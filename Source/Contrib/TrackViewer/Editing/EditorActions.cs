@@ -31,7 +31,8 @@ namespace ORTS.TrackViewer.Editing
 {
     /// <summary>Delegate to enable giving information on the edited path back to the editor</summary>
     public delegate void AfterEditDelegate(int nodesAdded);
-        
+
+    #region EditorAction (base)
     /// <summary>
     /// Base class for all kinds of editor actions. This contains all the common glue to support the action (like menuItem).
     /// It also contains all the common methods that edit/modify the path.
@@ -73,15 +74,17 @@ namespace ORTS.TrackViewer.Editing
             ActionMenuItem.Click += new RoutedEventHandler(contextExecuteAction_Click);
 
             string contentPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Content");
-           
-            string fullFileName = System.IO.Path.Combine(contentPath, pngFileName + ".png");
-            ActionMenuItem.Icon = new System.Windows.Controls.Image
+
+            if (!string.IsNullOrEmpty(pngFileName))
             {
-                Source = new BitmapImage(new Uri(fullFileName, UriKind.Relative)),
-                Width=14,
-                Height=14,
-            };
-            
+                string fullFileName = System.IO.Path.Combine(contentPath, pngFileName + ".png");
+                ActionMenuItem.Icon = new System.Windows.Controls.Image
+                {
+                    Source = new BitmapImage(new Uri(fullFileName, UriKind.Relative)),
+                    Width = 14,
+                    Height = 14,
+                };
+            }
         }
         
         /// <summary>
@@ -124,6 +127,7 @@ namespace ORTS.TrackViewer.Editing
             Trainpath.StoreCurrentPath();
             NetNodesAdded = 0;
             ExecuteAction();
+            Trainpath.DetermineIfBroken(); // instead of keeping track of when to do this or not, just do it always.
             if (afterEditCallback != null)
             {
                 afterEditCallback(NetNodesAdded);
@@ -275,13 +279,9 @@ namespace ORTS.TrackViewer.Editing
         protected static TrainpathVectorNode CreateHalfWayNode(TrainpathJunctionNode junctionNode, int tvnIndex)
         {   // The idea here is to use all the code in traveller to make life easier.
 
-            Traveller traveller = junctionNode.PlaceTravellerAfterJunction(tvnIndex);
-
-            TrackNode nextJunctionTrackNode = TrackExtensions.TrackNode(junctionNode.GetNextJunctionIndex(tvnIndex));
-            WorldLocation nextJunctionLocation = DrawTrackDB.UidLocation(nextJunctionTrackNode.UiD);
-
-            //move the traveller halfway through the next vector section
-            float distanceToTravel = traveller.DistanceTo(nextJunctionLocation) / 2;
+            // move the traveller halfway through the next vector section
+            Traveller traveller = junctionNode.PlaceTravellerAfterJunction(tvnIndex);      
+            float distanceToTravel = traveller.TrackNodeLength / 2;
             traveller.Move(distanceToTravel);
 
             TrainpathVectorNode halfwayNode = new TrainpathVectorNode(junctionNode, traveller);
@@ -313,7 +313,7 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         /// <param name="nodeCandidate"></param>
         /// <returns>The just created node</returns>
-        protected TrainpathVectorNode AddIntermediateNode(TrainpathVectorNode nodeCandidate)
+        protected TrainpathVectorNode AddIntermediateMainNode(TrainpathVectorNode nodeCandidate)
         {
             TrainpathNode prevNode = nodeCandidate.PrevNode;
             TrainpathNode nextNode = prevNode.NextMainNode;
@@ -329,18 +329,28 @@ namespace ORTS.TrackViewer.Editing
             newNode.NextSidingNode = null; // should not be needed
             nextNode.PrevNode = newNode;
 
-            //remove possible disambiguity node 
-            if (prevNode.NodeType == TrainpathNodeType.Other && prevNode is TrainpathVectorNode)
-            {
-                RemoveIntermediatePoint(prevNode);
-            }
-            if (nextNode.NodeType == TrainpathNodeType.Other && nextNode is TrainpathVectorNode)
-            {
-                RemoveIntermediatePoint(nextNode);
-            }
+            CleanAmbiguityNodes(newNode);
 
             NetNodesAdded++;
             return newNode;
+        }
+
+        /// <summary>
+        /// Check the next and the previous nodes on whether they are disambiguity node, and if yes, remove them.
+        /// </summary>
+        /// <param name="keepNode">The (vector) node to keep</param>
+        protected void CleanAmbiguityNodes(TrainpathNode keepNode)
+        {
+            TrainpathNode[] nodesToCheck = {keepNode.PrevNode, keepNode.NextMainNode};
+            foreach (TrainpathNode node in nodesToCheck)
+            {
+                if (   node != null
+                    && node.NodeType == TrainpathNodeType.Other
+                    && node is TrainpathVectorNode)
+                {
+                    RemoveIntermediatePoint(node);
+                }
+            }
         }
 
         /// <summary>
@@ -367,7 +377,7 @@ namespace ORTS.TrackViewer.Editing
                 {
                     TrainpathVectorNode halfwayNode = CreateHalfWayNode(prevJunctionNode, prevJunctionNode.NextMainTvnIndex);
                     halfwayNode.PrevNode = prevNode;
-                    AddIntermediateNode(halfwayNode);
+                    AddIntermediateMainNode(halfwayNode);
                 }
             }
         }
@@ -407,6 +417,7 @@ namespace ORTS.TrackViewer.Editing
 
         #endregion
     }
+    #endregion
 
     #region Template
     /// <summary>
@@ -472,7 +483,33 @@ namespace ORTS.TrackViewer.Editing
         {
             if (Trainpath.FirstNode == null) return false;
             if (Trainpath.HasEnd) return false;
+            if (Trainpath.FirstNodeOfTail != null) return false; // because then remove start (keep tail) is possible
             return (ActiveNode == Trainpath.FirstNode);
+        }
+
+        /// <summary>Execute the action. This assumes that the action can be executed</summary>
+        protected override void ExecuteAction()
+        {
+            Trainpath.FirstNode = null;
+        }
+    }
+    #endregion
+
+    #region RemoveStartKeepTail
+    /// <summary>
+    /// Subclass to implement the action: Remove Start point while keeping the tail
+    /// This action removes start node and subsequently the complete path (apart from the tail). (only path metadata will be unchanged!)
+    /// </summary>
+    public class EditorActionRemoveStartKeepTail : EditorAction
+    {
+        /// <summary>Constructor</summary>
+        public EditorActionRemoveStartKeepTail() : base(TrackViewer.catalog.GetString("Clear path (keep tail)"), null) { }
+
+        /// <summary>Can the action be executed given the current path and active nodes?</summary>
+        protected override bool CanExecuteAction()
+        {
+            if (Trainpath.FirstNode == null) return false;
+            return (Trainpath.FirstNodeOfTail != null);
         }
 
         /// <summary>Execute the action. This assumes that the action can be executed</summary>
@@ -543,6 +580,7 @@ namespace ORTS.TrackViewer.Editing
 
             TrainpathVectorNode newNode = AddAdditionalVectorNode(lastNode, ActiveTrackLocation, true);
             newNode.NodeType = TrainpathNodeType.End;
+            CleanAmbiguityNodes(newNode);
             Trainpath.HasEnd = true;
         }
     }
@@ -605,6 +643,7 @@ namespace ORTS.TrackViewer.Editing
             newNode.PrevNode = lastNode;
 
             newNode.ReverseOrientation(); // reverse because, well, this is a reverse point.
+            CleanAmbiguityNodes(newNode);
         }
     }
     #endregion
@@ -690,7 +729,7 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>Execute the action. This assumes that the action can be executed</summary>
         protected override void ExecuteAction()
         {
-            TrainpathVectorNode newNode = AddIntermediateNode(ActiveTrackLocation);
+            TrainpathVectorNode newNode = AddIntermediateMainNode(ActiveTrackLocation);
             newNode.NodeType = TrainpathNodeType.Stop;
             EditWaitMetaData(newNode);
         }
@@ -872,7 +911,7 @@ namespace ORTS.TrackViewer.Editing
                 junctionIndex = nextJunctionIndex;
                 newMainJunctionIndexes.Add(junctionIndex);
                 TvnIndex = TrackExtensions.GetLeavingTvnIndex(junctionIndex, TvnIndex);
-                if (TvnIndex < 0)
+                if (TvnIndex <= 0)
                 {
                     return null;
                 }
@@ -985,7 +1024,6 @@ namespace ORTS.TrackViewer.Editing
             {   //really take other exit and discard rest of path
                 activeNodeAsJunction.NextMainTvnIndex = NewTvnIndex;
                 ReplaceNodeAndFollowingByNewNode(ActiveNode.NextMainNode);
-                Trainpath.DetermineIfBroken();
                 return;
             }
 
@@ -999,7 +1037,6 @@ namespace ORTS.TrackViewer.Editing
             //Reconnect.
             lastNodeNewPath.NextMainNode = ReconnectNode;
             ReconnectNode.PrevNode = lastNodeNewPath;
-            Trainpath.DetermineIfBroken();
         }
     }
     #endregion
@@ -1070,7 +1107,6 @@ namespace ORTS.TrackViewer.Editing
             // Main track is not set to hasSidingNode.
             AddAdditionalNode(ActiveNode, NewTvnIndex, false);
             ActiveNode.NodeType = TrainpathNodeType.SidingStart;
-            Trainpath.DetermineIfBroken();
             NetNodesAdded = 0; // no main nodes added
         }
 
@@ -1120,8 +1156,7 @@ namespace ORTS.TrackViewer.Editing
             TrainpathNode mainNode = ActiveNode;
             mainNode.NodeType = TrainpathNodeType.Other; // this was SidingStart
             mainNode.NextSidingNode = null;
-            Trainpath.DetermineIfBroken();
-
+            
             if (!mainNode.HasSidingPath)
             {   // only a broken stub created by StartPassingPath
                 return;
@@ -1181,13 +1216,16 @@ namespace ORTS.TrackViewer.Editing
     public class EditorActionRemoveRestOfPath : EditorAction
     {
         /// <summary>Constructor</summary>
-        public EditorActionRemoveRestOfPath() : base(TrackViewer.catalog.GetString("Remove everything after this point"), "activeNode") { }
+        public EditorActionRemoveRestOfPath() : base(TrackViewer.catalog.GetString("Delete rest of path"), "activeNode") { }
 
         /// <summary>Can the action be executed given the current path and active nodes?</summary>
         protected override bool CanExecuteAction()
         {
             if (Trainpath.FirstNode == null) return false;
-            return (Trainpath.FirstNodeOfTail != null);
+            if (ActiveNode.HasSidingPath) return false;
+            if (ActiveNode.NextSidingNode != null) return false; // Do not allow if it is on a siding.
+            if (ActiveNode.NodeType == TrainpathNodeType.End) return false; // Nothing to remove
+            return true;
         }
 
         /// <summary>Execute the action. This assumes that the action can be executed</summary>
@@ -1195,6 +1233,7 @@ namespace ORTS.TrackViewer.Editing
         {
             ActiveNode.NextMainNode = null;
             ActiveNode.NextSidingNode = null;
+            Trainpath.HasEnd = false;
         }
     }
     #endregion
@@ -1685,7 +1724,6 @@ lastEditableNode.NextMainNode = null;
 
             //some nodes are discarded by making the new links:
             NetNodesAdded -= numberOfNodeThatWillBeRemoved;
-            Trainpath.DetermineIfBroken(); // Possibly we removed the last broken nodes.
         }       
     }
     #endregion
@@ -1723,7 +1761,6 @@ lastEditableNode.NextMainNode = null;
 
             Trainpath.FirstNodeOfTail = null;
             Trainpath.HasEnd = Trainpath.TailHasEnd;
-            Trainpath.DetermineIfBroken(); // Possibly we removed the last broken nodes.
             NetNodesAdded = CountSuccessors(ActiveNode); // just draw everything
         }
 
@@ -1832,7 +1869,6 @@ lastEditableNode.NextMainNode = null;
                 mainNode = mainNode.NextMainNode;
             }
 
-            Trainpath.DetermineIfBroken();
             NetNodesAdded = 0; // no main nodes added.
         }
 
@@ -1935,7 +1971,6 @@ lastEditableNode.NextMainNode = null;
         protected override void ExecuteAction()
         {
             CreateFoundConnection(false);
-            Trainpath.DetermineIfBroken();
 
             NetNodesAdded = 0; // no main nodes added.
         }
@@ -2174,7 +2209,7 @@ lastEditableNode.NextMainNode = null;
                     {   // the next node is a junction, which is not good enough
                         TrainpathVectorNode halfwayNode = CreateHalfWayNode(mainNodeAsJunction, mainNode.NextMainTvnIndex);
                         halfwayNode.PrevNode = mainNode;
-                        AddIntermediateNode(halfwayNode);
+                        AddIntermediateMainNode(halfwayNode);
                         trainpath.IsModified = true;
                     }
 

@@ -178,21 +178,25 @@ namespace ORTS.TrackViewer.Editing
             int minPixelSize = 7;
             float angle = trainpathNode.TrackAngle;
 
+            Color colorMain = DrawColors.colorsPathMain.TrackStraight;
+            Color colorSiding = DrawColors.colorsPathSiding.TrackStraight;
+            Color colorBroken = DrawColors.colorsNormal.BrokenNode;
+
             switch (trainpathNode.NodeType)
             {
                 case TrainpathNodeType.Start:
                     // first node; texture is not rotated
-                    drawArea.DrawTexture(trainpathNode.Location, "pathStart", 0, pathPointSize, minPixelSize);
+                    drawArea.DrawTexture(trainpathNode.Location, "pathStart", pathPointSize, minPixelSize, colorMain);
                     break;
                 case TrainpathNodeType.End:
                     // formal end node; texture is not rotated
-                    drawArea.DrawTexture(trainpathNode.Location, "pathEnd", 0, pathPointSize, minPixelSize);
+                    drawArea.DrawTexture(trainpathNode.Location, "pathEnd", pathPointSize, minPixelSize, colorMain);
                     break;
                 case TrainpathNodeType.Reverse:
-                    drawArea.DrawTexture(trainpathNode.Location, "pathReverse", angle, pathPointSize, minPixelSize);
+                    drawArea.DrawTexture(trainpathNode.Location, "pathReverse", pathPointSize, minPixelSize, angle, colorMain);
                     break;
                 case TrainpathNodeType.Stop:
-                    drawArea.DrawTexture(trainpathNode.Location, "pathWait", 0, pathPointSize, minPixelSize);
+                    drawArea.DrawTexture(trainpathNode.Location, "pathWait", pathPointSize, minPixelSize, colorMain);
                     break;
 #if COUPLE
                 case TrainpathNodeType.Uncouple:
@@ -202,7 +206,7 @@ namespace ORTS.TrackViewer.Editing
                 default:
                     if ((trainpathNode.NextMainNode == null) && (trainpathNode.NextSidingNode != null))
                     {   // siding node;
-                        drawArea.DrawTexture(trainpathNode.Location, "pathSiding", angle, pathPointSize, minPixelSize);
+                        drawArea.DrawTexture(trainpathNode.Location, "pathNormal", pathPointSize, minPixelSize, angle, colorSiding);
                     }
                     else if ((trainpathNode.NextMainNode == null)
                           && (trainpathNode.NextSidingNode == null)
@@ -210,19 +214,19 @@ namespace ORTS.TrackViewer.Editing
                           && (trainpathNode.PrevNode.NextSidingNode == trainpathNode))
                     {
                         // end of a siding path without it being a siding end
-                        drawArea.DrawTexture(trainpathNode.Location, "pathSiding", angle, pathPointSize, minPixelSize);
-                        drawArea.DrawSimpleTexture(trainpathNode.Location, "crossedRing", pathPointSize, minPixelSize, DrawColors.colorsNormal["brokenNode"]);
+                        drawArea.DrawTexture(trainpathNode.Location, "pathNormal", pathPointSize, minPixelSize, angle, colorMain);
+                        drawArea.DrawTexture(trainpathNode.Location, "crossedRing", pathPointSize, minPixelSize, colorBroken);
                     }
                     else
                     {   // normal node
-                        drawArea.DrawTexture(trainpathNode.Location, "pathNormal", angle, pathPointSize, minPixelSize);
+                        drawArea.DrawTexture(trainpathNode.Location, "pathNormal", pathPointSize, minPixelSize, angle, colorMain);
                     }
                     break;
             }
 
             if (trainpathNode.IsBroken)
             {
-                drawArea.DrawSimpleTexture(trainpathNode.Location, "crossedRing", pathPointSize, minPixelSize, DrawColors.colorsNormal["brokenNode"]);
+                drawArea.DrawTexture(trainpathNode.Location, "crossedRing", pathPointSize, minPixelSize, colorBroken);
             }       
             
         }
@@ -376,14 +380,14 @@ namespace ORTS.TrackViewer.Editing
                 float angleStart = sign*MathHelper.ToDegrees(startOffset / radius);
                 angleLength -= angleStart;
 
-                drawArea.DrawArc(trackSection.SectionSize.Width, colors["trackCurved"], thisLocation,
+                drawArea.DrawArc(trackSection.SectionSize.Width, colors.TrackCurved, thisLocation,
                     radius, tvs.AY, angleLength, angleStart);
             }
             else
             {   // straight section
                 float length = (stopOffset < 0) ? trackSection.SectionSize.Length : stopOffset;
                 length -= startOffset;
-                drawArea.DrawLine(trackSection.SectionSize.Width, colors["trackStraight"], thisLocation,
+                drawArea.DrawLine(trackSection.SectionSize.Width, colors.TrackStraight, thisLocation,
                     length, tvs.AY, startOffset);
             }
         }
@@ -397,7 +401,7 @@ namespace ORTS.TrackViewer.Editing
         /// <param name="nextNode">node to draw to</param>
         static void DrawPathBrokenNode(DrawArea drawArea, ColorScheme colors, TrainpathNode currentNode, TrainpathNode nextNode)
         {
-            drawArea.DrawLine(1f, colors["pathBroken"] , currentNode.Location, nextNode.Location);
+            drawArea.DrawLine(1f, colors.BrokenPath , currentNode.Location, nextNode.Location);
         }
 
         /// <summary>
@@ -413,10 +417,10 @@ namespace ORTS.TrackViewer.Editing
 
             if (lastDrawnNode != null)
             {
-                drawArea.DrawDashedLine(1f, DrawColors.colorsNormal["pathBroken"], lastDrawnNode.Location, firstTailNode.Location);
+                drawArea.DrawDashedLine(1f, DrawColors.colorsNormal.BrokenPath, lastDrawnNode.Location, firstTailNode.Location);
             }
             DrawNodeItself(drawArea, firstTailNode);
-            drawArea.DrawSimpleTexture(firstTailNode.Location, "ring", 8f, 7, colors["pathBroken"]);
+            drawArea.DrawTexture(firstTailNode.Location, "ring", 8f, 7, colors.BrokenPath);
 
         }
     }

@@ -101,6 +101,9 @@ namespace ORTS.TrackViewer.Drawing
         private DrawableTrackItem[] roadTrackItemTable;
         /// <summary>Direction-angle of track indexed by tracknode index (of the endnode)</summary>
         private Dictionary<uint, float> endnodeAngles = new Dictionary<uint, float>();
+
+        /// <summary>The signal config file to distinguish normal and non-normal signals</summary>
+        private SIGCFGFile sigcfgFile;
         
         // various fields to optimize drawing efficiency
         int tileXIndexStart;
@@ -137,10 +140,24 @@ namespace ORTS.TrackViewer.Drawing
 
             roadTrackFileName = routePath + @"\" + TRK.Tr_RouteFile.FileName + ".rdb";
 
-            messageDelegate(TrackViewer.catalog.GetString("Finding the angles to draw signals ..."));
+            string ORfilepath = System.IO.Path.Combine(routePath, "OpenRails");
+            if (File.Exists(ORfilepath + @"\sigcfg.dat"))
+            {
+                sigcfgFile = new SIGCFGFile(ORfilepath + @"\sigcfg.dat");
+            }
+            else if (File.Exists(routePath + @"\sigcfg.dat"))
+            {
+                sigcfgFile = new SIGCFGFile(routePath + @"\sigcfg.dat");
+            }
+            else {
+                //sigcfgFile = null; // default initialization
+            }
+
+
+            messageDelegate(TrackViewer.catalog.GetString("Finding the angles to draw signals, endnodes, ..."));
             
             FillAvailableIndexes();
-            FindSignalOrientations();
+            FindSignalDetails();
             FindEndnodeOrientations();
             FindSidingsAndPlatforms();
 
@@ -199,7 +216,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <summary>
         /// Find, for each signal, the orientation/angle we need to draw it
         /// </summary>
-        void FindSignalOrientations()
+        void FindSignalDetails()
         {
             foreach (TrackNode tn in TrackDB.TrackNodes)
             {
@@ -215,6 +232,7 @@ namespace ORTS.TrackViewer.Drawing
                     if (signalItem != null)
                     {
                         signalItem.FindAngle(TsectionDat, TrackDB, tn);
+                        signalItem.DetermineIfNormal(sigcfgFile);
                     }
                 }
             }
@@ -607,9 +625,14 @@ namespace ORTS.TrackViewer.Drawing
         /// </summary>
         /// <param name="drawArea">Area to draw upon</param>
         /// <param name="doAll">highlight everything possible or just train tracks</param>
-        public void DrawHighlights(DrawArea drawArea, bool doAll)
+        public void DrawTrackHighlights(DrawArea drawArea, bool doAll)
         {
-            CheckForHighlightOverride();
+            if (!CheckForHighlightOverrideTracks())
+            {
+                ClosestTrack = closestRailTrack; // we still need this for path editing
+                return;
+            }
+
             if (doAll)
             {
                 if (Properties.Settings.Default.drawRoads && ClosestRoadTrack.IsCloserThan(closestRailTrack))
@@ -622,28 +645,41 @@ namespace ORTS.TrackViewer.Drawing
                     ClosestTrack = closestRailTrack;
                     DrawHighlightTracks(drawArea, closestRailTrack, DrawColors.colorsHighlight, DrawColors.colorsHotlight);
                 }
-
-                if (ClosestTrackItem.DrawableTrackItem != null && ClosestTrackItem.IsCloserThan(ClosestJunctionOrEnd))
-                {
-                    // Highlight the closest track item
-                    ClosestTrackItem.DrawableTrackItem.Draw(drawArea, DrawColors.colorsHighlight, IsHighlightOverriddenTrItem);
-                }
-                else if (ClosestJunctionOrEnd.JunctionOrEndNode != null)
-                {   // Highlight the closest junction
-                    if (ClosestJunctionOrEnd.Description == "junction")
-                    {
-                        DrawJunctionNode(drawArea, ClosestJunctionOrEnd.JunctionOrEndNode, DrawColors.colorsHighlight);
-                    }
-                    else
-                    {
-                        DrawEndNode(drawArea, ClosestJunctionOrEnd.JunctionOrEndNode, DrawColors.colorsHighlight);
-                    }
-                }
             }
             else
             { // basically for inset only
                 DrawHighlightTracks(drawArea, closestRailTrack, DrawColors.colorsHighlight, DrawColors.colorsHotlight);
             }
+        }
+
+        /// <summary>
+        /// Draw the various highlights (tracks/roads and items/junctions/endnodes, based on what is closest to the mouse)
+        /// </summary>
+        /// <param name="drawArea">Area to draw upon</param>
+        public void DrawItemHighlights(DrawArea drawArea)
+        {
+            if (!CheckForHighlightOverrideItems())
+            {
+                return;
+            }
+
+            if (ClosestTrackItem.DrawableTrackItem != null && ClosestTrackItem.IsCloserThan(ClosestJunctionOrEnd))
+            {
+                // Highlight the closest track item
+                ClosestTrackItem.DrawableTrackItem.Draw(drawArea, DrawColors.colorsHighlight, IsHighlightOverriddenTrItem);
+            }
+            else if (ClosestJunctionOrEnd.JunctionOrEndNode != null)
+            {   // Highlight the closest junction
+                if (ClosestJunctionOrEnd.Description == "junction")
+                {
+                    DrawJunctionNode(drawArea, ClosestJunctionOrEnd.JunctionOrEndNode, DrawColors.colorsHighlight);
+                }
+                else
+                {
+                    DrawEndNode(drawArea, ClosestJunctionOrEnd.JunctionOrEndNode, DrawColors.colorsHighlight);
+                }
+            }
+
         }
 
         /// <summary>
@@ -704,12 +740,12 @@ namespace ORTS.TrackViewer.Drawing
 
             if (trackSection.SectionCurve != null)
             {
-                drawArea.DrawArc(trackSection.SectionSize.Width, colors["trackCurved"], thisLocation,
+                drawArea.DrawArc(trackSection.SectionSize.Width, colors.TrackCurved, thisLocation,
                     trackSection.SectionCurve.Radius, tvs.AY, trackSection.SectionCurve.Angle, 0);
             }
             else
             {
-                drawArea.DrawLine(trackSection.SectionSize.Width, colors["trackStraight"], thisLocation,
+                drawArea.DrawLine(trackSection.SectionSize.Width, colors.TrackStraight, thisLocation,
                     trackSection.SectionSize.Length, tvs.AY, 0);
             }
         }
@@ -751,7 +787,7 @@ namespace ORTS.TrackViewer.Drawing
         {
             WorldLocation thisLocation = UidLocation(tn.UiD);
             ClosestJunctionOrEnd.CheckMouseDistance(thisLocation, drawArea.MouseLocation, tn, "junction");
-            drawArea.DrawSimpleTexture(thisLocation, "disc", 3f, 2, colors["junction"]);
+            drawArea.DrawTexture(thisLocation, "disc", 3f, 2, colors.Junction);
         }
 
         /// <summary>
@@ -765,7 +801,7 @@ namespace ORTS.TrackViewer.Drawing
             WorldLocation thisLocation = UidLocation(tn.UiD);
             ClosestJunctionOrEnd.CheckMouseDistance(thisLocation, drawArea.MouseLocation, tn, "endnode");
             float angle = endnodeAngles[tn.Index];
-            drawArea.DrawLine(3f, colors["endnode"], thisLocation, 2f, angle, 0);
+            drawArea.DrawLine(3f, colors.EndNode, thisLocation, 2f, angle, 0);
         }
 
         /// <summary>
@@ -774,7 +810,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="drawArea">Area to draw the items on</param>
         public void DrawTrackItems(DrawArea drawArea)
         {
-            ClosestTrackItem.Reset();
+            
             for (int xindex = tileXIndexStart; xindex <= tileXIndexStop; xindex++)
             {
                 for (int zindex = tileZIndexStart; zindex <= tileZIndexStop; zindex++)
@@ -796,6 +832,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="drawArea">Area to draw the items on</param>
         public void DrawRoadTrackItems(DrawArea drawArea)
         {
+            ClosestTrackItem.Reset(); // dirtily assumes this is called before normal track items
             // we only want the carspawners here
             if (!Properties.Settings.Default.showCarSpawners && !Properties.Settings.Default.showRoadCrossings) return;
             
@@ -927,17 +964,58 @@ namespace ORTS.TrackViewer.Drawing
         }
 
         /// <summary>
-        /// Check whether there is an hightlight override, and if there is make sure the item to highlighted is indeed used.
+        /// Check whether there is an highlight override for tracks (meaning the highlight is coming from a search, 
+        /// not from being closest to the mouse), and if there is make sure the track to highlighted is indeed used.
         /// </summary>
-        void CheckForHighlightOverride()
+        /// <returns>True in case the highlight needs to be drawn</returns>
+        bool CheckForHighlightOverrideTracks()
         {
-            IsHighlightOverriddenTrItem = (IsHighlightOverridden && (searchTrItem != null));
-            if (!IsHighlightOverridden) return;
-            if (searchJunctionOrEnd != null) ClosestJunctionOrEnd = searchJunctionOrEnd;
-            if (searchTrItem != null) ClosestTrackItem = searchTrItem;
+            if (!IsHighlightOverridden)
+            {
+                return Properties.Settings.Default.showTrackHighlights;
+            }
+
             // To be sure the inset also shows the correct track, we need to make sure to make a deeper copy, instead
             // of changing only the reference.
-            if (searchTrack != null) closestRailTrack = new CloseToMouseTrack(TsectionDat, searchTrack.TrackNode);
+            if (searchTrack != null)
+            {
+                closestRailTrack = new CloseToMouseTrack(TsectionDat, searchTrack.TrackNode);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+
+        /// <summary>
+        /// Check whether there is an highlight override for items (meaning the highlight is coming from a search, 
+        /// not from being closest to the mouse), and if there is make sure the item to highlighted is indeed used.
+        /// </summary>
+        /// <returns>True in case the highlight needs to be drawn</returns>
+        bool CheckForHighlightOverrideItems()
+        {
+            IsHighlightOverriddenTrItem = (IsHighlightOverridden && (searchTrItem != null));
+            if (!IsHighlightOverridden)
+            {
+                return Properties.Settings.Default.showItemHighlights;
+            }
+
+            bool foundHighlightItem = false;
+            if (searchJunctionOrEnd != null)
+            {
+                ClosestJunctionOrEnd = searchJunctionOrEnd;
+                foundHighlightItem = true;
+            }
+
+            if (searchTrItem != null)
+            {
+                ClosestTrackItem = searchTrItem;
+                foundHighlightItem = true;
+            }
+
+            return foundHighlightItem;
         }
         #endregion
 

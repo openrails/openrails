@@ -66,10 +66,9 @@ namespace ORTS.TrackViewer.Drawing
         {
             if (trainLocation != null)
             {
-                float angle = 0;
                 float size = 9f; // in meters
                 int minPixelSize = 7;
-                drawArea.DrawTexture(trainLocation, "playerTrain", angle, size, minPixelSize);
+                drawArea.DrawTexture(trainLocation, "playerTrain", size, minPixelSize);
             }
         }
     }

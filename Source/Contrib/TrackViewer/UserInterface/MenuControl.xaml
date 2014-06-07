@@ -20,19 +20,29 @@
                 <MenuItem Header="Quit (Q)" Name="menuQuit" Click="menuQuit_Click"/>
             </MenuItem>
             <MenuItem Header="View">
-                <MenuItem Header="Center around platform">
+                <MenuItem Header="Center around platform" SubmenuClosed="MenuItemCenterClosed">
                     <ComboBox Name="menuPlatformCombobox" SelectionChanged="menuPlatformCombobox_SelectionChanged"/>
                 </MenuItem>
                 <MenuItem Header="Center around siding">
                     <ComboBox Name="menuSidingCombobox" SelectionChanged="menuSidingCombobox_SelectionChanged"/>
                 </MenuItem>
                 <Separator/>
-                <MenuItem Header="Show inset" Name="menuShowInset" IsCheckable="True" Click="UpdateMenuSettings"/>
-                <MenuItem Header="Show world tiles" Name="menuShowWorldTiles" IsCheckable="True" Click="UpdateMenuSettings"/>
-                <MenuItem Header="Show grid lines" Name="menuShowGridLines" IsCheckable="True" Click="UpdateMenuSettings"/>
-                <MenuItem Header="Show scale ruler" Name="menuShowScaleRuler" IsCheckable="True" Click="UpdateMenuSettings"/>
-                <MenuItem Header="Show longitude/latitude" Name="menuShowLonLat" IsCheckable="True" Click="UpdateMenuSettings"/>
-                <MenuItem Header="Use miles i.s.o. meters" Name="menuUseMilesNotMeters" IsCheckable="True" Click="UpdateMenuSettings"/>
+                <MenuItem Header="Paths">
+                    <MenuItem Header="Show path (F11)" Name="menuShowTrainpath" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show raw path from .pat file (shift F11)" Name="menuShowPATfile" IsCheckable="True" Click="UpdateMenuSettings"/>
+                </MenuItem>
+                <MenuItem Header="Track Coloring">
+                    <MenuItem Header="Color tracks" Name="menuColorTracks" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Highlight tracks (F10)" Name="menuHighlightTracks" IsCheckable="True" Click="UpdateMenuSettings"/>
+                </MenuItem>
+                <MenuItem Header="Additional views">
+                    <MenuItem Header="Show inset" Name="menuShowInset" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show world tiles" Name="menuShowWorldTiles" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show grid lines" Name="menuShowGridLines" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show scale ruler" Name="menuShowScaleRuler" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show longitude/latitude" Name="menuShowLonLat" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Use miles i.s.o. meters" Name="menuUseMilesNotMeters" IsCheckable="True" Click="UpdateMenuSettings"/>
+                </MenuItem>
                 <Separator/>
                 <MenuItem Header="Save current zoom" Name="menuZoomSave" Click="menuZoomSave_Click"/>
                 <MenuItem Header="Restore saved zoom" Name="menuZoomRestore" Click="menuZoomRestore_Click"/>
@@ -44,8 +54,10 @@
                 <Separator/>
                 <MenuItem Header="Anti aliasing (needs restart)" Name="menuDoAntiAliasing" IsCheckable="True" Click="menuDoAntiAliasing_Click"/>
             </MenuItem>
-            <MenuItem Header="Tracks">
-                <MenuItem Header="Color tracks" Name="menuColorTracks" IsCheckable="True" Click="UpdateMenuSettings"/>
+            <MenuItem Header="Track items">
+                <MenuItem Header="Show all items" Name="menuShowAll" IsCheckable="False" Click="menuShowAll_Click"/>
+                <MenuItem Header="Show no items" Name="menuShowNone" IsCheckable="False" Click="menuShowNone_Click"/>
+                <MenuItem Header="Highlight items (shift-F10)" Name="menuHighlightItems" IsCheckable="True" Click="UpdateMenuSettings"/>
                 <MenuItem Header="Junctions/ends">
                     <MenuItem Header="Show junctions" Name="menuShowJunctionNodes" IsCheckable="True" Click="UpdateMenuSettings"/>
                     <MenuItem Header="Show end nodes" Name="menuShowEndNodes" IsCheckable="True" Click="UpdateMenuSettings"/>
@@ -61,6 +73,7 @@
                 </MenuItem>
                 <MenuItem Header="Interactives">
                     <MenuItem Header="Show signals (F7)" Name="menuShowSignals" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show also other signals" Name="menuShowAllSignals" IsCheckable="True" Click="menuShowAllSignals_Click"/>
                     <MenuItem Header="Show level crossings" Name="menuShowCrossings" IsCheckable="True" Click="UpdateMenuSettings"/>
                     <MenuItem Header="Show hazards" Name="menuShowHazards" IsCheckable="True" Click="UpdateMenuSettings"/>
                     <MenuItem Header="Show fuel/pickups" Name="menuShowPickups" IsCheckable="True" Click="UpdateMenuSettings"/>
@@ -69,10 +82,6 @@
                 <MenuItem Header="Posts">
                     <MenuItem Header="Show speed limits (F5)" Name="menuShowSpeedLimits" IsCheckable="True" Click="UpdateMenuSettings"/>
                     <MenuItem Header="Show mileposts (shift F5)" Name="menuShowMileposts" IsCheckable="True" Click="UpdateMenuSettings"/>
-                </MenuItem>
-                <MenuItem Header="Paths">
-                    <MenuItem Header="Show path (F11)" Name="menuShowTrainpath" IsCheckable="True" Click="UpdateMenuSettings"/>
-                    <MenuItem Header="Show raw path from .pat file (shift F11)" Name="menuShowPATfile" IsCheckable="True" Click="UpdateMenuSettings"/>
                 </MenuItem>
                 <MenuItem Header="Roads">
                     <MenuItem Header="Draw roads" Name="menuDrawRoads" IsCheckable="True" Click="UpdateMenuSettings"/>
@@ -88,8 +97,7 @@
                 <MenuItem Header="Show Path info" Name="menuStatusShowTrainpath" IsCheckable="True" IsChecked="True"
                           Click="UpdateMenuSettings"/>
             </MenuItem>
-            <MenuItem Header="Preferences">
-                <MenuItem Header="Select background color" Name="menuSelectColor"/>
+            <MenuItem Header="Preferences" Name="menuPreferences">
                 <MenuItem Header="Zooming is centered on mouse (m)" Name="menuZoomIsCenteredOnMouse" IsCheckable="True" IsChecked="True"
                           Click="UpdateMenuSettings"/>
             </MenuItem>
@@ -97,7 +105,6 @@
                 <MenuItem Header="==Supporting MSTS paths only==" Foreground="Blue" IsEnabled="False"/>
                 <MenuItem Header="Select path" Name="menuSelectPath"/>
                 <Separator/>
-                <MenuItem Header="Path Editor is under construction!" Foreground="Red" IsEnabled="False"/>
                 <MenuItem Header="Save path" Name="menuSavePath" IsCheckable="False" Click="menuSavePath_Click"/>
                 <MenuItem Header="Enable editing" Name="menuEnableEditing" IsCheckable="True" IsChecked="False" Click="menuEnableEditing_Click"/>
                 <MenuItem Header="New path" Name="menuNewPath" IsCheckable="False" Click="menuNewPath_Click"/>

@@ -103,7 +103,7 @@ namespace ORTS.TrackViewer.Drawing
                     int TileZstop = worldTileRanges[TileX][i+1];
                     WorldLocation bot = new WorldLocation(TileX, TileZstart, 0, 0, -1024);
                     WorldLocation top = new WorldLocation(TileX, TileZstop, 0, 0, 1024);
-                    drawArea.DrawLineAlways(2048, DrawColors.colorsNormal["tile"], bot, top);
+                    drawArea.DrawLineAlways(2048, DrawColors.colorsNormal.Tile, bot, top);
                 }
             }
         }

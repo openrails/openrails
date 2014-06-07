@@ -151,7 +151,7 @@ namespace ORTS.TrackViewer.Drawing
             Vector2 lowerRightPoint = new Vector2(lowerLeftPoint.X + fullPixelWidth, lowerLeftPoint.Y);
             Vector2 bigMarker = new Vector2(0, -10);
             Vector2 smallMarker = new Vector2(0, -5);
-            Color color = DrawColors.colorsNormal["text"];
+            Color color = DrawColors.colorsNormal.Text;
 
             BasicShapes.DrawLine(1, color, lowerLeftPoint, lowerRightPoint);
             BasicShapes.DrawLine(1, color, lowerLeftPoint, lowerLeftPoint + bigMarker);
@@ -201,7 +201,7 @@ namespace ORTS.TrackViewer.Drawing
             string longitudeDegrees = MathHelper.ToDegrees((float)longitude).ToString("F5", System.Globalization.CultureInfo.CurrentCulture);
             string locationText = String.Format(System.Globalization.CultureInfo.CurrentCulture, 
                 "Lon = {0}; Lat = {1}", longitudeDegrees, latitudeDegrees);
-            BasicShapes.DrawString(lowerLeft, Color.Black, locationText);           
+            BasicShapes.DrawString(lowerLeft, DrawColors.colorsNormal.Text, locationText);           
         }
     }
 }

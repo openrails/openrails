@@ -55,7 +55,7 @@ namespace ORTS.TrackViewer.Editing
             get { return trainPaths[currentIndex].firstNodeOfTail; }
             set { trainPaths[currentIndex].firstNodeOfTail = value; }
         }
-        
+
         /// <summary>Does the path have a real end node?</summary>
         public bool HasEnd
         {
@@ -176,7 +176,7 @@ namespace ORTS.TrackViewer.Editing
         /// <param name="tsectionDat"></param>
         /// <param name="filePath">file name including path of the .pat file</param>
         public Trainpath(TrackDB trackDB, TSectionDatFile tsectionDat, string filePath)
-            :this(trackDB, tsectionDat)
+            : this(trackDB, tsectionDat)
         {
             this.FilePath = filePath;
 
@@ -212,7 +212,7 @@ namespace ORTS.TrackViewer.Editing
             FirstNode = Nodes[0];
             FirstNode.NodeType = TrainpathNodeType.Start;
         }
- 
+
         /// <summary>
         /// Link the various nodes to each other. Do some initial processing on the path, like finding linking TVNs
         /// and determining whether junctions are facing or not.
@@ -266,7 +266,7 @@ namespace ORTS.TrackViewer.Editing
                 node.SetFacingPoint();
             }
         }
-  
+
         /// <summary>
         /// Find all nodes that are the end of a siding (so where main path and siding path come together again)
         /// </summary>
@@ -355,23 +355,24 @@ namespace ORTS.TrackViewer.Editing
             TrainpathNode currentMainNode = FirstNode;
             while (currentMainNode.NextMainNode != null)
             {
+
                 TrainpathVectorNode currentNodeAsVector = currentMainNode as TrainpathVectorNode;
-                if (currentNodeAsVector != null)
+                if (currentNodeAsVector != null && !currentMainNode.IsBroken)
                 {
                     // if it is forward oriented it should also be earlier on track as next node
                     // if it is not forward oriented it should also not be earlier on track as next node
-                    if (   currentNodeAsVector.ForwardOriented
+                    if (currentNodeAsVector.ForwardOriented
                         != currentNodeAsVector.IsEarlierOnTrackThan(currentMainNode.NextMainNode))
                     {   // the link is broken (although the nodes themselves might be fine)
                         currentMainNode.NextMainTvnIndex = -1;
-                    }              
+                    }
                 }
 
                 TrainpathNode currentSidingNode = currentMainNode;
                 while (currentSidingNode.NextSidingNode != null)
                 {
                     currentNodeAsVector = currentSidingNode as TrainpathVectorNode;
-                    if (currentNodeAsVector != null)
+                    if (currentNodeAsVector != null && !currentSidingNode.IsBroken)
                     {
                         // if it is forward oriented it should also be earlier on track as next node
                         // if it is not forward oriented it should also not be earlier on track as next node
@@ -416,7 +417,7 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         public void UseLast()
         {
-            currentIndex = trainPaths.Count-1;
+            currentIndex = trainPaths.Count - 1;
         }
 
         /// <summary>
@@ -424,7 +425,7 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         public void UseLastButOne()
         {
-            currentIndex = trainPaths.Count-2;
+            currentIndex = trainPaths.Count - 2;
             if (currentIndex <= 0) currentIndex = 0; // should not happen
         }
 
@@ -436,7 +437,8 @@ namespace ORTS.TrackViewer.Editing
         public void StoreCurrentPath()
         {
             int newIndex = currentIndex + 1;
-            if (trainPaths.Count > newIndex) {
+            if (trainPaths.Count > newIndex)
+            {
                 trainPaths.RemoveRange(newIndex, trainPaths.Count - newIndex);
             }
 
@@ -449,7 +451,7 @@ namespace ORTS.TrackViewer.Editing
             IsModified = true;
         }
 
-   
+
         #endregion
 
         #region Methods giving info on path
@@ -459,13 +461,14 @@ namespace ORTS.TrackViewer.Editing
         /// <returns>A collection containing integers that tell how far to draw the path to go to the broken node</returns>
         public Collection<int> DetermineIfBroken()
         {
-            if (FirstNode == null) {
+            if (FirstNode == null)
+            {
                 IsBroken = false;
                 return new Collection<int>();
             }
 
             List<TrainpathNode> brokenNodes = new List<TrainpathNode>();
-                        
+
             TrainpathNode currentMainNode = FirstNode;
             while (currentMainNode.NextMainNode != null)
             {
@@ -494,7 +497,7 @@ namespace ORTS.TrackViewer.Editing
                         }
                         currentSidingNode = currentSidingNode.NextSidingNode;
 
-                        if (   currentSidingNode.NextSidingNode == null 
+                        if (currentSidingNode.NextSidingNode == null
                             && currentSidingNode.NodeType != TrainpathNodeType.SidingEnd)
                         {   // The end of a siding track while still not on siding end
                             brokenNodes.Add(currentMainNode.NextMainNode);
@@ -542,8 +545,11 @@ namespace ORTS.TrackViewer.Editing
             return numberFound;
         }
         #endregion
+
+        #region class TrainPathData
         class TrainPathData
         {
+            #region public fields
             public TrainpathNode firstNode;
             public TrainpathNode firstNodeOfTail;
 
@@ -558,7 +564,11 @@ namespace ORTS.TrackViewer.Editing
             public bool hasEnd;
             public bool tailHasEnd;
             public bool isBroken;
-            
+            #endregion
+
+            /// <summary>
+            /// Constructor. Set name, end, start and id to thos of a new path.
+            /// </summary>
             public TrainPathData()
             {
                 //firstNode = null; //this is already the default
@@ -578,7 +588,7 @@ namespace ORTS.TrackViewer.Editing
                 TrainPathData newData = (TrainPathData)this.MemberwiseClone();
                 newData.firstNode = DeepCopyOfLinkedNodes(firstNode);
                 newData.firstNodeOfTail = DeepCopyOfLinkedNodes(firstNodeOfTail);
-            
+
                 return newData;
             }
 
@@ -637,7 +647,6 @@ namespace ORTS.TrackViewer.Editing
             }
 
         }
+        #endregion
     }
-
-
 }

@@ -20,6 +20,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Windows;
@@ -52,13 +53,14 @@ namespace ORTS.TrackViewer.UserInterface
     /// By being so central in the userinterface, it is sometimes difficult to make nice and clean interactions
     /// with the rest of the program. There are many calls to trackviewer and items within trackviewer.
     /// </summary>
-    public sealed partial class MenuControl : System.Windows.Controls.UserControl, IDisposable
+    public sealed partial class MenuControl : System.Windows.Controls.UserControl, IDisposable, IPreferenceChanger
     {
         /// <summary>Height of the menu in pixels</summary>
         public int MenuHeight { get; set; }
 
         private TrackViewer trackViewer;
         private ElementHost elementHost;
+        private SaveableSettingsDictionary settingsDictionary = new SaveableSettingsDictionary();
 
         /// <summary>
         /// constructor
@@ -98,12 +100,12 @@ namespace ORTS.TrackViewer.UserInterface
         /// </summary>
         public void InitUserSettings()
         {
-            PopulateColors(Properties.Settings.Default.backgroundColorName);
-
             menuShowInset.IsChecked = Properties.Settings.Default.showInset;
             menuShowWorldTiles.IsChecked = Properties.Settings.Default.showWorldTiles;
             menuShowGridLines.IsChecked = Properties.Settings.Default.showGridLines;
             menuColorTracks.IsChecked = Properties.Settings.Default.colorTracks;
+            menuHighlightTracks.IsChecked = Properties.Settings.Default.showTrackHighlights;
+            menuHighlightItems.IsChecked = Properties.Settings.Default.showItemHighlights;
 
             menuShowJunctionNodes.IsChecked = Properties.Settings.Default.showJunctionNodes;
             menuShowEndNodes.IsChecked = Properties.Settings.Default.showEndNodes;
@@ -117,6 +119,7 @@ namespace ORTS.TrackViewer.UserInterface
             menuShowMileposts.IsChecked = Properties.Settings.Default.showMileposts;
             menuShowHazards.IsChecked = Properties.Settings.Default.showHazards;
             menuShowSignals.IsChecked = Properties.Settings.Default.showSignals;
+            menuShowAllSignals.IsChecked = Properties.Settings.Default.showAllSignals;
             menuShowPickups.IsChecked = Properties.Settings.Default.showPickups;
             menuShowSoundRegions.IsChecked = Properties.Settings.Default.showSoundRegions;
 
@@ -151,11 +154,18 @@ namespace ORTS.TrackViewer.UserInterface
             if (!menuShowPATfile.IsEnabled) {
                 menuShowPATfile.IsChecked = false;
             }
+            if (!menuShowSignals.IsChecked)
+            {   // if signals are not shown, then also all signals cannot be shown.
+                menuShowAllSignals.IsChecked = false;
+            }
 
             Properties.Settings.Default.showInset = menuShowInset.IsChecked;
             Properties.Settings.Default.showWorldTiles = menuShowWorldTiles.IsChecked;
             Properties.Settings.Default.showGridLines = menuShowGridLines.IsChecked;
             Properties.Settings.Default.colorTracks = menuColorTracks.IsChecked;
+            Properties.Settings.Default.showTrackHighlights = menuHighlightTracks.IsChecked;
+            Properties.Settings.Default.showItemHighlights = menuHighlightItems.IsChecked;
+
             Properties.Settings.Default.showJunctionNodes = menuShowJunctionNodes.IsChecked;
             Properties.Settings.Default.showEndNodes = menuShowEndNodes.IsChecked;
             Properties.Settings.Default.showCrossovers = menuShowCrossovers.IsChecked;
@@ -167,6 +177,7 @@ namespace ORTS.TrackViewer.UserInterface
             Properties.Settings.Default.showSpeedLimits = menuShowSpeedLimits.IsChecked;
             Properties.Settings.Default.showMileposts = menuShowMileposts.IsChecked;
             Properties.Settings.Default.showSignals = menuShowSignals.IsChecked;
+            Properties.Settings.Default.showAllSignals = menuShowAllSignals.IsChecked;
             Properties.Settings.Default.showHazards = menuShowHazards.IsChecked;
             Properties.Settings.Default.showSoundRegions = menuShowSoundRegions.IsChecked;
             Properties.Settings.Default.showPickups = menuShowPickups.IsChecked;
@@ -190,7 +201,7 @@ namespace ORTS.TrackViewer.UserInterface
 
             Properties.Settings.Default.Save();
 
-            DrawColors.setTrackColors(menuColorTracks.IsChecked, menuShowWorldTiles.IsChecked);
+            DrawColors.SetColoursFromOptions(menuColorTracks.IsChecked, menuShowWorldTiles.IsChecked);
 
             menuStatusShowPATfile.IsEnabled = menuShowPATfile.IsChecked;
             menuStatusShowTrainpath.IsEnabled = menuShowTrainpath.IsChecked;
@@ -201,6 +212,31 @@ namespace ORTS.TrackViewer.UserInterface
             menuEnableEditing.IsEnabled = (trackViewer.PathEditor != null);
             menuEditMetadata.IsEnabled = menuEnableEditing.IsChecked;
 
+        }
+
+        private void menuSetAllItems(bool isChecked)
+        {
+            menuShowJunctionNodes.IsChecked = isChecked;
+            menuShowEndNodes.IsChecked = isChecked;
+            menuShowCrossovers.IsChecked = isChecked;
+            menuShowSidingMarkers.IsChecked = isChecked;
+            menuShowSidingNames.IsChecked = isChecked;
+            menuShowPlatformMarkers.IsChecked = isChecked;
+            menuShowPlatformNames.IsChecked = isChecked;
+            menuShowCrossings.IsChecked = isChecked;
+            menuShowSpeedLimits.IsChecked = isChecked;
+            menuShowMileposts.IsChecked = isChecked;
+            menuShowHazards.IsChecked = isChecked;
+            menuShowSignals.IsChecked = isChecked;
+            menuShowAllSignals.IsChecked = isChecked;
+            menuShowPickups.IsChecked = isChecked;
+            menuShowSoundRegions.IsChecked = isChecked;
+
+            menuDrawRoads.IsChecked = isChecked;
+            menuShowCarSpawners.IsChecked = isChecked;
+            menuShowRoadCrossings.IsChecked = isChecked;
+
+            UpdateMenuSettings();  // to be sure some other settings are done correctly
         }
 
         // only so it can be called as a callback
@@ -306,7 +342,6 @@ namespace ORTS.TrackViewer.UserInterface
             menuSelectPath.UpdateLayout();
         }
 
-
         /// <summary>
         /// Update the menu to make sure all the platforms are listed
         /// </summary>
@@ -314,7 +349,10 @@ namespace ORTS.TrackViewer.UserInterface
         {
             if (trackViewer.DrawTrackDB == null) return;
             if (trackViewer.DrawTrackDB.PlatformLocations == null) return;
-            menuPlatformCombobox.ItemsSource = trackViewer.DrawTrackDB.PlatformLocations.Keys.OrderBy(a => a.ToString());
+            List<string> platforms = trackViewer.DrawTrackDB.PlatformLocations.Keys.OrderBy(a => a.ToString()).ToList();
+            platforms.Insert(0, "<Select platform>");
+            menuPlatformCombobox.ItemsSource = platforms;
+            menuPlatformCombobox.SelectedItem = menuPlatformCombobox.Items.GetItemAt(0).ToString();
         }
 
         /// <summary>
@@ -324,7 +362,44 @@ namespace ORTS.TrackViewer.UserInterface
         {
             if (trackViewer.DrawTrackDB == null) return;
             if (trackViewer.DrawTrackDB.SidingLocations == null) return;
-            menuSidingCombobox.ItemsSource = trackViewer.DrawTrackDB.SidingLocations.Keys.OrderBy(a => a.ToString());
+            List<string> sidings = trackViewer.DrawTrackDB.SidingLocations.Keys.OrderBy(a => a.ToString()).ToList();
+            sidings.Insert(0, "<Select siding>");
+            menuSidingCombobox.ItemsSource = sidings;
+            menuSidingCombobox.SelectedItem = menuSidingCombobox.Items.GetItemAt(0).ToString();
+        }
+
+        private void menuPlatformCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string platformName = menuPlatformCombobox.SelectedItem as string;
+            if (platformName == null) return;
+            if (trackViewer.DrawTrackDB.PlatformLocations.ContainsKey(platformName))
+            {
+                trackViewer.DrawArea.ShiftToLocation(trackViewer.DrawTrackDB.PlatformLocations[platformName]);
+            }
+        }
+
+        private void menuSidingCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string sidingName = menuSidingCombobox.SelectedItem as string;
+            if (sidingName == null) return;
+            if (trackViewer.DrawTrackDB.SidingLocations.ContainsKey(sidingName))
+            {
+                trackViewer.DrawArea.ShiftToLocation(trackViewer.DrawTrackDB.SidingLocations[sidingName]);
+            }
+
+        }
+
+        private void MenuItemCenterClosed(object sender, RoutedEventArgs e)
+        {
+            // If we close, we select the first item (which is only a header)
+            if (menuPlatformCombobox.Items.Count > 0)
+            {
+                menuPlatformCombobox.SelectedItem = menuPlatformCombobox.Items.GetItemAt(0).ToString();
+            }
+            if (menuSidingCombobox.Items.Count > 0)
+            {
+                menuSidingCombobox.SelectedItem = menuSidingCombobox.Items.GetItemAt(0).ToString();
+            }
         }
 
         /// <summary>
@@ -370,6 +445,7 @@ namespace ORTS.TrackViewer.UserInterface
             shortcuts += "D:  Shift right\n";
             shortcuts += "W:  Shift up\n";
             shortcuts += "C:  Shift to center of current path node\n";
+            shortcuts += "shift-C:  Shift to center of current mouse location\n";
             shortcuts += "PgUp:  Show more of the path\n";
             shortcuts += "PgDn:  Show less of the path\n";
             shortcuts += "shift-PgUp:  Show the full path\n";
@@ -469,11 +545,33 @@ namespace ORTS.TrackViewer.UserInterface
         }
 
         /// <summary>
+        /// Toggle whether highlighting of tracks is done
+        /// </summary>
+        public void MenuToggleHighlightTracks()
+        {
+            menuHighlightTracks.IsChecked = !menuHighlightTracks.IsChecked;
+            UpdateMenuSettings();
+        }
+
+        /// <summary>
+        /// Toggle whether highlighting of track-itemss is done
+        /// </summary>
+        public void MenuToggleHighlightItems()
+        {
+            menuHighlightItems.IsChecked = !menuHighlightItems.IsChecked;
+            UpdateMenuSettings();
+        }
+
+        /// <summary>
         /// Toggle whether the signals are shown
         /// </summary>
         public void MenuToggleShowSignals()
         {
             menuShowSignals.IsChecked = !menuShowSignals.IsChecked;
+            if (!menuShowSignals.IsChecked)
+            {
+                menuShowAllSignals.IsChecked = false;
+            }
             UpdateMenuSettings();
         }
         
@@ -495,22 +593,6 @@ namespace ORTS.TrackViewer.UserInterface
             UpdateMenuSettings();
         }
 
-        private void menuPlatformCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            string platformName = menuPlatformCombobox.SelectedItem as string;
-            if (platformName == null) return;
-            if (trackViewer.DrawTrackDB.PlatformLocations.ContainsKey(platformName))
-                trackViewer.DrawArea.ShiftToLocation(trackViewer.DrawTrackDB.PlatformLocations[platformName]);
-        }
-
-        private void menuSidingCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            string sidingName = menuSidingCombobox.SelectedItem as string;
-            if (sidingName == null) return;
-            if (trackViewer.DrawTrackDB.SidingLocations.ContainsKey(sidingName))
-                trackViewer.DrawArea.ShiftToLocation(trackViewer.DrawTrackDB.SidingLocations[sidingName]);
-
-        }
 
         private void menuSearchTrackNode_Click(object sender, RoutedEventArgs e)
         {
@@ -541,32 +623,51 @@ namespace ORTS.TrackViewer.UserInterface
         }
 
 
-        void PopulateColors(string preferenceBackgroundColor)
-        {
-            menuSelectColor.Items.Clear();
 
-            foreach (string colorName in DrawColors.GetColorNames(preferenceBackgroundColor))
+        /// <summary>
+        /// Add a new preference in the form of a string. The list of allowed options should also be given.
+        /// The callback should be called whenever the option is changed (or possibly when the default is initialized).
+        /// </summary>
+        /// <param name="name">Name of the preference used for indexing within the program</param>
+        /// <param name="description">Description of the preference used to present it to the user</param>
+        /// <param name="options">The options a preference can take</param>
+        /// <param name="defaultOption">The default option.</param>
+        /// <param name="callback">The callback that will be called upon a change in the preference</param>
+        public void AddStringPreference(string name, string description, string[] options, string defaultOption, StringPreferenceDelegate callback)
+        {
+            MenuItem preferenceItem = new MenuItem();
+            preferenceItem.Header = description;
+            foreach (string option in options)
             {
                 MenuItem menuItem = new MenuItem();
-                menuItem.Header = colorName;
+                menuItem.Header = option;
                 menuItem.IsCheckable = false;
                 menuItem.IsChecked = false;
-                menuItem.Click += new RoutedEventHandler(menuSelectColor_Click);
+                menuItem.CommandParameter = new PreferenceData {Callback = callback, Name = name};
+                menuItem.Click += new RoutedEventHandler(StringPreference_Click);
 
-                menuSelectColor.Items.Add(menuItem);
+                preferenceItem.Items.Add(menuItem);
+            }
+            menuPreferences.Items.Add(preferenceItem);
+
+            //See if there is a preference
+            if (settingsDictionary.ContainsKey(name))
+            {
+                callback(settingsDictionary[name]);
             }
         }
 
-        void menuSelectColor_Click(object sender, RoutedEventArgs e)
+        private void StringPreference_Click(object sender, RoutedEventArgs e)
         {
-            MenuItem selectedMenuItem = sender as MenuItem;
-            string colorName = (string)selectedMenuItem.Header;
-            if (DrawColors.SetBackGroundColor(colorName))
-            {
-                Properties.Settings.Default.backgroundColorName = colorName;
-                UpdateMenuSettings();
-            }
+            MenuItem callingMenu = sender as MenuItem;
+            PreferenceData preferenceData = callingMenu.CommandParameter as PreferenceData;
+            StringPreferenceDelegate callback = preferenceData.Callback;
+            string selectedOption = callingMenu.Header.ToString();
+            callback(selectedOption);
 
+            //Store the preference
+            settingsDictionary[preferenceData.Name] = selectedOption;
+            settingsDictionary.Save();
         }
 
         private void menuEnableEditing_Click(object sender, RoutedEventArgs e)
@@ -599,7 +700,7 @@ namespace ORTS.TrackViewer.UserInterface
         {
             string limitations = String.Empty;
             limitations += "Currently all intended and planned editor features have been implemented.\n";
-            limitations += "Documentation is available (under source directory)\n";
+            limitations += "Documentation is available\n";
             limitations += "\n";
             limitations += "Known limitations:\n";
             limitations += "* The saved-paths have not been tested with MSTS or ORTS.\n";
@@ -639,6 +740,125 @@ namespace ORTS.TrackViewer.UserInterface
             disposed = true;
         }
         #endregion
+
+        private void menuShowAll_Click(object sender, RoutedEventArgs e)
+        {
+            menuSetAllItems(true);
+        }
+
+        private void menuShowNone_Click(object sender, RoutedEventArgs e)
+        {
+            menuSetAllItems(false);
+        }
+
+        private void menuShowAllSignals_Click(object sender, RoutedEventArgs e)
+        {
+            // if someone selects all signals, also normal signals should be turned on.
+            if (menuShowAllSignals.IsChecked)
+            {
+                menuShowSignals.IsChecked = true;
+            }
+            UpdateMenuSettings();
+        }
+
+        /// <summary>
+        /// For preference that can be added from other places, we need to store both a callback and a name
+        /// </summary>
+        class PreferenceData
+        {
+            /// <summary>The callback for a preference</summary>
+            public StringPreferenceDelegate Callback;
+            /// <summary>The name for a preference that can be used as programming index</summary>
+            public string Name;
+        }
     }
 
+    #region IPreferenceChanger
+    /// <summary>
+    /// Delegate to enable callbacks for preference choices
+    /// </summary>
+    /// <param name="chosenOption">The option of the preferences that was chosen</param>
+    public delegate void StringPreferenceDelegate(string chosenOption);
+
+    /// <summary>
+    /// This interface is intended to support various ways in preferences can be changed.
+    /// By having a common interface implementation and definition are separated and hence more flexible
+    /// </summary>
+    public interface IPreferenceChanger
+    {
+        /// <summary>
+        /// Add a new preference in the form of a string. The list of allowed options should also be given.
+        /// The callback should be called whenever the option is changed (or possibly when the default is initialized).
+        /// </summary>
+        /// <param name="name">Name of the preference used for indexing within the program</param>
+        /// <param name="description">Description of the preference used to present it to the user</param>
+        /// <param name="options">The options a preference can take</param>
+        /// <param name="defaultOption">The default option.</param>
+        /// <param name="callback">The callback that will be called upon a change in the preference</param>
+        void AddStringPreference(string name, string description, string[] options, string defaultOption, StringPreferenceDelegate callback);
+    }
+    #endregion 
+
+    #region SaveableSettingsDictionary
+    /// <summary>
+    /// Dictionary that supports saving to stored user settings.
+    /// </summary>
+    class SaveableSettingsDictionary : Dictionary<string,string>
+    {
+        /// <summary>
+        /// Constructor. Also loads the values from stored settings.
+        /// </summary>
+        public SaveableSettingsDictionary()
+        {
+            if (Properties.Settings.Default.preferences == null)
+            {
+                Properties.Settings.Default.preferences = new StringCollection();
+            }
+            Dictionary<string, string> hiddenDictionary = ToDictionary(Properties.Settings.Default.preferences);
+            foreach (KeyValuePair<string, string> kvp in hiddenDictionary)
+            {
+                this.Add(kvp.Key, kvp.Value);
+            }
+        }
+
+        /// <summary>
+        /// Save to stored settings
+        /// </summary>
+        public void Save()
+        {
+            Properties.Settings.Default.preferences = ToStringCollection(this);
+            Properties.Settings.Default.Save();
+        }
+
+        /// <summary>
+        /// Translate a StringCollection containing key, value pairs into a dictionary.
+        /// </summary>
+        /// <param name="stringCollection"></param>
+        /// <returns></returns>
+        private static Dictionary<string, string> ToDictionary(StringCollection stringCollection)
+        {
+            Dictionary<string, string> result = new Dictionary<string, string>();
+            for (int i = 0; i < stringCollection.Count - 1; i += 2) // the -1 to prevent problems when the stringCollection has odd number of elements.
+            {
+                result.Add(stringCollection[i], stringCollection[i + 1]);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Translate from a dictionary to a StringCollection (organized in key, value pairs)
+        /// </summary>
+        /// <param name="dictionary">The dictionary to translate</param>
+        private static StringCollection ToStringCollection(Dictionary<string, string> dictionary)
+        {
+            StringCollection result = new StringCollection();
+            foreach (KeyValuePair<string,string> kvp in dictionary)
+            {
+                result.Add(kvp.Key);
+                result.Add(kvp.Value);
+            }
+            return result;
+        }
+    }
+    #endregion
 }

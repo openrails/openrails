@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.Xna.Framework;
 using ORTS.Common;
 using MSTS.Formats;
 
@@ -104,7 +105,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <summary>The X-coordinate within a tile of the original item in the track database</summary>
         public override float X { get { return JunctionOrEndNode.UiD.X; } }
         /// <summary>The Z-coordinate within a tile of the original item in the track database</summary>
-        public override float Z { get { return JunctionOrEndNode.UiD.X; } }
+        public override float Z { get { return JunctionOrEndNode.UiD.Z; } }
 
         /// <summary>
         /// Reset the calculation of which item (junction) is closest to the mouse
@@ -324,11 +325,9 @@ namespace ORTS.TrackViewer.Drawing
                 TrackCandidate trackCandidate = sortedTrackCandidates[distanceKey];
                 if (trackCandidate.trackNode == null) continue;
                 TrackSection trackSection = tsectionDat.TrackSections.Get(trackCandidate.vectorSection.SectionIndex);
-                DistanceLon distanceLon = (trackSection.SectionCurve == null)
-                    ? calcRealDistanceSquaredStraight(trackCandidate.vectorSection, trackSection)
-                    : calcRealDistanceSquaredCurved(trackCandidate.vectorSection, trackSection);
+                DistanceLon distanceLon = calcRealDistanceSquared(trackCandidate.vectorSection, trackSection);
                 double realDistanceSquared = (double)distanceLon.distanceSquared;
-
+                
                 // Add the trackCandidate to the sorted list with its new distance squared as key
                 if (!sortedTrackCandidates.ContainsKey(realDistanceSquared))
                 {
@@ -341,80 +340,64 @@ namespace ORTS.TrackViewer.Drawing
         }
 
         /// <summary>
-        /// Calculate the closest distance to a straight track. Any direction, any distance allowed
+        /// Calculate the closest distance to a track, as well as the 'longitude' along it.
         /// </summary>
         /// <param name="trackVectorSection">The vectorsection for which we want to know the distance</param>
         /// <param name="trackSection">The corresponding tracksection</param>
-        /// <returns>Distance to the track</returns>
+        /// <returns>Distance Squared to the track as well as length along track.</returns>
         /// <remarks>Partly the same code as in Traveller.cs, but here no culling, and we just want the distance.
         /// The math here is not perfect (it is quite difficult to calculate the distances to a curved line 
-        /// for all possibilities) but good enough. The math was designed (in Traveller,cs) to work well for close distances</remarks>
-        DistanceLon calcRealDistanceSquaredCurved(TrVectorSection trackVectorSection, TrackSection trackSection)
+        /// for all possibilities) but good enough. The math was designed (in Traveller.cs) to work well for close distances.
+        /// Math is modified to prevent NaN and to combine straight and curved tracks.</remarks>
+        DistanceLon calcRealDistanceSquared(TrVectorSection trackVectorSection, TrackSection trackSection)
         {
-            float x = storedMouseLocation.Location.X;
-            float z = storedMouseLocation.Location.Z;
-            x += (storedMouseLocation.TileX - trackVectorSection.TileX) * 2048;
-            z += (storedMouseLocation.TileZ - trackVectorSection.TileZ) * 2048;
-            float sx = trackVectorSection.X;
-            float sz = trackVectorSection.Z;
+            //Calculate the vector from start of track to the mouse
+            Vector3 vectorToMouse = new Vector3();
+            vectorToMouse.X = storedMouseLocation.Location.X - trackVectorSection.X;
+            vectorToMouse.Z = storedMouseLocation.Location.Z - trackVectorSection.Z;
+            vectorToMouse.X += (storedMouseLocation.TileX - trackVectorSection.TileX) * 2048;
+            vectorToMouse.Z += (storedMouseLocation.TileZ - trackVectorSection.TileZ) * 2048;
 
-            // Copied from traveller.cs. Not verified the math.
-            // To simplify the math, center around the start of the track section, rotate such that the track section starts out pointing north (+z) and flip so the track curves to the right.
-            x -= sx;
-            z -= sz;
-            MSTSMath.M.Rotate2D(trackVectorSection.AY, ref x, ref z);
-            if (trackSection.SectionCurve.Angle < 0)
-                x *= -1;
+            //Now rotate the vector such that a direction along the track is in a direction (x=0, z=1)
+            vectorToMouse = Vector3.Transform(vectorToMouse, Matrix.CreateRotationY(-trackVectorSection.AY));
 
-            // Compute distance to curve's center at (radius,0) then adjust to get distance from centerline.
-            float dx = x - trackSection.SectionCurve.Radius;
-            float lat = (float)Math.Sqrt(dx * dx + z * z) - trackSection.SectionCurve.Radius;
-
-            float radiansAlongCurve = (float)Math.Asin(z / trackSection.SectionCurve.Radius);
-            float lon = radiansAlongCurve * trackSection.SectionCurve.Radius;
-            float trackSectionLength = DrawTrackDB.GetLength(trackSection);
-
-            if (lon < 0)
+            float lon, lat;
+            if (trackSection.SectionCurve == null)
             {
-                return new DistanceLon(lat * lat + lon * lon, 0);  // distance from one end of the track
+                //Track is straight. In this coordinate system, the distance along track (lon) and orthogonal to track (lat) are easy.
+                lon = vectorToMouse.Z;
+                lat = vectorToMouse.X;
             }
-            if (lon > trackSectionLength)
+            else
             {
-                return new DistanceLon(lat * lat + (lon - trackSectionLength) * (lon - trackSectionLength), trackSectionLength); //idem
+                // make sure the vector is as if the vector section turns to the left.
+                // The center of the curved track is now a (x=-radius, z=0), track starting at (0,0), pointing in positive Z
+                if (trackSection.SectionCurve.Angle > 0)
+                    vectorToMouse.X *= -1;
+
+                //make vector relative to center of curve. Track now starts at (radius,0)
+                vectorToMouse.X += trackSection.SectionCurve.Radius;
+
+                float radiansAlongCurve = (float)Math.Atan2(vectorToMouse.Z, vectorToMouse.X);
+
+                //The following calculations make sense when close to the track. Otherwise they are not necessarily sensible, but at least well-defined.
+                // Distance from mouse to circle through track section.
+                lat = (float)Math.Sqrt(vectorToMouse.X * vectorToMouse.X + vectorToMouse.Z * vectorToMouse.Z) - trackSection.SectionCurve.Radius;
+                lon = radiansAlongCurve * trackSection.SectionCurve.Radius;
             }
-            return new DistanceLon(lat * lat, lon); // Only lateral distance because to the side of the track.
-        }
 
-        /// <summary>
-        /// Calculate the closest distance to a straight track. Any direction, any distance allowed
-        /// </summary>
-        /// <param name="trackVectorSection">The vectorsection for which we want to know the distance</param>
-        /// <param name="trackSection">The corresponding tracksection</param>
-        /// <returns>Distance to the track</returns>
-        /// <remarks>Partly the same code as in Traveller.cs, but here no culling, and we just want the distance</remarks>
-        DistanceLon calcRealDistanceSquaredStraight(TrVectorSection trackVectorSection, TrackSection trackSection)
-        {
-            float x = storedMouseLocation.Location.X;
-            float z = storedMouseLocation.Location.Z;
-            x += (storedMouseLocation.TileX - trackVectorSection.TileX) * 2048;
-            z += (storedMouseLocation.TileZ - trackVectorSection.TileZ) * 2048;
-            float sx = trackVectorSection.X;
-            float sz = trackVectorSection.Z;
 
-            // Calculate distance along and away from the track centerline.
-            float lat, lon;
-            MSTSMath.M.Survey(sx, sz, trackVectorSection.AY, x, z, out lon, out lat);
             float trackSectionLength = DrawTrackDB.GetLength(trackSection);
             if (lon < 0)
-            {   // distance from one end of the track, place at beginning of section
+            {   // distance from start of track
                 return new DistanceLon(lat * lat + lon * lon, 0);
             }
-
             if (lon > trackSectionLength)
-            {   //idem, but now place at end of section
-                return new DistanceLon(lat * lat + (lon - trackSectionLength) * (lon - trackSectionLength), trackSectionLength);
+            {   // distance from end of track
+                return new DistanceLon(lat * lat + (lon - trackSectionLength) * (lon - trackSectionLength), trackSectionLength); //idem
             }
-            return new DistanceLon(lat * lat, lon); // Only lateral distance because to the side of the track.
+            // somewhere along track. Distance is only in lateral direction
+            return new DistanceLon(lat * lat, lon);
         }
 
     }

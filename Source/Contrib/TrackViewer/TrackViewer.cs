@@ -20,6 +20,10 @@
 // ENHANCEMENT list for Trackviewer      
 // Issues
 //      moving around with cursor buttons
+//      Loop is not done OK. Possibly there is not even a right way given the limitations of MSTS format.
+//      is there an issue when start passing path is used?
+//
+// Additions
 //
 // Ideas from others
 //      Draw ground textures from .ace files.
@@ -41,12 +45,13 @@
 //      Add y to statusbar, but perhaps only for items?
 //      
 // Looks and usability
-//      drawTrains: add y, add direction=angle. Add option to (re-)connect to ORTS. Remove http variant. train replaces mouselocation
 //
 // Code improvements
+//      When selecting platform, rest of screen should not move along. But not trivial because of capture by menu.
 //      remove drawTrains?
 //      remove dependency on ORTS.Settings. Even though it means a bit of code duplication
-//      colors should not be string based, but enum.
+//      Colorscheme needs optimalization: now a color needs to go through to many redirections too often. Can I profile this?
+//          Possibly easiest is to have a fixed version that is created once the colorscheme is requested.
 //
 // MSTS trackviewer features perhaps to take over:
 //      different color for switches
@@ -76,6 +81,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
@@ -114,7 +120,7 @@ namespace ORTS.TrackViewer
     {
         #region Public members
         /// <summary>String showing the version of the program</summary>
-        public readonly static string TrackViewerVersion = "2014/04/27";
+        public readonly static string TrackViewerVersion = "2014/06/07";
         /// <summary>Path where the content (like .png files) is stored</summary>
         public string ContentPath { get; private set; }
         /// <summary>Folder where MSTS is installed (or at least, where the files needed for tracks, routes and paths are stored)</summary>
@@ -235,8 +241,9 @@ namespace ORTS.TrackViewer
             TVInputSettings.SetDefaults();
 
             statusBarControl = new StatusBarControl(this);
-            DrawColors.Initialize();
             menuControl = new MenuControl(this);
+            DrawColors.Initialize(menuControl);
+            
 
             Localize(statusBarControl);
             Localize(menuControl);
@@ -356,6 +363,7 @@ namespace ORTS.TrackViewer
 
             if (TVUserInput.IsPressed(TVUserCommands.Quit)) this.Quit();
 
+            if (TVUserInput.IsPressed(TVUserCommands.ShiftToMouseLocation)) DrawArea.ShiftToLocation(DrawArea.MouseLocation);
             if (TVUserInput.IsPressed(TVUserCommands.ZoomInSlow)) DrawArea.Zoom(-1);
             if (TVUserInput.IsPressed(TVUserCommands.ZoomOutSlow)) DrawArea.Zoom(1);
             if (TVUserInput.IsPressed(TVUserCommands.ZoomToTile)) DrawArea.ZoomToTile();
@@ -371,7 +379,7 @@ namespace ORTS.TrackViewer
                 if (TVUserInput.IsPressed(TVUserCommands.ExtendPathFull)) DrawPATfile.ExtendPathFull();
                 if (TVUserInput.IsPressed(TVUserCommands.ReducePath))     DrawPATfile.ReducePath();
                 if (TVUserInput.IsPressed(TVUserCommands.ReducePathFull)) DrawPATfile.ReducePathFull();
-                if (TVUserInput.IsDown(TVUserCommands.ShiftToLocation)) DrawArea.ShiftToLocation(DrawPATfile.CurrentLocation);
+                if (TVUserInput.IsDown(TVUserCommands.ShiftToPathLocation)) DrawArea.ShiftToLocation(DrawPATfile.CurrentLocation);
             }
 
             if (PathEditor != null && Properties.Settings.Default.showTrainpath)
@@ -380,7 +388,7 @@ namespace ORTS.TrackViewer
                 if (TVUserInput.IsPressed(TVUserCommands.ExtendPathFull)) PathEditor.ExtendPathFull();
                 if (TVUserInput.IsPressed(TVUserCommands.ReducePath))     PathEditor.ReducePath();
                 if (TVUserInput.IsPressed(TVUserCommands.ReducePathFull)) PathEditor.ReducePathFull();
-                if (TVUserInput.IsDown(TVUserCommands.ShiftToLocation)) DrawArea.ShiftToLocation(PathEditor.CurrentLocation);
+                if (TVUserInput.IsDown(TVUserCommands.ShiftToPathLocation)) DrawArea.ShiftToLocation(PathEditor.CurrentLocation);
 
                 if (TVUserInput.IsPressed(TVUserCommands.EditorUndo)) PathEditor.Undo();
                 if (TVUserInput.IsPressed(TVUserCommands.EditorRedo)) PathEditor.Redo();
@@ -440,7 +448,6 @@ namespace ORTS.TrackViewer
             }
 
            
-
             DrawArea.Update();
             drawAreaInset.Update();
             drawAreaInset.Follow(DrawArea, 10f);
@@ -456,6 +463,8 @@ namespace ORTS.TrackViewer
             if (TVUserInput.IsPressed(TVUserCommands.ToggleShowMilePosts)) menuControl.MenuToggleShowMilePosts();
             if (TVUserInput.IsPressed(TVUserCommands.ToggleShowTrainpath)) menuControl.MenuToggleShowTrainpath();
             if (TVUserInput.IsPressed(TVUserCommands.ToggleShowPatFile)) menuControl.MenuToggleShowPatFile();
+            if (TVUserInput.IsPressed(TVUserCommands.ToggleHighlightTracks)) menuControl.MenuToggleHighlightTracks();
+            if (TVUserInput.IsPressed(TVUserCommands.ToggleHighlightItems)) menuControl.MenuToggleHighlightItems();
 
 
             if (TVUserInput.IsPressed(TVUserCommands.Debug)) runDebug();
@@ -473,15 +482,15 @@ namespace ORTS.TrackViewer
             // This is not really a game State, because it is not used interactively. In fact, Draw itself is
             // probably not called because the program is doing other things
             BeginDraw();
-            GraphicsDevice.Clear(DrawColors.colorsNormal["clearwindow"]);
+            GraphicsDevice.Clear(DrawColors.colorsNormal.ClearWindow);
             spriteBatch.Begin();
             // it is better to have integer locations, otherwise text is difficult to read
             Vector2 messageLocation = new Vector2((float) Math.Round(ScreenW / 2f), (float) Math.Round(ScreenH / 2f));
-            BasicShapes.DrawStringCentered(messageLocation, Color.Black, message);
+            BasicShapes.DrawStringCentered(messageLocation, DrawColors.colorsNormal.Text, message);
 
             // we have to redo the string drawing, because we now first have to load the characters into textures.
             fontManager.Update(GraphicsDevice);
-            BasicShapes.DrawStringCentered(messageLocation, Color.Black, message);
+            BasicShapes.DrawStringCentered(messageLocation, DrawColors.colorsNormal.Text, message);
 
             spriteBatch.End();
             EndDraw();
@@ -497,7 +506,7 @@ namespace ORTS.TrackViewer
             // Even if there is nothing new to draw for main window, we might still need to draw for the shadow textures.
             if (DrawTrackDB != null && Properties.Settings.Default.showInset)
             {
-                drawAreaInset.DrawShadowTextures(DrawTrackDB.DrawTracks, DrawColors.colorsNormal["clearwindowinset"]);
+                drawAreaInset.DrawShadowTextures(DrawTrackDB.DrawTracks, DrawColors.colorsNormal.ClearWindowInset);
             }
             
             // if there is nothing to draw, be done.
@@ -506,7 +515,7 @@ namespace ORTS.TrackViewer
                 return;
             }
 
-            GraphicsDevice.Clear(DrawColors.colorsNormal["clearwindow"]);
+            GraphicsDevice.Clear(DrawColors.colorsNormal.ClearWindow);
             if (DrawTrackDB == null) return;
 
             spriteBatch.Begin();
@@ -515,23 +524,26 @@ namespace ORTS.TrackViewer
             
             DrawTrackDB.DrawRoads(DrawArea);
             DrawTrackDB.DrawTracks(DrawArea);
-            DrawTrackDB.DrawJunctionAndEndNodes(DrawArea);
-            DrawTrackDB.DrawTrackItems(DrawArea);
-            DrawTrackDB.DrawRoadTrackItems(DrawArea);
-            DrawTrackDB.DrawHighlights(DrawArea, true);
+            DrawTrackDB.DrawTrackHighlights(DrawArea, true);
 
+            DrawTrackDB.DrawJunctionAndEndNodes(DrawArea);
+            
             if (Properties.Settings.Default.showInset)
             {
-                drawAreaInset.DrawBackground(DrawColors.colorsNormal["clearwindowinset"]);
+                drawAreaInset.DrawBackground(DrawColors.colorsNormal.ClearWindowInset);
                 //drawTrackDB.DrawTracks(drawAreaInset); //replaced by next line
                 drawAreaInset.DrawShadowedTextures(); 
-                DrawTrackDB.DrawHighlights(drawAreaInset, false);
+                DrawTrackDB.DrawTrackHighlights(drawAreaInset, false);
                 drawAreaInset.DrawBorder(Color.Red, DrawArea);
                 drawAreaInset.DrawBorder(Color.Black);
             }
 
             if (DrawPATfile != null && Properties.Settings.Default.showPATfile) DrawPATfile.Draw(DrawArea);
             if (PathEditor != null && Properties.Settings.Default.showTrainpath) PathEditor.Draw(DrawArea);
+
+            DrawTrackDB.DrawRoadTrackItems(DrawArea);
+            DrawTrackDB.DrawTrackItems(DrawArea);
+            DrawTrackDB.DrawItemHighlights(DrawArea);
 
             CalculateFPS(gameTime);
             
@@ -547,7 +559,6 @@ namespace ORTS.TrackViewer
             base.Draw(gameTime);
             skipDrawAmount = maxSkipDrawAmount;
         }
-
  
         void CalculateFPS(GameTime gameTime)
         {
@@ -840,12 +851,13 @@ namespace ORTS.TrackViewer
 
         void runDebug()
         {
-            //Properties.Settings.Default.statusShowFPS = false;
+            //Properties.Settings.Default.statusShowFPS = true;
             //SetDefaultRoute();
             //SetPath(Paths[0]);
+            //PathEditor.EditingIsActive = true;
             //DrawArea.ZoomToTile();
             //DrawArea.Zoom(-15);
-            //CenterAroundTrackNode(31);
+            //CenterAroundTrackNode(3206);
             //NewPath();
             //drawArea.ShiftToLocation(pathEditor.CurrentLocation);
             ////drawArea.ShiftToLocation(pathEditor.trainpath.FirstNode.location);

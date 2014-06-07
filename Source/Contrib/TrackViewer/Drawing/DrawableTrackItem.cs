@@ -24,7 +24,9 @@ using ORTS.Common;
 using ORTS.TrackViewer.Properties;
 
 namespace ORTS.TrackViewer.Drawing
-{  /// <summary>
+{
+    #region DrawableTrackItem (base class)
+    /// <summary>
     /// This class represents all track items that are defined in the TrackDatabase (also for road) in a way that allows
     /// us to draw them in trackviewer. This is the base class, all real track items are supposed to be subclasses (because
     /// each has its own texture or symbol to draw, and also its own name.
@@ -76,10 +78,12 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="drawArea">The area to draw upon</param>
         /// <param name="colors">The colorscheme to use</param>
         /// <param name="drawAlways">Do we need to draw anyway, independent of settings?</param>
+        /// <returns>true if the item has been drawn</returns>
         internal abstract bool Draw(DrawArea drawArea, ColorScheme colors, bool drawAlways);
-        
     }
+    #endregion
 
+    #region DrawableSignalItem
     /// <summary>
     /// Represents a drawable signal
     /// </summary>
@@ -91,6 +95,12 @@ namespace ORTS.TrackViewer.Drawing
         /// <summary>angle to draw the signal at</summary>
         private float angle;
 
+        /// <summary>Is it a normal signal</summary>
+        private bool isNormal;
+
+        /// <summary>Signal Type, which is a name to cross-reference to sigcfg file</summary>
+        private string signalType;
+
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -99,7 +109,10 @@ namespace ORTS.TrackViewer.Drawing
             : base(originalTrItem)
         {
             this.Description = "signal";
-            this.direction = (originalTrItem as SignalItem).Direction == 0 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward;
+            this.isNormal = true; // default value
+            SignalItem originalSignalItem = originalTrItem as SignalItem;
+            this.direction = originalSignalItem.Direction == 0 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward;
+            this.signalType = originalSignalItem.SignalType;
         }
 
         /// <summary>
@@ -123,6 +136,23 @@ namespace ORTS.TrackViewer.Drawing
         }
 
         /// <summary>
+        /// Determine if the current signal is a normal signal (i.s.a. distance, ...)
+        /// </summary>
+        /// <param name="sigcfgFile">The signal configuration file</param>
+        public void DetermineIfNormal(SIGCFGFile sigcfgFile)
+        {
+            this.isNormal = true; //default
+            if (sigcfgFile == null)
+            {   // if no sigcfgFile is available, just keep default
+                return;
+            }
+            if (sigcfgFile.SignalTypes.ContainsKey(this.signalType))
+            {
+                this.isNormal = (sigcfgFile.SignalTypes[this.signalType].FnType == SignalType.FnTypes.Normal);
+            }
+        }
+
+        /// <summary>
         /// Draw a single track item
         /// </summary>
         /// <param name="drawArea">The area to draw upon</param>
@@ -130,17 +160,22 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="drawAlways">Do we need to draw anyway, independent of settings?</param>
         internal override bool Draw(DrawArea drawArea, ColorScheme colors, bool drawAlways)
         {
-            if (Properties.Settings.Default.showSignals || drawAlways)
+            if (   drawAlways 
+                || Properties.Settings.Default.showAllSignals
+                || (Properties.Settings.Default.showSignals && isNormal)
+                )
             {
-                float size = 9f; // in meters
-                int minPixelSize = 9;
-                drawArea.DrawTexture(this.WorldLocation, "signal" + colors.nameExtension, this.angle, size, minPixelSize);
+                float size = 7f; // in meters
+                int minPixelSize = 5;
+                drawArea.DrawTexture(this.WorldLocation, "signal" + colors.nameExtension, size, minPixelSize, this.angle);
                 return true;
             }
             return false;
         }
     }
+    #endregion
 
+    #region DrawableLevelCrItem
     /// <summary>
     /// Represents a drawable level crossing
     /// </summary>
@@ -166,13 +201,15 @@ namespace ORTS.TrackViewer.Drawing
         {
             if (Properties.Settings.Default.showCrossings || drawAlways)
             {
-                drawArea.DrawSimpleTexture(this.WorldLocation, "disc", 6f, 0, colors["crossing"]);
+                drawArea.DrawTexture(this.WorldLocation, "disc", 6f, 0, colors.Crossing);
                 return true;
             }
             return false;
         }
     }
+    #endregion
 
+    #region DrawableRoadLevelCrItem
     /// <summary>
     /// Represents a drawable level crossing on a road
     /// </summary>
@@ -198,13 +235,15 @@ namespace ORTS.TrackViewer.Drawing
         {
             if (Properties.Settings.Default.showRoadCrossings || drawAlways)
             {
-                drawArea.DrawSimpleTexture(this.WorldLocation, "disc", 4f, 0, colors["road crossing"]);
+                drawArea.DrawTexture(this.WorldLocation, "disc", 4f, 0, colors.RoadCrossing);
                 return true;
             }
             return false;
         }
     }
+    #endregion
 
+    #region DrawableSidingItem
     /// <summary>
     /// Represents a drawable siding item
     /// </summary>
@@ -235,7 +274,7 @@ namespace ORTS.TrackViewer.Drawing
             returnValue = false;
             if (Properties.Settings.Default.showSidingMarkers || drawAlways)
             {
-                drawArea.DrawSimpleTexture(this.WorldLocation, "disc", 6f, 0, colors["siding"]);
+                drawArea.DrawTexture(this.WorldLocation, "disc", 6f, 0, colors.Siding);
                 returnValue = true;
             }
             if (Properties.Settings.Default.showSidingNames || drawAlways)
@@ -246,7 +285,9 @@ namespace ORTS.TrackViewer.Drawing
             return returnValue;
         }
     }
+    #endregion
 
+    #region DrawablePlatformItem
     /// <summary>
     /// Represents a drawable platform item
     /// </summary>
@@ -277,10 +318,9 @@ namespace ORTS.TrackViewer.Drawing
             returnValue = false;
             if (Properties.Settings.Default.showPlatformMarkers || drawAlways)
             {
-                float angle = 0;
                 float size = 9f; // in meters
                 int minPixelSize = 7;
-                drawArea.DrawTexture(this.WorldLocation, "platform" + colors.nameExtension, angle, size, minPixelSize);
+                drawArea.DrawTexture(this.WorldLocation, "platform" + colors.nameExtension, size, minPixelSize);
                 returnValue = true;
             }
             if (Properties.Settings.Default.showPlatformNames || drawAlways)
@@ -291,7 +331,9 @@ namespace ORTS.TrackViewer.Drawing
             return returnValue;
         }
     }
+    #endregion
 
+    #region DrawblePickupItem
     /// <summary>
     /// Represents a drawable pickup item
     /// </summary>
@@ -317,16 +359,17 @@ namespace ORTS.TrackViewer.Drawing
         {
             if (Properties.Settings.Default.showPickups || drawAlways)
             {
-                float angle = 0;
                 float size = 9f; // in meters
                 int minPixelSize = 5;
-                drawArea.DrawTexture(this.WorldLocation, "pickup" + colors.nameExtension, angle, size, minPixelSize);
+                drawArea.DrawTexture(this.WorldLocation, "pickup" + colors.nameExtension, size, minPixelSize);
                 return true;
             }
             return false;
         }
     }
+    #endregion
 
+    #region DrawableHazardItem
     /// <summary>
     /// Represents a drawable hazard item
     /// </summary>
@@ -352,16 +395,17 @@ namespace ORTS.TrackViewer.Drawing
         {
             if (Properties.Settings.Default.showHazards || drawAlways)
             {
-                float angle = 0;
                 float size = 9f; // in meters
                 int minPixelSize = 7;
-                drawArea.DrawTexture(this.WorldLocation, "hazard" + colors.nameExtension, angle, size, minPixelSize);
+                drawArea.DrawTexture(this.WorldLocation, "hazard" + colors.nameExtension, size, minPixelSize);
                 return true;
             }
             return false;
         }
     }
+    #endregion
 
+    #region DrawableCarSpawnerItem
     /// <summary>
     /// Represents a drawable car spawner
     /// </summary>
@@ -387,16 +431,17 @@ namespace ORTS.TrackViewer.Drawing
         {
             if (Properties.Settings.Default.showCarSpawners || drawAlways)
             {
-                float angle = 0;
                 float size = 9f; // in meters
                 int minPixelSize = 5;
-                drawArea.DrawTexture(this.WorldLocation, "carspawner" + colors.nameExtension, angle, size, minPixelSize);
+                drawArea.DrawTexture(this.WorldLocation, "carspawner" + colors.nameExtension, size, minPixelSize);
                 return true;
             }
             return false;
         }
     }
+    #endregion
 
+    #region DrawableEmptyItem
     /// <summary>
     /// Represents a drawable empty item (so not much to draw then)
     /// </summary>
@@ -424,7 +469,9 @@ namespace ORTS.TrackViewer.Drawing
             return true;
         }
     }
+    #endregion
 
+    #region DrawableCorssoverItem
     /// <summary>
     /// Represents a drawable cross-over
     /// </summary>
@@ -450,13 +497,15 @@ namespace ORTS.TrackViewer.Drawing
         {
             if (Properties.Settings.Default.showCrossovers || drawAlways)
             {
-                drawArea.DrawSimpleTexture(this.WorldLocation, "disc", 3f, 0, colors["endnode"]);
+                drawArea.DrawTexture(this.WorldLocation, "disc", 3f, 0, colors.EndNode);
                 return true;
             }
             return false;
         }
     }
+    #endregion
 
+    #region DrawableSpeedPostItem
     /// <summary>
     /// Represents a drawable speedpost (or milepost)
     /// </summary>
@@ -487,14 +536,14 @@ namespace ORTS.TrackViewer.Drawing
             returnValue = false;
             if (originalItem.IsLimit && (Properties.Settings.Default.showSpeedLimits || drawAlways))
             {
-                drawArea.DrawSimpleTexture(this.WorldLocation, "disc", 6f, 0, colors["speedpost"]);
+                drawArea.DrawTexture(this.WorldLocation, "disc", 6f, 0, colors.Speedpost);
                 string speed = originalItem.SpeedInd.ToString(System.Globalization.CultureInfo.CurrentCulture);
                 drawArea.DrawExpandingString(this.WorldLocation, speed);
                 returnValue = true;
             }
             if (originalItem.IsMilePost && (Properties.Settings.Default.showMileposts || drawAlways))
             {
-                drawArea.DrawSimpleTexture(this.WorldLocation, "disc", 6f, 0, colors["speedpost"]);
+                drawArea.DrawTexture(this.WorldLocation, "disc", 6f, 0, colors.Speedpost);
                 string distance = originalItem.SpeedInd.ToString(System.Globalization.CultureInfo.CurrentCulture);
                 drawArea.DrawExpandingString(this.WorldLocation, distance);
                 returnValue = true;
@@ -503,7 +552,9 @@ namespace ORTS.TrackViewer.Drawing
             return returnValue;
         }
     }
+    #endregion
 
+    #region DrawableSoundRegionItem
     /// <summary>
     /// Represents a drawable sound region
     /// </summary>
@@ -529,13 +580,13 @@ namespace ORTS.TrackViewer.Drawing
         {
             if (Properties.Settings.Default.showSoundRegions || drawAlways)
             {
-                float angle = 0;
                 float size = 4f; // in meters
                 int minPixelSize = 5;
-                drawArea.DrawTexture(this.WorldLocation, "sound" + colors.nameExtension, angle, size, minPixelSize);
+                drawArea.DrawTexture(this.WorldLocation, "sound" + colors.nameExtension, size, minPixelSize);
                 return true;
             }
             return false;
         }
     }
+    #endregion
 }

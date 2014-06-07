@@ -65,7 +65,9 @@ namespace ORTS.TrackViewer.UserInterface
         /// <summary>command for shifting view window down</summary>
         ShiftDown,
         /// <summary>command for shifting to a specific location</summary>
-        ShiftToLocation,
+        ShiftToPathLocation,
+        /// <summary>command for shift to current mouse location</summary>
+        ShiftToMouseLocation,
         /// <summary>command for extending a train path</summary>
         ExtendPath,
         /// <summary>command for showing the full train path</summary>
@@ -98,6 +100,10 @@ namespace ORTS.TrackViewer.UserInterface
         ToggleShowSpeedLimits,
         /// <summary>command for toggling showing mile posts</summary>
         ToggleShowMilePosts,
+        /// <summary>command for toggling highlighting tracks</summary>
+        ToggleHighlightTracks,
+        /// <summary>command for toggling higlighting track items</summary>
+        ToggleHighlightItems,
         /// <summary>command for allowing slow zoom with mouse</summary>
         MouseZoomSlow,
         /// <summary>command for redo in editor</summary>
@@ -154,7 +160,8 @@ namespace ORTS.TrackViewer.UserInterface
             Commands[(int)TVUserCommands.ShiftRight] = new ORTS.Settings.UserCommandKeyInput(0x20);
             Commands[(int)TVUserCommands.ShiftUp]    = new ORTS.Settings.UserCommandKeyInput(0x11);
             Commands[(int)TVUserCommands.ShiftDown]  = new ORTS.Settings.UserCommandKeyInput(0x1F);
-            Commands[(int)TVUserCommands.ShiftToLocation] = new ORTS.Settings.UserCommandKeyInput(0x2E);
+            Commands[(int)TVUserCommands.ShiftToPathLocation] = new ORTS.Settings.UserCommandKeyInput(0x2E);
+            Commands[(int)TVUserCommands.ShiftToMouseLocation] = new ORTS.Settings.UserCommandKeyInput(0x2E, ORTS.Settings.KeyModifiers.Shift);
             Commands[(int)TVUserCommands.ToggleZoomAroundMouse] = new ORTS.Settings.UserCommandKeyInput(0x32);
             
             Commands[(int)TVUserCommands.ToggleShowSpeedLimits] = new ORTS.Settings.UserCommandKeyInput(0x3F);
@@ -166,6 +173,8 @@ namespace ORTS.TrackViewer.UserInterface
             Commands[(int)TVUserCommands.ToggleShowSidingNames] = new ORTS.Settings.UserCommandKeyInput(0x43, ORTS.Settings.KeyModifiers.Shift);
             Commands[(int)TVUserCommands.ToggleShowTrainpath] = new ORTS.Settings.UserCommandKeyInput(0x57);
             Commands[(int)TVUserCommands.ToggleShowPatFile] = new ORTS.Settings.UserCommandKeyInput(0x57, ORTS.Settings.KeyModifiers.Shift);
+            Commands[(int)TVUserCommands.ToggleHighlightTracks] = new ORTS.Settings.UserCommandKeyInput(0x44);
+            Commands[(int)TVUserCommands.ToggleHighlightItems] = new ORTS.Settings.UserCommandKeyInput(0x44, ORTS.Settings.KeyModifiers.Shift);
             
 
             Commands[(int)TVUserCommands.ExtendPath] = new ORTS.Settings.UserCommandKeyInput(0x49);

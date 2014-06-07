@@ -65,7 +65,7 @@ namespace ORTS.TrackViewer.Editing
             }
         }
 
-        /// <summary>Return the vector node index of the trailing path leaving this junction</summary>
+        /// <summary>Return the vector node index of the trailing path leaving this junction.</summary>
         public static int TrailingTvn(this TrackNode trackNode) { return trackNode.TrPins[0].Link; }
         /// <summary>Return the vector node index of the main path leaving this junction (main being defined as the first one defined)</summary>
         public static int MainTvn(this TrackNode trackNode) { return trackNode.TrPins[mainRouteIndex[trackNode.Index]].Link; }
@@ -86,10 +86,14 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         /// <param name="junctionIndex">Index of this junction node</param>
         /// <param name="linkingTrackNodeIndex">index of the vector node linking the two junction nodes</param>
-        /// <returns>The index of the junctin node at the other end</returns>
+        /// <returns>The index of the junction node at the other end, or 0 in case of trouble</returns>
         public static int GetNextJunctionIndex(int junctionIndex, int linkingTrackNodeIndex)
         {
+            if (linkingTrackNodeIndex <= 0) return 0; // link is not well-defined
+
             TrackNode linkingTrackNode = trackNodes[linkingTrackNodeIndex];
+            if (linkingTrackNode == null) return 0;
+
             if (junctionIndex == linkingTrackNode.JunctionIndexAtStart())
             {
                 return linkingTrackNode.JunctionIndexAtEnd();
@@ -107,13 +111,19 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         /// <param name="junctionIndex">index of junction tracknode</param>
         /// <param name="incomingTvnIndex">index of incoming vector node</param>
-        /// <returns>index of the leaving vector node or -1 if none found.</returns>
+        /// <returns>index of the leaving vector node or 0 if none found.</returns>
         public static int GetLeavingTvnIndex(int junctionIndex, int incomingTvnIndex)
         {
+            if (junctionIndex <= 0) return 0; // something wrong in database
+
             TrackNode junctionTrackNode = trackNodes[junctionIndex];
+            if (junctionTrackNode == null) {
+                return 0;
+            }
+
             if (junctionTrackNode.TrEndNode)
             {
-                return -1;
+                return 0;
             }
             if (incomingTvnIndex == junctionTrackNode.TrailingTvn())
             {

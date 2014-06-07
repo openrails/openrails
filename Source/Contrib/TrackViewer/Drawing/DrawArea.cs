@@ -252,8 +252,19 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="scaleSteps">The amount of zoom-steps to take (using the discrete scale)</param>
         private void ZoomAround(Vector2 fixedAreaLocation, int scaleSteps)
         {
-            // prevent too much zooming out
-            if ((scaleSteps > 0) && MaxZoomOutReached()) return;
+            if (scaleSteps > 0)
+            {
+                // prevent too much zooming out, scale is in pixels/meter
+                double minScale = fullScale / 2;
+                double maxRatio = Scale / minScale;
+                int maxSteps = metersPerPixel.StepsNeededForRatio(maxRatio);
+                if (maxSteps <= 0)
+                {
+                    return;
+                }
+                scaleSteps = Math.Min(scaleSteps, maxSteps);
+            }
+            
 
             // equation is areaX = scale * (worldX - offsetX)
             // for a fixed point (in area location) we have
@@ -290,15 +301,6 @@ namespace ORTS.TrackViewer.Drawing
             double scaleY = AreaH / 2048.0;
             double newScale = Math.Min(scaleX, scaleY);
             ZoomCentered(metersPerPixel.StepsNeededForRatio(Scale / newScale ));
-        }
-
-        /// <summary>
-        /// Determines whether the maximum allowed zoom is reached
-        /// </summary>
-        /// <returns>true when we should no longer zoom-out</returns>
-        public bool MaxZoomOutReached()
-        {
-            return (Scale < fullScale/2);
         }
 
         /// <summary>
@@ -696,7 +698,19 @@ namespace ORTS.TrackViewer.Drawing
             // We offset the top-left corner to make sure the text is not on the marker.
             int offsetXY = 2 + (int)GetWindowSize(2f); 
             Vector2 textOffset = new Vector2(offsetXY, offsetXY);
-            BasicShapes.DrawExpandingString(GetWindowVector(location)+textOffset, DrawColors.colorsNormal["text"], message); 
+            BasicShapes.DrawExpandingString(GetWindowVector(location)+textOffset, DrawColors.colorsNormal.Text, message); 
+        }
+
+        /// <summary>
+        /// Draw a texture, determined by its name.
+        /// </summary>
+        /// <param name="location">Location where to draw the texture</param>
+        /// <param name="textureName">Name identifying the texture</param>
+        /// <param name="size">Size of the texture in world-meters</param>
+        /// <param name="minPixelSize">Minimum size in pixels, to make sure you always see something</param>
+        public void DrawTexture(WorldLocation location, string textureName, float size, int minPixelSize)
+        {
+            DrawTexture(location, textureName, size, minPixelSize, 0, Color.White);
         }
 
         /// <summary>
@@ -707,27 +721,38 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="angle">Rotation angle for the texture</param>
         /// <param name="size">Size of the texture in world-meters</param>
         /// <param name="minPixelSize">Minimum size in pixels, to make sure you always see something</param>
-        public void DrawTexture(WorldLocation location, string textureName, float angle, float size, int minPixelSize)
+        public void DrawTexture(WorldLocation location, string textureName, float size, int minPixelSize, float angle)
         {
-            if (OutOfArea(location)) return;
-            float pixelSize = (float)Math.Max(GetWindowSize(size), minPixelSize);
-            BasicShapes.DrawTexture(GetWindowVector(location), textureName, angle, pixelSize, Color.White);
+            DrawTexture(location, textureName, size, minPixelSize, angle, Color.White);
         }
 
         /// <summary>
-        /// Draw a simple texture, like ring, disc, determined by its name. In contrast to regular textures
-        /// here we support color as well, because that is not predefined
+        /// Draw a texture, determined by its name.
         /// </summary>
-        /// <param name="location">Location to draw (the center) of the texture</param>
-        /// <param name="size">size in meters of the texture</param>
-        /// <param name="textureName">Name of the simple texture, like disc, ring, </param>
+        /// <param name="location">Location where to draw the texture</param>
+        /// <param name="textureName">Name identifying the texture</param>
+        /// <param name="size">Size of the texture in world-meters</param>
         /// <param name="minPixelSize">Minimum size in pixels, to make sure you always see something</param>
         /// <param name="color">Color you want the simple texture to have</param>
-        public void DrawSimpleTexture(WorldLocation location, string textureName, float size, int minPixelSize, Color color)
+        public void DrawTexture(WorldLocation location, string textureName, float size, int minPixelSize, Color color)
+        {
+            DrawTexture(location, textureName, size, minPixelSize, 0, color);
+        }
+
+        /// <summary>
+        /// Draw a texture, determined by its name.
+        /// </summary>
+        /// <param name="location">Location where to draw the texture</param>
+        /// <param name="textureName">Name identifying the texture</param>
+        /// <param name="angle">Rotation angle for the texture</param>
+        /// <param name="size">Size of the texture in world-meters</param>
+        /// <param name="minPixelSize">Minimum size in pixels, to make sure you always see something</param>
+        /// <param name="color">Color you want the simple texture to have</param>
+        public void DrawTexture(WorldLocation location, string textureName, float size, int minPixelSize, float angle, Color color)
         {
             if (OutOfArea(location)) return;
             float pixelSize = (float)Math.Max(GetWindowSize(size), minPixelSize);
-            BasicShapes.DrawTexture(GetWindowVector(location), textureName, 0, pixelSize, color);
+            BasicShapes.DrawTexture(GetWindowVector(location), textureName, angle, pixelSize, color);
         }
 
     }

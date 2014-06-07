@@ -190,10 +190,11 @@ namespace ORTS.TrackViewer.Editing
             editorActionsActiveNode.Add(new EditorActionRemovePassingPath());
             editorActionsActiveNode.Add(new EditorActionOtherStartDirection());
             editorActionsActiveNode.Add(new EditorActionRemoveStart());
-            //editorActionsActiveNode.Add(new EditorActionRemoveRestOfPath());
+            editorActionsActiveNode.Add(new EditorActionRemoveRestOfPath());
             editorActionsActiveNode.Add(new EditorActionCutAndStoreTail());
             editorActionsActiveNode.Add(new EditorActionAutoConnectTail());
-
+            editorActionsActiveNode.Add(new EditorActionRemoveStartKeepTail());
+            
             // active track location actions
             editorActionsActiveTrack = new List<EditorAction>();
             editorActionsActiveTrack.Add(new EditorActionAddEnd());
@@ -462,12 +463,12 @@ namespace ORTS.TrackViewer.Editing
 
             if (activeNode != null)
             {
-                drawArea.DrawSimpleTexture(activeNode.Location, "ring", 8f, 7, DrawColors.colorsNormal["activeNode"]);
+                drawArea.DrawTexture(activeNode.Location, "ring", 8f, 7, DrawColors.colorsNormal.ActiveNode);
 
             }
             if (activeTrackLocation != null && activeTrackLocation.Location != null)
             {
-                drawArea.DrawSimpleTexture(activeTrackLocation.Location, "ring", 8f, 7, DrawColors.colorsNormal["nodeCandidate"]);
+                drawArea.DrawTexture(activeTrackLocation.Location, "ring", 8f, 7, DrawColors.colorsNormal.CandidateNode);
             }
 
         }
@@ -502,14 +503,14 @@ namespace ORTS.TrackViewer.Editing
         /// <param name="drawnPathData">The data structure with the information on the drawn path</param>
         void FindActiveTrackLocation(DrawnPathData drawnPathData)
         {
-            TrackNode tn = drawTrackDB.ClosestTrack.TrackNode;
-            if (tn == null)
+            if (drawTrackDB.ClosestTrack == null ||
+                drawTrackDB.ClosestTrack.TrackNode == null)
             {
                 activeTrackLocation.Location = null;
                 return;
             }
 
-            uint tni = tn.Index;
+            uint tni = drawTrackDB.ClosestTrack.TrackNode.Index;
             int tni_int = (int)tni;
 
             if (!drawnPathData.TrackHasBeenDrawn(tni_int) && trainpath.FirstNode != null)

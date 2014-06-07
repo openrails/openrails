@@ -110,7 +110,9 @@ namespace ORTS.TrackViewer.UserInterface
         /// <param name="trackViewer"></param>
         private void SetTrackIndexStatus(TrackViewer trackViewer)
         {
-            TrackNode tn = trackViewer.DrawTrackDB.ClosestTrack.TrackNode;
+            Drawing.CloseToMouseTrack closestTrack = trackViewer.DrawTrackDB.ClosestTrack;
+            if (closestTrack == null) return;
+            TrackNode tn = closestTrack.TrackNode;
             if (tn == null) return;
             statusTrIndex.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
                 "{0} ", tn.Index);

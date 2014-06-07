@@ -92,7 +92,7 @@ namespace ORTS.TrackViewer.Editing
                         TrPathNode nextNode = patFile.TrPathNodes[nextNodeIndexOnSiding];
                         WorldLocation nextLoc = GetPdpLocation(patFile.TrackPDPs[(int)nextNode.fromPDP]);
 
-                        drawArea.DrawLine(1, DrawColors.colorsNormal["pathSiding"], curLoc, nextLoc);
+                        drawArea.DrawLine(1, DrawColors.colorsPathSiding.TrackStraight, curLoc, nextLoc);
                     }
                     currentSidingNodeIndex = nextNodeIndexOnSiding;
                 }
@@ -110,7 +110,7 @@ namespace ORTS.TrackViewer.Editing
                     TrPathNode nextNode = patFile.TrPathNodes[nextSidingNodeIndex];
                     WorldLocation nextLoc = GetPdpLocation(patFile.TrackPDPs[(int)nextNode.fromPDP]);
 
-                    drawArea.DrawLine(1, DrawColors.colorsNormal["pathSiding"], curMainLoc, nextLoc);
+                    drawArea.DrawLine(1, DrawColors.colorsPathSiding.TrackStraight, curMainLoc, nextLoc);
                     currentSidingNodeIndex = nextSidingNodeIndex;
                 }
 
@@ -121,7 +121,7 @@ namespace ORTS.TrackViewer.Editing
                     TrPathNode nextNode = patFile.TrPathNodes[nextMainNodeIndex];
                     WorldLocation nextLoc = GetPdpLocation(patFile.TrackPDPs[(int)nextNode.fromPDP]);
 
-                    drawArea.DrawLine(1, DrawColors.colorsNormal["pathMain"], curMainLoc, nextLoc);
+                    drawArea.DrawLine(1, DrawColors.colorsPathMain.TrackStraight, curMainLoc, nextLoc);
                     currentMainNodeIndex = nextMainNodeIndex;
                 }
             }

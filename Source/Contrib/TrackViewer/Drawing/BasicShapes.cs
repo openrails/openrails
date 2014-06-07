@@ -72,7 +72,7 @@ namespace ORTS.TrackViewer.Drawing
             textureOffsets["crossedRing"] = new Vector2(diameter / 2, diameter / 2);
 
 
-            LoadAndHighlightTexture(graphicsDevice, contentPath, "signal", "Signal",12, 11);
+            LoadAndHighlightTexture(graphicsDevice, contentPath, "signal", "Signal",29, 18);
             LoadAndHighlightTexture(graphicsDevice, contentPath, "hazard", "Hazard");
 
             LoadAndHighlightTexture(graphicsDevice, contentPath, "pathNormal", "pathNormal",31,31);
@@ -83,13 +83,13 @@ namespace ORTS.TrackViewer.Drawing
             LoadAndHighlightTexture(graphicsDevice, contentPath, "pathUncouple", "pathUncouple", 31, 31);
 #endif
             LoadAndHighlightTexture(graphicsDevice, contentPath, "pathReverse", "pathReverse", 31, 31);
-            LoadAndHighlightTexture(graphicsDevice, contentPath, "pathSiding", "pathSiding", 31, 31);
+            //LoadAndHighlightTexture(graphicsDevice, contentPath, "pathSiding", "pathSiding", 31, 31);
 
             // textures modified from http://www.iconsdb.com
             LoadAndHighlightTexture(graphicsDevice, contentPath, "sound", "Sound", 5, 5);
             LoadAndHighlightTexture(graphicsDevice, contentPath, "carspawner", "CarSpawner");
             LoadAndHighlightTexture(graphicsDevice, contentPath, "pickup", "Pickup");
-            LoadAndHighlightTexture(graphicsDevice, contentPath, "platform", "Platform");
+            LoadAndHighlightTexture(graphicsDevice, contentPath, "platform", "Platform", 31, 37);
             LoadAndHighlightTexture(graphicsDevice, contentPath, "sound", "Sound");
             LoadAndHighlightTexture(graphicsDevice, contentPath, "playerTrain", "steamTrain",31,31);
 
@@ -117,7 +117,6 @@ namespace ORTS.TrackViewer.Drawing
             try
             {
                 tempTexture = Texture2D.FromFile(graphicsDevice, fullFileName);
-                //Texture2D tempTexture = contentPath.Content.Update<Texture2D>(fileName);
             }
             catch
             {
@@ -141,7 +140,7 @@ namespace ORTS.TrackViewer.Drawing
             texture.GetData<Color>(pixels);
             for (int i = 0; i < pixels.Length; i++)
             {
-                pixels[i] = DrawColors.Highlighted(pixels[i], offset);
+                pixels[i] = ColorWithHighlights.Highlighted(pixels[i], offset);
             }
 
             Texture2D outTexture = new Texture2D(graphicsDevice, texture.Width, texture.Height, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
