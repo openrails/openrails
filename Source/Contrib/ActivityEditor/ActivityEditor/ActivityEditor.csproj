@@ -9,7 +9,7 @@
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ActivityEditor</RootNamespace>
-    <AssemblyName>ActivityEditor</AssemblyName>
+    <AssemblyName>Contrib.ActivityEditor</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ApplicationIcon>..\..\..\ORTS.ico</ApplicationIcon>
