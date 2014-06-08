@@ -2,6 +2,7 @@
 using System.Windows.Forms;
 using System.Linq;
 using LibAE;
+using LibAE.Formats;
 
 namespace AEWizard
 {
