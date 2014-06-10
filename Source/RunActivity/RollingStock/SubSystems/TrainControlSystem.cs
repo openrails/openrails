@@ -40,7 +40,9 @@ namespace ORTS
         public bool PenaltyApplication { get; set; }
         public float CurrentSpeedLimitMpS { get; set; }
         public float NextSpeedLimitMpS { get; set; }
+        public float InterventionSpeedLimitMpS { get; set; }
         public TrackMonitorSignalAspect CabSignalAspect { get; set; }
+        public MonitoringStatus MonitoringStatus { get; set; }
 
         Train.TrainInfo TrainInfo = new Train.TrainInfo();
 
@@ -240,8 +242,10 @@ namespace ORTS
             Script.SetVigilanceEmergencyDisplay = (value) => this.VigilanceEmergency = value;
             Script.SetOverspeedWarningDisplay = (value) => this.OverspeedWarning = value;
             Script.SetPenaltyApplicationDisplay = (value) => this.PenaltyApplication = value;
+            Script.SetMonitoringStatus = (value) => this.MonitoringStatus = value;
             Script.SetCurrentSpeedLimitMpS = (value) => this.CurrentSpeedLimitMpS = value;
             Script.SetNextSpeedLimitMpS = (value) => this.NextSpeedLimitMpS = value;
+            Script.SetInterventionSpeedLimitMpS = (value) => this.InterventionSpeedLimitMpS = value;
             Script.SetNextSignalAspect = (value) => this.CabSignalAspect = (TrackMonitorSignalAspect)value;
             Script.SetVigilanceAlarm = (value) => Locomotive.SignalEvent(value ? Event.VigilanceAlarmOn : Event.VigilanceAlarmOff);
             Script.TriggerSoundAlert1 = () => this.HandleEvent(Event.TrainControlSystemAlert1, Script);
@@ -474,6 +478,8 @@ namespace ORTS
 
         float VigilanceAlarmTimeoutS;
         float CurrentSpeedLimitMpS;
+        
+        MonitoringStatus Status;
 
         public ScriptedTrainControlSystem.MonitoringDevice VigilanceMonitor;
         public ScriptedTrainControlSystem.MonitoringDevice OverspeedMonitor;
@@ -516,9 +522,11 @@ namespace ORTS
             CurrentSpeedLimitMpS = CurrentSignalSpeedLimitMpS() >= 0 ? CurrentSignalSpeedLimitMpS() : TrainSpeedLimitMpS();
             if (CurrentSpeedLimitMpS > TrainSpeedLimitMpS())
                 CurrentSpeedLimitMpS = TrainSpeedLimitMpS();
+            
+            var nextSpeedLimitMpS = NextSignalSpeedLimitMpS(0) >= 0 && NextSignalSpeedLimitMpS(0) < TrainSpeedLimitMpS() ? NextSignalSpeedLimitMpS(0) : TrainSpeedLimitMpS();
 
             SetCurrentSpeedLimitMpS(CurrentSpeedLimitMpS);
-            SetNextSpeedLimitMpS(NextSignalSpeedLimitMpS(0) >= 0 && NextSignalSpeedLimitMpS(0) < TrainSpeedLimitMpS() ? NextSignalSpeedLimitMpS(0) : TrainSpeedLimitMpS());
+            SetNextSpeedLimitMpS(nextSpeedLimitMpS);
 
             if (VigilanceMonitor != null)
                 UpdateVigilance();
@@ -564,6 +572,25 @@ namespace ORTS
             }
 
             SetPenaltyApplicationDisplay(IsBrakeEmergency() && IsBrakeFullService());
+            
+            // Update monitoring status
+            if (SpeedMpS() > CurrentSpeedLimitMpS)
+            {
+                if (OverspeedMonitor.AppliesEmergencyBrake || OverspeedMonitor.AppliesFullBrake)
+                    Status = MonitoringStatus.Intervention;
+                else
+                    Status = MonitoringStatus.Warning;
+            }
+            else if (nextSpeedLimitMpS < CurrentSpeedLimitMpS && SpeedMpS() > nextSpeedLimitMpS)
+            {
+                if (Deceleration(SpeedMpS(), nextSpeedLimitMpS, NextSignalDistanceM(0)) > 0.7f)
+                    Status = MonitoringStatus.Overspeed;
+                else
+                    Status = MonitoringStatus.Indication;
+            }
+            else
+                Status = MonitoringStatus.Normal;
+            SetMonitoringStatus(Status);
         }
 
         public override void HandleEvent(TCSEvent evt, string message)
@@ -644,17 +671,22 @@ namespace ORTS
         void UpdateSpeedControl()
         {
             var overspeedWarning = false;
-
+            var interventionSpeedMpS = 0f;
+            
             // Not sure about the difference of the following two. Seems both of them are used.
             if (OverspeedMonitor.TriggerOnOverspeedMpS > 0)
                 overspeedWarning |= SpeedMpS() > OverspeedMonitor.TriggerOnOverspeedMpS;
             if (OverspeedMonitor.CriticalLevelMpS > 0)
                 overspeedWarning |= SpeedMpS() > OverspeedMonitor.CriticalLevelMpS;
             if (OverspeedMonitor.TriggerOnTrackOverspeed)
+            {
                 overspeedWarning |= SpeedMpS() > CurrentSpeedLimitMpS + OverspeedMonitor.TriggerOnTrackOverspeedMarginMpS;
-
+                interventionSpeedMpS = CurrentSpeedLimitMpS + OverspeedMonitor.TriggerOnTrackOverspeedMarginMpS;
+            }
+            
             OverspeedWarning = overspeedWarning;
             SetOverspeedWarningDisplay(overspeedWarning);
+            SetInterventionSpeedLimitMpS(interventionSpeedMpS);
 
             OverspeedAlarm = OverspeedAlarmTimer.Triggered;
 

@@ -241,7 +241,7 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Action<bool> SetFullBrake;
         /// <summary>
-        /// Set train brake controller to emergency position.
+        /// Set emergency braking on or off.
         /// </summary>
         public Action<bool> SetEmergencyBrake;
         /// <summary>
@@ -321,6 +321,10 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Action<bool> SetPenaltyApplicationDisplay;
         /// <summary>
+        /// Monitoring status determines the colors speeds displayed with. (E.g. circular speed gauge).
+        /// </summary>
+        public Action<MonitoringStatus> SetMonitoringStatus;
+        /// <summary>
         /// Set current speed limit of the train, as to be shown on SPEEDLIMIT cabcontrol.
         /// </summary>
         public Action<float> SetCurrentSpeedLimitMpS;
@@ -328,6 +332,12 @@ namespace ORTS.Scripting.Api
         /// Set speed limit of the next signal, as to be shown on SPEEDLIM_DISPLAY cabcontrol.
         /// </summary>
         public Action<float> SetNextSpeedLimitMpS;
+        /// <summary>
+        /// The speed at the train control system applies brake automatically.
+        /// Determines needle color (orange/red) on circular speed gauge, when the locomotive
+        /// already runs above the permitted speed limit. Otherwise is unused.
+        /// </summary>
+        public Action<float> SetInterventionSpeedLimitMpS;
         /// <summary>
         /// Will be whown on ASPECT_DISPLAY cabcontrol.
         /// </summary>
@@ -449,6 +459,34 @@ namespace ORTS.Scripting.Api
         /// Internal reset request by the horn handle.
         /// </summary>
         HornActivated,
+    }
+    
+    /// <summary>
+    /// Controls what color the speed monitoring display uses.
+    /// </summary>
+    public enum MonitoringStatus
+    {
+        /// <summary>
+        /// Grey color. No speed restriction is ahead.
+        /// </summary>
+        Normal,
+        /// <summary>
+        /// White color. Pre-indication, that the next signal is restricted. No manual intervention is needed yet.
+        /// </summary>
+        Indication,
+        /// <summary>
+        /// Yellow color. Next signal is restricted, driver should start decreasing speed.
+        /// (Please note, it is not for indication of a "real" overspeed. In this state the locomotive still runs under the actual permitted speed.)
+        /// </summary>
+        Overspeed,
+        /// <summary>
+        /// Orange color. The locomotive is very close to next speed restriction, driver should start strong braking immediately.
+        /// </summary>
+        Warning,
+        /// <summary>
+        /// Red color. Train control system intervention speed. Computer has to apply full service or emergency brake to maintain speed restriction.
+        /// </summary>
+        Intervention,
     }
 
     #endregion

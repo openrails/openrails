@@ -612,6 +612,35 @@ namespace ORTS.Viewer3D
     }
 
     [CallOnThread("Render")]
+    public class DriverMachineInterfaceShader : Shader
+    {
+        readonly EffectParameter limitAngle;
+        readonly EffectParameter normalColor;
+        readonly EffectParameter limitColor;
+        readonly EffectParameter pointerColor;
+        readonly EffectParameter backgroundColor;
+        //readonly EffectParameter imageTexture;
+
+        public void SetData(Vector4 angle, Color gaugeColor, Color needleColor)
+        {
+            limitAngle.SetValue(angle);
+            limitColor.SetValue(gaugeColor.ToVector4());
+            pointerColor.SetValue(needleColor.ToVector4());
+        }
+
+        public DriverMachineInterfaceShader(GraphicsDevice graphicsDevice)
+            : base(graphicsDevice, "DriverMachineInterfaceShader")
+        {
+            normalColor = Parameters["NormalColor"];
+            limitColor = Parameters["LimitColor"];
+            pointerColor = Parameters["PointerColor"];
+            backgroundColor = Parameters["BackgroundColor"];
+            limitAngle = Parameters["LimitAngle"];
+            //imageTexture = Parameters["ImageTexture"];
+        }
+    }
+
+    [CallOnThread("Render")]
     public class DebugShader : Shader
     {
         readonly EffectParameter worldViewProjection;

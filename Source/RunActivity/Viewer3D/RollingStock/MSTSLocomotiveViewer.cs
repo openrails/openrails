@@ -1098,7 +1098,11 @@ namespace ORTS.Viewer3D.RollingStock
 						CVCDigital digital = cvc as CVCDigital;
 						if (digital != null)
 						{
-							CabViewDigitalRenderer cvdr = new CabViewDigitalRenderer(viewer, car, digital, _Shader);
+                            CabViewDigitalRenderer cvdr;
+                            if (digital.ControlStyle == CABViewControlStyles.NEEDLE)
+                                cvdr = new CabViewCircularSpeedGaugeRenderer(viewer, car, digital, _Shader);
+                            else
+							    cvdr = new CabViewDigitalRenderer(viewer, car, digital, _Shader);
 							cvdr.SortIndex = controlSortIndex;
 							CabViewControlRenderersList[i].Add(cvdr);
 							if (!ControlMap.ContainsKey(key)) ControlMap.Add(key, cvdr);
@@ -1829,7 +1833,7 @@ namespace ORTS.Viewer3D.RollingStock
 
 		float Num;
 		WindowTextFont DrawFont;
-		Rectangle DrawPosition;
+		protected Rectangle DrawPosition;
 		string DrawText;
 		Color DrawColor;
 
