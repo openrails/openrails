@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-05-18 03:06:05+0200\n"
-"PO-Revision-Date: 2014-05-18 03:06:07+0200\n"
+"POT-Creation-Date: 2014-06-10 03:11:22+0200\n"
+"PO-Revision-Date: 2014-06-10 03:11:23+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -11,69 +11,69 @@ msgstr ""
 "X-Generator: MonoDevelop Gettext addin\n"
 
 
-#: ../../RunActivity/Common/Scripting.cs:622
+#: ../../RunActivity/Common/Scripting.cs:632
 msgid "Release"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:623
+#: ../../RunActivity/Common/Scripting.cs:633
 msgid "Quick Release"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:624
+#: ../../RunActivity/Common/Scripting.cs:634
 msgid "Running"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:625
+#: ../../RunActivity/Common/Scripting.cs:635
 msgid "Neutral"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:626
+#: ../../RunActivity/Common/Scripting.cs:636
 msgid "Apply"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:627
+#: ../../RunActivity/Common/Scripting.cs:637
 msgid "EPApply"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:628
+#: ../../RunActivity/Common/Scripting.cs:638
 msgid "Emergency"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:629
-#: ../../RunActivity/Common/Scripting.cs:632
+#: ../../RunActivity/Common/Scripting.cs:639
+#: ../../RunActivity/Common/Scripting.cs:642
 msgid "Lap"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:630
-#: ../../RunActivity/Common/Scripting.cs:631
+#: ../../RunActivity/Common/Scripting.cs:640
+#: ../../RunActivity/Common/Scripting.cs:641
 msgid "Service"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:633
+#: ../../RunActivity/Common/Scripting.cs:643
 msgid "Suppression"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:634
+#: ../../RunActivity/Common/Scripting.cs:644
 msgid "Cont. Service"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:635
+#: ../../RunActivity/Common/Scripting.cs:645
 msgid "Full Service"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:636
+#: ../../RunActivity/Common/Scripting.cs:646
 msgid "Overcharge"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:637
+#: ../../RunActivity/Common/Scripting.cs:647
 msgid "Emergency Braking Push Button"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:638
+#: ../../RunActivity/Common/Scripting.cs:648
 msgid "TCS Emergency Braking"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:639
+#: ../../RunActivity/Common/Scripting.cs:649
 msgid "TCS Full Service Braking"
 msgstr ""
 
@@ -269,75 +269,75 @@ msgstr ""
 msgid "Alt-E to gain control of your train"
 msgstr ""
 
-#: ../../RunActivity/MultiPlayer/Message.cs:643
+#: ../../RunActivity/MultiPlayer/Message.cs:644
 msgid "Dispatcher does not allow hand throw at this time"
 msgstr ""
 
-#: ../../RunActivity/MultiPlayer/Message.cs:687
+#: ../../RunActivity/MultiPlayer/Message.cs:688
 msgid "main route"
 msgstr ""
 
-#: ../../RunActivity/MultiPlayer/Message.cs:687
+#: ../../RunActivity/MultiPlayer/Message.cs:688
 msgid "side route"
 msgstr ""
 
-#: ../../RunActivity/MultiPlayer/Message.cs:1461
+#: ../../RunActivity/MultiPlayer/Message.cs:1462
 msgid "You are the new dispatcher. Enjoy!"
 msgstr ""
 
-#: ../../RunActivity/MultiPlayer/Message.cs:1591
+#: ../../RunActivity/MultiPlayer/Message.cs:1592
 msgid "Name conflicted with people in the game, will play in single mode"
 msgstr ""
 
-#: ../../RunActivity/MultiPlayer/Message.cs:1666
+#: ../../RunActivity/MultiPlayer/Message.cs:1667
 #: ../../RunActivity/MultiPlayer/MPManager.cs:130
 msgid "You gained back the control of your train"
 msgstr ""
 
-#: ../../RunActivity/MultiPlayer/Message.cs:1876
+#: ../../RunActivity/MultiPlayer/Message.cs:1867
 msgid "Server quits, will play as single mode"
 msgstr ""
 
-#: ../../RunActivity/MultiPlayer/Message.cs:2157
-#: ../../RunActivity/MultiPlayer/Message.cs:2403
+#: ../../RunActivity/MultiPlayer/Message.cs:2148
+#: ../../RunActivity/MultiPlayer/Message.cs:2394
 msgid "Trains uncoupled, gain back control by Alt-E"
 msgstr ""
 
-#: ../../RunActivity/MultiPlayer/Message.cs:2541
-#: ../../RunActivity/MultiPlayer/Message.cs:2649
+#: ../../RunActivity/MultiPlayer/Message.cs:2532
+#: ../../RunActivity/MultiPlayer/Message.cs:2640
 msgid "Trains coupled, hit \\ then Shift-? to release brakes"
 msgstr ""
 
-#: ../../RunActivity/MultiPlayer/Message.cs:3093
+#: ../../RunActivity/MultiPlayer/Message.cs:3084
 msgid "You are an assistant now, will be able to handle switches and signals."
 msgstr ""
 
-#: ../../RunActivity/MultiPlayer/Message.cs:3099
+#: ../../RunActivity/MultiPlayer/Message.cs:3090
 msgid "You are no longer an assistant."
 msgstr ""
 
-#: ../../RunActivity/MultiPlayer/Message.cs:686
+#: ../../RunActivity/MultiPlayer/Message.cs:687
 #, csharp-format
 msgid "Switched, current route is {0}"
 msgstr ""
 
-#: ../../RunActivity/MultiPlayer/Message.cs:1468
+#: ../../RunActivity/MultiPlayer/Message.cs:1469
 #, csharp-format
 msgid "New dispatcher is {0}"
 msgstr ""
 
-#: ../../RunActivity/MultiPlayer/Message.cs:1887
+#: ../../RunActivity/MultiPlayer/Message.cs:1878
 #: ../../RunActivity/MultiPlayer/OnlinePlayer.cs:148
 #, csharp-format
 msgid "{0} quit."
 msgstr ""
 
-#: ../../RunActivity/MultiPlayer/Message.cs:1959
+#: ../../RunActivity/MultiPlayer/Message.cs:1950
 #, csharp-format
 msgid "{0} lost."
 msgstr ""
 
-#: ../../RunActivity/MultiPlayer/Message.cs:2979
+#: ../../RunActivity/MultiPlayer/Message.cs:2970
 #, csharp-format
 msgid " From {0}: {1}"
 msgstr ""
@@ -353,83 +353,83 @@ msgid_plural "Cannot decouple: train has {0} players, need to completely stop."
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../../RunActivity/Physics/Train.cs:1432
+#: ../../RunActivity/Physics/Train.cs:1448
 msgid "Coupler broken!"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:1435
+#: ../../RunActivity/Physics/Train.cs:1451
 msgid "Coupler overloaded!"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:4060
-#: ../../RunActivity/Physics/Train.cs:4065
+#: ../../RunActivity/Physics/Train.cs:4140
+#: ../../RunActivity/Physics/Train.cs:4145
 msgid "Other train is blocking path"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:4191
+#: ../../RunActivity/Physics/Train.cs:4271
 msgid "Held for connecting train : "
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:4246
+#: ../../RunActivity/Physics/Train.cs:4326
 #: ../../RunActivity/Simulator/Activity.cs:830
 msgid "Passenger boarding completed. You may depart now."
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5195
+#: ../../RunActivity/Physics/Train.cs:5293
 msgid "Stopped due to errors in route setting"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5857
-#: ../../RunActivity/Physics/Train.cs:6930
+#: ../../RunActivity/Physics/Train.cs:5955
+#: ../../RunActivity/Physics/Train.cs:7028
 msgid "No signal in train's path"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5865
+#: ../../RunActivity/Physics/Train.cs:5963
 msgid "Next signal already allocated to other train"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5926
+#: ../../RunActivity/Physics/Train.cs:6024
 msgid "Request to clear signal cannot be processed"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6032
-#: ../../RunActivity/Physics/Train.cs:7050
+#: ../../RunActivity/Physics/Train.cs:6130
+#: ../../RunActivity/Physics/Train.cs:7148
 msgid "No switch found"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7280
+#: ../../RunActivity/Physics/Train.cs:7371
 msgid "Train is not back on original route"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7289
+#: ../../RunActivity/Physics/Train.cs:7380
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7302
+#: ../../RunActivity/Physics/Train.cs:7393
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7397
+#: ../../RunActivity/Physics/Train.cs:7488
 msgid "Reversal required and rear of train not on required route"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7584
+#: ../../RunActivity/Physics/Train.cs:7675
 msgid "Cannot clear signal behind train while in AUTO mode"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:4252
+#: ../../RunActivity/Physics/Train.cs:4332
 #: ../../RunActivity/Simulator/Activity.cs:823
 #, csharp-format
 msgid "Passenger boarding completes in {0:D2}:{1:D2}"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7826
+#: ../../RunActivity/Physics/Train.cs:7917
 #, csharp-format
 msgid "Allowed speed raised to {0}"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7868
+#: ../../RunActivity/Physics/Train.cs:7959
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr ""
@@ -440,18 +440,16 @@ msgid ""
 "Restoring from a save made by an older version {0}\n"
 msgstr ""
 
-#: ../../RunActivity/Processes/GameStateRunActivity.cs:1014
+#: ../../RunActivity/Processes/GameStateRunActivity.cs:1008
 #, csharp-format
 msgid "Activity Save file '*.save' not found in folder {0}"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:258
-#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:269
+#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:203
 msgid "No power line!"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:260
-#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:271
+#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:205
 msgid "Power line condition overridden."
 msgstr ""
 
@@ -495,19 +493,19 @@ msgstr ""
 msgid "Boiler no longer priming."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/TrainCar.cs:370
+#: ../../RunActivity/RollingStock/TrainCar.cs:371
 msgid ""
 "You are traveling too fast for this curve. Slow down, your freight may be "
 "damaged and your train may derail."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/TrainCar.cs:374
+#: ../../RunActivity/RollingStock/TrainCar.cs:375
 msgid ""
 "You are travelling too fast for this curve. Slow down, your passengers are "
 "feeling uncomfortable and your train may derail."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/TrainCar.cs:409
+#: ../../RunActivity/RollingStock/TrainCar.cs:410
 msgid "Your train has overturned."
 msgstr ""
 
