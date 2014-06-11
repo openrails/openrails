@@ -1099,7 +1099,7 @@ namespace ORTS.Viewer3D.RollingStock
 						if (digital != null)
 						{
                             CabViewDigitalRenderer cvdr;
-                            if (digital.ControlStyle == CABViewControlStyles.NEEDLE)
+                            if (viewer.Settings.CircularSpeedGauge && digital.ControlStyle == CABViewControlStyles.NEEDLE)
                                 cvdr = new CabViewCircularSpeedGaugeRenderer(viewer, car, digital, _Shader);
                             else
 							    cvdr = new CabViewDigitalRenderer(viewer, car, digital, _Shader);

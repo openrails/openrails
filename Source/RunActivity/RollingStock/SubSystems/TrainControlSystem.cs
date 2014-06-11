@@ -576,7 +576,7 @@ namespace ORTS
             // Update monitoring status
             if (SpeedMpS() > CurrentSpeedLimitMpS)
             {
-                if (OverspeedMonitor.AppliesEmergencyBrake || OverspeedMonitor.AppliesFullBrake)
+                if (OverspeedMonitor != null && (OverspeedMonitor.AppliesEmergencyBrake || OverspeedMonitor.AppliesFullBrake))
                     Status = MonitoringStatus.Intervention;
                 else
                     Status = MonitoringStatus.Warning;

@@ -130,6 +130,7 @@ namespace ORTS
             checkPreferDDSTexture.Checked = Settings.PreferDDSTexture;
             checkFastFullScreenAltTab.Checked = Settings.FastFullScreenAltTab;
             checkUseLargeAddressAware.Checked = Settings.UseLargeAddressAware;
+            checkBoxCircularSpeedGauge.Checked = Settings.CircularSpeedGauge;
 
             // DataLogger tab
             comboDataLoggerSeparator.Text = settings.DataLoggerSeparator;
@@ -288,6 +289,7 @@ namespace ORTS
             Settings.PreferDDSTexture = checkPreferDDSTexture.Checked;
             Settings.FastFullScreenAltTab = checkFastFullScreenAltTab.Checked;
             Settings.UseLargeAddressAware = checkUseLargeAddressAware.Checked;
+            Settings.CircularSpeedGauge = checkBoxCircularSpeedGauge.Checked;
             
             // DataLogger tab
             Settings.DataLoggerSeparator = comboDataLoggerSeparator.Text;

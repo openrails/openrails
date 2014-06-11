@@ -122,6 +122,7 @@
             this.numericDataLogTSInterval = new System.Windows.Forms.NumericUpDown();
             this.checkDataLogTrainSpeed = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.checkBoxCircularSpeedGauge = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -244,9 +245,9 @@
             // 
             // tabOptions
             // 
-            this.tabOptions.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.tabOptions.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tabOptions.Controls.Add(this.tabPageGeneral);
             this.tabOptions.Controls.Add(this.tabPageAudio);
             this.tabOptions.Controls.Add(this.tabPageVideo);
@@ -596,7 +597,7 @@
             this.numericCab2DStretch.Size = new System.Drawing.Size(54, 20);
             this.numericCab2DStretch.TabIndex = 12;
             this.toolTip1.SetToolTip(this.numericCab2DStretch, "0 to clip cab view, 100 to stretch it. For cab views that match the display, use " +
-                    "100.");
+        "100.");
             // 
             // labelCab2DStretch
             // 
@@ -813,7 +814,7 @@
             this.buttonExport.TabIndex = 4;
             this.buttonExport.Text = "Export";
             this.toolTip1.SetToolTip(this.buttonExport, "Generate a listing of your keyboard assignments.  \r\nThe output is placed on your " +
-                    "desktop.");
+        "desktop.");
             this.buttonExport.UseVisualStyleBackColor = true;
             this.buttonExport.Click += new System.EventHandler(this.buttonExport_Click);
             // 
@@ -843,9 +844,9 @@
             // 
             // panelKeys
             // 
-            this.panelKeys.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.panelKeys.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.panelKeys.AutoScroll = true;
             this.panelKeys.Location = new System.Drawing.Point(6, 6);
             this.panelKeys.Name = "panelKeys";
@@ -854,6 +855,7 @@
             // 
             // tabPageExperimental
             // 
+            this.tabPageExperimental.Controls.Add(this.checkBoxCircularSpeedGauge);
             this.tabPageExperimental.Controls.Add(this.checkBoxModelInstancing);
             this.tabPageExperimental.Controls.Add(this.checkUseLargeAddressAware);
             this.tabPageExperimental.Controls.Add(this.checkFastFullScreenAltTab);
@@ -1238,7 +1240,7 @@
             this.label18.Size = new System.Drawing.Size(368, 26);
             this.label18.TabIndex = 0;
             this.label18.Text = "Use DataLogger to record your simulation data (in-game command: F12).\r\nPlease rem" +
-                "ember that the size of the dump file grows with the simulation time!";
+    "ember that the size of the dump file grows with the simulation time!";
             // 
             // checkDataLogMisc
             // 
@@ -1379,6 +1381,16 @@
             this.checkDataLogTrainSpeed.TabIndex = 13;
             this.checkDataLogTrainSpeed.Text = "Log train speed";
             this.checkDataLogTrainSpeed.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxCircularSpeedGauge
+            // 
+            this.checkBoxCircularSpeedGauge.AutoSize = true;
+            this.checkBoxCircularSpeedGauge.Location = new System.Drawing.Point(225, 217);
+            this.checkBoxCircularSpeedGauge.Name = "checkBoxCircularSpeedGauge";
+            this.checkBoxCircularSpeedGauge.Size = new System.Drawing.Size(183, 17);
+            this.checkBoxCircularSpeedGauge.TabIndex = 30;
+            this.checkBoxCircularSpeedGauge.Text = "Use ETCS Circular Speed Gauge";
+            this.checkBoxCircularSpeedGauge.UseVisualStyleBackColor = true;
             // 
             // OptionsForm
             // 
@@ -1526,5 +1538,6 @@
         private System.Windows.Forms.CheckBox checkBoxVerticalSync;
         private System.Windows.Forms.ComboBox comboBoxPressureUnit;
         private System.Windows.Forms.Label labelPressureUnit;
+        private System.Windows.Forms.CheckBox checkBoxCircularSpeedGauge;
     }
 }
