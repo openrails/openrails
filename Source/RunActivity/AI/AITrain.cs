@@ -254,7 +254,7 @@ namespace ORTS
         {
 
 #if DEBUG_CHECKTRAIN
-            if (Number == 873)
+            if (Number == 2043)
             {
                 CheckTrain = true;
             }
@@ -279,7 +279,9 @@ namespace ORTS
                         newStop.DepartTime = StartTime.Value;
                         newStop.arrivalDT = new DateTime((long)(StartTime.Value * Math.Pow(10, 7)));
                         newStop.departureDT = new DateTime((long)(StartTime.Value * Math.Pow(10, 7)));
-                        StationStops.Add(newStop);
+                        newStop.RouteIndex = lastSubpath.GetRouteIndex(newStop.TCSectionIndex, 0);
+                        newStop.SubrouteIndex = TCRoute.TCRouteSubpaths.Count - 1;
+                        if (newStop.RouteIndex >= 0) StationStops.Add(newStop); // do not set stop if platform is not on route
                     }
                 }
             }
@@ -572,7 +574,7 @@ namespace ORTS
         public void AIUpdate(float elapsedClockSeconds, double clockTime, bool preUpdate)
         {
 #if DEBUG_CHECKTRAIN
-            if (Number == 873)
+            if (Number == 2043)
             {
                 CheckTrain = true;
             }
@@ -1971,7 +1973,7 @@ namespace ORTS
 
             else if (nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.END_OF_AUTHORITY)
             {
-                nextActionInfo.ActivateDistanceM = DistanceToEndNodeAuthorityM[0];
+                nextActionInfo.ActivateDistanceM = DistanceToEndNodeAuthorityM[0] + DistanceTravelledM;
                 if (EndAuthorityType[0] == END_AUTHORITY.MAX_DISTANCE)
                 {
                     clearAction = true;

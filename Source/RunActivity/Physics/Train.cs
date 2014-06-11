@@ -13726,11 +13726,11 @@ namespace ORTS
 
                             if (thisElement.Direction == thisRoute[preloopindex].Direction)
                             {
-                                loopindex--;
+                                loopindex++;
                             }
                             else
                             {
-                                loopindex++;
+                                loopindex--;
                             }
 
                             if (loopindex >= 0 && loopindex <= (thisRoute.Count - 1))
@@ -13758,7 +13758,7 @@ namespace ORTS
                     List<int> invalids = new List<int>();
                     for (int iLoop = loopList[iRoute].Count - 1; iLoop >= 1; iLoop--)
                     {
-                        if (loopList[iRoute][iLoop][1] > loopList[iRoute][iLoop - 1][0])
+                        if (loopList[iRoute][iLoop][1] > loopList[iRoute][iLoop - 1][0] && loopList[iRoute][iLoop][0] < loopList[iRoute][iLoop - 1][1])
                         {
                             invalids.Add(iLoop);
                         }
@@ -14029,7 +14029,7 @@ namespace ORTS
                 {
                     PlatformDetails actPlatform = orgSignals.PlatformDetailsList[platformRef];
 
-                    string stationName = actPlatform.Name.ToLower();
+                    string stationName = actPlatform.Name.ToLower().Trim();
 
                     if (!StationXRef.ContainsKey(stationName))
                     {

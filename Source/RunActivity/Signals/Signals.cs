@@ -8596,7 +8596,7 @@ namespace ORTS
             // reserve partial sections if signal clears on occupied track or permission is granted
 
                 else if ((signalState > MstsSignalAspect.STOP || hasPermission == Permission.Granted) &&
-                         (internalBlockState != InternalBlockstate.Reserved && internalBlockState > InternalBlockstate.ReservedOther))
+                         (internalBlockState != InternalBlockstate.Reserved && internalBlockState < InternalBlockstate.ReservedOther))
                 {
 
                     // reserve upto available section
@@ -9414,7 +9414,7 @@ namespace ORTS
                 if (!String.IsNullOrEmpty(dumpfile))
                 {
                     var sob = new StringBuilder();
-                    sob.AppendFormat("APPROACH CONTROL : Train {0} : First signal is not this signal but {1}",
+                    sob.AppendFormat("APPROACH CONTROL : Train {0} : First signal is not this signal but {1} \n",
                         enabledTrain.Train.Number, enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex].thisRef);
                     File.AppendAllText(dumpfile, sob.ToString());
                 }
@@ -9436,7 +9436,7 @@ namespace ORTS
                 if (!String.IsNullOrEmpty(dumpfile))
                 {
                     var sob = new StringBuilder();
-                    sob.AppendFormat("APPROACH CONTROL : Train {0} at distance {1} (required {2}), clear allowed",
+                    sob.AppendFormat("APPROACH CONTROL : Train {0} at distance {1} (required {2}), clear allowed \n",
                         enabledTrain.Train.Number, enabledTrain.Train.distanceToSignal, reqPositionM);
                     File.AppendAllText(dumpfile, sob.ToString());
                 }
@@ -9449,7 +9449,7 @@ namespace ORTS
                 if (!String.IsNullOrEmpty(dumpfile))
                 {
                     var sob = new StringBuilder();
-                    sob.AppendFormat("APPROACH CONTROL : Train {0} at distance {1} (required {2}), clear not allowed",
+                    sob.AppendFormat("APPROACH CONTROL : Train {0} at distance {1} (required {2}), clear not allowed \n",
                         enabledTrain.Train.Number, enabledTrain.Train.distanceToSignal, reqPositionM);
                     File.AppendAllText(dumpfile, sob.ToString());
                 }
@@ -9483,7 +9483,7 @@ namespace ORTS
                 if (!String.IsNullOrEmpty(dumpfile))
                 {
                     var sob = new StringBuilder();
-                    sob.AppendFormat("APPROACH CONTROL : Train {0} : First signal is not this signal but {1}",
+                    sob.AppendFormat("APPROACH CONTROL : Train {0} : First signal is not this signal but {1} \n",
                         enabledTrain.Train.Number, enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex].thisRef);
                     File.AppendAllText(dumpfile, sob.ToString());
                 }
@@ -9523,7 +9523,7 @@ namespace ORTS
                     if (!String.IsNullOrEmpty(dumpfile))
                     {
                         var sob = new StringBuilder();
-                        sob.AppendFormat("APPROACH CONTROL : Train {0} at distance {1} (required {2}) and speed {3} (required {4}), clear allowed",
+                        sob.AppendFormat("APPROACH CONTROL : Train {0} at distance {1} (required {2}) and speed {3} (required {4}), clear allowed \n",
                             enabledTrain.Train.Number, enabledTrain.Train.distanceToSignal, reqPositionM, enabledTrain.Train.SpeedMpS, reqSpeedMpS);
                         File.AppendAllText(dumpfile, sob.ToString());
                     }
@@ -9536,7 +9536,7 @@ namespace ORTS
                     if (!String.IsNullOrEmpty(dumpfile))
                     {
                         var sob = new StringBuilder();
-                        sob.AppendFormat("APPROACH CONTROL : Train {0} at distance {1} (required {2}) and speed {3} (required {4}), clear not allowed",
+                        sob.AppendFormat("APPROACH CONTROL : Train {0} at distance {1} (required {2}) and speed {3} (required {4}), clear not allowed \n",
                             enabledTrain.Train.Number, enabledTrain.Train.distanceToSignal, reqPositionM, enabledTrain.Train.SpeedMpS, reqSpeedMpS);
                         File.AppendAllText(dumpfile, sob.ToString());
                     }
@@ -9549,7 +9549,7 @@ namespace ORTS
                 if (!String.IsNullOrEmpty(dumpfile))
                 {
                     var sob = new StringBuilder();
-                    sob.AppendFormat("APPROACH CONTROL : Train {0} at distance {1} (required {2}), clear not allowed",
+                    sob.AppendFormat("APPROACH CONTROL : Train {0} at distance {1} (required {2}), clear not allowed \n",
                         enabledTrain.Train.Number, enabledTrain.Train.distanceToSignal, reqPositionM);
                     File.AppendAllText(dumpfile, sob.ToString());
                 }
@@ -9570,7 +9570,7 @@ namespace ORTS
             {
                 if (!String.IsNullOrEmpty(dumpfile))
                 {
-                    File.AppendAllText(dumpfile, "CALL ON : no train approaching");
+                    File.AppendAllText(dumpfile, "CALL ON : no train approaching \n");
                 }
 
                 return (false);
@@ -9583,7 +9583,7 @@ namespace ORTS
                 if (!String.IsNullOrEmpty(dumpfile))
                 {
                     var sob = new StringBuilder();
-                    sob.AppendFormat("CALL ON : Train {0} : First signal is not this signal but {1}",
+                    sob.AppendFormat("CALL ON : Train {0} : First signal is not this signal but {1} \n",
                         enabledTrain.Train.Name, enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex].thisRef);
                     File.AppendAllText(dumpfile, sob.ToString());
                 }
@@ -9601,7 +9601,7 @@ namespace ORTS
                     if (!String.IsNullOrEmpty(dumpfile))
                     {
                         var sob = new StringBuilder();
-                        sob.AppendFormat("CALL ON : Train {0} : valid - train has Stable_CallOn set", enabledTrain.Train.Name);
+                        sob.AppendFormat("CALL ON : Train {0} : valid - train has Stable_CallOn set \n", enabledTrain.Train.Name);
                         File.AppendAllText(dumpfile, sob.ToString());
                     }
                     return (true);
@@ -9622,7 +9622,7 @@ namespace ORTS
                             if (!String.IsNullOrEmpty(dumpfile))
                             {
                                 var sob = new StringBuilder();
-                                sob.AppendFormat("CALL ON : Train {0} : valid - train is to attach to {1}",
+                                sob.AppendFormat("CALL ON : Train {0} : valid - train is to attach to {1} \n",
                                     enabledTrain.Train.Name, occTrain.Train.Name);
                                 File.AppendAllText(dumpfile, sob.ToString());
                             }
@@ -9644,7 +9644,7 @@ namespace ORTS
                                 if (!String.IsNullOrEmpty(dumpfile))
                                 {
                                     var sob = new StringBuilder();
-                                    sob.AppendFormat("CALL ON : Train {0} : valid - access to platform {1}",
+                                    sob.AppendFormat("CALL ON : Train {0} : valid - access to platform {1} \n",
                                         enabledTrain.Train.Name, thisPlatform.Name);
                                     File.AppendAllText(dumpfile, sob.ToString());
                                 }
@@ -9655,7 +9655,7 @@ namespace ORTS
                         if (!String.IsNullOrEmpty(dumpfile))
                         {
                             var sob = new StringBuilder();
-                            sob.AppendFormat("CALL ON : Train {0} : route is into platform {1}",
+                            sob.AppendFormat("CALL ON : Train {0} : route is into platform {1} \n",
                                 enabledTrain.Train.Name, thisPlatform.Name);
                             File.AppendAllText(dumpfile, sob.ToString());
                         }
@@ -9669,7 +9669,7 @@ namespace ORTS
                     if (!String.IsNullOrEmpty(dumpfile))
                     {
                         var sob = new StringBuilder();
-                        sob.AppendFormat("CALL ON : Train {0} : valid - route does not lead into platform", enabledTrain.Train.Name);
+                        sob.AppendFormat("CALL ON : Train {0} : valid - route does not lead into platform \n", enabledTrain.Train.Name);
                         File.AppendAllText(dumpfile, sob.ToString());
                     }
                     return (true);
@@ -9679,7 +9679,7 @@ namespace ORTS
             if (!String.IsNullOrEmpty(dumpfile))
             {
                 var sob = new StringBuilder();
-                sob.AppendFormat("CALL ON : Train {0} : not valid", enabledTrain.Train.Name);
+                sob.AppendFormat("CALL ON : Train {0} : not valid \n", enabledTrain.Train.Name);
                 File.AppendAllText(dumpfile, sob.ToString());
             }
             return (false);

@@ -1181,7 +1181,7 @@ namespace ORTS
 
                     if (!trainFound)
                     {
-                        Trace.TraceWarning("Train :  {0} : Dispose detailt : formed train {1} not found",
+                        Trace.TraceWarning("Train :  {0} : Dispose details : formed train {1} not found",
                             AITrain.Name, otherTrainName[1]);
                     }
 
