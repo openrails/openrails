@@ -51,6 +51,7 @@ using MSTS.Formats;
 using MSTS.Parsers;
 using ORTS.Common;
 using ORTS.MultiPlayer;
+using ORTS.Scripting.Api;
 using ORTS.Viewer3D;
 using ORTS.Viewer3D.Popups;
 using GNU.Gettext;
@@ -1307,8 +1308,20 @@ namespace ORTS
 
         public void SignalEvent(Event evt)
         {
-            foreach (var car in Cars)
+            foreach (TrainCar car in Cars)
                 car.SignalEvent(evt);
+        }
+
+        public void SignalEvent(PowerSupplyEvent evt)
+        {
+            foreach (TrainCar car in Cars)
+                car.SignalEvent(evt);
+        }
+
+        public void SignalEvent(PowerSupplyEvent evt, int id)
+        {
+            foreach (TrainCar car in Cars)
+                car.SignalEvent(evt, id);
         }
 
 

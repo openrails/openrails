@@ -27,6 +27,7 @@ using MSTS.Formats;
 using MSTS.Parsers;
 using ORTS;
 using ORTS.Common;
+using ORTS.Scripting.Api;
 
 namespace ORTS.MultiPlayer
 {
@@ -363,11 +364,11 @@ namespace ORTS.MultiPlayer
 			seconds = Program.Simulator.ClockTime; season = (int)Program.Simulator.Season; weather = (int)Program.Simulator.Weather;
 			pantofirst = pantosecond = 0;
 			MSTSWagon w = (MSTSWagon)Program.Simulator.PlayerLocomotive;
-			if (w != null)
-			{
-				pantofirst = w.Pan1Up == true ? 1 : 0;
-				pantosecond = w.Pan2Up == true ? 1 : 0;
-			}
+            if (w != null)
+            {
+                pantofirst = w.Pantographs[1].CommandUp ? 1 : 0;
+                pantosecond = w.Pantographs[2].CommandUp ? 1 : 0;
+            }
 
 			cars = new string[t.Cars.Count];
 			ids = new string[t.Cars.Count];
@@ -1810,29 +1811,19 @@ namespace ORTS.MultiPlayer
 				t.SignalEvent(EventState == 1 ? Event.HornOn : Event.HornOff);
 				MPManager.BroadCast(this.ToString()); //if the server, will broadcast
 			}
-			else if (EventName == "PANTO2")
-			{
-				MSTSWagon w = (MSTSWagon)t.Cars[0];
-				if (w == null) return;
+            else if (EventName == "PANTO1")
+            {
+                t.SignalEvent((EventState == 1 ? PowerSupplyEvent.RaisePantograph : PowerSupplyEvent.LowerPantograph), 1);
 
-				w.Pan2Up = (EventState == 1 ? true : false);
+                MPManager.BroadCast(this.ToString()); //if the server, will broadcast
+            }
+            else if (EventName == "PANTO2")
+            {
+                t.SignalEvent((EventState == 1 ? PowerSupplyEvent.RaisePantograph : PowerSupplyEvent.LowerPantograph), 1);
 
-				foreach (TrainCar car in t.Cars)
-					if (car is MSTSWagon) ((MSTSWagon)car).Pan2Up = w.Pan2Up;
-				MPManager.BroadCast(this.ToString()); //if the server, will broadcast
-			}
-			else if (EventName == "PANTO1")
-			{
-				MSTSWagon w = (MSTSWagon)t.Cars[0];
-				if (w == null) return;
-
-				w.Pan1Up = (EventState == 1 ? true : false);
-
-				foreach (TrainCar car in t.Cars)
-					if (car is MSTSWagon) ((MSTSWagon)car).Pan1Up = w.Pan1Up;
-				MPManager.BroadCast(this.ToString()); //if the server, will broadcast
-			}
-			else if (EventName == "BELL")
+                MPManager.BroadCast(this.ToString()); //if the server, will broadcast
+            }
+            else if (EventName == "BELL")
 			{
                 if (t.LeadLocomotive != null) t.LeadLocomotive.SignalEvent(EventState == 0 ? Event.BellOff : Event.BellOn);
 				MPManager.BroadCast(this.ToString()); //if the server, will broadcast

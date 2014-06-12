@@ -291,8 +291,8 @@ namespace ORTS.Viewer3D
                         }
                         if (Viewer.PlayerLocomotive.GetType() == typeof(MSTSElectricLocomotive))
                         {
-                            Logger.Data((Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pan1Up.ToString());
-                            Logger.Data((Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pan2Up.ToString());
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pantographs[1].CommandUp.ToString());
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pantographs[2].CommandUp.ToString());
                             Logger.Data("null");
                             Logger.Data("null");
                             Logger.Data("null");

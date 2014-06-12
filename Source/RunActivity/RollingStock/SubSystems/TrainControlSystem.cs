@@ -269,16 +269,9 @@ namespace ORTS
             Script.Deceleration = (arg1, arg2, arg3) => Deceleration(arg1, arg2, arg3);
             Script.SetPantographsDown = () => 
             {
-                if (Locomotive.Pan1Up)
+                if (Locomotive.Pantographs.State == PantographState.Up)
                 {
-                    Locomotive.SignalEvent(Event.Pantograph1Down);
-                    Locomotive.Train.SignalEvent(Event.Pantograph1Down);
-                }
-
-                if (Locomotive.Pan2Up)
-                {
-                    Locomotive.SignalEvent(Event.Pantograph2Down);
-                    Locomotive.Train.SignalEvent(Event.Pantograph2Down);
+                    Locomotive.Train.SignalEvent(PowerSupplyEvent.LowerPantograph);
                 }
             };
             Script.GetBoolParameter = (arg1, arg2, arg3) => LoadParameter<bool>(arg1, arg2, arg3);

@@ -19,6 +19,7 @@
 
 using System;
 using System.Diagnostics;   // Used by Trace.Warnings
+using ORTS.Scripting.Api;
 using ORTS.Viewer3D.Popups;
 using ORTS.Viewer3D.RollingStock;
 
@@ -228,11 +229,10 @@ namespace ORTS.Viewer3D
         }
 
         public override void Redo() {
-            if (Receiver == null) return;//no receiver of this panto
-            Receiver.SetPantographs( item, ToState );
-            if( item == 1 ) ((MSTSWagon)Receiver).ToggleFirstPantograph();
-            if( item == 2 ) ((MSTSWagon)Receiver).ToggleSecondPantograph();
-            // Report();
+            if (Receiver != null && Receiver.Train != null)
+            {
+                Receiver.Train.SignalEvent((ToState ? PowerSupplyEvent.RaisePantograph : PowerSupplyEvent.LowerPantograph), item);
+            }
         }
 
         public override string ToString() {

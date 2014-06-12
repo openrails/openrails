@@ -17,10 +17,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MSTS;
 using System.IO;
+using System.Linq;
+using ORTS.Scripting.Api;
 
 namespace ORTS.MultiPlayer
 {
@@ -193,11 +192,11 @@ namespace ORTS.MultiPlayer
 				train.Cars.Add(car);
 				car.Train = train;
 				MSTSWagon w = (MSTSWagon)car;
-				if (w != null)
-				{
-					w.Pan1Up = player.pantofirst == 1 ? true : false;
-					w.Pan2Up = player.pantosecond == 1 ? true : false;
-				}
+                if (w != null)
+                {
+                    w.SignalEvent((player.pantofirst == 1 ? PowerSupplyEvent.RaisePantograph : PowerSupplyEvent.LowerPantograph), 1);
+                    w.SignalEvent((player.pantosecond == 1 ? PowerSupplyEvent.RaisePantograph : PowerSupplyEvent.LowerPantograph), 2);
+                }
 
 			}// for each rail car
 

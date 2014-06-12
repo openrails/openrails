@@ -245,10 +245,10 @@ namespace ORTS
                 if (cabView != null)
                 {
                     CabViewList.Add(cabView);
-                    var reverseCVFFileName = Path.Combine(Path.GetDirectoryName(CVFFileName),
-                        // Some CVF paths begin with "..\..\"
-                        // so Path.GetDirectoryName() is needed.
-                                                            Path.GetFileNameWithoutExtension(CVFFileName) + "_rv.cvf");
+                    var reverseCVFFileName = Path.Combine(
+                        Path.GetDirectoryName(CVFFileName), // Some CVF paths begin with "..\..\", so Path.GetDirectoryName() is needed.
+                        Path.GetFileNameWithoutExtension(CVFFileName) + "_rv.cvf"
+                    );
                     {
                         cabView = BuildCabView(WagFilePath, reverseCVFFileName, CabViewType.Rear);
                         if (cabView != null)
@@ -942,9 +942,7 @@ namespace ORTS
                 case Train.TRAINTYPE.AI:
                     if (!PowerOn)
                     {
-                        PowerOn = true;
-                        Pan = true;
-                        Pan1Up = true;
+                        SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
                     }
                     //LimitMotiveForce(elapsedClockSeconds);    //calls the advanced physics
                     LimitMotiveForce();                         //let's call the basic physics instead for now

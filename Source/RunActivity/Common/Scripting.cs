@@ -698,4 +698,32 @@ namespace ORTS.Scripting.Api
     }
 
     #endregion
+
+    #region PowerSupply
+
+    public enum PowerSupplyEvent
+    {
+        RaisePantograph,
+        LowerPantograph,
+        CloseCircuitBreaker,
+        OpenCircuitBreaker,
+        GiveCircuitBreakerClosingAuthority,
+        RemoveCircuitBreakerClosingAuthority,
+        StartEngine,
+        StopEngine,
+        ClosePowerContactor,
+        OpenPowerContactor,
+        GivePowerContactorClosingAuthority,
+        RemovePowerContactorClosingAuthority
+    }
+
+    public enum PantographState
+    {
+        Down,
+        Lowering,
+        Raising,
+        Up
+    }
+
+    #endregion
 }

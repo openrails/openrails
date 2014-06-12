@@ -38,6 +38,7 @@ using Microsoft.Xna.Framework;
 using MSTS.Formats;
 using MSTS.Parsers;
 using ORTS.Common;
+using ORTS.Scripting.Api;
 using ORTS.Viewer3D;
 
 namespace ORTS
@@ -54,9 +55,7 @@ namespace ORTS
     
     public class MSTSWagon: TrainCar
     {
-        public bool Pan;     // false = down; some wagon has pantograph
-        public bool Pan1Up;  // if the forwards pantograph is up
-        public bool Pan2Up;  // if the backwards pantograph is up
+        public Pantographs Pantographs;
         public bool DoorLeftOpen;
         public bool DoorRightOpen;
         public bool MirrorOpen;
@@ -144,6 +143,8 @@ namespace ORTS
         public MSTSWagon(Simulator simulator, string wagFilePath)
             : base(simulator, wagFilePath)
         {
+            Pantographs = new Pantographs(this);
+
             if (CarManager.LoadedCars.ContainsKey(wagFilePath))
             {
                 InitializeFromCopy(CarManager.LoadedCars[wagFilePath]);
@@ -167,18 +168,28 @@ namespace ORTS
             if (File.Exists(orFile))
                 wagFilePath = orFile;
             using (STFReader stf = new STFReader(wagFilePath, true))
+            {
                 while (!stf.Eof)
                 {
                     stf.ReadItem();
                     Parse(stf.Tree.ToLower(), stf);
                 }
-             if (BrakeSystem == null)
-                    BrakeSystem = new AirSinglePipe(this);
-             Initialize();
+            }
+            
+            if (BrakeSystem == null)
+                BrakeSystem = new AirSinglePipe(this);
+
+            // Adding two pantographs by default
+            Pantographs.Add(new Pantograph(this));
+            Pantographs.Add(new Pantograph(this));
+            
+            Initialize();
         }
 
         public override void Initialize()
         {
+            Pantographs.Initialize();
+
             base.Initialize();
         }
 
@@ -407,11 +418,13 @@ namespace ORTS
             foreach (MSTSCoupling coupler in copy.Couplers)
                 Couplers.Add(coupler);
 
-            
+            Pantographs.Copy(copy.Pantographs);
+
             MSTSBrakeSystem.InitializeFromCopy(copy.BrakeSystem);
             base.Initialize();
         }
-		private void ParseWagonInside(STFReader stf)
+
+        private void ParseWagonInside(STFReader stf)
 		{
 			PassengerViewPoint passengerViewPoint = new PassengerViewPoint();
 			stf.MustMatch("(");
@@ -509,7 +522,7 @@ namespace ORTS
             base.Restore(inf);
         }
 
-        public override void Update( float elapsedClockSeconds )
+        public override void Update(float elapsedClockSeconds)
         {
             base.Update(elapsedClockSeconds);
 
@@ -710,6 +723,8 @@ namespace ORTS
                     CouplerOverloaded = false;
             }
 
+            Pantographs.Update(elapsedClockSeconds);
+
             MSTSBrakeSystem.Update(elapsedClockSeconds);
         }
 
@@ -717,10 +732,19 @@ namespace ORTS
         {
             switch (evt)
             {
-                case Event.Pantograph1Up: { Pan1Up = true; Pan = Pan1Up || Pan2Up; break; }
-                case Event.Pantograph1Down: { Pan1Up = false; Pan = Pan1Up || Pan2Up; break; }
-                case Event.Pantograph2Up: { Pan2Up = true; Pan = Pan1Up || Pan2Up; break; }
-                case Event.Pantograph2Down: { Pan2Up = false; Pan = Pan1Up || Pan2Up; break; }
+                // Compatibility layer for MSTS events
+                case Event.Pantograph1Up:
+                    SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
+                    break;
+                case Event.Pantograph1Down:
+                    SignalEvent(PowerSupplyEvent.LowerPantograph, 1);
+                    break;
+                case Event.Pantograph2Up:
+                    SignalEvent(PowerSupplyEvent.RaisePantograph, 2);
+                    break;
+                case Event.Pantograph2Down:
+                    SignalEvent(PowerSupplyEvent.LowerPantograph, 2);
+                    break;
             }
 
             // TODO: This should be moved to TrainCar probably.
@@ -730,54 +754,45 @@ namespace ORTS
             base.SignalEvent(evt);
         }
 
-        // <CJComment> Expected pantograph handling to be in MSTSElectricLocomotive.cs,
-        // but guess that some trains have pantographs on non-motorised cars </CJComment>
-        public void ToggleFirstPantograph()
+        public override void SignalEvent(PowerSupplyEvent evt)
         {
-    		Pan1Up = !Pan1Up;
-            if (Simulator.PlayerLocomotive == this) //inform everyone else in the train
+            if (Simulator.PlayerLocomotive == this || AcceptMUSignals)
             {
-                foreach (var car in Train.Cars)
+                switch (evt)
                 {
-                    var mstsWagon = car as MSTSWagon;
-                    if (car != this && mstsWagon != null)
-                    {
-                        if(car.AcceptMUSignals)
-                            mstsWagon.Pan1Up = Pan1Up;
-                    }
+                    case PowerSupplyEvent.RaisePantograph:
+                    case PowerSupplyEvent.LowerPantograph:
+                        if (Pantographs != null)
+                            Pantographs.HandleEvent(evt);
+                        break;
                 }
             }
-            if( Pan1Up ) {
-                SignalEvent(Event.Pantograph1Up);
-            } else {
-                SignalEvent(Event.Pantograph1Down);
-            }
+
+            base.SignalEvent(evt);
         }
 
-        public void ToggleSecondPantograph() {
-            Pan2Up = !Pan2Up;
-            if (Simulator.PlayerLocomotive == this) //inform everyone else in the train
+        public override void SignalEvent(PowerSupplyEvent evt, int id)
+        {
+            if (Simulator.PlayerLocomotive == this || AcceptMUSignals)
             {
-                foreach (var car in Train.Cars)
+                switch (evt)
                 {
-                    var mstsWagon = car as MSTSWagon;
-                    if (car != this && mstsWagon != null)
-                    {
-                        if (car.AcceptMUSignals)
-                            mstsWagon.Pan2Up = Pan2Up;
-                    }
+                    case PowerSupplyEvent.RaisePantograph:
+                    case PowerSupplyEvent.LowerPantograph:
+                        if (Pantographs != null)
+                            Pantographs.HandleEvent(evt, id);
+                        break;
                 }
             }
-            if( Pan2Up ) {
-                SignalEvent(Event.Pantograph2Up);
-            } else {
-                SignalEvent(Event.Pantograph2Down);
-            }
+
+            base.SignalEvent(evt, id);
         }
-        
-        public void ToggleDoorsLeft() {
+
+        public void ToggleDoorsLeft()
+        {
             DoorLeftOpen = !DoorLeftOpen;
-            if( Simulator.PlayerLocomotive == this ) {//inform everyone else in the train
+            if (Simulator.PlayerLocomotive == this)
+            {//inform everyone else in the train
                 foreach (var car in Train.Cars)
                 {
                     var mstsWagon = car as MSTSWagon;
@@ -789,13 +804,15 @@ namespace ORTS
                 }
                 if (DoorLeftOpen) SignalEvent(Event.DoorOpen); // hook for sound trigger
                 else SignalEvent(Event.DoorClose);
-                Simulator.Confirmer.Confirm( CabControl.DoorsLeft, DoorLeftOpen ? CabSetting.On : CabSetting.Off );
+                Simulator.Confirmer.Confirm(CabControl.DoorsLeft, DoorLeftOpen ? CabSetting.On : CabSetting.Off);
             }
         }
 
-        public void ToggleDoorsRight() {
+        public void ToggleDoorsRight()
+        {
             DoorRightOpen = !DoorRightOpen;
-            if( Simulator.PlayerLocomotive == this ) { //inform everyone else in the train
+            if (Simulator.PlayerLocomotive == this)
+            { //inform everyone else in the train
                 foreach (TrainCar car in Train.Cars)
                 {
                     var mstsWagon = car as MSTSWagon;
@@ -807,15 +824,16 @@ namespace ORTS
                 }
                 if (DoorRightOpen) SignalEvent(Event.DoorOpen); // hook for sound trigger
                 else SignalEvent(Event.DoorClose);
-                Simulator.Confirmer.Confirm( CabControl.DoorsRight, DoorRightOpen ? CabSetting.On : CabSetting.Off );
+                Simulator.Confirmer.Confirm(CabControl.DoorsRight, DoorRightOpen ? CabSetting.On : CabSetting.Off);
             }
         }
 
-        public void ToggleMirrors() {
+        public void ToggleMirrors()
+        {
             MirrorOpen = !MirrorOpen;
             if (MirrorOpen) SignalEvent(Event.MirrorOpen); // hook for sound trigger
             else SignalEvent(Event.MirrorClose);
-            Simulator.Confirmer.Confirm( CabControl.Mirror, MirrorOpen ? CabSetting.On : CabSetting.Off );
+            Simulator.Confirmer.Confirm(CabControl.Mirror, MirrorOpen ? CabSetting.On : CabSetting.Off);
         }
 
         public void FindTendersSteamLocomotive()

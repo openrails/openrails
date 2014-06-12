@@ -32,6 +32,7 @@ using System.IO;
 using System.Text;
 using MSTS.Formats;
 using MSTS.Parsers;
+using ORTS.Scripting.Api;
 using ORTS.Viewer3D;  // needed for Confirmation
 
 namespace ORTS
@@ -46,13 +47,6 @@ namespace ORTS
     /// </summary>
     public class MSTSElectricLocomotive: MSTSLocomotive
     {
-
-        public bool PantographFirstUp;
-        public bool PantographSecondUp;
-        public float PantographFirstDelay;
-        public float PantographSecondDelay;
-        
-
         public IIRFilter VoltageFilter;
         public float VoltageV;
 
@@ -85,11 +79,6 @@ namespace ORTS
             //CabSoundFileName = locoCopy.CabSoundFileName;
             //CVFFileName = locoCopy.CVFFileName;
             MSTSElectricLocomotive locoCopy = (MSTSElectricLocomotive) copy;
-            PantographFirstUp = locoCopy.PantographFirstUp;
-            PantographSecondUp = locoCopy.PantographSecondUp;
-            PantographFirstDelay = locoCopy.PantographFirstDelay;
-            PantographSecondDelay = locoCopy.PantographSecondDelay;
-            
 
             VoltageFilter = locoCopy.VoltageFilter;
             VoltageV = locoCopy.VoltageV;
@@ -103,13 +92,9 @@ namespace ORTS
         /// </summary>
         public override void Save(BinaryWriter outf)
         {
-            outf.Write(PantographFirstUp);
-            outf.Write(PantographSecondUp);
+            outf.Write(Pantographs[1].CommandUp);
+            outf.Write(Pantographs[2].CommandUp);
             outf.Write(PowerOn);
-
-            outf.Write(Pan);
-            outf.Write(Pan1Up);
-            outf.Write(Pan2Up);
 
             base.Save(outf);
         }
@@ -120,14 +105,11 @@ namespace ORTS
         /// </summary>
         public override void Restore(BinaryReader inf)
         {
-            PantographFirstUp = inf.ReadBoolean();
-            PantographSecondUp = inf.ReadBoolean();
+            SignalEvent((inf.ReadBoolean() ? PowerSupplyEvent.RaisePantograph : PowerSupplyEvent.LowerPantograph), 1);
+            SignalEvent((inf.ReadBoolean() ? PowerSupplyEvent.RaisePantograph : PowerSupplyEvent.LowerPantograph), 2);
             PowerOn = inf.ReadBoolean();
             if (PowerOn)
                 SignalEvent(Event.EnginePowerOn);
-            Pan = inf.ReadBoolean();
-            Pan1Up = inf.ReadBoolean();
-            Pan2Up = inf.ReadBoolean();
             base.Restore(inf);
         }
 
@@ -147,51 +129,21 @@ namespace ORTS
 
         public override void Update(float elapsedClockSeconds)
         {
+            bool powerOn = Pantographs.State == PantographState.Up
+                && (Simulator.TRK.Tr_RouteFile.Electrified || Simulator.Settings.OverrideNonElectrifiedRoutes);
 
-            if (!(PantographFirstUp || PantographSecondUp))
+            if (powerOn && !PowerOn)
             {
-                if (PowerOn)
-                    SignalEvent(Event.EnginePowerOff);
-                PowerOn = false;
+                SignalEvent(Event.EnginePowerOn);
+            }
+            else if (!powerOn && PowerOn)
+            {
+                SignalEvent(Event.EnginePowerOff);
                 CompressorIsOn = false;
-                if ((PantographFirstDelay -= elapsedClockSeconds) < 0.0f) PantographFirstDelay = 0.0f;
-                if ((PantographSecondDelay -= elapsedClockSeconds) < 0.0f) PantographSecondDelay = 0.0f;
             }
-            else
-            {
-                if (PantographFirstUp)
-                {
-                    if ((PantographFirstDelay -= elapsedClockSeconds) < 0.0f)
-                    {
-                        if ((Simulator.TRK.Tr_RouteFile.Electrified)||(Simulator.Settings.OverrideNonElectrifiedRoutes))
-                        {
-                            if (!PowerOn)
-                                SignalEvent(Event.EnginePowerOn);
-                            PowerOn = true;
-                        }
-                        PantographFirstDelay = 0.0f;
-                    }
-                }
-                else
-                    if ((PantographFirstDelay -= elapsedClockSeconds) < 0.0f) PantographFirstDelay = 0.0f;
 
-                if (PantographSecondUp)
-                {
-                    if ((PantographSecondDelay -= elapsedClockSeconds) < 0.0f)
-                    {
-                        if ((Simulator.TRK.Tr_RouteFile.Electrified)||(Simulator.Settings.OverrideNonElectrifiedRoutes))
-                        {
-                            if (!PowerOn)
-                                SignalEvent(Event.EnginePowerOn);
-                            PowerOn = true;
-                        }
-                        PantographSecondDelay = 0.0f;
-                    }
-                }
-                else
-                    if ((PantographSecondDelay -= elapsedClockSeconds) < 0.0f) PantographSecondDelay = 0.0f;
-            }
- 
+            PowerOn = powerOn;
+
             if (PowerOn)
                 VoltageV = VoltageFilter.Filter((float)Program.Simulator.TRK.Tr_RouteFile.MaxLineVoltage, elapsedClockSeconds);
             else
@@ -223,74 +175,66 @@ namespace ORTS
         /// </summary>
         public override void SignalEvent(Event evt)
         {
-            switch (evt)
+            base.SignalEvent(evt);
+        }
+
+        public override void SignalEvent(PowerSupplyEvent evt)
+        {
+            if (Simulator.Confirmer != null && Simulator.PlayerLocomotive == this)
             {
-                case Event.Pantograph1Up: { SetPantographFirst(true); break; }
-                case Event.Pantograph1Down: { SetPantographFirst(false); break; }
-                case Event.Pantograph2Up: { SetPantographSecond(true); break; }
-                case Event.Pantograph2Down: { SetPantographSecond(false); break; }
+                switch (evt)
+                {
+                    case PowerSupplyEvent.RaisePantograph:
+                        Simulator.Confirmer.Confirm(CabControl.Pantograph1, CabSetting.On);
+                        Simulator.Confirmer.Confirm(CabControl.Pantograph2, CabSetting.On);
+                        break;
+
+                    case PowerSupplyEvent.LowerPantograph:
+                        Simulator.Confirmer.Confirm(CabControl.Pantograph1, CabSetting.Off);
+                        Simulator.Confirmer.Confirm(CabControl.Pantograph2, CabSetting.Off);
+                        break;
+                }
             }
 
             base.SignalEvent(evt);
         }
 
-        /// <summary>
-        /// Raise or lower the first pantograph on all locomotives in the train
-        /// </summary>
-        /// <param name="raise"></param>
-        public void SetPantographs( int item, bool raise ) {
-            foreach (var car in Train.Cars)
+        public override void SignalEvent(PowerSupplyEvent evt, int id)
+        {
+            if (Simulator.Confirmer != null && Simulator.PlayerLocomotive == this)
             {
-                var mstsElectricLocomotive = car as MSTSElectricLocomotive;
-                if (mstsElectricLocomotive != null)
+                switch (evt)
                 {
-                    if (mstsElectricLocomotive.AcceptMUSignals)
-                    {
-                        if (item == 1) mstsElectricLocomotive.SetPantographFirst(raise);
-                        if (item == 2) mstsElectricLocomotive.SetPantographSecond(raise);
-                    }
+                    case PowerSupplyEvent.RaisePantograph:
+                        if (id == 1) Simulator.Confirmer.Confirm(CabControl.Pantograph1, CabSetting.On);
+                        if (id == 2) Simulator.Confirmer.Confirm(CabControl.Pantograph2, CabSetting.On);
+
+                        if (!Simulator.TRK.Tr_RouteFile.Electrified)
+                            Simulator.Confirmer.Warning(Viewer.Catalog.GetString("No power line!"));
+                        if (Simulator.Settings.OverrideNonElectrifiedRoutes)
+                            Simulator.Confirmer.Information(Viewer.Catalog.GetString("Power line condition overridden."));
+                        break;
+
+                    case PowerSupplyEvent.LowerPantograph:
+                        if (id == 1) Simulator.Confirmer.Confirm(CabControl.Pantograph1, CabSetting.Off);
+                        if (id == 2) Simulator.Confirmer.Confirm(CabControl.Pantograph2, CabSetting.Off);
+                        break;
                 }
             }
-            if( item == 1 ) this.Simulator.Confirmer.Confirm( CabControl.Pantograph1, raise == true ? CabSetting.On : CabSetting.Off );
-            if( item == 2 ) this.Simulator.Confirmer.Confirm( CabControl.Pantograph2, raise == true ? CabSetting.On : CabSetting.Off );
-        }
 
-        public void SetPantographFirst( bool up)
-        {
-            if (PantographFirstUp != up)
-                PantographFirstDelay += PowerOnDelayS;
-            PantographFirstUp = up;
-
-            if (Simulator.Confirmer == null)
-                return;
-
-            if ((up) && (!Simulator.TRK.Tr_RouteFile.Electrified))
-                Simulator.Confirmer.Warning(Viewer.Catalog.GetString("No power line!"));
-            if (Simulator.Settings.OverrideNonElectrifiedRoutes)
-                Simulator.Confirmer.Information(Viewer.Catalog.GetString("Power line condition overridden."));
-        }
-
-        public void SetPantographSecond( bool up)
-        {
-            if (PantographSecondUp != up)
-                PantographSecondDelay += PowerOnDelayS;
-            PantographSecondUp = up;
-            if((up)&&(!Simulator.TRK.Tr_RouteFile.Electrified))
-                Simulator.Confirmer.Warning(Viewer.Catalog.GetString("No power line!"));
-            if (Simulator.Settings.OverrideNonElectrifiedRoutes)
-                Simulator.Confirmer.Information(Viewer.Catalog.GetString("Power line condition overridden."));
+            base.SignalEvent(evt, id);
         }
 
         public override void SetPower(bool ToState)
         {
-            SetPantographFirst(ToState);
-            if (!ToState)
+            if (Train != null)
             {
-                if (Pan1Up) SignalEvent(Event.Pantograph1Down);
-                if (Pan2Up) SignalEvent(Event.Pantograph2Down);
+                if (!ToState)
+                    Train.SignalEvent(PowerSupplyEvent.LowerPantograph);
+                else
+                    Train.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
             }
-            else
-                SignalEvent(Event.Pantograph1Up);
+
             base.SetPower(ToState);
         }
 
@@ -302,7 +246,7 @@ namespace ORTS
             {
                 case CABViewControlTypes.LINE_VOLTAGE:
                     {
-                        if (Pan)
+                        if (Pantographs.State == PantographState.Up)
                         {
                             //data = (float)Program.Simulator.TRK.Tr_RouteFile.MaxLineVoltage;
                             data = VoltageV;
@@ -316,22 +260,22 @@ namespace ORTS
                 case CABViewControlTypes.PANTOGRAPH:
                 case CABViewControlTypes.PANTO_DISPLAY:
                     {
-                        data = Pan ? 1 : 0;
+                        data = Pantographs[1].State == PantographState.Up ? 1 : 0;
                         break;
                     }
                 case CABViewControlTypes.PANTOGRAPH2:
                     {
-                        data = Pan2Up ? 1 : 0;
+                        data = Pantographs[2].State == PantographState.Up ? 1 : 0;
                         break;
                     }
                 case CABViewControlTypes.PANTOGRAPHS_4:
                 case CABViewControlTypes.PANTOGRAPHS_4C:
                     {
-                        if (Pan1Up && Pan2Up)
+                        if (Pantographs[1].State == PantographState.Up && Pantographs[2].State == PantographState.Up)
                             data = 2;
-                        else if (Pan1Up)
+                        else if (Pantographs[1].State == PantographState.Up)
                             data = 1;
-                        else if (Pan2Up)
+                        else if (Pantographs[2].State == PantographState.Up)
                             data = 3;
                         else
                             data = 0;
@@ -339,11 +283,11 @@ namespace ORTS
                     }
                 case CABViewControlTypes.PANTOGRAPHS_5:
                     {
-                        if (Pan1Up && Pan2Up)
+                        if (Pantographs[1].State == PantographState.Up && Pantographs[2].State == PantographState.Up)
                             data = 0; // TODO: Should be 0 if the previous state was Pan2Up, and 4 if that was Pan1Up
-                        else if (Pan2Up)
+                        else if (Pantographs[2].State == PantographState.Up)
                             data = 1;
-                        else if (Pan1Up)
+                        else if (Pantographs[1].State == PantographState.Up)
                             data = 3;
                         else
                             data = 2;
@@ -361,13 +305,33 @@ namespace ORTS
 
         public override string GetStatus()
         {
-            return String.Format("Electric power = {0}{1}{2}", PantographFirstDelay > 0 || PantographSecondDelay > 0 ? "Switching" : PowerOn ? "On" : "Off", PantographFirstUp ? " 1st up" : "", PantographSecondUp ? " 2nd up" : "");
+            return String.Format(
+                "Electric power = {0}{1}{2}",
+                Pantographs.State == PantographState.Raising || Pantographs.State == PantographState.Lowering ? "Switching" : PowerOn ? "On" : "Off",
+                Pantographs[1].CommandUp ? " 1st up" : "",
+                Pantographs[2].CommandUp ? " 2nd up" : ""
+            );
         }
 
         public override string GetDebugStatus()
         {
             var status = new StringBuilder();
-            status.AppendFormat("Car {0}\t{2} {1}\t{3}\t{4:F0}%\t{5:F0}m/s\t{6:F0}kW\t{7:F0}kN\t{8}\t{9}\tElectric:\t{10}\t{11}\t{12}", UiD, Flipped ? "(flip)" : "", Direction == Direction.Forward ? "Fwd" : Direction == Direction.Reverse ? "Rev" : "N", AcceptMUSignals ? "MU'd" : "Single", ThrottlePercent, SpeedMpS, MotiveForceN * SpeedMpS / 1000, MotiveForceN / 1000, WheelSlip ? "Slipping" : "", CouplerOverloaded ? "Coupler overloaded" : "", PantographFirstDelay > 0 || PantographSecondDelay > 0 ? "Switching" : PowerOn ? "Power on" : "Power off", PantographFirstUp ? "1st up" : "", PantographSecondUp ? "2nd up" : "");
+            status.AppendFormat(
+                "Car {0}\t{2} {1}\t{3}\t{4:F0}%\t{5:F0}m/s\t{6:F0}kW\t{7:F0}kN\t{8}\t{9}\tElectric:\t{10}\t{11}\t{12}",
+                UiD,
+                Flipped ? "(flip)" : "",
+                Direction == Direction.Forward ? "Fwd" : Direction == Direction.Reverse ? "Rev" : "N",
+                AcceptMUSignals ? "MU'd" : "Single",
+                ThrottlePercent,
+                SpeedMpS,
+                MotiveForceN * SpeedMpS / 1000,
+                MotiveForceN / 1000,
+                WheelSlip ? "Slipping" : "",
+                CouplerOverloaded ? "Coupler overloaded" : "",
+                Pantographs.State == PantographState.Raising || Pantographs.State == PantographState.Lowering ? "Switching" : PowerOn ? "Power on" : "Power off",
+                Pantographs[1].CommandUp ? "1st up" : "",
+                Pantographs[2].CommandUp ? "2nd up" : ""
+            );
             return status.ToString();
         }
 

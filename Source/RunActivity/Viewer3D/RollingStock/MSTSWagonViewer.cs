@@ -110,8 +110,8 @@ namespace ORTS.Viewer3D.RollingStock
             if (car.Flipped)
                 AnimatedPart.Swap(ref RightDoor, ref LeftDoor);
 
-            Pantograph1.SetState(MSTSWagon.Pan1Up);
-            Pantograph2.SetState(MSTSWagon.Pan2Up);
+            Pantograph1.SetState(MSTSWagon.Pantographs[1].CommandUp);
+            Pantograph2.SetState(MSTSWagon.Pantographs[2].CommandUp);
             LeftDoor.SetState(MSTSWagon.DoorLeftOpen);
             RightDoor.SetState(MSTSWagon.DoorRightOpen);
             Mirrors.SetState(MSTSWagon.MirrorOpen);
@@ -235,11 +235,11 @@ namespace ORTS.Viewer3D.RollingStock
             // Pantograph
             if (UserInput.IsPressed(UserCommands.ControlPantograph1))
             {
-                new PantographCommand(Viewer.Log, 1, !MSTSWagon.Pan1Up);
+                new PantographCommand(Viewer.Log, 1, !MSTSWagon.Pantographs[1].CommandUp);
             }
             if (UserInput.IsPressed(UserCommands.ControlPantograph2))
             {
-                new PantographCommand(Viewer.Log, 2, !MSTSWagon.Pan1Up);
+                new PantographCommand(Viewer.Log, 2, !MSTSWagon.Pantographs[2].CommandUp);
             }
             if (UserInput.IsPressed(UserCommands.ControlDoorLeft)) //control door (or only left)
             {
@@ -262,8 +262,8 @@ namespace ORTS.Viewer3D.RollingStock
         /// </summary>
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            Pantograph1.UpdateState(MSTSWagon.Pan1Up, elapsedTime);
-            Pantograph2.UpdateState(MSTSWagon.Pan2Up, elapsedTime);
+            Pantograph1.UpdateState(MSTSWagon.Pantographs[1].CommandUp, elapsedTime);
+            Pantograph2.UpdateState(MSTSWagon.Pantographs[2].CommandUp, elapsedTime);
             LeftDoor.UpdateState(MSTSWagon.DoorLeftOpen, elapsedTime);
             RightDoor.UpdateState(MSTSWagon.DoorRightOpen, elapsedTime);
             Mirrors.UpdateState(MSTSWagon.MirrorOpen, elapsedTime);

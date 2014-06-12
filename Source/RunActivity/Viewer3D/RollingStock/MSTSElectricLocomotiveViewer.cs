@@ -40,12 +40,12 @@ namespace ORTS.Viewer3D.RollingStock
         {
             if (UserInput.IsPressed(UserCommands.ControlPantograph1))
             {
-                new PantographCommand(Viewer.Log, 1, !ElectricLocomotive.PantographFirstUp);
+                new PantographCommand(Viewer.Log, 1, !ElectricLocomotive.Pantographs[1].CommandUp);
                 return; // I.e. Skip the call to base.HandleUserInput()
             }
             if (UserInput.IsPressed(UserCommands.ControlPantograph2))
             {
-                new PantographCommand(Viewer.Log, 2, !ElectricLocomotive.PantographSecondUp);
+                new PantographCommand(Viewer.Log, 2, !ElectricLocomotive.Pantographs[2].CommandUp);
                 return;
             }
 

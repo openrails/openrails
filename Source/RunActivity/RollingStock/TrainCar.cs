@@ -25,6 +25,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using ORTS.Common;
+using ORTS.Scripting.Api;
 using ORTS.Viewer3D;
 
 namespace ORTS
@@ -578,6 +579,8 @@ namespace ORTS
         /// </summary>
         /// <param name="evt"></param>
         public virtual void SignalEvent(Event evt) { }
+        public virtual void SignalEvent(PowerSupplyEvent evt) { }
+        public virtual void SignalEvent(PowerSupplyEvent evt, int id) { }
 
         public virtual string GetStatus() { return null; }
         public virtual string GetDebugStatus() { return null; }
