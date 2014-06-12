@@ -275,10 +275,10 @@ namespace ORTS
             }
         }
 
-        public float Update(float elapsedSeconds)
+        public float Update(float elapsedClockSeconds)
         {
             if (Script != null)
-                return Script.Update(elapsedSeconds);
+                return Script.Update(elapsedClockSeconds);
             else
                 return 0;
         }

@@ -35,6 +35,7 @@ using System.Diagnostics;
 using System.IO;
 using MSTS.Formats;
 using ORTS.MultiPlayer;
+using ORTS.Scripting.Api;
 
 namespace ORTS
 {
@@ -422,7 +423,7 @@ namespace ORTS
                     car.Flipped = wagon.Flip;
                     train.Cars.Add(car);
                     car.Train = train;
-                    car.SignalEvent(Event.Pantograph1Up);
+                    car.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
                     train.Length += car.LengthM;
                 }
                 catch (Exception error)

@@ -584,7 +584,7 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Called regularly at every simulator update cycle.
         /// </summary>
-        public abstract float Update(float elapsedSeconds);
+        public abstract float Update(float elapsedClockSeconds);
         /// <summary>
         /// Called regularly at every simulator update cycle.
         /// </summary>
