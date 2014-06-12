@@ -216,6 +216,7 @@ namespace ORTS
 
             Script.ClockTime = () => (float)Simulator.ClockTime;
             Script.DistanceM = () => Locomotive.DistanceM;
+            Script.IsDirectionReverse = () => Locomotive.Direction == Direction.Reverse;
             Script.IsBrakeEmergency = () => Locomotive.TrainBrakeController.EmergencyBraking;
             Script.IsBrakeFullService = () => Locomotive.TrainBrakeController.TCSFullServiceBraking;
             Script.TrainLengthM = () => Locomotive.Train != null ? Locomotive.Train.Length : 0f;

@@ -205,6 +205,10 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<float> DistanceM;
         /// <summary>
+        /// True if train direction is reverse.
+        /// </summary>
+        public Func<bool> IsDirectionReverse;
+        /// <summary>
         /// True if train brake controller is in emergency position, otherwise false.
         /// </summary>
         public Func<bool> IsBrakeEmergency;
