@@ -1681,8 +1681,8 @@ namespace ORTS
                         string partString = TermString.Substring(6);
                         try
                         {
-                            SignalObject.MstsBlockState Blockstate =
-                                    (SignalObject.MstsBlockState)Enum.Parse(typeof(SignalObject.MstsBlockState), partString, true);
+                            MstsBlockState Blockstate =
+                                    (MstsBlockState)Enum.Parse(typeof(MstsBlockState), partString, true);
                             TermParts = new SCRParameterType(SCRTermType.Block, (int)Blockstate);
                         }
                         catch (Exception Ex)
@@ -2847,7 +2847,7 @@ namespace ORTS
 
         public void SH_update_basic(SignalHead thisHead)
         {
-            if (thisHead.mainSignal.block_state() == SignalObject.MstsBlockState.CLEAR)
+            if (thisHead.mainSignal.block_state() == MstsBlockState.CLEAR)
             {
                 thisHead.SetLeastRestrictiveAspect();
             }

@@ -3997,7 +3997,7 @@ namespace ORTS
                             }
                             break;
                         }
-                        else if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL && NextSignalObject[direction].block_state() != SignalObject.MstsBlockState.CLEAR) // route to next signal not clear
+                        else if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL && NextSignalObject[direction].block_state() != MstsBlockState.CLEAR) // route to next signal not clear
                         {
                             SwitchToNodeControl(LastReservedSection[direction]);
 #if DEBUG_REPORTS

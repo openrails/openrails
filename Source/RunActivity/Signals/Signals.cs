@@ -6750,13 +6750,6 @@ namespace ORTS
     public class SignalObject
     {
 
-        public enum MstsBlockState
-        {
-            CLEAR,         // Block ahead is clear and accesible
-            OCCUPIED,      // Block ahead is occupied by one or more wagons/locos not moving in opposite direction
-            JN_OBSTRUCTED, // Block ahead is impassable due to the state of a switch or occupied by moving train or not accesible
-        }
-
         public enum InternalBlockstate
         {
             Reserved,                   // all sections reserved for requiring train       //

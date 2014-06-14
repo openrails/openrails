@@ -66,7 +66,7 @@
     <Compile Include="SDFile.cs" />
     <Compile Include="SFile.cs" />
     <Compile Include="SIGCFGFile.cs" />
-    <Compile Include="Signals.cs" />
+    <Compile Include="SignalEnums.cs" />
     <Compile Include="SMSFile.cs" />
     <Compile Include="SRVFile.cs" />
     <Compile Include="TDBFile.cs" />
