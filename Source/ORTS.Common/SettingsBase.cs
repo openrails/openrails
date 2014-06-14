@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2013 by the Open Rails project.
+﻿// COPYRIGHT 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -22,31 +22,84 @@ using System.Linq;
 
 namespace ORTS.Common
 {
+    /// <summary>
+    /// Base class for supporting settings (either from user, commandline, default, ...)
+    /// </summary>
 	public abstract class SettingsBase
 	{
-		public enum Source
+        /// <summary>
+        /// Enumeration of the various sources for settings
+        /// </summary>
+		protected enum Source
 		{
+            /// <summary>Setting is a default setting</summary>
 			Default,
-			CommandLine,
-			User,
+            /// <summary>Setting comes from the command line</summary>
+            CommandLine,
+            /// <summary>Setting comes from user (so stored between runs)</summary>
+            User,
 		}
 
-		protected readonly SettingsStore SettingStore;
-		protected readonly Dictionary<string, Source> Sources = new Dictionary<string, Source>();
+        /// <summary>The store of the settings</summary>
+        protected SettingsStore SettingStore { get; private set; }
+        /// <summary>Translates name of a setting to its source</summary>
+        protected readonly Dictionary<string, Source> Sources = new Dictionary<string, Source>();
 
-		public SettingsBase(SettingsStore settings)
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="settings">The store for the settings</param>
+		protected SettingsBase(SettingsStore settings)
 		{
 			SettingStore = settings;
 		}
 
+        /// <summary>
+        /// Get the default value of a setting
+        /// </summary>
+        /// <param name="name">The name of the setting</param>
 		public abstract object GetDefaultValue(string name);
+
+        /// <summary>
+        /// Get the current value of a setting
+        /// </summary>
+        /// <param name="name">The name of the setting</param>
 		protected abstract object GetValue(string name);
+
+        /// <summary>
+        /// set the current value of a setting
+        /// </summary>
+        /// <param name="name">The name of the setting</param>
+        /// <param name="value">The value of the setting</param>
 		protected abstract void SetValue(string name, object value);
+
+        /// <summary>
+        /// Load all settings, possibly partly from the given options
+        /// </summary>
+        /// <param name="allowUserSettings">Are user settings allowed?</param>
+        /// <param name="optionsDictionary">???</param>
 		protected abstract void Load(bool allowUserSettings, Dictionary<string, string> optionsDictionary);
+
+        /// <summary>
+        /// Save all settings to the store
+        /// </summary>
 		public abstract void Save();
+
+        /// <summary>
+        /// Save a setting to the store. Since type is not known, this is abstract.
+        /// </summary>
+        /// <param name="name">name of the setting</param>
 		public abstract void Save(string name);
+
+        /// <summary>
+        /// Reset all values to their default
+        /// </summary>
         public abstract void Reset();
 
+        /// <summary>
+        /// Load settings from the options
+        /// </summary>
+        /// <param name="options">???</param>
 		protected void Load(IEnumerable<string> options)
 		{
 			// This special command-line option prevents the registry values from being used.
@@ -64,6 +117,13 @@ namespace ORTS.Common
 			Load(allowUserSettings, optionsDictionary);
 		}
 
+        /// <summary>
+        /// Load a single value from the store, once type of the setting is known
+        /// </summary>
+        /// <param name="allowUserSettings">Are user settings allowed for this setting?</param>
+        /// <param name="optionsDictionary">???</param>
+        /// <param name="name">name of the setting</param>
+        /// <param name="type">type of the setting</param>
 		protected void Load(bool allowUserSettings, Dictionary<string, string> optionsDictionary, string name, Type type)
 		{
 			// Get the default value.
@@ -114,6 +174,11 @@ namespace ORTS.Common
 			}
 		}
 
+        /// <summary>
+        /// Save a setting to the store, if name and especially type are known
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        /// <param name="type">type of the setting</param>
 		protected void Save(string name, Type type)
 		{
 			var defValue = GetDefaultValue(name);
@@ -155,6 +220,10 @@ namespace ORTS.Common
 			}
 		}
 
+        /// <summary>
+        /// Reset a single setting to its default
+        /// </summary>
+        /// <param name="name">name of the setting</param>
         protected void Reset(string name)
         {
             SetValue(name, GetDefaultValue(name));

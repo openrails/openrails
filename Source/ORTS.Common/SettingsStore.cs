@@ -31,14 +31,23 @@ namespace ORTS.Common
 	/// </summary>
 	public abstract class SettingsStore
 	{
-		protected readonly string Section;
+        /// <summary>Name of a 'section', to distinguish various part within a underlying store</summary>
+        protected string Section { get; private set; }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="section">Name of the 'section', to distinguish various part within a underlying store</param>
 		protected SettingsStore(string section)
 		{
 			Section = section;
 		}
 
-        protected void AssertGetUserValueType(Type expectedType)
+        /// <summary>
+        /// Assert that the type expected from the settings store is an allowed type.
+        /// </summary>
+        /// <param name="expectedType">Type that is expected</param>
+        protected static void AssertGetUserValueType(Type expectedType)
         {
             Debug.Assert(new[] {
                 typeof(bool),
@@ -51,26 +60,81 @@ namespace ORTS.Common
             }.Contains(expectedType), String.Format("GetUserValue called with unexpected type {0}.", expectedType.FullName));
         }
 
+        /// <summary>
+        /// Return an array of all setting-names that are in the store
+        /// </summary>
         public abstract string[] GetUserNames();
 
+        /// <summary>
+        /// Get the value of a user setting
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        /// <param name="expectedType">Type that is expected</param>
+        /// <returns>the value from the store, as a general object</returns>
         public abstract object GetUserValue(string name, Type expectedType);
 
+        /// <summary>
+        /// Set a boolean user setting
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        /// <param name="value">value of the setting</param>
         public abstract void SetUserValue(string name, bool value);
 
+        /// <summary>
+        /// Set a value of a user setting
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        /// <param name="value">value of the setting</param>
         public abstract void SetUserValue(string name, int value);
 
+        /// <summary>
+        /// Set a value of a user setting
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        /// <param name="value">value of the setting</param>
         public abstract void SetUserValue(string name, DateTime value);
 
+        /// <summary>
+        /// Set a value of a user setting
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        /// <param name="value">value of the setting</param>
         public abstract void SetUserValue(string name, TimeSpan value);
 
+        /// <summary>
+        /// Set a value of a user setting
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        /// <param name="value">value of the setting</param>
         public abstract void SetUserValue(string name, string value);
 
+        /// <summary>
+        /// Set a value of a user setting
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        /// <param name="value">value of the setting</param>
         public abstract void SetUserValue(string name, int[] value);
 
+        /// <summary>
+        /// Set a value of a user setting
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        /// <param name="value">value of the setting</param>
         public abstract void SetUserValue(string name, string[] value);
 
+        /// <summary>
+        /// Remove a user setting from the store
+        /// </summary>
+        /// <param name="name">name of the setting</param>
 		public abstract void DeleteUserValue(string name);
 
+        /// <summary>
+        /// Factory method to create a setting store (sub-class of SettingsStore)
+        /// </summary>
+        /// <param name="filePath">File patht o a .init file, if you want to use a .ini file</param>
+        /// <param name="registryKey">key to the 'windows' register, if you want to use a registry-based store</param>
+        /// <param name="section">Name to distinguish between various 'section's used in underlying store.</param>
+        /// <returns>The created SettingsStore</returns>
 		public static SettingsStore GetSettingStore(string filePath, string registryKey, string section)
 		{
 			if (!String.IsNullOrEmpty(filePath) && File.Exists(filePath))
@@ -96,11 +160,20 @@ namespace ORTS.Common
 			Key = Registry.CurrentUser.CreateSubKey(RegistryKey);
 		}
 
+        /// <summary>
+        /// Return an array of all setting-names that are in the store
+        /// </summary>
         public override string[] GetUserNames()
         {
             return Key.GetValueNames();
         }
 
+        /// <summary>
+        /// Get the value of a user setting
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        /// <param name="expectedType">Type that is expected</param>
+        /// <returns>the value from the store, as a general object</returns>
         public override object GetUserValue(string name, Type expectedType)
         {
             AssertGetUserValueType(expectedType);
@@ -137,41 +210,80 @@ namespace ORTS.Common
             }
         }
 
+        /// <summary>
+        /// Set a value of a user setting
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        /// <param name="value">value of the setting</param>
         public override void SetUserValue(string name, bool value)
         {
             Key.SetValue(name, value ? 1 : 0, RegistryValueKind.DWord);
         }
 
+        /// <summary>
+        /// Set a value of a user setting
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        /// <param name="value">value of the setting</param>
         public override void SetUserValue(string name, int value)
         {
             Key.SetValue(name, value, RegistryValueKind.DWord);
         }
 
+        /// <summary>
+        /// Set a value of a user setting
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        /// <param name="value">value of the setting</param>
         public override void SetUserValue(string name, DateTime value)
         {
             Key.SetValue(name, value.ToBinary(), RegistryValueKind.QWord);
         }
 
+        /// <summary>
+        /// Set a value of a user setting
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        /// <param name="value">value of the setting</param>
         public override void SetUserValue(string name, TimeSpan value)
         {
             Key.SetValue(name, value.Ticks, RegistryValueKind.QWord);
         }
 
+        /// <summary>
+        /// Set a value of a user setting
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        /// <param name="value">value of the setting</param>
         public override void SetUserValue(string name, string value)
         {
             Key.SetValue(name, value, RegistryValueKind.String);
         }
 
+        /// <summary>
+        /// Set a value of a user setting
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        /// <param name="value">value of the setting</param>
         public override void SetUserValue(string name, int[] value)
 		{
 			Key.SetValue(name, String.Join(",", ((int[])value).Select(v => v.ToString()).ToArray()), RegistryValueKind.String);
 		}
 
+        /// <summary>
+        /// Set a value of a user setting
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        /// <param name="value">value of the setting</param>
         public override void SetUserValue(string name, string[] value)
         {
             Key.SetValue(name, value, RegistryValueKind.MultiString);
         }
 
+        /// <summary>
+        /// Remove a user setting from the store
+        /// </summary>
+        /// <param name="name">name of the setting</param>
         public override void DeleteUserValue(string name)
 		{
 			Key.DeleteValue(name, false);
@@ -193,6 +305,9 @@ namespace ORTS.Common
 			FilePath = filePath;
 		}
 
+        /// <summary>
+        /// Return an array of all setting-names that are in the store
+        /// </summary>
         public override string[] GetUserNames()
         {
             var buffer = new String('\0', 256);
@@ -209,6 +324,12 @@ namespace ORTS.Common
             return buffer.Split('\0').Where(s => s.Contains('=')).Select(s => s.Split('=')[0]).ToArray();
         }
 
+        /// <summary>
+        /// Get the value of a user setting
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        /// <param name="expectedType">Type that is expected</param>
+        /// <returns>the value from the store, as a general object</returns>
         public override object GetUserValue(string name, Type expectedType)
         {
             AssertGetUserValueType(expectedType);
@@ -275,55 +396,124 @@ namespace ORTS.Common
             }
         }
 
+        /// <summary>
+        /// Set a value of a user setting
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        /// <param name="value">value of the setting</param>
         public override void SetUserValue(string name, bool value)
 		{
 			NativeMethods.WritePrivateProfileString(Section, name, "bool:" + (value ? "true" : "false"), FilePath);
 		}
 
+        /// <summary>
+        /// Set a value of a user setting
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        /// <param name="value">value of the setting</param>
         public override void SetUserValue(string name, int value)
         {
             NativeMethods.WritePrivateProfileString(Section, name, "int:" + Uri.EscapeDataString(value.ToString(CultureInfo.InvariantCulture)), FilePath);
         }
 
+        /// <summary>
+        /// Set a value of a user setting
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        /// <param name="value">value of the setting</param>
         public override void SetUserValue(string name, DateTime value)
         {
             NativeMethods.WritePrivateProfileString(Section, name, "DateTime:" + Uri.EscapeDataString(value.ToBinary().ToString(CultureInfo.InvariantCulture)), FilePath);
         }
 
+        /// <summary>
+        /// Set a value of a user setting
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        /// <param name="value">value of the setting</param>
         public override void SetUserValue(string name, TimeSpan value)
         {
             NativeMethods.WritePrivateProfileString(Section, name, "TimeSpan:" + Uri.EscapeDataString(value.Ticks.ToString(CultureInfo.InvariantCulture)), FilePath);
         }
 
+        /// <summary>
+        /// Set a value of a user setting
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        /// <param name="value">value of the setting</param>
         public override void SetUserValue(string name, string value)
 		{
 			NativeMethods.WritePrivateProfileString(Section, name, "string:" + Uri.EscapeDataString(value), FilePath);
 		}
 
-		public override void SetUserValue(string name, int[] value)
+        /// <summary>
+        /// Set a value of a user setting
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        /// <param name="value">value of the setting</param>
+        public override void SetUserValue(string name, int[] value)
 		{
 			NativeMethods.WritePrivateProfileString(Section, name, "int[]:" + String.Join(",", ((int[])value).Select(v => Uri.EscapeDataString(v.ToString(CultureInfo.InvariantCulture))).ToArray()), FilePath);
 		}
 
-		public override void SetUserValue(string name, string[] value)
+        /// <summary>
+        /// Set a value of a user setting
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        /// <param name="value">value of the setting</param>
+        public override void SetUserValue(string name, string[] value)
 		{
 			NativeMethods.WritePrivateProfileString(Section, name, "string[]:" + String.Join(",", value.Select(v => Uri.EscapeDataString(v)).ToArray()), FilePath);
 		}
 
-		public override void DeleteUserValue(string name)
+        /// <summary>
+        /// Remove a user setting from the store
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        public override void DeleteUserValue(string name)
 		{
 			NativeMethods.WritePrivateProfileString(Section, name, null, FilePath);
 		}
 	}
 
+    /// <summary>
+    /// Class to provate a few external native windows methods to deal with ini-files.
+    /// </summary>
 	public sealed class NativeMethods
-	{
+	{   // comments might not be completely accurate
+
+        /// <summary>
+        /// Get the list of names from a given section
+        /// </summary>
+        /// <param name="sectionName">name of the section</param>
+        /// <param name="value">This will be a string that acts like an output: upon return this will contain the list of names</param>
+        /// <param name="size">Size of the output string 'value'</param>
+        /// <param name="fileName">The name of the ini file</param>
+        /// <returns>The length of the string 'value' that is being filled with results upon return</returns>
         [DllImport("KERNEL32.DLL", EntryPoint = "GetPrivateProfileSectionW", SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true)]
         public static extern int GetPrivateProfileSection(string sectionName, string value, int size, string fileName);
 
+        /// <summary>
+        /// Get the value of a given setting from the ini file.
+        /// </summary>
+        /// <param name="sectionName">Name of the section in the ini file</param>
+        /// <param name="keyName">Name of the key = name of the setting</param>
+        /// <param name="defaultValue">The default value in case the setting is not found</param>
+        /// <param name="value">This will be a string that acts like an output: upon return this will contain the value</param>
+        /// <param name="size">Size of the output string 'value'</param>
+        /// <param name="fileName">The name of the ini file</param>
+        /// <returns>The length of the string 'value' that is being filled with results upon return</returns>
         [DllImport("KERNEL32.DLL", EntryPoint = "GetPrivateProfileStringW", SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true)]
         public static extern int GetPrivateProfileString(string sectionName, string keyName, string defaultValue, string value, int size, string fileName);
 
+        /// <summary>
+        /// Write a value to the ini file
+        /// </summary>
+        /// <param name="sectionName">Name of the section in the ini file</param>
+        /// <param name="keyName">Name of the key = name of the setting</param>
+        /// <param name="value">Value to store in the ini file</param>
+        /// <param name="fileName">The name of the ini file</param>
+        /// <returns>???</returns>
 		[DllImport("KERNEL32.DLL", EntryPoint = "WritePrivateProfileStringW", SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true)]
 		public static extern int WritePrivateProfileString(string sectionName, string keyName, string value, string fileName);
     }

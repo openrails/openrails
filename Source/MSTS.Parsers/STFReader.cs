@@ -898,26 +898,26 @@ namespace MSTS.Parsers
                     case "*(m^3)": return 1000;
                     case "m^3": return 1000;
                     case "l": return 1;
-                    case "g-uk": return 4.546f;
-                    case "g-us": return 3.785f;
-                    case "gal": return 3.785f;  // US gallons
-                    case "gals": return 3.785f; // US gallons
+                    case "g-uk": return 4.54609f;
+                    case "g-us": return 3.78541f;
+                    case "gal": return 3.78541f;  // US gallons
+                    case "gals": return 3.78541f; // US gallons
                 }
             if ((validUnits & UNITS.VolumeDefaultFT3) > 0)
                 switch (suffix)
                 {
-                    case "": return 1.0;
-                    case "*(ft^3)": return 1;  // <CJComment> Factors to be revised when non-metric internal units removed. </CJComment>
-                    case "ft^3": return 1;  // <CJComment> Factors to be revised when non-metric internal units removed. </CJComment>
-                    case "*(in^3)": return 0.000578703704;
-                    case "in^3": return 0.000578703704;
-                    case "*(m^3)": return 35.3146667;
-                    case "m^3": return 35.3146667;
-                    case "l": return 0.0353146667;
-                    case "g-uk": return 0.16054372f;
-                    case "g-us": return 0.133680556f;
-                    case "gal": return 0.133680556f;  // US gallons
-                    case "gals": return 0.133680556f; // US gallons
+                    case "": return 28.3168;
+                    case "*(ft^3)": return 28.3168;
+                    case "ft^3": return 28.3168;
+                    case "*(in^3)": return 0.0163871;
+                    case "in^3": return 0.0163871;
+                    case "*(m^3)": return 1000;
+                    case "m^3": return 1000;
+                    case "l": return 1;
+                    case "g-uk": return 4.54609f;
+                    case "g-us": return 3.78541f;
+                    case "gal": return 3.78541f;  // US gallons
+                    case "gals": return 3.78541f; // US gallons
                 }
             if ((validUnits & UNITS.Time) > 0)
                 switch (suffix)
@@ -972,10 +972,10 @@ namespace MSTS.Parsers
                     case "": return 1.0;
                     case "m/s": return 1.0;
                     case "mph": return 0.44704;
-                    case "kph": return 0.27778;
-                    case "km/h": return 0.27778;
-                    case "kmph": return 0.27778;
-                    case "kmh": return 0.27778; // Misspelled unit accepted by MSTS, documented in Richter-Realmuto's 
+                    case "kph": return 0.27777778;
+                    case "km/h": return 0.27777778;
+                    case "kmph": return 0.27777778;
+                    case "kmh": return 0.27777778; // Misspelled unit accepted by MSTS, documented in Richter-Realmuto's 
                     // "Manual for .eng- and .wag-files of the MS Train Simulator 1.0". and used in Bernina
                 }
             if ((validUnits & UNITS.SpeedDefaultMPH) > 0)
@@ -984,10 +984,11 @@ namespace MSTS.Parsers
                     case "": return 0.44704;
                     case "m/s": return 1.0;
                     case "mph": return 0.44704;
-                    case "kph": return 0.27778;
-                    case "km/h": return 0.27778;
-                    case "kmph": return 0.27778;
-                    case "kmh": return 0.27778; // Misspelled unit accepted by MSTS, documented in Richter-Realmuto's 
+                    case "kph": return 0.27777778;
+                    case "km/h": return 0.27777778;
+                    case "kmph": return 0.27777778;
+                    case "kmh": return 0.27777778; // Misspelled unit accepted by MSTS, documented in Richter-Realmuto's 
+                    // "Manual for .eng- and .wag-files of the MS Train Simulator 1.0". and used in Bernina
                 }
             if ((validUnits & UNITS.Frequency) > 0)
                 switch (suffix)
@@ -1012,7 +1013,7 @@ namespace MSTS.Parsers
                     case "": return 1.0;
                     case "w": return 1;
                     case "kw": return 1e3;
-                    case "hp": return 745.7;
+                    case "hp": return 745.699872;
                 }
             if ((validUnits & UNITS.Stiffness) > 0)
                 switch (suffix)
@@ -1034,33 +1035,33 @@ namespace MSTS.Parsers
                     case "": return 1.0;
                     case "psi": return 1;  // <CJComment> Factors to be revised when non-metric internal units removed. </CJComment>
                     case "bar": return 14.5037738;
-                    case "inhg": return 0.4911;
-                    case "kpa": return 0.145;
+                    case "inhg": return 0.4911542;
+                    case "kpa": return 0.145037738;
                 }
             if ((validUnits & UNITS.PressureDefaultInHg) > 0)
                 switch (suffix)
                 {
-                    case "": return 0.4911;
+                    case "": return 0.4911542;
                     case "psi": return 1;  // <CJComment> Factors to be revised when non-metric internal units removed. </CJComment>
                     case "bar": return 14.5037738;
-                    case "inhg": return 0.4911;
-                    case "kpa": return 0.145;
+                    case "inhg": return 0.4911542;
+                    case "kpa": return 0.145037738;
                 }
             if ((validUnits & UNITS.PressureRateDefaultPSIpS) > 0)
                 switch (suffix)
                 {
                     case "": return 1.0;
                     case "psi/s": return 1;  // <CJComment> Factors to be revised when non-metric internal units removed. </CJComment>
-                    case "inhg/s": return 0.4911f;
+                    case "inhg/s": return 0.4911542;
                     case "bar/s": return 14.5037738;
                     case "kpa/s": return 0.145;
                 }
             if ((validUnits & UNITS.PressureRateDefaultInHgpS) > 0)
                 switch (suffix)
                 {
-                    case "": return 0.4911f;
+                    case "": return 0.4911542;
                     case "psi/s": return 1;  // <CJComment> Factors to be revised when non-metric internal units removed. </CJComment>
-                    case "inhg/s": return 0.4911f;
+                    case "inhg/s": return 0.4911542;
                     case "bar/s": return 14.5037738;
                     case "kpa/s": return 0.145;
                 }
@@ -1645,8 +1646,15 @@ namespace MSTS.Parsers
                 if (comment == ")") return comment;
                 if (comment == "(") SkipRestOfBlock();
                 #endregion
+
+                //If the next thing is end-of-block, we cannot just read it, because StepBackOneItem is not handling
+                //this correctly when using 'tree'
+                int c2 = PeekPastWhitespace();
+                if (c2 == ')')
+                {
+                    return "#\u00b6";
+                }
                 string item = ReadItem( skip_mode, string_mode);
-                if (item == ")") { StepBackOneItem(); return "#\u00b6"; }
                 return item; // Now move on to the next token after the commented area
             }
             #endregion
@@ -1754,8 +1762,14 @@ namespace MSTS.Parsers
                             string comment = ReadItem(skip_mode, string_mode);
                             if (comment == "(") SkipRestOfBlock();
                             #endregion
+                            //If the next thing is end-of-block, we cannot just read it, because StepBackOneItem is not handling
+                            //this correctly when using 'tree'
+                            int c2 = PeekPastWhitespace();
+                            if (c2 == ')')
+                            {
+                                return "#\u00b6";
+                            }
                             string item = ReadItem(skip_mode, string_mode);
-                            if (item == ")") { StepBackOneItem(); return "#\u00b6"; }
                             return item; // Now move on to the next token after the commented area
                         }
                     #endregion

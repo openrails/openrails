@@ -22,6 +22,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
+    <DocumentationFile>..\..\Program\Tests.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>pdbonly</DebugType>
@@ -53,12 +54,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MSTS\STF.cs" />
+    <Compile Include="ORTS.Common\Conversions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MSTS.Parsers\MSTS.Parsers.csproj">
       <Project>{8A84696C-3559-49B8-B27F-BB6932D8A1C6}</Project>
       <Name>MSTS.Parsers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj">
+      <Project>{DA94D876-7D35-46C3-AECE-AFACE72C686C}</Project>
+      <Name>ORTS.Common</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

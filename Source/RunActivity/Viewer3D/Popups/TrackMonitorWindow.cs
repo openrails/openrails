@@ -562,7 +562,7 @@ namespace ORTS.Viewer3D.Popups
         private float drawDistanceMarkers(SpriteBatch spriteBatch, Point offset,
             float maxDistance, float distanceFactor,int zeropoint, int noMarkers, bool forward)
         {
-            float maxDistanceD = metric ? maxDistance / 1000 : Miles.FromM(maxDistance, metric); // in displayed units
+            float maxDistanceD = Me.FromM(maxDistance, metric); // in displayed units
             float markerIntervalD = maxDistanceD / noMarkers;
 
             float roundingValue = roundingValues[0];
@@ -572,20 +572,20 @@ namespace ORTS.Viewer3D.Popups
             }
 
             markerIntervalD = Convert.ToInt32(markerIntervalD / roundingValue) * roundingValue;
-            float markerIntervalM = metric ? markerIntervalD * 1000 : Miles.ToM(markerIntervalD, metric);
+            float markerIntervalM = Me.ToM(markerIntervalD, metric);  // from display back to metre
 
-                for (int ipos = 1; ipos <= noMarkers; ipos++)
+            for (int ipos = 1; ipos <= noMarkers; ipos++)
+            {
+                float actDistanceM = markerIntervalM * ipos;
+                if (actDistanceM < maxDistance)
                 {
-                    float actDistanceM = markerIntervalM * ipos;
-                    if (actDistanceM < maxDistance)
-                    {
-                        int actLabelOffset = Convert.ToInt32(actDistanceM * distanceFactor);
-                        int actLabelposition = forward ? zeropoint - actLabelOffset : zeropoint + actLabelOffset;
-                        string distanceString = FormatStrings.FormatDistanceDisplay(actDistanceM, metric);
+                    int actLabelOffset = Convert.ToInt32(actDistanceM * distanceFactor);
+                    int actLabelposition = forward ? zeropoint - actLabelOffset : zeropoint + actLabelOffset;
+                    string distanceString = FormatStrings.FormatDistanceDisplay(actDistanceM, metric);
 
-                        Font.Draw(spriteBatch, new Point(offset.X + distanceTextOffset, offset.Y + actLabelposition), distanceString, Color.White);
-                    }
+                    Font.Draw(spriteBatch, new Point(offset.X + distanceTextOffset, offset.Y + actLabelposition), distanceString, Color.White);
                 }
+            }
 
             return (markerIntervalM);
         }

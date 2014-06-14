@@ -30,10 +30,14 @@ namespace ORTS.Common
     {
         static readonly string ApplicationPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
         // GetRevision() must come before GetVersion()
-        public static readonly string Revision = GetRevision("Revision.txt"); // e.g. Release: "1648",       experimental: "1649",   local: ""
-        public static readonly string Version = GetVersion("Version.txt");    // e.g. Release: "0.9.0.1648", experimental: "X.1649", local: ""
-        public static readonly string Build = GetBuild("ORTS.Common.dll", "OpenRails.exe", "Menu.exe", "RunActivity.exe"); // e.g. "0.0.5223.24629 (2014-04-20 13:40:58Z)"
-        public static readonly string VersionOrBuild = GetVersionOrBuild();   // Version, but if "", returns Build
+        /// <summary>Revision number, e.g. Release: "1648",       experimental: "1649",   local: ""</summary>
+        public static readonly string Revision = GetRevision("Revision.txt");
+        /// <summary>Full version number, e.g. Release: "0.9.0.1648", experimental: "X.1649", local: ""</summary>
+        public static readonly string Version = GetVersion("Version.txt");
+        /// <summary>Full build number, e.g. "0.0.5223.24629 (2014-04-20 13:40:58Z)"</summary>
+        public static readonly string Build = GetBuild("ORTS.Common.dll", "OpenRails.exe", "Menu.exe", "RunActivity.exe");
+        /// <summary>Version, but if "", returns Build</summary>
+        public static readonly string VersionOrBuild = GetVersionOrBuild();
 
         static string GetRevision(string fileName)
         {
@@ -97,10 +101,17 @@ namespace ORTS.Common
             return Version.Length > 0 ? Version : Build;
         }
 
+        /// <summary>
+        /// Find whether a requested version and build are valid for this build 
+        /// </summary>
+        /// <param name="version">version to test again</param>
+        /// <param name="build">build to test again</param>
+        /// <param name="youngestFailedToResume">youngest build that failed to resume</param>
+        /// <returns>true or false when able to determine validity, null otherwise</returns>
         public static bool? GetValidity(string version, string build, int youngestFailedToResume)
         {
-            var revision = GetRevisionFromVersion(version);
-            var programRevision = 0;
+            int revision = GetRevisionFromVersion(version);
+            int programRevision = 0;
             try  // as Convert.ToInt32() can fail and version may be ""
             {
                 programRevision = Convert.ToInt32(VersionInfo.Revision);
@@ -137,6 +148,10 @@ namespace ORTS.Common
             return false; // default validity
         }
 
+        /// <summary>
+        /// Find the revision number (e.g. 1648) from the full version (e.g. 0.9.0.1648)
+        /// </summary>
+        /// <param name="version">full version</param>
         public static int GetRevisionFromVersion(string version)
         {
             string[] versionArray = version.Split('.');
