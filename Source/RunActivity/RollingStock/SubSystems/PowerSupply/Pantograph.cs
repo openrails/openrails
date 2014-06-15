@@ -130,6 +130,13 @@ namespace ORTS
                 return value;
             }
         }
+        private int Id
+        {
+            get
+            {
+                return Wagon.Pantographs.List.IndexOf(this) + 1;
+            }
+        }
 
         public Pantograph(MSTSWagon wagon)
         {
@@ -184,21 +191,56 @@ namespace ORTS
 
         public void HandleEvent(PowerSupplyEvent evt)
         {
+            Event soundEvent = Event.None;
+
             switch (evt)
             {
                 case PowerSupplyEvent.LowerPantograph:
                     if (State == PantographState.Up || State == PantographState.Raising)
                     {
                         State = PantographState.Lowering;
+
+                        switch (Id)
+                        {
+                            default:
+                            case 1:
+                                soundEvent = Event.Pantograph1Down;
+                                break;
+
+                            case 2:
+                                soundEvent = Event.Pantograph2Down;
+                                break;
+                        }
                     }
+
                     break;
 
                 case PowerSupplyEvent.RaisePantograph:
                     if (State == PantographState.Down || State == PantographState.Lowering)
                     {
                         State = PantographState.Raising;
+
+                        switch (Id)
+                        {
+                            default:
+                            case 1:
+                                soundEvent = Event.Pantograph1Up;
+                                break;
+
+                            case 2:
+                                soundEvent = Event.Pantograph2Up;
+                                break;
+                        }
                     }
                     break;
+            }
+
+            if (soundEvent != Event.None)
+            {
+                foreach (var eventHandler in Wagon.EventHandlers)
+                {
+                    eventHandler.HandleEvent(soundEvent);
+                }
             }
         }
     }
