@@ -295,8 +295,8 @@ namespace ORTS.Debugging
 			  }
 		  }
 
-          var maxsize = maxX - minX > maxX - minX ? maxX - minX : maxX - minX;
-          maxsize = (int)maxsize / 100 * 100;
+          var maxsize = maxX - minX > maxY - minY ? maxX - minX : maxY - minY;
+          maxsize = (int)(maxsize / 100 +1 ) * 100;
           windowSizeUpDown.Maximum = (decimal)maxsize;
           Inited = true;
 
