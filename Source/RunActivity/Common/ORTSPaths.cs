@@ -72,7 +72,7 @@ namespace ORTS
             var firstPath = pathArray[0];
             if (branch != badBranch || firstPath != badPath)
             {
-                Trace.TraceWarning("Sound file {0} missing from {1}", branch, firstPath);
+                Trace.TraceWarning("File {0} missing from {1}", branch, firstPath);
                 badBranch = branch;
                 badPath = firstPath;
             }
