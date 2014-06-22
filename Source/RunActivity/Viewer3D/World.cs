@@ -17,8 +17,9 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using ORTS.Common;
+using System.Collections.Generic;
 
 namespace ORTS.Viewer3D
 {

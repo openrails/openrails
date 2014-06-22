@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2011 by the Open Rails project.
+﻿// COPYRIGHT 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -15,28 +15,26 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+// This file is the responsibility of the 3D & Environment Team. 
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ORTS.Interlocking.MovementAuthority
+namespace ORTS.Common
 {
-   /// <summary>
-   /// Defines a single path between either  a signal
-   /// and a termination object (another signal or a buffer). 
-   /// </summary>
-   public class Route
-   {
-
-      /// <summary>
-      /// The signal defining the beginning of the route.
-      /// </summary>
-      public InterlockingSignal StartSignal { get; private set; }
-
-
-      public InterlockingTerminator Terminator { get; private set; }
-      
-
-   }
+    public enum TrackMonitorSignalAspect
+    {
+        None,
+        Clear_2,
+        Clear_1,
+        Approach_3,
+        Approach_2,
+        Approach_1,
+        Restricted,
+        StopAndProceed,
+        Stop,
+        Permission,
+    }
 }

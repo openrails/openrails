@@ -51,9 +51,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\..\RunActivity\Common\FxCopAttributes.cs">
-      <Link>OR\FxCopAttributes.cs</Link>
-    </Compile>
     <Compile Include="Engine\ActEditor.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -19,15 +19,16 @@
 
 // Add DEBUG_WINDOW_ZORDER to project defines to record window visibility and z-order changes.
 
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using ORTS.Common;
+using ORTS.Viewer3D;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using ORTS.Viewer3D;
 
 namespace ORTS.Viewer3D.Popups
 {

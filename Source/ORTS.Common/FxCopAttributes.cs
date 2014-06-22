@@ -20,13 +20,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ORTS
+namespace ORTS.Common
 {
 	/// <summary>
 	/// Explicitly sets the name of the thread on which the target will run.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
-	sealed class ThreadNameAttribute : Attribute
+	public sealed class ThreadNameAttribute : Attribute
 	{
 		readonly string threadName;
 
@@ -46,7 +46,7 @@ namespace ORTS
 	/// Defines a thread on which the target is allowed to run; multiple threads may be allowed for a single target.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Constructor | AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
-	sealed class CallOnThreadAttribute : Attribute
+    public sealed class CallOnThreadAttribute : Attribute
 	{
 		readonly string threadName;
 

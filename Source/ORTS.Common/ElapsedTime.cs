@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2011 by the Open Rails project.
+﻿// COPYRIGHT 2013 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -15,26 +15,30 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace ORTS
+namespace ORTS.Common
 {
-    public enum Direction { Forward, Reverse, N }
-
-    public class DirectionControl
+    public class ElapsedTime
     {
-        public static Direction Flip(Direction direction)
+        public readonly float ClockSeconds;
+        public readonly float RealSeconds;
+
+        public static ElapsedTime Zero = new ElapsedTime();
+
+        public static ElapsedTime operator +(ElapsedTime a, ElapsedTime b)
         {
-            //return direction == Direction.Forward ? Direction.Reverse : Direction.Forward;
-            if (direction == Direction.N)
-                return Direction.N;
-            if (direction == Direction.Forward)
-                return Direction.Reverse;
-            else
-                return Direction.Forward;
+            return new ElapsedTime(a.ClockSeconds + b.ClockSeconds, a.RealSeconds + b.RealSeconds);
+        }
+
+        public ElapsedTime()
+            : this(0, 0)
+        {
+        }
+
+        public ElapsedTime(float clockSeconds, float realSeconds)
+        {
+            ClockSeconds = clockSeconds;
+            RealSeconds = realSeconds;
         }
     }
 }

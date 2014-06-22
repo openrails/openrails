@@ -32,18 +32,19 @@
 /// All keyboard input comes from the viewer class as calls on simulator's methods.
 /// </summary>
 
+using Microsoft.Xna.Framework;
+using MSTS.Formats;
+using ORTS.Common;
+using ORTS.Formats;
+using ORTS.MultiPlayer;
+using ORTS.Scripting;
+using ORTS.Settings;
+using ORTS.Viewer3D;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Windows.Forms; // Needed for MessageBox
-using Microsoft.Xna.Framework;
-using MSTS.Formats;
-using ORTS.MultiPlayer;
-using ORTS.Scripting;
-using ORTS.Settings;
-using ORTS.Formats;
-using ORTS.Viewer3D;
+using System.Windows.Forms;
 
 namespace ORTS
 {

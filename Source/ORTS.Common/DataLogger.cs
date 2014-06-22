@@ -21,9 +21,9 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-namespace ORTS
+namespace ORTS.Common
 {
-    class DataLogger
+    public class DataLogger
     {
         const int CacheSize = 2048 * 1024;  // 2 Megs
         readonly StringBuilder Cache = new StringBuilder(CacheSize);

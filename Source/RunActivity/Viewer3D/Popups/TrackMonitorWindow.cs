@@ -17,29 +17,15 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace ORTS.Viewer3D.Popups
 {
-    public enum TrackMonitorSignalAspect
-    {
-        None,
-        Clear_2,
-        Clear_1,
-        Approach_3,
-        Approach_2,
-        Approach_1,
-        Restricted,
-        StopAndProceed,
-        Stop,
-        Permission,
-    }
-
     public class TrackMonitorWindow : Window
     {
         public int MAXDISTANCE = 5000;

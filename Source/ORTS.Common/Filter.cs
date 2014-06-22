@@ -16,12 +16,12 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Collections;
 
-namespace ORTS
+namespace ORTS.Common
 {
     /// <summary>
     /// by Matej Pacha

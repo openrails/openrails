@@ -54,9 +54,17 @@
   <ItemGroup>
     <Compile Include="Conversions.cs" />
     <Compile Include="Coordinates.cs" />
+    <Compile Include="DataLogger.cs" />
+    <Compile Include="ElapsedTime.cs" />
+    <Compile Include="enums.cs" />
+    <Compile Include="Filter.cs" />
+    <Compile Include="FxCopAttributes.cs" />
+    <Compile Include="Integrator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingsBase.cs" />
     <Compile Include="SettingsStore.cs" />
+    <Compile Include="SmoothedData.cs" />
+    <Compile Include="TrackMonitorSignalAspect.cs" />
     <Compile Include="VersionInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

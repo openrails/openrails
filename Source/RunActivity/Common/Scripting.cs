@@ -15,17 +15,18 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using GNU.Gettext;
+using Microsoft.CSharp;
+using ORTS.Common;
+using ORTS.Viewer3D.Popups;
 using System;
-using System.IO;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Threading;
-using System.Diagnostics;
-using System.Reflection;
-using System.CodeDom.Compiler;
-using Microsoft.CSharp;
-using GNU.Gettext;
-using ORTS.Viewer3D.Popups;
 
 namespace ORTS.Scripting
 {

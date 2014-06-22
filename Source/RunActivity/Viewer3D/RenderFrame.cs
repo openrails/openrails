@@ -24,14 +24,15 @@
 // complex feature and performance is not guaranteed.
 #define RENDER_BLEND_SORTING
 
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using ORTS.Common;
+using ORTS.Processes;
+using ORTS.Settings;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using ORTS.Processes;
-using ORTS.Settings;
 using Game = ORTS.Processes.Game;
 
 namespace ORTS.Viewer3D

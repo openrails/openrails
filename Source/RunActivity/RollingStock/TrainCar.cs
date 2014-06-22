@@ -18,15 +18,17 @@
 // Define this to log the wheel configurations on cars as they are loaded.
 //#define DEBUG_WHEELS
 
+using Microsoft.Xna.Framework;
+using MSTS.Formats;
+using ORTS.Common;
+using ORTS.Scripting.Api;
+using ORTS.Viewer3D;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Microsoft.Xna.Framework;
-using ORTS.Common;
-using ORTS.Scripting.Api;
-using ORTS.Viewer3D;
+using Camera = ORTS.Viewer3D.Camera;
 
 namespace ORTS
 {

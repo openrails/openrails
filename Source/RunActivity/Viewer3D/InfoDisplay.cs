@@ -29,6 +29,11 @@
 // Analyse the data using a spreadsheet and graph with an XY chart.
 
 
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using ORTS.Common;
+using ORTS.Settings;
+using ORTS.Viewer3D.Popups;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -36,11 +41,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using ORTS.Common;
-using ORTS.Settings;
-using ORTS.Viewer3D.Popups;
 
 
 namespace ORTS.Viewer3D
