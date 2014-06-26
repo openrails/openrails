@@ -246,6 +246,9 @@ namespace ORTS.Viewer3D
                     case "SignalLight":
                         Materials[materialKey] = new SignalLightMaterial(Viewer, textureName);
                         break;
+                    case "SignalLightGlow":
+                        Materials[materialKey] = new SignalLightGlowMaterial(Viewer);
+                        break;
                     case "Sky":
                         Materials[materialKey] = new SkyMaterial(Viewer);
                         break;

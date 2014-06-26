@@ -202,7 +202,10 @@ namespace ORTS.Settings
         [Default(false)]
         public bool CircularSpeedGauge { get; set; }
 
-        // Data Logger settings:
+        [Default(false)]
+        public bool SignalLightGlow { get; set; }
+
+		// Data Logger settings:
 		[Default("comma")]
 		public string DataLoggerSeparator { set; get; }
 		[Default("route")]

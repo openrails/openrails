@@ -131,6 +131,7 @@ namespace ORTS
             checkFastFullScreenAltTab.Checked = Settings.FastFullScreenAltTab;
             checkUseLargeAddressAware.Checked = Settings.UseLargeAddressAware;
             checkBoxCircularSpeedGauge.Checked = Settings.CircularSpeedGauge;
+            checkBoxSignalLightGlow.Checked = Settings.SignalLightGlow;
 
             // DataLogger tab
             comboDataLoggerSeparator.Text = settings.DataLoggerSeparator;
@@ -290,6 +291,7 @@ namespace ORTS
             Settings.FastFullScreenAltTab = checkFastFullScreenAltTab.Checked;
             Settings.UseLargeAddressAware = checkUseLargeAddressAware.Checked;
             Settings.CircularSpeedGauge = checkBoxCircularSpeedGauge.Checked;
+            Settings.SignalLightGlow = checkBoxSignalLightGlow.Checked;
             
             // DataLogger tab
             Settings.DataLoggerSeparator = comboDataLoggerSeparator.Text;

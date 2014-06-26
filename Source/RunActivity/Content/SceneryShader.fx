@@ -50,7 +50,7 @@ float    HalfNightColorModifier;
 float    VegetationAmbientModifier;
 float4   EyeVector;
 float3   SideVector;
-float ReferenceAlpha;
+float    ReferenceAlpha;
 texture  ImageTexture;
 texture  OverlayTexture;
 
@@ -151,11 +151,25 @@ void _VSNormalProjection(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
 	Out.Normal_Light.w = dot(Out.Normal_Light.xyz, LightVector_ZFar.xyz) * 0.5 + 0.5;
 }
 
-void _VSSignalProjection(in VERTEX_INPUT_SIGNAL In, inout VERTEX_OUTPUT Out)
+void _VSSignalProjection(uniform bool Glow, in VERTEX_INPUT_SIGNAL In, inout VERTEX_OUTPUT Out)
 {
 	// Project position, normal and copy texture coords
+	float3 relPos = mul(In.Position, World) - ViewerPos;
+	// Position 1cm in front of signal.
+	In.Position.z += 0.01;
+	if (Glow) {
+		// Position glow a further 1cm in front of the light.
+		In.Position.z += 0.01;
+		// The glow around signal lights scales according to distance; there is a cut-off which controls when the glow
+		// starts, a scaling factor which determines how quickly it expands (logarithmically), and ZBias_Lighting.x is
+		// an overall "glow power" control which determines the effectiveness of glow on any individual light. This is
+		// used to have different glows in the day and night, and to prevent theatre boxes from glowing!
+		const float GlowCutOffM = 100;
+		const float GlowScalingFactor = 40;
+		In.Position.xyz *= clamp(log(1 + (length(relPos) - GlowCutOffM) / GlowScalingFactor), 0, 10) * ZBias_Lighting.x;
+	}
 	Out.Position = mul(In.Position, WorldViewProjection);
-	Out.RelPosition.xyz = mul(In.Position, World) - ViewerPos;
+	Out.RelPosition.xyz = relPos;
 	Out.TexCoords.xy = In.TexCoords;
 	Out.Color = In.Color;
 }
@@ -248,14 +262,10 @@ VERTEX_OUTPUT VSForest(in VERTEX_INPUT In)
 	return Out;
 }
 
-VERTEX_OUTPUT VSSignalLight(in VERTEX_INPUT_SIGNAL In)
+VERTEX_OUTPUT VSSignalLight(uniform bool Glow, in VERTEX_INPUT_SIGNAL In)
 {
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
-	_VSSignalProjection(In, Out);
-
-	// Apply a small z-bias so that lights are always on top of the shape.
-	Out.Position.z *= 0.9999;
-
+	_VSSignalProjection(Glow, In, Out);
 	return Out;
 }
 
@@ -641,7 +651,14 @@ technique FullBrightPS2 {
 
 technique SignalLight {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSSignalLight();
+		VertexShader = compile vs_2_0 VSSignalLight(false);
+		PixelShader = compile ps_2_0 PSSignalLight();
+	}
+}
+
+technique SignalLightGlow {
+	pass Pass_0 {
+		VertexShader = compile vs_2_0 VSSignalLight(true);
 		PixelShader = compile ps_2_0 PSSignalLight();
 	}
 }

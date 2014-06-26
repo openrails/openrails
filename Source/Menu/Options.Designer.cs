@@ -83,6 +83,8 @@
             this.buttonCheckKeys = new System.Windows.Forms.Button();
             this.panelKeys = new System.Windows.Forms.Panel();
             this.tabPageExperimental = new System.Windows.Forms.TabPage();
+            this.checkBoxCircularSpeedGauge = new System.Windows.Forms.CheckBox();
+            this.checkBoxSignalLightGlow = new System.Windows.Forms.CheckBox();
             this.checkBoxModelInstancing = new System.Windows.Forms.CheckBox();
             this.checkUseLargeAddressAware = new System.Windows.Forms.CheckBox();
             this.checkFastFullScreenAltTab = new System.Windows.Forms.CheckBox();
@@ -122,7 +124,6 @@
             this.numericDataLogTSInterval = new System.Windows.Forms.NumericUpDown();
             this.checkDataLogTrainSpeed = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.checkBoxCircularSpeedGauge = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -856,6 +857,7 @@
             // tabPageExperimental
             // 
             this.tabPageExperimental.Controls.Add(this.checkBoxCircularSpeedGauge);
+            this.tabPageExperimental.Controls.Add(this.checkBoxSignalLightGlow);
             this.tabPageExperimental.Controls.Add(this.checkBoxModelInstancing);
             this.tabPageExperimental.Controls.Add(this.checkUseLargeAddressAware);
             this.tabPageExperimental.Controls.Add(this.checkFastFullScreenAltTab);
@@ -885,6 +887,26 @@
             this.tabPageExperimental.TabIndex = 3;
             this.tabPageExperimental.Text = "Experimental";
             this.tabPageExperimental.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxCircularSpeedGauge
+            // 
+            this.checkBoxCircularSpeedGauge.AutoSize = true;
+            this.checkBoxCircularSpeedGauge.Location = new System.Drawing.Point(225, 240);
+            this.checkBoxCircularSpeedGauge.Name = "checkBoxCircularSpeedGauge";
+            this.checkBoxCircularSpeedGauge.Size = new System.Drawing.Size(183, 17);
+            this.checkBoxCircularSpeedGauge.TabIndex = 30;
+            this.checkBoxCircularSpeedGauge.Text = "Use ETCS Circular Speed Gauge";
+            this.checkBoxCircularSpeedGauge.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxSignalLightGlow
+            // 
+            this.checkBoxSignalLightGlow.AutoSize = true;
+            this.checkBoxSignalLightGlow.Location = new System.Drawing.Point(225, 217);
+            this.checkBoxSignalLightGlow.Name = "checkBoxSignalLightGlow";
+            this.checkBoxSignalLightGlow.Size = new System.Drawing.Size(102, 17);
+            this.checkBoxSignalLightGlow.TabIndex = 31;
+            this.checkBoxSignalLightGlow.Text = "Signal light glow";
+            this.checkBoxSignalLightGlow.UseVisualStyleBackColor = true;
             // 
             // checkBoxModelInstancing
             // 
@@ -1382,16 +1404,6 @@
             this.checkDataLogTrainSpeed.Text = "Log train speed";
             this.checkDataLogTrainSpeed.UseVisualStyleBackColor = true;
             // 
-            // checkBoxCircularSpeedGauge
-            // 
-            this.checkBoxCircularSpeedGauge.AutoSize = true;
-            this.checkBoxCircularSpeedGauge.Location = new System.Drawing.Point(225, 217);
-            this.checkBoxCircularSpeedGauge.Name = "checkBoxCircularSpeedGauge";
-            this.checkBoxCircularSpeedGauge.Size = new System.Drawing.Size(183, 17);
-            this.checkBoxCircularSpeedGauge.TabIndex = 30;
-            this.checkBoxCircularSpeedGauge.Text = "Use ETCS Circular Speed Gauge";
-            this.checkBoxCircularSpeedGauge.UseVisualStyleBackColor = true;
-            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -1539,5 +1551,6 @@
         private System.Windows.Forms.ComboBox comboBoxPressureUnit;
         private System.Windows.Forms.Label labelPressureUnit;
         private System.Windows.Forms.CheckBox checkBoxCircularSpeedGauge;
+        private System.Windows.Forms.CheckBox checkBoxSignalLightGlow;
     }
 }
