@@ -15,6 +15,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using GNU.Gettext;
+using GNU.Gettext.WinForms;
+using ORTS.Settings;
+using ORTS.Updater;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -22,9 +26,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using GNU.Gettext;
-using GNU.Gettext.WinForms;
-using ORTS.Settings;
 using XNA = Microsoft.Xna.Framework.Input;
 
 namespace ORTS
@@ -32,6 +33,7 @@ namespace ORTS
     public partial class OptionsForm : Form
     {
         readonly UserSettings Settings;
+        readonly UpdateManager UpdateManager;
 
         private GettextResourceManager catalog = new GettextResourceManager("Menu");
         private Boolean Initialized = false;
@@ -42,13 +44,14 @@ namespace ORTS
             public string Name { get; set; }
         }
 
-        public OptionsForm(UserSettings settings)
+        public OptionsForm(UserSettings settings, UpdateManager updateManager)
         {
             InitializeComponent();
 
             Localizer.Localize(this, catalog);
 
             Settings = settings;
+            UpdateManager = updateManager;
 
             // Collect all the available language codes by searching for
             // localisation files, but always include English (base language).
@@ -112,6 +115,62 @@ namespace ORTS
             // Keyboard tab
             InitializeKeyboardSettings();
 
+            // DataLogger tab
+            comboDataLoggerSeparator.Text = settings.DataLoggerSeparator;
+            comboDataLogSpeedUnits.Text = settings.DataLogSpeedUnits;
+            checkDataLogger.Checked = Settings.DataLogger;
+            checkDataLogPerformance.Checked = settings.DataLogPerformance;
+            checkDataLogPhysics.Checked = settings.DataLogPhysics;
+            checkDataLogMisc.Checked = settings.DataLogMisc;
+
+            // Evaluation tab
+            checkDataLogTrainSpeed.Checked = Settings.DataLogTrainSpeed;
+            numericDataLogTSInterval.Value = Settings.DataLogTSInterval;
+            for (var i = 0; i < checkedListBoxDataLogTSContents.Items.Count; i++)
+                checkedListBoxDataLogTSContents.SetItemChecked(i, Settings.DataLogTSContents[i] == 1);
+            checkDataLogStationStops.Checked = Settings.DataLogStationStops;
+
+            // Updater tab
+            var updateChannelNames = new Dictionary<string, string> {
+                { "release", catalog.GetString("Release channel (Recommended for users)") },
+                { "experimental", catalog.GetString("Experimental channel (For supporters)") },
+                { "nightly", catalog.GetString("Nightly channel (For developers)") },
+                { "", catalog.GetString("None") },
+            };
+            var updateChannelDescriptions = new Dictionary<string, string> {
+                { "release", catalog.GetString("The release channel contains only official, hand-picked stable versions.") },
+                { "experimental", catalog.GetString("The experimental channel contains automatically generated weekly versions.") },
+                { "nightly", catalog.GetString("The nightly channel contains every single version created.") },
+                { "", catalog.GetString("No automatic updates.") },
+            };
+            var spacing = labelUpdateChannel.Margin.All * 2;
+            var indent = 20;
+            var top = labelUpdateChannel.Bottom + spacing;
+            foreach (var channel in UpdateManager.GetChannels())
+            {
+                var radio = new RadioButton() {
+                    Text = updateChannelNames[channel.ToLowerInvariant()],
+                    Margin = labelUpdateChannel.Margin,
+                    Left = spacing,
+                    Top = top,
+                    Checked = updateManager.ChannelName.Equals(channel, StringComparison.InvariantCultureIgnoreCase),
+                    AutoSize = true,
+                    Tag = channel,
+                };
+                tabPageUpdater.Controls.Add(radio);
+                top += radio.Height + spacing;
+                var label = new Label() {
+                    Text = updateChannelDescriptions[channel.ToLowerInvariant()],
+                    Margin = labelUpdateChannel.Margin,
+                    Left = spacing + indent,
+                    Top = top,
+                    Width = tabPageUpdater.ClientSize.Width - indent - spacing * 2,
+                    AutoSize = true,
+                };
+                tabPageUpdater.Controls.Add(label);
+                top += label.Height + spacing;
+            }
+
             // Experimental tab
             numericUseSuperElevation.Value = Settings.UseSuperElevation;
             numericSuperElevationMinLen.Value = Settings.SuperElevationMinLen;
@@ -132,21 +191,6 @@ namespace ORTS
             checkUseLargeAddressAware.Checked = Settings.UseLargeAddressAware;
             checkBoxCircularSpeedGauge.Checked = Settings.CircularSpeedGauge;
             checkBoxSignalLightGlow.Checked = Settings.SignalLightGlow;
-
-            // DataLogger tab
-            comboDataLoggerSeparator.Text = settings.DataLoggerSeparator;
-            comboDataLogSpeedUnits.Text = settings.DataLogSpeedUnits;
-            checkDataLogger.Checked = Settings.DataLogger;
-            checkDataLogPerformance.Checked = settings.DataLogPerformance;
-            checkDataLogPhysics.Checked = settings.DataLogPhysics;
-            checkDataLogMisc.Checked = settings.DataLogMisc;
-
-            // Evaluation tab
-            checkDataLogTrainSpeed.Checked = Settings.DataLogTrainSpeed;
-            numericDataLogTSInterval.Value = Settings.DataLogTSInterval;
-            for (var i = 0; i < checkedListBoxDataLogTSContents.Items.Count; i++)
-                checkedListBoxDataLogTSContents.SetItemChecked(i, Settings.DataLogTSContents[i] == 1);
-            checkDataLogStationStops.Checked = Settings.DataLogStationStops;
 
             Initialized = true;
         }
@@ -272,6 +316,26 @@ namespace ORTS
             // Keyboard tab
             // These are edited live.
             
+            // DataLogger tab
+            Settings.DataLoggerSeparator = comboDataLoggerSeparator.Text;
+            Settings.DataLogSpeedUnits = comboDataLogSpeedUnits.Text;
+            Settings.DataLogger = checkDataLogger.Checked;
+            Settings.DataLogPerformance = checkDataLogPerformance.Checked;
+            Settings.DataLogPhysics = checkDataLogPhysics.Checked;
+            Settings.DataLogMisc = checkDataLogMisc.Checked;
+            
+            // Evaluation tab
+            Settings.DataLogTrainSpeed = checkDataLogTrainSpeed.Checked;
+            Settings.DataLogTSInterval = (int)numericDataLogTSInterval.Value;
+            for (var i = 0; i < checkedListBoxDataLogTSContents.Items.Count; i++)
+                Settings.DataLogTSContents[i] = checkedListBoxDataLogTSContents.GetItemChecked(i) ? 1 : 0;
+            Settings.DataLogStationStops = checkDataLogStationStops.Checked;
+            
+            // Updater tab
+            foreach (Control control in tabPageUpdater.Controls)
+                if ((control is RadioButton) && (control as RadioButton).Checked)
+                    UpdateManager.SetChannel((string)control.Tag);
+
             // Experimental tab
             Settings.UseSuperElevation = (int)numericUseSuperElevation.Value;
             Settings.SuperElevationMinLen = (int)numericSuperElevationMinLen.Value;
@@ -292,21 +356,6 @@ namespace ORTS
             Settings.UseLargeAddressAware = checkUseLargeAddressAware.Checked;
             Settings.CircularSpeedGauge = checkBoxCircularSpeedGauge.Checked;
             Settings.SignalLightGlow = checkBoxSignalLightGlow.Checked;
-            
-            // DataLogger tab
-            Settings.DataLoggerSeparator = comboDataLoggerSeparator.Text;
-            Settings.DataLogSpeedUnits = comboDataLogSpeedUnits.Text;
-            Settings.DataLogger = checkDataLogger.Checked;
-            Settings.DataLogPerformance = checkDataLogPerformance.Checked;
-            Settings.DataLogPhysics = checkDataLogPhysics.Checked;
-            Settings.DataLogMisc = checkDataLogMisc.Checked;
-            
-            // Evaluation tab
-            Settings.DataLogTrainSpeed = checkDataLogTrainSpeed.Checked;
-            Settings.DataLogTSInterval = (int)numericDataLogTSInterval.Value;
-            for (var i = 0; i < checkedListBoxDataLogTSContents.Items.Count; i++)
-                Settings.DataLogTSContents[i] = checkedListBoxDataLogTSContents.GetItemChecked(i) ? 1 : 0;
-            Settings.DataLogStationStops = checkDataLogStationStops.Checked;
 
             Settings.Save();
 

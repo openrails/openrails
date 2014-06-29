@@ -35,6 +35,8 @@ namespace ORTS.Settings
         // of type 'string', 'int', 'bool', 'string[]' and 'int[]' are automatically loaded/saved.
 
         [Default("")]
+        public string Channel { get; set; }
+        [Default("")]
         public string URL { get; set; }
         public TimeSpan TTL { get; set; }
 
@@ -42,9 +44,23 @@ namespace ORTS.Settings
 
         public UpdateSettings()
             : base(SettingsStore.GetSettingStore(UpdateSettings.SettingsFilePath, null, "Settings"))
-		{
-			Load(new string[0]);
-		}
+        {
+            Load(new string[0]);
+        }
+
+        public UpdateSettings(string channel)
+            : base(SettingsStore.GetSettingStore(UpdateSettings.SettingsFilePath, null, channel + "Settings"))
+        {
+            Load(new string[0]);
+        }
+
+        public string[] GetChannels()
+        {
+            // We are always a local INI settings store.
+            return (from name in (SettingStore as SettingsStoreLocalIni).GetSectionNames()
+                    where name.EndsWith("Settings")
+                    select name.Replace("Settings", "")).ToArray();
+        }
 
         public override object GetDefaultValue(string name)
         {

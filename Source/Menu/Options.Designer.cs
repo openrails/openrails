@@ -124,6 +124,8 @@
             this.numericDataLogTSInterval = new System.Windows.Forms.NumericUpDown();
             this.checkDataLogTrainSpeed = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.tabPageUpdater = new System.Windows.Forms.TabPage();
+            this.labelUpdateChannel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -148,12 +150,13 @@
             this.tabPageDataLogger.SuspendLayout();
             this.tabPageEvaluate.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericDataLogTSInterval)).BeginInit();
+            this.tabPageUpdater.SuspendLayout();
             this.SuspendLayout();
             // 
             // buttonOK
             // 
             this.buttonOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonOK.Location = new System.Drawing.Point(308, 447);
+            this.buttonOK.Location = new System.Drawing.Point(466, 446);
             this.buttonOK.Name = "buttonOK";
             this.buttonOK.Size = new System.Drawing.Size(75, 23);
             this.buttonOK.TabIndex = 1;
@@ -207,7 +210,7 @@
             // 
             this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.buttonCancel.Location = new System.Drawing.Point(389, 447);
+            this.buttonCancel.Location = new System.Drawing.Point(547, 446);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(75, 23);
             this.buttonCancel.TabIndex = 2;
@@ -254,13 +257,14 @@
             this.tabOptions.Controls.Add(this.tabPageVideo);
             this.tabOptions.Controls.Add(this.tabPageSimulation);
             this.tabOptions.Controls.Add(this.tabPageKeyboard);
-            this.tabOptions.Controls.Add(this.tabPageExperimental);
             this.tabOptions.Controls.Add(this.tabPageDataLogger);
             this.tabOptions.Controls.Add(this.tabPageEvaluate);
+            this.tabOptions.Controls.Add(this.tabPageUpdater);
+            this.tabOptions.Controls.Add(this.tabPageExperimental);
             this.tabOptions.Location = new System.Drawing.Point(12, 12);
             this.tabOptions.Name = "tabOptions";
             this.tabOptions.SelectedIndex = 0;
-            this.tabOptions.Size = new System.Drawing.Size(452, 429);
+            this.tabOptions.Size = new System.Drawing.Size(610, 428);
             this.tabOptions.TabIndex = 0;
             // 
             // tabPageGeneral
@@ -279,7 +283,7 @@
             this.tabPageGeneral.Location = new System.Drawing.Point(4, 22);
             this.tabPageGeneral.Name = "tabPageGeneral";
             this.tabPageGeneral.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageGeneral.Size = new System.Drawing.Size(444, 403);
+            this.tabPageGeneral.Size = new System.Drawing.Size(602, 402);
             this.tabPageGeneral.TabIndex = 0;
             this.tabPageGeneral.Text = "General";
             this.tabPageGeneral.UseVisualStyleBackColor = true;
@@ -349,7 +353,7 @@
             this.tabPageAudio.Location = new System.Drawing.Point(4, 22);
             this.tabPageAudio.Name = "tabPageAudio";
             this.tabPageAudio.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageAudio.Size = new System.Drawing.Size(444, 403);
+            this.tabPageAudio.Size = new System.Drawing.Size(602, 402);
             this.tabPageAudio.TabIndex = 5;
             this.tabPageAudio.Text = "Audio";
             this.tabPageAudio.UseVisualStyleBackColor = true;
@@ -442,7 +446,7 @@
             this.tabPageVideo.Location = new System.Drawing.Point(4, 22);
             this.tabPageVideo.Name = "tabPageVideo";
             this.tabPageVideo.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageVideo.Size = new System.Drawing.Size(444, 403);
+            this.tabPageVideo.Size = new System.Drawing.Size(602, 402);
             this.tabPageVideo.TabIndex = 4;
             this.tabPageVideo.Text = "Video";
             this.tabPageVideo.UseVisualStyleBackColor = true;
@@ -708,7 +712,7 @@
             this.tabPageSimulation.Location = new System.Drawing.Point(4, 22);
             this.tabPageSimulation.Name = "tabPageSimulation";
             this.tabPageSimulation.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageSimulation.Size = new System.Drawing.Size(444, 403);
+            this.tabPageSimulation.Size = new System.Drawing.Size(602, 402);
             this.tabPageSimulation.TabIndex = 2;
             this.tabPageSimulation.Text = "Simulation";
             this.tabPageSimulation.UseVisualStyleBackColor = true;
@@ -801,7 +805,7 @@
             this.tabPageKeyboard.Location = new System.Drawing.Point(4, 22);
             this.tabPageKeyboard.Name = "tabPageKeyboard";
             this.tabPageKeyboard.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageKeyboard.Size = new System.Drawing.Size(444, 403);
+            this.tabPageKeyboard.Size = new System.Drawing.Size(602, 402);
             this.tabPageKeyboard.TabIndex = 1;
             this.tabPageKeyboard.Text = "Keyboard";
             this.tabPageKeyboard.UseVisualStyleBackColor = true;
@@ -809,7 +813,7 @@
             // buttonExport
             // 
             this.buttonExport.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonExport.Location = new System.Drawing.Point(363, 374);
+            this.buttonExport.Location = new System.Drawing.Point(521, 373);
             this.buttonExport.Name = "buttonExport";
             this.buttonExport.Size = new System.Drawing.Size(75, 23);
             this.buttonExport.TabIndex = 4;
@@ -822,7 +826,7 @@
             // buttonDefaultKeys
             // 
             this.buttonDefaultKeys.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonDefaultKeys.Location = new System.Drawing.Point(87, 374);
+            this.buttonDefaultKeys.Location = new System.Drawing.Point(87, 373);
             this.buttonDefaultKeys.Name = "buttonDefaultKeys";
             this.buttonDefaultKeys.Size = new System.Drawing.Size(75, 23);
             this.buttonDefaultKeys.TabIndex = 2;
@@ -834,7 +838,7 @@
             // buttonCheckKeys
             // 
             this.buttonCheckKeys.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonCheckKeys.Location = new System.Drawing.Point(6, 374);
+            this.buttonCheckKeys.Location = new System.Drawing.Point(6, 373);
             this.buttonCheckKeys.Name = "buttonCheckKeys";
             this.buttonCheckKeys.Size = new System.Drawing.Size(75, 23);
             this.buttonCheckKeys.TabIndex = 1;
@@ -851,7 +855,7 @@
             this.panelKeys.AutoScroll = true;
             this.panelKeys.Location = new System.Drawing.Point(6, 6);
             this.panelKeys.Name = "panelKeys";
-            this.panelKeys.Size = new System.Drawing.Size(432, 362);
+            this.panelKeys.Size = new System.Drawing.Size(590, 361);
             this.panelKeys.TabIndex = 0;
             // 
             // tabPageExperimental
@@ -883,7 +887,7 @@
             this.tabPageExperimental.Location = new System.Drawing.Point(4, 22);
             this.tabPageExperimental.Name = "tabPageExperimental";
             this.tabPageExperimental.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageExperimental.Size = new System.Drawing.Size(444, 403);
+            this.tabPageExperimental.Size = new System.Drawing.Size(602, 402);
             this.tabPageExperimental.TabIndex = 3;
             this.tabPageExperimental.Text = "Experimental";
             this.tabPageExperimental.UseVisualStyleBackColor = true;
@@ -891,7 +895,7 @@
             // checkBoxCircularSpeedGauge
             // 
             this.checkBoxCircularSpeedGauge.AutoSize = true;
-            this.checkBoxCircularSpeedGauge.Location = new System.Drawing.Point(225, 240);
+            this.checkBoxCircularSpeedGauge.Location = new System.Drawing.Point(301, 240);
             this.checkBoxCircularSpeedGauge.Name = "checkBoxCircularSpeedGauge";
             this.checkBoxCircularSpeedGauge.Size = new System.Drawing.Size(183, 17);
             this.checkBoxCircularSpeedGauge.TabIndex = 30;
@@ -901,7 +905,7 @@
             // checkBoxSignalLightGlow
             // 
             this.checkBoxSignalLightGlow.AutoSize = true;
-            this.checkBoxSignalLightGlow.Location = new System.Drawing.Point(225, 217);
+            this.checkBoxSignalLightGlow.Location = new System.Drawing.Point(301, 217);
             this.checkBoxSignalLightGlow.Name = "checkBoxSignalLightGlow";
             this.checkBoxSignalLightGlow.Size = new System.Drawing.Size(102, 17);
             this.checkBoxSignalLightGlow.TabIndex = 31;
@@ -911,7 +915,7 @@
             // checkBoxModelInstancing
             // 
             this.checkBoxModelInstancing.AutoSize = true;
-            this.checkBoxModelInstancing.Location = new System.Drawing.Point(225, 122);
+            this.checkBoxModelInstancing.Location = new System.Drawing.Point(301, 122);
             this.checkBoxModelInstancing.Name = "checkBoxModelInstancing";
             this.checkBoxModelInstancing.Size = new System.Drawing.Size(127, 17);
             this.checkBoxModelInstancing.TabIndex = 30;
@@ -979,7 +983,7 @@
             this.trackDayAmbientLight.Maximum = 30;
             this.trackDayAmbientLight.Minimum = 15;
             this.trackDayAmbientLight.Name = "trackDayAmbientLight";
-            this.trackDayAmbientLight.Size = new System.Drawing.Size(214, 26);
+            this.trackDayAmbientLight.Size = new System.Drawing.Size(289, 26);
             this.trackDayAmbientLight.SmallChange = 2;
             this.trackDayAmbientLight.TabIndex = 24;
             this.toolTip1.SetToolTip(this.trackDayAmbientLight, "Default is 100");
@@ -1207,7 +1211,7 @@
             this.tabPageDataLogger.Location = new System.Drawing.Point(4, 22);
             this.tabPageDataLogger.Name = "tabPageDataLogger";
             this.tabPageDataLogger.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageDataLogger.Size = new System.Drawing.Size(444, 403);
+            this.tabPageDataLogger.Size = new System.Drawing.Size(602, 402);
             this.tabPageDataLogger.TabIndex = 6;
             this.tabPageDataLogger.Text = "DataLogger";
             this.tabPageDataLogger.UseVisualStyleBackColor = true;
@@ -1324,7 +1328,7 @@
             this.tabPageEvaluate.Location = new System.Drawing.Point(4, 22);
             this.tabPageEvaluate.Name = "tabPageEvaluate";
             this.tabPageEvaluate.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageEvaluate.Size = new System.Drawing.Size(444, 403);
+            this.tabPageEvaluate.Size = new System.Drawing.Size(602, 402);
             this.tabPageEvaluate.TabIndex = 7;
             this.tabPageEvaluate.Text = "Evaluation";
             this.tabPageEvaluate.UseVisualStyleBackColor = true;
@@ -1404,13 +1408,34 @@
             this.checkDataLogTrainSpeed.Text = "Log train speed";
             this.checkDataLogTrainSpeed.UseVisualStyleBackColor = true;
             // 
+            // tabPageUpdater
+            // 
+            this.tabPageUpdater.Controls.Add(this.labelUpdateChannel);
+            this.tabPageUpdater.Location = new System.Drawing.Point(4, 22);
+            this.tabPageUpdater.Name = "tabPageUpdater";
+            this.tabPageUpdater.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageUpdater.Size = new System.Drawing.Size(602, 402);
+            this.tabPageUpdater.TabIndex = 8;
+            this.tabPageUpdater.Text = "Updater";
+            this.tabPageUpdater.UseVisualStyleBackColor = true;
+            // 
+            // labelUpdateChannel
+            // 
+            this.labelUpdateChannel.AutoSize = true;
+            this.labelUpdateChannel.Location = new System.Drawing.Point(6, 6);
+            this.labelUpdateChannel.Margin = new System.Windows.Forms.Padding(3);
+            this.labelUpdateChannel.Name = "labelUpdateChannel";
+            this.labelUpdateChannel.Size = new System.Drawing.Size(86, 13);
+            this.labelUpdateChannel.TabIndex = 0;
+            this.labelUpdateChannel.Text = "Update channel:";
+            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
-            this.ClientSize = new System.Drawing.Size(476, 482);
+            this.ClientSize = new System.Drawing.Size(634, 481);
             this.Controls.Add(this.tabOptions);
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.buttonOK);
@@ -1451,6 +1476,8 @@
             this.tabPageEvaluate.ResumeLayout(false);
             this.tabPageEvaluate.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericDataLogTSInterval)).EndInit();
+            this.tabPageUpdater.ResumeLayout(false);
+            this.tabPageUpdater.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -1552,5 +1579,7 @@
         private System.Windows.Forms.Label labelPressureUnit;
         private System.Windows.Forms.CheckBox checkBoxCircularSpeedGauge;
         private System.Windows.Forms.CheckBox checkBoxSignalLightGlow;
+        private System.Windows.Forms.TabPage tabPageUpdater;
+        private System.Windows.Forms.Label labelUpdateChannel;
     }
 }

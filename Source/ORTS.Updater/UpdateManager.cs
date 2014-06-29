@@ -38,7 +38,10 @@ namespace ORTS.Updater
         public readonly string ProductVersion;
         readonly UpdateSettings Settings;
         readonly UpdateState State;
+        UpdateSettings Channel;
+        bool Force;
 
+        public string ChannelName { get; private set; }
         public Update LatestUpdate { get; private set; }
         public Exception LatestUpdateError { get; private set; }
 
@@ -54,6 +57,7 @@ namespace ORTS.Updater
             {
                 Settings = new UpdateSettings();
                 State = new UpdateState();
+                Channel = new UpdateSettings(ChannelName = Settings.Channel);
             }
             catch (ArgumentException)
             {
@@ -61,29 +65,63 @@ namespace ORTS.Updater
             }
         }
 
+        public string[] GetChannels()
+        {
+            if (Channel == null)
+                return new string[0];
+
+            return Settings.GetChannels();
+        }
+
+        public void SetChannel(string channel)
+        {
+            if (Channel == null)
+                throw new InvalidOperationException();
+
+            // Switch channel and save the change.
+            Settings.Channel = channel;
+            Settings.Save();
+            Channel = new UpdateSettings(ChannelName = Settings.Channel);
+
+            // Do a forced update check because the cached update data is likely to only be valid for the old channel.
+            Force = true;
+        }
+
         public void Check()
         {
-            if (Settings == null)
+            // If there's no updater file or the update channel is not correctly configured, exit without error.
+            if (Channel == null)
                 return;
 
             try
             {
-                if (DateTime.Now < State.NextCheck)
+                // If we're not at the appropriate time for the next check (and we're not forced), we reconstruct the cached update/error and exit.
+                if (DateTime.Now < State.NextCheck && !Force)
                 {
                     LatestUpdate = State.Update.Length > 0 ? JsonConvert.DeserializeObject<Update>(State.Update) : null;
-                    LatestUpdateError = State.Update.Length > 0 ? null : new InvalidDataException("Last update check failed.");
+                    LatestUpdateError = State.Update.Length > 0 || string.IsNullOrEmpty(Channel.URL) ? null : new InvalidDataException("Last update check failed.");
                     return;
                 }
 
+                // This updates the NextCheck time and clears the cached update/error.
                 ResetCachedUpdate();
 
+                if (string.IsNullOrEmpty(Channel.URL))
+                {
+                    // If there's no update URL, reset cached update/error.
+                    LatestUpdate = null;
+                    LatestUpdateError = null;
+                    return;
+                }
+
+                // Fetch the update URL (adding ?force=true if forced) and cache the update/error.
                 var client = new WebClient()
                 {
                     CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache),
                     Encoding = Encoding.UTF8,
                 };
                 client.Headers[HttpRequestHeader.UserAgent] = GetUserAgent();
-                var updateUri = new Uri(Settings.URL);
+                var updateUri = new Uri(!Force ? Channel.URL : Channel.URL.Contains('?') ? Channel.URL + "&force=true" : Channel.URL + "?force=true");
                 var updateData = client.DownloadString(updateUri);
                 LatestUpdate = JsonConvert.DeserializeObject<Update>(updateData);
                 LatestUpdateError = null;
@@ -163,13 +201,14 @@ namespace ORTS.Updater
             // if they launch it at 6:00PM on Monday, then 5:30PM on Tuesday, they won't get an update chech on
             // Tuesday. With the time rounding, they should get one check/day if the TTL is 1 day and they open it
             // every day. (This is why BaseDateTimeMidnightLocal uses the local midnight!)
-            State.NextCheck = Settings.TTL.TotalMinutes > 1 ? BaseDateTimeMidnightLocal.AddSeconds(Math.Ceiling((State.LastCheck - BaseDateTimeMidnightLocal).TotalSeconds / Settings.TTL.TotalSeconds) * Settings.TTL.TotalSeconds) : State.LastCheck + TimeSpan.FromMinutes(1);
+            State.NextCheck = Channel.TTL.TotalMinutes > 1 ? BaseDateTimeMidnightLocal.AddSeconds(Math.Ceiling((State.LastCheck - BaseDateTimeMidnightLocal).TotalSeconds / Channel.TTL.TotalSeconds) * Channel.TTL.TotalSeconds) : State.LastCheck + TimeSpan.FromMinutes(1);
             State.Update = "";
             State.Save();
         }
 
         void CacheUpdate(string updateData)
         {
+            Force = false;
             State.Update = updateData;
             State.Save();
         }
@@ -201,7 +240,7 @@ namespace ORTS.Updater
             if (!Directory.Exists(PathUpdateStage))
                 Directory.CreateDirectory(PathUpdateStage);
 
-            var updateUri = new Uri(Settings.URL);
+            var updateUri = new Uri(Channel.URL);
             var uri = new Uri(updateUri, LatestUpdate.Url);
             var client = new WebClient();
             client.Headers[HttpRequestHeader.UserAgent] = GetUserAgent();

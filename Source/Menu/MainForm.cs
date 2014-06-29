@@ -442,9 +442,10 @@ namespace ORTS
 
         void buttonOptions_Click(object sender, EventArgs e)
         {
-            using (var form = new OptionsForm(Settings))
+            using (var form = new OptionsForm(Settings, UpdateManager))
             {
-                form.ShowDialog(this);
+                if (form.ShowDialog(this) == System.Windows.Forms.DialogResult.OK)
+                    CheckForUpdate();
             }
         }
 
