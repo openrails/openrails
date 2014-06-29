@@ -64,22 +64,24 @@ namespace ORTS.Viewer3D
         public double RealTime { get; private set; }
         InfoDisplay InfoDisplay;
         public WindowManager WindowManager { get; private set; }
-        public QuitWindow QuitWindow { get; private set; } // Escape window
         public MessagesWindow MessagesWindow { get; private set; } // Game message window (special, always visible)
         public NoticeWindow NoticeWindow { get; private set; } // Game notices window (special)
         public PauseWindow PauseWindow { get; private set; } // Game paused window (special)
+        public ActivityWindow ActivityWindow { get; private set; } // Activity notices window
+        public QuitWindow QuitWindow { get; private set; } // Escape window
         public HelpWindow HelpWindow { get; private set; } // F1 window
         public TrackMonitorWindow TrackMonitorWindow { get; private set; } // F4 window
         public HUDWindow HUDWindow { get; private set; } // F5 hud
+        public OSDLocations OSDLocations { get; private set; } // F6 platforms/sidings OSD
+        public OSDCars OSDCars { get; private set; } // F7 cars OSD
         public SwitchWindow SwitchWindow { get; private set; } // F8 window
         public TrainOperationsWindow TrainOperationsWindow { get; private set; } // F9 window
-        public CarOperationsWindow CarOperationsWindow { get; private set; } // Car operation window
+        public CarOperationsWindow CarOperationsWindow { get; private set; } // F9 sub-window for car operations
         public NextStationWindow NextStationWindow { get; private set; } // F10 window
         public CompassWindow CompassWindow { get; private set; } // 0 window
-        public ActivityWindow ActivityWindow { get; private set; } // pop-up window
         public TracksDebugWindow TracksDebugWindow { get; private set; } // Control-Alt-F6
         public SignallingDebugWindow SignallingDebugWindow { get; private set; } // Control-Alt-F11 window
-        public ComposeMessage ComposeMessageWindow { get; private set; } // Control-Alt-F11 window
+        public ComposeMessage ComposeMessageWindow { get; private set; } // ??? window
         public static GettextResourceManager Catalog { get; private set; } // Localization dictionary
         // Route Information
         public TileManager Tiles { get; private set; }
@@ -322,19 +324,21 @@ namespace ORTS.Viewer3D
             Catalog = new GettextResourceManager("RunActivity");
 
             WindowManager = new WindowManager(this);
-            QuitWindow = new QuitWindow(WindowManager);
             MessagesWindow = new MessagesWindow(WindowManager);
             NoticeWindow = new NoticeWindow(WindowManager);
             PauseWindow = new PauseWindow(WindowManager);
+            ActivityWindow = new ActivityWindow(WindowManager);
+            QuitWindow = new QuitWindow(WindowManager);
             HelpWindow = new HelpWindow(WindowManager);
             TrackMonitorWindow = new TrackMonitorWindow(WindowManager);
             HUDWindow = new HUDWindow(WindowManager);
+            OSDLocations = new OSDLocations(WindowManager);
+            OSDCars = new OSDCars(WindowManager);
             SwitchWindow = new SwitchWindow(WindowManager);
             TrainOperationsWindow = new TrainOperationsWindow(WindowManager);
             CarOperationsWindow = new CarOperationsWindow(WindowManager);
             NextStationWindow = new NextStationWindow(WindowManager);
             CompassWindow = new CompassWindow(WindowManager);
-            ActivityWindow = new ActivityWindow(WindowManager);
             TracksDebugWindow = new TracksDebugWindow(WindowManager);
             SignallingDebugWindow = new SignallingDebugWindow(WindowManager);
             ComposeMessageWindow = new ComposeMessage(WindowManager);
@@ -647,6 +651,8 @@ namespace ORTS.Viewer3D
             if (UserInput.IsPressed(UserCommands.DisplayHelpWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) HelpWindow.TabAction(); else HelpWindow.Visible = !HelpWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DisplayTrackMonitorWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) TrackMonitorWindow.TabAction(); else TrackMonitorWindow.Visible = !TrackMonitorWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DisplayHUD)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) HUDWindow.TabAction(); else HUDWindow.Visible = !HUDWindow.Visible;
+            if (UserInput.IsPressed(UserCommands.DisplayStationLabels)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) OSDLocations.TabAction(); else OSDLocations.Visible = !OSDLocations.Visible;
+            if (UserInput.IsPressed(UserCommands.DisplayCarLabels)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) OSDCars.TabAction(); else OSDCars.Visible = !OSDCars.Visible;
             if (UserInput.IsPressed(UserCommands.DisplaySwitchWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) SwitchWindow.TabAction(); else SwitchWindow.Visible = !SwitchWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DisplayTrainOperationsWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) TrainOperationsWindow.TabAction(); else { TrainOperationsWindow.Visible = !TrainOperationsWindow.Visible; if (!TrainOperationsWindow.Visible) CarOperationsWindow.Visible = false; }
             if (UserInput.IsPressed(UserCommands.DisplayNextStationWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) NextStationWindow.TabAction(); else NextStationWindow.Visible = !NextStationWindow.Visible;
@@ -942,7 +948,6 @@ namespace ORTS.Viewer3D
         [CallOnThread("Loader")]
         public void Mark()
         {
-            InfoDisplay.Mark();
             WindowManager.Mark();
         }
 

@@ -54,16 +54,6 @@ namespace ORTS.Viewer3D
         readonly DataLogger Logger = new DataLogger();
         readonly int ProcessorCount = System.Environment.ProcessorCount;
 
-        bool DrawCarNumber;
-        // F6 reveals labels for both sidings and platforms.
-        // Booleans for both so they can also be used independently.
-        bool DrawSiding;
-        bool DrawPlatform;
-
-        SpriteBatchMaterial TextMaterial;
-        Label3DMaterial DrawInforMaterial;
-
-        Matrix Identity = Matrix.Identity;
         int FrameNumber;
         double LastUpdateRealTime;   // update text message only 10 times per second
 
@@ -98,8 +88,6 @@ namespace ORTS.Viewer3D
         public InfoDisplay(Viewer viewer)
         {
             Viewer = viewer;
-            TextMaterial = (SpriteBatchMaterial)viewer.MaterialManager.Load("SpriteBatch");
-            DrawInforMaterial = (Label3DMaterial)viewer.MaterialManager.Load("Label3D");
 
             ProcessHandle = OpenProcess(0x410 /* PROCESS_QUERY_INFORMATION | PROCESS_VM_READ */, false, Process.GetCurrentProcess().Id);
             ProcessMemoryCounters = new PROCESS_MEMORY_COUNTERS() { cb = 40 };
@@ -124,26 +112,6 @@ namespace ORTS.Viewer3D
                     DataLoggerStart(Viewer.Settings);
                 else
                     DataLoggerStop();
-            }
-            if (UserInput.IsPressed(UserCommands.DisplayCarLabels))
-                DrawCarNumber = !DrawCarNumber;
-            if (UserInput.IsPressed(UserCommands.DisplayStationLabels))
-            {
-                // Steps along a sequence of 5 states
-                // none > both > sidings only > platforms only > none
-                //   00 >   11 >           10 >             01 >   00
-
-                // Set the first 2 bits of an int
-                int bitArray = 0;
-                bitArray += DrawSiding ? 1 : 0;
-                bitArray += DrawPlatform ? 2 : 0;
-                // Decrement the int to step along the sequence
-                bitArray--;
-                // Extract first 2 bits of the int
-                DrawSiding = ((bitArray & 1) == 1);
-                DrawPlatform = ((bitArray & 2) == 2);
-                // Take modulus 4 to keep in range 0-3. +1 as messages are in range 1-4
-                Viewer.Simulator.Confirmer.Confirm(CabControl.Labels, (CabSetting)(bitArray % 4) + 1);
             }
         }
 
@@ -340,34 +308,6 @@ namespace ORTS.Viewer3D
                 }
 #endif
             }
-            if (DrawSiding == true || DrawPlatform == true)
-            {
-                // TODO: Don't construct new ItemLabelPrimitive on every frame.
-                var worldFiles = Viewer.World.Scenery.WorldFiles;
-                foreach (var worldFile in worldFiles)
-                {
-                    if (DrawSiding == true && worldFile.sidings != null)
-                        foreach (var siding in worldFile.sidings)
-                            frame.AddPrimitive(DrawInforMaterial, new ItemLabelPrimitive(DrawInforMaterial, siding, Color.Coral), RenderPrimitiveGroup.World, ref Identity);
-                    if (DrawPlatform == true && worldFile.platforms != null)
-                        foreach (var platform in worldFile.platforms)
-                            frame.AddPrimitive(DrawInforMaterial, new ItemLabelPrimitive(DrawInforMaterial, platform, Color.Yellow), RenderPrimitiveGroup.World, ref Identity);
-                }
-            }
-            if (DrawCarNumber == true)
-            {
-                // TODO: Don't construct new CarLabelPrimitive on every frame.
-                var cars = Viewer.World.Trains.Cars;
-                foreach (var car in cars.Keys)
-                    frame.AddPrimitive(DrawInforMaterial, new CarLabelPrimitive(DrawInforMaterial, car), RenderPrimitiveGroup.World, ref Identity);
-            }
-        }
-
-        [CallOnThread("Loader")]
-        public void Mark()
-        {
-            TextMaterial.Mark();
-            DrawInforMaterial.Mark();
         }
 
         int GetWorkingSetSize()
@@ -564,78 +504,6 @@ namespace ORTS.Viewer3D
             Viewer.UpdaterProcess.Profiler.Mark();
             Viewer.LoaderProcess.Profiler.Mark();
             Viewer.SoundProcess.Profiler.Mark();
-        }
-    }
-
-    public abstract class InfoLabelPrimitive : RenderPrimitive
-    {
-        public readonly Label3DMaterial Material;
-
-        protected readonly Viewer Viewer;
-        protected readonly Color Color;
-        protected readonly Color Outline;
-
-        protected InfoLabelPrimitive(Label3DMaterial material, Color color, Color outline)
-        {
-            Material = material;
-            Viewer = material.Viewer;
-            Color = color;
-            Outline = outline;
-        }
-
-        protected void DrawLabel(WorldPosition position, float yOffset, string text)
-        {
-            var lineLocation3D = position.XNAMatrix.Translation;
-            lineLocation3D.X += (position.TileX - Viewer.Camera.TileX) * 2048;
-            lineLocation3D.Y += yOffset;
-            lineLocation3D.Z += (Viewer.Camera.TileZ - position.TileZ) * 2048;
-
-            var lineLocation2DStart = Viewer.GraphicsDevice.Viewport.Project(lineLocation3D, Viewer.Camera.XnaProjection, Viewer.Camera.XnaView, Matrix.Identity);
-            if (lineLocation2DStart.Z > 1 || lineLocation2DStart.Z < 0)
-                return; // Out of range or behind the camera
-
-            lineLocation3D.Y += 10;
-            var lineLocation2DEndY = Viewer.GraphicsDevice.Viewport.Project(lineLocation3D, Viewer.Camera.XnaProjection, Viewer.Camera.XnaView, Matrix.Identity).Y;
-
-            var labelLocation2D = Material.GetTextLocation((int)lineLocation2DStart.X, (int)lineLocation2DEndY - Material.Font.Height, text);
-            lineLocation2DEndY = labelLocation2D.Y + Material.Font.Height;
-
-            Material.Font.Draw(Material.SpriteBatch, labelLocation2D, text, Color, Outline);
-            Material.SpriteBatch.Draw(Material.Texture, new Vector2(lineLocation2DStart.X - 1, lineLocation2DEndY), null, Outline, 0, Vector2.Zero, new Vector2(4, lineLocation2DStart.Y - lineLocation2DEndY), SpriteEffects.None, lineLocation2DStart.Z);
-            Material.SpriteBatch.Draw(Material.Texture, new Vector2(lineLocation2DStart.X, lineLocation2DEndY), null, Color, 0, Vector2.Zero, new Vector2(2, lineLocation2DStart.Y - lineLocation2DEndY), SpriteEffects.None, lineLocation2DStart.Z);
-        }
-    }
-
-    public class CarLabelPrimitive : InfoLabelPrimitive
-    {
-        readonly TrainCar Car;
-
-        public CarLabelPrimitive(Label3DMaterial material, TrainCar car)
-            : base(material, Color.Blue, Color.White)
-        {
-            Car = car;
-        }
-
-        public override void Draw(GraphicsDevice graphicsDevice)
-        {
-            if ((Car.Train != null) && (Car.Train.TrainType == Train.TRAINTYPE.AI) && (Car.IsDriveable)) DrawLabel(Car.WorldPosition, Car.HeightM, Car.Train.Name) ;
-            else DrawLabel(Car.WorldPosition, Car.HeightM, Car.CarID);
-        }
-    }
-
-    public class ItemLabelPrimitive : InfoLabelPrimitive
-    {
-        readonly TrItemLabel Item;
-
-        public ItemLabelPrimitive(Label3DMaterial material, TrItemLabel item, Color color)
-            : base(material, color, Color.Black)
-        {
-            Item = item;
-        }
-
-        public override void Draw(GraphicsDevice graphicsDevice)
-        {
-            DrawLabel(Item.Location, 0, Item.ItemName);
         }
     }
 }

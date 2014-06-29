@@ -575,12 +575,12 @@ namespace ORTS.Settings
             Commands[(int)UserCommands.DebugTracks] = new UserCommandKeyInput(0x40, KeyModifiers.Control | KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugWeatherChange] = new UserCommandKeyInput(0x19, KeyModifiers.Alt);
 
-            Commands[(int)UserCommands.DisplayCarLabels] = new UserCommandKeyInput(0x41);
+            Commands[(int)UserCommands.DisplayCarLabels] = new UserCommandModifiableKeyInput(0x41, Commands[(int)UserCommands.DisplayNextWindowTab]);
             Commands[(int)UserCommands.DisplayCompassWindow] = new UserCommandKeyInput(0x0B);
             Commands[(int)UserCommands.DisplayHelpWindow] = new UserCommandModifiableKeyInput(0x3B, Commands[(int)UserCommands.DisplayNextWindowTab]);
             Commands[(int)UserCommands.DisplayHUD] = new UserCommandModifiableKeyInput(0x3F, Commands[(int)UserCommands.DisplayNextWindowTab]);
             Commands[(int)UserCommands.DisplayNextStationWindow] = new UserCommandKeyInput(0x44);
-            Commands[(int)UserCommands.DisplayStationLabels] = new UserCommandKeyInput(0x40);
+            Commands[(int)UserCommands.DisplayStationLabels] = new UserCommandModifiableKeyInput(0x40, Commands[(int)UserCommands.DisplayNextWindowTab]);
             Commands[(int)UserCommands.DisplaySwitchWindow] = new UserCommandKeyInput(0x42);
             Commands[(int)UserCommands.DisplayTrackMonitorWindow] = new UserCommandKeyInput(0x3E);
             Commands[(int)UserCommands.DisplayTrainOperationsWindow] = new UserCommandKeyInput(0x43);

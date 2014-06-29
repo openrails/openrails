@@ -58,6 +58,8 @@ namespace ORTS.Viewer3D.Popups
         public readonly WindowTextFont TextFontSmall;
         public readonly WindowTextFont TextFontSmallOutlined;
 
+        public Label3DMaterial Label3DMaterial { get; private set; }
+
         readonly Material WindowManagerMaterial;
         readonly PopupWindowMaterial PopupWindowMaterial;
         readonly List<Window> Windows = new List<Window>();
@@ -145,6 +147,9 @@ namespace ORTS.Viewer3D.Popups
 
         public void Initialize()
         {
+            // This is needed here (rather that in constructor) because it needs the WindowManager and WindowTextManager up and running first. Sigh.
+            Label3DMaterial = (Label3DMaterial)Viewer.MaterialManager.Load("Label3D");
+
             ScreenChanged();
             UpdateTopMost();
 
@@ -338,6 +343,7 @@ namespace ORTS.Viewer3D.Popups
         {
             WindowManagerMaterial.Mark();
             PopupWindowMaterial.Mark();
+            Label3DMaterial.Mark();
         }
 
         [CallOnThread("Loader")]

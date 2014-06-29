@@ -89,7 +89,6 @@ namespace ORTS {
       , Uncouple
       , Activity
       , Replay
-      , Labels
       , GearBox
       , SignalMode
     }

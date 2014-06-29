@@ -180,12 +180,15 @@
     <Compile Include="Viewer3D\Popups\CarOperationsWindow.cs" />
     <Compile Include="Viewer3D\Popups\CompassWindow.cs" />
     <Compile Include="Viewer3D\Popups\ComposeMessage.cs" />
+    <Compile Include="Viewer3D\Popups\LabelPrimitive.cs" />
     <Compile Include="Viewer3D\Popups\NoticeWindow.cs" />
     <Compile Include="Viewer3D\Popups\HelpWindow.cs" />
     <Compile Include="Viewer3D\Popups\HUDWindow.cs" />
     <Compile Include="Viewer3D\Popups\LayeredWindow.cs" />
     <Compile Include="Viewer3D\Popups\MessagesWindow.cs" />
     <Compile Include="Viewer3D\Popups\NextStationWindow.cs" />
+    <Compile Include="Viewer3D\Popups\OSDCars.cs" />
+    <Compile Include="Viewer3D\Popups\OSDLocations.cs" />
     <Compile Include="Viewer3D\Popups\PauseWindow.cs" />
     <Compile Include="Viewer3D\Popups\QuitWindow.cs" />
     <Compile Include="Viewer3D\Popups\SignallingDebugWindow.cs" />
