@@ -143,9 +143,58 @@ namespace ORTS.Scripting
 
 namespace ORTS.Scripting.Api
 {
+    #region Common
+
+    public abstract class AbstractScriptClass
+    {
+        /// <summary>
+        /// Clock value (in seconds) for the simulation. Starts at activity start time.
+        /// </summary>
+        public Func<float> ClockTime;
+        /// <summary>
+        /// Running total of distance travelled - always positive, updated by train physics.
+        /// </summary>
+        public Func<float> DistanceM;
+    }
+
+    /// <summary>
+    /// Base class for Timer and OdoMeter. Not to be used directly.
+    /// </summary>
+    public class Counter
+    {
+        float EndValue;
+        protected Func<float> CurrentValue;
+
+        public float AlarmValue { get; private set; }
+        public float RemainingValue { get { return EndValue - CurrentValue(); } }
+        public bool Started { get; private set; }
+        public void Setup(float alarmValue) { AlarmValue = alarmValue; }
+        public void Start() { EndValue = CurrentValue() + AlarmValue; Started = true; }
+        public void Stop() { Started = false; }
+        public bool Triggered { get { return Started && CurrentValue() >= EndValue; } }
+    }
+
+    public class Timer : Counter
+    {
+        public Timer(AbstractScriptClass asc)
+        {
+            CurrentValue = asc.ClockTime;
+        }
+    }
+
+    public class OdoMeter : Counter
+    {
+        public OdoMeter(AbstractScriptClass asc)
+        {
+            CurrentValue = asc.DistanceM;
+        }
+    }
+
+    #endregion
+
     #region TrainControlSystem
 
-    public abstract class TrainControlSystem
+    public abstract class TrainControlSystem : AbstractScriptClass
     {
         public bool Activated { get; set; }
 
@@ -197,14 +246,6 @@ namespace ORTS.Scripting.Api
         /// Train's actual absolute speed.
         /// </summary>
         public Func<float> SpeedMpS;
-        /// <summary>
-        /// Clock value (in seconds) for the simulation. Starts at activity start time.
-        /// </summary>
-        public Func<float> ClockTime;
-        /// <summary>
-        /// Running total of distance travelled - always positive, updated by train physics.
-        /// </summary>
-        public Func<float> DistanceM;
         /// <summary>
         /// True if train direction is reverse.
         /// </summary>
@@ -384,26 +425,6 @@ namespace ORTS.Scripting.Api
         public abstract void SetEmergency(bool emergency);
     }
 
-    /// <summary>
-    /// Base class for Timer and OdoMeter. Not to be used directly.
-    /// </summary>
-    public class Counter
-    {
-        float EndValue;
-        protected Func<float> CurrentValue;
-
-        public float AlarmValue { get; private set; }
-        public float RemainingValue { get { return EndValue - CurrentValue(); } }
-        public bool Started { get; private set; }
-        public void Setup(float alarmValue) { AlarmValue = alarmValue; }
-        public void Start() { EndValue = CurrentValue() + AlarmValue; Started = true; }
-        public void Stop() { Started = false; }
-        public bool Triggered { get { return Started && CurrentValue() >= EndValue; } }
-    }
-
-    public class Timer : Counter { public Timer(TrainControlSystem tcs) { CurrentValue = tcs.ClockTime; } }
-    public class OdoMeter : Counter { public OdoMeter(TrainControlSystem tcs) { CurrentValue = tcs.DistanceM; } }
-
     // Represents the same enum as TrackMonitorSignalAspect
     /// <summary>
     /// A signal aspect, as shown on track monitor
@@ -498,7 +519,7 @@ namespace ORTS.Scripting.Api
 
     #region BrakeController
 
-    public abstract class BrakeController
+    public abstract class BrakeController : AbstractScriptClass
     {
         /// <summary>
         /// True if the Graduated Brake Release setting is set.

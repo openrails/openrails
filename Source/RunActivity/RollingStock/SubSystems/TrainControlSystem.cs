@@ -214,14 +214,17 @@ namespace ORTS
                     Sounds.Add(Script, soundPath);
             }
 
+            // AbstractScriptClass
             Script.ClockTime = () => (float)Simulator.ClockTime;
             Script.DistanceM = () => Locomotive.DistanceM;
+
+            // TrainControlSystem
             Script.IsDirectionReverse = () => Locomotive.Direction == Direction.Reverse;
             Script.IsBrakeEmergency = () => Locomotive.TrainBrakeController.EmergencyBraking;
             Script.IsBrakeFullService = () => Locomotive.TrainBrakeController.TCSFullServiceBraking;
             Script.TrainLengthM = () => Locomotive.Train != null ? Locomotive.Train.Length : 0f;
             Script.SpeedMpS = () => Math.Abs(Locomotive.SpeedMpS);
-            Script.BrakePipePressureBar = () => Locomotive.BrakeSystem != null ? KPa.ToBar(KPa.FromPSI(Locomotive.BrakeSystem.BrakeLine1PressurePSI)) : float.MaxValue;
+            Script.BrakePipePressureBar = () => Locomotive.BrakeSystem != null ? Bar.FromPSI(Locomotive.BrakeSystem.BrakeLine1PressurePSI) : float.MaxValue;
             Script.CurrentSignalSpeedLimitMpS = () => Locomotive.Train.allowedMaxSpeedSignalMpS;
             Script.CurrentPostSpeedLimitMpS = () => Locomotive.Train.allowedMaxSpeedLimitMpS;
             Script.IsAlerterEnabled = () => this.IsAlerterEnabled;
