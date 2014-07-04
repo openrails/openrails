@@ -764,7 +764,9 @@ namespace ORTS.Viewer3D
                 pass.Begin();
                 foreach (var item in renderItems)
                 {
-                    Matrix wvp = item.XNAMatrix * XNAViewMatrix * Camera.XNASkyProjection;
+                    // Glow lights were not working properly because farPlaneDistance used by XNASkyProjection is hardcoded at 6100.  So when view distance was greater than 6100, the 
+                    // glow lights were unable to render properly.
+                    Matrix wvp = item.XNAMatrix * XNAViewMatrix * Viewer.Camera.XnaProjection;
                     shader.SetMatrix(ref wvp);
                     shader.SetFade(((LightPrimitive)item.RenderPrimitive).Fade);
                     shader.CommitChanges();
@@ -824,7 +826,9 @@ namespace ORTS.Viewer3D
                 pass.Begin();
                 foreach (var item in renderItems)
                 {
-                    Matrix wvp = item.XNAMatrix * XNAViewMatrix * Camera.XNASkyProjection;
+                    // Light cone was originally using XNASkyProjection, but with no problems.
+                    // Switched to Viewer.Camera.XnaProjection to keep the standard since farPlaneDistance used by XNASkyProjection is limited to 6100.
+                    Matrix wvp = item.XNAMatrix * XNAViewMatrix * Viewer.Camera.XnaProjection;
                     shader.SetMatrix(ref wvp);
                     shader.SetFade(((LightPrimitive)item.RenderPrimitive).Fade);
                     shader.CommitChanges();
