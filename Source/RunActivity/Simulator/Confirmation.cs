@@ -15,9 +15,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using ORTS.Viewer3D;
 using ORTS.Settings;
+using ORTS.Viewer3D;
+using System;
+using System.Diagnostics;
 
 namespace ORTS {
     public enum ConfirmLevel
@@ -192,10 +193,10 @@ namespace ORTS {
                 , new string [] { GetString("Uncouple After") } 
                 , new string [] { GetString("Activity"), GetString("quit"), null, GetString("resume") } 
                 , new string [] { GetString("Replay"), null, null, null, null, null, GetString("Overriding camera replay. Press Escape to resume camera replay.") } 
-                , new string [] { GetString("Location labels"), GetParticularString("Labels", "none"), GetString("sidings"), GetString("stations"), GetString("stations and sidings") } 
                 , new string [] { GetString("Gearbox"), null, null, null, GetString("down"), GetString("up"), GetString("locked. Use shaft before changing gear.") } 
                 , new string [] { GetString("Signal mode"), GetString("manual"), null, GetString("auto"), null, null, GetString("locked. Stop train, then re-try.") } 
             };
+            Debug.Assert(ConfirmText.Length == Enum.GetNames(typeof(CabControl)).Length, "Number of entries indexer ConfirmText must match values in CabControl enum.");
         }
 
         #region Control confirmation
