@@ -117,8 +117,8 @@ namespace ORTS.Viewer3D.Popups
                     {
                         var line = cl.AddLayoutHorizontal(TextHeight);
                         line.Add(new Label(colWidth * 4, line.RemainingHeight, Viewer.Catalog.GetString("Task")));
-                        line.Add(new Label(colWidth * 9, line.RemainingHeight, Viewer.Catalog.GetString("Car(s)")));
-						line.Add(new Label(colWidth * 6, line.RemainingHeight, Viewer.Catalog.GetString("Location")));
+                        line.Add(new Label(colWidth * 8, line.RemainingHeight, Viewer.Catalog.GetString("Car(s)")));
+						line.Add(new Label(colWidth * 7, line.RemainingHeight, Viewer.Catalog.GetString("Location")));
 						line.Add(new Label(colWidth * 6, line.RemainingHeight, Viewer.Catalog.GetString("Status")));
                     }
                     cl.AddHorizontalSeparator();
@@ -158,6 +158,7 @@ namespace ORTS.Viewer3D.Popups
                                     var location = "";
                                     var locationShown = false;
 									var wagonIdx = 0;
+                                    var locationFirst = "";
                                     foreach (MSTS.Formats.WorkOrderWagon wagonItem in eventAction.WagonList.WorkOrderWagonList)
                                     {
                                         if (locationShown) {
@@ -205,12 +206,16 @@ namespace ORTS.Viewer3D.Popups
                                             }
                                         }
                                         line.Add(new Label(colWidth * 3, line.RemainingHeight, wagonName));
-                                        line.Add(new Label(colWidth * 6, line.RemainingHeight, wagonType));
+                                        line.Add(new Label(colWidth * 5, line.RemainingHeight, wagonType));
 
                                         // Location column
-                                        if (locationShown) {
-                                            line.AddSpace(colWidth * 6, 0);
-                                        } else {
+                                        if (locationShown &&
+                                            !((eventAction.Type == MSTS.Formats.EventType.PickUpPassengers)||(eventAction.Type == MSTS.Formats.EventType.PickUpWagons)))
+                                        {
+                                            line.AddSpace(colWidth * 7, 0);
+                                        }
+                                        else
+                                        {
                                             var sidingId = eventAction.Type == MSTS.Formats.EventType.AssembleTrainAtLocation
                                                 || eventAction.Type == MSTS.Formats.EventType.DropOffWagonsAtLocation
                                                 ? (uint)eventAction.SidingId : wagonItem.SidingId;
@@ -221,11 +226,15 @@ namespace ORTS.Viewer3D.Popups
                                                     break;
                                                 }
                                             }
-                                            line.Add(new Label(colWidth * 6, line.RemainingHeight, location));
+                                            if ( locationFirst != location )
+                                            line.Add(new Label(colWidth * 7, line.RemainingHeight, location));
+                                            else if ((eventAction.Type == MSTS.Formats.EventType.PickUpPassengers) || (eventAction.Type == MSTS.Formats.EventType.PickUpWagons))
+                                                line.AddSpace(colWidth * 7, 0);
+                                            locationFirst = location;
                                             locationShown = true;
                                         }
 										// Status column
-										if (@event.TimesTriggered == 1 &&wagonIdx == 0) line.Add(new Label(colWidth, line.RemainingHeight, Viewer.Catalog.GetString("Done")));
+										if (@event.TimesTriggered == 1 &&wagonIdx == 0) line.Add(new Label(colWidth * 6, line.RemainingHeight, Viewer.Catalog.GetString("Done")));
 										else line.Add(new Label(colWidth, line.RemainingHeight, ""));
 										wagonIdx++;
 
