@@ -29,6 +29,9 @@ using System.IO;
 using System.Linq;
 using MSTS.Formats;
 using ORTS.Common;
+#if ACTIVITY_EDITOR
+using LibAE.Formats;
+#endif
 
 namespace ORTS
 {
@@ -38,6 +41,9 @@ namespace ORTS
     {
         public TrackDB TrackDB;
         public TSectionDatFile TSectionDat;
+#if ACTIVITY_EDITOR
+        public ORRouteConfig orRouteConfig { get; protected set; }
+#endif
         public AIPathNode FirstNode;    // path starting node
         //public AIPathNode LastVisitedNode; not used anymore
         public List<AIPathNode> Nodes = new List<AIPathNode>();
@@ -48,12 +54,19 @@ namespace ORTS
         /// First creates all the nodes and then links them together into a main list
         /// with optional parallel siding list.
         /// </summary>
+#if ACTIVITY_EDITOR
+        public AIPath(TDBFile TDB, TSectionDatFile tsectiondat, string filePath, ORRouteConfig orRouteConf)
+#else
         public AIPath(TDBFile TDB, TSectionDatFile tsectiondat, string filePath)
+#endif
         {
             PATFile patFile = new PATFile(filePath);
             pathName = patFile.Name;
             TrackDB = TDB.TrackDB;
             TSectionDat = tsectiondat;
+#if ACTIVITY_EDITOR
+            orRouteConfig = orRouteConf;
+#endif
 
             foreach (TrPathNode tpn in patFile.TrPathNodes)
                 Nodes.Add(new AIPathNode(tpn, patFile.TrackPDPs[(int)tpn.fromPDP], TrackDB));

@@ -59,7 +59,7 @@ namespace LibAE.Formats
         /// <summary>
         /// The underlying signal object as referenced by the TrItem.
         /// </summary>
-        public SignalObject Signal;
+        public AESignalObject Signal;
 
         public PointF Dir;
         public bool hasDir = false;
@@ -96,7 +96,7 @@ namespace LibAE.Formats
         /// </summary>
         /// <param name="sideItem"></param>
         /// <param name="signal"></param>
-        public AESignalItem(SignalItem item, SignalObject signal, TDBFile TDB)
+        public AESignalItem(SignalItem item, AESignalObject signal, TDBFile TDB)
         {
             typeItem = (int)TypeItem.SIGNAL_ITEM;
             Item = item;
@@ -180,6 +180,7 @@ namespace LibAE.Formats
     }
 
     #endregion
+
     #region CrossOver
 
     /// <summary>
@@ -273,16 +274,18 @@ namespace LibAE.Formats
             parentStation = (StationItem)ownParent;
         }
 
-        public void searchPaths(AETraveller myTravel, List<TrackSegment> listConnectors, MSTSItems aeItems, StationItem parent)
+        public List<StationPath> searchPaths(AETraveller myTravel, List<TrackSegment> listConnectors, MSTSItems aeItems, StationItem parent)
         {
+            List<StationPath> paths;
             if (!Configured)
-                return;
+                return null;
             if (stationPaths == null)
             {
                 stationPaths = new StationPaths();
             }
             stationPaths.Clear();
-            stationPaths.explore(myTravel, listConnectors, aeItems, parent);
+            paths = stationPaths.explore(myTravel, listConnectors, aeItems, parent);
+            return paths;
         }
 
         public void highlightTrackFromArea(MSTSItems aeItems)
@@ -344,7 +347,7 @@ namespace LibAE.Formats
     #region SideItem
 
     /// <summary>
-    /// Defines a siding sideItem
+    /// Defines a siding sideItem  (platform, difing or passing)
     /// SideStartItem is the place where the Siding Label is attached
     /// SideEndItem is the end place
     /// </summary>

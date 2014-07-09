@@ -11,8 +11,6 @@ namespace ActivityEditor.Preference
 {
     public partial class Options : Form
     {
-        private Rectangle tabArea;
-        private RectangleF tabTextArea;
         List<string> routePaths;
 
         public Options()

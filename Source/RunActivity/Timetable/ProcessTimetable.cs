@@ -723,7 +723,11 @@ namespace ORTS
             foreach (string thisRoute in routeNames)
             {
                 // read route
+#if ACTIVITY_EDITOR
+                AIPath newPath = new AIPath(simulator.TDB, simulator.TSectionDat, thisRoute, simulator.orRouteConfig);
+#else
                 AIPath newPath = new AIPath(simulator.TDB, simulator.TSectionDat, thisRoute);
+#endif
                 Paths.Add(thisRoute, newPath);
             }
         }
@@ -743,7 +747,11 @@ namespace ORTS
             }
             else
             {
+#if ACTIVITY_EDITOR
+                outPath = new AIPath(simulator.TDB, simulator.TSectionDat, formedpathFilefull, simulator.orRouteConfig);
+#else
                 outPath = new AIPath(simulator.TDB, simulator.TSectionDat, formedpathFilefull);
+#endif
                 Paths.Add(formedpathFilefull, new AIPath(outPath));
             }
 

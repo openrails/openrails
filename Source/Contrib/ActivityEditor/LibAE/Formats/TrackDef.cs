@@ -11,6 +11,7 @@ using ORTS.Common;
 
 namespace LibAE.Formats
 {
+#if false
     //================================================================================================//
     //
     // class TrackCircuitSection
@@ -484,7 +485,6 @@ namespace LibAE.Formats
 
     }
 
-#if false
     //================================================================================================//
     //
     // class TrackCircuitXRefList
@@ -579,7 +579,6 @@ namespace LibAE.Formats
         }
     } // class TrackCircuitXRefList
     
-#endif
     //================================================================================================//
     //
     // class TrackCircuitSignalList
@@ -682,6 +681,7 @@ namespace LibAE.Formats
             }
         }
     }
+#endif
 
 
 }

@@ -197,7 +197,7 @@ namespace LibAE.Formats
                 }
 
             }
-            catch (IOException e)
+            catch (IOException)
             {
                 fileName += ".act.json";
                 p = new ActivityInfo();

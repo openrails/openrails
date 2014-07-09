@@ -45,6 +45,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
+#if ACTIVITY_EDITOR
+using LibAE;
+using LibAE.Formats;
+using LibAE.Common;
+#endif
 
 namespace ORTS
 {
@@ -132,6 +137,9 @@ namespace ORTS
         public Confirmer Confirmer;                 // Set by the Viewer
         public Event SoundNotify = Event.None;
         public ScriptManager ScriptManager;
+#if ACTIVITY_EDITOR
+        public ORRouteConfig orRouteConfig;
+#endif
 
         public Simulator(UserSettings settings, string activityPath, bool useOpenRailsDirectory)
         {
@@ -180,6 +188,12 @@ namespace ORTS
             if (File.Exists(RoutePath + @"\TSECTION.DAT"))
                 TSectionDat.AddRouteTSectionDatFile(RoutePath + @"\TSECTION.DAT");
 
+#if ACTIVITY_EDITOR
+            //  Where we try to load OR's specific data description (Station, connectors, etc...)
+            orRouteConfig = ORRouteConfig.LoadConfig(TRK.Tr_RouteFile.FileName, RoutePath, TypeEditor.NONE);
+            orRouteConfig.SetTraveller(TSectionDat, TDB);
+#endif
+
             RailDriver = new RailDriverHandler(BasePath);
 
             Trace.Write(" ACT");
@@ -200,6 +214,7 @@ namespace ORTS
 
             HazzardManager = new HazzardManager(this);
             ScriptManager = new ScriptManager(this);
+
         }
 
         public void SetActivity(string activityPath)
@@ -666,7 +681,11 @@ namespace ORTS
             //PathName = patFile.Name;
             // This is the position of the back end of the train in the database.
             //PATTraveller patTraveller = new PATTraveller(patFileName);
+#if ACTIVITY_EDITOR
+            AIPath aiPath = new AIPath(TDB, TSectionDat, patFileName, orRouteConfig);
+#else
             AIPath aiPath = new AIPath(TDB, TSectionDat, patFileName);
+#endif
             PathName = aiPath.pathName;
 
             if (aiPath.Nodes == null)

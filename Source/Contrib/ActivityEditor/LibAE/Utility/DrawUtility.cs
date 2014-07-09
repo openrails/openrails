@@ -527,7 +527,6 @@ namespace LibAE
 	#endif
         public static PointF FindCurveIntersection(AESegment segArea, AESegment track)
         {
-            int j = 0;
             PointF pointA = track.startPoint;
             PointF pointB = track.endPoint;
             AESegment partTrack;

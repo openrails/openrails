@@ -153,8 +153,10 @@ TrackPath (
 		/// <param name="filePath">path to the PAT file, including full path and extension</param>
         public PATFile(string filePath)
         {
-            using (STFReader stf = new STFReader(filePath, false))
-                stf.ParseFile(new STFReader.TokenProcessor[] {
+            try
+            {
+                using (STFReader stf = new STFReader(filePath, false))
+                    stf.ParseFile(new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("trackpdps", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
                         new STFReader.TokenProcessor("trackpdp", ()=>{ trackPDPs.Add(new TrackPDP(stf)); }),
                     });}),
@@ -180,6 +182,10 @@ TrackPath (
                         }),
                     });}),
                 });
+            }
+            catch
+            {
+            }
         }
 
         public override string ToString()
@@ -215,6 +221,17 @@ TrackPath (
             invalidFlag = stf.ReadInt(null);
             stf.SkipRestOfBlock();
         }
+
+        public TrackPDP(TrItem item)
+        {
+            TileX = item.TileX;
+            TileZ = item.TileZ;
+            X = item.X;
+            Y = item.Y;
+            Z = item.Z;
+            junctionFlag = 0;
+            invalidFlag = 0;
+        }
 	}
 
     // for an explanation, see class PATfile 
@@ -235,6 +252,14 @@ TrackPath (
             nextSidingNode = stf.ReadUInt(null);
             fromPDP = stf.ReadUInt(null);
             stf.SkipRestOfBlock();
+        }
+
+        public TrPathNode (uint flags, uint nextNode, uint nextSiding, uint pdp)
+        {
+            pathFlags = flags;
+            nextMainNode = nextNode;
+            nextSidingNode = nextSiding;
+            fromPDP = pdp;
         }
     }
 }

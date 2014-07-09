@@ -513,12 +513,15 @@ namespace LibAE.Formats
         public float icoAngle;
         [JsonProperty("areaCompleted")]
         public bool areaCompleted;
+        [JsonProperty("configuredBuffer")]
+        public List<AEBufferItem> insideBuffers;
+
         [JsonIgnore]
         private List<TrackSegment> segmentsInStation;
         [JsonIgnore]
         public AETraveller traveller { get; protected set; }
-        [JsonProperty("configuredBuffer")]
-        public List<AEBufferItem> insideBuffers;
+        [JsonIgnore]
+        public StationPathsHelper StationPathsHelper;
 
         public StationItem(TypeEditor interfaceType, AETraveller travel)
         {
@@ -529,6 +532,7 @@ namespace LibAE.Formats
             this.segmentsInStation = new List<TrackSegment>();
             this.traveller = travel;
             insideBuffers = new List<AEBufferItem>();
+            StationPathsHelper = new StationPathsHelper(this.GetPaths);
         }
 
         public override void alignEdition(TypeEditor interfaceType, GlobalItem ownParent)
@@ -730,7 +734,30 @@ namespace LibAE.Formats
                 AddBuffers(orRouteConfig, aeItems.buffers);
                 checkForNewConnector(orRouteConfig, aeItems, tileBase);
                 areaCompleted = true;
-                searchForTrackSegments(orRouteConfig, aeItems, tileBase);
+                searchForPaths(orRouteConfig, aeItems, tileBase);
+                GetPaths();
+            }
+        }
+        public void GetPaths()
+        {
+            List<StationPath> paths = null;
+            for (int i = 0; i < this.stationArea.Count; i++)
+            {
+                StationAreaItem item = this.stationArea[i];
+                if (item.IsInterface() && item.stationConnector.getLineSegment() != null &&
+                    (item.stationConnector.getDirConnector() == AllowedDir.IN ||
+                    item.stationConnector.getDirConnector() == AllowedDir.InOut))
+                {
+                    paths = item.stationConnector.stationPaths.getPaths();
+                    StationPathsHelper.Add(item.stationConnector.getLabel(), paths);
+                }
+            }
+            foreach (AEBufferItem buffer in insideBuffers)
+            {
+                if (buffer.stationPaths == null)
+                    continue;
+                paths = buffer.stationPaths.getPaths();
+                StationPathsHelper.Add(buffer.NameBuffer, paths);
             }
         }
 
@@ -861,8 +888,11 @@ namespace LibAE.Formats
             }
         }
 
-        public void searchForTrackSegments(ORRouteConfig orRouteConfig, MSTSItems aeItems, MSTSBase tileBase)
+        public void searchForPaths(ORRouteConfig orRouteConfig, MSTSItems aeItems, MSTSBase tileBase)
         {
+            List<StationPath> paths = null;
+            //StationPathsHelper.Clear();
+            
             for (int i = 0; i < this.stationArea.Count; i++)
             {
                 double positiveInfinity = double.PositiveInfinity;
@@ -878,7 +908,7 @@ namespace LibAE.Formats
                     PointF position = myTravel.getCoordinate();
                     if (FindItemExact(position, positiveInfinity, aeItems) == 0.0)
                     {
-                        item.stationConnector.searchPaths(myTravel, getListConnector(), aeItems, this);
+                        paths = item.stationConnector.searchPaths(myTravel, getListConnector(), aeItems, this);
                     }
                     else
                     {
@@ -887,9 +917,10 @@ namespace LibAE.Formats
                         position = myTravel.getCoordinate();
                         if (this.FindItemExact(position, positiveInfinity, aeItems) == 0.0)
                         {
-                            item.stationConnector.searchPaths(myTravel, getListConnector(), aeItems, this);
+                            paths = item.stationConnector.searchPaths(myTravel, getListConnector(), aeItems, this);
                         }
                     }
+                    //StationPathsHelper.Add(item.stationConnector.getLabel(), paths);
                 }
             }
             foreach (AEBufferItem buffer in insideBuffers)
@@ -898,7 +929,8 @@ namespace LibAE.Formats
                 myTravel.place((int)buffer.Coord.TileX, (int)buffer.Coord.TileY, buffer.Coord.X, buffer.Coord.Y);
                 if (myTravel.EndNodeAhead() != null)
                     myTravel.ReverseDirection();
-                buffer.searchPaths(myTravel, getListConnector(), aeItems, this);
+                paths = buffer.searchPaths(myTravel, getListConnector(), aeItems, this);
+                //StationPathsHelper.Add(buffer.NameBuffer, paths);
             }
         }
 
@@ -983,7 +1015,6 @@ namespace LibAE.Formats
             List<System.Drawing.PointF> poly = getPolyPoints();
             int i, j = poly.Count - 1;
             bool oddNodes = false;
-            double dist = double.PositiveInfinity;
             PointF placeNormalized = place.ConvertToPointF();
 
             isSeen = false;
@@ -1142,7 +1173,7 @@ namespace LibAE.Formats
         public float angle;
         [JsonProperty("Configured")]
         bool configured;
-        [JsonIgnore]
+        [JsonProperty("StationPaths")]
         public StationPaths stationPaths { get; protected set; }
         [JsonProperty("ChainedConnector")]
         public string ChainedConnector { get; protected set; }    // Circle chain
@@ -1256,14 +1287,15 @@ namespace LibAE.Formats
             }
         }
 
-        public void searchPaths(AETraveller myTravel, List<TrackSegment> listConnector, MSTSItems aeItems, StationItem parent)
+        public List<StationPath> searchPaths(AETraveller myTravel, List<TrackSegment> listConnector, MSTSItems aeItems, StationItem parent)
         {
             if (stationPaths == null)
             {
                 stationPaths = new StationPaths();
             }
             stationPaths.Clear();
-            stationPaths.explore(myTravel, listConnector, aeItems, parent);
+            List<StationPath> paths = stationPaths.explore(myTravel, listConnector, aeItems, parent);
+            return paths;
         }
 
  
@@ -1411,18 +1443,12 @@ namespace LibAE.Formats
 
         public bool setSnap()
         {
-            int i;
-            if (associateNode.Index == 3)
-                i = 0;
             snapped = true;
             return snapped;
         }
 
         public bool setSnaps(MSTSItems aeItems)
         {
-            int i;
-            if (associateNode.Index == 3)
-                i = 0;
             snapped = true;
             var indexClosest = (int)associateNodeIdx;
             foreach (var segment in aeItems.segments)
@@ -1437,9 +1463,6 @@ namespace LibAE.Formats
 
         public bool setAreaSnaps(MSTSItems aeItems)
         {
-            int i;
-            if (associateNode.Index == 3)
-                i = 0;
             snapped = true;
             //var indexClosest = (int)associateNodeIdx;
             //foreach (var segment in mstsItems.segments)
@@ -1454,9 +1477,6 @@ namespace LibAE.Formats
 
         public bool unsetSnap()
         {
-            int i;
-            if (associateNode.Index == 3)
-                i = 0;
             snapped = false;
             return snapped;
         }
@@ -1501,11 +1521,6 @@ namespace LibAE.Formats
         public void OutStation()
         {
             unsetEditable();
-        }
-
-        public override void Edit()
-        {
-            int i = 0;
         }
     }
 

@@ -250,7 +250,7 @@ namespace LibAE.Formats
                 }
 
             }
-            catch (IOException e)
+            catch (IOException)
             {
                 p = new ORRouteConfig();
                 p.FileName = Path.GetFileName(fileName);
@@ -306,11 +306,8 @@ namespace LibAE.Formats
             {
                 if (item2.GetType() == typeof(StationItem))
                     continue;
-                if (item2.typeItem == (int)TypeItem.BUFFER_ITEM) // && item2.associateNodeIdx == 16)
-                {
-                    int i = 0;
-                }
-
+                if (!item2.IsEditable() && !item2.IsMovable() && !item2.IsRotable())
+                    continue;
                 item2.SynchroLocation();
                 positiveInfinity = item2.FindItem(point, snapSize, actualDist, aeItems);
                 if ((((item != null) && (positiveInfinity <= actualDist)) && ((positiveInfinity == 0.0) || item2.isItSeen())) || (item == null))
@@ -323,11 +320,6 @@ namespace LibAE.Formats
             {
                 foreach (GlobalItem item2 in AllItems)
                 {
-                    if (item2.typeItem == (int)TypeItem.BUFFER_ITEM && item2.associateNodeIdx == 22)
-                    {
-                        int i = 0;
-                    }
-
                     item2.SynchroLocation();
                     positiveInfinity = item2.FindItem(point, snapSize, actualDist, aeItems);
                     if ((((item != null) && (positiveInfinity <= actualDist)) && ((positiveInfinity == 0.0) || item2.isItSeen())) || (item == null))

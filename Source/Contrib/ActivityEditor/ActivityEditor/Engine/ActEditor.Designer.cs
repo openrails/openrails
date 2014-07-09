@@ -40,6 +40,7 @@ namespace ActivityEditor
             this.activityToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.trafficToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.metadataToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadMetada = new System.Windows.Forms.ToolStripMenuItem();
@@ -81,7 +82,6 @@ namespace ActivityEditor
             this.tagActivity = new System.Windows.Forms.ToolStripButton();
             this.wizardPageSR = new AEWizard.SelectRoute();
             this.wizardPageAD = new AEWizard.ActivityDescr();
-            this.metadataToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.informationPanel.SuspendLayout();
@@ -133,6 +133,7 @@ namespace ActivityEditor
             this.activityToolStripMenuItem.Name = "activityToolStripMenuItem";
             this.activityToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.activityToolStripMenuItem.Text = "Activity";
+            this.activityToolStripMenuItem.ToolTipText = "Click to start new Activity Description (not ready)";
             this.activityToolStripMenuItem.Click += new System.EventHandler(this.activityToolStripMenuItem_Click);
             // 
             // trafficToolStripMenuItem
@@ -140,6 +141,7 @@ namespace ActivityEditor
             this.trafficToolStripMenuItem.Name = "trafficToolStripMenuItem";
             this.trafficToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.trafficToolStripMenuItem.Text = "Traffic";
+            this.trafficToolStripMenuItem.ToolTipText = "Click to create new Traffic description (not ready)";
             this.trafficToolStripMenuItem.Click += new System.EventHandler(this.trafficToolStripMenuItem_Click);
             // 
             // saveToolStripMenuItem
@@ -151,6 +153,13 @@ namespace ActivityEditor
             this.saveToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.saveToolStripMenuItem.Text = "Save";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
+            // 
+            // metadataToolStripMenuItem
+            // 
+            this.metadataToolStripMenuItem.Name = "metadataToolStripMenuItem";
+            this.metadataToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.metadataToolStripMenuItem.Text = "Metadata";
+            this.metadataToolStripMenuItem.Click += new System.EventHandler(this.SaveRouteCfg);
             // 
             // saveAsToolStripMenuItem
             // 
@@ -165,6 +174,7 @@ namespace ActivityEditor
             this.loadToolStripMenuItem.Name = "loadToolStripMenuItem";
             this.loadToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.loadToolStripMenuItem.Text = "Load Activity";
+            this.loadToolStripMenuItem.ToolTipText = "Click to load an existing OR Activity (not ready)";
             this.loadToolStripMenuItem.Click += new System.EventHandler(this.loadToolStripMenuItem_Click);
             // 
             // loadMetada
@@ -172,6 +182,7 @@ namespace ActivityEditor
             this.loadMetada.Name = "loadMetada";
             this.loadMetada.Size = new System.Drawing.Size(152, 22);
             this.loadMetada.Text = "Load Metada";
+            this.loadMetada.ToolTipText = "Click to Edit Metadata for a specified route";
             this.loadMetada.Click += new System.EventHandler(this.UpdateRouteCfg);
             // 
             // quitToolStripMenuItem
@@ -313,8 +324,8 @@ namespace ActivityEditor
             // 
             // routeData
             // 
-            this.routeData.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.routeData.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.routeData.Location = new System.Drawing.Point(1, 10);
             this.routeData.Name = "routeData";
             this.routeData.Size = new System.Drawing.Size(190, 500);
@@ -524,13 +535,6 @@ namespace ActivityEditor
             this.wizardPageAD.Size = new System.Drawing.Size(497, 313);
             this.wizardPageAD.TabIndex = 3;
             this.wizardPageAD.Visible = false;
-            // 
-            // metadataToolStripMenuItem
-            // 
-            this.metadataToolStripMenuItem.Name = "metadataToolStripMenuItem";
-            this.metadataToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.metadataToolStripMenuItem.Text = "Metadata";
-            this.metadataToolStripMenuItem.Click += new System.EventHandler(this.SaveRouteCfg);
             // 
             // ActEditor
             // 

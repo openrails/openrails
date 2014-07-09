@@ -21,6 +21,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>pdbonly</DebugType>
@@ -53,7 +55,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\AEDefinitions.cs" />
     <Compile Include="AEUtility.cs" />
     <Compile Include="Divers.cs" />
     <Compile Include="Formats\ActivityInfo.cs" />
@@ -62,7 +63,7 @@
     <Compile Include="Formats\ORRouteConfig.cs" />
     <Compile Include="Formats\PathEvent.cs" />
     <Compile Include="Formats\RouteItems.cs" />
-    <Compile Include="Formats\Signals.cs" />
+    <Compile Include="Formats\AESignals.cs" />
     <Compile Include="Formats\StationPath.cs" />
     <Compile Include="Formats\TrackDef.cs" />
     <Compile Include="MSTSCoord.cs" />
@@ -79,6 +80,10 @@
     <EmbeddedResource Include="Icon\Wait.ico" />
   </ItemGroup>
   <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Activities\" />
+    <Folder Include="Common\" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\MSTS.Formats\MSTS.Formats.csproj">
       <Project>{570709fa-0c8a-4b1d-ba2d-d9455afd9b5c}</Project>

@@ -54,10 +54,8 @@ namespace ActivityEditor.Engine
         Pen orangePen = new Pen(Color.Orange);
         Pen darkGrayPen = new Pen(Color.DarkGray);
         Pen bluePen = new Pen(Color.Blue);
-        Icon WPIcon;
         Icon StationIcon;
         Icon TagIcon;
-        Icon RevIcon;
         Icon SignalIco;
         Icon ShuntIco;
         Icon OtherSigIco;
@@ -463,10 +461,6 @@ namespace ActivityEditor.Engine
                     {
                         if (line.isSnap())
                         {
-                            int i;
-                            if (line.associateNode.Index == 3)
-                                i = 0;
-
                             if (Program.aePreference.ShowSnapLine && Program.aePreference.PlSiZoom >= usedScale)
                             {
                                 g.DrawRectangle(pen, (int)scaledA.X, (int)scaledA.Y, 5, 5);

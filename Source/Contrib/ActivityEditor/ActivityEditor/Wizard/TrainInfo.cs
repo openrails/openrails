@@ -93,7 +93,7 @@ namespace AEWizard
         /// Override this method to specify some action the user must take
         /// when the Back button is pressed.
         /// </remarks>
-        protected internal virtual string OnWizardBack()
+        protected internal override string OnWizardBack()
         {
             // Move to the default previous page in the wizard
             Wizard.SetWizardButtons(WizardButton.Next);
@@ -131,7 +131,7 @@ namespace AEWizard
         /// Override this method to specify some action the user must take
         /// when the Next button is pressed.
         /// </remarks>
-        protected internal virtual string OnWizardNext()
+        protected internal override string OnWizardNext()
         {
             // Move to the default next page in the wizard
             return WizardForm.NextPage;

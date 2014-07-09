@@ -133,7 +133,7 @@ namespace ActivityEditor.Preference
                     p = xs.Deserialize(rd) as AEPreference;
                 }
             }
-            catch (IOException e)
+            catch (IOException)
             {
                 p = new AEPreference();
             }

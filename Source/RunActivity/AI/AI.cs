@@ -377,8 +377,11 @@ namespace ORTS
 
             // Patch Placingproblem - JeroenP
             // 
-
+#if ACTIVITY_EDITOR
+            AIPath aiPath = new AIPath(Simulator.TDB, Simulator.TSectionDat, pathFileName, Simulator.orRouteConfig);
+#else
             AIPath aiPath = new AIPath(Simulator.TDB, Simulator.TSectionDat, pathFileName);
+#endif
             // End patch
 
             if (aiPath.Nodes == null)

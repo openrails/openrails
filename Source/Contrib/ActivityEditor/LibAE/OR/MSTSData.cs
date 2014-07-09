@@ -31,7 +31,7 @@ using MSTS.Parsers;
 using ORTS.Common;
 using LibAE.Formats;
 
-namespace MSTS.Formats
+namespace ORTS.Formats
 {
     public class MSTSData
     {
@@ -41,7 +41,7 @@ namespace MSTS.Formats
         public SIGCFGFile SIGCFG { get; protected set; }
         public string RoutePath { get; set; }
         public string MstsPath { get; set; }
-        public Signals Signals { get; protected set; }
+        public AESignals Signals { get; protected set; }
 
         public MSTSData (string mstsPath, string Route)
         {
@@ -57,7 +57,7 @@ namespace MSTS.Formats
                 TSectionDat = new TSectionDatFile(RoutePath + @"\GLOBAL\TSECTION.DAT");
             if (File.Exists(RoutePath + @"\TSECTION.DAT"))
                 TSectionDat.AddRouteTSectionDatFile(RoutePath + @"\TSECTION.DAT");
-            Signals = new Signals (this, SIGCFG);
+            Signals = new AESignals (this, SIGCFG);
         }
     }
 }

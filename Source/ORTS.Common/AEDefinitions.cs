@@ -19,28 +19,47 @@
 /// Author: Stéfan Paitoni
 /// Updates : 
 /// 
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using ORTS.Formats;
-using MSTS.Parsers;
+
 using ORTS.Common;
-using LibAE.Common;
 
-namespace LibAE
+namespace LibAE.Common
 {
-    public class MSTSDataConfig : MSTSData
+    /// <summary>
+    /// List of items that can be shown through the Editor.  These items can be searchable, modifiable, movable, ...
+    /// </summary>
+    public enum TypeItem
     {
-        public MSTSBase TileBase { get; protected set; }
+        GLOBAL_ITEM = 0,
+        SIGNAL_ITEM = 1,
+        SWITCH_ITEM = 2,
+        TAG_ITEM = 3,
+        BUFFER_ITEM = 4,
+        SIDING_START = 5,
+        STATION_ITEM = 6,
+        STATION_AREA_ITEM = 7,
+        STATION_CONNECTOR = 8,
+        ACTIVITY_ITEM = 9,
+        SIDING_END = 10,
+        CROSS_OVER = 11
+    };
 
-        public MSTSDataConfig(string mstsPath, string Route, TypeEditor interfaceType) : base (mstsPath, Route)
-        {
-            string routePath = Path.Combine(Route, TRK.Tr_RouteFile.FileName);
-            TileBase = new MSTSBase(TDB);
-            TileBase.reduce(TDB);
-        }
-    }
+    public enum TypeSiding
+    {
+        SIDING_START = 0,
+        SIDING_END = 1,
+        PLATFORM_START = 2,
+        PLATFORM_END = 3
+    };
+    public enum TypeEditor
+    {
+        ACTIVITY = 1,
+        ROUTECONFIG = 2,
+        TRAFFIC = 3,
+        NONE = 0
+    };
 }

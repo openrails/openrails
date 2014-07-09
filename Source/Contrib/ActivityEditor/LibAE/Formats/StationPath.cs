@@ -20,11 +20,15 @@
 /// 
 
 using System;
+using System.Collections;
+using System.Collections.Specialized;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using System.Threading;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using MSTS;
 using MSTS.Formats;
 using MSTS.Parsers;
@@ -32,14 +36,120 @@ using ORTS.Common;
 using ORTS;
 using LibAE;
 using LibAE.Common;
+using LibAE.Formats;
 
 namespace LibAE.Formats
 {
+    public class Possibility : Dictionary<string, StationPath>
+    {
+        public new Possibility Add(StationPath path)
+        {
+            if (ContainsKey(path.PathName))
+            {
+                this[path.PathName] = path;
+                return this;
+            }
+            else
+            {
+                base.Add(path.PathName, path);
+                return this;
+            }
+        }
+    }
+
+    public class DestinationPoint : Dictionary<string, Possibility> 
+    {
+        public Possibility Add(string desti) 
+        {
+            if (ContainsKey(desti))
+            {
+                return this[desti];
+            }
+
+            var destination = new Possibility();
+            base.Add(desti,destination); 
+            return destination; 
+        }
+    }
+
+    public class OriginPoint : Dictionary<string, DestinationPoint>
+    {
+        public DestinationPoint Add(string origin)
+        {
+            if (ContainsKey(origin)) 
+            { 
+                return this[origin]; 
+            }
+            var desti = new DestinationPoint();
+            base.Add(origin, desti);
+            return desti;
+        }
+    }
+
+    public class StationPathsHelper
+    {
+        public OriginPoint DefinedPath;
+        public OriginPoint StepInPaths;
+        public OriginPoint UndefinedPath;
+
+        public delegate void GetPaths();
+        GetPaths parentFunct;
+
+        public StationPathsHelper(GetPaths f)
+        {
+            DefinedPath = new OriginPoint();
+            StepInPaths = new OriginPoint();
+            parentFunct = f;
+        }
+
+        public void Clear()
+        {
+            // DefinedPath.Clear(); //  Do not clear this one
+            StepInPaths.Clear();
+            UndefinedPath.Clear();
+        }
+
+        public void Add(string inLabel, List<StationPath> paths)
+        {
+            if (paths == null)
+                return;
+            foreach (var path in paths)
+            {
+                string outLabel = path.outLabel;
+                if (path.IsDefined())
+                    DefinedPath.Add(inLabel).Add(outLabel).Add(path);
+                else
+                    UndefinedPath.Add(inLabel).Add(outLabel).Add(path);
+            }
+        }
+
+        public void Modify(string inLabel, StationPath path)
+        {
+            try
+            {
+                if (path == null)
+                    return;
+                string outLabel = path.outLabel;
+            }
+            catch
+            {
+            }
+        }
+
+        public void Reload()
+        {
+            parentFunct();
+        }
+    }
+
     public class StationPaths
     {
         // Fields
+        [JsonProperty("componentPath")]
         private List<StationPath> paths = new List<StationPath>();
+        [JsonProperty("MaxPassing")]
         public double MaxPassingYard;
+        [JsonProperty("ShortPassing")]
         public double ShortPassingYard;
 
         // Methods
@@ -64,7 +174,7 @@ namespace LibAE.Formats
             ShortPassingYard = double.PositiveInfinity;
         }
 
-        public void explore(AETraveller myTravel, List<TrackSegment> listConnector, MSTSItems aeItems, StationItem parent)
+        public List<StationPath> explore(AETraveller myTravel, List<TrackSegment> listConnector, MSTSItems aeItems, StationItem parent)
         {
             List<AEJunctionItem> insideJunction = new List<AEJunctionItem>();
             Stopwatch stopWatch = new Stopwatch();
@@ -120,6 +230,7 @@ namespace LibAE.Formats
                     }
                     else
                     {
+                        paths[pathChecked].setComplete(buffer);
                         pathChecked++;
                     }
                     if (pathChecked < paths.Count)
@@ -185,11 +296,8 @@ namespace LibAE.Formats
                     MaxPassingYard = path.PassingYard;
                 if (path.PassingYard < ShortPassingYard)
                     ShortPassingYard = path.PassingYard;
-                foreach (string elapse in path.elapse)
-                {
-                    Console.WriteLine("RunTime " + elapse);
-                }
-            }
+           }
+            return paths;
         }
 
         public void highlightTrackFromArea(MSTSItems aeItems)
@@ -209,21 +317,40 @@ namespace LibAE.Formats
     public class StationPath
     {
         // Fields
+        [JsonIgnore]
         public List<GlobalItem> ComponentItem { get; protected set; }
+        [JsonIgnore]
         public List<SideItem> SidesItem { get; protected set; }
-        public List<string> elapse { get; set; }
         // Properties
+        [JsonProperty("label")]
+        public string outLabel;
+        [JsonProperty("PathName")]
+        public string PathName;
+        [JsonIgnore]
         public bool complete { get; protected set; }
+        [JsonIgnore]
         public double Siding { get; protected set; }
+        [JsonIgnore]
         public double Platform { get; protected set; }
+        [JsonIgnore]
         public double PassingYard { get; protected set; }
+        [JsonIgnore]
         public int jctnIdx { get; set; }
+        [JsonIgnore]
         public int LastCommonTrack { get; set; }
+        [JsonIgnore]
         public short directionJunction { get; set; }
+        [JsonProperty("NbrPlatform")]
         public int NbrPlatform { get; protected set; }
+        [JsonProperty("NbrSiding")]
         public int NbrSiding { get; protected set; }
+        [JsonProperty("NbrPassingYard")]
+        public int NbrPassingYard { get; protected set; }
+        [JsonProperty("IsMainPath")]
         public bool MainPath { get; protected set; }
+        [JsonIgnore]
         public AETraveller traveller { get; private set; }
+        [JsonIgnore]
         protected StationPaths parent;
 
         // Methods
@@ -231,7 +358,6 @@ namespace LibAE.Formats
         {
             ComponentItem = new List<GlobalItem>();
             SidesItem = new List<SideItem>();
-            elapse = new List<string>();
             complete = false;
             jctnIdx = -1;
             traveller = null;
@@ -243,6 +369,7 @@ namespace LibAE.Formats
             MainPath = true;
             LastCommonTrack = 0;
             directionJunction = 0;
+            PathName = "";
         }
 
         public StationPath(StationPath original)
@@ -251,7 +378,7 @@ namespace LibAE.Formats
             MainPath = false;
             ComponentItem = new List<GlobalItem>();
             SidesItem = new List<SideItem>();
-            elapse = new List<string>();
+            PathName = "";
             if (original.ComponentItem.Count > 0)
             {
                 foreach (GlobalItem componentItem in original.ComponentItem)
@@ -285,7 +412,6 @@ namespace LibAE.Formats
         {
             ComponentItem = new List<GlobalItem>();
             SidesItem = new List<SideItem>();
-            elapse = new List<string>();
             ComponentItem.Add(startNode);
             complete = false;
             jctnIdx = -1;
@@ -297,13 +423,13 @@ namespace LibAE.Formats
             NbrSiding = 0;
             LastCommonTrack = 0;
             directionJunction = 0;
+            PathName = "";
         }
 
         public StationPath(AETraveller travel)
         {
             ComponentItem = new List<GlobalItem>();
             SidesItem = new List<SideItem>();
-            elapse = new List<string>();
             complete = false;
             jctnIdx = -1;
             traveller = travel;
@@ -313,6 +439,7 @@ namespace LibAE.Formats
             NbrPlatform = 0;
             NbrSiding = 0;
             LastCommonTrack = 0;
+            PathName = "";
         }
 
         public void Clear()
@@ -323,7 +450,7 @@ namespace LibAE.Formats
             }
             ComponentItem.Clear();
             SidesItem.Clear();
-            elapse.Clear();
+            PathName = "";
         }
 
         public TrackNode explore(MSTSItems aeItems, List<TrackSegment> listConnector, int entryNode, StationItem parent)
@@ -348,7 +475,7 @@ namespace LibAE.Formats
                         //  Il faut tester que l'on change bien d'index de node pour quitter  mais pas pour le premier et aussi l'idx de la section
                         if (currentNode.Index == conSeg.associateNodeIdx && sectionIdx == conSeg.associateSectionIdx)
                         {
-                            setComplete();
+                            setComplete(conSeg);
                             break;
                         }
                     }
@@ -362,12 +489,14 @@ namespace LibAE.Formats
                         SidesItem.Add(trItem);
                         if (trItem.typeSiding == (int)TypeSiding.SIDING_START)
                         {
+                            PathName = trItem.Name;
                             NbrSiding++;
                             if (trItem.sizeSiding > Siding)
                                 Siding = trItem.sizeSiding;
                         }
                         else if (trItem.typeSiding == (int)TypeSiding.PLATFORM_START)
                         {
+                            PathName = trItem.Name;
                             NbrPlatform++;
                             if (trItem.sizeSiding > Platform)
                                 Platform = trItem.sizeSiding;
@@ -413,9 +542,18 @@ namespace LibAE.Formats
             }
         }
 
-        public void setComplete()
+        public void setComplete(GlobalItem segment)
         {
             complete = true;
+            
+            if (segment.GetType() == typeof(TrackSegment) && ((TrackSegment)segment).HasConnector != null)
+            {
+                outLabel = ((TrackSegment)segment).HasConnector.label;
+            }
+            else if (segment.GetType() == typeof(AEBufferItem))
+            {
+                outLabel = ((AEBufferItem)segment).NameBuffer;
+            }
         }
 
         public AETraveller switchJnct(short direction)
@@ -432,6 +570,14 @@ namespace LibAE.Formats
         public void NextNode()
         {
             traveller.NextTrackNode();
+        }
+
+        public bool IsDefined()
+        {
+            if ((NbrPlatform + NbrSiding + NbrPassingYard) > 0)
+                return true;
+            else
+                return false;
         }
     }
 }

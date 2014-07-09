@@ -56,7 +56,7 @@ namespace ActivityEditor
         public TDBFile TDB { get { return mstsDataConfig.TDB; } protected set { } }
         public TRKFile TRK { get { return mstsDataConfig.TRK; } protected set { } }
         public TSectionDatFile TSectionDat { get { return mstsDataConfig.TSectionDat; } protected set { } }
-        public Signals Signals { get { return mstsDataConfig.Signals; } protected set { } }
+        public AESignals Signals { get { return mstsDataConfig.Signals; } protected set { } }
         public SIGCFGFile SIGCFG { get { return mstsDataConfig.SIGCFG; } protected set { } }
         public string RoutePath { get { return mstsDataConfig.RoutePath; } protected set { } }
         public string mstsPath { get { return mstsDataConfig.MstsPath; } protected set { } }
@@ -98,7 +98,7 @@ namespace ActivityEditor
             Program.actEditor.DisplayStatusMessage("Load route Metadata ...");
 
             orRouteConfig = ORRouteConfig.LoadConfig(TRK.Tr_RouteFile.FileName, routePath, interfaceType);
-            //Signals = new Signals(this);
+            //AESignals = new AESignals(this);
             orRouteConfig.SetTraveller(TSectionDat, TDB);
             orRouteConfig.SetTileBase(mstsDataConfig.TileBase);
             orRouteConfig.ReduceItems();
@@ -173,10 +173,6 @@ namespace ActivityEditor
                     else if (currNode.TrVectorNode != null && currNode.TrVectorNode.TrVectorSections != null)
                     {
                         //Program.actEditor.DisplayStatusMessage("Init data for display...  Load Vector Nodes: " + currNode.Index);
-                        int i;
-                        if (currNode.Index == 84)
-                            i = 0;
-
                         if (currNode.TrVectorNode.TrVectorSections.Length > 1)
                         {
                             AddSegments(currNode);
@@ -238,10 +234,6 @@ namespace ActivityEditor
 
                     else if (currNode.TrJunctionNode != null)
                     {
-                        int i;
-                        if (currNode.Index == 84 || currNode.Index == 86)
-                            i = 0;
-
                         //Program.actEditor.DisplayStatusMessage("Init data for display...  Load Junction Nodes: " + currNode.Index);
                         mstsItems.switches.Add(new AEJunctionItem(currNode));
                         areaRoute.manageTiles(currNode.UiD.TileX, currNode.UiD.TileZ);
@@ -284,7 +276,7 @@ namespace ActivityEditor
 
                         if (si.SigObj >= 0 && si.SigObj < Signals.SignalObjects.Length)
                         {
-                            SignalObject s = Signals.SignalObjects[si.SigObj];
+                            AESignalObject s = Signals.SignalObjects[si.SigObj];
                             if (s.isSignal) // && s.isSignalNormal())
                             {
                                 mstsItems.AddSignal(new AESignalItem(si, s, TDB));
@@ -421,7 +413,7 @@ namespace ActivityEditor
                     break;
             }
   
-	#endif        
+#endif        
         }
 
         public void SaveRoute()

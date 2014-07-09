@@ -810,6 +810,10 @@ namespace LibAE
             return DistanceTo(item.TileX, item.TileZ, item.X, item.Y, item.Z, distMax);
         }
 
+        public float DistanceTo(GlobalItem item, float distMax = float.MaxValue)
+        {
+            return DistanceTo((int)item.Coord.TileX, (int)item.Coord.TileY, item.Coord.X, 0.0f, item.Coord.Y, distMax);
+        }
 
         /// <summary>
         /// Move AETraveller to given TrItem
