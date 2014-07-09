@@ -334,6 +334,10 @@ namespace ORTS.Viewer3D.Popups
                 }
 
             }
+            else if (updateFull && Tabs[ActiveTab].Tab == Tab.ActivityWorkOrders && Owner.Viewer.Simulator.ActivityRun != null)
+            {
+                if (Owner.Viewer.Simulator.ActivityRun.EventList != null) Layout();
+            }
 			if (this.ActivityUpdated == true) //true value is set in ActivityWindow.cs
 			{
 				this.ActivityUpdated = false;
