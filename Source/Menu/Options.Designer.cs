@@ -1436,7 +1436,7 @@
             // 
             this.checkBoxEnhancedActCompatibility.AutoSize = true;
             this.checkBoxEnhancedActCompatibility.Enabled = false;
-            this.checkBoxEnhancedActCompatibility.ForeColor = System.Drawing.Color.Gray;
+            this.checkBoxEnhancedActCompatibility.ForeColor = System.Drawing.Color.Silver;
             this.checkBoxEnhancedActCompatibility.Location = new System.Drawing.Point(301, 145);
             this.checkBoxEnhancedActCompatibility.Name = "checkBoxEnhancedActCompatibility";
             this.checkBoxEnhancedActCompatibility.Size = new System.Drawing.Size(234, 17);
