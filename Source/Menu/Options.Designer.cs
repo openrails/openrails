@@ -82,6 +82,24 @@
             this.buttonDefaultKeys = new System.Windows.Forms.Button();
             this.buttonCheckKeys = new System.Windows.Forms.Button();
             this.panelKeys = new System.Windows.Forms.Panel();
+            this.tabPageDataLogger = new System.Windows.Forms.TabPage();
+            this.comboDataLogSpeedUnits = new System.Windows.Forms.ComboBox();
+            this.comboDataLoggerSeparator = new System.Windows.Forms.ComboBox();
+            this.label19 = new System.Windows.Forms.Label();
+            this.label18 = new System.Windows.Forms.Label();
+            this.checkDataLogMisc = new System.Windows.Forms.CheckBox();
+            this.checkDataLogPerformance = new System.Windows.Forms.CheckBox();
+            this.checkDataLogger = new System.Windows.Forms.CheckBox();
+            this.label17 = new System.Windows.Forms.Label();
+            this.checkDataLogPhysics = new System.Windows.Forms.CheckBox();
+            this.tabPageEvaluate = new System.Windows.Forms.TabPage();
+            this.checkedListBoxDataLogTSContents = new System.Windows.Forms.CheckedListBox();
+            this.labelDataLogTSInterval = new System.Windows.Forms.Label();
+            this.checkDataLogStationStops = new System.Windows.Forms.CheckBox();
+            this.numericDataLogTSInterval = new System.Windows.Forms.NumericUpDown();
+            this.checkDataLogTrainSpeed = new System.Windows.Forms.CheckBox();
+            this.tabPageUpdater = new System.Windows.Forms.TabPage();
+            this.labelUpdateChannel = new System.Windows.Forms.Label();
             this.tabPageExperimental = new System.Windows.Forms.TabPage();
             this.checkBoxCircularSpeedGauge = new System.Windows.Forms.CheckBox();
             this.checkBoxSignalLightGlow = new System.Windows.Forms.CheckBox();
@@ -107,25 +125,8 @@
             this.numericUseSuperElevation = new System.Windows.Forms.NumericUpDown();
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
-            this.tabPageDataLogger = new System.Windows.Forms.TabPage();
-            this.comboDataLogSpeedUnits = new System.Windows.Forms.ComboBox();
-            this.comboDataLoggerSeparator = new System.Windows.Forms.ComboBox();
-            this.label19 = new System.Windows.Forms.Label();
-            this.label18 = new System.Windows.Forms.Label();
-            this.checkDataLogMisc = new System.Windows.Forms.CheckBox();
-            this.checkDataLogPerformance = new System.Windows.Forms.CheckBox();
-            this.checkDataLogger = new System.Windows.Forms.CheckBox();
-            this.label17 = new System.Windows.Forms.Label();
-            this.checkDataLogPhysics = new System.Windows.Forms.CheckBox();
-            this.tabPageEvaluate = new System.Windows.Forms.TabPage();
-            this.checkedListBoxDataLogTSContents = new System.Windows.Forms.CheckedListBox();
-            this.labelDataLogTSInterval = new System.Windows.Forms.Label();
-            this.checkDataLogStationStops = new System.Windows.Forms.CheckBox();
-            this.numericDataLogTSInterval = new System.Windows.Forms.NumericUpDown();
-            this.checkDataLogTrainSpeed = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.tabPageUpdater = new System.Windows.Forms.TabPage();
-            this.labelUpdateChannel = new System.Windows.Forms.Label();
+            this.checkBoxEnhancedActCompatibility = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -141,16 +142,16 @@
             this.tabPageSimulation.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericAdhesionMovingAverageFilterSize)).BeginInit();
             this.tabPageKeyboard.SuspendLayout();
+            this.tabPageDataLogger.SuspendLayout();
+            this.tabPageEvaluate.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericDataLogTSInterval)).BeginInit();
+            this.tabPageUpdater.SuspendLayout();
             this.tabPageExperimental.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackDayAmbientLight)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericPerformanceTunerTarget)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).BeginInit();
-            this.tabPageDataLogger.SuspendLayout();
-            this.tabPageEvaluate.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericDataLogTSInterval)).BeginInit();
-            this.tabPageUpdater.SuspendLayout();
             this.SuspendLayout();
             // 
             // buttonOK
@@ -858,8 +859,241 @@
             this.panelKeys.Size = new System.Drawing.Size(590, 361);
             this.panelKeys.TabIndex = 0;
             // 
+            // tabPageDataLogger
+            // 
+            this.tabPageDataLogger.Controls.Add(this.comboDataLogSpeedUnits);
+            this.tabPageDataLogger.Controls.Add(this.comboDataLoggerSeparator);
+            this.tabPageDataLogger.Controls.Add(this.label19);
+            this.tabPageDataLogger.Controls.Add(this.label18);
+            this.tabPageDataLogger.Controls.Add(this.checkDataLogMisc);
+            this.tabPageDataLogger.Controls.Add(this.checkDataLogPerformance);
+            this.tabPageDataLogger.Controls.Add(this.checkDataLogger);
+            this.tabPageDataLogger.Controls.Add(this.label17);
+            this.tabPageDataLogger.Controls.Add(this.checkDataLogPhysics);
+            this.tabPageDataLogger.Location = new System.Drawing.Point(4, 22);
+            this.tabPageDataLogger.Name = "tabPageDataLogger";
+            this.tabPageDataLogger.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageDataLogger.Size = new System.Drawing.Size(602, 402);
+            this.tabPageDataLogger.TabIndex = 6;
+            this.tabPageDataLogger.Text = "DataLogger";
+            this.tabPageDataLogger.UseVisualStyleBackColor = true;
+            // 
+            // comboDataLogSpeedUnits
+            // 
+            this.comboDataLogSpeedUnits.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboDataLogSpeedUnits.FormattingEnabled = true;
+            this.comboDataLogSpeedUnits.Items.AddRange(new object[] {
+            "route",
+            "m/s",
+            "mph",
+            "kph"});
+            this.comboDataLogSpeedUnits.Location = new System.Drawing.Point(5, 62);
+            this.comboDataLogSpeedUnits.Margin = new System.Windows.Forms.Padding(2);
+            this.comboDataLogSpeedUnits.Name = "comboDataLogSpeedUnits";
+            this.comboDataLogSpeedUnits.Size = new System.Drawing.Size(121, 21);
+            this.comboDataLogSpeedUnits.TabIndex = 3;
+            // 
+            // comboDataLoggerSeparator
+            // 
+            this.comboDataLoggerSeparator.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboDataLoggerSeparator.FormattingEnabled = true;
+            this.comboDataLoggerSeparator.Items.AddRange(new object[] {
+            "comma",
+            "semicolon",
+            "tab",
+            "space"});
+            this.comboDataLoggerSeparator.Location = new System.Drawing.Point(5, 37);
+            this.comboDataLoggerSeparator.Margin = new System.Windows.Forms.Padding(2);
+            this.comboDataLoggerSeparator.Name = "comboDataLoggerSeparator";
+            this.comboDataLoggerSeparator.Size = new System.Drawing.Size(121, 21);
+            this.comboDataLoggerSeparator.TabIndex = 1;
+            // 
+            // label19
+            // 
+            this.label19.AutoSize = true;
+            this.label19.Location = new System.Drawing.Point(131, 65);
+            this.label19.Margin = new System.Windows.Forms.Padding(3);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(63, 13);
+            this.label19.TabIndex = 4;
+            this.label19.Text = "Speed units";
+            // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.label18.Location = new System.Drawing.Point(6, 6);
+            this.label18.Margin = new System.Windows.Forms.Padding(3);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(368, 26);
+            this.label18.TabIndex = 0;
+            this.label18.Text = "Use DataLogger to record your simulation data (in-game command: F12).\r\nPlease rem" +
+    "ember that the size of the dump file grows with the simulation time!";
+            // 
+            // checkDataLogMisc
+            // 
+            this.checkDataLogMisc.AutoSize = true;
+            this.checkDataLogMisc.Location = new System.Drawing.Point(6, 157);
+            this.checkDataLogMisc.Name = "checkDataLogMisc";
+            this.checkDataLogMisc.Size = new System.Drawing.Size(137, 17);
+            this.checkDataLogMisc.TabIndex = 8;
+            this.checkDataLogMisc.Text = "Log miscellaneous data";
+            this.checkDataLogMisc.UseVisualStyleBackColor = true;
+            // 
+            // checkDataLogPerformance
+            // 
+            this.checkDataLogPerformance.AutoSize = true;
+            this.checkDataLogPerformance.Location = new System.Drawing.Point(6, 111);
+            this.checkDataLogPerformance.Name = "checkDataLogPerformance";
+            this.checkDataLogPerformance.Size = new System.Drawing.Size(130, 17);
+            this.checkDataLogPerformance.TabIndex = 6;
+            this.checkDataLogPerformance.Text = "Log performance data";
+            this.checkDataLogPerformance.UseVisualStyleBackColor = true;
+            // 
+            // checkDataLogger
+            // 
+            this.checkDataLogger.AutoSize = true;
+            this.checkDataLogger.Location = new System.Drawing.Point(6, 88);
+            this.checkDataLogger.Name = "checkDataLogger";
+            this.checkDataLogger.Size = new System.Drawing.Size(197, 17);
+            this.checkDataLogger.TabIndex = 5;
+            this.checkDataLogger.Text = "Start logging with the simulation start";
+            this.checkDataLogger.UseVisualStyleBackColor = true;
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Location = new System.Drawing.Point(131, 40);
+            this.label17.Margin = new System.Windows.Forms.Padding(3);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(53, 13);
+            this.label17.TabIndex = 2;
+            this.label17.Text = "Separator";
+            // 
+            // checkDataLogPhysics
+            // 
+            this.checkDataLogPhysics.AutoSize = true;
+            this.checkDataLogPhysics.Location = new System.Drawing.Point(6, 134);
+            this.checkDataLogPhysics.Name = "checkDataLogPhysics";
+            this.checkDataLogPhysics.Size = new System.Drawing.Size(106, 17);
+            this.checkDataLogPhysics.TabIndex = 7;
+            this.checkDataLogPhysics.Text = "Log physics data";
+            this.checkDataLogPhysics.UseVisualStyleBackColor = true;
+            // 
+            // tabPageEvaluate
+            // 
+            this.tabPageEvaluate.Controls.Add(this.checkedListBoxDataLogTSContents);
+            this.tabPageEvaluate.Controls.Add(this.labelDataLogTSInterval);
+            this.tabPageEvaluate.Controls.Add(this.checkDataLogStationStops);
+            this.tabPageEvaluate.Controls.Add(this.numericDataLogTSInterval);
+            this.tabPageEvaluate.Controls.Add(this.checkDataLogTrainSpeed);
+            this.tabPageEvaluate.Location = new System.Drawing.Point(4, 22);
+            this.tabPageEvaluate.Name = "tabPageEvaluate";
+            this.tabPageEvaluate.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageEvaluate.Size = new System.Drawing.Size(602, 402);
+            this.tabPageEvaluate.TabIndex = 7;
+            this.tabPageEvaluate.Text = "Evaluation";
+            this.tabPageEvaluate.UseVisualStyleBackColor = true;
+            // 
+            // checkedListBoxDataLogTSContents
+            // 
+            this.checkedListBoxDataLogTSContents.FormattingEnabled = true;
+            this.checkedListBoxDataLogTSContents.Items.AddRange(new object[] {
+            "Time",
+            "Train Speed",
+            "Max. Speed",
+            "Signal State",
+            "Track Elevation",
+            "Direction",
+            "Control Mode",
+            "Distance Travelled",
+            "Throttle %",
+            "Brake Cyl Press",
+            "Dyn Brake %",
+            "Gear Setting"});
+            this.checkedListBoxDataLogTSContents.Location = new System.Drawing.Point(26, 55);
+            this.checkedListBoxDataLogTSContents.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
+            this.checkedListBoxDataLogTSContents.Name = "checkedListBoxDataLogTSContents";
+            this.checkedListBoxDataLogTSContents.Size = new System.Drawing.Size(120, 184);
+            this.checkedListBoxDataLogTSContents.TabIndex = 17;
+            // 
+            // labelDataLogTSInterval
+            // 
+            this.labelDataLogTSInterval.AutoSize = true;
+            this.labelDataLogTSInterval.Location = new System.Drawing.Point(86, 31);
+            this.labelDataLogTSInterval.Margin = new System.Windows.Forms.Padding(3);
+            this.labelDataLogTSInterval.Name = "labelDataLogTSInterval";
+            this.labelDataLogTSInterval.Size = new System.Drawing.Size(68, 13);
+            this.labelDataLogTSInterval.TabIndex = 16;
+            this.labelDataLogTSInterval.Text = "Interval (sec)";
+            // 
+            // checkDataLogStationStops
+            // 
+            this.checkDataLogStationStops.AutoSize = true;
+            this.checkDataLogStationStops.Location = new System.Drawing.Point(6, 245);
+            this.checkDataLogStationStops.Name = "checkDataLogStationStops";
+            this.checkDataLogStationStops.Size = new System.Drawing.Size(106, 17);
+            this.checkDataLogStationStops.TabIndex = 15;
+            this.checkDataLogStationStops.Text = "Log station stops";
+            this.checkDataLogStationStops.UseVisualStyleBackColor = true;
+            // 
+            // numericDataLogTSInterval
+            // 
+            this.numericDataLogTSInterval.Location = new System.Drawing.Point(26, 29);
+            this.numericDataLogTSInterval.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
+            this.numericDataLogTSInterval.Maximum = new decimal(new int[] {
+            60,
+            0,
+            0,
+            0});
+            this.numericDataLogTSInterval.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numericDataLogTSInterval.Name = "numericDataLogTSInterval";
+            this.numericDataLogTSInterval.Size = new System.Drawing.Size(54, 20);
+            this.numericDataLogTSInterval.TabIndex = 14;
+            this.numericDataLogTSInterval.Value = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            // 
+            // checkDataLogTrainSpeed
+            // 
+            this.checkDataLogTrainSpeed.AutoSize = true;
+            this.checkDataLogTrainSpeed.Location = new System.Drawing.Point(6, 6);
+            this.checkDataLogTrainSpeed.Name = "checkDataLogTrainSpeed";
+            this.checkDataLogTrainSpeed.Size = new System.Drawing.Size(99, 17);
+            this.checkDataLogTrainSpeed.TabIndex = 13;
+            this.checkDataLogTrainSpeed.Text = "Log train speed";
+            this.checkDataLogTrainSpeed.UseVisualStyleBackColor = true;
+            // 
+            // tabPageUpdater
+            // 
+            this.tabPageUpdater.Controls.Add(this.labelUpdateChannel);
+            this.tabPageUpdater.Location = new System.Drawing.Point(4, 22);
+            this.tabPageUpdater.Name = "tabPageUpdater";
+            this.tabPageUpdater.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageUpdater.Size = new System.Drawing.Size(602, 402);
+            this.tabPageUpdater.TabIndex = 8;
+            this.tabPageUpdater.Text = "Updater";
+            this.tabPageUpdater.UseVisualStyleBackColor = true;
+            // 
+            // labelUpdateChannel
+            // 
+            this.labelUpdateChannel.AutoSize = true;
+            this.labelUpdateChannel.Location = new System.Drawing.Point(6, 6);
+            this.labelUpdateChannel.Margin = new System.Windows.Forms.Padding(3);
+            this.labelUpdateChannel.Name = "labelUpdateChannel";
+            this.labelUpdateChannel.Size = new System.Drawing.Size(86, 13);
+            this.labelUpdateChannel.TabIndex = 0;
+            this.labelUpdateChannel.Text = "Update channel:";
+            // 
             // tabPageExperimental
             // 
+            this.tabPageExperimental.Controls.Add(this.checkBoxEnhancedActCompatibility);
             this.tabPageExperimental.Controls.Add(this.checkBoxCircularSpeedGauge);
             this.tabPageExperimental.Controls.Add(this.checkBoxSignalLightGlow);
             this.tabPageExperimental.Controls.Add(this.checkBoxModelInstancing);
@@ -884,6 +1118,7 @@
             this.tabPageExperimental.Controls.Add(this.numericUseSuperElevation);
             this.tabPageExperimental.Controls.Add(this.ElevationText);
             this.tabPageExperimental.Controls.Add(this.checkPreferDDSTexture);
+            this.tabPageExperimental.ForeColor = System.Drawing.Color.Black;
             this.tabPageExperimental.Location = new System.Drawing.Point(4, 22);
             this.tabPageExperimental.Name = "tabPageExperimental";
             this.tabPageExperimental.Padding = new System.Windows.Forms.Padding(3);
@@ -1197,237 +1432,17 @@
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
             // 
-            // tabPageDataLogger
+            // checkBoxEnhancedActCompatibility
             // 
-            this.tabPageDataLogger.Controls.Add(this.comboDataLogSpeedUnits);
-            this.tabPageDataLogger.Controls.Add(this.comboDataLoggerSeparator);
-            this.tabPageDataLogger.Controls.Add(this.label19);
-            this.tabPageDataLogger.Controls.Add(this.label18);
-            this.tabPageDataLogger.Controls.Add(this.checkDataLogMisc);
-            this.tabPageDataLogger.Controls.Add(this.checkDataLogPerformance);
-            this.tabPageDataLogger.Controls.Add(this.checkDataLogger);
-            this.tabPageDataLogger.Controls.Add(this.label17);
-            this.tabPageDataLogger.Controls.Add(this.checkDataLogPhysics);
-            this.tabPageDataLogger.Location = new System.Drawing.Point(4, 22);
-            this.tabPageDataLogger.Name = "tabPageDataLogger";
-            this.tabPageDataLogger.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageDataLogger.Size = new System.Drawing.Size(602, 402);
-            this.tabPageDataLogger.TabIndex = 6;
-            this.tabPageDataLogger.Text = "DataLogger";
-            this.tabPageDataLogger.UseVisualStyleBackColor = true;
-            // 
-            // comboDataLogSpeedUnits
-            // 
-            this.comboDataLogSpeedUnits.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboDataLogSpeedUnits.FormattingEnabled = true;
-            this.comboDataLogSpeedUnits.Items.AddRange(new object[] {
-            "route",
-            "m/s",
-            "mph",
-            "kph"});
-            this.comboDataLogSpeedUnits.Location = new System.Drawing.Point(5, 62);
-            this.comboDataLogSpeedUnits.Margin = new System.Windows.Forms.Padding(2);
-            this.comboDataLogSpeedUnits.Name = "comboDataLogSpeedUnits";
-            this.comboDataLogSpeedUnits.Size = new System.Drawing.Size(121, 21);
-            this.comboDataLogSpeedUnits.TabIndex = 3;
-            // 
-            // comboDataLoggerSeparator
-            // 
-            this.comboDataLoggerSeparator.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboDataLoggerSeparator.FormattingEnabled = true;
-            this.comboDataLoggerSeparator.Items.AddRange(new object[] {
-            "comma",
-            "semicolon",
-            "tab",
-            "space"});
-            this.comboDataLoggerSeparator.Location = new System.Drawing.Point(5, 37);
-            this.comboDataLoggerSeparator.Margin = new System.Windows.Forms.Padding(2);
-            this.comboDataLoggerSeparator.Name = "comboDataLoggerSeparator";
-            this.comboDataLoggerSeparator.Size = new System.Drawing.Size(121, 21);
-            this.comboDataLoggerSeparator.TabIndex = 1;
-            // 
-            // label19
-            // 
-            this.label19.AutoSize = true;
-            this.label19.Location = new System.Drawing.Point(131, 65);
-            this.label19.Margin = new System.Windows.Forms.Padding(3);
-            this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(63, 13);
-            this.label19.TabIndex = 4;
-            this.label19.Text = "Speed units";
-            // 
-            // label18
-            // 
-            this.label18.AutoSize = true;
-            this.label18.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.label18.Location = new System.Drawing.Point(6, 6);
-            this.label18.Margin = new System.Windows.Forms.Padding(3);
-            this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(368, 26);
-            this.label18.TabIndex = 0;
-            this.label18.Text = "Use DataLogger to record your simulation data (in-game command: F12).\r\nPlease rem" +
-    "ember that the size of the dump file grows with the simulation time!";
-            // 
-            // checkDataLogMisc
-            // 
-            this.checkDataLogMisc.AutoSize = true;
-            this.checkDataLogMisc.Location = new System.Drawing.Point(6, 157);
-            this.checkDataLogMisc.Name = "checkDataLogMisc";
-            this.checkDataLogMisc.Size = new System.Drawing.Size(137, 17);
-            this.checkDataLogMisc.TabIndex = 8;
-            this.checkDataLogMisc.Text = "Log miscellaneous data";
-            this.checkDataLogMisc.UseVisualStyleBackColor = true;
-            // 
-            // checkDataLogPerformance
-            // 
-            this.checkDataLogPerformance.AutoSize = true;
-            this.checkDataLogPerformance.Location = new System.Drawing.Point(6, 111);
-            this.checkDataLogPerformance.Name = "checkDataLogPerformance";
-            this.checkDataLogPerformance.Size = new System.Drawing.Size(130, 17);
-            this.checkDataLogPerformance.TabIndex = 6;
-            this.checkDataLogPerformance.Text = "Log performance data";
-            this.checkDataLogPerformance.UseVisualStyleBackColor = true;
-            // 
-            // checkDataLogger
-            // 
-            this.checkDataLogger.AutoSize = true;
-            this.checkDataLogger.Location = new System.Drawing.Point(6, 88);
-            this.checkDataLogger.Name = "checkDataLogger";
-            this.checkDataLogger.Size = new System.Drawing.Size(197, 17);
-            this.checkDataLogger.TabIndex = 5;
-            this.checkDataLogger.Text = "Start logging with the simulation start";
-            this.checkDataLogger.UseVisualStyleBackColor = true;
-            // 
-            // label17
-            // 
-            this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(131, 40);
-            this.label17.Margin = new System.Windows.Forms.Padding(3);
-            this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(53, 13);
-            this.label17.TabIndex = 2;
-            this.label17.Text = "Separator";
-            // 
-            // checkDataLogPhysics
-            // 
-            this.checkDataLogPhysics.AutoSize = true;
-            this.checkDataLogPhysics.Location = new System.Drawing.Point(6, 134);
-            this.checkDataLogPhysics.Name = "checkDataLogPhysics";
-            this.checkDataLogPhysics.Size = new System.Drawing.Size(106, 17);
-            this.checkDataLogPhysics.TabIndex = 7;
-            this.checkDataLogPhysics.Text = "Log physics data";
-            this.checkDataLogPhysics.UseVisualStyleBackColor = true;
-            // 
-            // tabPageEvaluate
-            // 
-            this.tabPageEvaluate.Controls.Add(this.checkedListBoxDataLogTSContents);
-            this.tabPageEvaluate.Controls.Add(this.labelDataLogTSInterval);
-            this.tabPageEvaluate.Controls.Add(this.checkDataLogStationStops);
-            this.tabPageEvaluate.Controls.Add(this.numericDataLogTSInterval);
-            this.tabPageEvaluate.Controls.Add(this.checkDataLogTrainSpeed);
-            this.tabPageEvaluate.Location = new System.Drawing.Point(4, 22);
-            this.tabPageEvaluate.Name = "tabPageEvaluate";
-            this.tabPageEvaluate.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageEvaluate.Size = new System.Drawing.Size(602, 402);
-            this.tabPageEvaluate.TabIndex = 7;
-            this.tabPageEvaluate.Text = "Evaluation";
-            this.tabPageEvaluate.UseVisualStyleBackColor = true;
-            // 
-            // checkedListBoxDataLogTSContents
-            // 
-            this.checkedListBoxDataLogTSContents.FormattingEnabled = true;
-            this.checkedListBoxDataLogTSContents.Items.AddRange(new object[] {
-            "Time",
-            "Train Speed",
-            "Max. Speed",
-            "Signal State",
-            "Track Elevation",
-            "Direction",
-            "Control Mode",
-            "Distance Travelled",
-            "Throttle %",
-            "Brake Cyl Press",
-            "Dyn Brake %",
-            "Gear Setting"});
-            this.checkedListBoxDataLogTSContents.Location = new System.Drawing.Point(26, 55);
-            this.checkedListBoxDataLogTSContents.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
-            this.checkedListBoxDataLogTSContents.Name = "checkedListBoxDataLogTSContents";
-            this.checkedListBoxDataLogTSContents.Size = new System.Drawing.Size(120, 184);
-            this.checkedListBoxDataLogTSContents.TabIndex = 17;
-            // 
-            // labelDataLogTSInterval
-            // 
-            this.labelDataLogTSInterval.AutoSize = true;
-            this.labelDataLogTSInterval.Location = new System.Drawing.Point(86, 31);
-            this.labelDataLogTSInterval.Margin = new System.Windows.Forms.Padding(3);
-            this.labelDataLogTSInterval.Name = "labelDataLogTSInterval";
-            this.labelDataLogTSInterval.Size = new System.Drawing.Size(68, 13);
-            this.labelDataLogTSInterval.TabIndex = 16;
-            this.labelDataLogTSInterval.Text = "Interval (sec)";
-            // 
-            // checkDataLogStationStops
-            // 
-            this.checkDataLogStationStops.AutoSize = true;
-            this.checkDataLogStationStops.Location = new System.Drawing.Point(6, 245);
-            this.checkDataLogStationStops.Name = "checkDataLogStationStops";
-            this.checkDataLogStationStops.Size = new System.Drawing.Size(106, 17);
-            this.checkDataLogStationStops.TabIndex = 15;
-            this.checkDataLogStationStops.Text = "Log station stops";
-            this.checkDataLogStationStops.UseVisualStyleBackColor = true;
-            // 
-            // numericDataLogTSInterval
-            // 
-            this.numericDataLogTSInterval.Location = new System.Drawing.Point(26, 29);
-            this.numericDataLogTSInterval.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
-            this.numericDataLogTSInterval.Maximum = new decimal(new int[] {
-            60,
-            0,
-            0,
-            0});
-            this.numericDataLogTSInterval.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.numericDataLogTSInterval.Name = "numericDataLogTSInterval";
-            this.numericDataLogTSInterval.Size = new System.Drawing.Size(54, 20);
-            this.numericDataLogTSInterval.TabIndex = 14;
-            this.numericDataLogTSInterval.Value = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
-            // 
-            // checkDataLogTrainSpeed
-            // 
-            this.checkDataLogTrainSpeed.AutoSize = true;
-            this.checkDataLogTrainSpeed.Location = new System.Drawing.Point(6, 6);
-            this.checkDataLogTrainSpeed.Name = "checkDataLogTrainSpeed";
-            this.checkDataLogTrainSpeed.Size = new System.Drawing.Size(99, 17);
-            this.checkDataLogTrainSpeed.TabIndex = 13;
-            this.checkDataLogTrainSpeed.Text = "Log train speed";
-            this.checkDataLogTrainSpeed.UseVisualStyleBackColor = true;
-            // 
-            // tabPageUpdater
-            // 
-            this.tabPageUpdater.Controls.Add(this.labelUpdateChannel);
-            this.tabPageUpdater.Location = new System.Drawing.Point(4, 22);
-            this.tabPageUpdater.Name = "tabPageUpdater";
-            this.tabPageUpdater.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageUpdater.Size = new System.Drawing.Size(602, 402);
-            this.tabPageUpdater.TabIndex = 8;
-            this.tabPageUpdater.Text = "Updater";
-            this.tabPageUpdater.UseVisualStyleBackColor = true;
-            // 
-            // labelUpdateChannel
-            // 
-            this.labelUpdateChannel.AutoSize = true;
-            this.labelUpdateChannel.Location = new System.Drawing.Point(6, 6);
-            this.labelUpdateChannel.Margin = new System.Windows.Forms.Padding(3);
-            this.labelUpdateChannel.Name = "labelUpdateChannel";
-            this.labelUpdateChannel.Size = new System.Drawing.Size(86, 13);
-            this.labelUpdateChannel.TabIndex = 0;
-            this.labelUpdateChannel.Text = "Update channel:";
+            this.checkBoxEnhancedActCompatibility.AutoSize = true;
+            this.checkBoxEnhancedActCompatibility.Enabled = false;
+            this.checkBoxEnhancedActCompatibility.ForeColor = System.Drawing.Color.Gray;
+            this.checkBoxEnhancedActCompatibility.Location = new System.Drawing.Point(301, 145);
+            this.checkBoxEnhancedActCompatibility.Name = "checkBoxEnhancedActCompatibility";
+            this.checkBoxEnhancedActCompatibility.Size = new System.Drawing.Size(234, 17);
+            this.checkBoxEnhancedActCompatibility.TabIndex = 32;
+            this.checkBoxEnhancedActCompatibility.Text = "Enhanced compatibility with MSTS activities";
+            this.checkBoxEnhancedActCompatibility.UseVisualStyleBackColor = true;
             // 
             // OptionsForm
             // 
@@ -1464,13 +1479,6 @@
             this.tabPageSimulation.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericAdhesionMovingAverageFilterSize)).EndInit();
             this.tabPageKeyboard.ResumeLayout(false);
-            this.tabPageExperimental.ResumeLayout(false);
-            this.tabPageExperimental.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.trackDayAmbientLight)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericPerformanceTunerTarget)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).EndInit();
             this.tabPageDataLogger.ResumeLayout(false);
             this.tabPageDataLogger.PerformLayout();
             this.tabPageEvaluate.ResumeLayout(false);
@@ -1478,6 +1486,13 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericDataLogTSInterval)).EndInit();
             this.tabPageUpdater.ResumeLayout(false);
             this.tabPageUpdater.PerformLayout();
+            this.tabPageExperimental.ResumeLayout(false);
+            this.tabPageExperimental.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.trackDayAmbientLight)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericPerformanceTunerTarget)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -1581,5 +1596,6 @@
         private System.Windows.Forms.CheckBox checkBoxSignalLightGlow;
         private System.Windows.Forms.TabPage tabPageUpdater;
         private System.Windows.Forms.Label labelUpdateChannel;
+        private System.Windows.Forms.CheckBox checkBoxEnhancedActCompatibility;
     }
 }

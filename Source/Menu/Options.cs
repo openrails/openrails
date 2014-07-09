@@ -191,6 +191,7 @@ namespace ORTS
             checkUseLargeAddressAware.Checked = Settings.UseLargeAddressAware;
             checkBoxCircularSpeedGauge.Checked = Settings.CircularSpeedGauge;
             checkBoxSignalLightGlow.Checked = Settings.SignalLightGlow;
+            checkBoxEnhancedActCompatibility.Checked = Settings.EnhancedActCompatibility;
 
             Initialized = true;
         }
@@ -356,6 +357,7 @@ namespace ORTS
             Settings.UseLargeAddressAware = checkUseLargeAddressAware.Checked;
             Settings.CircularSpeedGauge = checkBoxCircularSpeedGauge.Checked;
             Settings.SignalLightGlow = checkBoxSignalLightGlow.Checked;
+            Settings.EnhancedActCompatibility = checkBoxEnhancedActCompatibility.Checked;
 
             Settings.Save();
 
