@@ -71,7 +71,7 @@ namespace ORTS
         bool FuelBoost = false;
         bool FuelBoostReset = false;
         bool StokerIsMechanical = false;
-        bool HotStart = true;
+        bool HotStart; // Determine whether locomotive is started in hot or cold state - selectable option in Options TAB
         bool BoilerHeat = false;
         bool HasSuperheater = false;
         bool safety2IsOn = false; // Safety valve #2 is on and opertaing
@@ -484,7 +484,10 @@ namespace ORTS
                 SuperheatTempRatio = SuperheatRefTempF / SuperheatTempLbpHtoDegF[pS.TopH(TheoreticalMaxSteamOutputLBpS)];    // calculate a ratio figure for known value against reference curve.      
              
             }
-            
+
+            // Determine whether to start locomotive in Hot or Cold State
+            HotStart = Simulator.Settings.HotStart;
+
             // Determine whether it is a geared locomotive
             if (SteamGearRatio > 1.0)
             {

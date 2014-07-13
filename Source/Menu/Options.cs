@@ -111,6 +111,7 @@ namespace ORTS
             checkOverrideNonElectrifiedRoutes.Checked = Settings.OverrideNonElectrifiedRoutes;
             checkCurveResistanceSpeedDependent.Checked = settings.CurveResistanceSpeedDependent;
             checkCurveSpeedDependent.Checked = settings.CurveSpeedDependent;
+            checkHotStart.Checked = settings.HotStart;
 
             // Keyboard tab
             InitializeKeyboardSettings();
@@ -313,6 +314,7 @@ namespace ORTS
             Settings.OverrideNonElectrifiedRoutes = checkOverrideNonElectrifiedRoutes.Checked;
             Settings.CurveResistanceSpeedDependent = checkCurveResistanceSpeedDependent.Checked;
             Settings.CurveSpeedDependent = checkCurveSpeedDependent.Checked;
+            Settings.HotStart = checkHotStart.Checked;
             
             // Keyboard tab
             // These are edited live.

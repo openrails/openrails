@@ -147,6 +147,8 @@ namespace ORTS.Settings
         public bool CurveResistanceSpeedDependent { get; set; }
         [Default(false)]
         public bool CurveSpeedDependent { get; set; }
+        [Default(true)]
+        public bool HotStart { get; set; }
 
 
 		// Experimental settings for super-elevation:

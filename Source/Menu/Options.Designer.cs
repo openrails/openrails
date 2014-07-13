@@ -70,6 +70,7 @@
             this.checkDynamicShadows = new System.Windows.Forms.CheckBox();
             this.checkWire = new System.Windows.Forms.CheckBox();
             this.tabPageSimulation = new System.Windows.Forms.TabPage();
+            this.checkHotStart = new System.Windows.Forms.CheckBox();
             this.checkCurveSpeedDependent = new System.Windows.Forms.CheckBox();
             this.checkCurveResistanceSpeedDependent = new System.Windows.Forms.CheckBox();
             this.checkOverrideNonElectrifiedRoutes = new System.Windows.Forms.CheckBox();
@@ -703,6 +704,7 @@
             // 
             // tabPageSimulation
             // 
+            this.tabPageSimulation.Controls.Add(this.checkHotStart);
             this.tabPageSimulation.Controls.Add(this.checkCurveSpeedDependent);
             this.tabPageSimulation.Controls.Add(this.checkCurveResistanceSpeedDependent);
             this.tabPageSimulation.Controls.Add(this.checkOverrideNonElectrifiedRoutes);
@@ -717,6 +719,17 @@
             this.tabPageSimulation.TabIndex = 2;
             this.tabPageSimulation.Text = "Simulation";
             this.tabPageSimulation.UseVisualStyleBackColor = true;
+            // 
+            // checkHotStart
+            // 
+            this.checkHotStart.AutoSize = true;
+            this.checkHotStart.Location = new System.Drawing.Point(6, 147);
+            this.checkHotStart.Name = "checkHotStart";
+            this.checkHotStart.Size = new System.Drawing.Size(160, 17);
+            this.checkHotStart.TabIndex = 6;
+            this.checkHotStart.Text = "Steam Locomotive Hot Start";
+            this.checkHotStart.UseVisualStyleBackColor = true;
+            
             // 
             // checkCurveSpeedDependent
             // 
@@ -1586,6 +1599,7 @@
         private System.Windows.Forms.CheckBox checkDistantMountains;
         private System.Windows.Forms.CheckBox checkAlerterDisableExternal;
         private System.Windows.Forms.CheckBox checkCurveSpeedDependent;
+        private System.Windows.Forms.CheckBox checkHotStart;
         private System.Windows.Forms.CheckBox checkFastFullScreenAltTab;
         private System.Windows.Forms.CheckBox checkUseLargeAddressAware;
         private System.Windows.Forms.CheckBox checkBoxModelInstancing;
