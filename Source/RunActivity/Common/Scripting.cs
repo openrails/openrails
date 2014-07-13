@@ -538,6 +538,10 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<bool> TCSFullServiceBraking;
         /// <summary>
+        /// Main reservoir pressure
+        /// </summary>
+        public Func<float> MainReservoirPressureBar;
+        /// <summary>
         /// Maximum pressure in the brake pipes and the equalizing reservoir
         /// </summary>
         public Func<float> MaxPressureBar;

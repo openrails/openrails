@@ -259,6 +259,14 @@ namespace ORTS
                 Script.EmergencyBrakingPushButton = () => EmergencyBrakingPushButton;
                 Script.TCSEmergencyBraking = () => TCSEmergencyBraking;
                 Script.TCSFullServiceBraking = () => TCSFullServiceBraking;
+
+                Script.MainReservoirPressureBar = () =>
+                {
+                    if (Locomotive.Train != null)
+                        return Bar.FromPSI(Locomotive.Train.BrakeLine2PressurePSI);
+                    else
+                        return float.MaxValue;
+                };
                 Script.MaxPressureBar = () => Bar.FromPSI(MaxPressurePSI);
                 Script.ReleaseRateBarpS = () => BarpS.FromPSIpS(ReleaseRatePSIpS);
                 Script.QuickReleaseRateBarpS = () => BarpS.FromPSIpS(QuickReleaseRatePSIpS);
