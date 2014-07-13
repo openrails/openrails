@@ -539,6 +539,40 @@ namespace MSTS.Formats
                     ServiceList.Add(new Service_Item(efficiency, skipCount, distanceDownPath, platformStartID)); }),
             });
         }
+
+        //================================================================================================//
+        /// <summary>
+        /// For restore
+        /// <\summary>
+        /// 
+
+        public Service_Definition ()
+        { }
+
+        //================================================================================================//
+        /// <summary>
+        /// Save of useful Service Items parameters
+        /// <\summary>
+        /// 
+
+        public void Save(BinaryWriter outf)
+        {
+            if (ServiceList == null || ServiceList.Count == 0)
+            {
+                outf.Write(-1);
+            }
+            else          
+            {
+                outf.Write (ServiceList.Count);
+                foreach (Service_Item thisServiceItem in ServiceList)
+                {
+                    outf.Write(thisServiceItem.Efficiency);
+                    outf.Write(thisServiceItem.PlatformStartID);
+                }
+            } 
+        }
+
+ 
     }
 
     public class Service_Item {

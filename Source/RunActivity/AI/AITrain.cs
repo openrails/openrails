@@ -61,6 +61,8 @@ namespace ORTS
         public AIActionItem nextActionInfo;              // no next action
         public float NextStopDistanceM;                  // distance to next stop node
         public int? StartTime;                           // starting time
+        public float MaxVelocityA = 30.0f;               // max velocity as set in .con file
+        public Service_Definition ServiceDefinition;     // train's service definition in .act file
 
         public enum AI_MOVEMENT_STATE
         {
@@ -104,18 +106,20 @@ namespace ORTS
         /// Constructor
         /// <\summary>
 
-        public AITrain(Simulator simulator, int uid, AI ai, AIPath path, int start, float efficiency,
-                string name, Traffic_Service_Definition trafficService)
+        public AITrain(Simulator simulator, Service_Definition sd, AI ai, AIPath path, float efficiency,
+                Traffic_Service_Definition trafficService, float maxVelocityA)
             : base(simulator)
         {
-            UiD = uid;
+            ServiceDefinition = sd;
+            UiD = ServiceDefinition.UiD;
             AI = ai;
             Path = path;
             TrainType = TRAINTYPE.AI_NOTSTARTED;
-            StartTime = start;
+            StartTime = ServiceDefinition.Time;
             Efficiency = efficiency;
-            Name = String.Copy(name);
+            Name = String.Copy(ServiceDefinition.Name);
             TrafficService = trafficService;
+            MaxVelocityA = maxVelocityA;
         }
 
         public AITrain(Simulator simulator)
@@ -192,6 +196,11 @@ namespace ORTS
 
             MovementState = (AI_MOVEMENT_STATE)inf.ReadInt32();
 
+            Efficiency = inf.ReadSingle();
+            MaxVelocityA = inf.ReadSingle();
+            int serviceListCount = inf.ReadInt32();
+            if (serviceListCount >= 0) RestoreServiceDefinition(inf, serviceListCount);
+
             // set signals and actions if train is active train
             bool activeTrain = true;
 
@@ -209,6 +218,22 @@ namespace ORTS
                 ResetActions(true);
             }
         }
+
+        //================================================================================================//
+        //
+        // Restore of useful Service Items parameters
+        //
+
+        public void RestoreServiceDefinition(BinaryReader inf, int serviceLC )
+        {
+               ServiceDefinition = new Service_Definition();
+           for (int iServiceList = 0; iServiceList < serviceLC; iServiceList++)
+            {
+                ServiceDefinition.ServiceList.Add(new Service_Item(inf.ReadSingle(), 0, 0.0f, inf.ReadInt32()));
+ 
+            }
+        }
+
 
         //================================================================================================//
         /// <summary>
@@ -232,7 +257,12 @@ namespace ORTS
             outf.Write(Alpha10);
 
             outf.Write((int)MovementState);
+            outf.Write(Efficiency);
+            outf.Write(MaxVelocityA);
+            ServiceDefinition.Save(outf);
         }
+
+ 
 
         //================================================================================================//
         /// <summary>
@@ -320,6 +350,16 @@ namespace ORTS
                 BuildStationList(clearingDistanceM);
 
                 StationStops.Sort();
+                if (!atStation && StationStops.Count > 0 )
+                {
+                    if (Program.Simulator.Settings.EnhancedActCompatibility && MaxVelocityA > 0 && ServiceDefinition.ServiceList.Count > 0)
+                    {
+                        // <CScomment> gets efficiency from .act file to override TrainMaxSpeedMpS computed from .srv efficiency
+                        var sectionEfficiency = ServiceDefinition.ServiceList[0].Efficiency;
+                        if (sectionEfficiency > 0)
+                            TrainMaxSpeedMpS = Math.Min((float)Simulator.TRK.Tr_RouteFile.SpeedLimit, MaxVelocityA * sectionEfficiency);
+                    }
+                }
 
                 InitializeSignals(false);           // Get signal information
                 TCRoute.SetReversalOffset(Length);  // set reversal information for first subpath
@@ -335,8 +375,9 @@ namespace ORTS
                 if (!atStation)
                 {
                     if (StationStops.Count > 0)
-                        SetNextStationAction();               // set station details
-
+                    { 
+                               SetNextStationAction();               // set station details
+                    }
                     MovementState = AI_MOVEMENT_STATE.INIT;   // start in STOPPED mode to collect info
                 }
             }
@@ -1030,8 +1071,8 @@ namespace ORTS
                 StationStops.RemoveAt(0);
                 if (StationStops.Count == 0) // no more stations
                 {
-                    return;
-                }
+                       return;
+                  }
                 thisStation = StationStops[0];
             }
 
@@ -1643,6 +1684,27 @@ namespace ORTS
             // depart
 
             thisStation.Passed = true;
+
+            if (Program.Simulator.Settings.EnhancedActCompatibility && thisStation.ActualStopType == StationStop.STOPTYPE.STATION_STOP 
+                && MaxVelocityA > 0 && ServiceDefinition.ServiceList.Count > 0)
+            // <CScomment> Recalculate TrainMaxSpeedMpS and AllowedMaxSpeedMpS
+            {
+               var actualServiceItemIdx = ServiceDefinition.ServiceList.FindIndex (si => si.PlatformStartID == thisStation.PlatformReference );
+               if (actualServiceItemIdx != null && ServiceDefinition.ServiceList.Count >= actualServiceItemIdx + 2)
+               {
+                       var sectionEfficiency = ServiceDefinition.ServiceList[actualServiceItemIdx + 1].Efficiency;
+                       if (sectionEfficiency > 0)
+                       { 
+                           TrainMaxSpeedMpS = Math.Min((float)Simulator.TRK.Tr_RouteFile.SpeedLimit, MaxVelocityA * sectionEfficiency);
+                           RecalculateAllowedMaxSpeed();
+                       }
+               }
+               else if (MaxVelocityA > 0 && Efficiency > 0)
+               {
+                   TrainMaxSpeedMpS = Math.Min((float)Simulator.TRK.Tr_RouteFile.SpeedLimit, MaxVelocityA * Efficiency);
+                   RecalculateAllowedMaxSpeed();
+               }
+             }
 
             // first, check state of signal
 
@@ -3207,6 +3269,18 @@ namespace ORTS
 
         //================================================================================================//
         /// <summary>
+        /// Update AllowedMaxSpeedMps after station stop
+        /// <\summary>
+        /// 
+
+        public void RecalculateAllowedMaxSpeed()
+        {
+            var allowedMaxSpeedPathMpS = Math.Min(allowedAbsoluteMaxSpeedSignalMpS, allowedAbsoluteMaxSpeedLimitMpS);
+            AllowedMaxSpeedMpS = Math.Min(allowedMaxSpeedPathMpS, TrainMaxSpeedMpS);
+        }
+
+        //================================================================================================//
+        /// <summary>
         /// Create waiting point list
         /// <\summary>
 
@@ -4081,13 +4155,14 @@ namespace ORTS
             {
                 allowedMaxSpeedSignalMpS = speedInfo.MaxSpeedMpSSignal;
                 AllowedMaxSpeedMpS = Math.Min(allowedMaxSpeedLimitMpS, speedInfo.MaxSpeedMpSSignal);
-
             }
             if (speedInfo.MaxSpeedMpSLimit > 0)
             {
                 allowedMaxSpeedLimitMpS = speedInfo.MaxSpeedMpSLimit;
                 AllowedMaxSpeedMpS = speedInfo.MaxSpeedMpSLimit;
             }
+            // <CScomment> following statement should be valid in general, as it seems there was a bug here in the original SW
+            if (Program.Simulator.Settings.EnhancedActCompatibility) AllowedMaxSpeedMpS = Math.Min(AllowedMaxSpeedMpS, TrainMaxSpeedMpS);
 
             if (MovementState == AI_MOVEMENT_STATE.RUNNING && SpeedMpS < AllowedMaxSpeedMpS - 2.0f * hysterisMpS)
             {

@@ -144,6 +144,8 @@ namespace ORTS
         public float AllowedMaxSpeedMpS;                 // Max speed as allowed
         public float allowedMaxSpeedSignalMpS;           // Max speed as set by signal
         public float allowedMaxSpeedLimitMpS;            // Max speed as set by limit
+        public float allowedAbsoluteMaxSpeedSignalMpS = (float)Program.Simulator.TRK.Tr_RouteFile.SpeedLimit ;   // Max speed as set by signal independently from train features
+        public float allowedAbsoluteMaxSpeedLimitMpS = (float)Program.Simulator.TRK.Tr_RouteFile.SpeedLimit;    // Max speed as set by limit independently from train features
         public float maxTimeS = 120;                     // check ahead for distance covered in 2 mins.
         public float minCheckDistanceM = 5000;           // minimum distance to check ahead
         public float minCheckDistanceManualM = 3000;     // minimum distance to check ahead in manual mode
@@ -434,6 +436,8 @@ namespace ORTS
             AllowedMaxSpeedMpS = orgTrain.AllowedMaxSpeedMpS;
             allowedMaxSpeedLimitMpS = orgTrain.allowedMaxSpeedLimitMpS;
             allowedMaxSpeedSignalMpS = orgTrain.allowedMaxSpeedSignalMpS;
+            allowedAbsoluteMaxSpeedLimitMpS = orgTrain.allowedAbsoluteMaxSpeedLimitMpS;
+            allowedAbsoluteMaxSpeedSignalMpS = orgTrain.allowedAbsoluteMaxSpeedSignalMpS;
 
             if (orgTrain.StationStops != null)
             {
@@ -518,6 +522,8 @@ namespace ORTS
             AllowedMaxSpeedMpS = inf.ReadSingle();
             allowedMaxSpeedSignalMpS = inf.ReadSingle();
             allowedMaxSpeedLimitMpS = inf.ReadSingle();
+            allowedAbsoluteMaxSpeedSignalMpS = inf.ReadSingle();
+            allowedAbsoluteMaxSpeedLimitMpS = inf.ReadSingle();
 
             SignalObjectItems = new List<ObjectItemInfo>();
             signalRef = simulator.Signals;
@@ -856,6 +862,8 @@ namespace ORTS
             outf.Write(AllowedMaxSpeedMpS);
             outf.Write(allowedMaxSpeedSignalMpS);
             outf.Write(allowedMaxSpeedLimitMpS);
+            outf.Write(allowedAbsoluteMaxSpeedSignalMpS);
+            outf.Write(allowedAbsoluteMaxSpeedLimitMpS);
 
             outf.Write((int)TrainType);
             outf.Write(tilted);
@@ -2207,6 +2215,14 @@ namespace ORTS
                             }
                             requiredActions.InsertAction(speedLimit);
                             requiredActions.UpdatePendingSpeedlimits(firstObject.actual_speed);  // update any older pending speed limits
+                        }
+                        if (firstObject.ObjectDetails.isSignal)
+                        {
+                            allowedAbsoluteMaxSpeedSignalMpS = firstObject.actual_speed;
+                        }
+                        else
+                        {
+                            allowedAbsoluteMaxSpeedLimitMpS = firstObject.actual_speed;
                         }
                     }
 

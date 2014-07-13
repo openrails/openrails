@@ -102,6 +102,7 @@
             this.tabPageUpdater = new System.Windows.Forms.TabPage();
             this.labelUpdateChannel = new System.Windows.Forms.Label();
             this.tabPageExperimental = new System.Windows.Forms.TabPage();
+            this.checkBoxEnhancedActCompatibility = new System.Windows.Forms.CheckBox();
             this.checkBoxCircularSpeedGauge = new System.Windows.Forms.CheckBox();
             this.checkBoxSignalLightGlow = new System.Windows.Forms.CheckBox();
             this.checkBoxModelInstancing = new System.Windows.Forms.CheckBox();
@@ -127,7 +128,6 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.checkBoxEnhancedActCompatibility = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -1140,6 +1140,17 @@
             this.tabPageExperimental.Text = "Experimental";
             this.tabPageExperimental.UseVisualStyleBackColor = true;
             // 
+            // checkBoxEnhancedActCompatibility
+            // 
+            this.checkBoxEnhancedActCompatibility.AutoSize = true;
+            this.checkBoxEnhancedActCompatibility.ForeColor = System.Drawing.Color.Black;
+            this.checkBoxEnhancedActCompatibility.Location = new System.Drawing.Point(301, 145);
+            this.checkBoxEnhancedActCompatibility.Name = "checkBoxEnhancedActCompatibility";
+            this.checkBoxEnhancedActCompatibility.Size = new System.Drawing.Size(234, 17);
+            this.checkBoxEnhancedActCompatibility.TabIndex = 32;
+            this.checkBoxEnhancedActCompatibility.Text = "Enhanced compatibility with MSTS activities";
+            this.checkBoxEnhancedActCompatibility.UseVisualStyleBackColor = true;
+            // 
             // checkBoxCircularSpeedGauge
             // 
             this.checkBoxCircularSpeedGauge.AutoSize = true;
@@ -1444,18 +1455,6 @@
             this.checkPreferDDSTexture.TabIndex = 16;
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
-            // 
-            // checkBoxEnhancedActCompatibility
-            // 
-            this.checkBoxEnhancedActCompatibility.AutoSize = true;
-            this.checkBoxEnhancedActCompatibility.Enabled = false;
-            this.checkBoxEnhancedActCompatibility.ForeColor = System.Drawing.Color.Silver;
-            this.checkBoxEnhancedActCompatibility.Location = new System.Drawing.Point(301, 145);
-            this.checkBoxEnhancedActCompatibility.Name = "checkBoxEnhancedActCompatibility";
-            this.checkBoxEnhancedActCompatibility.Size = new System.Drawing.Size(234, 17);
-            this.checkBoxEnhancedActCompatibility.TabIndex = 32;
-            this.checkBoxEnhancedActCompatibility.Text = "Enhanced compatibility with MSTS activities";
-            this.checkBoxEnhancedActCompatibility.UseVisualStyleBackColor = true;
             // 
             // OptionsForm
             // 

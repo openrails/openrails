@@ -390,7 +390,8 @@ namespace ORTS
                 return null;
             }
 
-            AITrain train = new AITrain(Simulator, sd.UiD, this, aiPath, sd.Time, srvFile.Efficiency, sd.Name, trfDef);
+            float maxVelocityA = conFile.Train.TrainCfg.MaxVelocity.A;
+            AITrain train = new AITrain(Simulator, sd, this, aiPath, srvFile.Efficiency, trfDef, maxVelocityA);
             Simulator.TrainDictionary.Add(train.Number, train);
 
             if (!Simulator.NameDictionary.ContainsKey(train.Name.ToLower()))
@@ -400,8 +401,15 @@ namespace ORTS
 
             // also set Route max speed for speedpost-processing in train.cs
             train.TrainMaxSpeedMpS = (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;
-            if (conFile.Train.TrainCfg.MaxVelocity.A > 0 && srvFile.Efficiency > 0)
-                train.TrainMaxSpeedMpS = Math.Min(train.TrainMaxSpeedMpS, conFile.Train.TrainCfg.MaxVelocity.A);
+
+
+            if (maxVelocityA > 0 && srvFile.Efficiency > 0)
+            {
+                if (!Program.Simulator.Settings.EnhancedActCompatibility) 
+                    train.TrainMaxSpeedMpS = Math.Min(train.TrainMaxSpeedMpS, maxVelocityA);
+                    // <CScomment> this is overridden if there are station stops
+                else train.TrainMaxSpeedMpS = Math.Min(train.TrainMaxSpeedMpS, maxVelocityA * srvFile.Efficiency);
+                }
 
             // add wagons
             train.Length = 0.0f;
