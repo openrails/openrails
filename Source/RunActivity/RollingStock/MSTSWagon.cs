@@ -76,12 +76,12 @@ namespace ORTS
         public string FreightShapeFileName;
         public float FreightAnimMaxLevelM;
         public float FreightAnimMinLevelM;
-		public string Cab3DShapeFileName; // 3DCab view shape file name
-		public string InteriorShapeFileName; // passenger view shape file name
-		public string MainSoundFileName;
-		public string InteriorSoundFileName;
-		public string Cab3DSoundFileName;
-		public float WheelRadiusM = 1;          // provide some defaults in case it's missing from the wag
+        public string Cab3DShapeFileName; // 3DCab view shape file name
+        public string InteriorShapeFileName; // passenger view shape file name
+        public string MainSoundFileName;
+        public string InteriorSoundFileName;
+        public string Cab3DSoundFileName;
+        public float WheelRadiusM = 1;          // provide some defaults in case it's missing from the wag
         public float DriverWheelRadiusM = 1.5f;    // provide some defaults in case i'ts missing from the wag
         float StaticFrictionFactorLb;    // factor to multiply friction by to determine static or starting friction - will vary depending upon whether roller or friction bearing
         public float Friction0N;        // static friction
@@ -203,13 +203,13 @@ namespace ORTS
             switch (lowercasetoken)
             {
                 case "wagon(wagonshape": MainShapeFileName = stf.ReadStringBlock(null); break;
-		        case "wagon(type":
-		            stf.MustMatch("(");
-		            string typeString = stf.ReadString();
-		            IsFreight = String.Compare(typeString,"Freight") == 0 ? true : false;
-		            IsTender = String.Compare(typeString,"Tender") == 0 ? true : false;
-                    IsPassenger = String.Compare(typeString, "Carriage") == 0 ? true : false;
-                    IsEngine = String.Compare(typeString, "Engine") == 0 ? true : false;
+                case "wagon(type":
+                    stf.MustMatch("(");
+                    string typeString = stf.ReadString();
+                    IsFreight = String.Compare(typeString,"Freight") == 0;
+                    IsTender = String.Compare(typeString,"Tender") == 0;
+                    IsPassenger = String.Compare(typeString, "Carriage") == 0;
+                    IsEngine = String.Compare(typeString, "Engine") == 0;
                     break;
                 case "wagon(freightanim":
                     stf.MustMatch("(");
@@ -253,12 +253,12 @@ namespace ORTS
                 case "wagon(ortsdavis_b": DavisBNSpM = stf.ReadFloatBlock(STFReader.UNITS.Resistance, null); break;
                 case "wagon(ortsdavis_c": DavisCNSSpMM = stf.ReadFloatBlock(STFReader.UNITS.ResistanceDavisC, null); break;
                 case "wagon(ortsbearingtype":
-		            stf.MustMatch("(");
-		            string typeString2 = stf.ReadString();
-		            IsRollerBearing = String.Compare(typeString2,"Roller") == 0 ? true : false;
-                    IsLowTorqueRollerBearing = String.Compare(typeString2, "Low") == 0 ? true : false;
-                    IsFrictionBearing = String.Compare(typeString2, "Friction") == 0 ? true : false;
-		            break;
+                    stf.MustMatch("(");
+                    string typeString2 = stf.ReadString();
+                    IsRollerBearing = String.Compare(typeString2,"Roller") == 0;
+                    IsLowTorqueRollerBearing = String.Compare(typeString2, "Low") == 0;
+                    IsFrictionBearing = String.Compare(typeString2, "Friction") == 0;
+                    break;
                 case "wagon(friction":
                     stf.MustMatch("(");
                     FrictionC1 = stf.ReadFloat(STFReader.UNITS.Resistance, null);
@@ -335,9 +335,9 @@ namespace ORTS
                 case "wagon(lights":
                     Lights = new LightCollection(stf);
                     break;
-				case "wagon(inside": ParseWagonInside(stf); break;
-				case "wagon(orts3dcab": Parse3DCab(stf); break;
-				case "wagon(numwheels": NumWheelsBrakingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); break;
+                case "wagon(inside": ParseWagonInside(stf); break;
+                case "wagon(orts3dcab": Parse3DCab(stf); break;
+                case "wagon(numwheels": NumWheelsBrakingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); break;
                 case "wagon(intakepoint": IntakePointList.Add(new IntakePoint(stf)); break;
                 default:
                     if (MSTSBrakeSystem != null)
@@ -391,11 +391,11 @@ namespace ORTS
             IsFrictionBearing = copy.IsFrictionBearing;
             brakeSystemType = copy.brakeSystemType;
             BrakeSystem = MSTSBrakeSystem.Create(brakeSystemType, this);
-			InteriorShapeFileName = copy.InteriorShapeFileName;
-			InteriorSoundFileName = copy.InteriorSoundFileName;
-			Cab3DShapeFileName = copy.Cab3DShapeFileName;
-			Cab3DSoundFileName = copy.Cab3DSoundFileName;
-			Adhesion1 = copy.Adhesion1;
+            InteriorShapeFileName = copy.InteriorShapeFileName;
+            InteriorSoundFileName = copy.InteriorSoundFileName;
+            Cab3DShapeFileName = copy.Cab3DShapeFileName;
+            Cab3DSoundFileName = copy.Cab3DSoundFileName;
+            Adhesion1 = copy.Adhesion1;
             Adhesion2 = copy.Adhesion2;
             Adhesion3 = copy.Adhesion3;
             Curtius_KnifflerA = copy.Curtius_KnifflerA;
@@ -409,12 +409,12 @@ namespace ORTS
                 PassengerViewpoints.Add(passengerViewPoint);
             foreach (ViewPoint headOutViewPoint in copy.HeadOutViewpoints)
                 HeadOutViewpoints.Add(headOutViewPoint);
-			if (copy.CabViewpoints != null)
-			{
-				CabViewpoints = new List<ViewPoint>();
-				foreach (ViewPoint cabViewPoint in copy.CabViewpoints)
-					CabViewpoints.Add(cabViewPoint);
-			}
+            if (copy.CabViewpoints != null)
+            {
+                CabViewpoints = new List<ViewPoint>();
+                foreach (ViewPoint cabViewPoint in copy.CabViewpoints)
+                CabViewpoints.Add(cabViewPoint);
+            }
             foreach (MSTSCoupling coupler in copy.Couplers)
                 Couplers.Add(coupler);
 
@@ -425,38 +425,38 @@ namespace ORTS
         }
 
         private void ParseWagonInside(STFReader stf)
-		{
-			PassengerViewPoint passengerViewPoint = new PassengerViewPoint();
-			stf.MustMatch("(");
-			stf.ParseBlock(new STFReader.TokenProcessor[] {
+        {
+            PassengerViewPoint passengerViewPoint = new PassengerViewPoint();
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("sound", ()=>{ InteriorSoundFileName = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("passengercabinfile", ()=>{ InteriorShapeFileName = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("passengercabinheadpos", ()=>{ passengerViewPoint.Location = stf.ReadVector3Block(STFReader.UNITS.Distance, new Vector3()); }),
                 new STFReader.TokenProcessor("rotationlimit", ()=>{ passengerViewPoint.RotationLimit = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
                 new STFReader.TokenProcessor("startdirection", ()=>{ passengerViewPoint.StartDirection = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
             });
-			// Set initial direction
-			passengerViewPoint.RotationXRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.X);
-			passengerViewPoint.RotationYRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.Y);
-			PassengerViewpoints.Add(passengerViewPoint);
-		}
-		private void Parse3DCab(STFReader stf)
-		{
-			PassengerViewPoint passengerViewPoint = new PassengerViewPoint();
-			stf.MustMatch("(");
-			stf.ParseBlock(new STFReader.TokenProcessor[] {
+            // Set initial direction
+            passengerViewPoint.RotationXRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.X);
+            passengerViewPoint.RotationYRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.Y);
+            PassengerViewpoints.Add(passengerViewPoint);
+        }
+        private void Parse3DCab(STFReader stf)
+        {
+            PassengerViewPoint passengerViewPoint = new PassengerViewPoint();
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("sound", ()=>{ Cab3DSoundFileName = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("orts3dcabfile", ()=>{ Cab3DShapeFileName = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("orts3dcabheadpos", ()=>{ passengerViewPoint.Location = stf.ReadVector3Block(STFReader.UNITS.Distance, new Vector3()); }),
                 new STFReader.TokenProcessor("rotationlimit", ()=>{ passengerViewPoint.RotationLimit = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
                 new STFReader.TokenProcessor("startdirection", ()=>{ passengerViewPoint.StartDirection = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
             });
-			// Set initial direction
-			passengerViewPoint.RotationXRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.X);
-			passengerViewPoint.RotationYRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.Y);
-			if (this.CabViewpoints == null) CabViewpoints = new List<ViewPoint>();
-			CabViewpoints.Add(passengerViewPoint);
-		}
+            // Set initial direction
+            passengerViewPoint.RotationXRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.X);
+            passengerViewPoint.RotationYRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.Y);
+            if (this.CabViewpoints == null) CabViewpoints = new List<ViewPoint>();
+            CabViewpoints.Add(passengerViewPoint);
+        }
         public static float ParseFloat(string token)
         {   // is there a better way to ignore any suffix?
             while (token.Length > 0)
