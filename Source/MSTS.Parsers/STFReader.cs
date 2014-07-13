@@ -906,19 +906,19 @@ namespace MSTS.Parsers
             if ((validUnits & UNITS.VolumeDefaultFT3) > 0)
                 switch (suffix)
                 {
-                    case "": return 28.3168;
-                    case "*(ft^3)": return 28.3168;
-                    case "ft^3": return 28.3168;
-                    case "*(in^3)": return 0.0163871;
-                    case "in^3": return 0.0163871;
-                    case "*(m^3)": return 1000;
-                    case "m^3": return 1000;
-                    case "l": return 1;
-                    case "g-uk": return 4.54609f;
-                    case "g-us": return 3.78541f;
-                    case "gal": return 3.78541f;  // US gallons
-                    case "gals": return 3.78541f; // US gallons
-                }
+                    case "": return 1.0;
+                    case "*(ft^3)": return 1;  // <CJComment> Factors to be revised when non-metric internal units removed. </CJComment>
+                    case "ft^3": return 1;  // <CJComment> Factors to be revised when non-metric internal units removed. </CJComment>
+                    case "*(in^3)": return 0.000578703704;
+                    case "in^3": return 0.000578703704;
+                    case "*(m^3)": return 35.3146667;
+                    case "m^3": return 35.3146667;
+                    case "l": return 0.0353146667;
+                    case "g-uk": return 0.16054372f;
+                    case "g-us": return 0.133680556f;
+                    case "gal": return 0.133680556f;  // US gallons
+                    case "gals": return 0.133680556f; // US gallons
+                 }
             if ((validUnits & UNITS.Time) > 0)
                 switch (suffix)
                 {
