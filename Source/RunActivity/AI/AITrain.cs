@@ -259,7 +259,8 @@ namespace ORTS
             outf.Write((int)MovementState);
             outf.Write(Efficiency);
             outf.Write(MaxVelocityA);
-            ServiceDefinition.Save(outf);
+            if (!Program.Simulator.TimetableMode) ServiceDefinition.Save(outf);
+            else outf.Write(-1);
         }
 
  
@@ -352,7 +353,7 @@ namespace ORTS
                 StationStops.Sort();
                 if (!atStation && StationStops.Count > 0 )
                 {
-                    if (Program.Simulator.Settings.EnhancedActCompatibility && MaxVelocityA > 0 && ServiceDefinition.ServiceList.Count > 0)
+                    if (! Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility && MaxVelocityA > 0 && ServiceDefinition.ServiceList.Count > 0)
                     {
                         // <CScomment> gets efficiency from .act file to override TrainMaxSpeedMpS computed from .srv efficiency
                         var sectionEfficiency = ServiceDefinition.ServiceList[0].Efficiency;
@@ -1685,7 +1686,7 @@ namespace ORTS
 
             thisStation.Passed = true;
 
-            if (Program.Simulator.Settings.EnhancedActCompatibility && thisStation.ActualStopType == StationStop.STOPTYPE.STATION_STOP 
+            if (!Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility && thisStation.ActualStopType == StationStop.STOPTYPE.STATION_STOP 
                 && MaxVelocityA > 0 && ServiceDefinition.ServiceList.Count > 0)
             // <CScomment> Recalculate TrainMaxSpeedMpS and AllowedMaxSpeedMpS
             {
@@ -4162,7 +4163,7 @@ namespace ORTS
                 AllowedMaxSpeedMpS = speedInfo.MaxSpeedMpSLimit;
             }
             // <CScomment> following statement should be valid in general, as it seems there was a bug here in the original SW
-            if (Program.Simulator.Settings.EnhancedActCompatibility) AllowedMaxSpeedMpS = Math.Min(AllowedMaxSpeedMpS, TrainMaxSpeedMpS);
+            if (!Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility) AllowedMaxSpeedMpS = Math.Min(AllowedMaxSpeedMpS, TrainMaxSpeedMpS);
 
             if (MovementState == AI_MOVEMENT_STATE.RUNNING && SpeedMpS < AllowedMaxSpeedMpS - 2.0f * hysterisMpS)
             {

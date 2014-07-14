@@ -405,7 +405,7 @@ namespace ORTS
 
             if (maxVelocityA > 0 && srvFile.Efficiency > 0)
             {
-                if (!Program.Simulator.Settings.EnhancedActCompatibility) 
+                if (!Program.Simulator.Settings.EnhancedActCompatibility || Program.Simulator.TimetableMode) 
                     train.TrainMaxSpeedMpS = Math.Min(train.TrainMaxSpeedMpS, maxVelocityA);
                     // <CScomment> this is overridden if there are station stops
                 else train.TrainMaxSpeedMpS = Math.Min(train.TrainMaxSpeedMpS, maxVelocityA * srvFile.Efficiency);
