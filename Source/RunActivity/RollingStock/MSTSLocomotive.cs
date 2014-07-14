@@ -224,13 +224,6 @@ namespace ORTS
             TrainBrakeController.Initialize();
             EngineBrakeController.Initialize();
 
-            if (ThrottleController == null)
-            {
-                //If no controller so far, we create a default one
-                ThrottleController = new MSTSNotchController();
-                ThrottleController.StepSize = 0.1f;
-            }
-
             if (VigilanceMonitor)
             {
                 TrainControlSystem.Initialize();
@@ -261,9 +254,57 @@ namespace ORTS
                 }
             }
 
+            CheckCoherence();
+            GetPressureUnit();
+            IsDriveable = true;
+        }
+
+        private void CheckCoherence()
+        {
+            if (!TrainBrakeController.IsValid())
+                TrainBrakeController = new ScriptedBrakeController(this); //create a blank one
+            if (!EngineBrakeController.IsValid())
+                EngineBrakeController = null;
+
+            if (ThrottleController == null)
+            {
+                //If no controller so far, we create a default one
+                ThrottleController = new MSTSNotchController();
+                ThrottleController.StepSize = 0.1f;
+            }
+
+            // need to test for Dynamic brake problem on 3DTS and SLI
+            if (DynamicBrakeController.IsValid())
+            {
+                if (DynamicBrakeController.NotchCount() <= 3)
+                {
+                    // Trace.TraceInformation("Smooth Dynamic Brake may have inaccurate display");
+                    HasSmoothStruc = true;
+                }
+            }
+            else
+                DynamicBrakeController = null;
+
+            if (DynamicBrakeForceCurves == null && MaxDynamicBrakeForceN > 0)
+            {
+                DynamicBrakeForceCurves = new Interpolator2D(2);
+                Interpolator interp = new Interpolator(2);
+                interp[0] = 0;
+                interp[100] = 0;
+                DynamicBrakeForceCurves[0] = interp;
+                interp = new Interpolator(4);
+                interp[DynamicBrakeSpeed1MpS] = 0;
+                interp[DynamicBrakeSpeed2MpS] = MaxDynamicBrakeForceN;
+                interp[DynamicBrakeSpeed3MpS] = MaxDynamicBrakeForceN;
+                interp[DynamicBrakeSpeed4MpS] = 0;
+                DynamicBrakeForceCurves[1] = interp;
+            }
+        }
+
+        private void GetPressureUnit()
+        {
             switch (Simulator.Settings.PressureUnit)
             {
-
                 default:
                 case "Automatic":
                     if (CabViewList.Count > 0)
@@ -313,13 +354,13 @@ namespace ORTS
                                     PressureUnit = unit;
                             }
 
+                            // If CVF data isn't coherent, reset pressure unit.
                             if (!coherent)
+                            {
+                                PressureUnit = PressureUnit.None;
                                 break;
+                            }
                         }
-
-                        // If CVF data isn't coherent, reset pressure unit.
-                        if (!coherent)
-                            PressureUnit = PressureUnit.None;
                     }
 
                     if (PressureUnit == PressureUnit.None)
@@ -339,42 +380,10 @@ namespace ORTS
                 case "inHg":
                     PressureUnit = PressureUnit.InHg;
                     break;
-                    
+
                 case "kgf/cm^2":
                     PressureUnit = PressureUnit.KgfpCm2;
                     break;
-            }
-
-            IsDriveable = true;
-            if (!TrainBrakeController.IsValid())
-                TrainBrakeController = new ScriptedBrakeController(this); //create a blank one
-            if (!EngineBrakeController.IsValid())
-                EngineBrakeController = null;
-
-            // need to test for Dynamic brake problem on 3DTS and SLI
-            if (DynamicBrakeController.IsValid())
-            {
-                if (DynamicBrakeController.NotchCount() <= 3)
-                {
-                    // Trace.TraceInformation("Smooth Dynamic Brake may have inaccurate display");
-                    HasSmoothStruc = true;
-                }
-            }
-            if (!DynamicBrakeController.IsValid())
-                DynamicBrakeController = null;
-            if (DynamicBrakeForceCurves == null && MaxDynamicBrakeForceN > 0)
-            {
-                DynamicBrakeForceCurves = new Interpolator2D(2);
-                Interpolator interp = new Interpolator(2);
-                interp[0] = 0;
-                interp[100] = 0;
-                DynamicBrakeForceCurves[0] = interp;
-                interp = new Interpolator(4);
-                interp[DynamicBrakeSpeed1MpS] = 0;
-                interp[DynamicBrakeSpeed2MpS] = MaxDynamicBrakeForceN;
-                interp[DynamicBrakeSpeed3MpS] = MaxDynamicBrakeForceN;
-                interp[DynamicBrakeSpeed4MpS] = 0;
-                DynamicBrakeForceCurves[1] = interp;
             }
         }
 
