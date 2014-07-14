@@ -2225,6 +2225,11 @@ namespace ORTS
                         Injector2Fraction = 1.0f;
                     }
                 }
+
+                // Put sound triggers in for the injectors in AI Fireman mode
+                SignalEvent(Injector1IsOn ? Event.SteamEjector1On : Event.SteamEjector1Off); // hook for sound trigger
+                SignalEvent(Injector2IsOn ? Event.SteamEjector2On : Event.SteamEjector2Off); // hook for sound trigger
+
             }
             #endregion
             // Determine Heat Ratio - for calculating burn rate
