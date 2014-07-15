@@ -207,8 +207,8 @@ namespace ORTS
             Wagon = wagon;
 
             State = PantographState.Down;
-            DelayS = 0;
-            TimeS = 0;
+            DelayS = 0f;
+            TimeS = 0f;
         }
 
         public void Parse(STFReader stf)
@@ -252,9 +252,9 @@ namespace ORTS
                 case PantographState.Lowering:
                     TimeS -= elapsedClockSeconds;
 
-                    if (TimeS < 0)
+                    if (TimeS <= 0f)
                     {
-                        TimeS = 0;
+                        TimeS = 0f;
                         State = PantographState.Down;
                     }
                     break;
@@ -262,7 +262,7 @@ namespace ORTS
                 case PantographState.Raising:
                     TimeS += elapsedClockSeconds;
 
-                    if (TimeS > DelayS)
+                    if (TimeS >= DelayS)
                     {
                         TimeS = DelayS;
                         State = PantographState.Up;
