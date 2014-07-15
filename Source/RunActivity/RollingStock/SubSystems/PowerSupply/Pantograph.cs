@@ -37,7 +37,29 @@ namespace ORTS
 
         public void Parse(string lowercasetoken, STFReader stf)
         {
+            List.Clear();
 
+            switch (lowercasetoken)
+            {
+                case "wagon(ortspantographs":
+                    stf.MustMatch("(");
+                    stf.ParseBlock(
+                        new[] {
+                            new STFReader.TokenProcessor(
+                                "pantograph",
+                                () => {
+                                    List.Add(new Pantograph(Wagon));
+                                    List.Last().Parse(stf);
+                                }
+                            )
+                        }
+                    );
+
+                    if (List.Count() == 0)
+                        throw new InvalidDataException("ORTSPantographs block with no pantographs");
+
+                    break;
+            }
         }
 
         public void Copy(Pantographs pantographs)
@@ -65,6 +87,11 @@ namespace ORTS
 
         public void Initialize()
         {
+            while (List.Count() < 2)
+            {
+                Add(new Pantograph(Wagon));
+            }
+
             foreach (Pantograph pantograph in List)
             {
                 pantograph.Initialize();
@@ -184,9 +211,19 @@ namespace ORTS
             TimeS = 0;
         }
 
-        public void Parse(string lowercasetoken, STFReader stf)
+        public void Parse(STFReader stf)
         {
-
+            stf.MustMatch("(");
+            stf.ParseBlock(
+                new[] {
+                    new STFReader.TokenProcessor(
+                        "delay",
+                        () => {
+                            DelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null);
+                        }
+                    )
+                }
+            );
         }
 
         public void Copy(Pantograph pantograph)

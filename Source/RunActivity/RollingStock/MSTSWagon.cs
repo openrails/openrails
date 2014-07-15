@@ -178,10 +178,6 @@ namespace ORTS
             
             if (BrakeSystem == null)
                 BrakeSystem = new AirSinglePipe(this);
-
-            // Adding two pantographs by default
-            Pantographs.Add(new Pantograph(this));
-            Pantographs.Add(new Pantograph(this));
             
             Initialize();
         }
@@ -338,6 +334,9 @@ namespace ORTS
                 case "wagon(inside": ParseWagonInside(stf); break;
                 case "wagon(orts3dcab": Parse3DCab(stf); break;
                 case "wagon(numwheels": NumWheelsBrakingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); break;
+                case "wagon(ortspantographs":
+                    Pantographs.Parse(lowercasetoken, stf);
+                    break;
                 case "wagon(intakepoint": IntakePointList.Add(new IntakePoint(stf)); break;
                 default:
                     if (MSTSBrakeSystem != null)
