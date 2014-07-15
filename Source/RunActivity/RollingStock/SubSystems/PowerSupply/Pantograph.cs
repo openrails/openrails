@@ -37,11 +37,11 @@ namespace ORTS
 
         public void Parse(string lowercasetoken, STFReader stf)
         {
-            List.Clear();
-
             switch (lowercasetoken)
             {
                 case "wagon(ortspantographs":
+                    List.Clear();
+
                     stf.MustMatch("(");
                     stf.ParseBlock(
                         new[] {
