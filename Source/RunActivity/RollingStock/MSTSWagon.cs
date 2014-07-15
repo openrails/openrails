@@ -493,6 +493,7 @@ namespace ORTS
             outf.Write(Couplers.Count);
             foreach (MSTSCoupling coupler in Couplers)
                 coupler.Save(outf);
+            Pantographs.Save(outf);
             base.Save(outf);
         }
 
@@ -519,6 +520,7 @@ namespace ORTS
                 Couplers.Add(new MSTSCoupling());
                 Couplers[i].Restore(inf);
             }
+            Pantographs.Restore(inf);
             base.Restore(inf);
         }
 
