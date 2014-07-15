@@ -145,13 +145,13 @@ namespace ORTS
         // Fire Rate - ie lbs of coal per Square Foot of Grate Area 
         static float[] CoalGrateAreaTableLbspFt2 = new float[]
         {
-            20.0f, 40.0f, 60.0f, 80.0f, 100.0f, 120.0f, 140.0f, 160.0f,
+            0.0f, 20.0f, 40.0f, 60.0f, 80.0f, 100.0f, 120.0f, 140.0f, 160.0f,
         };
         
         // Boiler Efficiency - based upon paper from Locomotive Stoker paper - values above 120, extrapolated
         static float[] BoilerEfficiencyTableX = new float[]
         {
-            0.85f, 0.775f, 0.70f, 0.625f, 0.55f, 0.475f, 0.40f, 0.325f,
+            0.875f, 0.85f, 0.775f, 0.70f, 0.625f, 0.55f, 0.475f, 0.40f, 0.325f,
         };
         
         // pressure tables for Injectors temperature and steam usage

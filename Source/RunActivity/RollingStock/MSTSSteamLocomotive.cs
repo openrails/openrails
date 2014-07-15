@@ -395,14 +395,20 @@ namespace ORTS
             WaterTempFtoPSI = SteamTable.TemperatureToPressureInterpolatorFtoPSI();
             SpecificHeatKtoKJpKGpK = SteamTable.SpecificHeatInterpolatorKtoKJpKGpK();
             SaturationPressureKtoPSI = SteamTable.SaturationPressureInterpolatorKtoPSI();
-            BoilerEfficiencyGrateAreaLBpFT2toX = SteamTable.BoilerEfficiencyGrateAreaInterpolatorLbstoX();
+            
             CylinderCondensationFractionX = SteamTable.CylinderCondensationFractionInterpolatorX();
             SuperheatTempLimitXtoDegF = SteamTable.SuperheatTempLimitInterpolatorXtoDegF();
             SuperheatTempLbpHtoDegF = SteamTable.SuperheatTempInterpolatorLbpHtoDegF();
             InitialPressureDropRatioRpMtoX = SteamTable.InitialPressureDropRatioInterpolatorRpMtoX();
             CutoffPressureDropRatioRpMtoX = SteamTable.CutoffPressureDropRatioInterpolatorRpMtoX();
             SteamChestPressureDropRatioRpMtoX = SteamTable.SteamChestPressureDropRatioInterpolatorRpMtoX();
-          
+
+            if (BoilerEfficiencyGrateAreaLBpFT2toX == null)
+            {
+            BoilerEfficiencyGrateAreaLBpFT2toX = SteamTable.BoilerEfficiencyGrateAreaInterpolatorLbstoX();
+            Trace.TraceWarning("BoilerEfficiencyGrateAreaLBpFT2toX not read in ENG file {0} ", BoilerEfficiencyGrateAreaLBpFT2toX[35.0f]);
+            }
+
             RefillTenderWithCoal();
             RefillTenderWithWater();
 
@@ -722,7 +728,7 @@ namespace ORTS
                 case "engine(ortscylinderpressuredrop": CylinderPressureDropLBpStoPSI = new Interpolator(stf); break;
                 case "engine(ortsbackpressure": BackPressureLBpStoPSI = new Interpolator(stf); break;
                 case "engine(ortsburnrate": BurnRateLBpStoKGpS = new Interpolator(stf); break;
-                case "engine(ortsboilerefficiency": BoilerEfficiency = new Interpolator(stf); break;
+                case "engine(ortsboilerefficiency": BoilerEfficiencyGrateAreaLBpFT2toX = new Interpolator(stf); break;
                 case "engine(ortsdrivewheelweight": DrvWheelWeightKg = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(ortssteamgearratio": SteamGearRatio = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortssteammaxgearpistonrate": MaxSteamGearPistonRateRpM = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
