@@ -4909,7 +4909,14 @@ namespace ORTS
                 return (true);
             }
 
-            if (CircuitState.TrainReserved != null && CircuitState.TrainReserved.Train != thisTrain.Train)
+            if (!Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility)
+            { 
+            if ( CircuitState.TrainReserved != null && CircuitState.TrainReserved.Train != thisTrain.Train)
+            {
+                ClearSectionsOfTrainBehind(CircuitState.TrainReserved, this);
+            }
+            }
+            else if ( CircuitState.TrainReserved != null && CircuitState.TrainReserved.Train != thisTrain.Train)
             {
                 return (false);
             }
@@ -6295,6 +6302,33 @@ namespace ORTS
             if (DeadlockAwaited.Contains(trainNumber))
                 totalCount--;
             return (totalCount > 0);
+        }
+
+        //================================================================================================//
+        //
+        // Clear track sections from train behind
+        //
+
+        public void ClearSectionsOfTrainBehind (Train.TrainRouted trainRouted, TrackCircuitSection startTCSectionIndex)
+        {
+            int startindex = 0;
+            startTCSectionIndex.UnreserveTrain(trainRouted, true);
+            for (int iindex = 0; iindex < trainRouted.Train.ValidRoute[0].Count; iindex++)
+            {
+                if (startTCSectionIndex == signalRef.TrackCircuitList[trainRouted.Train.ValidRoute[0][iindex].TCSectionIndex]) 
+                {
+                    startindex = iindex + 1;
+                    break;
+                }
+            }
+           
+                for (int iindex = startindex; iindex < trainRouted.Train.ValidRoute[0].Count; iindex++)
+                {
+                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[trainRouted.Train.ValidRoute[0][iindex].TCSectionIndex];
+                    if (thisSection.CircuitState.TrainReserved == null)
+                        break;
+                    thisSection.UnreserveTrain(trainRouted, true);
+                }
         }
 
         //================================================================================================//
