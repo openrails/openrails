@@ -199,7 +199,7 @@ namespace ORTS
             Efficiency = inf.ReadSingle();
             MaxVelocityA = inf.ReadSingle();
             int serviceListCount = inf.ReadInt32();
-            if (serviceListCount >= 0) RestoreServiceDefinition(inf, serviceListCount);
+            if (serviceListCount > 0) RestoreServiceDefinition(inf, serviceListCount);
 
             // set signals and actions if train is active train
             bool activeTrain = true;
@@ -259,7 +259,7 @@ namespace ORTS
             outf.Write((int)MovementState);
             outf.Write(Efficiency);
             outf.Write(MaxVelocityA);
-            if (!Program.Simulator.TimetableMode) ServiceDefinition.Save(outf);
+            if (!Program.Simulator.TimetableMode && ServiceDefinition != null ) ServiceDefinition.Save(outf);
             else outf.Write(-1);
         }
 
