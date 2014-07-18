@@ -1792,5 +1792,90 @@ namespace ORTS.Viewer3D
 			PrevCabWasRear = mstsLocomotive.UsingRearCab;
 			SetCameraCar(newCar);
 		}
+
+		public override void HandleUserInput(ElapsedTime elapsedTime)
+		{
+
+			MoveCar();
+
+			RotateByMouse();
+
+			var speed = GetSpeed(elapsedTime) * SpeedAdjustmentForRotation;
+
+			float x = 0.0f, y = 0.0f, z = 0.0f;
+			// Rotate camera
+			if (UserInput.IsDown(UserCommands.CameraRotateUp)) RotateDown(-speed);
+			if (UserInput.IsDown(UserCommands.CameraRotateDown)) RotateDown(speed);
+			if (UserInput.IsDown(UserCommands.CameraRotateLeft)) RotateRight(-speed);
+			if (UserInput.IsDown(UserCommands.CameraRotateRight)) RotateRight(speed);
+
+			// Move camera
+			if (UserInput.IsDown(UserCommands.CameraZoomIn))
+			{
+				z = speed * 5;
+				MoveCameraXYZ(0, 0, z);
+
+			}
+			if (UserInput.IsDown(UserCommands.CameraZoomOut))
+			{
+				z = speed * -5;
+				MoveCameraXYZ(0, 0, z);
+			}
+			// Move camera
+			if (UserInput.IsDown(UserCommands.CameraPanUp))
+			{
+				y = speed / 2;
+				MoveCameraXYZ(0, y, 0);
+
+			}
+			if (UserInput.IsDown(UserCommands.CameraPanDown))
+			{
+				y = -speed / 2;
+				MoveCameraXYZ(0, y, 0);
+			}
+			if (UserInput.IsDown(UserCommands.CameraPanLeft))
+			{
+				x = speed * -2;
+				MoveCameraXYZ(x, 0, 0);
+			}
+			if (UserInput.IsDown(UserCommands.CameraPanRight))
+			{
+				x = speed * 2;
+				MoveCameraXYZ(x, 0, 0);
+			}
+
+			Program.Simulator.Confirmer.Information("" + x + " " + y + " " + z);
+			// Zoom
+			ZoomByMouseWheel(speed);
+
+			// Support for replaying camera rotation movements
+			if (UserInput.IsPressed(UserCommands.CameraRotateUp) || UserInput.IsPressed(UserCommands.CameraRotateDown))
+				CommandStartTime = Viewer.Simulator.ClockTime;
+			if (UserInput.IsReleased(UserCommands.CameraRotateUp) || UserInput.IsReleased(UserCommands.CameraRotateDown))
+				new CameraRotateUpDownCommand(Viewer.Log, CommandStartTime, Viewer.Simulator.ClockTime, RotationXRadians);
+
+			if (UserInput.IsPressed(UserCommands.CameraRotateLeft) || UserInput.IsPressed(UserCommands.CameraRotateRight))
+				CommandStartTime = Viewer.Simulator.ClockTime;
+			if (UserInput.IsReleased(UserCommands.CameraRotateLeft) || UserInput.IsReleased(UserCommands.CameraRotateRight))
+				new CameraRotateLeftRightCommand(Viewer.Log, CommandStartTime, Viewer.Simulator.ClockTime, RotationYRadians);
+
+			// Support for replaying camera up/down/left/right/forward/backward movements
+			if (UserInput.IsPressed(UserCommands.CameraPanDown) || UserInput.IsPressed(UserCommands.CameraPanUp)
+			|| UserInput.IsPressed(UserCommands.CameraPanLeft) || UserInput.IsPressed(UserCommands.CameraPanRight))
+				CommandStartTime = Viewer.Simulator.ClockTime;
+			if (UserInput.IsPressed(UserCommands.CameraPanDown) || UserInput.IsPressed(UserCommands.CameraPanUp)
+			|| UserInput.IsPressed(UserCommands.CameraPanLeft) || UserInput.IsPressed(UserCommands.CameraPanRight))
+				new ThreeDimCabCameraMoveXYZCommand(Viewer.Log, CommandStartTime, Viewer.Simulator.ClockTime, x, y, z);
+		}
+
+		public void MoveCameraXYZ(float x, float y, float z)
+		{
+			attachedLocation.X += x;
+			attachedLocation.Y += y;
+			attachedLocation.Z += z;
+			UpdateLocation();
+
+		}
+
 	}
 }

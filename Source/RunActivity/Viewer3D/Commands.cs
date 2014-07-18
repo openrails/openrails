@@ -1360,8 +1360,37 @@ namespace ORTS.Viewer3D
             return base.ToString() + String.Format( ", {0}", ZRadians );
         }
     }
-    
-    [Serializable()]
+
+	[Serializable()]
+	public class ThreeDimCabCameraMoveXYZCommand : MoveCameraCommand
+	{
+		float X, Y, Z;
+
+		public ThreeDimCabCameraMoveXYZCommand(CommandLog log, double startTime, double endTime, float xr, float yr, float zr)
+			: base(log, startTime, endTime)
+		{
+			X = xr; Y = yr; Z = zr;
+			Redo();
+		}
+
+		public override void Redo()
+		{
+			if (Receiver.Camera is ThreeDimCabCamera)
+			{
+				var c = Receiver.Camera as ThreeDimCabCamera;
+				c.MoveCameraXYZ(X, Y, Z);
+				c.EndTime = EndTime;
+			}
+			// Report();
+		}
+
+		public override string ToString()
+		{
+			return base.ToString() + String.Format(", {0}", X);
+		}
+	}
+
+	[Serializable()]
     public class TrackingCameraXCommand : MoveCameraCommand {
         float PositionXRadians;
 
