@@ -1844,7 +1844,6 @@ namespace ORTS.Viewer3D
 				MoveCameraXYZ(x, 0, 0);
 			}
 
-			Program.Simulator.Confirmer.Information("" + x + " " + y + " " + z);
 			// Zoom
 			ZoomByMouseWheel(speed);
 
