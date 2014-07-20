@@ -1,0 +1,1 @@
+<?php echo "<title>Open Rails - Frequently Asked Questions (FAQ)</title>"; ?>

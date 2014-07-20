@@ -1,0 +1,1 @@
+<?php echo "<title>Open Rails - License</title>"; ?>

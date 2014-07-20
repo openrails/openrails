@@ -1,0 +1,1 @@
+<?php echo "<title>Open Rails - Project News</title>"; ?>

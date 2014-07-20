@@ -1,0 +1,17 @@
+/* index.css */
+
+.iframe_wrap { width: 302px; height: 302px; padding: 0; overflow: hidden; border: solid 1px #888; }
+.iframe_scale { width: 900px; height: 900px; border: 0px; }
+.iframe_scale {
+    zoom: 0.333;
+    -moz-transform: scale(0.333);
+    -moz-transform-origin: 0 0;
+    -o-transform: scale(0.333);
+    -o-transform-origin: 0 0;
+    -webkit-transform: scale(0.333);
+    -webkit-transform-origin: 0 0;
+}
+
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  .iframe_scale { zoom: 1; }
+}

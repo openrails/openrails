@@ -1,0 +1,38 @@
+[27-May-2014 09:56:11] PHP Parse error:  parse error in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 6
+[27-May-2014 16:22:30] PHP Parse error:  parse error in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 27
+[27-May-2014 16:22:34] PHP Parse error:  parse error in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 27
+[27-May-2014 16:23:17] PHP Notice:  Undefined variable: file in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 45
+[27-May-2014 16:23:17] PHP Notice:  Undefined variable: title in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 45
+[27-May-2014 16:23:17] PHP Notice:  Undefined variable: supplier in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 45
+[27-May-2014 16:23:59] PHP Notice:  Undefined variable: file in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 45
+[27-May-2014 16:23:59] PHP Notice:  Undefined variable: title in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 45
+[27-May-2014 16:23:59] PHP Notice:  Undefined variable: supplier in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 45
+[27-May-2014 16:24:10] PHP Notice:  Undefined variable: file in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 46
+[27-May-2014 16:24:10] PHP Notice:  Undefined variable: title in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 46
+[27-May-2014 16:24:10] PHP Notice:  Undefined variable: supplier in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 46
+[27-May-2014 16:24:22] PHP Parse error:  parse error in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 28
+[27-May-2014 16:24:55] PHP Parse error:  parse error in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 29
+[27-May-2014 16:25:00] PHP Parse error:  parse error in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 29
+[27-May-2014 16:25:01] PHP Parse error:  parse error in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 29
+[27-May-2014 16:38:16] PHP Notice:  Undefined variable: file in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 47
+[27-May-2014 16:38:16] PHP Notice:  Undefined variable: title in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 47
+[27-May-2014 16:38:16] PHP Notice:  Undefined variable: supplier in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 47
+[27-May-2014 16:42:52] PHP Notice:  Undefined variable: file in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 47
+[27-May-2014 16:42:52] PHP Notice:  Undefined variable: title in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 47
+[27-May-2014 16:42:52] PHP Notice:  Undefined variable: supplier in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 47
+[27-May-2014 16:43:17] PHP Parse error:  parse error in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 29
+[27-May-2014 16:43:35] PHP Warning:  fopen(banners/banner_list.csv) [<a href='function.fopen'>function.fopen</a>]: failed to open stream: No such file or directory in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 7
+[27-May-2014 16:43:35] PHP Notice:  Undefined variable: file in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 47
+[27-May-2014 16:43:35] PHP Notice:  Undefined variable: title in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 47
+[27-May-2014 16:43:35] PHP Notice:  Undefined variable: supplier in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 47
+[27-May-2014 16:50:12] PHP Warning:  fopen(banners/banner_list.csv) [<a href='function.fopen'>function.fopen</a>]: failed to open stream: No such file or directory in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 7
+[27-May-2014 16:50:12] PHP Notice:  Undefined variable: file in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 47
+[27-May-2014 16:50:12] PHP Notice:  Undefined variable: title in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 47
+[27-May-2014 16:50:12] PHP Notice:  Undefined variable: supplier in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 47
+[27-May-2014 16:50:25] PHP Warning:  fopen(banners/banner_list.csv) [<a href='function.fopen'>function.fopen</a>]: failed to open stream: No such file or directory in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 7
+[27-May-2014 16:50:25] PHP Notice:  Undefined variable: file in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 47
+[27-May-2014 16:50:25] PHP Notice:  Undefined variable: title in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 47
+[27-May-2014 16:50:25] PHP Notice:  Undefined variable: supplier in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 47
+[27-May-2014 16:51:26] PHP Parse error:  parse error in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 12
+[27-May-2014 16:52:07] PHP Parse error:  parse error in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 13
+[27-May-2014 16:52:12] PHP Parse error:  parse error in D:\web\openrails\web\or\dev\shared\banners\banner.php on line 13
