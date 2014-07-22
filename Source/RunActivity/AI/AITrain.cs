@@ -353,7 +353,8 @@ namespace ORTS
                 StationStops.Sort();
                 if (!atStation && StationStops.Count > 0 )
                 {
-                    if (! Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility && MaxVelocityA > 0 && ServiceDefinition.ServiceList.Count > 0)
+                    if (! Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility && MaxVelocityA > 0 &&
+                        ServiceDefinition != null && ServiceDefinition.ServiceList.Count > 0)
                     {
                         // <CScomment> gets efficiency from .act file to override TrainMaxSpeedMpS computed from .srv efficiency
                         var sectionEfficiency = ServiceDefinition.ServiceList[0].Efficiency;
@@ -1687,7 +1688,7 @@ namespace ORTS
             thisStation.Passed = true;
 
             if (!Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility && thisStation.ActualStopType == StationStop.STOPTYPE.STATION_STOP 
-                && MaxVelocityA > 0 && ServiceDefinition.ServiceList.Count > 0)
+                && MaxVelocityA > 0 && ServiceDefinition != null && ServiceDefinition.ServiceList.Count > 0)
             // <CScomment> Recalculate TrainMaxSpeedMpS and AllowedMaxSpeedMpS
             {
                var actualServiceItemIdx = ServiceDefinition.ServiceList.FindIndex (si => si.PlatformStartID == thisStation.PlatformReference );
