@@ -35,27 +35,33 @@ namespace ORTS.Scripting
     {
         readonly Simulator Simulator;
         readonly Dictionary<string, Assembly> Scripts = new Dictionary<string, Assembly>();
-        static readonly CSharpCodeProvider Compiler = new CSharpCodeProvider(new Dictionary<string, string>() { { "CompilerVersion", "v3.5" } }); 
-        static readonly CompilerParameters CompilerParameters = new CompilerParameters();
+        static readonly CSharpCodeProvider Compiler = new CSharpCodeProvider(new Dictionary<string, string>() { { "CompilerVersion", "v3.5" } });
+        static readonly CompilerParameters CompilerParameters = GetCompilerParameters();
+
+        static CompilerParameters GetCompilerParameters()
+        {
+            var cp = new CompilerParameters()
+            {
+                GenerateInMemory = true,
+                IncludeDebugInformation = Debugger.IsAttached,
+            };
+            cp.ReferencedAssemblies.Add("System.dll");
+            cp.ReferencedAssemblies.Add("System.Core.dll");
+            cp.ReferencedAssemblies.Add("ORTS.Common.dll");
+            cp.ReferencedAssemblies.Add("RunActivity.exe");
+            return cp;
+        }
 
         [CallOnThread("Loader")]
         internal ScriptManager(Simulator simulator)
         {
             Simulator = simulator;
-            CompilerParameters.GenerateExecutable = false;
-            CompilerParameters.GenerateInMemory = true;
-            //CompilerParameters.IncludeDebugInformation = true;
-            //CompilerParameters.CompilerOptions += " /debug:pdbonly"; 
-            CompilerParameters.ReferencedAssemblies.Add("System.dll");
-            CompilerParameters.ReferencedAssemblies.Add("System.Core.dll");
-            CompilerParameters.ReferencedAssemblies.Add("ORTS.Common.dll");
-            CompilerParameters.ReferencedAssemblies.Add("RunActivity.exe");
         }
 
         public object Load(string[] pathArray, string name)
         {
             if (Thread.CurrentThread.Name != "Loader Process")
-                Trace.TraceError("SharedScriptManager.Load incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
+                Trace.TraceError("ScriptManager.Load incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
 
             if (pathArray == null || pathArray.Length == 0 || name == null || name == "")
                 return null;
@@ -77,15 +83,7 @@ namespace ORTS.Scripting
 
             try
             {
-                var sourceCode = new StringBuilder();
-                var prefixLines = 0;
-                using (var sr = new StreamReader(path))
-                {
-                    sourceCode.Append(sr.ReadToEnd());
-                    sr.Close();
-                }
-
-                var compilerResults = Compiler.CompileAssemblyFromSource(CompilerParameters, sourceCode.ToString());
+                var compilerResults = Compiler.CompileAssemblyFromFile(CompilerParameters, path);
                 if (!compilerResults.Errors.HasErrors)
                 {
                     var script = compilerResults.CompiledAssembly;
@@ -99,7 +97,7 @@ namespace ORTS.Scripting
                     errorString.Append(Environment.NewLine);
                     foreach (CompilerError error in compilerResults.Errors)
                     {
-                        errorString.AppendFormat("   {0}, line: {1}, column: {2}", error.ErrorText, error.Line - prefixLines, error.Column);
+                        errorString.AppendFormat("   {0}, line: {1}, column: {2}", error.ErrorText, error.Line /*- prefixLines*/, error.Column);
                         errorString.Append(Environment.NewLine);
                     }
 
