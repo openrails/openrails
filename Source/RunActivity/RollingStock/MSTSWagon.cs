@@ -338,6 +338,7 @@ namespace ORTS
                     Pantographs.Parse(lowercasetoken, stf);
                     break;
                 case "wagon(intakepoint": IntakePointList.Add(new IntakePoint(stf)); break;
+                case "wagon(passengercapacity": HasPassengerCapacity = true;  break;
                 default:
                     if (MSTSBrakeSystem != null)
                         MSTSBrakeSystem.Parse(lowercasetoken, stf);

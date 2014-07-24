@@ -96,7 +96,8 @@ namespace ORTS
         public int NPull;
         public int NPush;
         public int LeadLocomotiveIndex = -1;
-        public bool IsFreight;
+        public bool IsFreight;                           // has at least one freight car; mainly used for maxspeed calculation
+        public int PassengerCarsNumber = 0;              // Number of passenger cars
         public float SlipperySpotDistanceM;              // distance to extra slippery part of track
         public float SlipperySpotLengthM;
 
@@ -1868,7 +1869,7 @@ namespace ORTS
                         AtStation = true;
                         int presentTime = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
                         StationStops[0].ActualArrival = presentTime;
-                        StationStops[0].CalculateDepartTime(presentTime);
+                        StationStops[0].CalculateDepartTime(presentTime, this);
                         break;
                     }
                 }
@@ -2656,9 +2657,10 @@ namespace ORTS
                 }
                 else
                 {
-                    if (actualSpeedMpS > 998f)
-                    {
-                        actualSpeedMpS = TrainMaxSpeedMpS;
+                    if (actualSpeedMpS > 998f)  
+                    { 
+                        if (!Program.Simulator.Settings.EnhancedActCompatibility  || Program.Simulator.TimetableMode) actualSpeedMpS = TrainMaxSpeedMpS;
+                        else actualSpeedMpS = (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;
                     }
 
                     if (actualSpeedMpS > 0)
@@ -2966,10 +2968,13 @@ namespace ORTS
         public void CheckFreight()
         {
             IsFreight = false;
+            PassengerCarsNumber = 0;
             foreach (var car in Cars)
             {
                 if (car.IsFreight)
                     IsFreight = true;
+                if (!Simulator.TimetableMode && ((!car.IsFreight && !car.IsTender && !car.IsDriveable) || (car.IsDriveable && car.HasPassengerCapacity)))
+                    PassengerCarsNumber++;
             }
         } // CheckFreight
 
@@ -4413,7 +4418,7 @@ namespace ORTS
                         {
                             int presentTime = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
                             StationStops[0].ActualArrival = presentTime;
-                            StationStops[0].CalculateDepartTime(presentTime);
+                            StationStops[0].CalculateDepartTime(presentTime, this);
 
                             if (StationStops[0].ConnectionsWaiting.Count > 0)
                             {
@@ -15617,6 +15622,8 @@ namespace ORTS
 
         public class StationStop : IComparable<StationStop>
         {
+            public const int NumSecPerPass = 10; // number of seconds to board of a passengers
+            public const int DefaultFreightStopTime = 20; // MSTS stoptime for freight trains
 
             public enum STOPTYPE
             {
@@ -15853,7 +15860,7 @@ namespace ORTS
             /// </summary>
             /// <param name="presentTime"></param>
 
-            public void CalculateDepartTime(int presentTime)
+            public void CalculateDepartTime(int presentTime, Train stoppedTrain )
             {
                 int eightHundredHours = 8 * 3600;
                 int sixteenHundredHours = 16 * 3600;
@@ -15878,6 +15885,14 @@ namespace ORTS
                     stopTime += (24 * 3600);
                 }
 
+                // if MSTS compatibility mode uses platform passenger number
+                if (!Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility)
+                {
+                          stopTime = ComputeBoardingTime(stoppedTrain);
+                }
+ 
+               
+                else
                 // use minimun station dwell time
                 if (stopTime <= 0 || stopTime > PlatformItem.MinWaitingTime)
                 {
@@ -15888,7 +15903,84 @@ namespace ORTS
                 int correctedTime = ActualArrival + stopTime;
                 ActualDepart = CompareTimes.LatestTime(DepartTime, correctedTime);
             }
+
+            //================================================================================================//
+            /// <summary>
+            /// <CScomment> Compute boarding time for passenger train. Solution based on number of carriages within platform.
+            /// Number of carriages computed considering an average Traincar length...
+            /// ...moreover considering that carriages are in the train part within platform (MSTS apparently does so).
+            /// Player train has more sophisticated computing, as in MSTS.
+            /// As of now the position of the carriages within the train is computed here at every station together with the statement if the carriage is within the 
+            /// platform boundaries. To be evaluated if the position of the carriages within the train could later be computed together with the CheckFreight method</CScomment>
+            /// <\summary>
+            public int ComputeBoardingTime(Train stopTrain)
+            {
+                var passengerCarsWithinPlatform = stopTrain.PassengerCarsNumber;
+                int stopTime = DefaultFreightStopTime;
+                if (passengerCarsWithinPlatform == 0) return stopTime; // pure freight train
+                var distancePlatformHeadtoTrainHead = -stopTrain.StationStops[0].StopOffset + PlatformItem.TCOffset[1, stopTrain.TCRoute.TCRouteSubpaths[stopTrain.TCRoute.activeSubpath][stopTrain.StationStops[0].RouteIndex].Direction] + stopTrain.StationStops[0].DistanceToTrainM;
+                var trainPartOutsidePlatformForward = distancePlatformHeadtoTrainHead < 0 ? -distancePlatformHeadtoTrainHead : 0;
+                if (trainPartOutsidePlatformForward >= stopTrain.Length) return (int)PlatformItem.MinWaitingTime; // train actually passed platform; should not happen
+                var distancePlatformTailtoTrainTail = distancePlatformHeadtoTrainHead - PlatformItem.Length + stopTrain.Length;
+                var trainPartOutsidePlatformBackward = distancePlatformTailtoTrainTail > 0 ? distancePlatformTailtoTrainTail : 0;
+                if (trainPartOutsidePlatformBackward >= stopTrain.Length) return (int)PlatformItem.MinWaitingTime; // train actually stopped before platform; should not happen
+                if (stopTrain.TrainType == TRAINTYPE.PLAYER)
+                {
+                    if (trainPartOutsidePlatformForward == 0 && trainPartOutsidePlatformBackward == 0) passengerCarsWithinPlatform = stopTrain.PassengerCarsNumber;
+                    else
+                    {
+                        if (trainPartOutsidePlatformForward > 0)
+                        {
+                            var walkingDistance = 0.0f;
+                            int trainCarIndex = 0;
+                            while (walkingDistance <= trainPartOutsidePlatformForward && passengerCarsWithinPlatform > 0 && trainCarIndex < stopTrain.Cars.Count - 1)
+                            {
+                                var walkingDistanceBehind = walkingDistance + stopTrain.Cars[trainCarIndex].LengthM;
+                                if ((!stopTrain.Cars[trainCarIndex].IsFreight && !stopTrain.Cars[trainCarIndex].IsTender && !stopTrain.Cars[trainCarIndex].IsDriveable) ||
+                                   (stopTrain.Cars[trainCarIndex].IsDriveable && stopTrain.Cars[trainCarIndex].HasPassengerCapacity))
+                                {
+                                    if ((trainPartOutsidePlatformForward - walkingDistance) > 0.67 * stopTrain.Cars[trainCarIndex].LengthM) passengerCarsWithinPlatform--;
+                                }
+                                walkingDistance = walkingDistanceBehind;
+                                trainCarIndex++;
+                            }
+                        }
+                        if (trainPartOutsidePlatformBackward > 0 && passengerCarsWithinPlatform > 0)
+                        {
+                            var walkingDistance = 0.0f;
+                            int trainCarIndex = stopTrain.Cars.Count - 1;
+                            while (walkingDistance <= trainPartOutsidePlatformBackward && passengerCarsWithinPlatform > 0 && trainCarIndex >= 0)
+                        {
+                            var walkingDistanceBehind = walkingDistance + stopTrain.Cars[trainCarIndex].LengthM;
+                            if ((!stopTrain.Cars[trainCarIndex].IsFreight && !stopTrain.Cars[trainCarIndex].IsTender && !stopTrain.Cars[trainCarIndex].IsDriveable) ||
+                               (stopTrain.Cars[trainCarIndex].IsDriveable && stopTrain.Cars[trainCarIndex].HasPassengerCapacity))
+                            { 
+                                if ((trainPartOutsidePlatformBackward - walkingDistance)> 0.67 * stopTrain.Cars[trainCarIndex].LengthM) passengerCarsWithinPlatform--;
+                            }
+                            walkingDistance = walkingDistanceBehind;
+                            trainCarIndex--;                           
+                            }
+                        }
+                    }
+                }
+                else
+                {
+
+                        passengerCarsWithinPlatform = stopTrain.Length - trainPartOutsidePlatformForward - trainPartOutsidePlatformBackward > 0 ?
+                        stopTrain.PassengerCarsNumber : (int)Math.Min((stopTrain.Length - trainPartOutsidePlatformForward - trainPartOutsidePlatformBackward) / stopTrain.Cars.Count()+0.33,
+                        stopTrain.PassengerCarsNumber);
+                }
+                if (passengerCarsWithinPlatform > 0) stopTime = Math.Max(NumSecPerPass * PlatformItem.NumPassengersWaiting / passengerCarsWithinPlatform, DefaultFreightStopTime);
+                else stopTime = 0; // no passenger car stopped within platform: sorry, no countdown starts
+                return stopTime;
+                   
+            }
+
+
         }
+
+
+
 
         //================================================================================================//
         /// <summary>

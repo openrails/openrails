@@ -3929,6 +3929,7 @@ namespace ORTS
                 {
                     thisDetails.Name = String.Copy(thisPlatform.Station);
                     thisDetails.MinWaitingTime = thisPlatform.PlatformMinWaitingTime;
+                    thisDetails.NumPassengersWaiting = (int)thisPlatform.PlatformNumPassengersWaiting;
                 }
                 else if (!splitPlatform)
                 {
@@ -4059,6 +4060,20 @@ namespace ORTS
                     }
                 }
             }
+
+            if (!Program.Simulator.TimetableMode && Program.Simulator.Activity != null && 
+                Program.Simulator.Activity.Tr_Activity.Tr_Activity_File.PlatformNumPassengersWaiting != null)
+
+            // Override .tdb NumPassengersWaiting info with .act NumPassengersWaiting info if any available
+            {
+                int overriddenPlatformDetailsIndex;
+                  foreach (PlatformData platformData in Program.Simulator.Activity.Tr_Activity.Tr_Activity_File.PlatformNumPassengersWaiting.PlatformDataList)
+                  {
+                    overriddenPlatformDetailsIndex = PlatformDetailsList.FindIndex(platformDetails => (platformDetails.PlatformReference[0] == platformData.Id) || (platformDetails.PlatformReference[1] == platformData.Id));
+                    PlatformDetailsList[overriddenPlatformDetailsIndex].NumPassengersWaiting = platformData.PassengerCount;
+                  }
+             }
+
         }// ProcessPlatforms
 
         //================================================================================================//
@@ -10615,6 +10630,8 @@ namespace ORTS
         public float[] DistanceToSignals = new float[2];
         public string Name;
         public uint MinWaitingTime;
+        public int NumPassengersWaiting;
+
 
         //================================================================================================//
         //
@@ -10649,6 +10666,7 @@ namespace ORTS
             orgDetails.DistanceToSignals.CopyTo(DistanceToSignals, 0);
             Name = String.Copy(orgDetails.Name);
             MinWaitingTime = orgDetails.MinWaitingTime;
+            NumPassengersWaiting = orgDetails.NumPassengersWaiting;
         }
     }
 

@@ -733,39 +733,69 @@ namespace ORTS
             {
                 if (IsAtStation())
                 {
-
-                    // If yes, we arrived
-                    if (ActArrive == null)
+                    if (Program.Simulator.TimetableMode || !Program.Simulator.Settings.EnhancedActCompatibility || Program.Simulator.PlayerLocomotive.Train.StationStops.Count == 0)
                     {
-                        ActArrive = new DateTime().Add(TimeSpan.FromSeconds(Program.Simulator.ClockTime));
+                        // If yes, we arrived
+                        if (ActArrive == null)
+                        {
+                            ActArrive = new DateTime().Add(TimeSpan.FromSeconds(Program.Simulator.ClockTime));
+                        }
+
+                        arrived = true;
+
+                        // Figure out the boarding time
+                        // <CSComment> No midnight checks here? There are some in Train.CalculateDepartTime
+                        double plannedBoardingS = (SchDepart - SchArrive).TotalSeconds;
+                        double punctualBoardingS = (SchDepart - ActArrive).Value.TotalSeconds;
+                        double expectedBoardingS = plannedBoardingS > 0 ? plannedBoardingS : PlatformEnd1.PlatformMinWaitingTime;
+                        BoardingS = punctualBoardingS;                                     // default is leave on time
+                        if (punctualBoardingS < expectedBoardingS)                         // if not enough time for boarding
+                        {
+                            if (plannedBoardingS > 0 && plannedBoardingS < PlatformEnd1.PlatformMinWaitingTime)
+                            { // and tight schedule
+                                BoardingS = plannedBoardingS;                              // leave late with no recovery of time
+                            }
+                            else
+                            {                                                       // generous schedule
+                                BoardingS = Math.Max(
+                                    punctualBoardingS,                                     // leave on time
+                                    PlatformEnd1.PlatformMinWaitingTime);                  // leave late with some recovery
+                            }
+                        }
+                        // ActArrive is usually same as ClockTime
+                        BoardingEndS = Program.Simulator.ClockTime + BoardingS;
+                        // But not if game starts after scheduled arrival. In which case actual arrival is assumed to be same as schedule arrival.
+                        double sinceActArriveS = (new DateTime().Add(TimeSpan.FromSeconds(Program.Simulator.ClockTime))
+                                                - ActArrive).Value.TotalSeconds;
+                        BoardingEndS -= sinceActArriveS;
                     }
-
-                    arrived = true;
-
-                    // Figure out the boarding time
-                    double plannedBoardingS = (SchDepart - SchArrive).TotalSeconds;
-                    double punctualBoardingS = (SchDepart - ActArrive).Value.TotalSeconds;
-                    double expectedBoardingS = plannedBoardingS > 0 ? plannedBoardingS : PlatformEnd1.PlatformMinWaitingTime;
-                    BoardingS = punctualBoardingS;                                     // default is leave on time
-                    if (punctualBoardingS < expectedBoardingS)                         // if not enough time for boarding
+                    else
                     {
-                        if (plannedBoardingS > 0 && plannedBoardingS < PlatformEnd1.PlatformMinWaitingTime)
-                        { // and tight schedule
-                            BoardingS = plannedBoardingS;                              // leave late with no recovery of time
+                    // <CSComment> MSTS mode - player
+                                BoardingS = (double)Program.Simulator.PlayerLocomotive.Train.StationStops[0].ComputeBoardingTime(Program.Simulator.PlayerLocomotive.Train);
+                        if (BoardingS > 0 || ((double)(SchDepart - SchArrive).TotalSeconds > 0 &&
+                            Program.Simulator.PlayerLocomotive.Train.PassengerCarsNumber == 1 && Program.Simulator.PlayerLocomotive.Train.Cars.Count > 10 ))
+                        {
+                        // accepted station stop because either freight train or passenger train or fake passenger train with passenger car on platform or fake passenger train
+                            // with Scheduled Depart > Scheduled Arrive
+                                // ActArrive is usually same as ClockTime
+                                BoardingEndS = Program.Simulator.ClockTime + BoardingS;
+                                BoardingEndS = CompareTimes.LatestTime((int)SchDepart.TimeOfDay.TotalSeconds, (int)BoardingEndS);
+                                if (ActArrive == null)
+                                {
+                                    ActArrive = new DateTime().Add(TimeSpan.FromSeconds(Program.Simulator.ClockTime));
+                                }
+
+                                arrived = true;
+                                // But not if game starts after scheduled arrival. In which case actual arrival is assumed to be same as schedule arrival.
+                                double sinceActArriveS = (new DateTime().Add(TimeSpan.FromSeconds(Program.Simulator.ClockTime))
+                                                        - ActArrive).Value.TotalSeconds;
+                                BoardingEndS -= sinceActArriveS;
+
+                            }
                         }
-                        else
-                        {                                                       // generous schedule
-                            BoardingS = Math.Max(
-                                punctualBoardingS,                                     // leave on time
-                                PlatformEnd1.PlatformMinWaitingTime);                  // leave late with some recovery
-                        }
-                    }
-                    // ActArrive is usually same as ClockTime
-                    BoardingEndS = Program.Simulator.ClockTime + BoardingS;
-                    // But not if game starts after scheduled arrival. In which case actual arrival is assumed to be same as schedule arrival.
-                    double sinceActArriveS = (new DateTime().Add(TimeSpan.FromSeconds(Program.Simulator.ClockTime))
-                                            - ActArrive).Value.TotalSeconds;
-                    BoardingEndS -= sinceActArriveS;
+
+
                 }
             }
             else if (EventType == ActivityEventType.TrainStart)

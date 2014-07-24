@@ -565,26 +565,49 @@ namespace ORTS
             {
                 stationIndex = ValidRoute[0].GetRouteIndex(thisStation.TCSectionIndex, PresentPosition[1].RouteListIndex);
             }
+            if (Program.Simulator.TimetableMode || !Program.Simulator.Settings.EnhancedActCompatibility)
+            { 
+                // if rear is in platform, station is valid
+                if (PresentPosition[1].RouteListIndex == stationIndex)
+                {
+                    atStation = true;
+                }
 
-            // if rear is in platform, station is valid
-            if (PresentPosition[1].RouteListIndex == stationIndex)
-            {
-                atStation = true;
+                // if front is in platform and most of the train is as well, station is valid
+                else if (PresentPosition[0].RouteListIndex == stationIndex &&
+                        ((thisPlatform.Length - (platformBeginOffset - PresentPosition[0].TCOffset)) > (Length / 2)))
+                {
+                    atStation = true;
+                }
+
+                // if front is beyond platform and rear is not on route or before platform : train spans platform
+                else if (PresentPosition[0].RouteListIndex > stationIndex && PresentPosition[1].RouteListIndex < stationIndex)
+                {
+                    atStation = true;
+                }
             }
-
-            // if front is in platform and most of the train is as well, station is valid
-            else if (PresentPosition[0].RouteListIndex == stationIndex &&
-                    ((thisPlatform.Length - (platformBeginOffset - PresentPosition[0].TCOffset)) > (Length / 2)))
+                // <CSComment> above first and third test don't work well at least in a real case each
+            else
             {
-                atStation = true;
-            }
+                // if rear is in platform, station is valid
+                 if (PresentPosition[1].RouteListIndex == stationIndex && PresentPosition[1].TCOffset >= platformBeginOffset)
+                 {
+                     atStation = true;
+                 }
+                 // if front is in platform and most of the train is as well, station is valid
+                 else if (PresentPosition[0].RouteListIndex == stationIndex &&
+                         ((thisPlatform.Length - (platformEndOffset - PresentPosition[0].TCOffset)) > (Length / 2)))
+                 {
+                     atStation = true;
+                 }
+                 // if front is beyond platform and rear is not on route or before platform : train spans platform
+                 else if ((PresentPosition[0].RouteListIndex > stationIndex || (PresentPosition[0].RouteListIndex == stationIndex && PresentPosition[0].TCOffset >= platformEndOffset))
+                     && (PresentPosition[1].RouteListIndex < stationIndex || (PresentPosition[1].RouteListIndex == stationIndex && PresentPosition[1].TCOffset <= platformBeginOffset)))
+                 {
+                     atStation = true;
+                 }
 
-            // if front is beyond platform and rear is not on route or before platform : train spans platform
-            else if (PresentPosition[0].RouteListIndex > stationIndex && PresentPosition[1].RouteListIndex < stationIndex)
-            {
-                atStation = true;
             }
-
 
             // At station : set state, create action item
 
@@ -1570,11 +1593,11 @@ namespace ORTS
             if (thisStation.ActualStopType == StationStop.STOPTYPE.STATION_STOP)
             {
                 AtStation = true;
-
+                 
                 if (thisStation.ActualArrival < 0)
                 {
                     thisStation.ActualArrival = presentTime;
-                    thisStation.CalculateDepartTime(presentTime);
+                    thisStation.CalculateDepartTime(presentTime, this );
                     actualdepart = thisStation.ActualDepart;
 
 #if DEBUG_REPORTS

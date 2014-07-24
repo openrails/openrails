@@ -925,8 +925,8 @@ namespace MSTS.Formats
     }
 
     public class PlatformData { // e.g. "PlatformData ( 41 20 )" 
-        int Id;
-        int PassengerCount;
+        public int Id;
+        public int PassengerCount;
 
         public PlatformData(int id, int passengerCount) {
             Id = id;
