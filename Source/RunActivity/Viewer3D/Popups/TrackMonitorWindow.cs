@@ -744,7 +744,12 @@ namespace ORTS.Viewer3D.Popups
                     forward ? Math.Min(itemLocation, lastLabelPosition - textSpacing) : Math.Max(itemLocation, lastLabelPosition + textSpacing);
                 newLabelPosition = reqLabelPosition;
 
-                string speedString = FormatStrings.FormatSpeedLimit(thisItem.AllowedSpeedMpS, metric);
+                var allowedSpeed = thisItem.AllowedSpeedMpS;
+                if (allowedSpeed > 998)
+                {
+                    if (Program.Simulator.Settings.EnhancedActCompatibility  && !Program.Simulator.TimetableMode) allowedSpeed = (float)Program.Simulator.TRK.Tr_RouteFile.SpeedLimit;
+                }
+                string speedString = FormatStrings.FormatSpeedLimit(allowedSpeed, metric);
                 Point labelPoint = new Point(offset.X + speedTextOffset, offset.Y + newLabelPosition);
 
                 Font.Draw(spriteBatch, labelPoint, speedString, Color.White);
