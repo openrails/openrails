@@ -1165,6 +1165,13 @@ namespace ORTS
                     {
                         triggered = includesWagons(PlayerTrain, ChangeWagonIdList);
                     }
+                    // To recognize the dropping off of the cars before the event is activated, this method is used.
+                    // This method does not check if the cars are on the correct track since there does not appear
+                    // to be a way yet to track cars that have been cut from the Cars list before the event is activated.
+                    // The only exception would be if the car was picked up then dropped off.  At this point, the car would already exist
+                    // in the Trains list.
+                    else
+                        triggered = excludesWagons(PlayerTrain, ChangeWagonIdList);
                     break;
                 case EventType.PickUpPassengers:
                     break;
@@ -1215,6 +1222,19 @@ namespace ORTS
                 if (train.Cars.Find(car => car.CarID == item) == null) return false;
             }
             return true;
+        }
+        /// </summary>
+        /// <param name="train"></param>
+        /// <param name="wagonIdList"></param>
+        /// <returns>True if all listed wagons are not part of the given train.</returns>
+        static bool excludesWagons(Train train, List<string> wagonIdList)
+        {
+
+            foreach (var item in wagonIdList)
+            {
+                if (train.Cars.Find(car => car.CarID == item) == null) return true;
+            }
+            return false;
         }
 
         /// <summary>
