@@ -31,7 +31,7 @@
           </div>
     			<input type = "hidden" name="send_to_name"   value="or_website">
 		    	<input type = "hidden" name="send_to_domain" value="jakeman.plus.com">
-			    <input type = "hidden" name="success_url"    value="http://openrails.org/or/dev/contact/success.php"> 
+			    <input type = "hidden" name="success_url"    value="http://openrails.org/contact/success.php"> 
           <div class="form-group">
             <label for="emailMessage">Message</label>
             <textarea class="form-control" rows="10" id="emailMessage" name="body" placeholder="Enter your message" required></textarea>

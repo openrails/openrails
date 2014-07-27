@@ -35,7 +35,8 @@ modeling people or road traffic or moving water. A specialist could deliver and 
 These vendors sell or distribute products suitable for Open Rails:
 </p>
 <ul>
-  <li>(This empty list represents a business opportunity.)</li>
+  <li><a href="http://www.streamlines.ca">Stream Lines</a> - Canada</li>
+  <li><a href="http://dekosoft.com/trains">Dekosoft Trains</a> - USA</li>
 </ul>
 <p>&nbsp;</p>
 <h2>Vendors Supporting MSTS</h2>
@@ -45,6 +46,7 @@ These vendors sell or distribute products suitable for MSTS:
 <ul>
   <li><a href="http://www.3dtrains.com" target="_blank">3DTrains</a> - USA</li>
   <li><a href="http://www.3dtrainstuff.com" target="_blank">3DTrainStuff</a> - USA and UK</li>
+  <li><a href="http://www.valleypass.com/Sales/Sales.htm" target="_blank">BLW Productions</a> - Canada</li>
   <li><a href="http://www.dieselswest.com" target="_blank">DieselsWest</a> - USA</li>
   <li><a href="http://www.mstsgmo.com" target="_blank">GM&amp;O Simulations</a> - USA</li>
   <li><a href="http://www.makingtracks-online.co.uk" target="_blank">Making Tracks</a> - UK</li>
