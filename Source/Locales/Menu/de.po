@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
 "POT-Creation-Date: 2014-07-13 12:04:28+0200\n"
-"PO-Revision-Date: 2014-07-19 16:52+0100\n"
+"PO-Revision-Date: 2014-07-28 19:46+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -544,7 +544,7 @@ msgstr "SIFA"
 
 #: ../../Menu/Options.Designer.cs:239
 msgid "Suppress control confirmations"
-msgstr "Steuerelement-Benstätigungen deaktivieren"
+msgstr "Steuerelement-Bestätigungen deaktivieren"
 
 #: ../../Menu/Options.Designer.cs:249
 msgid "Dispatcher window"
@@ -556,7 +556,7 @@ msgstr "Allgemein"
 
 #: ../../Menu/Options.Designer.cs:300
 msgid "Pressure unit"
-msgstr "Einhiet des Drucks"
+msgstr "Einheit des Drucks"
 
 #: ../../Menu/Options.Designer.cs:325
 msgid "Language"
