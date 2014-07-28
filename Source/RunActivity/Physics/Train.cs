@@ -2192,13 +2192,22 @@ namespace ORTS
                         if (firstObject.actual_speed <= AllowedMaxSpeedMpS)
                         {
                             AllowedMaxSpeedMpS = firstObject.actual_speed;
+                            float tempMaxSpeedMps = AllowedMaxSpeedMpS;
+                            if (!Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility)
+                            {
+                                tempMaxSpeedMps = IsFreight ? firstObject.speed_freight : firstObject.speed_passenger;
+                                if (tempMaxSpeedMps == -1f) 
+                                    tempMaxSpeedMps = AllowedMaxSpeedMpS;
+                            }
+
+
                             if (firstObject.ObjectDetails.isSignal)
                             {
-                                allowedMaxSpeedSignalMpS = AllowedMaxSpeedMpS;
+                                allowedMaxSpeedSignalMpS = tempMaxSpeedMps;
                             }
                             else
                             {
-                                allowedMaxSpeedLimitMpS = AllowedMaxSpeedMpS;
+                                allowedMaxSpeedLimitMpS = tempMaxSpeedMps;
                             }
                             requiredActions.UpdatePendingSpeedlimits(AllowedMaxSpeedMpS);  // update any older pending speed limits
                         }
@@ -2225,6 +2234,21 @@ namespace ORTS
                         {
                             allowedAbsoluteMaxSpeedLimitMpS = firstObject.actual_speed;
                         }
+                    }
+                    else if (!Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility)
+                    {
+                             var tempMaxSpeedMps = IsFreight ? firstObject.speed_freight : firstObject.speed_passenger;
+                             if (tempMaxSpeedMps >= 0)
+                             {
+                                 if (firstObject.ObjectDetails.isSignal)
+                                 {
+                                     allowedMaxSpeedSignalMpS = tempMaxSpeedMps;
+                                 }
+                                 else
+                                 {
+                                     allowedMaxSpeedLimitMpS = tempMaxSpeedMps;
+                                 }
+                             }
                     }
 
                     if (NextSignalObject[0] != null && firstObject.ObjectDetails == NextSignalObject[0])
@@ -2607,7 +2631,6 @@ namespace ORTS
 
             foreach (ObjectItemInfo thisObject in SignalObjectItems)
             {
-
                 //
                 // select speed on type of train 
                 //
@@ -2655,26 +2678,71 @@ namespace ORTS
                         validSpeedMpS = actualSpeedMpS;
                     }
                 }
-                else
+                else if (!Program.Simulator.Settings.EnhancedActCompatibility || Program.Simulator.TimetableMode)
                 {
-                    if (actualSpeedMpS > 998f)  
-                    { 
-                        if (!Program.Simulator.Settings.EnhancedActCompatibility  || Program.Simulator.TimetableMode) actualSpeedMpS = TrainMaxSpeedMpS;
-                        else actualSpeedMpS = (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;
+                    {
+                        if (actualSpeedMpS > 998f)
+                        {
+                            actualSpeedMpS = TrainMaxSpeedMpS;
+                        }
+
+                        if (actualSpeedMpS > 0)
+                        {
+                            validSpeedMpS = actualSpeedMpS;
+                            validSpeedLimitMpS = actualSpeedMpS;
+                        }
+                        else if (actualSpeedMpS < 0 && thisObject.speed_reset == 1)
+                        {
+                            validSpeedMpS = validSpeedLimitMpS;
+                            actualSpeedMpS = validSpeedLimitMpS;
+                        }
+
+                        thisObject.actual_speed = actualSpeedMpS;
+                    }
+                }
+
+                else  // Enhanced Compatibility on & SpeedLimit
+                {
+                    if (actualSpeedMpS > 998f)
+                    {
+                        actualSpeedMpS = (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;
                     }
 
                     if (actualSpeedMpS > 0)
                     {
-                        validSpeedMpS = actualSpeedMpS;
                         validSpeedLimitMpS = actualSpeedMpS;
+                        if (validSpeedLimitMpS > validSpeedSignalMpS)
+                        {
+                            if (validSpeedMpS < validSpeedSignalMpS)
+                            {
+                                actualSpeedMpS = validSpeedSignalMpS;
+                            }
+                            else
+                            {
+                                actualSpeedMpS = -1;
+                            }
+                        }
                     }
-                    else if (actualSpeedMpS < 0 && thisObject.speed_reset == 1)
+                    else if (actualSpeedMpS < 0)
                     {
-                        validSpeedMpS = validSpeedLimitMpS;
-                        actualSpeedMpS = validSpeedLimitMpS;
+                        validSpeedLimitMpS = (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;
+                        float newSpeedMpS1 = Math.Min(validSpeedSignalMpS, validSpeedLimitMpS);
+
+                        if (newSpeedMpS1 != validSpeedMpS)
+                        {
+                            actualSpeedMpS = newSpeedMpS1;
+                        }
+                        else
+                        {
+                            actualSpeedMpS = -1;
+                        }
                     }
 
                     thisObject.actual_speed = actualSpeedMpS;
+                    if (actualSpeedMpS > 0)
+                    {
+                        validSpeedMpS = actualSpeedMpS;
+                    }
                 }
             }
         }
@@ -7939,7 +8007,10 @@ namespace ORTS
             if (speedInfo.MaxSpeedMpSLimit > 0)
             {
                 allowedMaxSpeedLimitMpS = speedInfo.MaxSpeedMpSLimit;
+                if ( Program.Simulator.TimetableMode || !Program.Simulator.Settings.EnhancedActCompatibility)
                 AllowedMaxSpeedMpS = speedInfo.MaxSpeedMpSLimit;
+                else
+                    AllowedMaxSpeedMpS = Math.Min(speedInfo.MaxSpeedMpSLimit, allowedMaxSpeedSignalMpS);
             }
 
 #if DEBUG_REPORTS
