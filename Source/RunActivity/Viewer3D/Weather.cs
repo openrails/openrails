@@ -17,6 +17,7 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using System;
 using Microsoft.Xna.Framework;
 using ORTS.Common;
 using ORTS.MultiPlayer;
@@ -53,6 +54,18 @@ namespace ORTS.Viewer3D
         public readonly List<SoundSourceBase> RainSound;
         public readonly List<SoundSourceBase> SnowSound;
         public readonly List<SoundSourceBase> WeatherSounds = new List<SoundSourceBase>();
+
+        public Vector2 WindSpeedMpS = new Vector2();
+        public float WindSpeed { get { return WindSpeedMpS.Length(); } }
+        public float WindDirection { get { return (float)Math.Atan2(WindSpeedMpS.X, WindSpeedMpS.Y); } }
+
+        readonly float[] WindChangeMpSS = { 40, 5 }; // Flurry, steady
+        const float WindSpeedMaxMpS = 30;
+
+        // Variables used for wind calculations
+        Vector2 WindSpeedInternalMpS;
+        Vector2[] windSpeedMpS = new Vector2[2];
+        float Time;
 
         public WeatherControl(Viewer viewer)
         {
@@ -113,6 +126,25 @@ namespace ORTS.Viewer3D
         {
             foreach (var soundSource in RainSound) soundSource.Volume = pricipitationIntensityPPSPM2 / PrecipitationViewer.MaxIntensityPPSPM2;
             foreach (var soundSource in SnowSound) soundSource.Volume = pricipitationIntensityPPSPM2 / PrecipitationViewer.MaxIntensityPPSPM2;
+        }
+
+        private void UpdateWind(ElapsedTime elapsedTime)
+        {
+            Time += elapsedTime.ClockSeconds;
+            WindSpeedInternalMpS = Vector2.Zero;
+            for (var i = 0; i < windSpeedMpS.Length; i++)
+            {
+                windSpeedMpS[i].X += ((float)Program.Random.NextDouble() * 2 - 1) * WindChangeMpSS[i] * elapsedTime.ClockSeconds;
+                windSpeedMpS[i].Y += ((float)Program.Random.NextDouble() * 2 - 1) * WindChangeMpSS[i] * elapsedTime.ClockSeconds;
+
+                var windMagnitude = windSpeedMpS[i].Length() / (i == 0 ? WindSpeedMpS.Length() * 0.4f : WindSpeedMaxMpS);
+                if (windMagnitude > 1)
+                    windSpeedMpS[i] /= windMagnitude;
+
+                WindSpeedInternalMpS += windSpeedMpS[i];
+            }
+
+            WindSpeedMpS = WindSpeedInternalMpS;
         }
 
         // TODO: Add several other weather conditions, such as PartlyCloudy, LightRain, 
@@ -183,6 +215,8 @@ namespace ORTS.Viewer3D
                 // Fog ranges from 10m (can't see anything) to 100km (clear arctic conditions).
                 if (UserInput.IsDown(UserCommands.DebugFogIncrease)) fogDistance = MathHelper.Clamp(fogDistance - elapsedTime.RealSeconds * fogDistance, 10, 100000);
                 if (UserInput.IsDown(UserCommands.DebugFogDecrease)) fogDistance = MathHelper.Clamp(fogDistance + elapsedTime.RealSeconds * fogDistance, 10, 100000);
+
+                UpdateWind(elapsedTime);
             }
 
             if (!MultiPlayer.MPManager.IsMultiPlayer())

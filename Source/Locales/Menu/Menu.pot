@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-07-13 12:04:28+0200\n"
-"PO-Revision-Date: 2014-07-13 12:04:30+0200\n"
+"POT-Creation-Date: 2014-07-28 21:02:50+0200\n"
+"PO-Revision-Date: 2014-07-28 21:02:51+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -313,7 +313,7 @@ msgid "Logging"
 msgstr ""
 
 #: ../../Menu/MainForm.Designer.cs:195
-#: ../../Menu/Options.Designer.cs:1475
+#: ../../Menu/Options.Designer.cs:1474
 msgid "Options"
 msgstr ""
 
@@ -715,86 +715,86 @@ msgstr ""
 msgid "Experimental"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1150
+#: ../../Menu/Options.Designer.cs:1151
+msgid "Enhanced compatibility with MSTS activities"
+msgstr ""
+
+#: ../../Menu/Options.Designer.cs:1161
 msgid "Use ETCS Circular Speed Gauge"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1160
+#: ../../Menu/Options.Designer.cs:1171
 msgid "Signal light glow"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1170
+#: ../../Menu/Options.Designer.cs:1181
 msgid "Use model instancing"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1180
+#: ../../Menu/Options.Designer.cs:1191
 msgid ""
 "Use large address aware binaries (for all 64bit and 3GB tuning on 32bit)"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1190
+#: ../../Menu/Options.Designer.cs:1201
 msgid "Fast full-screen alt-tab"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1200
+#: ../../Menu/Options.Designer.cs:1211
 msgid "Use MSTS Environments"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1210
+#: ../../Menu/Options.Designer.cs:1221
 msgid "Always use highest detail objects"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1222
+#: ../../Menu/Options.Designer.cs:1233
 msgid "Use location-linked passing path processing"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1249
+#: ../../Menu/Options.Designer.cs:1260
 msgid "Ambient daylight brightness"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1258
+#: ../../Menu/Options.Designer.cs:1269
 msgid "Target frame rate"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1296
+#: ../../Menu/Options.Designer.cs:1307
 msgid "Automatically tune settings to keep performance level"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1306
+#: ../../Menu/Options.Designer.cs:1317
 msgid "Double overhead wires"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1316
+#: ../../Menu/Options.Designer.cs:1327
 msgid "Extend object maximum viewing distance to horizon"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1326
+#: ../../Menu/Options.Designer.cs:1337
 msgid "Gauge (mm)"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1363
+#: ../../Menu/Options.Designer.cs:1374
 msgid "Minimum length (m)"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1401
+#: ../../Menu/Options.Designer.cs:1412
 msgid "Level"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1412
+#: ../../Menu/Options.Designer.cs:1423
 msgid ""
 "Experimental features that may slow down the game, use at your own risk."
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1436
+#: ../../Menu/Options.Designer.cs:1447
 msgid "Super-elevation"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1445
+#: ../../Menu/Options.Designer.cs:1456
 msgid "Load DDS textures in preference to ACE"
-msgstr ""
-
-#: ../../Menu/Options.Designer.cs:1457
-msgid "Enhanced compatibility with MSTS activities"
 msgstr ""
 
 #: ../../Menu/Options.Designer.cs:943
@@ -809,7 +809,7 @@ msgid "Sound Volume 0-100"
 msgstr ""
 
 #: ../../Menu/Options.Designer.cs:498
-#: ../../Menu/Options.Designer.cs:1282
+#: ../../Menu/Options.Designer.cs:1293
 msgid "Distance to see mountains"
 msgstr ""
 
@@ -821,15 +821,15 @@ msgstr ""
 msgid "Check for incorrect key assignments."
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1237
+#: ../../Menu/Options.Designer.cs:1248
 msgid "Default is 100"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1387
+#: ../../Menu/Options.Designer.cs:1398
 msgid "Shortest curve to have elevation"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1426
+#: ../../Menu/Options.Designer.cs:1437
 msgid "0: no elevation, 1: 9cm max; 10: 18cm max"
 msgstr ""
 

@@ -1,10 +1,10 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Contrib\n"
-"POT-Creation-Date: 2014-04-13 18:00:34+0200\n"
-"PO-Revision-Date: 2014-04-17 16:18+0100\n"
+"Project-Id-Version: Open Rails\n"
+"POT-Creation-Date: 2014-06-14 09:15:46+0200\n"
+"PO-Revision-Date: 2014-07-27 12:30+0100\n"
 "Last-Translator: Zepder\n"
-"Language-Team: Open Rails Dev Team\n"
+"Language-Team: \n"
 "Language: da\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -12,24 +12,572 @@ msgstr ""
 "X-Generator: Poedit 1.6.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../../Contrib/ContentManager/ContentManagerGUI.cs:59
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:17
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:89
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:551
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:289
+msgid "Activity Editor"
+msgstr "Aktivitets Editor"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:18
+msgid "0.1"
+msgstr "0.1"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:19
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:136
+msgid "Copyright by Open Rails project"
+msgstr "Copyright Open Rails projektet"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:20
+msgid "OR"
+msgstr "OR"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:21
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:125
+msgid ""
+"Tool intended for the creation of activities for the Open simulator Rail."
+msgstr "Værktøj til oprettelse af aktiviteter for Open Rails simulatoren."
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:111
+msgid "&OK"
+msgstr "&OK"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:148
+msgid "Version 0.1"
+msgstr "Version 0.1"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:166
+msgid "AboutActEdit"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:100
+msgid "Activiti Description"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:111
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:339
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:92
+#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:92
+msgid "Activity Description"
+msgstr "Aktivitets beskrivelse"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:123
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:351
+msgid "Path Events"
+msgstr "Path Events"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:131
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:257
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:359
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:297
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:82
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:76
+msgid "Remove"
+msgstr "Fjern"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:140
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:273
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:368
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:188
+msgid "Edit"
+msgstr "Rediger"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:162
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:390
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:56
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:434
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:110
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:48
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.Designer.cs:42
+msgid "OK"
+msgstr "OK"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:179
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:406
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:96
+msgid "Description"
+msgstr "Beskrivelse"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:195
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:283
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:422
+msgid "Consist :"
+msgstr "Consist :"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:212
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:329
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:439
+msgid "Description :"
+msgstr "Beskrivelse :"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:228
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:320
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:455
+msgid "Activity Name : "
+msgstr "Aktivitets Navn :"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:238
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:249
+msgid "Traffic Description"
+msgstr "Trafik Beskrivelse"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:464
+msgid "StartActivity"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:67
+msgid "Give your description :"
+msgstr "Giv din beskrivelse :"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:76
+msgid "Environment"
+msgstr "Omgivelser"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:105
+msgid "Place Name : "
+msgstr "Sted Navn :"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:115
+msgid "WAIT Activity Description"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:127
+msgid "WaitActivity"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.cs:529
+msgid "NoMoreAct"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:106
+msgid "menuStrip1"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:119
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/SimpleTextEd.Designer.cs:62
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:7
+msgid "File"
+msgstr "Fil"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:128
+msgid "New"
+msgstr "Ny"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:135
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:281
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.Designer.cs:117
+msgid "Activity"
+msgstr "Aktivitet"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:142
+msgid "Traffic"
+msgstr "Trafik"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:152
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/SimpleTextEd.Designer.cs:68
+msgid "Save"
+msgstr "Gem"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:160
+msgid "Save As"
+msgstr "Gem som"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:167
+msgid "Load Activity"
+msgstr "Hent aktivitet"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:174
+msgid "Load Metada"
+msgstr "Hent Metadata"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:181
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:79
+msgid "Quit"
+msgstr "Afslut"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:197
+msgid "Tools"
+msgstr "Værktøjer"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:203
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:458
+msgid "Options"
+msgstr "Indstillinger"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:210
+msgid "Import"
+msgstr "Importer"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:218
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:114
+msgid "Help"
+msgstr "Hjælp"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:224
+msgid "About Activity Editor"
+msgstr "Om Aktivitets Editoren"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:235
+msgid "statusStrip1"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:241
+msgid "Status"
+msgstr "Status"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:291
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2029
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2131
+msgid "v"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:301
+msgid "Edit Description"
+msgstr "Rediger Beskrivelse"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:359
+msgid "Add Station Area"
+msgstr "Tilføj Stations-område"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:369
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:248
+msgid "Station Configuration"
+msgstr "Station indstillinger"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:378
+msgid "Add Tag"
+msgstr "Tilføj Tag"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:388
+msgid "Add Station"
+msgstr "Tilføj Station"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:398
+msgid "Edit MetaSegment"
+msgstr "Rediger MetaSegment"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:420
+msgid "Move"
+msgstr "Flyt"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:430
+msgid "Rotate"
+msgstr "Roter"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:457
+msgid "Activity Start"
+msgstr "Aktivitet Start"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:467
+msgid "Activity Stop"
+msgstr "Aktivitet Stop"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:477
+msgid "Waiting Point"
+msgstr "Vente punkt"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:487
+msgid "Action Point"
+msgstr "Begivenhed Point"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:497
+msgid "Action Check"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:507
+msgid "toolStripButton10"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:532
+msgid "Metadata"
+msgstr "Metadata"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/SimpleTextEd.Designer.cs:85
+msgid "Form1"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:163
+msgid "Route MetaData"
+msgstr "Rute Metadata"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2007
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2096
+msgid "Display"
+msgstr "Skærm"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2018
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2120
+msgid "x"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2044
+msgid "Tag"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2110
+msgid "Station"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.Designer.cs:107
+msgid "Center view"
+msgstr "Center visning"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:106
+msgid "Editor Options"
+msgstr "Editor Indstillinger"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:116
+msgid "Show Platform Label"
+msgstr "Vis platform markører"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:182
+msgid "Zoom level :"
+msgstr "Zoom niveau :"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:192
+msgid "Size of snap circle :"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:201
+msgid "Show Snap circle"
+msgstr "Vis Snap Cirkel"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:212
+msgid "Show all Signal"
+msgstr "Vis alle signaler"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:224
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:426
+#, fuzzy
+msgid "Editor Preference"
+msgstr "Indstillinger"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:243
+msgid "Path Options"
+msgstr "Sti indstillinger"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:254
+msgid "Please, configure your paths"
+msgstr "Indstil venligst dine paths"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:271
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:326
+msgid "Browse"
+msgstr "Gennemse"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:307
+msgid "Add"
+msgstr "Tilføj"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:318
+msgid "Route Paths"
+msgstr "Rute Sti"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:344
+msgid "MSTS Path :"
+msgstr "MSTS Path :"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:360
+msgid "Debug Options"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:370
+msgid "Show Snap Track Info"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:381
+msgid "Show Snap Info"
+msgstr "Vis Snap oplysninger"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:392
+msgid "Show Snap Line"
+msgstr "Vis Snap Linier"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:403
+msgid "Show Ruler"
+msgstr "Vis Lineal"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:414
+msgid "Show Tiles"
+msgstr "Vis fliser"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:445
+msgid "Show Track Info"
+msgstr "Vis Spor Oplysninger"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.cs:33
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.cs:57
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.cs:28
+msgid "Please, give a name"
+msgstr "Navngiv venligst"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:56
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:104
+msgid "TC Section : "
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:73
+msgid "Buffer Label : "
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:93
+msgid "Buffer Direction : "
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:128
+msgid "BufferInterface"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.cs:48
+msgid "Not yet implemented"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:67
+msgid "Connection Direction : "
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:87
+msgid "Connection Label : "
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:130
+msgid "Station Route Interface"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:83
+msgid "###"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:90
+msgid "Station :"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:159
+msgid "From"
+msgstr "Fra"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:170
+msgid " To "
+msgstr "Til"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:181
+msgid "Max. Siding Length"
+msgstr "Max. Sidespor Længde"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:192
+msgid "Max. Platform Length"
+msgstr "Max. Platform Længde"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:203
+msgid "Number of Platform"
+msgstr "Antal Platforme"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:214
+msgid "Number of Siding"
+msgstr "Antal sidespor"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:225
+msgid "Max. Passing Length"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.Designer.cs:60
+msgid "Segment Label : "
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.Designer.cs:71
+msgid "TrackSegmentInterface"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:108
+#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:108
+msgid "Activity Name"
+msgstr "Aktivitets Navn"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:124
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/SelectRoute.cs:68
+#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:124
+#: ../../Contrib/ActivityEditor/AEWizard/SelectRoute.cs:68
+msgid "Route Path"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:141
+#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:141
+msgid "Activity Editor: Create new activity"
+msgstr "Aktivitets Editor: Opret ny aktivitet"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/SelectRoute.cs:47
+#: ../../Contrib/ActivityEditor/AEWizard/SelectRoute.cs:47
+msgid "Route Configuration: Select Route"
+msgstr "Rute Indstillinger: Vælg Rute"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/TrainInfo.cs:175
+#: ../../Contrib/ActivityEditor/AEWizard/TrainInfo.cs:175
+msgid "Activity Editor: Specify Train Info"
+msgstr "Aktivitets Editor: Angiv Tog Informationer"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/TrainInfo.cs:194
+#: ../../Contrib/ActivityEditor/AEWizard/TrainInfo.cs:194
+msgid "Select Train Consist"
+msgstr "Vælg Tog Consist"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/TrainInfo.cs:211
+#: ../../Contrib/ActivityEditor/AEWizard/TrainInfo.cs:211
+msgid "Train Name (Opt.)"
+msgstr "Tog Navn (Opt.)"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:194
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:194
+msgid "< &Back"
+msgstr "< &Tilbage"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:203
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:203
+msgid "&Next >"
+msgstr "&Næste >"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:213
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:213
+#: ../../Contrib/TrackViewer/UserInterface/SearchControl.xaml:12
+msgid "Cancel"
+msgstr "Annuller"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:222
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:222
+msgid "&Finish"
+msgstr "&Færdig"
+
+#: ../../Contrib/ActivityEditor/AEWizard/ExteriorWizardPage.cs:72
+msgid "Welcome to the Sample Setup Wizard"
+msgstr "Velkommen til Prøve installationsguiden"
+
+#: ../../Contrib/ActivityEditor/AEWizard/InteriorWizardPage.cs:105
+msgid "Sample Header Title"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/AEWizard/InteriorWizardPage.cs:114
+msgid ""
+"Sample header subtitle will help a user complete a certain task in the "
+"Sample wizard by clarifying the task in some way."
+msgstr ""
+
+#: ../../Contrib/ContentManager/ContentManagerGUI.cs:61
 msgid "Loading..."
 msgstr "Indlæser..."
 
-#: ../../Contrib/ContentManager/ContentManagerGUI.Designer.cs:69
+#: ../../Contrib/ContentManager/ContentManagerGUI.Designer.cs:70
 msgid "Open Rails Content Manager"
 msgstr "Open Rails Content Manager"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:553
+#: ../../Contrib/TrackViewer/TrackViewer.cs:576
 msgid "The path you are working on has un-saved changes.\n"
 msgstr ""
 "I den sti du arbejder på findes der ændringer som endnu ikke er gemt.\n"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:555
+#: ../../Contrib/TrackViewer/TrackViewer.cs:578
 msgid "Do you really want to Quit?"
 msgstr "Vil du virkelig afslutte spillet?"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:592
+#: ../../Contrib/TrackViewer/TrackViewer.cs:615
 msgid ""
 "Directory is not a valid install directory.\n"
 "The install directory needs to contain ROUTES, GLOBAL, ..."
@@ -37,128 +585,133 @@ msgstr ""
 "Mappen er ikke en gyldig installations mappe.\n"
 "Installations mappen skal indeholde ROUTES, GLOBAL..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:658
+#: ../../Contrib/TrackViewer/TrackViewer.cs:681
 msgid "Loading route..."
 msgstr "Indlæser rute..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:678
+#: ../../Contrib/TrackViewer/TrackViewer.cs:701
 msgid "Route cannot be loaded. Sorry"
 msgstr "Rute kan ikke indlæses. Beklager"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:736
+#: ../../Contrib/TrackViewer/TrackViewer.cs:759
 msgid "Loading .pat file ..."
 msgstr "Indlæser .pat fil ..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:739
+#: ../../Contrib/TrackViewer/TrackViewer.cs:762
 msgid "Processing .pat file ..."
 msgstr "Behandler .pat fil ..."
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:112
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:123
 msgid "Loading trackfile .trk ..."
 msgstr "Indlæser sporfil .trk ..."
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:116
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:127
 msgid "Loading track database .tdb ..."
 msgstr "Indlæser spor database .tdb ..."
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:121
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:132
 msgid "Loading tsection.dat ..."
 msgstr "Indlæser tsection.dat ..."
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:132
-msgid "Finding the angles to draw signals ..."
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:157
+#, fuzzy
+msgid "Finding the angles to draw signals, endnodes, ..."
 msgstr "Søger vinklerne til at tegne signalerne ..."
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:418
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:429
 msgid "Not to be used, template only"
 msgstr "Skal ikke bruges, kun skabelon"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:441
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:452
 msgid "Place start point"
 msgstr "Placer startpunkt"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:468
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:479
 msgid "Remove start point"
 msgstr "Fjern startpunkt"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:493
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:506
+msgid "Clear path (keep tail)"
+msgstr ""
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:530
 msgid "Change start direction"
 msgstr "Skift start-retning"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:522
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:558
 msgid "Place end point"
 msgstr "Placer slutpunkt"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:559
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:596
 msgid "Remove end point"
 msgstr "Fjern slutpunkt"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:585
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:622
 msgid "Place reversal point"
 msgstr "Placer vendepunkt"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:620
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:658
 msgid "Remove reversal point"
 msgstr "Fjern vendepunkt"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:681
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:719
 msgid "Place wait point"
 msgstr "Placer ventepunkt"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:708
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:746
 msgid "Edit wait point"
 msgstr "Rediger ventepunkt"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:732
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:770
 msgid "Remove wait point"
 msgstr "Fjern ventepunkt"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:972
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1734
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1010
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1887
 msgid "Take other exit"
 msgstr "Tag et andet spor"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1015
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1051
 msgid "Add passing path"
 msgstr "Tilføj passerings-sti"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1051
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1087
 msgid "Start passing path"
 msgstr "Start passerings-sti"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1109
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1144
 msgid "Remove passing path"
 msgstr "Fjern passerings-sti"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1150
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1184
 msgid "Remove broken point"
 msgstr "Fjern brudt punkt"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1185
-msgid "Remove everything after this point"
-msgstr "Fjern alt efter dette punkt"
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1219
+msgid "Delete rest of path"
+msgstr "Slet resten af stien"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1210
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1248
 msgid "Cut path here and store its tail"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1475
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1631
 msgid "Auto-fix broken nodes"
 msgstr "Auto-fix brudte knuder"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1583
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1738
 msgid "Reconnect to tail"
-msgstr ""
+msgstr "Tilslut til halen"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1641
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1795
 msgid "Reconnect passing path"
 msgstr "Tilslut passerings-sti"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:2084
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:2236
 msgid "Draw path until here"
 msgstr "Tegn stien indtil her"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:2124
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:2276
 msgid "Draw path until next broken point"
 msgstr "Tegn stien indtil næste brudt punkt"
 
@@ -166,11 +719,11 @@ msgstr "Tegn stien indtil næste brudt punkt"
 msgid "Saving broken paths is not supported"
 msgstr "Du kan ikke gemme brudte stier"
 
-#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:366
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:322
 msgid "Closest junction is too far away"
 msgstr "Nærmeste sporskifter er for langt væk"
 
-#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:642
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:647
 msgid "Not able to place node on track"
 msgstr "Er ikke i stand til at placere knude på sporet"
 
@@ -239,10 +792,6 @@ msgstr "Ventetid = "
 msgid "minutes"
 msgstr "minutter"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:7
-msgid "File"
-msgstr "Fil"
-
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:8
 msgid "(Re)load route"
 msgstr "(Gen)indlæs rute"
@@ -292,230 +841,258 @@ msgid "Center around siding"
 msgstr "Centrer omkring sidespor"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:30
-msgid "Show inset"
-msgstr "Vis minikort"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:31
-msgid "Show world tiles"
-msgstr "Vis World Tiles"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:32
-msgid "Show scale ruler"
-msgstr "Vis målestoks skala"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:33
-msgid "Show longitude/latitude"
-msgstr "Vis længde/breddegrad"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:34
-msgid "Use miles i.s.o. meters"
-msgstr "Brug mil i stedet for meter"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:36
-msgid "Save current zoom"
-msgstr "Gem den aktuelle zoom"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:37
-msgid "Restore saved zoom"
-msgstr "Gendan gemte zoom"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:39
-msgid "Zoom in (=)"
-msgstr "Zoom ind (=)"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:40
-msgid "Zoom out (-)"
-msgstr "Zoom ud (-)"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:41
-msgid "Zoom to tile (z)"
-msgstr "Zoom til Tile (z)"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:42
-msgid "Zoom reset (r)"
-msgstr "Reset Zoom (r)"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:44
-msgid "Anti aliasing (needs restart)"
-msgstr "Anti aliasing (kræver genstart)"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:46
-msgid "Tracks"
-msgstr "Spor"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:47
-msgid "Color tracks"
-msgstr "Farvede spor"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:48
-msgid "Junctions/ends"
-msgstr "Knudepunkt/afslutninger"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:49
-msgid "Show junctions"
-msgstr "Vis knudepunkter"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:50
-msgid "Show end nodes"
-msgstr "Vis slutpunkter"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:52
-msgid "Sidings"
-msgstr "Sidespor"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:53
-msgid "Show siding markers (F9)"
-msgstr "Vis sidespor markører (F9)"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:54
-msgid "Show siding names (shift-F9)"
-msgstr "Vis sidespor navne (shift-F9)"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:56
-msgid "Platforms"
-msgstr "Platforme"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:57
-msgid "Show platform markers (F8)"
-msgstr "Vis platform markører (F8)"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:58
-msgid "Show platform names (shift-F8)"
-msgstr "Vis platform navne (shift-F8)"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:60
-msgid "Interactives"
-msgstr "Interaktive objekter"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:61
-msgid "Show signals (F7)"
-msgstr "Vis signaler (F7)"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:62
-msgid "Show level crossings"
-msgstr "Vis jernbaneoverskæringer"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:63
-msgid "Show hazards"
-msgstr "Vis farer"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:64
-msgid "Show fuel/pickups"
-msgstr "Vis forsyningskilder"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:65
-msgid "Show sound regions"
-msgstr "Vis lydområder"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:67
-msgid "Posts"
-msgstr "Poster"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:68
-msgid "Show speed limits (F5)"
-msgstr "Vis hastighedsbegrænsninger (F5)"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:69
-msgid "Show mileposts (shift F5)"
-msgstr "Vis MilePosts (shift-F5)"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:71
 msgid "Paths"
 msgstr "Sti"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:72
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:31
 msgid "Show path (F11)"
 msgstr "Vis sti (F11)"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:73
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:32
 msgid "Show raw path from .pat file (shift F11)"
 msgstr "Vis sti fra .pat fil (shift-F11)"
 
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:34
+msgid "Track Coloring"
+msgstr "Spor Farvesætning"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:35
+msgid "Color tracks"
+msgstr "Farvede spor"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:36
+msgid "Highlight tracks (F10)"
+msgstr "Fremhæv spor (F10)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:38
+msgid "Additional views"
+msgstr "Yderligere visninger"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:39
+msgid "Show inset"
+msgstr "Vis minikort"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:40
+msgid "Show world tiles"
+msgstr "Vis World Tiles"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:41
+msgid "Show grid lines"
+msgstr "Vis net linjer"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:42
+msgid "Show scale ruler"
+msgstr "Vis målestoks skala"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:43
+msgid "Show longitude/latitude"
+msgstr "Vis længde/breddegrad"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:44
+msgid "Use miles i.s.o. meters"
+msgstr "Brug mil i stedet for meter"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:47
+msgid "Save current zoom"
+msgstr "Gem den aktuelle zoom"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:48
+msgid "Restore saved zoom"
+msgstr "Gendan gemte zoom"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:50
+msgid "Zoom in (=)"
+msgstr "Zoom ind (=)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:51
+msgid "Zoom out (-)"
+msgstr "Zoom ud (-)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:52
+msgid "Zoom to tile (z)"
+msgstr "Zoom til Tile (z)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:53
+msgid "Zoom reset (r)"
+msgstr "Reset Zoom (r)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:55
+msgid "Anti aliasing (needs restart)"
+msgstr "Anti aliasing (kræver genstart)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:57
+msgid "Track items"
+msgstr "Spor emner"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:58
+msgid "Show all items"
+msgstr "Vis Alle emner"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:59
+msgid "Show no items"
+msgstr "Vis ingen emner"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:60
+msgid "Highlight items (shift-F10)"
+msgstr "Fremhæv genstande (shift-F10)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:61
+msgid "Junctions/ends"
+msgstr "Knudepunkt/afslutninger"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:62
+msgid "Show junctions"
+msgstr "Vis knudepunkter"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:63
+msgid "Show end nodes"
+msgstr "Vis slutpunkter"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:64
+msgid "Show crossovers"
+msgstr "Vis overgange"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:66
+msgid "Sidings"
+msgstr "Sidespor"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:67
+msgid "Show siding markers (F9)"
+msgstr "Vis sidespor markører (F9)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:68
+msgid "Show siding names (shift-F9)"
+msgstr "Vis sidespor navne (shift-F9)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:70
+msgid "Platforms"
+msgstr "Platforme"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:71
+msgid "Show platform markers (F8)"
+msgstr "Vis platform markører (F8)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:72
+msgid "Show platform names (shift-F8)"
+msgstr "Vis platform navne (shift-F8)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:74
+msgid "Interactives"
+msgstr "Interaktive objekter"
+
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:75
+msgid "Show signals (F7)"
+msgstr "Vis signaler (F7)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:76
+msgid "Show also other signals"
+msgstr "Vis også andre signaler"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:77
+msgid "Show level crossings"
+msgstr "Vis jernbaneoverskæringer"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:78
+msgid "Show hazards"
+msgstr "Vis farer"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:79
+msgid "Show fuel/pickups"
+msgstr "Vis forsyningskilder"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:80
+msgid "Show sound regions"
+msgstr "Vis lydområder"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:82
+msgid "Posts"
+msgstr "Poster"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:83
+msgid "Show speed limits (F5)"
+msgstr "Vis hastighedsbegrænsninger (F5)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:84
+msgid "Show mileposts (shift F5)"
+msgstr "Vis MilePosts (shift-F5)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:86
 msgid "Roads"
 msgstr "Veje"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:76
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:87
 msgid "Draw roads"
 msgstr "Tegn veje"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:77
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:88
 msgid "Show car spawners"
 msgstr "Se vejtraffik"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:78
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:89
 msgid "Show road crossings"
 msgstr "Vis fodgænger overgange"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:81
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:92
 msgid "Statusbar"
 msgstr "Statusliste"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:82
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:93
 msgid "Show vector section info"
 msgstr "Vis VectorSection oplysninger"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:84
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:95
 msgid "Show PAT file info"
 msgstr "Vis PAT fil oplysninger"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:86
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:97
 msgid "Show Path info"
 msgstr "Vis Sti oplysninger"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:89
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:100
 msgid "Preferences"
 msgstr "Indstillinger"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:90
-msgid "Select background color"
-msgstr "Vælg baggrundsfarve"
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:101
+msgid "Zooming is centered on mouse (m)"
+msgstr "Zoom ind centreret om musen (m)"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:92
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:104
 msgid "Path-Editor"
 msgstr "Redigering af Sti"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:93
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:105
 msgid "==Supporting MSTS paths only=="
 msgstr "==Søtter kun MSTS stier=="
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:94
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:106
 msgid "Select path"
 msgstr "Vælg sti"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:96
-msgid "Path Editor is under construction!"
-msgstr "Sti Redigering er under konstruktion"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:97
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:108
 msgid "Save path"
 msgstr "Gem sti"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:98
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:109
 msgid "Enable editing"
 msgstr "Aktiver redigering"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:99
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:110
 msgid "New path"
 msgstr "Ny sti"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:100
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:111
 msgid "Edit path metadata"
 msgstr "Rediger sti metadata"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:101
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:112
 msgid "Known limitations"
 msgstr "Kendte begrænsninger"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:103
-msgid "Help"
-msgstr "Hjælp"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:104
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:115
 msgid "Shortcuts"
 msgstr "Genveje"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:105
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:116
 msgid "About"
 msgstr "Om"
 
@@ -523,10 +1100,6 @@ msgstr "Om"
 #: ../../Contrib/TrackViewer/UserInterface/SearchControl.xaml:13
 msgid "Search"
 msgstr "Søg"
-
-#: ../../Contrib/TrackViewer/UserInterface/SearchControl.xaml:12
-msgid "Cancel"
-msgstr "Annuller"
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:33
 msgid "Shows tileX and tileZ of the world location at the mouse pointer"
@@ -555,6 +1128,15 @@ msgstr "Objekt"
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:98
 msgid "Any other relevant information. Make your choice via Statusbar menu"
 msgstr "Alle andre relevante oplysninger. Vælg via Statusbar menu"
+
+#~ msgid "Remove everything after this point"
+#~ msgstr "Fjern alt efter dette punkt"
+
+#~ msgid "Select background color"
+#~ msgstr "Vælg baggrundsfarve"
+
+#~ msgid "Path Editor is under construction!"
+#~ msgstr "Sti Redigering er under konstruktion"
 
 #~ msgid "elementHost"
 #~ msgstr "elementHost"

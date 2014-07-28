@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-06-14 09:15:46+0200\n"
-"PO-Revision-Date: 2014-06-14 09:15:53+0200\n"
+"POT-Creation-Date: 2014-07-28 21:02:40+0200\n"
+"PO-Revision-Date: 2014-07-28 21:02:45+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -13,7 +13,7 @@ msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:17
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:89
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:551
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:555
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:289
 msgid "Activity Editor"
 msgstr ""
@@ -77,7 +77,7 @@ msgstr ""
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:140
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:273
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:368
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:188
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:199
 msgid "Edit"
 msgstr ""
 
@@ -163,157 +163,173 @@ msgid "New"
 msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:135
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:281
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:292
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.Designer.cs:117
 msgid "Activity"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:142
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:143
 msgid "Traffic"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:152
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:154
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/SimpleTextEd.Designer.cs:68
 msgid "Save"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:160
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:161
+msgid "Metadata"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:169
 msgid "Save As"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:167
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:176
 msgid "Load Activity"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:174
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:184
 msgid "Load Metada"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:181
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:79
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:192
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:83
 msgid "Quit"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:197
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:208
 msgid "Tools"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:203
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:214
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:458
 msgid "Options"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:210
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:221
 msgid "Import"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:218
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:229
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:114
 msgid "Help"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:224
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:235
 msgid "About Activity Editor"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:235
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:246
 msgid "statusStrip1"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:241
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:252
 msgid "Status"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:291
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2029
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2131
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:302
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2024
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2126
 msgid "v"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:301
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:312
 msgid "Edit Description"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:359
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:370
 msgid "Add Station Area"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:369
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:248
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:380
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:273
 msgid "Station Configuration"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:378
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:389
 msgid "Add Tag"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:388
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:399
 msgid "Add Station"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:398
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:409
 msgid "Edit MetaSegment"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:420
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:431
 msgid "Move"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:430
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:441
 msgid "Rotate"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:457
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:468
 msgid "Activity Start"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:467
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:478
 msgid "Activity Stop"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:477
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:488
 msgid "Waiting Point"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:487
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:498
 msgid "Action Point"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:497
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:508
 msgid "Action Check"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:507
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:518
 msgid "toolStripButton10"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:532
-msgid "Metadata"
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:136
+msgid "Click to start new Activity Description (not ready)"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:144
+msgid "Click to create new Traffic description (not ready)"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:177
+msgid "Click to load an existing OR Activity (not ready)"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:185
+msgid "Click to Edit Metadata for a specified route"
 msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/SimpleTextEd.Designer.cs:85
 msgid "Form1"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:163
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:162
 msgid "Route MetaData"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2007
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2096
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2002
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2091
 msgid "Display"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2018
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2120
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2013
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2115
 msgid "x"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2044
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2039
 msgid "Tag"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2110
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2105
 msgid "Station"
 msgstr ""
 
@@ -442,40 +458,60 @@ msgstr ""
 msgid "Station Route Interface"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:83
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:38
+msgid "Please Load Paths:"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:42
+msgid "List of Paths seems OK:"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:119
 msgid "###"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:90
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:161
+msgid "Loaded:"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:94
 msgid "Station :"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:159
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:163
 msgid "From"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:170
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:174
 msgid " To "
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:181
-msgid "Max. Siding Length"
-msgstr ""
-
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:192
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:185
 msgid "Max. Platform Length"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:203
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:196
+msgid "Max. Siding Length"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:207
 msgid "Number of Platform"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:214
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:218
 msgid "Number of Siding"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:225
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:229
 msgid "Max. Passing Length"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:248
+msgid "Load Paths"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:260
+msgid "label7"
 msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.Designer.cs:60
@@ -523,23 +559,23 @@ msgstr ""
 msgid "Train Name (Opt.)"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:194
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:191
 #: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:194
 msgid "< &Back"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:203
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:200
 #: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:203
 msgid "&Next >"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:213
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:210
 #: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:213
 #: ../../Contrib/TrackViewer/UserInterface/SearchControl.xaml:12
 msgid "Cancel"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:222
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:219
 #: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:222
 msgid "&Finish"
 msgstr ""

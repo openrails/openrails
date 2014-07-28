@@ -1,597 +1,601 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
-"POT-Creation-Date: 2014-02-23 20:45:59+0000\n"
-"PO-Revision-Date: 2014-02-24 11:07+0100\n"
+"POT-Creation-Date: 2014-05-04 11:37:39+0100\n"
+"PO-Revision-Date: 2014-07-27 12:45+0100\n"
 "Last-Translator: Zepder\n"
-"Language-Team: Open Rails Dev Team\n"
+"Language-Team: \n"
+"Language: da\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 1.6.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"Language: da\n"
 
-#: ../ORTS.Settings/InputSettings.cs:42
+#: ../../ORTS.Settings/InputSettings.cs:42
 msgid "Game Pause Menu"
 msgstr "Spil Pausemenu"
 
-#: ../ORTS.Settings/InputSettings.cs:43
+#: ../../ORTS.Settings/InputSettings.cs:43
 msgid "Game Save"
 msgstr "Spil Gem"
 
-#: ../ORTS.Settings/InputSettings.cs:44
+#: ../../ORTS.Settings/InputSettings.cs:44
 msgid "Game Quit"
 msgstr "Spil Afslut"
 
-#: ../ORTS.Settings/InputSettings.cs:45
+#: ../../ORTS.Settings/InputSettings.cs:45
 msgid "Game Pause"
 msgstr "Spil Pause"
 
-#: ../ORTS.Settings/InputSettings.cs:46
+#: ../../ORTS.Settings/InputSettings.cs:46
 msgid "Game Screenshot"
 msgstr "Spil Screenshot"
 
-#: ../ORTS.Settings/InputSettings.cs:47
+#: ../../ORTS.Settings/InputSettings.cs:47
 msgid "Game Fullscreen"
 msgstr "Spil Fuldskærm"
 
-#: ../ORTS.Settings/InputSettings.cs:48
+#: ../../ORTS.Settings/InputSettings.cs:48
 msgid "Game Switch Ahead"
 msgstr "Spil Skift Sporskifte Forude"
 
-#: ../ORTS.Settings/InputSettings.cs:49
+#: ../../ORTS.Settings/InputSettings.cs:49
 msgid "Game Switch Behind"
 msgstr "Spil Skift Sporskifte Bagude"
 
-#: ../ORTS.Settings/InputSettings.cs:50
+#: ../../ORTS.Settings/InputSettings.cs:50
 msgid "Game Switch Picked"
 msgstr "Spil Sporskifte Valgt"
 
-#: ../ORTS.Settings/InputSettings.cs:51
+#: ../../ORTS.Settings/InputSettings.cs:51
 msgid "Game Signal Picked"
 msgstr "Spil Signal Valgt"
 
-#: ../ORTS.Settings/InputSettings.cs:52
+#: ../../ORTS.Settings/InputSettings.cs:52
 msgid "Game Switch With Mouse"
 msgstr "Spil Skift Sporskifte Med Mus"
 
-#: ../ORTS.Settings/InputSettings.cs:53
+#: ../../ORTS.Settings/InputSettings.cs:53
 msgid "Game Uncouple With Mouse"
 msgstr "Spil Frakobl Med Mus"
 
-#: ../ORTS.Settings/InputSettings.cs:54
+#: ../../ORTS.Settings/InputSettings.cs:54
 msgid "Game Change Cab"
 msgstr "Spil Skift Førerhus"
 
-#: ../ORTS.Settings/InputSettings.cs:55
+#: ../../ORTS.Settings/InputSettings.cs:55
 msgid "Game Request Control"
 msgstr "Spil Anmod Om Kontrol"
 
-#: ../ORTS.Settings/InputSettings.cs:56
+#: ../../ORTS.Settings/InputSettings.cs:56
 msgid "Game Multi Player Dispatcher"
 msgstr "Spil Multiplayer Dispatcher"
 
-#: ../ORTS.Settings/InputSettings.cs:57
+#: ../../ORTS.Settings/InputSettings.cs:57
 msgid "Game Multi Player Texting"
 msgstr "Spil Multiplayer Beskeder"
 
-#: ../ORTS.Settings/InputSettings.cs:58
+#: ../../ORTS.Settings/InputSettings.cs:58
 msgid "Game Switch Manual Mode"
 msgstr "Spil Sporskifte Manuel Tilstand"
 
-#: ../ORTS.Settings/InputSettings.cs:59
+#: ../../ORTS.Settings/InputSettings.cs:59
 msgid "Game Clear Signal Forward"
 msgstr "Spil Ryd Signalet Forude"
 
-#: ../ORTS.Settings/InputSettings.cs:60
+#: ../../ORTS.Settings/InputSettings.cs:60
 msgid "Game Clear Signal Backward"
 msgstr "Spil Ryd Signalet Bagude"
 
-#: ../ORTS.Settings/InputSettings.cs:61
+#: ../../ORTS.Settings/InputSettings.cs:61
 msgid "Game Reset Signal Forward"
 msgstr "Spil Nulstil Signalet Forude"
 
-#: ../ORTS.Settings/InputSettings.cs:62
+#: ../../ORTS.Settings/InputSettings.cs:62
 msgid "Game Reset Signal Backward"
 msgstr "Spil Nulstil Signalet Bagude"
 
-#: ../ORTS.Settings/InputSettings.cs:64
+#: ../../ORTS.Settings/InputSettings.cs:64
 msgid "Display Next Window Tab"
 msgstr "Vis Næste Vindue"
 
-#: ../ORTS.Settings/InputSettings.cs:65
+#: ../../ORTS.Settings/InputSettings.cs:65
 msgid "Display Help Window"
 msgstr "Vis Hjælpevinduet"
 
-#: ../ORTS.Settings/InputSettings.cs:66
+#: ../../ORTS.Settings/InputSettings.cs:66
 msgid "Display Track Monitor Window"
 msgstr "Vis Spor Monitor"
 
-#: ../ORTS.Settings/InputSettings.cs:67
+#: ../../ORTS.Settings/InputSettings.cs:67
 msgid "Display HUD"
 msgstr "Vis HUD"
 
-#: ../ORTS.Settings/InputSettings.cs:68
+#: ../../ORTS.Settings/InputSettings.cs:68
 msgid "Display Car Labels"
 msgstr "Vis Vognetiketter"
 
-#: ../ORTS.Settings/InputSettings.cs:69
+#: ../../ORTS.Settings/InputSettings.cs:69
 msgid "Display Station Labels"
 msgstr "Vis Stationsetiketter"
 
-#: ../ORTS.Settings/InputSettings.cs:70
+#: ../../ORTS.Settings/InputSettings.cs:70
 msgid "Display Switch Window"
 msgstr "Vis Sporskifte Vinduet"
 
-#: ../ORTS.Settings/InputSettings.cs:71
+#: ../../ORTS.Settings/InputSettings.cs:71
 msgid "Display Train Operations Window"
 msgstr "Vis Togsammensætning Vinduet"
 
-#: ../ORTS.Settings/InputSettings.cs:72
+#: ../../ORTS.Settings/InputSettings.cs:72
 msgid "Display Next Station Window"
 msgstr "Vis Næste Station Vindue"
 
-#: ../ORTS.Settings/InputSettings.cs:73
+#: ../../ORTS.Settings/InputSettings.cs:73
 msgid "Display Compass Window"
 msgstr "Vis Kompas Vindue"
 
-#: ../ORTS.Settings/InputSettings.cs:75
+#: ../../ORTS.Settings/InputSettings.cs:75
 msgid "Debug Speed Up"
 msgstr "Fejlfinding Øg hastighed"
 
-#: ../ORTS.Settings/InputSettings.cs:76
+#: ../../ORTS.Settings/InputSettings.cs:76
 msgid "Debug Speed Down"
 msgstr "Fejlfinding Sænk hastighed"
 
-#: ../ORTS.Settings/InputSettings.cs:77
+#: ../../ORTS.Settings/InputSettings.cs:77
 msgid "Debug Speed Reset"
 msgstr "Fejlfinding Nulstil Hastighed"
 
-#: ../ORTS.Settings/InputSettings.cs:78
+#: ../../ORTS.Settings/InputSettings.cs:78
 msgid "Debug Overcast Increase"
 msgstr "Fejlfinding Mere Overskyet"
 
-#: ../ORTS.Settings/InputSettings.cs:79
+#: ../../ORTS.Settings/InputSettings.cs:79
 msgid "Debug Overcast Decrease"
 msgstr "Fejlfinding Mindre Overskyet"
 
-#: ../ORTS.Settings/InputSettings.cs:80
+#: ../../ORTS.Settings/InputSettings.cs:80
 msgid "Debug Fog Increase"
 msgstr "Fejlfinding Mere Tåge"
 
-#: ../ORTS.Settings/InputSettings.cs:81
+#: ../../ORTS.Settings/InputSettings.cs:81
 msgid "Debug Fog Decrease"
 msgstr "Fejlfinding Mindre Tåge"
 
-#: ../ORTS.Settings/InputSettings.cs:82
+#: ../../ORTS.Settings/InputSettings.cs:82
 msgid "Debug Weather Change"
 msgstr "Fejlfinding Vejrskift"
 
-#: ../ORTS.Settings/InputSettings.cs:83
+#: ../../ORTS.Settings/InputSettings.cs:83
 msgid "Debug Clock Forwards"
 msgstr "Fejlfinding Ur Fremad"
 
-#: ../ORTS.Settings/InputSettings.cs:84
+#: ../../ORTS.Settings/InputSettings.cs:84
 msgid "Debug Clock Backwards"
 msgstr "Fejlfinding Ur Baglæns"
 
-#: ../ORTS.Settings/InputSettings.cs:85
+#: ../../ORTS.Settings/InputSettings.cs:85
 msgid "Debug Logger"
 msgstr "Fejlfinding Logføring"
 
-#: ../ORTS.Settings/InputSettings.cs:86
+#: ../../ORTS.Settings/InputSettings.cs:86
 msgid "Debug Lock Shadows"
 msgstr "Fejlfinding Lås Skygger"
 
-#: ../ORTS.Settings/InputSettings.cs:87
+#: ../../ORTS.Settings/InputSettings.cs:87
 msgid "Debug Dump Keymap"
 msgstr "Fejlfinding Gem Tastaturoversigt"
 
-#: ../ORTS.Settings/InputSettings.cs:88
+#: ../../ORTS.Settings/InputSettings.cs:88
 msgid "Debug Log Render Frame"
 msgstr "Fejlfinding Log Render Frame"
 
-#: ../ORTS.Settings/InputSettings.cs:89
+#: ../../ORTS.Settings/InputSettings.cs:89
 msgid "Debug Tracks"
 msgstr "Fejlfinding Spor"
 
-#: ../ORTS.Settings/InputSettings.cs:90
+#: ../../ORTS.Settings/InputSettings.cs:90
 msgid "Debug Signalling"
 msgstr "Fejlfinding Signalering"
 
-#: ../ORTS.Settings/InputSettings.cs:91
+#: ../../ORTS.Settings/InputSettings.cs:91
 msgid "Debug Reset Wheel Slip"
 msgstr "Fejlfinding Nulstil Hjulspin"
 
-#: ../ORTS.Settings/InputSettings.cs:92
+#: ../../ORTS.Settings/InputSettings.cs:92
 msgid "Debug Toggle Advanced Adhesion"
 msgstr "Fejlfinding Skift Avanceret Friktion"
 
-#: ../ORTS.Settings/InputSettings.cs:93
+#: ../../ORTS.Settings/InputSettings.cs:93
 msgid "Debug Sound Form"
 msgstr "Fejlfinding Lydtype"
 
-#: ../ORTS.Settings/InputSettings.cs:94
+#: ../../ORTS.Settings/InputSettings.cs:94
 msgid "Debug Physics Form"
 msgstr "Fejlfinding Fysisk Type"
 
-#: ../ORTS.Settings/InputSettings.cs:95
+#: ../../ORTS.Settings/InputSettings.cs:95
 msgid "Debug Precipitation Increase"
 msgstr "Fejlfinding Mere Nedbør"
 
-#: ../ORTS.Settings/InputSettings.cs:96
+#: ../../ORTS.Settings/InputSettings.cs:96
 msgid "Debug Precipitation Decrease"
 msgstr "Fejlfinding Mindre Nedbør"
 
-#: ../ORTS.Settings/InputSettings.cs:98
+#: ../../ORTS.Settings/InputSettings.cs:98
 msgid "Camera Cab"
 msgstr "Kamera Førerhus"
 
-#: ../ORTS.Settings/InputSettings.cs:99
+#: ../../ORTS.Settings/InputSettings.cs:99
+msgid "Camera 3D Cab"
+msgstr "Kamera 3D Førerhus"
+
+#: ../../ORTS.Settings/InputSettings.cs:100
 msgid "Camera Outside Front"
 msgstr "Kamera Udendørs Fremad"
 
-#: ../ORTS.Settings/InputSettings.cs:100
+#: ../../ORTS.Settings/InputSettings.cs:101
 msgid "Camera Outside Rear"
 msgstr "Kamera Udendørs Bagud"
 
-#: ../ORTS.Settings/InputSettings.cs:101
+#: ../../ORTS.Settings/InputSettings.cs:102
 msgid "Camera Trackside"
 msgstr "Kamera Langs Sporet"
 
-#: ../ORTS.Settings/InputSettings.cs:102
+#: ../../ORTS.Settings/InputSettings.cs:103
 msgid "Camera Passenger"
 msgstr "Kamera Passagerer"
 
-#: ../ORTS.Settings/InputSettings.cs:103
+#: ../../ORTS.Settings/InputSettings.cs:104
 msgid "Camera Brakeman"
 msgstr "Kamera Bremsemand"
 
-#: ../ORTS.Settings/InputSettings.cs:104
+#: ../../ORTS.Settings/InputSettings.cs:105
 msgid "Camera Free"
 msgstr "Kamera Frit"
 
-#: ../ORTS.Settings/InputSettings.cs:105
+#: ../../ORTS.Settings/InputSettings.cs:106
 msgid "Camera Previous Free"
 msgstr "Kamera Frit Forrige"
 
-#: ../ORTS.Settings/InputSettings.cs:106
+#: ../../ORTS.Settings/InputSettings.cs:107
 msgid "Camera HeadOut Forward"
 msgstr "Kamera Hovedet Ud Fremad"
 
-#: ../ORTS.Settings/InputSettings.cs:107
+#: ../../ORTS.Settings/InputSettings.cs:108
 msgid "Camera HeadOut Backward"
 msgstr "Kamera Hovedet Ud Bagud"
 
-#: ../ORTS.Settings/InputSettings.cs:108
+#: ../../ORTS.Settings/InputSettings.cs:109
 msgid "Camera Toggle Show Cab"
 msgstr "Kamera Vis Førerhus til/fra"
 
-#: ../ORTS.Settings/InputSettings.cs:109
+#: ../../ORTS.Settings/InputSettings.cs:110
 msgid "Camera Reset"
 msgstr "Kamera Nulstil"
 
-#: ../ORTS.Settings/InputSettings.cs:110
+#: ../../ORTS.Settings/InputSettings.cs:111
 msgid "Camera Move Fast"
 msgstr "Kamera Flyt Hurtigt"
 
-#: ../ORTS.Settings/InputSettings.cs:111
+#: ../../ORTS.Settings/InputSettings.cs:112
 msgid "Camera Move Slow"
 msgstr "Kamera Flyt Langsomt"
 
-#: ../ORTS.Settings/InputSettings.cs:112
+#: ../../ORTS.Settings/InputSettings.cs:113
 msgid "Camera Pan Left"
 msgstr "Kamera Flyt Venstre"
 
-#: ../ORTS.Settings/InputSettings.cs:113
+#: ../../ORTS.Settings/InputSettings.cs:114
 msgid "Camera Pan Right"
 msgstr "Kamera Flyt Højre"
 
-#: ../ORTS.Settings/InputSettings.cs:114
+#: ../../ORTS.Settings/InputSettings.cs:115
 msgid "Camera Pan Up"
 msgstr "Kamera Flyt Op"
 
-#: ../ORTS.Settings/InputSettings.cs:115
+#: ../../ORTS.Settings/InputSettings.cs:116
 msgid "Camera Pan Down"
 msgstr "Kamera Flyt Ned"
 
-#: ../ORTS.Settings/InputSettings.cs:116
+#: ../../ORTS.Settings/InputSettings.cs:117
 msgid "Camera Zoom In"
 msgstr "Kamera Zoom Ind"
 
-#: ../ORTS.Settings/InputSettings.cs:117
+#: ../../ORTS.Settings/InputSettings.cs:118
 msgid "Camera Zoom Out"
 msgstr "Kamera Zoom Ud"
 
-#: ../ORTS.Settings/InputSettings.cs:118
+#: ../../ORTS.Settings/InputSettings.cs:119
 msgid "Camera Rotate Left"
 msgstr "Kamera Roter Venstre"
 
-#: ../ORTS.Settings/InputSettings.cs:119
+#: ../../ORTS.Settings/InputSettings.cs:120
 msgid "Camera Rotate Right"
 msgstr "Kamera Roter Højre"
 
-#: ../ORTS.Settings/InputSettings.cs:120
+#: ../../ORTS.Settings/InputSettings.cs:121
 msgid "Camera Rotate Up"
 msgstr "Kamera Roter Op"
 
-#: ../ORTS.Settings/InputSettings.cs:121
+#: ../../ORTS.Settings/InputSettings.cs:122
 msgid "Camera Rotate Down"
 msgstr "Kamera Roter Ned"
 
-#: ../ORTS.Settings/InputSettings.cs:122
+#: ../../ORTS.Settings/InputSettings.cs:123
 msgid "Camera Car Next"
 msgstr "Kamera Næste Vogn"
 
-#: ../ORTS.Settings/InputSettings.cs:123
+#: ../../ORTS.Settings/InputSettings.cs:124
 msgid "Camera Car Previous"
 msgstr "Kamera Forrige Vogn"
 
-#: ../ORTS.Settings/InputSettings.cs:124
+#: ../../ORTS.Settings/InputSettings.cs:125
 msgid "Camera Car First"
 msgstr "Kamera Første Vogn"
 
-#: ../ORTS.Settings/InputSettings.cs:125
+#: ../../ORTS.Settings/InputSettings.cs:126
 msgid "Camera Car Last"
 msgstr "Kamera Sidste Vogn"
 
-#: ../ORTS.Settings/InputSettings.cs:126
+#: ../../ORTS.Settings/InputSettings.cs:127
 msgid "Camera Jumping Trains"
 msgstr "Kamera Hop mellem tog"
 
-#: ../ORTS.Settings/InputSettings.cs:127
+#: ../../ORTS.Settings/InputSettings.cs:128
 msgid "Camera Jump Back Player"
 msgstr "Kamera Hop Til Fører"
 
-#: ../ORTS.Settings/InputSettings.cs:128
+#: ../../ORTS.Settings/InputSettings.cs:129
 msgid "Camera Jump See Switch"
 msgstr "Kamera Hop Til Sporskifte"
 
-#: ../ORTS.Settings/InputSettings.cs:129
+#: ../../ORTS.Settings/InputSettings.cs:130
 msgid "Camera Vibrate"
 msgstr "Kamera Vibrer"
 
-#: ../ORTS.Settings/InputSettings.cs:130
+#: ../../ORTS.Settings/InputSettings.cs:131
 msgid "Camera Cab Rotate"
 msgstr "Kamera Roter Førerhus"
 
-#: ../ORTS.Settings/InputSettings.cs:132
+#: ../../ORTS.Settings/InputSettings.cs:133
 msgid "Control Forwards"
 msgstr "Styring Fremad"
 
-#: ../ORTS.Settings/InputSettings.cs:133
+#: ../../ORTS.Settings/InputSettings.cs:134
 msgid "Control Backwards"
 msgstr "Styring Baglæns"
 
-#: ../ORTS.Settings/InputSettings.cs:134
+#: ../../ORTS.Settings/InputSettings.cs:135
 msgid "Control Throttle Increase"
 msgstr "Styring Øg Gashåndtaget"
 
-#: ../ORTS.Settings/InputSettings.cs:135
+#: ../../ORTS.Settings/InputSettings.cs:136
 msgid "Control Throttle Decrease"
 msgstr "Styring Reducer Gashåndtaget"
 
-#: ../ORTS.Settings/InputSettings.cs:136
+#: ../../ORTS.Settings/InputSettings.cs:137
 msgid "Control Gear Up"
 msgstr "Styring Højere Gear"
 
-#: ../ORTS.Settings/InputSettings.cs:137
+#: ../../ORTS.Settings/InputSettings.cs:138
 msgid "Control Gear Down"
 msgstr "Styring Lavere Gear"
 
-#: ../ORTS.Settings/InputSettings.cs:138
+#: ../../ORTS.Settings/InputSettings.cs:139
 msgid "Control Train Brake Increase"
 msgstr "Styring Øg Togbremsen"
 
-#: ../ORTS.Settings/InputSettings.cs:139
+#: ../../ORTS.Settings/InputSettings.cs:140
 msgid "Control Train Brake Decrease"
 msgstr "Styring Reducer Togbremsen"
 
-#: ../ORTS.Settings/InputSettings.cs:140
+#: ../../ORTS.Settings/InputSettings.cs:141
 msgid "Control Engine Brake Increase"
 msgstr "Styring Øg Lokomotivbremsen"
 
-#: ../ORTS.Settings/InputSettings.cs:141
+#: ../../ORTS.Settings/InputSettings.cs:142
 msgid "Control Engine Brake Decrease"
 msgstr "Styring Reducer Lokomotivbremsen"
 
-#: ../ORTS.Settings/InputSettings.cs:142
+#: ../../ORTS.Settings/InputSettings.cs:143
 msgid "Control Dynamic Brake Increase"
 msgstr "Styring Øg Dynamisk Bremse"
 
-#: ../ORTS.Settings/InputSettings.cs:143
+#: ../../ORTS.Settings/InputSettings.cs:144
 msgid "Control Dynamic Brake Decrease"
 msgstr "Styring Reducer Dynamisk Bremse"
 
-#: ../ORTS.Settings/InputSettings.cs:144
+#: ../../ORTS.Settings/InputSettings.cs:145
 msgid "Control Bail Off"
 msgstr "Styring Nulstil Bremser (Bail Off)"
 
-#: ../ORTS.Settings/InputSettings.cs:145
+#: ../../ORTS.Settings/InputSettings.cs:146
 msgid "Control Initialize Brakes"
 msgstr "Styring Initialiser Bremser"
 
-#: ../ORTS.Settings/InputSettings.cs:146
+#: ../../ORTS.Settings/InputSettings.cs:147
 msgid "Control Handbrake Full"
 msgstr "Styring Fuld Håndbremse"
 
-#: ../ORTS.Settings/InputSettings.cs:147
+#: ../../ORTS.Settings/InputSettings.cs:148
 msgid "Control Handbrake None"
 msgstr "Styring Løsn Håndbremse"
 
-#: ../ORTS.Settings/InputSettings.cs:148
+#: ../../ORTS.Settings/InputSettings.cs:149
 msgid "Control Retainers On"
 msgstr "Styring Retainer til"
 
-#: ../ORTS.Settings/InputSettings.cs:149
+#: ../../ORTS.Settings/InputSettings.cs:150
 msgid "Control Retainers Off"
 msgstr "Styring Retainer fra"
 
-#: ../ORTS.Settings/InputSettings.cs:150
+#: ../../ORTS.Settings/InputSettings.cs:151
 msgid "Control Brake Hose Connect"
 msgstr "Styring Bremseslange Tilkobl"
 
-#: ../ORTS.Settings/InputSettings.cs:151
+#: ../../ORTS.Settings/InputSettings.cs:152
 msgid "Control Brake Hose Disconnect"
 msgstr "Styring Bremseslange Frakobl"
 
-#: ../ORTS.Settings/InputSettings.cs:152
+#: ../../ORTS.Settings/InputSettings.cs:153
 msgid "Control Alerter"
 msgstr "Styring Alarm / Alerter"
 
-#: ../ORTS.Settings/InputSettings.cs:153
+#: ../../ORTS.Settings/InputSettings.cs:154
 msgid "Control Emergency"
 msgstr "Styring Nødsituation"
 
-#: ../ORTS.Settings/InputSettings.cs:154
+#: ../../ORTS.Settings/InputSettings.cs:155
 msgid "Control Sander"
 msgstr "Styring Sandspreder"
 
-#: ../ORTS.Settings/InputSettings.cs:155
+#: ../../ORTS.Settings/InputSettings.cs:156
 msgid "Control Wiper"
 msgstr "Styring Vinduesviskere"
 
-#: ../ORTS.Settings/InputSettings.cs:156
+#: ../../ORTS.Settings/InputSettings.cs:157
 msgid "Control Horn"
 msgstr "Styring Horn"
 
-#: ../ORTS.Settings/InputSettings.cs:157
+#: ../../ORTS.Settings/InputSettings.cs:158
 msgid "Control Bell"
 msgstr "Styring Horn / Klokke"
 
-#: ../ORTS.Settings/InputSettings.cs:158
+#: ../../ORTS.Settings/InputSettings.cs:159
 msgid "Control Bell Toggle"
 msgstr "Styring Klokke til/fra"
 
-#: ../ORTS.Settings/InputSettings.cs:159
+#: ../../ORTS.Settings/InputSettings.cs:160
 msgid "Control Door Left"
 msgstr "Styring Venstre døre"
 
-#: ../ORTS.Settings/InputSettings.cs:160
+#: ../../ORTS.Settings/InputSettings.cs:161
 msgid "Control Door Right"
 msgstr "Styring Højre døre"
 
-#: ../ORTS.Settings/InputSettings.cs:161
+#: ../../ORTS.Settings/InputSettings.cs:162
 msgid "Control Mirror"
 msgstr "Styring Spejle"
 
-#: ../ORTS.Settings/InputSettings.cs:162
+#: ../../ORTS.Settings/InputSettings.cs:163
 msgid "Control Light"
 msgstr "Styring Lys"
 
-#: ../ORTS.Settings/InputSettings.cs:163
+#: ../../ORTS.Settings/InputSettings.cs:164
 msgid "Control Pantograph1"
 msgstr "Styring Strømaftager1"
 
-#: ../ORTS.Settings/InputSettings.cs:164
+#: ../../ORTS.Settings/InputSettings.cs:165
 msgid "Control Pantograph2"
 msgstr "Styring Strømaftager2"
 
-#: ../ORTS.Settings/InputSettings.cs:165
+#: ../../ORTS.Settings/InputSettings.cs:166
 msgid "Control Diesel Player"
 msgstr "Styring Diesel Fører"
 
-#: ../ORTS.Settings/InputSettings.cs:166
+#: ../../ORTS.Settings/InputSettings.cs:167
 msgid "Control Diesel Helper"
 msgstr "Styring Diesel Hjælper"
 
-#: ../ORTS.Settings/InputSettings.cs:167
+#: ../../ORTS.Settings/InputSettings.cs:168
 msgid "Control Headlight Increase"
 msgstr "Styring Forøg Lyset"
 
-#: ../ORTS.Settings/InputSettings.cs:168
+#: ../../ORTS.Settings/InputSettings.cs:169
 msgid "Control Headlight Decrease"
 msgstr "Styring Sænk Lyset"
 
-#: ../ORTS.Settings/InputSettings.cs:169
+#: ../../ORTS.Settings/InputSettings.cs:170
 msgid "Control Injector1 Increase"
 msgstr "Styring Øg Indsprøjtning1"
 
-#: ../ORTS.Settings/InputSettings.cs:170
+#: ../../ORTS.Settings/InputSettings.cs:171
 msgid "Control Injector1 Decrease"
 msgstr "Styring Reducer Indsprøjtning1"
 
-#: ../ORTS.Settings/InputSettings.cs:171
+#: ../../ORTS.Settings/InputSettings.cs:172
 msgid "Control Injector1"
 msgstr "Styring Indsprøjtning1"
 
-#: ../ORTS.Settings/InputSettings.cs:172
+#: ../../ORTS.Settings/InputSettings.cs:173
 msgid "Control Injector2 Increase"
 msgstr "Styring Øg Indsprøjtning2"
 
-#: ../ORTS.Settings/InputSettings.cs:173
+#: ../../ORTS.Settings/InputSettings.cs:174
 msgid "Control Injector2 Decrease"
 msgstr "Styring Reducer Indsprøjtning2"
 
-#: ../ORTS.Settings/InputSettings.cs:174
+#: ../../ORTS.Settings/InputSettings.cs:175
 msgid "Control Injector2"
 msgstr "Styring Indsprøjtning2"
 
-#: ../ORTS.Settings/InputSettings.cs:175
+#: ../../ORTS.Settings/InputSettings.cs:176
 msgid "Control Blower Increase"
 msgstr "Styring Øg Blæser (Blower)"
 
-#: ../ORTS.Settings/InputSettings.cs:176
+#: ../../ORTS.Settings/InputSettings.cs:177
 msgid "Control Blower Decrease"
 msgstr "Styring Reducer Blæser (Blower)"
 
-#: ../ORTS.Settings/InputSettings.cs:177
+#: ../../ORTS.Settings/InputSettings.cs:178
 msgid "Control Damper Increase"
 msgstr "Styring Øg Spjæld (Damper)"
 
-#: ../ORTS.Settings/InputSettings.cs:178
+#: ../../ORTS.Settings/InputSettings.cs:179
 msgid "Control Damper Decrease"
 msgstr "Styring Reducer Spjæld (Damper)"
 
-#: ../ORTS.Settings/InputSettings.cs:179
+#: ../../ORTS.Settings/InputSettings.cs:180
 msgid "Control Firebox Open"
 msgstr "Styring Åbn Brændkammer (Firebox)"
 
-#: ../ORTS.Settings/InputSettings.cs:180
+#: ../../ORTS.Settings/InputSettings.cs:181
 msgid "Control Firebox Close"
 msgstr "Styring Luk Brændkammer (Firebox)"
 
-#: ../ORTS.Settings/InputSettings.cs:181
+#: ../../ORTS.Settings/InputSettings.cs:182
 msgid "Control Firing Rate Increase"
 msgstr "Styring Øg Fyringsgrad (Firing Rate)"
 
-#: ../ORTS.Settings/InputSettings.cs:182
+#: ../../ORTS.Settings/InputSettings.cs:183
 msgid "Control Firing Rate Decrease"
 msgstr "Styring Reducer Fyringsgrad (Firing Rate)"
 
-#: ../ORTS.Settings/InputSettings.cs:183
+#: ../../ORTS.Settings/InputSettings.cs:184
 msgid "Control Fire Shovel Full"
 msgstr "Styring Fyld skovlen (Fire Shovel Full)"
 
-#: ../ORTS.Settings/InputSettings.cs:184
+#: ../../ORTS.Settings/InputSettings.cs:185
 msgid "Control Cylinder Cocks"
 msgstr "Styring Cylinder Porte (Cylinder Cocks)"
 
-#: ../ORTS.Settings/InputSettings.cs:185
+#: ../../ORTS.Settings/InputSettings.cs:186
 msgid "Control Firing"
 msgstr "Styring Fyringen"
 
-#: ../ORTS.Settings/InputSettings.cs:186
+#: ../../ORTS.Settings/InputSettings.cs:187
 msgid "Control Refill"
 msgstr "Styring Påfyldning"
 
-#: ../ORTS.Settings/InputSettings.cs:631
+#: ../../ORTS.Settings/InputSettings.cs:633
 #, csharp-format
 msgid "{0} requires and is modified by Shift"
 msgstr "{0} kræves og styres af Shift"
 
-#: ../ORTS.Settings/InputSettings.cs:633
+#: ../../ORTS.Settings/InputSettings.cs:635
 #, csharp-format
 msgid "{0} requires and is modified by Control"
 msgstr "{0} kræves og styres af Control"
 
-#: ../ORTS.Settings/InputSettings.cs:635
+#: ../../ORTS.Settings/InputSettings.cs:637
 #, csharp-format
 msgid "{0} requires and is modified by Alt"
 msgstr "{0} kræves og styres af Alt"
 
-#: ../ORTS.Settings/InputSettings.cs:666
+#: ../../ORTS.Settings/InputSettings.cs:668
 #, csharp-format
 msgid "{0} and {1} both match {2}"
 msgstr "{0} og {1} stemmer overens med {2}"

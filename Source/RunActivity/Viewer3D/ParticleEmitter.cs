@@ -64,7 +64,7 @@ namespace ORTS.Viewer3D
         public const float Rate = 10;
         public const float DecelerationTime = 0.5f;
         public const float InitialSpreadRate = 1;
-        public const float SpreadRate = 1.5f;
+        public const float SpreadRate = 0.75f;
         public const float DurationVariation = 0.5f; // Duration varies +/-50%
 
         readonly Viewer Viewer;
@@ -159,6 +159,8 @@ namespace ORTS.Viewer3D
         readonly DynamicVertexBuffer VertexBuffer;
         readonly IndexBuffer IndexBuffer;
 
+        readonly float[] PerlinStart;
+
         struct ParticleVertex
         {
             public Vector4 StartPosition_StartTime;
@@ -203,9 +205,8 @@ namespace ORTS.Viewer3D
 
         Viewer viewer;
         GraphicsDevice graphicsDevice;
-
-        static float windSpeed;
-        static float windDirection;
+        float Time;
+        
         static float windDisplacementX;
         static float windDisplacementZ;
 
@@ -232,10 +233,7 @@ namespace ORTS.Viewer3D
             WorldPosition = worldPosition;
             LastWorldPosition = new WorldPosition(worldPosition);
 
-            windSpeed = viewer.World.Sky.windSpeed * 0.25f;
-            windDirection = viewer.World.Sky.windDirection;
-            windDisplacementX = -(float)Math.Sin(windDirection) * windSpeed;
-            windDisplacementZ = -(float)Math.Cos(windDirection) * windSpeed;
+            PerlinStart = new float[] { (float)Program.Random.NextDouble() * 30000f, (float)Program.Random.NextDouble() * 30000f, (float)Program.Random.NextDouble() * 30000f };
         }
 
         void VertexBuffer_ContentLost(object sender, EventArgs e)
@@ -313,6 +311,9 @@ namespace ORTS.Viewer3D
 
         public void Update(float currentTime, ElapsedTime elapsedTime)
         {
+            windDisplacementX = viewer.World.WeatherControl.WindSpeedMpS.X * 0.25f;
+            windDisplacementZ = viewer.World.WeatherControl.WindSpeedMpS.Y * 0.25f;
+
             var velocity = WorldPosition.Location - LastWorldPosition.Location;
             velocity.X += (WorldPosition.TileX - LastWorldPosition.TileX) * 2048;
             velocity.Z += (WorldPosition.TileZ - LastWorldPosition.TileZ) * 2048;
@@ -340,8 +341,13 @@ namespace ORTS.Viewer3D
             // TODO: This should only be rotated about the Y axis and not get fully rotated.
             var globalTargetVelocity = Vector3.Transform(XNATargetVelocity, rotation);
 
+            if (numToEmit == 0)
+                Time += elapsedTime.ClockSeconds;
+
             for (var i = 0; i < numToEmit; i++)
             {
+                Time += elapsedTime.ClockSeconds / numToEmit;
+
                 var particle = (FirstFreeParticle + 1) % MaxParticles;
                 var vertex = particle * VerticiesPerParticle;
                 var texture = Program.Random.Next(16); // Randomizes emissions.
@@ -354,9 +360,9 @@ namespace ORTS.Viewer3D
 
                 // Target/final velocity vaies in X, Y and Z.
                 var targetVelocity = globalTargetVelocity;
-                targetVelocity.X += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterViewer.SpreadRate;
-                targetVelocity.Y += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterViewer.SpreadRate;
-                targetVelocity.Z += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterViewer.SpreadRate;
+                targetVelocity.X += Noise.Generate(Time + PerlinStart[0]) * ParticleEmitterViewer.SpreadRate;
+                targetVelocity.Y += Noise.Generate(Time + PerlinStart[1]) * ParticleEmitterViewer.SpreadRate;
+                targetVelocity.Z += Noise.Generate(Time + PerlinStart[2]) * ParticleEmitterViewer.SpreadRate;
 
                 // Add wind speed
                 targetVelocity.X += windDisplacementX;
