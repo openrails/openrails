@@ -209,13 +209,20 @@ namespace ORTS.Processes
                                 "Save file is incompatible with current revision of {0} so activity cannot continue.\n\n" +
                                 "Save file = {1}\n\n" +
                                 "Save file revision = {2}\n" +
-                                "Open Rails revision = {3}",
-                                Application.ProductName, 
-                                ((IncompatibleSaveException)error).SaveFile, 
-                                ((IncompatibleSaveException)error).Revision, 
+                                "{0} revision = {3}",
+                                Application.ProductName,
+                                ((IncompatibleSaveException)error).SaveFile,
+                                ((IncompatibleSaveException)error).Revision,
                                 VersionInfo.Revision),
                                 Application.ProductName + " " + VersionInfo.VersionOrBuild, MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
+                        else if (error is InvalidCommandLine)
+                            MessageBox.Show(String.Format(
+                                "{0} was started with an invalid command-line. {1} Arguments given:\n\n{2}",
+                                Application.ProductName,
+                                error.Message,
+                                String.Join("\n", data.Select(d => "\u2022 " + d).ToArray())),
+                                Application.ProductName + " " + VersionInfo.VersionOrBuild, MessageBoxButtons.OK, MessageBoxIcon.Error);
                         else if (error is FileNotFoundException)
                         {
                             MessageBox.Show(String.Format(
@@ -840,52 +847,46 @@ namespace ORTS.Processes
 
         void InitSimulator(UserSettings settings, string[] args, string mode, string acttype)
         {
+            if (String.IsNullOrEmpty(acttype))
+            {
+                // old style processing without explicit action definition - to be removed later
+                if (args.Length == 1)
+                    acttype = "activity";
+                else if (args.Length == 5)
+                    acttype = "explorer";
+            }
+
             Console.WriteLine(mode.Length <= 0 ? "Mode       = {1}" : acttype.Length > 0 ? "Mode       = {0}" : "Mode       = {0} {1}", mode, acttype);
 
             switch (acttype)
             {
                 case "activity":
-                    Console.WriteLine("Activity   = {0}", args[0]);
-                break;
+                    if (args.Length < 1) throw new InvalidCommandLine("Mode 'activity' needs 1 argument: activity file.");
+                    Console.WriteLine("Route      = {0}", GetRouteName(args[0]));
+                    Console.WriteLine("Activity   = {0} ({1})", GetActivityName(args[0]), args[0]);
+                    break;
 
                 case "explorer":
-                    Console.WriteLine("Path       = {0}", args[0]);
-                    Console.WriteLine("Consist    = {0}", args[1]);
-                    Console.WriteLine("Time       = {0}", args[2]);
-                    Console.WriteLine("Season     = {0}", args[3]);
-                    Console.WriteLine("Weather    = {0}", args[4]);
-                break;
+                    if (args.Length < 5) throw new InvalidCommandLine("Mode 'explorer' needs 5 arguments: path file, consist file, time (hh[:mm[:ss]]), season (0-3), weather (0-2).");
+                    Console.WriteLine("Route      = {0}", GetRouteName(args[0]));
+                    Console.WriteLine("Path       = {0} ({1})", GetPathName(args[0]), args[0]);
+                    Console.WriteLine("Consist    = {0} ({1})", GetConsistName(args[1]), args[1]);
+                    Console.WriteLine("Time       = {0} ({1})", GetTime(args[2]), args[2]);
+                    Console.WriteLine("Season     = {0} ({1})", GetSeason(args[3]), args[3]);
+                    Console.WriteLine("Weather    = {0} ({1})", GetWeather(args[4]), args[4]);
+                    break;
 
                 case "timetable":
-                    Console.WriteLine("File                 = {0}", args[0]);
-                    Console.WriteLine("Train                = {0}", args[1]);
-                    Console.WriteLine("Day                  = {0}", args[2]);
-                    Console.WriteLine("Season               = {0}", args[3]);
-                    Console.WriteLine("Weather              = {0}", args[4]);
-                break;
+                    if (args.Length < 5) throw new InvalidCommandLine("Mode 'timetable' needs 5 arguments: timetable file, train name, day (???), season (0-3), weather (0-2).");
+                    Console.WriteLine("File       = {0}", args[0]);
+                    Console.WriteLine("Train      = {0}", args[1]);
+                    Console.WriteLine("Day        = {0}", args[2]);
+                    Console.WriteLine("Season     = {0} ({1})", GetSeason(args[3]), args[3]);
+                    Console.WriteLine("Weather    = {0} ({1})", GetWeather(args[4]), args[4]);
+                    break;
 
-                default:  // old style processing without explicit action definition - to be removed later
-                    if (args.Length == 1)
-                    {
-                        Console.WriteLine("Activity   = {0}", args[0]);
-                    }
-                    else if (args.Length == 3)
-                    {
-                        Console.WriteLine("Activity   = {0}", args[0]);
-                    }
-                    else if (args.Length == 4)
-                    {
-                        Console.WriteLine("Activity   = {0}", args[0]);
-                    }
-                    else
-                    {
-                        Console.WriteLine("Path       = {0}", args[0]);
-                        Console.WriteLine("Consist    = {0}", args[1]);
-                        Console.WriteLine("Time       = {0}", args[2]);
-                        Console.WriteLine("Season     = {0}", args[3]);
-                        Console.WriteLine("Weather    = {0}", args[4]);
-                    }
-                break;
+                default:
+                    throw new InvalidCommandLine("Unexpected mode '" + acttype + "' with argument count " + args.Length);
             }
 
             LogSeparator();
@@ -931,16 +932,6 @@ namespace ORTS.Processes
                         Simulator.PathName = String.Copy(args[1]);
                     }
                     break;
-
-                default: // old style processing without explicit type definition, to be removed later
-                    Simulator = new Simulator(settings, args[0], false);
-                    if (LoadingScreen == null)
-                        LoadingScreen = new LoadingScreenPrimitive(Game);
-                    if (args.Length == 1)
-                        Simulator.SetActivity(args[0]);
-                    else if (args.Length == 5)
-                        Simulator.SetExplore(args[0], args[1], args[2], args[3], args[4]);
-                    break;
             }
 
             if (settings.MultiplayerServer)
@@ -980,6 +971,93 @@ namespace ORTS.Processes
                     Client = null;
                 }
             }
+        }
+
+        string GetRouteName(string path)
+        {
+            try
+            {
+                if (Path.GetExtension(path).Equals(".act", StringComparison.OrdinalIgnoreCase) || Path.GetExtension(path).Equals(".pat", StringComparison.OrdinalIgnoreCase))
+                {
+                    var trk = new MSTS.Formats.TRKFile(MSTS.MSTSPath.GetTRKFileName(Path.GetDirectoryName(Path.GetDirectoryName(path))));
+                    return trk.Tr_RouteFile.Name;
+                }
+            }
+            catch { }
+            return null;
+        }
+
+        string GetActivityName(string path)
+        {
+            try
+            {
+                if (Path.GetExtension(path).Equals(".act", StringComparison.OrdinalIgnoreCase))
+                {
+                    var act = new MSTS.Formats.ACTFile(path);
+                    return act.Tr_Activity.Tr_Activity_Header.Name;
+                }
+            }
+            catch { }
+            return null;
+        }
+
+        string GetPathName(string path)
+        {
+            try
+            {
+                if (Path.GetExtension(path).Equals(".pat", StringComparison.OrdinalIgnoreCase))
+                {
+                    var pat = new MSTS.Formats.PATFile(path);
+                    return pat.Name;
+                }
+            }
+            catch { }
+            return null;
+        }
+
+        string GetConsistName(string path)
+        {
+            try
+            {
+                if (Path.GetExtension(path).Equals(".con", StringComparison.OrdinalIgnoreCase))
+                {
+                    var con = new MSTS.Formats.CONFile(path);
+                    return con.Name;
+                }
+            }
+            catch { }
+            return null;
+        }
+
+        string GetTime(string timeString)
+        {
+            try
+            {
+                var time = timeString.Split(':');
+                return new TimeSpan(int.Parse(time[0]), time.Length > 1 ? int.Parse(time[1]) : 0, time.Length > 2 ? int.Parse(time[2]) : 0).ToString();
+            }
+            catch { }
+            return null;
+        }
+
+        string GetSeason(string season)
+        {
+            try
+            {
+                return Enum.Parse(typeof(MSTS.Formats.SeasonType), season).ToString();
+            }
+            catch { }
+            return null;
+        }
+
+        string GetWeather(string weather)
+        {
+            try
+            {
+                return Enum.Parse(typeof(MSTS.Formats.WeatherType), weather).ToString();
+            }
+            catch { }
+            return null;
         }
 
         void LogSeparator()
@@ -1265,13 +1343,22 @@ namespace ORTS.Processes
         }
     }
 
-    public sealed class IncompatibleSaveException : Exception {
+    public sealed class IncompatibleSaveException : Exception
+    {
         public readonly int Revision;
         public readonly string SaveFile;
         public IncompatibleSaveException(int revision, string saveFile)
         {
             Revision = revision;
             SaveFile = saveFile;
+        }
+    }
+
+    public sealed class InvalidCommandLine : Exception
+    {
+        public InvalidCommandLine(string message)
+            : base(message)
+        {
         }
     }
 }
