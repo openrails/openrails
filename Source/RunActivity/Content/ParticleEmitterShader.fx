@@ -36,6 +36,8 @@ float currentTime;
 static float2 texCoords[4] = { float2(0, 0), float2(0.25f, 0), float2(0.25f, 0.25f), float2(0, 0.25f) };
 static float3 offsets[4] = { float3(-0.5f, 0.5f, 0), float3(0.5f, 0.5f, 0), float3(0.5f, -0.5f, 0), float3(-0.5f, -0.5f, 0) };
 
+float4 Fog;
+
 // Textures
 texture particle_Tex;
 
@@ -148,6 +150,8 @@ void _PSApplyDay2Night(inout float3 Color)
 	float incpt = 1.0 - slope * startNightTrans; // "b"
 	// This is the return value used to darken scenery
 	float adjustment;
+	
+	Color.rgb = lerp(Color.rgb, Fog.rgb, Fog.a);
 	
 	if (LightVector.y < finishNightTrans)
 		adjustment = minDarknessCoeff;

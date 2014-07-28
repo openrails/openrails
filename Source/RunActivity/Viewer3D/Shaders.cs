@@ -333,8 +333,8 @@ namespace ORTS.Viewer3D
         public float WindDirection
         {
             set 
-            { 
-                var totalWindDisplacement = 200 * WindSpeed * _time; // This greatly exaggerates the wind speed, but it looks better!
+            {
+                var totalWindDisplacement = 50 * WindSpeed * _time; // This exaggerates the wind speed, but it is necessary to get a visible effect
                 windDisplacement.SetValue(new Vector2(-(float)Math.Sin(value) * totalWindDisplacement, (float)Math.Cos(value) * totalWindDisplacement));
             }
         }
@@ -422,6 +422,7 @@ namespace ORTS.Viewer3D
         EffectParameter invView;
         EffectParameter texture;
         EffectParameter lightVector;
+        EffectParameter fog;
 
         public float CurrentTime
         {
@@ -458,12 +459,18 @@ namespace ORTS.Viewer3D
             tileXY = Parameters["cameraTileXY"];
             texture = Parameters["particle_Tex"];
             lightVector = Parameters["LightVector"];
+            fog = Parameters["Fog"];
         }
 
         public void SetMatrix(Matrix world, ref Matrix view, ref Matrix projection)
         {
             wvp.SetValue(world * view * projection);
             invView.SetValue(Matrix.Invert(view));
+        }
+
+        public void SetFog(float depth, ref Color color)
+        {
+            fog.SetValue(new Vector4(color.R / 255f, color.G / 255f, color.B / 255f, MathHelper.Clamp(300f / depth, 0, 1)));
         }
     }
 

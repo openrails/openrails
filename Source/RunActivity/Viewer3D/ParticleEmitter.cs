@@ -84,7 +84,7 @@ namespace ORTS.Viewer3D
         {
             Viewer = viewer;
             EmissionHoleM2 = (MathHelper.Pi * ((data.NozzleWidth / 2f) * (data.NozzleWidth / 2f)));
-            Emitter = new ParticleEmitterPrimitive(viewer.GraphicsDevice, data, worldPosition);
+            Emitter = new ParticleEmitterPrimitive(viewer, data, worldPosition);
 #if DEBUG_EMITTER_INPUT
             EmitterID = ++EmitterIDIndex;
             InputCycle = Program.Random.Next(InputCycleLimit);
@@ -201,8 +201,19 @@ namespace ORTS.Viewer3D
         float TimeParticlesLastEmitted;
         int DrawCounter;
 
-        public ParticleEmitterPrimitive(GraphicsDevice graphicsDevice, ParticleEmitterData data, WorldPosition worldPosition)
+        Viewer viewer;
+        GraphicsDevice graphicsDevice;
+
+        static float windSpeed;
+        static float windDirection;
+        static float windDisplacementX;
+        static float windDisplacementZ;
+
+        public ParticleEmitterPrimitive(Viewer viewer, ParticleEmitterData data, WorldPosition worldPosition)
         {
+            this.viewer = viewer;
+            this.graphicsDevice = viewer.GraphicsDevice;
+            
             MaxParticles = (int)(data.MaxParticlesPerSecond * data.MaxParticleDuration);
             Vertices = new ParticleVertex[MaxParticles * VerticiesPerParticle];
             VertexDeclaration = new VertexDeclaration(graphicsDevice, ParticleVertex.VertexElements);
@@ -220,6 +231,11 @@ namespace ORTS.Viewer3D
 
             WorldPosition = worldPosition;
             LastWorldPosition = new WorldPosition(worldPosition);
+
+            windSpeed = viewer.World.Sky.windSpeed * 0.25f;
+            windDirection = viewer.World.Sky.windDirection;
+            windDisplacementX = -(float)Math.Sin(windDirection) * windSpeed;
+            windDisplacementZ = -(float)Math.Cos(windDirection) * windSpeed;
         }
 
         void VertexBuffer_ContentLost(object sender, EventArgs e)
@@ -341,6 +357,10 @@ namespace ORTS.Viewer3D
                 targetVelocity.X += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterViewer.SpreadRate;
                 targetVelocity.Y += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterViewer.SpreadRate;
                 targetVelocity.Z += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterViewer.SpreadRate;
+
+                // Add wind speed
+                targetVelocity.X += windDisplacementX;
+                targetVelocity.Z += windDisplacementZ;
 
                 // Duration is variable too.
                 var duration = ParticleDuration * (1 + (float)(Program.Random.NextDouble() - 0.5f) * 2 * ParticleEmitterViewer.DurationVariation);

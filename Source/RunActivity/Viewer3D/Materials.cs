@@ -362,12 +362,14 @@ namespace ORTS.Viewer3D
             {
                 SceneryShader.Overcast = Viewer.World.WeatherControl.overcastFactor;
                 SceneryShader.SetFog(Viewer.World.WeatherControl.fogDistance, ref SharedMaterialManager.FogColor);
+                ParticleEmitterShader.SetFog(Viewer.World.WeatherControl.fogDistance, ref SharedMaterialManager.FogColor);
                 SceneryShader.ViewerPos = Viewer.Camera.XnaLocation(Viewer.Camera.CameraWorldLocation);
             }
             else
             {
                 SceneryShader.Overcast = Viewer.World.MSTSSky.mstsskyovercastFactor;
                 SceneryShader.SetFog(Viewer.World.MSTSSky.mstsskyfogDistance, ref SharedMaterialManager.FogColor);
+                ParticleEmitterShader.SetFog(Viewer.World.WeatherControl.fogDistance, ref SharedMaterialManager.FogColor);
                 SceneryShader.ViewerPos = Viewer.Camera.XnaLocation(Viewer.Camera.CameraWorldLocation);
             }
         }
