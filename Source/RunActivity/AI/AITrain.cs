@@ -107,7 +107,7 @@ namespace ORTS
         /// <\summary>
 
         public AITrain(Simulator simulator, Service_Definition sd, AI ai, AIPath path, float efficiency,
-                Traffic_Service_Definition trafficService, float maxVelocityA)
+                string name, Traffic_Service_Definition trafficService, float maxVelocityA)
             : base(simulator)
         {
             ServiceDefinition = sd;
@@ -117,7 +117,7 @@ namespace ORTS
             TrainType = TRAINTYPE.AI_NOTSTARTED;
             StartTime = ServiceDefinition.Time;
             Efficiency = efficiency;
-            Name = String.Copy(ServiceDefinition.Name);
+            Name = String.Copy(name);
             TrafficService = trafficService;
             MaxVelocityA = maxVelocityA;
         }

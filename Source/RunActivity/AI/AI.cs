@@ -386,12 +386,14 @@ namespace ORTS
 
             if (aiPath.Nodes == null)
             {
-                Trace.TraceWarning("Invalid path " + pathFileName + " for AI train : " + sd.Name + " ; train not started\n");
+                Trace.TraceWarning("Invalid path " + pathFileName + " for AI train : " + srvFile.Name + " ; train not started\n");
                 return null;
             }
 
             float maxVelocityA = conFile.Train.TrainCfg.MaxVelocity.A;
-            AITrain train = new AITrain(Simulator, sd, this, aiPath, srvFile.Efficiency, trfDef, maxVelocityA);
+            // sd.Name is the name of the service file.
+            // srvFile.Name points to the name of the service within the Name() category such as Name ( "Eastbound Freight Train" ) in the service file.
+            AITrain train = new AITrain(Simulator, sd, this, aiPath, srvFile.Efficiency, srvFile.Name, trfDef, maxVelocityA);
             Simulator.TrainDictionary.Add(train.Number, train);
 
             if (!Simulator.NameDictionary.ContainsKey(train.Name.ToLower()))
