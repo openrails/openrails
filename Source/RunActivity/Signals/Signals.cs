@@ -4070,7 +4070,7 @@ namespace ORTS
                   foreach (PlatformData platformData in Program.Simulator.Activity.Tr_Activity.Tr_Activity_File.PlatformNumPassengersWaiting.PlatformDataList)
                   {
                     overriddenPlatformDetailsIndex = PlatformDetailsList.FindIndex(platformDetails => (platformDetails.PlatformReference[0] == platformData.Id) || (platformDetails.PlatformReference[1] == platformData.Id));
-                    PlatformDetailsList[overriddenPlatformDetailsIndex].NumPassengersWaiting = platformData.PassengerCount;
+                    if (overriddenPlatformDetailsIndex >= 0 ) PlatformDetailsList[overriddenPlatformDetailsIndex].NumPassengersWaiting = platformData.PassengerCount;
                   }
              }
 
