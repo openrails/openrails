@@ -1170,8 +1170,8 @@ namespace ORTS
                     // to be a way yet to track cars that have been cut from the Cars list before the event is activated.
                     // The only exception would be if the car was picked up then dropped off.  At this point, the car would already exist
                     // in the Trains list.
-                    else
-                        triggered = excludesWagons(PlayerTrain, ChangeWagonIdList);
+                    //else
+                    //    triggered = excludesWagons(PlayerTrain, ChangeWagonIdList);
                     break;
                 case EventType.PickUpPassengers:
                     break;
