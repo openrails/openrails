@@ -34,6 +34,7 @@ namespace ORTS.Viewer3D.Popups
         const int TextHeight = 16;
 
         public bool ActivityUpdated;
+        public int lastLastEventID = -1;
 
         List<TabData> Tabs = new List<TabData>();
         int ActiveTab;
@@ -336,7 +337,15 @@ namespace ORTS.Viewer3D.Popups
             }
             else if (updateFull && Tabs[ActiveTab].Tab == Tab.ActivityWorkOrders && Owner.Viewer.Simulator.ActivityRun != null)
             {
-                if (Owner.Viewer.Simulator.ActivityRun.EventList != null) Layout();
+                if (Owner.Viewer.Simulator.ActivityRun.EventList != null)
+                {
+                    if (Owner.Viewer.Simulator.ActivityRun.LastTriggeredEvent != null && (Owner.Viewer.HelpWindow.lastLastEventID == -1 ||
+                        (Owner.Viewer.Simulator.ActivityRun.LastTriggeredEvent.ParsedObject.ID != Owner.Viewer.HelpWindow.lastLastEventID)))
+                    {
+                        lastLastEventID = Owner.Viewer.Simulator.ActivityRun.LastTriggeredEvent.ParsedObject.ID;
+                        Layout();
+                    }
+                }
             }
 			if (this.ActivityUpdated == true) //true value is set in ActivityWindow.cs
 			{

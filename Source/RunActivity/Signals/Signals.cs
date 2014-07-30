@@ -4071,7 +4071,8 @@ namespace ORTS
                   {
                     overriddenPlatformDetailsIndex = PlatformDetailsList.FindIndex(platformDetails => (platformDetails.PlatformReference[0] == platformData.Id) || (platformDetails.PlatformReference[1] == platformData.Id));
                     if (overriddenPlatformDetailsIndex >= 0 ) PlatformDetailsList[overriddenPlatformDetailsIndex].NumPassengersWaiting = platformData.PassengerCount;
-                  }
+                    else Trace.TraceWarning("Platform referenced in .act file with TrItemId {0} not present in .tdb file ", platformData.Id);
+                     }
              }
 
         }// ProcessPlatforms
