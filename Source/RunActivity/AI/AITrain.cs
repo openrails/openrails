@@ -380,7 +380,7 @@ namespace ORTS
                     { 
                                SetNextStationAction();               // set station details
                     }
-                    MovementState = AI_MOVEMENT_STATE.INIT;   // start in STOPPED mode to collect info
+                MovementState = AI_MOVEMENT_STATE.INIT;   // start in STOPPED mode to collect info
                 }
             }
 
@@ -1557,7 +1557,24 @@ namespace ORTS
                         MovementState = AI_MOVEMENT_STATE.RUNNING;
                         StartMoving(AI_START_MOVEMENT.SIGNAL_CLEARED);
                     }
-
+                    else if (!Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility)
+                    {
+                        //<CSComment: without this train would not start moving if there is a stop signal in front
+                        if (NextSignalObject[0] != null)
+                        {
+                            var distanceSignaltoTrain = NextSignalObject[0].DistanceTo(FrontTDBTraveller);
+                            if (distanceSignaltoTrain >= 100.0f)
+                            {
+                            MovementState = AI_MOVEMENT_STATE.BRAKING;
+                                //>CSComment: better be sure the train will stop in front of signal
+                            CreateTrainAction(0.0f, 0.0f, distanceSignaltoTrain, SignalObjectItems[0], AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_STOP);
+                            Alpha10 = 10;
+                            AITrainThrottlePercent = 25;
+                            AdjustControlsBrakeOff();
+                            }
+                        }
+                    }
+                    
 #if DEBUG_REPORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
                                 Number.ToString() + " , forced to BRAKING from invalid stop (now at " +
@@ -1715,7 +1732,7 @@ namespace ORTS
             // <CScomment> Recalculate TrainMaxSpeedMpS and AllowedMaxSpeedMpS
             {
                var actualServiceItemIdx = ServiceDefinition.ServiceList.FindIndex (si => si.PlatformStartID == thisStation.PlatformReference );
-               if (actualServiceItemIdx != null && ServiceDefinition.ServiceList.Count >= actualServiceItemIdx + 2)
+               if (actualServiceItemIdx >=0 && ServiceDefinition.ServiceList.Count >= actualServiceItemIdx + 2)
                {
                        var sectionEfficiency = ServiceDefinition.ServiceList[actualServiceItemIdx + 1].Efficiency;
                        if (sectionEfficiency > 0)
@@ -2696,7 +2713,21 @@ namespace ORTS
 
                         float keepDistanceTrainM = 0f;
                         bool attachToTrain = AttachTo == OtherTrain.Number;
-
+                        // <CScomment> Make check when this train in same section of OtherTrain; if other train is static or this train is in last section, pass to passive coupling
+                        if (!Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility && OtherTrain.SpeedMpS == 0.0f)
+                        {
+                            var rearOrFront = ValidRoute[0][ValidRoute[0].Count - 1].Direction == 1 ? 0 : 1;
+                             if   (PresentPosition[rearOrFront].TCSectionIndex == OtherTrain.PresentPosition[0].TCSectionIndex || 
+                                PresentPosition[rearOrFront].TCSectionIndex == OtherTrain.PresentPosition[1].TCSectionIndex)
+                            {
+                                if (OtherTrain.TrainType == TRAINTYPE.STATIC || PresentPosition[0].TCSectionIndex ==
+                                    TCRoute.TCRouteSubpaths[TCRoute.TCRouteSubpaths.Count - 1][TCRoute.TCRouteSubpaths[TCRoute.TCRouteSubpaths.Count - 1].Count - 1].TCSectionIndex)
+                                { 
+                                attachToTrain = true;
+                                AttachTo = OtherTrain.Number;
+                                }
+                            }
+                        }
                         if (OtherTrain.SpeedMpS != 0.0f)
                         {
                             keepDistanceTrainM = keepDistanceMovingTrainM;
@@ -3976,7 +4007,7 @@ namespace ORTS
                     float Tdec = (presentSpeedMpS - SpeedMpS) / 0.25f * MaxDecelMpSS;
                     secndPartRangeM = (SpeedMpS * (Tacc + Tdec)) + (0.5f * MaxAccelMpSS * (Tacc * Tacc)) + (0.5f * 0.25f * MaxDecelMpSS * (Tdec * Tdec));
                 }
-
+                //<CSComment: here sometimes triggerDistanceM becomes negative.
                 triggerDistanceM = activateDistanceTravelledM - (firstPartRangeM + secndPartRangeM);
             }
 
