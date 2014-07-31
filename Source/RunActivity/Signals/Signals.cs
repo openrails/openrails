@@ -4925,7 +4925,7 @@ namespace ORTS
                 return (true);
             }
 
-            if (!Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility)
+            if (!Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility && thisTrain.Train.TrainType == Train.TRAINTYPE.AI_NOTSTARTED)
             { 
             if ( CircuitState.TrainReserved != null && CircuitState.TrainReserved.Train != thisTrain.Train)
             {
