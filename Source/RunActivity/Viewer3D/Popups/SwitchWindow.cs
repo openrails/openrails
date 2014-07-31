@@ -100,8 +100,6 @@ namespace ORTS.Viewer3D.Popups
 		{
 #if !NEW_SIGNALLING
             if( Owner.Viewer.Simulator.SwitchTrackAhead(Owner.Viewer.PlayerTrain) )
-#else
-            if (Signals.RequestSetSwitch(Owner.Viewer.PlayerTrain, Direction.Forward) )
 #endif
             {
                 new ToggleSwitchAheadCommand(Owner.Viewer.Log);
@@ -112,8 +110,6 @@ namespace ORTS.Viewer3D.Popups
 		{
 #if !NEW_SIGNALLING
             if( Owner.Viewer.Simulator.SwitchTrackBehind(Owner.Viewer.PlayerTrain) )
-#else
-            if ( Signals.RequestSetSwitch(Owner.Viewer.PlayerTrain, Direction.Reverse) )
 #endif
             {
                 new ToggleSwitchBehindCommand(Owner.Viewer.Log);
