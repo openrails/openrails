@@ -292,7 +292,7 @@ namespace ORTS.Viewer3D.RollingStock
                             old_Distance_Travelled = Viewer.PlayerTrain.DistanceTravelledM;
                         }
                 }
-                Color_Value = (steamVolumeM3pS * .10f) + (car.Smoke.SmoothedValue / 2) / 256 * 100f;
+                Color_Value = car.Smoke.SmoothedValue;
 
                 drawer.SetOutput((steamVolumeM3pS * pulse) + car.FireRatio, (Throttlepercent + car.FireRatio), (new Color(Color_Value, Color_Value, Color_Value)));
 

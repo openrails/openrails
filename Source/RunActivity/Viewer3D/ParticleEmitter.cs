@@ -233,7 +233,12 @@ namespace ORTS.Viewer3D
             WorldPosition = worldPosition;
             LastWorldPosition = new WorldPosition(worldPosition);
 
-            PerlinStart = new float[] { (float)Program.Random.NextDouble() * 30000f, (float)Program.Random.NextDouble() * 30000f, (float)Program.Random.NextDouble() * 30000f };
+            PerlinStart = new float[] {
+                (float)Program.Random.NextDouble() * 30000f,
+                (float)Program.Random.NextDouble() * 30000f,
+                (float)Program.Random.NextDouble() * 30000f,
+                (float)Program.Random.NextDouble() * 30000f,
+            };
         }
 
         void VertexBuffer_ContentLost(object sender, EventArgs e)
@@ -369,7 +374,7 @@ namespace ORTS.Viewer3D
                 targetVelocity.Z += windDisplacementZ;
 
                 // Duration is variable too.
-                var duration = ParticleDuration * (1 + (float)(Program.Random.NextDouble() - 0.5f) * 2 * ParticleEmitterViewer.DurationVariation);
+                var duration = ParticleDuration * (1 + Noise.Generate(Time + PerlinStart[3]) * ParticleEmitterViewer.DurationVariation);
 
                 for (var j = 0; j < VerticiesPerParticle; j++)
                 {

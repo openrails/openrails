@@ -120,7 +120,7 @@ namespace ORTS
         float FlueTempK = 775;      // Initial FlueTemp (best @ 475)
         float MaxFlueTempK;         // FlueTemp at full boiler performance
         public bool SafetyIsOn;
-        public readonly SmoothedData Smoke = new SmoothedData(15);
+        public readonly SmoothedData Smoke = new SmoothedData(2);
 
         // eng file configuration parameters
         float MaxBoilerPressurePSI = 180f;  // maximum boiler pressure, safety valve setting
@@ -154,10 +154,10 @@ namespace ORTS
         float HeatRatio = 0.001f;        // Ratio to control burn rate - based on ratio of heat in vs heat out
         float PressureRatio = 0.01f;    // Ratio to control burn rate - based upon boiler pressure
         float BurnRateRawLBpS;           // Raw burnrate
-        SmoothedData FuelRateStokerLBpS = new SmoothedData(30); // Stoker is more responsive and only takes x seconds to fully react to changing needs.
+        SmoothedData FuelRateStoker = new SmoothedData(30); // Stoker is more responsive and only takes x seconds to fully react to changing needs.
         SmoothedData FuelRate = new SmoothedData(90); // Automatic fireman takes x seconds to fully react to changing needs.
         SmoothedData BurnRateSmoothLBpS = new SmoothedData(300); // Changes in BurnRate take x seconds to fully react to changing needs.
-        float FuelRateSmoothLBpS = 0.0f;     // Smoothed Fuel Rate
+        float FuelRateSmooth = 0.0f;     // Smoothed Fuel Rate
         
         // precomputed values
         float CylinderSweptVolumeFT3pFT;     // Volume of steam Cylinder
@@ -897,7 +897,7 @@ namespace ORTS
             // Variable1 is proportional to angular speed, value of 10 means 1 rotation/second.
             Variable1 = (Simulator.UseAdvancedAdhesion ? LocomotiveAxle.AxleSpeedMpS : SpeedMpS) / DriverWheelRadiusM / MathHelper.Pi * 5;
             Variable2 = Math.Min(CylinderPressurePSI / MaxBoilerPressurePSI * 100f, 100f);
-            Variable3 = FiringIsManual ? FiringRateController.CurrentValue * 100 : FuelRate.SmoothedValue * 100;
+            Variable3 = FiringIsManual ? FiringRateController.CurrentValue * 100 : FuelRateSmooth * 100;
 
             const int rotations = 2;
             const int fullLoop = 10 * rotations;
@@ -1162,13 +1162,13 @@ namespace ORTS
                 DesiredChange = MathHelper.Clamp(((IdealFireMassKG - FireMassKG) + Kg.FromLb(FuelBurnRateLBpS)) / MaxFiringRateKGpS, 0.001f, 1);
                 if (StokerIsMechanical) // if a stoker is fitted expect a quicker response to fuel feeding
                 {
-                    FuelRateStokerLBpS.Update(elapsedClockSeconds, DesiredChange); // faster fuel feed rate for stoker    
-                    FuelRateSmoothLBpS = FuelRateStokerLBpS.SmoothedValue;
+                    FuelRateStoker.Update(elapsedClockSeconds, DesiredChange); // faster fuel feed rate for stoker    
+                    FuelRateSmooth = FuelRateStoker.SmoothedValue;
                 }
                 else
                 {
                     FuelRate.Update(elapsedClockSeconds, DesiredChange); // slower fuel feed rate for fireman
-                    FuelRateSmoothLBpS = FuelRate.SmoothedValue;
+                    FuelRateSmooth = FuelRate.SmoothedValue;
                 }
                 // If tender coal is empty stop fuelrate (feeding coal onto fire).  
                 if ((IdealFireMassKG - FireMassKG) > 20.0) // if firemass is falling too low shovel harder - needs further refinement as this shouldn't be able to be maintained indefinitely
@@ -1207,14 +1207,14 @@ namespace ORTS
                 {
                     if (FuelBoost && !FuelBoostReset) // if firemass is falling too low, shovel harder - needs further refinement as this shouldn't be able to be maintained indefinitely
                     {
-                        FuelFeedRateLBpS = Kg.ToLb(MaxTheoreticalFiringRateKgpS) * FuelRateSmoothLBpS;  // At times of heavy burning allow AI fireman to overfuel
-                        FireMassKG += elapsedClockSeconds * (MaxTheoreticalFiringRateKgpS * FuelRateSmoothLBpS - Kg.FromLb(FuelBurnRateLBpS));
+                        FuelFeedRateLBpS = Kg.ToLb(MaxTheoreticalFiringRateKgpS) * FuelRateSmooth;  // At times of heavy burning allow AI fireman to overfuel
+                        FireMassKG += elapsedClockSeconds * (MaxTheoreticalFiringRateKgpS * FuelRateSmooth - Kg.FromLb(FuelBurnRateLBpS));
                         FuelBoostOnTimerS += elapsedClockSeconds; // Time how long to fuel boost for
                     }
                     else
                     {
-                        FuelFeedRateLBpS = Kg.ToLb(MaxFiringRateKGpS) * FuelRateSmoothLBpS;
-                        FireMassKG += elapsedClockSeconds * (MaxFiringRateKGpS * FuelRateSmoothLBpS - Kg.FromLb(FuelBurnRateLBpS));
+                        FuelFeedRateLBpS = Kg.ToLb(MaxFiringRateKGpS) * FuelRateSmooth;
+                        FireMassKG += elapsedClockSeconds * (MaxFiringRateKGpS * FuelRateSmooth - Kg.FromLb(FuelBurnRateLBpS));
                     }
                 }                  
             }
@@ -1231,7 +1231,7 @@ namespace ORTS
                 FuelBoostOnTimerS = 0.01f;     // Reset fuel boost timer to allow another boost if required.
                 FuelBoostReset = false;
             }
-            Smoke.Update(elapsedClockSeconds, FuelFeedRateLBpS / FuelBurnRateLBpS);
+            Smoke.Update(elapsedClockSeconds, MathHelper.Clamp((RadiationSteamLossLBpS + BlowerBurnEffect + DamperBurnEffect) / PreviousTotalSteamUsageLBpS - 0.2f, 0.25f, 1));
         }
 
         private void UpdateBoiler(float elapsedClockSeconds)
@@ -2133,16 +2133,6 @@ namespace ORTS
                 {
                     Injector2Fraction = Injector2Controller.CurrentValue;
                 }
-                // Damper
-                if (absSpeedMpS < 1.0f)    // locomotive is stationary then damper will have no effect
-                {
-                    DamperBurnEffect = 0.0f;
-                }
-                else
-                {
-                    DamperBurnEffect = DamperController.CurrentValue * absSpeedMpS * DamperFactorManual; // Damper value for manual firing - related to damper setting and increased speed
-                }
-                DamperBurnEffect = MathHelper.Clamp(DamperBurnEffect, 0.0f, TheoreticalMaxSteamOutputLBpS); // set damper maximum to the max generation rate
             }
             else
 
@@ -2238,6 +2228,18 @@ namespace ORTS
 
             }
             #endregion
+
+            // Damper - need to be calculated in AI fireman case too, to determine smoke color
+            if (absSpeedMpS < 1.0f)    // locomotive is stationary then damper will have no effect
+            {
+                DamperBurnEffect = 0.0f;
+            }
+            else
+            {
+                DamperBurnEffect = DamperController.CurrentValue * absSpeedMpS * DamperFactorManual; // Damper value for manual firing - related to damper setting and increased speed
+            }
+            DamperBurnEffect = MathHelper.Clamp(DamperBurnEffect, 0.0f, TheoreticalMaxSteamOutputLBpS); // set damper maximum to the max generation rate
+            
             // Determine Heat Ratio - for calculating burn rate
 
             if (BoilerHeat)
@@ -2732,6 +2734,8 @@ namespace ORTS
         {
             FireMassKG+= ShovelMassKG;
             Simulator.Confirmer.Confirm( CabControl.FireShovelfull, CabSetting.On );
+            // Make a black puff of smoke
+            Smoke.Update(1, 0);
         }
 
         public void ToggleCylinderCocks()
