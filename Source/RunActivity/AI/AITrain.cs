@@ -3827,7 +3827,7 @@ namespace ORTS
                     attachTrain.Cars.Insert(0, car);
                 }
                 //<CSComment this should be a bug; now corrected only when Enhanced flag on
-                if (!Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility)
+                if (!Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility && attachTrain.LeadLocomotiveIndex >= 0)
                     attachTrain.LeadLocomotiveIndex += Cars.Count ;
             }
             // attach to rear of waiting train
