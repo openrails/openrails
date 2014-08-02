@@ -248,7 +248,7 @@ namespace ORTS.Viewer3D
                     if (SignalTypeData.DrawAspects.ContainsKey(DisplayState))
                     {
                         SemaphoreTarget = SignalTypeData.DrawAspects[DisplayState].SemaphorePos;
-                        SemaphoreSpeed = SemaphoreTarget > SemaphorePos ? +1 : -1;
+                        SemaphoreSpeed = SemaphoreInfo == 0 ? 0 : (SemaphoreTarget > SemaphorePos ? +1 : -1) / SemaphoreInfo;
                         if (Sound != null) Sound.HandleEvent(Event.SemaphoreArm);
                     }
                 }
