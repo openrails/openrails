@@ -92,7 +92,7 @@ namespace ORTS.Viewer3D
                 {
                     var i = x * (maxZ - minZ + 1) + z;
                     verticies[i].Position.X = (x + minX) * 8 - center.X;
-                    verticies[i].Position.Y = viewer.Tiles.GetElevation(position.TileX, position.TileZ, (x + minX) * 8, (z + minZ) * 8) - center.Y;
+                    verticies[i].Position.Y = viewer.Tiles.LoadAndGetElevation(position.TileX, position.TileZ, (x + minX) * 8, (z + minZ) * 8, false) - center.Y;
                     verticies[i].Position.Z = -(z + minZ) * 8 + center.Z;
 
                     var tc = new Vector3(verticies[i].Position.X, 0, verticies[i].Position.Z);

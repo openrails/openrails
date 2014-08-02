@@ -96,7 +96,7 @@ namespace ORTS.Viewer3D
             {
                 var xnaTreePosition = new Vector3((0.5f - (float)random.NextDouble()) * forest.forestArea.X, 0, (0.5f - (float)random.NextDouble()) * forest.forestArea.Z);
                 Vector3.Transform(ref xnaTreePosition, ref position.XNAMatrix, out xnaTreePosition);
-                xnaTreePosition.Y = tiles.GetElevation(position.TileX, position.TileZ, xnaTreePosition.X, -xnaTreePosition.Z);
+                xnaTreePosition.Y = tiles.LoadAndGetElevation(position.TileX, position.TileZ, xnaTreePosition.X, -xnaTreePosition.Z, false);
                 xnaTreePosition -= position.XNAMatrix.Translation;
 
                 var scale = MathHelper.Lerp(forest.scaleRange.Minimum, forest.scaleRange.Maximum, (float)random.NextDouble());
