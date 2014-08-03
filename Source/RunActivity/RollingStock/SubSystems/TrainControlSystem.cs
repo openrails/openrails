@@ -398,19 +398,28 @@ namespace ORTS
 
         public void Update()
         {
-            if (Script == null)
-                return;
+            // If script not loaded or not in player's locomotive = all restrictions disabled
+            if (Script == null || Locomotive.Train.TrainType != Train.TRAINTYPE.PLAYER || !Locomotive.IsLeadLocomotive())
+            {
+                if (Locomotive.TrainBrakeController != null)
+                {
+                    Locomotive.TrainBrakeController.TCSFullServiceBraking = false;
+                    Locomotive.TrainBrakeController.TCSEmergencyBraking = false;
+                }
+            }
+            else
+            {
+                SignalSpeedLimits.Clear();
+                SignalAspects.Clear();
+                SignalDistances.Clear();
+                PostSpeedLimits.Clear();
+                PostDistances.Clear();
 
-            SignalSpeedLimits.Clear();
-            SignalAspects.Clear();
-            SignalDistances.Clear();
-            PostSpeedLimits.Clear();
-            PostDistances.Clear();
+                IsAlerterEnabled = Simulator.Settings.Alerter
+                    & !(Simulator.Settings.AlerterDisableExternal & Simulator.Confirmer.Viewer.Camera.Style != ORTS.Viewer3D.Camera.Styles.Cab);
 
-            IsAlerterEnabled = Simulator.Settings.Alerter
-                & !(Simulator.Settings.AlerterDisableExternal & Simulator.Confirmer.Viewer.Camera.Style != ORTS.Viewer3D.Camera.Styles.Cab);
-
-            Script.Update();
+                Script.Update();
+            }
         }
 
         public void AlerterPressed(bool pressed)
