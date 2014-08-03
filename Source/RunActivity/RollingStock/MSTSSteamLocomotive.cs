@@ -356,307 +356,6 @@ namespace ORTS
         public MSTSSteamLocomotive(Simulator simulator, string wagFile)
             : base(simulator, wagFile)
         {
-            if (NumCylinders < 0 && ZeroError(NumCylinders, "NumCylinders", wagFile))
-                NumCylinders = 0;
-            if (ZeroError(CylinderDiameterM, "CylinderDiammeter", wagFile))
-                CylinderDiameterM= 1;
-            if (ZeroError(CylinderStrokeM, "CylinderStroke", wagFile))
-                CylinderStrokeM= 1;
-            if (ZeroError(DriverWheelRadiusM, "WheelRadius", wagFile))
-                DriverWheelRadiusM= 1;
-            if (ZeroError(MaxBoilerPressurePSI, "MaxBoilerPressure", wagFile))
-                MaxBoilerPressurePSI= 1;
-            if (ZeroError(MaxBoilerOutputLBpH, "MaxBoilerOutput", wagFile))
-                MaxBoilerOutputLBpH= 1;
-            if (ZeroError(ExhaustLimitLBpH, "ExhaustLimit", wagFile))
-                ExhaustLimitLBpH = MaxBoilerOutputLBpH;
-            if (ZeroError(BoilerVolumeFT3, "BoilerVolume", wagFile))
-                BoilerVolumeFT3 = 1;
-
-        #region Initialise additional steam properties
-
-            SteamDensityPSItoLBpFT3 = SteamTable.SteamDensityInterpolatorPSItoLBpFT3();
-            WaterDensityPSItoLBpFT3 = SteamTable.WaterDensityInterpolatorPSItoLBpFT3();
-            SteamHeatPSItoBTUpLB = SteamTable.SteamHeatInterpolatorPSItoBTUpLB();
-            WaterHeatPSItoBTUpLB = SteamTable.WaterHeatInterpolatorPSItoBTUpLB();
-            CylinderSteamDensityPSItoLBpFT3 = SteamTable.SteamDensityInterpolatorPSItoLBpFT3();
-            HeatToPressureBTUpLBtoPSI = SteamTable.WaterHeatToPressureInterpolatorBTUpLBtoPSI();
-            PressureToTemperaturePSItoF = SteamTable.PressureToTemperatureInterpolatorPSItoF();
-            Injector09FlowratePSItoUKGpM = SteamTable.Injector09FlowrateInterpolatorPSItoUKGpM();
-            Injector10FlowratePSItoUKGpM = SteamTable.Injector10FlowrateInterpolatorPSItoUKGpM();
-            Injector11FlowratePSItoUKGpM = SteamTable.Injector11FlowrateInterpolatorPSItoUKGpM();
-            Injector13FlowratePSItoUKGpM = SteamTable.Injector13FlowrateInterpolatorPSItoUKGpM();
-            Injector14FlowratePSItoUKGpM = SteamTable.Injector14FlowrateInterpolatorPSItoUKGpM();            
-            Injector15FlowratePSItoUKGpM = SteamTable.Injector15FlowrateInterpolatorPSItoUKGpM();            
-            InjDelWaterTempMinPressureFtoPSI = SteamTable.InjDelWaterTempMinPressureInterpolatorFtoPSI();
-            InjDelWaterTempMaxPressureFtoPSI = SteamTable.InjDelWaterTempMaxPressureInterpolatorFtoPSI();
-            InjWaterFedSteamPressureFtoPSI = SteamTable.InjWaterFedSteamPressureInterpolatorFtoPSI();
-            InjCapMinFactorX = SteamTable.InjCapMinFactorInterpolatorX();
-            WaterTempFtoPSI = SteamTable.TemperatureToPressureInterpolatorFtoPSI();
-            SpecificHeatKtoKJpKGpK = SteamTable.SpecificHeatInterpolatorKtoKJpKGpK();
-            SaturationPressureKtoPSI = SteamTable.SaturationPressureInterpolatorKtoPSI();
-            
-            CylinderCondensationFractionX = SteamTable.CylinderCondensationFractionInterpolatorX();
-            SuperheatTempLimitXtoDegF = SteamTable.SuperheatTempLimitInterpolatorXtoDegF();
-            SuperheatTempLbpHtoDegF = SteamTable.SuperheatTempInterpolatorLbpHtoDegF();
-            InitialPressureDropRatioRpMtoX = SteamTable.InitialPressureDropRatioInterpolatorRpMtoX();
-            CutoffPressureDropRatioRpMtoX = SteamTable.CutoffPressureDropRatioInterpolatorRpMtoX();
-            SteamChestPressureDropRatioRpMtoX = SteamTable.SteamChestPressureDropRatioInterpolatorRpMtoX();
-
-            if (BoilerEfficiencyGrateAreaLBpFT2toX == null)
-            {
-            BoilerEfficiencyGrateAreaLBpFT2toX = SteamTable.BoilerEfficiencyGrateAreaInterpolatorLbstoX();
-            Trace.TraceWarning("BoilerEfficiencyGrateAreaLBpFT2toX not read in ENG file {0} ", BoilerEfficiencyGrateAreaLBpFT2toX[35.0f]);
-            }
-
-            RefillTenderWithCoal();
-            RefillTenderWithWater();
-
-            // Computed Values
-            // Read alternative OR Value for calculation of Ideal Fire Mass
-            if (GrateAreaM2 == 0)  // Calculate Grate Area if not present in ENG file
-            {
-                float MinGrateAreaSizeSqFt = 6.0f;
-                GrateAreaM2 = Me2.FromFt2(((NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM)) * MEPFactor * MaxBoilerPressurePSI) / (Me.ToIn(DriverWheelRadiusM * 2.0f) * GrateAreaDesignFactor));
-                GrateAreaM2 = MathHelper.Clamp(GrateAreaM2, Me2.FromFt2(MinGrateAreaSizeSqFt), GrateAreaM2); // Clamp grate area to a minimum value of 6 sq ft
-                IdealFireMassKG = GrateAreaM2 * Me.FromIn(IdealFireDepthIN) * FuelDensityKGpM3;
-	            Trace.TraceWarning("Grate Area not found in ENG file and has been set to {0} m^2", GrateAreaM2); // Advise player that Grate Area is missing from ENG file
-            }
-            else
-                if (LocoIsOilBurner)
-                    IdealFireMassKG = GrateAreaM2 * 720.0f * 0.08333f * 0.02382f * 1.293f;  // Check this formula as conversion factors maybe incorrect, also grate area is now in SqM
-                else
-                    IdealFireMassKG = GrateAreaM2 * Me.FromIn(IdealFireDepthIN) * FuelDensityKGpM3;
-            if (MaxFireMassKG == 0) // If not specified, assume twice as much as ideal. 
-                                    // Scale FIREBOX control to show FireMassKG as fraction of MaxFireMassKG.
-                MaxFireMassKG = 2 * IdealFireMassKG;
-
-            float baseTempK = C.ToK(C.FromF(PressureToTemperaturePSItoF[MaxBoilerPressurePSI]));
-            if (EvaporationAreaM2 == 0)        // If evaporation Area is not in ENG file then synthesize a value
-	        {
-                EvaporationAreaM2 = Me2.FromFt2(((NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM)) * MEPFactor * MaxBoilerPressurePSI) / (Me.ToIn(DriverWheelRadiusM * 2.0f) * EvapAreaDesignFactor));
-                Trace.TraceWarning("Evaporation Area not found in ENG file and has been set to {0} m^2", EvaporationAreaM2); // Advise player that Evaporation Area is missing from ENG file
-	        }
-
-            CylinderSteamUsageLBpS = 1.0f;  // Set to 1 to ensure that there are no divide by zero errors
-            WaterFraction = 0.9f;
-
-            if (BoilerEvapRateLbspFt2 == 0) // If boiler evaporation rate is not in ENG file then set a default value
-            {
-                BoilerEvapRateLbspFt2 = 15.0f; // Default rate for evaporation rate. Assume a default rate of 15 lbs/sqft of evaporation area
-            }
-            BoilerEvapRateLbspFt2 = MathHelper.Clamp(BoilerEvapRateLbspFt2, 10.0f, 15.0f); // Clamp BoilerEvap Rate to between 10 & 15
-            TheoreticalMaxSteamOutputLBpS = pS.FrompH(Me2.ToFt2(EvaporationAreaM2) * BoilerEvapRateLbspFt2 ); // set max boiler theoretical steam output
-
-	        float BoilerVolumeCheck = Me2.ToFt2(EvaporationAreaM2) / BoilerVolumeFT3;    //Calculate the Boiler Volume Check value.
-            if (BoilerVolumeCheck > 15) // If boiler volume is not in ENG file or less then a viable figure (ie high ratio figure), then set to a default value
-            {
-              BoilerVolumeFT3 = Me2.ToFt2(EvaporationAreaM2) / 8.3f; // Default rate for evaporation rate. Assume a default ratio of evaporation area * 1/8.3
-              Trace.TraceWarning("Boiler Volume not found in ENG file, or doesn't appear to be a valid figure, and has been set to {0} Ft^3", BoilerVolumeFT3); // Advise player that Boiler Volume is missing from or incorrect in ENG file
-            }
-
-            MaxBoilerHeatPressurePSI = MaxBoilerPressurePSI + SafetyValveStartPSI + 5.0f; // set locomotive maximum boiler pressure to calculate max heat, allow for safety valve + a bit
-            MaxBoilerPressHeatBTU = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[MaxBoilerHeatPressurePSI] * WaterHeatPSItoBTUpLB[MaxBoilerHeatPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[MaxBoilerHeatPressurePSI] * SteamHeatPSItoBTUpLB[MaxBoilerHeatPressurePSI];  // calculate the maximum possible heat in the boiler, assuming safety valve and a small margin
-            MaxBoilerHeatBTU = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[MaxBoilerPressurePSI] * WaterHeatPSItoBTUpLB[MaxBoilerPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[MaxBoilerPressurePSI] * SteamHeatPSItoBTUpLB[MaxBoilerPressurePSI];  // calculate the maximum possible heat in the boiler
-
-            MaxBoilerKW = Kg.FromLb(TheoreticalMaxSteamOutputLBpS) * W.ToKW(W.FromBTUpS(SteamHeatPSItoBTUpLB[MaxBoilerPressurePSI]));
-            MaxFlueTempK = (MaxBoilerKW / (W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2 * HeatMaterialThicknessFactor)) + baseTempK;
-
-            // Determine if Superheater in use
-            if (SuperheatAreaM2 == 0) // If super heating area not specified
-            {
-                if (SuperheaterFactor > 1.0) // check if MSTS value, then set superheating
-                {
-                    HasSuperheater = true;
-                    SuperheatRefTempF = 200.0f; // Assume a superheating temp of 250degF
-                    SuperheatTempRatio = SuperheatRefTempF / SuperheatTempLbpHtoDegF[pS.TopH(TheoreticalMaxSteamOutputLBpS)];
-                }
-                else
-                {
-                    HasSuperheater = false;
-                    SuperheatRefTempF = 0.0f;
-                }
-            }
-            else  // if OR value set then calculate
-            {
-                
-                HasSuperheater = true;
-
-                // Calculate superheat steam reference temperature based upon heating area of superheater
-                // SuperTemp = (SuperHeatArea x HeatTransmissionCoeff * (MeanGasTemp - MeanSteamTemp)) / (SteamQuantity * MeanSpecificSteamHeat)
-                // Formula has been simplified as follows: SuperTemp = (SuperHeatArea x FlueTempK x SFactor) / SteamQuantity
-                // SFactor is a "loose reprentation" =  (HeatTransmissionCoeff / MeanSpecificSteamHeat) - Av figure calculate by comparing a number of "known" units for superheat.
-                SuperheatRefTempF = (Me2.ToFt2(SuperheatAreaM2) * C.ToF(C.FromK(MaxFlueTempK)) * SuperheatKFactor) / pS.TopH(TheoreticalMaxSteamOutputLBpS);
-                SuperheatTempRatio = SuperheatRefTempF / SuperheatTempLbpHtoDegF[pS.TopH(TheoreticalMaxSteamOutputLBpS)];    // calculate a ratio figure for known value against reference curve.      
-             
-            }
-
-            // Determine whether to start locomotive in Hot or Cold State
-            HotStart = Simulator.Settings.HotStart;
-
-            // Determine whether it is a geared locomotive
-            if (SteamGearRatio > 1.0)
-            {
-            IsGearedSteamLoco = true;    // set flag for geared locomotive
-            MotiveForceGearRatio = SteamGearRatio;
-            // Calculate maximum locomotive speed - based upon the number of revs for the drive shaft, geared to wheel shaft, and then circumference of drive wheel
-            // Max Geared speed = ((MaxPistonSpeed / Gear Ratio) x DrvWheelCircumference) / Feet in mile - miles per min
-            MaxGearedSpeedMpS = pS.FrompM(MaxSteamGearPistonRateRpM / SteamGearRatio * MathHelper.Pi * DriverWheelRadiusM * 2.0f);
-            }
-            else
-            {
-            IsGearedSteamLoco = false;    // set flag for non-geared locomotive
-            MotiveForceGearRatio = 1.0f;  // set gear ratio to default, as not a geared locomotive
-            }            
-                    
-        #endregion
-
-            // Cylinder Steam Usage = Cylinder Volume * Cutoff * No of Cylinder Strokes (based on loco speed, ie, distance travelled in period / Circumference of Drive Wheels)
-            // SweptVolumeToTravelRatioFT3pFT is used to calculate the Cylinder Steam Usage Rate (see below)
-            // SweptVolumeToTravelRatioFT3pFT = strokes_per_cycle * no_of_cylinders * pi*CylRad^2 * stroke_length / 2*pi*WheelRad
-            // "pi"s cancel out
-            
-            // Cylinder piston shaft volume needs to be calculated and deducted from sweptvolume - assume diameter of the cylinder minus one-half of the piston-rod area. Let us assume that the latter is 3 square inches
-            CylinderPistonShaftFt3 = Me2.ToFt2(Me2.FromIn2(((float)Math.PI * (CylinderPistonShaftDiaIn / 2.0f) * (CylinderPistonShaftDiaIn / 2.0f)) / 2.0f));
-            CylinderPistonAreaFt2 = Me2.ToFt2(MathHelper.Pi * CylinderDiameterM * CylinderDiameterM / 4.0f); 
-            CylinderSweptVolumeFT3pFT = ((CylinderPistonAreaFt2 * Me.ToFt(CylinderStrokeM)) - CylinderPistonShaftFt3);
-            
-            // Cylinder Steam Usage	= SweptVolumeToTravelRatioFT3pFT x cutoff x {(speed x (SteamDensity (CylPress) - SteamDensity (CylBackPress)) 
-            // lbs/s                = ft3/ft                                  x   ft/s  x  lbs/ft3
-
-            // The next two tables are the average over a full wheel rotation calculated using numeric integration
-            // they depend on valve geometry and main rod length etc
-            if (ForceFactor1Npcutoff == null)
-            {
-                ForceFactor1Npcutoff = new Interpolator(11);
-                ForceFactor1Npcutoff[.200f] = -.428043f;
-                ForceFactor1Npcutoff[.265f] = -.453624f;
-                ForceFactor1Npcutoff[.330f] = -.479480f;
-                ForceFactor1Npcutoff[.395f] = -.502123f;
-                ForceFactor1Npcutoff[.460f] = -.519346f;
-                ForceFactor1Npcutoff[.525f] = -.535572f;
-                ForceFactor1Npcutoff[.590f] = -.550099f;
-                ForceFactor1Npcutoff[.655f] = -.564719f;
-                ForceFactor1Npcutoff[.720f] = -.579431f;
-                ForceFactor1Npcutoff[.785f] = -.593737f;
-                ForceFactor1Npcutoff[.850f] = -.607703f;
-                ForceFactor1Npcutoff.ScaleY(4.4482f * (float)Math.PI / 4 * 39.372f * 39.372f * NumCylinders * CylinderDiameterM * CylinderDiameterM * CylinderStrokeM / (2 * DriverWheelRadiusM)); // Original formula
-            }
-            if (ForceFactor2Npcutoff == null)
-            {
-                ForceFactor2Npcutoff = new Interpolator(11);
-                ForceFactor2Npcutoff[.200f] = .371714f;
-                ForceFactor2Npcutoff[.265f] = .429217f;
-                ForceFactor2Npcutoff[.330f] = .476195f;
-                ForceFactor2Npcutoff[.395f] = .512149f;
-                ForceFactor2Npcutoff[.460f] = .536852f;
-                ForceFactor2Npcutoff[.525f] = .554344f;
-                ForceFactor2Npcutoff[.590f] = .565618f;
-                ForceFactor2Npcutoff[.655f] = .573383f;
-                ForceFactor2Npcutoff[.720f] = .579257f;
-                ForceFactor2Npcutoff[.785f] = .584714f;
-                ForceFactor2Npcutoff[.850f] = .591967f;
-                ForceFactor2Npcutoff.ScaleY(4.4482f * (float)Math.PI / 4 * 39.372f * 39.372f * NumCylinders * CylinderDiameterM * CylinderDiameterM * CylinderStrokeM / (2 * DriverWheelRadiusM)); // original Formula
-            }
-            if (CylinderPressureDropLBpStoPSI == null)
-            {   // this table is not based on measurements
-                CylinderPressureDropLBpStoPSI = new Interpolator(5);
-                CylinderPressureDropLBpStoPSI[0] = 0;
-                CylinderPressureDropLBpStoPSI[.2f] = 0;
-                CylinderPressureDropLBpStoPSI[.5f] = 2;
-                CylinderPressureDropLBpStoPSI[1] = 10;
-                CylinderPressureDropLBpStoPSI[2] = 20;
-                CylinderPressureDropLBpStoPSI.ScaleX(ExhaustLimitLBpH);
-                CylinderPressureDropLBpStoPSI.ScaleX(1 / 3600f);
-            }
-            if (BackPressureLBpStoPSI == null)
-            {   // this table is not based on measurements
-                BackPressureLBpStoPSI = new Interpolator(3);
-                BackPressureLBpStoPSI[0] = 0;
-                BackPressureLBpStoPSI[1] = 10;
-                BackPressureLBpStoPSI[1.2f] = 30;
-                BackPressureLBpStoPSI.ScaleX(TheoreticalMaxSteamOutputLBpS);
-
-            }
-
-            // This is to model falling boiler efficiency as the combustion increases, based on a "crude" model, to be REDONE?
-            if (BoilerEfficiency == null)
-            {
-                BoilerEfficiency = new Interpolator(4);
-                BoilerEfficiency[0] = .82f;
-                BoilerEfficiency[(1 - .82f) / .35f] = .82f;
-                BoilerEfficiency[(1 - .4f) / .35f] = .4f;
-                BoilerEfficiency[1 / .35f] = .4f;
-            }
-
-            // Based on the EvapArea, this section calculates the maximum boiler output in lbs/s, and also calculates the theoretical burn rate in kg/s to support it.
-            // BurnRate creates a table with an x-axis of steam production in lb/s, and a y-axis calculating the coal burnt to support this production rate in lb/s.
-            BurnRateLBpStoKGpS = new Interpolator(27);
-            for (int i = 0; i < 27; i++)
-            {
-                float x = .1f * i;
-                float y = x;
-                if (y < .02)
-                    y = .02f;
-                else if (y > 2.5f)
-                    y = 2.5f;
-                BurnRateLBpStoKGpS[x] = y / BoilerEfficiency[x]; // To increase burnrate to compensate for a loss of energy, ie this is amount of coal that would need to compensate for the boiler efficiency
-            }
-            float sy = (MaxFlueTempK - baseTempK) * W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2 / HeatMaterialThicknessFactor; // Boiler kWs
-            float sx = sy / (W.ToKW(W.FromBTUpS(SteamHeatPSItoBTUpLB[MaxBoilerPressurePSI])));  // BoilerkW / (SteamHeat- in kJ)?
-            BurnRateLBpStoKGpS.ScaleX(sx);  // Steam in lbs
-            BurnRateLBpStoKGpS.ScaleY(sy / FuelCalorificKJpKG); // Original Formula - FuelBurnt KG = BoilerkW / FuelCalorific - Convert to equivalent kgs of coal
-            BoilerEfficiency.ScaleX(sx); // Boiler Efficiency x axis - Steam in lbs
-            MaxBoilerOutputLBpH = Kg.ToLb(pS.TopH(sx));
-            BurnRateLBpStoKGpS.ScaleY(BurnRateMultiplier);
-
-            // Calculate the maximum boiler heat input based on the steam generation rate
-            MaxBoilerHeatInBTUpS = W.ToBTUpS(W.FromKW(BurnRateLBpStoKGpS[TheoreticalMaxSteamOutputLBpS] * FuelCalorificKJpKG * BoilerEfficiency[TheoreticalMaxSteamOutputLBpS]));
-
-        #region Initialise Locomotive in a Hot or Cold Start Condition
-
-            if (HotStart)
-            {
-                // Hot Start - set so that FlueTemp is at maximum, boilerpressure slightly below max
-                BoilerPressurePSI = MaxBoilerPressurePSI - 5.0f;
-                baseStartTempK = C.ToK(C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]));
-                BoilerStartkW = Kg.FromLb((BoilerPressurePSI / MaxBoilerPressurePSI) * TheoreticalMaxSteamOutputLBpS) * W.ToKW(W.FromBTUpS(SteamHeatPSItoBTUpLB[BoilerPressurePSI])); // Given pressure is slightly less then max, this figure should be slightly less, ie reduce TheoreticalMaxSteamOutputLBpS, for the time being assume a ratio of bp to MaxBP
-                FlueTempK = (BoilerStartkW / (W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2 * HeatMaterialThicknessFactor)) + baseStartTempK;
-                BoilerMassLB = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI];
-                BoilerHeatBTU = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] * WaterHeatPSItoBTUpLB[BoilerPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI] * SteamHeatPSItoBTUpLB[BoilerPressurePSI];
-                StartBoilerHeatBTU = BoilerHeatBTU;
-            }
-            else
-            {
-                // Cold Start - as per current
-                BoilerPressurePSI = MaxBoilerPressurePSI * 0.66f; // Allow for cold start - start at 66% of max boiler pressure - check pressure value given heat in boiler????
-                baseStartTempK = C.ToK(C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]));
-                BoilerStartkW = Kg.FromLb((BoilerPressurePSI / MaxBoilerPressurePSI) * TheoreticalMaxSteamOutputLBpS) * W.ToKW(W.FromBTUpS(SteamHeatPSItoBTUpLB[BoilerPressurePSI]));
-                FlueTempK = (BoilerStartkW / (W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2 * HeatMaterialThicknessFactor)) + baseStartTempK;
-                BoilerMassLB = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI];
-                BoilerHeatBTU = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] * WaterHeatPSItoBTUpLB[BoilerPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI] * SteamHeatPSItoBTUpLB[BoilerPressurePSI];
-            }
-
-            DamperFactorManual = TheoreticalMaxSteamOutputLBpS / SpeedEquivMpS; // Calculate a factor for damper control that will vary with speed.
-            BlowerSteamUsageFactor = .04f * MaxBoilerOutputLBpH / 3600 / MaxBoilerPressurePSI;
-            WaterTempNewK = C.ToK(C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI])); // Initialise new boiler pressure
-            FireMassKG = IdealFireMassKG;
-            if (MaxFiringRateKGpS == 0)
-                MaxFiringRateKGpS = 180 * MaxBoilerOutputLBpH / 775 / 3600 / 2.2046f;
-                
-            if (ORTSMaxFiringRateKGpS != 0)
-                MaxFiringRateKGpS = ORTSMaxFiringRateKGpS; // If OR value present then use it 
-
-            // Initialise Mechanical Stoker if present
-            if ( Stoker == 1.0f)
-            {
-                StokerIsMechanical = true;
-                MaxFiringRateKGpS = 2 * MaxFiringRateKGpS; // Temp allowance for mechanical stoker
-            }
-            MaxTheoreticalFiringRateKgpS = MaxFiringRateKGpS * 1.2f; // allow the fireman to overfuel for short periods of time 
-        #endregion
-
-            ApplyBoilerPressure();
         }
 
         /// <summary>
@@ -675,11 +374,11 @@ namespace ORTS
             WaterController.CurrentValue = 1.0f;
         } 
        
-        public static bool ZeroError(float v, string name, string wagFile)
+        private bool ZeroError(float v, string name)
         {
             if (v > 0)
                 return false;
-            Trace.TraceWarning("Steam engine value {1} must be defined and greater than zero in {0}", wagFile, name);
+            Trace.TraceWarning("Steam engine value {1} must be defined and greater than zero in {0}", WagFilePath, name);
             return true;
         }
 
@@ -844,6 +543,313 @@ namespace ORTS
             ControllerFactory.Restore(FireboxDoorController, inf);
             ControllerFactory.Restore(FiringRateController, inf);
             base.Restore(inf);
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+
+            if (NumCylinders < 0 && ZeroError(NumCylinders, "NumCylinders"))
+                NumCylinders = 0;
+            if (ZeroError(CylinderDiameterM, "CylinderDiammeter"))
+                CylinderDiameterM = 1;
+            if (ZeroError(CylinderStrokeM, "CylinderStroke"))
+                CylinderStrokeM = 1;
+            if (ZeroError(DriverWheelRadiusM, "WheelRadius"))
+                DriverWheelRadiusM = 1;
+            if (ZeroError(MaxBoilerPressurePSI, "MaxBoilerPressure"))
+                MaxBoilerPressurePSI = 1;
+            if (ZeroError(MaxBoilerOutputLBpH, "MaxBoilerOutput"))
+                MaxBoilerOutputLBpH = 1;
+            if (ZeroError(ExhaustLimitLBpH, "ExhaustLimit"))
+                ExhaustLimitLBpH = MaxBoilerOutputLBpH;
+            if (ZeroError(BoilerVolumeFT3, "BoilerVolume"))
+                BoilerVolumeFT3 = 1;
+
+            #region Initialise additional steam properties
+
+            SteamDensityPSItoLBpFT3 = SteamTable.SteamDensityInterpolatorPSItoLBpFT3();
+            WaterDensityPSItoLBpFT3 = SteamTable.WaterDensityInterpolatorPSItoLBpFT3();
+            SteamHeatPSItoBTUpLB = SteamTable.SteamHeatInterpolatorPSItoBTUpLB();
+            WaterHeatPSItoBTUpLB = SteamTable.WaterHeatInterpolatorPSItoBTUpLB();
+            CylinderSteamDensityPSItoLBpFT3 = SteamTable.SteamDensityInterpolatorPSItoLBpFT3();
+            HeatToPressureBTUpLBtoPSI = SteamTable.WaterHeatToPressureInterpolatorBTUpLBtoPSI();
+            PressureToTemperaturePSItoF = SteamTable.PressureToTemperatureInterpolatorPSItoF();
+            Injector09FlowratePSItoUKGpM = SteamTable.Injector09FlowrateInterpolatorPSItoUKGpM();
+            Injector10FlowratePSItoUKGpM = SteamTable.Injector10FlowrateInterpolatorPSItoUKGpM();
+            Injector11FlowratePSItoUKGpM = SteamTable.Injector11FlowrateInterpolatorPSItoUKGpM();
+            Injector13FlowratePSItoUKGpM = SteamTable.Injector13FlowrateInterpolatorPSItoUKGpM();
+            Injector14FlowratePSItoUKGpM = SteamTable.Injector14FlowrateInterpolatorPSItoUKGpM();
+            Injector15FlowratePSItoUKGpM = SteamTable.Injector15FlowrateInterpolatorPSItoUKGpM();
+            InjDelWaterTempMinPressureFtoPSI = SteamTable.InjDelWaterTempMinPressureInterpolatorFtoPSI();
+            InjDelWaterTempMaxPressureFtoPSI = SteamTable.InjDelWaterTempMaxPressureInterpolatorFtoPSI();
+            InjWaterFedSteamPressureFtoPSI = SteamTable.InjWaterFedSteamPressureInterpolatorFtoPSI();
+            InjCapMinFactorX = SteamTable.InjCapMinFactorInterpolatorX();
+            WaterTempFtoPSI = SteamTable.TemperatureToPressureInterpolatorFtoPSI();
+            SpecificHeatKtoKJpKGpK = SteamTable.SpecificHeatInterpolatorKtoKJpKGpK();
+            SaturationPressureKtoPSI = SteamTable.SaturationPressureInterpolatorKtoPSI();
+
+            CylinderCondensationFractionX = SteamTable.CylinderCondensationFractionInterpolatorX();
+            SuperheatTempLimitXtoDegF = SteamTable.SuperheatTempLimitInterpolatorXtoDegF();
+            SuperheatTempLbpHtoDegF = SteamTable.SuperheatTempInterpolatorLbpHtoDegF();
+            InitialPressureDropRatioRpMtoX = SteamTable.InitialPressureDropRatioInterpolatorRpMtoX();
+            CutoffPressureDropRatioRpMtoX = SteamTable.CutoffPressureDropRatioInterpolatorRpMtoX();
+            SteamChestPressureDropRatioRpMtoX = SteamTable.SteamChestPressureDropRatioInterpolatorRpMtoX();
+
+            if (BoilerEfficiencyGrateAreaLBpFT2toX == null)
+            {
+                BoilerEfficiencyGrateAreaLBpFT2toX = SteamTable.BoilerEfficiencyGrateAreaInterpolatorLbstoX();
+                Trace.TraceWarning("BoilerEfficiencyGrateAreaLBpFT2toX not read in ENG file {0} ", BoilerEfficiencyGrateAreaLBpFT2toX[35.0f]);
+            }
+
+            RefillTenderWithCoal();
+            RefillTenderWithWater();
+
+            // Computed Values
+            // Read alternative OR Value for calculation of Ideal Fire Mass
+            if (GrateAreaM2 == 0)  // Calculate Grate Area if not present in ENG file
+            {
+                float MinGrateAreaSizeSqFt = 6.0f;
+                GrateAreaM2 = Me2.FromFt2(((NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM)) * MEPFactor * MaxBoilerPressurePSI) / (Me.ToIn(DriverWheelRadiusM * 2.0f) * GrateAreaDesignFactor));
+                GrateAreaM2 = MathHelper.Clamp(GrateAreaM2, Me2.FromFt2(MinGrateAreaSizeSqFt), GrateAreaM2); // Clamp grate area to a minimum value of 6 sq ft
+                IdealFireMassKG = GrateAreaM2 * Me.FromIn(IdealFireDepthIN) * FuelDensityKGpM3;
+                Trace.TraceWarning("Grate Area not found in ENG file and has been set to {0} m^2", GrateAreaM2); // Advise player that Grate Area is missing from ENG file
+            }
+            else
+                if (LocoIsOilBurner)
+                    IdealFireMassKG = GrateAreaM2 * 720.0f * 0.08333f * 0.02382f * 1.293f;  // Check this formula as conversion factors maybe incorrect, also grate area is now in SqM
+                else
+                    IdealFireMassKG = GrateAreaM2 * Me.FromIn(IdealFireDepthIN) * FuelDensityKGpM3;
+            if (MaxFireMassKG == 0) // If not specified, assume twice as much as ideal. 
+                // Scale FIREBOX control to show FireMassKG as fraction of MaxFireMassKG.
+                MaxFireMassKG = 2 * IdealFireMassKG;
+
+            float baseTempK = C.ToK(C.FromF(PressureToTemperaturePSItoF[MaxBoilerPressurePSI]));
+            if (EvaporationAreaM2 == 0)        // If evaporation Area is not in ENG file then synthesize a value
+            {
+                EvaporationAreaM2 = Me2.FromFt2(((NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM)) * MEPFactor * MaxBoilerPressurePSI) / (Me.ToIn(DriverWheelRadiusM * 2.0f) * EvapAreaDesignFactor));
+                Trace.TraceWarning("Evaporation Area not found in ENG file and has been set to {0} m^2", EvaporationAreaM2); // Advise player that Evaporation Area is missing from ENG file
+            }
+
+            CylinderSteamUsageLBpS = 1.0f;  // Set to 1 to ensure that there are no divide by zero errors
+            WaterFraction = 0.9f;
+
+            if (BoilerEvapRateLbspFt2 == 0) // If boiler evaporation rate is not in ENG file then set a default value
+            {
+                BoilerEvapRateLbspFt2 = 15.0f; // Default rate for evaporation rate. Assume a default rate of 15 lbs/sqft of evaporation area
+            }
+            BoilerEvapRateLbspFt2 = MathHelper.Clamp(BoilerEvapRateLbspFt2, 10.0f, 15.0f); // Clamp BoilerEvap Rate to between 10 & 15
+            TheoreticalMaxSteamOutputLBpS = pS.FrompH(Me2.ToFt2(EvaporationAreaM2) * BoilerEvapRateLbspFt2); // set max boiler theoretical steam output
+
+            float BoilerVolumeCheck = Me2.ToFt2(EvaporationAreaM2) / BoilerVolumeFT3;    //Calculate the Boiler Volume Check value.
+            if (BoilerVolumeCheck > 15) // If boiler volume is not in ENG file or less then a viable figure (ie high ratio figure), then set to a default value
+            {
+                BoilerVolumeFT3 = Me2.ToFt2(EvaporationAreaM2) / 8.3f; // Default rate for evaporation rate. Assume a default ratio of evaporation area * 1/8.3
+                Trace.TraceWarning("Boiler Volume not found in ENG file, or doesn't appear to be a valid figure, and has been set to {0} Ft^3", BoilerVolumeFT3); // Advise player that Boiler Volume is missing from or incorrect in ENG file
+            }
+
+            MaxBoilerHeatPressurePSI = MaxBoilerPressurePSI + SafetyValveStartPSI + 5.0f; // set locomotive maximum boiler pressure to calculate max heat, allow for safety valve + a bit
+            MaxBoilerPressHeatBTU = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[MaxBoilerHeatPressurePSI] * WaterHeatPSItoBTUpLB[MaxBoilerHeatPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[MaxBoilerHeatPressurePSI] * SteamHeatPSItoBTUpLB[MaxBoilerHeatPressurePSI];  // calculate the maximum possible heat in the boiler, assuming safety valve and a small margin
+            MaxBoilerHeatBTU = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[MaxBoilerPressurePSI] * WaterHeatPSItoBTUpLB[MaxBoilerPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[MaxBoilerPressurePSI] * SteamHeatPSItoBTUpLB[MaxBoilerPressurePSI];  // calculate the maximum possible heat in the boiler
+
+            MaxBoilerKW = Kg.FromLb(TheoreticalMaxSteamOutputLBpS) * W.ToKW(W.FromBTUpS(SteamHeatPSItoBTUpLB[MaxBoilerPressurePSI]));
+            MaxFlueTempK = (MaxBoilerKW / (W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2 * HeatMaterialThicknessFactor)) + baseTempK;
+
+            // Determine if Superheater in use
+            if (SuperheatAreaM2 == 0) // If super heating area not specified
+            {
+                if (SuperheaterFactor > 1.0) // check if MSTS value, then set superheating
+                {
+                    HasSuperheater = true;
+                    SuperheatRefTempF = 200.0f; // Assume a superheating temp of 250degF
+                    SuperheatTempRatio = SuperheatRefTempF / SuperheatTempLbpHtoDegF[pS.TopH(TheoreticalMaxSteamOutputLBpS)];
+                }
+                else
+                {
+                    HasSuperheater = false;
+                    SuperheatRefTempF = 0.0f;
+                }
+            }
+            else  // if OR value set then calculate
+            {
+
+                HasSuperheater = true;
+
+                // Calculate superheat steam reference temperature based upon heating area of superheater
+                // SuperTemp = (SuperHeatArea x HeatTransmissionCoeff * (MeanGasTemp - MeanSteamTemp)) / (SteamQuantity * MeanSpecificSteamHeat)
+                // Formula has been simplified as follows: SuperTemp = (SuperHeatArea x FlueTempK x SFactor) / SteamQuantity
+                // SFactor is a "loose reprentation" =  (HeatTransmissionCoeff / MeanSpecificSteamHeat) - Av figure calculate by comparing a number of "known" units for superheat.
+                SuperheatRefTempF = (Me2.ToFt2(SuperheatAreaM2) * C.ToF(C.FromK(MaxFlueTempK)) * SuperheatKFactor) / pS.TopH(TheoreticalMaxSteamOutputLBpS);
+                SuperheatTempRatio = SuperheatRefTempF / SuperheatTempLbpHtoDegF[pS.TopH(TheoreticalMaxSteamOutputLBpS)];    // calculate a ratio figure for known value against reference curve.      
+
+            }
+
+            // Determine whether to start locomotive in Hot or Cold State
+            HotStart = Simulator.Settings.HotStart;
+
+            // Determine whether it is a geared locomotive
+            if (SteamGearRatio > 1.0)
+            {
+                IsGearedSteamLoco = true;    // set flag for geared locomotive
+                MotiveForceGearRatio = SteamGearRatio;
+                // Calculate maximum locomotive speed - based upon the number of revs for the drive shaft, geared to wheel shaft, and then circumference of drive wheel
+                // Max Geared speed = ((MaxPistonSpeed / Gear Ratio) x DrvWheelCircumference) / Feet in mile - miles per min
+                MaxGearedSpeedMpS = pS.FrompM(MaxSteamGearPistonRateRpM / SteamGearRatio * MathHelper.Pi * DriverWheelRadiusM * 2.0f);
+            }
+            else
+            {
+                IsGearedSteamLoco = false;    // set flag for non-geared locomotive
+                MotiveForceGearRatio = 1.0f;  // set gear ratio to default, as not a geared locomotive
+            }
+
+            #endregion
+
+            // Cylinder Steam Usage = Cylinder Volume * Cutoff * No of Cylinder Strokes (based on loco speed, ie, distance travelled in period / Circumference of Drive Wheels)
+            // SweptVolumeToTravelRatioFT3pFT is used to calculate the Cylinder Steam Usage Rate (see below)
+            // SweptVolumeToTravelRatioFT3pFT = strokes_per_cycle * no_of_cylinders * pi*CylRad^2 * stroke_length / 2*pi*WheelRad
+            // "pi"s cancel out
+
+            // Cylinder piston shaft volume needs to be calculated and deducted from sweptvolume - assume diameter of the cylinder minus one-half of the piston-rod area. Let us assume that the latter is 3 square inches
+            CylinderPistonShaftFt3 = Me2.ToFt2(Me2.FromIn2(((float)Math.PI * (CylinderPistonShaftDiaIn / 2.0f) * (CylinderPistonShaftDiaIn / 2.0f)) / 2.0f));
+            CylinderPistonAreaFt2 = Me2.ToFt2(MathHelper.Pi * CylinderDiameterM * CylinderDiameterM / 4.0f);
+            CylinderSweptVolumeFT3pFT = ((CylinderPistonAreaFt2 * Me.ToFt(CylinderStrokeM)) - CylinderPistonShaftFt3);
+
+            // Cylinder Steam Usage	= SweptVolumeToTravelRatioFT3pFT x cutoff x {(speed x (SteamDensity (CylPress) - SteamDensity (CylBackPress)) 
+            // lbs/s                = ft3/ft                                  x   ft/s  x  lbs/ft3
+
+            // The next two tables are the average over a full wheel rotation calculated using numeric integration
+            // they depend on valve geometry and main rod length etc
+            if (ForceFactor1Npcutoff == null)
+            {
+                ForceFactor1Npcutoff = new Interpolator(11);
+                ForceFactor1Npcutoff[.200f] = -.428043f;
+                ForceFactor1Npcutoff[.265f] = -.453624f;
+                ForceFactor1Npcutoff[.330f] = -.479480f;
+                ForceFactor1Npcutoff[.395f] = -.502123f;
+                ForceFactor1Npcutoff[.460f] = -.519346f;
+                ForceFactor1Npcutoff[.525f] = -.535572f;
+                ForceFactor1Npcutoff[.590f] = -.550099f;
+                ForceFactor1Npcutoff[.655f] = -.564719f;
+                ForceFactor1Npcutoff[.720f] = -.579431f;
+                ForceFactor1Npcutoff[.785f] = -.593737f;
+                ForceFactor1Npcutoff[.850f] = -.607703f;
+                ForceFactor1Npcutoff.ScaleY(4.4482f * (float)Math.PI / 4 * 39.372f * 39.372f * NumCylinders * CylinderDiameterM * CylinderDiameterM * CylinderStrokeM / (2 * DriverWheelRadiusM)); // Original formula
+            }
+            if (ForceFactor2Npcutoff == null)
+            {
+                ForceFactor2Npcutoff = new Interpolator(11);
+                ForceFactor2Npcutoff[.200f] = .371714f;
+                ForceFactor2Npcutoff[.265f] = .429217f;
+                ForceFactor2Npcutoff[.330f] = .476195f;
+                ForceFactor2Npcutoff[.395f] = .512149f;
+                ForceFactor2Npcutoff[.460f] = .536852f;
+                ForceFactor2Npcutoff[.525f] = .554344f;
+                ForceFactor2Npcutoff[.590f] = .565618f;
+                ForceFactor2Npcutoff[.655f] = .573383f;
+                ForceFactor2Npcutoff[.720f] = .579257f;
+                ForceFactor2Npcutoff[.785f] = .584714f;
+                ForceFactor2Npcutoff[.850f] = .591967f;
+                ForceFactor2Npcutoff.ScaleY(4.4482f * (float)Math.PI / 4 * 39.372f * 39.372f * NumCylinders * CylinderDiameterM * CylinderDiameterM * CylinderStrokeM / (2 * DriverWheelRadiusM)); // original Formula
+            }
+            if (CylinderPressureDropLBpStoPSI == null)
+            {   // this table is not based on measurements
+                CylinderPressureDropLBpStoPSI = new Interpolator(5);
+                CylinderPressureDropLBpStoPSI[0] = 0;
+                CylinderPressureDropLBpStoPSI[.2f] = 0;
+                CylinderPressureDropLBpStoPSI[.5f] = 2;
+                CylinderPressureDropLBpStoPSI[1] = 10;
+                CylinderPressureDropLBpStoPSI[2] = 20;
+                CylinderPressureDropLBpStoPSI.ScaleX(ExhaustLimitLBpH);
+                CylinderPressureDropLBpStoPSI.ScaleX(1 / 3600f);
+            }
+            if (BackPressureLBpStoPSI == null)
+            {   // this table is not based on measurements
+                BackPressureLBpStoPSI = new Interpolator(3);
+                BackPressureLBpStoPSI[0] = 0;
+                BackPressureLBpStoPSI[1] = 10;
+                BackPressureLBpStoPSI[1.2f] = 30;
+                BackPressureLBpStoPSI.ScaleX(TheoreticalMaxSteamOutputLBpS);
+
+            }
+
+            // This is to model falling boiler efficiency as the combustion increases, based on a "crude" model, to be REDONE?
+            if (BoilerEfficiency == null)
+            {
+                BoilerEfficiency = new Interpolator(4);
+                BoilerEfficiency[0] = .82f;
+                BoilerEfficiency[(1 - .82f) / .35f] = .82f;
+                BoilerEfficiency[(1 - .4f) / .35f] = .4f;
+                BoilerEfficiency[1 / .35f] = .4f;
+            }
+
+            // Based on the EvapArea, this section calculates the maximum boiler output in lbs/s, and also calculates the theoretical burn rate in kg/s to support it.
+            // BurnRate creates a table with an x-axis of steam production in lb/s, and a y-axis calculating the coal burnt to support this production rate in lb/s.
+            BurnRateLBpStoKGpS = new Interpolator(27);
+            for (int i = 0; i < 27; i++)
+            {
+                float x = .1f * i;
+                float y = x;
+                if (y < .02)
+                    y = .02f;
+                else if (y > 2.5f)
+                    y = 2.5f;
+                BurnRateLBpStoKGpS[x] = y / BoilerEfficiency[x]; // To increase burnrate to compensate for a loss of energy, ie this is amount of coal that would need to compensate for the boiler efficiency
+            }
+            float sy = (MaxFlueTempK - baseTempK) * W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2 / HeatMaterialThicknessFactor; // Boiler kWs
+            float sx = sy / (W.ToKW(W.FromBTUpS(SteamHeatPSItoBTUpLB[MaxBoilerPressurePSI])));  // BoilerkW / (SteamHeat- in kJ)?
+            BurnRateLBpStoKGpS.ScaleX(sx);  // Steam in lbs
+            BurnRateLBpStoKGpS.ScaleY(sy / FuelCalorificKJpKG); // Original Formula - FuelBurnt KG = BoilerkW / FuelCalorific - Convert to equivalent kgs of coal
+            BoilerEfficiency.ScaleX(sx); // Boiler Efficiency x axis - Steam in lbs
+            MaxBoilerOutputLBpH = Kg.ToLb(pS.TopH(sx));
+            BurnRateLBpStoKGpS.ScaleY(BurnRateMultiplier);
+
+            // Calculate the maximum boiler heat input based on the steam generation rate
+            MaxBoilerHeatInBTUpS = W.ToBTUpS(W.FromKW(BurnRateLBpStoKGpS[TheoreticalMaxSteamOutputLBpS] * FuelCalorificKJpKG * BoilerEfficiency[TheoreticalMaxSteamOutputLBpS]));
+
+            #region Initialise Locomotive in a Hot or Cold Start Condition
+
+            if (HotStart)
+            {
+                // Hot Start - set so that FlueTemp is at maximum, boilerpressure slightly below max
+                BoilerPressurePSI = MaxBoilerPressurePSI - 5.0f;
+                baseStartTempK = C.ToK(C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]));
+                BoilerStartkW = Kg.FromLb((BoilerPressurePSI / MaxBoilerPressurePSI) * TheoreticalMaxSteamOutputLBpS) * W.ToKW(W.FromBTUpS(SteamHeatPSItoBTUpLB[BoilerPressurePSI])); // Given pressure is slightly less then max, this figure should be slightly less, ie reduce TheoreticalMaxSteamOutputLBpS, for the time being assume a ratio of bp to MaxBP
+                FlueTempK = (BoilerStartkW / (W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2 * HeatMaterialThicknessFactor)) + baseStartTempK;
+                BoilerMassLB = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI];
+                BoilerHeatBTU = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] * WaterHeatPSItoBTUpLB[BoilerPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI] * SteamHeatPSItoBTUpLB[BoilerPressurePSI];
+                StartBoilerHeatBTU = BoilerHeatBTU;
+            }
+            else
+            {
+                // Cold Start - as per current
+                BoilerPressurePSI = MaxBoilerPressurePSI * 0.66f; // Allow for cold start - start at 66% of max boiler pressure - check pressure value given heat in boiler????
+                baseStartTempK = C.ToK(C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]));
+                BoilerStartkW = Kg.FromLb((BoilerPressurePSI / MaxBoilerPressurePSI) * TheoreticalMaxSteamOutputLBpS) * W.ToKW(W.FromBTUpS(SteamHeatPSItoBTUpLB[BoilerPressurePSI]));
+                FlueTempK = (BoilerStartkW / (W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2 * HeatMaterialThicknessFactor)) + baseStartTempK;
+                BoilerMassLB = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI];
+                BoilerHeatBTU = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] * WaterHeatPSItoBTUpLB[BoilerPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI] * SteamHeatPSItoBTUpLB[BoilerPressurePSI];
+            }
+
+            DamperFactorManual = TheoreticalMaxSteamOutputLBpS / SpeedEquivMpS; // Calculate a factor for damper control that will vary with speed.
+            BlowerSteamUsageFactor = .04f * MaxBoilerOutputLBpH / 3600 / MaxBoilerPressurePSI;
+            WaterTempNewK = C.ToK(C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI])); // Initialise new boiler pressure
+            FireMassKG = IdealFireMassKG;
+            if (MaxFiringRateKGpS == 0)
+                MaxFiringRateKGpS = 180 * MaxBoilerOutputLBpH / 775 / 3600 / 2.2046f;
+
+            if (ORTSMaxFiringRateKGpS != 0)
+                MaxFiringRateKGpS = ORTSMaxFiringRateKGpS; // If OR value present then use it 
+
+            // Initialise Mechanical Stoker if present
+            if (Stoker == 1.0f)
+            {
+                StokerIsMechanical = true;
+                MaxFiringRateKGpS = 2 * MaxFiringRateKGpS; // Temp allowance for mechanical stoker
+            }
+            MaxTheoreticalFiringRateKgpS = MaxFiringRateKGpS * 1.2f; // allow the fireman to overfuel for short periods of time 
+            #endregion
+
+            ApplyBoilerPressure();
         }
 
         /// <summary>
