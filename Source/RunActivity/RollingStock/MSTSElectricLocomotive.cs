@@ -75,7 +75,7 @@ namespace ORTS
         /// need to parse the wag file multiple times.
         /// NOTE:  you must initialize all the same variables as you parsed above
         /// </summary>
-        public override void InitializeFromCopy(MSTSWagon copy)
+        public override void Copy(MSTSWagon copy)
         {
             // for example
             //CabSoundFileName = locoCopy.CabSoundFileName;
@@ -85,7 +85,7 @@ namespace ORTS
             VoltageFilter = locoCopy.VoltageFilter;
             VoltageV = locoCopy.VoltageV;
 
-            base.InitializeFromCopy(copy);  // each derived level initializes its own variables
+            base.Copy(copy);  // each derived level initializes its own variables
         }
 
         /// <summary>

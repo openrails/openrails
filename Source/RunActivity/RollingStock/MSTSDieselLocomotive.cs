@@ -164,7 +164,7 @@ namespace ORTS
         /// need to parse the wag file multiple times.
         /// NOTE:  you must initialize all the same variables as you parsed above
         /// </summary>
-        public override void InitializeFromCopy(MSTSWagon copy)
+        public override void Copy(MSTSWagon copy)
         {
             MSTSDieselLocomotive locoCopy = (MSTSDieselLocomotive)copy;
             EngineRPM = locoCopy.EngineRPM;
@@ -194,8 +194,7 @@ namespace ORTS
 
             DieselEngines = new DieselEngines(locoCopy.DieselEngines, this);
 
-            Initialize();
-            base.InitializeFromCopy(copy);  // each derived level initializes its own variables
+            base.Copy(copy);  // each derived level initializes its own variables
         }
 
         /// <summary>
@@ -403,7 +402,9 @@ namespace ORTS
             MaxMagnitude = DieselEngines[0].MaxMagnitude;
             ExhaustColor = DieselEngines[0].ExhaustColor;
 
-            if (PowerOn = DieselEngines.PowerOn)
+            PowerOn = DieselEngines.PowerOn;
+
+            if (PowerOn)
             {
                 if (TractiveForceCurves == null)
                 {
@@ -683,11 +684,11 @@ namespace ORTS
                 EngineRPMold = EngineRPM;
             }
 
-            if ((MainResPressurePSI < CompressorRestartPressurePSI) && (!CompressorIsOn) && (PowerOn))
+            if (MainResPressurePSI < CompressorRestartPressurePSI && PowerOn && !CompressorIsOn)
                 SignalEvent(Event.CompressorOn);
-            else if (MainResPressurePSI > MaxMainResPressurePSI && CompressorIsOn)
+            else if ((MainResPressurePSI > MaxMainResPressurePSI || !PowerOn) && CompressorIsOn)
                 SignalEvent(Event.CompressorOff);
-            if ((CompressorIsOn)&&(PowerOn))
+            if (CompressorIsOn)
                 MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
             
             if (Train.TrainType == Train.TRAINTYPE.PLAYER && this.IsLeadLocomotive())

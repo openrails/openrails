@@ -206,28 +206,21 @@ namespace ORTS
             LocomotiveAxle.FilterMovingAverage.Size = Simulator.Settings.AdhesionMovingAverageFilterSize;
             CurrentFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.5f), 0.001f);
             AdhesionFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.1f), 0.001f);
+
+            TrainBrakeController = new ScriptedBrakeController(this);
+            EngineBrakeController = new ScriptedBrakeController(this);
+            ThrottleController = new MSTSNotchController();
+            DynamicBrakeController = new MSTSNotchController();
+            TrainControlSystem = new ScriptedTrainControlSystem(this);
         }
 
         /// <summary>
         /// This initializer is called when we haven't loaded this type of car before
         /// and must read it new from the wag file.
         /// </summary>
-        public override void InitializeFromWagFile(string wagFilePath)
+        public override void LoadFromWagFile(string wagFilePath)
         {
-            TrainBrakeController = new ScriptedBrakeController(this);
-            EngineBrakeController = new ScriptedBrakeController(this);
-            DynamicBrakeController = new MSTSNotchController();
-            TrainControlSystem = new ScriptedTrainControlSystem(this);
-
-            base.InitializeFromWagFile(wagFilePath);
-
-            TrainBrakeController.Initialize();
-            EngineBrakeController.Initialize();
-
-            if (VigilanceMonitor)
-            {
-                TrainControlSystem.Initialize();
-            }
+            base.LoadFromWagFile(wagFilePath);
 
             // Assumes that CabViewList[0] is the front cab
             // and that CabViewList[1] is the rear cab, if present.
@@ -242,6 +235,7 @@ namespace ORTS
                         Path.GetDirectoryName(CVFFileName), // Some CVF paths begin with "..\..\", so Path.GetDirectoryName() is needed.
                         Path.GetFileNameWithoutExtension(CVFFileName) + "_rv.cvf"
                     );
+
                     {
                         cabView = BuildCabView(WagFilePath, reverseCVFFileName, CabViewType.Rear);
                         if (cabView != null)
@@ -545,7 +539,7 @@ namespace ORTS
         /// loaded in memory.  We use this one to speed up loading by eliminating the
         /// need to parse the wag file multiple times.
         /// </summary>
-        public override void InitializeFromCopy(MSTSWagon copy)
+        public override void Copy(MSTSWagon copy)
         {
             MSTSLocomotive locoCopy = (MSTSLocomotive)copy;
             CabSoundFileName = locoCopy.CabSoundFileName;
@@ -586,9 +580,7 @@ namespace ORTS
             DynamicBrakeController = locoCopy.DynamicBrakeController != null ? (MSTSNotchController)locoCopy.DynamicBrakeController.Clone() : null;
             TrainControlSystem = locoCopy.TrainControlSystem != null ? locoCopy.TrainControlSystem.Clone(this) : null;
 
-            Initialize();
-
-            base.InitializeFromCopy(copy);  // each derived level initializes its own variables
+            base.Copy(copy);  // each derived level initializes its own variables
         }
 
         /// <summary>
@@ -611,6 +603,7 @@ namespace ORTS
             ControllerFactory.Save(TrainBrakeController, outf);
             ControllerFactory.Save(EngineBrakeController, outf);
             ControllerFactory.Save(DynamicBrakeController, outf);
+
             base.Save(outf);
         }
 
@@ -708,6 +701,10 @@ namespace ORTS
         /// </summary>
         public override void Initialize()
         {
+            TrainBrakeController.Initialize();
+            EngineBrakeController.Initialize();
+            TrainControlSystem.Initialize();
+
             base.Initialize();
         }
 
@@ -719,6 +716,8 @@ namespace ORTS
         /// </summary>
         public override void Update(float elapsedClockSeconds)
         {
+            TrainControlSystem.Update();
+
             TrainBrakeController.Update(elapsedClockSeconds);
             if (TrainBrakeController.UpdateValue > 0.0)
             {
@@ -877,7 +876,6 @@ namespace ORTS
 #else
             if (Train.TrainType == Train.TRAINTYPE.PLAYER) // for player locomotives
             {
-
                 if (this.IsLeadLocomotive())
                 {
                     switch (Direction)
@@ -951,7 +949,7 @@ namespace ORTS
                 case Train.TRAINTYPE.AI:
                     if (!PowerOn)
                     {
-                        SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
+                        Train.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
                     }
                     //LimitMotiveForce(elapsedClockSeconds);    //calls the advanced physics
                     LimitMotiveForce();                         //let's call the basic physics instead for now
@@ -988,15 +986,12 @@ namespace ORTS
                     break;
 
             }
-            if ((MainResPressurePSI < CompressorRestartPressurePSI) && (!CompressorIsOn) && (PowerOn))
+            if (MainResPressurePSI < CompressorRestartPressurePSI && PowerOn && !CompressorIsOn)
                 SignalEvent(Event.CompressorOn);
-            else if (MainResPressurePSI > MaxMainResPressurePSI && CompressorIsOn)
+            else if ((MainResPressurePSI > MaxMainResPressurePSI || !PowerOn) && CompressorIsOn)
                 SignalEvent(Event.CompressorOff);
             if (CompressorIsOn)
                 MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
-
-            if (Train.TrainType == Train.TRAINTYPE.PLAYER && this.IsLeadLocomotive())
-                TrainControlSystem.Update();
 
             PrevMotiveForceN = MotiveForceN;
             base.Update(elapsedClockSeconds);

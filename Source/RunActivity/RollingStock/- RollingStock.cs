@@ -26,7 +26,7 @@ namespace ORTS
 {
     public static class RollingStock
     {
-        public static TrainCar Load(Simulator simulator, string wagFilePath)
+        public static TrainCar Load(Simulator simulator, string wagFilePath, bool initialize = true)
         {
             GenericWAGFile wagFile = SharedGenericWAGFileManager.Get(wagFilePath);  
             TrainCar car;
@@ -66,9 +66,21 @@ namespace ORTS
                     case "electric": car = new MSTSElectricLocomotive(simulator, wagFilePath); break;
                     case "steam": car = new MSTSSteamLocomotive(simulator, wagFilePath); break;
                     case "diesel": car = new MSTSDieselLocomotive(simulator, wagFilePath); break;
-					default: throw new InvalidDataException(wagFilePath + "\r\n\r\nUnknown engine type: " + wagFile.Engine.Type);
+                    default: throw new InvalidDataException(wagFilePath + "\r\n\r\nUnknown engine type: " + wagFile.Engine.Type);
                 }
             }
+
+            MSTSWagon wagon = car as MSTSWagon;
+            if (car != null)
+            {
+                wagon.Load();
+
+                if (initialize)
+                {
+                    wagon.Initialize();
+                }
+            }
+
             return car;
         }
 
@@ -81,12 +93,12 @@ namespace ORTS
 
         public static TrainCar Restore(Simulator simulator, BinaryReader inf, Train train)
         {
-            TrainCar car = Load(simulator, inf.ReadString());
+            TrainCar car = Load(simulator, inf.ReadString(), false);
             car.Train = train;
             car.Restore(inf);
+            car.Initialize();
             return car;
         }
-
 
         /// <summary>
         /// Utility class to avoid loading multiple copies of the same file.

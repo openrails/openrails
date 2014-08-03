@@ -144,15 +144,18 @@ namespace ORTS
             : base(simulator, wagFilePath)
         {
             Pantographs = new Pantographs(this);
+        }
 
-            if (CarManager.LoadedCars.ContainsKey(wagFilePath))
+        public void Load()
+        {
+            if (CarManager.LoadedCars.ContainsKey(WagFilePath))
             {
-                InitializeFromCopy(CarManager.LoadedCars[wagFilePath]);
+                Copy(CarManager.LoadedCars[WagFilePath]);
             }
             else
             {
-                InitializeFromWagFile(wagFilePath);
-                CarManager.LoadedCars.Add(wagFilePath, this);
+                LoadFromWagFile(WagFilePath);
+                CarManager.LoadedCars.Add(WagFilePath, this);
             }
         }
 
@@ -160,13 +163,14 @@ namespace ORTS
         /// This initializer is called when we haven't loaded this type of car before
         /// and must read it new from the wag file.
         /// </summary>
-        public virtual void InitializeFromWagFile(string wagFilePath)
+        public virtual void LoadFromWagFile(string wagFilePath)
         {
             string dir = Path.GetDirectoryName(wagFilePath);
             string file = Path.GetFileName(wagFilePath);
             string orFile = dir + @"\openrails\" + file;
             if (File.Exists(orFile))
                 wagFilePath = orFile;
+
             using (STFReader stf = new STFReader(wagFilePath, true))
             {
                 while (!stf.Eof)
@@ -178,8 +182,6 @@ namespace ORTS
             
             if (BrakeSystem == null)
                 BrakeSystem = new AirSinglePipe(this);
-            
-            Initialize();
         }
 
         public override void Initialize()
@@ -353,7 +355,7 @@ namespace ORTS
         /// 
         /// IMPORTANT NOTE:  everything you initialized in parse, must be initialized here
         /// </summary>
-        public virtual void InitializeFromCopy(MSTSWagon copy)
+        public virtual void Copy(MSTSWagon copy)
         {
             MainShapeFileName = copy.MainShapeFileName;
             IsFreight = copy.IsFreight;
@@ -421,7 +423,6 @@ namespace ORTS
             Pantographs.Copy(copy.Pantographs);
 
             MSTSBrakeSystem.InitializeFromCopy(copy.BrakeSystem);
-            base.Initialize();
         }
 
         private void ParseWagonInside(STFReader stf)

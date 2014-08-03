@@ -742,7 +742,7 @@ namespace ORTS
         /// need to parse the wag file multiple times.
         /// NOTE:  you must initialize all the same variables as you parsed above
         /// </summary>
-        public override void InitializeFromCopy(MSTSWagon copy)
+        public override void Copy(MSTSWagon copy)
         {
             MSTSSteamLocomotive locoCopy = (MSTSSteamLocomotive)copy;
             NumCylinders = locoCopy.NumCylinders;
@@ -786,7 +786,8 @@ namespace ORTS
             DrvWheelWeightKg = locoCopy.DrvWheelWeightKg;
             SteamGearRatio = locoCopy.SteamGearRatio;
             MaxSteamGearPistonRateRpM = locoCopy.MaxSteamGearPistonRateRpM;
-            base.InitializeFromCopy(copy);  // each derived level initializes its own variables
+
+            base.Copy(copy);  // each derived level initializes its own variables
         }
 
         /// <summary>

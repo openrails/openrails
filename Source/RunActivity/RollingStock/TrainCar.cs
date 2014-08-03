@@ -632,7 +632,6 @@ namespace ORTS
             _PrevSpeedMpS = SpeedMpS;
             CouplerSlackM = inf.ReadSingle();
             Headlight = inf.ReadInt32();
-            Initialize();
         }
 
         public bool HasFrontCab { get
