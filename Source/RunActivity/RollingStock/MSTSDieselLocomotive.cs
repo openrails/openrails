@@ -90,7 +90,6 @@ namespace ORTS
             : base(simulator, wagFile)
         {
             PowerOn = true;
-            InitialMassKg = MassKG;
             RefillImmediately();
         }
 
@@ -128,34 +127,11 @@ namespace ORTS
             }
         }
 
-        public override void Initialize()
+        public override void LoadFromWagFile(string wagFilePath)
         {
-            if (DieselEngines.Count == 0)
-            {
-                DieselEngines.Add(new DieselEngine());
-                DieselEngines[0].InitFromMSTS(this);
-            }
+            base.LoadFromWagFile(wagFilePath);
 
-            if ((GearBox != null) && (GearBoxController == null))
-            {
-                if (!GearBox.IsInitialized)
-                    GearBox = null;
-                else
-                {
-                    foreach (DieselEngine de in DieselEngines)
-                    {
-                        if (de.GearBox == null)
-                            de.GearBox = new GearBox(GearBox, de);
-                        //if (this.Train.TrainType == Train.TRAINTYPE.AI)
-                        //    de.GearBox.GearBoxOperation = GearBoxOperation.Automatic;
-                    }
-                    GearBoxController = new MSTSNotchController(DieselEngines[0].GearBox.NumOfGears + 1);
-                }
-            }
-
-            DieselEngines.Initialize(true);
-
-            base.Initialize();
+            InitialMassKg = MassKG;
         }
 
         /// <summary>
@@ -195,6 +171,36 @@ namespace ORTS
             DieselEngines = new DieselEngines(locoCopy.DieselEngines, this);
 
             base.Copy(copy);  // each derived level initializes its own variables
+        }
+
+        public override void Initialize()
+        {
+            if (DieselEngines.Count == 0)
+            {
+                DieselEngines.Add(new DieselEngine());
+                DieselEngines[0].InitFromMSTS(this);
+            }
+
+            if ((GearBox != null) && (GearBoxController == null))
+            {
+                if (!GearBox.IsInitialized)
+                    GearBox = null;
+                else
+                {
+                    foreach (DieselEngine de in DieselEngines)
+                    {
+                        if (de.GearBox == null)
+                            de.GearBox = new GearBox(GearBox, de);
+                        //if (this.Train.TrainType == Train.TRAINTYPE.AI)
+                        //    de.GearBox.GearBoxOperation = GearBoxOperation.Automatic;
+                    }
+                    GearBoxController = new MSTSNotchController(DieselEngines[0].GearBox.NumOfGears + 1);
+                }
+            }
+
+            DieselEngines.Initialize(true);
+
+            base.Initialize();
         }
 
         /// <summary>
