@@ -606,6 +606,8 @@ namespace MSTS.Formats
                 {
                     case TokenID.uv_op_copy: Add(new uv_op_copy(subBlock)); break;
                     case TokenID.uv_op_reflectmapfull: Add(new uv_op_reflectmapfull(subBlock)); break;
+                    case TokenID.uv_op_uniformscale: this.Add(new uv_op_uniformscale(subBlock)); break;
+                    case TokenID.uv_op_nonuniformscale: this.Add(new uv_op_nonuniformscale(subBlock)); break;
                     default: throw new System.Exception("Unexpected uv_op: " + subBlock.ID.ToString());
                 }
             }
@@ -640,6 +642,41 @@ namespace MSTS.Formats
             block.VerifyID(TokenID.uv_op_reflectmapfull);
             TexAddrMode = block.ReadInt();
             block.VerifyEndOfBlock();
+        }
+    }
+
+    public class uv_op_uniformscale : uv_op
+    {
+        public int SrcUVIdx;
+        public float UnknownParameter3;
+        public float UnknownParameter4;
+
+        public uv_op_uniformscale(SBR block)
+        {
+            block.VerifyID(TokenID.uv_op_uniformscale);
+            TexAddrMode = block.ReadInt();
+            SrcUVIdx = block.ReadInt();
+            UnknownParameter3 = block.ReadFloat();
+            block.VerifyEndOfBlock();
+            block.TraceInformation(String.Format("{0} was treated as uv_op_copy", block.ID.ToString()));
+        }
+    }
+
+    public class uv_op_nonuniformscale : uv_op
+    {
+        public int SrcUVIdx;
+        public float UnknownParameter3;
+        public float UnknownParameter4;
+
+        public uv_op_nonuniformscale(SBR block)
+        {
+            block.VerifyID(TokenID.uv_op_nonuniformscale);
+            TexAddrMode = block.ReadInt();
+            SrcUVIdx = block.ReadInt();
+            UnknownParameter3 = block.ReadFloat();
+            UnknownParameter4 = block.ReadFloat();
+            block.VerifyEndOfBlock();
+            block.TraceInformation(String.Format("{0} was treated as uv_op_copy", block.ID.ToString()));
         }
     }
 
