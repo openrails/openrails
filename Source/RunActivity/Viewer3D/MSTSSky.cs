@@ -17,22 +17,23 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using ORTS.Common;
-using ORTS.Processes;
-using ORTS.Settings;
 using System;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using ORTS.Processes;
+using ORTS.Settings;
+using ORTS.Common;
 
 namespace ORTS.Viewer3D
 {
-    #region MSTSSkyConstants
-    static class MSTSSkyConstants
+    #region MSTSSkyVariables
+    public class MSTSSkyConstants
     {
         // Sky dome constants
-        public const int skyRadius = 6000;
-        public const int skySides = 24;
+        public static int skyRadius = 6000;  //MSTS radius from .env file  Todo:  Pull from .env file.
+        public const int skySides = 24;  //MSTS doesn't specify this, but we still need it.
+        public static int skyHeight; //Todo:  Pull from .env file.
         public static bool IsNight = false;
     }
 
@@ -50,7 +51,7 @@ namespace ORTS.Viewer3D
         WorldLatLon mstsskyworldLoc; // Access to latitude and longitude calcs (MSTS routes only)
         SunMoonPos MSTSSkyVectors;
 
-		int mstsskyseasonType; //still need to remember it as MP now can change it.
+        int mstsskyseasonType; //still need to remember it as MP now can change it.
         #region Class variables
         // Latitude of current route in radians. -pi/2 = south pole, 0 = equator, pi/2 = north pole.
         // Longitude of current route in radians. -pi = west of prime, 0 = prime, pi = east of prime.
@@ -58,7 +59,7 @@ namespace ORTS.Viewer3D
         // Date of activity
 
         public ORTS.Viewer3D.SkyViewer.Date date;
-  
+
         // Size of the sun- and moon-position lookup table arrays.
         // Must be an integral divisor of 1440 (which is the number of minutes in a day).
         private int maxSteps = 72;
@@ -93,7 +94,7 @@ namespace ORTS.Viewer3D
             MSTSSkyViewer = viewer;
             MSTSSkyMaterial = viewer.MaterialManager.Load("MSTSSky");
             // Instantiate classes
-            MSTSSkyMesh = new MSTSSkyMesh( MSTSSkyViewer.RenderProcess);
+            MSTSSkyMesh = new MSTSSkyMesh(MSTSSkyViewer.RenderProcess);
             MSTSSkyVectors = new SunMoonPos();
 
             //viewer.World.MSTSSky.MSTSSkyMaterial.Viewer.MaterialManager.sunDirection.Y < 0
@@ -107,7 +108,7 @@ namespace ORTS.Viewer3D
             // Default wind speed and direction
             mstsskywindSpeed = 5.0f; // m/s (approx 11 mph)
             mstsskywindDirection = 4.7f; // radians (approx 270 deg, i.e. westerly)
-       }
+        }
         #endregion
 
         /// <summary>
@@ -115,17 +116,17 @@ namespace ORTS.Viewer3D
         /// </summary>
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-			if (mstsskyseasonType != (int)MSTSSkyViewer.Simulator.Season)
-			{
-				mstsskyseasonType = (int)MSTSSkyViewer.Simulator.Season;
-				date.ordinalDate = 82 + mstsskyseasonType * 91;
-				// TODO: Set the following three externally from ORTS route files (future)
-				date.month = 1 + date.ordinalDate / 30;
-				date.day = 21;
-				date.year = 2010;
-			}
+            if (mstsskyseasonType != (int)MSTSSkyViewer.Simulator.Season)
+            {
+                mstsskyseasonType = (int)MSTSSkyViewer.Simulator.Season;
+                date.ordinalDate = 82 + mstsskyseasonType * 91;
+                // TODO: Set the following three externally from ORTS route files (future)
+                date.month = 1 + date.ordinalDate / 30;
+                date.day = 21;
+                date.year = 2010;
+            }
             // Adjust dome position so the bottom edge is not visible
-			Vector3 ViewerXNAPosition = new Vector3(MSTSSkyViewer.Camera.Location.X, MSTSSkyViewer.Camera.Location.Y - 100, -MSTSSkyViewer.Camera.Location.Z);
+            Vector3 ViewerXNAPosition = new Vector3(MSTSSkyViewer.Camera.Location.X, MSTSSkyViewer.Camera.Location.Y - 100, -MSTSSkyViewer.Camera.Location.Z);
             Matrix XNASkyWorldLocation = Matrix.CreateTranslation(ViewerXNAPosition);
 
             if (mstsskyworldLoc == null)
@@ -154,13 +155,13 @@ namespace ORTS.Viewer3D
                 mstsskyfogDistance = MSTSSkyViewer.World.WeatherControl.fogDistance;
             }
 
-			if (MultiPlayer.MPManager.IsClient() && MultiPlayer.MPManager.Instance().weatherChanged)
-			{
-				//received message about weather change
-				if ( MultiPlayer.MPManager.Instance().overcastFactor >= 0)
-				{
-					mstsskyovercastFactor = MultiPlayer.MPManager.Instance().overcastFactor;
-				}
+            if (MultiPlayer.MPManager.IsClient() && MultiPlayer.MPManager.Instance().weatherChanged)
+            {
+                //received message about weather change
+                if (MultiPlayer.MPManager.Instance().overcastFactor >= 0)
+                {
+                    mstsskyovercastFactor = MultiPlayer.MPManager.Instance().overcastFactor;
+                }
                 //received message about weather change
                 if (MultiPlayer.MPManager.Instance().fogDistance > 0)
                 {
@@ -168,18 +169,18 @@ namespace ORTS.Viewer3D
                 }
                 try
                 {
-                    if (MultiPlayer.MPManager.Instance().overcastFactor >= 0 || MultiPlayer.MPManager.Instance().fogDistance > 0) 
+                    if (MultiPlayer.MPManager.Instance().overcastFactor >= 0 || MultiPlayer.MPManager.Instance().fogDistance > 0)
                     {
                         MultiPlayer.MPManager.Instance().weatherChanged = false;
-                        MultiPlayer.MPManager.Instance().overcastFactor = -1 ;
-                        MultiPlayer.MPManager.Instance().fogDistance = -1 ;
+                        MultiPlayer.MPManager.Instance().overcastFactor = -1;
+                        MultiPlayer.MPManager.Instance().fogDistance = -1;
                     }
                 }
                 catch { }
 
             }
 
-////////////////////// T E M P O R A R Y ///////////////////////////
+            ////////////////////// T E M P O R A R Y ///////////////////////////
 
             // The following keyboard commands are used for viewing sky and weather effects in "demo" mode.
             // Control- and Control+ for overcast, Shift- and Shift+ for fog and - and + for time.
@@ -211,7 +212,7 @@ namespace ORTS.Viewer3D
                 }
             }
 
-////////////////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////
 
             // Current solar and lunar position are calculated by interpolation in the lookup arrays.
             // Using the Lerp() function, so need to calculate the in-between differential
@@ -247,7 +248,7 @@ namespace ORTS.Viewer3D
                     step2 = maxSteps - 1;
                 }
             }
-            
+
 
             mstsskysolarDirection.X = MathHelper.Lerp(mstsskysolarPosArray[step1].X, mstsskysolarPosArray[step2].X, diff);
             mstsskysolarDirection.Y = MathHelper.Lerp(mstsskysolarPosArray[step1].Y, mstsskysolarPosArray[step2].Y, diff);
@@ -256,10 +257,10 @@ namespace ORTS.Viewer3D
             mstsskylunarDirection.Y = MathHelper.Lerp(mstsskylunarPosArray[step1].Y, mstsskylunarPosArray[step2].Y, diff);
             mstsskylunarDirection.Z = MathHelper.Lerp(mstsskylunarPosArray[step1].Z, mstsskylunarPosArray[step2].Z, diff);
 
-            if (mstsskysolarDirection.Y < -0.09f )
+            if (mstsskysolarDirection.Y < -0.09f)
             {
                 MSTSSkyConstants.IsNight = true;
-                MSTSSkyMesh.ResetMSTSSkyMesh(MSTSSkyViewer.RenderProcess);              
+                MSTSSkyMesh.ResetMSTSSkyMesh(MSTSSkyViewer.RenderProcess);
             }
             else
             {
@@ -278,7 +279,7 @@ namespace ORTS.Viewer3D
     #endregion
 
     #region MSTSSkyMesh
-    public class MSTSSkyMesh: RenderPrimitive 
+    public class MSTSSkyMesh : RenderPrimitive
     {
         private VertexBuffer MSTSSkyVertexBuffer;
         private static VertexDeclaration MSTSSkyVertexDeclaration;
@@ -290,9 +291,8 @@ namespace ORTS.Viewer3D
         private static short[] triangleListIndices; // Trilist buffer.
 
         // Sky dome geometry is based on two global variables: the radius and the number of sides
-        public int mstsskyRadius = MSTSSkyConstants.skyRadius;
+        public int mstsskyRadius;// = MSTSSkyConstants.skyRadius;
         private static int mstsskySides = MSTSSkyConstants.skySides;
-        public int mstscloudDomeRadiusDiff = 600; // Amount by which cloud dome radius is smaller than sky dome
         // skyLevels: Used for iterating vertically through the "levels" of the hemisphere polygon
         private static int mstsskyLevels = ((MSTSSkyConstants.skySides / 4) - 1);
         // Number of vertices in the sky hemisphere. (each dome = 145 for 24-sided sky dome: 24 x 6 + 1)
@@ -310,10 +310,10 @@ namespace ORTS.Viewer3D
         public MSTSSkyMesh(RenderProcess renderProcess)
         {
             var tileFactor = 1;
-            if ( MSTSSkyConstants.IsNight == true) 
-                    tileFactor = 8;
-                else
-                    tileFactor = 1;
+            if (MSTSSkyConstants.IsNight == true)
+                tileFactor = 8;
+            else
+                tileFactor = 1;
             // Initialize the vertex and point-index buffers
             vertexList = new VertexPositionNormalTexture[numVertices];
             triangleListIndices = new short[indexCount];
@@ -328,7 +328,7 @@ namespace ORTS.Viewer3D
             MoonLists(numVertices - 5, indexCount - 6);//(144, 792);
             // Meshes have now been assembled, so put everything into vertex and index buffers
             InitializeVertexBuffers(renderProcess.GraphicsDevice);
-            
+
         }
         public void ResetMSTSSkyMesh(RenderProcess renderProcess)
         {
@@ -381,13 +381,13 @@ namespace ORTS.Viewer3D
                     2);
                     break;
                 //case 3: // Clouds Dome
-                    //graphicsDevice.DrawIndexedPrimitives(
-                        //PrimitiveType.TriangleList, 0,
-                        //(numVertices - 4) / 2,
-                        //(numVertices - 4) / 2,
-                        //(indexCount - 6) / 2,
-                        //(indexCount - 6) / 6);
-                    //break;
+                //graphicsDevice.DrawIndexedPrimitives(
+                //PrimitiveType.TriangleList, 0,
+                //(numVertices - 4) / 2,
+                //(numVertices - 4) / 2,
+                //(indexCount - 6) / 2,
+                //(indexCount - 6) / 6);
+                //break;
                 default:
                     break;
             }
@@ -421,7 +421,7 @@ namespace ORTS.Viewer3D
 
                     // Store the position, texture coordinates and normal (normalized position vector) for the current vertex
                     vertexList[vertexIndex].Position = new Vector3(x, y, z);
-                    vertexList[vertexIndex].TextureCoordinate = new Vector2(uv_u * texturetiling , uv_v * texturetiling);  ///MSTS Sky is tiled, need to add that in.
+                    vertexList[vertexIndex].TextureCoordinate = new Vector2(uv_u * texturetiling, uv_v * texturetiling);  ///MSTS Sky is tiled, need to add that in.
                     vertexList[vertexIndex].Normal = Vector3.Normalize(new Vector3(x, y, z));
                     vertexIndex++;
                 }
@@ -563,7 +563,7 @@ namespace ORTS.Viewer3D
         IEnumerator<EffectPass> ShaderPassesMoon;
         //IEnumerator<EffectPass> ShaderPassesClouds;
 
-        
+
 
         public MSTSSkyMaterial(Viewer viewer)
             : base(viewer, null)
@@ -650,28 +650,32 @@ namespace ORTS.Viewer3D
             var rs = graphicsDevice.RenderState;
             rs.DepthBufferWriteEnable = false;
 
-            MSTSSkyShader.CurrentTechnique = MSTSSkyShader.Techniques["Sky"];
-            Viewer.World.MSTSSky.MSTSSkyMesh.drawIndex = 1;
-
-            Matrix viewXNASkyProj = XNAViewMatrix * Camera.XNASkyProjection;
-
-            MSTSSkyShader.SetViewMatrix(ref XNAViewMatrix);
-            MSTSSkyShader.Begin();
-            ShaderPassesSky.Reset();
-            while (ShaderPassesSky.MoveNext())
+            for (int i = 0; i < Viewer.ENVFile.SkyLayers.Count; i++)
             {
-                ShaderPassesSky.Current.Begin();
-                foreach (var item in renderItems)
-                {
-                    Matrix wvp = item.XNAMatrix * viewXNASkyProj;
-                    MSTSSkyShader.SetMatrix(ref wvp);
-                    MSTSSkyShader.CommitChanges();
-                    item.RenderPrimitive.Draw(graphicsDevice);
-                }
-                ShaderPassesSky.Current.End();
-            }
-            MSTSSkyShader.End();
+                MSTSSkyShader.CurrentTechnique = MSTSSkyShader.Techniques["Sky"];
+                Viewer.World.MSTSSky.MSTSSkyMesh.drawIndex = 1;
 
+                Viewer.World.MSTSSky.MSTSSkyMesh.mstsskyRadius = Viewer.ENVFile.SkyLayers[i]._edge_radius;
+
+                Matrix viewXNASkyProj = XNAViewMatrix * Camera.XNASkyProjection;
+
+                MSTSSkyShader.SetViewMatrix(ref XNAViewMatrix);
+                MSTSSkyShader.Begin();
+                ShaderPassesSky.Reset();
+                while (ShaderPassesSky.MoveNext())
+                {
+                    ShaderPassesSky.Current.Begin();
+                    foreach (var item in renderItems)
+                    {
+                        Matrix wvp = item.XNAMatrix * viewXNASkyProj;
+                        MSTSSkyShader.SetMatrix(ref wvp);
+                        MSTSSkyShader.CommitChanges();
+                        item.RenderPrimitive.Draw(graphicsDevice);
+                    }
+                    ShaderPassesSky.Current.End();
+                }
+                MSTSSkyShader.End();
+            }
             // Moon
             MSTSSkyShader.CurrentTechnique = MSTSSkyShader.Techniques["Moon"];
             Viewer.World.MSTSSky.MSTSSkyMesh.drawIndex = 2;

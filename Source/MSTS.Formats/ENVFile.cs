@@ -119,21 +119,20 @@ namespace MSTS.Formats
 
         public string TextureName;
         public string TextureMode;
-        public int _top_nfaces;
-        public int _top_radius;
-        public int _top_height;
+        public int _edge_radius;
+        public int _edge_height;
 
         public ENVFileSkyLayer(STFReader stf)
         {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                    new STFReader.TokenProcessor("world_sky_layer_top", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
-                        new STFReader.TokenProcessor("world_sky_layer_top_nfaces", ()=>{ stf.MustMatch("("); _top_nfaces = stf.ReadInt(null);  stf.ParseBlock(new STFReader.TokenProcessor[] {
+                    new STFReader.TokenProcessor("world_sky_layer_edge", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
+                    new STFReader.TokenProcessor("world_sky_layer_edge_steps", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
+                        new STFReader.TokenProcessor("world_sky_layer_edge_step_height", ()=>{ stf.MustMatch("("); _edge_height = stf.ReadInt(null);  stf.ParseBlock(new STFReader.TokenProcessor[] {
                             });}),
-                        new STFReader.TokenProcessor("world_sky_layer_top_radius", ()=>{ stf.MustMatch("("); _top_radius = stf.ReadInt(null);  stf.ParseBlock(new STFReader.TokenProcessor[] {
+                        new STFReader.TokenProcessor("world_sky_layer_edge_step_radius", ()=>{ stf.MustMatch("("); _edge_radius = stf.ReadInt(null);  stf.ParseBlock(new STFReader.TokenProcessor[] {
                             });}),
-                        new STFReader.TokenProcessor("world_sky_layer_top_height", ()=>{ stf.MustMatch("("); _top_height = stf.ReadInt(null);  stf.ParseBlock(new STFReader.TokenProcessor[] {
-                            });}),
+                    });}),
                     });}),
                         new STFReader.TokenProcessor("world_anim_shader", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
                         new STFReader.TokenProcessor("world_shader", ()=>{ stf.MustMatch("("); TextureMode = stf.ReadString(); stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -144,7 +143,7 @@ namespace MSTS.Formats
                             });}),
                     });}),
                 });
-                                
+
         }
     }
     public class ENVFileSkySatellite
