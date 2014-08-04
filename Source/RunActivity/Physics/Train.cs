@@ -2219,10 +2219,11 @@ namespace ORTS
                             {
                                 speedLimit = new ActivateSpeedLimit(reqDistance, -1f, firstObject.actual_speed);
                             }
-                            else
+                            else if (Simulator.TimetableMode || !Simulator.Settings.EnhancedActCompatibility || firstObject.speed_reset == 0)
                             {
                                 speedLimit = new ActivateSpeedLimit(reqDistance, firstObject.actual_speed, -1f);
                             }
+                            else speedLimit = new ActivateSpeedLimit(reqDistance, firstObject.actual_speed, firstObject.actual_speed);
                             requiredActions.InsertAction(speedLimit);
                             requiredActions.UpdatePendingSpeedlimits(firstObject.actual_speed);  // update any older pending speed limits
                         }
@@ -2723,7 +2724,7 @@ namespace ORTS
                             }
                         }
                     }
-                    else if (actualSpeedMpS < 0)
+                    else if (actualSpeedMpS < 0 && thisObject.speed_reset == 0)
                     {
                         validSpeedLimitMpS = (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;
                         float newSpeedMpS1 = Math.Min(validSpeedSignalMpS, validSpeedLimitMpS);
@@ -2736,6 +2737,10 @@ namespace ORTS
                         {
                             actualSpeedMpS = -1;
                         }
+                    }
+                    else if (thisObject.speed_reset == 1)
+                    {
+                        actualSpeedMpS = validSpeedLimitMpS;
                     }
 
                     thisObject.actual_speed = actualSpeedMpS;
