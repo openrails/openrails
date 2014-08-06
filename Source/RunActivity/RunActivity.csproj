@@ -84,7 +84,7 @@
     <Compile Include="Common\WorldLatLon.cs" />
     <Compile Include="Common\Scripting\BrakeController.cs" />
     <Compile Include="Common\Scripting\Common.cs" />
-    <Compile Include="Common\Scripting\Scripting.cs" />
+    <Compile Include="Common\Scripting\ScriptManager.cs" />
     <Compile Include="Common\Scripting\TrainControlSystem.cs" />
     <Compile Include="Common\Scripting\PowerSupply\AbstractPowerSupply.cs" />
     <Compile Include="Debugging\DebugViewerForm.cs">
