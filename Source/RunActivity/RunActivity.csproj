@@ -79,10 +79,10 @@
     <Compile Include="Common\Interpolator.cs" />
     <Compile Include="Common\Math.cs" />
     <Compile Include="Common\ORTSPaths.cs" />
-    <Compile Include="Common\Scripting.cs" />
     <Compile Include="Common\SteamTable.cs" />
     <Compile Include="Common\SunMoonPos.cs" />
     <Compile Include="Common\WorldLatLon.cs" />
+    <Compile Include="Common\Scripting\Scripting.cs" />
     <Compile Include="Debugging\DebugViewerForm.cs">
       <SubType>Form</SubType>
     </Compile>
