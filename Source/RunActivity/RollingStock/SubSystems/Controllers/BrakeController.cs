@@ -53,15 +53,15 @@ namespace ORTS
             }
             set
             {
-                if (Script != null)
+                if (Simulator.Confirmer != null)
                 {
                     if (value && !emergencyBrakingPushButton && !tcsEmergencyBraking)
                         Simulator.Confirmer.Confirm(CabControl.EmergencyBrake, CabSetting.On);
                     else if (!value && emergencyBrakingPushButton && !tcsEmergencyBraking)
                         Simulator.Confirmer.Confirm(CabControl.EmergencyBrake, CabSetting.Off);
-
-                    emergencyBrakingPushButton = value;
                 }
+
+                emergencyBrakingPushButton = value;
             }
         }
         public bool TCSEmergencyBraking
@@ -72,15 +72,15 @@ namespace ORTS
             }
             set
             {
-                if (Script != null)
+                if (Simulator.Confirmer != null)
                 {
                     if (value && !emergencyBrakingPushButton && !tcsEmergencyBraking)
                         Simulator.Confirmer.Confirm(CabControl.EmergencyBrake, CabSetting.On);
                     else if (!value && !emergencyBrakingPushButton && tcsEmergencyBraking)
                         Simulator.Confirmer.Confirm(CabControl.EmergencyBrake, CabSetting.Off);
-
-                    tcsEmergencyBraking = value;
                 }
+
+                tcsEmergencyBraking = value;
             }
         }
         public bool TCSFullServiceBraking
@@ -91,8 +91,11 @@ namespace ORTS
             }
             set
             {
-                if (value && !tcsFullServiceBraking)
-                    Simulator.Confirmer.Confirm(CabControl.TrainBrake, CabSetting.On);
+                if (Simulator.Confirmer != null)
+                {
+                    if (value && !tcsFullServiceBraking)
+                        Simulator.Confirmer.Confirm(CabControl.TrainBrake, CabSetting.On);
+                }
 
                 tcsFullServiceBraking = value;
             }
@@ -330,6 +333,14 @@ namespace ORTS
         {
             if (Script != null)
                 Script.HandleEvent(evt, value);
+            else
+            {
+                if (evt == BrakeControllerEvent.SetCurrentValue && value != null)
+                {
+                    float newValue = value ?? 0F;
+                    CurrentValue = newValue;
+                }
+            }
         }
 
         public void StartIncrease()
@@ -423,11 +434,19 @@ namespace ORTS
             outf.Write((int)ControllerTypes.BrakeController);
 
             outf.Write(CurrentValue);
+
+            outf.Write(EmergencyBrakingPushButton);
+            outf.Write(TCSEmergencyBraking);
+            outf.Write(TCSFullServiceBraking);
         }
 
         public void Restore(BinaryReader inf)
         {
             SendEvent(BrakeControllerEvent.SetCurrentValue, inf.ReadSingle());
+
+            EmergencyBrakingPushButton = inf.ReadBoolean();
+            TCSEmergencyBraking = inf.ReadBoolean();
+            TCSFullServiceBraking = inf.ReadBoolean();
         }
     }
 }
