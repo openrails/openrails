@@ -28,13 +28,8 @@ namespace ORTS.Viewer3D.RollingStock
 {
     public class MSTSSteamLocomotiveViewer : MSTSLocomotiveViewer
     {
-        const float LBToKG = 0.45359237f;
-        const float SteamVaporDensityAt100DegC1BarM3pKG = 1.694f;
         float Throttlepercent;
         float Color_Value;
-        float Pulse_Rate = 1.0f;
-        float pulse = 0.25f;
-        float old_Distance_Travelled = 0.0f;
 
         MSTSSteamLocomotive SteamLocomotive { get { return (MSTSSteamLocomotive)Car; } }
         List<ParticleEmitterViewer> Cylinders = new List<ParticleEmitterViewer>();
@@ -65,8 +60,6 @@ namespace ORTS.Viewer3D.RollingStock
                 foreach (var drawer in emitter.Value)
                     drawer.Initialize(steamTexture);
             }
-
-            Pulse_Rate = (MathHelper.Pi * SteamLocomotive.DriverWheelRadiusM);
         }
 
         /// <summary>
@@ -244,62 +237,26 @@ namespace ORTS.Viewer3D.RollingStock
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             var car = Car as MSTSSteamLocomotive;
-            var steamUsageLBpS = car.CylinderSteamUsageLBpS + car.BlowerSteamUsageLBpS + car.BasicSteamUsageLBpS + (car.SafetyIsOn ? car.SafetyValveUsageLBpS : 0);
-            var cockSteamUsageLBps = car.CylCockSteamUsageLBpS;
-            var safetySteamUsageLBps = car.SafetyValveUsageLBpS;
-            var steamVolumeM3pS = Kg.FromLb(steamUsageLBpS) * SteamVaporDensityAt100DegC1BarM3pKG;
-            var cocksVolumeM3pS = Kg.FromLb(cockSteamUsageLBps) * SteamVaporDensityAt100DegC1BarM3pKG;
-            var safetyVolumeM3pS = Kg.FromLb(safetySteamUsageLBps) * SteamVaporDensityAt100DegC1BarM3pKG;
 
             foreach (var drawer in Cylinders)
-                drawer.SetOutput(car.CylinderCocksAreOpen ? cocksVolumeM3pS : 0);
+                drawer.SetOutput(5, car.CylindersSteamVolumeM3pS * 10);
 
             foreach (var drawer in Drainpipe)
-                drawer.SetOutput(0);
+                drawer.SetOutput(0, 0);
 
             foreach (var drawer in SafetyValves)
-                drawer.SetOutput(car.SafetyIsOn ? safetyVolumeM3pS : 0);
+                drawer.SetOutput(car.CylindersSteamVelocityMpS, car.SafetyValvesSteamVolumeM3pS);
 
             Throttlepercent = car.ThrottlePercent > 0 ? car.ThrottlePercent / 10f : 0f;
 
             foreach (var drawer in Stack)
             {
-                if (car.Direction == Direction.Forward)
-                {
-                    if (pulse == 0.25f)
-                        if (Viewer.PlayerTrain.DistanceTravelledM > old_Distance_Travelled + (Pulse_Rate / 4))
-                        {
-                            pulse = 1.0f;
-                        }
-                    if (pulse == 1.0f)
-                        if (Viewer.PlayerTrain.DistanceTravelledM > old_Distance_Travelled + Pulse_Rate)
-                        {
-                            pulse = 0.25f;
-                            old_Distance_Travelled = Viewer.PlayerTrain.DistanceTravelledM;
-                        }
-                }
-                if (car.Direction == Direction.Reverse)
-                {
-                    if (pulse == 0.25f)
-                        if (Viewer.PlayerTrain.DistanceTravelledM < old_Distance_Travelled - (Pulse_Rate / 4))
-                        {
-                            pulse = 1.0f;
-                        }
-                    if (pulse == 1.0f)
-                        if (Viewer.PlayerTrain.DistanceTravelledM < old_Distance_Travelled - Pulse_Rate)
-                        {
-                            pulse = 0.25f;
-                            old_Distance_Travelled = Viewer.PlayerTrain.DistanceTravelledM;
-                        }
-                }
                 Color_Value = car.Smoke.SmoothedValue;
-
-                drawer.SetOutput((steamVolumeM3pS * pulse) + car.FireRatio, (Throttlepercent + car.FireRatio), (new Color(Color_Value, Color_Value, Color_Value)));
-
+                drawer.SetOutput(car.StackSteamVelocityMpS.SmoothedValue, car.StackSteamVolumeM3pS / Stack.Count + car.FireRatio, Throttlepercent + car.FireRatio, new Color(Color_Value, Color_Value, Color_Value));
             }
 
             foreach (var drawer in Whistle)
-                drawer.SetOutput(car.Horn ? 1 : 0);
+                drawer.SetOutput(5, (car.Horn ? 5 : 0));
 
             base.PrepareFrame(frame, elapsedTime);
         }

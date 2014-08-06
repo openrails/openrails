@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
 "POT-Creation-Date: 2014-07-13 12:04:31+0200\n"
-"PO-Revision-Date: 2014-07-28 21:21+0100\n"
+"PO-Revision-Date: 2014-08-03 21:53+0100\n"
 "Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: hu\n"
@@ -709,7 +709,7 @@ msgstr "Jobboldali gőzsugárszivattyú"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:155
 msgid "Blower"
-msgstr "Füstszekrény-fúvóka"
+msgstr "Segédfúvó"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:155
 #: ../../RunActivity/Simulator/Confirmation.cs:158
@@ -727,7 +727,7 @@ msgstr "növelés"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:156
 msgid "Damper"
-msgstr "Légbefúvó"
+msgstr "Légcsappantyú"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:157
 msgid "Firebox Door"

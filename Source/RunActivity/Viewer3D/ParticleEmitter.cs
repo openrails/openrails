@@ -61,8 +61,8 @@ namespace ORTS.Viewer3D
     public class ParticleEmitterViewer
     {
         public const float VolumeScale = 1f / 100;
-        public const float Rate = 10;
-        public const float DecelerationTime = 0.5f;
+        public const float Rate = 0.1f;
+        public const float DecelerationTime = 0.2f;
         public const float InitialSpreadRate = 1;
         public const float SpreadRate = 0.75f;
         public const float DurationVariation = 0.5f; // Duration varies +/-50%
@@ -99,7 +99,7 @@ namespace ORTS.Viewer3D
         public void SetOutput(float volumeM3pS)
         {
             // TODO: The values here are out by a factor of 100 here it seems. The XNAInitialVelocity should need no multiplication or division factors.
-            Emitter.ParticlesPerSecond = volumeM3pS / EmissionHoleM2 * VolumeScale * Rate;
+            Emitter.ParticlesPerSecond = volumeM3pS / EmissionHoleM2 * Rate;
             Emitter.XNAInitialVelocity = Emitter.EmitterData.XNADirection * volumeM3pS / EmissionHoleM2 * VolumeScale;
 #if DEBUG_EMITTER_INPUT
             if (InputCycle == 0)
@@ -116,6 +116,24 @@ namespace ORTS.Viewer3D
 #if DEBUG_EMITTER_INPUT
             if (InputCycle == 0)
                 Trace.TraceInformation("Emitter{0}({1:F6}m^3) D={2,3}s", EmitterID, EmissionHoleM2, durationS);
+#endif
+        }
+
+        public void SetOutput(float initialVelocityMpS, float volumeM3pS)
+        {
+            Emitter.XNAInitialVelocity = Emitter.EmitterData.XNADirection * initialVelocityMpS;
+            Emitter.ParticlesPerSecond = volumeM3pS / EmissionHoleM2 * Rate;
+        }
+
+        public void SetOutput(float initialVelocityMpS, float volumeM3pS, float durationS, Color particleColor)
+        {
+            SetOutput(initialVelocityMpS, volumeM3pS);
+            Emitter.ParticleDuration = durationS;
+            Emitter.ParticleColor = particleColor;
+
+#if DEBUG_EMITTER_INPUT
+            if (InputCycle == 0)
+                Trace.TraceInformation("Emitter{0}(v={1:F6}m/s V={2,7:F3}m^3/s) {3,7:F3}m^2 D={4,3}s", EmitterID, initialVelocityMpS, volumeM3pS, EmissionHoleM2, durationS);
 #endif
         }
 

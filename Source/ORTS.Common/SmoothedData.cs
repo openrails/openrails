@@ -41,7 +41,11 @@ namespace ORTS.Common
         public void Update(float periodS, float newValue)
         {
             if (periodS < float.Epsilon)
+            {
+                if (float.IsNaN(smoothedValue) || float.IsInfinity(smoothedValue))
+                    smoothedValue = newValue;
                 return;
+            }
 
             value = newValue;
             SmoothValue(ref smoothedValue, periodS, newValue);

@@ -201,7 +201,8 @@ namespace ORTS
         float BackPressurePSI;
 
   #region Additional steam properties
-        const float SpecificHeatCoalKJpKGpK = 1.26f; // specific heat of coal - Kj/kg Kelvin
+        const float SpecificHeatCoalKJpKGpK = 1.26f; // specific heat of coal - kJ/kg/K
+        const float SteamVaporSpecVolumeAt100DegC1BarM3pKG = 1.696f;
         float WaterHeatBTUpFT3;             // Water heat in btu/ft3
         bool FusiblePlugIsBlown = false;    // Fusible plug blown, due to lack of water in the boiler
         bool LocoIsOilBurner = false;       // Used to identify if loco is oil burner
@@ -230,6 +231,7 @@ namespace ORTS
         public float CylCockSteamUsageLBpS = 0.0f; // Cylinder Cock Steam Usage
         float CylCockDiaIN = 0.5f;          // Steam Cylinder Cock orifice size
         float CylCockPressReduceFactor;     // Factor to reduce cylinder pressure by if cocks open
+        const float WaterDensityAt100DegC1BarKGpM3 = 954.8f;
 
         // Air Compressor Characteristics - assume 9.5in x 10in Compressor operating at 120 strokes per min.          
         float CompCylDiaIN = 9.5f;
@@ -352,6 +354,16 @@ namespace ORTS
         float MotiveForceGearRatio; // mulitplication factor to be used in calculating motive force etc, when a geared locomotive.    
 
   #endregion 
+
+  #region Variables for visual effects (steam, smoke)
+
+        public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(10);
+        public float StackSteamVolumeM3pS;
+        public float CylindersSteamVelocityMpS;
+        public float CylindersSteamVolumeM3pS;
+        public float SafetyValvesSteamVolumeM3pS;
+
+  #endregion
 
         public MSTSSteamLocomotive(Simulator simulator, string wagFile)
             : base(simulator, wagFile)
@@ -875,6 +887,7 @@ namespace ORTS
             PowerOn = true;
             UpdateControllers(elapsedClockSeconds);
             base.Update(elapsedClockSeconds);
+            UpdateFX(elapsedClockSeconds);
 
 #if INDIVIDUAL_CONTROL
 			//this train is remote controlled, with mine as a helper, so I need to send the controlling information, but not the force.
@@ -901,25 +914,6 @@ namespace ORTS
 					Train.MUDirection = Direction.Reverse;
 			}
 #endif 
-            // Variable1 is proportional to angular speed, value of 10 means 1 rotation/second.
-            Variable1 = (Simulator.UseAdvancedAdhesion ? LocomotiveAxle.AxleSpeedMpS : SpeedMpS) / DriverWheelRadiusM / MathHelper.Pi * 5;
-            Variable2 = Math.Min(CylinderPressurePSI / MaxBoilerPressurePSI * 100f, 100f);
-            Variable3 = FiringIsManual ? FiringRateController.CurrentValue * 100 : FuelRateSmooth * 100;
-
-            const int rotations = 2;
-            const int fullLoop = 10 * rotations;
-            int numPulses = NumCylinders * 2 * rotations;
-
-            PulseTracker += Variable1 / fullLoop * numPulses * elapsedClockSeconds;
-
-            if (PulseTracker > NextPulse)
-            {
-                SignalEvent((Event)((int)Event.SteamPulse1 + NextPulse - 1));
-                PulseTracker %= numPulses;
-                NextPulse %= numPulses;
-                NextPulse++;
-            }
-
             throttle = ThrottlePercent / 100;
             cutoff = Math.Abs(Train.MUReverserPercent / 100);
             if (cutoff > ForceFactor2Npcutoff.MaxX())
@@ -952,6 +946,40 @@ namespace ORTS
             UpdateInjectors(elapsedClockSeconds);
             UpdateFiring(absSpeedMpS);
             #endregion
+        }
+
+        /// <summary>
+        /// Update variables related to audiovisual effects (sound, steam)
+        /// </summary>
+        private void UpdateFX(float elapsedClockSeconds)
+        {
+            // Bernoulli equations
+            StackSteamVelocityMpS.Update(elapsedClockSeconds, (float)Math.Sqrt(KPa.FromPSI(BackPressurePSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3));
+            CylindersSteamVelocityMpS = (float)Math.Sqrt(KPa.FromPSI(CylinderPressurePSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3);
+
+            StackSteamVolumeM3pS = Kg.FromLb(CylinderSteamUsageLBpS + BlowerSteamUsageLBpS + BasicSteamUsageLBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG;
+            CylindersSteamVolumeM3pS = (CylinderCocksAreOpen ? Kg.FromLb(CylCockSteamUsageLBpS) / NumCylinders * SteamVaporSpecVolumeAt100DegC1BarM3pKG : 0);
+            SafetyValvesSteamVolumeM3pS = SafetyIsOn ? Kg.FromLb(SafetyValveUsageLBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG : 0;
+
+            // Variable1 is proportional to angular speed, value of 10 means 1 rotation/second.
+            Variable1 = (Simulator.UseAdvancedAdhesion ? LocomotiveAxle.AxleSpeedMpS : SpeedMpS) / DriverWheelRadiusM / MathHelper.Pi * 5;
+            Variable2 = Math.Min(CylinderPressurePSI / MaxBoilerPressurePSI * 100f, 100f);
+            Variable3 = FiringIsManual ? FiringRateController.CurrentValue * 100 : FuelRateSmooth * 100;
+
+            const int rotations = 2;
+            const int fullLoop = 10 * rotations;
+            int numPulses = NumCylinders * 2 * rotations;
+
+            var dPulseTracker = Variable1 / fullLoop * numPulses * elapsedClockSeconds;
+            PulseTracker += dPulseTracker;
+
+            if (PulseTracker > (float)NextPulse - dPulseTracker / 2)
+            {
+                SignalEvent((Event)((int)Event.SteamPulse1 + NextPulse - 1));
+                PulseTracker %= numPulses;
+                NextPulse %= numPulses;
+                NextPulse++;
+            }
         }
 
         private void UpdateControllers(float elapsedClockSeconds)
@@ -1123,29 +1151,15 @@ namespace ORTS
             
             FireRatio = FireMassKG / IdealFireMassKG;
             if (absSpeedMpS == 0)
-            {
                 BurnRateRawLBpS *= FireRatio * 0.2f; // reduce background burnrate if stationary
-                // <CJComment> Correct version commented out. Needs fixing. </CJComment>
-                //BurnRateSmoothLBpS.Update(elapsedClockSeconds, BurnRateRawLBpS);
-                BurnRateSmoothLBpS.Update(0.1f, BurnRateRawLBpS); // Smooth the burn rate
-                FuelBurnRateLBpS = BurnRateSmoothLBpS.SmoothedValue;
-            }
             else if (FireRatio < 1.0f)  // maximise burnrate when FireMass = IdealFireMass, else allow a reduction in efficiency
-            {
                 BurnRateRawLBpS *= FireRatio;
-                // <CJComment> Correct version commented out. Needs fixing. </CJComment>
-                //BurnRateSmoothLBpS.Update(elapsedClockSeconds, BurnRateRawLBpS);
-                BurnRateSmoothLBpS.Update(0.1f, BurnRateRawLBpS); // Smooth the burn rate
-                FuelBurnRateLBpS = BurnRateSmoothLBpS.SmoothedValue;
-            }
             else
-            {
                 BurnRateRawLBpS *= 2 - FireRatio;
-                // <CJComment> Correct version commented out. Needs fixing. </CJComment>
-                //BurnRateSmoothLBpS.Update(elapsedClockSeconds, BurnRateRawLBpS); // Smooth the burn rate
-                BurnRateSmoothLBpS.Update(0.1f, BurnRateRawLBpS); // Smooth the burn rate
-                FuelBurnRateLBpS = BurnRateSmoothLBpS.SmoothedValue;
-            }
+            // <CJComment> Correct version commented out. Needs fixing. </CJComment>
+            //BurnRateSmoothLBpS.Update(elapsedClockSeconds, BurnRateRawLBpS);
+            BurnRateSmoothLBpS.Update(0.1f, BurnRateRawLBpS); // Smooth the burn rate
+            FuelBurnRateLBpS = BurnRateSmoothLBpS.SmoothedValue;
             FuelBurnRateLBpS = MathHelper.Clamp(FuelBurnRateLBpS, 0, MaxFireMassKG); // clamp burnrate to maintain it within limits
 
             if (FiringIsManual)
