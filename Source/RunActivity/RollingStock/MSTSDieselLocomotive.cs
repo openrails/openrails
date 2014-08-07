@@ -142,6 +142,8 @@ namespace ORTS
         /// </summary>
         public override void Copy(MSTSWagon copy)
         {
+            base.Copy(copy);  // each derived level initializes its own variables
+
             MSTSDieselLocomotive locoCopy = (MSTSDieselLocomotive)copy;
             EngineRPM = locoCopy.EngineRPM;
             IdleRPM = locoCopy.IdleRPM;
@@ -169,8 +171,6 @@ namespace ORTS
                 GearBoxController = new MSTSNotchController(locoCopy.GearBoxController);
 
             DieselEngines = new DieselEngines(locoCopy.DieselEngines, this);
-
-            base.Copy(copy);  // each derived level initializes its own variables
         }
 
         public override void Initialize()

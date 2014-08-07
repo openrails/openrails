@@ -541,6 +541,8 @@ namespace ORTS
         /// </summary>
         public override void Copy(MSTSWagon copy)
         {
+            base.Copy(copy);  // each derived level initializes its own variables
+
             MSTSLocomotive locoCopy = (MSTSLocomotive)copy;
             CabSoundFileName = locoCopy.CabSoundFileName;
             CVFFileName = locoCopy.CVFFileName;
@@ -579,8 +581,6 @@ namespace ORTS
             EngineBrakeController = locoCopy.EngineBrakeController != null ? locoCopy.EngineBrakeController.Clone(this) : null;
             DynamicBrakeController = locoCopy.DynamicBrakeController != null ? (MSTSNotchController)locoCopy.DynamicBrakeController.Clone() : null;
             TrainControlSystem = locoCopy.TrainControlSystem != null ? locoCopy.TrainControlSystem.Clone(this) : null;
-
-            base.Copy(copy);  // each derived level initializes its own variables
         }
 
         /// <summary>

@@ -507,6 +507,8 @@ namespace ORTS
         /// </summary>
         public override void Save(BinaryWriter outf)
         {
+            base.Save(outf);
+
             outf.Write(BoilerHeatOutBTUpS);
             outf.Write(BoilerHeatInBTUpS); 
             outf.Write(TenderCoalMassLB);
@@ -526,7 +528,6 @@ namespace ORTS
             ControllerFactory.Save(DamperController, outf);
             ControllerFactory.Save(FireboxDoorController, outf);
             ControllerFactory.Save(FiringRateController, outf);
-            base.Save(outf);
         }
 
         /// <summary>

@@ -77,6 +77,8 @@ namespace ORTS
         /// </summary>
         public override void Copy(MSTSWagon copy)
         {
+            base.Copy(copy);  // each derived level initializes its own variables
+
             // for example
             //CabSoundFileName = locoCopy.CabSoundFileName;
             //CVFFileName = locoCopy.CVFFileName;
@@ -84,8 +86,6 @@ namespace ORTS
 
             VoltageFilter = locoCopy.VoltageFilter;
             VoltageV = locoCopy.VoltageV;
-
-            base.Copy(copy);  // each derived level initializes its own variables
         }
 
         /// <summary>
