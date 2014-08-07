@@ -790,8 +790,6 @@ namespace ORTS
             foreach (var p in Parts)
                 Console.WriteLine("  part:  matrix {1,5:F0}  offset {0,10:F4}  weight {2,5:F0}", p.OffsetM, p.iMatrix, p.SumWgt);
 #endif
-
-
             bool articulatedFront = !WheelAxles.Any(a => a.OffsetM < 0);
             bool articulatedRear = !WheelAxles.Any(a => a.OffsetM > 0);
 
@@ -804,12 +802,6 @@ namespace ORTS
                     WheelAxles.Add(new WheelAxle(part.OffsetM, part.iMatrix, 0));
                 Trace.TraceInformation("Wheel axle data faked based on {1} bogies for {0}", WagFilePath, Parts.Count - 1);
             }
-            // Less that two axles is bad.
-            //if (WheelAxles.Count < 2)
-            //{
-            //    Trace.TraceWarning("Car has less than two axles in {0}", WagFilePath);
-            //    return;
-            //}
             // No parts means no bogies (always?), so make sure we've got Parts[0] for the car itself.
             if (Parts.Count == 0)
                 Parts.Add(new TrainCarPart(0, 0));
@@ -818,11 +810,14 @@ namespace ORTS
             {
                 foreach (var w in WheelAxles)
                 {
+                    if (!articulatedFront && !articulatedRear && Parts[0].SumWgt < 1.5)
+                        if (w.BogieIndex >= Parts.Count - 1)
+                            w.BogieIndex = 0;
                     if (w.BogieIndex >= Parts.Count)
                         w.BogieIndex = 0;
                     if (w.BogieMatrix > 0)
                     {
-                        for (var i = 0; i < Parts.Count; i++)
+                        for (var i = 0; i < Parts.Count - 1; i++)
                             if (Parts[i].iMatrix == w.BogieMatrix)
                             {
                                 w.BogieIndex = i;
@@ -836,32 +831,27 @@ namespace ORTS
                 // Attempting to sort car w/o WheelAxles will resort to an error.
                 WheelAxles.Sort(WheelAxles[0]);
             }
-            // Make sure the axles are sorted by OffsetM along the car.
-           // Count up the number of bogies (parts) with at least 2 axles.
+            // Count up the number of bogies (parts) with at least 2 axles.
             for (var i = 1; i < Parts.Count; i++)
                 if (Parts[i].SumWgt > 1.5)
                     Parts[0].SumWgt++;
             // Check for articulation and if we have enough wheels.
-            //bool articulatedFront = !WheelAxles.Any(a => a.OffsetM < 0);
-            //bool articulatedRear = !WheelAxles.Any(a => a.OffsetM > 0);
             //var carIndex = Train.Cars.IndexOf(this);
-            if (!articulatedFront && !articulatedRear && (Parts[0].SumWgt < 1.5))
-            {
-                // Not articulated, but not enough wheels/bogies attached to the car.
-                Trace.TraceWarning("Car with less than two axles/bogies ({1} axles, {2} bogies) in {0}", WagFilePath, WheelAxles.Count, Parts.Count - 1);
-                // Put all the axles directly on the car, ignoring any bogies.
-                foreach (WheelAxle w in WheelAxles)
-                {
-                    w.BogieIndex = 0;
-                    w.Part = Parts[0];
-                }
-            }
+            //if (!articulatedFront && !articulatedRear && (Parts[0].SumWgt < 1.5))
+            //{
+            //    // Not articulated, but not enough wheels/bogies attached to the car.
+            //    Trace.TraceWarning("Car with less than two axles/bogies ({1} axles, {2} bogies) in {0}", WagFilePath, WheelAxles.Count, Parts.Count - 1);
+            //    // Put all the axles directly on the car, ignoring any bogies.
+            //    foreach (WheelAxle w in WheelAxles)
+            //    {
+            //        w.BogieIndex = 0;
+            //        w.Part = Parts[0];
+            //    }
+            //}
             // Using WheelAxles.Count test to control WheelAxlesLoaded flag.
-            // CHECK MUST BE > 2 FOR ARTICULATED STOCK TO WORK PROPERLY !!!!!
             if (WheelAxles.Count > 2)
-            {
                 WheelAxlesLoaded = true;
-            }
+            
                                                                                  
 #if DEBUG_WHEELS
             Console.WriteLine(WagFilePath);
@@ -875,8 +865,6 @@ namespace ORTS
             // Decided to control what is sent to SetUpWheelsArticulation()by using
             // WheelAxlesLoaded as a flag.  This way, wagons that have to be processed are included
             // and the rest left out.
-            //bool articulatedFront = !WheelAxles.Any(a => a.OffsetM < 0);
-            //bool articulatedRear = !WheelAxles.Any(a => a.OffsetM > 0);
             var carIndex = Train.Cars.IndexOf(this);
             if (Train != null)
                 foreach (var car in Train.Cars)
