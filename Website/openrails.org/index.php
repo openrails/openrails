@@ -36,7 +36,7 @@
 $file = 'setup_OR_pre-v1.0_from_download.exe';
 $exe = 'exe';
 $file_path = "../../files";
-echo "<a href='download/program/download.php?filepath=$file_path&file=$file&ext=$exe' class='btn download_button'><span class='glyphicon glyphicon-download'></span> &nbsp; Download OR installer ";echo date('d-M-Y', filemtime($file_path/$file));         
+echo "<a href='download/program/download.php?filepath=$file_path&file=$file&ext=$exe' class='btn download_button'><span class='glyphicon glyphicon-download'></span> &nbsp; Download OR installer ";echo date('d-M-Y', filemtime("files/$file"));
 //echo "<a href='$file_path/$file' class='btn download_button'><span class='glyphicon glyphicon-download'></span> &nbsp; Download OR installer ";echo date('d-M-Y', filemtime($file_path/$file));         
 ?>
               </a>
