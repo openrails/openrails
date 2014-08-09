@@ -65,15 +65,10 @@ echo 'Date: ' . date('d-M-Y', filemtime("$file_path/$file")) . '&nbsp; &nbsp; &n
       </div>
 			<div class="col-md-6">
         <h2>Recent Code Changes</h2>
-        <p>&nbsp;</p>
-        <p><!-- Could use  http://bazaar.launchpad.net/~twpol/or/trunk/changes  instead -->
-          <a href='http://openrails.azurewebsites.net/code/revisions' target='_blank'>Click to open in new tab/window</a>
-        </p>
-        <div class="iframe_wrap">
-          <iframe class='iframe_scale' src='http://openrails.azurewebsites.net/code/revisions'>
-          </iframe>
-        </div>
-        <br>
+		<ul>
+			<?php include "../../scripts/experimental_changelog1.html" ?>
+		</ul>
+		<p><a href='../changes/'>See more code changes</a></p>
         <h2>Installation Guides</h2>
   <ul>
     <li><a href="/files/installation_guide_en.pdf">Installation Guide (English)</a></li>
