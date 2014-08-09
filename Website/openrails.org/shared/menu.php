@@ -40,6 +40,7 @@ if (ends_with($cwd, "open_rails_project")
 <?php 
 if (ends_with($cwd, "program") 
 || ends_with($cwd, "source")
+|| ends_with($cwd, "changes")
 || ends_with($cwd, "content")) 
   { echo "<li class='active dropdown'>"; }else{ echo "<li class='dropdown'>"; }
 ?>
