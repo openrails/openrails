@@ -54,6 +54,7 @@ using ORTS.MultiPlayer;
 using ORTS.Scripting.Api;
 using ORTS.Viewer3D;
 using ORTS.Viewer3D.Popups;
+using ORTS.Settings;
 using GNU.Gettext;
 
 namespace ORTS
@@ -10019,7 +10020,14 @@ namespace ORTS
                 thisStation.arrivalDT = arrivalDT;
                 thisStation.departureDT = departureDT;
 
-                StationStops.Add(thisStation);
+                if (Simulator.Settings.EnhancedActCompatibility)
+                {
+                    MergeWPAndInsert(activeSubroute, thisStation, thisElement, beginOffset, endOffset);
+                }
+                else
+                {
+                    StationStops.Add(thisStation);
+                }
 
                 // add signal to list of hold signals
 
@@ -10070,6 +10078,24 @@ namespace ORTS
 #endif
 
             return (true);
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Add the station stop after removing all WP between Begin and end offset
+        /// <\summary>
+        
+        public void MergeWPAndInsert(int activeSubroute, StationStop thisStation, TCRouteElement thisElement, float beginOffset, float endOffset)
+        {
+            for (int idxElt = 0; idxElt < TCRoute.WaitingPoints.Count; idxElt++)
+            {
+                var element = TCRoute.WaitingPoints[idxElt];
+                if (element[2] == thisElement.TCSectionIndex && element[5] >= beginOffset)
+                {
+                    int i = 0;
+                }
+            }
+            StationStops.Add(thisStation);
         }
 
         //================================================================================================//
@@ -10298,10 +10324,143 @@ namespace ORTS
         }
 
         //================================================================================================//
+
         /// <summary>
         /// Create status line
         /// <\summary>
-
+        /// <remarks>
+        ///  "Train", "Travelled", "Speed", "Max", "AI mode", "AI data", "Mode", "Auth", "Distance", "Signal", "Distance", "Consist", "Path"
+        ///  0   Train: Number with trailing type (F freight, P Passenger)
+        ///  1   Travelled: travelled distance so far
+        ///  2   Speed: Current speed
+        ///  3   Max: Maximum allowed speed
+        ///  4   AIMode :
+        ///      INI     : AI is in INIT mode
+        ///      STC     : AI is static
+        ///      STP     : AI is Stopped
+        ///      BRK     : AI Brakes
+        ///      ACC     : AI do acceleration
+        ///      FOL     : AI follows
+        ///      RUN     : AI is running
+        ///      EOP     : AI approch and of path
+        ///      STA     : AI is on Station Stop
+        ///      WTP     : AI is on Waiting Point
+        ///  5   AI Data :
+        ///      000&000     : Throttel & Brake in %
+        ///                  : for mode INI, BRK, ACC, FOL, RUN or EOP
+        ///      HH:mm:ss    : for mode STA or WTP with actualDepart or DepartTime
+        ///                  : for mode STC with Start Time Value
+        ///      ..:..:..    : For other case
+        ///  6   Mode:
+        ///          SIGN or Sdelay: Train in AUTO_SIGNAL, with delay if train delayed
+        ///          NODE or Ndelay: Train in AUTO_NODE, with delay if train delayed
+        ///          MAN: Train in AUTO_MANUAL
+        ///          OOC: Train in OUT_OF_CONTROL
+        ///          EXP: Train in EXPLORER
+        ///  7   Auth + Distance:    For Player Train
+        ///          case OOC:   Distance set to blank
+        ///              SPAD:   Signal Passed At Danger
+        ///              RSPD:   Rear SPAD
+        ///              OOAU:   Out Of Authority
+        ///              OOPA:   Out Of Path
+        ///              SLPP:   Slipped out Path
+        ///              SLPT:   Slipped to End of Track
+        ///              OOTR:   To End Of Track
+        ///              MASW:   Misaligned Switch
+        ///              ....:   Undefined
+        ///          case Waiting Point: WAIT, Distance set to Train Number to Wait ????
+        ///          case NODE:                      Distance: Blank or
+        ///              EOT:    End Of Track
+        ///              EOP:    End Of Path
+        ///              RSW:    Reserved Switch
+        ///              LP:     Loop
+        ///              TAH:    Train Ahead
+        ///              MXD:    Max Distance        Distance: To End Of Authority
+        ///              NOP:    No Path Reserved    Distance: To End Of Authority
+        ///              ...:    Undefined
+        ///          Other:
+        ///              Blank + Blank
+        ///  7   Next Action :   For AI Train
+        ///              SPDL    :   Speed limit
+        ///              SIGL    :   Speed signal
+        ///              STOP    :   Signal STOP
+        ///              REST    :   Signal RESTRICTED
+        ///              EOA     :   End Of Authority
+        ///              STAT    :   Station Stop
+        ///              TRAH    :   Train Ahead
+        ///              EOR     :   End Of Route
+        ///              NONE    :   None
+        ///  9   Signal + Distance
+        ///          Manual or Explorer: Distance set to blank
+        ///              First:  Reverse direction
+        ///                  G:  Signal at STOP but Permission Granted
+        ///                  S:  Signal At STOP
+        ///                  P:  Signal at STOP & PROCEED
+        ///                  R:  Signal at RESTRICTING
+        ///                  A:  Signal at APPROACH 1, 2 or 3
+        ///                  C:  Signal at CLEAR 1 or 2
+        ///                  -:  Not Defined
+        ///              <>
+        ///              Second: Forward direction
+        ///                  G:  Signal at STOP but Permission Granted
+        ///                  S:  Signal At STOP
+        ///                  P:  Signal at STOP & PROCEED
+        ///                  R:  Signal at RESTRICTING
+        ///                  A:  Signal at APPROACH 1, 2 or 3
+        ///                  C:  Signal at CLEAR 1 or 2
+        ///                  -:  Not Defined
+        ///          Other:  Distance is Distance to next Signal
+        ///              STOP:   Signal at STOP
+        ///              SPRC:   Signal at STOP & PROCEED
+        ///              REST:   Signal at RESTRICTING
+        ///              APP1:   Signal at APPROACH 1
+        ///              APP2:   Signal at APPROACH 2
+        ///              APP3:   Signal at APPROACH 3
+        ///              CLR1:   Signal at CLEAR 1
+        ///              CLR2:   Signal at CLEAR 2
+        ///  10  Consist:
+        ///          PLAYER:
+        ///          REMOTE:
+        ///  11  Path:
+        ///          not Manual nor Explorer:
+        ///              number or ?     :   Id of subpath in valid TCRoute or ? if no valid TCRoute
+        ///              ={              :   Starting String
+        ///              CircuitString   :   List of Circuit (see next)
+        ///              }               :   Ending String
+        ///              x or blank      :   x if already on TCRoute
+        ///          Manual or Explorer:
+        ///              CircuitString   :   Backward
+        ///              ={  Dir }=      :   Dir is '<' or '>'
+        ///              CircuitString   :   Forward
+        ///          For AI  :
+        ///              Train Name
+        ///  
+        ///      CircuitString analyse:
+        ///          Build string for section information
+        ///      returnString +
+        ///      CircuitType:
+        ///          >   : Junction
+        ///          +   : CrossOver
+        ///          [   : End of Track direction 1
+        ///          ]   : End of Track direction 0
+        ///          -   : Default (Track Section)
+        ///      Deadlock traps:
+        ///          Yes : Ended with *
+        ///              Await number    : ^
+        ///              Await more      : ~
+        ///      Train Occupancy:    + '&' If more than one
+        ///          N° of train     : If one train
+        ///      If train reservation :
+        ///          (
+        ///          Train Number
+        ///          )
+        ///      If signal reserved :
+        ///          (S
+        ///          Signal Number
+        ///          )
+        ///      If one or more train claim
+        ///          #
+        /// <\remarks>
         public String[] GetStatus(bool metric)
         {
 
@@ -10309,6 +10468,7 @@ namespace ORTS
 
             string[] statusString = new string[13];
 
+            //  0, "Train"
             statusString[iColumn] = Number.ToString();
 
             if (IsFreight)
@@ -10321,18 +10481,24 @@ namespace ORTS
             }
             iColumn++;
 
+            //  1, "Travelled"
             statusString[iColumn] = FormatStrings.FormatDistance(DistanceTravelledM, metric);
             iColumn++;
+            //  2, "Speed"
             statusString[iColumn] = FormatStrings.FormatSpeed(SpeedMpS, metric);
             iColumn++;
+            //  3, "Max"
             statusString[iColumn] = FormatStrings.FormatSpeed(AllowedMaxSpeedMpS, metric);
             iColumn++;
 
+            //  4, "AI mode"
             statusString[iColumn] = " ";  // for AI trains
             iColumn++;
+            //  5, "AI data"
             statusString[iColumn] = " ";  // for AI trains
             iColumn++;
 
+            //  6, "Mode"
             switch (ControlMode)
             {
                 case TRAIN_CONTROL.AUTO_SIGNAL:
@@ -10370,6 +10536,7 @@ namespace ORTS
             }
 
             iColumn++;
+            //  7, "Auth"
             if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL)
             {
                 switch (OutOfControlReason)
@@ -10404,6 +10571,7 @@ namespace ORTS
                 }
 
                 iColumn++;
+                //  8, "Distance"
                 statusString[iColumn] = " ";
             }
 
@@ -10411,6 +10579,7 @@ namespace ORTS
             {
                 statusString[iColumn] = "WAIT";
                 iColumn++;
+                //  8, "Distance"  but used to display Train Number
                 statusString[iColumn] = WaitList[0].waitTrainNumber.ToString();
             }
 
@@ -10445,6 +10614,7 @@ namespace ORTS
                 }
 
                 iColumn++;
+                //  8, "Distance"
                 if (EndAuthorityType[0] != END_AUTHORITY.MAX_DISTANCE && EndAuthorityType[0] != END_AUTHORITY.NO_PATH_RESERVED)
                 {
                     statusString[iColumn] = FormatStrings.FormatDistance(DistanceToEndNodeAuthorityM[0], metric);
@@ -10458,10 +10628,12 @@ namespace ORTS
             {
                 statusString[iColumn] = " ";
                 iColumn++;
+                //  8, "Distance"
                 statusString[iColumn] = " ";
             }
 
             iColumn++;
+            //  9, "Signal"
             if (ControlMode == TRAIN_CONTROL.MANUAL || ControlMode == TRAIN_CONTROL.EXPLORER)
             {
                 // reverse direction
@@ -10554,6 +10726,7 @@ namespace ORTS
 
                 statusString[iColumn] = String.Concat(firstchar, "<>", lastchar);
                 iColumn++;
+                //  9, "Distance"
                 statusString[iColumn] = " ";
             }
             else
@@ -10591,20 +10764,25 @@ namespace ORTS
                     }
 
                     iColumn++;
+                    //  9, "Distance"
                     statusString[iColumn] = FormatStrings.FormatDistance(distanceToSignal, metric);
                 }
                 else
                 {
                     statusString[iColumn] = " ";
                     iColumn++;
+                    //  9, "Distance"
                     statusString[iColumn] = " ";
                 }
             }
 
             iColumn++;
+            //  10, "Consist"
             statusString[iColumn] = "PLAYER";
             if (TrainType == TRAINTYPE.REMOTE) statusString[iColumn] = "REMOTE";
 
+            iColumn++;
+            //  11, "Path"
             string circuitString = String.Empty;
 
             if ((ControlMode != TRAIN_CONTROL.MANUAL && ControlMode != TRAIN_CONTROL.EXPLORER) || ValidRoute[1] == null)
@@ -10691,17 +10869,39 @@ namespace ORTS
                 circuitString = String.Concat(circuitString, forwardstring);
             }
 
-            iColumn++;
             statusString[iColumn] = String.Copy(circuitString);
 
             return (statusString);
         }
 
         //================================================================================================//
-        /// <summary>
-        /// Build string for section information
-        /// </summary>
 
+
+        /// <summary>
+        ///  Build string for section information
+        ///  <c>returnString +
+        ///     CircuitType:
+        ///         >   : Junction
+        ///         +   : CrossOver
+        ///         [   : End of Track direction 1
+        ///         ]   : End of Track direction 0
+        ///     Deadlock traps:
+        ///         Yes : Ended with *
+        ///             Await number    : ^
+        ///             Await more      : ~
+        ///     Train Occupancy:    + '&' If more than one
+        ///         N° of train     : If one train
+        ///     If train reservation :
+        ///         (
+        ///         Train Number
+        ///         )
+        ///     If signal reserved :
+        ///         (S
+        ///         Signal Number
+        ///         )
+        ///     If one or more train claim
+        ///         #</c>
+        /// </summary>
         public string BuildSectionString(string thisString, TrackCircuitSection thisSection, int direction)
         {
 
@@ -10766,6 +10966,44 @@ namespace ORTS
             return (returnString);
         }
 
+#if WITH_PATH_DEBUG
+        //================================================================================================//
+        /// <summary>
+        /// Create Path information line
+        /// "Train", "Path"
+        /// <\summary>
+
+        public String[] GetPathStatus(bool metric)
+        {
+            int iColumn = 0;
+
+            string[] statusString = new string[10];
+
+            //  "Train"
+            statusString[0] = Number.ToString();
+            iColumn++;
+
+            //  "Action"
+            statusString[1] = "----";
+            statusString[2] = "..";
+            statusString[3] = "..";
+            statusString[4] = "..";
+            statusString[5] = "..";
+            statusString[6] = "..";
+            statusString[7] = "..";
+            iColumn = 8;
+
+            string circuitString = String.Empty;
+            circuitString = string.Concat(circuitString, "Path: ");
+
+
+            statusString[iColumn] = String.Copy(circuitString);
+            iColumn++;
+
+            return (statusString);
+
+        }
+#endif
         //================================================================================================//
         /// <summary>
         /// Create TrackInfoObject for information in TrackMonitor window
@@ -11114,7 +11352,7 @@ namespace ORTS
             File.AppendAllText(@"C:\temp\TCSections.txt", "--------------------------------------------------\n");
             File.AppendAllText(@"C:\temp\TCSections.txt", "Train : " + Number.ToString() + "\n\n");
 #endif
-            TCRoute = new TCRoutePath(aiPath, (int)FrontTDBTraveller.Direction, Length, signalRef, Number);
+            TCRoute = new TCRoutePath(aiPath, (int)FrontTDBTraveller.Direction, Length, signalRef, Number, Simulator.Settings);
             ValidRoute[0] = TCRoute.TCRouteSubpaths[TCRoute.activeSubpath];
         }
 
@@ -11131,7 +11369,7 @@ namespace ORTS
             File.AppendAllText(@"C:\temp\TCSections.txt", "Train : " + Number.ToString() + "\n\n");
 #endif
             int orgDirection = (RearTDBTraveller != null) ? (int)RearTDBTraveller.Direction : -2;
-            TCRoute = new TCRoutePath(aiPath, orgDirection, Length, orgSignals, Number);
+            TCRoute = new TCRoutePath(aiPath, orgDirection, Length, orgSignals, Number, Simulator.Settings);
             ValidRoute[0] = TCRoute.TCRouteSubpaths[TCRoute.activeSubpath];
         }
 
@@ -11143,7 +11381,7 @@ namespace ORTS
         public void PresetExplorerPath(AIPath aiPath, Signals orgSignals)
         {
             int orgDirection = (RearTDBTraveller != null) ? (int)RearTDBTraveller.Direction : -2;
-            TCRoute = new TCRoutePath(aiPath, orgDirection, 0, orgSignals, Number);
+            TCRoute = new TCRoutePath(aiPath, orgDirection, 0, orgSignals, Number, Simulator.Settings);
 
             // loop through all sections in first subroute except first and last (neither can be junction)
 
@@ -11789,7 +12027,7 @@ namespace ORTS
 
                         if (fullpath != null) // valid path
                         {
-                            TCRoutePath fullRoute = new TCRoutePath(fullpath, -2, 1, signalRef, -1);
+                            TCRoutePath fullRoute = new TCRoutePath(fullpath, -2, 1, signalRef, -1, Simulator.Settings);
                             newWaitItem.CheckPath = new TCSubpathRoute(fullRoute.TCRouteSubpaths[0]);
 
                             // find first overlap section with train route
@@ -12495,7 +12733,7 @@ namespace ORTS
             /// Constructor (from AIPath)
             /// </summary>
 
-            public TCRoutePath(AIPath aiPath, int orgDir, float thisTrainLength, ORTS.Signals orgSignals, int trainNumber)
+            public TCRoutePath(AIPath aiPath, int orgDir, float thisTrainLength, ORTS.Signals orgSignals, int trainNumber, UserSettings settings)
             {
                 activeSubpath = 0;
                 activeAltpath = -1;
@@ -12511,6 +12749,7 @@ namespace ORTS
                 Dictionary<int, int[]> AlternativeRoutes = new Dictionary<int, int[]>();
                 Queue<int> ActiveAlternativeRoutes = new Queue<int>();
 
+                //  Create the first TCSubpath into the TCRoute
                 TCSubpathRoute thisSubpath = new TCSubpathRoute();
                 TCRouteSubpaths.Add(thisSubpath);
 
@@ -12575,7 +12814,10 @@ namespace ORTS
                     lastPathNode = thisPathNode;
 
                     // process siding items
-
+                    //  SPA:  Station: à adapter
+                    //  if (orgSignals.UseLocationPassingPaths) ??
+#if ACTIVITY_EDITOR
+#else
                     if (thisPathNode.Type == AIPathNodeType.SidingStart)
                     {
                         TrackNode sidingNode = aiPath.TrackDB.TrackNodes[thisPathNode.JunctionIndex];
@@ -12600,6 +12842,7 @@ namespace ORTS
 
                         thisPathNode.Type = AIPathNodeType.Other;
                     }
+#endif
 
                     //
                     // process last non-junction section
@@ -12609,6 +12852,7 @@ namespace ORTS
                     {
                         thisNode = aiPath.TrackDB.TrackNodes[trackNodeIndex];
 
+                        //  SPA:    Subpath:    Add TCRouteElement for each TrackCircuitsection in node
                         if (currentDir == 0)
                         {
                             for (int iTC = 0; iTC < thisNode.TCCrossReference.Count; iTC++)
@@ -12616,6 +12860,7 @@ namespace ORTS
                                 TCRouteElement thisElement =
                                     new TCRouteElement(thisNode, iTC, currentDir, orgSignals);
                                 thisSubpath.Add(thisElement);
+                                //  SPA:    Station:    A adapter, 
                                 SetStationReference(TCRouteSubpaths, thisElement.TCSectionIndex, orgSignals);
                             }
                             newDir = thisNode.TrPins[currentDir].Direction;
@@ -12633,6 +12878,7 @@ namespace ORTS
                             newDir = thisNode.TrPins[currentDir].Direction;
                         }
 
+                        //  SPA:    Subpath:    ! Check the length.
                         if (reversal > 0)
                         {
                             while (reversal > 0)
@@ -12645,6 +12891,7 @@ namespace ORTS
                             }
                             continue;          // process this node again in reverse direction
                         }
+                            //  SPA:    WP: New forms ?
                         else if (breakpoint)
                         {
                             sublist++;
@@ -12725,14 +12972,39 @@ namespace ORTS
                         }
                         else if (nextPathNode.Type == AIPathNodeType.Stop)
                         {
-                            int[] waitingPoint = new int[5];
+                            //if (settings.EnhancedActCompatibility)
+                            //{
+                            //    if (breakpoint)
+                            //    {
+                            //        TCRouteElement thisElement = thisSubpath[thisSubpath.Count - 1];
+                            //        sublist++;
+                            //        thisSubpath = new TCSubpathRoute();
+                            //        thisSubpath.Add(thisElement);
+                            //        TCRouteSubpaths.Add(thisSubpath);
+                            //        breakpoint = false;
+                            //    }
+                            //}
+                            //  SPA:    WP: Add this as simple WP, not node
+                            TrackNode WPNode = aiPath.TrackDB.TrackNodes[nextPathNode.NextMainTVNIndex];
+                            TrVectorSection firstSection = WPNode.TrVectorNode.TrVectorSections[0];
+                            Traveller TDBTrav = new Traveller(aiPath.TSectionDat, aiPath.TrackDB.TrackNodes, WPNode,
+                                firstSection.TileX, firstSection.TileZ,
+                                firstSection.X, firstSection.Z, (Traveller.TravellerDirection)1);
+
+                            float offset = TDBTrav.DistanceTo(WPNode,
+                                nextPathNode.Location.TileX, nextPathNode.Location.TileZ,
+                                nextPathNode.Location.Location.X,
+                                nextPathNode.Location.Location.Y,
+                                nextPathNode.Location.Location.Z);
+
+                            int[] waitingPoint = new int[6];
                             waitingPoint[0] = sublist;
                             waitingPoint[1] = ConvertWaitingPoint(nextPathNode, aiPath.TrackDB, aiPath.TSectionDat, currentDir);
 
                             waitingPoint[2] = nextPathNode.WaitTimeS;
                             waitingPoint[3] = nextPathNode.WaitUntil;
                             waitingPoint[4] = -1; // hold signal set later
-
+                            waitingPoint[5] = (int)offset;
                             WaitingPoints.Add(waitingPoint);
                             breakpoint = true;
                         }
@@ -12989,6 +13261,7 @@ namespace ORTS
 
                 // first, find last signal - there may not be a junction between last signal and end
                 // last end must be end-of-track
+                //  SPA:    Station:    Et si pas de signaux ?
 
                 foreach (TCSubpathRoute endSubPath in TCRouteSubpaths)
                 {
@@ -13097,6 +13370,7 @@ namespace ORTS
                 }
 
                 // search for loops
+                //  SPA:    
 
                 LoopSearch();
 
@@ -13194,6 +13468,61 @@ namespace ORTS
 #endif
             }
 
+            public String[] GetTCRouteInfo(String[] stateString, TCPosition position)
+            {
+                String[] retString = new String[stateString.Length];
+                stateString.CopyTo(retString, 0);
+                string TCSidxString = "Index : ";
+                string lenTCcurrent = " ";
+                Boolean show = false;
+                string wpString = "";
+                int[] tabWP = new int[WaitingPoints.Count];
+                int cntWP = 0;
+                foreach (var wp in WaitingPoints)
+                {
+                    if (wp[0] == activeSubpath)
+                    {
+                        tabWP[cntWP] = wp[1];
+                    }
+                    else
+                    {
+                        tabWP[cntWP] = 0;
+                    }
+                    cntWP++;
+                }
+                cntWP = 0;
+                TCSidxString = String.Concat(TCSidxString, "(", activeSubpath.ToString(), "):");
+                foreach (var subpath in TCRouteSubpaths[activeSubpath])
+                {
+                    if (subpath.TCSectionIndex == tabWP[activeSubpath])
+                    {
+                        wpString = String.Concat("(wp:", WaitingPoints[activeSubpath][2].ToString(), "sec)");
+                        tabWP[activeSubpath] = 0;
+                    }
+                    else
+                    {
+                        wpString = "";
+                    }
+                    if (position.TCSectionIndex == subpath.TCSectionIndex)
+                    {
+                        show = true;
+                        lenTCcurrent = String.Concat(" (", position.DistanceTravelledM.ToString("F0"), ")");
+                        TCSidxString = String.Concat(TCSidxString, subpath.TCSectionIndex.ToString(), lenTCcurrent, wpString,", ");
+                    }
+                    else if (!show)
+                    {
+                        TCSidxString = String.Concat(TCSidxString, "{", subpath.TCSectionIndex.ToString(), "}", wpString,", ");
+                    }
+                    else if (show)
+                    {
+                        TCSidxString = String.Concat(TCSidxString, subpath.TCSectionIndex.ToString(), wpString,", ");
+                        lenTCcurrent = "";
+                    }
+                }
+                retString[9] = TCSidxString;
+                return (retString);
+
+            }
             //================================================================================================//
             //
             // process alternative paths - MSTS style Path definition
@@ -14149,6 +14478,33 @@ namespace ORTS
                 }
             }
 
+            //================================================================================================//
+            //
+            //  Clone subpath at a specific position.  The new subpath will be inserted after the current one and all TCElement from position
+            //  To the end will be added to the new subpath.
+            //  The WaitingPoint list will be aligned with.
+            //
+
+            public void CloneSubPath(int WPIdx, int position)
+            {
+                int subpathIdx = WaitingPoints[WPIdx][0];
+                var subpath = TCRouteSubpaths[subpathIdx];
+                TCSubpathRoute nextRoute = new TCSubpathRoute();
+                TCRouteSubpaths.Insert(subpathIdx + 1, nextRoute);
+                TCReversalInfo nextReversalPoint = new TCReversalInfo(); // also add dummy reversal info to match total number
+                ReversalInfo.Add(nextReversalPoint);
+                LoopEnd.Add(-1); // also add dummy loop end
+                for (int iElement = subpath.Count - 1; iElement >= position + 1; iElement--)
+                {
+                    nextRoute.Insert(0, subpath[iElement]);
+                    subpath.RemoveAt(iElement);
+                }
+                nextRoute.Insert(0, subpath[position]);
+                for (int cntWP = WPIdx+1; cntWP < WaitingPoints.Count; cntWP++)
+                {
+                    WaitingPoints[cntWP][0]++;
+                }
+            }
         }
 
         //================================================================================================//

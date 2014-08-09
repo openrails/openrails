@@ -115,6 +115,9 @@ namespace ORTS.Viewer3D.Popups
             DebugGraphProcessUpdater = DebugGraphs.Add("Updater process", "0%", "100%", Color.Yellow, 20);
             DebugGraphProcessLoader = DebugGraphs.Add("Loader process", "0%", "100%", Color.Magenta, 20);
             DebugGraphProcessSound = DebugGraphs.Add("Sound process", "0%", "100%", Color.Cyan, 20);
+#if WITH_PATH_DEBUG
+            TextPage = 5;
+#endif
         }
 
         protected internal override void Save(BinaryWriter outf)
@@ -512,7 +515,6 @@ namespace ORTS.Viewer3D.Popups
         void TextPageDispatcherInfo(TableData table)
         {
             TextPageHeading(table, "DISPATCHER INFORMATION");
-
             TableSetCells(table, 0, "Train", "Travelled", "Speed", "Max", "AI mode", "AI data", "Mode", "Auth", "Distance", "Signal", "Distance", "Consist", "Path");
             TableAddLine(table);
 
@@ -553,7 +555,61 @@ namespace ORTS.Viewer3D.Popups
                     TableAddLine(table);
                 }
             }
+#if WITH_PATH_DEBUG
+            TextPageHeading(table, "PATH info");
+
+            TableSetCells(table, 0, "Train", "Path ");
+            TableSetCells(table, 8, "Type", "Info");
+            TableAddLine(table);
+
+            foreach (var thisTrain in Viewer.Simulator.AI.AITrains)
+            {
+                if (thisTrain.MovementState != AITrain.AI_MOVEMENT_STATE.AI_STATIC)
+                {
+                    TextPagePathInfo(thisTrain, table);
+                }
+            }
+            TextPageHeading(table, "ACTIONs info");
+
+            TableSetCells(table, 0, "Train", "Actions ");
+            TableAddLine(table);
+
+            foreach (var thisTrain in Viewer.Simulator.AI.AITrains)
+            {
+                if (thisTrain.MovementState != AITrain.AI_MOVEMENT_STATE.AI_STATIC)
+                {
+                    TextPageActionsInfo(thisTrain, table);
+                }
+            }
+#endif
+
         }
+#if WITH_PATH_DEBUG
+        void TextPagePathInfo(AITrain thisTrain, TableData table)
+        {
+            // next is active AI trains
+            if (thisTrain.MovementState != AITrain.AI_MOVEMENT_STATE.AI_STATIC)
+            {
+                var status = thisTrain.GetPathStatus(Viewer.MilepostUnitsMetric);
+                status = thisTrain.AddPathInfo(status, Viewer.MilepostUnitsMetric);
+                for (var iCell = 0; iCell < status.Length; iCell++)
+                    TableSetCell(table, table.CurrentRow, iCell, status[iCell]);
+                TableAddLine(table);
+            }
+        }
+
+        void TextPageActionsInfo(AITrain thisTrain, TableData table)
+        {
+            // next is active AI trains
+            if (thisTrain.MovementState != AITrain.AI_MOVEMENT_STATE.AI_STATIC)
+            {
+                var status = thisTrain.GetActionStatus(Viewer.MilepostUnitsMetric);
+                for (var iCell = 0; iCell < status.Length; iCell++)
+                    TableSetCell(table, table.CurrentRow, iCell, status[iCell]);
+                TableAddLine(table);
+            }
+        }
+#endif
 
         void TextPageDebugInfo(TableData table)
         {
