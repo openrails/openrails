@@ -19,8 +19,10 @@
 			  <h1>Simple Download <small>(recommended)</small></h1>
         <br />
 <?php 
-$file_path = '../../files/setup_OR_pre-v1.0_from_download.exe';
-echo "<a href='$file_path' class='btn download_button btn-lg btn-block'>";        
+$file = 'setup_OR_pre-v1.0_from_download.exe';
+$exe = 'exe';
+$file_path = "../../files";
+echo "<a href='download.php?filepath=$file_path&file=$file&ext=$exe' class='btn download_button btn-lg btn-block'>";        
 ?>
           <h2><span class='glyphicon glyphicon-download'></span> &nbsp; Download the installer</h2>
           <p>
@@ -29,7 +31,7 @@ echo "<a href='$file_path' class='btn download_button btn-lg btn-block'>";
         </a>
         <p style="text-align: center;">
 <?php 
-echo 'Date: ' . date('d-M-Y', filemtime($file_path)) . '&nbsp; &nbsp; &nbsp; Size: ' . round(filesize($file_path) / 1024 / 1024) . 'MB'; ?>
+echo 'Date: ' . date('d-M-Y', filemtime("$file_path/$file")) . '&nbsp; &nbsp; &nbsp; Size: ' . round(filesize("$file_path/$file") / 1024 / 1024) . 'MB'; ?>
         </p>
 			</div>
 			<div class="col-md-2"></div>
@@ -37,8 +39,10 @@ echo 'Date: ' . date('d-M-Y', filemtime($file_path)) . '&nbsp; &nbsp; &nbsp; Siz
 			  <h1>Supporters' Download</h1>
         <br>
 <?php 
-$file_path = '../../files/OR_X.zip';
-echo "<a href='$file_path' class='btn download_button btn-lg btn-block'>";        
+$file = 'OR_X.zip';
+$exe = 'zip';
+$file_path = "../../files";
+echo "<a href='download.php?filepath=$file_path&file=$file&ext=$exe' class='btn download_button btn-lg btn-block'>";        
 ?>
           <h2><span class='glyphicon glyphicon-download'></span> &nbsp; Download just Open Rails</h2>
           <p>
@@ -47,7 +51,7 @@ echo "<a href='$file_path' class='btn download_button btn-lg btn-block'>";
         </a>
         <p style="text-align: center;">
 <?php 
-echo 'Date: ' . date('d-M-Y', filemtime($file_path)) . '&nbsp; &nbsp; &nbsp; Size: ' . round(filesize($file_path) / 1024 / 1024) . 'MB'; ?>
+echo 'Date: ' . date('d-M-Y', filemtime("$file_path/$file")) . '&nbsp; &nbsp; &nbsp; Size: ' . round(filesize("$file_path/$file") / 1024 / 1024) . 'MB'; ?>
         </p>
         <p>
           This build of OR contains an easy, semi-automatic updater.

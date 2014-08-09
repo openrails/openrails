@@ -1,6 +1,5 @@
 <?php include "../shared/head.php" ?>
   </head>
-
   
   <body>
     <div class="container"><!-- Centres content and sets fixed width to suit device -->
@@ -9,7 +8,7 @@
 <?php include "../shared/menu.php" ?>
 		<div class="row">
 			<div class="col-md-4">
-			  <h1>Trade</h1>
+			  <h1>Trade</h1> 
 			</div>
 		</div>
 		<div class="row">
@@ -35,8 +34,9 @@ modeling people or road traffic or moving water. A specialist could deliver and 
 These vendors sell or distribute products suitable for Open Rails:
 </p>
 <ul>
-  <li><a href="http://www.streamlines.ca">Stream Lines</a> - Canada</li>
   <li><a href="http://dekosoft.com/trains">Dekosoft Trains</a> - USA</li>
+  <li><a href="http://www.makingtracks-online.co.uk" target="_blank">Making Tracks</a> - UK</li>
+  <li><a href="http://www.streamlines.ca">Stream Lines</a> - Canada</li>
 </ul>
 <p>&nbsp;</p>
 <h2>Vendors Supporting MSTS</h2>
@@ -49,7 +49,6 @@ These vendors sell or distribute products suitable for MSTS:
   <li><a href="http://www.valleypass.com/Sales/Sales.htm" target="_blank">BLW Productions</a> - Canada</li>
   <li><a href="http://www.dieselswest.com" target="_blank">DieselsWest</a> - USA</li>
   <li><a href="http://www.mstsgmo.com" target="_blank">GM&amp;O Simulations</a> - USA</li>
-  <li><a href="http://www.makingtracks-online.co.uk" target="_blank">Making Tracks</a> - UK</li>
   <li><a href="http://www.mapleleaftracks.com" target="_blank">Maple Leaf Tracks</a> - Canada</li>
   <li><a href="http://www.uktrainsim.com" target="_blank">UKTrainSim</a> - UK</li>
 </ul>

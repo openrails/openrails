@@ -3,7 +3,8 @@
   </head>
   
   <body>
-    <div class="container"><!-- Centres content and sets fixed width to suit device -->      <div class="row">
+    <div class="container"><!-- Centres content and sets fixed width to suit device -->
+      <div class="row">
         <div class="col-md-9 header">
           <img class="totally_free_software" src="totally_free_software3.png" alt="Totally free software"/>
           <a href="/">
@@ -12,12 +13,10 @@
           </a>
         </div>
         <div class="col-md-3 header">
-<!--
           <div class="since_last_visit">
-            <a class="btn btn-default" href="/or/dev/changed_pages/index.php">Changes since last visit</a><br />
+            <a class="btn btn-default" href="/changed-pages/index.php">Changes since last visit</a><br />
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(uses cookies) 
           </div>
--->
         </div>
       </div>
 <?php include "shared/menu.php" ?>
@@ -34,8 +33,11 @@
             </div>
             <div class="download">
 <?php 
-$file_path = 'files/setup_OR_pre-v1.0_from_download.exe';
-echo "<a href='$file_path' class='btn download_button'><span class='glyphicon glyphicon-download'></span> &nbsp; Download OR installer ";echo date('d-M-Y', filemtime($file_path));         
+$file = 'setup_OR_pre-v1.0_from_download.exe';
+$exe = 'exe';
+$file_path = "../../files";
+echo "<a href='download/program/download.php?filepath=$file_path&file=$file&ext=$exe' class='btn download_button'><span class='glyphicon glyphicon-download'></span> &nbsp; Download OR installer ";echo date('d-M-Y', filemtime($file_path/$file));         
+//echo "<a href='$file_path/$file' class='btn download_button'><span class='glyphicon glyphicon-download'></span> &nbsp; Download OR installer ";echo date('d-M-Y', filemtime($file_path/$file));         
 ?>
               </a>
             </div>

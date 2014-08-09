@@ -22,6 +22,11 @@ echo date('Y', filemtime($file_path));
             <p>
               Open Rails is Free Software licensed under the GPL.
             </p>
+            <ul>
+            <li>
+              <a href='/shared/mysql/get_statistics.php?previous_days=1' target='_blank'>Website Statistics</a>
+            </li>
+            </ul>
           </div>
 			    <div class="col-md-4 footer_column top_right_footer">
             <p>
@@ -58,7 +63,6 @@ echo date('Y', filemtime($file_path));
                 title="CSS Minifier">
                 CSS minified with CSS Minifier
               </a>
-            </li>
             </li>
             </ul>
           </div>

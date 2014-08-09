@@ -1,8 +1,7 @@
 <?php 
-// commented out until database server is available
-// require_once('mysql/track_visits.php');
+require_once('mysql/track_visits.php');
 
-// To avoid the workaround for IE browsers, which is not valid HTML, send it only when MSIE. See
+// To avoid the workaround for IE browsers, which is not valid HTML, send it only when browser is MSIE. See
 // http://www.validatethis.co.uk/news/fix-bad-value-x-ua-compatible-once-and-for-all/
 // Workaround placed in <head>
 // <meta http-equiv="X-UA-Compatible" content="IE=edge">
