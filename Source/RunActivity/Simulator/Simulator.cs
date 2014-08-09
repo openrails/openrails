@@ -749,7 +749,7 @@ namespace ORTS
                 {
                     Signals.UseLocationPassingPaths = true;
                     int orgDirection = (train.RearTDBTraveller != null) ? (int)train.RearTDBTraveller.Direction : -2;
-                    Train.TCRoutePath dummyRoute = new Train.TCRoutePath(aiPath, orgDirection, 0, Signals, -1);
+                    Train.TCRoutePath dummyRoute = new Train.TCRoutePath(aiPath, orgDirection, 0, Signals, -1, Settings);
                 }
                 else
                 {
