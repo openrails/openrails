@@ -32,7 +32,7 @@ dispatcher (or any player) to monitor the location of trains and operate switche
 </p>
 <h3>Communicating</h3>
 <p>
-Players can communicate using the built-in text message but many groups prefer to use a free system such as Skype which can provide voice as well. Their PCs communicate in a flexible way as follows. Any player may launch his Open Rails as a server, publish its IP address and other players launch their Open Rails as clients connecting to that address. See <a href="../../learn/manual-and-tutorials/index.php">the manual</a> for more details.
+Players can communicate using the built-in text message but many groups prefer to use a free system such as Skype which can provide voice as well. Their PCs communicate in a flexible way as follows. Any player may launch his Open Rails as a server, publish its IP address and other players launch their Open Rails as clients connecting to that address. See <a href="../../learn/manual-and-tutorials/">the manual</a> for more details.
 </p><p>
 There is also <a href="http://www.tsimserver.com/forums">a public forum</a> where you can find and announce multi-player sessions and discuss multi-player issues.
 </p>

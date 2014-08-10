@@ -28,7 +28,7 @@
 				</p>
 				<h3>Is OR freeware? Is there a downloadable version available?</h3>
 				<p>
-				Yes. A variety of downloads <a href="../../download/program">are available here</a>.
+				Yes. A variety of downloads <a href="../../download/program/">are available here</a>.
 				</p>
 				<h3>Is OR just an improved version of MSTS?</h3>
 				<p>
@@ -127,7 +127,7 @@
 				<h3>What should I do if I find problems, issues or stuff not working with Open Rails?</h3>
 				<p>
           Open Rails is a constantly evolving project that runs on volunteer participation. Please feel free to post questions and comments
-          about <a href="../../shared">Open Rails on the forums</a>. The Open Rails team monitors these forums daily.
+          about <a href="../../share/community/">Open Rails on the forums</a>. The Open Rails team monitors these forums daily.
         </p>
 				<h3>What's the graphic engine in Open Rails?</h3>
 				<p>

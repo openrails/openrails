@@ -22,7 +22,7 @@
     <a href=#><h2 class="accordion_head"><span class="glyphicon glyphicon-play btn-xs"></span> Private Changes</h2></a>
     <div class="accordion_body">
       <p>
-Anyone can <a href="../../download/source">download the source code</a> for Open Rails and make changes to suit themselves and create a personal version. <a href="#accessing_the_code">Instructions for this</a> are below.
+Anyone can <a href="../../download/source/">download the source code</a> for Open Rails and make changes to suit themselves and create a personal version. <a href="#accessing_the_code">Instructions for this</a> are below.
       </p>
     </div>
   </li><li>

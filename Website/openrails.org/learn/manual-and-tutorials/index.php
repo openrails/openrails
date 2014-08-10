@@ -47,7 +47,7 @@ echo date('d-M-Y', filemtime($file_path)) . '&nbsp; &nbsp; &nbsp; Size: ' . roun
         <p>
           such as the tutorials on <a href="http://msts-roundhouse.nazuka.net" target="_blank">Eric Conrad's blog</a>.
         </p><p>
-          If you are interested in helping with tutorials, please <a href='../../contact'>contact us</a>.
+          If you are interested in helping with tutorials, please <a href='../../contact/'>contact us</a>.
         </p>
         <h3>Some other support materials are available:</h3>
         <ul>

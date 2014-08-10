@@ -39,7 +39,7 @@ Open Rails's source code is arranged as a Visual Studio solution which can be bu
 </p>
 <h2>License Requirements</h2>
 <p>
-One of the ways that the <a href="../../discover/license">Free Software License (GPL)</a> protects our rights is by requiring everyone who distributes software under the GPL
+One of the ways that the <a href="../../discover/license/">Free Software License (GPL)</a> protects our rights is by requiring everyone who distributes software under the GPL
 to make the source available also. That way, everyone who uses the software can examine it and customize it if they wish. 
 </p>
 <h2>Subversion (SVN) Software Versioning Control System</h2>
@@ -47,7 +47,7 @@ to make the source available also. That way, everyone who uses the software can 
 The entire history of project development is archived in our SVN repository, so visitors are able to extract, not just the current
 version, but all the previous ones too back to version 1 in December 2009. 
 </p><p>
-For access details, see <a href="../../contribute/developing-code">Contribute > Code</a>.
+For access details, see <a href="../../contribute/developing-code/">Contribute > Code</a>.
 </p>
 			</div>
 		</div>

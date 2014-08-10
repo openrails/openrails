@@ -96,7 +96,7 @@
     </div>
 		<div class="row">
 			<div class="col-md-12">
-        <p><a href="../../contact">Let us know</a> if we've left anyone out.</p>
+        <p><a href="../../contact/">Let us know</a> if we've left anyone out.</p>
 			</div>
 		</div>
 <?php include "../../shared/tail.php" ?>
