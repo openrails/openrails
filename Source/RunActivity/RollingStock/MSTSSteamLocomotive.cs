@@ -455,6 +455,8 @@ namespace ORTS
         /// </summary>
         public override void Copy(MSTSWagon copy)
         {
+            base.Copy(copy);  // each derived level initializes its own variables
+
             MSTSSteamLocomotive locoCopy = (MSTSSteamLocomotive)copy;
             NumCylinders = locoCopy.NumCylinders;
             CylinderStrokeM = locoCopy.CylinderStrokeM;
@@ -497,8 +499,6 @@ namespace ORTS
             DrvWheelWeightKg = locoCopy.DrvWheelWeightKg;
             SteamGearRatio = locoCopy.SteamGearRatio;
             MaxSteamGearPistonRateRpM = locoCopy.MaxSteamGearPistonRateRpM;
-
-            base.Copy(copy);  // each derived level initializes its own variables
         }
 
         /// <summary>
@@ -507,8 +507,6 @@ namespace ORTS
         /// </summary>
         public override void Save(BinaryWriter outf)
         {
-            base.Save(outf);
-
             outf.Write(BoilerHeatOutBTUpS);
             outf.Write(BoilerHeatInBTUpS); 
             outf.Write(TenderCoalMassLB);
@@ -528,6 +526,7 @@ namespace ORTS
             ControllerFactory.Save(DamperController, outf);
             ControllerFactory.Save(FireboxDoorController, outf);
             ControllerFactory.Save(FiringRateController, outf);
+            base.Save(outf);
         }
 
         /// <summary>
