@@ -68,14 +68,10 @@
 			<div class="col-md-1"></div>
 			<div class="col-md-4">
         <h2>Recent Code Changes</h2>
-        <p>&nbsp;</p>
-        <p><!-- Could use  http://bazaar.launchpad.net/~twpol/or/trunk/changes  instead -->
-          <a href='http://openrails.azurewebsites.net/code/revisions' target='_blank'>Click to open in new tab/window</a>
-        </p>
-        <div class="iframe_wrap">
-          <iframe class='iframe_scale' src='http://openrails.azurewebsites.net/code/revisions'>
-          </iframe>
-        </div>
+		<ul>
+			<?php include "../../scripts/experimental_changelog1.html" ?>
+		</ul>
+		<p><a href='../../download/changes/'>See more code changes</a></p>
   			<div class="col-md-1">
         </div>
       </div>
