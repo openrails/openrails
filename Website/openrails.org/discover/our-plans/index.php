@@ -15,7 +15,6 @@
 		<div class="row">
 			<div class="col-md-1"></div>
 			<div class="col-md-5">
-        <p>
 <h2>Planning And Voluntary Projects</h2>
 <p>
 It's important to have clear goals, so our users and contributors know where we are going. However teams like ours, made up of willing volunteers, are unlikely to follow a detailed plan closely and expertise in a topic is not always available.

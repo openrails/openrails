@@ -57,7 +57,7 @@ There will be other advantages as we move beyond our current status of MSTS-comp
 <p>
 One of these advantages is 3D cabs. Open Rails now supports 3D cabs interiors as well as the MSTS 2D interiors.
 </p>
-<img src="3d_cab.jpg" alt="" title="Cab from Hungarian MAV 424 class loco &#xa; posted by zaza" />
+<img src="3d_cab.jpg" title="Cab from Hungarian MAV 424 class loco &#xa; posted by zaza" alt="Cab from Hungarian MAV 424 class loco &#xa; posted by zaza" />
 <p>&nbsp;
 </p>
 <h2>Operational Modelling For Open Rails</h2>
@@ -69,6 +69,7 @@ There is also a Train Control System (TCS) under development which reports the s
 monitoring system such as the German LZB and the European ERTMS to be modelled. The modelling is carried out by programming in C#.
 </p>
 		</div>
+	</div>
 <?php include "../../shared/tail.php" ?>
 <?php include "../../shared/banners/preload_next_banner.php" ?>
   </body>

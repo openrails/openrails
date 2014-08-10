@@ -13,10 +13,10 @@
 		</div>
 		<div class="row">
 			<div class="col-md-6">
-        <p>
 <h2>A New Platform</h2>
 <p>
 Our goal is to enhance the railroad simulation hobby through a new platform, designed and supported by the community and built to provide a lasting foundation for accurate and immersive simulation experiences.
+</p>
 <h2>Benefits Of A Community-Based Project</h2>
 <p>
 By making the entire source code of the project freely available, we ensure that Open Rails will continually evolve to meet the technical, operational, graphical and content-building needs of the community. Perhaps more importantly, we can anticipate that Open Rails will last for as long as it is needed. Unlike commercial simulators, we are immune from the economic pressures that can kill off a simulator product and suddenly abandon a large investment in building accurate routes and rolling stock.
@@ -24,7 +24,7 @@ By making the entire source code of the project freely available, we ensure that
 We benefit from community expertise to deliver accuracy not just in appearance, but also operationally. It is mostly in this area that we find existing products lacking. We understand that operations differ greatly, not just between regions, but even from railroad to railroad.
 </p><p>
 For this reason we are working towards an open, extensible architecture that accommodates plug-ins, developed by specialized sub-teams, to reproduce the characteristic aspects of their favorite railroad. 
-<p>
+</p>
 			</div>
       <div class="col-md-6">
 <h2>Better Than MSTS</h2>

@@ -16,7 +16,7 @@
         <p>
           To contact the Open Rails Development Team, use this form to send us a message.
         </p><p>
-          To report issues with the product or feature requests, please use <a href="../contribute/reporting-bugs/index.php">our Bug Tracker</a>.
+          To report issues with the product or feature requests, please use <a href="../contribute/reporting-bugs/">our Bug Tracker</a>.
         </p>
       </div>
 			<div class="col-md-6">

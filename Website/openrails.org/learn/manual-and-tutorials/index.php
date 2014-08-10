@@ -19,7 +19,7 @@
 				  Each download includes a copy of the Operating Manual. 
 <?php 
 $file_path = '../../files/Manual.pdf';
-echo "For convenience, you can also download it <a href='$file_path'>here</a> - dated ";
+echo "For convenience, you can also directly <a href='$file_path'>download the manual</a> - dated ";
 echo date('d-M-Y', filemtime($file_path)) . '&nbsp; &nbsp; &nbsp; Size: ' . round(filesize($file_path) / 1024) . ' KB'; 
 ?>
 				</p>

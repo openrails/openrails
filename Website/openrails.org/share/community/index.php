@@ -28,7 +28,7 @@ compared to modern products. But Open Rails is robust, shows much promise and it
 We have commentators on the whole train simulator world, such as Nicholas Ozorak's video library <em>At The Railyard</em>. For his independent opinion, watch <a href="http://www.attherailyard.com/seasonfiveepisodes.htm" target="_blank">this video review of Open Rails</a>.
 </p><p>
 Finally we have the experts who collaborate to produce quality models for sale - for more, see <a href="../../trade/">Trade</a>. 
-<p>
+</p>
 			</div>
       <div class="col-md-6">
 <h2>Communities Supporting Open Rails</h2>
