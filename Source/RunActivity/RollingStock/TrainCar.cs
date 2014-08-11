@@ -790,9 +790,6 @@ namespace ORTS
             foreach (var p in Parts)
                 Console.WriteLine("  part:  matrix {1,5:F0}  offset {0,10:F4}  weight {2,5:F0}", p.OffsetM, p.iMatrix, p.SumWgt);
 #endif
-            bool articulatedFront = !WheelAxles.Any(a => a.OffsetM < 0);
-            bool articulatedRear = !WheelAxles.Any(a => a.OffsetM > 0);
-
             WheelHasBeenSet = true;
             // No axles but we have bogies.
             if (WheelAxles.Count == 0 && Parts.Count > 1)
@@ -805,12 +802,14 @@ namespace ORTS
             // No parts means no bogies (always?), so make sure we've got Parts[0] for the car itself.
             if (Parts.Count == 0)
                 Parts.Add(new TrainCarPart(0, 0));
+            bool articFront = !WheelAxles.Any(a => a.OffsetM < 0);
+            bool articRear = !WheelAxles.Any(a => a.OffsetM > 0);
             // Validate the axles' assigned bogies and count up the axles on each bogie.
             if (WheelAxles.Count > 0)
             {
                 foreach (var w in WheelAxles)
                 {
-                    if (!articulatedFront && !articulatedRear && Parts[0].SumWgt < 1.5)
+                    if (!articFront && !articRear && Parts[0].SumWgt < 1.5)
                         if (w.BogieIndex >= Parts.Count - 1)
                             w.BogieIndex = 0;
                     if (w.BogieIndex >= Parts.Count)
@@ -865,16 +864,27 @@ namespace ORTS
             // Decided to control what is sent to SetUpWheelsArticulation()by using
             // WheelAxlesLoaded as a flag.  This way, wagons that have to be processed are included
             // and the rest left out.
+            bool articulatedFront = !WheelAxles.Any(a => a.OffsetM < 0);
+            bool articulatedRear = !WheelAxles.Any(a => a.OffsetM > 0);
             var carIndex = Train.Cars.IndexOf(this);
-            if (Train != null)
-                foreach (var car in Train.Cars)
-                {
-                    if (articulatedRear || articulatedFront)
+            //Certain locomotives are testing as articulated wagons for some reason.
+            this.WagonType = GetWagonType();
+            if (this.WagonType != "Engine" && this.WagonType != "Carriage")
+                if (this.WagonType == "Freight" && this.WheelAxles.Count >= 2)
+                    if (articulatedFront || articulatedRear)
+                    {
                         WheelAxlesLoaded = true;
+                        this.SetUpWheelsArticulation(carIndex);
+                    }
+            //if (Train != null)
+            //    foreach (var car in Train.Cars)
+            //    {
+            //        if (articulatedRear || articulatedFront)
+            //            WheelAxlesLoaded = true;
 
-                    if (car.WheelAxlesLoaded)
-                        car.SetUpWheelsArticulation(carIndex);
-                }
+            //        if (car.WheelAxlesLoaded)
+            //            car.SetUpWheelsArticulation(carIndex);
+            //    }
         } // end SetUpWheels()
 
         void SetUpWheelsArticulation(int carIndex)
