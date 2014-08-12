@@ -9,8 +9,8 @@ $path = strtr($root, '\\', '/');
 $cookie_name = 'or_org3';
 if(isset($_COOKIE[$cookie_name])) {
 	$id = $_COOKIE[$cookie_name];
-}else{	
-	$id = md5(date("Y-m-d H:i:s") + rand()); // Uses the MySQL DATETIME format plus random number
+}else{
+	$id = md5(date("Y-m-d H:i:s") . rand()); // Uses the MySQL DATETIME format plus random number
 	setcookie($cookie_name, $id, 2147483647); // max time value to expire far into future (19-Jan-2038)
 	$sql = "INSERT INTO tVisitor (id) VALUES('$id')";
 	if (!mysqli_query($dbc, $sql)) { die('Error: ' . mysqli_error($dbc)); }
