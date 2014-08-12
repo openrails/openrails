@@ -125,47 +125,44 @@ namespace ORTS
 
             LoadOptions();
             LoadLanguage();
-            Localizer.Localize(this, catalog);
 
-            string[] Seasons =
-            { 
-                catalog.GetString("Spring"),
-                catalog.GetString("Summer"),
-                catalog.GetString("Autumn"),
-                catalog.GetString("Winter"),
-            };
-            string[] Weathers = 
+            if (!Initialized)
             {
-                catalog.GetString("Clear"),
-                catalog.GetString("Snow"),
-                catalog.GetString("Rain"),
-            };
-            string[] Difficulties = 
-            {
-                catalog.GetString("Easy"),
-                catalog.GetString("Medium"),
-                catalog.GetString("Hard"),
-                "",
-            };
+                var Seasons = new[] {
+                    catalog.GetString("Spring"),
+                    catalog.GetString("Summer"),
+                    catalog.GetString("Autumn"),
+                    catalog.GetString("Winter"),
+                };
+                var Weathers = new[] {
+                    catalog.GetString("Clear"),
+                    catalog.GetString("Snow"),
+                    catalog.GetString("Rain"),
+                };
+                var Difficulties = new[] {
+                    catalog.GetString("Easy"),
+                    catalog.GetString("Medium"),
+                    catalog.GetString("Hard"),
+                    "",
+                };
+                var Days = new[] {
+                    catalog.GetString("Monday"),
+                    catalog.GetString("Tuesday"),
+                    catalog.GetString("Wednesday"),
+                    catalog.GetString("Thursday"),
+                    catalog.GetString("Friday"),
+                    catalog.GetString("Saturday"),
+                    catalog.GetString("Sunday"),
+                };
 
-            string[] Days = 
-            {
-                catalog.GetString("Monday"),
-                catalog.GetString("Tuesday"),
-                catalog.GetString("Wednesday"),
-                catalog.GetString("Thursday"),
-                catalog.GetString("Friday"),
-                catalog.GetString("Saturday"),
-                catalog.GetString("Sunday"),
-            };
+                comboBoxStartSeason.Items.AddRange(Seasons);
+                comboBoxStartWeather.Items.AddRange(Weathers);
+                comboBoxDifficulty.Items.AddRange(Difficulties);
 
-            this.comboBoxStartSeason.Items.AddRange(Seasons);
-            this.comboBoxStartWeather.Items.AddRange(Weathers);
-            this.comboBoxDifficulty.Items.AddRange(Difficulties);
-
-            this.comboBoxTimetableSeason.Items.AddRange(Seasons);
-            this.comboBoxTimetableWeather.Items.AddRange(Weathers);
-            this.comboBoxTimetableDay.Items.AddRange(Days);
+                comboBoxTimetableSeason.Items.AddRange(Seasons);
+                comboBoxTimetableWeather.Items.AddRange(Weathers);
+                comboBoxTimetableDay.Items.AddRange(Days);
+            }
 
             ShowEnvironment();
 
