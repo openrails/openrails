@@ -24,6 +24,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
@@ -349,7 +350,26 @@ namespace ORTS.Viewer3D.Popups
             {
                 TableAddLabelValue(table, "Dynamic brake", "{0}", dynamicBrakeStatus);
             }
-            if (locomotiveStatus != null)
+            if (Viewer.PlayerLocomotive is MSTSElectricLocomotive)
+            {
+                MSTSElectricLocomotive loco = Viewer.PlayerLocomotive as MSTSElectricLocomotive;
+
+                StringBuilder pantographStatus = new StringBuilder();
+                foreach (Pantograph pantograph in loco.Pantographs.List)
+                {
+                    pantographStatus.AppendFormat("{0} {1}", pantograph.Id, pantograph.State.ToString());
+                    if (pantograph != loco.Pantographs.List.Last())
+                    {
+                        pantographStatus.Append(" ");
+                    }
+                }
+
+                TableAddLabelValue(table, "Pantographs", pantographStatus.ToString());
+                TableAddLabelValue(table, "Circuit breaker", loco.PowerSupply.CircuitBreaker.State.ToString());
+                TableAddLabelValue(table, "Electric power", loco.PowerSupply.State.ToString());
+                TableAddLabelValue(table, "Auxiliary power", loco.PowerSupply.AuxiliaryState.ToString());
+            }
+            else if (locomotiveStatus != null)
             {
                 var lines = locomotiveStatus.Split('\n');
                 foreach (var line in lines)

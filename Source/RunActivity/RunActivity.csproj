@@ -87,6 +87,8 @@
     <Compile Include="Common\Scripting\ScriptManager.cs" />
     <Compile Include="Common\Scripting\TrainControlSystem.cs" />
     <Compile Include="Common\Scripting\PowerSupply\AbstractPowerSupply.cs" />
+    <Compile Include="Common\Scripting\PowerSupply\CircuitBreaker.cs" />
+    <Compile Include="Common\Scripting\PowerSupply\ElectricPowerSupply.cs" />
     <Compile Include="Debugging\DebugViewerForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -158,7 +160,9 @@
     <Compile Include="RollingStock\SubSystems\Controllers\IController.cs" />
     <Compile Include="RollingStock\SubSystems\Controllers\MSTSBrakeController.cs" />
     <Compile Include="RollingStock\SubSystems\Controllers\MSTSNotchController.cs" />
+    <Compile Include="RollingStock\SubSystems\PowerSupply\CircuitBreaker.cs" />
     <Compile Include="RollingStock\SubSystems\PowerSupply\DieselEngine.cs" />
+    <Compile Include="RollingStock\SubSystems\PowerSupply\ElectricPowerSupply.cs" />
     <Compile Include="RollingStock\SubSystems\PowerSupply\Pantograph.cs" />
     <Compile Include="RollingStock\SubSystems\PowerTransmission\Axle.cs" />
     <Compile Include="RollingStock\SubSystems\PowerTransmission\ElectricMotor.cs" />

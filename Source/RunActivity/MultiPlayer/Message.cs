@@ -2835,8 +2835,8 @@ namespace ORTS.MultiPlayer
 			TT = loco.ThrottleController.CurrentValue;
 			if (loco is MSTSElectricLocomotive)
 			{
-				VL = (loco as MSTSElectricLocomotive).VoltageV;
-			}
+                VL = (loco as MSTSElectricLocomotive).PowerSupply.FilterVoltageV;
+            }
 			tnum = loco.Train.Number;
 			user = u;
 		}
@@ -2899,8 +2899,8 @@ namespace ORTS.MultiPlayer
 			loco.ThrottleController.UpdateValue = 0.0f;
 			if (loco is MSTSElectricLocomotive)
 			{
-				(loco as MSTSElectricLocomotive).VoltageV = VL;
-			}
+                (loco as MSTSElectricLocomotive).PowerSupply.FilterVoltageV = VL;
+            }
 			loco.notificationReceived = true;
 		}
 		public override string ToString()

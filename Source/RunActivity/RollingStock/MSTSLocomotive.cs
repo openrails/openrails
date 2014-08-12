@@ -505,7 +505,6 @@ namespace ORTS
                 case "engine(ortsdynamicbrakeforcecurves": DynamicBrakeForceCurves = new Interpolator2D(stf, false); break;
                 case "engine(ortscontinuousforcetimefactor": ContinuousForceTimeFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(orts(ortssanderspeedeffectupto": SanderSpeedEffectUpToMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
-                case "engine(orts(ortspowerondelay": PowerOnDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(orts(ortsemergencycausespowerdown": EmergencyCausesPowerDown = stf.ReadBoolBlock(false); break;
                 case "engine(orts(ortsemergencycausesthrottledown": EmergencyCausesThrottleDown = stf.ReadBoolBlock(false); break;
                 case "engine(orts(ortsemergencyengageshorn": EmergencyEngagesHorn = stf.ReadBoolBlock(false); break;
@@ -580,7 +579,7 @@ namespace ORTS
             TrainBrakeController = locoCopy.TrainBrakeController.Clone(this);
             EngineBrakeController = locoCopy.EngineBrakeController != null ? locoCopy.EngineBrakeController.Clone(this) : null;
             DynamicBrakeController = locoCopy.DynamicBrakeController != null ? (MSTSNotchController)locoCopy.DynamicBrakeController.Clone() : null;
-            TrainControlSystem = locoCopy.TrainControlSystem != null ? locoCopy.TrainControlSystem.Clone(this) : null;
+            TrainControlSystem.Copy(locoCopy.TrainControlSystem);
         }
 
         /// <summary>
@@ -986,9 +985,9 @@ namespace ORTS
                     break;
 
             }
-            if (MainResPressurePSI < CompressorRestartPressurePSI && PowerOn && !CompressorIsOn)
+            if (MainResPressurePSI < CompressorRestartPressurePSI && AuxPowerOn && !CompressorIsOn)
                 SignalEvent(Event.CompressorOn);
-            else if ((MainResPressurePSI > MaxMainResPressurePSI || !PowerOn) && CompressorIsOn)
+            else if ((MainResPressurePSI > MaxMainResPressurePSI || !AuxPowerOn) && CompressorIsOn)
                 SignalEvent(Event.CompressorOff);
             if (CompressorIsOn)
                 MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;

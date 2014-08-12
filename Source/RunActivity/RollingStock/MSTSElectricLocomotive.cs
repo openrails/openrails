@@ -49,13 +49,12 @@ namespace ORTS
     /// </summary>
     public class MSTSElectricLocomotive: MSTSLocomotive
     {
-        public IIRFilter VoltageFilter;
-        public float VoltageV;
+        public ScriptedElectricPowerSupply PowerSupply;
 
-        public MSTSElectricLocomotive(Simulator simulator, string wagFile)
-            : base(simulator, wagFile)
+        public MSTSElectricLocomotive(Simulator simulator, string wagFile) :
+            base(simulator, wagFile)
         {
-            VoltageFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.7f), 0.001f);
+            PowerSupply = new ScriptedElectricPowerSupply(this);
         }
 
         /// <summary>
@@ -65,7 +64,17 @@ namespace ORTS
         {
             switch (lowercasetoken)
             {
-                default: base.Parse(lowercasetoken, stf); break;
+                case "engine(ortspowerondelay":
+                case "engine(ortsauxpowerondelay":
+                case "engine(ortspowersupply":
+                case "engine(ortscircuitbreaker":
+                case "engine(ortscircuitbreakerclosingdelay":
+                    PowerSupply.Parse(lowercasetoken, stf);
+                    break;
+
+                default:
+                    base.Parse(lowercasetoken, stf);
+                    break;
             }
         }
 
@@ -84,8 +93,7 @@ namespace ORTS
             //CVFFileName = locoCopy.CVFFileName;
             MSTSElectricLocomotive locoCopy = (MSTSElectricLocomotive) copy;
 
-            VoltageFilter = locoCopy.VoltageFilter;
-            VoltageV = locoCopy.VoltageV;
+            PowerSupply.Copy(locoCopy.PowerSupply);
         }
 
         /// <summary>
@@ -94,9 +102,7 @@ namespace ORTS
         /// </summary>
         public override void Save(BinaryWriter outf)
         {
-            outf.Write(Pantographs[1].CommandUp);
-            outf.Write(Pantographs[2].CommandUp);
-            outf.Write(PowerOn);
+            PowerSupply.Save(outf);
 
             base.Save(outf);
         }
@@ -107,18 +113,18 @@ namespace ORTS
         /// </summary>
         public override void Restore(BinaryReader inf)
         {
-            SignalEvent((inf.ReadBoolean() ? PowerSupplyEvent.RaisePantograph : PowerSupplyEvent.LowerPantograph), 1);
-            SignalEvent((inf.ReadBoolean() ? PowerSupplyEvent.RaisePantograph : PowerSupplyEvent.LowerPantograph), 2);
-            PowerOn = inf.ReadBoolean();
-            if (PowerOn)
-                SignalEvent(Event.EnginePowerOn);
+            PowerSupply.Restore(inf);
+
             base.Restore(inf);
         }
 
         public override void Initialize()
         {
-            if ((!Simulator.TRK.Tr_RouteFile.Electrified)&&(!Simulator.Settings.OverrideNonElectrifiedRoutes))
+            if (!PowerSupply.RouteElectrified)
                 Trace.WriteLine("Warning: The route is not electrified. Electric driven trains will not run!");
+
+            PowerSupply.Initialize();
+
             base.Initialize();
         }
 
@@ -131,25 +137,7 @@ namespace ORTS
 
         public override void Update(float elapsedClockSeconds)
         {
-            bool powerOn = Pantographs.State == PantographState.Up
-                && (Simulator.TRK.Tr_RouteFile.Electrified || Simulator.Settings.OverrideNonElectrifiedRoutes);
-
-            if (powerOn && !PowerOn)
-            {
-                SignalEvent(Event.EnginePowerOn);
-            }
-            else if (!powerOn && PowerOn)
-            {
-                SignalEvent(Event.EnginePowerOff);
-                CompressorIsOn = false;
-            }
-
-            PowerOn = powerOn;
-
-            if (PowerOn)
-                VoltageV = VoltageFilter.Filter((float)Program.Simulator.TRK.Tr_RouteFile.MaxLineVoltage, elapsedClockSeconds);
-            else
-                VoltageV = VoltageFilter.Filter(0.0f, elapsedClockSeconds);
+            PowerSupply.Update(elapsedClockSeconds);
 
             base.Update(elapsedClockSeconds);
             //Variable2 = Variable1 * 100F ;
@@ -195,6 +183,13 @@ namespace ORTS
                         Simulator.Confirmer.Confirm(CabControl.Pantograph1, CabSetting.Off);
                         Simulator.Confirmer.Confirm(CabControl.Pantograph2, CabSetting.Off);
                         break;
+
+                    case PowerSupplyEvent.CloseCircuitBreaker:
+                    case PowerSupplyEvent.OpenCircuitBreaker:
+                    case PowerSupplyEvent.GiveCircuitBreakerClosingAuthority:
+                    case PowerSupplyEvent.RemoveCircuitBreakerClosingAuthority:
+                        PowerSupply.HandleEvent(evt);
+                        break;
                 }
             }
 
@@ -232,9 +227,9 @@ namespace ORTS
             if (Train != null)
             {
                 if (!ToState)
-                    Train.SignalEvent(PowerSupplyEvent.LowerPantograph);
+                    SignalEvent(PowerSupplyEvent.LowerPantograph);
                 else
-                    Train.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
+                    SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
             }
 
             base.SetPower(ToState);
@@ -251,7 +246,7 @@ namespace ORTS
                         if (Pantographs.State == PantographState.Up)
                         {
                             //data = (float)Program.Simulator.TRK.Tr_RouteFile.MaxLineVoltage;
-                            data = VoltageV;
+                            data = PowerSupply.FilterVoltageV;
                             if (cvc.Units == CABViewControlUnits.KILOVOLTS)
                                 data /= 1000;
                         }
@@ -303,16 +298,6 @@ namespace ORTS
             }
 
             return data;
-        }
-
-        public override string GetStatus()
-        {
-            return String.Format(
-                "Electric power = {0}{1}{2}",
-                Pantographs.State == PantographState.Raising || Pantographs.State == PantographState.Lowering ? "Switching" : PowerOn ? "On" : "Off",
-                Pantographs[1].CommandUp ? " 1st up" : "",
-                Pantographs[2].CommandUp ? " 2nd up" : ""
-            );
         }
 
         public override string GetDebugStatus()

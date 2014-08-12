@@ -409,6 +409,7 @@ namespace ORTS
             ExhaustColor = DieselEngines[0].ExhaustColor;
 
             PowerOn = DieselEngines.PowerOn;
+            AuxPowerOn = DieselEngines.PowerOn;
 
             if (PowerOn)
             {
@@ -690,9 +691,9 @@ namespace ORTS
                 EngineRPMold = EngineRPM;
             }
 
-            if (MainResPressurePSI < CompressorRestartPressurePSI && PowerOn && !CompressorIsOn)
+            if (MainResPressurePSI < CompressorRestartPressurePSI && AuxPowerOn && !CompressorIsOn)
                 SignalEvent(Event.CompressorOn);
-            else if ((MainResPressurePSI > MaxMainResPressurePSI || !PowerOn) && CompressorIsOn)
+            else if ((MainResPressurePSI > MaxMainResPressurePSI || !AuxPowerOn) && CompressorIsOn)
                 SignalEvent(Event.CompressorOff);
             if (CompressorIsOn)
                 MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;

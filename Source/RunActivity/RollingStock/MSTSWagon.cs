@@ -56,6 +56,7 @@ namespace ORTS
     public class MSTSWagon: TrainCar
     {
         public Pantographs Pantographs;
+        public bool AuxPowerOn;
         public bool DoorLeftOpen;
         public bool DoorRightOpen;
         public bool MirrorOpen;

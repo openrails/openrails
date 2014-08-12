@@ -34,80 +34,6 @@ namespace ORTS
 {
     public class ScriptedTrainControlSystem
     {
-        public bool VigilanceAlarm { get; set; }
-        public bool VigilanceEmergency { get; set; }
-        public bool OverspeedWarning { get; set; }
-        public bool PenaltyApplication { get; set; }
-        public float CurrentSpeedLimitMpS { get; set; }
-        public float NextSpeedLimitMpS { get; set; }
-        public float InterventionSpeedLimitMpS { get; set; }
-        public TrackMonitorSignalAspect CabSignalAspect { get; set; }
-        public MonitoringStatus MonitoringStatus { get; set; }
-
-        Train.TrainInfo TrainInfo = new Train.TrainInfo();
-
-        readonly MSTSLocomotive Locomotive;
-        readonly Simulator Simulator;
-
-        List<float> SignalSpeedLimits = new List<float>();
-        List<Aspect> SignalAspects = new List<Aspect>();
-        List<float> SignalDistances = new List<float>();
-        List<float> PostSpeedLimits = new List<float>();
-        List<float> PostDistances = new List<float>();
-
-        MonitoringDevice VigilanceMonitor;
-        MonitoringDevice OverspeedMonitor;
-        MonitoringDevice EmergencyStopMonitor;
-        MonitoringDevice AWSMonitor;
-
-        public bool AlerterButtonPressed;
-        public bool Activated;
-        bool IsAlerterEnabled;
-
-        string ScriptName;
-        string SoundFileName;
-        string ParametersFileName;
-        TrainControlSystem Script;
-
-        public Dictionary<TrainControlSystem, string> Sounds = new Dictionary<TrainControlSystem, string>();
-
-        const float GravityMpS2 = 9.80665f;
-
-        public ScriptedTrainControlSystem() { }
-
-        public ScriptedTrainControlSystem(MSTSLocomotive locomotive)
-        {
-            Locomotive = locomotive;
-            Simulator = Locomotive.Simulator;
-        }
-
-        public ScriptedTrainControlSystem(ScriptedTrainControlSystem other, MSTSLocomotive newLocomotive)
-        {
-            Locomotive = newLocomotive;
-            Simulator = newLocomotive.Simulator;
-            ScriptName = other.ScriptName;
-            SoundFileName = other.SoundFileName;
-            ParametersFileName = other.ParametersFileName;
-            if (other.VigilanceMonitor != null) VigilanceMonitor = new MonitoringDevice(other.VigilanceMonitor);
-            if (other.OverspeedMonitor != null) OverspeedMonitor = new MonitoringDevice(other.OverspeedMonitor);
-            if (other.EmergencyStopMonitor != null) EmergencyStopMonitor = new MonitoringDevice(other.EmergencyStopMonitor);
-            if (other.AWSMonitor != null) AWSMonitor = new MonitoringDevice(other.AWSMonitor);
-        }
-
-        public void Parse(string lowercasetoken, STFReader stf)
-        {
-            switch (lowercasetoken)
-            {
-                case "engine(vigilancemonitor": VigilanceMonitor = new MonitoringDevice(stf); break;
-                case "engine(overspeedmonitor": OverspeedMonitor = new MonitoringDevice(stf); break;
-                case "engine(emergencystopmonitor": EmergencyStopMonitor = new MonitoringDevice(stf); break;
-                case "engine(awsmonitor": AWSMonitor = new MonitoringDevice(stf); break;
-                case "engine(ortstraincontrolsystem": ScriptName = stf.ReadStringBlock(null); break;
-                case "engine(ortstraincontrolsystemsound": SoundFileName = stf.ReadStringBlock(null); break;
-                case "engine(ortstraincontrolsystemparameters": ParametersFileName = stf.ReadStringBlock(null); break;
-            }
-        }
-
         public class MonitoringDevice
         {
             public float MonitorTimeS = 66; // Time from alerter reset to applying emergency brake
@@ -172,9 +98,80 @@ namespace ORTS
             }
         }
 
-        public ScriptedTrainControlSystem Clone(MSTSLocomotive newLocomotive)
+        public bool VigilanceAlarm { get; set; }
+        public bool VigilanceEmergency { get; set; }
+        public bool OverspeedWarning { get; set; }
+        public bool PenaltyApplication { get; set; }
+        public float CurrentSpeedLimitMpS { get; set; }
+        public float NextSpeedLimitMpS { get; set; }
+        public float InterventionSpeedLimitMpS { get; set; }
+        public TrackMonitorSignalAspect CabSignalAspect { get; set; }
+        public MonitoringStatus MonitoringStatus { get; set; }
+
+        Train.TrainInfo TrainInfo = new Train.TrainInfo();
+
+        readonly MSTSLocomotive Locomotive;
+        readonly Simulator Simulator;
+
+        List<float> SignalSpeedLimits = new List<float>();
+        List<Aspect> SignalAspects = new List<Aspect>();
+        List<float> SignalDistances = new List<float>();
+        List<float> PostSpeedLimits = new List<float>();
+        List<float> PostDistances = new List<float>();
+
+        MonitoringDevice VigilanceMonitor;
+        MonitoringDevice OverspeedMonitor;
+        MonitoringDevice EmergencyStopMonitor;
+        MonitoringDevice AWSMonitor;
+
+        public bool AlerterButtonPressed { get; private set; }
+        bool IsAlerterEnabled;
+
+        public bool PowerAuthorization { get; private set; }
+
+        bool Activated = false;
+        string ScriptName;
+        string SoundFileName;
+        string ParametersFileName;
+        TrainControlSystem Script;
+
+        public Dictionary<TrainControlSystem, string> Sounds = new Dictionary<TrainControlSystem, string>();
+
+        const float GravityMpS2 = 9.80665f;
+
+        public ScriptedTrainControlSystem() { }
+
+        public ScriptedTrainControlSystem(MSTSLocomotive locomotive)
         {
-            return new ScriptedTrainControlSystem(this, newLocomotive);
+            Locomotive = locomotive;
+            Simulator = Locomotive.Simulator;
+
+            PowerAuthorization = true;
+        }
+
+        public void Parse(string lowercasetoken, STFReader stf)
+        {
+            switch (lowercasetoken)
+            {
+                case "engine(vigilancemonitor": VigilanceMonitor = new MonitoringDevice(stf); break;
+                case "engine(overspeedmonitor": OverspeedMonitor = new MonitoringDevice(stf); break;
+                case "engine(emergencystopmonitor": EmergencyStopMonitor = new MonitoringDevice(stf); break;
+                case "engine(awsmonitor": AWSMonitor = new MonitoringDevice(stf); break;
+                case "engine(ortstraincontrolsystem": ScriptName = stf.ReadStringBlock(null); break;
+                case "engine(ortstraincontrolsystemsound": SoundFileName = stf.ReadStringBlock(null); break;
+                case "engine(ortstraincontrolsystemparameters": ParametersFileName = stf.ReadStringBlock(null); break;
+            }
+        }
+
+        public void Copy(ScriptedTrainControlSystem other)
+        {
+            ScriptName = other.ScriptName;
+            SoundFileName = other.SoundFileName;
+            ParametersFileName = other.ParametersFileName;
+            if (other.VigilanceMonitor != null) VigilanceMonitor = new MonitoringDevice(other.VigilanceMonitor);
+            if (other.OverspeedMonitor != null) OverspeedMonitor = new MonitoringDevice(other.OverspeedMonitor);
+            if (other.EmergencyStopMonitor != null) EmergencyStopMonitor = new MonitoringDevice(other.EmergencyStopMonitor);
+            if (other.AWSMonitor != null) AWSMonitor = new MonitoringDevice(other.AWSMonitor);
         }
 
         public void Initialize()
@@ -222,6 +219,7 @@ namespace ORTS
             Script.IsDirectionReverse = () => Locomotive.Direction == Direction.Reverse;
             Script.IsBrakeEmergency = () => Locomotive.TrainBrakeController.EmergencyBraking;
             Script.IsBrakeFullService = () => Locomotive.TrainBrakeController.TCSFullServiceBraking;
+            Script.PowerAuthorization = () => PowerAuthorization;
             Script.TrainLengthM = () => Locomotive.Train != null ? Locomotive.Train.Length : 0f;
             Script.SpeedMpS = () => Math.Abs(Locomotive.SpeedMpS);
             Script.BrakePipePressureBar = () => Locomotive.BrakeSystem != null ? Bar.FromPSI(Locomotive.BrakeSystem.BrakeLine1PressurePSI) : float.MaxValue;
@@ -277,6 +275,11 @@ namespace ORTS
                 {
                     Locomotive.Train.SignalEvent(PowerSupplyEvent.LowerPantograph);
                 }
+            };
+            Script.SetPowerAuthorization = (value) =>
+            {
+                if (PowerAuthorization != value)
+                    PowerAuthorization = value;
             };
             Script.GetBoolParameter = (arg1, arg2, arg3) => LoadParameter<bool>(arg1, arg2, arg3);
             Script.GetIntParameter = (arg1, arg2, arg3) => LoadParameter<int>(arg1, arg2, arg3);
@@ -401,6 +404,7 @@ namespace ORTS
             // If script not loaded or not in player's locomotive = all restrictions disabled
             if (Script == null || Locomotive.Train.TrainType != Train.TRAINTYPE.PLAYER || !Locomotive.IsLeadLocomotive())
             {
+                PowerAuthorization = true;
                 if (Locomotive.TrainBrakeController != null)
                 {
                     Locomotive.TrainBrakeController.TCSFullServiceBraking = false;
@@ -541,6 +545,7 @@ namespace ORTS
 
             bool EmergencyBrake = false;
             bool FullBrake = false;
+            bool PowerCut = false;
 
             if (VigilanceMonitor != null)
             {
@@ -548,6 +553,9 @@ namespace ORTS
                     EmergencyBrake |= VigilanceEmergency;
                 else if (VigilanceMonitor.AppliesFullBrake)
                     FullBrake |= VigilanceEmergency;
+
+                if (VigilanceMonitor.EmergencyCutsPower)
+                    PowerCut |= VigilanceEmergency;
             }
 
             if (OverspeedMonitor != null)
@@ -556,6 +564,9 @@ namespace ORTS
                     EmergencyBrake |= OverspeedEmergency;
                 else if (OverspeedMonitor.AppliesFullBrake)
                     FullBrake |= OverspeedEmergency;
+
+                if (OverspeedMonitor.EmergencyCutsPower)
+                    PowerCut |= OverspeedEmergency;
             }
 
             if (EmergencyStopMonitor != null)
@@ -565,11 +576,13 @@ namespace ORTS
                 else if (EmergencyStopMonitor.AppliesFullBrake)
                     FullBrake |= ExternalEmergency;
 
-                if (EmergencyStopMonitor.EmergencyCutsPower && ExternalEmergency) SetPantographsDown();
+                if (EmergencyStopMonitor.EmergencyCutsPower)
+                    PowerCut |= ExternalEmergency;
             }
 
             SetEmergencyBrake(EmergencyBrake);
             SetFullBrake(FullBrake);
+            SetPowerAuthorization(!PowerCut);
 
             if (EmergencyBrake || FullBrake)
             {

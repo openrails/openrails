@@ -84,6 +84,10 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<bool> IsBrakeFullService;
         /// <summary>
+        /// True if circuit breaker or power contactor close authorization is true.
+        /// </summary>
+        public Func<bool> PowerAuthorization;
+        /// <summary>
         /// Train brake pipe pressure. Returns float.MaxValue if no data is available.
         /// </summary>
         public Func<float> BrakePipePressureBar;
@@ -127,6 +131,10 @@ namespace ORTS.Scripting.Api
         /// Cut power by pull all pantographs down.
         /// </summary>
         public Action SetPantographsDown;
+        /// <summary>
+        /// Set the circuit breaker or power contactor close authorization.
+        /// </summary>
+        public Action<bool> SetPowerAuthorization;
         /// <summary>
         /// Switch vigilance alarm sound on (true) or off (false).
         /// </summary>

@@ -142,8 +142,13 @@ namespace ORTS
 
         public Pantograph this[int i]
         {
-            get { return List[i - 1]; }
-            set { List[i - 1] = value; }
+            get
+            {
+                if (i <= 0 || i > List.Count)
+                    return null;
+                else
+                    return List[i - 1];
+            }
         }
 
         #endregion
@@ -194,7 +199,7 @@ namespace ORTS
                 return value;
             }
         }
-        private int Id
+        public int Id
         {
             get
             {
