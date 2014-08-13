@@ -816,7 +816,7 @@ namespace ORTS
                         w.BogieIndex = 0;
                     if (w.BogieMatrix > 0 && w.BogieIndex > 0)
                     {
-                        for (var i = 0; i <= Parts.Count; i++)
+                        for (var i = 0; i < Parts.Count; i++)
                             if (Parts[i].iMatrix == w.BogieMatrix)
                             {
                                 w.BogieIndex = i;
