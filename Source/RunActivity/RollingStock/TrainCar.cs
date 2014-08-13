@@ -814,9 +814,9 @@ namespace ORTS
                             w.BogieIndex = 0;
                     if (w.BogieIndex >= Parts.Count)
                         w.BogieIndex = 0;
-                    if (w.BogieMatrix > 0)
+                    if (w.BogieMatrix > 0 && w.BogieIndex > 0)
                     {
-                        for (var i = 0; i <= Parts.Count - 1; i++)
+                        for (var i = 0; i <= Parts.Count; i++)
                             if (Parts[i].iMatrix == w.BogieMatrix)
                             {
                                 w.BogieIndex = i;
@@ -834,19 +834,7 @@ namespace ORTS
             for (var i = 1; i < Parts.Count; i++)
                 if (Parts[i].SumWgt > 1.5)
                     Parts[0].SumWgt++;
-            // Check for articulation and if we have enough wheels.
-            //var carIndex = Train.Cars.IndexOf(this);
-            //if (!articulatedFront && !articulatedRear && (Parts[0].SumWgt < 1.5))
-            //{
-            //    // Not articulated, but not enough wheels/bogies attached to the car.
-            //    Trace.TraceWarning("Car with less than two axles/bogies ({1} axles, {2} bogies) in {0}", WagFilePath, WheelAxles.Count, Parts.Count - 1);
-            //    // Put all the axles directly on the car, ignoring any bogies.
-            //    foreach (WheelAxle w in WheelAxles)
-            //    {
-            //        w.BogieIndex = 0;
-            //        w.Part = Parts[0];
-            //    }
-            //}
+            
             // Using WheelAxles.Count test to control WheelAxlesLoaded flag.
             if (WheelAxles.Count > 2)
                 WheelAxlesLoaded = true;
@@ -876,15 +864,6 @@ namespace ORTS
                         WheelAxlesLoaded = true;
                         this.SetUpWheelsArticulation(carIndex);
                     }
-            //if (Train != null)
-            //    foreach (var car in Train.Cars)
-            //    {
-            //        if (articulatedRear || articulatedFront)
-            //            WheelAxlesLoaded = true;
-
-            //        if (car.WheelAxlesLoaded)
-            //            car.SetUpWheelsArticulation(carIndex);
-            //    }
         } // end SetUpWheels()
 
         void SetUpWheelsArticulation(int carIndex)
