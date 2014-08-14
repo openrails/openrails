@@ -107,6 +107,11 @@ namespace ORTS
             // Simulation tab
             checkUseAdvancedAdhesion.Checked = Settings.UseAdvancedAdhesion;
             numericAdhesionMovingAverageFilterSize.Value = settings.AdhesionMovingAverageFilterSize;
+            AdhesionFactorTrackBar1.Value = settings.AdhesionFactor;
+            AdhesionFactorChangeTrackBar1.Value = settings.AdhesionFactorChange;
+            AdhesionPropToWeatherCheckBox.Checked = settings.AdhesionProportionalToWeather;
+            SetAdhesionLevelValue();
+
             checkBreakCouplers.Checked = Settings.BreakCouplers;
             checkOverrideNonElectrifiedRoutes.Checked = Settings.OverrideNonElectrifiedRoutes;
             checkCurveResistanceSpeedDependent.Checked = settings.CurveResistanceSpeedDependent;
@@ -310,6 +315,9 @@ namespace ORTS
             // Simulation tab
             Settings.UseAdvancedAdhesion = checkUseAdvancedAdhesion.Checked;
             Settings.AdhesionMovingAverageFilterSize = (int)numericAdhesionMovingAverageFilterSize.Value;
+            Settings.AdhesionFactor = (int)AdhesionFactorTrackBar1.Value;
+            Settings.AdhesionFactorChange = (int)AdhesionFactorChangeTrackBar1.Value;
+            Settings.AdhesionProportionalToWeather = AdhesionPropToWeatherCheckBox.Checked;
             Settings.BreakCouplers = checkBreakCouplers.Checked;
             Settings.OverrideNonElectrifiedRoutes = checkOverrideNonElectrifiedRoutes.Checked;
             Settings.CurveResistanceSpeedDependent = checkCurveResistanceSpeedDependent.Checked;
@@ -414,6 +422,40 @@ namespace ORTS
         {
             if (Initialized)
                 MessageBox.Show(catalog.GetString("Please restart Open Rails in order to load the new language."));
+        }
+
+        private void AdhesionFactorTrackBar1_ValueChanged(object sender, EventArgs e)
+        {
+            SetAdhesionLevelValue();
+            AdhesionFactorValueLabel.Text = AdhesionFactorTrackBar1.Value.ToString() + "%";
+            AdhesionFactorChangeValueLabel.Text = AdhesionFactorChangeTrackBar1.Value.ToString() + "%";
+        }
+
+        private void SetAdhesionLevelValue()
+        {
+            int level = AdhesionFactorTrackBar1.Value - AdhesionFactorChangeTrackBar1.Value;
+            if (AdhesionPropToWeatherCheckBox.Checked)
+                level -= 40;
+
+            if (level > 159)
+                AdhesionLevelValue.Text = "Very easy";
+            else if (level > 139)
+                AdhesionLevelValue.Text = "Easy";
+            else if (level > 119)
+                AdhesionLevelValue.Text = "MSTS Compatibile";
+            else if (level > 89)
+                AdhesionLevelValue.Text = "Normal";
+            else if (level > 69)
+                AdhesionLevelValue.Text = "Hard";
+            else if (level > 59)
+                AdhesionLevelValue.Text = "Very Hard";
+            else
+                AdhesionLevelValue.Text = "Good luck!";
+        }
+
+        private void AdhesionPropToWeatherCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            SetAdhesionLevelValue();
         }
     }
 }

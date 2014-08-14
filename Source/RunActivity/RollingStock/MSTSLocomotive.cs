@@ -205,7 +205,7 @@ namespace ORTS
             LocomotiveAxle.StabilityCorrection = true;
             LocomotiveAxle.FilterMovingAverage.Size = Simulator.Settings.AdhesionMovingAverageFilterSize;
             CurrentFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.5f), 0.001f);
-            AdhesionFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.1f), 0.001f);
+            AdhesionFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(1f), 0.001f);
 
             TrainBrakeController = new ScriptedBrakeController(this);
             EngineBrakeController = new ScriptedBrakeController(this);
@@ -1168,29 +1168,18 @@ namespace ORTS
                 }
 
                 //Set adhesion coeff to the model
-                //Pure condition
-                //LocomotiveAxle.AdhesionConditions = max0;
-                //Filtered condition
-                //LocomotiveAxle.AdhesionConditions = AdhesionFilter.Filter(max0, elapsedClockSeconds);
                 //Filtered random condition
-                LocomotiveAxle.AdhesionConditions = AdhesionFilter.Filter(max0 + (float)(0.2 * Program.Random.NextDouble()), elapsedClockSeconds);
-                //LocomotiveAxle.AdhesionConditions = max0;
-                //Set axle inertia (this should be placed within the ENG parser)
-                // but make sure the value is sufficietn
-                //if (MaxPowerW < 200000.0f)
-                //{
-                //    if (NumWheelsAdhesionFactor > 4.0f)
-                //        LocomotiveAxle.InertiaKgm2 = 2.0f * NumWheelsAdhesionFactor * 4000.0f;
-                //    else
-                //        LocomotiveAxle.InertiaKgm2 = 32000.0f;
-                //}
-                //else
-                //{
-                //    if (NumWheelsAdhesionFactor > 4.0f)
-                //        LocomotiveAxle.InertiaKgm2 = 2.0f * NumWheelsAdhesionFactor * MaxPowerW / 500.0f;
-                //    else
-                //        LocomotiveAxle.InertiaKgm2 = 32000.0f;
-                //}
+
+                if (Simulator.Settings.AdhesionProportionalToWeather)
+                {
+                    float fog = Program.Viewer.World.WeatherControl.fogDistance;
+                    float pric = Program.Viewer.World.WeatherControl.pricipitationIntensityPPSPM2 * 1000;
+                    max0 *= Math.Min(Math.Max(fog * 5.1e-4f + 0.7f, 0.7f), 1.5f);
+                    max0 *= Math.Min(Math.Max(1.5f - pric * 0.05f, 0.5f), 1.5f);
+                }
+                LocomotiveAxle.AdhesionConditions = (float)(Simulator.Settings.AdhesionFactor) * 0.01f *
+                                                        AdhesionFilter.Filter(max0 + (float)((float)(Simulator.Settings.AdhesionFactorChange) * 0.01f * 2f * (Program.Random.NextDouble() - 0.5f)), elapsedClockSeconds);
+                    
 
                 //Compute axle inertia from parameters if possible
                 if (AxleInertiaKgm2 > 10000.0f)

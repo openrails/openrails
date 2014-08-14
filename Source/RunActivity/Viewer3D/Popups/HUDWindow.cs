@@ -392,7 +392,12 @@ namespace ORTS.Viewer3D.Popups
             else if (Viewer.PlayerTrain.IsWheelSlipWarninq)
                 TableAddLine(table, "Wheel slip warning");
             if (Viewer.PlayerLocomotive.GetSanderOn())
-                TableAddLine(table, "Sander on");
+            {
+                if (Math.Abs(playerTrain.SpeedMpS) < ((MSTSLocomotive)Viewer.PlayerLocomotive).SanderSpeedOfMpS)
+                    TableAddLine(table, "Sander on");
+                else
+                    TableAddLine(table, "Sander blocked");
+            }
 
             if (MultiPlayer.MPManager.IsMultiPlayer())
             {
@@ -490,6 +495,7 @@ namespace ORTS.Viewer3D.Popups
                 if ((mstsLocomotive.Simulator.UseAdvancedAdhesion) && (!mstsLocomotive.AntiSlip))
                 {
                     TableAddLabelValue(table, "Wheel slip", "{0:F0}% ({1:F0}%/s)", mstsLocomotive.LocomotiveAxle.SlipSpeedPercent, mstsLocomotive.LocomotiveAxle.SlipDerivationPercentpS);
+                    TableAddLabelValue(table, "Conditions", "{0:F0}%", mstsLocomotive.LocomotiveAxle.AdhesionConditions * 10f);
                     TableAddLabelValue(table, "Axle drive force", "{0:F0} N", mstsLocomotive.LocomotiveAxle.DriveForceN);
                     TableAddLabelValue(table, "Axle brake force", "{0:F0} N", mstsLocomotive.LocomotiveAxle.BrakeForceN);
                     TableAddLabelValue(table, "Num of substeps", "{0:F0} (filtered by {1:F0})", mstsLocomotive.LocomotiveAxle.AxleRevolutionsInt.NumOfSubstepsPS,

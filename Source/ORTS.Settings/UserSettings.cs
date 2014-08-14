@@ -139,6 +139,12 @@ namespace ORTS.Settings
 		public bool UseAdvancedAdhesion { get; set; }
 		[Default(10)]
 		public int AdhesionMovingAverageFilterSize { get; set; }
+        [Default(130)]
+        public int AdhesionFactor { get; set; }
+        [Default(10)]
+        public int AdhesionFactorChange { get; set; }
+        [Default(false)]
+        public bool AdhesionProportionalToWeather { get; set; }
 		[Default(false)]
 		public bool BreakCouplers { get; set; }
 		[Default(false)]
