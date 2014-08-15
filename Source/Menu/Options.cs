@@ -438,19 +438,19 @@ namespace ORTS
                 level -= 40;
 
             if (level > 159)
-                AdhesionLevelValue.Text = "Very easy";
+                AdhesionLevelValue.Text = catalog.GetString("Very easy");
             else if (level > 139)
-                AdhesionLevelValue.Text = "Easy";
+                AdhesionLevelValue.Text = catalog.GetString("Easy");
             else if (level > 119)
-                AdhesionLevelValue.Text = "MSTS Compatibile";
+                AdhesionLevelValue.Text = catalog.GetString("MSTS Compatibile");
             else if (level > 89)
-                AdhesionLevelValue.Text = "Normal";
+                AdhesionLevelValue.Text = catalog.GetString("Normal");
             else if (level > 69)
-                AdhesionLevelValue.Text = "Hard";
+                AdhesionLevelValue.Text = catalog.GetString("Hard");
             else if (level > 59)
-                AdhesionLevelValue.Text = "Very Hard";
+                AdhesionLevelValue.Text = catalog.GetString("Very Hard");
             else
-                AdhesionLevelValue.Text = "Good luck!";
+                AdhesionLevelValue.Text = catalog.GetString("Good luck!");
         }
 
         private void AdhesionPropToWeatherCheckBox_CheckedChanged(object sender, EventArgs e)
