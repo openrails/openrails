@@ -89,7 +89,7 @@ namespace ORTS
                 {
                     auxiliaryState = value;
 
-                    if (Locomotive.IsLeadLocomotive() && Locomotive.Train != null)
+                    if (Locomotive.Train != null && Locomotive.IsLeadLocomotive())
                     {
                         foreach (TrainCar car in Locomotive.Train.Cars)
                         {
