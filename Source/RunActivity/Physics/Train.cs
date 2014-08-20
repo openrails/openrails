@@ -158,7 +158,7 @@ namespace ORTS
         private float standardWaitTimeS = 60.0f;         // wait for 1 min before claim state
         private float backwardThreshold = 20;            // counter threshold to detect backward move
 
-        protected Signals signalRef;                     // reference to main Signals class
+        public Signals signalRef { get; protected set; } // reference to main Signals class: SPA change protected to public with get, set!
         public TCRoutePath TCRoute;                      // train path converted to TC base
         public TCSubpathRoute[] ValidRoute = new TCSubpathRoute[2] { null, null };  // actual valid path
         public TCSubpathRoute TrainRoute;                // partial route under train for Manual mode
@@ -12737,13 +12737,13 @@ namespace ORTS
             {
                 activeSubpath = 0;
                 activeAltpath = -1;
+                float offset = 0;
 
                 //
                 // collect all TC Elements
                 //
                 // get tracknode from first path node
                 //
-
                 int sublist = 0;
 
                 Dictionary<int, int[]> AlternativeRoutes = new Dictionary<int, int[]>();
@@ -12807,7 +12807,9 @@ namespace ORTS
 
                 thisPathNode = thisPathNode.NextMainNode;
                 int reversal = 0;
+#if !NEW_ACTION
                 bool breakpoint = false;
+#endif
 
                 while (thisPathNode != null)
                 {
@@ -12891,7 +12893,8 @@ namespace ORTS
                             }
                             continue;          // process this node again in reverse direction
                         }
-                            //  SPA:    WP: New forms ?
+                            //  SPA:    WP: New forms 
+#if !NEW_ACTION
                         else if (breakpoint)
                         {
                             sublist++;
@@ -12900,6 +12903,7 @@ namespace ORTS
 
                             breakpoint = false;
                         }
+#endif
 
                         //
                         // process junction section
@@ -12960,7 +12964,7 @@ namespace ORTS
                             Traveller TDBTrav = new Traveller(aiPath.TSectionDat, aiPath.TrackDB.TrackNodes, reversalNode,
                                             firstSection.TileX, firstSection.TileZ,
                                             firstSection.X, firstSection.Z, (Traveller.TravellerDirection)1);
-                            float offset = TDBTrav.DistanceTo(reversalNode,
+                            offset = TDBTrav.DistanceTo(reversalNode,
                                 nextPathNode.Location.TileX, nextPathNode.Location.TileZ,
                                 nextPathNode.Location.Location.X,
                                 nextPathNode.Location.Location.Y,
@@ -12972,31 +12976,21 @@ namespace ORTS
                         }
                         else if (nextPathNode.Type == AIPathNodeType.Stop)
                         {
-                            //if (settings.EnhancedActCompatibility)
-                            //{
-                            //    if (breakpoint)
-                            //    {
-                            //        TCRouteElement thisElement = thisSubpath[thisSubpath.Count - 1];
-                            //        sublist++;
-                            //        thisSubpath = new TCSubpathRoute();
-                            //        thisSubpath.Add(thisElement);
-                            //        TCRouteSubpaths.Add(thisSubpath);
-                            //        breakpoint = false;
-                            //    }
-                            //}
-                            //  SPA:    WP: Add this as simple WP, not node
+#if NEW_ACTION
+                            offset = GetOffsetToPlace(aiPath, currentDir, nextPathNode);
+#else
                             TrackNode WPNode = aiPath.TrackDB.TrackNodes[nextPathNode.NextMainTVNIndex];
-                            TrVectorSection firstSection = WPNode.TrVectorNode.TrVectorSections[0];
-                            Traveller TDBTrav = new Traveller(aiPath.TSectionDat, aiPath.TrackDB.TrackNodes, WPNode,
-                                firstSection.TileX, firstSection.TileZ,
-                                firstSection.X, firstSection.Z, (Traveller.TravellerDirection)1);
+                                TrVectorSection firstSection = WPNode.TrVectorNode.TrVectorSections[0];
+                                Traveller TDBTrav = new Traveller(aiPath.TSectionDat, aiPath.TrackDB.TrackNodes, WPNode,
+                                    firstSection.TileX, firstSection.TileZ,
+                                    firstSection.X, firstSection.Z, (Traveller.TravellerDirection)1);
 
-                            float offset = TDBTrav.DistanceTo(WPNode,
-                                nextPathNode.Location.TileX, nextPathNode.Location.TileZ,
-                                nextPathNode.Location.Location.X,
-                                nextPathNode.Location.Location.Y,
-                                nextPathNode.Location.Location.Z);
-
+                                offset = TDBTrav.DistanceTo(WPNode,
+                                    nextPathNode.Location.TileX, nextPathNode.Location.TileZ,
+                                    nextPathNode.Location.Location.X,
+                                    nextPathNode.Location.Location.Y,
+                                    nextPathNode.Location.Location.Z);
+#endif
                             int[] waitingPoint = new int[6];
                             waitingPoint[0] = sublist;
                             waitingPoint[1] = ConvertWaitingPoint(nextPathNode, aiPath.TrackDB, aiPath.TSectionDat, currentDir);
@@ -13006,7 +13000,9 @@ namespace ORTS
                             waitingPoint[4] = -1; // hold signal set later
                             waitingPoint[5] = (int)offset;
                             WaitingPoints.Add(waitingPoint);
+#if !NEW_ACTION
                             breakpoint = true;
+#endif
                         }
 
                         // other type of path need not be processed
@@ -13014,7 +13010,6 @@ namespace ORTS
                         // go to next node
                         nextPathNode = nextPathNode.NextMainNode;
                     }
-
                     thisPathNode = nextPathNode;
                 }
 
@@ -13109,7 +13104,7 @@ namespace ORTS
                 for (int iSub = 0; iSub < reversalOffset.Count; iSub++)  // no reversal for final path
                 {
                     TCSubpathRoute revSubPath = TCRouteSubpaths[reversalIndex[iSub]];
-                    float offset = reversalOffset[iSub];
+                    offset = reversalOffset[iSub];
                     if (revSubPath.Count <= 0)
                         continue;
 
@@ -13466,6 +13461,51 @@ namespace ORTS
 
                 File.AppendAllText(@"C:\temp\TCSections.txt", "--------------------------------------------------\n");
 #endif
+            }
+
+            //  SPA: Used with enhanced MSTS Mode, please don't change
+            float GetOffsetToPlace(AIPath aiPath, int direction, AIPathNode pathNode)
+            {
+                AIPathNode startAINode = aiPath.Nodes[0];
+                TrackNode startWPNode = aiPath.TrackDB.TrackNodes[startAINode.NextMainTVNIndex];
+                Traveller startNodeTrav = new Traveller(aiPath.TSectionDat, aiPath.TrackDB.TrackNodes, startWPNode,
+                    startAINode.Location.TileX, startAINode.Location.TileZ,
+                    startAINode.Location.Location.X, startAINode.Location.Location.Z, (Traveller.TravellerDirection)direction);
+                float startOffset = startNodeTrav.DistanceTo(startWPNode,
+                    pathNode.Location.TileX, pathNode.Location.TileZ,
+                    pathNode.Location.Location.X,
+                    pathNode.Location.Location.Y,
+                    pathNode.Location.Location.Z);
+
+                float offset = 0;
+                TrackNode WPNode;
+                TrVectorSection firstSection;
+
+                WPNode = aiPath.TrackDB.TrackNodes[pathNode.NextMainTVNIndex];
+                int idxSectionWP = ConvertWaitingPoint(pathNode, aiPath.TrackDB, aiPath.TSectionDat, direction);
+                firstSection = WPNode.TrVectorNode.TrVectorSections[0];
+                Traveller TDBTrav = new Traveller(aiPath.TSectionDat, aiPath.TrackDB.TrackNodes, WPNode,
+                    firstSection.TileX, firstSection.TileZ,
+                    firstSection.X, firstSection.Z, (Traveller.TravellerDirection)1);
+
+                offset = TDBTrav.DistanceTo(WPNode,
+                    pathNode.Location.TileX, pathNode.Location.TileZ,
+                    pathNode.Location.Location.X,
+                    pathNode.Location.Location.Y,
+                    pathNode.Location.Location.Z);
+                for (int idx = 0; idx < WPNode.TrVectorNode.TrVectorSections.Count(); idx++)
+                {
+                    int TCSectionIndex = WPNode.TCCrossReference[idx].Index;
+                    if (TCSectionIndex == idxSectionWP)
+                    {
+                        if (offset < WPNode.TCCrossReference[idx].OffsetLength[direction])
+                            offset += WPNode.TCCrossReference[idx].OffsetLength[direction];
+                        else
+                            offset -= WPNode.TCCrossReference[idx].OffsetLength[direction];
+                        break;
+                    }
+                }
+                return offset;
             }
 
             public String[] GetTCRouteInfo(String[] stateString, TCPosition position)
@@ -15873,9 +15913,16 @@ namespace ORTS
             {
                 List<DistanceTravelledItem> itemsToRemove = new List<DistanceTravelledItem>();
 
+                if (removeAll)
+                    Trace.TraceInformation("No Actions");
+
                 foreach (var thisAction in this)
                 {
-                    if (thisAction is AIActionItem || removeAll)
+#if NEW_ACTION
+                    if ((thisAction is AIActionItem && !(thisAction is AuxActionItem)) || removeAll)
+#else
+                    if ((thisAction is AIActionItem) || removeAll)
+#endif
                     {
                         DistanceTravelledItem thisItem = thisAction;
                         itemsToRemove.Add(thisItem);
@@ -15908,6 +15955,7 @@ namespace ORTS
             public DistanceTravelledItem()
             {
             }
+
 
             //================================================================================================//
             //

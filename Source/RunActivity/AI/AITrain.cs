@@ -64,6 +64,10 @@ namespace ORTS
         public float MaxVelocityA = 30.0f;               // max velocity as set in .con file
         public Service_Definition ServiceDefinition;     // train's service definition in .act file
 
+#if NEW_ACTION
+        public List<AIAuxActions> AuxActions;          // Action To Do during activity, like WP
+#endif
+
         public enum AI_MOVEMENT_STATE
         {
             AI_STATIC,
@@ -74,7 +78,10 @@ namespace ORTS
             ACCELERATING,
             FOLLOWING,
             RUNNING,
-            APPROACHING_END_OF_PATH
+            APPROACHING_END_OF_PATH,
+            INIT_ACTION,
+            HANDLE_ACTION,
+            END_ACTION//  SPA: used by new AIActionItem as Auxiliary
         }
 
         public AI_MOVEMENT_STATE MovementState = AI_MOVEMENT_STATE.INIT;  // actual movement state
@@ -91,20 +98,24 @@ namespace ORTS
 
         public AI AI;
 
-        static float keepDistanceStatTrainM_P = 10.0f;  // stay 10m behind stationary train (pass in station)
-        static float keepDistanceStatTrainM_F = 50.0f;  // stay 50m behind stationary train (freight or pass outside station)
-        static float followDistanceStatTrainM = 30.0f;  // min dist for starting to follow
-        static float keepDistanceMovingTrainM = 300.0f; // stay 300m behind moving train
-        static float creepSpeedMpS = 2.5f;              // speed for creeping up behind train or upto signal
-        static float maxFollowSpeedMpS = 15.0f;         // max. speed when following
-        static float hysterisMpS = 0.5f;                // speed hysteris value to avoid instability
-        static float clearingDistanceM = 30.0f;         // clear distance to stopping point
-        static float signalApproachDistanceM = 20.0f;   // final approach to signal
+        //  SPA:    Add public in order to be able to get these infos in new AIActionItems
+        public static float keepDistanceStatTrainM_P = 10.0f;  // stay 10m behind stationary train (pass in station)
+        public static float keepDistanceStatTrainM_F = 50.0f;  // stay 50m behind stationary train (freight or pass outside station)
+        public static float followDistanceStatTrainM = 30.0f;  // min dist for starting to follow
+        public static float keepDistanceMovingTrainM = 300.0f; // stay 300m behind moving train
+        public static float creepSpeedMpS = 2.5f;              // speed for creeping up behind train or upto signal
+        public static float maxFollowSpeedMpS = 15.0f;         // max. speed when following
+        public static float hysterisMpS = 0.5f;                // speed hysteris value to avoid instability
+        public static float clearingDistanceM = 30.0f;         // clear distance to stopping point
+        public static float signalApproachDistanceM = 20.0f;   // final approach to signal
 
 #if WITH_PATH_DEBUG
         //  Only for EnhancedActCompatibility
         public string currentAIState = "";
         public string currentAIStation = "";
+        int countRequiredAction = 0;
+        public AIActionItem savedActionInfo = null;              // no next action
+
 #endif
         //================================================================================================//
         /// <summary>
@@ -125,12 +136,19 @@ namespace ORTS
             Name = String.Copy(name);
             TrafficService = trafficService;
             MaxVelocityA = maxVelocityA;
+#if NEW_ACTION
+            AuxActions = new List<AIAuxActions>();
+#endif
         }
 
         public AITrain(Simulator simulator)
             : base(simulator)
         {
             TrainType = TRAINTYPE.AI_NOTSTARTED;
+#if NEW_ACTION
+            AuxActions = new List<AIAuxActions>();
+#endif
+
         }
 
         //================================================================================================//
@@ -222,6 +240,10 @@ namespace ORTS
                 InitializeSignals(true);
                 ResetActions(true);
             }
+#if NEW_ACTION
+            AuxActions = new List<AIAuxActions>();
+#endif
+
         }
 
         //================================================================================================//
@@ -373,7 +395,12 @@ namespace ORTS
                 SetEndOfRouteAction();              // set action to ensure train stops at end of route
 
                 // check if train starts at station stop
-
+#if NEW_ACTION                                                                                                                                                              
+                if (AuxActions.Count > 0)
+                {
+                    SetAuxAction();
+                }
+#endif
                 if (StationStops.Count > 0)
                 {
                     atStation = CheckInitialStation();
@@ -385,7 +412,7 @@ namespace ORTS
                     { 
                                SetNextStationAction();               // set station details
                     }
-                MovementState = AI_MOVEMENT_STATE.INIT;   // start in STOPPED mode to collect info
+                    MovementState = AI_MOVEMENT_STATE.INIT;   // start in STOPPED mode to collect info
                 }
             }
 
@@ -652,6 +679,19 @@ namespace ORTS
 #endif
             
             PreUpdate = preUpdate;   // flag for pre-update phase
+#if WITH_PATH_DEBUG
+            int lastIndex = PreviousPosition[0].RouteListIndex;
+            int presentIndex = PresentPosition[0].RouteListIndex;
+            if (lastIndex != presentIndex || countRequiredAction != requiredActions.Count)
+            {
+                countRequiredAction = requiredActions.Count;
+            }
+            if (nextActionInfo != savedActionInfo)
+            {
+                savedActionInfo = nextActionInfo;
+            }
+#endif
+
 
             // Check if at stop point and stopped
             //          if ((NextStopDistanceM < actClearance) || (SpeedMpS <= 0 && MovementState == AI_MOVEMENT_STATE.STOPPED))
@@ -692,7 +732,15 @@ namespace ORTS
                 {
                     CheckRequiredAction();
                 }
+#if BROL
+                if (MovementState != AI_MOVEMENT_STATE.INIT && EndAuthorityType[0] != END_AUTHORITY.MAX_DISTANCE)
+                {
+                    CheckRequiredAuxAction();
+                }
 
+                if (requiredActions.Count == 0)
+                    Trace.TraceInformation("No Actions");
+#endif
                 // check if reversal point reached and not yet activated - but station stop has preference over reversal point
                 if ((nextActionInfo == null ||
                      (nextActionInfo.NextAction != AIActionItem.AI_ACTION_TYPE.STATION_STOP && nextActionInfo.NextAction != AIActionItem.AI_ACTION_TYPE.REVERSAL)) &&
@@ -727,37 +775,66 @@ namespace ORTS
 #if WITH_PATH_DEBUG
             currentAIStation = " ---";
 #endif
-            switch (MovementState)
+#if NEW_ACTION
+            //if (nextActionInfo != null && nextActionInfo.GetType().IsSubclassOf(typeof(AuxActionItem)))
+            //{
+            //    MovementState = nextActionInfo.UpdateAuxAction(this, presentTime, elapsedClockSeconds, MovementState);
+            //}
+            //else  SPA: Don't know yet
+#endif
             {
-                case AI_MOVEMENT_STATE.AI_STATIC:
-                    UpdateAIStaticState(presentTime);
-                    break;
-                case AI_MOVEMENT_STATE.STOPPED:
-                    bool[] stillExist = ProcessEndOfPath(presentTime);
-                    if (stillExist[1]) UpdateStoppedState();
-                    break;
-                case AI_MOVEMENT_STATE.INIT:
-                    stillExist = ProcessEndOfPath(presentTime);
-                    if (stillExist[1]) UpdateStoppedState();
-                    break;
-                case AI_MOVEMENT_STATE.STATION_STOP:
-                    UpdateStationState(presentTime);
-                    break;
-                case AI_MOVEMENT_STATE.BRAKING:
-                    UpdateBrakingState(elapsedClockSeconds, presentTime);
-                    break;
-                case AI_MOVEMENT_STATE.APPROACHING_END_OF_PATH:
-                    UpdateBrakingState(elapsedClockSeconds, presentTime);
-                    break;
-                case AI_MOVEMENT_STATE.ACCELERATING:
-                    UpdateAccelState(elapsedClockSeconds);
-                    break;
-                case AI_MOVEMENT_STATE.FOLLOWING:
-                    UpdateFollowingState(elapsedClockSeconds, presentTime);
-                    break;
-                case AI_MOVEMENT_STATE.RUNNING:
-                    UpdateRunningState(elapsedClockSeconds);
-                    break;
+                bool[] stillExist;
+
+                switch (MovementState)
+                {
+                    case AI_MOVEMENT_STATE.AI_STATIC:
+                        UpdateAIStaticState(presentTime);
+                        break;
+                    case AI_MOVEMENT_STATE.STOPPED:
+#if NEW_ACTION
+                        if (nextActionInfo != null && nextActionInfo.GetType().IsSubclassOf(typeof(AuxActionItem)))
+                        {
+                            MovementState = nextActionInfo.ProcessAction(this, presentTime, elapsedClockSeconds, MovementState);
+                        }
+                        else
+#endif
+                        {
+                            stillExist = ProcessEndOfPath(presentTime);
+                            if (stillExist[1]) UpdateStoppedState();
+                        }
+                        break;
+                    case AI_MOVEMENT_STATE.INIT:
+                        stillExist = ProcessEndOfPath(presentTime);
+                        if (stillExist[1]) UpdateStoppedState();
+                        break;
+                    case AI_MOVEMENT_STATE.STATION_STOP:
+                        UpdateStationState(presentTime);
+                        break;
+                    case AI_MOVEMENT_STATE.BRAKING:
+                        UpdateBrakingState(elapsedClockSeconds, presentTime);
+                        break;
+                    case AI_MOVEMENT_STATE.APPROACHING_END_OF_PATH:
+                        UpdateBrakingState(elapsedClockSeconds, presentTime);
+                        break;
+                    case AI_MOVEMENT_STATE.ACCELERATING:
+                        UpdateAccelState(elapsedClockSeconds);
+                        break;
+                    case AI_MOVEMENT_STATE.FOLLOWING:
+                        UpdateFollowingState(elapsedClockSeconds, presentTime);
+                        break;
+                    case AI_MOVEMENT_STATE.RUNNING:
+                        UpdateRunningState(elapsedClockSeconds);
+                        break;
+                    default:
+#if NEW_ACTION
+                        if(nextActionInfo != null && nextActionInfo.GetType().IsSubclassOf(typeof(AuxActionItem)))
+                        {
+                            MovementState = nextActionInfo.ProcessAction(this, presentTime, elapsedClockSeconds, MovementState);
+                        }
+#endif
+                        break;
+
+                }
             }
 #if WITH_PATH_DEBUG
             //if (Simulator.Settings.EnhancedActCompatibility)
@@ -791,6 +868,9 @@ namespace ORTS
                     case AI_MOVEMENT_STATE.RUNNING:
                         currentAIState = "RUNNING";
                         break;
+                    case AI_MOVEMENT_STATE.HANDLE_ACTION:
+                        currentAIState = "HANDLE";
+                        break;
                 }
                 if (nextActionInfo != null)
                 {
@@ -823,12 +903,19 @@ namespace ORTS
                         case AIActionItem.AI_ACTION_TYPE.REVERSAL:
                             currentAIState = String.Concat(currentAIState, " to REVERSAL");
                             break;
+                        case AIActionItem.AI_ACTION_TYPE.AUX_ACTION:
+                            currentAIState = String.Concat(currentAIState, " to AUX ACTION ");
+                            break;
                         case AIActionItem.AI_ACTION_TYPE.NONE:
                             currentAIState = String.Concat(currentAIState, " to NONE ");
                             break;
                         default:
                             break;
                     }
+                }
+                else
+                {
+                    currentAIState = String.Concat(currentAIState, " to ???? ");
                 }
                 currentAIState = String.Concat(currentAIState, currentAIStation);
             }
@@ -917,6 +1004,15 @@ namespace ORTS
                     File.AppendAllText(@"C:\Temp\checktrain.txt", "\n");
                 }
             }
+#if WITH_PATH_DEBUG
+            lastIndex = PreviousPosition[0].RouteListIndex;
+            presentIndex = PresentPosition[0].RouteListIndex;
+            if (lastIndex != presentIndex || countRequiredAction != requiredActions.Count)
+            {
+                countRequiredAction = requiredActions.Count;
+            }
+#endif
+
         }
 
         //================================================================================================//
@@ -1032,6 +1128,18 @@ namespace ORTS
                 NextStopDistanceM = DistanceToEndNodeAuthorityM[0] - clearingDistanceM;
             }
         }
+
+#if NEW_ACTION
+        public void CheckRequiredAuxAction()
+        {
+            //nextActionInfo = null;
+
+            if (AuxActions != null)
+            {
+                SetAuxAction();
+            }
+        }
+#endif
 
         //================================================================================================//
         /// <summary>
@@ -1332,6 +1440,49 @@ namespace ORTS
             return (distancesM);
         }
 
+#if NEW_ACTION
+        //================================================================================================//
+        //  SPA:    Added for use with new AIActionItems
+        /// <summary>
+        /// Create Auxiliary Action
+        /// <\summary>
+        public void SetAuxAction()
+        {
+            if (AuxActions.Count <= 0)
+                return;
+            AIAuxActions thisAction = AuxActions[0];
+
+            if (thisAction.SubrouteIndex > TCRoute.activeSubpath)
+            {
+                return;
+            }
+
+            bool validAction = false;
+            while (!validAction)
+            {
+                float[] distancesM = thisAction.CalculateDistancesToNextAction(this, TrainMaxSpeedMpS, true);
+                if (distancesM[0] < 0f)
+                {
+                    AuxActions.RemoveAt(0);
+                    if (AuxActions.Count == 0)
+                    {
+                        return;
+                    }
+
+                    thisAction = AuxActions[0];
+                    if (thisAction.SubrouteIndex > TCRoute.activeSubpath) return;
+                }
+                else
+                {
+                    validAction = true;
+                    AIActionItem newAction = AuxActions[0].Handler(distancesM[1], 0.0f, distancesM[0], DistanceTravelledM);
+
+                    requiredActions.InsertAction(newAction);
+                }
+            }
+        }
+        
+#endif
         //================================================================================================//
         /// <summary>
         /// Override Switch to Signal control
@@ -1419,7 +1570,7 @@ namespace ORTS
         /// Update train in stopped state
         /// <\summary>
 
-        private void UpdateStoppedState()
+        internal AITrain.AI_MOVEMENT_STATE UpdateStoppedState()      //  SPA:    Change private to internal, used by new AIActionItems
         {
 
             if (SpeedMpS > 0)   // if train still running force it to stop
@@ -1634,6 +1785,13 @@ namespace ORTS
                         }
                     }
                 }
+#if NEW_ACTION
+                else if (nextActionInfo != null &&
+                    nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.AUX_ACTION)
+                {
+                    MovementState = AI_MOVEMENT_STATE.BRAKING;
+                }
+#endif
                 else if (nextActionInfo == null || nextActionInfo.NextAction != AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_STOP)
                 {
                     if (nextAspect != MstsSignalAspect.STOP)
@@ -1649,16 +1807,16 @@ namespace ORTS
                             var distanceSignaltoTrain = NextSignalObject[0].DistanceTo(FrontTDBTraveller);
                             if (distanceSignaltoTrain >= 100.0f)
                             {
-                            MovementState = AI_MOVEMENT_STATE.BRAKING;
+                                MovementState = AI_MOVEMENT_STATE.BRAKING;
                                 //>CSComment: better be sure the train will stop in front of signal
-                            CreateTrainAction(0.0f, 0.0f, distanceSignaltoTrain, SignalObjectItems[0], AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_STOP);
-                            Alpha10 = 10;
-                            AITrainThrottlePercent = 25;
-                            AdjustControlsBrakeOff();
+                                CreateTrainAction(0.0f, 0.0f, distanceSignaltoTrain, SignalObjectItems[0], AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_STOP);
+                                Alpha10 = 10;
+                                AITrainThrottlePercent = 25;
+                                AdjustControlsBrakeOff();
                             }
                         }
                     }
-                    
+
 #if DEBUG_REPORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
                                 Number.ToString() + " , forced to BRAKING from invalid stop (now at " +
@@ -1673,6 +1831,7 @@ namespace ORTS
                     }
                 }
             }
+            return MovementState;
         }
 
         //================================================================================================//
@@ -2351,7 +2510,13 @@ namespace ORTS
                         return;
                     }
                 }
-
+#if NEW_ACTION
+                else if(nextActionInfo.GetType().IsSubclassOf(typeof(AuxActionItem)))
+                {
+                    NextStopDistanceM = distanceToGoM;
+                    MovementState = nextActionInfo.ProcessAction(this, presentTime, elapsedClockSeconds, MovementState);
+                }
+#endif
                 // check speed reduction position reached
 
                 else if (nextActionInfo.RequiredSpeedMpS > 0)
@@ -3450,12 +3615,16 @@ namespace ORTS
 
         public override void BuildWaitingPointList(float clearingDistanceM)
         {
-            int prevSection = -1;
-            int TCElmtSignalIdx = -1;
 
             // loop through all waiting points - back to front as the processing affects the actual routepaths
 
+#if NEW_ACTION
+            for (int iWait = 0; iWait <= TCRoute.WaitingPoints.Count - 1; iWait++)
+#else
+            int prevSection = -1;
+            int TCElmtSignalIdx = -1;
             for (int iWait = TCRoute.WaitingPoints.Count - 1; iWait >= 0; iWait--)
+#endif
             {
                 int[] waitingPoint = TCRoute.WaitingPoints[iWait];
 
@@ -3469,31 +3638,20 @@ namespace ORTS
                     Trace.TraceInformation("Waiting point for train " + Number.ToString() + " is not on route - point removed");
                     continue;
                 }
+#if NEW_ACTION
+                int direction = thisRoute[routeIndex].Direction;
+#else
 
-                if (!Simulator.Settings.EnhancedActCompatibility)
+                // waiting point is in same section as previous - add time to previous point, remove this point
+                if (waitingPoint[1] == prevSection)
                 {
-                    // waiting point is in same section as previous - add time to previous point, remove this point
-                    if (waitingPoint[1] == prevSection)
-                    {
-                        int[] prevWP = TCRoute.WaitingPoints[iWait + 1];
-                        prevWP[2] += waitingPoint[2];
-                        TCRoute.WaitingPoints.RemoveAt(iWait);
-                        StationStops[StationStops.Count - 1].DepartTime = -prevWP[2];
-                        StationStops[StationStops.Count - 1].ActualDepart = -prevWP[2];
-                        Trace.TraceInformation("Waiting points for train " + Number.ToString() + " combined, total time set to " + prevWP[2].ToString());
-                        continue;
-                    }
-                }
-                else
-                {
-                    if (routeIndex < thisRoute.Count - 1)
-                    {
-                        TCRoute.CloneSubPath(iWait, routeIndex);
-                    }
-                    if (waitingPoint[1] == prevSection)
-                    {
-                        TCRoute.CloneSubPath(iWait, routeIndex);
-                    }
+                    int[] prevWP = TCRoute.WaitingPoints[iWait + 1];
+                    prevWP[2] += waitingPoint[2];
+                    TCRoute.WaitingPoints.RemoveAt(iWait);
+                    StationStops[StationStops.Count - 1].DepartTime = -prevWP[2];
+                    StationStops[StationStops.Count - 1].ActualDepart = -prevWP[2];
+                    Trace.TraceInformation("Waiting points for train " + Number.ToString() + " combined, total time set to " + prevWP[2].ToString());
+                    continue;
                 }
 
                 // check if section has signal
@@ -3510,7 +3668,7 @@ namespace ORTS
 
                 int direction = thisRoute[routeIndex].Direction;
                 
-                if (!(Simulator.Settings.EnhancedActCompatibility) && TCElmtSignalIdx == -1)
+                if (TCElmtSignalIdx == -1)
                 {
                     if (thisSection.EndSignals[direction] != null)
                     {
@@ -3526,15 +3684,7 @@ namespace ORTS
                 else if (nextSection == null || nextSection.CircuitType != TrackCircuitSection.TrackCircuitType.Normal)
                 {
                     endSectionFound = true;
-                    if (Simulator.Settings.EnhancedActCompatibility)
-                        offset = waitingPoint[5];
-                    else
-                        offset = thisSection.Length - junctionOverlapM;
-                }
-                else if (TCElmtSignalIdx > 0 && Simulator.Settings.EnhancedActCompatibility)
-                {
-                    endSectionFound = true;
-                    offset = waitingPoint[5];
+                    offset = thisSection.Length - junctionOverlapM;
                 }
                 TCElmtSignalIdx = -1;
                 // try and find next section with signal; if junction is found, stop search
@@ -3564,9 +3714,10 @@ namespace ORTS
                         offset = nextSection.Length - junctionOverlapM;  // use this section length if next section is junction
                     }
                 }
-
+#endif
                 // move sections beyond waiting point to next subroute
 
+#if !NEW_ACTION
                 TCSubpathRoute nextRoute = null;
                 if ((waitingPoint[0] + 1) > (TCRoute.TCRouteSubpaths.Count - 1))
                 {
@@ -3586,17 +3737,6 @@ namespace ORTS
                     nextRoute.Insert(0, thisRoute[iElement]);
                     thisRoute.RemoveAt(iElement);
                 }
-                if (Simulator.Settings.EnhancedActCompatibility)
-                {
-                    for (int cnt = TCRoute.WaitingPoints.Count - 1; cnt > iWait; cnt--)
-                    {
-                        if (TCRoute.WaitingPoints[cnt][0] < TCRoute.TCRouteSubpaths.Count - 1)
-                            TCRoute.WaitingPoints[cnt][0]++;
-                        else
-                            break;
-                    }
-                }
-
                 // repeat actual waiting section in next subroute (if not allready there)
 
                 if (nextRoute.Count <= 0 || nextRoute[0].TCSectionIndex != thisRoute[thisRoute.Count - 1].TCSectionIndex)
@@ -3607,6 +3747,13 @@ namespace ORTS
                 bool HoldSignal = exitSignalReference >= 0;
 
                 int DepartTime = waitingPoint[2] > 0 ? -waitingPoint[2] : waitingPoint[3];
+#endif
+
+#if NEW_ACTION
+                AIActionWP action = new AIActionWP(waitingPoint[5], 0f, 0, thisRoute[lastIndex].TCSectionIndex, lastIndex, direction);
+                action.SetDelay(waitingPoint[2]);
+                AuxActions.Add(action);
+#else
 
                 StationStop thisStation = new StationStop(
                         -1,
@@ -3624,77 +3771,20 @@ namespace ORTS
                 StationStops.Add(thisStation);
             }
 
-            if (Simulator.Settings.EnhancedActCompatibility)
+            // adjust station stop indices for removed subpaths
+            for (int i = 0; i < StationStops.Count; i++)
             {
-                for (int TCrs = 0; TCrs < TCRoute.TCRouteSubpaths.Count; TCrs++)
+                var WPcur = StationStops[i];
+                for (int iTC = TCRoute.TCRouteSubpaths.Count - 1; iTC >= 0; iTC--)
                 {
-                    var subpath = TCRoute.TCRouteSubpaths[TCrs];
-                    TCSubpathRoute nextRoute = null;
-                    for (int cnt = 0; cnt < subpath.Count - 1; cnt++)
+                    var tcRS = TCRoute.TCRouteSubpaths[iTC];
+                    for (int iTCE = tcRS.Count - 1; iTCE >= 0; iTCE--)
                     {
-                        if (subpath[cnt + 1].TCSectionIndex == subpath[cnt].TCSectionIndex)
+                        var tcSR = tcRS[iTCE];
+                        if (WPcur.TCSectionIndex == tcSR.TCSectionIndex)
                         {
-                            nextRoute = new TCSubpathRoute();
-                            TCRoute.TCRouteSubpaths.Insert(TCrs + 1, nextRoute);
-                            TCReversalInfo nextReversalPoint = new TCReversalInfo(); // also add dummy reversal info to match total number
-                            TCRoute.ReversalInfo.Add(nextReversalPoint);
-                            TCRoute.LoopEnd.Add(-1); // also add dummy loop end
-                            for (int iElement = subpath.Count - 1; iElement >= cnt + 1; iElement--)
-                            {
-                                nextRoute.Insert(0, subpath[iElement]);
-                                subpath.RemoveAt(iElement);
-                            }
-                            for (int cntWP = 0; cntWP < TCRoute.WaitingPoints.Count; cntWP++)
-                            {
-                                if (TCRoute.WaitingPoints[cntWP][0] > TCrs)
-                                {
-                                    TCRoute.WaitingPoints[cntWP][0]++;
-                                }
-                            }
-                            break;
-                        }
-                    }
-                }
-                // adjust station stop indices
-                for (int i = 0; i < StationStops.Count; i++)
-                {
-                    var WPcur = StationStops[i];
-                    for (int iTC = TCRoute.WaitingPoints.Count - 1; iTC >= 0; iTC--)
-                    {
-                        var tcWP = TCRoute.WaitingPoints[iTC];
-                        if (WPcur.TCSectionIndex == tcWP[1] && WPcur.DepartTime == -(tcWP[2]))
-                        {
-                            var subpath = TCRoute.TCRouteSubpaths[tcWP[0]];
-                            for (int idxSP = subpath.Count - 1; idxSP >= 0; idxSP--)
-                            {
-                                if (subpath[idxSP].TCSectionIndex == WPcur.TCSectionIndex)
-                                {
-                                    WPcur.SubrouteIndex = iTC;
-                                    WPcur.RouteIndex = idxSP;
-                                }
-                            }
-                        }
-                    }
-                }
-
-            }
-            else
-            {
-                // adjust station stop indices for removed subpaths
-                for (int i = 0; i < StationStops.Count; i++)
-                {
-                    var WPcur = StationStops[i];
-                    for (int iTC = TCRoute.TCRouteSubpaths.Count - 1; iTC >= 0; iTC--)
-                    {
-                        var tcRS = TCRoute.TCRouteSubpaths[iTC];
-                        for (int iTCE = tcRS.Count - 1; iTCE >= 0; iTCE--)
-                        {
-                            var tcSR = tcRS[iTCE];
-                            if (WPcur.TCSectionIndex == tcSR.TCSectionIndex)
-                            {
-                                WPcur.SubrouteIndex = iTC;
-                                WPcur.RouteIndex = iTCE;
-                            }
+                            WPcur.SubrouteIndex = iTC;
+                            WPcur.RouteIndex = iTCE;
                         }
                     }
                 }
@@ -3734,7 +3824,9 @@ namespace ORTS
                         }
                     }
                 }
+#endif
             }
+            
         }
 
         //================================================================================================//
@@ -4373,6 +4465,12 @@ namespace ORTS
             }
             requiredActions.RemovePendingAIActionItems(false);
 
+#if NEW_ACTION
+            if (AuxActions != null)
+            {
+                SetAuxAction();
+            }
+#endif
             if (StationStops.Count > 0)
                 SetNextStationAction();
             if (setEndOfPath)
@@ -4399,10 +4497,21 @@ namespace ORTS
                 {
                     SetAIPendingSpeedLimit(thisAction as ActivateSpeedLimit);
                 }
+#if NEW_ACTION
+                else if (thisAction is AIActionItem && !(thisAction is AuxActionItem))
+                {
+                    ProcessActionItem(thisAction as AIActionItem);
+                }
+                else if (thisAction is AuxActionItem)
+                {
+                    ((AuxActionItem)thisAction).ValidAction(this);
+                }
+#else
                 else if (thisAction is AIActionItem)
                 {
                     ProcessActionItem(thisAction as AIActionItem);
                 }
+#endif
             }
         }
 
@@ -4506,7 +4615,7 @@ namespace ORTS
             }
 
             // if signal speed, check if still set
-
+ #region signal_check
             if (thisItem.NextAction == AIActionItem.AI_ACTION_TYPE.SPEED_SIGNAL)
             {
                 if (thisItem.ActiveItem.actual_speed == AllowedMaxSpeedMpS)  // no longer valid
@@ -4641,6 +4750,7 @@ namespace ORTS
                                  FormatStrings.FormatSpeed(SpeedMpS, true) + ")\n");
                         }
                     }
+
                 }
             }
 
@@ -4682,6 +4792,7 @@ namespace ORTS
                     thisItem.ActivateDistanceM = distancesM[0];
                     requiredActions.InsertAction(thisItem);
 
+
 #if DEBUG_REPORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "StationStop rescheduled for train " +
                         Number.ToString() + ", at " +
@@ -4702,6 +4813,13 @@ namespace ORTS
                 }
             }
 
+            EndProcessAction(actionValid, thisItem, actionCleared);
+        }
+#endregion
+
+        //  SPA:    To be able to call it by AuxActionItems
+        public void EndProcessAction (bool actionValid, AIActionItem thisItem, bool actionCleared)
+        {
             // if still valid - check if at station and signal is exit signal
             // if so, use minimum distance of both items to ensure train stops in time for signal
 
@@ -4750,6 +4868,7 @@ namespace ORTS
 
             // if still valid - check if more severe as existing action
 
+#region more_severe
             if (actionValid)
             {
                 if (nextActionInfo != null)
@@ -4860,6 +4979,7 @@ namespace ORTS
                     }
                 }
             }
+#endregion
 
             // if still valid, set as action, set state to braking if still running
 
@@ -4889,7 +5009,7 @@ namespace ORTS
 
 #endif
 
-                if (MovementState != AI_MOVEMENT_STATE.STATION_STOP && MovementState != AI_MOVEMENT_STATE.STOPPED)
+                if (MovementState != AI_MOVEMENT_STATE.STATION_STOP && MovementState != AI_MOVEMENT_STATE.STOPPED && MovementState != AI_MOVEMENT_STATE.HANDLE_ACTION)
                 {
                     MovementState = AI_MOVEMENT_STATE.BRAKING;
                     Alpha10 = 10;
@@ -5195,7 +5315,11 @@ namespace ORTS
             {
                 actionString = String.Concat(actionString, " ASL(", action.RequiredDistance.ToString("F0"), "m):");
             }
+#if NEW_ACTION
+            else if (action.GetType() == typeof(AIActionItem) || action.GetType().IsSubclassOf(typeof(AuxActionItem)))
+#else
             else if (action.GetType() == typeof(AIActionItem))
+#endif
             {
                 AIActionItem AIaction = action as AIActionItem;
                 {
@@ -5238,7 +5362,12 @@ namespace ORTS
                         case AIActionItem.AI_ACTION_TYPE.NONE:
                             actionString = String.Concat(actionString, " None(", NextStopDistanceM.ToString("F0"), "m):");
                             break;
- 
+#if NEW_ACTION
+                        case AIActionItem.AI_ACTION_TYPE.AUX_ACTION:
+                            actionString = String.Concat(actionString, AIaction.AsString(), NextStopDistanceM.ToString("F0"), "m):");
+                            //actionString = String.Concat(actionString, " AUX(", NextStopDistanceM.ToString("F0"), "m):");
+                            break;
+#endif
                     }
                 }
             }
@@ -5273,6 +5402,7 @@ namespace ORTS
             TRAIN_AHEAD,
             END_OF_ROUTE,
             REVERSAL,
+            AUX_ACTION,
             NONE
         }
 
@@ -5390,6 +5520,42 @@ namespace ORTS
 
             outf.Write(ActiveItem.processed);
         }
+#if NEW_ACTION
+        //================================================================================================//
+        //
+        //  Generic Handler for all derived class
+        //
+        public virtual bool ValidAction(AITrain thisTrain)
+        {
+            return false;
+        }
+
+        public virtual AITrain.AI_MOVEMENT_STATE InitAction(AITrain thisTrain, int presentTime, AITrain.AI_MOVEMENT_STATE movementState)
+        {
+            return movementState;
+        }
+
+        public virtual AITrain.AI_MOVEMENT_STATE EndAction(AITrain thisTrain, int presentTime, AITrain.AI_MOVEMENT_STATE movementState)
+        {
+            return movementState;
+        }
+
+        public virtual AITrain.AI_MOVEMENT_STATE HandleAction(AITrain thisTrain, int presentTime, AITrain.AI_MOVEMENT_STATE movementState)
+        {
+            return movementState;
+        }
+
+        public virtual AITrain.AI_MOVEMENT_STATE ProcessAction(AITrain thisTrain, int presentTime, float elapsedClockSeconds, AITrain.AI_MOVEMENT_STATE movementState)
+        {
+            return movementState;
+        }
+
+        public virtual string AsString()
+        {
+            return " ??(";
+        }
+
+#endif
     }
 
 }
