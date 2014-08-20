@@ -19,7 +19,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\..\Program\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;WINDOWS;NEW_SIGNALLING;WITH_PATH_DEBUG;NEW_ACTION</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;WINDOWS;NEW_SIGNALLING</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
@@ -28,7 +28,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\..\Program\</OutputPath>
-    <DefineConstants>TRACE;WINDOWS;NEW_SIGNALLING;WITH_PATH_DEBUG;NEW_ACTION</DefineConstants>
+    <DefineConstants>TRACE;WINDOWS;NEW_SIGNALLING</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
