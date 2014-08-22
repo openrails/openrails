@@ -1521,8 +1521,11 @@ namespace ORTS
                 // valid stop
                 if (arrdepvalid)
                 {
+                    int activeSubroute = 0;
+                    int activeSubrouteNodeIndex = 0;
                     // create station stop info
-                    validStop = actTrain.CreateStationStop(actPlatformID, arrivalTime, departureTime, arrivalDT, departureDT, 15.0f);
+                    validStop = actTrain.CreateStationStop(actPlatformID, arrivalTime, departureTime, arrivalDT, departureDT, 15.0f,
+                        ref activeSubroute, ref activeSubrouteNodeIndex);
 
                     // override holdstate using stop info - but only if exit signal is defined
 

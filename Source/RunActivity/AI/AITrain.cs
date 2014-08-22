@@ -79,6 +79,7 @@ namespace ORTS
             FOLLOWING,
             RUNNING,
             APPROACHING_END_OF_PATH,
+            STOPPED_EXISTING,
             INIT_ACTION,
             HANDLE_ACTION,
             END_ACTION//  SPA: used by new AIActionItem as Auxiliary
@@ -744,21 +745,33 @@ namespace ORTS
                 // check if reversal point reached and not yet activated - but station stop has preference over reversal point
                 if ((nextActionInfo == null ||
                      (nextActionInfo.NextAction != AIActionItem.AI_ACTION_TYPE.STATION_STOP && nextActionInfo.NextAction != AIActionItem.AI_ACTION_TYPE.REVERSAL)) &&
-                     TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid)
+                     TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid )
                 {
                     int reqSection = TCRoute.ReversalInfo[TCRoute.activeSubpath].SignalUsed ?
                         TCRoute.ReversalInfo[TCRoute.activeSubpath].LastSignalIndex :
                         TCRoute.ReversalInfo[TCRoute.activeSubpath].LastDivergeIndex;
 
-                    if (reqSection >= 0 && PresentPosition[1].RouteListIndex >= reqSection)
+                    if (reqSection >= 0 && PresentPosition[1].RouteListIndex >= reqSection && TCRoute.ReversalInfo[TCRoute.activeSubpath].ReversalActionInserted == false)
                     {
                         float reqDistance = SpeedMpS * SpeedMpS * MaxDecelMpSS;
+                        float distanceToReversalPoint = 0;
                         reqDistance = nextActionInfo != null ? Math.Min(nextActionInfo.RequiredDistance, reqDistance) : reqDistance;
-                        nextActionInfo = new AIActionItem(reqDistance, 0.0f, 0.0f, PresentPosition[0].DistanceTravelledM, null, AIActionItem.AI_ACTION_TYPE.REVERSAL);
-                        MovementState = AI_MOVEMENT_STATE.BRAKING;
+                        if (!Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility )
+                        {
+                        distanceToReversalPoint = ComputeDistanceToReversalPoint();
+                        // <CSComment: if compatibility flag on, the AI train runs up to the reverse point no matter how far it is from the diverging point.
+                         
+                            CreateTrainAction(TrainMaxSpeedMpS, 0.0f, distanceToReversalPoint, null, AIActionItem.AI_ACTION_TYPE.REVERSAL);
+                            TCRoute.ReversalInfo[TCRoute.activeSubpath].ReversalActionInserted = true;
+                        }
+                        else
+                        { 
+                            nextActionInfo = new AIActionItem(reqDistance, 0.0f, 0.0f, PresentPosition[0].DistanceTravelledM, null, AIActionItem.AI_ACTION_TYPE.REVERSAL);
+                            MovementState = AI_MOVEMENT_STATE.BRAKING;
+                        }
+ 
                     }
                 }
-
                 // check if out of control - if so, remove
 
                 if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL)
@@ -825,7 +838,10 @@ namespace ORTS
                     case AI_MOVEMENT_STATE.RUNNING:
                         UpdateRunningState(elapsedClockSeconds);
                         break;
-                    default:
+                    case AI_MOVEMENT_STATE.STOPPED_EXISTING:
+                        UpdateStoppedState();
+                        break;
+                        default:
 #if NEW_ACTION
                         if(nextActionInfo != null && nextActionInfo.GetType().IsSubclassOf(typeof(AuxActionItem)))
                         {
@@ -1805,12 +1821,19 @@ namespace ORTS
                         if (NextSignalObject[0] != null)
                         {
                             var distanceSignaltoTrain = NextSignalObject[0].DistanceTo(FrontTDBTraveller);
-                            if (distanceSignaltoTrain >= 100.0f)
+                            float distanceToReversalPoint = 10000000f;
+                            if (TCRoute.ReversalInfo[TCRoute.activeSubpath] != null && TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid)
                             {
-                                MovementState = AI_MOVEMENT_STATE.BRAKING;
+                                distanceToReversalPoint = ComputeDistanceToReversalPoint();
+                            }
+                            if (distanceSignaltoTrain >= 100.0f || (nextActionInfo != null && nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.REVERSAL 
+                                && nextActionInfo.ActivateDistanceM - DistanceTravelledM > 10)|| 
+                                distanceSignaltoTrain > distanceToReversalPoint)
+                            {
+                            MovementState = AI_MOVEMENT_STATE.RUNNING;
                                 //>CSComment: better be sure the train will stop in front of signal
-                                CreateTrainAction(0.0f, 0.0f, distanceSignaltoTrain, SignalObjectItems[0], AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_STOP);
-                                Alpha10 = 10;
+                            CreateTrainAction(0.0f, 0.0f, distanceSignaltoTrain, SignalObjectItems[0], AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_STOP);
+                            Alpha10 = 10;
                                 AITrainThrottlePercent = 25;
                                 AdjustControlsBrakeOff();
                             }
@@ -2052,7 +2075,8 @@ namespace ORTS
             {
                 if (MovementState == AI_MOVEMENT_STATE.STATION_STOP)
                 {
-                    MovementState = AI_MOVEMENT_STATE.STOPPED;   // if state is still station_stop and ready to depart - change to stop to check action
+                    // if state is still station_stop and ready to depart - change to stop to check action
+                    MovementState = (Simulator.TimetableMode || !Simulator.Settings.EnhancedActCompatibility)? AI_MOVEMENT_STATE.STOPPED : AI_MOVEMENT_STATE.STOPPED_EXISTING;   
                     AtStation = false;
                 }
 
@@ -2543,7 +2567,9 @@ namespace ORTS
 
                 else if (nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.REVERSAL)
                 {
-                    if (Math.Abs(SpeedMpS) < 0.01f) MovementState = AI_MOVEMENT_STATE.STOPPED;
+                    if (Math.Abs(SpeedMpS) < 0.01f && ! Simulator.Settings.EnhancedActCompatibility) MovementState = AI_MOVEMENT_STATE.STOPPED;
+                    else if (Math.Abs(SpeedMpS) < 0.01f && nextActionInfo.ActivateDistanceM - DistanceTravelledM < 10.0f && 
+                        Simulator.Settings.EnhancedActCompatibility && !Simulator.TimetableMode) MovementState = AI_MOVEMENT_STATE.STOPPED;
                 }
 
                 // check if stopped at signal
@@ -4477,6 +4503,9 @@ namespace ORTS
             {
                 SetEndOfRouteAction();
             }
+            // to allow re-inserting of reversal action if necessary (enhanced compatibility flag on)
+            if (TCRoute.ReversalInfo[TCRoute.activeSubpath].ReversalActionInserted == true)
+                TCRoute.ReversalInfo[TCRoute.activeSubpath].ReversalActionInserted = false;
 
         }
 

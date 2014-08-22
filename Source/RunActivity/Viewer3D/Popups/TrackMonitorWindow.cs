@@ -611,7 +611,7 @@ namespace ORTS.Viewer3D.Popups
 
                     case Train.TrainObjectItem.TRAINOBJECTTYPE.REVERSAL:
                         drawReversal(spriteBatch, offset, startObjectArea, endObjectArea, zeropoint,
-                            maxDistance, distanceFactor, firstLabelPosition, forward, lastLabelPosition, thisItem);
+                            maxDistance, distanceFactor, firstLabelPosition, forward, lastLabelPosition, thisItem, ref firstLabelShown);
                         break;
 
                     default:     // capture unkown item
@@ -788,10 +788,10 @@ namespace ORTS.Viewer3D.Popups
             return (newLabelPosition);
         }
 
-        // draw station stop information
+        // draw reversal information
         public int drawReversal(SpriteBatch spriteBatch, Point offset, int startObjectArea, int endObjectArea, int zeropoint,
                             float maxDistance, float distanceFactor, float firstLabelDistance, bool forward,
-                            int lastLabelPosition, Train.TrainObjectItem thisItem)
+                            int lastLabelPosition, Train.TrainObjectItem thisItem, ref bool firstLabelShown)
         {
             Rectangle displayItem = reversalMarker;
             int newLabelPosition = lastLabelPosition;
@@ -801,9 +801,22 @@ namespace ORTS.Viewer3D.Popups
             {
                 itemOffset = Convert.ToInt32(thisItem.DistanceToTrainM * distanceFactor);
                 int itemLocation = forward ? zeropoint - itemOffset : zeropoint + itemOffset;
-                Rectangle markerPlacement = new Rectangle(offset.X + ReversalPosition[0], offset.Y + itemLocation - ReversalPosition[1],
+                int reqLabelPosition =
+                    forward ? Math.Min(itemLocation, lastLabelPosition - textSpacing) : Math.Max(itemLocation, lastLabelPosition + textSpacing);
+                newLabelPosition = reqLabelPosition;
+                int correctingOffset = Program.Simulator.TimetableMode || !Program.Simulator.Settings.EnhancedActCompatibility ? 0 : 7; 
+                Rectangle markerPlacement = new Rectangle(offset.X + ReversalPosition[0], offset.Y + itemLocation - ReversalPosition[1] + correctingOffset,
                     ReversalPosition[3], ReversalPosition[4]);
-                spriteBatch.Draw(TrackMonitorImages, markerPlacement, displayItem, Color.White);
+                if (thisItem.Enabled) spriteBatch.Draw(TrackMonitorImages, markerPlacement, displayItem, Color.Green);
+                else spriteBatch.Draw(TrackMonitorImages, markerPlacement, displayItem, Color.White);
+                if (itemOffset < firstLabelDistance && !firstLabelShown && !Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility)
+                {
+                    string distanceString = FormatStrings.FormatDistanceDisplay(thisItem.DistanceToTrainM, metric);
+                    Point labelPoint = new Point(offset.X + distanceTextOffset, offset.Y + newLabelPosition - 7);
+
+                    Font.Draw(spriteBatch, labelPoint, distanceString, Color.White);
+                    firstLabelShown = true;
+                }
             }
             return (newLabelPosition);
         }

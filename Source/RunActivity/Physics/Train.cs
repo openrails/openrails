@@ -731,10 +731,10 @@ namespace ORTS
             for (int iAction = 0; iAction < activeActions; iAction++)
             {
                 int actionType = inf.ReadInt32();
-
                 switch (actionType)
                 {
                     case 1:
+
                         ActivateSpeedLimit speedLimit = new ActivateSpeedLimit(inf);
                         requiredActions.InsertAction(speedLimit);
                         break;
@@ -3898,21 +3898,201 @@ namespace ORTS
             else if (StationStops.Count > 0)
             {
                 StationStop thisStation = StationStops[0];
-
-                int thisSectionIndex = PresentPosition[0].TCSectionIndex;
-                TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisSectionIndex];
-                float leftInSectionM = thisSection.Length - PresentPosition[0].TCOffset;
-
-                // if present position off route, try rear position
-                // if both off route, skip station stop
-                int stationIndex = ValidRoute[0].GetRouteIndex(thisStation.TCSectionIndex, PresentPosition[0].RouteListIndex);
-                float distanceToTrainM = ValidRoute[0].GetDistanceAlongRoute(PresentPosition[0].RouteListIndex,
-                    leftInSectionM, stationIndex, thisStation.StopOffset, true, signalRef);
-
-                thisStation.DistanceToTrainM = distanceToTrainM;
+                thisStation.DistanceToTrainM = ComputeDistanceToNextStation(thisStation);
             }
         }
 
+        //================================================================================================//
+        /// <summary>
+        /// Compute distance to next station
+        /// <\summary>
+        /// 
+        public float ComputeDistanceToNextStation(StationStop thisStation)
+        {
+            int thisSectionIndex = PresentPosition[0].TCSectionIndex;
+            TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisSectionIndex];
+            float leftInSectionM = thisSection.Length - PresentPosition[0].TCOffset;
+            float distanceToTrainM = -1;
+            int stationIndex;
+
+            if (thisStation.SubrouteIndex > TCRoute.activeSubpath && !Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility)
+            // if the station is in a further subpath, distance computation is longer
+            {
+                // first compute distance up to end or reverse point of activeSubpath. To be restudied for subpaths with no reversal
+                if (TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid)
+                    distanceToTrainM = ComputeDistanceToReversalPoint();
+                else
+                {
+                    int lastSectionRouteIndex = TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1;
+                   float lastSectionLength = signalRef.TrackCircuitList[TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][lastSectionRouteIndex].TCSectionIndex].Length;
+                   distanceToTrainM = TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].GetDistanceAlongRoute(PresentPosition[0].RouteListIndex,
+                leftInSectionM, lastSectionRouteIndex, lastSectionLength, true, signalRef);
+                }
+                float lengthOfIntSubpath = 0;
+                int firstSection = 0;
+                float firstSectionOffsetToGo = 0;
+                int lastSection = 0;
+                float lastSectionOffsetToGo = 0;
+                int tempSectionTCSectionIndex;
+                if (distanceToTrainM >= 0)
+                {
+
+                    // compute length of intermediate subpaths, if any, from reversal or section at beginning to reversal or section at end
+
+                    for (int iSubpath = TCRoute.activeSubpath + 1; iSubpath < thisStation.SubrouteIndex; iSubpath++)
+                    {
+                        if (TCRoute.ReversalInfo[iSubpath - 1].Valid)
+                        // skip sections before reversal at beginning of path
+                        {
+                            for (int iSection = 0; iSection < TCRoute.TCRouteSubpaths[iSubpath].Count; iSection++)
+                            {
+                                if (TCRoute.TCRouteSubpaths[iSubpath][iSection].TCSectionIndex == TCRoute.ReversalInfo[iSubpath - 1].ReversalSectionIndex)
+                                {
+                                    firstSection = iSection;
+                                    firstSectionOffsetToGo = TCRoute.ReversalInfo[iSubpath - 1].ReverseReversalOffset;
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            for (int iSection = 0; iSection < TCRoute.TCRouteSubpaths[iSubpath].Count; iSection++)
+                            {
+                                if (TCRoute.TCRouteSubpaths[iSubpath][iSection].TCSectionIndex ==
+                                    TCRoute.TCRouteSubpaths[iSubpath-1][TCRoute.TCRouteSubpaths[iSubpath-1].Count-1].TCSectionIndex)
+                                {
+                                    firstSection = iSection+1;
+                                    tempSectionTCSectionIndex = TCRoute.TCRouteSubpaths[iSubpath][firstSection].TCSectionIndex;
+                                    firstSectionOffsetToGo = signalRef.TrackCircuitList[tempSectionTCSectionIndex].Length;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (TCRoute.ReversalInfo[iSubpath].Valid)
+                        // skip sections before reversal at beginning of path
+                        {
+                            for (int iSection = TCRoute.TCRouteSubpaths[iSubpath].Count - 1; iSection >= 0; iSection--)
+                            {
+                                if (TCRoute.TCRouteSubpaths[iSubpath][iSection].TCSectionIndex == TCRoute.ReversalInfo[iSubpath].ReversalSectionIndex)
+                                {
+                                    lastSection = iSection;
+                                    lastSectionOffsetToGo = TCRoute.ReversalInfo[iSubpath].ReverseReversalOffset;
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            lastSection = TCRoute.TCRouteSubpaths[iSubpath].Count - 1;
+                            tempSectionTCSectionIndex = TCRoute.TCRouteSubpaths[iSubpath][lastSection].TCSectionIndex;
+                            lastSectionOffsetToGo = signalRef.TrackCircuitList[tempSectionTCSectionIndex].Length;
+                        }
+
+                        lengthOfIntSubpath = TCRoute.TCRouteSubpaths[iSubpath].GetDistanceAlongRoute(firstSection,
+                            firstSectionOffsetToGo, lastSection, lastSectionOffsetToGo, true, signalRef);
+                        if (lengthOfIntSubpath < 0)
+                        {
+                            distanceToTrainM = -1;
+                            break;
+                        }
+                        distanceToTrainM += lengthOfIntSubpath;
+                    }
+                }
+                if (distanceToTrainM >= 0)
+                {
+                    // finally compute distance from start of station subpath up to station
+                    if (TCRoute.ReversalInfo[thisStation.SubrouteIndex - 1].Valid)
+                    // skip sections before reversal at beginning of path
+                    {
+                        for (int iSection = 0; iSection < TCRoute.TCRouteSubpaths[thisStation.SubrouteIndex].Count; iSection++)
+                        {
+                            if (TCRoute.TCRouteSubpaths[thisStation.SubrouteIndex][iSection].TCSectionIndex == TCRoute.ReversalInfo[thisStation.SubrouteIndex - 1].ReversalSectionIndex)
+                            {
+                                firstSection = iSection;
+                                firstSectionOffsetToGo = TCRoute.ReversalInfo[thisStation.SubrouteIndex - 1].ReverseReversalOffset;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for (int iSection = 0; iSection < TCRoute.TCRouteSubpaths[thisStation.SubrouteIndex].Count; iSection++)
+                        {
+                            if (TCRoute.TCRouteSubpaths[thisStation.SubrouteIndex][iSection].TCSectionIndex ==
+                                TCRoute.TCRouteSubpaths[thisStation.SubrouteIndex - 1][TCRoute.TCRouteSubpaths[thisStation.SubrouteIndex - 1].Count - 1].TCSectionIndex)
+                            {
+                                firstSection = iSection + 1;
+                                tempSectionTCSectionIndex = TCRoute.TCRouteSubpaths[thisStation.SubrouteIndex][firstSection].TCSectionIndex;
+                                firstSectionOffsetToGo = signalRef.TrackCircuitList[tempSectionTCSectionIndex].Length;
+                                break;
+                            }
+                        }
+                    }
+
+                    stationIndex = thisStation.RouteIndex;
+                    float distanceFromStartOfsubPath = TCRoute.TCRouteSubpaths[thisStation.SubrouteIndex].GetDistanceAlongRoute(firstSection,
+                        firstSectionOffsetToGo, stationIndex, thisStation.StopOffset, true, signalRef);
+                    if (distanceFromStartOfsubPath < 0) distanceToTrainM = -1;
+                    else distanceToTrainM += distanceFromStartOfsubPath;
+                }
+            }
+
+            else
+            {
+                // No enhanced compatibility, simple computation
+                // if present position off route, try rear position
+                // if both off route, skip station stop
+                stationIndex = ValidRoute[0].GetRouteIndex(thisStation.TCSectionIndex, PresentPosition[0].RouteListIndex);
+                distanceToTrainM = ValidRoute[0].GetDistanceAlongRoute(PresentPosition[0].RouteListIndex,
+                    leftInSectionM, stationIndex, thisStation.StopOffset, true, signalRef);
+            }
+            return distanceToTrainM;
+        }
+
+
+        //================================================================================================//
+        /// <summary>
+        /// Compute distance to reversal point
+        /// <\summary>
+
+        public float ComputeDistanceToReversalPoint()
+        {
+
+
+            float lengthToGoM = -PresentPosition[0].TCOffset;
+            TrackCircuitSection thisSection;
+            int reversalRouteIndex = ValidRoute[0].GetRouteIndex(TCRoute.ReversalInfo[TCRoute.activeSubpath].ReversalSectionIndex, PresentPosition[0].RouteListIndex);
+            if (PresentPosition[0].RouteListIndex <= reversalRouteIndex)
+            {
+                for (int iElement = PresentPosition[0].RouteListIndex; iElement < ValidRoute[0].Count; iElement++)
+                {
+                    TCRouteElement thisElement = ValidRoute[0][iElement];
+                    thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                    if (thisSection.Index == TCRoute.ReversalInfo[TCRoute.activeSubpath].ReversalSectionIndex)
+                    {
+                        break;
+                    }
+                    else lengthToGoM += thisSection.Length;
+                }
+                return lengthToGoM += TCRoute.ReversalInfo[TCRoute.activeSubpath].ReverseReversalOffset;
+            }
+            else
+            {
+                for (int iElement = PresentPosition[0].RouteListIndex-1; iElement >= 0; iElement--)
+                {
+                    TCRouteElement thisElement = ValidRoute[0][iElement];
+                    thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                    if (thisSection.Index == TCRoute.ReversalInfo[TCRoute.activeSubpath].ReversalSectionIndex)
+                    {
+                        break;
+                    }
+                    else lengthToGoM -= thisSection.Length;
+                }
+                return lengthToGoM += TCRoute.ReversalInfo[TCRoute.activeSubpath].ReverseReversalOffset -
+                    signalRef.TrackCircuitList[TCRoute.ReversalInfo[TCRoute.activeSubpath].ReversalSectionIndex].Length;       
+            }
+        }
 
         //================================================================================================//
         /// <summary>
@@ -4682,11 +4862,12 @@ namespace ORTS
             // check position in relation to present end of path
 
             if (ControlMode == TRAIN_CONTROL.AUTO_NODE &&
-                (EndAuthorityType[0] == END_AUTHORITY.END_OF_TRACK ||
-                 EndAuthorityType[0] == END_AUTHORITY.END_OF_PATH))
+                (EndAuthorityType[0] == END_AUTHORITY.END_OF_TRACK || EndAuthorityType[0] == END_AUTHORITY.END_OF_PATH )||
+                ( !Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility))
             {
                 // front is in last route section
-                if (PresentPosition[0].RouteListIndex == (ValidRoute[0].Count - 1))
+                if (PresentPosition[0].RouteListIndex == (ValidRoute[0].Count - 1) && (!Simulator.Settings.EnhancedActCompatibility || Simulator.TimetableMode ||
+                    !TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid))
                 {
                     endOfRoute = true;
                 }
@@ -4703,14 +4884,23 @@ namespace ORTS
                         junctionFound = thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction;
                         lengthToGo += thisSection.Length;
                     }
+                    float compatibilityNegligibleRouteChunk = (TrainType == TRAINTYPE.AI && TCRoute.TCRouteSubpaths.Count - 1 == TCRoute.activeSubpath) ? 30f : 5f;
+                    float negligibleRouteChunk = (!Simulator.Settings.EnhancedActCompatibility || Simulator.TimetableMode)? 150f : compatibilityNegligibleRouteChunk;
 
-                    if (lengthToGo < 150f && !junctionFound)
+                    if (lengthToGo < negligibleRouteChunk && !junctionFound && 
+                        (!Simulator.Settings.EnhancedActCompatibility || Simulator.TimetableMode || !TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid))
                     {
                         endOfRoute = true;
                     }
                 }
             }
-
+            //<CSComment: check of vicinity to reverse point; only in subpaths ending with reversal
+            if (!Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility && TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid)
+            {
+                float distanceToReversalPoint = ComputeDistanceToReversalPoint();
+                if (distanceToReversalPoint < 50  && PresentPosition[1].RouteListIndex >= reversalSectionIndex)
+                endOfRoute = true;
+            }
             // other checks unrelated to state
             if (!endOfRoute)
             {
@@ -4721,7 +4911,7 @@ namespace ORTS
 
                 // if end of train on last section in route - end of route reached
 
-                if (PresentPosition[1].RouteListIndex == lastValidRouteIndex)
+                if (PresentPosition[1].RouteListIndex == lastValidRouteIndex && (!Simulator.Settings.EnhancedActCompatibility || Simulator.TimetableMode))
                 {
                     endOfRoute = true;
                 }
@@ -4729,7 +4919,8 @@ namespace ORTS
                 // if waiting for next signal and section in front of signal is last in route - end of route reached
 
                 if (NextSignalObject[0] != null && PresentPosition[0].TCSectionIndex == NextSignalObject[0].TCReference &&
-                     NextSignalObject[0].TCReference == ValidRoute[0][lastValidRouteIndex].TCSectionIndex)
+                     NextSignalObject[0].TCReference == ValidRoute[0][lastValidRouteIndex].TCSectionIndex &&
+                     (!Simulator.Settings.EnhancedActCompatibility || Simulator.TimetableMode))
                 {
                     endOfRoute = true;
                 }
@@ -4743,7 +4934,8 @@ namespace ORTS
 
                 // if rear of train is beyond reversal section
 
-                else if (reversalSectionIndex >= 0 && PresentPosition[1].RouteListIndex >= reversalSectionIndex)
+                else if (reversalSectionIndex >= 0 && PresentPosition[1].RouteListIndex >= reversalSectionIndex && 
+                    (!Simulator.Settings.EnhancedActCompatibility || Simulator.TimetableMode))
                 {
                     endOfRoute = true;
                 }
@@ -4833,7 +5025,7 @@ namespace ORTS
 
                     // check overall position
 
-                    if (!intermediateJunction && !intermediateSignal)  // no more junctions and no more signal - reverse subpath
+                    if (!intermediateJunction && !intermediateSignal && (!Simulator.Settings.EnhancedActCompatibility || Simulator.TimetableMode))  // no more junctions and no more signal - reverse subpath
                     {
                         endOfRoute = true;
                     }
@@ -9706,9 +9898,19 @@ namespace ORTS
 
             // loop through traffic points
 
+            int beginActiveSubroute = 0;
+            int activeSubrouteNodeIndex = 0;
+
             foreach (Traffic_Traffic_Item thisItem in TrafficService.TrafficDetails)
             {
-                bool validStop = CreateStationStop(thisItem.PlatformStartID, thisItem.ArrivalTime, thisItem.DepartTime, new DateTime(0), new DateTime(0), clearingDistanceM);
+                if ( Simulator.TimetableMode || !Simulator.Settings.EnhancedActCompatibility)
+                {
+                    beginActiveSubroute = 0;
+                    activeSubrouteNodeIndex = 0;
+                }
+                bool validStop = 
+                    CreateStationStop(thisItem.PlatformStartID, thisItem.ArrivalTime, thisItem.DepartTime, new DateTime(0), new DateTime(0), clearingDistanceM, 
+                    ref beginActiveSubroute, ref activeSubrouteNodeIndex);
                 if (!validStop)
                 {
                     Trace.TraceInformation("Train {0} : cannot find platform {1}",
@@ -9722,11 +9924,12 @@ namespace ORTS
         /// Create station stop list
         /// <\summary>
 
-        public bool CreateStationStop(int platformStartID, int arrivalTime, int departTime, DateTime arrivalDT, DateTime departureDT, float clearingDistanceM)
+        public bool CreateStationStop(int platformStartID, int arrivalTime, int departTime, DateTime arrivalDT, DateTime departureDT, float clearingDistanceM,
+            ref int beginActiveSubroute, ref int activeSubrouteNodeIndex)
         {
             int platformIndex;
-            int activeSubroute = 0;
             int lastRouteIndex = 0;
+            int activeSubroute = beginActiveSubroute;
 
             TCSubpathRoute thisRoute = TCRoute.TCRouteSubpaths[activeSubroute];
 
@@ -9736,14 +9939,14 @@ namespace ORTS
             {
                 PlatformDetails thisPlatform = signalRef.PlatformDetailsList[platformIndex];
                 int sectionIndex = thisPlatform.TCSectionIndex[0];
-                int routeIndex = thisRoute.GetRouteIndex(sectionIndex, 0);
+                int routeIndex = thisRoute.GetRouteIndex(sectionIndex, activeSubrouteNodeIndex);
 
                 // if first section not found in route, try last
 
                 if (routeIndex < 0)
                 {
                     sectionIndex = thisPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1];
-                    routeIndex = thisRoute.GetRouteIndex(sectionIndex, 0);
+                    routeIndex = thisRoute.GetRouteIndex(sectionIndex, activeSubrouteNodeIndex);
                 }
 
                 // if neither section found - try next subroute - keep trying till found or out of subroutes
@@ -9751,15 +9954,16 @@ namespace ORTS
                 while (routeIndex < 0 && activeSubroute < (TCRoute.TCRouteSubpaths.Count - 1))
                 {
                     activeSubroute++;
+                    activeSubrouteNodeIndex = 0;
                     thisRoute = TCRoute.TCRouteSubpaths[activeSubroute];
-                    routeIndex = thisRoute.GetRouteIndex(sectionIndex, 0);
+                    routeIndex = thisRoute.GetRouteIndex(sectionIndex, activeSubrouteNodeIndex);
 
                     // if first section not found in route, try last
 
                     if (routeIndex < 0)
                     {
                         sectionIndex = thisPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1];
-                        routeIndex = thisRoute.GetRouteIndex(sectionIndex, 0);
+                        routeIndex = thisRoute.GetRouteIndex(sectionIndex, activeSubrouteNodeIndex);
                     }
                 }
 
@@ -9770,6 +9974,11 @@ namespace ORTS
                     Trace.TraceWarning("Train {0} : platform {1} is not on route",
                             Number.ToString(), platformStartID.ToString());
                     return (false);
+                }
+                else
+                {
+                   activeSubrouteNodeIndex = routeIndex;
+                   beginActiveSubroute = activeSubroute;
                 }
 
                 // determine end stop position depending on direction
@@ -10293,6 +10502,7 @@ namespace ORTS
             for (int iStation = 0; iStation < StationStops.Count && foundStation < 0; iStation++)
             {
                 thisStation = StationStops[iStation];
+                if (!Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility && thisStation.SubrouteIndex > TCRoute.activeSubpath) break;
                 if (thisStation.PlatformReference == id1 ||
                     thisStation.PlatformReference == id2)
                 {
@@ -11073,19 +11283,34 @@ namespace ORTS
             TCReversalInfo thisReversal = TCRoute.ReversalInfo[TCRoute.activeSubpath];
             if (thisReversal.Valid)
             {
-                int reversalSection = TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][(TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count) - 1].TCSectionIndex;
+                int reversalSection = (Program.Simulator.TimetableMode || !Program.Simulator.Settings.EnhancedActCompatibility)?
+                    TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][(TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count) - 1].TCSectionIndex 
+                    : reversalSection = thisReversal.ReversalSectionIndex;
                 if (thisReversal.LastDivergeIndex >= 0)
                 {
                     reversalSection = thisReversal.SignalUsed ? thisReversal.SignalSectorIndex : thisReversal.DivergeSectorIndex;
                 }
-
+  
                 TrackCircuitSection rearSection = signalRef.TrackCircuitList[PresentPosition[1].TCSectionIndex];
-                float reversalDistanceM =
-                    rearSection.GetDistanceBetweenObjects(PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection,
-                    reversalSection, 0.0f);
+                float reversalDistanceM = rearSection.GetDistanceBetweenObjects(PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection,
+                reversalSection, 0.0f);
+ 
+                bool reversalEnabled = true;
+                if (!Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility)
+                {
+                    TrackCircuitSection frontSection = signalRef.TrackCircuitList[PresentPosition[0].TCSectionIndex];
+                    reversalDistanceM = Math.Max(reversalDistanceM, frontSection.GetDistanceBetweenObjects
+                        (PresentPosition[0].TCSectionIndex, PresentPosition[0].TCOffset, PresentPosition[0].TCDirection,
+                        thisReversal.ReversalSectionIndex, thisReversal.ReverseReversalOffset));
+                    int reversalIndex = thisReversal.SignalUsed ? thisReversal.LastSignalIndex : thisReversal.LastDivergeIndex;
+                    if (reversalDistanceM > 50f || (PresentPosition[1].RouteListIndex < reversalIndex))
+                    {
+                        reversalEnabled = false;
+                    }
+                }
                 if (reversalDistanceM > 0)
                 {
-                    TrainObjectItem nextItem = new TrainObjectItem(0, reversalDistanceM);
+                    TrainObjectItem nextItem = new TrainObjectItem(reversalEnabled, reversalDistanceM);
                     thisInfo.ObjectInfoForward.Add(nextItem);
                 }
             }
@@ -12724,6 +12949,7 @@ namespace ORTS
             // [1] = WP section; [2] = WP wait time (delta); [3] = WP depart time;
             // [4] = hold signal
             public List<TCReversalInfo> ReversalInfo = new List<TCReversalInfo>();
+            public List<RoughReversalInfo> RoughReversalInfos = new List<RoughReversalInfo>();
             public List<int> LoopEnd = new List<int>();
             public Dictionary<string, int[]> StationXRef = new Dictionary<string, int[]>();
             // int[0] = subpath index, int[1] = element index, int[3] = platform ID
@@ -12969,7 +13195,32 @@ namespace ORTS
                                 nextPathNode.Location.Location.X,
                                 nextPathNode.Location.Location.Y,
                                 nextPathNode.Location.Location.Z);
+                            float reverseOffset = 0;
+                            int sectionIndex = -1;
+                            if (currentDir == 0)
+                            {
+                                reverseOffset = -offset;
+                                for (int i = reversalNode.TCCrossReference.Count-1; i >= 0 && reverseOffset<=0; i--)
+                                {
+                                    reverseOffset += reversalNode.TCCrossReference[i].Length;
+                                    sectionIndex = reversalNode.TCCrossReference[i].Index;
 
+                                }
+                            }
+                            else
+                            {
+                                int exti = 0;
+                                reverseOffset = offset;
+                                for (int i = reversalNode.TCCrossReference.Count - 1; i >=0 && reverseOffset >= 0; i--)
+                                {
+                                    reverseOffset -= reversalNode.TCCrossReference[i].Length;
+                                    sectionIndex = reversalNode.TCCrossReference[i].Index;
+                                    exti = i;
+                                }
+                                reverseOffset +=reversalNode.TCCrossReference[exti].Length;
+                            }
+                            RoughReversalInfo roughReversalInfo =  new RoughReversalInfo(sublist, reverseOffset, sectionIndex);
+                            RoughReversalInfos.Add(roughReversalInfo);
                             reversalOffset.Add(offset);
                             reversalIndex.Add(sublist);
                             reversal++;
@@ -13202,6 +13453,15 @@ namespace ORTS
                     {
                         TCRouteSubpaths.RemoveAt(iSub);
                         subRemoved.Add(iSub);
+                        var itemToRemove = RoughReversalInfos.FindIndex(r => r.SubPathIndex >= iSub);
+                        if (itemToRemove != -1)
+                        {
+                            if (RoughReversalInfos[itemToRemove].SubPathIndex == iSub) RoughReversalInfos.RemoveAt(itemToRemove);
+                            for (int i = itemToRemove; i < RoughReversalInfos.Count; i++)
+                            {
+                                RoughReversalInfos[i].SubPathIndex--;
+                            }
+                        }
                     }
                 }
 
@@ -13343,14 +13603,34 @@ namespace ORTS
                 // for reversals, find actual diverging section
 
                 int prevDivergeSectorIndex = -1;
+                int iReversalLists = 0;
+                TCReversalInfo reversalInfo;
                 for (int iSubpath = 1; iSubpath < TCRouteSubpaths.Count; iSubpath++)
                 {
-                    TCReversalInfo reversalInfo = new TCReversalInfo(TCRouteSubpaths[iSubpath - 1], prevDivergeSectorIndex,
-                        TCRouteSubpaths[iSubpath], orgSignals);
+                    while (RoughReversalInfos.Count > 0 && RoughReversalInfos[iReversalLists].SubPathIndex < iSubpath-1 && iReversalLists < RoughReversalInfos.Count-1)
+                    {
+                        iReversalLists++;   
+                    }
+                    
+                    if (RoughReversalInfos.Count > 0 && RoughReversalInfos[iReversalLists].SubPathIndex == iSubpath-1)
+                    {
+                        reversalInfo = new TCReversalInfo(TCRouteSubpaths[iSubpath - 1], prevDivergeSectorIndex,
+                            TCRouteSubpaths[iSubpath], orgSignals,
+                            RoughReversalInfos[iReversalLists].ReverseReversalOffset, RoughReversalInfos[iReversalLists].SubPathIndex, RoughReversalInfos[iReversalLists].ReversalSectionIndex);
+                    }
+                    else
+                    {
+                        reversalInfo = new TCReversalInfo(TCRouteSubpaths[iSubpath - 1], prevDivergeSectorIndex,
+                            TCRouteSubpaths[iSubpath], orgSignals, -1, -1, -1);
+                    }
+
                     ReversalInfo.Add(reversalInfo);
                     prevDivergeSectorIndex = reversalInfo.Valid ? reversalInfo.FirstDivergeIndex : -1;
                 }
                 ReversalInfo.Add(new TCReversalInfo());  // add invalid item to make up the numbers (equals no. subpaths)
+
+                RoughReversalInfos.Clear(); // no more used
+
 
                 // process alternative paths - MSTS style
 
@@ -14532,7 +14812,9 @@ namespace ORTS
                 TCSubpathRoute nextRoute = new TCSubpathRoute();
                 TCRouteSubpaths.Insert(subpathIdx + 1, nextRoute);
                 TCReversalInfo nextReversalPoint = new TCReversalInfo(); // also add dummy reversal info to match total number
-                ReversalInfo.Add(nextReversalPoint);
+                //CSComment: insert subpath number and subpath index
+                nextReversalPoint.ReversalIndex = subpathIdx + 1;
+                ReversalInfo.Insert(subpathIdx+1, nextReversalPoint);
                 LoopEnd.Add(-1); // also add dummy loop end
                 for (int iElement = subpath.Count - 1; iElement >= position + 1; iElement--)
                 {
@@ -14543,6 +14825,10 @@ namespace ORTS
                 for (int cntWP = WPIdx+1; cntWP < WaitingPoints.Count; cntWP++)
                 {
                     WaitingPoints[cntWP][0]++;
+                }
+                for (int cntRI = subpathIdx+2; cntRI < ReversalInfo.Count-1; cntRI++)
+                {
+                    if (ReversalInfo[cntRI].ReversalIndex >= 0) ReversalInfo[cntRI].ReversalIndex++; 
                 }
             }
         }
@@ -15466,13 +15752,17 @@ namespace ORTS
             public int FirstSignalIndex;
             public int SignalSectorIndex;
             public float SignalOffset;
+            public float ReverseReversalOffset;
+            public int ReversalIndex;
+            public int ReversalSectionIndex;
+            public bool ReversalActionInserted;
 
             //================================================================================================//
             /// <summary>
             /// Constructor (from route path details)
             /// <\summary>
 
-            public TCReversalInfo(TCSubpathRoute lastRoute, int prevReversalIndex, TCSubpathRoute firstRoute, Signals orgSignals)
+            public TCReversalInfo(TCSubpathRoute lastRoute, int prevReversalIndex, TCSubpathRoute firstRoute, Signals orgSignals, float reverseReversalOffset, int reversalIndex, int reversalSectionIndex)
             {
                 // preset values
                 Valid = false;
@@ -15482,6 +15772,10 @@ namespace ORTS
                 FirstSignalIndex = -1;
                 SignalAvailable = false;
                 SignalUsed = false;
+                ReverseReversalOffset = reverseReversalOffset;
+                ReversalIndex = reversalIndex;
+                ReversalSectionIndex = reversalSectionIndex;
+                ReversalActionInserted = false;
 
                 // search for first common section in last and first
 
@@ -15527,7 +15821,8 @@ namespace ORTS
                     lastIndex = lastCommonSection;
                     firstIndex = firstCommonSection;
 
-                    int endLastIndex = (prevReversalIndex > 0 && prevReversalIndex < lastCommonSection) ? prevReversalIndex : 0;
+                    int endLastIndex = (prevReversalIndex > 0 && prevReversalIndex < lastCommonSection && 
+                        (Program.Simulator.TimetableMode || !Program.Simulator.Settings.EnhancedActCompatibility )) ? prevReversalIndex : 0;
 
                     while (lastIndex >= endLastIndex && firstIndex <= (firstRoute.Count - 1) && lastRoute[lastIndex].TCSectionIndex == firstRoute[firstIndex].TCSectionIndex)
                     {
@@ -15540,7 +15835,9 @@ namespace ORTS
                     }
 
                     Valid = LastDivergeIndex >= 0; // it is a reversal
-                    validDivPoint = LastDivergeIndex > 0 && FirstDivergeIndex < (firstRoute.Count - 1); // valid reversal point
+                    validDivPoint = true;
+                    if (Program.Simulator.TimetableMode || !Program.Simulator.Settings.EnhancedActCompatibility)
+                        validDivPoint = LastDivergeIndex > 0 && FirstDivergeIndex < (firstRoute.Count - 1); // valid reversal point
                     if (lastRoute.Count == 1 && FirstDivergeIndex < (firstRoute.Count - 1)) validDivPoint = true; // valid reversal point in first and only section
                 }
 
@@ -15558,7 +15855,20 @@ namespace ORTS
                     // find last signal furthest away from diverging point
 
                     bool signalFound = false;
-                    for (int iSection = 0; iSection <= FirstDivergeIndex && !signalFound; iSection++)
+                    int startSection = 0;
+                    if (!Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility)
+                        // In this case test starts only after reverse point.
+                    {
+                        for (int iSection = 0; iSection < firstRoute.Count; iSection++)
+                        {
+                            if (firstRoute[iSection].TCSectionIndex == ReversalSectionIndex)
+                            {
+                                startSection = iSection;
+                                break;
+                            }
+                        }
+                    }
+                    for (int iSection = startSection; iSection <= FirstDivergeIndex && !signalFound; iSection++)
                     {
                         TrackCircuitSection thisSection = orgSignals.TrackCircuitList[firstRoute[iSection].TCSectionIndex];
                         if (thisSection.EndSignals[firstRoute[iSection].Direction] != null)   // signal in required direction
@@ -15613,6 +15923,10 @@ namespace ORTS
                 FirstSignalIndex = otherInfo.FirstSignalIndex;
                 SignalSectorIndex = otherInfo.SignalSectorIndex;
                 SignalOffset = otherInfo.SignalOffset;
+                ReverseReversalOffset = otherInfo.ReverseReversalOffset;
+                ReversalIndex = otherInfo.ReversalIndex;
+                ReversalSectionIndex = otherInfo.ReversalSectionIndex;
+                ReversalActionInserted = false;
             }
 
             //================================================================================================//
@@ -15637,6 +15951,10 @@ namespace ORTS
 
                 SignalAvailable = false;
                 SignalUsed = false;
+                ReverseReversalOffset = 0.0f;
+                ReversalIndex = -1;
+                ReversalSectionIndex = -1;
+                ReversalActionInserted = false;
             }
 
             //================================================================================================//
@@ -15661,6 +15979,10 @@ namespace ORTS
                     FirstSignalIndex = inf.ReadInt32();
                     SignalSectorIndex = inf.ReadInt32();
                     SignalOffset = inf.ReadSingle();
+                    ReverseReversalOffset = inf.ReadSingle();
+                    ReversalIndex = inf.ReadInt32();
+                    ReversalSectionIndex = inf.ReadInt32();
+                    ReversalActionInserted = inf.ReadBoolean();
                 }
                 else
                 {
@@ -15676,6 +15998,10 @@ namespace ORTS
 
                     SignalAvailable = false;
                     SignalUsed = false;
+                    ReverseReversalOffset = 0.0f;
+                    ReversalIndex = -1;
+                    ReversalSectionIndex = -1;
+                    ReversalActionInserted = false;
                 }
             }
 
@@ -15701,10 +16027,41 @@ namespace ORTS
                     outf.Write(FirstSignalIndex);
                     outf.Write(SignalSectorIndex);
                     outf.Write(SignalOffset);
+                    outf.Write(ReverseReversalOffset);
+                    outf.Write(ReversalIndex);
+                    outf.Write(ReversalSectionIndex);
+                    outf.Write(ReversalActionInserted);
                 }
             }
 
         }//TCReversalInfo
+
+               //================================================================================================//
+        /// <summary>
+        /// Rough Reversal information class, used only during route building.
+        /// </summary>
+
+        public class RoughReversalInfo
+        {
+            public int SubPathIndex;
+            public float ReverseReversalOffset;
+            public int ReversalSectionIndex;
+
+            //================================================================================================//
+            /// <summary>
+            /// Constructor (from route path details)
+            /// <\summary>
+
+            public RoughReversalInfo(int subPathIndex, float reverseReversalOffset, int reversalSectionIndex)
+            {
+
+
+                SubPathIndex = subPathIndex;
+                ReverseReversalOffset = reverseReversalOffset;
+                ReversalSectionIndex = reversalSectionIndex;
+            }
+        }
+
 
         //================================================================================================//
         /// <summary>
@@ -16398,7 +16755,9 @@ namespace ORTS
                 var passengerCarsWithinPlatform = stopTrain.PassengerCarsNumber;
                 int stopTime = DefaultFreightStopTime;
                 if (passengerCarsWithinPlatform == 0) return stopTime; // pure freight train
-                var distancePlatformHeadtoTrainHead = -stopTrain.StationStops[0].StopOffset + PlatformItem.TCOffset[1, stopTrain.TCRoute.TCRouteSubpaths[stopTrain.TCRoute.activeSubpath][stopTrain.StationStops[0].RouteIndex].Direction] + stopTrain.StationStops[0].DistanceToTrainM;
+                var distancePlatformHeadtoTrainHead = -stopTrain.StationStops[0].StopOffset 
+                   + PlatformItem.TCOffset[1, stopTrain.StationStops[0].Direction]
+                   + stopTrain.StationStops[0].DistanceToTrainM; 
                 var trainPartOutsidePlatformForward = distancePlatformHeadtoTrainHead < 0 ? -distancePlatformHeadtoTrainHead : 0;
                 if (trainPartOutsidePlatformForward >= stopTrain.Length) return (int)PlatformItem.MinWaitingTime; // train actually passed platform; should not happen
                 var distancePlatformTailtoTrainTail = distancePlatformHeadtoTrainHead - PlatformItem.Length + stopTrain.Length;
@@ -16951,6 +17310,7 @@ namespace ORTS
             public TrackMonitorSignalAspect SignalState;
             public float AllowedSpeedMpS;
             public float DistanceToTrainM;
+            public bool Enabled;
 
             // field validity :
             // if ItemType == SIGNAL :
@@ -17012,13 +17372,14 @@ namespace ORTS
             }
 
             // Constructor for Reversal
-            public TrainObjectItem(int dummy, float thisDistanceM)  // dummy int as first parameter to make it unique
+            public TrainObjectItem(bool enabled, float thisDistanceM)  
             {
                 ItemType = TRAINOBJECTTYPE.REVERSAL;
                 AuthorityType = END_AUTHORITY.NO_PATH_RESERVED;
                 SignalState = TrackMonitorSignalAspect.Clear_2;
                 AllowedSpeedMpS = -1;
                 DistanceToTrainM = thisDistanceM;
+                Enabled = enabled;
             }
 
             // Constructor for Authority
