@@ -409,6 +409,9 @@ namespace ORTS.TrackViewer.Drawing
                 }
             }
 
+            // First force TrItemTable to exist in case it was not defined in the .tdb file
+            TrackDB.AddTrItems(new TrItem[0]);
+
             // find rail track items
             railTrackItemTable = new DrawableTrackItem[TrackDB.TrItemTable.Count()];
             for (int i = 0; i < TrackDB.TrItemTable.Count(); i++)
