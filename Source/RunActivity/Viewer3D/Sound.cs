@@ -658,7 +658,7 @@ namespace ORTS.Viewer3D
                 viewpoint = Camera.Styles.External;
             }
 
-            if (conditions.CabCam && viewpoint == Camera.Styles.Cab)
+            if (conditions.CabCam && (viewpoint == Camera.Styles.Cab || viewpoint == Camera.Styles.ThreeDimCab))
                 return true;
             if (conditions.PassengerCam && viewpoint == Camera.Styles.Passenger)
                 return true;
