@@ -1141,7 +1141,9 @@ namespace ORTS
                 (nextActionInfo == null || nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.END_OF_ROUTE))
             {
                 ResetActions(false);
-                NextStopDistanceM = DistanceToEndNodeAuthorityM[0] - clearingDistanceM;
+                if (Simulator.TimetableMode || !Simulator.Settings.EnhancedActCompatibility || TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1)
+                    NextStopDistanceM = DistanceToEndNodeAuthorityM[0] - clearingDistanceM;
+                else NextStopDistanceM = ComputeDistanceToReversalPoint() - clearingDistanceM;
             }
         }
 
@@ -4398,16 +4400,18 @@ namespace ORTS
 
             TrackCircuitSection thisSection = signalRef.TrackCircuitList[PresentPosition[0].TCSectionIndex];
             float lengthToGoM = thisSection.Length - PresentPosition[0].TCOffset;
-
-            // go through all further sections
-
-            for (int iElement = PresentPosition[0].RouteListIndex + 1; iElement < ValidRoute[0].Count; iElement++)
+            if (Simulator.TimetableMode || !Simulator.Settings.EnhancedActCompatibility || TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1)
             {
-                TCRouteElement thisElement = ValidRoute[0][iElement];
-                thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
-                lengthToGoM += thisSection.Length;
-            }
+                // go through all further sections
 
+                for (int iElement = PresentPosition[0].RouteListIndex + 1; iElement < ValidRoute[0].Count; iElement++)
+                {
+                    TCRouteElement thisElement = ValidRoute[0][iElement];
+                    thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                    lengthToGoM += thisSection.Length;
+                }
+            }
+            else lengthToGoM = ComputeDistanceToReversalPoint();
             lengthToGoM -= 5.0f; // keep save distance from end
 
             // if last section does not end at signal at next section is switch, set back overlap to keep clear of switch
@@ -4415,7 +4419,8 @@ namespace ORTS
 
             TCRouteElement lastElement = ValidRoute[0][ValidRoute[0].Count - 1];
             TrackCircuitSection lastSection = signalRef.TrackCircuitList[lastElement.TCSectionIndex];
-            if (lastSection.EndSignals[lastElement.Direction] == null && TCRoute.activeSubpath == (TCRoute.TCRouteSubpaths.Count - 1))
+            if (lastSection.EndSignals[lastElement.Direction] == null && TCRoute.activeSubpath == (TCRoute.TCRouteSubpaths.Count - 1) &&
+                (Simulator.TimetableMode || !Simulator.Settings.EnhancedActCompatibility) )
             {
                 int nextIndex = lastSection.Pins[lastElement.Direction, 0].Link;
                 if (nextIndex >= 0)

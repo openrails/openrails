@@ -4878,12 +4878,16 @@ namespace ORTS
                     float lengthToGo = thisSection.Length - PresentPosition[0].TCOffset;
 
                     bool junctionFound = false;
-                    for (int iIndex = PresentPosition[0].RouteListIndex + 1; iIndex < ValidRoute[0].Count && !junctionFound; iIndex++)
+                    if (Simulator.TimetableMode || !Simulator.Settings.EnhancedActCompatibility || TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1)
                     {
-                        thisSection = signalRef.TrackCircuitList[ValidRoute[0][iIndex].TCSectionIndex];
-                        junctionFound = thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction;
-                        lengthToGo += thisSection.Length;
+                        for (int iIndex = PresentPosition[0].RouteListIndex + 1; iIndex < ValidRoute[0].Count && !junctionFound; iIndex++)
+                        {
+                            thisSection = signalRef.TrackCircuitList[ValidRoute[0][iIndex].TCSectionIndex];
+                            junctionFound = thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction;
+                            lengthToGo += thisSection.Length;
+                        }
                     }
+                    else lengthToGo = ComputeDistanceToReversalPoint();
                     float compatibilityNegligibleRouteChunk = (TrainType == TRAINTYPE.AI && TCRoute.TCRouteSubpaths.Count - 1 == TCRoute.activeSubpath) ? 30f : 5f;
                     float negligibleRouteChunk = (!Simulator.Settings.EnhancedActCompatibility || Simulator.TimetableMode)? 150f : compatibilityNegligibleRouteChunk;
 
@@ -13279,6 +13283,34 @@ namespace ORTS
                     lastPathNode.Location.Location.Y,
                     lastPathNode.Location.Location.Z);
 
+                // Prepare info about route end point
+                float reverseEndOffset = 0;
+                int endNodeSectionIndex = -1;
+                if (currentDir == 0)
+                {
+                    reverseEndOffset = -endOffset;
+                    for (int i = thisNode.TCCrossReference.Count - 1; i >= 0 && reverseEndOffset <= 0; i--)
+                    {
+                        reverseEndOffset += thisNode.TCCrossReference[i].Length;
+                        endNodeSectionIndex = thisNode.TCCrossReference[i].Index;
+
+                    }
+                }
+                else
+                {
+                    int exti = 0;
+                    reverseEndOffset = endOffset;
+                    for (int i = thisNode.TCCrossReference.Count - 1; i >= 0 && reverseEndOffset >= 0; i--)
+                    {
+                        reverseEndOffset -= thisNode.TCCrossReference[i].Length;
+                        endNodeSectionIndex = thisNode.TCCrossReference[i].Index;
+                        exti = i;
+                    }
+                    reverseEndOffset += thisNode.TCCrossReference[exti].Length;
+                }
+                RoughReversalInfo lastReversalInfo = new RoughReversalInfo(thisSubpath.Count-1, reverseEndOffset, endNodeSectionIndex);
+                RoughReversalInfos.Add(lastReversalInfo);
+
                 // only add last section if end point is in different tracknode as last added item
                 if (thisSubpath.Count <= 0 ||
                     thisNode.Index != orgSignals.TrackCircuitList[thisSubpath[thisSubpath.Count - 1].TCSectionIndex].OriginalIndex)
@@ -13607,7 +13639,7 @@ namespace ORTS
                 TCReversalInfo reversalInfo;
                 for (int iSubpath = 1; iSubpath < TCRouteSubpaths.Count; iSubpath++)
                 {
-                    while (RoughReversalInfos.Count > 0 && RoughReversalInfos[iReversalLists].SubPathIndex < iSubpath-1 && iReversalLists < RoughReversalInfos.Count-1)
+                    while (RoughReversalInfos.Count > 0 && RoughReversalInfos[iReversalLists].SubPathIndex < iSubpath-1 && iReversalLists < RoughReversalInfos.Count-2)
                     {
                         iReversalLists++;   
                     }
@@ -13628,6 +13660,10 @@ namespace ORTS
                     prevDivergeSectorIndex = reversalInfo.Valid ? reversalInfo.FirstDivergeIndex : -1;
                 }
                 ReversalInfo.Add(new TCReversalInfo());  // add invalid item to make up the numbers (equals no. subpaths)
+                // Insert data for end route offset
+                ReversalInfo[ReversalInfo.Count-1].ReverseReversalOffset = RoughReversalInfos[RoughReversalInfos.Count-1].ReverseReversalOffset;
+                ReversalInfo[ReversalInfo.Count-1].ReversalIndex = RoughReversalInfos[RoughReversalInfos.Count-1].SubPathIndex;
+                ReversalInfo[ReversalInfo.Count-1].ReversalSectionIndex = RoughReversalInfos[RoughReversalInfos.Count-1].ReversalSectionIndex;
 
                 RoughReversalInfos.Clear(); // no more used
 
