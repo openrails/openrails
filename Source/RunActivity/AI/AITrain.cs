@@ -3753,6 +3753,12 @@ namespace ORTS
                     TCRoute.TCRouteSubpaths.Add(nextRoute);
                     TCReversalInfo nextReversalPoint = new TCReversalInfo(); // also add dummy reversal info to match total number
                     TCRoute.ReversalInfo.Add(nextReversalPoint);
+                    if (!Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility)
+                    {
+                        TCRoute.ReversalInfo[TCRoute.ReversalInfo.Count - 1].ReversalIndex = TCRoute.ReversalInfo[TCRoute.ReversalInfo.Count - 2].ReversalIndex + 1;
+                        TCRoute.ReversalInfo[TCRoute.ReversalInfo.Count - 1].ReversalSectionIndex = TCRoute.ReversalInfo[TCRoute.ReversalInfo.Count - 2].ReversalSectionIndex;
+                        TCRoute.ReversalInfo[TCRoute.ReversalInfo.Count - 1].ReverseReversalOffset = TCRoute.ReversalInfo[TCRoute.ReversalInfo.Count - 2].ReverseReversalOffset;
+                    }
                     TCRoute.LoopEnd.Add(-1); // also add dummy loop end
                 }
                 else
