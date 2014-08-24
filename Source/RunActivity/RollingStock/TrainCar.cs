@@ -873,6 +873,11 @@ namespace ORTS
             bool articulatedFront = !WheelAxles.Any(a => a.OffsetM < 0);
             bool articulatedRear = !WheelAxles.Any(a => a.OffsetM > 0);
             // If the car is articulated, steal some wheels from nearby cars.
+
+            // Since each articulated car is made differently, we must make sure
+            //    that each car has an axle count of 3 or more before entering the ComputePosition() process.
+            // If not, the ComputePosition() process will be unable to process the car correctly.
+            // In this case, the result is usually a car that does not show up.
             
                 if (articulatedFront || articulatedRear)
                 {
@@ -880,7 +885,7 @@ namespace ORTS
                     {
                         var otherCar = Train.Cars[carIndex - 1];
                         var otherPart = otherCar.Parts.OrderBy(p => p.OffsetM).FirstOrDefault();
-                        if (otherPart == null)
+                        if (otherPart == null || Parts.Count < 3)
                             WheelAxles.Add(new WheelAxle(-LengthM / 2, 0, 0) { Part = Parts[0] });
                         else
                         {
@@ -896,7 +901,7 @@ namespace ORTS
                     {
                         var otherCar = Train.Cars[carIndex + 1];
                         var otherPart = otherCar.Parts.OrderBy(p => -p.OffsetM).FirstOrDefault();
-                        if (otherPart == null)
+                        if (otherPart == null || Parts.Count < 3)
                             WheelAxles.Add(new WheelAxle(LengthM / 2, 0, 0) { Part = Parts[0] });
                         else
                         {
