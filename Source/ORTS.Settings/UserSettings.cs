@@ -215,7 +215,10 @@ namespace ORTS.Settings
 
         [Default(false)]
         public bool EnhancedActCompatibility { get; set; }
-        
+
+        [Default(false)]
+        public bool AuxActionEnabled { get; set; }
+
         // Data Logger settings:
 		[Default("comma")]
 		public string DataLoggerSeparator { set; get; }

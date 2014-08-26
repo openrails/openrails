@@ -65,7 +65,7 @@ namespace ORTS
         public Service_Definition ServiceDefinition;     // train's service definition in .act file
 
 #if NEW_ACTION
-        public List<AIAuxActions> AuxActions;          // Action To Do during activity, like WP
+        public List<AIAuxActionsRef> AuxActions;          // Action To Do during activity, like WP
 #endif
 
         public enum AI_MOVEMENT_STATE
@@ -138,7 +138,7 @@ namespace ORTS
             TrafficService = trafficService;
             MaxVelocityA = maxVelocityA;
 #if NEW_ACTION
-            AuxActions = new List<AIAuxActions>();
+            AuxActions = new List<AIAuxActionsRef>();
 #endif
         }
 
@@ -147,7 +147,7 @@ namespace ORTS
         {
             TrainType = TRAINTYPE.AI_NOTSTARTED;
 #if NEW_ACTION
-            AuxActions = new List<AIAuxActions>();
+            AuxActions = new List<AIAuxActionsRef>();
 #endif
 
         }
@@ -242,7 +242,7 @@ namespace ORTS
                 ResetActions(true);
             }
 #if NEW_ACTION
-            AuxActions = new List<AIAuxActions>();
+            AuxActions = new List<AIAuxActionsRef>();
 #endif
 
         }
@@ -1469,7 +1469,7 @@ namespace ORTS
         {
             if (AuxActions.Count <= 0)
                 return;
-            AIAuxActions thisAction = AuxActions[0];
+            AIAuxActionsRef thisAction = AuxActions[0];
 
             if (thisAction.SubrouteIndex > TCRoute.activeSubpath)
             {
@@ -1494,7 +1494,7 @@ namespace ORTS
                 else
                 {
                     validAction = true;
-                    AIActionItem newAction = AuxActions[0].Handler(distancesM[1], 0.0f, distancesM[0], DistanceTravelledM);
+                    AIActionItem newAction = AuxActions[0].Handler(distancesM[1], AuxActions[0].RequiredSpeedMpS, distancesM[0], DistanceTravelledM);
 
                     requiredActions.InsertAction(newAction);
                 }
@@ -2165,6 +2165,10 @@ namespace ORTS
 
             bool clearAction = false;
             float distanceToGoM = clearingDistanceM;
+            if (nextActionInfo.RequiredSpeedMpS == 99999f)  //  RequiredSpeed doesn't matter
+            {
+                return;
+            }
 
             if (nextActionInfo == null) // action has been reset - keep status quo
             {
@@ -3283,7 +3287,6 @@ namespace ORTS
 
         public void UpdateRunningState(float elapsedClockSeconds)
         {
-
             float topBand = AllowedMaxSpeedMpS - ((1.5f - Efficiency) * hysterisMpS);
             float highBand = Math.Max(0.5f, AllowedMaxSpeedMpS - ((3.0f - 2.0f * Efficiency) * hysterisMpS));
             float lowBand = Math.Max(0.4f, AllowedMaxSpeedMpS - ((9.0f - 3.0f * Efficiency) * hysterisMpS));
@@ -3785,7 +3788,7 @@ namespace ORTS
 #endif
 
 #if NEW_ACTION
-                AIActionWP action = new AIActionWP(waitingPoint[5], 0f, 0, thisRoute[lastIndex].TCSectionIndex, lastIndex, direction);
+                AIActionWPRef action = new AIActionWPRef(this, waitingPoint[5], 0f, 0, thisRoute[lastIndex].TCSectionIndex, lastIndex, direction);
                 action.SetDelay(waitingPoint[2]);
                 AuxActions.Add(action);
 #else
@@ -5572,17 +5575,17 @@ namespace ORTS
             return false;
         }
 
-        public virtual AITrain.AI_MOVEMENT_STATE InitAction(AITrain thisTrain, int presentTime, AITrain.AI_MOVEMENT_STATE movementState)
+        public virtual AITrain.AI_MOVEMENT_STATE InitAction(AITrain thisTrain, int presentTime, float elapsedClockSeconds, AITrain.AI_MOVEMENT_STATE movementState)
         {
             return movementState;
         }
 
-        public virtual AITrain.AI_MOVEMENT_STATE EndAction(AITrain thisTrain, int presentTime, AITrain.AI_MOVEMENT_STATE movementState)
+        public virtual AITrain.AI_MOVEMENT_STATE EndAction(AITrain thisTrain, int presentTime, float elapsedClockSeconds, AITrain.AI_MOVEMENT_STATE movementState)
         {
             return movementState;
         }
 
-        public virtual AITrain.AI_MOVEMENT_STATE HandleAction(AITrain thisTrain, int presentTime, AITrain.AI_MOVEMENT_STATE movementState)
+        public virtual AITrain.AI_MOVEMENT_STATE HandleAction(AITrain thisTrain, int presentTime, float elapsedClockSeconds, AITrain.AI_MOVEMENT_STATE movementState)
         {
             return movementState;
         }

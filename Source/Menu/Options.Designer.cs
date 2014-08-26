@@ -137,6 +137,7 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.checkBoxAuxAction = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -203,7 +204,7 @@
             // 
             this.label4.AutoSize = true;
             this.label4.Location = new System.Drawing.Point(66, 77);
-            this.label4.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.label4.Margin = new System.Windows.Forms.Padding(3);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(159, 13);
             this.label4.TabIndex = 3;
@@ -295,7 +296,7 @@
             this.tabPageGeneral.Controls.Add(this.label4);
             this.tabPageGeneral.Location = new System.Drawing.Point(4, 22);
             this.tabPageGeneral.Name = "tabPageGeneral";
-            this.tabPageGeneral.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPageGeneral.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageGeneral.Size = new System.Drawing.Size(602, 402);
             this.tabPageGeneral.TabIndex = 0;
             this.tabPageGeneral.Text = "General";
@@ -329,7 +330,7 @@
             // 
             this.labelLanguage.AutoSize = true;
             this.labelLanguage.Location = new System.Drawing.Point(133, 177);
-            this.labelLanguage.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.labelLanguage.Margin = new System.Windows.Forms.Padding(3);
             this.labelLanguage.Name = "labelLanguage";
             this.labelLanguage.Size = new System.Drawing.Size(55, 13);
             this.labelLanguage.TabIndex = 7;
@@ -365,7 +366,7 @@
             this.tabPageAudio.Controls.Add(this.checkMSTSBINSound);
             this.tabPageAudio.Location = new System.Drawing.Point(4, 22);
             this.tabPageAudio.Name = "tabPageAudio";
-            this.tabPageAudio.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPageAudio.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageAudio.Size = new System.Drawing.Size(602, 402);
             this.tabPageAudio.TabIndex = 5;
             this.tabPageAudio.Text = "Audio";
@@ -398,7 +399,7 @@
             // 
             this.soundVolumeLabel.AutoSize = true;
             this.soundVolumeLabel.Location = new System.Drawing.Point(66, 57);
-            this.soundVolumeLabel.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.soundVolumeLabel.Margin = new System.Windows.Forms.Padding(3);
             this.soundVolumeLabel.Name = "soundVolumeLabel";
             this.soundVolumeLabel.Size = new System.Drawing.Size(87, 13);
             this.soundVolumeLabel.TabIndex = 4;
@@ -408,7 +409,7 @@
             // 
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(66, 8);
-            this.label2.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.label2.Margin = new System.Windows.Forms.Padding(3);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(91, 13);
             this.label2.TabIndex = 1;
@@ -458,7 +459,7 @@
             this.tabPageVideo.Controls.Add(this.checkWire);
             this.tabPageVideo.Location = new System.Drawing.Point(4, 22);
             this.tabPageVideo.Name = "tabPageVideo";
-            this.tabPageVideo.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPageVideo.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageVideo.Size = new System.Drawing.Size(602, 402);
             this.tabPageVideo.TabIndex = 4;
             this.tabPageVideo.Text = "Video";
@@ -478,7 +479,7 @@
             // 
             this.label11.AutoSize = true;
             this.label11.Location = new System.Drawing.Point(86, 254);
-            this.label11.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.label11.Margin = new System.Windows.Forms.Padding(3);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(110, 13);
             this.label11.TabIndex = 18;
@@ -527,7 +528,7 @@
             // 
             this.label14.AutoSize = true;
             this.label14.Location = new System.Drawing.Point(66, 205);
-            this.label14.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.label14.Margin = new System.Windows.Forms.Padding(3);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(104, 13);
             this.label14.TabIndex = 15;
@@ -564,7 +565,7 @@
             // 
             this.labelFOVHelp.AutoSize = true;
             this.labelFOVHelp.Location = new System.Drawing.Point(222, 153);
-            this.labelFOVHelp.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.labelFOVHelp.Margin = new System.Windows.Forms.Padding(3);
             this.labelFOVHelp.Name = "labelFOVHelp";
             this.labelFOVHelp.Size = new System.Drawing.Size(28, 13);
             this.labelFOVHelp.TabIndex = 11;
@@ -597,7 +598,7 @@
             // 
             this.label10.AutoSize = true;
             this.label10.Location = new System.Drawing.Point(66, 153);
-            this.label10.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.label10.Margin = new System.Windows.Forms.Padding(3);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(105, 13);
             this.label10.TabIndex = 10;
@@ -621,7 +622,7 @@
             // 
             this.labelCab2DStretch.AutoSize = true;
             this.labelCab2DStretch.Location = new System.Drawing.Point(66, 179);
-            this.labelCab2DStretch.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.labelCab2DStretch.Margin = new System.Windows.Forms.Padding(3);
             this.labelCab2DStretch.Name = "labelCab2DStretch";
             this.labelCab2DStretch.Size = new System.Drawing.Size(89, 13);
             this.labelCab2DStretch.TabIndex = 13;
@@ -631,7 +632,7 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(66, 8);
-            this.label1.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.label1.Margin = new System.Windows.Forms.Padding(3);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(103, 13);
             this.label1.TabIndex = 1;
@@ -687,7 +688,7 @@
             // 
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(133, 35);
-            this.label3.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.label3.Margin = new System.Windows.Forms.Padding(3);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(67, 13);
             this.label3.TabIndex = 3;
@@ -725,7 +726,7 @@
             this.tabPageSimulation.Controls.Add(this.checkUseAdvancedAdhesion);
             this.tabPageSimulation.Location = new System.Drawing.Point(4, 22);
             this.tabPageSimulation.Name = "tabPageSimulation";
-            this.tabPageSimulation.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPageSimulation.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageSimulation.Size = new System.Drawing.Size(602, 402);
             this.tabPageSimulation.TabIndex = 2;
             this.tabPageSimulation.Text = "Simulation";
@@ -775,7 +776,7 @@
             // 
             this.label12.AutoSize = true;
             this.label12.Location = new System.Drawing.Point(86, 31);
-            this.label12.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.label12.Margin = new System.Windows.Forms.Padding(3);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(173, 13);
             this.label12.TabIndex = 3;
@@ -828,7 +829,7 @@
             this.tabPageKeyboard.Controls.Add(this.panelKeys);
             this.tabPageKeyboard.Location = new System.Drawing.Point(4, 22);
             this.tabPageKeyboard.Name = "tabPageKeyboard";
-            this.tabPageKeyboard.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPageKeyboard.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageKeyboard.Size = new System.Drawing.Size(602, 402);
             this.tabPageKeyboard.TabIndex = 1;
             this.tabPageKeyboard.Text = "Keyboard";
@@ -895,7 +896,7 @@
             this.tabPageDataLogger.Controls.Add(this.checkDataLogPhysics);
             this.tabPageDataLogger.Location = new System.Drawing.Point(4, 22);
             this.tabPageDataLogger.Name = "tabPageDataLogger";
-            this.tabPageDataLogger.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPageDataLogger.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageDataLogger.Size = new System.Drawing.Size(602, 402);
             this.tabPageDataLogger.TabIndex = 6;
             this.tabPageDataLogger.Text = "DataLogger";
@@ -911,7 +912,7 @@
             "mph",
             "kph"});
             this.comboDataLogSpeedUnits.Location = new System.Drawing.Point(5, 62);
-            this.comboDataLogSpeedUnits.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.comboDataLogSpeedUnits.Margin = new System.Windows.Forms.Padding(2);
             this.comboDataLogSpeedUnits.Name = "comboDataLogSpeedUnits";
             this.comboDataLogSpeedUnits.Size = new System.Drawing.Size(121, 21);
             this.comboDataLogSpeedUnits.TabIndex = 3;
@@ -926,7 +927,7 @@
             "tab",
             "space"});
             this.comboDataLoggerSeparator.Location = new System.Drawing.Point(5, 37);
-            this.comboDataLoggerSeparator.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.comboDataLoggerSeparator.Margin = new System.Windows.Forms.Padding(2);
             this.comboDataLoggerSeparator.Name = "comboDataLoggerSeparator";
             this.comboDataLoggerSeparator.Size = new System.Drawing.Size(121, 21);
             this.comboDataLoggerSeparator.TabIndex = 1;
@@ -935,7 +936,7 @@
             // 
             this.label19.AutoSize = true;
             this.label19.Location = new System.Drawing.Point(131, 65);
-            this.label19.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.label19.Margin = new System.Windows.Forms.Padding(3);
             this.label19.Name = "label19";
             this.label19.Size = new System.Drawing.Size(63, 13);
             this.label19.TabIndex = 4;
@@ -946,7 +947,7 @@
             this.label18.AutoSize = true;
             this.label18.ForeColor = System.Drawing.SystemColors.Highlight;
             this.label18.Location = new System.Drawing.Point(6, 6);
-            this.label18.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.label18.Margin = new System.Windows.Forms.Padding(3);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(368, 26);
             this.label18.TabIndex = 0;
@@ -987,7 +988,7 @@
             // 
             this.label17.AutoSize = true;
             this.label17.Location = new System.Drawing.Point(131, 40);
-            this.label17.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.label17.Margin = new System.Windows.Forms.Padding(3);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(53, 13);
             this.label17.TabIndex = 2;
@@ -1012,7 +1013,7 @@
             this.tabPageEvaluate.Controls.Add(this.checkDataLogTrainSpeed);
             this.tabPageEvaluate.Location = new System.Drawing.Point(4, 22);
             this.tabPageEvaluate.Name = "tabPageEvaluate";
-            this.tabPageEvaluate.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPageEvaluate.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageEvaluate.Size = new System.Drawing.Size(602, 402);
             this.tabPageEvaluate.TabIndex = 7;
             this.tabPageEvaluate.Text = "Evaluation";
@@ -1044,7 +1045,7 @@
             // 
             this.labelDataLogTSInterval.AutoSize = true;
             this.labelDataLogTSInterval.Location = new System.Drawing.Point(86, 31);
-            this.labelDataLogTSInterval.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.labelDataLogTSInterval.Margin = new System.Windows.Forms.Padding(3);
             this.labelDataLogTSInterval.Name = "labelDataLogTSInterval";
             this.labelDataLogTSInterval.Size = new System.Drawing.Size(68, 13);
             this.labelDataLogTSInterval.TabIndex = 16;
@@ -1098,7 +1099,7 @@
             this.tabPageUpdater.Controls.Add(this.labelUpdateChannel);
             this.tabPageUpdater.Location = new System.Drawing.Point(4, 22);
             this.tabPageUpdater.Name = "tabPageUpdater";
-            this.tabPageUpdater.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPageUpdater.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageUpdater.Size = new System.Drawing.Size(602, 402);
             this.tabPageUpdater.TabIndex = 8;
             this.tabPageUpdater.Text = "Updater";
@@ -1108,7 +1109,7 @@
             // 
             this.labelUpdateChannel.AutoSize = true;
             this.labelUpdateChannel.Location = new System.Drawing.Point(6, 6);
-            this.labelUpdateChannel.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.labelUpdateChannel.Margin = new System.Windows.Forms.Padding(3);
             this.labelUpdateChannel.Name = "labelUpdateChannel";
             this.labelUpdateChannel.Size = new System.Drawing.Size(86, 13);
             this.labelUpdateChannel.TabIndex = 0;
@@ -1126,6 +1127,7 @@
             this.tabPageExperimental.Controls.Add(this.AdhesionFactorTrackBar1);
             this.tabPageExperimental.Controls.Add(this.AdhesionPropToWeatherCheckBox);
             this.tabPageExperimental.Controls.Add(this.checkBoxEnhancedActCompatibility);
+            this.tabPageExperimental.Controls.Add(this.checkBoxAuxAction);
             this.tabPageExperimental.Controls.Add(this.checkBoxCircularSpeedGauge);
             this.tabPageExperimental.Controls.Add(this.checkBoxSignalLightGlow);
             this.tabPageExperimental.Controls.Add(this.checkBoxModelInstancing);
@@ -1153,7 +1155,7 @@
             this.tabPageExperimental.ForeColor = System.Drawing.Color.Black;
             this.tabPageExperimental.Location = new System.Drawing.Point(4, 22);
             this.tabPageExperimental.Name = "tabPageExperimental";
-            this.tabPageExperimental.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPageExperimental.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageExperimental.Size = new System.Drawing.Size(602, 402);
             this.tabPageExperimental.TabIndex = 3;
             this.tabPageExperimental.Text = "Experimental";
@@ -1215,7 +1217,7 @@
             this.AdhesionFactorChangeTrackBar1.AutoSize = false;
             this.AdhesionFactorChangeTrackBar1.LargeChange = 10;
             this.AdhesionFactorChangeTrackBar1.Location = new System.Drawing.Point(404, 46);
-            this.AdhesionFactorChangeTrackBar1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.AdhesionFactorChangeTrackBar1.Margin = new System.Windows.Forms.Padding(2);
             this.AdhesionFactorChangeTrackBar1.Maximum = 100;
             this.AdhesionFactorChangeTrackBar1.Name = "AdhesionFactorChangeTrackBar1";
             this.AdhesionFactorChangeTrackBar1.Size = new System.Drawing.Size(190, 32);
@@ -1240,7 +1242,7 @@
             this.AdhesionFactorTrackBar1.AutoSize = false;
             this.AdhesionFactorTrackBar1.LargeChange = 10;
             this.AdhesionFactorTrackBar1.Location = new System.Drawing.Point(226, 44);
-            this.AdhesionFactorTrackBar1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.AdhesionFactorTrackBar1.Margin = new System.Windows.Forms.Padding(2);
             this.AdhesionFactorTrackBar1.Maximum = 200;
             this.AdhesionFactorTrackBar1.Minimum = 10;
             this.AdhesionFactorTrackBar1.Name = "AdhesionFactorTrackBar1";
@@ -1360,7 +1362,7 @@
             this.trackDayAmbientLight.AutoSize = false;
             this.trackDayAmbientLight.LargeChange = 4;
             this.trackDayAmbientLight.Location = new System.Drawing.Point(5, 258);
-            this.trackDayAmbientLight.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.trackDayAmbientLight.Margin = new System.Windows.Forms.Padding(2);
             this.trackDayAmbientLight.Maximum = 30;
             this.trackDayAmbientLight.Minimum = 15;
             this.trackDayAmbientLight.Name = "trackDayAmbientLight";
@@ -1375,7 +1377,7 @@
             // 
             this.label15.AutoSize = true;
             this.label15.Location = new System.Drawing.Point(6, 240);
-            this.label15.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.label15.Margin = new System.Windows.Forms.Padding(3);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(135, 13);
             this.label15.TabIndex = 22;
@@ -1538,7 +1540,7 @@
             this.label5.AutoSize = true;
             this.label5.ForeColor = System.Drawing.SystemColors.Highlight;
             this.label5.Location = new System.Drawing.Point(6, 6);
-            this.label5.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.label5.Margin = new System.Windows.Forms.Padding(3);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(354, 13);
             this.label5.TabIndex = 0;
@@ -1562,7 +1564,7 @@
             // 
             this.ElevationText.AutoSize = true;
             this.ElevationText.Location = new System.Drawing.Point(6, 25);
-            this.ElevationText.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.ElevationText.Margin = new System.Windows.Forms.Padding(3);
             this.ElevationText.Name = "ElevationText";
             this.ElevationText.Size = new System.Drawing.Size(81, 13);
             this.ElevationText.TabIndex = 1;
@@ -1577,6 +1579,17 @@
             this.checkPreferDDSTexture.TabIndex = 16;
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxAuxAction
+            // 
+            this.checkBoxAuxAction.AutoSize = true;
+            this.checkBoxAuxAction.ForeColor = System.Drawing.Color.Black;
+            this.checkBoxAuxAction.Location = new System.Drawing.Point(301, 168);
+            this.checkBoxAuxAction.Name = "checkBoxAuxAction";
+            this.checkBoxAuxAction.Size = new System.Drawing.Size(189, 17);
+            this.checkBoxAuxAction.TabIndex = 42;
+            this.checkBoxAuxAction.Text = "WP with horn and other AuxActionEnabled";
+            this.checkBoxAuxAction.UseVisualStyleBackColor = true;
             // 
             // OptionsForm
             // 
@@ -1743,5 +1756,6 @@
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.TrackBar AdhesionFactorTrackBar1;
         private System.Windows.Forms.CheckBox AdhesionPropToWeatherCheckBox;
+        private System.Windows.Forms.CheckBox checkBoxAuxAction;
     }
 }

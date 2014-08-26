@@ -198,6 +198,7 @@ namespace ORTS
             checkBoxCircularSpeedGauge.Checked = Settings.CircularSpeedGauge;
             checkBoxSignalLightGlow.Checked = Settings.SignalLightGlow;
             checkBoxEnhancedActCompatibility.Checked = Settings.EnhancedActCompatibility;
+            checkBoxAuxAction.Checked = Settings.AuxActionEnabled;
 
             Initialized = true;
         }
@@ -368,6 +369,7 @@ namespace ORTS
             Settings.CircularSpeedGauge = checkBoxCircularSpeedGauge.Checked;
             Settings.SignalLightGlow = checkBoxSignalLightGlow.Checked;
             Settings.EnhancedActCompatibility = checkBoxEnhancedActCompatibility.Checked;
+            Settings.AuxActionEnabled = checkBoxAuxAction.Checked;
 
             Settings.Save();
 
