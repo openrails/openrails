@@ -445,8 +445,10 @@ namespace ORTS
                         {
                             thisTrain.SpeedMpS = 0f;
                             movementState = AITrain.AI_MOVEMENT_STATE.INIT_ACTION;
-                         }
+                        }
                     }
+                    else if (distanceToGoM < AITrain.signalApproachDistanceM && thisTrain.SpeedMpS == 0)
+                        movementState = AITrain.AI_MOVEMENT_STATE.INIT_ACTION;
 
                     break;
                 case AITrain.AI_MOVEMENT_STATE.STOPPED:

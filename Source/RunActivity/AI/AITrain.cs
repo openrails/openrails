@@ -1833,7 +1833,7 @@ namespace ORTS
                                 && nextActionInfo.ActivateDistanceM - DistanceTravelledM > 10)|| 
                                 distanceSignaltoTrain > distanceToReversalPoint)
                             {
-                            MovementState = AI_MOVEMENT_STATE.RUNNING;
+                            MovementState = AI_MOVEMENT_STATE.BRAKING;
                                 //>CSComment: better be sure the train will stop in front of signal
                             CreateTrainAction(0.0f, 0.0f, distanceSignaltoTrain, SignalObjectItems[0], AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_STOP);
                             Alpha10 = 10;
@@ -3788,7 +3788,7 @@ namespace ORTS
 #endif
 
 #if NEW_ACTION
-                AIActionWPRef action = new AIActionWPRef(this, waitingPoint[5], 0f, 0, thisRoute[lastIndex].TCSectionIndex, lastIndex, direction);
+                AIActionWPRef action = new AIActionWPRef(this, waitingPoint[5], 0f, waitingPoint[0], thisRoute[lastIndex].TCSectionIndex, lastIndex, direction);
                 action.SetDelay(waitingPoint[2]);
                 AuxActions.Add(action);
 #else

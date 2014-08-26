@@ -4885,7 +4885,7 @@ namespace ORTS
             {
                 // front is in last route section
                 if (PresentPosition[0].RouteListIndex == (ValidRoute[0].Count - 1) && (!Simulator.Settings.EnhancedActCompatibility || Simulator.TimetableMode ||
-                    !TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid))
+                    (!TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid && TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1)))
                 {
                     endOfRoute = true;
                 }
@@ -13245,7 +13245,9 @@ namespace ORTS
                         else if (nextPathNode.Type == AIPathNodeType.Stop)
                         {
 #if NEW_ACTION
-                            offset = GetOffsetToPlace(aiPath, currentDir, nextPathNode);
+                            int validDir = currentDir;
+                            if (reversal % 2 == 1) validDir = validDir == 1 ? 0 : 1;                            
+                            offset = GetOffsetToPlace(aiPath, validDir, nextPathNode);
 #else
                             TrackNode WPNode = aiPath.TrackDB.TrackNodes[nextPathNode.NextMainTVNIndex];
                                 TrVectorSection firstSection = WPNode.TrVectorNode.TrVectorSections[0];
@@ -13260,7 +13262,7 @@ namespace ORTS
                                     nextPathNode.Location.Location.Z);
 #endif
                             int[] waitingPoint = new int[6];
-                            waitingPoint[0] = sublist;
+                            waitingPoint[0] = sublist + reversal;
                             waitingPoint[1] = ConvertWaitingPoint(nextPathNode, aiPath.TrackDB, aiPath.TSectionDat, currentDir);
 
                             waitingPoint[2] = nextPathNode.WaitTimeS;
