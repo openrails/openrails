@@ -4906,7 +4906,7 @@ namespace ORTS
                         }
                     }
                     else lengthToGo = ComputeDistanceToReversalPoint();
-                    float compatibilityNegligibleRouteChunk = (TrainType == TRAINTYPE.AI && TCRoute.TCRouteSubpaths.Count - 1 == TCRoute.activeSubpath) ? 30f : 5f;
+                    float compatibilityNegligibleRouteChunk = (TrainType == TRAINTYPE.AI && TCRoute.TCRouteSubpaths.Count - 1 == TCRoute.activeSubpath) ? 40f : 5f;
                     float negligibleRouteChunk = (!Simulator.Settings.EnhancedActCompatibility || Simulator.TimetableMode)? 150f : compatibilityNegligibleRouteChunk;
 
                     if (lengthToGo < negligibleRouteChunk && !junctionFound && 
@@ -13321,7 +13321,7 @@ namespace ORTS
                     }
                     reverseEndOffset += thisNode.TCCrossReference[exti].Length;
                 }
-                RoughReversalInfo lastReversalInfo = new RoughReversalInfo(thisSubpath.Count-1, reverseEndOffset, endNodeSectionIndex);
+                RoughReversalInfo lastReversalInfo = new RoughReversalInfo(sublist, reverseEndOffset, endNodeSectionIndex);
                 RoughReversalInfos.Add(lastReversalInfo);
 
                 // only add last section if end point is in different tracknode as last added item
@@ -13511,7 +13511,7 @@ namespace ORTS
                 }
 
                 // calculate new indices
-                for (int iSub = 0; iSub <= orgCount - 1; iSub++)
+                for (int iSub = 0; iSub <= orgCount - 1; iSub++) //<CSComment> maybe comparison only with less than?
                 {
                     if (subRemoved.Contains(iSub))
                     {
@@ -13639,6 +13639,13 @@ namespace ORTS
                         {
                             for (int iSection = endSubPath.Count - 1; iSection > sigIndex; iSection--)
                             {
+                                if ( endSubPath == TCRouteSubpaths[TCRouteSubpaths.Count-1] &&
+                                    endSubPath[iSection].TCSectionIndex == RoughReversalInfos[RoughReversalInfos.Count-1].ReversalSectionIndex)
+                                {
+                                    RoughReversalInfos[RoughReversalInfos.Count - 1].ReversalSectionIndex = endSubPath[sigIndex].TCSectionIndex;
+                                    RoughReversalInfos[RoughReversalInfos.Count - 1].ReverseReversalOffset = endSubPath[sigIndex].Direction == 0 ?
+                                        orgSignals.TrackCircuitList[endSubPath[sigIndex].TCSectionIndex].Length : 0;
+                                }
                                 endSubPath.RemoveAt(iSection);
                             }
                         }
@@ -15224,7 +15231,6 @@ namespace ORTS
 
                 return (-1);
             }
-
 
             //================================================================================================//
             /// <summary>
