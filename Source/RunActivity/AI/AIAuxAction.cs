@@ -62,6 +62,12 @@ namespace ORTS
 
         public AI_AUX_ACTION NextAction = AI_AUX_ACTION.NONE;
 
+        //================================================================================================//
+        /// <summary>
+        /// AIAuxActions: Generic Constructor
+        /// The specific datas are used to fired the Action.
+        /// </summary>
+
         public AIAuxActions(float distance, float requiredSpeedMpS, int subrouteIdx, int routeIdx, int sectionIdx, int dir)
         {
             RequiredDistance = distance;
@@ -72,12 +78,25 @@ namespace ORTS
             Direction = dir;
         }
 
+        //================================================================================================//
+        /// <summary>
+        /// Handler
+        /// Like a fabric, if other informations are needed, please define specific function that can be called on the new object
+        /// </summary>
+
+
         public virtual AIActionItem Handler(float distance, float speed, float activateDistance, float insertedDistance)
         {
             AIActionItem info = new AuxActionItem(distance, speed, activateDistance, insertedDistance,
                             this, AIActionItem.AI_ACTION_TYPE.AUX_ACTION);
             return info;
         }
+
+        //================================================================================================//
+        /// <summary>
+        /// CalculateDistancesToNextAction
+        /// PLease, don't use the default function, redefine it.
+        /// </summary>
 
         public virtual float[] CalculateDistancesToNextAction(AITrain thisTrain, float presentSpeedMpS, bool reschedule)
         {
@@ -96,7 +115,6 @@ namespace ORTS
     /// info used to figure out a Waiting Point along the route.
     /// </summary>
 
-
     public class AIActionWP : AIAuxActions
     {
         int Delay;
@@ -114,6 +132,12 @@ namespace ORTS
             info.SetDelay(Delay);
             return (AIActionItem)info;
         }
+
+        //================================================================================================//
+        /// <summary>
+        /// SetDelay
+        /// To fullfill the waiting delay.
+        /// </summary>
 
         public void SetDelay(int delay)
         {
@@ -184,6 +208,12 @@ namespace ORTS
     {
         public AIAuxActions ActionRef;
 
+        //================================================================================================//
+        /// <summary>
+        /// AuxActionItem
+        /// The basic constructor
+        /// </summary>
+
         public AuxActionItem(float distance, float requiredSpeedMpS, float activateDistance, float insertedDistance,
             AIAuxActions thisItem, AI_ACTION_TYPE thisAction) :
             base (distance, requiredSpeedMpS, activateDistance, insertedDistance, null, thisAction)
@@ -197,7 +227,7 @@ namespace ORTS
             return false;
         }
 #if WITH_PATH_DEBUG
-        public override string AsString()
+        public override string AsString(AITrain thisTrain)
         {
             return " AUX(";
         }
@@ -217,7 +247,13 @@ namespace ORTS
         public int DepartTime;
         public int ActualArrival;
         public int ActualDepart;
+        int testTime = 0;
 
+        //================================================================================================//
+        /// <summary>
+        /// AuxActionWPItem
+        /// The specific constructor for WP action
+        /// </summary>
 
         public AuxActionWPItem(float distance, float requiredSpeedMpS, float activateDistance, float insertedDistance,
             AIAuxActions thisItem, AI_ACTION_TYPE thisAction) :
@@ -227,7 +263,13 @@ namespace ORTS
             ActualArrival = 0;
         }
 
-        public override string AsString()
+        //================================================================================================//
+        /// <summary>
+        /// AsString
+        /// Used by debugging in HUDWindows.
+        /// </summary>
+
+        public override string AsString(AITrain thisTrain)
         {
             return " WP(";
         }
@@ -237,18 +279,14 @@ namespace ORTS
             if (ActionRef == null)
                 return false;
             float[] distancesM = ActionRef.CalculateDistancesToNextAction(thisTrain, SpeedMpS, reschedule);
-            File.AppendAllText(@"C:\temp\newAction.txt", "CheckActionValide: AuxActionWPItem:Activated: " + distancesM[0] + ", Required: " +
-                distancesM[1] + " TravelledM: " + thisTrain.DistanceTravelledM + "\n");
 
             if (RequiredDistance < thisTrain.DistanceTravelledM) // trigger point
             {
-                File.AppendAllText(@"C:\temp\newAction.txt", "\t rend true");
                 return true;
             }
 
             RequiredDistance = distancesM[1];
             ActivateDistanceM = distancesM[0];
-            File.AppendAllText(@"C:\temp\newAction.txt", "Required & Activate saved, rend false");
             return false;
         }
 
@@ -260,14 +298,10 @@ namespace ORTS
         public override bool ValidAction(AITrain thisTrain)
         {
             bool actionValid = CheckActionValide(thisTrain, thisTrain.SpeedMpS, true);
+            
             if (!actionValid)
             {
-                File.AppendAllText(@"C:\temp\newAction.txt", "\tAUX_ACTION: not valid & inserted\n");
                 thisTrain.requiredActions.InsertAction(this);
-            }
-            else
-            {
-                File.AppendAllText(@"C:\temp\newAction.txt", "\tAUX_ACTION: valid\n");
             }
             thisTrain.EndProcessAction(actionValid, this, false);
             return actionValid;
@@ -278,6 +312,8 @@ namespace ORTS
             int correctedTime = presentTime;
             ActualArrival = correctedTime;
             ActualDepart = correctedTime + Delay;
+            //TrainCar locomotive = thisTrain.FindLeadLocomotive();
+            //((MSTSLocomotive)locomotive).SignalEvent(Event.Couple);
             return AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION;
         }
 
@@ -285,12 +321,10 @@ namespace ORTS
         {
             if (ActualDepart > presentTime)
             {
-                File.AppendAllText(@"C:\temp\newAction.txt", "set movement to HANDLE_ACTION: Actual > corrected");
                 movementState = AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION;
             }
             else
             {
-                File.AppendAllText(@"C:\temp\newAction.txt", "set movement to END_ACTION: Actual <= corrected");
                 movementState = AITrain.AI_MOVEMENT_STATE.END_ACTION;
             }
             return movementState;
@@ -300,6 +334,8 @@ namespace ORTS
         {
             thisTrain.AuxActions.RemoveAt(0);
             thisTrain.ResetActions(true);
+            //TrainCar locomotive = thisTrain.FindLeadLocomotive();
+            //((MSTSLocomotive)locomotive).Horn = false;
             return AITrain.AI_MOVEMENT_STATE.STOPPED;
         }
 
@@ -321,25 +357,21 @@ namespace ORTS
                     float distanceToGoM = AITrain.clearingDistanceM;
                     distanceToGoM = ActivateDistanceM - thisTrain.PresentPosition[0].DistanceTravelledM;
                     float NextStopDistanceM = distanceToGoM;
-                    if (distanceToGoM <= 0f)
+                    if (distanceToGoM < 0f)
                     {
                         thisTrain.AdjustControlsBrakeMore(thisTrain.MaxDecelMpSS, elapsedClockSeconds, 100);
                         thisTrain.AITrainThrottlePercent = 0;
-
-                        // train is stopped - set departure time
 
                         if (thisTrain.SpeedMpS < 0.001)
                         {
                             thisTrain.SpeedMpS = 0f;
                             movementState = AITrain.AI_MOVEMENT_STATE.INIT_ACTION;
-                            File.AppendAllText(@"C:\temp\newAction.txt", "set movement to HANDLE_ACTION: SpeedMpS = 0");
-                        }
+                         }
                     }
+
                     break;
                 case AITrain.AI_MOVEMENT_STATE.STOPPED:
                     movementState = thisTrain.UpdateStoppedState();
-                    //movementState = AITrain.AI_MOVEMENT_STATE.ACCELERATING;
-                    File.AppendAllText(@"C:\temp\newAction.txt", "set movement to ACCELERATING");
                     break;
                 default:
                     break; 

@@ -284,7 +284,7 @@ namespace ORTS
         private int[] DatalogTSContents;                 // logging selection
         private string DataLogFile;                      // required datalog file
 
-        protected Simulator Simulator;                   // reference to the simulator
+        public Simulator Simulator { get; protected set; }                   // reference to the simulator
 
 
         // For AI control of the train
@@ -2920,6 +2920,24 @@ namespace ORTS
                 for (int i = LeadLocomotiveIndex; i >= 0 && Cars[i].IsDriveable; i--)
                     first = i;
             }
+        }
+
+        public TrainCar FindLeadLocomotive()
+        {
+            int first = -1;
+            int last = -1;
+            FindLeadLocomotives(ref first, ref last);
+            if (first != -1 && first < LeadLocomotiveIndex)
+            {
+                return Cars[first];
+            }
+            else if (last != -1 && last > LeadLocomotiveIndex)
+            {
+                return Cars[last];
+            }
+            if (Cars.Count() == 1 && Cars[0].IsDriveable)
+                return Cars[0];
+            return null;
         }
 
         //================================================================================================//
@@ -11191,7 +11209,7 @@ namespace ORTS
         {
             int iColumn = 0;
 
-            string[] statusString = new string[10];
+            string[] statusString = new string[5];
 
             //  "Train"
             statusString[0] = Number.ToString();
@@ -11200,12 +11218,7 @@ namespace ORTS
             //  "Action"
             statusString[1] = "----";
             statusString[2] = "..";
-            statusString[3] = "..";
-            statusString[4] = "..";
-            statusString[5] = "..";
-            statusString[6] = "..";
-            statusString[7] = "..";
-            iColumn = 8;
+            iColumn = 3;
 
             string circuitString = String.Empty;
             circuitString = string.Concat(circuitString, "Path: ");
@@ -13782,45 +13795,74 @@ namespace ORTS
             //  SPA: Used with enhanced MSTS Mode, please don't change
             float GetOffsetToPlace(AIPath aiPath, int direction, AIPathNode pathNode)
             {
-                AIPathNode startAINode = aiPath.Nodes[0];
-                TrackNode startWPNode = aiPath.TrackDB.TrackNodes[startAINode.NextMainTVNIndex];
-                Traveller startNodeTrav = new Traveller(aiPath.TSectionDat, aiPath.TrackDB.TrackNodes, startWPNode,
-                    startAINode.Location.TileX, startAINode.Location.TileZ,
-                    startAINode.Location.Location.X, startAINode.Location.Location.Z, (Traveller.TravellerDirection)direction);
-                float startOffset = startNodeTrav.DistanceTo(startWPNode,
-                    pathNode.Location.TileX, pathNode.Location.TileZ,
-                    pathNode.Location.Location.X,
-                    pathNode.Location.Location.Y,
-                    pathNode.Location.Location.Z);
+                //AIPathNode startAINode = aiPath.Nodes[0];
+                //TrackNode startWPNode = aiPath.TrackDB.TrackNodes[startAINode.NextMainTVNIndex];
+                //Traveller startNodeTrav = new Traveller(aiPath.TSectionDat, aiPath.TrackDB.TrackNodes, startWPNode,
+                //    startAINode.Location.TileX, startAINode.Location.TileZ,
+                //    startAINode.Location.Location.X, startAINode.Location.Location.Z, (Traveller.TravellerDirection)direction);
+                //float startOffset = startNodeTrav.DistanceTo(startWPNode,
+                //    pathNode.Location.TileX, pathNode.Location.TileZ,
+                //    pathNode.Location.Location.X,
+                //    pathNode.Location.Location.Y,
+                //    pathNode.Location.Location.Z);
 
                 float offset = 0;
                 TrackNode WPNode;
                 TrVectorSection firstSection;
+                //int nextNodeIdx = 0;
+                int NodeDir = direction;
 
                 WPNode = aiPath.TrackDB.TrackNodes[pathNode.NextMainTVNIndex];
                 int idxSectionWP = ConvertWaitingPoint(pathNode, aiPath.TrackDB, aiPath.TSectionDat, direction);
                 firstSection = WPNode.TrVectorNode.TrVectorSections[0];
+                //nextNodeIdx = pathNode.NextMainNode.NextMainTVNIndex;
+                //if (pathNode.NextMainNode.JunctionIndex != -1)
+                //    nextNodeIdx = pathNode.NextMainNode.JunctionIndex;
                 Traveller TDBTrav = new Traveller(aiPath.TSectionDat, aiPath.TrackDB.TrackNodes, WPNode,
                     firstSection.TileX, firstSection.TileZ,
-                    firstSection.X, firstSection.Z, (Traveller.TravellerDirection)1);
-
-                offset = TDBTrav.DistanceTo(WPNode,
-                    pathNode.Location.TileX, pathNode.Location.TileZ,
-                    pathNode.Location.Location.X,
-                    pathNode.Location.Location.Y,
-                    pathNode.Location.Location.Z);
-                for (int idx = 0; idx < WPNode.TrVectorNode.TrVectorSections.Count(); idx++)
+                    firstSection.X, firstSection.Z, (Traveller.TravellerDirection)NodeDir);
+                if (TDBTrav.Direction == Traveller.TravellerDirection.Backward)
                 {
-                    int TCSectionIndex = WPNode.TCCrossReference[idx].Index;
-                    if (TCSectionIndex == idxSectionWP)
+                    NodeDir = 1 - direction;
+                    TDBTrav = new Traveller(aiPath.TSectionDat, aiPath.TrackDB.TrackNodes, WPNode,
+                    firstSection.TileX, firstSection.TileZ,
+                    firstSection.X, firstSection.Z, (Traveller.TravellerDirection)NodeDir);
+                    offset = TDBTrav.DistanceTo(WPNode,
+                        pathNode.Location.TileX, pathNode.Location.TileZ,
+                        pathNode.Location.Location.X,
+                        pathNode.Location.Location.Y,
+                        pathNode.Location.Location.Z);
+                    for (int idx = 0; idx < WPNode.TCCrossReference.Count(); idx++)
                     {
-                        if (offset < WPNode.TCCrossReference[idx].OffsetLength[direction])
-                            offset += WPNode.TCCrossReference[idx].OffsetLength[direction];
-                        else
-                            offset -= WPNode.TCCrossReference[idx].OffsetLength[direction];
-                        break;
+                        int TCSectionIndex = WPNode.TCCrossReference[idx].Index;
+                        if (TCSectionIndex == idxSectionWP)
+                        {
+                            if (offset > WPNode.TCCrossReference[idx].OffsetLength[NodeDir])
+                                Trace.TraceInformation("no reverse");
+                            float sectionOffset = offset - WPNode.TCCrossReference[idx].OffsetLength[NodeDir];
+                            offset = WPNode.TCCrossReference[idx].Length - sectionOffset;
+                            break;
+                        }
                     }
                 }
+                else
+                {
+                    Trace.TraceInformation("no reverse");
+                    offset = TDBTrav.DistanceTo(WPNode,
+                        pathNode.Location.TileX, pathNode.Location.TileZ,
+                        pathNode.Location.Location.X,
+                        pathNode.Location.Location.Y,
+                        pathNode.Location.Location.Z);
+                    for (int idx = 0; idx < WPNode.TCCrossReference.Count(); idx++)
+                    {
+                        int TCSectionIndex = WPNode.TCCrossReference[idx].Index;
+                        if (TCSectionIndex == idxSectionWP)
+                        {
+                            offset = offset + WPNode.TCCrossReference[idx].OffsetLength[NodeDir];
+                            break;
+                        }
+                   }
+               }
                 return offset;
             }
 
@@ -13830,7 +13872,7 @@ namespace ORTS
                 stateString.CopyTo(retString, 0);
                 string TCSidxString = "Index : ";
                 string lenTCcurrent = " ";
-                Boolean show = false;
+                int show = 0;
                 string wpString = "";
                 int[] tabWP = new int[WaitingPoints.Count];
                 int cntWP = 0;
@@ -13850,6 +13892,14 @@ namespace ORTS
                 TCSidxString = String.Concat(TCSidxString, "(", activeSubpath.ToString(), "):");
                 foreach (var subpath in TCRouteSubpaths[activeSubpath])
                 {
+                    if (position.TCSectionIndex != subpath.TCSectionIndex)
+                        show++;
+                    if (position.TCSectionIndex == subpath.TCSectionIndex)
+                        break;
+                }
+                int cnt = 0;
+                foreach (var subpath in TCRouteSubpaths[activeSubpath])
+                {
                     if (subpath.TCSectionIndex == tabWP[activeSubpath])
                     {
                         wpString = String.Concat("(wp:", WaitingPoints[activeSubpath][2].ToString(), "sec)");
@@ -13861,21 +13911,24 @@ namespace ORTS
                     }
                     if (position.TCSectionIndex == subpath.TCSectionIndex)
                     {
-                        show = true;
                         lenTCcurrent = String.Concat(" (", position.DistanceTravelledM.ToString("F0"), ")");
                         TCSidxString = String.Concat(TCSidxString, subpath.TCSectionIndex.ToString(), lenTCcurrent, wpString,", ");
                     }
-                    else if (!show)
+                    else if (cnt > show-3 && cnt < show)
                     {
                         TCSidxString = String.Concat(TCSidxString, "{", subpath.TCSectionIndex.ToString(), "}", wpString,", ");
                     }
-                    else if (show)
+                    else if (cnt > show && cnt < show+10)
                     {
                         TCSidxString = String.Concat(TCSidxString, subpath.TCSectionIndex.ToString(), wpString,", ");
                         lenTCcurrent = "";
                     }
+                    cnt++;
+                    if (cnt > show + 10)
+                        break;
                 }
-                retString[9] = TCSidxString;
+                retString[3] = "...";
+                retString[4] = TCSidxString;
                 return (retString);
 
             }

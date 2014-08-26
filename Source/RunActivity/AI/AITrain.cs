@@ -691,6 +691,7 @@ namespace ORTS
             {
                 savedActionInfo = nextActionInfo;
             }
+
 #endif
 
 
@@ -5404,7 +5405,8 @@ namespace ORTS
                             break;
 #if NEW_ACTION
                         case AIActionItem.AI_ACTION_TYPE.AUX_ACTION:
-                            actionString = String.Concat(actionString, AIaction.AsString(), NextStopDistanceM.ToString("F0"), "m):");
+                            string coord = String.Concat("X:", this.FrontTDBTraveller.X.ToString(), ", Z:", this.FrontTDBTraveller.Z.ToString());
+                            actionString = String.Concat(actionString, AIaction.AsString(this), NextStopDistanceM.ToString("F0"), "m):", coord);
                             //actionString = String.Concat(actionString, " AUX(", NextStopDistanceM.ToString("F0"), "m):");
                             break;
 #endif
@@ -5590,7 +5592,7 @@ namespace ORTS
             return movementState;
         }
 
-        public virtual string AsString()
+        public virtual string AsString(AITrain thisTrain)
         {
             return " ??(";
         }
