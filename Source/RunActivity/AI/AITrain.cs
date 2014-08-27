@@ -2165,7 +2165,7 @@ namespace ORTS
 
             bool clearAction = false;
             float distanceToGoM = clearingDistanceM;
-            if (nextActionInfo.RequiredSpeedMpS == 99999f)  //  RequiredSpeed doesn't matter
+            if (nextActionInfo != null && nextActionInfo.RequiredSpeedMpS == 99999f)  //  RequiredSpeed doesn't matter
             {
                 return;
             }
