@@ -14755,12 +14755,13 @@ namespace ORTS
                 int totalWaitingPoint = inf.ReadInt32();
                 for (int iWP = 0; iWP < totalWaitingPoint; iWP++)
                 {
-                    int[] waitingPoint = new int[5];
+                    int[] waitingPoint = new int[6];
                     waitingPoint[0] = inf.ReadInt32();
                     waitingPoint[1] = inf.ReadInt32();
                     waitingPoint[2] = inf.ReadInt32();
                     waitingPoint[3] = inf.ReadInt32();
                     waitingPoint[4] = inf.ReadInt32();
+                    waitingPoint[5] = inf.ReadInt32();
 
                     WaitingPoints.Add(waitingPoint);
                 }
@@ -14809,6 +14810,7 @@ namespace ORTS
                     outf.Write(waitingPoint[2]);
                     outf.Write(waitingPoint[3]);
                     outf.Write(waitingPoint[4]);
+                    outf.Write(waitingPoint[5]);
                 }
 
                 outf.Write(ReversalInfo.Count);
