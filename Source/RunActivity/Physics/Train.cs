@@ -16062,44 +16062,21 @@ namespace ORTS
             public TCReversalInfo(BinaryReader inf)
             {
                 Valid = inf.ReadBoolean();
+                LastDivergeIndex = inf.ReadInt32();
+                FirstDivergeIndex = inf.ReadInt32();
+                DivergeSectorIndex = inf.ReadInt32();
+                DivergeOffset = inf.ReadSingle();
 
-                if (Valid)
-                {
-                    LastDivergeIndex = inf.ReadInt32();
-                    FirstDivergeIndex = inf.ReadInt32();
-                    DivergeSectorIndex = inf.ReadInt32();
-                    DivergeOffset = inf.ReadSingle();
-
-                    SignalAvailable = inf.ReadBoolean();
-                    SignalUsed = inf.ReadBoolean();
-                    LastSignalIndex = inf.ReadInt32();
-                    FirstSignalIndex = inf.ReadInt32();
-                    SignalSectorIndex = inf.ReadInt32();
-                    SignalOffset = inf.ReadSingle();
-                    ReverseReversalOffset = inf.ReadSingle();
-                    ReversalIndex = inf.ReadInt32();
-                    ReversalSectionIndex = inf.ReadInt32();
-                    ReversalActionInserted = inf.ReadBoolean();
-                }
-                else
-                {
-                    LastDivergeIndex = -1;
-                    FirstDivergeIndex = -1;
-                    DivergeSectorIndex = -1;
-                    DivergeOffset = 0.0f;
-
-                    LastSignalIndex = -1;
-                    FirstSignalIndex = -1;
-                    SignalSectorIndex = -1;
-                    SignalOffset = 0.0f;
-
-                    SignalAvailable = false;
-                    SignalUsed = false;
-                    ReverseReversalOffset = 0.0f;
-                    ReversalIndex = -1;
-                    ReversalSectionIndex = -1;
-                    ReversalActionInserted = false;
-                }
+                SignalAvailable = inf.ReadBoolean();
+                SignalUsed = inf.ReadBoolean();
+                LastSignalIndex = inf.ReadInt32();
+                FirstSignalIndex = inf.ReadInt32();
+                SignalSectorIndex = inf.ReadInt32();
+                SignalOffset = inf.ReadSingle();
+                ReverseReversalOffset = inf.ReadSingle();
+                ReversalIndex = inf.ReadInt32();
+                ReversalSectionIndex = inf.ReadInt32();
+                ReversalActionInserted = inf.ReadBoolean();
             }
 
             //================================================================================================//
@@ -16110,25 +16087,20 @@ namespace ORTS
             public void Save(BinaryWriter outf)
             {
                 outf.Write(Valid);
-
-                if (Valid)
-                {
-                    outf.Write(LastDivergeIndex);
-                    outf.Write(FirstDivergeIndex);
-                    outf.Write(DivergeSectorIndex);
-                    outf.Write(DivergeOffset);
-
-                    outf.Write(SignalAvailable);
-                    outf.Write(SignalUsed);
-                    outf.Write(LastSignalIndex);
-                    outf.Write(FirstSignalIndex);
-                    outf.Write(SignalSectorIndex);
-                    outf.Write(SignalOffset);
-                    outf.Write(ReverseReversalOffset);
-                    outf.Write(ReversalIndex);
-                    outf.Write(ReversalSectionIndex);
-                    outf.Write(ReversalActionInserted);
-                }
+                outf.Write(LastDivergeIndex);
+                outf.Write(FirstDivergeIndex);
+                outf.Write(DivergeSectorIndex);
+                outf.Write(DivergeOffset);
+                outf.Write(SignalAvailable);
+                outf.Write(SignalUsed);
+                outf.Write(LastSignalIndex);
+                outf.Write(FirstSignalIndex);
+                outf.Write(SignalSectorIndex);
+                outf.Write(SignalOffset);
+                outf.Write(ReverseReversalOffset);
+                outf.Write(ReversalIndex);
+                outf.Write(ReversalSectionIndex);
+                outf.Write(ReversalActionInserted);
             }
 
         }//TCReversalInfo
