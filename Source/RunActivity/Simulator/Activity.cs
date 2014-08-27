@@ -1150,15 +1150,6 @@ namespace ORTS
                         triggered = atSiding(consistTrain.FrontTDBTraveller, consistTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2);
                     }
                     break;
-
-                // This is the action that should be taken by DropOffWagonsAtLocation.
-                // MSTS - Marias Pass - Cutbank Grain Car Sorting - shows that, in MSTS, the event fires as soon as the train is in the siding.
-                //case EventType.DropOffWagonsAtLocation:
-                //    if (atSiding(Simulator.PlayerLocomotive.Train.FrontTDBTraveller, this.SidingEnd1, this.SidingEnd2)) {
-                //        triggered = excludesWagons();
-                //    }
-                //    break;
-
                 case EventType.DropOffWagonsAtLocation:
                     // A better name than DropOffWagonsAtLocation would be ArriveAtSidingWithWagons.
                     if (atSiding(PlayerTrain.FrontTDBTraveller, PlayerTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2))
@@ -1166,12 +1157,9 @@ namespace ORTS
                         triggered = includesWagons(PlayerTrain, ChangeWagonIdList);
                     }
                     // To recognize the dropping off of the cars before the event is activated, this method is used.
-                    // This method does not check if the cars are on the correct track since there does not appear
-                    // to be a way yet to track cars that have been cut from the Cars list before the event is activated.
-                    // The only exception would be if the car was picked up then dropped off.  At this point, the car would already exist
-                    // in the Trains list.
-                    //else
-                    //    triggered = excludesWagons(PlayerTrain, ChangeWagonIdList);
+                    consistTrain = matchesConsistNoOrder(ChangeWagonIdList);
+                    if (consistTrain != null)
+                        triggered = atSiding(consistTrain.FrontTDBTraveller, consistTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2);
                     break;
                 case EventType.PickUpPassengers:
                     break;
@@ -1207,7 +1195,26 @@ namespace ORTS
             }
             return null;
         }
-
+        /// <summary>
+        /// Finds the train that contains exactly the wagons (and maybe loco) in the list. Exact order is not required.
+        /// </summary>
+        /// <param name="wagonIdList"></param>
+        /// <returns>train or null</returns>
+        private Train matchesConsistNoOrder(List<string> wagonIdList)
+        {
+            foreach (var trainItem in Simulator.Trains)
+            {
+                if (trainItem.Cars.Count == wagonIdList.Count)
+                {
+                    // Compare two lists to make sure wagons are present.
+                    bool listsMatch = true;
+                    if (excludesWagons(trainItem, wagonIdList))
+                        listsMatch = false;
+                    if (listsMatch) return trainItem;
+                }
+            }
+            return null;
+        }
         /// <summary>
         /// Like MSTS, do not check for unlisted wagons as the wagon list may be shortened for convenience to contain
         /// only the first and last wagon or even just the first wagon.
@@ -1223,20 +1230,21 @@ namespace ORTS
             }
             return true;
         }
+        /// <summary>
+        /// Like MSTS, do not check for unlisted wagons as the wagon list may be shortened for convenience to contain
+        /// only the first and last wagon or even just the first wagon.
         /// </summary>
         /// <param name="train"></param>
         /// <param name="wagonIdList"></param>
         /// <returns>True if all listed wagons are not part of the given train.</returns>
         static bool excludesWagons(Train train, List<string> wagonIdList)
         {
-
             foreach (var item in wagonIdList)
             {
                 if (train.Cars.Find(car => car.CarID == item) == null) return true;
             }
             return false;
         }
-
         /// <summary>
         /// Like platforms, checking that one end of the train is within the siding.
         /// </summary>
