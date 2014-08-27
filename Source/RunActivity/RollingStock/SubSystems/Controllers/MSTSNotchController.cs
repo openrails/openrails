@@ -170,11 +170,6 @@ namespace ORTS
             Parse(stf);
         }
 
-        public MSTSNotchController(BinaryReader inf)
-        {
-            this.Restore(inf);
-        }
-
         public MSTSNotchController(List<MSTSNotch> notches)
         {
             Notches = notches;

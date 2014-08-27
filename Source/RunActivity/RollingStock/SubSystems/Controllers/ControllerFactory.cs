@@ -44,6 +44,8 @@ namespace ORTS
             switch ((ControllerTypes)inf.ReadInt32())
             {                
                 case ControllerTypes.MSTSNotchController:
+                    if (controller == null)
+                        controller = new MSTSNotchController();
                     ((MSTSNotchController)controller).Restore(inf);
                     break;
 
