@@ -251,7 +251,7 @@ namespace ORTS.Viewer3D.RollingStock
 
             foreach (var drawer in Stack)
             {
-                Color_Value = car.Smoke.SmoothedValue;
+                Color_Value = car.SmokeColor.SmoothedValue;
                 drawer.SetOutput(car.StackSteamVelocityMpS.SmoothedValue, car.StackSteamVolumeM3pS / Stack.Count + car.FireRatio, Throttlepercent + car.FireRatio, new Color(Color_Value, Color_Value, Color_Value));
             }
 

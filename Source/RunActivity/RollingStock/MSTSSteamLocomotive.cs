@@ -120,7 +120,7 @@ namespace ORTS
         float FlueTempK = 775;      // Initial FlueTemp (best @ 475)
         float MaxFlueTempK;         // FlueTemp at full boiler performance
         public bool SafetyIsOn;
-        public readonly SmoothedData Smoke = new SmoothedData(2);
+        public readonly SmoothedData SmokeColor = new SmoothedData(2);
 
         // eng file configuration parameters
         float MaxBoilerPressurePSI = 180f;  // maximum boiler pressure, safety valve setting
@@ -357,7 +357,7 @@ namespace ORTS
 
   #region Variables for visual effects (steam, smoke)
 
-        public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(10);
+        public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(5);
         public float StackSteamVolumeM3pS;
         public float CylindersSteamVelocityMpS;
         public float CylindersSteamVolumeM3pS;
@@ -961,8 +961,10 @@ namespace ORTS
             CylindersSteamVolumeM3pS = (CylinderCocksAreOpen ? Kg.FromLb(CylCockSteamUsageLBpS) / NumCylinders * SteamVaporSpecVolumeAt100DegC1BarM3pKG : 0);
             SafetyValvesSteamVolumeM3pS = SafetyIsOn ? Kg.FromLb(SafetyValveUsageLBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG : 0;
 
+            SmokeColor.Update(elapsedClockSeconds, MathHelper.Clamp((RadiationSteamLossLBpS + BlowerBurnEffect + DamperBurnEffect) / PreviousTotalSteamUsageLBpS - 0.2f, 0.25f, 1));
+
             // Variable1 is proportional to angular speed, value of 10 means 1 rotation/second.
-            Variable1 = (Simulator.UseAdvancedAdhesion ? LocomotiveAxle.AxleSpeedMpS : SpeedMpS) / DriverWheelRadiusM / MathHelper.Pi * 5;
+            Variable1 = (Simulator.UseAdvancedAdhesion && Train.TrainType == ORTS.Train.TRAINTYPE.PLAYER ? LocomotiveAxle.AxleSpeedMpS : SpeedMpS) / DriverWheelRadiusM / MathHelper.Pi * 5;
             Variable2 = Math.Min(CylinderPressurePSI / MaxBoilerPressurePSI * 100f, 100f);
             Variable3 = FiringIsManual ? FiringRateController.CurrentValue * 100 : FuelRateSmooth * 100;
 
@@ -1252,7 +1254,6 @@ namespace ORTS
                 FuelBoostOnTimerS = 0.01f;     // Reset fuel boost timer to allow another boost if required.
                 FuelBoostReset = false;
             }
-            Smoke.Update(elapsedClockSeconds, MathHelper.Clamp((RadiationSteamLossLBpS + BlowerBurnEffect + DamperBurnEffect) / PreviousTotalSteamUsageLBpS - 0.2f, 0.25f, 1));
         }
 
         private void UpdateBoiler(float elapsedClockSeconds)
@@ -2350,7 +2351,7 @@ namespace ORTS
             var usage = pS.TopH(PreviousTotalSteamUsageLBpS);
             
 			var result = new StringBuilder();
-            result.AppendFormat("Boiler pressure = {0:F1} PSI\nSteam = +{1:F0} lb/h -{2:F0} lb/h ({3:F0} %)\nWater Gauge = {4:F1} in", BoilerPressurePSI, evap, usage, Smoke.SmoothedValue * 100, WaterGlassLevelIN);
+            result.AppendFormat("Boiler pressure = {0:F1} PSI\nSteam = +{1:F0} lb/h -{2:F0} lb/h ({3:F0} %)\nWater Gauge = {4:F1} in", BoilerPressurePSI, evap, usage, SmokeColor.SmoothedValue * 100, WaterGlassLevelIN);
             if (FiringIsManual)
             {
                 result.AppendFormat("\nWater level = {0:F0} %", WaterFraction * 100);
@@ -2756,7 +2757,7 @@ namespace ORTS
             FireMassKG+= ShovelMassKG;
             Simulator.Confirmer.Confirm( CabControl.FireShovelfull, CabSetting.On );
             // Make a black puff of smoke
-            Smoke.Update(1, 0);
+            SmokeColor.Update(1, 0);
         }
 
         public void ToggleCylinderCocks()
