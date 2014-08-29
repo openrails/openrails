@@ -198,6 +198,7 @@ namespace ORTS
 
             float[] distancesM = new float[2];
             distancesM[1] = triggerDistanceM;
+            if (activateDistanceTravelledM < 0 && -activateDistanceTravelledM < thisTrain.Length) activateDistanceTravelledM = 0;
             distancesM[0] = activateDistanceTravelledM;
 
             return (distancesM);

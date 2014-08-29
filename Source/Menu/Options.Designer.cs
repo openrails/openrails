@@ -112,6 +112,7 @@
             this.AdhesionFactorTrackBar1 = new System.Windows.Forms.TrackBar();
             this.AdhesionPropToWeatherCheckBox = new System.Windows.Forms.CheckBox();
             this.checkBoxEnhancedActCompatibility = new System.Windows.Forms.CheckBox();
+            this.checkBoxAuxAction = new System.Windows.Forms.CheckBox();
             this.checkBoxCircularSpeedGauge = new System.Windows.Forms.CheckBox();
             this.checkBoxSignalLightGlow = new System.Windows.Forms.CheckBox();
             this.checkBoxModelInstancing = new System.Windows.Forms.CheckBox();
@@ -137,7 +138,6 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.checkBoxAuxAction = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -1275,6 +1275,17 @@
             this.checkBoxEnhancedActCompatibility.Text = "Enhanced compatibility with MSTS activities";
             this.checkBoxEnhancedActCompatibility.UseVisualStyleBackColor = true;
             // 
+            // checkBoxAuxAction
+            // 
+            this.checkBoxAuxAction.AutoSize = true;
+            this.checkBoxAuxAction.ForeColor = System.Drawing.Color.Black;
+            this.checkBoxAuxAction.Location = new System.Drawing.Point(301, 168);
+            this.checkBoxAuxAction.Name = "checkBoxAuxAction";
+            this.checkBoxAuxAction.Size = new System.Drawing.Size(136, 17);
+            this.checkBoxAuxAction.TabIndex = 42;
+            this.checkBoxAuxAction.Text = "Enable Auxiliary Action ";
+            this.checkBoxAuxAction.UseVisualStyleBackColor = true;
+            // 
             // checkBoxCircularSpeedGauge
             // 
             this.checkBoxCircularSpeedGauge.AutoSize = true;
@@ -1579,17 +1590,6 @@
             this.checkPreferDDSTexture.TabIndex = 16;
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
-            // 
-            // checkBoxAuxAction
-            // 
-            this.checkBoxAuxAction.AutoSize = true;
-            this.checkBoxAuxAction.ForeColor = System.Drawing.Color.Black;
-            this.checkBoxAuxAction.Location = new System.Drawing.Point(301, 168);
-            this.checkBoxAuxAction.Name = "checkBoxAuxAction";
-            this.checkBoxAuxAction.Size = new System.Drawing.Size(189, 17);
-            this.checkBoxAuxAction.TabIndex = 42;
-            this.checkBoxAuxAction.Text = "WP with horn and other AuxActionEnabled";
-            this.checkBoxAuxAction.UseVisualStyleBackColor = true;
             // 
             // OptionsForm
             // 
