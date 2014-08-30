@@ -31,7 +31,8 @@ namespace ORTS.Viewer3D.Popups
 {
 	public abstract class Window : RenderPrimitive
 	{
-		public static readonly Point DecorationSize = new Point(4 + 4, 4 + 16 + 5 + 4);
+        public static readonly Point DecorationOffset = new Point(4, 4 + 16 + 5);
+        public static readonly Point DecorationSize = new Point(4 + 4, 4 + 16 + 5 + 4);
 		public Matrix XNAWorld;
 		protected WindowManager Owner;
         bool visible;

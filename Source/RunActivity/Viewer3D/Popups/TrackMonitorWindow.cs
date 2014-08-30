@@ -28,9 +28,11 @@ namespace ORTS.Viewer3D.Popups
 {
     public class TrackMonitorWindow : Window
     {
-        public int MAXDISTANCE = 5000;
-        public const int TrackMonitorHeight = 265;
-        public const int LabelsHeight = 117;
+        public const int MaximumDistance = 5000;
+        public const int TrackMonitorLabelHeight = 95; // Height of labels above the main display.
+        public const int TrackMonitorOffsetY = 25/*Window.DecorationOffset.Y*/ + TrackMonitorLabelHeight;
+        public const int TrackMonitorWidth = 150;
+        public const int TrackMonitorHeight = 250;
 
         Label SpeedCurrent;
         Label SpeedProjected;
@@ -67,7 +69,7 @@ namespace ORTS.Viewer3D.Popups
 
         // Constructor
         public TrackMonitorWindow(WindowManager owner)
-            : base(owner, 150, LabelsHeight + TrackMonitorHeight + 10, Viewer.Catalog.GetString("Track Monitor"))
+            : base(owner, TrackMonitorWidth + Window.DecorationSize.X, TrackMonitorLabelHeight + TrackMonitorHeight + Window.DecorationSize.Y, Viewer.Catalog.GetString("Track Monitor"))
         {
             ControlModeLabels = new Dictionary<Train.TRAIN_CONTROL, string> 
             {
@@ -133,7 +135,7 @@ namespace ORTS.Viewer3D.Popups
                 vbox.AddHorizontalSeparator();
 
                 // add object area
-                vbox.Add(Monitor = new TrackMonitor(vbox.RemainingWidth, 50, Owner, this));
+                vbox.Add(Monitor = new TrackMonitor(vbox.RemainingWidth, 50, Owner));
             }
 
             return vbox;
@@ -189,7 +191,6 @@ namespace ORTS.Viewer3D.Popups
 
     public class TrackMonitor : Control
     {
-        TrackMonitorWindow parentWindow;
         static Texture2D SignalAspects;
         static Texture2D TrackMonitorImages;
         static Texture2D MonitorTexture;
@@ -201,44 +202,53 @@ namespace ORTS.Viewer3D.Popups
         Train.TrainInfo validInfo;
 
         // position constants
-        readonly int addInfoOffset = 21; // vertical offset on window for additional out-of-range info at top and bottom
-        readonly int[] mainOffset = new int[2] {16, 6 }; // offset for items, cell 0 is upward, 1 is downward
-        readonly int textSpacing = 10; // minimum vertical distance between two labels
+        const int additionalInfoHeight = 16; // vertical offset on window for additional out-of-range info at top and bottom
+        readonly int[] mainOffset = new int[2] { 12, 12 }; // offset for items, cell 0 is upward, 1 is downward
+        const int textSpacing = 10; // minimum vertical distance between two labels
 
-        readonly int distanceTextOffset = 4; // horizontal offset distance text
-        readonly int speedTextOffset = 70; // horizontal offset distance text
+        // The track is 24 wide = 6 + 2 + 8 + 2 + 6.
+        const int trackRail1Offset = 6;
+        const int trackRail2Offset = 6 + 2 + 8;
+        const int trackRailWidth = 2;
+
+        // Vertical offset for text for forwards ([0]) and backwards ([1]).
+        readonly int[] textOffset = new int[2] { -11, -3 };
+
+        // Horizontal offsets for various elements.
+        const int distanceTextOffset = 0;
+        const int trackOffset = 42;
+        const int speedTextOffset = 70;
 
         // position definition arrays
         // contents :
         // cell 0 : X offset
-        // cell 1 : Y offset from top (absolute, but relative if Y position is variable)
-        // cell 2 : Y offset from bottom (positive, value is distracted)
+        // cell 1 : Y offset down from top (absolute)/item location (relative)
+        // cell 2 : Y offset down from bottom (absolute)/item location (relative)
         // cell 3 : X size
         // cell 4 : Y size
-        // cell 5 : Y offset between marker and text (positive is further from zeropoint)
 
-        int[] eyePosition = new int[6] { 40, 0, 20, 24, 24, 0 };
-        int[] TrainPosition = new int[6] { 38, 4, -12, 24, 24, 0 }; // Y value set in function
-        int[] otherTrainPosition = new int[6] { 38, -16, 3, 24, 24, 0 }; // Y value set in function
-        int[] StationPosition = new int[6] { 43, 0, 0, 15, 15, 0 }; // Y value set in function
-        int[] ReversalPosition = new int[6] { 46, 15, 0, 10, 15, 0 }; // Y value set in function
-        int[] endAuthorityPosition = new int[6] { 42, -2, 6, 16, 8, 0 }; // Y value set in function
-        int[] SignalPosition = new int[6] { 130, 1, 0, 16, 16, -1 }; // Y value set in function
-        int[] SignalTopPosition = new int[6] { 130, 24, 10, 16, 16, 1 };
-        int[] arrowPosition = new int[6] { 26, -12, -11, 10, 24, 0 };
+        int[] eyePosition          = new int[5] {  42,  -4, -20, 24, 24 };
+        int[] trainPosition        = new int[5] {  42, -12,  12, 24, 24 }; // Relative positioning
+        int[] otherTrainPosition   = new int[5] {  42,   0,   0, 24, 24 }; // Relative positioning
+        int[] stationPosition      = new int[5] {  42,   0,   0, 24, 24 }; // Relative positioning
+        int[] reversalPosition     = new int[5] {  42, -21,   0, 24, 24 }; // Relative positioning
+        int[] endAuthorityPosition = new int[5] {  42, -14,   0, 24, 24 }; // Relative positioning
+        int[] signalPosition       = new int[5] { 134, -16,   0, 16, 16 }; // Relative positioning
+        int[] arrowPosition        = new int[5] {  22, -12, -12, 24, 24 };
 
         // texture rectangles : X-offset, Y-offset, width, height
-        Rectangle eyeTexture = new Rectangle(10, 394, 44, 44);
-        Rectangle trainPositionAuto = new Rectangle(0, 192, 64, 64);
-        Rectangle trainPositionManualOnRoute = new Rectangle(64, 256, 64, 64);
-        Rectangle trainPositionManualOffRoute = new Rectangle(0, 256, 64, 64);
-        Rectangle endAuthorityMarker = new Rectangle(0, 24, 64, 16);
-        Rectangle oppositeTrainMarkerForward = new Rectangle(0, 320, 64, 64);
-        Rectangle oppositeTrainMarkerBackward = new Rectangle(64, 320, 64, 64);
-        Rectangle stationMarker = new Rectangle(64, 0, 64, 64);
-        Rectangle reversalMarker = new Rectangle(0, 64, 64, 64);
-        Rectangle forwardArrow = new Rectangle(74, 128, 44, 64);
-        Rectangle backwardArrow = new Rectangle(10, 128, 44, 64);
+        Rectangle eyeSprite = new Rectangle(0, 144, 24, 24);
+        Rectangle trainPositionAutoForwardsSprite = new Rectangle(0, 72, 24, 24);
+        Rectangle trainPositionAutoBackwardsSprite = new Rectangle(24, 72, 24, 24);
+        Rectangle trainPositionManualOnRouteSprite = new Rectangle(24, 96, 24, 24);
+        Rectangle trainPositionManualOffRouteSprite = new Rectangle(0, 96, 24, 24);
+        Rectangle endAuthoritySprite = new Rectangle(0, 0, 24, 24);
+        Rectangle oppositeTrainForwardSprite = new Rectangle(24, 120, 24, 24);
+        Rectangle oppositeTrainBackwardSprite = new Rectangle(0, 120, 24, 24);
+        Rectangle stationSprite = new Rectangle(24, 0, 24, 24);
+        Rectangle reversalSprite = new Rectangle(0, 24, 24, 24);
+        Rectangle forwardArrowSprite = new Rectangle(24, 48, 24, 24);
+        Rectangle backwardArrowSprite = new Rectangle(0, 48, 24, 24);
 
         Dictionary<TrackMonitorSignalAspect, Rectangle> SignalMarkers =
             new Dictionary<TrackMonitorSignalAspect, Rectangle>
@@ -257,13 +267,13 @@ namespace ORTS.Viewer3D.Popups
         // fixed distance rounding values as function of maximum distance
 
         Dictionary<float, float> roundingValues =
-            new Dictionary<float,float>
+            new Dictionary<float, float>
             {{0.0f, 0.5f},
              {5.0f, 1.0f},
              {10.0f, 2.0f}};
 
         // Constructor
-        public TrackMonitor(int width, int height, WindowManager owner, TrackMonitorWindow thisWindow)
+        public TrackMonitor(int width, int height, WindowManager owner)
             : base(0, 0, width, height)
         {
             if (SignalAspects == null)
@@ -275,7 +285,6 @@ namespace ORTS.Viewer3D.Popups
 
             metric = owner.Viewer.MilepostUnitsMetric;
 
-            parentWindow = thisWindow;
             Font = owner.TextFontSmall;
         }
 
@@ -288,6 +297,9 @@ namespace ORTS.Viewer3D.Popups
                 MonitorTexture = new Texture2D(spriteBatch.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
                 MonitorTexture.SetData(new[] { Color.White });
             }
+
+            offset.X += Window.DecorationOffset.X;
+            offset.Y += TrackMonitorWindow.TrackMonitorOffsetY;
 
             // no info available
             if (validInfo == null)
@@ -321,297 +333,270 @@ namespace ORTS.Viewer3D.Popups
         }
 
         // draw track lines
-        static void drawTrack(SpriteBatch spriteBatch, Point offset, float speedMpS, float allowedSpeedMpS)
+        void drawTrack(SpriteBatch spriteBatch, Point offset, float speedMpS, float allowedSpeedMpS)
         {
-            float absspeedMpS = Math.Abs(speedMpS);
-            var lineColor = (absspeedMpS < allowedSpeedMpS - 1.0f) ? Color.Green :
-                ((absspeedMpS < allowedSpeedMpS) ? Color.PaleGreen :
-                ((absspeedMpS < allowedSpeedMpS + 5.0f) ? Color.Orange : Color.Red));
+            var absoluteSpeedMpS = Math.Abs(speedMpS);
+            var trackColor =
+                absoluteSpeedMpS < allowedSpeedMpS - 1.0f ? Color.Green :
+                absoluteSpeedMpS < allowedSpeedMpS + 0.0f ? Color.PaleGreen :
+                absoluteSpeedMpS < allowedSpeedMpS + 5.0f ? Color.Orange : Color.Red;
 
-            float lineStart = (float)TrackMonitorWindow.LabelsHeight + 2;
-            float trackDistance = (float)TrackMonitorWindow.TrackMonitorHeight + 5;
-
-            spriteBatch.Draw(MonitorTexture, new Vector2(offset.X + 45, offset.Y + lineStart), null, lineColor, 0, Vector2.Zero,
-                new Vector2(2, trackDistance), SpriteEffects.None, 0);
-            spriteBatch.Draw(MonitorTexture, new Vector2(offset.X + 55, offset.Y + lineStart), null, lineColor, 0, Vector2.Zero,
-                new Vector2(2, trackDistance), SpriteEffects.None, 0);
+            spriteBatch.Draw(MonitorTexture, new Rectangle(offset.X, offset.Y, TrackMonitorWindow.TrackMonitorWidth, TrackMonitorWindow.TrackMonitorHeight), new Color(Color.Red, 64));
+            spriteBatch.Draw(MonitorTexture, new Rectangle(offset.X + trackOffset + trackRail1Offset, offset.Y, trackRailWidth, TrackMonitorWindow.TrackMonitorHeight), trackColor);
+            spriteBatch.Draw(MonitorTexture, new Rectangle(offset.X + trackOffset + trackRail2Offset, offset.Y, trackRailWidth, TrackMonitorWindow.TrackMonitorHeight), trackColor);
         }
 
         // draw auto info
         // all details accessed through class variables
 
-        private void drawAutoInfo(SpriteBatch spriteBatch, Point offset)
+        void drawAutoInfo(SpriteBatch spriteBatch, Point offset)
         {
             // set area details
-            int offsetPosition = TrackMonitorWindow.LabelsHeight;
-            int endOffset = TrackMonitorWindow.TrackMonitorHeight;
-            int endPosition = offsetPosition + endOffset;
-            int startObjectArea = offsetPosition + addInfoOffset + textSpacing;
-            int endObjectArea = endPosition - addInfoOffset;
+            var startObjectArea = additionalInfoHeight;
+            var endObjectArea = TrackMonitorWindow.TrackMonitorHeight - additionalInfoHeight - trainPosition[4];
+            var zeroObjectPointTop = endObjectArea;
+            var zeroObjectPointMiddle = zeroObjectPointTop - trainPosition[1];
+            var zeroObjectPointBottom = zeroObjectPointMiddle + trainPosition[2];
+            var distanceFactor = (float)(endObjectArea - startObjectArea) / TrackMonitorWindow.MaximumDistance;
 
-            float maxDistance = parentWindow.MAXDISTANCE;
-            int zeropointmid = endObjectArea - textSpacing;
-            int zeropointtop = zeropointmid - mainOffset[0]; // leave space for train symbol
-            int zeropointlow = zeropointmid + mainOffset[1]; // leave space for train symbol
-            float distanceFactor = (float)(zeropointtop - startObjectArea) / parentWindow.MAXDISTANCE;
-
-            // draw line for object out of reach
-            spriteBatch.Draw(MonitorTexture, new Vector2(offset.X + 4, offset.Y + offsetPosition + addInfoOffset), null, Color.White, 0, Vector2.Zero,
-                new Vector2(142, 1), SpriteEffects.None, 0);
-
-            // draw line for object behind
-            // draw as red line if no info for reverse move available
-
-            var lineColor = Color.White;
+            // draw train position line
+            // use red if no info for reverse move available
+            var lineColor = Color.DarkGray;
             if (validInfo.ObjectInfoBackward != null && validInfo.ObjectInfoBackward.Count > 0 &&
                 validInfo.ObjectInfoBackward[0].ItemType == Train.TrainObjectItem.TRAINOBJECTTYPE.AUTHORITY &&
                 validInfo.ObjectInfoBackward[0].AuthorityType == Train.END_AUTHORITY.NO_PATH_RESERVED)
             {
                 lineColor = Color.Red;
             }
-
-            spriteBatch.Draw(MonitorTexture, new Vector2(offset.X + 4, offset.Y + endPosition - addInfoOffset), null, lineColor, 0, Vector2.Zero,
-                new Vector2(142, 1), SpriteEffects.None, 0);
-
-            // draw own train marker
-            drawOwnTrain(spriteBatch, offset, trainPositionAuto, zeropointtop + TrainPosition[1]);
+            spriteBatch.Draw(MonitorTexture, new Rectangle(offset.X, offset.Y + endObjectArea, TrackMonitorWindow.TrackMonitorWidth, 1), lineColor);
 
             // draw direction arrow
             if (validInfo.direction == 0)
             {
-                drawArrow(spriteBatch, offset, forwardArrow, zeropointlow + arrowPosition[1]);
+                drawArrow(spriteBatch, offset, forwardArrowSprite, zeroObjectPointMiddle + arrowPosition[1]);
             }
             else if (validInfo.direction == 1)
             {
-                drawArrow(spriteBatch, offset, backwardArrow, zeropointlow + arrowPosition[1]);
+                drawArrow(spriteBatch, offset, backwardArrowSprite, zeroObjectPointMiddle + arrowPosition[2]);
             }
 
             // draw eye
-            drawEye(spriteBatch, offset, offsetPosition, endPosition);
+            drawEye(spriteBatch, offset, 0, TrackMonitorWindow.TrackMonitorHeight);
 
             // draw fixed distance indications
-            float firstMarkerDistance = drawDistanceMarkers(spriteBatch, offset, maxDistance, distanceFactor, zeropointtop, 4, true);
-            int firstLabelPosition = Convert.ToInt32(firstMarkerDistance * distanceFactor) - textSpacing;
+            var firstMarkerDistance = drawDistanceMarkers(spriteBatch, offset, TrackMonitorWindow.MaximumDistance, distanceFactor, zeroObjectPointTop, 4, true);
+            var firstLabelPosition = Convert.ToInt32(firstMarkerDistance * distanceFactor) - textSpacing;
 
             // draw forward items
-            drawItems(spriteBatch, offset, startObjectArea, endObjectArea, zeropointtop, zeropointlow, maxDistance, distanceFactor, firstLabelPosition, 
-                validInfo.ObjectInfoForward, true);
+            drawItems(spriteBatch, offset, startObjectArea, endObjectArea, zeroObjectPointTop, zeroObjectPointBottom, TrackMonitorWindow.MaximumDistance, distanceFactor, firstLabelPosition, validInfo.ObjectInfoForward, true);
+
+            // draw own train marker
+            drawOwnTrain(spriteBatch, offset, trainPositionAutoForwardsSprite, zeroObjectPointTop);
         }
 
         // draw Multiplayer info
         // all details accessed through class variables
 
-        private void drawMPInfo(SpriteBatch spriteBatch, Point offset)
+        void drawMPInfo(SpriteBatch spriteBatch, Point offset)
         {
             // set area details
-            int offsetPosition = TrackMonitorWindow.LabelsHeight;
-            int endOffset = TrackMonitorWindow.TrackMonitorHeight;
-            int endPosition = offsetPosition + endOffset;
-            int startObjectArea = offsetPosition + addInfoOffset + textSpacing;
-            int endObjectArea = endPosition - addInfoOffset;
-
-            float maxDistance = parentWindow.MAXDISTANCE;
-            int zeropointmid = endObjectArea - textSpacing;
-            if (validInfo.direction == 1) zeropointmid = startObjectArea - textSpacing;
-            int zeropointtop = zeropointmid - mainOffset[0]; // leave space for train symbol
-            int zeropointlow = zeropointmid + mainOffset[1]; // leave space for train symbol
-            float distanceFactor = (float)(zeropointtop - startObjectArea) / parentWindow.MAXDISTANCE;
-            if (validInfo.direction == 1) distanceFactor = (float)(endObjectArea - zeropointtop) / parentWindow.MAXDISTANCE;
-
-            // draw line for object out of reach
-            spriteBatch.Draw(MonitorTexture, new Vector2(offset.X + 4, offset.Y + offsetPosition + addInfoOffset), null, Color.White, 0, Vector2.Zero,
-                new Vector2(142, 1), SpriteEffects.None, 0);
-
-            // draw own train marker
-            drawOwnTrain(spriteBatch, offset, trainPositionAuto, zeropointtop + TrainPosition[1]);
-
-            // draw eye
-            drawEye(spriteBatch, offset, offsetPosition, endPosition);
-
-            // draw direction arrow
+            var startObjectArea = additionalInfoHeight;
+            var endObjectArea = TrackMonitorWindow.TrackMonitorHeight - additionalInfoHeight;
+            var zeroObjectPointTop = 0;
+            var zeroObjectPointMiddle = 0;
+            var zeroObjectPointBottom = 0;
             if (validInfo.direction == 0)
             {
-                drawArrow(spriteBatch, offset, forwardArrow, zeropointlow + arrowPosition[1]);
-                // draw fixed distance indications
-                float firstMarkerDistance = drawDistanceMarkers(spriteBatch, offset, maxDistance, distanceFactor, zeropointtop, 4, true);
-                int firstLabelPosition = Convert.ToInt32(firstMarkerDistance * distanceFactor) - textSpacing;
-
-                // draw forward items
-                drawItems(spriteBatch, offset, startObjectArea, endObjectArea, zeropointtop, zeropointlow, maxDistance, distanceFactor, firstLabelPosition,
-                    validInfo.ObjectInfoForward, true);
+                zeroObjectPointTop = endObjectArea - trainPosition[4];
+                zeroObjectPointMiddle = zeroObjectPointTop - trainPosition[1];
+                zeroObjectPointBottom = zeroObjectPointMiddle + trainPosition[2];
             }
             else if (validInfo.direction == 1)
             {
-                drawArrow(spriteBatch, offset, backwardArrow, zeropointtop + arrowPosition[2]);
-                // draw fixed distance indications
-                float firstMarkerDistance = drawDistanceMarkers(spriteBatch, offset, maxDistance, distanceFactor, zeropointlow, 4, false);
-                int firstLabelPosition = Convert.ToInt32(firstMarkerDistance * distanceFactor) - textSpacing;
-                // draw backward items
-                drawItems(spriteBatch, offset, startObjectArea, endObjectArea, zeropointlow, zeropointtop, maxDistance, distanceFactor, firstLabelPosition,
-                    validInfo.ObjectInfoBackward, false);
+                zeroObjectPointTop = startObjectArea;
+                zeroObjectPointMiddle = zeroObjectPointTop - trainPosition[1];
+                zeroObjectPointBottom = zeroObjectPointMiddle + trainPosition[2];
+            }
+            else
+            {
+                zeroObjectPointMiddle = startObjectArea + (endObjectArea - startObjectArea) / 2;
+                zeroObjectPointTop = zeroObjectPointMiddle + trainPosition[1];
+                zeroObjectPointBottom = zeroObjectPointMiddle + trainPosition[2];
+            }
+            var distanceFactor = (float)(endObjectArea - startObjectArea - trainPosition[4]) / TrackMonitorWindow.MaximumDistance;
+            if (validInfo.direction == -1)
+                distanceFactor /= 2;
+
+            if (validInfo.direction == 0)
+            {
+                // draw direction arrow
+                drawArrow(spriteBatch, offset, forwardArrowSprite, zeroObjectPointMiddle + arrowPosition[1]);
+            }
+            else if (validInfo.direction == 1)
+            {
+                // draw direction arrow
+                drawArrow(spriteBatch, offset, backwardArrowSprite, zeroObjectPointMiddle + arrowPosition[2]);
             }
 
+            if (validInfo.direction != 1)
+            {
+                // draw fixed distance indications
+                var firstMarkerDistance = drawDistanceMarkers(spriteBatch, offset, TrackMonitorWindow.MaximumDistance, distanceFactor, zeroObjectPointTop, 4, true);
+                var firstLabelPosition = Convert.ToInt32(firstMarkerDistance * distanceFactor) - textSpacing;
 
+                // draw forward items
+                drawItems(spriteBatch, offset, startObjectArea, endObjectArea, zeroObjectPointTop, zeroObjectPointBottom, TrackMonitorWindow.MaximumDistance, distanceFactor, firstLabelPosition, validInfo.ObjectInfoForward, true);
+            }
+
+            if (validInfo.direction != 0)
+            {
+                // draw fixed distance indications
+                var firstMarkerDistance = drawDistanceMarkers(spriteBatch, offset, TrackMonitorWindow.MaximumDistance, distanceFactor, zeroObjectPointBottom, 4, false);
+                var firstLabelPosition = Convert.ToInt32(firstMarkerDistance * distanceFactor) - textSpacing;
+
+                // draw backward items
+                drawItems(spriteBatch, offset, startObjectArea, endObjectArea, zeroObjectPointBottom, zeroObjectPointTop, TrackMonitorWindow.MaximumDistance, distanceFactor, firstLabelPosition, validInfo.ObjectInfoBackward, false);
+            }
+
+            // draw own train marker
+            drawOwnTrain(spriteBatch, offset, validInfo.direction == -1 ? trainPositionManualOnRouteSprite : validInfo.direction == 0 ? trainPositionAutoForwardsSprite : trainPositionAutoBackwardsSprite, zeroObjectPointTop);
         }
 
         // draw manual info
         // all details accessed through class variables
 
-        private void drawManualInfo(SpriteBatch spriteBatch, Point offset)
+        void drawManualInfo(SpriteBatch spriteBatch, Point offset)
         {
-            // draw line for object beyond maximum distance
-            int offsetPosition = TrackMonitorWindow.LabelsHeight;
-            int endOffset = TrackMonitorWindow.TrackMonitorHeight;
-            int endPosition = offsetPosition + endOffset;
-            int startObjectArea = offsetPosition + addInfoOffset + textSpacing;
-            int endObjectArea = endPosition - addInfoOffset;
+            // set area details
+            var startObjectArea = additionalInfoHeight;
+            var endObjectArea = TrackMonitorWindow.TrackMonitorHeight - additionalInfoHeight;
+            var zeroObjectPointMiddle = startObjectArea + (endObjectArea - startObjectArea) / 2;
+            var zeroObjectPointTop = zeroObjectPointMiddle + trainPosition[1];
+            var zeroObjectPointBottom = zeroObjectPointMiddle + trainPosition[2];
+            var distanceFactor = (float)(zeroObjectPointTop - startObjectArea) / TrackMonitorWindow.MaximumDistance;
 
-            float maxDistance = parentWindow.MAXDISTANCE / 2;
-            int zeropointmid = startObjectArea + (int)((endObjectArea - startObjectArea) / 2) - (textSpacing / 2);
-            int zeropointtop = zeropointmid - mainOffset[0]; // leave space for train symbol
-            int zeropointlow = zeropointmid + mainOffset[1]; // leave space for train symbol
-            float distanceFactor = (float)(zeropointtop - startObjectArea) / maxDistance;
-
-            // draw lines for objects beyond max distance forward and backward
-            spriteBatch.Draw(MonitorTexture, new Vector2(offset.X + 4, offset.Y + offsetPosition + addInfoOffset), null, Color.White, 0, Vector2.Zero,
-                new Vector2(142, 1), SpriteEffects.None, 0);
-
-            spriteBatch.Draw(MonitorTexture, new Vector2(offset.X + 4, offset.Y + endPosition - addInfoOffset), null, Color.White, 0, Vector2.Zero,
-                new Vector2(142, 1), SpriteEffects.None, 0);
-
-            // draw line through own train
-            spriteBatch.Draw(MonitorTexture, new Vector2(offset.X + 4, offset.Y + zeropointmid), null, Color.White, 0, Vector2.Zero,
-                new Vector2(142, 1), SpriteEffects.None, 0);
-
-            // draw own train marker
-            Rectangle ownTrainMarker = validInfo.isOnPath ? trainPositionManualOnRoute : trainPositionManualOffRoute;
-            drawOwnTrain(spriteBatch, offset, ownTrainMarker, zeropointmid + TrainPosition[2]);
+            // draw lines through own train
+            spriteBatch.Draw(MonitorTexture, new Rectangle(offset.X, offset.Y + zeroObjectPointTop, TrackMonitorWindow.TrackMonitorWidth, 1), Color.DarkGray);
+            spriteBatch.Draw(MonitorTexture, new Rectangle(offset.X, offset.Y + zeroObjectPointBottom - 1, TrackMonitorWindow.TrackMonitorWidth, 1), Color.DarkGray);
 
             // draw direction arrow
             if (validInfo.direction == 0)
             {
-                drawArrow(spriteBatch, offset, forwardArrow, zeropointmid + arrowPosition[1]);
+                drawArrow(spriteBatch, offset, forwardArrowSprite, zeroObjectPointMiddle + arrowPosition[1]);
             }
             else if (validInfo.direction == 1)
             {
-                drawArrow(spriteBatch, offset, backwardArrow, zeropointmid + arrowPosition[2]);
+                drawArrow(spriteBatch, offset, backwardArrowSprite, zeroObjectPointMiddle + arrowPosition[2]);
             }
 
             // draw eye
-            drawEye(spriteBatch, offset, offsetPosition, endPosition);
+            drawEye(spriteBatch, offset, 0, TrackMonitorWindow.TrackMonitorHeight);
 
             // draw fixed distance indications
-            float firstMarkerDistance = drawDistanceMarkers(spriteBatch, offset, maxDistance, distanceFactor, zeropointtop, 3, true);
-            drawDistanceMarkers(spriteBatch, offset, maxDistance, distanceFactor, zeropointlow, 3, false);  // no return required
-            int firstLabelPosition = Convert.ToInt32(firstMarkerDistance * distanceFactor) - textSpacing;
+            var firstMarkerDistance = drawDistanceMarkers(spriteBatch, offset, TrackMonitorWindow.MaximumDistance, distanceFactor, zeroObjectPointTop, 3, true);
+            drawDistanceMarkers(spriteBatch, offset, TrackMonitorWindow.MaximumDistance, distanceFactor, zeroObjectPointBottom, 3, false);  // no return required
+            var firstLabelPosition = Convert.ToInt32(firstMarkerDistance * distanceFactor) - textSpacing;
 
             // draw forward items
-            drawItems(spriteBatch, offset, startObjectArea, endObjectArea, zeropointtop, zeropointlow, maxDistance, distanceFactor, firstLabelPosition,
-                validInfo.ObjectInfoForward, true);
+            drawItems(spriteBatch, offset, startObjectArea, endObjectArea, zeroObjectPointTop, zeroObjectPointBottom, TrackMonitorWindow.MaximumDistance, distanceFactor, firstLabelPosition, validInfo.ObjectInfoForward, true);
 
             // draw backward items
-            drawItems(spriteBatch, offset, startObjectArea, endObjectArea, zeropointlow, zeropointtop, maxDistance, distanceFactor, firstLabelPosition, 
-                validInfo.ObjectInfoBackward, false);
+            drawItems(spriteBatch, offset, startObjectArea, endObjectArea, zeroObjectPointBottom, zeroObjectPointTop, TrackMonitorWindow.MaximumDistance, distanceFactor, firstLabelPosition, validInfo.ObjectInfoBackward, false);
+
+            // draw own train marker
+            var ownTrainSprite = validInfo.isOnPath ? trainPositionManualOnRouteSprite : trainPositionManualOffRouteSprite;
+            drawOwnTrain(spriteBatch, offset, ownTrainSprite, zeroObjectPointTop);
         }
 
         // draw own train marker at required position
-        private void drawOwnTrain(SpriteBatch spriteBatch, Point offset, Rectangle marker, int position)
+        void drawOwnTrain(SpriteBatch spriteBatch, Point offset, Rectangle sprite, int position)
         {
-            spriteBatch.Draw(TrackMonitorImages, new Rectangle(offset.X + TrainPosition[0], offset.Y + position,
-                TrainPosition[3], TrainPosition[4]), marker, Color.White);
+            spriteBatch.Draw(TrackMonitorImages, new Rectangle(offset.X + trainPosition[0], offset.Y + position, trainPosition[3], trainPosition[4]), sprite, Color.White);
         }
 
         // draw own train marker at required position
-        private void drawArrow(SpriteBatch spriteBatch, Point offset, Rectangle marker, int position)
+        void drawArrow(SpriteBatch spriteBatch, Point offset, Rectangle sprite, int position)
         {
-            spriteBatch.Draw(TrackMonitorImages, new Rectangle(offset.X + arrowPosition[0], offset.Y + position,
-                arrowPosition[3], arrowPosition[4]), marker, Color.White);
+            spriteBatch.Draw(TrackMonitorImages, new Rectangle(offset.X + arrowPosition[0], offset.Y + position, arrowPosition[3], arrowPosition[4]), sprite, Color.White);
         }
 
         // draw eye at required position
-        private void drawEye(SpriteBatch spriteBatch, Point offset, int offsetPosition, int endPosition)
+        void drawEye(SpriteBatch spriteBatch, Point offset, int forwardsY, int backwardsY)
         {
             // draw eye
             if (validInfo.cabOrientation == 0)
             {
-                spriteBatch.Draw(TrackMonitorImages, new Rectangle(offset.X + eyePosition[0], offset.Y + offsetPosition + eyePosition[1],
-                    eyePosition[3], eyePosition[4]), eyeTexture, Color.White);
+                spriteBatch.Draw(TrackMonitorImages, new Rectangle(offset.X + eyePosition[0], offset.Y + forwardsY + eyePosition[1], eyePosition[3], eyePosition[4]), eyeSprite, Color.White);
             }
             else
             {
-                spriteBatch.Draw(TrackMonitorImages, new Rectangle(offset.X + eyePosition[0], offset.Y + endPosition - eyePosition[2],
-                    eyePosition[3], eyePosition[4]), eyeTexture, Color.White);
+                spriteBatch.Draw(TrackMonitorImages, new Rectangle(offset.X + eyePosition[0], offset.Y + backwardsY + eyePosition[2], eyePosition[3], eyePosition[4]), eyeSprite, Color.White);
             }
         }
 
         // draw fixed distance markers
-        private float drawDistanceMarkers(SpriteBatch spriteBatch, Point offset,
-            float maxDistance, float distanceFactor,int zeropoint, int noMarkers, bool forward)
+        float drawDistanceMarkers(SpriteBatch spriteBatch, Point offset, float maxDistance, float distanceFactor, int zeroPoint, int numberOfMarkers, bool forward)
         {
-            float maxDistanceD = Me.FromM(maxDistance, metric); // in displayed units
-            float markerIntervalD = maxDistanceD / noMarkers;
+            var maxDistanceD = Me.FromM(maxDistance, metric); // in displayed units
+            var markerIntervalD = maxDistanceD / numberOfMarkers;
 
-            float roundingValue = roundingValues[0];
-            foreach (KeyValuePair<float, float> thisValue in roundingValues)
+            var roundingValue = roundingValues[0];
+            foreach (var thisValue in roundingValues)
             {
-                if (markerIntervalD > thisValue.Key) roundingValue = thisValue.Value;
-            }
-
-            markerIntervalD = Convert.ToInt32(markerIntervalD / roundingValue) * roundingValue;
-            float markerIntervalM = Me.ToM(markerIntervalD, metric);  // from display back to metre
-
-            for (int ipos = 1; ipos <= noMarkers; ipos++)
-            {
-                float actDistanceM = markerIntervalM * ipos;
-                if (actDistanceM < maxDistance)
+                if (markerIntervalD > thisValue.Key)
                 {
-                    int actLabelOffset = Convert.ToInt32(actDistanceM * distanceFactor);
-                    int actLabelposition = forward ? zeropoint - actLabelOffset : zeropoint + actLabelOffset;
-                    string distanceString = FormatStrings.FormatDistanceDisplay(actDistanceM, metric);
-
-                    Font.Draw(spriteBatch, new Point(offset.X + distanceTextOffset, offset.Y + actLabelposition), distanceString, Color.White);
+                    roundingValue = thisValue.Value;
                 }
             }
 
-            return (markerIntervalM);
+            markerIntervalD = Convert.ToInt32(markerIntervalD / roundingValue) * roundingValue;
+            var markerIntervalM = Me.ToM(markerIntervalD, metric);  // from display back to metre
+
+            for (var ipos = 1; ipos <= numberOfMarkers; ipos++)
+            {
+                var actDistanceM = markerIntervalM * ipos;
+                if (actDistanceM < maxDistance)
+                {
+                    var itemOffset = Convert.ToInt32(actDistanceM * distanceFactor);
+                    var itemLocation = forward ? zeroPoint - itemOffset : zeroPoint + itemOffset;
+                    var distanceString = FormatStrings.FormatDistanceDisplay(actDistanceM, metric);
+                    Font.Draw(spriteBatch, new Point(offset.X + distanceTextOffset, offset.Y + itemLocation + textOffset[forward ? 0 : 1]), distanceString, Color.White);
+                }
+            }
+
+            return markerIntervalM;
         }
 
         // draw signal, speed and authority items
         // items are sorted in order of increasing distance
 
-        public void drawItems(SpriteBatch spriteBatch, Point offset, int startObjectArea, int endObjectArea, int zeropoint, int lastLabelPosition,
-            float maxDistance, float distanceFactor, int firstLabelPosition, List<Train.TrainObjectItem> itemList, bool forward)
+        void drawItems(SpriteBatch spriteBatch, Point offset, int startObjectArea, int endObjectArea, int zeroPoint, int lastLabelPosition, float maxDistance, float distanceFactor, int firstLabelPosition, List<Train.TrainObjectItem> itemList, bool forward)
         {
-            bool signalShown = false;
-            bool firstLabelShown = false;
+            var signalShown = false;
+            var firstLabelShown = false;
 
-            foreach (Train.TrainObjectItem thisItem in itemList)
+            foreach (var thisItem in itemList)
             {
                 switch (thisItem.ItemType)
                 {
                     case Train.TrainObjectItem.TRAINOBJECTTYPE.AUTHORITY:
-                        drawAuthority(spriteBatch, offset, startObjectArea, endObjectArea, zeropoint,
-                            maxDistance, distanceFactor, firstLabelPosition, forward, lastLabelPosition, thisItem, ref firstLabelShown);
+                        drawAuthority(spriteBatch, offset, startObjectArea, endObjectArea, zeroPoint, maxDistance, distanceFactor, firstLabelPosition, forward, lastLabelPosition, thisItem, ref firstLabelShown);
                         break;
 
                     case Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL:
-                        lastLabelPosition = drawSignal(spriteBatch, offset, startObjectArea, endObjectArea, zeropoint,
-                            maxDistance, distanceFactor, firstLabelPosition, forward, lastLabelPosition, thisItem, ref signalShown, ref firstLabelShown);
+                        lastLabelPosition = drawSignal(spriteBatch, offset, startObjectArea, endObjectArea, zeroPoint, maxDistance, distanceFactor, firstLabelPosition, forward, lastLabelPosition, thisItem, ref signalShown, ref firstLabelShown);
                         break;
 
                     case Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST:
-                        lastLabelPosition = drawSpeedpost(spriteBatch, offset, startObjectArea, endObjectArea, zeropoint,
-                            maxDistance, distanceFactor, firstLabelPosition, forward, lastLabelPosition, thisItem, ref firstLabelShown);
+                        lastLabelPosition = drawSpeedpost(spriteBatch, offset, startObjectArea, endObjectArea, zeroPoint, maxDistance, distanceFactor, firstLabelPosition, forward, lastLabelPosition, thisItem, ref firstLabelShown);
                         break;
 
                     case Train.TrainObjectItem.TRAINOBJECTTYPE.STATION:
-                        drawStation(spriteBatch, offset, startObjectArea, endObjectArea, zeropoint,
-                            maxDistance, distanceFactor, firstLabelPosition, forward, lastLabelPosition, thisItem);
+                        drawStation(spriteBatch, offset, startObjectArea, endObjectArea, zeroPoint, maxDistance, distanceFactor, firstLabelPosition, forward, lastLabelPosition, thisItem);
                         break;
 
                     case Train.TrainObjectItem.TRAINOBJECTTYPE.REVERSAL:
-                        drawReversal(spriteBatch, offset, startObjectArea, endObjectArea, zeropoint,
-                            maxDistance, distanceFactor, firstLabelPosition, forward, lastLabelPosition, thisItem, ref firstLabelShown);
+                        drawReversal(spriteBatch, offset, startObjectArea, endObjectArea, zeroPoint, maxDistance, distanceFactor, firstLabelPosition, forward, lastLabelPosition, thisItem, ref firstLabelShown);
                         break;
 
                     default:     // capture unkown item
@@ -621,14 +606,11 @@ namespace ORTS.Viewer3D.Popups
         }
 
         // draw authority information
-        public void drawAuthority(SpriteBatch spriteBatch, Point offset, int startObjectArea, int endObjectArea, int zeropoint,
-                            float maxDistance, float distanceFactor, int firstLabelPosition, bool forward,
-                            int lastLabelPosition, Train.TrainObjectItem thisItem, ref bool firstLabelShown)
+        void drawAuthority(SpriteBatch spriteBatch, Point offset, int startObjectArea, int endObjectArea, int zeroPoint, float maxDistance, float distanceFactor, int firstLabelPosition, bool forward, int lastLabelPosition, Train.TrainObjectItem thisItem, ref bool firstLabelShown)
         {
-            Rectangle displayItem = new Rectangle(0, 0, 0, 0);
-            bool displayRequired = false;
-            int itemOffset = 2 * startObjectArea; // default is out of range
-            int[] offsetArray = endAuthorityPosition;
+            var displayItem = new Rectangle(0, 0, 0, 0);
+            var displayRequired = false;
+            var offsetArray = new int[0];
 
             if (thisItem.AuthorityType == Train.END_AUTHORITY.END_OF_AUTHORITY ||
                 thisItem.AuthorityType == Train.END_AUTHORITY.END_OF_PATH ||
@@ -636,190 +618,165 @@ namespace ORTS.Viewer3D.Popups
                 thisItem.AuthorityType == Train.END_AUTHORITY.RESERVED_SWITCH ||
                 thisItem.AuthorityType == Train.END_AUTHORITY.LOOP)
             {
-                displayItem = endAuthorityMarker;
+                displayItem = endAuthoritySprite;
+                offsetArray = endAuthorityPosition;
                 displayRequired = true;
             }
             else if (thisItem.AuthorityType == Train.END_AUTHORITY.TRAIN_AHEAD)
             {
-                displayItem = forward ? oppositeTrainMarkerForward : oppositeTrainMarkerBackward;
+                displayItem = forward ? oppositeTrainForwardSprite : oppositeTrainBackwardSprite;
                 offsetArray = otherTrainPosition;
                 displayRequired = true;
             }
 
             if (thisItem.DistanceToTrainM < (maxDistance - textSpacing / distanceFactor) && displayRequired)
             {
-                itemOffset = Convert.ToInt32(thisItem.DistanceToTrainM * distanceFactor);
-                int itemLocation = forward ? zeropoint - itemOffset : zeropoint + itemOffset;
-                int markerLocation = forward ? itemLocation + offsetArray[1] : itemLocation + offsetArray[2]; //adjust for difference in size between text and marker
-
-                Rectangle markerPlacement = new Rectangle(offset.X + offsetArray[0], offset.Y + markerLocation,
-                    offsetArray[3], offsetArray[4]);
-                spriteBatch.Draw(TrackMonitorImages, markerPlacement, displayItem, Color.White);
+                var itemOffset = Convert.ToInt32(thisItem.DistanceToTrainM * distanceFactor);
+                var itemLocation = forward ? zeroPoint - itemOffset : zeroPoint + itemOffset;
+                spriteBatch.Draw(TrackMonitorImages, new Rectangle(offset.X + offsetArray[0], offset.Y + itemLocation + offsetArray[forward ? 1 : 2], offsetArray[3], offsetArray[4]), displayItem, Color.White);
 
                 if (itemOffset < firstLabelPosition && !firstLabelShown)
                 {
-                    string distanceString = FormatStrings.FormatDistanceDisplay(thisItem.DistanceToTrainM, metric);
-                    Point labelPoint = new Point(offset.X + distanceTextOffset, offset.Y + itemLocation);
-
+                    var labelPoint = new Point(offset.X + distanceTextOffset, offset.Y + itemLocation + textOffset[forward ? 0 : 1]);
+                    var distanceString = FormatStrings.FormatDistanceDisplay(thisItem.DistanceToTrainM, metric);
                     Font.Draw(spriteBatch, labelPoint, distanceString, Color.White);
                     firstLabelShown = true;
                 }
             }
         }
 
-
         // draw signal information
-        public int drawSignal(SpriteBatch spriteBatch, Point offset, int startObjectArea, int endObjectArea, int zeropoint,
-                            float maxDistance, float distanceFactor, int firstLabelPosition, bool forward,
-                            int lastLabelPosition, Train.TrainObjectItem thisItem, ref bool signalShown, ref bool firstLabelShown)
+        int drawSignal(SpriteBatch spriteBatch, Point offset, int startObjectArea, int endObjectArea, int zeroPoint, float maxDistance, float distanceFactor, int firstLabelPosition, bool forward, int lastLabelPosition, Train.TrainObjectItem thisItem, ref bool signalShown, ref bool firstLabelShown)
         {
-            Rectangle displayItem = SignalMarkers[thisItem.SignalState];
-            int newLabelPosition = lastLabelPosition;
+            var displayItem = SignalMarkers[thisItem.SignalState];
+            var newLabelPosition = lastLabelPosition;
 
-            bool displayRequired = false;
-            int itemLocation = 0;
-            int itemOffset = 2 * startObjectArea; // default is out of range
-            float maxDisplayDistance = maxDistance - (textSpacing / 2) / distanceFactor;
+            var displayRequired = false;
+            var itemLocation = 0;
+            var itemOffset = 0;
+            var maxDisplayDistance = maxDistance - (textSpacing / 2) / distanceFactor;
 
             if (thisItem.DistanceToTrainM < maxDisplayDistance)
             {
                 itemOffset = Convert.ToInt32(thisItem.DistanceToTrainM * distanceFactor);
-                itemLocation = forward ? zeropoint - itemOffset - SignalPosition[1] : zeropoint + itemOffset - SignalPosition[2];
+                itemLocation = forward ? zeroPoint - itemOffset : zeroPoint + itemOffset;
                 displayRequired = true;
                 signalShown = true;
             }
             else if (!signalShown)
             {
-                itemLocation = forward ? startObjectArea - SignalTopPosition[1] : endObjectArea + SignalTopPosition[2]; // item is outside area
-                signalShown = true;
+                itemOffset = 2 * startObjectArea;
+                itemLocation = forward ? startObjectArea : endObjectArea;
                 displayRequired = true;
+                signalShown = true;
             }
 
             if (displayRequired)
             {
-                int reqMarkerPosition =
-                    forward ? Math.Min(itemLocation, lastLabelPosition - textSpacing) : Math.Max(itemLocation, lastLabelPosition + textSpacing);
-                newLabelPosition = reqMarkerPosition;
-
-                int reqLabelPosition = reqMarkerPosition - SignalPosition[5];   //adjust for difference in size between text and marker
-                Rectangle markerPlacement = new Rectangle(offset.X + SignalPosition[0], offset.Y + reqMarkerPosition,
-                    SignalPosition[3], SignalPosition[4]);
-                spriteBatch.Draw(SignalAspects, markerPlacement, displayItem, Color.White);
+                spriteBatch.Draw(SignalAspects, new Rectangle(offset.X + signalPosition[0], offset.Y + itemLocation + signalPosition[forward ? 1 : 2], signalPosition[3], signalPosition[4]), displayItem, Color.White);
 
                 if (thisItem.SignalState != TrackMonitorSignalAspect.Stop && thisItem.AllowedSpeedMpS > 0)
                 {
-                    string speedString = FormatStrings.FormatSpeedLimit(thisItem.AllowedSpeedMpS, metric);
-                    Point labelPoint = new Point(offset.X + speedTextOffset, offset.Y + reqLabelPosition);
-
+                    var labelPoint = new Point(offset.X + speedTextOffset, offset.Y + itemLocation + textOffset[forward ? 0 : 1]);
+                    var speedString = FormatStrings.FormatSpeedLimit(thisItem.AllowedSpeedMpS, metric);
                     Font.Draw(spriteBatch, labelPoint, speedString, Color.White);
                 }
 
-                if ( (itemOffset < firstLabelPosition && !firstLabelShown) || thisItem.DistanceToTrainM > maxDisplayDistance)
+                if ((itemOffset < firstLabelPosition && !firstLabelShown) || thisItem.DistanceToTrainM > maxDisplayDistance)
                 {
-                    string distanceString = FormatStrings.FormatDistanceDisplay(thisItem.DistanceToTrainM, metric);
-                    Point labelPoint = new Point(offset.X + distanceTextOffset, offset.Y + reqLabelPosition);
-
+                    var labelPoint = new Point(offset.X + distanceTextOffset, offset.Y + itemLocation + textOffset[forward ? 0 : 1]);
+                    var distanceString = FormatStrings.FormatDistanceDisplay(thisItem.DistanceToTrainM, metric);
                     Font.Draw(spriteBatch, labelPoint, distanceString, Color.White);
                     firstLabelShown = true;
                 }
             }
 
-            return (newLabelPosition);
+            return newLabelPosition;
         }
 
-
         // draw speedpost information
-        public int drawSpeedpost(SpriteBatch spriteBatch, Point offset, int startObjectArea, int endObjectArea, int zeropoint,
-                            float maxDistance, float distanceFactor, int firstLabelPosition, bool forward,
-                            int lastLabelPosition, Train.TrainObjectItem thisItem, ref bool firstLabelShown)
+        int drawSpeedpost(SpriteBatch spriteBatch, Point offset, int startObjectArea, int endObjectArea, int zeroPoint, float maxDistance, float distanceFactor, int firstLabelPosition, bool forward, int lastLabelPosition, Train.TrainObjectItem thisItem, ref bool firstLabelShown)
         {
-            int newLabelPosition = lastLabelPosition;
-            int itemOffset = 2 * startObjectArea; // default is out of range
+            var newLabelPosition = lastLabelPosition;
 
             if (thisItem.DistanceToTrainM < (maxDistance - textSpacing / distanceFactor))
             {
-                itemOffset = Convert.ToInt32(thisItem.DistanceToTrainM * distanceFactor);
-                int itemLocation = forward ? zeropoint - itemOffset : zeropoint + itemOffset;
-                int reqLabelPosition =
-                    forward ? Math.Min(itemLocation, lastLabelPosition - textSpacing) : Math.Max(itemLocation, lastLabelPosition + textSpacing);
-                newLabelPosition = reqLabelPosition;
+                var itemOffset = Convert.ToInt32(thisItem.DistanceToTrainM * distanceFactor);
+                var itemLocation = forward ? zeroPoint - itemOffset : zeroPoint + itemOffset;
+                newLabelPosition = forward ? Math.Min(itemLocation, lastLabelPosition - textSpacing) : Math.Max(itemLocation, lastLabelPosition + textSpacing);
 
                 var allowedSpeed = thisItem.AllowedSpeedMpS;
                 if (allowedSpeed > 998)
                 {
-                    if (Program.Simulator.Settings.EnhancedActCompatibility  && !Program.Simulator.TimetableMode) allowedSpeed = (float)Program.Simulator.TRK.Tr_RouteFile.SpeedLimit;
+                    if (Program.Simulator.Settings.EnhancedActCompatibility && !Program.Simulator.TimetableMode)
+                    {
+                        allowedSpeed = (float)Program.Simulator.TRK.Tr_RouteFile.SpeedLimit;
+                    }
                 }
-                string speedString = FormatStrings.FormatSpeedLimit(allowedSpeed, metric);
-                Point labelPoint = new Point(offset.X + speedTextOffset, offset.Y + newLabelPosition);
 
+                var labelPoint = new Point(offset.X + speedTextOffset, offset.Y + newLabelPosition + textOffset[forward ? 0 : 1]);
+                var speedString = FormatStrings.FormatSpeedLimit(allowedSpeed, metric);
                 Font.Draw(spriteBatch, labelPoint, speedString, Color.White);
 
                 if (itemOffset < firstLabelPosition && !firstLabelShown)
                 {
-                    string distanceString = FormatStrings.FormatDistanceDisplay(thisItem.DistanceToTrainM, metric);
-                    labelPoint = new Point(offset.X + distanceTextOffset, offset.Y + newLabelPosition);
-
+                    labelPoint = new Point(offset.X + distanceTextOffset, offset.Y + newLabelPosition + textOffset[forward ? 0 : 1]);
+                    var distanceString = FormatStrings.FormatDistanceDisplay(thisItem.DistanceToTrainM, metric);
                     Font.Draw(spriteBatch, labelPoint, distanceString, Color.White);
                     firstLabelShown = true;
                 }
             }
 
-            return (newLabelPosition);
+            return newLabelPosition;
         }
 
 
         // draw station stop information
-        public int drawStation(SpriteBatch spriteBatch, Point offset, int startObjectArea, int endObjectArea, int zeropoint,
-                            float maxDistance, float distanceFactor, float firstLabelDistance, bool forward,
-                            int lastLabelPosition, Train.TrainObjectItem thisItem)
+        int drawStation(SpriteBatch spriteBatch, Point offset, int startObjectArea, int endObjectArea, int zeroPoint, float maxDistance, float distanceFactor, float firstLabelDistance, bool forward, int lastLabelPosition, Train.TrainObjectItem thisItem)
         {
-            Rectangle displayItem = stationMarker;
-            int newLabelPosition = lastLabelPosition;
-            int itemOffset = 2 * startObjectArea; // default is out of range
+            var displayItem = stationSprite;
+            var newLabelPosition = lastLabelPosition;
 
             if (thisItem.DistanceToTrainM < (maxDistance - textSpacing / distanceFactor))
             {
-                itemOffset = Convert.ToInt32(thisItem.DistanceToTrainM * distanceFactor);
-                int itemLocation = forward ? zeropoint - itemOffset : zeropoint + itemOffset;
-                Rectangle markerPlacement = new Rectangle(offset.X + StationPosition[0], offset.Y + itemLocation - StationPosition[1],
-                    StationPosition[3], StationPosition[4]);
+                var itemOffset = Convert.ToInt32(thisItem.DistanceToTrainM * distanceFactor);
+                var itemLocation = forward ? zeroPoint - itemOffset : zeroPoint + itemOffset;
+                var markerPlacement = new Rectangle(offset.X + stationPosition[0], offset.Y + itemLocation + stationPosition[forward ? 1 : 2], stationPosition[3], stationPosition[4]);
                 spriteBatch.Draw(TrackMonitorImages, markerPlacement, displayItem, Color.White);
             }
-            return (newLabelPosition);
+
+            return newLabelPosition;
         }
 
         // draw reversal information
-        public int drawReversal(SpriteBatch spriteBatch, Point offset, int startObjectArea, int endObjectArea, int zeropoint,
-                            float maxDistance, float distanceFactor, float firstLabelDistance, bool forward,
-                            int lastLabelPosition, Train.TrainObjectItem thisItem, ref bool firstLabelShown)
+        int drawReversal(SpriteBatch spriteBatch, Point offset, int startObjectArea, int endObjectArea, int zeroPoint, float maxDistance, float distanceFactor, float firstLabelDistance, bool forward, int lastLabelPosition, Train.TrainObjectItem thisItem, ref bool firstLabelShown)
         {
-            Rectangle displayItem = reversalMarker;
-            int newLabelPosition = lastLabelPosition;
-            int itemOffset = 2 * startObjectArea; // default is out of range
+            var displayItem = reversalSprite;
+            var newLabelPosition = lastLabelPosition;
 
             if (thisItem.DistanceToTrainM < (maxDistance - textSpacing / distanceFactor))
             {
-                itemOffset = Convert.ToInt32(thisItem.DistanceToTrainM * distanceFactor);
-                int itemLocation = forward ? zeropoint - itemOffset : zeropoint + itemOffset;
-                int reqLabelPosition =
-                    forward ? Math.Min(itemLocation, lastLabelPosition - textSpacing) : Math.Max(itemLocation, lastLabelPosition + textSpacing);
-                newLabelPosition = reqLabelPosition;
-                int correctingOffset = Program.Simulator.TimetableMode || !Program.Simulator.Settings.EnhancedActCompatibility ? 0 : 7; 
-                Rectangle markerPlacement = new Rectangle(offset.X + ReversalPosition[0], offset.Y + itemLocation - ReversalPosition[1] + correctingOffset,
-                    ReversalPosition[3], ReversalPosition[4]);
-                if (thisItem.Enabled) spriteBatch.Draw(TrackMonitorImages, markerPlacement, displayItem, Color.Green);
-                else spriteBatch.Draw(TrackMonitorImages, markerPlacement, displayItem, Color.White);
+                var itemOffset = Convert.ToInt32(thisItem.DistanceToTrainM * distanceFactor);
+                var itemLocation = forward ? zeroPoint - itemOffset : zeroPoint + itemOffset;
+                newLabelPosition = forward ? Math.Min(itemLocation, lastLabelPosition - textSpacing) : Math.Max(itemLocation, lastLabelPosition + textSpacing);
+
+                // What was this offset all about? Shouldn't we draw the icons in the correct location ALL the time? -- James Ross
+                // var correctingOffset = Program.Simulator.TimetableMode || !Program.Simulator.Settings.EnhancedActCompatibility ? 0 : 7;
+
+                var markerPlacement = new Rectangle(offset.X + reversalPosition[0], offset.Y + itemLocation + reversalPosition[forward ? 1 : 2], reversalPosition[3], reversalPosition[4]);
+                spriteBatch.Draw(TrackMonitorImages, markerPlacement, displayItem, thisItem.Enabled ? Color.LightGreen : Color.White);
+
+                // Only show distance for enhanced MSTS compatibility (this is the only time the position is controlled by the author).
                 if (itemOffset < firstLabelDistance && !firstLabelShown && !Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility)
                 {
-                    string distanceString = FormatStrings.FormatDistanceDisplay(thisItem.DistanceToTrainM, metric);
-                    Point labelPoint = new Point(offset.X + distanceTextOffset, offset.Y + newLabelPosition - 7);
-
+                    var labelPoint = new Point(offset.X + distanceTextOffset, offset.Y + newLabelPosition + textOffset[forward ? 0 : 1]);
+                    var distanceString = FormatStrings.FormatDistanceDisplay(thisItem.DistanceToTrainM, metric);
                     Font.Draw(spriteBatch, labelPoint, distanceString, Color.White);
                     firstLabelShown = true;
                 }
             }
-            return (newLabelPosition);
+
+            return newLabelPosition;
         }
     }
-
 }

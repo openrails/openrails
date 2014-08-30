@@ -340,9 +340,7 @@
       <DependentUpon>WizardForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="DataStruct\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="Resources\metasegment.bmp" />
     <Content Include="Resources\metasegment.png" />

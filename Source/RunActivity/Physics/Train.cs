@@ -17336,7 +17336,7 @@ namespace ORTS
             public float speedMpS;                           // present speed
             public float projectedSpeedMpS;                  // projected speed
             public float allowedSpeedMpS;                    // max allowed speed
-            public int direction;                            // present direction (0=forward, 1=backward)
+            public int direction;                            // present direction (0=forward, 1=backward, -1=neutral)
             public int cabOrientation;                       // present cab orientation (0=forward, 1=backward)
             public bool isOnPath;                            // train is on defined path (valid in Manual mode only)
             public List<TrainObjectItem> ObjectInfoForward;  // forward objects
