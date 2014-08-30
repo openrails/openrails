@@ -4919,7 +4919,7 @@ namespace ORTS
                 {
                     bool earlier = false;
 
-                    if (thisItem.ActivateDistanceM < nextActionInfo.ActivateDistanceM)
+                    if (thisItem.ActivateDistanceM <= nextActionInfo.ActivateDistanceM)
                     {
                         if (thisItem.RequiredSpeedMpS <= nextActionInfo.RequiredSpeedMpS)
                         {

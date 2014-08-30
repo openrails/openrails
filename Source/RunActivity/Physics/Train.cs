@@ -13867,7 +13867,7 @@ namespace ORTS
                         int TCSectionIndex = WPNode.TCCrossReference[idx].Index;
                         if (TCSectionIndex == idxSectionWP)
                         {
-                            offset = offset + WPNode.TCCrossReference[idx].OffsetLength[NodeDir];
+                            offset = offset - WPNode.TCCrossReference[idx].OffsetLength[NodeDir];
                             break;
                         }
                    }

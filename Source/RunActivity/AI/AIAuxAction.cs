@@ -437,7 +437,7 @@ namespace ORTS
                     float distanceToGoM = AITrain.clearingDistanceM;
                     distanceToGoM = ActivateDistanceM - thisTrain.PresentPosition[0].DistanceTravelledM;
                     float NextStopDistanceM = distanceToGoM;
-                    if (distanceToGoM < 0f)
+                    if (distanceToGoM <= 0f)
                     {
                         thisTrain.AdjustControlsBrakeMore(thisTrain.MaxDecelMpSS, elapsedClockSeconds, 100);
                         thisTrain.AITrainThrottlePercent = 0;
@@ -449,7 +449,10 @@ namespace ORTS
                         }
                     }
                     else if (distanceToGoM < AITrain.signalApproachDistanceM && thisTrain.SpeedMpS == 0)
+                    {
+                        thisTrain.AdjustControlsBrakeMore(thisTrain.MaxDecelMpSS, elapsedClockSeconds, 100);
                         movementState = AITrain.AI_MOVEMENT_STATE.INIT_ACTION;
+                    }
 
                     break;
                 case AITrain.AI_MOVEMENT_STATE.STOPPED:
