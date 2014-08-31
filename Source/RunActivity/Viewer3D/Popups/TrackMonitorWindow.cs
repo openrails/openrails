@@ -228,11 +228,11 @@ namespace ORTS.Viewer3D.Popups
         // cell 4 : Y size
 
         int[] eyePosition          = new int[5] {  42,  -4, -20, 24, 24 };
-        int[] trainPosition        = new int[5] {  42, -12,  12, 24, 24 }; // Relative positioning
-        int[] otherTrainPosition   = new int[5] {  42,   0,   0, 24, 24 }; // Relative positioning
-        int[] stationPosition      = new int[5] {  42,   0,   0, 24, 24 }; // Relative positioning
-        int[] reversalPosition     = new int[5] {  42, -21,   0, 24, 24 }; // Relative positioning
-        int[] endAuthorityPosition = new int[5] {  42, -14,   0, 24, 24 }; // Relative positioning
+        int[] trainPosition        = new int[5] {  42, -12, -12, 24, 24 }; // Relative positioning
+        int[] otherTrainPosition   = new int[5] {  42, -24,   0, 24, 24 }; // Relative positioning
+        int[] stationPosition      = new int[5] {  42,   0, -24, 24, 24 }; // Relative positioning
+        int[] reversalPosition     = new int[5] {  42, -21,  -3, 24, 24 }; // Relative positioning
+        int[] endAuthorityPosition = new int[5] {  42, -14, -10, 24, 24 }; // Relative positioning
         int[] signalPosition       = new int[5] { 134, -16,   0, 16, 16 }; // Relative positioning
         int[] arrowPosition        = new int[5] {  22, -12, -12, 24, 24 };
 
@@ -341,7 +341,6 @@ namespace ORTS.Viewer3D.Popups
                 absoluteSpeedMpS < allowedSpeedMpS + 0.0f ? Color.PaleGreen :
                 absoluteSpeedMpS < allowedSpeedMpS + 5.0f ? Color.Orange : Color.Red;
 
-            spriteBatch.Draw(MonitorTexture, new Rectangle(offset.X, offset.Y, TrackMonitorWindow.TrackMonitorWidth, TrackMonitorWindow.TrackMonitorHeight), new Color(Color.Red, 64));
             spriteBatch.Draw(MonitorTexture, new Rectangle(offset.X + trackOffset + trackRail1Offset, offset.Y, trackRailWidth, TrackMonitorWindow.TrackMonitorHeight), trackColor);
             spriteBatch.Draw(MonitorTexture, new Rectangle(offset.X + trackOffset + trackRail2Offset, offset.Y, trackRailWidth, TrackMonitorWindow.TrackMonitorHeight), trackColor);
         }
@@ -356,7 +355,7 @@ namespace ORTS.Viewer3D.Popups
             var endObjectArea = TrackMonitorWindow.TrackMonitorHeight - additionalInfoHeight - trainPosition[4];
             var zeroObjectPointTop = endObjectArea;
             var zeroObjectPointMiddle = zeroObjectPointTop - trainPosition[1];
-            var zeroObjectPointBottom = zeroObjectPointMiddle + trainPosition[2];
+            var zeroObjectPointBottom = zeroObjectPointMiddle - trainPosition[2];
             var distanceFactor = (float)(endObjectArea - startObjectArea) / TrackMonitorWindow.MaximumDistance;
 
             // draw train position line
@@ -409,19 +408,19 @@ namespace ORTS.Viewer3D.Popups
             {
                 zeroObjectPointTop = endObjectArea - trainPosition[4];
                 zeroObjectPointMiddle = zeroObjectPointTop - trainPosition[1];
-                zeroObjectPointBottom = zeroObjectPointMiddle + trainPosition[2];
+                zeroObjectPointBottom = zeroObjectPointMiddle - trainPosition[2];
             }
             else if (validInfo.direction == 1)
             {
                 zeroObjectPointTop = startObjectArea;
                 zeroObjectPointMiddle = zeroObjectPointTop - trainPosition[1];
-                zeroObjectPointBottom = zeroObjectPointMiddle + trainPosition[2];
+                zeroObjectPointBottom = zeroObjectPointMiddle - trainPosition[2];
             }
             else
             {
                 zeroObjectPointMiddle = startObjectArea + (endObjectArea - startObjectArea) / 2;
                 zeroObjectPointTop = zeroObjectPointMiddle + trainPosition[1];
-                zeroObjectPointBottom = zeroObjectPointMiddle + trainPosition[2];
+                zeroObjectPointBottom = zeroObjectPointMiddle - trainPosition[2];
             }
             var distanceFactor = (float)(endObjectArea - startObjectArea - trainPosition[4]) / TrackMonitorWindow.MaximumDistance;
             if (validInfo.direction == -1)
@@ -472,7 +471,7 @@ namespace ORTS.Viewer3D.Popups
             var endObjectArea = TrackMonitorWindow.TrackMonitorHeight - additionalInfoHeight;
             var zeroObjectPointMiddle = startObjectArea + (endObjectArea - startObjectArea) / 2;
             var zeroObjectPointTop = zeroObjectPointMiddle + trainPosition[1];
-            var zeroObjectPointBottom = zeroObjectPointMiddle + trainPosition[2];
+            var zeroObjectPointBottom = zeroObjectPointMiddle - trainPosition[2];
             var distanceFactor = (float)(zeroObjectPointTop - startObjectArea) / TrackMonitorWindow.MaximumDistance;
 
             // draw lines through own train
