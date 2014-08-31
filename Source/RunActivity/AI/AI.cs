@@ -60,6 +60,15 @@ namespace ORTS
         public AI(Simulator simulator, double activityStartTime)
         {
             Simulator = simulator;
+#if WITH_PATH_DEBUG
+
+            if (File.Exists(@"C:\temp\checkpath.txt"))
+            {
+                File.Delete(@"C:\temp\checkpath.txt");
+            }
+
+
+#endif
             if (simulator.Activity != null && simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition != null)
             {
                 foreach (var sd in simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition.ServiceDefinitionList)
@@ -456,7 +465,9 @@ namespace ORTS
 
             // Patch placingproblem JeroenP (1 line)
             train.RearTDBTraveller = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, aiPath); // create traveller
-
+#if WITH_PATH_DEBUG
+            File.AppendAllText(@"C:\temp\checkpath.txt", "-----  New AI Train  -----\n");
+#endif
             train.CreateRoute(false);  // create route without use of FrontTDBtraveller
             train.CheckFreight(); // check if train is freight or passenger
             train.AITrainDirectionForward = true;

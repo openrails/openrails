@@ -12981,7 +12981,9 @@ namespace ORTS
                 activeSubpath = 0;
                 activeAltpath = -1;
                 float offset = 0;
-
+#if WITH_PATH_DEBUG
+                File.AppendAllText(@"C:\temp\checkpath.txt", "TCRoutePath: Train " + trainNumber + ", Length " + thisTrainLength + "\n");
+#endif
                 //
                 // collect all TC Elements
                 //
@@ -13241,6 +13243,9 @@ namespace ORTS
                             reversalOffset.Add(offset);
                             reversalIndex.Add(sublist);
                             reversal++;
+#if WITH_PATH_DEBUG
+                            File.AppendAllText(@"C:\temp\checkpath.txt", "\tReverse at: " + offset + ", node idx " + sectionIndex + ", direction " + currentDir + "\n");
+#endif
                         }
                         else if (nextPathNode.Type == AIPathNodeType.Stop)
                         {
@@ -13270,6 +13275,9 @@ namespace ORTS
                             waitingPoint[4] = -1; // hold signal set later
                             waitingPoint[5] = (int)offset;
                             WaitingPoints.Add(waitingPoint);
+#if WITH_PATH_DEBUG
+                            File.AppendAllText(@"C:\temp\checkpath.txt", "\tWP at: " + offset + ", node idx " + waitingPoint[1] + ", direction " + currentDir + "\n");
+#endif
 #if !NEW_ACTION
                             breakpoint = true;
 #endif
@@ -13830,6 +13838,9 @@ namespace ORTS
                 Traveller TDBTrav = new Traveller(aiPath.TSectionDat, aiPath.TrackDB.TrackNodes, WPNode,
                     firstSection.TileX, firstSection.TileZ,
                     firstSection.X, firstSection.Z, (Traveller.TravellerDirection)NodeDir);
+#if WITH_PATH_DEBUG
+                File.AppendAllText(@"C:\temp\checkpath.txt", "\t\tWPNode: " + idxSectionWP + ", section idx " + firstSection + ", direction " + direction + "\n");
+#endif
                 if (TDBTrav.Direction == Traveller.TravellerDirection.Backward)
                 {
                     NodeDir = 1 - direction;
@@ -13846,17 +13857,22 @@ namespace ORTS
                         int TCSectionIndex = WPNode.TCCrossReference[idx].Index;
                         if (TCSectionIndex == idxSectionWP)
                         {
-                            if (offset > WPNode.TCCrossReference[idx].OffsetLength[NodeDir])
-                                Trace.TraceInformation("no reverse");
                             float sectionOffset = offset - WPNode.TCCrossReference[idx].OffsetLength[NodeDir];
                             offset = WPNode.TCCrossReference[idx].Length - sectionOffset;
+#if WITH_PATH_DEBUG
+                            File.AppendAllText(@"C:\temp\checkpath.txt", "\t\tfound section at  " + idx + " (" + TCSectionIndex + ","
+                                + WPNode.TCCrossReference[idx].Length + ") "
+                                + ", with self offset " + WPNode.TCCrossReference[idx].OffsetLength[NodeDir] + " for direction " + NodeDir 
+                                + ", and other offset " + WPNode.TCCrossReference[idx].OffsetLength[1-NodeDir] 
+                                + ", retiurned offset " + offset + "\n");
+#endif
                             break;
                         }
                     }
                 }
                 else
                 {
-                    Trace.TraceInformation("no reverse");
+                    //Trace.TraceInformation("no reverse");
                     offset = TDBTrav.DistanceTo(WPNode,
                         pathNode.Location.TileX, pathNode.Location.TileZ,
                         pathNode.Location.Location.X,
@@ -13868,6 +13884,13 @@ namespace ORTS
                         if (TCSectionIndex == idxSectionWP)
                         {
                             offset = offset - WPNode.TCCrossReference[idx].OffsetLength[NodeDir];
+#if WITH_PATH_DEBUG
+                            File.AppendAllText(@"C:\temp\checkpath.txt", "\t\tfound section at  " + idx + " (" + TCSectionIndex + ","
+                                + WPNode.TCCrossReference[idx].Length + ") "
+                                + ", with self offset " + WPNode.TCCrossReference[idx].OffsetLength[NodeDir] + " for direction " + NodeDir
+                                + ", and other offset " + WPNode.TCCrossReference[idx].OffsetLength[1 - NodeDir]
+                                + ", retiurned offset " + offset + "\n");
+#endif
                             break;
                         }
                    }

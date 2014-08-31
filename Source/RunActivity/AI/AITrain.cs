@@ -842,7 +842,7 @@ namespace ORTS
                     case AI_MOVEMENT_STATE.STOPPED_EXISTING:
                         UpdateStoppedState();
                         break;
-                        default:
+                    default:
 #if NEW_ACTION
                         if(nextActionInfo != null && nextActionInfo.GetType().IsSubclassOf(typeof(AuxActionItem)))
                         {
@@ -1591,7 +1591,7 @@ namespace ORTS
 
         internal AITrain.AI_MOVEMENT_STATE UpdateStoppedState()      //  SPA:    Change private to internal, used by new AIActionItems
         {
-
+            var AuxActionnextActionInfo = nextActionInfo;
             if (SpeedMpS > 0)   // if train still running force it to stop
             {
                 SpeedMpS = 0;
@@ -1856,6 +1856,10 @@ namespace ORTS
                                 FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + ")\n");
                     }
                 }
+            }
+            if (AuxActionnextActionInfo != null && MovementState == AI_MOVEMENT_STATE.STOPPED)   // && ControlMode == TRAIN_CONTROL.AUTO_NODE)
+            {
+                MovementState = AI_MOVEMENT_STATE.BRAKING;
             }
             return MovementState;
         }
@@ -2544,8 +2548,15 @@ namespace ORTS
 #if NEW_ACTION
                 else if(nextActionInfo.GetType().IsSubclassOf(typeof(AuxActionItem)))
                 {
-                    NextStopDistanceM = distanceToGoM;
-                    MovementState = nextActionInfo.ProcessAction(this, presentTime, elapsedClockSeconds, MovementState);
+                    if (distanceToGoM < -1f)
+                    {
+                        nextActionInfo = null;
+                    }
+                    else
+                    {
+                        NextStopDistanceM = distanceToGoM;
+                        MovementState = nextActionInfo.ProcessAction(this, presentTime, elapsedClockSeconds, MovementState);
+                    }
                 }
 #endif
                 // check speed reduction position reached

@@ -124,6 +124,11 @@ namespace ORTS
         public AIActionWPRef(AITrain thisTrain, float distance, float requiredSpeedMpS, int subrouteIdx, int routeIdx, int sectionIdx, int dir)
             : base(thisTrain, distance, requiredSpeedMpS, subrouteIdx, routeIdx, sectionIdx, dir)
         {
+#if WITH_PATH_DEBUG
+            File.AppendAllText(@"C:\temp\checkpath.txt", "New AIAuxActionRef (WP) for train " + thisTrain.Number +
+                " Required Distance " + distance + ", speed " + requiredSpeedMpS + ", and dir " + dir + "\n");
+            File.AppendAllText(@"C:\temp\checkpath.txt", "\t\tSection id: " + subrouteIdx + "." + routeIdx + "." + sectionIdx + "\n"); 
+#endif
             NextAction = AI_AUX_ACTION.WAITING_POINT;
             if (thisTrain.Simulator.Settings.AuxActionEnabled)
             {
@@ -140,6 +145,10 @@ namespace ORTS
             AuxActionWPItem info = new AuxActionWPItem(distance, speed, activateDistance, insertedDistance,
                             this, AIActionItem.AI_ACTION_TYPE.AUX_ACTION);
             info.SetDelay(Delay);
+#if WITH_PATH_DEBUG
+            File.AppendAllText(@"C:\temp\checkpath.txt", "New action item, type WP with distance " + distance + ", speed " + speed + ", activate distance  " + activateDistance +
+                " and inserted distance " + insertedDistance + " (delay " + Delay + ")\n");
+#endif
             return (AIActionItem)info;
         }
 
@@ -151,6 +160,9 @@ namespace ORTS
 
         public void SetDelay(int delay)
         {
+#if WITH_PATH_DEBUG
+            File.AppendAllText(@"C:\temp\checkpath.txt", "\tDelay set to: " + delay + "\n");
+#endif
             Delay = delay;
         }
 
@@ -378,6 +390,10 @@ namespace ORTS
         {
             int correctedTime = presentTime;
             ActualDepart = correctedTime + Delay;
+#if WITH_PATH_DEBUG
+            File.AppendAllText(@"C:\temp\checkpath.txt", "WP, init action for train " + thisTrain.Number + " at " + correctedTime + " to " + ActualDepart + "(HANDLE_ACTION)\n");
+#endif
+
             return AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION;
         }
 
@@ -393,6 +409,9 @@ namespace ORTS
             }
             else
             {
+#if WITH_PATH_DEBUG
+                File.AppendAllText(@"C:\temp\checkpath.txt", "WP, End Handle action for train " + thisTrain.Number + " at " + presentTime + "(END_ACTION)\n");
+#endif
                 movementState = AITrain.AI_MOVEMENT_STATE.END_ACTION;
             }
             return movementState;
@@ -413,8 +432,11 @@ namespace ORTS
             }
             else
             {
-                thisTrain.AuxActions.RemoveAt(0);
-                thisTrain.ResetActions(true);
+                //thisTrain.AuxActions.RemoveAt(0);
+                //thisTrain.ResetActions(true);
+#if WITH_PATH_DEBUG
+                File.AppendAllText(@"C:\temp\checkpath.txt", "WP, Action ended for train " + thisTrain.Number + " at " + presentTime + "(STOPPED)\n");
+#endif
             }
             return AITrain.AI_MOVEMENT_STATE.STOPPED;
         }
@@ -456,7 +478,20 @@ namespace ORTS
 
                     break;
                 case AITrain.AI_MOVEMENT_STATE.STOPPED:
-                    movementState = thisTrain.UpdateStoppedState();
+                    if (thisTrain.AuxActions.Count > 0)
+                        thisTrain.AuxActions.RemoveAt(0);
+#if WITH_PATH_DEBUG
+                    else
+                    {
+                        File.AppendAllText(@"C:\temp\checkpath.txt", "AITRain " + thisTrain.Number + "!  No more AuxActions...\n");
+                    }
+#endif
+                    //movementState = thisTrain.UpdateStoppedState();   // Don't call UpdateStoppedState(), WP can't touch Signal
+                    movementState = AITrain.AI_MOVEMENT_STATE.BRAKING;
+                    thisTrain.ResetActions(true);
+#if WITH_PATH_DEBUG
+                    File.AppendAllText(@"C:\temp\checkpath.txt", "AITRain " + thisTrain.Number + " is " + movementState.ToString() + " at " + presentTime + "\n");
+#endif
                     break;
                 default:
                     break; 
