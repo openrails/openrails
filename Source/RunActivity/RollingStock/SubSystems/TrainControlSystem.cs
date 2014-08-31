@@ -420,7 +420,7 @@ namespace ORTS
                 PostDistances.Clear();
 
                 IsAlerterEnabled = Simulator.Settings.Alerter
-                    & !(Simulator.Settings.AlerterDisableExternal & Simulator.Confirmer.Viewer.Camera.Style != ORTS.Viewer3D.Camera.Styles.Cab);
+                    & !(Simulator.Settings.AlerterDisableExternal & Simulator.Confirmer.Viewer.Camera.Style != Viewer3D.Camera.Styles.Cab & Simulator.Confirmer.Viewer.Camera.Style != Viewer3D.Camera.Styles.ThreeDimCab);
 
                 Script.Update();
             }

@@ -16364,9 +16364,6 @@ namespace ORTS
             {
                 List<DistanceTravelledItem> itemsToRemove = new List<DistanceTravelledItem>();
 
-                if (removeAll)
-                    Trace.TraceInformation("No Actions");
-
                 foreach (var thisAction in this)
                 {
 #if NEW_ACTION

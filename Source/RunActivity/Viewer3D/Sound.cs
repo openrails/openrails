@@ -617,7 +617,7 @@ namespace ORTS.Viewer3D
         {
             get
             {
-                return (Viewer.Camera.Style == Camera.Styles.Cab || Viewer.Camera.Style == Camera.Styles.Passenger) && (Viewer.Camera.AttachedCar != Car);
+                return (Viewer.Camera.Style == Camera.Styles.Cab || Viewer.Camera.Style == Camera.Styles.ThreeDimCab || Viewer.Camera.Style == Camera.Styles.Passenger) && (Viewer.Camera.AttachedCar != Car);
             }
         }
 
@@ -634,7 +634,7 @@ namespace ORTS.Viewer3D
         {
             get
             {
-                return (!IsEnvSound && !IsExternal && Viewer.Camera.Style == Camera.Styles.Cab
+                return (!IsEnvSound && !IsExternal && (Viewer.Camera.Style == Camera.Styles.Cab || Viewer.Camera.Style == Camera.Styles.ThreeDimCab)
                     && Car != null && Viewer.Camera.AttachedCar != null && !(Car is MSTSLocomotive) 
                     && (Car.Train == Viewer.Camera.AttachedCar.Train || Car.Train.TrainType == Train.TRAINTYPE.STATIC || Car.Train.TrainType == Train.TRAINTYPE.AI_NOTSTARTED));
             }
