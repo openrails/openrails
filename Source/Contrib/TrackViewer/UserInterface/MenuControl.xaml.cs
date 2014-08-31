@@ -114,6 +114,7 @@ namespace ORTS.TrackViewer.UserInterface
             menuShowSidingNames.IsChecked = Properties.Settings.Default.showSidingNames;
             menuShowPlatformMarkers.IsChecked = Properties.Settings.Default.showPlatformMarkers;
             menuShowPlatformNames.IsChecked = Properties.Settings.Default.showPlatformNames;
+            menuShowStationNames.IsChecked = Properties.Settings.Default.showStationNames;
             menuShowCrossings.IsChecked = Properties.Settings.Default.showCrossings;
             menuShowSpeedLimits.IsChecked = Properties.Settings.Default.showSpeedLimits;
             menuShowMileposts.IsChecked = Properties.Settings.Default.showMileposts;
@@ -158,6 +159,10 @@ namespace ORTS.TrackViewer.UserInterface
             {   // if signals are not shown, then also all signals cannot be shown.
                 menuShowAllSignals.IsChecked = false;
             }
+            if (menuShowStationNames.IsChecked)
+            {
+                menuShowPlatformNames.IsChecked = false;
+            }
 
             Properties.Settings.Default.showInset = menuShowInset.IsChecked;
             Properties.Settings.Default.showWorldTiles = menuShowWorldTiles.IsChecked;
@@ -173,6 +178,7 @@ namespace ORTS.TrackViewer.UserInterface
             Properties.Settings.Default.showSidingNames = menuShowSidingNames.IsChecked;
             Properties.Settings.Default.showPlatformMarkers = menuShowPlatformMarkers.IsChecked;
             Properties.Settings.Default.showPlatformNames = menuShowPlatformNames.IsChecked;
+            Properties.Settings.Default.showStationNames = menuShowStationNames.IsChecked;
             Properties.Settings.Default.showCrossings = menuShowCrossings.IsChecked;
             Properties.Settings.Default.showSpeedLimits = menuShowSpeedLimits.IsChecked;
             Properties.Settings.Default.showMileposts = menuShowMileposts.IsChecked;
@@ -222,7 +228,8 @@ namespace ORTS.TrackViewer.UserInterface
             menuShowSidingMarkers.IsChecked = isChecked;
             menuShowSidingNames.IsChecked = isChecked;
             menuShowPlatformMarkers.IsChecked = isChecked;
-            menuShowPlatformNames.IsChecked = isChecked;
+            menuShowPlatformNames.IsChecked = false; // stationNames get preference
+            menuShowStationNames.IsChecked = isChecked;
             menuShowCrossings.IsChecked = isChecked;
             menuShowSpeedLimits.IsChecked = isChecked;
             menuShowMileposts.IsChecked = isChecked;
@@ -327,21 +334,31 @@ namespace ORTS.TrackViewer.UserInterface
         /// </summary>
         public void PopulatePaths()
         {
-            menuSelectPath.Items.Clear();
             if (trackViewer.Paths == null) return;
+            List<string> paths = new List<string>();
             foreach (ORTS.Menu.Path path in trackViewer.Paths)
             {
-                MenuItem menuItem = new MenuItem();
-                menuItem.Header = makeHeader(path);
-                menuItem.IsCheckable = false;
-                menuItem.IsChecked = false;
-                menuItem.Click += new RoutedEventHandler(menuSelectPath_Click);
-
-                menuSelectPath.Items.Add(menuItem);
+                paths.Add(makeHeader(path));
             }
-            menuSelectPath.UpdateLayout();
+            paths.Insert(0, "<Select path>");
+            menuSelectPathCombobox.ItemsSource = paths;
+            menuSelectPathCombobox.SelectedItem = menuSelectPathCombobox.Items.GetItemAt(0).ToString();
         }
 
+        /// <summary>
+        /// Update the menu to make sure all the stations are listed
+        /// </summary>
+        public void PopulateStations()
+        {
+            
+            if (trackViewer.DrawTrackDB == null) return;
+            if (trackViewer.DrawTrackDB.StationLocations == null) return;
+            List<string> stations = trackViewer.DrawTrackDB.StationLocations.Keys.OrderBy(a => a.ToString()).ToList();
+            stations.Insert(0, "<Select station>");
+            menuStationCombobox.ItemsSource = stations;
+            menuStationCombobox.SelectedItem = menuStationCombobox.Items.GetItemAt(0).ToString();
+        }
+        
         /// <summary>
         /// Update the menu to make sure all the platforms are listed
         /// </summary>
@@ -368,6 +385,16 @@ namespace ORTS.TrackViewer.UserInterface
             menuSidingCombobox.SelectedItem = menuSidingCombobox.Items.GetItemAt(0).ToString();
         }
 
+        private void menuStationCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string stationName = menuStationCombobox.SelectedItem as string;
+            if (stationName == null) return;
+            if (trackViewer.DrawTrackDB.StationLocations.ContainsKey(stationName))
+            {
+                trackViewer.DrawArea.ShiftToLocation(trackViewer.DrawTrackDB.StationLocations[stationName]);
+            }
+        }
+
         private void menuPlatformCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             string platformName = menuPlatformCombobox.SelectedItem as string;
@@ -392,6 +419,10 @@ namespace ORTS.TrackViewer.UserInterface
         private void MenuItemCenterClosed(object sender, RoutedEventArgs e)
         {
             // If we close, we select the first item (which is only a header)
+            if (menuStationCombobox.Items.Count > 0)
+            {
+                menuStationCombobox.SelectedItem = menuStationCombobox.Items.GetItemAt(0).ToString();
+            } 
             if (menuPlatformCombobox.Items.Count > 0)
             {
                 menuPlatformCombobox.SelectedItem = menuPlatformCombobox.Items.GetItemAt(0).ToString();
@@ -400,6 +431,7 @@ namespace ORTS.TrackViewer.UserInterface
             {
                 menuSidingCombobox.SelectedItem = menuSidingCombobox.Items.GetItemAt(0).ToString();
             }
+            menuNeedingMouseClosed(sender, e);
         }
 
         /// <summary>
@@ -424,6 +456,31 @@ namespace ORTS.TrackViewer.UserInterface
                 }
             }
         }
+
+        /// <summary>
+        /// The user has selected a path. Find out which one and load it
+        /// </summary>
+        private void menuSelectPathCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string selectedPath = menuSelectPathCombobox.SelectedItem as string;
+            if (selectedPath == null) return;
+            foreach (ORTS.Menu.Path path in trackViewer.Paths)
+            {
+                if (makeHeader(path) == selectedPath)
+                {
+                    menuPathEditor.IsSubmenuOpen = false;
+                    trackViewer.SetPath(path);
+                    trackViewer.PathEditor.EditingIsActive = menuEnableEditing.IsChecked;
+                    if (!menuShowPATfile.IsChecked)
+                    {   // make sure path is visible either raw or (preferably) processed.
+                        menuShowTrainpath.IsChecked = true;
+                    }
+                    UpdateMenuSettings();
+                    return;
+                }
+            }
+        }
+
 
         /// <summary>
         /// Convert a path (based on a .pat file) to a header for the menu
@@ -518,11 +575,25 @@ namespace ORTS.TrackViewer.UserInterface
         }
 
         /// <summary>
-        /// Toggle whether the platform names are shown
+        /// Circulate from station names, to platform names to neither
         /// </summary>
-        public void MenuToggleShowPlatformNames()
+        public void MenuCirculatePlatformStationNames()
         {
-            menuShowPlatformNames.IsChecked = !menuShowPlatformNames.IsChecked;
+            if (menuShowStationNames.IsChecked)
+            {
+                menuShowStationNames.IsChecked = false;
+                menuShowPlatformNames.IsChecked = true;
+            }
+            else if (menuShowPlatformNames.IsChecked)
+            {
+                menuShowStationNames.IsChecked = false;
+                menuShowPlatformNames.IsChecked = false;
+            }
+            else
+            {
+                menuShowStationNames.IsChecked = true;
+                menuShowPlatformNames.IsChecked = false;
+            }
             UpdateMenuSettings();
         }
 
@@ -621,7 +692,6 @@ namespace ORTS.TrackViewer.UserInterface
             TrackViewer.Localize(searchControl);
             searchControl.ShowDialog();
         }
-
 
 
         /// <summary>
@@ -771,6 +841,17 @@ namespace ORTS.TrackViewer.UserInterface
             /// <summary>The name for a preference that can be used as programming index</summary>
             public string Name;
         }
+
+        private void menuNeedingMouseOpened(object sender, RoutedEventArgs e)
+        {
+            trackViewer.MenuHasMouse = true;
+        }
+
+        private void menuNeedingMouseClosed(object sender, RoutedEventArgs e)
+        {
+            trackViewer.MenuHasMouse = false;
+        }
+
     }
 
     #region IPreferenceChanger

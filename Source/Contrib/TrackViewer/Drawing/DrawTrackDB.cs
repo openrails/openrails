@@ -59,6 +59,8 @@ namespace ORTS.TrackViewer.Drawing
         public Dictionary<string, WorldLocation> SidingLocations { get; private set; }
         /// <summary>(approximate) world location of the platforms indexed by platform name</summary>
         public Dictionary<string, WorldLocation> PlatformLocations { get; private set; }
+        /// <summary>(approximate) world location of the stations indexed by station name</summary>
+        public Dictionary<string, WorldLocation> StationLocations { get; private set; }
 
 
         /// <summary>Name of the route</summary>
@@ -288,6 +290,7 @@ namespace ORTS.TrackViewer.Drawing
         {
             SidingLocations = new Dictionary<string, WorldLocation>();
             PlatformLocations = new Dictionary<string, WorldLocation>();
+            StationLocations = new Dictionary<string, WorldLocation>();
 
             foreach (TrItem trackItem in TrackDB.TrItemTable)
             {
@@ -295,9 +298,12 @@ namespace ORTS.TrackViewer.Drawing
                 {
                     SidingLocations[trackItem.ItemName] = new WorldLocation(trackItem.TileX, trackItem.TileZ, trackItem.X, trackItem.Y, trackItem.Z);
                 }
-                if (trackItem is PlatformItem)
+
+                PlatformItem platform = trackItem as PlatformItem;
+                if (platform != null)
                 {
-                    PlatformLocations[trackItem.ItemName] = new WorldLocation(trackItem.TileX, trackItem.TileZ, trackItem.X, trackItem.Y, trackItem.Z);
+                    PlatformLocations[platform.ItemName] = new WorldLocation(trackItem.TileX, trackItem.TileZ, trackItem.X, trackItem.Y, trackItem.Z);
+                    StationLocations[platform.Station] = PlatformLocations[platform.ItemName];
                 }     
             }
         }

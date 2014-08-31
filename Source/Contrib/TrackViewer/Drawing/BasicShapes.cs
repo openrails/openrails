@@ -294,6 +294,33 @@ namespace ORTS.TrackViewer.Drawing
             return texture;
         }
 
+        static private List<string> oldAceFiles;
+        public static void LoadAceFiles(GraphicsDevice graphicsDevice, string directory, IEnumerable<string> filenames)
+        {
+            //first remove content of old textures
+            if (oldAceFiles != null)
+            {
+                foreach (string textureName in oldAceFiles)
+                {
+                    textures.Remove(textureName);
+                }
+            }
+
+            foreach (string filename in filenames)
+            {
+                string textureName = filename;
+                string path = directory + filename;
+                oldAceFiles = new List<string>();
+                if (System.IO.File.Exists(path))
+                {
+                    Texture2D texture = MSTS.Formats.ACEFile.Texture2DFromFile(graphicsDevice, path);
+                    textures[textureName] = texture;
+                    textureScales[textureName] = textures[textureName].Width;
+                    textureOffsets[textureName] = Vector2.Zero;
+                    oldAceFiles.Add(textureName);
+                }
+            }
+        }
 
         /// <summary>
         /// Basic method to draw a line. Coordinates are in screen coordinates.

@@ -14,11 +14,11 @@
                             <ColumnDefinition Width="58" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="35" />
+                            <ColumnDefinition Width="42" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="80" />
-                            <ColumnDefinition Width="35" />
+                            <ColumnDefinition Width="42" />
                             <ColumnDefinition Width="60" />
                             <ColumnDefinition Width="60" />
                             <ColumnDefinition Width="Auto" />
@@ -56,7 +56,7 @@
             <StatusBarItem Grid.Column="6">
                 <Border BorderThickness="1 1 0 0" BorderBrush="Gray">
                     <Border BorderThickness="0 0 1 1" BorderBrush="AntiqueWhite">
-                        <TextBlock Name="statusTrIndex" Width="30" TextAlignment="Right" 
+                        <TextBlock Name="statusTrIndex" Width="37" TextAlignment="Right" 
                                    ToolTip="Index in the Track DataBase (.tdb) file"/>
                     </Border>
                 </Border>
@@ -75,7 +75,8 @@
             <StatusBarItem Grid.Column="10">
                 <Border BorderThickness="1 1 0 0" BorderBrush="Gray">
                     <Border BorderThickness="0 0 1 1" BorderBrush="AntiqueWhite">
-                        <TextBlock Name="statusTrItemIndex" Width="30" TextAlignment="Right"/>
+                        <TextBlock Name="statusTrItemIndex" Width="37" TextAlignment="Right" 
+                                   ToolTip="Index in the Track DataBase (.tdb) file"/>
                     </Border>
                 </Border>
             </StatusBarItem>

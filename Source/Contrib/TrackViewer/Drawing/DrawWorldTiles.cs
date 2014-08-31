@@ -25,6 +25,13 @@ using ORTS.Common;
 namespace ORTS.TrackViewer.Drawing
 {
     /// <summary>
+    /// Delegate function to be called for a tile.
+    /// </summary>
+    /// <param name="TileX">X-value of the tile number</param>
+    /// <param name="TileZ">Z-value of the tile number</param>
+    public delegate void TileDelegate(int TileX, int TileZ);
+
+    /// <summary>
     /// Class to draw the world tiles that are present in the route's definition. Tiles themselves are only squares.
     /// The tiles that are present will be determined from the file names in the 'world' subdirectory of the route
     /// </summary>
@@ -104,6 +111,27 @@ namespace ORTS.TrackViewer.Drawing
                     WorldLocation bot = new WorldLocation(TileX, TileZstart, 0, 0, -1024);
                     WorldLocation top = new WorldLocation(TileX, TileZstop, 0, 0, 1024);
                     drawArea.DrawLineAlways(2048, DrawColors.colorsNormal.Tile, bot, top);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Run over all available tiles that are a available, and for each tile call a delegate.
+        /// Note that the available tiles are not in a rectangular grid at all, and might even contain holes.
+        /// </summary>
+        /// <param name="tileDelegate">The function to call for each tile</param>
+        public void DoForAllTiles(TileDelegate tileDelegate)
+        {
+            foreach (int TileX in worldTileRanges.Keys)
+            {
+                for (int i = 0; i < worldTileRanges[TileX].Count; i += 2)
+                {
+                    int TileZstart = worldTileRanges[TileX][i];
+                    int TileZstop = worldTileRanges[TileX][i + 1];
+                    for (int TileZ = TileZstart; TileZ <= TileZstop; TileZ++)
+                    {
+                        tileDelegate(TileX, TileZ);
+                    }
                 }
             }
         }

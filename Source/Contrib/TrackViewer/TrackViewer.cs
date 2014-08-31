@@ -21,9 +21,9 @@
 // Issues
 //      moving around with cursor buttons
 //      Loop is not done OK. Possibly there is not even a right way given the limitations of MSTS format.
-//      is there an issue when start passing path is used?
 //
 // Additions
+//      Path editor: allow dragging junction nodes with the mouse.
 //
 // Ideas from others
 //      Draw ground textures from .ace files.
@@ -119,8 +119,8 @@ namespace ORTS.TrackViewer
     public class TrackViewer : Microsoft.Xna.Framework.Game
     {
         #region Public members
-        /// <summary>String showing the version of the program</summary>
-        public readonly static string TrackViewerVersion = "2014/06/07";
+        /// <summary>String showing the date of the program</summary>
+        public readonly static string TrackViewerVersion = "2014/08/31";
         /// <summary>Path where the content (like .png files) is stored</summary>
         public string ContentPath { get; private set; }
         /// <summary>Folder where MSTS is installed (or at least, where the files needed for tracks, routes and paths are stored)</summary>
@@ -149,6 +149,9 @@ namespace ORTS.TrackViewer
         /// <summary>The routines to draw the .pat file</summary>
         public DrawPATfile DrawPATfile { get; private set; }
 
+        /// <summary>This is set when the Menu has mouse control</summary>
+        public bool MenuHasMouse { get; set; }
+
         #endregion
         #region Private members
         GraphicsDeviceManager graphics;
@@ -164,6 +167,8 @@ namespace ORTS.TrackViewer
         DrawTrains drawTrains;
         /// <summary>The routines to draw the world tiles</summary>
         DrawWorldTiles drawWorldTiles;
+        // /// <summary>The routines to draw the terrain textures</summary>
+        //DrawTerrain drawTerrain;
 
         /// <summary>The menu at the top</summary>
         MenuControl menuControl;
@@ -305,6 +310,7 @@ namespace ORTS.TrackViewer
             spriteBatch = new SpriteBatch(GraphicsDevice);
             BasicShapes.LoadContent(GraphicsDevice, spriteBatch, ContentPath);
             drawAreaInset.LoadContent(GraphicsDevice, spriteBatch, 2, 2, 2);
+            //drawTerrain.LoadContent(GraphicsDevice); // can only be done when route is known!
         }
 
         /// <summary>
@@ -336,7 +342,8 @@ namespace ORTS.TrackViewer
             if (lostFocus)
             {
                 // if the previous call was in inactive mode, we do want TVUserIut to be updated, but we will only
-                // act on it the next round.
+                // act on it the next round. To make sure moving the mouse to other locations and back is influencing 
+                // the location visible in trackviewer.
                 lostFocus = false;
                 return;
             }
@@ -350,11 +357,11 @@ namespace ORTS.TrackViewer
             // First check all the buttons that can be kept down.
             if (TVUserInput.IsDown(TVUserCommands.ShiftLeft)) { DrawArea.ShiftLeft(); skipDrawAmount = 0; }
             if (TVUserInput.IsDown(TVUserCommands.ShiftRight)) { DrawArea.ShiftRight(); skipDrawAmount = 0; }
-            if (TVUserInput.IsDown(TVUserCommands.ShiftUp)) {DrawArea.ShiftUp(); skipDrawAmount=0;}
+            if (TVUserInput.IsDown(TVUserCommands.ShiftUp)) { DrawArea.ShiftUp(); skipDrawAmount = 0; }
             if (TVUserInput.IsDown(TVUserCommands.ShiftDown)) { DrawArea.ShiftDown(); skipDrawAmount = 0; }
 
             if (TVUserInput.IsDown(TVUserCommands.ZoomIn)) { DrawArea.Zoom(-1); skipDrawAmount = 0; }
-            if (TVUserInput.IsDown(TVUserCommands.ZoomOut)) {DrawArea.Zoom(1); skipDrawAmount = 0;}
+            if (TVUserInput.IsDown(TVUserCommands.ZoomOut)) { DrawArea.Zoom(1); skipDrawAmount = 0; }
 
             if (TVUserInput.Changed)
             {
@@ -426,7 +433,7 @@ namespace ORTS.TrackViewer
                 }
             }
 
-            if (!TVUserInput.IsDown(TVUserCommands.EditorTakesMouseClick))
+            if (!TVUserInput.IsDown(TVUserCommands.EditorTakesMouseClick) && !this.MenuHasMouse)
             {
                 if (TVUserInput.IsMouseMoved() && TVUserInput.IsMouseLeftButtonDown())
                 {
@@ -458,7 +465,7 @@ namespace ORTS.TrackViewer
             if (TVUserInput.IsPressed(TVUserCommands.ToggleShowSidings)) menuControl.MenuToggleShowSidings();
             if (TVUserInput.IsPressed(TVUserCommands.ToggleShowSidingNames)) menuControl.MenuToggleShowSidingNames();
             if (TVUserInput.IsPressed(TVUserCommands.ToggleShowPlatforms)) menuControl.MenuToggleShowPlatforms();
-            if (TVUserInput.IsPressed(TVUserCommands.ToggleShowPlatformNames)) menuControl.MenuToggleShowPlatformNames();
+            if (TVUserInput.IsPressed(TVUserCommands.ToggleShowPlatformNames)) menuControl.MenuCirculatePlatformStationNames();
             if (TVUserInput.IsPressed(TVUserCommands.ToggleShowSpeedLimits)) menuControl.MenuToggleShowSpeedLimits();
             if (TVUserInput.IsPressed(TVUserCommands.ToggleShowMilePosts)) menuControl.MenuToggleShowMilePosts();
             if (TVUserInput.IsPressed(TVUserCommands.ToggleShowTrainpath)) menuControl.MenuToggleShowTrainpath();
@@ -679,10 +686,11 @@ namespace ORTS.TrackViewer
             if (!CanDiscardModifiedPath()) return;
 
             DrawLoadingMessage(catalog.GetString("Loading route..."));
+            MessageDelegate messageHandler = new MessageDelegate(DrawLoadingMessage);
 
             try
             {
-                MessageDelegate messageHandler = new MessageDelegate(DrawLoadingMessage);
+                
                 DrawTrackDB = new DrawTrackDB(newRoute.Path, messageHandler);
                 CurrentRoute = newRoute;
 
@@ -701,6 +709,8 @@ namespace ORTS.TrackViewer
                 MessageBox.Show(catalog.GetString("Route cannot be loaded. Sorry"));
             }
 
+
+
             if (CurrentRoute == null) return;
 
             PathEditor = null;
@@ -713,10 +723,13 @@ namespace ORTS.TrackViewer
             try
             {
                 drawWorldTiles.SetRoute(CurrentRoute.Path);
+                //drawTerrain = new DrawTerrain(CurrentRoute.Path, messageHandler, drawWorldTiles);
+                //drawTerrain.LoadContent(GraphicsDevice);
             }
             catch { }
 
             menuControl.PopulatePlatforms();
+            menuControl.PopulateStations();
             menuControl.PopulateSidings();
         }
 

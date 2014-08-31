@@ -294,6 +294,7 @@ namespace ORTS.TrackViewer.Drawing
     class DrawablePlatformItem : DrawableTrackItem
     {
         private string itemName;
+        private string stationName;
 
         /// <summary>
         /// Default constructor
@@ -303,7 +304,9 @@ namespace ORTS.TrackViewer.Drawing
             : base(originalTrItem)
         {
             Description = "platform";
-            this.itemName = (originalTrItem as PlatformItem).ItemName;
+            PlatformItem platform = originalTrItem as PlatformItem;
+            this.itemName = platform.ItemName;
+            this.stationName = platform.Station;
         }
 
         /// <summary>
@@ -323,11 +326,18 @@ namespace ORTS.TrackViewer.Drawing
                 drawArea.DrawTexture(this.WorldLocation, "platform" + colors.nameExtension, size, minPixelSize);
                 returnValue = true;
             }
-            if (Properties.Settings.Default.showPlatformNames || drawAlways)
+            if (Properties.Settings.Default.showPlatformNames)
             {
                 drawArea.DrawExpandingString(this.WorldLocation, this.itemName);
                 returnValue = true;
             }
+            if (Properties.Settings.Default.showStationNames || 
+                (drawAlways && !Properties.Settings.Default.showPlatformNames) )
+            {   // if drawAlways and no station nor platform name requested, then also show station
+                drawArea.DrawExpandingString(this.WorldLocation, this.stationName);
+                returnValue = true;
+            }
+            
             return returnValue;
         }
     }

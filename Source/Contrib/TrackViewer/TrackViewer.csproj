@@ -74,6 +74,7 @@
     <Compile Include="Drawing\DrawArea.cs" />
     <Compile Include="Drawing\DrawColors.cs" />
     <Compile Include="Drawing\DrawScaleRuler.cs" />
+    <Compile Include="Drawing\DrawTerrain.cs" />
     <Compile Include="Drawing\DrawTrackDB.cs" />
     <Compile Include="Drawing\DrawTrains.cs" />
     <Compile Include="Drawing\DrawWorldTiles.cs" />

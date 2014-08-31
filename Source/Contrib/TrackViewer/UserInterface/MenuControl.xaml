@@ -20,10 +20,13 @@
                 <MenuItem Header="Quit (Q)" Name="menuQuit" Click="menuQuit_Click"/>
             </MenuItem>
             <MenuItem Header="View">
-                <MenuItem Header="Center around platform" SubmenuClosed="MenuItemCenterClosed">
+                <MenuItem Header="Center around station" SubmenuClosed="MenuItemCenterClosed" SubmenuOpened="menuNeedingMouseOpened">
+                    <ComboBox Name="menuStationCombobox" SelectionChanged="menuStationCombobox_SelectionChanged"/>
+                </MenuItem>
+                <MenuItem Header="Center around platform" SubmenuClosed="MenuItemCenterClosed" SubmenuOpened="menuNeedingMouseOpened">
                     <ComboBox Name="menuPlatformCombobox" SelectionChanged="menuPlatformCombobox_SelectionChanged"/>
                 </MenuItem>
-                <MenuItem Header="Center around siding">
+                <MenuItem Header="Center around siding" SubmenuClosed="MenuItemCenterClosed" SubmenuOpened="menuNeedingMouseOpened">
                     <ComboBox Name="menuSidingCombobox" SelectionChanged="menuSidingCombobox_SelectionChanged"/>
                 </MenuItem>
                 <Separator/>
@@ -70,6 +73,7 @@
                 <MenuItem Header="Platforms">
                     <MenuItem Header="Show platform markers (F8)" Name="menuShowPlatformMarkers" IsCheckable="True" Click="UpdateMenuSettings"/>
                     <MenuItem Header="Show platform names (shift-F8)" Name="menuShowPlatformNames" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show station names (shift-F8)" Name="menuShowStationNames" IsCheckable="True" Click="UpdateMenuSettings"/>
                 </MenuItem>
                 <MenuItem Header="Interactives">
                     <MenuItem Header="Show signals (F7)" Name="menuShowSignals" IsCheckable="True" Click="UpdateMenuSettings"/>
@@ -101,9 +105,12 @@
                 <MenuItem Header="Zooming is centered on mouse (m)" Name="menuZoomIsCenteredOnMouse" IsCheckable="True" IsChecked="True"
                           Click="UpdateMenuSettings"/>
             </MenuItem>
-            <MenuItem Header="Path-Editor">
+            <MenuItem Header="Path-Editor" Name="menuPathEditor" >
                 <MenuItem Header="==Supporting MSTS paths only==" Foreground="Blue" IsEnabled="False"/>
-                <MenuItem Header="Select path" Name="menuSelectPath"/>
+                <MenuItem Header="Load path" Name="menuSelectPath" 
+                          SubmenuOpened="menuNeedingMouseOpened" SubmenuClosed="menuNeedingMouseClosed">
+                    <ComboBox Name="menuSelectPathCombobox" SelectionChanged="menuSelectPathCombobox_SelectionChanged"/>
+                </MenuItem>
                 <Separator/>
                 <MenuItem Header="Save path" Name="menuSavePath" IsCheckable="False" Click="menuSavePath_Click"/>
                 <MenuItem Header="Enable editing" Name="menuEnableEditing" IsCheckable="True" IsChecked="False" Click="menuEnableEditing_Click"/>

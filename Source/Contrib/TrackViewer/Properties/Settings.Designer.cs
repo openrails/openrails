@@ -537,5 +537,17 @@ namespace ORTS.TrackViewer.Properties {
                 this["preferences"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool showStationNames {
+            get {
+                return ((bool)(this["showStationNames"]));
+            }
+            set {
+                this["showStationNames"] = value;
+            }
+        }
     }
 }
