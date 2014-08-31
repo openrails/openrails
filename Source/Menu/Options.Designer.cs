@@ -1278,6 +1278,7 @@
             // checkBoxAuxAction
             // 
             this.checkBoxAuxAction.AutoSize = true;
+            this.checkBoxAuxAction.Enabled = false;
             this.checkBoxAuxAction.ForeColor = System.Drawing.Color.Black;
             this.checkBoxAuxAction.Location = new System.Drawing.Point(301, 168);
             this.checkBoxAuxAction.Name = "checkBoxAuxAction";

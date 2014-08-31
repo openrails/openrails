@@ -130,13 +130,15 @@ namespace ORTS
             File.AppendAllText(@"C:\temp\checkpath.txt", "\t\tSection id: " + subrouteIdx + "." + routeIdx + "." + sectionIdx + "\n"); 
 #endif
             NextAction = AI_AUX_ACTION.WAITING_POINT;
-            if (thisTrain.Simulator.Settings.AuxActionEnabled)
-            {
-                AIActionHornRef actionHorn = new AIActionHornRef(thisTrain, distance, 99999f, 0, SubrouteIndex, RouteIndex, Direction);
-                actionHorn.SetDelay(2);
-                LinkedAuxAction = actionHorn;
-            }
-            else
+
+            //  SPA :   Code temporary disabled 
+            //if (thisTrain.Simulator.Settings.AuxActionEnabled)
+            //{
+            //    AIActionHornRef actionHorn = new AIActionHornRef(thisTrain, distance, 99999f, 0, SubrouteIndex, RouteIndex, Direction);
+            //    actionHorn.SetDelay(2);
+            //    LinkedAuxAction = actionHorn;
+            //}
+            //else
                 LinkedAuxAction = null;
         }
 
@@ -403,7 +405,7 @@ namespace ORTS
             {
                 movementState = AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION;
             }
-            else if (LinkedAuxActionItem != null)
+            else if (LinkedAuxActionItem != null && thisTrain.Simulator.Settings.AuxActionEnabled)
             {
                 return LinkedAuxActionItem.ProcessAction(thisTrain, presentTime, elapsedClockSeconds, movementState);;
             }
@@ -420,12 +422,12 @@ namespace ORTS
         public override AITrain.AI_MOVEMENT_STATE EndAction(AITrain thisTrain, int presentTime, float elapsedClockSeconds, AITrain.AI_MOVEMENT_STATE movementState)
         {
             AITrain.AI_MOVEMENT_STATE mvtState;
-            if (ActionRef != null && ActionRef.LinkedAuxAction != null && LinkedAuxActionItem == null)
+            if (ActionRef != null && ActionRef.LinkedAuxAction != null && LinkedAuxActionItem == null && thisTrain.Simulator.Settings.AuxActionEnabled)
             {
                 LinkedAuxActionItem = ActionRef.LinkedAuxAction.Handler(ActionRef.RequiredDistance, ActionRef.RequiredSpeedMpS, ActivateDistanceM, InsertedDistanceM);
                 movementState = AITrain.AI_MOVEMENT_STATE.INIT_ACTION;
             }
-            if (LinkedAuxActionItem != null)
+            if (LinkedAuxActionItem != null && thisTrain.Simulator.Settings.AuxActionEnabled)
             {
                 mvtState = LinkedAuxActionItem.ProcessAction(thisTrain, presentTime, elapsedClockSeconds, movementState);
                 return mvtState;
