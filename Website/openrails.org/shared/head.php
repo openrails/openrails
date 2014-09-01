@@ -1,4 +1,9 @@
 <?php 
+// Better to move this section above track_visits.php
+// As it is, someone with cookies disallowed gets new visitor attributes for every page visited, not just on every visit.
+require_once('set_session_save_path.php');  // To avoid error 500 on this system
+ini_set('session.use_only_cookies',0);
+session_start();
 require_once('mysql/track_visits.php');
 
 // To avoid the workaround for IE browsers, which is not valid HTML, send it only when browser is MSIE. See
@@ -8,10 +13,6 @@ require_once('mysql/track_visits.php');
 if (isset($_SERVER['HTTP_USER_AGENT'])
 && (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE') !== false))
   header('X-UA-Compatible: IE=edge,chrome=1');
-	
-require_once('set_session_save_path.php');  // To avoid error 500 on this system
-
-session_start(); 
 ?>
 <!DOCTYPE html>
 <html lang="en">

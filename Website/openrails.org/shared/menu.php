@@ -94,7 +94,7 @@ if (ends_with($cwd, "reporting_bugs")
               </ul>
             </li>
 <?php if (ends_with($cwd, "trade")) { echo "<li class = 'active'>"; }else{ echo "<li>"; } ?>
-                <a href="/trade/">Trade</a></li>
+                <a href="/trade/<?php echo '?', htmlspecialchars(SID); ?>">Trade</a></li>
 <?php if (ends_with($cwd, "contact")) { echo "<li class = 'active'>"; }else{ echo "<li>"; } ?>
                 <a href="/contact/">Contact</a></li>
           </ul>

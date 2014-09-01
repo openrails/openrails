@@ -7,51 +7,47 @@
 <?php include "../../shared/banners/choose_banner.php" ?>
 <?php include "../../shared/banners/show_banner.php" ?>
 <?php include "../../shared/menu.php" ?>
-		<div class="row">
-			<div class="col-md-4">
-			  <h1>Download > Program</h1>
-        <p>&nbsp;</p>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col-md-1"></div>
-			<div class="col-md-4">
-			  <h1>Simple Download <small>(recommended)</small></h1>
-        <br />
-<?php 
-$file = 'setup_OR_pre-v1.0_from_download.exe';
-$exe = 'exe';
+  		<div class="row">
+	  		<div class="col-md-4">
+		  	  <h1>Download > Program</h1>
+          <p>&nbsp;</p>
+  			</div>
+	  	</div>
+		  <div class="row">
+			  <div class="col-md-1"></div>
+  			<div class="col-md-4">
+	  		  <h1>Simple Download <small>(recommended)</small></h1>
+          <br />
+          <!-- Button to trigger modal -->
+          <a href="#modal1" role="button" class='btn download_button btn-lg btn-block' data-toggle="modal">
+            <h2><span class='glyphicon glyphicon-download'></span> &nbsp; Download the installer</h2>
+            <p>
+              This installer provides any missing pre-requisites for OR and an uninstaller too.
+            </p>
+          </a>
+          <p style="text-align: center;">
+<?php
+$simple_download = 'setup_OR_pre-v1.0_from_download.exe';
 $file_path = "../../files";
-echo "<a href='download.php?filepath=$file_path&file=$file&ext=$exe' class='btn download_button btn-lg btn-block'>";        
-?>
-          <h2><span class='glyphicon glyphicon-download'></span> &nbsp; Download the installer</h2>
-          <p>
-            This installer provides any missing pre-requisites for OR and an uninstaller too.
+echo 'Date: ' . date('d-M-Y', filemtime("$file_path/$simple_download")) . '&nbsp; &nbsp; &nbsp; Size: ' . round(filesize("$file_path/$simple_download") / 1024 / 1024) . 'MB'; ?>
           </p>
-        </a>
-        <p style="text-align: center;">
-<?php 
-echo 'Date: ' . date('d-M-Y', filemtime("$file_path/$file")) . '&nbsp; &nbsp; &nbsp; Size: ' . round(filesize("$file_path/$file") / 1024 / 1024) . 'MB'; ?>
-        </p>
-			</div>
+        </div>
 			<div class="col-md-2"></div>
 			<div class="col-md-4">
 			  <h1>Supporters' Download</h1>
         <br>
-<?php 
-$file = 'OR_X.zip';
-$exe = 'zip';
-$file_path = "../../files";
-echo "<a href='download.php?filepath=$file_path&file=$file&ext=$exe' class='btn download_button btn-lg btn-block'>";        
-?>
-          <h2><span class='glyphicon glyphicon-download'></span> &nbsp; Download just Open Rails</h2>
-          <p>
+          <!-- Button to trigger modal -->
+          <a href="#modal2" role="button" class='btn download_button btn-lg btn-block' data-toggle="modal">
+            <h2><span class='glyphicon glyphicon-download'></span> &nbsp; Download just Open Rails</h2>
+            <p>
             You must download and install any missing pre-requisites - see installation guides below.
-          </p>
-        </a>
+            </p>
+          </a>
         <p style="text-align: center;">
 <?php 
-echo 'Date: ' . date('d-M-Y', filemtime("$file_path/$file")) . '&nbsp; &nbsp; &nbsp; Size: ' . round(filesize("$file_path/$file") / 1024 / 1024) . 'MB'; ?>
+$supporters_download = 'OR_X.zip';
+$file_path = "../../files";
+echo 'Date: ' . date('d-M-Y', filemtime("$file_path/$supporters_download")) . '&nbsp; &nbsp; &nbsp; Size: ' . round(filesize("$file_path/$supporters_download") / 1024 / 1024) . 'MB'; ?>
         </p>
         <p>
           This build of OR contains an easy, semi-automatic updater.
@@ -89,9 +85,28 @@ The updater can be set to check for the latest weekly version. Supporters may pr
 <p>
 By default, the updater is set to check for a version that is one week behind the latest. Occasionally, a new version may cause problems so this delay gives the team a chance to fix or withdraw any problem versions. 
 </p>
+<h3>Older Versions</h3>
+<p>
+You can download <a href='http://james-ross.co.uk/projects/or/builds'>previous versions of the Open Rails Supporters' Download</a> back to September 2013.
+</p>
 			</div>
 		</div>
 <?php include "../../shared/tail.php" ?>
 <?php include "../../shared/banners/preload_next_banner.php" ?>
+<?php 
+$modal = 'modal1';
+$title = 'Simple Download';
+$download_file = $simple_download;
+$file_path = "../../files";
+$ext = 'exe';
+include "preamble.php";
+
+$modal = 'modal2';
+$title = "Supporters' Download";
+$download_file = $supporters_download;
+$file_path = "../../files";
+$ext = 'zip';
+include "preamble.php";
+?>
   </body>
 </html>

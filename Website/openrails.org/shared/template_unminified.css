@@ -66,7 +66,7 @@ hr {
 }
 p a, div.row ul li a, h2 a, h5 a { /* div.row to exclude navbar */
 	color: rgb(80, 128, 40);
-	text-decoration: underline;
+	 !importantunderline;
 }
 
 ul {
@@ -165,6 +165,11 @@ table.staff tr td {
 
 p img {
   border:#999 medium solid;
+}
+.cancel_button {
+  background-color: white;
+	white-space: normal; /* Override Bootstrap's white-space:no-wrap; */ 
+  margin-bottom: 6px;
 }
 .download_button {
   background-color: #7DC243;

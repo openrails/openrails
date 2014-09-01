@@ -77,6 +77,7 @@ These are the experts in creating buildings, locos, routes, signs, even grass. T
             <tr><td>Buttercup</td></tr>
             <tr><td>captain_bazza</td></tr>
             <tr><td>chalky</td></tr>
+            <tr><td>coonskin</td></tr>
             <tr><td>Copperpen</td></tr>
             <tr><td>Eldorado.Railroad</td></tr>
           </table>

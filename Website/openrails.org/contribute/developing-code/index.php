@@ -19,14 +19,14 @@
 <!-- implement an accordion -->
 <ul class="accordion">
   <li>
-    <a href=#><h2 class="accordion_head"><span class="glyphicon glyphicon-play btn-xs"></span> Private Changes</h2></a>
+    <a href=# id="private_changes"><h2 class="accordion_head"><span class="glyphicon glyphicon-play btn-xs"></span> Private Changes</h2></a>
     <div class="accordion_body">
       <p>
 Anyone can <a href="../../download/source/">download the source code</a> for Open Rails and make changes to suit themselves and create a personal version. <a href="#accessing_the_code">Instructions for this</a> are below.
       </p>
     </div>
   </li><li>
-    <a href=#><h2 class="accordion_head"><span class="glyphicon glyphicon-play btn-xs"></span> Public Changes</h2></a>
+    <a href=# id="public_changes"><h2 class="accordion_head"><span class="glyphicon glyphicon-play btn-xs"></span> Public Changes</h2></a>
     <div class="accordion_body">
       <p>
 If your changes might be useful to others, then we encourage you to <a href="#submitting_a_change">submit them for inclusion into the product</a>. We will respond to all
@@ -34,14 +34,14 @@ submissions and give credit in the project record for submissions that are inclu
       </p>
     </div>
   </li><li>
-    <a href=#><h2 class="accordion_head"><span class="glyphicon glyphicon-play btn-xs"></span> SVN Version Control System</h2></a>
+    <a href=# id="source_code_repository"><h2 class="accordion_head"><span class="glyphicon glyphicon-play btn-xs"></span> SVN Version Control System</h2></a>
     <div class="accordion_body">
       <p>
 The Open Rails project uses Apache Subversion (often abbreviated to SVN) as the versioning and revision control system for our software.
 Revisions are archived in a repository and can be compared, restored and merged, so that versions are safe and several developers can work
  independently without (too much) conflict.
       </p><p>
-The Open Rails source code is managed on <a href="http://svn.uktrainsim.com/svn/openrails/trunk">our svn server</a>:<br>
+The Open Rails source code is managed on <a href="http://svn.uktrainsim.com/svn/openrails/trunk">our SVN server</a>:<br>
 Read-only access is provided from the guest login:
       </p>
       <ul>
@@ -89,7 +89,7 @@ The main folders in the repository are:
       </ul>
     </div>
   </li><li>
-    <a href=#><h2 class="accordion_head"><span class="glyphicon glyphicon-play btn-xs"></span> Compiling the Open Rails Project</h2></a>
+    <a href=# id="compiling"><h2 class="accordion_head"><span class="glyphicon glyphicon-play btn-xs"></span> Compiling the Open Rails Project</h2></a>
     <div class="accordion_body">
       <p>
 To compile and debug the Open Rails source code, ensure you have the following Microsoft products installed:
@@ -113,7 +113,7 @@ After you have downloaded the code:
       <p>The executable files have now been re-built and placed in your empty Program folder.</p>
     </div>
   </li><li>
-    <a href=#>
+    <a href=# id="debugging">
       <h2 class="accordion_head"><span class="glyphicon glyphicon-play btn-xs"></span> Running the RunActivity.exe code in debug mode</h2>
     </a>
     <div class="accordion_body">
@@ -125,10 +125,11 @@ On the Visual Studio menu bar,
       <ol>
         <li>Select <i>View > Solution Explorer</i></li>
         <li>In the <i>Solution Explorer</i> box (on the right), right click on <i>RunActivity > Properties</i></li>
-        <li>Use the Debug tab (on the left) to open the Debug Window</li>
-        <li>Enter the path of the activity that you want to run: e.g. "c:\personal\msts\routes\lps\activities\ls1.act". 
+        <li>Use the Debug tab (on the left) to open the Debug Window.</li>
+        <li>Into the "Command line arguments", enter the path of the activity that you want to run: e.g. "c:\personal\msts\routes\lps\activities\ls1.act". 
          Use quotes to cope with spaces in the path.
         </li>
+        <li>Below this, check the checkbox for "Enable native code debugging"</li>
         <li>Press F5 to run RunActivity.exe using your activity.</li>
       </ol>
     </div>

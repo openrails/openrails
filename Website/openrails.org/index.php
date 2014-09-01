@@ -32,12 +32,12 @@
               the world's largest range of digital content. 
             </div>
             <div class="download">
-<?php 
-$file = 'setup_OR_pre-v1.0_from_download.exe';
-$exe = 'exe';
-$file_path = "../../files";
-echo "<a href='download/program/download.php?filepath=$file_path&file=$file&ext=$exe' class='btn download_button'><span class='glyphicon glyphicon-download'></span> &nbsp; Download OR installer ";echo date('d-M-Y', filemtime("files/$file"));
-//echo "<a href='$file_path/$file' class='btn download_button'><span class='glyphicon glyphicon-download'></span> &nbsp; Download OR installer ";echo date('d-M-Y', filemtime($file_path/$file));         
+              <!-- Button to trigger modal -->
+              <a href="#modal1" role="button" class='btn download_button' data-toggle="modal">
+                <span class='glyphicon glyphicon-download'></span>&nbsp; Download OR installer 
+<?php
+$simple_download = 'setup_OR_pre-v1.0_from_download.exe';
+echo(date('d-M-Y', filemtime("files/$simple_download"))); 
 ?>
               </a>
             </div>
@@ -98,5 +98,13 @@ echo "<a href='download/program/download.php?filepath=$file_path&file=$file&ext=
 <?php include "shared/tail.php" ?>
 <?php include "shared/banners/choose_banner.php" ?>
 <?php include "shared/banners/preload_next_banner.php" ?>
+<?php 
+$modal = 'modal1';
+$title = 'Simple Download';
+$download_file = $simple_download;
+$ext = 'exe';
+$file_path = "../../files"; 
+include "download/program/preamble.php";
+?>
   </body>
 </html>

@@ -3,8 +3,8 @@
 <?php 
 $key = $_SESSION['banner_key'];
 $banner_list = $_SESSION['banner_list'];
-$id = $banner_list[$key][1];
-$file = "/shared/banners/banner" . sprintf("%03d", $id) . ".jpg"; 
+$bid = $banner_list[$key][1];
+$file = "/shared/banners/banner" . sprintf("%03d", $bid) . ".jpg"; 
 $supplier = $banner_list[$key][3];
 $title = $banner_list[$key][4];
 echo("<img class='banner' src='$file' title='$title &#xa; posted by $supplier' alt='$title &#xa;posted by $supplier'>"); 
