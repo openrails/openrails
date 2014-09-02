@@ -80,6 +80,30 @@ namespace ORTS
             LinkedAuxAction = null;
         }
 
+        public AIAuxActionsRef(AITrain thisTrain, BinaryReader inf)
+        {
+            RequiredSpeedMpS = inf.ReadSingle();
+            RequiredDistance = inf.ReadSingle();
+            SubrouteIndex = inf.ReadInt32();
+            RouteIndex = inf.ReadInt32();
+            TCSectionIndex = inf.ReadInt32();
+            Direction = inf.ReadInt32();
+            TriggerDistance = inf.ReadInt32();
+            string actionRef = inf.ReadString();
+            AIAuxActionsRef.AI_AUX_ACTION nextAction = (AIAuxActionsRef.AI_AUX_ACTION)Enum.Parse(typeof(AIAuxActionsRef.AI_AUX_ACTION), actionRef);
+            switch (nextAction)
+            {
+                case AIAuxActionsRef.AI_AUX_ACTION.WAITING_POINT:
+                    break;
+                case AIAuxActionsRef.AI_AUX_ACTION.SOUND_HORN:
+                    break;
+                default:
+                    break;
+            }
+ 
+            LinkedAuxAction = null;
+
+        }
         //================================================================================================//
         /// <summary>
         /// Handler
@@ -109,6 +133,37 @@ namespace ORTS
             return (distancesM);
         }
 
+        //================================================================================================//
+        //
+        // Save
+        //
+
+        public void save(BinaryWriter outf, int cnt)
+        {
+            outf.Write(cnt);
+            string info = NextAction.ToString();
+            outf.Write(NextAction.ToString());
+            outf.Write(RequiredSpeedMpS);
+            outf.Write(RequiredDistance);
+            outf.Write(SubrouteIndex);
+            outf.Write(RouteIndex);
+            outf.Write(TCSectionIndex);
+            outf.Write(Direction);
+            outf.Write(TriggerDistance);
+            if (LinkedAuxAction != null)
+                outf.Write(LinkedAuxAction.NextAction.ToString());
+            else
+                outf.Write(AI_AUX_ACTION.NONE.ToString());
+        }
+
+                //================================================================================================//
+        //
+        // Restore
+        //
+
+        public AIAuxActionsRef(BinaryReader inf, Signals signalRef)
+        {
+        }
     }
 
     //================================================================================================//
@@ -127,7 +182,8 @@ namespace ORTS
 #if WITH_PATH_DEBUG
             File.AppendAllText(@"C:\temp\checkpath.txt", "New AIAuxActionRef (WP) for train " + thisTrain.Number +
                 " Required Distance " + distance + ", speed " + requiredSpeedMpS + ", and dir " + dir + "\n");
-            File.AppendAllText(@"C:\temp\checkpath.txt", "\t\tSection id: " + subrouteIdx + "." + routeIdx + "." + sectionIdx + "\n"); 
+            File.AppendAllText(@"C:\temp\checkpath.txt", "\t\tSection id: " + subrouteIdx + "." + routeIdx + "." + sectionIdx 
+                + "\n"); 
 #endif
             NextAction = AI_AUX_ACTION.WAITING_POINT;
 
@@ -140,6 +196,11 @@ namespace ORTS
             //}
             //else
                 LinkedAuxAction = null;
+        }
+
+        public AIActionWPRef(AITrain thisTrain, BinaryReader inf)
+            : base (thisTrain, inf)
+        {
         }
 
         public override AIActionItem Handler(float distance, float speed, float activateDistance, float insertedDistance)
@@ -233,6 +294,12 @@ namespace ORTS
         {
             NextAction = AI_AUX_ACTION.SOUND_HORN;
         }
+
+        public AIActionHornRef(AITrain thisTrain, BinaryReader inf)
+            : base (thisTrain, inf)
+        {
+        }
+
 
         public override AIActionItem Handler(float distance, float speed, float activateDistance, float insertedDistance)
         {

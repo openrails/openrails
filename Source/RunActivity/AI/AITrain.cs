@@ -242,7 +242,33 @@ namespace ORTS
                 ResetActions(true);
             }
 #if NEW_ACTION
+            int cntAuxAction = inf.ReadInt32();
             AuxActions = new List<AIAuxActionsRef>();
+            try
+            {
+                for (int cnt = 0; cnt < cntAuxAction; cnt++)
+                {
+                    int cntAction = inf.ReadInt32();
+                    AIAuxActionsRef action;
+                    string actionRef = inf.ReadString();
+                    AIAuxActionsRef.AI_AUX_ACTION nextAction = (AIAuxActionsRef.AI_AUX_ACTION)Enum.Parse(typeof(AIAuxActionsRef.AI_AUX_ACTION), actionRef);
+                    switch (nextAction)
+                    {
+                        case AIAuxActionsRef.AI_AUX_ACTION.WAITING_POINT:
+                            action = new AIActionWPRef(this, inf);
+                            AuxActions.Add(action);
+                            break;
+                        case AIAuxActionsRef.AI_AUX_ACTION.SOUND_HORN:
+                            action = new AIActionHornRef(this, inf);
+                            AuxActions.Add(action);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            catch { }
+            ResetActions(true);
 #endif
 
         }
@@ -289,9 +315,20 @@ namespace ORTS
             outf.Write(MaxVelocityA);
             if (!Program.Simulator.TimetableMode && ServiceDefinition != null ) ServiceDefinition.Save(outf);
             else outf.Write(-1);
+            SaveAIAuxActions(outf);
         }
 
- 
+        private void SaveAIAuxActions(BinaryWriter outf)
+        {
+            int cnt = 0;
+            outf.Write(AuxActions.Count);
+            foreach (var action in AuxActions)
+            {
+                action.save(outf, cnt);
+                cnt++;
+            }
+        }
+
 
         //================================================================================================//
         /// <summary>
@@ -686,12 +723,14 @@ namespace ORTS
             if (lastIndex != presentIndex || countRequiredAction != requiredActions.Count)
             {
                 countRequiredAction = requiredActions.Count;
+                File.AppendAllText(@"C:\temp\checkpath.txt", "Train position change: Train" + Number  
+                    + " direction " + PresentPosition[0].TCDirection 
+                    + "\n");
             }
             if (nextActionInfo != savedActionInfo)
             {
                 savedActionInfo = nextActionInfo;
             }
-
 #endif
 
 
@@ -734,16 +773,8 @@ namespace ORTS
                 {
                     CheckRequiredAction();
                 }
-#if BROL
-                if (MovementState != AI_MOVEMENT_STATE.INIT && EndAuthorityType[0] != END_AUTHORITY.MAX_DISTANCE)
-                {
-                    CheckRequiredAuxAction();
-                }
-
-                if (requiredActions.Count == 0)
-                    Trace.TraceInformation("No Actions");
-#endif
                 // check if reversal point reached and not yet activated - but station stop has preference over reversal point
+
                 if ((nextActionInfo == null ||
                      (nextActionInfo.NextAction != AIActionItem.AI_ACTION_TYPE.STATION_STOP && nextActionInfo.NextAction != AIActionItem.AI_ACTION_TYPE.REVERSAL)) &&
                      TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid )
@@ -2438,6 +2469,15 @@ namespace ORTS
                     }
                 }
             }
+            else if (nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.END_OF_ROUTE)
+            {
+                ResetActions(false);
+                if (Simulator.TimetableMode || !Simulator.Settings.EnhancedActCompatibility || TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1)
+                    NextStopDistanceM = DistanceToEndNodeAuthorityM[0] - clearingDistanceM;
+                else 
+                    NextStopDistanceM = ComputeDistanceToReversalPoint() - clearingDistanceM;
+            }
+
 
             // action cleared - reset processed info for object items to determine next action
             // clear list of pending action to create new list
@@ -2585,9 +2625,11 @@ namespace ORTS
 
                 else if (nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.REVERSAL)
                 {
-                    if (Math.Abs(SpeedMpS) < 0.01f && ! Simulator.Settings.EnhancedActCompatibility) MovementState = AI_MOVEMENT_STATE.STOPPED;
+                    if (Math.Abs(SpeedMpS) < 0.01f && ! Simulator.Settings.EnhancedActCompatibility) 
+                        MovementState = AI_MOVEMENT_STATE.STOPPED;
                     else if (Math.Abs(SpeedMpS) < 0.01f && nextActionInfo.ActivateDistanceM - DistanceTravelledM < 10.0f && 
-                        Simulator.Settings.EnhancedActCompatibility && !Simulator.TimetableMode) MovementState = AI_MOVEMENT_STATE.STOPPED;
+                        Simulator.Settings.EnhancedActCompatibility && !Simulator.TimetableMode) 
+                        MovementState = AI_MOVEMENT_STATE.STOPPED;
                 }
 
                 // check if stopped at signal
@@ -3876,6 +3918,7 @@ namespace ORTS
 #endif
             }
             
+        
         }
 
         //================================================================================================//
@@ -5077,6 +5120,11 @@ namespace ORTS
                         File.AppendAllText(@"C:\temp\checktrain.txt", "Train " + Number.ToString() +
                         " , new state : " + MovementState.ToString() + "\n");
                     }
+                }
+                else if (MovementState == AI_MOVEMENT_STATE.STOPPED && nextActionInfo.GetType().IsSubclassOf(typeof(AuxActionItem)))
+                {
+                    MovementState = AI_MOVEMENT_STATE.BRAKING;
+                    Alpha10 = 10;
                 }
                 else
                 {
