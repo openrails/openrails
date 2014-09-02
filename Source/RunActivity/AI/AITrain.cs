@@ -2469,15 +2469,6 @@ namespace ORTS
                     }
                 }
             }
-            else if (nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.END_OF_ROUTE)
-            {
-                ResetActions(false);
-                if (Simulator.TimetableMode || !Simulator.Settings.EnhancedActCompatibility || TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1)
-                    NextStopDistanceM = DistanceToEndNodeAuthorityM[0] - clearingDistanceM;
-                else 
-                    NextStopDistanceM = ComputeDistanceToReversalPoint() - clearingDistanceM;
-            }
-
 
             // action cleared - reset processed info for object items to determine next action
             // clear list of pending action to create new list
@@ -5302,6 +5293,27 @@ namespace ORTS
                 {
                     movString = "WTP";
                 }
+            }
+            else if (MovementState == AI_MOVEMENT_STATE.HANDLE_ACTION)
+            {
+                if (AuxActions[0].NextAction == AIAuxActionsRef.AI_AUX_ACTION.WAITING_POINT)
+                {
+                    movString = "WTP";
+/*                    DateTime baseDT = new DateTime();
+                                        if (StationStops[0].ActualDepart > 0)
+                                        {
+                                            DateTime depTime = baseDT.AddSeconds(StationStops[0].ActualDepart);
+                                            abString = depTime.ToString("HH:mm:ss");
+                                        }
+                                        else
+                                        {
+                                            abString = "..:..:..";
+                                        }*/
+                }
+                
+ 
+
+
             }
             else if (MovementState == AI_MOVEMENT_STATE.AI_STATIC)
             {

@@ -13245,9 +13245,8 @@ namespace ORTS
                         {
 #if NEW_ACTION
                             int validDir = currentDir;
-                            //if (reversal % 2 == 1) validDir = validDir == 1 ? 0 : 1;                            
-                            //offset = GetOffsetToPlace(aiPath, validDir, nextPathNode);
-                            offset = GetOffsetToPlace(aiPath, currentDir, nextPathNode);
+                            if (reversal % 2 == 1) validDir = validDir == 1 ? 0 : 1;                            
+                            offset = GetOffsetToPlace(aiPath, validDir, nextPathNode);
 #else
                             TrackNode WPNode = aiPath.TrackDB.TrackNodes[nextPathNode.NextMainTVNIndex];
                                 TrVectorSection firstSection = WPNode.TrVectorNode.TrVectorSections[0];
