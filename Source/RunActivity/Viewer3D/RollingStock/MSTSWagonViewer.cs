@@ -144,7 +144,7 @@ namespace ORTS.Viewer3D.RollingStock
                 var id = 1;
                 Int32.TryParse(matrixName.Substring(5), out id);
                 var m = TrainCarShape.SharedShape.GetMatrixProduct(matrix);
-                car.AddBogie(m.M43, matrix, id);
+                car.AddBogie(m.M43, matrix, id, matrixName.ToString());
 
                 // Bogies contain wheels!
                 for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)

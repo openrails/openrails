@@ -766,18 +766,55 @@ namespace ORTS
             WheelAxles.Add(new WheelAxle(offset, bogie, parentMatrix));
         }
 
-        public void AddBogie(float offset, int matrix, int id)
+        public void AddBogie(float offset, int matrix, int id, string bogie)
         {
             if (WheelAxlesLoaded || WheelHasBeenSet)
                 return;
-            //make sure two bogies are not defined too close
-            foreach (var p in Parts) if (p.bogie && offset.AlmostEqual(p.OffsetM, 0.05f)) { offset = p.OffsetM + 0.1f; break; }
-            while (Parts.Count <= id)
-                Parts.Add(new TrainCarPart(0, 0));
-            Parts[id].OffsetM = offset;
-            Parts[id].iMatrix = matrix;
-            Parts[id].bogie = true;//identify this is a bogie, will be used for hold rails on track
-        }
+            if (bogie == "BOGIE1")
+            {
+                foreach (var p in Parts) if (p.bogie && offset.AlmostEqual(p.OffsetM, 0.05f)) { offset = p.OffsetM + 0.1f; break; }
+                while (Parts.Count <= id)
+                    Parts.Add(new TrainCarPart(0, 0));
+                Parts[id].OffsetM = offset;
+                Parts[id].iMatrix = matrix;
+                Parts[id].bogie = true;//identify this is a bogie, will be used for hold rails on track
+            }
+            if (bogie == "BOGIE2")
+            {
+                // Checking for an initial Parts entry.
+                if (Parts.Count > 0)
+                {
+                    while (Parts.Count <= id)
+                        Parts.Add(new TrainCarPart(0, 0));
+                    Parts[id].OffsetM = offset;
+                    Parts[id].iMatrix = matrix;
+                    Parts[id].bogie = true;//identify this is a bogie, will be used for hold rails on track
+                }
+                // This was the initial problem.  If the shape file contained only one entry that was labeled as BOGIE2(should be BOGIE1)
+                // the process would assign 2 to id, causing it to create 2 Parts entries( or 2 bogies) when one was only needed.  It is possible that
+                // this issue created many of the problems with articulated wagons later on in the process.
+                // 2 would be assigned to id, not because there were 2 entries, but because 2 was in BOGIE2.
+                else
+                {
+                    id -= 1;
+                    while (Parts.Count <= id)
+                        Parts.Add(new TrainCarPart(0, 0));
+                    Parts[id].OffsetM = offset;
+                    Parts[id].iMatrix = matrix;
+                    Parts[id].bogie = true;//identify this is a bogie, will be used for hold rails on track
+                }
+            }
+            // Default process in case bogie entry was not labled as BOGIE1 or BOGIE2.
+            else
+            {
+                foreach (var p in Parts) if (p.bogie && offset.AlmostEqual(p.OffsetM, 0.05f)) { offset = p.OffsetM + 0.1f; break; }
+                while (Parts.Count <= id)
+                    Parts.Add(new TrainCarPart(0, 0));
+                Parts[id].OffsetM = offset;
+                Parts[id].iMatrix = matrix;
+                Parts[id].bogie = true;//identify this is a bogie, will be used for hold rails on track
+            }
+        } // end AddBogie()
 
         public void SetUpWheels()
         {
@@ -857,8 +894,8 @@ namespace ORTS
             var carIndex = Train.Cars.IndexOf(this);
             //Certain locomotives are testing as articulated wagons for some reason.
             this.WagonType = GetWagonType();
-            if (this.WagonType != "Engine" && this.WagonType != "Carriage")
-                if (this.WagonType == "Freight" && this.WheelAxles.Count >= 2)
+            if (this.WagonType != "Engine")
+                if (this.WheelAxles.Count >= 2)
                     if (articulatedFront || articulatedRear)
                     {
                         WheelAxlesLoaded = true;
@@ -885,7 +922,7 @@ namespace ORTS
                     {
                         var otherCar = Train.Cars[carIndex - 1];
                         var otherPart = otherCar.Parts.OrderBy(p => p.OffsetM).FirstOrDefault();
-                        if (otherPart == null || Parts.Count < 3)
+                        if (otherPart == null ||WheelAxles.Count < 3)
                             WheelAxles.Add(new WheelAxle(-LengthM / 2, 0, 0) { Part = Parts[0] });
                         else
                         {
@@ -901,7 +938,7 @@ namespace ORTS
                     {
                         var otherCar = Train.Cars[carIndex + 1];
                         var otherPart = otherCar.Parts.OrderBy(p => -p.OffsetM).FirstOrDefault();
-                        if (otherPart == null || Parts.Count < 3)
+                        if (otherPart == null)
                             WheelAxles.Add(new WheelAxle(LengthM / 2, 0, 0) { Part = Parts[0] });
                         else
                         {
