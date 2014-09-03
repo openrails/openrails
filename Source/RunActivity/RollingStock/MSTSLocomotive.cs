@@ -1579,6 +1579,10 @@ namespace ORTS
             ThrottlePercent = ThrottleController.SetPercent(percent);
         }
 
+         public virtual void ChangeGearUp()
+      {
+        }
+
         public virtual void StartGearBoxIncrease()
         {
             if (GearBoxController != null)
@@ -1588,18 +1592,7 @@ namespace ORTS
                 AlerterReset(TCSEvent.GearBoxChanged);
             }
 
-            var mstsDieselLocomotive = this as MSTSDieselLocomotive;
-            if (mstsDieselLocomotive != null)
-            {
-                if (mstsDieselLocomotive.DieselEngines[0].GearBox != null)
-                {
-                    if (mstsDieselLocomotive.DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Semiautomatic)
-                    {
-                        mstsDieselLocomotive.DieselEngines[0].GearBox.AutoGearUp();
-                        GearBoxController.SetValue((float)mstsDieselLocomotive.DieselEngines[0].GearBox.NextGearIndex);
-                    }
-                }
-            }
+            ChangeGearUp();
         }
 
         public virtual void StopGearBoxIncrease()
@@ -1608,6 +1601,10 @@ namespace ORTS
             {
                 GearBoxController.StopIncrease();
             }
+        }
+
+        public virtual void ChangeGearDown()
+        {
         }
 
         public virtual void StartGearBoxDecrease()
@@ -1619,18 +1616,7 @@ namespace ORTS
                 AlerterReset(TCSEvent.GearBoxChanged);
             }
 
-            var mstsDieselLocomotive = this as MSTSDieselLocomotive;
-            if (mstsDieselLocomotive != null)
-            {
-                if (mstsDieselLocomotive.DieselEngines[0].GearBox != null)
-                {
-                    if (mstsDieselLocomotive.DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Semiautomatic)
-                    {
-                        mstsDieselLocomotive.DieselEngines[0].GearBox.AutoGearDown();
-                        GearBoxController.SetValue((float)mstsDieselLocomotive.DieselEngines[0].GearBox.NextGearIndex);
-                    }
-                }
-            }
+            ChangeGearDown();
         }
 
         public virtual void StopGearBoxDecrease()

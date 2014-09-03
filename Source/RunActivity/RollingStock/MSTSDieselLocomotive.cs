@@ -493,6 +493,8 @@ namespace ORTS
                 AverageForceN = w * AverageForceN + (1 - w) * MotiveForceN;
             }
 
+ 
+
 #if !NEW_SIGNALLING
             if (this.IsLeadLocomotive())
             {
@@ -709,6 +711,31 @@ namespace ORTS
             base.UpdateParent(elapsedClockSeconds); // Calls the Update() method in the parent class MSTSLocomotive which calls Update() on its parent MSTSWagon which calls ...
         }
 
+        public override void ChangeGearUp()
+        {
+            if (DieselEngines[0].GearBox != null)
+            {
+                if (DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Semiautomatic)
+                {
+                    DieselEngines[0].GearBox.AutoGearUp();
+                    GearBoxController.SetValue((float)DieselEngines[0].GearBox.NextGearIndex);
+                }
+            }
+        }
+
+        public override void ChangeGearDown()
+        {
+            
+                if (DieselEngines[0].GearBox != null)
+                {
+                    if (DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Semiautomatic)
+                    {
+                        DieselEngines[0].GearBox.AutoGearDown();
+                        GearBoxController.SetValue((float)DieselEngines[0].GearBox.NextGearIndex);
+                    }
+                }
+        }
+       
         public override float GetDataOf(CabViewControl cvc)
         {
             float data = 0;
