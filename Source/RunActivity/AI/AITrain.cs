@@ -5296,19 +5296,19 @@ namespace ORTS
             }
             else if (MovementState == AI_MOVEMENT_STATE.HANDLE_ACTION)
             {
-                if (AuxActions[0].NextAction == AIAuxActionsRef.AI_AUX_ACTION.WAITING_POINT)
+                if (nextActionInfo != null && AuxActions[0] != null && AuxActions[0].NextAction == AIAuxActionsRef.AI_AUX_ACTION.WAITING_POINT)
                 {
                     movString = "WTP";
-/*                    DateTime baseDT = new DateTime();
-                                        if (StationStops[0].ActualDepart > 0)
-                                        {
-                                            DateTime depTime = baseDT.AddSeconds(StationStops[0].ActualDepart);
-                                            abString = depTime.ToString("HH:mm:ss");
-                                        }
-                                        else
-                                        {
-                                            abString = "..:..:..";
-                                        }*/
+                    DateTime baseDT = new DateTime();
+                    if (((AuxActionWPItem)nextActionInfo).ActualDepart > 0)
+                    {
+                        DateTime depTime = baseDT.AddSeconds(((AuxActionWPItem)nextActionInfo).ActualDepart);
+                        abString = depTime.ToString("HH:mm:ss");
+                    }
+                    else
+                    {
+                        abString = "..:..:..";
+                    }
                 }
                 
  
