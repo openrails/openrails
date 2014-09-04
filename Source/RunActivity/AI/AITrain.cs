@@ -225,7 +225,14 @@ namespace ORTS
             int serviceListCount = inf.ReadInt32();
             if (serviceListCount > 0) RestoreServiceDefinition(inf, serviceListCount);
 
-            // set signals and actions if train is active train
+#if NEW_ACTION
+            int cntAuxAction = inf.ReadInt32();
+            AuxActions = new List<AIAuxActionsRef>();
+            if (cntAuxAction > 0)
+            {
+                RestoreAuxActions(inf, cntAuxAction);
+            }
+#endif            // set signals and actions if train is active train
             bool activeTrain = true;
 
             if (TrainType == TRAINTYPE.AI_NOTSTARTED) activeTrain = false;
@@ -241,9 +248,27 @@ namespace ORTS
                 InitializeSignals(true);
                 ResetActions(true);
             }
-#if NEW_ACTION
-            int cntAuxAction = inf.ReadInt32();
-            AuxActions = new List<AIAuxActionsRef>();
+
+
+        }
+
+        //================================================================================================//
+        //
+        // Restore of useful Service Items parameters
+        //
+
+        public void RestoreServiceDefinition(BinaryReader inf, int serviceLC )
+        {
+               ServiceDefinition = new Service_Definition();
+           for (int iServiceList = 0; iServiceList < serviceLC; iServiceList++)
+            {
+                ServiceDefinition.ServiceList.Add(new Service_Item(inf.ReadSingle(), 0, 0.0f, inf.ReadInt32()));
+ 
+            }
+        }
+
+        public void RestoreAuxActions(BinaryReader inf, int cntAuxAction)
+        {
             try
             {
                 for (int cnt = 0; cnt < cntAuxAction; cnt++)
@@ -268,27 +293,8 @@ namespace ORTS
                 }
             }
             catch { }
-            ResetActions(true);
-#endif
 
         }
-
-        //================================================================================================//
-        //
-        // Restore of useful Service Items parameters
-        //
-
-        public void RestoreServiceDefinition(BinaryReader inf, int serviceLC )
-        {
-               ServiceDefinition = new Service_Definition();
-           for (int iServiceList = 0; iServiceList < serviceLC; iServiceList++)
-            {
-                ServiceDefinition.ServiceList.Add(new Service_Item(inf.ReadSingle(), 0, 0.0f, inf.ReadInt32()));
- 
-            }
-        }
-
-
         //================================================================================================//
         /// <summary>
         /// Save
@@ -322,6 +328,11 @@ namespace ORTS
         {
             int cnt = 0;
             outf.Write(AuxActions.Count);
+#if WITH_PATH_DEBUG
+            File.AppendAllText(@"C:\temp\checkpath.txt", "SaveAIAuxActions, count :" + AuxActions.Count + 
+                "Position in file: " + outf.BaseStream.Position + "\n");
+#endif
+
             foreach (var action in AuxActions)
             {
                 action.save(outf, cnt);

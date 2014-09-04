@@ -89,20 +89,19 @@ namespace ORTS
             TCSectionIndex = inf.ReadInt32();
             Direction = inf.ReadInt32();
             TriggerDistance = inf.ReadInt32();
-            string actionRef = inf.ReadString();
-            AIAuxActionsRef.AI_AUX_ACTION nextAction = (AIAuxActionsRef.AI_AUX_ACTION)Enum.Parse(typeof(AIAuxActionsRef.AI_AUX_ACTION), actionRef);
-            switch (nextAction)
-            {
-                case AIAuxActionsRef.AI_AUX_ACTION.WAITING_POINT:
-                    break;
-                case AIAuxActionsRef.AI_AUX_ACTION.SOUND_HORN:
-                    break;
-                default:
-                    break;
-            }
+            //string strLinkedAuxAction = inf.ReadString();
+            //AIAuxActionsRef.AI_AUX_ACTION nextAction = (AIAuxActionsRef.AI_AUX_ACTION)Enum.Parse(typeof(AIAuxActionsRef.AI_AUX_ACTION), strLinkedAuxAction);
+            //switch (nextAction)
+            //{
+            //    case AIAuxActionsRef.AI_AUX_ACTION.WAITING_POINT:
+            //        break;
+            //    case AIAuxActionsRef.AI_AUX_ACTION.SOUND_HORN:
+            //        break;
+            //    default:
+            //        break;
+            //}
  
             LinkedAuxAction = null;
-
         }
         //================================================================================================//
         /// <summary>
@@ -138,7 +137,7 @@ namespace ORTS
         // Save
         //
 
-        public void save(BinaryWriter outf, int cnt)
+        public virtual void save(BinaryWriter outf, int cnt)
         {
             outf.Write(cnt);
             string info = NextAction.ToString();
@@ -150,10 +149,10 @@ namespace ORTS
             outf.Write(TCSectionIndex);
             outf.Write(Direction);
             outf.Write(TriggerDistance);
-            if (LinkedAuxAction != null)
-                outf.Write(LinkedAuxAction.NextAction.ToString());
-            else
-                outf.Write(AI_AUX_ACTION.NONE.ToString());
+            //if (LinkedAuxAction != null)
+            //    outf.Write(LinkedAuxAction.NextAction.ToString());
+            //else
+            //    outf.Write(AI_AUX_ACTION.NONE.ToString());
         }
 
                 //================================================================================================//
@@ -201,6 +200,26 @@ namespace ORTS
         public AIActionWPRef(AITrain thisTrain, BinaryReader inf)
             : base (thisTrain, inf)
         {
+            Delay = inf.ReadInt32();
+            NextAction = AI_AUX_ACTION.WAITING_POINT;
+#if WITH_PATH_DEBUG
+            File.AppendAllText(@"C:\temp\checkpath.txt", "\tRestore one WPAuxAction" +
+                "Position in file: " + inf.BaseStream.Position +
+                " type Action: " + NextAction.ToString() +
+                " Delay: " + Delay + "\n");
+#endif
+        }
+
+        public override void save(BinaryWriter outf, int cnt)
+        {
+#if WITH_PATH_DEBUG
+            File.AppendAllText(@"C:\temp\checkpath.txt", "\tSave one WPAuxAction, count :" + cnt +
+                "Position in file: " + outf.BaseStream.Position +
+                " type Action: " + NextAction.ToString() +
+                " Delay: " + Delay + "\n");
+#endif
+            base.save(outf, cnt);
+            outf.Write(Delay);
         }
 
         public override AIActionItem Handler(float distance, float speed, float activateDistance, float insertedDistance)
@@ -298,6 +317,26 @@ namespace ORTS
         public AIActionHornRef(AITrain thisTrain, BinaryReader inf)
             : base (thisTrain, inf)
         {
+            Delay = inf.ReadInt32();
+            NextAction = AI_AUX_ACTION.SOUND_HORN;
+#if WITH_PATH_DEBUG
+            File.AppendAllText(@"C:\temp\checkpath.txt", "\tRestore one WPAuxAction" +
+                "Position in file: " + inf.BaseStream.Position +
+                " type Action: " + NextAction.ToString() +
+                " Delay: " + Delay + "\n");
+#endif
+        }
+
+        public override void save(BinaryWriter outf, int cnt)
+        {
+#if WITH_PATH_DEBUG
+            File.AppendAllText(@"C:\temp\checkpath.txt", "\tSave one HornAuxAction, count :" + cnt +
+                "Position in file: " + outf.BaseStream.Position +
+                " type Action: " + NextAction.ToString() + 
+                " Delay: " + Delay + "\n");
+#endif
+            base.save(outf, cnt);
+            outf.Write(Delay);
         }
 
 
