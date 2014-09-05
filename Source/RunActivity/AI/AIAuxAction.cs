@@ -498,8 +498,12 @@ namespace ORTS
 
         public override AITrain.AI_MOVEMENT_STATE InitAction(AITrain thisTrain, int presentTime, float elapsedClockSeconds, AITrain.AI_MOVEMENT_STATE movementState)
         {
+            // repeat stopping of train, because it could have been moved by UpdateBrakingState after ProcessAction
+            thisTrain.AdjustControlsBrakeMore(thisTrain.MaxDecelMpSS, elapsedClockSeconds, 100);
             int correctedTime = presentTime;
             ActualDepart = correctedTime + Delay;
+
+
 #if WITH_PATH_DEBUG
             File.AppendAllText(@"C:\temp\checkpath.txt", "WP, init action for train " + thisTrain.Number + " at " + correctedTime + " to " + ActualDepart + "(HANDLE_ACTION)\n");
 #endif
