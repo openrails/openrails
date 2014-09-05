@@ -1511,13 +1511,23 @@ namespace ORTS
         {
             if (AuxActions.Count <= 0)
                 return;
-            AIAuxActionsRef thisAction = AuxActions[0];
-
-            if (thisAction.SubrouteIndex > TCRoute.activeSubpath)
+            while (AuxActions.Count > 0)
             {
-                return;
+                AIAuxActionsRef thistAction = AuxActions[0];
+
+                if (thistAction.SubrouteIndex > TCRoute.activeSubpath)
+                {
+                    return;
+                }
+                if (thistAction.SubrouteIndex == TCRoute.activeSubpath) break;
+                else
+                {
+                    AuxActions.RemoveAt(0);
+                    if (AuxActions.Count <= 0) return;
+                }
             }
 
+            AIAuxActionsRef thisAction = AuxActions[0];
             bool validAction = false;
             while (!validAction)
             {
@@ -2590,15 +2600,8 @@ namespace ORTS
 #if NEW_ACTION
                 else if(nextActionInfo.GetType().IsSubclassOf(typeof(AuxActionItem)))
                 {
-                    if (distanceToGoM < -1f)
-                    {
-                        nextActionInfo = null;
-                    }
-                    else
-                    {
-                        NextStopDistanceM = distanceToGoM;
-                        MovementState = nextActionInfo.ProcessAction(this, presentTime, elapsedClockSeconds, MovementState);
-                    }
+                    NextStopDistanceM = distanceToGoM;
+                    MovementState = nextActionInfo.ProcessAction(this, presentTime, elapsedClockSeconds, MovementState);
                 }
 #endif
                 // check speed reduction position reached
@@ -4025,7 +4028,7 @@ namespace ORTS
                 // reset to node control, also reset required actions
 
                 SwitchToNodeControl(-1);
-                ResetActions(true);
+                if (Simulator.TimetableMode || !Simulator.Settings.EnhancedActCompatibility) ResetActions(true);
 
             }
             else
