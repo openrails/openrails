@@ -219,6 +219,7 @@ namespace ORTS
             Alpha10 = inf.ReadInt32();
 
             MovementState = (AI_MOVEMENT_STATE)inf.ReadInt32();
+            if (MovementState == AI_MOVEMENT_STATE.INIT_ACTION || MovementState == AI_MOVEMENT_STATE.HANDLE_ACTION) MovementState = AI_MOVEMENT_STATE.BRAKING;
 
             Efficiency = inf.ReadSingle();
             MaxVelocityA = inf.ReadSingle();
@@ -328,6 +329,10 @@ namespace ORTS
         {
             int cnt = 0;
             outf.Write(AuxActions.Count);
+            if (MovementState == AI_MOVEMENT_STATE.HANDLE_ACTION )
+            {
+                ((AIActionWPRef)AuxActions[0]).SetDelay( Convert.ToInt32(Math.Floor(Simulator.ClockTime)) - Convert.ToInt32(Math.Floor(Simulator.ClockTime)));
+            }
 #if WITH_PATH_DEBUG
             File.AppendAllText(@"C:\temp\checkpath.txt", "SaveAIAuxActions, count :" + AuxActions.Count + 
                 "Position in file: " + outf.BaseStream.Position + "\n");
