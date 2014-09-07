@@ -340,7 +340,7 @@ namespace ORTS.TrackViewer.UserInterface
             {
                 paths.Add(makeHeader(path));
             }
-            paths.Insert(0, "<Select path>");
+            paths.Insert(0, TrackViewer.catalog.GetString("<Select path>"));
             menuSelectPathCombobox.ItemsSource = paths;
             menuSelectPathCombobox.SelectedItem = menuSelectPathCombobox.Items.GetItemAt(0).ToString();
         }
@@ -354,7 +354,7 @@ namespace ORTS.TrackViewer.UserInterface
             if (trackViewer.DrawTrackDB == null) return;
             if (trackViewer.DrawTrackDB.StationLocations == null) return;
             List<string> stations = trackViewer.DrawTrackDB.StationLocations.Keys.OrderBy(a => a.ToString()).ToList();
-            stations.Insert(0, "<Select station>");
+            stations.Insert(0, TrackViewer.catalog.GetString("<Select station>"));
             menuStationCombobox.ItemsSource = stations;
             menuStationCombobox.SelectedItem = menuStationCombobox.Items.GetItemAt(0).ToString();
         }
@@ -367,7 +367,7 @@ namespace ORTS.TrackViewer.UserInterface
             if (trackViewer.DrawTrackDB == null) return;
             if (trackViewer.DrawTrackDB.PlatformLocations == null) return;
             List<string> platforms = trackViewer.DrawTrackDB.PlatformLocations.Keys.OrderBy(a => a.ToString()).ToList();
-            platforms.Insert(0, "<Select platform>");
+            platforms.Insert(0, TrackViewer.catalog.GetString("<Select platform>"));
             menuPlatformCombobox.ItemsSource = platforms;
             menuPlatformCombobox.SelectedItem = menuPlatformCombobox.Items.GetItemAt(0).ToString();
         }
@@ -380,7 +380,7 @@ namespace ORTS.TrackViewer.UserInterface
             if (trackViewer.DrawTrackDB == null) return;
             if (trackViewer.DrawTrackDB.SidingLocations == null) return;
             List<string> sidings = trackViewer.DrawTrackDB.SidingLocations.Keys.OrderBy(a => a.ToString()).ToList();
-            sidings.Insert(0, "<Select siding>");
+            sidings.Insert(0, TrackViewer.catalog.GetString("<Select siding>"));
             menuSidingCombobox.ItemsSource = sidings;
             menuSidingCombobox.SelectedItem = menuSidingCombobox.Items.GetItemAt(0).ToString();
         }
@@ -497,27 +497,27 @@ namespace ORTS.TrackViewer.UserInterface
         private void menuShortcuts_Click(object sender, RoutedEventArgs e)
         {
             string shortcuts = String.Empty;
-            shortcuts += "A:  Shift left\n";
-            shortcuts += "S:  Shift down\n";
-            shortcuts += "D:  Shift right\n";
-            shortcuts += "W:  Shift up\n";
-            shortcuts += "C:  Shift to center of current path node\n";
-            shortcuts += "shift-C:  Shift to center of current mouse location\n";
-            shortcuts += "PgUp:  Show more of the path\n";
-            shortcuts += "PgDn:  Show less of the path\n";
-            shortcuts += "shift-PgUp:  Show the full path\n";
-            shortcuts += "shift-PgDn:  Show only start point of path\n";
-            shortcuts += "ctrl-Z: Undo in path editor\n";
-            shortcuts += "ctrl-Y: Redo in path editor\n";
+            shortcuts += TrackViewer.catalog.GetString("A:  Shift left\n");
+            shortcuts += TrackViewer.catalog.GetString("S:  Shift down\n");
+            shortcuts += TrackViewer.catalog.GetString("D:  Shift right\n");
+            shortcuts += TrackViewer.catalog.GetString("W:  Shift up\n");
+            shortcuts += TrackViewer.catalog.GetString("C:  Shift to center of current path node\n");
+            shortcuts += TrackViewer.catalog.GetString("shift-C:  Shift to center of current mouse location\n");
+            shortcuts += TrackViewer.catalog.GetString("PgUp:  Show more of the path\n");
+            shortcuts += TrackViewer.catalog.GetString("PgDn:  Show less of the path\n");
+            shortcuts += TrackViewer.catalog.GetString("shift-PgUp:  Show the full path\n");
+            shortcuts += TrackViewer.catalog.GetString("shift-PgDn:  Show only start point of path\n");
+            shortcuts += TrackViewer.catalog.GetString("ctrl-Z: Undo in path editor\n");
+            shortcuts += TrackViewer.catalog.GetString("ctrl-Y: Redo in path editor\n");
             MessageBox.Show(shortcuts);
         }
 
         private void menuAbout_Click(object sender, RoutedEventArgs e)
         {
             string shortcuts = String.Empty;
-            shortcuts += "This is ORTS TrackViewer, version " + TrackViewer.TrackViewerVersion + "\n";
-            shortcuts += "It is a 'Contribution' to ORTS, and as such\n";
-            shortcuts += "not an integral part of ORTS.";
+            shortcuts += TrackViewer.catalog.GetString("This is ORTS TrackViewer, version " + TrackViewer.TrackViewerVersion + "\n");
+            shortcuts += TrackViewer.catalog.GetString("It is a 'Contribution' to ORTS, and as such\n");
+            shortcuts += TrackViewer.catalog.GetString("not an integral part of ORTS.");
             MessageBox.Show(shortcuts);
         }
 
@@ -769,15 +769,14 @@ namespace ORTS.TrackViewer.UserInterface
         private void menuKnownLimitations_Click(object sender, RoutedEventArgs e)
         {
             string limitations = String.Empty;
-            limitations += "Currently all intended and planned editor features have been implemented.\n";
-            limitations += "Documentation is available\n";
+            limitations += TrackViewer.catalog.GetString("Currently all intended and planned editor features have been implemented.") + "\n";
+            limitations += TrackViewer.catalog.GetString("Documentation is available") + "\n";
             limitations += "\n";
-            limitations += "Known limitations:\n";
-            limitations += "* The saved-paths have not been tested with MSTS or ORTS.\n";
-            limitations += "* Possibly non-standard junctions (> 1 incoming or > 2 outgoing tracks) might not work.\n";
-            limitations += "* PathFlags for the whole path is not supported (simply because it is unclear what it should do)\n";
+            limitations += TrackViewer.catalog.GetString("Known limitations") + ":\n";
+            limitations += TrackViewer.catalog.GetString("* The saved-paths have not been tested with MSTS or ORTS.") + "\n";
+            limitations += TrackViewer.catalog.GetString("* Possibly non-standard junctions (> 1 incoming or > 2 outgoing tracks) might not work.") + "\n";
             limitations += "\n";
-            limitations += "Feedback is appreciated.\n";
+            limitations += TrackViewer.catalog.GetString("Feedback is appreciated.") + "\n";
             limitations += "\n";
             MessageBox.Show(limitations);
         }
@@ -850,6 +849,21 @@ namespace ORTS.TrackViewer.UserInterface
         private void menuNeedingMouseClosed(object sender, RoutedEventArgs e)
         {
             trackViewer.MenuHasMouse = false;
+        }
+
+        /// <summary>
+        /// Populate the combobox for languages
+        /// </summary>
+        public void PopulateLanguages()
+        {
+            comboBoxLanguage.ItemsSource = trackViewer.languageManager.Languages;
+            comboBoxLanguage.SelectedValue = trackViewer.languageManager.CurrentLanguageCode; 
+        }
+
+        private void comboBoxLanguage_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Language selectedLanguage = comboBoxLanguage.SelectedItem as Language;
+            trackViewer.languageManager.SelectLanguage(selectedLanguage.Code);
         }
 
     }

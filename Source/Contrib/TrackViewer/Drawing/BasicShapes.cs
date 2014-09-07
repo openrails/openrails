@@ -98,7 +98,6 @@ namespace ORTS.TrackViewer.Drawing
 
         }
 
-
         /// <summary>
         /// Create both a normal and a highlighted texture by loading, adding highlight and doing automipmap
         /// </summary>

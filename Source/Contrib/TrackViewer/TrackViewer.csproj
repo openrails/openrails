@@ -106,6 +106,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="TrackViewer.cs" />
+    <Compile Include="UserInterface\Languages.cs" />
     <Compile Include="UserInterface\MenuControl.xaml.cs">
       <DependentUpon>MenuControl.xaml</DependentUpon>
     </Compile>

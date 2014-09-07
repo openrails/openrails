@@ -104,6 +104,10 @@
             <MenuItem Header="Preferences" Name="menuPreferences">
                 <MenuItem Header="Zooming is centered on mouse (m)" Name="menuZoomIsCenteredOnMouse" IsCheckable="True" IsChecked="True"
                           Click="UpdateMenuSettings"/>
+                <MenuItem Header="Select language" Name="menuSelectLanguage">
+                    <ComboBox Name="comboBoxLanguage" SelectionChanged="comboBoxLanguage_SelectionChanged"
+                              DisplayMemberPath="Name" SelectedValuePath="Code"/>
+                </MenuItem>
             </MenuItem>
             <MenuItem Header="Path-Editor" Name="menuPathEditor" >
                 <MenuItem Header="==Supporting MSTS paths only==" Foreground="Blue" IsEnabled="False"/>

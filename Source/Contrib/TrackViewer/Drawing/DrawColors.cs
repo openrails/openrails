@@ -73,14 +73,16 @@ namespace ORTS.TrackViewer.Drawing
         private static void SetPathColors(IPreferenceChanger preferenceChanger)
         {
             ColorWithHighlights pathMain = new ColorWithHighlights(Color.Yellow, 20);
-            pathMain.MakeIntoUserPreference(preferenceChanger, "pathmain", "Select path color (main)");
+            pathMain.MakeIntoUserPreference(preferenceChanger, "pathmain", 
+                TrackViewer.catalog.GetString("Select path color (main)"));
             ColorsGroupTrack pathMainGroup = new ColorsGroupTrack();
             pathMainGroup.TrackCurved = pathMain;
             pathMainGroup.TrackStraight = pathMain;
             colorsPathMain.TrackColors = pathMainGroup;
 
             ColorWithHighlights pathSiding = new ColorWithHighlights(Color.Orange, 20);
-            pathSiding.MakeIntoUserPreference(preferenceChanger, "pathsiding", "Select path color (siding)");
+            pathSiding.MakeIntoUserPreference(preferenceChanger, "pathsiding", 
+                TrackViewer.catalog.GetString("Select path color (siding)"));
             ColorsGroupTrack pathSidingGroup = new ColorsGroupTrack();
             pathSidingGroup.TrackCurved = pathSiding;
             pathSidingGroup.TrackStraight = pathSiding;
@@ -112,7 +114,8 @@ namespace ORTS.TrackViewer.Drawing
         {
             ColorWithHighlights fixedBackgroundColor = new ColorWithHighlights(Color.White, 20);
             ColorWithHighlights changingBackgroundColor = new ColorWithHighlights(Color.PaleGreen, 20);
-            changingBackgroundColor.MakeIntoUserPreference(preferenceChanger, "background", "Select background color");
+            changingBackgroundColor.MakeIntoUserPreference(preferenceChanger, "background", 
+                TrackViewer.catalog.GetString("Select background color"));
             backgroundWithoutTilesGroup.Tile = changingBackgroundColor;
             backgroundWithoutTilesGroup.ClearWindow = changingBackgroundColor;
             backgroundWithTilesGroup.Tile = changingBackgroundColor;
@@ -126,35 +129,43 @@ namespace ORTS.TrackViewer.Drawing
             ColorWithHighlights basicColor;
 
             basicColor = new ColorWithHighlights(Color.Black, 40);
-            basicColor.MakeIntoUserPreference(preferenceChanger, "text", "Select text color");
+            basicColor.MakeIntoUserPreference(preferenceChanger, "text", 
+                TrackViewer.catalog.GetString("Select text color"));
             basicColors.Text = basicColor;
 
             basicColor = new ColorWithHighlights(Color.Blue, 120);
-            basicColor.MakeIntoUserPreference(preferenceChanger, "junction", "Select junction color");
+            basicColor.MakeIntoUserPreference(preferenceChanger, "junction", 
+                TrackViewer.catalog.GetString("Select junction color"));
             basicColors.Junction = basicColor;
 
             basicColor = new ColorWithHighlights(Color.LimeGreen, 40);
-            basicColor.MakeIntoUserPreference(preferenceChanger, "endnode", "Select endnode color");
+            basicColor.MakeIntoUserPreference(preferenceChanger, "endnode", 
+                TrackViewer.catalog.GetString("Select endnode color"));
             basicColors.EndNode = basicColor;
 
             basicColor = new ColorWithHighlights(Color.Sienna, 40);
-            basicColor.MakeIntoUserPreference(preferenceChanger, "siding", "Select siding color");
+            basicColor.MakeIntoUserPreference(preferenceChanger, "siding", 
+                TrackViewer.catalog.GetString("Select siding color"));
             basicColors.Siding = basicColor;
 
             basicColor = new ColorWithHighlights(Color.Gray, 40);
-            basicColor.MakeIntoUserPreference(preferenceChanger, "crossing", "Select crossing color");
+            basicColor.MakeIntoUserPreference(preferenceChanger, "crossing", 
+                TrackViewer.catalog.GetString("Select crossing color"));
             basicColors.Crossing = basicColor;
 
             basicColor = new ColorWithHighlights(Color.DarkGray, 40);
-            basicColor.MakeIntoUserPreference(preferenceChanger, "roadcrossing", "Select road crossing color");
+            basicColor.MakeIntoUserPreference(preferenceChanger, "roadcrossing", 
+                TrackViewer.catalog.GetString("Select road crossing color"));
             basicColors.RoadCrossing = basicColor;
 
             basicColor = new ColorWithHighlights(Color.Purple, 40);
-            basicColor.MakeIntoUserPreference(preferenceChanger, "speedpost", "Select speedpost color");
+            basicColor.MakeIntoUserPreference(preferenceChanger, "speedpost", 
+                TrackViewer.catalog.GetString("Select speedpost color"));
             basicColors.Speedpost = basicColor;
 
             basicColor = new ColorWithHighlights(Color.Salmon, 40);
-            basicColor.MakeIntoUserPreference(preferenceChanger, "speedpost", "Select broken path color");
+            basicColor.MakeIntoUserPreference(preferenceChanger, "speedpost", 
+                TrackViewer.catalog.GetString("Select broken path color"));
             basicColors.BrokenPath = basicColor;
 
             basicColor = new ColorWithHighlights(Color.Red, 40);

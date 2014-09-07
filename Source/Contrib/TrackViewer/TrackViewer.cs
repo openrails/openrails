@@ -17,16 +17,19 @@
 //
 //
 //
-// ENHANCEMENT list for Trackviewer      
+// ENHANCEMENT list for Trackviewer 
+// Short term 
+//      Path editor: allow dragging junction nodes with the mouse.
+//     
 // Issues
-//      moving around with cursor buttons
+//      moving around with cursor buttons. Some XNA-WPF interaction that I have not understood and could not find on internet
 //      Loop is not done OK. Possibly there is not even a right way given the limitations of MSTS format.
 //
 // Additions
-//      Path editor: allow dragging junction nodes with the mouse.
+//      Draw ground textures from .ace files.
 //
 // Ideas from others
-//      Draw ground textures from .ace files.
+//      Adding color option also for 'black' parts of path textures
 //      Be able to list the issues directly without going through the ORTS logfile
 //      Make it XNA independent.
 //      Import & export.
@@ -120,7 +123,7 @@ namespace ORTS.TrackViewer
     {
         #region Public members
         /// <summary>String showing the date of the program</summary>
-        public readonly static string TrackViewerVersion = "2014/08/31";
+        public readonly static string TrackViewerVersion = "2014/09/06";
         /// <summary>Path where the content (like .png files) is stored</summary>
         public string ContentPath { get; private set; }
         /// <summary>Folder where MSTS is installed (or at least, where the files needed for tracks, routes and paths are stored)</summary>
@@ -143,6 +146,9 @@ namespace ORTS.TrackViewer
         public DrawArea DrawArea { get; private set; }
         /// <summary>The frame rate</summary>
         public SmoothedData FrameRate { get; private set; }
+
+        /// <summary>The language manager to deal with various languages.</summary>
+        public LanguageManager languageManager { get; private set; }
 
         /// <summary>The Path editor</summary>
         public PathEditor PathEditor { get; private set; }
@@ -207,12 +213,15 @@ namespace ORTS.TrackViewer
             Window.AllowUserResizing = true;
             Window.ClientSizeChanged += new System.EventHandler(Window_ClientSizeChanged);
         
-
             //we do not a very fast behaviour, but we do need to get all key presses
             IsFixedTimeStep = true;
             TargetElapsedTime = TimeSpan.FromSeconds(0.05);
             FrameRate = new SmoothedData(0.5f);
             InitLogging();
+
+            languageManager = new LanguageManager();
+            languageManager.LoadLanguage(); // need this before all menus and stuff are initialized.
+
         }
 
         /// <summary>
@@ -220,7 +229,8 @@ namespace ORTS.TrackViewer
         /// </summary>
         public void SetAliasing()
         {
-            // Personally, I do not think anti-aliasing looks crisp at all
+            // Personally, I do not think anti-aliasing looks crisp at all. Poddibly because not enough multi-sampling is used.
+            // If someone knows how to get better/best antisampling depending on available hardware, be my guess.
             graphics.PreferMultiSampling = Properties.Settings.Default.doAntiAliasing;
         }
 
@@ -247,6 +257,7 @@ namespace ORTS.TrackViewer
 
             statusBarControl = new StatusBarControl(this);
             menuControl = new MenuControl(this);
+            menuControl.PopulateLanguages();
             DrawColors.Initialize(menuControl);
             
 
@@ -748,7 +759,7 @@ namespace ORTS.TrackViewer
         /// </summary>
         private void findPaths()
         {
-            List<Path> newPaths = Path.GetPaths(CurrentRoute).OrderBy(r => r.Name).ToList();
+            List<Path> newPaths = Path.GetPaths(CurrentRoute, true).OrderBy(r => r.Name).ToList();
             Paths = new Collection<Path>(newPaths);
             menuControl.PopulatePaths();
             SetPath(null);   

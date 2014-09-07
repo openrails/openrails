@@ -1400,6 +1400,20 @@ lastEditableNode.NextMainNode = null;
         /// <returns>True if a connection has been found</returns>
         protected bool FindConnection(TrainpathNode startNode, TrainpathNode reconnectNode)
         {
+            return FindConnection(startNode, reconnectNode, null);
+        }
+
+        /// <summary>
+        /// Try to find a connection. Depth-first search via main track at junctions.
+        /// Also reversing the start or reconnectNode is tried, in case one of these nodes has a non-defined orientation 
+        /// because both before and after the node the path is broken.
+        /// </summary>
+        /// <param name="startNode">Node at which the reconnection should start</param>
+        /// <param name="reconnectNode">Node at which the reconnection should end</param>
+        /// <param name="firstTvnIndex">In case defined, the index of the first TVN the path has to follow</param>
+        /// <returns>True if a connection has been found</returns>
+        protected bool FindConnection(TrainpathNode startNode, TrainpathNode reconnectNode, int? firstTvnIndex)
+        {
             // We try to find a connection between two non-broken nodes.
             // We store the connection as a stack of linking tvns (track-node-vector-indexes)
             // The connection will only contain junctions (apart from maybe start and end nodes)
@@ -1410,13 +1424,14 @@ lastEditableNode.NextMainNode = null;
             autoFixReconnectNode = reconnectNode;
             startNodeNeedsReverse = false;
             reconnectNodeNeedsReverse = false;
-            
-            if (FindConnectionSameTrack()) {
+
+            if (FindConnectionSameTrack(firstTvnIndex))
+            {
                 return true;
             }
 
             //first try to see if we succeed without re-orienting the startNode or reconnectNode
-            if (FindConnectionThisOrientation())
+            if (FindConnectionThisOrientation(firstTvnIndex))
             {
                 return true;
             }
@@ -1425,9 +1440,10 @@ lastEditableNode.NextMainNode = null;
             if (CanReverse(startNode))
             {
                 startNode.ReverseOrientation();
-                startNodeNeedsReverse = FindConnectionThisOrientation();
+                startNodeNeedsReverse = FindConnectionThisOrientation(firstTvnIndex);
                 startNode.ReverseOrientation(); // we only do the actual reverse if the user chooses to fix
-                if (startNodeNeedsReverse) {
+                if (startNodeNeedsReverse)
+                {
                     return true;
                 }
             }
@@ -1436,9 +1452,10 @@ lastEditableNode.NextMainNode = null;
             if (CanReverse(reconnectNode))
             {
                 reconnectNode.ReverseOrientation();
-                reconnectNodeNeedsReverse = FindConnectionThisOrientation();
+                reconnectNodeNeedsReverse = FindConnectionThisOrientation(firstTvnIndex);
                 reconnectNode.ReverseOrientation(); // we only do the actual reverse if the user chooses to fix
-                if (reconnectNodeNeedsReverse) {
+                if (reconnectNodeNeedsReverse)
+                {
                     return true;
                 }
             }
@@ -1451,8 +1468,9 @@ lastEditableNode.NextMainNode = null;
         /// No reversing of the nodes will be allowed. 
         /// AutoFixStartNode and AutoFixReconnectNode are assumed to be defined already
         /// </summary>
+        /// <param name="firstTvnIndex">In case defined, the index of the first TVN the path has to follow</param>
         /// <returns>True if a connection has been found</returns>
-        private bool FindConnectionThisOrientation()
+        private bool FindConnectionThisOrientation(int? firstTvnIndex)
         {
             linkingTvns.Clear();
 
@@ -1466,6 +1484,7 @@ lastEditableNode.NextMainNode = null;
             TrainpathJunctionNode firstNodeAsJunction = autoFixStartNode as TrainpathJunctionNode;
             if (firstNodeAsVector != null)
             {
+                if (firstTvnIndex.HasValue && (firstTvnIndex.Value != firstNodeAsVector.TvnIndex)) return false;
                 firstJunctionIndex = firstNodeAsVector.GetNextJunctionIndex(firstNodeAsVector.TvnIndex);
                 linkingTvns.Add(firstNodeAsVector.TvnIndex);
                 firstJunctionIsFacing = (firstNodeAsVector.TvnIndex == TrackExtensions.TrackNode(firstJunctionIndex).TrailingTvn());
@@ -1491,17 +1510,30 @@ lastEditableNode.NextMainNode = null;
             }
 
             //search for a path
-            bool foundConnection = TryToFindConnection(firstJunctionIndex, firstJunctionIsFacing,
+            bool foundConnection;
+            if (firstTvnIndex.HasValue)
+            {
+                foundConnection = TryToFindConnectionVia(firstTvnIndex.Value, firstJunctionIndex, 
+                                                        lastJunctionIndex, lastJunctionIsFacing, 
+                                                        linkingTvns);
+            }
+            else
+            {
+                foundConnection = TryToFindConnection(firstJunctionIndex, firstJunctionIsFacing,
                                                        lastJunctionIndex, lastJunctionIsFacing,
                                                        linkingTvns);
+            }
+            
+
             return foundConnection;
         }
 
         /// <summary>
         /// Find whether it is possible to connect directly two points on the same track
         /// </summary>
+        /// <param name="firstTvnIndex">In case defined, the index of the first TVN the path has to follow</param>
         /// <returns>true if such a direct path has been found</returns>
-        private bool FindConnectionSameTrack()
+        private bool FindConnectionSameTrack(int? firstTvnIndex)
         {
             TrainpathVectorNode startAsVector     = autoFixStartNode as TrainpathVectorNode;
             TrainpathVectorNode reconnectAsVector = autoFixReconnectNode as TrainpathVectorNode;
@@ -1509,6 +1541,7 @@ lastEditableNode.NextMainNode = null;
             if (startAsVector == null) return false;
             if (reconnectAsVector == null) return false;
             if (startAsVector.TvnIndex != reconnectAsVector.TvnIndex) return false;
+            if (firstTvnIndex.HasValue && (firstTvnIndex.Value != startAsVector.TvnIndex )) return false;
 
             //for a reverse point the orientation is defined as being after the reversal.
             bool reconnectIsForward = (reconnectAsVector.NodeType == TrainpathNodeType.Reverse)
@@ -1517,7 +1550,7 @@ lastEditableNode.NextMainNode = null;
             if (startAsVector.ForwardOriented != reconnectIsForward) return false;
             if (startAsVector.ForwardOriented != startAsVector.IsEarlierOnTrackThan(reconnectAsVector)) return false;
 
-            linkingTvns.Clear();
+            linkingTvns.Clear(); // Same track so no linking Tvns needed
             return true;
         }
 
@@ -1895,11 +1928,17 @@ lastEditableNode.NextMainNode = null;
             if (ActiveNode.NextSidingNode == null) return false;
             if (ActiveNode.NextSidingNode.NodeType == TrainpathNodeType.SidingEnd) return false; // not enough room to take other exit.
 
+            TrainpathJunctionNode activeNodeAsJunction = (ActiveNode as TrainpathJunctionNode);
+            if ((activeNodeAsJunction == null) || (!activeNodeAsJunction.IsFacingPoint) ) {
+                return false;
+            }
+
             FindSidingEnd();
             if (sidingEndNode == null) return false;
 
             if (!FindDisAllowedJunctionIndexes()) return false;
-            return FindConnection(ActiveNode,sidingEndNode);
+            int newNextTvnIndex = activeNodeAsJunction.OtherExitTvnIndex();
+            return FindConnection(ActiveNode,sidingEndNode, newNextTvnIndex);
         }
 
         /// <summary>
@@ -1928,10 +1967,7 @@ lastEditableNode.NextMainNode = null;
         /// <returns>false if there was something really wrong</returns>
         bool FindDisAllowedJunctionIndexes()
         {
-            DisAllowedJunctionIndexes.Clear();  // to prevent the reconnection to go over the main path
-
-            DisAllowedJunctionIndexes.Add(TrackExtensions.GetNextJunctionIndex(
-                (ActiveNode as TrainpathJunctionNode).JunctionIndex, ActiveNode.NextSidingTvnIndex));
+            DisAllowedJunctionIndexes.Clear();  
 
             TrainpathNode mainNode = sidingEndNode.PrevNode;
             //follow the train path backward and see what we find
@@ -1978,9 +2014,33 @@ lastEditableNode.NextMainNode = null;
     }
     #endregion
 
+    #region MouseDragAll
+    /// <summary>
+    /// Subclass to implement the actions related to mouse dragging.
+    /// This class is about dragging 
+    /// </summary>
+    public class EditorActionMouseDragAll : EditorAction
+    {
+        /// <summary>Constructor</summary>
+        public EditorActionMouseDragAll() : base("", "") { }
+
+        /// <summary>Can the action be executed given the current path and active nodes?</summary>
+        protected override bool CanExecuteAction()
+        {
+            return true;
+        }
+
+        /// <summary>Execute the action. This assumes that the action can be executed</summary>
+        protected override void ExecuteAction()
+        {
+        }
+    }
+    #endregion
+
     #region MouseDrag
     /// <summary>
     /// Subclass to implement the actions related to mouse dragging.
+    /// This class is about dragging only start, end, wait and reverse points
     /// </summary>
     public class EditorActionMouseDrag : EditorAction
     {

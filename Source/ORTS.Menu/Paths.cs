@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -23,24 +23,37 @@ using System;
 
 namespace ORTS.Menu
 {
+    /// <summary>
+    /// Representation of the metadata of a path, where the path is coded in a .pat file. So not the full .pat file, 
+    /// but just basic information to be used in menus etc.
+    /// </summary>
     public class Path
     {
+        /// <summary>Name of the path</summary>
         public readonly string Name;
+        /// <summary>Start location of the path</summary>
         public readonly string Start;
+        /// <summary>Destination location of the path</summary>
         public readonly string End;
+        /// <summary>Full filename of the underlying .pat file</summary>
         public readonly string FilePath;
+        /// <summary>Is the path a player path or not</summary>
+        public readonly bool IsPlayerPath;
 
         GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
 
+        /// <summary>
+        /// Constructor. This will try to have the requested .pat file parsed for its metadata
+        /// </summary>
+        /// <param name="filePath">The full name of the .pat file</param>
         internal Path(string filePath)
         {
             if (File.Exists(filePath))
             {
-                var showInList = true;
                 try
                 {
                     var patFile = new PATFile(filePath);
-                    showInList = patFile.IsPlayerPath;
+                    this.IsPlayerPath = patFile.IsPlayerPath;
                     Name = patFile.Name.Trim();
                     Start = patFile.Start.Trim();
                     End = patFile.End.Trim();
@@ -49,7 +62,6 @@ namespace ORTS.Menu
                 {
                     Name = "<" + catalog.GetString("load error:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
                 }
-                if (!showInList) throw new InvalidDataException("Path '" + filePath + "' is excluded.");
                 if (string.IsNullOrEmpty(Name)) Name = "<" + catalog.GetString("unnamed:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
                 if (string.IsNullOrEmpty(Start)) Start = "<" + catalog.GetString("unnamed:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
                 if (string.IsNullOrEmpty(End)) End = "<" + catalog.GetString("unnamed:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
@@ -58,45 +70,80 @@ namespace ORTS.Menu
             {
                 Name = Start = End = "<" + catalog.GetString("missing:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
             }
-            FilePath = filePath;
+            this.FilePath = filePath;
         }
 
+        /// <summary>
+        /// A path will be identified by its destination
+        /// </summary>
         public override string ToString()
         {
             return End;
         }
 
-        public static List<Path> GetPaths(Route route)
+        /// <summary>
+        /// Return a list of paths that belong to the given route.
+        /// </summary>
+        /// <param name="route">The Route for which the paths need to be found</param>
+        /// <param name="includeNonPlayerPaths">Selects whether non-player paths are included or not</param>
+        public static List<Path> GetPaths(Route route, bool includeNonPlayerPaths)
         {
             var paths = new List<Path>();
             var directory = System.IO.Path.Combine(route.Path, "PATHS");
             if (Directory.Exists(directory))
             {
-                foreach (var path in Directory.GetFiles(directory, "*.pat"))
+                foreach (var file in Directory.GetFiles(directory, "*.pat"))
                 {
+                    Path path = null;
                     try
                     {
-                        paths.Add(new Path(path));
+                        path = new Path(file);
                     }
                     catch { }
+
+                    bool pathShouldBeIncluded = includeNonPlayerPaths || path.IsPlayerPath;
+                    if (pathShouldBeIncluded)
+                    {
+                        paths.Add(path);
+                    }
                 }
             }
             return paths;
         }
 
-        public static Path GetPath(Route route, string name)
+        /// <summary>
+        /// Get a path from a certain route with given name.
+        /// </summary>
+        /// <param name="route">The Route for which the paths need to be found</param>
+        /// <param name="name">The (file) name of the path, without directory, any extension allowed</param>
+        /// <param name="allowNonPlayerPath">Are non-player paths allowed?</param>
+        /// <returns>The path that has been found and is allowed, or null</returns>
+        public static Path GetPath(Route route, string name, bool allowNonPlayerPath)
         {
-            Path path = null; ;
-            var directory = System.IO.Path.Combine(route.Path, "PATHS");
-            var file = System.IO.Path.Combine(directory, System.IO.Path.ChangeExtension(name, "pat"));
+            Path path;
+            string directory = System.IO.Path.Combine(route.Path, "PATHS");
+            string file = System.IO.Path.Combine(directory, System.IO.Path.ChangeExtension(name, "pat"));
             try
             {
                 path = new Path(file);
             }
-            catch { }
+            catch {
+                path = null;
+            }
+
+            bool pathIsAllowed = allowNonPlayerPath || path.IsPlayerPath;
+            if (!pathIsAllowed)
+            {
+                path = null;
+            }
+
             return path;
         }
 
+        /// <summary>
+        /// Additional information strings about the metadata
+        /// </summary>
+        /// <returns>array of strings with the user-readable information</returns>
         public string[] ToInfo()
         {
             string[] infoString = new string[3];

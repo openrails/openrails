@@ -23,7 +23,8 @@ namespace ORTS.TrackViewer.Editing
         /// Create the dialog to edit the path metadata, and fill it with current values
         /// </summary>
         /// <param name="metadata">Array of string, containing ID, name, start and end</param>
-        public PathMetadataDialog(string[] metadata)
+        /// <param name="isPlayerPath">Is the path currently a player path?</param>
+        public PathMetadataDialog(string[] metadata, bool isPlayerPath)
         {
             InitializeComponent();
             this.Left = 100;
@@ -32,6 +33,7 @@ namespace ORTS.TrackViewer.Editing
             pathName.Text  = metadata[1];
             pathStart.Text = metadata[2];
             pathEnd.Text   = metadata[3];
+            pathIsPlayerPath.IsChecked = isPlayerPath; 
         }
 
         private void buttonOK_Click(object sender, RoutedEventArgs e)
@@ -50,7 +52,7 @@ namespace ORTS.TrackViewer.Editing
         /// <returns>string array containing the meta data</returns>
         public string[] GetMetadata()
         {
-            string[] metadata = { pathID.Text, pathName.Text, pathStart.Text, pathEnd.Text };
+            string[] metadata = { pathID.Text, pathName.Text, pathStart.Text, pathEnd.Text, pathIsPlayerPath.IsChecked.ToString() };
             return metadata;
         }
  

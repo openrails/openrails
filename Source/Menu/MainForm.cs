@@ -736,7 +736,7 @@ namespace ORTS
             ShowHeadToList();
 
             var selectedRoute = SelectedRoute;
-            PathLoader = new Task<List<Path>>(this, () => Path.GetPaths(selectedRoute).OrderBy(a => a.ToString()).ToList(), (paths) =>
+            PathLoader = new Task<List<Path>>(this, () => Path.GetPaths(selectedRoute, false).OrderBy(a => a.ToString()).ToList(), (paths) =>
             {
                 Paths = paths;
                 if (SelectedActivity == null || SelectedActivity is ExploreActivity)
@@ -1113,7 +1113,7 @@ namespace ORTS
         {
             TTPreInfo.TTTrainPreInfo selectedTrain = comboBoxPlayerTrain.SelectedItem as TTPreInfo.TTTrainPreInfo;
             SelectedTimetableConsist = Consist.GetConsist(SelectedFolder, selectedTrain.Consist);
-            SelectedTimetablePath = Path.GetPath(SelectedRoute, selectedTrain.Path);
+            SelectedTimetablePath = Path.GetPath(SelectedRoute, selectedTrain.Path, false);
             ShowDetails();
         }
         #endregion

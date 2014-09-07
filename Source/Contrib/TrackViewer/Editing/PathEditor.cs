@@ -628,7 +628,8 @@ namespace ORTS.TrackViewer.Editing
         public void EditMetaData()
         {
             string[] metadata = { trainpath.PathId, trainpath.PathName, trainpath.PathStart, trainpath.PathEnd };
-            PathMetadataDialog metadataDialog = new PathMetadataDialog(metadata);
+            bool isPlayerPath = (trainpath.PathFlags & PathFlags.NotPlayerPath) == 0;
+            PathMetadataDialog metadataDialog = new PathMetadataDialog(metadata, isPlayerPath);
             if (metadataDialog.ShowDialog() == true)
             {
                 metadata = metadataDialog.GetMetadata();
@@ -636,6 +637,16 @@ namespace ORTS.TrackViewer.Editing
                 trainpath.PathName = metadata[1];
                 trainpath.PathStart = metadata[2];
                 trainpath.PathEnd = metadata[3];
+
+                isPlayerPath = (metadata[4] == true.ToString());
+                if (isPlayerPath)
+                {
+                    trainpath.PathFlags &= ~PathFlags.NotPlayerPath; // unset the nonplayerpath flag
+                }
+                else
+                {
+                    trainpath.PathFlags |= PathFlags.NotPlayerPath; // set the nonplayerpath flag
+                }
             }
         }
 

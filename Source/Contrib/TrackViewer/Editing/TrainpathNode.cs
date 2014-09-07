@@ -517,7 +517,9 @@ namespace ORTS.TrackViewer.Editing
         /// <returns>The index of the other leaving vector node.</returns>
         public int OtherExitTvnIndex()
         {
-            if (NextMainTvnIndex == MainTvn)
+            // selecting whether to do this on main or siding is simple: if there is no next main, has to be siding
+            int CurrentNextTvnIndex = (NextMainTvnIndex > 0 ) ? NextMainTvnIndex : NextSidingTvnIndex;
+            if (CurrentNextTvnIndex == MainTvn)
             {
                 return SidingTvn;
             }
@@ -535,6 +537,16 @@ namespace ORTS.TrackViewer.Editing
             Location = DrawTrackDB.UidLocation(TrackDB.TrackNodes[JunctionIndex].UiD);
         }
 
+        /// <summary>
+        /// Override the ToString for easier debugging
+        /// </summary>
+        public override string ToString()
+        {
+            return String.Format(System.Globalization.CultureInfo.CurrentCulture, 
+                "TrainPathJunctionNode {0} {1}", this.JunctionIndex, 
+                this.IsFacingPoint ? "(Facing)" : "(Trailing)"
+                );
+        }
     }
 
     /// <summary>
@@ -928,6 +940,15 @@ namespace ORTS.TrackViewer.Editing
             return towardsNodeIsForwardOriented
                 ? linkingTrackNode.JunctionIndexAtStart()
                 : linkingTrackNode.JunctionIndexAtEnd();
+        }
+
+        /// <summary>
+        /// Override the ToString for easier debugging
+        /// </summary>
+        public override string ToString()
+        {
+            return String.Format(System.Globalization.CultureInfo.CurrentCulture,
+                "TrainPathVectorNode {0}", this.TvnIndex);
         }
     }
 }

@@ -23,6 +23,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Windows.Forms;
 
 using MSTS.Formats;
 
@@ -181,6 +182,13 @@ namespace ORTS.TrackViewer.Editing
             this.FilePath = filePath;
 
             PATFile patFile = new PATFile(filePath);
+            if (PatFileIsIncomplete(patFile))
+            {
+                MessageBox.Show("The .pat file is somehow incomplete. Cannot load the path.",
+                        "Trackviewer Path Editor", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             PathId = patFile.PathID;
             PathName = patFile.Name;
             PathStart = patFile.Start;
@@ -200,6 +208,18 @@ namespace ORTS.TrackViewer.Editing
         }
 
         #region Methods to parse MSTS paths
+        private static bool PatFileIsIncomplete(PATFile patFile)
+        {
+            if (patFile.Name == null) { return true; }
+            if (patFile.PathID == null) { return true; }
+            if (patFile.Start == null) { return true; }
+            if (patFile.End == null) { return true; }
+            if (patFile.TrackPDPs.Count == 0) { return true; }
+            if (patFile.TrPathNodes.Count == 0) { return true; }
+            
+            return false;
+        }
+
         /// <summary>
         /// Create the initial list of nodes from the patFile. No linking or preoccessing
         /// </summary>

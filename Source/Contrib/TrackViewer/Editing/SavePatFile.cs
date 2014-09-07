@@ -52,6 +52,12 @@ namespace ORTS.TrackViewer.Editing
                 return;
             }
 
+            if (trainpath.FirstNode == null)
+            {
+                DisplayNoPathAvailable();
+                return;
+            }
+
             if (UserCancelledBecauseOfUnfinishedPath(trainpath)) return;
 
             if (GetFileName(trainpath))
@@ -60,6 +66,12 @@ namespace ORTS.TrackViewer.Editing
                 WriteToFile(trainpath);
                 trainpath.IsModified = false;
             }
+        }
+
+        static void DisplayNoPathAvailable()
+        {
+            MessageBox.Show("Path does not even have a start node.\nSaving is not possible.",
+                        "Trackviewer Path Editor", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         static bool UserCancelledBecauseOfUnfinishedPath(Trainpath trainpath)
@@ -263,14 +275,12 @@ namespace ORTS.TrackViewer.Editing
             file.WriteLine(")");
             file.WriteLine("TrackPath (");
             file.WriteLine("\tTrPathName ( \"" + trainpath.PathId + "\" )");
-
-            //TODO, but I have no idea what the flags should be exactly
-            //if (trainpath.PathFlags != null) // currently the flags are perhaps not consistently read from PATfile.
-            //{
-            //string flagsString = string.Format(System.Globalization.CultureInfo.InvariantCulture,"{0:X8}", trainpath.PathFlags);// How to format hex? "X8" is not working for me.
-                string flagsString = "00000000";
-                file.WriteLine("\tTrPathFlags ( " + flagsString + " )"); 
-            //}
+         
+            // How to format hex? "{0:X8}" is not working for me. Neither is {0:X08}.
+            // Fortunately, {0:X} will use 8 characters anyway. Maybe because it knows the length from the number of bits in the number
+            string flagsString = string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:X}", trainpath.PathFlags);
+            file.WriteLine("\tTrPathFlags ( " + flagsString + " )"); 
+            
             file.WriteLine("\tName ( \"" + trainpath.PathName + "\" )");
             file.WriteLine("\tTrPathStart ( \""  + trainpath.PathStart + "\" )");
             file.WriteLine("\tTrPathEnd ( \"" + trainpath.PathEnd + "\" )");

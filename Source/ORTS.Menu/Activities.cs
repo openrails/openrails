@@ -64,6 +64,11 @@ namespace ORTS.Menu
                     Duration = actFile.Tr_Activity.Tr_Activity_Header.Duration;
                     Consist = new Consist(System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(folder.Path, "TRAINS"), "CONSISTS"), srvFile.Train_Config + ".con"), folder);
                     Path = new Path(System.IO.Path.Combine(System.IO.Path.Combine(route.Path, "PATHS"), srvFile.PathID + ".pat"));
+                    if (!Path.IsPlayerPath)
+                    {
+                        // Not nice to throw an error now. Error was originally thrown by new Path(...);
+                        throw new InvalidDataException("Not a player path");
+                    }
                 }
                 catch
                 {
