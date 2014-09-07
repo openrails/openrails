@@ -330,8 +330,14 @@ namespace ORTS
             int cnt = 0;
             outf.Write(AuxActions.Count);
             if (MovementState == AI_MOVEMENT_STATE.HANDLE_ACTION )
+
             {
-                ((AIActionWPRef)AuxActions[0]).SetDelay( Convert.ToInt32(Math.Floor(Simulator.ClockTime)) - Convert.ToInt32(Math.Floor(Simulator.ClockTime)));
+                if (nextActionInfo != null && nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.AUX_ACTION && (AuxActionWPItem)nextActionInfo != null)
+                // WP is running
+                {
+                    int remainingDelay = ((AuxActionWPItem)nextActionInfo).ActualDepart -Convert.ToInt32(Math.Floor(Simulator.ClockTime));
+                    ((AIActionWPRef)AuxActions[0]).SetDelay(remainingDelay);
+                }
             }
 #if WITH_PATH_DEBUG
             File.AppendAllText(@"C:\temp\checkpath.txt", "SaveAIAuxActions, count :" + AuxActions.Count + 
