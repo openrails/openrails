@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-07-13 12:04:31+0200\n"
-"PO-Revision-Date: 2014-07-13 12:04:37+0200\n"
+"POT-Creation-Date: 2014-09-08 01:46:43+0200\n"
+"PO-Revision-Date: 2014-09-08 01:46:46+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -11,69 +11,69 @@ msgstr ""
 "X-Generator: MonoDevelop Gettext addin\n"
 
 
-#: ../../RunActivity/Common/Scripting.cs:696
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:211
 msgid "Release"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:697
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:212
 msgid "Quick Release"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:698
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:213
 msgid "Running"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:699
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:214
 msgid "Neutral"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:700
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:215
 msgid "Apply"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:701
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:216
 msgid "EPApply"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:702
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:217
 msgid "Emergency"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:703
-#: ../../RunActivity/Common/Scripting.cs:706
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:218
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:221
 msgid "Lap"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:704
-#: ../../RunActivity/Common/Scripting.cs:705
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:219
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:220
 msgid "Service"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:707
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:222
 msgid "Suppression"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:708
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:223
 msgid "Cont. Service"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:709
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:224
 msgid "Full Service"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:710
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:225
 msgid "Overcharge"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:711
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:226
 msgid "Emergency Braking Push Button"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:712
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:227
 msgid "TCS Emergency Braking"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting.cs:713
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:228
 msgid "TCS Full Service Braking"
 msgstr ""
 
@@ -339,143 +339,137 @@ msgid_plural "Cannot decouple: train has {0} players, need to completely stop."
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../../RunActivity/Physics/Train.cs:1448
+#: ../../RunActivity/Physics/Train.cs:1457
 msgid "Coupler broken!"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:1451
+#: ../../RunActivity/Physics/Train.cs:1460
 msgid "Coupler overloaded!"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:4140
-#: ../../RunActivity/Physics/Train.cs:4145
+#: ../../RunActivity/Physics/Train.cs:4432
+#: ../../RunActivity/Physics/Train.cs:4437
 msgid "Other train is blocking path"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:4271
+#: ../../RunActivity/Physics/Train.cs:4563
 msgid "Held for connecting train : "
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:4326
-#: ../../RunActivity/Simulator/Activity.cs:831
+#: ../../RunActivity/Physics/Train.cs:4618
+#: ../../RunActivity/Simulator/Activity.cs:861
 msgid "Passenger boarding completed. You may depart now."
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5293
+#: ../../RunActivity/Physics/Train.cs:5601
 msgid "Stopped due to errors in route setting"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5955
-#: ../../RunActivity/Physics/Train.cs:7028
+#: ../../RunActivity/Physics/Train.cs:6263
+#: ../../RunActivity/Physics/Train.cs:7336
 msgid "No signal in train's path"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5963
+#: ../../RunActivity/Physics/Train.cs:6271
 msgid "Next signal already allocated to other train"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6024
+#: ../../RunActivity/Physics/Train.cs:6332
 msgid "Request to clear signal cannot be processed"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6130
-#: ../../RunActivity/Physics/Train.cs:7148
+#: ../../RunActivity/Physics/Train.cs:6438
+#: ../../RunActivity/Physics/Train.cs:7456
 msgid "No switch found"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7371
+#: ../../RunActivity/Physics/Train.cs:7679
 msgid "Train is not back on original route"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7380
+#: ../../RunActivity/Physics/Train.cs:7688
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7393
+#: ../../RunActivity/Physics/Train.cs:7701
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7488
+#: ../../RunActivity/Physics/Train.cs:7796
 msgid "Reversal required and rear of train not on required route"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7675
+#: ../../RunActivity/Physics/Train.cs:7983
 msgid "Cannot clear signal behind train while in AUTO mode"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:4332
-#: ../../RunActivity/Simulator/Activity.cs:824
+#: ../../RunActivity/Physics/Train.cs:4624
+#: ../../RunActivity/Simulator/Activity.cs:854
 #, csharp-format
 msgid "Passenger boarding completes in {0:D2}:{1:D2}"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7917
+#: ../../RunActivity/Physics/Train.cs:8228
 #, csharp-format
 msgid "Allowed speed raised to {0}"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7959
+#: ../../RunActivity/Physics/Train.cs:8270
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr ""
 
-#: ../../RunActivity/Processes/GameStateRunActivity.cs:523
-#, csharp-format
-msgid ""
-"Restoring from a save made by an older version {0}\n"
-msgstr ""
-
-#: ../../RunActivity/Processes/GameStateRunActivity.cs:1008
+#: ../../RunActivity/Processes/GameStateRunActivity.cs:1080
 #, csharp-format
 msgid "Activity Save file '*.save' not found in folder {0}"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:205
+#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:200
 msgid "No power line!"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:207
+#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:202
 msgid "Power line condition overridden."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1023
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1068
 msgid "Tender coal supply is empty. Your loco will fail."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1037
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1082
 msgid "Tender water supply is empty. Your loco will fail."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1091
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1136
 msgid "Fire has dropped too far. Your loco will fail."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1167
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1188
 msgid ""
 "FireMass is getting low. Your fireman will shovel faster, but don't wear him "
 "out."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1180
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1200
 msgid "FireMass is back within limits. Your fireman will shovel as per normal."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1773
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1783
 msgid ""
 "You are exceeding the maximum recommended speed. Continued operation at this "
 "speed may cause damage."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1961
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1971
 msgid "Water level dropped too far. Plug has fused and loco has failed."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1968
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1978
 msgid "Boiler overfull and priming."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1974
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1984
 msgid "Boiler no longer priming."
 msgstr ""
 
@@ -1274,93 +1268,93 @@ msgstr ""
 msgid "Compose Message (e.g.   receiver1, receiver2: message body)"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:42
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:43
 msgid "Help"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:44
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:45
 msgid "Key Commands"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:70
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:71
 msgid "Briefing"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:81
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:82
 msgid "Timetable"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:86
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:87
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:71
 msgid "Station"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:87
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:88
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:73
 msgid "Arrive"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:88
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:90
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:89
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:91
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:74
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:76
 msgid "Actual"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:89
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:90
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:75
 msgid "Depart"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:105
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:107
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:106
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:108
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:165
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:242
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:245
 msgid "(missed)"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:114
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:115
 msgid "Work Orders"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:119
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:120
 msgid "Task"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:120
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:121
 msgid "Car(s)"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:121
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:122
 msgid "Location"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:122
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:123
 msgid "Status"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:142
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:143
 msgid "Assemble Train"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:146
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:147
 msgid "At Location"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:150
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:151
 msgid "Drop Off"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:154
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:155
 msgid "Pick Up"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:237
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:238
 msgid "Done"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:250
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:251
 msgid "Procedures"
 msgstr ""
 
@@ -1409,47 +1403,47 @@ msgstr ""
 msgid "Switch"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:70
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:72
 msgid "Track Monitor"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:74
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:76
 msgid "Auto Signal"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:75
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:77
 msgid "Node"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:76
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:78
 msgid "Manual"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:77
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:79
 msgid "Explorer"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:78
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:80
 msgid "OutOfControl : "
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:79
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:81
 msgid "Unknown"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:98
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:100
 msgid "Speed:"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:105
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:107
 msgid "Projected:"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:112
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:114
 msgid "Limit:"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:130
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:132
 msgid " Dist      Speed   Aspect"
 msgstr ""
 

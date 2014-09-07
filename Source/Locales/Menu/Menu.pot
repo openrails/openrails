@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-08-29 17:34:06+0200\n"
-"PO-Revision-Date: 2014-08-29 17:34:07+0200\n"
+"POT-Creation-Date: 2014-09-08 01:46:41+0200\n"
+"PO-Revision-Date: 2014-09-08 01:46:42+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -315,7 +315,7 @@ msgid "Logging"
 msgstr ""
 
 #: ../../Menu/MainForm.Designer.cs:195
-#: ../../Menu/Options.Designer.cs:1609
+#: ../../Menu/Options.Designer.cs:1610
 msgid "Options"
 msgstr ""
 
@@ -766,85 +766,85 @@ msgstr ""
 msgid "Enhanced compatibility with MSTS activities"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1286
+#: ../../Menu/Options.Designer.cs:1287
 msgid "Enable Auxiliary Action "
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1296
+#: ../../Menu/Options.Designer.cs:1297
 msgid "Use ETCS Circular Speed Gauge"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1306
+#: ../../Menu/Options.Designer.cs:1307
 msgid "Signal light glow"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1316
+#: ../../Menu/Options.Designer.cs:1317
 msgid "Use model instancing"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1326
+#: ../../Menu/Options.Designer.cs:1327
 msgid ""
 "Use large address aware binaries (for all 64bit and 3GB tuning on 32bit)"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1336
+#: ../../Menu/Options.Designer.cs:1337
 msgid "Fast full-screen alt-tab"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1346
+#: ../../Menu/Options.Designer.cs:1347
 msgid "Use MSTS Environments"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1356
+#: ../../Menu/Options.Designer.cs:1357
 msgid "Always use highest detail objects"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1368
+#: ../../Menu/Options.Designer.cs:1369
 msgid "Use location-linked passing path processing"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1395
+#: ../../Menu/Options.Designer.cs:1396
 msgid "Ambient daylight brightness"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1404
+#: ../../Menu/Options.Designer.cs:1405
 msgid "Target frame rate"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1442
+#: ../../Menu/Options.Designer.cs:1443
 msgid "Automatically tune settings to keep performance level"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1452
+#: ../../Menu/Options.Designer.cs:1453
 msgid "Double overhead wires"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1462
+#: ../../Menu/Options.Designer.cs:1463
 msgid "Extend object maximum viewing distance to horizon"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1472
+#: ../../Menu/Options.Designer.cs:1473
 msgid "Gauge (mm)"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1509
+#: ../../Menu/Options.Designer.cs:1510
 msgid "Minimum length (m)"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1547
+#: ../../Menu/Options.Designer.cs:1548
 msgid "Level"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1558
+#: ../../Menu/Options.Designer.cs:1559
 msgid ""
 "Experimental features that may slow down the game, use at your own risk."
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1582
+#: ../../Menu/Options.Designer.cs:1583
 msgid "Super-elevation"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1591
+#: ../../Menu/Options.Designer.cs:1592
 msgid "Load DDS textures in preference to ACE"
 msgstr ""
 
@@ -860,7 +860,7 @@ msgid "Sound Volume 0-100"
 msgstr ""
 
 #: ../../Menu/Options.Designer.cs:510
-#: ../../Menu/Options.Designer.cs:1428
+#: ../../Menu/Options.Designer.cs:1429
 msgid "Distance to see mountains"
 msgstr ""
 
@@ -874,15 +874,15 @@ msgstr ""
 
 #: ../../Menu/Options.Designer.cs:1226
 #: ../../Menu/Options.Designer.cs:1252
-#: ../../Menu/Options.Designer.cs:1383
+#: ../../Menu/Options.Designer.cs:1384
 msgid "Default is 100"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1533
+#: ../../Menu/Options.Designer.cs:1534
 msgid "Shortest curve to have elevation"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1572
+#: ../../Menu/Options.Designer.cs:1573
 msgid "0: no elevation, 1: 9cm max; 10: 18cm max"
 msgstr ""
 
