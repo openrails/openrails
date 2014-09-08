@@ -1335,6 +1335,8 @@ namespace ORTS
 
         public abstract void HandleUserInput(ElapsedTime elapsedTime);
 
+        public abstract void InitializeUserInputCommands();
+
         /// <summary>
         /// Called at the full frame rate
         /// elapsedTime is time since last frame

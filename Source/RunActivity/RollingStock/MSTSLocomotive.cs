@@ -1631,6 +1631,7 @@ namespace ORTS
         {
             AlerterReset(TCSEvent.TrainBrakeChanged);
             TrainBrakeController.StartIncrease(target);
+            TrainBrakeController.CommandStartTime = Simulator.ClockTime;
             Simulator.Confirmer.Confirm(CabControl.TrainBrake, CabSetting.Increase, GetTrainBrakeStatus(PressureUnit));
             SignalEvent(Event.TrainBrakeChange);
         }
@@ -1639,12 +1640,14 @@ namespace ORTS
         {
             AlerterReset(TCSEvent.TrainBrakeChanged);
             TrainBrakeController.StopIncrease();
+            new TrainBrakeCommand(Simulator.Confirmer.Viewer.Log, true, TrainBrakeController.CurrentValue, TrainBrakeController.CommandStartTime);
         }
 
         public void StartTrainBrakeDecrease(float? target)
         {
             AlerterReset(TCSEvent.TrainBrakeChanged);
             TrainBrakeController.StartDecrease(target);
+            TrainBrakeController.CommandStartTime = Simulator.ClockTime;
             Simulator.Confirmer.Confirm(CabControl.TrainBrake, CabSetting.Decrease, GetTrainBrakeStatus(PressureUnit));
             SignalEvent(Event.TrainBrakeChange);
         }
@@ -1653,6 +1656,7 @@ namespace ORTS
         {
             AlerterReset(TCSEvent.TrainBrakeChanged);
             TrainBrakeController.StopDecrease();
+            new TrainBrakeCommand(Simulator.Confirmer.Viewer.Log, false, TrainBrakeController.CurrentValue, TrainBrakeController.CommandStartTime);
         }
 
         /// <summary>
@@ -1754,25 +1758,22 @@ namespace ORTS
         /// Ends change of brake value.
         /// </summary>
         /// <returns>true if action is completed</returns>
-        public bool StopEngineBrakeIncrease()
+        public void StopEngineBrakeIncrease()
         {
-            bool engineBrakeCommandNeeded = false;
+            if (EngineBrakeController == null)
+                return;
 
             AlerterReset(TCSEvent.EngineBrakeChanged);
-            if (EngineBrakeController != null)
-            {
-                EngineBrakeController.StopIncrease();
-                engineBrakeCommandNeeded = true;
-            }
-            return engineBrakeCommandNeeded;
+            EngineBrakeController.StopIncrease();
+            new EngineBrakeCommand(Simulator.Confirmer.Viewer.Log, true, EngineBrakeController.CurrentValue, EngineBrakeController.CommandStartTime);
         }
 
         public void StartEngineBrakeDecrease(float? target)
         {
-            AlerterReset(TCSEvent.EngineBrakeChanged);
             if (EngineBrakeController == null)
                 return;
 
+            AlerterReset(TCSEvent.EngineBrakeChanged);
             EngineBrakeController.StartDecrease(target);
             EngineBrakeController.CommandStartTime = Simulator.ClockTime; // Remember when the command was issued
             Simulator.Confirmer.Confirm(CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus(PressureUnit));
@@ -1782,18 +1783,14 @@ namespace ORTS
         /// <summary>
         /// Ends change of brake value.
         /// </summary>
-        /// <returns>true if action is completed</returns>
-        public bool StopEngineBrakeDecrease()
+        public void StopEngineBrakeDecrease()
         {
-            bool engineBrakeCommandNeeded = false;
+            if (EngineBrakeController == null)
+                return;
 
             AlerterReset(TCSEvent.EngineBrakeChanged);
-            if (EngineBrakeController != null)
-            {
-                EngineBrakeController.StopDecrease();
-                engineBrakeCommandNeeded = true;
-            }
-            return engineBrakeCommandNeeded;
+            EngineBrakeController.StopDecrease();
+            new EngineBrakeCommand(Simulator.Confirmer.Viewer.Log, false, EngineBrakeController.CurrentValue, EngineBrakeController.CommandStartTime);
         }
 
         public void SetEngineBrakePercent(float percent)
@@ -1846,17 +1843,14 @@ namespace ORTS
             }
         }
 
-        public bool StopDynamicBrakeIncrease()
+        public void StopDynamicBrakeIncrease()
         {
-            bool dynamicBrakeCommandNeeded = false;
-
             AlerterReset(TCSEvent.DynamicBrakeChanged);
             if (CanUseDynamicBrake())
             {
                 DynamicBrakeController.StopIncrease();
-                dynamicBrakeCommandNeeded = true;
+                new DynamicBrakeCommand(Simulator.Confirmer.Viewer.Log, true, DynamicBrakeController.CurrentValue, DynamicBrakeController.CommandStartTime);
             }
-            return dynamicBrakeCommandNeeded;
         }
 
         public void StartDynamicBrakeDecrease(float? target)
@@ -1884,17 +1878,14 @@ namespace ORTS
             }
         }
 
-        public bool StopDynamicBrakeDecrease()
+        public void StopDynamicBrakeDecrease()
         {
-            bool dynamicBrakeCommandNeeded = false;
-
             AlerterReset(TCSEvent.DynamicBrakeChanged);
             if (CanUseDynamicBrake())
             {
                 DynamicBrakeController.StopDecrease();
-                dynamicBrakeCommandNeeded = true;
+                new DynamicBrakeCommand(Simulator.Confirmer.Viewer.Log, false, DynamicBrakeController.CurrentValue, DynamicBrakeController.CommandStartTime);
             }
-            return dynamicBrakeCommandNeeded;
         }
 
         public void SetDynamicBrakePercent(float percent)
@@ -1961,6 +1952,9 @@ namespace ORTS
 
         public void ToggleCabLight()
         {
+            if (this is MSTSSteamLocomotive)
+                return;
+
             CabLightOn = !CabLightOn;
             SignalEvent(Event.LightSwitchToggle);
             Simulator.Confirmer.Confirm(CabControl.CabLight, CabLightOn ? CabSetting.On : CabSetting.Off);
@@ -2446,27 +2440,6 @@ namespace ORTS
         public virtual float GetFilledFraction(uint pickupType)
         {
             return 0f;
-        }
-
-        /// <summary>
-        /// Starts a continuous increase in controlled value.
-        /// </summary>
-        /// <param name="type">Pickup point</param>
-        public void StartRefilling(uint type)
-        {
-            var controller = GetRefillController(type);
-            controller.CommandStartTime = Simulator.ClockTime;  // for Replay to use 
-            controller.StartIncrease(controller.MaximumValue);
-        }
-
-        /// <summary>
-        /// Ends a continuous increase in controlled value.
-        /// </summary>
-        public void StopRefilling(uint type, CommandLog log)
-        {
-            var controller = GetRefillController(type);
-            new RefillCommand(log, controller.CurrentValue, controller.CommandStartTime);  // for Replay to use
-            controller.StopIncrease();
         }
     } // End Class MSTSLocomotive
 

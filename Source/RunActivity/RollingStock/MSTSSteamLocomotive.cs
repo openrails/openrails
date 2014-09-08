@@ -34,7 +34,8 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using MSTS.Formats;
 using MSTS.Parsers;
-using ORTS.Common;  // for MathHelper
+using ORTS.Common;
+using ORTS.Viewer3D;
 
 namespace ORTS
 {
@@ -2484,6 +2485,7 @@ namespace ORTS
 
         public void StopReverseIncrease() {
             CutoffController.StopIncrease();
+            new ContinuousReverserCommand(Simulator.Confirmer.Viewer.Log, true, CutoffController.CurrentValue, CutoffController.CommandStartTime);
         }
 
         public override void StartReverseDecrease( float? target ) {
@@ -2500,6 +2502,7 @@ namespace ORTS
 
         public void StopReverseDecrease() {
             CutoffController.StopDecrease();
+            new ContinuousReverserCommand(Simulator.Confirmer.Viewer.Log, false, CutoffController.CurrentValue, CutoffController.CommandStartTime);
         }
 
         public void ReverserChangeTo( bool isForward, float? target ) {
@@ -2528,6 +2531,7 @@ namespace ORTS
 
         public void StopInjector1Increase() {
             Injector1Controller.StopIncrease();
+            new ContinuousInjectorCommand(Simulator.Confirmer.Viewer.Log, 1, true, Injector1Controller.CurrentValue, Injector1Controller.CommandStartTime);
         }
 
         public void StartInjector1Decrease( float? target ) {
@@ -2538,6 +2542,7 @@ namespace ORTS
 
         public void StopInjector1Decrease() {
             Injector1Controller.StopDecrease();
+            new ContinuousInjectorCommand(Simulator.Confirmer.Viewer.Log, 1, false, Injector1Controller.CurrentValue, Injector1Controller.CommandStartTime);
         }
         
         public void ToggleInjector1()
@@ -2557,6 +2562,7 @@ namespace ORTS
 
         public void StopInjector2Increase() {
             Injector2Controller.StopIncrease();
+            new ContinuousInjectorCommand(Simulator.Confirmer.Viewer.Log, 2, true, Injector2Controller.CurrentValue, Injector2Controller.CommandStartTime);
         }
 
         public void StartInjector2Decrease( float? target ) {
@@ -2567,6 +2573,7 @@ namespace ORTS
 
         public void StopInjector2Decrease() {
             Injector2Controller.StopDecrease();
+            new ContinuousInjectorCommand(Simulator.Confirmer.Viewer.Log, 2, false, Injector2Controller.CurrentValue, Injector2Controller.CommandStartTime);
         }
 
         public void ToggleInjector2()
@@ -2610,6 +2617,7 @@ namespace ORTS
         }
         public void StopBlowerIncrease() {
             BlowerController.StopIncrease();
+            new ContinuousBlowerCommand(Simulator.Confirmer.Viewer.Log, true, BlowerController.CurrentValue, BlowerController.CommandStartTime);
         }
         public void StartBlowerDecrease( float? target ) {
             BlowerController.CommandStartTime = Simulator.ClockTime;
@@ -2619,6 +2627,7 @@ namespace ORTS
         }
         public void StopBlowerDecrease() {
             BlowerController.StopDecrease();
+            new ContinuousBlowerCommand(Simulator.Confirmer.Viewer.Log, false, BlowerController.CurrentValue, BlowerController.CommandStartTime);
         }
 
         public void BlowerChangeTo( bool increase, float? target ) {
@@ -2641,6 +2650,7 @@ namespace ORTS
         }
         public void StopDamperIncrease() {
             DamperController.StopIncrease();
+            new ContinuousDamperCommand(Simulator.Confirmer.Viewer.Log, true, DamperController.CurrentValue, DamperController.CommandStartTime);
         }
         public void StartDamperDecrease( float? target ) {
             DamperController.CommandStartTime = Simulator.ClockTime;
@@ -2650,6 +2660,7 @@ namespace ORTS
         }
         public void StopDamperDecrease() {
             DamperController.StopDecrease();
+            new ContinuousDamperCommand(Simulator.Confirmer.Viewer.Log, false, DamperController.CurrentValue, DamperController.CommandStartTime);
         }
 
         public void DamperChangeTo( bool increase, float? target ) {
@@ -2674,6 +2685,7 @@ namespace ORTS
         public void StopFireboxDoorIncrease()
         {
             FireboxDoorController.StopIncrease();
+            new ContinuousFireboxDoorCommand(Simulator.Confirmer.Viewer.Log, true, FireboxDoorController.CurrentValue, FireboxDoorController.CommandStartTime);
         }
         public void StartFireboxDoorDecrease(float? target)
         {
@@ -2685,6 +2697,7 @@ namespace ORTS
         public void StopFireboxDoorDecrease()
         {
             FireboxDoorController.StopDecrease();
+            new ContinuousFireboxDoorCommand(Simulator.Confirmer.Viewer.Log, false, FireboxDoorController.CurrentValue, FireboxDoorController.CommandStartTime);
         }
 
         public void FireboxDoorChangeTo(bool increase, float? target)
@@ -2712,6 +2725,7 @@ namespace ORTS
         }
         public void StopFiringRateIncrease() {
             FiringRateController.StopIncrease();
+            new ContinuousFiringRateCommand(Simulator.Confirmer.Viewer.Log, true, FiringRateController.CurrentValue, FiringRateController.CommandStartTime);
         }
         public void StartFiringRateDecrease( float? target ) {
             FiringRateController.CommandStartTime = Simulator.ClockTime;
@@ -2720,6 +2734,7 @@ namespace ORTS
         }
         public void StopFiringRateDecrease() {
             FiringRateController.StopDecrease();
+            new ContinuousFiringRateCommand(Simulator.Confirmer.Viewer.Log, false, FiringRateController.CurrentValue, FiringRateController.CommandStartTime);
         }
 
         public void FiringRateChangeTo( bool increase, float? target ) {

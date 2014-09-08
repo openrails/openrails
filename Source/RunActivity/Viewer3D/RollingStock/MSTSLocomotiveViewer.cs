@@ -237,120 +237,58 @@ namespace ORTS.Viewer3D.RollingStock
             new ReverserCommand(Viewer.Log, false);    // No harm in trying to engage Reverse when already engaged.
         }
 
+        public override void InitializeUserInputCommands()
+        {
+            // Steam locomotives handle these differently, and might have set them already
+            if (!UserInputCommands.ContainsKey(UserCommands.ControlForwards))
+                UserInputCommands.Add(UserCommands.ControlForwards, new Action[] { Noop, () => ReverserControlForwards() });
+            if (!UserInputCommands.ContainsKey(UserCommands.ControlBackwards))
+                UserInputCommands.Add(UserCommands.ControlBackwards, new Action[] { Noop, () => ReverserControlBackwards() });
+
+            UserInputCommands.Add(UserCommands.ControlThrottleIncrease, new Action[] { () => StopThrottleIncrease(), () => StartThrottleIncrease() });
+            UserInputCommands.Add(UserCommands.ControlThrottleDecrease, new Action[] { () => StopThrottleDecrease(), () => StartThrottleDecrease() });
+            UserInputCommands.Add(UserCommands.ControlGearUp, new Action[] { () => StopGearBoxIncrease(), () => StartGearBoxIncrease() });
+            UserInputCommands.Add(UserCommands.ControlGearDown, new Action[] { () => StopGearBoxDecrease(), () => StartGearBoxDecrease() });
+            UserInputCommands.Add(UserCommands.ControlTrainBrakeIncrease, new Action[] { () => Locomotive.StopTrainBrakeIncrease(), () => Locomotive.StartTrainBrakeIncrease(null) });
+            UserInputCommands.Add(UserCommands.ControlTrainBrakeDecrease, new Action[] { () => Locomotive.StopTrainBrakeDecrease(), () => Locomotive.StartTrainBrakeDecrease(null) });
+            UserInputCommands.Add(UserCommands.ControlEngineBrakeIncrease, new Action[] { () => Locomotive.StopEngineBrakeIncrease(), () => Locomotive.StartEngineBrakeIncrease(null) });
+            UserInputCommands.Add(UserCommands.ControlEngineBrakeDecrease, new Action[] { () => Locomotive.StopEngineBrakeDecrease(), () => Locomotive.StartEngineBrakeDecrease(null) });
+            UserInputCommands.Add(UserCommands.ControlDynamicBrakeIncrease, new Action[] { () => Locomotive.StopDynamicBrakeIncrease(), () => Locomotive.StartDynamicBrakeIncrease(null) });
+            UserInputCommands.Add(UserCommands.ControlDynamicBrakeDecrease, new Action[] { () => Locomotive.StopDynamicBrakeDecrease(), () => Locomotive.StartDynamicBrakeDecrease(null) });
+            UserInputCommands.Add(UserCommands.ControlBailOff, new Action[] { () => new BailOffCommand(Viewer.Log, false), () => new BailOffCommand(Viewer.Log, true) });
+            UserInputCommands.Add(UserCommands.ControlInitializeBrakes, new Action[] { Noop, () => new InitializeBrakesCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommands.ControlHandbrakeNone, new Action[] { Noop, () => new HandbrakeCommand(Viewer.Log, false) });
+            UserInputCommands.Add(UserCommands.ControlHandbrakeFull, new Action[] { Noop, () => new HandbrakeCommand(Viewer.Log, true) });
+            UserInputCommands.Add(UserCommands.ControlRetainersOff, new Action[] { Noop, () => new RetainersCommand(Viewer.Log, false) });
+            UserInputCommands.Add(UserCommands.ControlRetainersOn, new Action[] { Noop, () => new RetainersCommand(Viewer.Log, true) });
+            UserInputCommands.Add(UserCommands.ControlBrakeHoseConnect, new Action[] { Noop, () => new BrakeHoseConnectCommand(Viewer.Log, true) });
+            UserInputCommands.Add(UserCommands.ControlBrakeHoseDisconnect, new Action[] { Noop, () => new BrakeHoseConnectCommand(Viewer.Log, false) });
+            UserInputCommands.Add(UserCommands.ControlEmergencyPushButton, new Action[] { Noop, () => new EmergencyPushButtonCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommands.ControlSander, new Action[] { () => new SanderCommand(Viewer.Log, false), () => new SanderCommand(Viewer.Log, true) });
+            UserInputCommands.Add(UserCommands.ControlSanderToggle, new Action[] { Noop, () => new SanderCommand(Viewer.Log, !Locomotive.Sander) });
+            UserInputCommands.Add(UserCommands.ControlWiper, new Action[] { Noop, () => new ToggleWipersCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommands.ControlHorn, new Action[] { () => new HornCommand(Viewer.Log, false), () => new HornCommand(Viewer.Log, true) });
+            UserInputCommands.Add(UserCommands.ControlBell, new Action[] { () => new BellCommand(Viewer.Log, false), () => new BellCommand(Viewer.Log, true) });
+            UserInputCommands.Add(UserCommands.ControlBellToggle, new Action[] { Noop, () => new BellCommand(Viewer.Log, !Locomotive.Bell) });
+            UserInputCommands.Add(UserCommands.ControlAlerter, new Action[] { () => new AlerterCommand(Viewer.Log, false), () => new AlerterCommand(Viewer.Log, true) });
+            UserInputCommands.Add(UserCommands.ControlHeadlightIncrease, new Action[] { Noop, () => new HeadlightCommand(Viewer.Log, true) });
+            UserInputCommands.Add(UserCommands.ControlHeadlightDecrease, new Action[] { Noop, () => new HeadlightCommand(Viewer.Log, false) });
+            UserInputCommands.Add(UserCommands.ControlLight, new Action[] { Noop, () => new ToggleCabLightCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommands.ControlRefill, new Action[] { () => StopRefilling(Viewer.Log), () => AttemptToRefill() });
+            base.InitializeUserInputCommands();
+        }
+
         /// <summary>
         /// A keyboard or mouse click has occurred. Read the UserInput
         /// structure to determine what was pressed.
         /// </summary>
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-            if (UserInput.IsPressed(UserCommands.ControlForwards)) ReverserControlForwards();
-            if (UserInput.IsPressed(UserCommands.ControlBackwards)) ReverserControlBackwards();
-
-            if (UserInput.IsPressed(UserCommands.ControlThrottleIncrease)) StartThrottleIncrease();
-            if (UserInput.IsReleased(UserCommands.ControlThrottleIncrease)) StopThrottleIncrease();
-            if (UserInput.IsPressed(UserCommands.ControlThrottleDecrease)) StartThrottleDecrease();
-            if (UserInput.IsReleased(UserCommands.ControlThrottleDecrease)) StopThrottleDecrease();
-
-            if (UserInput.IsPressed(UserCommands.ControlGearUp)) StartGearBoxIncrease();
-            if (UserInput.IsReleased(UserCommands.ControlGearUp)) StopGearBoxIncrease();
-            if (UserInput.IsPressed(UserCommands.ControlGearDown)) StartGearBoxDecrease();
-            if (UserInput.IsReleased(UserCommands.ControlGearDown)) StopGearBoxDecrease();
-
-            if (UserInput.IsPressed(UserCommands.ControlTrainBrakeIncrease))
-            {
-                Locomotive.StartTrainBrakeIncrease(null);
-                Locomotive.TrainBrakeController.CommandStartTime = Viewer.Simulator.ClockTime;
-            }
-            if (UserInput.IsReleased(UserCommands.ControlTrainBrakeIncrease))
-            {
-                Locomotive.StopTrainBrakeIncrease();
-                new TrainBrakeCommand(Viewer.Log, true, Locomotive.TrainBrakeController.CurrentValue, Locomotive.TrainBrakeController.CommandStartTime);
-            }
-            if (UserInput.IsPressed(UserCommands.ControlTrainBrakeDecrease))
-            {
-                Locomotive.StartTrainBrakeDecrease(null);
-                Locomotive.TrainBrakeController.CommandStartTime = Viewer.Simulator.ClockTime;
-            }
-            if (UserInput.IsReleased(UserCommands.ControlTrainBrakeDecrease))
-            {
-                Locomotive.StopTrainBrakeDecrease();
-                new TrainBrakeCommand(Viewer.Log, false, Locomotive.TrainBrakeController.CurrentValue, Locomotive.TrainBrakeController.CommandStartTime);
-            }
-            if (UserInput.IsPressed(UserCommands.ControlEngineBrakeIncrease)) Locomotive.StartEngineBrakeIncrease(null);
-            if (UserInput.IsReleased(UserCommands.ControlEngineBrakeIncrease))
-            {
-                if (Locomotive.StopEngineBrakeIncrease())
-                {
-                    new EngineBrakeCommand(Viewer.Log, true, Locomotive.EngineBrakeController.CurrentValue, Locomotive.EngineBrakeController.CommandStartTime);
-                }
-            }
-            if (UserInput.IsPressed(UserCommands.ControlEngineBrakeDecrease)) Locomotive.StartEngineBrakeDecrease(null);
-            if (UserInput.IsReleased(UserCommands.ControlEngineBrakeDecrease))
-            {
-                if (Locomotive.StopEngineBrakeDecrease())
-                {
-                    new EngineBrakeCommand(Viewer.Log, false, Locomotive.EngineBrakeController.CurrentValue, Locomotive.EngineBrakeController.CommandStartTime);
-                }
-            }
-            if (UserInput.IsPressed(UserCommands.ControlDynamicBrakeIncrease)) Locomotive.StartDynamicBrakeIncrease(null);
-            if (UserInput.IsReleased(UserCommands.ControlDynamicBrakeIncrease))
-                if (Locomotive.StopDynamicBrakeIncrease())
-                    new DynamicBrakeCommand(Viewer.Log, true, Locomotive.DynamicBrakeController.CurrentValue, Locomotive.DynamicBrakeController.CommandStartTime);
-            if (UserInput.IsPressed(UserCommands.ControlDynamicBrakeDecrease)) Locomotive.StartDynamicBrakeDecrease(null);
-            if (UserInput.IsReleased(UserCommands.ControlDynamicBrakeDecrease))
-                if (Locomotive.StopDynamicBrakeDecrease())
-                    new DynamicBrakeCommand(Viewer.Log, false, Locomotive.DynamicBrakeController.CurrentValue, Locomotive.DynamicBrakeController.CommandStartTime);
-
-            if (UserInput.IsPressed(UserCommands.ControlBailOff)) new BailOffCommand(Viewer.Log, true);
-            if (UserInput.IsReleased(UserCommands.ControlBailOff)) new BailOffCommand(Viewer.Log, false);
-
-            if (UserInput.IsPressed(UserCommands.ControlInitializeBrakes)) new InitializeBrakesCommand(Viewer.Log);
-            if (UserInput.IsPressed(UserCommands.ControlHandbrakeNone)) new HandbrakeCommand(Viewer.Log, false);
-            if (UserInput.IsPressed(UserCommands.ControlHandbrakeFull)) new HandbrakeCommand(Viewer.Log, true);
-            if (UserInput.IsPressed(UserCommands.ControlRetainersOff)) new RetainersCommand(Viewer.Log, false);
-            if (UserInput.IsPressed(UserCommands.ControlRetainersOn)) new RetainersCommand(Viewer.Log, true);
-            if (UserInput.IsPressed(UserCommands.ControlBrakeHoseConnect)) new BrakeHoseConnectCommand(Viewer.Log, true);
-            if (UserInput.IsPressed(UserCommands.ControlBrakeHoseDisconnect)) new BrakeHoseConnectCommand(Viewer.Log, false);
-            if (UserInput.IsPressed(UserCommands.ControlEmergency)) new EmergencyBrakesCommand(Viewer.Log);
-
-            // <CJComment> Some inputs calls their method directly, other via a SignalEvent. 
-            // Probably because a signal can then be handled more than once, 
-            // e.g. by every locomotive on the train or every car in the consist.
-            // The signals are distributed through the parent class MSTSWagon:SignalEvent </CJComment>
-            if (UserInput.IsPressed(UserCommands.ControlSander)) new SanderCommand(Viewer.Log, Locomotive.Sander);
-            if (UserInput.IsPressed(UserCommands.ControlWiper)) new ToggleWipersCommand(Viewer.Log);
-            if (UserInput.IsPressed(UserCommands.ControlHorn))
-            {
-                new HornCommand(Viewer.Log, true);
-                Locomotive.AlerterReset(TCSEvent.HornActivated);
-                this.Car.Simulator.HazzardManager.Horn();
-            }
-            if (UserInput.IsReleased(UserCommands.ControlHorn)) new HornCommand(Viewer.Log, false);
-            if (UserInput.IsPressed(UserCommands.ControlBell)) new BellCommand(Viewer.Log, true);
-            if (UserInput.IsReleased(UserCommands.ControlBell)) new BellCommand(Viewer.Log, false);
-            if (UserInput.IsPressed(UserCommands.ControlBellToggle)) new BellCommand(Viewer.Log, !Locomotive.Bell);
-            if (UserInput.IsPressed(UserCommands.ControlAlerter)) new AlerterCommand(Viewer.Log, true);  // z
-            if (UserInput.IsReleased(UserCommands.ControlAlerter)) new AlerterCommand(Viewer.Log, false);  // z
-
-            if (UserInput.IsPressed(UserCommands.ControlHeadlightDecrease)) new HeadlightCommand(Viewer.Log, false);
-            if (UserInput.IsPressed(UserCommands.ControlHeadlightIncrease)) new HeadlightCommand(Viewer.Log, true);
 #if !NEW_SIGNALLING
             if (UserInput.IsPressed(UserCommands.DebugForcePlayerAuthorization))
                 Program.Simulator.AI.Dispatcher.ExtendPlayerAuthorization(true);
 #endif
 
-            // By GeorgeS
-            if (UserInput.IsPressed(UserCommands.ControlLight))
-            {
-                if (Locomotive is MSTSSteamLocomotive)
-                {       // By default, the "L" key is used for injector2 on steam locos
-                    // do nothing
-                }
-                else
-                {
-                    new ToggleCabLightCommand(Viewer.Log);    // and cab lights on other locos.
-                }
-            }
             if (UserInput.IsPressed(UserCommands.CameraToggleShowCab))
                 Locomotive.ShowCab = !Locomotive.ShowCab;
 
@@ -396,10 +334,6 @@ namespace ORTS.Viewer3D.RollingStock
                 }
             }
 
-            if (UserInput.IsPressed(UserCommands.ControlRefill)) AttemptToRefill();
-            if (UserInput.IsReleased(UserCommands.ControlRefill))
-                if (MatchedWagonAndPickup != null)
-                    Locomotive.StopRefilling((uint)MatchedWagonAndPickup.Pickup.PickupType, Viewer.Log);
             base.HandleUserInput(elapsedTime);
         }
 
@@ -644,7 +578,7 @@ namespace ORTS.Viewer3D.RollingStock
                     PickupTypeDictionary[(uint)match.Pickup.PickupType]));
                 return;
             }
-            Locomotive.StartRefilling((uint)match.Pickup.PickupType);
+            StartRefilling((uint)match.Pickup.PickupType);
             MatchedWagonAndPickup = match;  // Save away for HandleUserInput() to use when key is released.
         }
 
@@ -659,6 +593,30 @@ namespace ORTS.Viewer3D.RollingStock
                 var controller = Locomotive.GetRefillController((uint)matchedWagonAndPickup.Pickup.PickupType);
                 controller.StartIncrease(target);
             }
+        }
+
+        /// <summary>
+        /// Starts a continuous increase in controlled value.
+        /// </summary>
+        /// <param name="type">Pickup point</param>
+        public void StartRefilling(uint type)
+        {
+            var controller = Locomotive.GetRefillController(type);
+            controller.CommandStartTime = Viewer.Simulator.ClockTime;  // for Replay to use 
+            controller.StartIncrease(controller.MaximumValue);
+        }
+
+        /// <summary>
+        /// Ends a continuous increase in controlled value.
+        /// </summary>
+        public void StopRefilling(CommandLog log)
+        {
+            if (MatchedWagonAndPickup == null)
+                return;
+
+            var controller = Locomotive.GetRefillController((uint)MatchedWagonAndPickup.Pickup.PickupType);
+            new RefillCommand(log, controller.CurrentValue, controller.CommandStartTime);  // for Replay to use
+            controller.StopIncrease();
         }
         #endregion
     } // Class LocomotiveViewer
@@ -2090,6 +2048,7 @@ namespace ORTS.Viewer3D.RollingStock
 			}
 		}
 
+        public override void InitializeUserInputCommands() { }
 
 		/// <summary>
 		/// A keyboard or mouse click has occurred. Read the UserInput

@@ -17,6 +17,7 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using System;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
 using ORTS.Settings;
@@ -55,95 +56,104 @@ namespace ORTS.Viewer3D.RollingStock
         /// </summary>
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-            if (UserInput.IsPressed(UserCommands.ControlDieselPlayer))
-            {
-                if (DieselLocomotive.ThrottlePercent < 1)
-                {
-                    //                    DieselLocomotive.PowerOn = !DieselLocomotive.PowerOn;
-                    if (DieselLocomotive.DieselEngines[0].EngineStatus == DieselEngine.Status.Stopped)
-                    {
-                        DieselLocomotive.DieselEngines[0].Start();
-                        DieselLocomotive.SignalEvent(Event.EnginePowerOn); // power on sound hook
-                    }
-                    if (DieselLocomotive.DieselEngines[0].EngineStatus == DieselEngine.Status.Running)
-                    {
-                        DieselLocomotive.DieselEngines[0].Stop();
-                        DieselLocomotive.SignalEvent(Event.EnginePowerOff); // power off sound hook
-                    }
-                    Viewer.Simulator.Confirmer.Confirm(CabControl.PlayerDiesel, DieselLocomotive.DieselEngines.PowerOn ? CabSetting.On : CabSetting.Off);
-                }
-                else
-                {
-                    Viewer.Simulator.Confirmer.Warning(CabControl.PlayerDiesel, CabSetting.Warn1);
-                }
-            }
-            if (UserInput.IsPressed(UserCommands.ControlDieselHelper))
-            {
-                var powerOn = false;
-                var helperLocos = 0;
-
-                foreach (var car in DieselLocomotive.Train.Cars)
-                {
-                    var mstsDieselLocomotive = car as MSTSDieselLocomotive;
-                    if (mstsDieselLocomotive != null && mstsDieselLocomotive.AcceptMUSignals)
-                    {
-                        if (mstsDieselLocomotive.DieselEngines.Count > 0)
-                        {
-                            if ((car == Program.Simulator.PlayerLocomotive))
-                            {
-                                if ((mstsDieselLocomotive.DieselEngines.Count > 1))
-                                {
-                                    for (int i = 1; i < mstsDieselLocomotive.DieselEngines.Count; i++)
-                                    {
-                                        if (mstsDieselLocomotive.DieselEngines[i].EngineStatus == DieselEngine.Status.Stopped)
-                                        {
-                                            mstsDieselLocomotive.DieselEngines[i].Start();
-                                        }
-                                        if (mstsDieselLocomotive.DieselEngines[i].EngineStatus == DieselEngine.Status.Running)
-                                        {
-                                            mstsDieselLocomotive.DieselEngines[i].Stop();
-                                        }
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                foreach (DieselEngine de in mstsDieselLocomotive.DieselEngines)
-                                {
-                                    if (de.EngineStatus == DieselEngine.Status.Stopped)
-                                    {
-                                        de.Start();
-                                    }
-                                    if (de.EngineStatus == DieselEngine.Status.Running)
-                                    {
-                                        de.Stop();
-                                    }
-                                }
-                            }
-                        }
-                        //mstsDieselLocomotive.StartStopDiesel();
-                        powerOn = mstsDieselLocomotive.DieselEngines.PowerOn;
-                        if ((car != Program.Simulator.PlayerLocomotive) && (mstsDieselLocomotive.AcceptMUSignals))
-                        {
-                            if ((mstsDieselLocomotive.DieselEngines[0].EngineStatus == DieselEngine.Status.Stopped) ||
-                                (mstsDieselLocomotive.DieselEngines[0].EngineStatus == DieselEngine.Status.Stopping))
-                                mstsDieselLocomotive.SignalEvent(Event.EnginePowerOff);
-                            else
-                                mstsDieselLocomotive.SignalEvent(Event.EnginePowerOn);
-                        }
-                        helperLocos++;
-                    }
-                }
-                // One confirmation however many helper locomotives
-                // <CJComment> Couldn't make one confirmation per loco work correctly :-( </CJComment>
-                if (helperLocos > 0)
-                {
-                    Viewer.Simulator.Confirmer.Confirm(CabControl.HelperDiesel, powerOn ? CabSetting.On : CabSetting.Off);
-                }
-            }
             base.HandleUserInput(elapsedTime);
         }
 
+        public override void InitializeUserInputCommands()
+        {
+            UserInputCommands.Add(UserCommands.ControlDieselPlayer, new Action[] { Noop, () => StartStopPlayerEngine() });
+            UserInputCommands.Add(UserCommands.ControlDieselHelper, new Action[] { Noop, () => StartStopHelpersEngine() });
+            base.InitializeUserInputCommands();
+        }
+
+        public void StartStopPlayerEngine()
+        {
+            if (DieselLocomotive.ThrottlePercent < 1)
+            {
+                //                    DieselLocomotive.PowerOn = !DieselLocomotive.PowerOn;
+                if (DieselLocomotive.DieselEngines[0].EngineStatus == DieselEngine.Status.Stopped)
+                {
+                    DieselLocomotive.DieselEngines[0].Start();
+                    DieselLocomotive.SignalEvent(Event.EnginePowerOn); // power on sound hook
+                }
+                if (DieselLocomotive.DieselEngines[0].EngineStatus == DieselEngine.Status.Running)
+                {
+                    DieselLocomotive.DieselEngines[0].Stop();
+                    DieselLocomotive.SignalEvent(Event.EnginePowerOff); // power off sound hook
+                }
+                Viewer.Simulator.Confirmer.Confirm(CabControl.PlayerDiesel, DieselLocomotive.DieselEngines.PowerOn ? CabSetting.On : CabSetting.Off);
+            }
+            else
+            {
+                Viewer.Simulator.Confirmer.Warning(CabControl.PlayerDiesel, CabSetting.Warn1);
+            }
+        }
+
+        public void StartStopHelpersEngine()
+        {
+            var powerOn = false;
+            var helperLocos = 0;
+
+            foreach (var car in DieselLocomotive.Train.Cars)
+            {
+                var mstsDieselLocomotive = car as MSTSDieselLocomotive;
+                if (mstsDieselLocomotive != null && mstsDieselLocomotive.AcceptMUSignals)
+                {
+                    if (mstsDieselLocomotive.DieselEngines.Count > 0)
+                    {
+                        if ((car == Program.Simulator.PlayerLocomotive))
+                        {
+                            if ((mstsDieselLocomotive.DieselEngines.Count > 1))
+                            {
+                                for (int i = 1; i < mstsDieselLocomotive.DieselEngines.Count; i++)
+                                {
+                                    if (mstsDieselLocomotive.DieselEngines[i].EngineStatus == DieselEngine.Status.Stopped)
+                                    {
+                                        mstsDieselLocomotive.DieselEngines[i].Start();
+                                    }
+                                    if (mstsDieselLocomotive.DieselEngines[i].EngineStatus == DieselEngine.Status.Running)
+                                    {
+                                        mstsDieselLocomotive.DieselEngines[i].Stop();
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            foreach (DieselEngine de in mstsDieselLocomotive.DieselEngines)
+                            {
+                                if (de.EngineStatus == DieselEngine.Status.Stopped)
+                                {
+                                    de.Start();
+                                }
+                                if (de.EngineStatus == DieselEngine.Status.Running)
+                                {
+                                    de.Stop();
+                                }
+                            }
+                        }
+                    }
+                    //mstsDieselLocomotive.StartStopDiesel();
+                    powerOn = mstsDieselLocomotive.DieselEngines.PowerOn;
+                    if ((car != Program.Simulator.PlayerLocomotive) && (mstsDieselLocomotive.AcceptMUSignals))
+                    {
+                        if ((mstsDieselLocomotive.DieselEngines[0].EngineStatus == DieselEngine.Status.Stopped) ||
+                            (mstsDieselLocomotive.DieselEngines[0].EngineStatus == DieselEngine.Status.Stopping))
+                            mstsDieselLocomotive.SignalEvent(Event.EnginePowerOff);
+                        else
+                            mstsDieselLocomotive.SignalEvent(Event.EnginePowerOn);
+                    }
+                    helperLocos++;
+                }
+            }
+            // One confirmation however many helper locomotives
+            // <CJComment> Couldn't make one confirmation per loco work correctly :-( </CJComment>
+            if (helperLocos > 0)
+            {
+                Viewer.Simulator.Confirmer.Confirm(CabControl.HelperDiesel, powerOn ? CabSetting.On : CabSetting.Off);
+            }
+
+        }
 
         /// <summary>
         /// We are about to display a video frame.  Calculate positions for 

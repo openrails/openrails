@@ -151,8 +151,9 @@ namespace ORTS.Settings
         [GetString("Control Brake Hose Connect")] ControlBrakeHoseConnect,
         [GetString("Control Brake Hose Disconnect")] ControlBrakeHoseDisconnect,
         [GetString("Control Alerter")] ControlAlerter,
-        [GetString("Control Emergency")] ControlEmergency,
+        [GetString("Control Emergency Push Button")] ControlEmergencyPushButton,
         [GetString("Control Sander")] ControlSander,
+        [GetString("Control Sander Toggle")] ControlSanderToggle,
         [GetString("Control Wiper")] ControlWiper,
         [GetString("Control Horn")] ControlHorn,
         [GetString("Control Bell")] ControlBell,
@@ -514,7 +515,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommands.ControlDoorRight] = new UserCommandKeyInput(0x10, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlDynamicBrakeDecrease] = new UserCommandKeyInput(0x33);
             Commands[(int)UserCommands.ControlDynamicBrakeIncrease] = new UserCommandKeyInput(0x34);
-            Commands[(int)UserCommands.ControlEmergency] = new UserCommandKeyInput(0x0E);
+            Commands[(int)UserCommands.ControlEmergencyPushButton] = new UserCommandKeyInput(0x0E);
             Commands[(int)UserCommands.ControlEngineBrakeDecrease] = new UserCommandKeyInput(0x1A);
             Commands[(int)UserCommands.ControlEngineBrakeIncrease] = new UserCommandKeyInput(0x1B);
             Commands[(int)UserCommands.ControlFireboxClose] = new UserCommandKeyInput(0x21, KeyModifiers.Shift);
@@ -546,6 +547,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommands.ControlRetainersOff] = new UserCommandKeyInput(0x1A, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlRetainersOn] = new UserCommandKeyInput(0x1B, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlSander] = new UserCommandKeyInput(0x2D);
+            Commands[(int)UserCommands.ControlSanderToggle] = new UserCommandKeyInput(0x2D, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlThrottleDecrease] = new UserCommandKeyInput(0x1E);
             Commands[(int)UserCommands.ControlThrottleIncrease] = new UserCommandKeyInput(0x20);
             Commands[(int)UserCommands.ControlTrainBrakeDecrease] = new UserCommandKeyInput(0x27);

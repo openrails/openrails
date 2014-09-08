@@ -39,17 +39,6 @@ namespace ORTS.Viewer3D.RollingStock
         /// </summary>
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-            if (UserInput.IsPressed(UserCommands.ControlPantograph1))
-            {
-                new PantographCommand(Viewer.Log, 1, !ElectricLocomotive.Pantographs[1].CommandUp);
-                return; // I.e. Skip the call to base.HandleUserInput()
-            }
-            if (UserInput.IsPressed(UserCommands.ControlPantograph2))
-            {
-                new PantographCommand(Viewer.Log, 2, !ElectricLocomotive.Pantographs[2].CommandUp);
-                return;
-            }
-
             base.HandleUserInput(elapsedTime);
         }
 

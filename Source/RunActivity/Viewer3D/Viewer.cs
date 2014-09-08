@@ -380,7 +380,7 @@ namespace ORTS.Viewer3D
             EngineBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             DynamicBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             InitializeBrakesCommand.Receiver = PlayerLocomotive.Train;
-            EmergencyBrakesCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            EmergencyPushButtonCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             HandbrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             BailOffCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             RetainersCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;

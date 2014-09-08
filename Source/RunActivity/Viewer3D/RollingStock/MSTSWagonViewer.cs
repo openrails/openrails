@@ -34,6 +34,11 @@ namespace ORTS.Viewer3D.RollingStock
         protected AnimatedShape FreightShape;
         protected AnimatedShape InteriorShape;
         protected List<SoundSourceBase> SoundSources = new List<SoundSourceBase>();
+        public static readonly Action Noop = () => { };
+        /// <summary>
+        /// Dictionary of built-in locomotive control keyboard commands, Action[] is in the order {KeyRelease, KeyPress}
+        /// </summary>
+        public Dictionary<UserCommands, Action[]> UserInputCommands = new Dictionary<UserCommands, Action[]>();
 
         // Wheels are rotated by hand instead of in the shape file.
         float WheelRotationR;
@@ -115,6 +120,8 @@ namespace ORTS.Viewer3D.RollingStock
             LeftDoor.SetState(MSTSWagon.DoorLeftOpen);
             RightDoor.SetState(MSTSWagon.DoorRightOpen);
             Mirrors.SetState(MSTSWagon.MirrorOpen);
+
+            InitializeUserInputCommands();
         }
 
         void MatchMatrixToPart(MSTSWagon car, int matrix)
@@ -230,29 +237,20 @@ namespace ORTS.Viewer3D.RollingStock
             }
         }
 
+        public override void InitializeUserInputCommands()
+        {
+            UserInputCommands.Add(UserCommands.ControlPantograph1, new Action[] { Noop, () => new PantographCommand(Viewer.Log, 1, !MSTSWagon.Pantographs[1].CommandUp) });
+            UserInputCommands.Add(UserCommands.ControlPantograph2, new Action[] { Noop, () => new PantographCommand(Viewer.Log, 2, !MSTSWagon.Pantographs[1].CommandUp) });
+            UserInputCommands.Add(UserCommands.ControlDoorLeft, new Action[] { Noop, () => new ToggleDoorsLeftCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommands.ControlDoorRight, new Action[] { Noop, () => new ToggleDoorsRightCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommands.ControlMirror, new Action[] { Noop, () => new ToggleMirrorsCommand(Viewer.Log) });
+        }
+
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-            // Pantograph
-            if (UserInput.IsPressed(UserCommands.ControlPantograph1))
-            {
-                new PantographCommand(Viewer.Log, 1, !MSTSWagon.Pantographs[1].CommandUp);
-            }
-            if (UserInput.IsPressed(UserCommands.ControlPantograph2))
-            {
-                new PantographCommand(Viewer.Log, 2, !MSTSWagon.Pantographs[2].CommandUp);
-            }
-            if (UserInput.IsPressed(UserCommands.ControlDoorLeft)) //control door (or only left)
-            {
-                new ToggleDoorsLeftCommand(Viewer.Log);
-            }
-            if (UserInput.IsPressed(UserCommands.ControlDoorRight)) //control right door
-            {
-                new ToggleDoorsRightCommand(Viewer.Log);
-            }
-            if (UserInput.IsPressed(UserCommands.ControlMirror))    // The mirrors on trams which swing out at platforms
-            {
-                new ToggleMirrorsCommand(Viewer.Log);
-            }
+            foreach (var command in UserInputCommands.Keys)
+                if (UserInput.IsPressed(command)) UserInputCommands[command][1]();
+                else if (UserInput.IsReleased(command)) UserInputCommands[command][0]();
         }
 
         /// <summary>

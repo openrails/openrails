@@ -80,122 +80,37 @@ namespace ORTS.Viewer3D.RollingStock
             SteamLocomotive.StartReverseDecrease(null);
         }
 
+        public override void InitializeUserInputCommands()
+        {
+            UserInputCommands.Add(UserCommands.ControlForwards, new Action[] { () => SteamLocomotive.StopReverseIncrease(), () => ReverserControlForwards() });
+            UserInputCommands.Add(UserCommands.ControlBackwards, new Action[] { () => SteamLocomotive.StopReverseDecrease(), () => ReverserControlBackwards() });
+            UserInputCommands.Add(UserCommands.ControlInjector1Increase, new Action[] { () => SteamLocomotive.StopInjector1Increase(), () => SteamLocomotive.StartInjector1Increase(null) });
+            UserInputCommands.Add(UserCommands.ControlInjector1Decrease, new Action[] { () => SteamLocomotive.StopInjector1Decrease(), () => SteamLocomotive.StartInjector1Decrease(null) });
+            UserInputCommands.Add(UserCommands.ControlInjector2Increase, new Action[] { () => SteamLocomotive.StopInjector2Increase(), () => SteamLocomotive.StartInjector2Increase(null) });
+            UserInputCommands.Add(UserCommands.ControlInjector2Decrease, new Action[] { () => SteamLocomotive.StopInjector2Decrease(), () => SteamLocomotive.StartInjector2Decrease(null) });
+            UserInputCommands.Add(UserCommands.ControlInjector1, new Action[] { Noop, () => new ToggleInjectorCommand(Viewer.Log, 1) });
+            UserInputCommands.Add(UserCommands.ControlInjector2, new Action[] { Noop, () => new ToggleInjectorCommand(Viewer.Log, 2) });
+            UserInputCommands.Add(UserCommands.ControlBlowerIncrease, new Action[] { () => SteamLocomotive.StopBlowerIncrease(), () => SteamLocomotive.StartBlowerIncrease(null) });
+            UserInputCommands.Add(UserCommands.ControlBlowerDecrease, new Action[] { () => SteamLocomotive.StopBlowerDecrease(), () => SteamLocomotive.StartBlowerDecrease(null) });
+            UserInputCommands.Add(UserCommands.ControlDamperIncrease, new Action[] { () => SteamLocomotive.StopDamperIncrease(), () => SteamLocomotive.StartDamperIncrease(null) });
+            UserInputCommands.Add(UserCommands.ControlDamperDecrease, new Action[] { () => SteamLocomotive.StopDamperDecrease(), () => SteamLocomotive.StartDamperDecrease(null) });
+            UserInputCommands.Add(UserCommands.ControlFireboxOpen, new Action[] { () => SteamLocomotive.StopFireboxDoorIncrease(), () => SteamLocomotive.StartFireboxDoorIncrease(null) });
+            UserInputCommands.Add(UserCommands.ControlFireboxClose, new Action[] { () => SteamLocomotive.StopFireboxDoorDecrease(), () => SteamLocomotive.StartFireboxDoorDecrease(null) });
+            UserInputCommands.Add(UserCommands.ControlFiringRateIncrease, new Action[] { () => SteamLocomotive.StopFiringRateIncrease(), () => SteamLocomotive.StartFiringRateIncrease(null) });
+            UserInputCommands.Add(UserCommands.ControlFiringRateDecrease, new Action[] { () => SteamLocomotive.StopFiringRateDecrease(), () => SteamLocomotive.StartFiringRateDecrease(null) });
+            UserInputCommands.Add(UserCommands.ControlFireShovelFull, new Action[] { Noop, () => new FireShovelfullCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommands.ControlCylinderCocks, new Action[] { Noop, () => new ToggleCylinderCocksCommand(Viewer.Log) });
+            base.InitializeUserInputCommands();
+        }
+
         /// <summary>
         /// A keyboard or mouse click has occured. Read the UserInput
         /// structure to determine what was pressed.
         /// </summary>
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-            // Note: UserInput.IsReleased( UserCommands.ControlReverserForward/Backwards ) are given here but
-            // UserInput.IsPressed( UserCommands.ControlReverserForward/Backwards ) are handled in base class MSTSLocomotive.
-            if (UserInput.IsReleased(UserCommands.ControlForwards))
-            {
-                SteamLocomotive.StopReverseIncrease();
-                new ContinuousReverserCommand(Viewer.Log, true, SteamLocomotive.CutoffController.CurrentValue, SteamLocomotive.CutoffController.CommandStartTime);
-            }
-            else if (UserInput.IsReleased(UserCommands.ControlBackwards))
-            {
-                SteamLocomotive.StopReverseDecrease();
-                new ContinuousReverserCommand(Viewer.Log, false, SteamLocomotive.CutoffController.CurrentValue, SteamLocomotive.CutoffController.CommandStartTime);
-            }
-            if (UserInput.IsPressed(UserCommands.ControlInjector1Increase))
-            {
-                SteamLocomotive.StartInjector1Increase(null);
-            }
-            else if (UserInput.IsReleased(UserCommands.ControlInjector1Increase))
-            {
-                SteamLocomotive.StopInjector1Increase();
-                new ContinuousInjectorCommand(Viewer.Log, 1, true, SteamLocomotive.Injector1Controller.CurrentValue, SteamLocomotive.Injector1Controller.CommandStartTime);
-            }
-            else if (UserInput.IsPressed(UserCommands.ControlInjector1Decrease))
-                SteamLocomotive.StartInjector1Decrease(null);
-            else if (UserInput.IsReleased(UserCommands.ControlInjector1Decrease))
-            {
-                SteamLocomotive.StopInjector1Decrease();
-                new ContinuousInjectorCommand(Viewer.Log, 1, false, SteamLocomotive.Injector1Controller.CurrentValue, SteamLocomotive.Injector1Controller.CommandStartTime);
-            }
-            if (UserInput.IsPressed(UserCommands.ControlInjector1))
-                new ToggleInjectorCommand(Viewer.Log, 1);
-
-            if (UserInput.IsPressed(UserCommands.ControlInjector2Increase))
-                SteamLocomotive.StartInjector2Increase(null);
-            else if (UserInput.IsReleased(UserCommands.ControlInjector2Increase))
-            {
-                SteamLocomotive.StopInjector2Increase();
-                new ContinuousInjectorCommand(Viewer.Log, 2, true, SteamLocomotive.Injector2Controller.CurrentValue, SteamLocomotive.Injector2Controller.CommandStartTime);
-            }
-            else if (UserInput.IsPressed(UserCommands.ControlInjector2Decrease))
-                SteamLocomotive.StartInjector2Decrease(null);
-            else if (UserInput.IsReleased(UserCommands.ControlInjector2Decrease))
-            {
-                SteamLocomotive.StopInjector2Decrease();
-                new ContinuousInjectorCommand(Viewer.Log, 2, false, SteamLocomotive.Injector2Controller.CurrentValue, SteamLocomotive.Injector2Controller.CommandStartTime);
-            }
-            if (UserInput.IsPressed(UserCommands.ControlInjector2))
-                new ToggleInjectorCommand(Viewer.Log, 2);
-
-            if (UserInput.IsPressed(UserCommands.ControlBlowerIncrease))
-                SteamLocomotive.StartBlowerIncrease(null);
-            else if (UserInput.IsReleased(UserCommands.ControlBlowerIncrease))
-            {
-                SteamLocomotive.StopBlowerIncrease();
-                new ContinuousBlowerCommand(Viewer.Log, true, SteamLocomotive.BlowerController.CurrentValue, SteamLocomotive.BlowerController.CommandStartTime);
-            }
-            else if (UserInput.IsPressed(UserCommands.ControlBlowerDecrease))
-                SteamLocomotive.StartBlowerDecrease(null);
-            else if (UserInput.IsReleased(UserCommands.ControlBlowerDecrease))
-            {
-                SteamLocomotive.StopBlowerDecrease();
-                new ContinuousBlowerCommand(Viewer.Log, false, SteamLocomotive.BlowerController.CurrentValue, SteamLocomotive.BlowerController.CommandStartTime);
-            }
-            if (UserInput.IsPressed(UserCommands.ControlDamperIncrease))
-                SteamLocomotive.StartDamperIncrease(null);
-            else if (UserInput.IsReleased(UserCommands.ControlDamperIncrease))
-            {
-                SteamLocomotive.StopDamperIncrease();
-                new ContinuousDamperCommand(Viewer.Log, true, SteamLocomotive.DamperController.CurrentValue, SteamLocomotive.DamperController.CommandStartTime);
-            }
-            else if (UserInput.IsPressed(UserCommands.ControlDamperDecrease))
-                SteamLocomotive.StartDamperDecrease(null);
-            else if (UserInput.IsReleased(UserCommands.ControlDamperDecrease))
-            {
-                SteamLocomotive.StopDamperDecrease();
-                new ContinuousDamperCommand(Viewer.Log, false, SteamLocomotive.DamperController.CurrentValue, SteamLocomotive.DamperController.CommandStartTime);
-            }
-            if (UserInput.IsPressed(UserCommands.ControlFireboxOpen))
-                SteamLocomotive.StartFireboxDoorIncrease(null);
-            else if (UserInput.IsReleased(UserCommands.ControlFireboxOpen))
-            {
-                SteamLocomotive.StopFireboxDoorIncrease();
-                new ContinuousFireboxDoorCommand(Viewer.Log, true, SteamLocomotive.FireboxDoorController.CurrentValue, SteamLocomotive.FireboxDoorController.CommandStartTime);
-            }
-            else if (UserInput.IsPressed(UserCommands.ControlFireboxClose))
-                SteamLocomotive.StartFireboxDoorDecrease(null);
-            else if (UserInput.IsReleased(UserCommands.ControlFireboxClose))
-            {
-                SteamLocomotive.StopFireboxDoorDecrease();
-                new ContinuousFireboxDoorCommand(Viewer.Log, false, SteamLocomotive.FireboxDoorController.CurrentValue, SteamLocomotive.FireboxDoorController.CommandStartTime);
-            }
-            if (UserInput.IsPressed(UserCommands.ControlFiringRateIncrease))
-                SteamLocomotive.StartFiringRateIncrease(null);
-            else if (UserInput.IsReleased(UserCommands.ControlFiringRateIncrease))
-            {
-                SteamLocomotive.StopFiringRateIncrease();
-                new ContinuousFiringRateCommand(Viewer.Log, true, SteamLocomotive.FiringRateController.CurrentValue, SteamLocomotive.FiringRateController.CommandStartTime);
-            }
-            else if (UserInput.IsPressed(UserCommands.ControlFiringRateDecrease))
-                SteamLocomotive.StartFiringRateDecrease(null);
-            else if (UserInput.IsReleased(UserCommands.ControlFiringRateDecrease))
-            {
-                SteamLocomotive.StopFiringRateDecrease();
-                new ContinuousFiringRateCommand(Viewer.Log, false, SteamLocomotive.FiringRateController.CurrentValue, SteamLocomotive.FiringRateController.CommandStartTime);
-            }
-            if (UserInput.IsPressed(UserCommands.ControlFireShovelFull))
-                new FireShovelfullCommand(Viewer.Log);
-            if (UserInput.IsPressed(UserCommands.ControlCylinderCocks))
-                new ToggleCylinderCocksCommand(Viewer.Log);
-            if (UserInput.IsPressed(UserCommands.ControlFiring))
-                new ToggleManualFiringCommand(Viewer.Log);
+            // Keeping separated, since it is not a real engine control. (Probably wrong classification?)
+            if (UserInput.IsPressed(UserCommands.ControlFiring)) new ToggleManualFiringCommand(Viewer.Log);
 
             if (UserInput.RDState != null && UserInput.RDState.Changed)
                 SteamLocomotive.SetCutoffPercent(UserInput.RDState.DirectionPercent);

@@ -387,11 +387,11 @@ namespace ORTS.Viewer3D
     }
 
     [Serializable()]
-    public class EmergencyBrakesCommand : Command
+    public class EmergencyPushButtonCommand : Command
     {
         public static MSTSLocomotive Receiver { get; set; }
 
-        public EmergencyBrakesCommand(CommandLog log)
+        public EmergencyPushButtonCommand(CommandLog log)
             : base(log)
         {
             Redo();
@@ -516,9 +516,9 @@ namespace ORTS.Viewer3D
 
         public override void Redo() {
             if( ToState ) {
-                Receiver.Train.SignalEvent(Event.SanderOff);
-            } else {
                 Receiver.Train.SignalEvent(Event.SanderOn);
+            } else {
+                Receiver.Train.SignalEvent(Event.SanderOff);
             }
             // Report();
         }
@@ -555,6 +555,11 @@ namespace ORTS.Viewer3D
 
         public override void Redo() {
             Receiver.SignalEvent(ToState ? Event.HornOn : Event.HornOff);
+            if (ToState)
+            {
+                Receiver.AlerterReset(TCSEvent.HornActivated);
+                Receiver.Simulator.HazzardManager.Horn();
+            }
             // Report();
         }
 
