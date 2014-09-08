@@ -56,6 +56,10 @@ namespace ORTS.Viewer3D.RollingStock
         protected MSTSWagon MSTSWagon { get { return (MSTSWagon)Car; } }
 
         bool HasFirstPanto;
+        bool bogie1IsPresent;
+        bool bogie2IsPresent;
+        bool wheels1IsPresent;
+        bool wheels2IsPresent;
         public MSTSWagonViewer(Viewer viewer, MSTSWagon car)
             : base(viewer, car)
         {
@@ -100,6 +104,23 @@ namespace ORTS.Viewer3D.RollingStock
                     if (TrainCarShape.SharedShape.MatrixNames[i].ToUpper().StartsWith("PANTO")) { HasFirstPanto = true; break; }
                 }
 
+            // Check bogies and wheels to find out what we have.
+            for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
+            {
+                if (TrainCarShape.SharedShape.MatrixNames[i].Equals("BOGIE1"))
+                    bogie1IsPresent = true;
+                else if (TrainCarShape.SharedShape.MatrixNames[i].Equals("BOGIE2"))
+                    bogie2IsPresent = true;
+                else if (TrainCarShape.SharedShape.MatrixNames[i].Contains("WHEELS"))
+                    if (TrainCarShape.SharedShape.MatrixNames[i].Length == 8)
+                    {
+                        if (TrainCarShape.SharedShape.MatrixNames[i].Contains("WHEELS1"))
+                            wheels1IsPresent = true;
+                        else if (TrainCarShape.SharedShape.MatrixNames[i].Contains("WHEELS2"))
+                            wheels2IsPresent = true;
+                    }
+            }
+
             // Match up all the matrices with their parts.
             for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
                 if (TrainCarShape.Hierarchy[i] == -1)
@@ -143,7 +164,7 @@ namespace ORTS.Viewer3D.RollingStock
                     else
                         RunningGear.AddMatrix(matrix);
                     var pmatrix = TrainCarShape.SharedShape.GetParentMatrix(matrix);
-                    car.AddWheelSet(m.M43, id, pmatrix);
+                    car.AddWheelSet(m.M43, id, pmatrix, matrixName.ToString(), wheels1IsPresent, wheels2IsPresent);
                 }
             }
             else if (matrixName.StartsWith("BOGIE") && matrixName.Length <= 6) //BOGIE1 is valid, BOGIE11 is not, it is used by some modelers to indicate this is part of bogie1
@@ -151,7 +172,7 @@ namespace ORTS.Viewer3D.RollingStock
                 var id = 1;
                 Int32.TryParse(matrixName.Substring(5), out id);
                 var m = TrainCarShape.SharedShape.GetMatrixProduct(matrix);
-                car.AddBogie(m.M43, matrix, id, matrixName.ToString());
+                car.AddBogie(m.M43, matrix, id, matrixName.ToString(), bogie1IsPresent, bogie2IsPresent);
 
                 // Bogies contain wheels!
                 for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
