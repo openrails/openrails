@@ -584,11 +584,11 @@ namespace ORTS
             SetFullBrake(FullBrake);
             SetPowerAuthorization(!PowerCut);
 
-            if (EmergencyBrake || FullBrake)
-            {
-                if (EmergencyCausesThrottleDown) SetThrottleController(0f);
-                if (EmergencyEngagesHorn) SetHorn(true);
-            }
+            if (EmergencyCausesThrottleDown && (EmergencyBrake || FullBrake))
+                SetThrottleController(0f);
+
+            if (EmergencyEngagesHorn)
+                SetHorn(EmergencyBrake || FullBrake);
 
             SetPenaltyApplicationDisplay(IsBrakeEmergency() && IsBrakeFullService());
             
