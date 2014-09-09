@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
 "POT-Creation-Date: 2014-09-08 01:46:41+0200\n"
-"PO-Revision-Date: 2014-09-09 21:50+0100\n"
+"PO-Revision-Date: 2014-09-09 23:34+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -437,7 +437,7 @@ msgstr "Tag:"
 
 #: ../../Menu/MainForm.Designer.cs:838
 msgid "Timetable set:"
-msgstr ""
+msgstr "Fahrplanset:"
 
 #: ../../Menu/MainForm.Designer.cs:861
 msgid "Restart to apply update"
@@ -521,7 +521,7 @@ msgstr "Sehr einfach"
 
 #: ../../Menu/Options.cs:447
 msgid "MSTS Compatibile"
-msgstr ""
+msgstr "MSTS-kompatibel"
 
 #: ../../Menu/Options.cs:449 ../../Menu/Options.Designer.cs:1193
 msgid "Normal"
@@ -529,7 +529,7 @@ msgstr "Normal"
 
 #: ../../Menu/Options.cs:453
 msgid "Very Hard"
-msgstr ""
+msgstr "Sehr schwer"
 
 #: ../../Menu/Options.cs:455
 msgid "Good luck!"
@@ -744,11 +744,11 @@ msgstr "Zuggeschwindigkeit im Log inkludieren"
 
 #: ../../Menu/Options.Designer.cs:1105
 msgid "Updater"
-msgstr ""
+msgstr "Auto-Updater"
 
 #: ../../Menu/Options.Designer.cs:1116
 msgid "Update channel:"
-msgstr ""
+msgstr "Zu benutzender Update-Kanal:"
 
 #: ../../Menu/Options.Designer.cs:1161
 msgid "Experimental"
@@ -756,7 +756,7 @@ msgstr "Experimentell"
 
 #: ../../Menu/Options.Designer.cs:1172
 msgid "10%"
-msgstr ""
+msgstr "10%"
 
 #: ../../Menu/Options.Designer.cs:1182
 msgid "130%"
@@ -764,11 +764,11 @@ msgstr "130%"
 
 #: ../../Menu/Options.Designer.cs:1203
 msgid "Level:"
-msgstr ""
+msgstr "Stufe:"
 
 #: ../../Menu/Options.Designer.cs:1213
 msgid "Adhesion factor random change:"
-msgstr "Zufällige Veränderung des Reibungsfaktors:"
+msgstr "Reibungsfaktor schwankt zufällig um"
 
 #: ../../Menu/Options.Designer.cs:1238
 msgid "Adhesion factor correction:"
@@ -783,8 +783,9 @@ msgid "Enhanced compatibility with MSTS activities"
 msgstr "Erweiterte Kompatibilität mit MSTS-Aufgaben"
 
 #: ../../Menu/Options.Designer.cs:1287
+#, fuzzy
 msgid "Enable Auxiliary Action "
-msgstr ""
+msgstr "Erweiterte Funktionen aktivieren."
 
 #: ../../Menu/Options.Designer.cs:1297
 msgid "Use ETCS Circular Speed Gauge"
@@ -831,7 +832,7 @@ msgstr "Ziel-Framerate"
 
 #: ../../Menu/Options.Designer.cs:1443
 msgid "Automatically tune settings to keep performance level"
-msgstr "Framerate automatisch regulieren um Leistung aufrecht zu erhalten"
+msgstr "Framerate automatisch regulieren um Leistung zu erhalten"
 
 #: ../../Menu/Options.Designer.cs:1453
 msgid "Double overhead wires"
