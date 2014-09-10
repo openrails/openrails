@@ -1,707 +1,601 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
-"POT-Creation-Date: 2014-02-20 20:48:10+0100\n"
-"PO-Revision-Date: 2014-02-20 20:48+0100\n"
-"Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
+"POT-Creation-Date: 2014-05-04 11:37:39+0100\n"
+"PO-Revision-Date: 2014-09-10 02:49+0100\n"
+"Last-Translator: GNIEWEK Cédric <gniewek.cedric@free.fr>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.6.4\n"
+"X-Generator: Poedit 1.6.9\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../ORTS/Menu/Activities.cs:47
-msgid "- Explore Route -"
-msgstr "- Exploration de la route -"
+#: ../../ORTS.Settings/InputSettings.cs:42
+msgid "Game Pause Menu"
+msgstr "Jeu Menu de pause"
 
-#: ../ORTS/Menu/Activities.cs:71 ../ORTS/Menu/Consists.cs:47
-#: ../ORTS/Menu/Consists.cs:123 ../ORTS/Menu/Paths.cs:51
-#: ../ORTS/Menu/Routes.cs:47
-msgid "load error:"
-msgstr "erreur de chargement :"
+#: ../../ORTS.Settings/InputSettings.cs:43
+msgid "Game Save"
+msgstr "Jeu Sauvegarder"
 
-#: ../ORTS/Menu/Activities.cs:74 ../ORTS/Menu/Consists.cs:50
-#: ../ORTS/Menu/Consists.cs:126 ../ORTS/Menu/Paths.cs:54
-#: ../ORTS/Menu/Paths.cs:55 ../ORTS/Menu/Paths.cs:56 ../ORTS/Menu/Routes.cs:49
-msgid "unnamed:"
-msgstr "sans nom :"
+#: ../../ORTS.Settings/InputSettings.cs:44
+msgid "Game Quit"
+msgstr "Jeu Quitter"
 
-#: ../ORTS/Menu/Activities.cs:80 ../ORTS/Menu/Consists.cs:54
-#: ../ORTS/Menu/Consists.cs:131 ../ORTS/Menu/Paths.cs:60
-#: ../ORTS/Menu/Routes.cs:54
-msgid "missing:"
-msgstr "manquant :"
+#: ../../ORTS.Settings/InputSettings.cs:45
+msgid "Game Pause"
+msgstr "Jeu Pause"
 
-#: ../ORTS/Menu/Activities.cs:73
+#: ../../ORTS.Settings/InputSettings.cs:46
+msgid "Game Screenshot"
+msgstr "Jeu Capture d'écran"
+
+#: ../../ORTS.Settings/InputSettings.cs:47
+msgid "Game Fullscreen"
+msgstr "Jeu Plein écran"
+
+#: ../../ORTS.Settings/InputSettings.cs:48
+msgid "Game Switch Ahead"
+msgstr "Jeu Déplacer l'aiguille devant"
+
+#: ../../ORTS.Settings/InputSettings.cs:49
+msgid "Game Switch Behind"
+msgstr "Jeu Déplacer l'aiguille derrière"
+
+#: ../../ORTS.Settings/InputSettings.cs:50
+msgid "Game Switch Picked"
+msgstr "Jeu Déplacer l'aiguille sélectionnée"
+
+#: ../../ORTS.Settings/InputSettings.cs:51
+msgid "Game Signal Picked"
+msgstr "Jeu Changer l'état du signal sélectionné"
+
+#: ../../ORTS.Settings/InputSettings.cs:52
+msgid "Game Switch With Mouse"
+msgstr "Jeu Déplacer l'aiguille avec la souris"
+
+#: ../../ORTS.Settings/InputSettings.cs:53
+msgid "Game Uncouple With Mouse"
+msgstr "Jeu Dételer avec la souris"
+
+#: ../../ORTS.Settings/InputSettings.cs:54
+msgid "Game Change Cab"
+msgstr "Jeu Changer de cabine"
+
+#: ../../ORTS.Settings/InputSettings.cs:55
+msgid "Game Request Control"
+msgstr "Jeu Demander le contrôle du train"
+
+#: ../../ORTS.Settings/InputSettings.cs:56
+msgid "Game Multi Player Dispatcher"
+msgstr "Jeu Poste d'aiguillage (multi-joueur)"
+
+#: ../../ORTS.Settings/InputSettings.cs:57
+msgid "Game Multi Player Texting"
+msgstr "Jeu Messagerie (multi-joueur)"
+
+#: ../../ORTS.Settings/InputSettings.cs:58
+msgid "Game Switch Manual Mode"
+msgstr "Jeu Passer en mode manuel"
+
+#: ../../ORTS.Settings/InputSettings.cs:59
+msgid "Game Clear Signal Forward"
+msgstr "Jeu Ouvrir le signal devant"
+
+#: ../../ORTS.Settings/InputSettings.cs:60
+msgid "Game Clear Signal Backward"
+msgstr "Jeu Ouvrir le signal derrière"
+
+#: ../../ORTS.Settings/InputSettings.cs:61
+msgid "Game Reset Signal Forward"
+msgstr "Jeu Réinitialiser le signal devant"
+
+#: ../../ORTS.Settings/InputSettings.cs:62
+msgid "Game Reset Signal Backward"
+msgstr "Jeu Réinitialiser le signal derrière"
+
+#: ../../ORTS.Settings/InputSettings.cs:64
+msgid "Display Next Window Tab"
+msgstr "Affichage "
+
+#: ../../ORTS.Settings/InputSettings.cs:65
+msgid "Display Help Window"
+msgstr "Affichage Fenêtre d'aide"
+
+#: ../../ORTS.Settings/InputSettings.cs:66
+msgid "Display Track Monitor Window"
+msgstr "Affichage Fenêtre de surveillance de la voie"
+
+#: ../../ORTS.Settings/InputSettings.cs:67
+msgid "Display HUD"
+msgstr "Affichage ATH"
+
+#: ../../ORTS.Settings/InputSettings.cs:68
+msgid "Display Car Labels"
+msgstr "Affichage Etiquettes de véhicules"
+
+#: ../../ORTS.Settings/InputSettings.cs:69
+msgid "Display Station Labels"
+msgstr "Affichage Etiquettes de stations"
+
+#: ../../ORTS.Settings/InputSettings.cs:70
+msgid "Display Switch Window"
+msgstr "Affichage Fenêtre d'aiguillage"
+
+#: ../../ORTS.Settings/InputSettings.cs:71
+msgid "Display Train Operations Window"
+msgstr "Affichage Fenêtre des opérations de train"
+
+#: ../../ORTS.Settings/InputSettings.cs:72
+msgid "Display Next Station Window"
+msgstr "Affichage Fenêtre de la prochaine station"
+
+#: ../../ORTS.Settings/InputSettings.cs:73
+msgid "Display Compass Window"
+msgstr "Affichage Fenêtre du compas"
+
+#: ../../ORTS.Settings/InputSettings.cs:75
+msgid "Debug Speed Up"
+msgstr "Debug Augmenter la vitesse"
+
+#: ../../ORTS.Settings/InputSettings.cs:76
+msgid "Debug Speed Down"
+msgstr "Debug Réduire la vitesse"
+
+#: ../../ORTS.Settings/InputSettings.cs:77
+msgid "Debug Speed Reset"
+msgstr "Debug Réinitialiser la vitesse"
+
+#: ../../ORTS.Settings/InputSettings.cs:78
+msgid "Debug Overcast Increase"
+msgstr "Debug Augmenter la quantité de nuages"
+
+#: ../../ORTS.Settings/InputSettings.cs:79
+msgid "Debug Overcast Decrease"
+msgstr "Debug Réduire la quantité de nuages"
+
+#: ../../ORTS.Settings/InputSettings.cs:80
+msgid "Debug Fog Increase"
+msgstr "Debug Augmenter la quantité de brouillard"
+
+#: ../../ORTS.Settings/InputSettings.cs:81
+msgid "Debug Fog Decrease"
+msgstr "Debug Réduire la quantité de brouillard"
+
+#: ../../ORTS.Settings/InputSettings.cs:82
+msgid "Debug Weather Change"
+msgstr "Debug Changer de météo"
+
+#: ../../ORTS.Settings/InputSettings.cs:83
+msgid "Debug Clock Forwards"
+msgstr "Debug Avancer l'heure"
+
+#: ../../ORTS.Settings/InputSettings.cs:84
+msgid "Debug Clock Backwards"
+msgstr "Debug Reculer l'heure"
+
+#: ../../ORTS.Settings/InputSettings.cs:85
+msgid "Debug Logger"
+msgstr "Debug Log"
+
+#: ../../ORTS.Settings/InputSettings.cs:86
+msgid "Debug Lock Shadows"
+msgstr "Debug Verrouiller les ombres"
+
+#: ../../ORTS.Settings/InputSettings.cs:87
+msgid "Debug Dump Keymap"
+msgstr "Debug Exporter les assignations de touches"
+
+#: ../../ORTS.Settings/InputSettings.cs:88
+msgid "Debug Log Render Frame"
+msgstr "Debug Fenêtre Log Render"
+
+#: ../../ORTS.Settings/InputSettings.cs:89
+msgid "Debug Tracks"
+msgstr "Debug Voies"
+
+#: ../../ORTS.Settings/InputSettings.cs:90
+msgid "Debug Signalling"
+msgstr "Debug Signalisation"
+
+#: ../../ORTS.Settings/InputSettings.cs:91
+msgid "Debug Reset Wheel Slip"
+msgstr "Debug Réinitialiser le patinage"
+
+#: ../../ORTS.Settings/InputSettings.cs:92
+msgid "Debug Toggle Advanced Adhesion"
+msgstr "Debug Activer/désactiver le modèle avance d'adhérence"
+
+#: ../../ORTS.Settings/InputSettings.cs:93
+msgid "Debug Sound Form"
+msgstr "Debug Fenêtre des sons"
+
+#: ../../ORTS.Settings/InputSettings.cs:94
+msgid "Debug Physics Form"
+msgstr "Debug Fenêtre du modèle physique"
+
+#: ../../ORTS.Settings/InputSettings.cs:95
+msgid "Debug Precipitation Increase"
+msgstr "Debug Augmenter la pluie"
+
+#: ../../ORTS.Settings/InputSettings.cs:96
+msgid "Debug Precipitation Decrease"
+msgstr "Debug Réduire la pluie"
+
+#: ../../ORTS.Settings/InputSettings.cs:98
+msgid "Camera Cab"
+msgstr "Caméra Vue cabine"
+
+#: ../../ORTS.Settings/InputSettings.cs:99
+msgid "Camera 3D Cab"
+msgstr "Caméra Vue cabine 3D"
+
+#: ../../ORTS.Settings/InputSettings.cs:100
+msgid "Camera Outside Front"
+msgstr "Caméra Vue extérieure avant"
+
+#: ../../ORTS.Settings/InputSettings.cs:101
+msgid "Camera Outside Rear"
+msgstr "Caméra Vue extérieure arrière"
+
+#: ../../ORTS.Settings/InputSettings.cs:102
+msgid "Camera Trackside"
+msgstr "Caméra Vue de la voie"
+
+#: ../../ORTS.Settings/InputSettings.cs:103
+msgid "Camera Passenger"
+msgstr "Caméra Vue du passager"
+
+#: ../../ORTS.Settings/InputSettings.cs:104
+msgid "Camera Brakeman"
+msgstr "Caméra Vue du serre-frein"
+
+#: ../../ORTS.Settings/InputSettings.cs:105
+msgid "Camera Free"
+msgstr "Caméra Vue libre"
+
+#: ../../ORTS.Settings/InputSettings.cs:106
+msgid "Camera Previous Free"
+msgstr "Caméra Vue libre précédente"
+
+#: ../../ORTS.Settings/InputSettings.cs:107
+msgid "Camera HeadOut Forward"
+msgstr "Caméra Vue tête à l'extérieur avant"
+
+#: ../../ORTS.Settings/InputSettings.cs:108
+msgid "Camera HeadOut Backward"
+msgstr "Caméra Vue tête à l'extérieur arrière"
+
+#: ../../ORTS.Settings/InputSettings.cs:109
+msgid "Camera Toggle Show Cab"
+msgstr "Caméra Activer/désactiver l'affichage de la cabine"
+
+#: ../../ORTS.Settings/InputSettings.cs:110
+msgid "Camera Reset"
+msgstr "Caméra Réinitialiser"
+
+#: ../../ORTS.Settings/InputSettings.cs:111
+msgid "Camera Move Fast"
+msgstr "Caméra Déplacement rapide"
+
+#: ../../ORTS.Settings/InputSettings.cs:112
+msgid "Camera Move Slow"
+msgstr "Caméra Déplacement lent"
+
+#: ../../ORTS.Settings/InputSettings.cs:113
+msgid "Camera Pan Left"
+msgstr "Caméra Tourner à gauche"
+
+#: ../../ORTS.Settings/InputSettings.cs:114
+msgid "Camera Pan Right"
+msgstr "Caméra Tourner à droite"
+
+#: ../../ORTS.Settings/InputSettings.cs:115
+msgid "Camera Pan Up"
+msgstr "Caméra Tourner vers le haut"
+
+#: ../../ORTS.Settings/InputSettings.cs:116
+msgid "Camera Pan Down"
+msgstr "Caméra Tourner vers le bas"
+
+#: ../../ORTS.Settings/InputSettings.cs:117
+msgid "Camera Zoom In"
+msgstr "Caméra Zoomer"
+
+#: ../../ORTS.Settings/InputSettings.cs:118
+msgid "Camera Zoom Out"
+msgstr "Caméra Dézoomer"
+
+#: ../../ORTS.Settings/InputSettings.cs:119
+msgid "Camera Rotate Left"
+msgstr "Caméra Tourner à gauche (sur soi-même)"
+
+#: ../../ORTS.Settings/InputSettings.cs:120
+msgid "Camera Rotate Right"
+msgstr "Caméra Tourner à droite (sur soi-même)"
+
+#: ../../ORTS.Settings/InputSettings.cs:121
+msgid "Camera Rotate Up"
+msgstr "Caméra Tourner vers le haut (sur soi-même)"
+
+#: ../../ORTS.Settings/InputSettings.cs:122
+msgid "Camera Rotate Down"
+msgstr "Caméra Tourner vers le bas (sur soi-même)"
+
+#: ../../ORTS.Settings/InputSettings.cs:123
+msgid "Camera Car Next"
+msgstr "Caméra Véhicule suivant"
+
+#: ../../ORTS.Settings/InputSettings.cs:124
+msgid "Camera Car Previous"
+msgstr "Caméra Véhicule précédent"
+
+#: ../../ORTS.Settings/InputSettings.cs:125
+msgid "Camera Car First"
+msgstr "Caméra Premier véhicule"
+
+#: ../../ORTS.Settings/InputSettings.cs:126
+msgid "Camera Car Last"
+msgstr "Caméra Dernier véhicule"
+
+#: ../../ORTS.Settings/InputSettings.cs:127
+msgid "Camera Jumping Trains"
+msgstr "Caméra Changer de train"
+
+#: ../../ORTS.Settings/InputSettings.cs:128
+msgid "Camera Jump Back Player"
+msgstr "Caméra Retourner à votre train"
+
+#: ../../ORTS.Settings/InputSettings.cs:129
+msgid "Camera Jump See Switch"
+msgstr "Caméra Aller à l'aiguille"
+
+#: ../../ORTS.Settings/InputSettings.cs:130
+msgid "Camera Vibrate"
+msgstr "Caméra Faire vibrer"
+
+#: ../../ORTS.Settings/InputSettings.cs:131
+msgid "Camera Cab Rotate"
+msgstr "Caméra Tourner la cabine"
+
+#: ../../ORTS.Settings/InputSettings.cs:133
+msgid "Control Forwards"
+msgstr "Contrôle Inverseur vers l'avant"
+
+#: ../../ORTS.Settings/InputSettings.cs:134
+msgid "Control Backwards"
+msgstr "Contrôle Inverseur vers l'arrière"
+
+#: ../../ORTS.Settings/InputSettings.cs:135
+msgid "Control Throttle Increase"
+msgstr "Contrôle Augmentation des gaz"
+
+#: ../../ORTS.Settings/InputSettings.cs:136
+msgid "Control Throttle Decrease"
+msgstr "Contrôle Réduction des gaz"
+
+#: ../../ORTS.Settings/InputSettings.cs:137
+msgid "Control Gear Up"
+msgstr "Contrôle Passage d'une vitesse"
+
+#: ../../ORTS.Settings/InputSettings.cs:138
+msgid "Control Gear Down"
+msgstr "Contrôle Rétrogradation d'une vitesse"
+
+#: ../../ORTS.Settings/InputSettings.cs:139
+msgid "Control Train Brake Increase"
+msgstr "Contrôle Augmentation du frein de train"
+
+#: ../../ORTS.Settings/InputSettings.cs:140
+msgid "Control Train Brake Decrease"
+msgstr "Contrôle Réduction du frein de train"
+
+#: ../../ORTS.Settings/InputSettings.cs:141
+msgid "Control Engine Brake Increase"
+msgstr "Contrôle Augmentation du frein de la locomotive"
+
+#: ../../ORTS.Settings/InputSettings.cs:142
+msgid "Control Engine Brake Decrease"
+msgstr "Contrôle Réduction du frein de la locomotive"
+
+#: ../../ORTS.Settings/InputSettings.cs:143
+msgid "Control Dynamic Brake Increase"
+msgstr "Contrôle Augmentation du frein dynamique"
+
+#: ../../ORTS.Settings/InputSettings.cs:144
+msgid "Control Dynamic Brake Decrease"
+msgstr "Contrôle Réduction du frein dynamique"
+
+#: ../../ORTS.Settings/InputSettings.cs:145
+msgid "Control Bail Off"
+msgstr "Contrôle Libération des freins de la locomotive"
+
+#: ../../ORTS.Settings/InputSettings.cs:146
+msgid "Control Initialize Brakes"
+msgstr "Contrôle Réinitialisation des freins"
+
+#: ../../ORTS.Settings/InputSettings.cs:147
+msgid "Control Handbrake Full"
+msgstr "Contrôle Activation du frein à main"
+
+#: ../../ORTS.Settings/InputSettings.cs:148
+msgid "Control Handbrake None"
+msgstr "Contrôle Désactivation du frein à main"
+
+#: ../../ORTS.Settings/InputSettings.cs:149
+msgid "Control Retainers On"
+msgstr "Contrôle Activation du freinage de retenue"
+
+#: ../../ORTS.Settings/InputSettings.cs:150
+msgid "Control Retainers Off"
+msgstr "Contrôle Désactivation du freinage de retenue"
+
+#: ../../ORTS.Settings/InputSettings.cs:151
+msgid "Control Brake Hose Connect"
+msgstr "Contrôle Connexion des raccords de conduite"
+
+#: ../../ORTS.Settings/InputSettings.cs:152
+msgid "Control Brake Hose Disconnect"
+msgstr "Contrôle Déconnexion des raccords de conduite"
+
+#: ../../ORTS.Settings/InputSettings.cs:153
+msgid "Control Alerter"
+msgstr "Contrôle Veille automatique"
+
+#: ../../ORTS.Settings/InputSettings.cs:154
+msgid "Control Emergency"
+msgstr "Contrôle Frein d'urgence"
+
+#: ../../ORTS.Settings/InputSettings.cs:155
+msgid "Control Sander"
+msgstr "Contrôle Sablage"
+
+#: ../../ORTS.Settings/InputSettings.cs:156
+msgid "Control Wiper"
+msgstr "Contrôle Essuie-glaces"
+
+#: ../../ORTS.Settings/InputSettings.cs:157
+msgid "Control Horn"
+msgstr "Contrôle Sifflet"
+
+#: ../../ORTS.Settings/InputSettings.cs:158
+msgid "Control Bell"
+msgstr "Contrôle Cloche"
+
+#: ../../ORTS.Settings/InputSettings.cs:159
+msgid "Control Bell Toggle"
+msgstr "Contrôle Activation/désactivation de la cloche"
+
+#: ../../ORTS.Settings/InputSettings.cs:160
+msgid "Control Door Left"
+msgstr "Contrôle Portes gauche"
+
+#: ../../ORTS.Settings/InputSettings.cs:161
+msgid "Control Door Right"
+msgstr "Contrôle Portes droite"
+
+#: ../../ORTS.Settings/InputSettings.cs:162
+msgid "Control Mirror"
+msgstr "Contrôle Mirroirs"
+
+#: ../../ORTS.Settings/InputSettings.cs:163
+msgid "Control Light"
+msgstr "Contrôle Eclairage de cabine"
+
+#: ../../ORTS.Settings/InputSettings.cs:164
+msgid "Control Pantograph1"
+msgstr "Contrôle Pantographe 1"
+
+#: ../../ORTS.Settings/InputSettings.cs:165
+msgid "Control Pantograph2"
+msgstr "Contrôle Pantographe 2"
+
+#: ../../ORTS.Settings/InputSettings.cs:166
+msgid "Control Diesel Player"
+msgstr "Contrôle Locomotive diesel du joueur"
+
+#: ../../ORTS.Settings/InputSettings.cs:167
+msgid "Control Diesel Helper"
+msgstr "Contrôle Locomotive diesel de pousse"
+
+#: ../../ORTS.Settings/InputSettings.cs:168
+msgid "Control Headlight Increase"
+msgstr "Contrôle Augmentation de l'éclairage de tête"
+
+#: ../../ORTS.Settings/InputSettings.cs:169
+msgid "Control Headlight Decrease"
+msgstr "Contrôle Diminution de l'éclairage de tête"
+
+#: ../../ORTS.Settings/InputSettings.cs:170
+msgid "Control Injector1 Increase"
+msgstr "Contrôle Augmentation de l'injecteur 1"
+
+#: ../../ORTS.Settings/InputSettings.cs:171
+msgid "Control Injector1 Decrease"
+msgstr "Contrôle Diminution de l'injecteur 1"
+
+#: ../../ORTS.Settings/InputSettings.cs:172
+msgid "Control Injector1"
+msgstr "Contrôle Activation/désactivation de l'injecteur 1"
+
+#: ../../ORTS.Settings/InputSettings.cs:173
+msgid "Control Injector2 Increase"
+msgstr "Contrôle Augmentation de l'injecteur 2"
+
+#: ../../ORTS.Settings/InputSettings.cs:174
+msgid "Control Injector2 Decrease"
+msgstr "Contrôle Diminution de l'injecteur 2"
+
+#: ../../ORTS.Settings/InputSettings.cs:175
+msgid "Control Injector2"
+msgstr "Contrôle Activation/désactivation de l'injecteur 2"
+
+#: ../../ORTS.Settings/InputSettings.cs:176
+msgid "Control Blower Increase"
+msgstr "Contrôle Augmentation de la soufflerie"
+
+#: ../../ORTS.Settings/InputSettings.cs:177
+msgid "Control Blower Decrease"
+msgstr "Contrôle Diminution de la soufflerie"
+
+#: ../../ORTS.Settings/InputSettings.cs:178
+msgid "Control Damper Increase"
+msgstr "Contrôle Augmentation du coupe-feu"
+
+#: ../../ORTS.Settings/InputSettings.cs:179
+msgid "Control Damper Decrease"
+msgstr "Contrôle Diminution du coupe-feu"
+
+#: ../../ORTS.Settings/InputSettings.cs:180
+msgid "Control Firebox Open"
+msgstr "Contrôle Ouverture du foyer"
+
+#: ../../ORTS.Settings/InputSettings.cs:181
+msgid "Control Firebox Close"
+msgstr "Contrôle Fermeture du foyer"
+
+#: ../../ORTS.Settings/InputSettings.cs:182
+msgid "Control Firing Rate Increase"
+msgstr "Contrôle Augmentation du taux d'allumage"
+
+#: ../../ORTS.Settings/InputSettings.cs:183
+msgid "Control Firing Rate Decrease"
+msgstr "Contrôle Diminution du taux d'allumage"
+
+#: ../../ORTS.Settings/InputSettings.cs:184
+msgid "Control Fire Shovel Full"
+msgstr "Contrôle Ajout d'une pelle de combustible"
+
+#: ../../ORTS.Settings/InputSettings.cs:185
+msgid "Control Cylinder Cocks"
+msgstr "Contrôle Purge des cylindres"
+
+#: ../../ORTS.Settings/InputSettings.cs:186
+msgid "Control Firing"
+msgstr "Contrôle Activation/désactivation du chauffage automatique"
+
+#: ../../ORTS.Settings/InputSettings.cs:187
+msgid "Control Refill"
+msgstr "Contrôle Remplissage des réservoirs"
+
+#: ../../ORTS.Settings/InputSettings.cs:633
 #, csharp-format
-msgid "Activity '{0}' is excluded."
-msgstr "L'activité '{0}' est exclue."
+msgid "{0} requires and is modified by Shift"
+msgstr "{0} nécessite d'appuyer sur Shift"
 
-#: ../ORTS/Menu/Consists.cs:109
-msgid "- Any Locomotive -"
-msgstr "- Toute locomotive -"
-
-#: ../ORTS/Menu/Consists.cs:125
+#: ../../ORTS.Settings/InputSettings.cs:635
 #, csharp-format
-msgid "Locomotive '{0}' is excluded."
-msgstr "La locomotive '{0}' est exclue."
-
-#~ msgid "OK"
-#~ msgstr "OK"
-
-#~ msgid "Cancel"
-#~ msgstr "Annuler"
-
-#~ msgid "Path:"
-#~ msgstr "Chemin :"
-
-#~ msgid "Name:"
-#~ msgstr "Nom :"
-
-#~ msgid "Installation Profile"
-#~ msgstr "Profil d'installation"
-
-#~ msgid "Save Packs"
-#~ msgstr "Pack de sauvegardes"
-
-#~ msgid "All files"
-#~ msgstr "Tous les fichiers"
-
-#~ msgid "Save Pack '{0}' imported successfully."
-#~ msgstr "Pack de sauvegarde '{0}' importé avec succès."
-
-#~ msgid "Save Pack '{0}' exported successfully."
-#~ msgstr "Pack de sauvegarde '{0}' exporté avec succès."
-
-#~ msgid "Save Pack folder contains {0} save pack:"
-#~ msgid_plural "Save Pack folder contains {0} save packs:"
-#~ msgstr[0] ""
-#~ "Le dossier de packs de sauvegarde contient {0} pack de sauvegardes :"
-#~ msgstr[1] ""
-#~ "Le dossier de packs de sauvegarde contient {0} packs de sauvegardes :"
-
-#~ msgid "Open Save Packs folder"
-#~ msgstr "Ouvrir le dossier des sauvegardes"
-
-#~ msgid "Export to Save Pack"
-#~ msgstr "Exporter vers un pack de sauvegardes"
-
-#~ msgid "Import Save Pack"
-#~ msgstr "Importer un pack de sauvegardes"
-
-#~ msgid "Import and export saved games"
-#~ msgstr "Importer et exporter des sauvegardes"
-
-#~ msgid "✔"
-#~ msgstr "✔"
-
-#~ msgid "✘"
-#~ msgstr "✘"
-
-#~ msgid "↺"
-#~ msgstr "↺"
-
-#~ msgid "EditKey"
-#~ msgstr "Editer la touche"
-
-#~ msgid "Accept changes"
-#~ msgstr "Valider les changements"
-
-#~ msgid "Cancel changes"
-#~ msgstr "Valider les changements"
-
-#~ msgid "Press any key"
-#~ msgstr "Appuyez sur n'importe quelle touche"
-
-#~ msgid "Reset to default"
-#~ msgstr "Restaurer les paramètres par défaut"
-
-#~ msgid "Spring"
-#~ msgstr "Printemps"
-
-#~ msgid "Summer"
-#~ msgstr "Eté"
-
-#~ msgid "Autumn"
-#~ msgstr "Automne"
-
-#~ msgid "Winter"
-#~ msgstr "Hiver"
-
-#~ msgid "Clear"
-#~ msgstr "Clair"
-
-#~ msgid "Snow"
-#~ msgstr "Neige"
-
-#~ msgid "Rain"
-#~ msgstr "Pluie"
-
-#~ msgid "Easy"
-#~ msgstr "Facile"
-
-#~ msgid "Medium"
-#~ msgstr "Moyen"
-
-#~ msgid "Hard"
-#~ msgstr "Difficile"
-
-#~ msgid "Select a the installation profile (MSTS folder) to add:"
-#~ msgstr "Sélectionnez un profil d'installation (dossier de MSTS) à ajouter :"
-
-#~ msgid "Path: "
-#~ msgstr "Itinéraire :"
-
-#~ msgid ""
-#~ "\n"
-#~ "Name: "
-#~ msgstr ""
-#~ "\n"
-#~ "Nom : "
-
-#~ msgid ""
-#~ "\n"
-#~ "\n"
-#~ "Remove this installation profile from Open Rails?"
-#~ msgstr ""
-#~ "\n"
-#~ "\n"
-#~ "Souhaitez-vous vraiment retirer ce profil d'installation d'Open Rails ?"
-
-#~ msgid ""
-#~ "User name must be 4-10 characters long, cannot contain space, ', \" or - "
-#~ "and must not start with a digit."
-#~ msgstr ""
-#~ "Les pseudos doivent être de 4 à 10 caractères, ne doivent pas contenir : "
-#~ "espace, ', \" ou - et ne doivent pas commencer par un chiffre."
-
-#~ msgid ""
-#~ "Microsoft Train Simulator doesn't appear to be installed.\n"
-#~ "Click on 'Add...' to point Open Rails at your Microsoft Train Simulator "
-#~ "folder."
-#~ msgstr ""
-#~ "Microsoft Train Simulator ne semble pas être installé.\n"
-#~ "Cliquez sur 'Ajouter' pour indiquer le chemin vers le dossier de "
-#~ "Microsoft Train Simulator."
-
-#~ msgid "Activity Briefing"
-#~ msgstr "Briefing de l'activité"
-
-#~ msgid "Route: {0}"
-#~ msgstr "Route : {0}"
-
-#~ msgid "Locomotive: {0}"
-#~ msgstr "Locomotive : {0}"
-
-#~ msgid "Activity: {0}"
-#~ msgstr "Activité : {0}"
-
-#~ msgid "Windowed"
-#~ msgstr "Fenêtré"
-
-#~ msgid "Start"
-#~ msgstr "Démarrer"
-
-#~ msgid "open"
-#~ msgstr "open"
-
-#~ msgid "rails"
-#~ msgstr "rails"
-
-#~ msgid "Add..."
-#~ msgstr "Ajouter"
-
-#~ msgid "Remove"
-#~ msgstr "Retirer"
-
-#~ msgid "Logging"
-#~ msgstr "Création log"
-
-#~ msgid "Options"
-#~ msgstr "Options"
-
-#~ msgid "Resume/ Replay..."
-#~ msgstr "Reprendre / Rejouer"
-
-#~ msgid "Testing"
-#~ msgstr "Test"
-
-#~ msgid "Route:"
-#~ msgstr "Route :"
-
-#~ msgid "Activity:"
-#~ msgstr "Activité :"
-
-#~ msgid "Locomotive:"
-#~ msgstr "Locomotive :"
-
-#~ msgid "Consist:"
-#~ msgstr "Composition :"
-
-#~ msgid "Starting at:"
-#~ msgstr "Départ de :"
-
-#~ msgid "Heading to:"
-#~ msgstr "Arrivée à :"
-
-#~ msgid "Host/port:"
-#~ msgstr "Hôte / port :"
-
-#~ msgid "User name:"
-#~ msgstr "Pseudo :"
-
-#~ msgid "Client"
-#~ msgstr "Client"
-
-#~ msgid "Server"
-#~ msgstr "Serveur"
-
-#~ msgid "Weather:"
-#~ msgstr "Météo :"
-
-#~ msgid "Duration:"
-#~ msgstr "Durée :"
-
-#~ msgid "Difficulty:"
-#~ msgstr "Difficulté :"
-
-#~ msgid "Time:"
-#~ msgstr "Heure :"
-
-#~ msgid "Season:"
-#~ msgstr "Saison :"
-
-#~ msgid "Multiplayer"
-#~ msgstr "Multijoueur"
-
-#~ msgid "Singleplayer"
-#~ msgstr "Monojoueur"
-
-#~ msgid "Installation profile:"
-#~ msgstr "Profil d'installation :"
-
-#~ msgid "Edit"
-#~ msgstr "Editer"
-
-#~ msgid "Open Rails"
-#~ msgstr "Open Rails"
-
-#~ msgid "Click to change this key"
-#~ msgstr "Cliquez ici pour changer cette touche"
-
-#~ msgid ""
-#~ "Continue with conflicting key assignments?\n"
-#~ "\n"
-#~ msgstr ""
-#~ "Continuer avec des assignations de touche conflictuels ?\n"
-#~ "\n"
-
-#~ msgid "Remove all custom key assignments?"
-#~ msgstr "Retirer toutes les assignations de touche personnalisées ?"
-
-#~ msgid ""
-#~ "A listing of all keyboard commands and keys has been placed here:\n"
-#~ "\n"
-#~ msgstr ""
-#~ "Une liste de toutes les commandes clavier a été enregistrée ici :\n"
-#~ "\n"
-
-#~ msgid "No errors found."
-#~ msgstr "Pas d'erreurs trouvées."
-
-#~ msgid "Please restart Open Rails in order to load the new language."
-#~ msgstr "Veuillez redémarrer Open Rails pour charger la nouvelle langue."
-
-#~ msgid ""
-#~ "{0:F0}° vertical FOV is the same as:\n"
-#~ "{1:F0}° horizontal FOV on 4:3\n"
-#~ "{2:F0}° horizontal FOV on 16:9"
-#~ msgstr ""
-#~ "Un champ de vision vertical de {0:F0}° équivaut à :\n"
-#~ "Un champ de vision horizontal de {1:F0}° en 4:3\n"
-#~ "Un champ de vision horizontal de {2:F0}° en 16:9"
-
-#~ msgid "Brake pipe charging rate (PSI/s)"
-#~ msgstr "Taux de remplissage des conduites de freins (PSI/s)"
-
-#~ msgid "Graduated release air brakes"
-#~ msgstr "Libération graduée des freins pneumatiques"
-
-#~ msgid "Alerter"
-#~ msgstr "Veille automatique"
-
-#~ msgid "Suppress control confirmations"
-#~ msgstr "Ne pas afficher le texte de confirmation des commandes clavier"
-
-#~ msgid "Dispatcher window"
-#~ msgstr "Fenêtre de l'aiguilleur"
-
-#~ msgid "General"
-#~ msgstr "Général"
-
-#~ msgid "Language"
-#~ msgstr "Langue"
-
-#~ msgid "Audio"
-#~ msgstr "Audio"
-
-#~ msgid "% Sound Volume"
-#~ msgstr "Volume du son (%)"
-
-#~ msgid "Sound detail level"
-#~ msgstr "Qualité du son"
-
-#~ msgid "MSTS Bin compatible sound"
-#~ msgstr "Sons compatibles MSTS Bin Patch"
-
-#~ msgid "Video"
-#~ msgstr "Video"
-
-#~ msgid "Viewing distance (m)"
-#~ msgstr "Distance de visibilité (m)"
-
-#~ msgid "XXX"
-#~ msgstr "XXX"
-
-#~ msgid "Viewing vertical FOV"
-#~ msgstr "Champ de vision vertical"
-
-#~ msgid "% Cab 2D stretch"
-#~ msgstr "% d'étirement de la cabine 2D"
-
-#~ msgid "World object density"
-#~ msgstr "Densité d'objets"
-
-#~ msgid "Glass on in-game windows"
-#~ msgstr "Afficher le pare brise dans la fenêtre du jeu"
-
-#~ msgid "Window size"
-#~ msgstr "Taille de la fenêtre"
-
-#~ msgid "Dynamic shadows"
-#~ msgstr "Ombres dynamiques"
-
-#~ msgid "Overhead wire"
-#~ msgstr "Caténaire"
-
-#~ msgid "Simulation"
-#~ msgstr "Simulation"
-
-#~ msgid "Optimal curve speed factor"
-#~ msgstr "Facteur optimal de vitesse dans les courbes"
-
-#~ msgid "Curve resistance multiplier at zero speed"
-#~ msgstr "Multiplicateur du frottement dans les courbes à vitesse nulle"
-
-#~ msgid "Curve resistance speed dependent"
-#~ msgstr "Frottement dans les courbes dépendant de la vitesse"
-
-#~ msgid "Override non-electrified route line-voltage"
-#~ msgstr "Autoriser les trains électriques sur les voies non électrifiées"
-
-#~ msgid "Adhesion Moving Average Filter Size"
-#~ msgstr "Taille de la moyenne glissante du modèle d'adhésion"
-
-#~ msgid "Break couplers"
-#~ msgstr "Autoriser la casse des attelages"
-
-#~ msgid "Use advanced adhesion model"
-#~ msgstr "Utiliser le modèle d'adhésion avancé"
-
-#~ msgid "Keyboard"
-#~ msgstr "Clavier"
-
-#~ msgid "Export"
-#~ msgstr "Exporter"
-
-#~ msgid "Defaults"
-#~ msgstr "Par défaut"
-
-#~ msgid "Check"
-#~ msgstr "Vérifier"
-
-#~ msgid "Experimental"
-#~ msgstr "Expérimental"
-
-#~ msgid "Use MSTS Environments"
-#~ msgstr "Utiliser les environnements de MSTS"
-
-#~ msgid "Always use highest detail objects"
-#~ msgstr "Toujours utiliser les objets les plus détaillés"
-
-#~ msgid "Use location-linked passing path processing"
-#~ msgstr "Calculer les itinéraires à l'aide des points de passage"
-
-#~ msgid "Ambient daylight brightness"
-#~ msgstr "Luminosité de la lumière ambiante"
-
-#~ msgid "Target frame rate"
-#~ msgstr "FPS cible"
-
-#~ msgid "Automatically tune settings to keep performance level"
-#~ msgstr ""
-#~ "Ajuster automatiquement les paramètres pour maintenir les performances"
-
-#~ msgid "Loading delay (ms)"
-#~ msgstr "Délai de chargement (ms)"
-
-#~ msgid "Double overhead wires"
-#~ msgstr "Caténaire à 2 fils"
-
-#~ msgid "Extend object maximum viewing distance to horizon"
-#~ msgstr ""
-#~ "Etendre la distance de visibilité maximale des objets jusqu'à l'horizon"
-
-#~ msgid "Viewing distance (km)"
-#~ msgstr "Distance de visibilité (km)"
-
-#~ msgid "Distant mountains"
-#~ msgstr "Montagnes distantes"
-
-#~ msgid "Gauge (mm)"
-#~ msgstr "Ecartement des rails (mm)"
-
-#~ msgid "Minimum length (m)"
-#~ msgstr "Longueur minimale (m)"
-
-#~ msgid "Level"
-#~ msgstr "Niveau"
-
-#~ msgid ""
-#~ "Experimental features that may slow down the game, use at your own risk."
-#~ msgstr ""
-#~ "Fonctionnalités expérimentales qui peuvent ralentir le jeu. A utiliser à "
-#~ "vos risques et périls."
-
-#~ msgid "Super-elevation"
-#~ msgstr "Dénivelé dans les courbes"
-
-#~ msgid "Load DDS textures in preference to ACE"
-#~ msgstr "Préferer le chargement de textures DDS"
-
-#~ msgid "DataLogger"
-#~ msgstr "Enregistreur de données"
-
-#~ msgid "Speed units"
-#~ msgstr "Unité de vitesse"
-
-#~ msgid "Log miscellaneous data"
-#~ msgstr "Enregistrer les données diverses"
-
-#~ msgid "Log performance data"
-#~ msgstr "Enregistrer les données de performance"
-
-#~ msgid "Start logging with the simulation start"
-#~ msgstr "Démarrer l'enregistrement dès le début de la simulation"
-
-#~ msgid "Separator"
-#~ msgstr "Séparateur"
-
-#~ msgid "Log physics data"
-#~ msgstr "Enregistrer les données physiques"
-
-#~ msgid "Evaluation"
-#~ msgstr "Evaluation"
-
-#~ msgid "Interval (sec)"
-#~ msgstr "Intervalle (s)"
-
-#~ msgid "Log station stops"
-#~ msgstr "Enregistrer les données des arrêts en station"
-
-#~ msgid "Log train speed"
-#~ msgstr "Enregistrer la vitesse du train"
-
-#~ msgid ""
-#~ "Use DataLogger to record your simulation data (in-game command: F12).\r\n"
-#~ "Please remember that the size of the dump file grows with the simulation "
-#~ "time!"
-#~ msgstr ""
-#~ "Utilisez l'enregistreur pour enregistrer les données de la simulation "
-#~ "(activation : F12).\r\n"
-#~ "Rappelez-vous que la taille du fichier d'enregistrement grossit au cours "
-#~ "de la simulation."
-
-#~ msgid "Sound Volume 0-100"
-#~ msgstr "Volume du son 0-100"
-
-#~ msgid "Load the factory default key assignments."
-#~ msgstr "Charge les assignations de touche par défaut."
-
-#~ msgid "Check for incorrect key assignments."
-#~ msgstr "Vérifie la présence de mauvaises assignations de touche."
-
-#~ msgid "Default is 100"
-#~ msgstr "Par défaut : 100"
-
-#~ msgid "Distance to see mountains"
-#~ msgstr "Distance de visibilité des montagnes"
-
-#~ msgid "Shortest curve to have elevation"
-#~ msgstr "Courbe la plus courte permettant de déclencher la dénivellation."
-
-#~ msgid "0: no elevation, 1: 9cm max; 10: 18cm max"
-#~ msgstr "0 : pas de dénivellation; 1 : 9 cm max; 10 : 18 cm max"
-
-#~ msgid ""
-#~ "0 to clip cab view, 100 to stretch it. For cab views that match the "
-#~ "display, use 100."
-#~ msgstr ""
-#~ "0 pour rogner la vue de la cabine, 100 pour l'étendre. Pour les cabines "
-#~ "de la même résolution que l'écran, utilisez 100."
-
-#~ msgid ""
-#~ "Generate a listing of your keyboard assignments.  \r\n"
-#~ "The output is placed on your desktop."
-#~ msgstr ""
-#~ "Crée une liste de vos assignations de touche de clavier.\r\n"
-#~ "Le fichier est créé sur votre bureau."
-
-#~ msgid "Explore Route"
-#~ msgstr "Exploration de la route"
-
-#~ msgid ""
-#~ "Warning: Save {0} found from a route with an unexpected name:\n"
-#~ "{1}.\n"
-#~ "\n"
-#~ msgstr ""
-#~ "Avertissement : La sauvegarde {0} provient d'une route ayant un nom "
-#~ "inattendu :\n"
-#~ "{1}.\n"
-#~ "\n"
-
-#~ msgid ""
-#~ "To prevent crashes and unexpected behavior, new versions of Open Rails "
-#~ "invalidate old saved games. {0} of {1} saves are no longer valid."
-#~ msgstr ""
-#~ "Pour éviter des crashs et des comportements inattendus, les nouvelles "
-#~ "versions d'Open Rails invalident les vieilles sauvegardes. {0} des {1} "
-#~ "sauvegardes ne sont plus valides."
-
-#~ msgid "Resume"
-#~ msgstr "Reprendre"
-
-#~ msgid "Delete"
-#~ msgstr "Supprimer"
-
-#~ msgid "Undelete"
-#~ msgstr "Restaurer"
-
-#~ msgid "Delete all invalid saves"
-#~ msgstr "Supprimer toutes les sauvegardes invalides"
-
-#~ msgid "Import/ export"
-#~ msgstr "Importer / Exporter"
-
-#~ msgid "Invalid saves"
-#~ msgstr "Sauvegardes invalides"
-
-#~ msgid "Replay from start"
-#~ msgstr "Rejouer depuis le début"
-
-#~ msgid "Replay from previous save"
-#~ msgstr "Rejouer dernière sauvegarde"
-
-#~ msgid "Pause replay at end"
-#~ msgstr "Mettre en pause à la fin"
-
-#~ msgid "Pause seconds before end:"
-#~ msgstr "Pause X secondes avant la fin :"
-
-#~ msgid "Saved Games"
-#~ msgstr "Sauvegardes"
-
-#~ msgid "File"
-#~ msgstr "Fichier"
-
-#~ msgid "Saved At"
-#~ msgstr "Date"
-
-#~ msgid "Path"
-#~ msgstr "Chemin"
-
-#~ msgid "Time"
-#~ msgstr "Temps de jeu"
-
-#~ msgid "Distance"
-#~ msgstr "Distance"
-
-#~ msgid "Tile"
-#~ msgstr "Tile"
-
-#~ msgid "Valid"
-#~ msgstr "Valide"
-
-#~ msgid "Deletes the currently selected save or saves."
-#~ msgstr "Supprime les sauvegardes sélectionnées."
-
-#~ msgid "Restores all saves deleted in this session."
-#~ msgstr "Restaure les sauvegardes supprimées lors de cette session."
-
-#~ msgid "Test all"
-#~ msgstr "Tester tout"
-
-#~ msgid "Test"
-#~ msgstr "Tester"
-
-#~ msgid "Summary"
-#~ msgstr "Résumé"
-
-#~ msgid "Details"
-#~ msgstr "Détails"
-
-#~ msgid "Override user settings when running tests"
-#~ msgstr "Ne pas prendre en compte les paramètres utilisateur"
-
-#~ msgid "Clear sort"
-#~ msgstr "Désactiver tri"
-
-#~ msgid "ToTest"
-#~ msgstr "A tester"
-
-#~ msgid "ActivityFilePath"
-#~ msgstr "Chemin de l'activité"
-
-#~ msgid "DefaultSort"
-#~ msgstr "DefaultSort"
-
-#~ msgid "Route"
-#~ msgstr "Route"
-
-#~ msgid "Activity"
-#~ msgstr "Activité"
-
-#~ msgid "Tested"
-#~ msgstr "Testé"
-
-#~ msgid "Passed"
-#~ msgstr "Réussi"
-
-#~ msgid "Errors"
-#~ msgstr "Erreurs"
-
-#~ msgid "Load"
-#~ msgstr "Chargement"
-
-#~ msgid "FPS"
-#~ msgstr "FPS"
-
-#~ msgid "X"
-#~ msgstr "X"
-
-#~ msgid "D"
-#~ msgstr "D"
-
-#~ msgid "Placed Keyboard.txt on your desktop"
-#~ msgstr "Fichier Keyboard.txt enregistré sur votre bureau."
-
-#~ msgid "1024x768"
-#~ msgstr "1024x768"
-
-#~ msgid "Debug"
-#~ msgstr "Debug"
-
-#~ msgid "Run a more complete check."
-#~ msgstr "Réalise un test plus complet."
+msgid "{0} requires and is modified by Control"
+msgstr "{0} nécessite d'appuyer sur Ctrl"
+
+#: ../../ORTS.Settings/InputSettings.cs:637
+#, csharp-format
+msgid "{0} requires and is modified by Alt"
+msgstr "{0} nécessite d'appuyer sur Alt"
+
+#: ../../ORTS.Settings/InputSettings.cs:668
+#, csharp-format
+msgid "{0} and {1} both match {2}"
+msgstr "{0} et {1} correspondent tous les deux à la touche {2}"
