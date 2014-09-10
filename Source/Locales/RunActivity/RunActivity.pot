@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-09-08 01:46:43+0200\n"
-"PO-Revision-Date: 2014-09-08 01:46:46+0200\n"
+"POT-Creation-Date: 2014-09-10 02:46:16+0200\n"
+"PO-Revision-Date: 2014-09-10 02:46:17+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -433,43 +433,43 @@ msgstr ""
 msgid "Power line condition overridden."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1068
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1069
 msgid "Tender coal supply is empty. Your loco will fail."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1082
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1083
 msgid "Tender water supply is empty. Your loco will fail."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1136
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1137
 msgid "Fire has dropped too far. Your loco will fail."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1188
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1189
 msgid ""
 "FireMass is getting low. Your fireman will shovel faster, but don't wear him "
 "out."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1200
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1201
 msgid "FireMass is back within limits. Your fireman will shovel as per normal."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1783
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1784
 msgid ""
 "You are exceeding the maximum recommended speed. Continued operation at this "
 "speed may cause damage."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1971
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1972
 msgid "Water level dropped too far. Plug has fused and loco has failed."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1978
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1979
 msgid "Boiler overfull and priming."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1984
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1985
 msgid "Boiler no longer priming."
 msgstr ""
 
@@ -1451,52 +1451,52 @@ msgstr ""
 msgid "Train Operations"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:496
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:430
 msgid "water"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:497
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:431
 msgid "coal"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:498
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:432
 msgid "diesel oil"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:499
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:433
 msgid "wood"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:609
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:543
 msgid "Refill: No suitable pick-up point anywhere, so refilling immediately."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:617
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:551
 #, csharp-format
 msgid "Refill: Distance to {0} supply is {1}."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:623
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:557
 #, csharp-format
 msgid "Refill: Loco must be stationary to refill {0}."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:629
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:563
 #, csharp-format
 msgid "Refill: Loco speed must exceed {0}."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:636
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:570
 #, csharp-format
 msgid "Refill: Loco speed must not exceed {0}."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:643
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:577
 #, csharp-format
 msgid "Refill: {0} supply now replenished."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:618
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:552
 #, csharp-format
 msgid "{0} meter"
 msgid_plural "{0} meters"
