@@ -122,7 +122,7 @@ namespace ORTS.Viewer3D
         public void SetOutput(float initialVelocityMpS, float volumeM3pS)
         {
             Emitter.XNAInitialVelocity = Emitter.EmitterData.XNADirection * initialVelocityMpS;
-            Emitter.ParticlesPerSecond = volumeM3pS / EmissionHoleM2 * Rate;
+            Emitter.ParticlesPerSecond = volumeM3pS / Rate * 0.2f;
         }
 
         public void SetOutput(float initialVelocityMpS, float volumeM3pS, float durationS, Color particleColor)

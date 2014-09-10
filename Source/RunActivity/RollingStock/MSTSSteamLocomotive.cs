@@ -358,7 +358,7 @@ namespace ORTS
 
   #region Variables for visual effects (steam, smoke)
 
-        public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(5);
+        public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
         public float StackSteamVolumeM3pS;
         public float CylindersSteamVelocityMpS;
         public float CylindersSteamVolumeM3pS;
@@ -957,7 +957,7 @@ namespace ORTS
         private void UpdateFX(float elapsedClockSeconds)
         {
             // Bernoulli equations
-            StackSteamVelocityMpS.Update(elapsedClockSeconds, (float)Math.Sqrt(KPa.FromPSI(BackPressurePSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3));
+            StackSteamVelocityMpS.Update(elapsedClockSeconds, (float)Math.Sqrt(KPa.FromPSI(CylinderExhaustPressurePSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3));
             CylindersSteamVelocityMpS = (float)Math.Sqrt(KPa.FromPSI(CylinderPressurePSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3);
 
             StackSteamVolumeM3pS = Kg.FromLb(CylinderSteamUsageLBpS + BlowerSteamUsageLBpS + BasicSteamUsageLBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG;
