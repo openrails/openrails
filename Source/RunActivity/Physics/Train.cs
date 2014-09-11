@@ -13282,6 +13282,49 @@ namespace ORTS
                     thisPathNode = nextPathNode;
                 }
 
+                if (!Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility)
+                {
+                    // insert reversals when they are in last section
+                    if (reversal > 0)
+                    {
+                        while (reversal > 0)
+                        {
+                            if (thisSubpath.Count == 0)
+                            {
+                                thisNode = aiPath.TrackDB.TrackNodes[trackNodeIndex];
+                                if (currentDir == 0)
+                                {
+                                    for (int iTC = 0; iTC < thisNode.TCCrossReference.Count; iTC++)
+                                    {
+                                        TCRouteElement thisElement =
+                                            new TCRouteElement(thisNode, iTC, currentDir, orgSignals);
+                                        thisSubpath.Add(thisElement);
+                                        //  SPA:    Station:    A adapter, 
+                                        SetStationReference(TCRouteSubpaths, thisElement.TCSectionIndex, orgSignals);
+                                    }
+                                    newDir = thisNode.TrPins[currentDir].Direction;
+
+                                }
+                                else
+                                {
+                                    for (int iTC = thisNode.TCCrossReference.Count - 1; iTC >= 0; iTC--)
+                                    {
+                                        TCRouteElement thisElement =
+                                            new TCRouteElement(thisNode, iTC, currentDir, orgSignals);
+                                        thisSubpath.Add(thisElement);
+                                        SetStationReference(TCRouteSubpaths, thisElement.TCSectionIndex, orgSignals);
+                                    }
+                                    newDir = thisNode.TrPins[currentDir].Direction;
+                                }                         
+                            }
+                            sublist++;
+                            thisSubpath = new TCSubpathRoute();
+                            TCRouteSubpaths.Add(thisSubpath);
+                            currentDir = currentDir == 1 ? 0 : 1;
+                            reversal--;        // reset reverse point
+                        }
+                    }
+                }
                 //
                 // add last section
                 //
