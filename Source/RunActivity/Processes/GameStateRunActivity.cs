@@ -529,7 +529,7 @@ namespace ORTS.Processes
             var version = inf.ReadString().Replace("\0", ""); // e.g. "0.9.0.1648" or "X1321" or "" (if compiled locally)
             var build = inf.ReadString().Replace("\0", ""); // e.g. 0.0.5223.24629 (2014-04-20 13:40:58Z)
             var versionOrBuild = version.Length > 0 ? version : build;
-            bool? valid = VersionInfo.GetValidity(version, build, settings.YoungestFailedToRestore);
+            var valid = VersionInfo.GetValidity(version, build, settings.YoungestFailedToRestore);
             if (valid == false) // This is usually detected in ResumeForm.cs but a Resume can also be launched from the command line.
             {
                 throw new IncompatibleSaveException(saveFile, versionOrBuild);
@@ -537,9 +537,10 @@ namespace ORTS.Processes
             if (valid == null)
             {
                 //<CJComment> Cannot make this multi-language using Viewer.Catalog as Viewer is still null. </CJCOmment>
-                Trace.TraceWarning("Restoring from a save made by older version {0}\n"
-                    + "of Open Rails may be incompatible with current version {1}.\n"
-                    + "Please do not report any problems that may result.\n", versionOrBuild, VersionInfo.VersionOrBuild);
+                Trace.TraceWarning("Restoring from a save made by older version {1}\n"
+                    + "of {0} may be incompatible with current version {2}.\n"
+                    + "Please do not report any problems that may result.\n",
+                    Application.ProductName, versionOrBuild, VersionInfo.VersionOrBuild);
             }
             return versionOrBuild;
         }

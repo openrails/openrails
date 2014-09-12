@@ -86,7 +86,7 @@ namespace ORTS
             public string CurrentTile { get; private set; }
             public string Distance { get; private set; }
             public bool? Valid { get; private set; } // 3 possibilities: invalid, unknown validity, valid
-            public string Version { get; private set; }
+            public string VersionOrBuild { get; private set; }
 
             public Save(string fileName, string currentBuild, int youngestFailedToResume)
             {
@@ -96,11 +96,10 @@ namespace ORTS
                 {
                     try
                     {
-                        // Read in validation data.
-                        Version = inf.ReadString().Replace("\0", ""); // e.g. "0.9.0.1648" or "X.1321"
-                        // or, if saved from a locally compiled program, ""
+                        var version = inf.ReadString().Replace("\0", ""); // e.g. "0.9.0.1648" or "X1321" or "" (if compiled locally)
                         var build = inf.ReadString().Replace("\0", ""); // e.g. 0.0.5223.24629 (2014-04-20 13:40:58Z)
-                        Valid = VersionInfo.GetValidity(Version, build, youngestFailedToResume);
+                        var versionOrBuild = version.Length > 0 ? version : build;
+                        var valid = VersionInfo.GetValidity(version, build, youngestFailedToResume);
 
                         // Read in route/activity/path/player data.
                         var routeName = inf.ReadString(); // Route name
@@ -118,12 +117,14 @@ namespace ORTS
                         // DistanceFromInitial using Pythagoras theorem.
                         var distance = String.Format("{0:F1}", Math.Sqrt(Math.Pow(currentTileX - initialTileX, 2) + Math.Pow(currentTileZ - initialTileZ, 2)) * 2048);
 
-                        RouteName = routeName;
                         PathName = pathName;
+                        RouteName = routeName;
                         GameTime = gameTime;
                         RealTime = realTime;
                         CurrentTile = currentTile;
                         Distance = distance;
+                        Valid = valid;
+                        VersionOrBuild = versionOrBuild;
                     }
                     catch { }
                 }
@@ -248,10 +249,9 @@ namespace ORTS
         bool AcceptUseOfNonvalidSave(Save save)
         {
             var reply = MessageBox.Show(catalog.GetStringFmt(
-                "This save was made by an older version {0} of Open Rails and\nmay be incompatible with the current version {1}.\n",
-                save.Version, VersionInfo.Version) +
-                catalog.GetString("Please do not report any problems that may result.\n\nContinue at your own risk?"),
-                Application.ProductName, MessageBoxButtons.YesNo);
+                "Restoring from a save made by older version {1} of {0} may be incompatible with current version {2}. Please do not report any problems that may result.\n\nContinue?",
+                Application.ProductName, save.VersionOrBuild, VersionInfo.VersionOrBuild),
+                Application.ProductName + " " + VersionInfo.VersionOrBuild, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             return reply == DialogResult.Yes;
         }
 
