@@ -116,10 +116,6 @@ namespace ORTS.Settings
 		[Default("1024x768")]
 		public string WindowSize { get; set; }
 		[Default(false)]
-        public bool TrainLights { get; set; }
-        [Default(false)]
-        public bool Precipitation { get; set; }
-        [Default(false)]
 		public bool Wire { get; set; }
 		[Default(false)]
 		public bool DynamicShadows { get; set; }
