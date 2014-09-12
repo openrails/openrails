@@ -294,7 +294,7 @@ namespace ORTS
 
         private void SaveAIAuxActions(BinaryWriter outf)
         {
-            AuxActionsContain.Save(outf);
+            AuxActionsContain.Save(outf, Convert.ToInt32(Math.Floor(Simulator.ClockTime)));
         }
 
 
@@ -4470,7 +4470,7 @@ namespace ORTS
             requiredActions.RemovePendingAIActionItems(false);
 
 #if NEW_ACTION
-            nextGenAction = AuxActionsContain.ResetNextGenAction(nextGenAction);
+            //nextGenAction = AuxActionsContain.ResetNextGenAction(nextGenAction);
             AuxActionsContain.SetAuxAction(this);
 #endif
             if (StationStops.Count > 0)
