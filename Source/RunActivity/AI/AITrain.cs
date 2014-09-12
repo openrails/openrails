@@ -59,13 +59,14 @@ namespace ORTS
 
         public bool PreUpdate;                           // pre update state
         public AIActionItem nextActionInfo;              // no next action
+        public AIActionItem nextGenAction;               // Can't remove GenAction if already active but we need to manage the normal Action, so
         public float NextStopDistanceM;                  // distance to next stop node
         public int? StartTime;                           // starting time
         public float MaxVelocityA = 30.0f;               // max velocity as set in .con file
         public Service_Definition ServiceDefinition;     // train's service definition in .act file
 
 #if NEW_ACTION
-        public List<AIAuxActionsRef> AuxActions;          // Action To Do during activity, like WP
+        public AuxActionsContainer AuxActionsContain;          // Action To Do during activity, like WP
 #endif
 
         public enum AI_MOVEMENT_STATE
@@ -138,7 +139,7 @@ namespace ORTS
             TrafficService = trafficService;
             MaxVelocityA = maxVelocityA;
 #if NEW_ACTION
-            AuxActions = new List<AIAuxActionsRef>();
+            AuxActionsContain = new AuxActionsContainer(this);
 #endif
         }
 
@@ -147,7 +148,7 @@ namespace ORTS
         {
             TrainType = TRAINTYPE.AI_NOTSTARTED;
 #if NEW_ACTION
-            AuxActions = new List<AIAuxActionsRef>();
+            AuxActionsContain = new AuxActionsContainer(this);
 #endif
 
         }
@@ -227,12 +228,7 @@ namespace ORTS
             if (serviceListCount > 0) RestoreServiceDefinition(inf, serviceListCount);
 
 #if NEW_ACTION
-            int cntAuxAction = inf.ReadInt32();
-            AuxActions = new List<AIAuxActionsRef>();
-            if (cntAuxAction > 0)
-            {
-                RestoreAuxActions(inf, cntAuxAction);
-            }
+            AuxActionsContain = new AuxActionsContainer(this, inf);
 #endif            // set signals and actions if train is active train
             bool activeTrain = true;
 
@@ -267,35 +263,6 @@ namespace ORTS
  
             }
         }
-
-        public void RestoreAuxActions(BinaryReader inf, int cntAuxAction)
-        {
-            try
-            {
-                for (int cnt = 0; cnt < cntAuxAction; cnt++)
-                {
-                    int cntAction = inf.ReadInt32();
-                    AIAuxActionsRef action;
-                    string actionRef = inf.ReadString();
-                    AIAuxActionsRef.AI_AUX_ACTION nextAction = (AIAuxActionsRef.AI_AUX_ACTION)Enum.Parse(typeof(AIAuxActionsRef.AI_AUX_ACTION), actionRef);
-                    switch (nextAction)
-                    {
-                        case AIAuxActionsRef.AI_AUX_ACTION.WAITING_POINT:
-                            action = new AIActionWPRef(this, inf);
-                            AuxActions.Add(action);
-                            break;
-                        case AIAuxActionsRef.AI_AUX_ACTION.SOUND_HORN:
-                            action = new AIActionHornRef(this, inf);
-                            AuxActions.Add(action);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            }
-            catch { }
-
-        }
         //================================================================================================//
         /// <summary>
         /// Save
@@ -327,28 +294,7 @@ namespace ORTS
 
         private void SaveAIAuxActions(BinaryWriter outf)
         {
-            int cnt = 0;
-            outf.Write(AuxActions.Count);
-            if (MovementState == AI_MOVEMENT_STATE.HANDLE_ACTION )
-
-            {
-                if (nextActionInfo != null && nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.AUX_ACTION && (AuxActionWPItem)nextActionInfo != null)
-                // WP is running
-                {
-                    int remainingDelay = ((AuxActionWPItem)nextActionInfo).ActualDepart -Convert.ToInt32(Math.Floor(Simulator.ClockTime));
-                    ((AIActionWPRef)AuxActions[0]).SetDelay(remainingDelay);
-                }
-            }
-#if WITH_PATH_DEBUG
-            File.AppendAllText(@"C:\temp\checkpath.txt", "SaveAIAuxActions, count :" + AuxActions.Count + 
-                "Position in file: " + outf.BaseStream.Position + "\n");
-#endif
-
-            foreach (var action in AuxActions)
-            {
-                action.save(outf, cnt);
-                cnt++;
-            }
+            AuxActionsContain.Save(outf);
         }
 
 
@@ -456,10 +402,7 @@ namespace ORTS
 
                 // check if train starts at station stop
 #if NEW_ACTION                                                                                                                                                              
-                if (AuxActions.Count > 0)
-                {
-                    SetAuxAction();
-                }
+                AuxActionsContain.SetAuxAction(this);
 #endif
                 if (StationStops.Count > 0)
                 {
@@ -851,6 +794,12 @@ namespace ORTS
 #endif
             {
                 bool[] stillExist;
+#if NEW_ACTION
+                if (nextGenAction != null)
+                {
+                    nextGenAction.ProcessAction(this, presentTime, elapsedClockSeconds, MovementState);
+                }
+#endif
 
                 switch (MovementState)
                 {
@@ -1206,10 +1155,7 @@ namespace ORTS
         {
             //nextActionInfo = null;
 
-            if (AuxActions != null)
-            {
-                SetAuxAction();
-            }
+            AuxActionsContain.SetAuxAction(this);
         }
 #endif
 
@@ -1512,59 +1458,6 @@ namespace ORTS
             return (distancesM);
         }
 
-#if NEW_ACTION
-        //================================================================================================//
-        //  SPA:    Added for use with new AIActionItems
-        /// <summary>
-        /// Create Auxiliary Action
-        /// <\summary>
-        public void SetAuxAction()
-        {
-            if (AuxActions.Count <= 0)
-                return;
-            while (AuxActions.Count > 0)
-            {
-                AIAuxActionsRef thistAction = AuxActions[0];
-
-                if (thistAction.SubrouteIndex > TCRoute.activeSubpath)
-                {
-                    return;
-                }
-                if (thistAction.SubrouteIndex == TCRoute.activeSubpath) break;
-                else
-                {
-                    AuxActions.RemoveAt(0);
-                    if (AuxActions.Count <= 0) return;
-                }
-            }
-
-            AIAuxActionsRef thisAction = AuxActions[0];
-            bool validAction = false;
-            while (!validAction)
-            {
-                float[] distancesM = thisAction.CalculateDistancesToNextAction(this, TrainMaxSpeedMpS, true);
-                if (distancesM[0] < 0f)
-                {
-                    AuxActions.RemoveAt(0);
-                    if (AuxActions.Count == 0)
-                    {
-                        return;
-                    }
-
-                    thisAction = AuxActions[0];
-                    if (thisAction.SubrouteIndex > TCRoute.activeSubpath) return;
-                }
-                else
-                {
-                    validAction = true;
-                    AIActionItem newAction = AuxActions[0].Handler(distancesM[1], AuxActions[0].RequiredSpeedMpS, distancesM[0], DistanceTravelledM);
-
-                    requiredActions.InsertAction(newAction);
-                }
-            }
-        }
-        
-#endif
         //================================================================================================//
         /// <summary>
         /// Override Switch to Signal control
@@ -3859,7 +3752,7 @@ namespace ORTS
 #if NEW_ACTION
                 AIActionWPRef action = new AIActionWPRef(this, waitingPoint[5], 0f, waitingPoint[0], thisRoute[lastIndex].TCSectionIndex, lastIndex, direction);
                 action.SetDelay(waitingPoint[2]);
-                AuxActions.Add(action);
+                AuxActionsContain.Add(action);
 #else
 
                 StationStop thisStation = new StationStop(
@@ -4577,10 +4470,8 @@ namespace ORTS
             requiredActions.RemovePendingAIActionItems(false);
 
 #if NEW_ACTION
-            if (AuxActions != null)
-            {
-                SetAuxAction();
-            }
+            nextGenAction = AuxActionsContain.ResetNextGenAction(nextGenAction);
+            AuxActionsContain.SetAuxAction(this);
 #endif
             if (StationStops.Count > 0)
                 SetNextStationAction();
@@ -5106,7 +4997,20 @@ namespace ORTS
                 {
                     File.AppendAllText(@"C:\temp\checktrain.txt", "Validated\n");
                 }
-                nextActionInfo = thisItem;
+                if (thisItem.GetType().IsSubclassOf(typeof(AuxActionItem)))
+                {
+                    AuxActionItem action = thisItem as AuxActionItem;
+                    AIAuxActionsRef actionRef = action.ActionRef;
+                    if (actionRef.IsGeneric)
+                    {
+                        nextGenAction = thisItem;   //  SPA In order to manage GenericAuxAction without perturbing normal actions
+                        requiredActions.Remove(thisItem);
+                    }
+                    else
+                        nextActionInfo = thisItem;
+                }
+                else
+                    nextActionInfo = thisItem;
                 if (nextActionInfo.RequiredSpeedMpS == 0)
                 {
                     NextStopDistanceM = thisItem.ActivateDistanceM - PresentPosition[0].DistanceTravelledM;
@@ -5321,18 +5225,26 @@ namespace ORTS
             }
             else if (MovementState == AI_MOVEMENT_STATE.HANDLE_ACTION)
             {
-                if (nextActionInfo != null && AuxActions[0] != null && AuxActions[0].NextAction == AIAuxActionsRef.AI_AUX_ACTION.WAITING_POINT)
+                if (nextActionInfo != null && nextActionInfo.GetType().IsSubclassOf(typeof(AuxActionItem)))
                 {
-                    movString = "WTP";
-                    DateTime baseDT = new DateTime();
-                    if (((AuxActionWPItem)nextActionInfo).ActualDepart > 0)
+                    AIAuxActionsRef actionRef = ((AuxActionItem)nextActionInfo).ActionRef;
+                    if (actionRef.IsGeneric)
                     {
-                        DateTime depTime = baseDT.AddSeconds(((AuxActionWPItem)nextActionInfo).ActualDepart);
-                        abString = depTime.ToString("HH:mm:ss");
+                        movString = "Gen";
                     }
-                    else
-                    {
-                        abString = "..:..:..";
+                    else if (AuxActionsContain[0] != null && AuxActionsContain[0].NextAction == AIAuxActionsRef.AI_AUX_ACTION.WAITING_POINT)
+                    {                   
+                        movString = "WTP";
+                        DateTime baseDT = new DateTime();
+                        if (((AuxActionWPItem)nextActionInfo).ActualDepart > 0)
+                        {
+                            DateTime depTime = baseDT.AddSeconds(((AuxActionWPItem)nextActionInfo).ActualDepart);
+                            abString = depTime.ToString("HH:mm:ss");
+                        }
+                        else
+                        {
+                            abString = "..:..:..";
+                        }
                     }
                 }
                 

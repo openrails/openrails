@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Diagnostics;
 using System.Linq;
 using MSTS.Formats;
@@ -95,6 +96,7 @@ namespace ORTS
             //   b) Within the maximum activation distance of front/rear of the train.
             // Separate tests are performed for present speed and for possible maximum speed to avoid anomolies if train accelerates.
             // Special test is also done to check on section availability to avoid closure beyond signal at danger.
+
             foreach (var crossing in TrackCrossingItems.Values.Where(ci => ci.CrossingGroup != null))
             {
                 var predictedDist = crossing.CrossingGroup.WarningTime * absSpeedMpS;
@@ -150,10 +152,24 @@ namespace ORTS
 
                 if (frontDist <= reqDist && (train.ReservedTrackLengthM <= 0 || frontDist < train.ReservedTrackLengthM) && rearDist <= minimumDist)
                 {
+#if NEW_ACTION
+                    //  Add generic actions if needed
+                    if (train is AITrain)
+                    {
+                        ((AITrain)train).AuxActionsContain.CheckGenActions(this.GetType(), rearDist, frontDist, crossing.Location, crossing.TrackIndex);
+                    }
+#endif
                     crossing.AddTrain(train);
                 }
                 else
                 {
+#if NEW_ACTION
+                    //  Add generic actions if needed
+                    if (train is AITrain)
+                    {
+                        ((AITrain)train).AuxActionsContain.RemoveGenActions(this.GetType(), crossing.Location);
+                    }
+#endif
                     crossing.RemoveTrain(train);
                 }
             }
@@ -170,6 +186,7 @@ namespace ORTS
         internal List<Train> Trains = new List<Train>();
         internal WorldLocation Location;
         internal LevelCrossing CrossingGroup;
+        public uint TrackIndex { get { return TrackNode.Index; } }
 
         public LevelCrossing Crossing { get { return CrossingGroup; } }
 
