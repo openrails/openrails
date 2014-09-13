@@ -1413,7 +1413,7 @@ namespace ORTS.Viewer3D
 
         public override Styles Style { get { return Styles.Cab; } }
         // Cab camera is only possible on the player train.
-        public override bool IsAvailable { get { return Viewer.PlayerLocomotive != null && Viewer.PlayerLocomotive.HasFrontCab; } }
+        public override bool IsAvailable { get { return Viewer.PlayerLocomotive != null && (Viewer.PlayerLocomotive.HasFrontCab || Viewer.PlayerLocomotive.HasRearCab); } }
         public override string Name { get { return Viewer.Catalog.GetString("Cab"); } }
 
         public override bool IsUnderground
@@ -1689,7 +1689,7 @@ namespace ORTS.Viewer3D
                 return;
             }
 
-            var trainForwards = (train.LeadLocomotive.SpeedMpS >= 0) ^ train.LeadLocomotive.Flipped;
+            var trainForwards = (train.LeadLocomotive.SpeedMpS >= 0) ^ train.LeadLocomotive.Flipped ^ ((MSTSLocomotive)train.LeadLocomotive).UsingRearCab;
             targetLocation = attachedCar.WorldPosition.WorldLocation;
 
             // Train is close enough if the last car we used is part of the same train and still close enough.

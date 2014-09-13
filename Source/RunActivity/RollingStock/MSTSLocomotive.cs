@@ -65,6 +65,7 @@ namespace ORTS
     {
         Front = 0,
         Rear = 1,
+        Void = 2
     }
 
     /// <summary>
@@ -163,9 +164,7 @@ namespace ORTS
 		{
 			get
 			{
-				return ((UsingRearCab ||
-					((CabViewList[(int)CabViewType.Front].ViewPointList[0].StartDirection.Y >= 90) ||
-					(CabViewList[(int)CabViewType.Front].ViewPointList[0].StartDirection.Y <= -90)) && !Flipped) == true ?
+				return ((UsingRearCab == true )?
 					-totalRotationZ * Program.Simulator.CabRotating : totalRotationZ * Program.Simulator.CabRotating);
 			}
 		}
@@ -227,7 +226,7 @@ namespace ORTS
             // Could be extended to more than 2 cabs.
             if (CVFFileName != null)
             {
-                var cabView = BuildCabView(WagFilePath, CVFFileName, CabViewType.Front);
+                var cabView = BuildCabView(WagFilePath, CVFFileName);
                 if (cabView != null)
                 {
                     CabViewList.Add(cabView);
@@ -237,11 +236,25 @@ namespace ORTS
                     );
 
                     {
-                        cabView = BuildCabView(WagFilePath, reverseCVFFileName, CabViewType.Rear);
+                        cabView = BuildCabView(WagFilePath, reverseCVFFileName);
                         if (cabView != null)
                             CabViewList.Add(cabView);
                     }
-                }
+                   // practically never happens, but never say never
+                    if (CabViewList.Count == 2 && CabViewList[1].CabViewType == CabViewType.Front && CabViewList[0].CabViewType == CabViewType.Rear)
+                    {
+                       cabView = CabViewList[1];
+                       CabViewList.Insert(0, cabView);
+                       CabViewList.RemoveAt(2);
+                    }
+                    // only one cabview, and it looks rear; insert a void one at first place to maintain fast indexing
+                    else if (CabViewList.Count == 1 && CabViewList[0].CabViewType == CabViewType.Rear)
+                    {
+                        UsingRearCab = true;
+                        CabViewList.Add(CabViewList[0]);
+                        CabViewList[0].CabViewType = CabViewType.Void;
+                    }
+                 }
                 else
                 {
                     Trace.TraceWarning("{0} locomotive's CabView references non-existent {1}", wagFilePath, CVFFileName);
@@ -310,7 +323,6 @@ namespace ORTS
                             CABViewControlTypes.BRAKE_PIPE
                         };
                         bool coherent = true;
-
                         CabViewControls cvcList = CabViewList[0].CVFFile.CabViewControls;
                         foreach (CabViewControl cvc in cvcList)
                         {
@@ -381,7 +393,7 @@ namespace ORTS
             }
         }
 
-        private CabView BuildCabView(string wagFilePath, string cvfFileName, CabViewType type)
+        private CabView BuildCabView(string wagFilePath, string cvfFileName)
         {
             var viewPointList = new List<ViewPoint>();
             var extendedCVF = new ExtendedCVF();
@@ -406,12 +418,14 @@ namespace ORTS
                 viewPoint.RotationLimit = new Vector3(0, 0, 0);  // cab views have a fixed head position
                 viewPointList.Add(viewPoint);
             }
+            var cabViewType = new CabViewType();
+            cabViewType = (viewPointList[0].StartDirection.Y >= 90 || viewPointList[0].StartDirection.Y <= -90) ? CabViewType.Rear : CabViewType.Front;
 
             if (!(this is MSTSSteamLocomotive))
             {
                 InitializeFromORTSSpecific(cvfFilePath, extendedCVF);
             }
-            return new CabView(cvfFile, viewPointList, extendedCVF);
+            return new CabView(cvfFile, viewPointList, extendedCVF, cabViewType);
         }
 
         protected void ParseEffects(string lowercasetoken, STFReader stf)
@@ -1177,8 +1191,8 @@ namespace ORTS
                     max0 *= Math.Min(Math.Max(fog * 5.1e-4f + 0.7f, 0.7f), 1.5f);
                     max0 *= Math.Min(Math.Max(1.5f - pric * 0.05f, 0.5f), 1.5f);
                 }
-                LocomotiveAxle.AdhesionConditions = (float)(Simulator.Settings.AdhesionFactor) * 0.01f *
-                                                        AdhesionFilter.Filter(max0 + (float)((float)(Simulator.Settings.AdhesionFactorChange) * 0.01f * 2f * (Program.Random.NextDouble() - 0.5f)), elapsedClockSeconds);
+                    if (elapsedClockSeconds > 0) LocomotiveAxle.AdhesionConditions = (float)(Simulator.Settings.AdhesionFactor) * 0.01f *
+                        AdhesionFilter.Filter(max0 + (float)((float)(Simulator.Settings.AdhesionFactorChange) * 0.01f * 2f * (Program.Random.NextDouble() - 0.5f)), elapsedClockSeconds);
                     
 
                 //Compute axle inertia from parameters if possible
@@ -1214,15 +1228,13 @@ namespace ORTS
                 LocomotiveAxle.AxleWeightN = 9.81f * MassKG;        //will be computed each time considering the tilting
                 LocomotiveAxle.DriveForceN = MotiveForceN;           //Developed force
                 LocomotiveAxle.TrainSpeedMpS = SpeedMpS;            //Set the train speed of the axle model
-
                 LocomotiveAxle.Update(elapsedClockSeconds);         //Main updater of the axle model
-
                 MotiveForceN = LocomotiveAxle.AxleForceN;           //Get the Axle force and use it for the motion
                 WheelSlip = LocomotiveAxle.IsWheelSlip;             //Get the wheelslip indicator
                 WheelSlipWarning = LocomotiveAxle.IsWheelSlipWarning;
-                WheelSpeedMpS = LocomotiveAxle.AxleSpeedMpS;
+                if (elapsedClockSeconds > 0) WheelSpeedMpS = LocomotiveAxle.AxleSpeedMpS;
             }
-            else
+            else 
             {
                 LimitMotiveForce();
             }
@@ -2448,12 +2460,14 @@ namespace ORTS
         public CVFFile CVFFile;
         public List<ViewPoint> ViewPointList;
         public ExtendedCVF ExtendedCVF;
+        public CabViewType CabViewType;
 
-        public CabView(CVFFile cvfFile, List<ViewPoint> viewPointList, ExtendedCVF extendedCVF)
+        public CabView(CVFFile cvfFile, List<ViewPoint> viewPointList, ExtendedCVF extendedCVF, CabViewType cabViewType)
         {
             CVFFile = cvfFile;
             ViewPointList = viewPointList;
             ExtendedCVF = extendedCVF;
+            CabViewType = cabViewType;
         }
     }
 

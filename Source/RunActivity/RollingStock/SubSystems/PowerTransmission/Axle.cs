@@ -585,6 +585,7 @@ namespace ORTS
             //Update axle force ( = k * loadTorqueNm)
             axleForceN = AxleWeightN * SlipCharacteristics(AxleSpeedMpS - TrainSpeedMpS, TrainSpeedMpS, AdhesionK, AdhesionConditions, Adhesion2);
 
+
             switch (driveType)
             {
                 case AxleDriveType.NotDriven:
@@ -655,7 +656,7 @@ namespace ORTS
                                             driveForceN * transmissionEfficiency
                                             + brakeForceN
                                             - slipDerivationMpSS * dampingNs
-                                            - Math.Abs(SlipSpeedMpS) * frictionN
+                                            + Math.Abs(SlipSpeedMpS) * frictionN
                                             - AxleForceN
                                             )
                                         / totalInertiaKgm2)

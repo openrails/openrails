@@ -334,7 +334,7 @@ namespace ORTS
                 case "wagon(lights":
                     Lights = new LightCollection(stf);
                     break;
-                case "wagon(inside": ParseWagonInside(stf); break;
+                case "wagon(inside": HasInsideView = true;  ParseWagonInside(stf); break;
                 case "wagon(orts3dcab": Parse3DCab(stf); break;
                 case "wagon(numwheels": NumWheelsBrakingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); break;
                 case "wagon(ortspantographs":

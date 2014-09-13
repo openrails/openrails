@@ -1436,12 +1436,11 @@ namespace ORTS
                 car.TotalForceN = car.MotiveForceN + car.GravityForceN - car.CurveForceN;
                 massKg += car.MassKG;
 
-                if (car.Flipped)
+                if (car.Flipped ^ (car.IsDriveable && car.Train.TrainType == TRAINTYPE.PLAYER && ((MSTSLocomotive)car).UsingRearCab))
                 {
                     car.TotalForceN = -car.TotalForceN;
                     car.SpeedMpS = -car.SpeedMpS;
                 }
-
                 if (car.WheelSlip)
                     whlslp = true;
                 if (car.WheelSlipWarning)
@@ -1499,7 +1498,7 @@ namespace ORTS
             foreach (TrainCar car1 in Cars)
             {
                 SpeedMpS += car1.SpeedMpS;
-                if (car1.Flipped)
+                if (car1.Flipped ^ (car1.IsDriveable && car1.Train.TrainType == TRAINTYPE.PLAYER && ((MSTSLocomotive)car1).UsingRearCab))
                     car1.SpeedMpS = -car1.SpeedMpS;
             }
             SpeedMpS /= Cars.Count;
@@ -3182,9 +3181,9 @@ namespace ORTS
             SpeedMpS = (kg1 * SpeedMpS + kg2 * otherTrain.SpeedMpS * otherMult) / (kg1 + kg2);
             otherTrain.SpeedMpS = SpeedMpS;
             foreach (TrainCar car1 in Cars)
-                car1.SpeedMpS = car1.Flipped ? -SpeedMpS : SpeedMpS;
+                car1.SpeedMpS = car1.Flipped ^ (car1.IsDriveable && car1.Train.TrainType == TRAINTYPE.PLAYER && ((MSTSLocomotive)car1).UsingRearCab) ? -SpeedMpS : SpeedMpS;
             foreach (TrainCar car2 in otherTrain.Cars)
-                car2.SpeedMpS = car2.Flipped ? -SpeedMpS : SpeedMpS;
+                car2.SpeedMpS = car2.Flipped ^ (car2.IsDriveable && car2.Train.TrainType == TRAINTYPE.PLAYER && ((MSTSLocomotive)car2).UsingRearCab) ? -SpeedMpS : SpeedMpS;
         }
 
 
@@ -4241,6 +4240,9 @@ namespace ORTS
 
                 while (NextSignalObject[direction] != null && !ValidRoute[direction].SignalIsAheadOfTrain(NextSignalObject[direction], trainPosition)) // signal not in front //
                 {
+                    // correct route index if necessary
+                    int correctedRouteIndex = ValidRoute[0].GetRouteIndex(trainPreviousPos.TCSectionIndex, 0);
+                    if (correctedRouteIndex >= 0) trainPreviousPos.RouteListIndex = correctedRouteIndex;
                     // check if train really went passed signal in correct direction
                     if (ValidRoute[direction].SignalIsAheadOfTrain(NextSignalObject[direction], trainPreviousPos)) // train was in front on last check, so we did pass
                     {

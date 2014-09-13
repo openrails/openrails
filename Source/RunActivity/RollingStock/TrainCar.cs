@@ -180,9 +180,21 @@ namespace ORTS
         }
         public float DynamicBrakePercent { get { return Train.MUDynamicBrakePercent; } set { Train.MUDynamicBrakePercent = value; } }
         public Direction Direction
-        { 
-            get { return Flipped ? DirectionControl.Flip(Train.MUDirection) : Train.MUDirection; } 
-            set { Train.MUDirection = Flipped ? DirectionControl.Flip( value ) : value; } }
+        {
+            get { 
+                    if (IsDriveable && Train.TrainType == Train.TRAINTYPE.PLAYER)
+                    {
+                        var loco = this as MSTSLocomotive;
+                        return Flipped ^ loco.UsingRearCab ? DirectionControl.Flip(Train.MUDirection) : Train.MUDirection;
+                    }
+                
+                    else return Flipped ? DirectionControl.Flip(Train.MUDirection) : Train.MUDirection; 
+                } 
+            set {
+                    var loco = this as MSTSLocomotive;
+                    Train.MUDirection = Flipped ^ loco.UsingRearCab ? DirectionControl.Flip(value) : value;
+            }
+                }
         public BrakeSystem BrakeSystem;
 
         // TrainCar.Update() must set these variables
@@ -638,7 +650,7 @@ namespace ORTS
             {
                 var loco = this as MSTSLocomotive;
                 var i = (int)CabViewType.Front;
-                if (loco == null || loco.CabViewList.Count <= i) return false;
+                if (loco == null || loco.CabViewList.Count <= i || loco.CabViewList[i].CabViewType != CabViewType.Front) return false;
                 return (loco.CabViewList[i].ViewPointList.Count > 0);
             }
         }

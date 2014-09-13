@@ -294,7 +294,7 @@ namespace ORTS.Viewer3D.RollingStock
         {
             float distanceTravelledM;
             if (MSTSWagon.IsDriveable && MSTSWagon.Simulator.UseAdvancedAdhesion)
-                distanceTravelledM = MSTSWagon.WheelSpeedMpS * elapsedTime.ClockSeconds;
+                distanceTravelledM = ((MSTSWagon.Train.TrainType == Train.TRAINTYPE.PLAYER && ((MSTSLocomotive)MSTSWagon).UsingRearCab)? -1: 1) * MSTSWagon.WheelSpeedMpS * elapsedTime.ClockSeconds;
             else
                 distanceTravelledM = MSTSWagon.SpeedMpS * elapsedTime.ClockSeconds;
 

@@ -560,7 +560,7 @@ namespace ORTS.Viewer3D
 
                 if (Camera.AttachedCar != null) ViewingPlayer = Camera.AttachedCar.Train == Simulator.PlayerLocomotive.Train;
 
-                if (Simulator.PlayerLocomotive.HasFrontCab && ViewingPlayer)
+                if ((Simulator.PlayerLocomotive.HasFrontCab || Simulator.PlayerLocomotive.HasRearCab) && ViewingPlayer)
                 {
                     CabCamera.Activate();
                 }
