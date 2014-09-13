@@ -79,6 +79,7 @@ VERTEX_OUTPUT VSShadowMap(in VERTEX_INPUT In)
 
 	if (determinant(In.Instance) != 0) {
 		In.Position = mul(In.Position, transpose(In.Instance));
+		In.Normal = mul(In.Normal, transpose(In.Instance));
 	}
 
 	Out.Position = mul(In.Position, WorldViewProjection);

@@ -206,6 +206,7 @@ VERTEX_OUTPUT VSGeneral(uniform bool ShaderModel3, in VERTEX_INPUT In)
 	if (ShaderModel3) {
 		if (determinant(In.Instance) != 0) {
 			In.Position = mul(In.Position, transpose(In.Instance));
+			In.Normal = mul(In.Normal, transpose(In.Instance));
 		}
 	}
 
