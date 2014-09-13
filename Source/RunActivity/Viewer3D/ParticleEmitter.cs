@@ -238,7 +238,7 @@ namespace ORTS.Viewer3D
             VertexDeclaration = new VertexDeclaration(graphicsDevice, ParticleVertex.VertexElements);
             VertexStride = Marshal.SizeOf(typeof(ParticleVertex));
             VertexBuffer = new DynamicVertexBuffer(graphicsDevice, typeof(ParticleVertex), MaxParticles * VerticiesPerParticle, BufferUsage.WriteOnly);
-            VertexBuffer.ContentLost += new System.EventHandler(VertexBuffer_ContentLost);
+            VertexBuffer.ContentLost += VertexBuffer_ContentLost;
             IndexBuffer = InitIndexBuffer(graphicsDevice, MaxParticles * IndiciesPerParticle);
 
             EmitterData = data;

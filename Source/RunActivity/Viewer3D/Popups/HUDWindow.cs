@@ -831,6 +831,7 @@ namespace ORTS.Viewer3D.Popups
         readonly Color Color;
 
         int SampleIndex;
+        VertexPositionColor[] Samples = new VertexPositionColor[VertexCount];
 
         public Vector4 GraphPos; // xy = xy position, zw = width/height
         public Vector2 Sample; // x = index, y = count
@@ -839,6 +840,7 @@ namespace ORTS.Viewer3D.Popups
         {
             VertexDeclaration = new VertexDeclaration(viewer.GraphicsDevice, VertexPositionColor.VertexElements);
             VertexBuffer = new DynamicVertexBuffer(viewer.GraphicsDevice, VertexCount * VertexPositionColor.SizeInBytes, BufferUsage.WriteOnly);
+            VertexBuffer.ContentLost += VertexBuffer_ContentLost;
             BorderVertexBuffer = new VertexBuffer(viewer.GraphicsDevice, 10 * VertexPositionColor.SizeInBytes, BufferUsage.WriteOnly);
             var borderOffset = new Vector2(1f / SampleCount, 1f / height);
             var borderColor = new Color(Color.White, 0);
@@ -866,19 +868,23 @@ namespace ORTS.Viewer3D.Popups
             Sample.Y = SampleCount;
         }
 
+        void VertexBuffer_ContentLost(object sender, EventArgs e)
+        {
+            VertexBuffer.SetData(0, Samples, 0, Samples.Length, VertexPositionColor.SizeInBytes, SetDataOptions.NoOverwrite);
+        }
+
         public void AddSample(float value)
         {
             value = MathHelper.Clamp(value, 0, 1);
             var x = Sample.X / Sample.Y;
 
-            VertexBuffer.SetData((int)Sample.X * VerticiesPerSample * VertexPositionColor.SizeInBytes, new[] {
-                new VertexPositionColor(new Vector3(x, value, 0), Color),
-                new VertexPositionColor(new Vector3(x, value, 1), Color),
-                new VertexPositionColor(new Vector3(x, 0, 1), Color),
-                new VertexPositionColor(new Vector3(x, 0, 1), Color),
-                new VertexPositionColor(new Vector3(x, value, 0), Color),
-                new VertexPositionColor(new Vector3(x, 0, 0), Color),
-            }, 0, VerticiesPerSample, VertexPositionColor.SizeInBytes, SetDataOptions.NoOverwrite);
+            Samples[(int)Sample.X * VerticiesPerSample + 0] = new VertexPositionColor(new Vector3(x, value, 0), Color);
+            Samples[(int)Sample.X * VerticiesPerSample + 1] = new VertexPositionColor(new Vector3(x, value, 1), Color);
+            Samples[(int)Sample.X * VerticiesPerSample + 2] = new VertexPositionColor(new Vector3(x, 0, 1), Color);
+            Samples[(int)Sample.X * VerticiesPerSample + 3] = new VertexPositionColor(new Vector3(x, 0, 1), Color);
+            Samples[(int)Sample.X * VerticiesPerSample + 4] = new VertexPositionColor(new Vector3(x, value, 0), Color);
+            Samples[(int)Sample.X * VerticiesPerSample + 5] = new VertexPositionColor(new Vector3(x, 0, 0), Color);
+            VertexBuffer.SetData((int)Sample.X * VerticiesPerSample * VertexPositionColor.SizeInBytes, Samples, (int)Sample.X * VerticiesPerSample, VerticiesPerSample, VertexPositionColor.SizeInBytes, SetDataOptions.NoOverwrite);
 
             SampleIndex = (SampleIndex + 1) % SampleCount;
             Sample.X = SampleIndex;
