@@ -181,6 +181,8 @@ namespace ORTS
         public float DynamicBrakePercent { get { return Train.MUDynamicBrakePercent; } set { Train.MUDynamicBrakePercent = value; } }
         public Direction Direction
         {
+            //TODO: following code lines have been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
+            // To achieve the same result with other means, without flipping trainset physics, the code lines probably should be changed
             get { 
                     if (IsDriveable && Train.TrainType == Train.TRAINTYPE.PLAYER)
                     {

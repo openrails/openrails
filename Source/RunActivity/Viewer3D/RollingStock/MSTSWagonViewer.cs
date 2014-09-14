@@ -294,6 +294,9 @@ namespace ORTS.Viewer3D.RollingStock
         {
             float distanceTravelledM;
             if (MSTSWagon.IsDriveable && MSTSWagon.Simulator.UseAdvancedAdhesion)
+                //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
+                // To achieve the same result with other means, without flipping trainset physics, the line should be changed as follows:
+                //                                distanceTravelledM = MSTSWagon.WheelSpeedMpS * elapsedTime.ClockSeconds;
                 distanceTravelledM = ((MSTSWagon.Train.TrainType == Train.TRAINTYPE.PLAYER && ((MSTSLocomotive)MSTSWagon).UsingRearCab)? -1: 1) * MSTSWagon.WheelSpeedMpS * elapsedTime.ClockSeconds;
             else
                 distanceTravelledM = MSTSWagon.SpeedMpS * elapsedTime.ClockSeconds;
