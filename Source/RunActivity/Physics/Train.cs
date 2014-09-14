@@ -13227,7 +13227,9 @@ namespace ORTS
                                 nextPathNode.Location.Location.Z);
                             float reverseOffset = 0;
                             int sectionIndex = -1;
-                            if (currentDir == 0)
+                            int validDir = currentDir;
+                            if (reversal % 2 == 1) validDir = validDir == 1 ? 0 : 1;         
+                            if (validDir == 0)
                             {
                                 reverseOffset = -offset;
                                 for (int i = reversalNode.TCCrossReference.Count-1; i >= 0 && reverseOffset<=0; i--)
@@ -13249,7 +13251,7 @@ namespace ORTS
                                 }
                                 reverseOffset +=reversalNode.TCCrossReference[exti].Length;
                             }
-                            RoughReversalInfo roughReversalInfo =  new RoughReversalInfo(sublist, reverseOffset, sectionIndex);
+                            RoughReversalInfo roughReversalInfo =  new RoughReversalInfo(sublist+reversal, reverseOffset, sectionIndex);
                             RoughReversalInfos.Add(roughReversalInfo);
                             reversalOffset.Add(offset);
                             reversalIndex.Add(sublist);
