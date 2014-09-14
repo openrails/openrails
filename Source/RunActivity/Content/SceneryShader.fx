@@ -166,7 +166,7 @@ void _VSSignalProjection(uniform bool Glow, in VERTEX_INPUT_SIGNAL In, inout VER
 		// used to have different glows in the day and night, and to prevent theatre boxes from glowing!
 		const float GlowCutOffM = 100;
 		const float GlowScalingFactor = 40;
-		In.Position.xyz *= clamp(log(1 + (length(relPos) - GlowCutOffM) / GlowScalingFactor), 0, 10) * ZBias_Lighting.x;
+		In.Position.xyz *= log(1 + max(0, length(relPos) - GlowCutOffM) / GlowScalingFactor) * ZBias_Lighting.x;
 	}
 	Out.Position = mul(In.Position, WorldViewProjection);
 	Out.RelPosition.xyz = relPos;
