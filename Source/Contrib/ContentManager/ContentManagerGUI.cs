@@ -15,18 +15,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using ORTS.Settings;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
+using System.Diagnostics;
 using System.Drawing;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using ORTS.Settings;
 
 namespace ORTS.ContentManager
 {
@@ -47,6 +44,7 @@ namespace ORTS.ContentManager
             Settings = new UserSettings(new string[0]);
             ContentManager = new ContentManager(Settings.Folders);
 
+            // Start off the tree with the Content Manager itself at the root and expand to show packages.
             treeViewContent.Nodes.Add(CreateContentNode(ContentManager));
             treeViewContent.Nodes[0].Expand();
 
@@ -56,13 +54,16 @@ namespace ORTS.ContentManager
 
         void treeViewContent_BeforeExpand(object sender, TreeViewCancelEventArgs e)
         {
+            // Are we about to expand a not-yet-loaded node? This is identified by a single child with no text or tag.
             if (e.Node.Tag != null && e.Node.Tag is Content && e.Node.Nodes.Count == 1 && e.Node.Nodes[0].Text == "" && e.Node.Nodes[0].Tag == null)
             {
+                // Make use of the single child to show a loading message.
                 e.Node.Nodes[0].Text = "Loading...";
                 var content = e.Node.Tag as Content;
                 var worker = new BackgroundWorker();
                 worker.DoWork += (object sender1, DoWorkEventArgs e1) =>
                 {
+                    // Get all the different possible types of content from this content item.
                     e1.Result = ((ContentType[])Enum.GetValues(typeof(ContentType))).SelectMany(ct => content.Get(ct).Select(c => CreateContentNode(c))).ToArray();
 
                     if (worker.CancellationPending)
@@ -70,20 +71,18 @@ namespace ORTS.ContentManager
                 };
                 worker.RunWorkerCompleted += (object sender2, RunWorkerCompletedEventArgs e2) =>
                 {
-                    // TODO: Cope with nodes being added whilst we worked.
-                    if (e2.Cancelled || e.Node.Nodes.Count != 1 || e.Node.Nodes[0].Text != "Loading..." || e.Node.Nodes[0].Tag != null)
+                    // If we got cancelled, or the loading node is missing, we should abort here to avoid issues caused by double-loading.
+                    if (e2.Cancelled || e.Node.Nodes.Count < 1 || e.Node.Nodes[e.Node.Nodes.Count - 1].Text != "Loading..." || e.Node.Nodes[e.Node.Nodes.Count - 1].Tag != null)
                         return;
 
-                    e.Node.Collapse();
-                    e.Node.Nodes.Clear();
+                    // Remove the loading node.
+                    e.Node.Nodes.RemoveAt(e.Node.Nodes.Count - 1);
 
+                    // Add either the error we encountered or the resulting content items.
                     if (e2.Error != null)
                         e.Node.Nodes.Add(new TreeNode(e2.Error.Message));
                     else
                         e.Node.Nodes.AddRange((TreeNode[])e2.Result);
-
-                    if (e.Node.Nodes.Count > 0)
-                        e.Node.Expand();
                 };
                 worker.RunWorkerAsync(e.Node.Tag);
             }
@@ -106,6 +105,7 @@ namespace ORTS.ContentManager
                 Effects = Native.CfmLink,
             };
 
+            Trace.TraceInformation("Updating richTextBoxContent with content {0}", e.Node.Tag as Content);
             richTextBoxContent.Clear();
             richTextBoxContent.Text = ContentInfo.GetText(e.Node.Tag as Content);
             var boldFont = new Font(richTextBoxContent.Font, FontStyle.Bold);
@@ -146,8 +146,16 @@ namespace ORTS.ContentManager
                 if (newContent != null)
                 {
                     treeViewContent.SelectedNode.Expand();
-                    treeViewContent.SelectedNode.Nodes.Insert(0, CreateContentNode(newContent));
-                    treeViewContent.SelectedNode = treeViewContent.SelectedNode.Nodes[0];
+                    var existingNode = treeViewContent.SelectedNode.Nodes.OfType<TreeNode>().FirstOrDefault(tn => (tn.Tag as Content) == newContent);
+                    if (existingNode != null)
+                    {
+                        treeViewContent.SelectedNode = existingNode;
+                    }
+                    else
+                    {
+                        treeViewContent.SelectedNode.Nodes.Insert(0, CreateContentNode(newContent));
+                        treeViewContent.SelectedNode = treeViewContent.SelectedNode.Nodes[0];
+                    }
                     treeViewContent.Focus();
                 }
                 else

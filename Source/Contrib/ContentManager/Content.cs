@@ -62,6 +62,34 @@ namespace ORTS.ContentManager
         public string Name { get; protected set; }
         public string PathName { get; protected set; }
 
+        public static bool operator ==(Content left, Content right)
+        {
+            return !Object.ReferenceEquals(left, null) && left.Equals(right);
+        }
+
+        public static bool operator !=(Content left, Content right)
+        {
+            return Object.ReferenceEquals(left, null) || !left.Equals(right);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null || GetType() != obj.GetType())
+                return false;
+            var content = obj as Content;
+            return Type == content.Type && PathName == content.PathName;
+        }
+
+        public override int GetHashCode()
+        {
+            return Type.GetHashCode() ^ PathName.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return String.Format("{0}({1})", Type, PathName);
+        }
+
         public virtual IEnumerable<Content> Get(ContentType type)
         {
             return new Content[0];
