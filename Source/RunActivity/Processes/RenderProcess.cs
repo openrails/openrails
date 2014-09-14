@@ -260,14 +260,8 @@ namespace ORTS.Processes
             }
         }
 
-        int ProfileFrames = 0;
-
         internal void BeginDraw()
         {
-            if (Game.Settings.Profiling)
-                if ((Game.Settings.ProfilingFrameCount > 0 && ++ProfileFrames > Game.Settings.ProfilingFrameCount) || (Game.Settings.ProfilingTime > 0 && Viewer != null && Viewer.RealTime >= Game.Settings.ProfilingTime))
-                    Game.PopState();
-
             if (Game.State == null)
                 return;
 
@@ -332,8 +326,6 @@ namespace ORTS.Processes
 
         internal void Stop()
         {
-            if (Game.Settings.Profiling)
-                Game.Settings.ProfilingFrameCount = ProfileFrames;
         }
 
         static void SwapFrames(ref RenderFrame frame1, ref RenderFrame frame2)

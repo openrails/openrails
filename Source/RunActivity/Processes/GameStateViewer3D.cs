@@ -29,6 +29,7 @@ namespace ORTS.Processes
         internal readonly Viewer Viewer;
 
         bool FirstFrame = true;
+        int ProfileFrames = 0;
 
         public GameStateViewer3D(Viewer viewer)
         {
@@ -38,6 +39,11 @@ namespace ORTS.Processes
 
         internal override void BeginRender(RenderFrame frame)
         {
+            // Do this here (instead of RenderProcess) because we only want to measure/time the running game.
+            if (Game.Settings.Profiling)
+                if ((Game.Settings.ProfilingFrameCount > 0 && ++ProfileFrames > Game.Settings.ProfilingFrameCount) || (Game.Settings.ProfilingTime > 0 && Viewer != null && Viewer.RealTime >= Game.Settings.ProfilingTime))
+                    Game.PopState();
+
             if (FirstFrame)
             {
                 // Turn off the 10FPS fixed-time-step and return to running as fast as we can.
