@@ -123,6 +123,11 @@ namespace ORTS.Viewer3D
         {
             Emitter.XNAInitialVelocity = Emitter.EmitterData.XNADirection * initialVelocityMpS;
             Emitter.ParticlesPerSecond = volumeM3pS / Rate * 0.2f;
+
+#if DEBUG_EMITTER_INPUT
+            if (InputCycle == 0)
+                Trace.TraceInformation("Emitter{0}({1:F6}m^2) V={2,7:F3}m^3/s P={3,7:F3}p/s IV={4,7:F3}m/s", EmitterID, EmissionHoleM2, volumeM3pS, Emitter.ParticlesPerSecond, Emitter.XNAInitialVelocity.Length());
+#endif
         }
 
         public void SetOutput(float initialVelocityMpS, float volumeM3pS, float durationS, Color particleColor)
@@ -133,7 +138,7 @@ namespace ORTS.Viewer3D
 
 #if DEBUG_EMITTER_INPUT
             if (InputCycle == 0)
-                Trace.TraceInformation("Emitter{0}(v={1:F6}m/s V={2,7:F3}m^3/s) {3,7:F3}m^2 D={4,3}s", EmitterID, initialVelocityMpS, volumeM3pS, EmissionHoleM2, durationS);
+                Trace.TraceInformation("Emitter{0}({1:F6}m^2) V={2,7:F3}m^3/s P={3,7:F3}p/s IV={4,7:F3}m/s D={5,3}s", EmitterID, EmissionHoleM2, volumeM3pS, Emitter.ParticlesPerSecond, Emitter.XNAInitialVelocity.Length(), durationS);
 #endif
         }
 
@@ -223,7 +228,6 @@ namespace ORTS.Viewer3D
 
         Viewer viewer;
         GraphicsDevice graphicsDevice;
-        float Time;
         
         static float windDisplacementX;
         static float windDisplacementZ;
@@ -351,67 +355,64 @@ namespace ORTS.Viewer3D
 
             ParticlesToEmit += elapsedTime.ClockSeconds * ParticlesPerSecond;
 
-            var numParticlesAdded = 0;
             var numToBeEmitted = (int)ParticlesToEmit;
             var numCanBeEmitted = GetCountFreeParticles();
             var numToEmit = Math.Min(numToBeEmitted, numCanBeEmitted);
 
-            var rotation = WorldPosition.XNAMatrix;
-            rotation.Translation = Vector3.Zero;
-
-            var position = Vector3.Transform(EmitterData.XNALocation, rotation) + WorldPosition.XNAMatrix.Translation;
-            var globalInitialVelocity = Vector3.Transform(XNAInitialVelocity, rotation) + velocity;
-            // TODO: This should only be rotated about the Y axis and not get fully rotated.
-            var globalTargetVelocity = Vector3.Transform(XNATargetVelocity, rotation);
-
-            if (numToEmit == 0)
-                Time += elapsedTime.ClockSeconds;
-
-            for (var i = 0; i < numToEmit; i++)
+            if (numToEmit > 0)
             {
-                Time += elapsedTime.ClockSeconds / numToEmit;
+                var rotation = WorldPosition.XNAMatrix;
+                rotation.Translation = Vector3.Zero;
 
-                var particle = (FirstFreeParticle + 1) % MaxParticles;
-                var vertex = particle * VerticiesPerParticle;
-                var texture = Program.Random.Next(16); // Randomizes emissions.
-                var color_Random = new Color(ParticleColor, (float)Program.Random.NextDouble());
+                var position = Vector3.Transform(EmitterData.XNALocation, rotation) + WorldPosition.XNAMatrix.Translation;
+                var globalInitialVelocity = Vector3.Transform(XNAInitialVelocity, rotation) + velocity;
+                // TODO: This should only be rotated about the Y axis and not get fully rotated.
+                var globalTargetVelocity = Vector3.Transform(XNATargetVelocity, rotation);
 
-                // Initial velocity varies in X and Z only.
-                var initialVelocity = globalInitialVelocity;
-                initialVelocity.X += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterViewer.InitialSpreadRate;
-                initialVelocity.Z += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterViewer.InitialSpreadRate;
+                var time = TimeParticlesLastEmitted;
 
-                // Target/final velocity vaies in X, Y and Z.
-                var targetVelocity = globalTargetVelocity;
-                targetVelocity.X += Noise.Generate(Time + PerlinStart[0]) * ParticleEmitterViewer.SpreadRate;
-                targetVelocity.Y += Noise.Generate(Time + PerlinStart[1]) * ParticleEmitterViewer.SpreadRate;
-                targetVelocity.Z += Noise.Generate(Time + PerlinStart[2]) * ParticleEmitterViewer.SpreadRate;
-
-                // Add wind speed
-                targetVelocity.X += windDisplacementX;
-                targetVelocity.Z += windDisplacementZ;
-
-                // Duration is variable too.
-                var duration = ParticleDuration * (1 + Noise.Generate(Time + PerlinStart[3]) * ParticleEmitterViewer.DurationVariation);
-
-                for (var j = 0; j < VerticiesPerParticle; j++)
+                for (var i = 0; i < numToEmit; i++)
                 {
-                    Vertices[vertex + j].StartPosition_StartTime = new Vector4(position, currentTime);
-                    Vertices[vertex + j].InitialVelocity_EndTime = new Vector4(initialVelocity, currentTime + duration);
-                    Vertices[vertex + j].TargetVelocity_TargetTime = new Vector4(targetVelocity, ParticleEmitterViewer.DecelerationTime);
-                    Vertices[vertex + j].TileXY_Vertex_ID = new Short4(WorldPosition.TileX, WorldPosition.TileZ, j, texture);
-                    Vertices[vertex + j].Color_Random = color_Random;
+                    time += 1 / ParticlesPerSecond;
+
+                    var particle = (FirstFreeParticle + 1) % MaxParticles;
+                    var vertex = particle * VerticiesPerParticle;
+                    var texture = Program.Random.Next(16); // Randomizes emissions.
+                    var color_Random = new Color(ParticleColor, (float)Program.Random.NextDouble());
+
+                    // Initial velocity varies in X and Z only.
+                    var initialVelocity = globalInitialVelocity;
+                    initialVelocity.X += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterViewer.InitialSpreadRate;
+                    initialVelocity.Z += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterViewer.InitialSpreadRate;
+
+                    // Target/final velocity vaies in X, Y and Z.
+                    var targetVelocity = globalTargetVelocity;
+                    targetVelocity.X += Noise.Generate(time + PerlinStart[0]) * ParticleEmitterViewer.SpreadRate;
+                    targetVelocity.Y += Noise.Generate(time + PerlinStart[1]) * ParticleEmitterViewer.SpreadRate;
+                    targetVelocity.Z += Noise.Generate(time + PerlinStart[2]) * ParticleEmitterViewer.SpreadRate;
+
+                    // Add wind speed
+                    targetVelocity.X += windDisplacementX;
+                    targetVelocity.Z += windDisplacementZ;
+
+                    // Duration is variable too.
+                    var duration = ParticleDuration * (1 + Noise.Generate(time + PerlinStart[3]) * ParticleEmitterViewer.DurationVariation);
+
+                    for (var j = 0; j < VerticiesPerParticle; j++)
+                    {
+                        Vertices[vertex + j].StartPosition_StartTime = new Vector4(position, time);
+                        Vertices[vertex + j].InitialVelocity_EndTime = new Vector4(initialVelocity, time + duration);
+                        Vertices[vertex + j].TargetVelocity_TargetTime = new Vector4(targetVelocity, ParticleEmitterViewer.DecelerationTime);
+                        Vertices[vertex + j].TileXY_Vertex_ID = new Short4(WorldPosition.TileX, WorldPosition.TileZ, j, texture);
+                        Vertices[vertex + j].Color_Random = color_Random;
+                    }
+
+                    FirstFreeParticle = particle;
+                    ParticlesToEmit--;
                 }
 
-                FirstFreeParticle = particle;
-                ParticlesToEmit--;
-                numParticlesAdded++;
+                TimeParticlesLastEmitted = time;
             }
-
-            if (numParticlesAdded > 0)
-                TimeParticlesLastEmitted = currentTime;
-
-            ParticlesToEmit = ParticlesToEmit - (int)ParticlesToEmit;
         }
 
         void AddNewParticlesToVertexBuffer()
