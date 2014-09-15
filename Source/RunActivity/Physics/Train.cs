@@ -10425,72 +10425,74 @@ namespace ORTS
                     }
                     nextIndex++;
                 }
+                if (Simulator.TimetableMode || !Simulator.Settings.EnhancedActCompatibility)
+                { 
+                    // move sections beyond waiting point to next subroute
 
-                // move sections beyond waiting point to next subroute
-
-                TCSubpathRoute nextRoute = null;
-                if ((waitingPoint[0] + 1) > (TCRoute.TCRouteSubpaths.Count - 1))
-                {
-                    nextRoute = new TCSubpathRoute();
-                    TCRoute.TCRouteSubpaths.Add(nextRoute);
-                    TCReversalInfo nextReversalPoint = new TCReversalInfo(); // also add dummy reversal info to match total number
-                    TCRoute.ReversalInfo.Add(nextReversalPoint);
-                    TCRoute.LoopEnd.Add(-1); // also add dummy loopend
-                }
-                else
-                {
-                    nextRoute = TCRoute.TCRouteSubpaths[waitingPoint[0] + 1];
-                }
-
-                for (int iElement = thisRoute.Count - 1; iElement >= lastIndex + 1; iElement--)
-                {
-                    nextRoute.Insert(0, thisRoute[iElement]);
-                    thisRoute.RemoveAt(iElement);
-                }
-
-                // repeat actual waiting section in next subroute
-
-                nextRoute.Insert(0, thisRoute[thisRoute.Count - 1]);
-
-                // add end signal to hold list, set ref in waiting point
-
-                if (endSignalIndex >= 0)
-                {
-                    TCRoute.WaitingPoints[iWait][4] = endSignalIndex;
-                    HoldingSignals.Add(endSignalIndex);
-                }
-            }
-
-            // retest for loop ends
-
-            for (int iLoop = TCRoute.TCRouteSubpaths.Count - 1; iLoop >= 0; iLoop--)
-            {
-                int loopSection = TCRoute.LoopEnd[iLoop];
-                if (loopSection >= 0)
-                {
-                    // if no longer on this subpath, test if on any of the following subpaths
-                    if (TCRoute.TCRouteSubpaths[iLoop].GetRouteIndex(loopSection, 0) < 0)
+                    TCSubpathRoute nextRoute = null;
+                    if ((waitingPoint[0] + 1) > (TCRoute.TCRouteSubpaths.Count - 1))
                     {
-                        for (int iLoop2 = iLoop + 1; iLoop2 <= TCRoute.TCRouteSubpaths.Count - 1; iLoop2++)
-                        {
-                            if (TCRoute.TCRouteSubpaths[iLoop2].GetRouteIndex(loopSection, 0) >= 0)
-                            {
-                                if (iLoop2 <= TCRoute.TCRouteSubpaths.Count - 2 && TCRoute.TCRouteSubpaths[iLoop2 + 1].GetRouteIndex(loopSection, 0) >= 0) // must also be on next subpath
-                                {
-                                    TCRoute.LoopEnd[iLoop2] = loopSection;
-                                    Trace.TraceInformation("Loop section " + loopSection + " moved to " + iLoop2 + "\n");
-                                }
-                            }
-                        }
-
-                        TCRoute.LoopEnd[iLoop] = -1;
-
+                        nextRoute = new TCSubpathRoute();
+                        TCRoute.TCRouteSubpaths.Add(nextRoute);
+                        TCReversalInfo nextReversalPoint = new TCReversalInfo(); // also add dummy reversal info to match total number
+                        TCRoute.ReversalInfo.Add(nextReversalPoint);
+                        TCRoute.LoopEnd.Add(-1); // also add dummy loopend
                     }
                     else
                     {
-                        if (iLoop > TCRoute.TCRouteSubpaths.Count - 2 || TCRoute.TCRouteSubpaths[iLoop + 1].GetRouteIndex(loopSection, 0) < 0) // check if also still on next subpath
+                        nextRoute = TCRoute.TCRouteSubpaths[waitingPoint[0] + 1];
+                    }
+
+                    for (int iElement = thisRoute.Count - 1; iElement >= lastIndex + 1; iElement--)
+                    {
+                        nextRoute.Insert(0, thisRoute[iElement]);
+                        thisRoute.RemoveAt(iElement);
+                    }
+
+                    // repeat actual waiting section in next subroute
+
+                    nextRoute.Insert(0, thisRoute[thisRoute.Count - 1]);
+
+                    // add end signal to hold list, set ref in waiting point
+
+                    if (endSignalIndex >= 0)
+                    {
+                        TCRoute.WaitingPoints[iWait][4] = endSignalIndex;
+                        HoldingSignals.Add(endSignalIndex);
+                    }
+                }
+
+                // retest for loop ends
+
+                for (int iLoop = TCRoute.TCRouteSubpaths.Count - 1; iLoop >= 0; iLoop--)
+                {
+                    int loopSection = TCRoute.LoopEnd[iLoop];
+                    if (loopSection >= 0)
+                    {
+                        // if no longer on this subpath, test if on any of the following subpaths
+                        if (TCRoute.TCRouteSubpaths[iLoop].GetRouteIndex(loopSection, 0) < 0)
                         {
+                            for (int iLoop2 = iLoop + 1; iLoop2 <= TCRoute.TCRouteSubpaths.Count - 1; iLoop2++)
+                            {
+                                if (TCRoute.TCRouteSubpaths[iLoop2].GetRouteIndex(loopSection, 0) >= 0)
+                                {
+                                    if (iLoop2 <= TCRoute.TCRouteSubpaths.Count - 2 && TCRoute.TCRouteSubpaths[iLoop2 + 1].GetRouteIndex(loopSection, 0) >= 0) // must also be on next subpath
+                                    {
+                                        TCRoute.LoopEnd[iLoop2] = loopSection;
+                                        Trace.TraceInformation("Loop section " + loopSection + " moved to " + iLoop2 + "\n");
+                                    }
+                                }
+                            }
+
                             TCRoute.LoopEnd[iLoop] = -1;
+
+                        }
+                        else
+                        {
+                            if (iLoop > TCRoute.TCRouteSubpaths.Count - 2 || TCRoute.TCRouteSubpaths[iLoop + 1].GetRouteIndex(loopSection, 0) < 0) // check if also still on next subpath
+                            {
+                                TCRoute.LoopEnd[iLoop] = -1;
+                            }
                         }
                     }
                 }
@@ -13301,22 +13303,22 @@ namespace ORTS
                 if (!Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility)
                 {
                     // insert reversals when they are in last section
-                    if (reversal > 0)
-                    {
                         while (reversal > 0)
                         {
-                            if (thisSubpath.Count == 0)
-                            {
                                 thisNode = aiPath.TrackDB.TrackNodes[trackNodeIndex];
                                 if (currentDir == 0)
                                 {
                                     for (int iTC = 0; iTC < thisNode.TCCrossReference.Count; iTC++)
                                     {
-                                        TCRouteElement thisElement =
-                                            new TCRouteElement(thisNode, iTC, currentDir, orgSignals);
-                                        thisSubpath.Add(thisElement);
-                                        //  SPA:    Station:    A adapter, 
-                                        SetStationReference(TCRouteSubpaths, thisElement.TCSectionIndex, orgSignals);
+                                        if (thisNode.TCCrossReference[iTC].Index == RoughReversalInfos[sublist].ReversalSectionIndex)
+                                        {
+                                            TCRouteElement thisElement =
+                                                 new TCRouteElement(thisNode, iTC, currentDir, orgSignals);
+                                            thisSubpath.Add(thisElement);
+                                            //  SPA:    Station:    A adapter, 
+                                            SetStationReference(TCRouteSubpaths, thisElement.TCSectionIndex, orgSignals);
+                                            break;
+                                        }
                                     }
                                     newDir = thisNode.TrPins[currentDir].Direction;
 
@@ -13325,21 +13327,23 @@ namespace ORTS
                                 {
                                     for (int iTC = thisNode.TCCrossReference.Count - 1; iTC >= 0; iTC--)
                                     {
-                                        TCRouteElement thisElement =
-                                            new TCRouteElement(thisNode, iTC, currentDir, orgSignals);
-                                        thisSubpath.Add(thisElement);
-                                        SetStationReference(TCRouteSubpaths, thisElement.TCSectionIndex, orgSignals);
+                                        if (thisNode.TCCrossReference[iTC].Index == RoughReversalInfos[sublist].ReversalSectionIndex)
+                                        {
+                                            TCRouteElement thisElement =
+                                               new TCRouteElement(thisNode, iTC, currentDir, orgSignals);
+                                            thisSubpath.Add(thisElement);
+                                            SetStationReference(TCRouteSubpaths, thisElement.TCSectionIndex, orgSignals);
+                                            break;
+                                        }
                                     }
                                     newDir = thisNode.TrPins[currentDir].Direction;
                                 }                         
-                            }
                             sublist++;
                             thisSubpath = new TCSubpathRoute();
                             TCRouteSubpaths.Add(thisSubpath);
                             currentDir = currentDir == 1 ? 0 : 1;
                             reversal--;        // reset reverse point
                         }
-                    }
                 }
                 //
                 // add last section
