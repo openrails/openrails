@@ -658,7 +658,8 @@ namespace ORTS.Viewer3D
         }
 
         public override void Redo() {
-            Receiver.ToggleDoorsLeft();
+            if (Receiver.Flipped ^ Receiver.GetCabFlipped())  Receiver.ToggleDoorsRight();
+            else Receiver.ToggleDoorsLeft();
             // Report();
         }
     }
@@ -673,7 +674,8 @@ namespace ORTS.Viewer3D
         }
 
         public override void Redo() {
-            Receiver.ToggleDoorsRight();
+            if (Receiver.Flipped ^ Receiver.GetCabFlipped()) Receiver.ToggleDoorsLeft();
+            else Receiver.ToggleDoorsRight();
             // Report();
         }
     }

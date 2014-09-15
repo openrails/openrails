@@ -3622,6 +3622,13 @@ namespace ORTS
             {
                 int[] waitingPoint = TCRoute.WaitingPoints[iWait];
 
+                //check if waiting point is in existing subpath
+                if (waitingPoint[0] >= TCRoute.TCRouteSubpaths.Count)
+                {
+                    Trace.TraceInformation("Waiting point for train " + Number.ToString() + " is not on route - point removed");
+                    continue;
+                }
+
                 TCSubpathRoute thisRoute = TCRoute.TCRouteSubpaths[waitingPoint[0]];
                 int routeIndex = thisRoute.GetRouteIndex(waitingPoint[1], 0);
                 int lastIndex = routeIndex;
