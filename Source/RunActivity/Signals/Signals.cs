@@ -11687,6 +11687,11 @@ namespace ORTS
             File.AppendAllText(@"C:\Temp\deadlock.txt", " Selected path (nofit) : " + selectedPathNofit.ToString() + "\n");
             File.AppendAllText(@"C:\Temp\deadlock.txt", "\n****\n\n");
 #endif
+            // Sometimes selectedPathFit nor selectedPathNofit gets new value, which is wrong and will induce an
+            // IndexOutOfRangeException, but I can't find out why that happens, so here is a warning message when it
+            // happens, to at least find out which train, and passing path that triggers this bug.
+            if (selectedPathFit < 0 && selectedPathNofit < 0)
+                Trace.TraceWarning("Path can't be selected for train {0} at end-section index {1}", thisTrain.Name, endSectionIndex);
             return (selectedPathFit >= 0 ? selectedPathFit : selectedPathNofit); // return fit path if set else no-fit path
         }
 
