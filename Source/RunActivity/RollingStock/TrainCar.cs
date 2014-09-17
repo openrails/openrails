@@ -944,6 +944,9 @@ namespace ORTS
             //    that each car has an axle count of 3 or more before entering the ComputePosition() process.
             // If not, the ComputePosition() process will be unable to process the car correctly.
             // In this case, the result is usually a car that does not show up.
+            // This check is for the front articulated cars which for some reason needs to be done???????
+
+            //  I will have to look into the possibility of rewriting this procedure.
             
                 if (articulatedFront || articulatedRear)
                 {
@@ -963,7 +966,7 @@ namespace ORTS
                             Parts.Add(part);
                         }
                     }
-                    if (articulatedRear && carIndex < Train.Cars.Count - 1 && carIndex != 2)
+                    if (articulatedRear && carIndex < Train.Cars.Count - 1)
                     {
                         var otherCar = Train.Cars[carIndex + 1];
                         var otherPart = otherCar.Parts.OrderBy(p => -p.OffsetM).FirstOrDefault();
