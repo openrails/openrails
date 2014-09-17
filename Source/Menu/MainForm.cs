@@ -162,6 +162,40 @@ namespace ORTS
                 comboBoxTimetableSeason.Items.AddRange(Seasons);
                 comboBoxTimetableWeather.Items.AddRange(Weathers);
                 comboBoxTimetableDay.Items.AddRange(Days);
+
+                var coreExecutables = new[] {
+                    "OpenRails.exe",
+                    "Menu.exe",
+                    "RunActivity.exe",
+                    "RunActivityLAA.exe",
+                };
+                var tools = new List<ToolStripItem>();
+                foreach (var executable in Directory.GetFiles(System.IO.Path.GetDirectoryName(Application.ExecutablePath), "*.exe"))
+                {
+                    // Don't show any of the core parts of the application.
+                    if (coreExecutables.Contains(System.IO.Path.GetFileName(executable)))
+                        continue;
+
+                    var toolInfo = FileVersionInfo.GetVersionInfo(executable);
+
+                    // Skip any executable that isn't part of this product (e.g. Visual Studio hosting files).
+                    if (toolInfo.ProductName != Application.ProductName)
+                        continue;
+
+                    // Remove the product name from the tool's name and localise.
+                    var toolName = catalog.GetString(toolInfo.FileDescription.Replace(Application.ProductName, "").Trim());
+
+                    // Create menu item to execute tool.
+                    tools.Add(new ToolStripMenuItem(toolName, null, (Object sender2, EventArgs e2) =>
+                    {
+                        // TODO: This doesn't work well for console processes.
+                        Process.Start((sender2 as ToolStripItem).Tag as string);
+                    }) { Tag = executable });
+                }
+                // Add all the tools in alphabetical order.
+                contextMenuStripTools.Items.AddRange((from tool in tools
+                                                      orderby tool.Text
+                                                      select tool).ToArray());
             }
 
             ShowEnvironment();
@@ -429,7 +463,13 @@ namespace ORTS
             Application.Exit();
         }
 
-        void buttonTesting_Click(object sender, EventArgs e)
+        void buttonTools_Click(object sender, EventArgs e)
+        {
+
+            contextMenuStripTools.Show(buttonTools, new Point(0, buttonTools.ClientSize.Height), ToolStripDropDownDirection.Default);
+        }
+
+        void testingToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (var form = new TestingForm(this, Settings))
             {

@@ -30,6 +30,7 @@ namespace ORTS
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.checkBoxWindowed = new System.Windows.Forms.CheckBox();
             this.buttonStart = new System.Windows.Forms.Button();
@@ -41,7 +42,7 @@ namespace ORTS
             this.checkBoxWarnings = new System.Windows.Forms.CheckBox();
             this.buttonOptions = new System.Windows.Forms.Button();
             this.buttonResume = new System.Windows.Forms.Button();
-            this.buttonTesting = new System.Windows.Forms.Button();
+            this.buttonTools = new System.Windows.Forms.Button();
             this.comboBoxFolder = new System.Windows.Forms.ComboBox();
             this.comboBoxRoute = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -97,12 +98,15 @@ namespace ORTS
             this.label15 = new System.Windows.Forms.Label();
             this.linkLabelUpdate = new System.Windows.Forms.LinkLabel();
             this.linkLabelRestart = new System.Windows.Forms.LinkLabel();
+            this.testingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.contextMenuStripTools = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.groupBox1.SuspendLayout();
             this.groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxLogo)).BeginInit();
             this.panel1.SuspendLayout();
             this.panelModeActivity.SuspendLayout();
             this.panelModeTimetable.SuspendLayout();
+            this.contextMenuStripTools.SuspendLayout();
             this.SuspendLayout();
             // 
             // checkBoxWindowed
@@ -205,14 +209,14 @@ namespace ORTS
             this.buttonResume.Text = "Resume/ Replay...";
             this.buttonResume.Click += new System.EventHandler(this.buttonResume_Click);
             // 
-            // buttonTesting
+            // buttonTools
             // 
-            this.buttonTesting.Location = new System.Drawing.Point(542, 29);
-            this.buttonTesting.Name = "buttonTesting";
-            this.buttonTesting.Size = new System.Drawing.Size(75, 23);
-            this.buttonTesting.TabIndex = 19;
-            this.buttonTesting.Text = "Testing";
-            this.buttonTesting.Click += new System.EventHandler(this.buttonTesting_Click);
+            this.buttonTools.Location = new System.Drawing.Point(542, 29);
+            this.buttonTools.Name = "buttonTools";
+            this.buttonTools.Size = new System.Drawing.Size(75, 23);
+            this.buttonTools.TabIndex = 19;
+            this.buttonTools.Text = "Tools ▼";
+            this.buttonTools.Click += new System.EventHandler(this.buttonTools_Click);
             // 
             // comboBoxFolder
             // 
@@ -348,9 +352,9 @@ namespace ORTS
             // 
             // panelDetails
             // 
-            this.panelDetails.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.panelDetails.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.panelDetails.AutoScroll = true;
             this.panelDetails.BackColor = System.Drawing.SystemColors.Window;
             this.panelDetails.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -864,6 +868,20 @@ namespace ORTS
             this.linkLabelRestart.Visible = false;
             this.linkLabelRestart.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelRestart_LinkClicked);
             // 
+            // testingToolStripMenuItem
+            // 
+            this.testingToolStripMenuItem.Name = "testingToolStripMenuItem";
+            this.testingToolStripMenuItem.Size = new System.Drawing.Size(113, 22);
+            this.testingToolStripMenuItem.Text = "Testing";
+            this.testingToolStripMenuItem.Click += new System.EventHandler(this.testingToolStripMenuItem_Click);
+            // 
+            // contextMenuStripTools
+            // 
+            this.contextMenuStripTools.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.testingToolStripMenuItem});
+            this.contextMenuStripTools.Name = "contextMenuStrip1";
+            this.contextMenuStripTools.Size = new System.Drawing.Size(114, 26);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -889,7 +907,7 @@ namespace ORTS
             this.Controls.Add(this.pictureBoxLogo);
             this.Controls.Add(this.labelLogo2);
             this.Controls.Add(this.labelLogo1);
-            this.Controls.Add(this.buttonTesting);
+            this.Controls.Add(this.buttonTools);
             this.Controls.Add(this.label2);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -897,8 +915,8 @@ namespace ORTS
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Open Rails";
-            this.Shown += new System.EventHandler(this.MainForm_Shown);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
+            this.Shown += new System.EventHandler(this.MainForm_Shown);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.groupBox3.ResumeLayout(false);
@@ -909,6 +927,7 @@ namespace ORTS
             this.panelModeActivity.PerformLayout();
             this.panelModeTimetable.ResumeLayout(false);
             this.panelModeTimetable.PerformLayout();
+            this.contextMenuStripTools.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -927,7 +946,7 @@ namespace ORTS
         private System.Windows.Forms.CheckBox checkBoxWarnings;
         private System.Windows.Forms.Button buttonOptions;
         private System.Windows.Forms.Button buttonResume;
-        private System.Windows.Forms.Button buttonTesting;
+        private System.Windows.Forms.Button buttonTools;
         private System.Windows.Forms.ComboBox comboBoxFolder;
         private System.Windows.Forms.ComboBox comboBoxRoute;
         private System.Windows.Forms.Label label2;
@@ -982,5 +1001,7 @@ namespace ORTS
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.LinkLabel linkLabelUpdate;
         private System.Windows.Forms.LinkLabel linkLabelRestart;
+        private System.Windows.Forms.ToolStripMenuItem testingToolStripMenuItem;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStripTools;
     }
 }
