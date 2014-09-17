@@ -5590,15 +5590,17 @@ namespace ORTS
             foreach (Train.TrainRouted claimingTrain in CircuitState.TrainClaimed)
             {
                 claimedTrains.Add(claimingTrain);
+            }
+            foreach (Train.TrainRouted claimingTrain in claimedTrains)
+            {
                 UnclaimTrain(claimingTrain);
             }
-
             // get train route
             Train.TCSubpathRoute usedRoute = thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex];
             int routeIndex = usedRoute.GetRouteIndex(Index, 0);
 
             // run down route and clear all claims for found trains, until end 
-            for (int iRouteIndex = routeIndex; iRouteIndex <= usedRoute.Count - 1 && (claimedTrains.Count > 0); iRouteIndex++)
+            for (int iRouteIndex = routeIndex + 1; iRouteIndex <= usedRoute.Count - 1 && (claimedTrains.Count > 0); iRouteIndex++)
             {
                 TrackCircuitSection nextSection = signalRef.TrackCircuitList[usedRoute[iRouteIndex].TCSectionIndex];
 
