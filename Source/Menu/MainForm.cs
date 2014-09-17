@@ -188,8 +188,16 @@ namespace ORTS
                     // Create menu item to execute tool.
                     tools.Add(new ToolStripMenuItem(toolName, null, (Object sender2, EventArgs e2) =>
                     {
-                        // TODO: This doesn't work well for console processes.
-                        Process.Start((sender2 as ToolStripItem).Tag as string);
+                        var toolPath = (sender2 as ToolStripItem).Tag as string;
+                        var toolIsConsole = false;
+                        using (var reader = new BinaryReader(File.OpenRead(toolPath)))
+                        {
+                            toolIsConsole = GetImageSubsystem(reader) == ImageSubsystem.WindowsConsole;
+                        }
+                        if (toolIsConsole)
+                            Process.Start("cmd", "/k \"" + toolPath + "\"");
+                        else
+                            Process.Start(toolPath);
                     }) { Tag = executable });
                 }
                 // Add all the tools in alphabetical order.
@@ -1164,6 +1172,59 @@ namespace ORTS
             comboBoxTimetableDay.SelectedIndex = 0;
             comboBoxTimetableSeason.SelectedIndex = 1;
             comboBoxTimetableWeather.SelectedIndex = 0;
+        }
+        #endregion
+
+        #region Executable utils
+        enum ImageSubsystem
+        {
+            Unknown = 0,
+            Native = 1,
+            WindowsGui = 2,
+            WindowsConsole = 3,
+        }
+
+        ImageSubsystem GetImageSubsystem(BinaryReader stream)
+        {
+            try
+            {
+                var baseOffset = stream.BaseStream.Position;
+
+                // WORD IMAGE_DOS_HEADER.e_magic = 0x4D5A (MZ)
+                stream.BaseStream.Seek(baseOffset + 0, SeekOrigin.Begin);
+                var dosMagic = stream.ReadUInt16();
+                if (dosMagic != 0x5A4D)
+                    return ImageSubsystem.Unknown;
+
+                // LONG IMAGE_DOS_HEADER.e_lfanew
+                stream.BaseStream.Seek(baseOffset + 60, SeekOrigin.Begin);
+                var ntHeaderOffset = stream.ReadUInt32();
+                if (ntHeaderOffset == 0)
+                    return ImageSubsystem.Unknown;
+
+                // DWORD IMAGE_NT_HEADERS.Signature = 0x00004550 (PE..)
+                stream.BaseStream.Seek(baseOffset + ntHeaderOffset, SeekOrigin.Begin);
+                var ntMagic = stream.ReadUInt32();
+                if (ntMagic != 0x00004550)
+                    return ImageSubsystem.Unknown;
+
+                // WORD IMAGE_OPTIONAL_HEADER.Magic = 0x010A (32bit header) or 0x020B (64bit header)
+                stream.BaseStream.Seek(baseOffset + ntHeaderOffset + 24, SeekOrigin.Begin);
+                var optionalMagic = stream.ReadUInt16();
+                if (optionalMagic != 0x010B && optionalMagic != 0x020B)
+                    return ImageSubsystem.Unknown;
+
+                // WORD IMAGE_OPTIONAL_HEADER.Subsystem
+                // Note: There might need to be an adjustment for ImageBase being ULONGLONG in the 64bit header though this doesn't actually seem to be true.
+                stream.BaseStream.Seek(baseOffset + ntHeaderOffset + 92, SeekOrigin.Begin);
+                var peSubsystem = stream.ReadUInt16();
+
+                return (ImageSubsystem)peSubsystem;
+            }
+            catch (EndOfStreamException)
+            {
+                return ImageSubsystem.Unknown;
+            }
         }
         #endregion
     }
