@@ -215,9 +215,11 @@ namespace ORTS.TrackViewer.UserInterface
             menuSelectPath.IsEnabled = (trackViewer.CurrentRoute != null);
             menuNewPath.IsEnabled = (trackViewer.CurrentRoute != null);
             menuSavePath.IsEnabled = (trackViewer.PathEditor != null);
+            menuSaveStations.IsEnabled = (trackViewer.PathEditor != null);
             menuEnableEditing.IsEnabled = (trackViewer.PathEditor != null);
             menuEditMetadata.IsEnabled = menuEnableEditing.IsChecked;
-
+            menuReversePath.IsEnabled = menuEnableEditing.IsChecked;
+            
         }
 
         private void menuSetAllItems(bool isChecked)
@@ -751,14 +753,24 @@ namespace ORTS.TrackViewer.UserInterface
             trackViewer.NewPath();
             menuEnableEditing.IsChecked = true;
             menuShowTrainpath.IsChecked = true;
-            trackViewer.PathEditor.EditingIsActive = true;
-            trackViewer.PathEditor.EditMetaData();
+            UpdateMenuSettings();
+        }
+
+        private void menuReversePath_Click(object sender, RoutedEventArgs e)
+        {
+            trackViewer.PathEditor.ReversePath();
             UpdateMenuSettings();
         }
 
         private void menuSavePath_Click(object sender, RoutedEventArgs e)
         {
             trackViewer.PathEditor.SavePath();
+        }
+
+
+        private void menuSaveStations_Click(object sender, RoutedEventArgs e)
+        {
+            trackViewer.PathEditor.SaveStationNames();
         }
 
         private void menuEditMetadata_Click(object sender, RoutedEventArgs e)
@@ -863,8 +875,11 @@ namespace ORTS.TrackViewer.UserInterface
         private void comboBoxLanguage_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             Language selectedLanguage = comboBoxLanguage.SelectedItem as Language;
-            trackViewer.languageManager.SelectLanguage(selectedLanguage.Code);
+            trackViewer.SelectLanguage(selectedLanguage.Code);
         }
+
+
+
 
     }
 

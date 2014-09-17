@@ -4,19 +4,19 @@
     Height="195" Width="300" Title="Path metadata">
     <StackPanel Orientation="Vertical">
         <StackPanel Orientation="Horizontal">
-            <Label Content="Path ID" HorizontalAlignment="Left" Width="70"/>
+            <Label Content="Path ID" HorizontalAlignment="Left" Width="130"/>
             <TextBox Height="23" Name="pathID" Width="200"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal">
-            <Label Content="Path name" HorizontalAlignment="Left" Width="70"/>
+            <Label Content="Path name" HorizontalAlignment="Left" Width="130"/>
             <TextBox Height="23" Name="pathName" Width="200"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal">
-            <Label Content="Path start" HorizontalAlignment="Left" Width="70"/>
+            <Label Content="Path start" HorizontalAlignment="Left" Width="130"/>
             <TextBox Height="23" Name="pathStart" Width="200"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal">
-            <Label Content="Path end" HorizontalAlignment="Left" Width="70"/>
+            <Label Content="Path end" HorizontalAlignment="Left" Width="130"/>
             <TextBox Height="23" Name="pathEnd" Width="200"/>
         </StackPanel>
         <CheckBox Name="pathIsPlayerPath" Width="200" Height="25">Player path</CheckBox>

@@ -28,7 +28,7 @@ namespace ORTS.TrackViewer.Editing
     /// Translate an internally stored path (using linked nodes etc) to the MSTS .pat format, 
     /// and write the result to a file. 
     /// 
-    /// This has only one public method : WritePaTFile
+    /// This has only one public method : WritePatFile
     /// </summary>
     public static class SavePatFile
     {
@@ -294,6 +294,43 @@ namespace ORTS.TrackViewer.Editing
             file.Close();
         }
 
+    }
 
+    /// <summary>
+    /// Class to simply save a list of stationNames to a unicode text file.
+    /// </summary>
+    public class SaveStationNames
+    {
+        /// <summary>
+        /// Constructor and only public method
+        /// </summary>
+        /// <param name="stationNames">String array containing the names of the stations.</param>
+        public SaveStationNames(string[] stationNames)
+        {
+            string fullFilePath = GetFileName();
+            if (String.IsNullOrEmpty(fullFilePath)) return;
+
+            System.IO.StreamWriter file = new System.IO.StreamWriter(fullFilePath, false, System.Text.Encoding.Unicode);
+            foreach (string stationName in stationNames)
+            {
+                file.WriteLine(stationName);
+            }
+            file.Close();
+        }
+
+        static string GetFileName()
+        {
+            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
+            dlg.OverwritePrompt = true;
+            //dlg.InitialDirectory = Path.GetDirectoryName(trainpath.FilePath);
+            dlg.FileName = "stations.txt";
+            dlg.DefaultExt = ".txt";
+            dlg.Filter = "Text documents (.txt)|*.txt";
+            if (dlg.ShowDialog() == true)
+            {
+                return dlg.FileName;
+            }
+            return String.Empty;
+        }
     }
 }

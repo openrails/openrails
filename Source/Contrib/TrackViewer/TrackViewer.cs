@@ -50,7 +50,6 @@
 // Looks and usability
 //
 // Code improvements
-//      When selecting platform, rest of screen should not move along. But not trivial because of capture by menu.
 //      remove drawTrains?
 //      remove dependency on ORTS.Settings. Even though it means a bit of code duplication
 //      Colorscheme needs optimalization: now a color needs to go through to many redirections too often. Can I profile this?
@@ -123,7 +122,7 @@ namespace ORTS.TrackViewer
     {
         #region Public members
         /// <summary>String showing the date of the program</summary>
-        public readonly static string TrackViewerVersion = "2014/09/06";
+        public readonly static string TrackViewerVersion = "2014/09/17";
         /// <summary>Path where the content (like .png files) is stored</summary>
         public string ContentPath { get; private set; }
         /// <summary>Folder where MSTS is installed (or at least, where the files needed for tracks, routes and paths are stored)</summary>
@@ -352,7 +351,7 @@ namespace ORTS.TrackViewer
             TVUserInput.Update();
             if (lostFocus)
             {
-                // if the previous call was in inactive mode, we do want TVUserIut to be updated, but we will only
+                // if the previous call was in inactive mode, we do want TVUserInput to be updated, but we will only
                 // act on it the next round. To make sure moving the mouse to other locations and back is influencing 
                 // the location visible in trackviewer.
                 lostFocus = false;
@@ -795,6 +794,8 @@ namespace ORTS.TrackViewer
             string pathsDirectory = System.IO.Path.Combine(CurrentRoute.Path, "PATHS");
             PathEditor = new PathEditor(DrawTrackDB, pathsDirectory);
             DrawPATfile = null;
+            PathEditor.EditingIsActive = true;
+            PathEditor.EditMetaData();
         }
 
         /// <summary>
@@ -877,11 +878,12 @@ namespace ORTS.TrackViewer
         {
             //Properties.Settings.Default.statusShowFPS = true;
             //SetDefaultRoute();
-            //SetPath(Paths[0]);
+            //SetPath(Paths[8]);
             //PathEditor.EditingIsActive = true;
             //DrawArea.ZoomToTile();
             //DrawArea.Zoom(-15);
-            //CenterAroundTrackNode(3206);
+            //CenterAroundTrackNode(1);
+            //ReversePath();
             //NewPath();
             //drawArea.ShiftToLocation(pathEditor.CurrentLocation);
             ////drawArea.ShiftToLocation(pathEditor.trainpath.FirstNode.location);
@@ -916,6 +918,20 @@ namespace ORTS.TrackViewer
                 if (property != null && property.CanRead && property.CanWrite && property.GetValue(element, null) is String)
                     property.SetValue(element, catalog.GetString(property.GetValue(element, null) as string), null);
             }
+        }
+
+        /// <summary>
+        /// Change/select the language. Store the preference to be used after a restart
+        /// Give message to use that TrackViewer needs to be restarted
+        /// </summary>
+        /// <param name="languageCode">Two-letter code for the new language</param>
+        public void SelectLanguage(string languageCode)
+        {
+            languageManager.SelectLanguage(languageCode);
+            //The lines below work from system/english to another language, but not from another language to system/english
+            //languageManager.LoadLanguage();
+            //Localize(menuControl);
+            //Localize(statusBarControl);
         }
 
         static void InitLogging()

@@ -26,6 +26,7 @@ using System.Text;
 using System.Windows.Forms;
 
 using MSTS.Formats;
+using ORTS.Common;
 
 namespace ORTS.TrackViewer.Editing
 {
@@ -564,6 +565,180 @@ namespace ORTS.TrackViewer.Editing
             }
             return numberFound;
         }
+
+        /// <summary>
+        /// Finds a list of names of the stations that are being passed by the path. Stations are determined by their platforms
+        /// which have both a start and end marker. All of these markers are found in the correct order, and double occurences are removed.
+        /// </summary>
+        public string[] StationNames()
+        {
+            List<string> stationNames = new List<string>();
+
+            TrainpathNode currentNode = this.FirstNode;
+            while (currentNode.NextMainNode != null)
+            {
+                stationNames.AddRange(StationNamesBetweenNodes(currentNode, currentNode.NextMainNode));
+                currentNode = currentNode.NextMainNode;
+            }
+
+            return StationNamesNoDoubles(stationNames);
+            
+        }
+
+        private List<string> StationNamesBetweenNodes(TrainpathNode firstNode, TrainpathNode secondNode)
+        {
+            var stationNames = new List<string>();
+            int tvnIndex = firstNode.NextMainTvnIndex;
+            if (tvnIndex < 0) return stationNames;
+
+            TrackNode tn = trackDB.TrackNodes[tvnIndex];
+            TrackNode[] tnArray = {tn};
+            TrVectorNode tvn = tn.TrVectorNode;
+            if (tvn == null) return stationNames;
+            if (tvn.TrItemRefs == null) return stationNames;
+
+            foreach (int trackItemIndex in tvn.TrItemRefs)
+            {
+                TrItem trItem = trackDB.TrItemTable[trackItemIndex];
+                if (trItem.ItemType == TrItem.trItemType.trPLATFORM)
+                {
+                    var traveller = new Traveller(tsectionDat, trackDB.TrackNodes, tn, 
+                        trItem.TileX, trItem.TileZ, trItem.X, trItem.Z, Traveller.TravellerDirection.Forward);
+                    if (traveller != null)
+                    {
+                        var platformNode = new TrainpathVectorNode(firstNode, traveller);
+                        if (platformNode.IsBetween(firstNode, secondNode))
+                        {
+                            PlatformItem platform = trItem as PlatformItem;
+                            stationNames.Add(platform.Station);
+                        }
+                    }
+            
+                }
+            }
+
+            return stationNames;
+        }
+
+        private string[] StationNamesNoDoubles(List<string> stationNames)
+        {
+            List<string> cleanedStationNames = new List<string>();
+
+            string lastStation = String.Empty;
+
+            foreach (string station in stationNames)
+            {
+                if (station.Equals(lastStation))
+                {
+                    lastStation = String.Empty;
+                }
+                else
+                {
+                    cleanedStationNames.Add(station);
+                    lastStation = station;
+                }
+            }
+
+            return cleanedStationNames.ToArray();
+        }
+        #endregion
+
+        #region Methods for reversing
+        /// <summary>
+        /// Reverse the path, including the metadata.
+        /// Assumption is that it is not broken, and that both start and end are given
+        /// </summary>
+        public void ReversePath()
+        {
+            this.PathId = "new";
+            string oldStart = this.PathStart;
+            this.PathStart = this.PathEnd;
+            this.PathEnd = oldStart;
+            this.PathName += " (reversed)";
+
+            List<TrainpathNode> mainNodes = new List<TrainpathNode>();
+
+            // Create list of nodes, in new order
+            TrainpathNode currentMainNode = this.FirstNode;
+            mainNodes.Add(currentMainNode);
+            while (currentMainNode.NextMainNode != null)
+            {
+                mainNodes.Add(currentMainNode.NextMainNode);
+                currentMainNode = currentMainNode.NextMainNode;
+            }
+            mainNodes.Reverse();
+            int lastIndex = mainNodes.Count() - 1; // we now this is at least 1
+
+            //new start
+            this.FirstNode = mainNodes[0];
+            mainNodes[0].NextMainNode = mainNodes[1];
+            mainNodes[0].NextMainTvnIndex = mainNodes[1].NextMainTvnIndex;  // note main TVN index was in reverse direction
+            mainNodes[0].PrevNode = null;
+            mainNodes[0].ReverseOrientation();
+            mainNodes[0].NodeType = TrainpathNodeType.Start;
+
+            //all intermediate nodes
+            for (int i = 1; i < lastIndex; i++)
+            {
+                mainNodes[i].NextMainNode = mainNodes[i+1];
+                mainNodes[i].NextMainTvnIndex = mainNodes[i+1].NextMainTvnIndex;  // note main TVN index was in reverse direction
+                mainNodes[i].PrevNode = mainNodes[i - 1];
+                if (mainNodes[i].NodeType != TrainpathNodeType.Reverse)
+                {   // reverse nodes have input and output swapped, but they are not changed themselves!
+                    mainNodes[i].ReverseOrientation();
+                }
+                
+                if (mainNodes[i].NodeType == TrainpathNodeType.SidingStart)
+                {
+                    ReverseSidingPath(mainNodes[i]);
+                }
+            }
+
+            //new end
+            mainNodes[lastIndex].NextMainNode = null;
+            mainNodes[lastIndex].PrevNode = mainNodes[lastIndex - 1];
+            mainNodes[lastIndex].ReverseOrientation();
+            mainNodes[lastIndex].NodeType = TrainpathNodeType.End;
+        }
+
+        void ReverseSidingPath(TrainpathNode oldSidingStart)
+        {
+            List<TrainpathNode> sidingNodes = new List<TrainpathNode>();
+            sidingNodes.Add(oldSidingStart);
+
+            // Create list of nodes, in new order
+            TrainpathNode currentSidingNode = oldSidingStart;
+            while (currentSidingNode.NextSidingNode != null)
+            {
+                sidingNodes.Add(currentSidingNode.NextSidingNode);
+                currentSidingNode = currentSidingNode.NextSidingNode;
+            }
+            sidingNodes.Reverse();
+
+            int lastIndex = sidingNodes.Count() - 1; // we now this is at least 1
+
+            // new start of siding
+            sidingNodes[0].NextSidingNode = sidingNodes[1];
+            sidingNodes[0].NextSidingTvnIndex = sidingNodes[1].NextSidingTvnIndex;
+            sidingNodes[0].NodeType = TrainpathNodeType.SidingStart;
+            // no reversing because this node is reversed as part of main path.
+            
+            // making new connections for all intermediate nodes, and reversing them as well
+            // Note order is important.
+            for (int i = 1 ; i < lastIndex ; i++)
+            {
+                sidingNodes[i].NextSidingNode = sidingNodes[i + 1];
+                sidingNodes[i].NextSidingTvnIndex = sidingNodes[i + 1].NextSidingTvnIndex; // this was oriented in the other direction!
+                sidingNodes[i].PrevNode = sidingNodes[i - 1];
+                sidingNodes[i].ReverseOrientation();
+            }
+
+            // new siding end
+            sidingNodes[lastIndex].NextSidingNode = null;
+            sidingNodes[lastIndex].NodeType = TrainpathNodeType.SidingEnd;
+            // no reversing because this node is reversed as part of main path.
+        }
+
         #endregion
 
         #region class TrainPathData

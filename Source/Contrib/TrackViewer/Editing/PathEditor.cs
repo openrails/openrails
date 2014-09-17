@@ -15,12 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 //
-// ENHANCEMENT list for path editor
-// === Not finished, so do before next release
-//
-// ==== new/improved functionality
-//  Add possibility to extend path fully while adding nodes? Extend as far as possible?
-//  saving path still has code parts I do not know how to do
 
 using System;
 using System.Collections.ObjectModel;
@@ -621,7 +615,7 @@ namespace ORTS.TrackViewer.Editing
 
         #endregion
 
-        #region Metadata and saving
+        #region Metadata, saving, reversing
         /// <summary>
         /// Popup a dialog to enable to user to edit the path meta data
         /// </summary>
@@ -630,6 +624,7 @@ namespace ORTS.TrackViewer.Editing
             string[] metadata = { trainpath.PathId, trainpath.PathName, trainpath.PathStart, trainpath.PathEnd };
             bool isPlayerPath = (trainpath.PathFlags & PathFlags.NotPlayerPath) == 0;
             PathMetadataDialog metadataDialog = new PathMetadataDialog(metadata, isPlayerPath);
+            TrackViewer.Localize(metadataDialog);
             if (metadataDialog.ShowDialog() == true)
             {
                 metadata = metadataDialog.GetMetadata();
@@ -656,6 +651,48 @@ namespace ORTS.TrackViewer.Editing
         public void SavePath()
         {
             SavePatFile.WritePatFile(trainpath);
+        }
+
+        /// <summary>
+        /// Save the names of the stations along the path to a file.
+        /// </summary>
+        public void SaveStationNames()
+        {
+            string[] stationNames = trainpath.StationNames();
+            new SaveStationNames(stationNames); // will be discarded immediately
+        }
+
+        /// <summary>
+        /// Reverse the path including metadata, but first check if the path is clean enough.
+        /// Note that reversing is like any other action, in the sense that it allows an undo.
+        /// </summary>
+        public void ReversePath()
+        {
+            if (! CanReverse()) return;
+            trainpath.StoreCurrentPath();
+            trainpath.ReversePath();
+            EditMetaData();
+        }
+
+        private bool CanReverse()
+        {
+            if (trainpath.IsBroken)
+            {
+                MessageBox.Show(TrackViewer.catalog.GetString("Reversing broken paths is not supported"));
+                return false;
+            }
+            if (trainpath.FirstNode == null)
+            {
+                MessageBox.Show(TrackViewer.catalog.GetString("Reversing a path without start node is not supported"));
+                return false;
+            }
+            if (!trainpath.HasEnd)
+            {
+                MessageBox.Show(TrackViewer.catalog.GetString("Reversing a path without end node is not supported"));
+                return false;
+            }
+
+            return true;
         }
 
         #endregion
