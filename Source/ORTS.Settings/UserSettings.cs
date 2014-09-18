@@ -90,155 +90,140 @@ namespace ORTS.Settings
         [Default(true)]
         public bool AlerterDisableExternal { get; set; }
         [Default(false)]
-		public bool GraduatedRelease { get; set; }
-		[Default(21)]
-		public int BrakePipeChargingRate { get; set; }
-        [Default("Automatic")]
-        public String PressureUnit { get; set; }
-		[Default(false)]
-		public bool SuppressConfirmations { get; set; }
-		[Default(false)]
-		public bool ViewDispatcher { get; set; }
+        public bool ViewDispatcher { get; set; }
+        [Default(false)]
+        public bool GraduatedRelease { get; set; }
+        [Default(true)]
+        public bool UseLargeAddressAware { get; set; }
+        [Default(false)]
+        public bool SuppressConfirmations { get; set; }
+        [Default(21)]
+        public int BrakePipeChargingRate { get; set; }
         [Default("")]
         public String Language { get; set; }
+        [Default("Automatic")]
+        public String PressureUnit { get; set; }
 
 		// Audio settings:
-		[Default(5)]
+        [Default(true)]
+        public bool MSTSBINSound { get; set; }
+        [Default(100)]
+        public int SoundVolumePercent { get; set; }
+        [Default(5)]
 		public int SoundDetailLevel { get; set; }
-		[Default(true)]
-		public bool MSTSBINSound { get; set; }
-		[Default(100)]
-		public int SoundVolumePercent { get; set; }
 
 		// Video settings:
-		[Default(10)]
-		public int WorldObjectDensity { get; set; }
-		[Default("1024x768")]
-		public string WindowSize { get; set; }
-		[Default(false)]
-		public bool Wire { get; set; }
-		[Default(false)]
-		public bool DynamicShadows { get; set; }
-		[Default(false)]
-		public bool WindowGlass { get; set; }
-		[Default(45)] // MSTS uses 60 FOV horizontally, on 4:3 displays this is 45 FOV vertically (what OR uses).
-		public int ViewingFOV { get; set; }
-		[Default(0)]
-		public int Cab2DStretch { get; set; }
-		[Default(2000)]
-		public int ViewingDistance { get; set; }
         [Default(false)]
-        public bool PreferDDSTexture { get; set; }
+        public bool DynamicShadows { get; set; }
+        [Default(false)]
+        public bool FastFullScreenAltTab { get; set; }
+        [Default(false)]
+        public bool WindowGlass { get; set; }
+        [Default(false)]
+        public bool ModelInstancing { get; set; }
+        [Default(true)]
+        public bool Wire { get; set; }
+        [Default(false)]
+        public bool VerticalSync { get; set; }
+        [Default(0)]
+        public int Cab2DStretch { get; set; }
+        [Default(2000)]
+        public int ViewingDistance { get; set; }
+        [Default(true)]
+        public bool DistantMountains { get; set; }
+        [Default(40000)]
+        public int DistantMountainsViewingDistance { get; set; }
+        [Default(45)] // MSTS uses 60 FOV horizontally, on 4:3 displays this is 45 FOV vertically (what OR uses).
+        public int ViewingFOV { get; set; }
+        [Default(10)]
+        public int WorldObjectDensity { get; set; }
+        [Default("1024x768")]
+        public string WindowSize { get; set; }
+        [Default(20)]
+        public int DayAmbientLight { get; set; }
 
 		// Simulation settings:
 		[Default(true)]
 		public bool UseAdvancedAdhesion { get; set; }
 		[Default(10)]
 		public int AdhesionMovingAverageFilterSize { get; set; }
-        [Default(130)]
-        public int AdhesionFactor { get; set; }
-        [Default(10)]
-        public int AdhesionFactorChange { get; set; }
         [Default(false)]
-        public bool AdhesionProportionalToWeather { get; set; }
-		[Default(false)]
-		public bool BreakCouplers { get; set; }
-		[Default(false)]
-		public bool OverrideNonElectrifiedRoutes { get; set; }
+        public bool BreakCouplers { get; set; }
         [Default(false)]
         public bool CurveResistanceSpeedDependent { get; set; }
         [Default(false)]
         public bool CurveSpeedDependent { get; set; }
+        [Default(false)]
+        public bool OverrideNonElectrifiedRoutes { get; set; }
         [Default(true)]
         public bool HotStart { get; set; }
 
+        // Data logger settings:
+        [Default("comma")]
+        public string DataLoggerSeparator { set; get; }
+        [Default("route")]
+        public string DataLogSpeedUnits { get; set; }
+        [Default(false)]
+        public bool DataLogStart { get; set; }
+        [Default(true)]
+        public bool DataLogPerformance { get; set; }
+        [Default(false)]
+        public bool DataLogPhysics { get; set; }
+        [Default(false)]
+        public bool DataLogMisc { get; set; }
+        
+        // Evaluation settings:
+        [Default(false)]
+        public bool DataLogTrainSpeed { get; set; }
+        [Default(10)]
+        public int DataLogTSInterval { get; set; }
+        //Time, Train Speed, Max Speed, Signal Aspect, Elevation, Direction, Distance Travelled, Control Mode, Throttle, Brake, Dyn Brake, Gear
+        [Default(new[] { 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 })]
+        public int[] DataLogTSContents { get; set; }
+        [Default(false)]
+        public bool DataLogStationStops { get; set; }
 
-		// Experimental settings for super-elevation:
+        // Updater settings are saved only in "Updater.ini".
+
+        // Experimental settings:
 		[Default(0)]
 		public int UseSuperElevation { get; set; }
 		[Default(50)]
 		public int SuperElevationMinLen { get; set; }
 		[Default(1435)]
 		public int SuperElevationGauge { get; set; }
-
-		// Experimental settings for distant mountains:
-		[Default(false)]
-		public bool DistantMountains { get; set; }
-		[Default(40000)]
-		public int DistantMountainsViewingDistance { get; set; }
-
-		// Experimental settings for LOD:
         [Default(false)]
         public bool LODAlwaysMaximum { get; set; }
         [Default(false)]
-        public bool LODViewingExtention { get; set; }
-
-		// Experimental settings for auto-tuning performance:
-		[Default(false)]
-		public bool PerformanceTuner { get; set; }
-		[Default(60)]
-		public int PerformanceTunerTarget { get; set; }
-
-		// Experimental settings for overhead wire:
-		[Default(false)]
-		public bool DoubleWire { get; set; }
-
-        // Experimental settings for alternative path processing
+        public bool PerformanceTuner { get; set; }
+        [Default(60)]
+        public int PerformanceTunerTarget { get; set; }
         [Default(false)]
-        public bool UseLocationPassingPaths { get; set; }
-
-        // Experimental settings for Ambient Lighting
-        [Default(20)]
-        public int DayAmbientLight { get; set; }
-
-        [Default(false)]
-        public bool UseMSTSEnv { get; set; }
-
-        [Default(false)]
-        public bool FastFullScreenAltTab { get; set; }
-
-        [Default(false)]
-        public bool UseLargeAddressAware { get; set; }
-
-        [Default(false)]
-        public bool ModelInstancing { get; set; }
-
-        [Default(false)]
-        public bool CircularSpeedGauge { get; set; }
-
-        [Default(false)]
-        public bool SignalLightGlow { get; set; }
-
-        [Default(false)]
-        public bool EnhancedActCompatibility { get; set; }
-
+        public bool DoubleWire { get; set; }
         [Default(false)]
         public bool AuxActionEnabled { get; set; }
-
-        // Data Logger settings:
-		[Default("comma")]
-		public string DataLoggerSeparator { set; get; }
-		[Default("route")]
-		public string DataLogSpeedUnits { get; set; }
-		[Default(false)]
-		public bool DataLogStart { get; set; }
-		[Default(true)]
-		public bool DataLogPerformance { get; set; }
-		[Default(false)]
-		public bool DataLogPhysics { get; set; }
-		[Default(false)]
-		public bool DataLogMisc { get; set; }
         [Default(false)]
-        public bool DataLogTrainSpeed { get; set; }
-        [Default (10)]
-        public int DataLogTSInterval { get; set; }
-        //Time, Train Speed, Max Speed, Signal Aspect, Elevation, Direction, Distance Travelled, Control Mode, Throttle, Brake, Dyn Brake, Gear
-        [Default (new [] {1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0})]
-        public int[] DataLogTSContents { get; set; }
+        public bool EnhancedActCompatibility { get; set; }
         [Default(false)]
-        public bool DataLogStationStops { get; set; }
+        public bool CircularSpeedGauge { get; set; }
+        [Default(false)]
+        public bool LODViewingExtention { get; set; }
+        [Default(false)]
+        public bool PreferDDSTexture { get; set; }
+        [Default(false)]
+        public bool UseLocationPassingPaths { get; set; }
+        [Default(false)]
+        public bool UseMSTSEnv { get; set; }
+        [Default(false)]
+        public bool SignalLightGlow { get; set; }
+        [Default(130)]
+        public int AdhesionFactor { get; set; }
+        [Default(10)]
+        public int AdhesionFactorChange { get; set; }
+        [Default(false)]
+        public bool AdhesionProportionalToWeather { get; set; }
 
-		// Hidden settings:
+        // Hidden settings:
 		[Default(0)]
 		public int CarVibratingLevel { get; set; }
 		[Default("OpenRailsLog.txt")]
@@ -259,8 +244,6 @@ namespace ORTS.Settings
 		public int ShadowMapDistance { get; set; }
 		[Default(1024)]
 		public int ShadowMapResolution { get; set; }
-		[Default(false)]
-		public bool VerticalSync { get; set; }
 		[Default(10)]
 		public int Multiplayer_UpdateInterval { get; set; }
 		[Default("http://openrails.org/images/support-logos.jpg")]

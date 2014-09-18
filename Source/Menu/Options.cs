@@ -77,6 +77,7 @@ namespace ORTS
             // Vista and later should use 9pt "Segoe UI". We'll use the
             // Message Box font to allow for user-customizations, though.
             Font = SystemFonts.MessageBoxFont;
+            AdhesionLevelValue.Font = new Font(Font, FontStyle.Bold);
 
             // General tab
             checkAlerter.Checked = Settings.Alerter;
