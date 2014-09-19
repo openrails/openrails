@@ -113,7 +113,14 @@ namespace ORTS
             if (Script == null)
                 return;
 
-            Script.Update(elapsedSeconds);
+            if (Locomotive.Train.TrainType == Train.TRAINTYPE.AI || Locomotive.Train.TrainType == Train.TRAINTYPE.AI_AUTOGENERATE)
+            {
+                State = CircuitBreakerState.Closed;
+            }
+            else
+            {
+                Script.Update(elapsedSeconds);
+            }
         }
 
         public void HandleEvent(PowerSupplyEvent evt)
