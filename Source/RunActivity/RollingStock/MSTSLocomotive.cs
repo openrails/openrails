@@ -721,6 +721,27 @@ namespace ORTS
             base.Initialize();
         }
 
+        //================================================================================================//
+        /// <summary>
+        /// Set starting conditions  when initial speed > 0 
+        /// 
+
+        public override void InitializeMoving()
+        {
+            base.InitializeMoving();
+            LocomotiveAxle.Reset(SpeedMpS);
+            LocomotiveAxle.AxleSpeedMpS = SpeedMpS;
+            LocomotiveAxle.AdhesionConditions = (float)(Simulator.Settings.AdhesionFactor) * 0.01f;
+            AdhesionFilter.Reset(0.5f);
+            LocalThrottlePercent = Train.MUThrottlePercent;
+            AverageForceN = MaxForceN * LocalThrottlePercent/100;
+            float maxPowerW = MaxPowerW * LocalThrottlePercent * LocalThrottlePercent/10000;
+            if (AverageForceN * SpeedMpS > maxPowerW) AverageForceN = maxPowerW / SpeedMpS;
+            LocomotiveAxle.FilterMovingAverage.Initialize(AverageForceN);
+            TrainBrakeController.InitializeMoving();
+            BrakeSystem.LocoInitializeMoving();
+        }
+
         /// <summary>
         /// This is a periodic update to calculate physics 
         /// parameters and update the base class's MotiveForceN 
@@ -791,7 +812,7 @@ namespace ORTS
             if (this.IsLeadLocomotive() || (!AcceptMUSignals))
             {
                 ThrottlePercent = ThrottleController.Update(elapsedClockSeconds) * 100.0f;
-                ConfirmWheelslip();
+                ConfirmWheelslip( elapsedClockSeconds );
                 LocalThrottlePercent = ThrottlePercent;
             }
             else
@@ -1059,37 +1080,39 @@ namespace ORTS
 
         Wheelslip WheelslipState = Wheelslip.None;
 
-        public void ConfirmWheelslip()
+        public void ConfirmWheelslip( float elapsedClockSeconds )
         {
-            if (Simulator.UseAdvancedAdhesion)
-            {
-                // Wheelslip
-                if (LocomotiveAxle.IsWheelSlip)
+            if (elapsedClockSeconds > 0 && Simulator.GameTime > 5)
+            { 
+                if (Simulator.UseAdvancedAdhesion)
                 {
-                    if (WheelslipState != Wheelslip.Occurring)
+                    // Wheelslip
+                    if (LocomotiveAxle.IsWheelSlip)
                     {
-                        WheelslipState = Wheelslip.Occurring;
-                        Simulator.Confirmer.Warning(CabControl.Wheelslip, CabSetting.On);
-                    }
-                }
-                else
-                {
-                    if (LocomotiveAxle.IsWheelSlipWarning)
-                    {
-                        if (WheelslipState != Wheelslip.Warning)
+                        if (WheelslipState != Wheelslip.Occurring)
                         {
-                            WheelslipState = Wheelslip.Warning;
-                            Simulator.Confirmer.Confirm(CabControl.Wheelslip, CabSetting.Warn1);
+                            WheelslipState = Wheelslip.Occurring;
+                            Simulator.Confirmer.Warning(CabControl.Wheelslip, CabSetting.On);
                         }
                     }
                     else
                     {
-                        if (WheelslipState != Wheelslip.None)
+                        if (LocomotiveAxle.IsWheelSlipWarning)
                         {
-                            WheelslipState = Wheelslip.None;
-                            Simulator.Confirmer.Confirm(CabControl.Wheelslip, CabSetting.Off);
+                            if (WheelslipState != Wheelslip.Warning)
+                            {
+                                WheelslipState = Wheelslip.Warning;
+                                Simulator.Confirmer.Confirm(CabControl.Wheelslip, CabSetting.Warn1);
+                            }
                         }
-                    }
+                        else
+                        {
+                            if (WheelslipState != Wheelslip.None)
+                            {
+                                WheelslipState = Wheelslip.None;
+                                Simulator.Confirmer.Confirm(CabControl.Wheelslip, CabSetting.Off);
+                            }
+                        }
                 }
             }
             else
@@ -1104,6 +1127,7 @@ namespace ORTS
                     WheelslipState = Wheelslip.None;
                     Simulator.Confirmer.Confirm(CabControl.Wheelslip, CabSetting.Off);
                 }
+            }
             }
         }
 
@@ -1230,9 +1254,12 @@ namespace ORTS
                 LocomotiveAxle.TrainSpeedMpS = SpeedMpS;            //Set the train speed of the axle model
                 LocomotiveAxle.Update(elapsedClockSeconds);         //Main updater of the axle model
                 MotiveForceN = LocomotiveAxle.AxleForceN;           //Get the Axle force and use it for the motion
+                if (elapsedClockSeconds > 0)
+                { 
                 WheelSlip = LocomotiveAxle.IsWheelSlip;             //Get the wheelslip indicator
                 WheelSlipWarning = LocomotiveAxle.IsWheelSlipWarning;
-                if (elapsedClockSeconds > 0) WheelSpeedMpS = LocomotiveAxle.AxleSpeedMpS;
+                }
+                WheelSpeedMpS = LocomotiveAxle.AxleSpeedMpS;
             }
             else 
             {

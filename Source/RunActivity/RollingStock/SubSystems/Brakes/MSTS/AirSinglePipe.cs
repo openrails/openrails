@@ -185,6 +185,26 @@ namespace ORTS
             TripleValveState = ValveState.Lap;
             HandbrakePercent = handbrakeOn ? 100 : 0;
         }
+
+        public override void InitializeMoving () // used when initial speed > 0
+        {
+            BrakeLine1PressurePSI = Car.Train.BrakeLine1PressurePSIorInHg;
+            BrakeLine2PressurePSI = Car.Train.BrakeLine2PressurePSI;
+            BrakeLine3PressurePSI = 0;
+            AuxResPressurePSI = BrakeLine1PressurePSI;
+             // release brakes immediately (for AI trains)
+//            if (immediateRelease)
+                AutoCylPressurePSI = 0;
+            TripleValveState = ValveState.Lap;
+            HandbrakePercent = 0;
+        }
+
+        public override void LocoInitializeMoving() // starting conditions when starting speed > 0
+        {
+            BrakePercent = 0;
+        }
+
+
         public override void Connect()
         {
             if (BrakeLine1PressurePSI < 0)

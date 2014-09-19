@@ -370,7 +370,12 @@ namespace ORTS
                 {
                     PlayerLocomotive = car;
                     playerTrain.LeadLocomotive = car;
+                    if (playerTrain.InitialSpeed == 0 || 
+                       ! ((PlayerLocomotive is MSTSDieselLocomotive) && //TODO: extend to other types of locos
+                    ((MSTSDieselLocomotive)PlayerLocomotive).GearBox == null && ((MSTSDieselLocomotive)PlayerLocomotive).GearBoxController == null &&
+                        ! (((MSTSDieselLocomotive)PlayerLocomotive).BrakeSystem is VacuumSinglePipe)))
                     playerTrain.InitializeBrakes();
+                    PlayerLocomotive.LocalThrottlePercent = playerTrain.AITrainThrottlePercent;
                     break;
                 }
             if (PlayerLocomotive == null)
@@ -658,6 +663,12 @@ namespace ORTS
             // set up the player locomotive
             // first extract the player service definition from the activity file
             // this gives the consist and path
+
+            Train train = new Train(this);
+            train.TrainType = Train.TRAINTYPE.PLAYER;
+            train.Number = 0;
+            train.Name = "PLAYER";
+
             if (Activity == null)
             {
                 patFileName = ExplorePathFile;
@@ -667,15 +678,14 @@ namespace ORTS
             {
                 string playerServiceFileName = Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name;
                 SRVFile srvFile = new SRVFile(RoutePath + @"\SERVICES\" + playerServiceFileName + ".SRV");
+                train.InitialSpeed = srvFile.TimeTable.InitialSpeed;
                 conFileName = BasePath + @"\TRAINS\CONSISTS\" + srvFile.Train_Config + ".CON";
                 patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
             }
 
-            Train train = new Train(this);
+
             if (conFileName.Contains("tilted")) train.tilted = true;
-            train.TrainType = Train.TRAINTYPE.PLAYER;
-            train.Number = 0;
-            train.Name = "PLAYER";
+
 
             //PATFile patFile = new PATFile(patFileName);
             //PathName = patFile.Name;
@@ -781,15 +791,24 @@ namespace ORTS
 
             train.CalculatePositionOfCars(0);
             Trains.Add(train);
-            train.AITrainBrakePercent = 100;
             if ((conFile.Train.TrainCfg.MaxVelocity != null) && (conFile.Train.TrainCfg.MaxVelocity.A <= 0f))
                 train.TrainMaxSpeedMpS = (float)TRK.Tr_RouteFile.SpeedLimit;
             else
                 train.TrainMaxSpeedMpS = Math.Min((float)TRK.Tr_RouteFile.SpeedLimit, conFile.Train.TrainCfg.MaxVelocity.A);
-
             // Note the initial position to be stored by a Save and used in Menu.exe to calculate DistanceFromStartM 
             InitialTileX = Trains[0].FrontTDBTraveller.TileX + (Trains[0].FrontTDBTraveller.X / 2048);
             InitialTileZ = Trains[0].FrontTDBTraveller.TileZ + (Trains[0].FrontTDBTraveller.Z / 2048);
+
+            PlayerLocomotive = InitialPlayerLocomotive ();
+
+            if (Activity != null && train.InitialSpeed > 0)
+            {
+                if ((PlayerLocomotive is MSTSDieselLocomotive) && // TODO: extend to other types of locos
+                    ((MSTSDieselLocomotive)PlayerLocomotive).GearBox == null && ((MSTSDieselLocomotive)PlayerLocomotive).GearBoxController == null &&
+                    !(((MSTSDieselLocomotive)PlayerLocomotive).BrakeSystem is VacuumSinglePipe))
+                    train.InitializeMoving();
+             }
+            else train.AITrainBrakePercent = 100;
 
             return (train);
         }

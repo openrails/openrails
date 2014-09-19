@@ -648,6 +648,18 @@ namespace ORTS
             Headlight = inf.ReadInt32();
         }
 
+        //================================================================================================//
+        /// <summary>
+        /// Set starting conditions for TrainCars when initial speed > 0 
+        /// 
+
+        public virtual void InitializeMoving()
+        {
+            BrakeSystem.InitializeMoving();
+            SpeedMpS = Train.InitialSpeed;
+            _PrevSpeedMpS = SpeedMpS;
+        }
+
         public bool HasFrontCab { get
             {
                 var loco = this as MSTSLocomotive;

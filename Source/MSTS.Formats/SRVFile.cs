@@ -34,6 +34,7 @@ namespace MSTS.Formats
 		public float MaxWheelAcceleration;
 		public float Efficiency;
 		public string TimeTableItem;
+        public TimeTable TimeTable;
 
 		/// <summary>
 		/// Open a service file, 
@@ -51,9 +52,23 @@ namespace MSTS.Formats
                         new STFReader.TokenProcessor("pathid", ()=>{ PathID = stf.ReadStringBlock(null); }),
                         new STFReader.TokenProcessor("maxwheelacceleration", ()=>{ MaxWheelAcceleration = stf.ReadFloatBlock(STFReader.UNITS.Any, null); }),
                         new STFReader.TokenProcessor("efficiency", ()=>{ Efficiency = stf.ReadFloatBlock(STFReader.UNITS.Any, null); }),
+                        new STFReader.TokenProcessor("timetable", ()=>{ TimeTable = new TimeTable(stf); }),
                     });}),
                 });
         }
 	} // SRVFile
+
+    public class TimeTable
+    {
+        public float InitialSpeed;
+ 
+        public TimeTable (STFReader stf)
+        {
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("startingspeed", ()=>{ InitialSpeed = stf.ReadFloatBlock(STFReader.UNITS.Any, null); }),
+            });
+        }
+    }
 }
 

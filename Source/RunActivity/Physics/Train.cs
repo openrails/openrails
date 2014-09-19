@@ -229,6 +229,9 @@ namespace ORTS
         public SignalObject RearSignalObject;            // direct reference to signal at rear (when moving backward)
         public bool tilted;
 
+        public float InitialSpeed = 0;                 // initial speed of train in activity as set in .srv file
+        public float InitialThrottlepercent = 25; // initial value of throttle when train starts activity at speed > 0
+
         public enum END_AUTHORITY
         {
             END_OF_TRACK,
@@ -1333,8 +1336,45 @@ namespace ORTS
                 car.SignalEvent(evt, id);
         }
 
+        //================================================================================================//
+        /// <summary>
+        /// Set starting conditions when speed > 0 
+        /// <\summary>
+        
+        public void InitializeMoving()
+        {
+            SpeedMpS = InitialSpeed;
+            MUDirection = Direction.Forward;
+            MUThrottlePercent = InitialThrottlepercent;
+            MUGearboxGearIndex = 3;
+            MUDynamicBrakePercent = 0;
+//            BrakeLine1PressurePSIorInHg = inf.ReadSingle();
+//            BrakeLine2PressurePSI = inf.ReadSingle();
+//            BrakeLine3PressurePSI = inf.ReadSingle();
+//            BrakeLine4PressurePSI = inf.ReadSingle();
+            aiBrakePercent = 0;
+//            RetainerSetting = (RetainerSetting)inf.ReadInt32();
+//            RetainerPercent = inf.ReadInt32();
+            AITrainThrottlePercent = 25;
+            AITrainBrakePercent = 0;
+            TraincarsInitializeMoving();
+        }
 
         //================================================================================================//
+        /// <summary>
+        /// Set starting conditions for TrainCars when speed > 0 
+        /// <\summary>
+
+        private void TraincarsInitializeMoving ()
+        {
+            for (int i = 0; i < Cars.Count-1; ++i)
+            {
+                TrainCar car = Cars[i];
+                car.InitializeMoving();
+            }
+        }
+
+         //================================================================================================//
         /// <summary>
         /// Update train 
         /// <\summary>

@@ -235,6 +235,20 @@ namespace ORTS
             DieselEngines.Restore(inf);
         }
 
+        //================================================================================================//
+        /// <summary>
+        /// Set starting conditions  when initial speed > 0 
+        /// 
+
+        public override void InitializeMoving()
+        {
+             base.InitializeMoving();
+             WheelSpeedMpS = SpeedMpS;
+             DynamicBrakePercent = -1;
+             ThrottleController.CurrentValue = Train.InitialThrottlepercent/100;
+             if (ThrottleController.NotchCount() > 0) ThrottleController.SetValue(Train.InitialThrottlepercent / 100);
+        }
+
         /// <summary>
         /// This is a periodic update to calculate physics 
         /// parameters and update the base class's MotiveForceN 
@@ -569,7 +583,7 @@ namespace ORTS
                             MotiveForceN *= 0;
                             break;
                     }
-                    ConfirmWheelslip();
+                    ConfirmWheelslip( elapsedClockSeconds );
                 }
                 else
                 {
@@ -645,9 +659,11 @@ namespace ORTS
                     }
 
                     //Force is filtered due to inductance
-                    FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
-
-                    MotiveForceN = FilteredMotiveForceN;
+                    if (elapsedClockSeconds > 0)
+                    {
+                        FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
+                        MotiveForceN = FilteredMotiveForceN;
+                    }
 
                     LimitMotiveForce(elapsedClockSeconds);
 

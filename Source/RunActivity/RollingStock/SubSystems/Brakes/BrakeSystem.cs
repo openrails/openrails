@@ -47,6 +47,8 @@ namespace ORTS
         public abstract void SetHandbrakePercent(float percent);
         public abstract bool GetHandbrakeStatus();
         public abstract void SetRetainer(RetainerSetting setting);
+        public abstract void InitializeMoving(); // starting conditions when starting speed > 0
+        public abstract void LocoInitializeMoving(); // starting conditions when starting speed > 0
     }
 
     public enum RetainerSetting

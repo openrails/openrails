@@ -46,6 +46,15 @@ namespace ORTS
             NotchController.StepSize = StepSize();
         }
 
+        public override void InitializeMoving()
+        {
+            NotchController.SetValue(0);
+            NotchController.CurrentNotch = 0;
+        }
+
+
+
+
         public override float Update(float elapsedSeconds)
         {
             float value = NotchController.Update(elapsedSeconds);

@@ -351,7 +351,12 @@ namespace ORTS.Viewer3D
 
             Simulator.Confirmer = new Confirmer(this, 1.5);
 
-            CameraActivate();
+            if ((Simulator.PlayerLocomotive.HasFrontCab || Simulator.PlayerLocomotive.HasRearCab) && PlayerTrain.InitialSpeed > 0
+                // TODO: extend to other types of locos
+                && ((PlayerLocomotive is MSTSDieselLocomotive) &&
+                ((MSTSDieselLocomotive)PlayerLocomotive).GearBox == null && ((MSTSDieselLocomotive)PlayerLocomotive).GearBoxController == null &&
+                    !(((MSTSDieselLocomotive)PlayerLocomotive).BrakeSystem is VacuumSinglePipe ))) CabCamera.Activate(); //Only in cab if moving train
+            else CameraActivate();
 
             // Prepare the world to be loaded and then load it from the correct thread for debugging/tracing purposes.
             // This ensures that a) we have all the required objects loaded when the 3D view first appears and b) that

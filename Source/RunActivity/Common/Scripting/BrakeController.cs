@@ -112,6 +112,12 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Called regularly at every simulator update cycle.
         /// </summary>
+        ///
+        public abstract void InitializeMoving();
+        /// <summary>
+        /// Called when starting speed > 0
+        /// </summary>
+        /// 
         public abstract float Update(float elapsedClockSeconds);
         /// <summary>
         /// Called regularly at every simulator update cycle.

@@ -291,6 +291,11 @@ namespace ORTS
             }
         }
 
+        public void InitializeMoving()
+        {
+            Script.InitializeMoving();
+        }
+
         public float Update(float elapsedClockSeconds)
         {
             if (Script != null)

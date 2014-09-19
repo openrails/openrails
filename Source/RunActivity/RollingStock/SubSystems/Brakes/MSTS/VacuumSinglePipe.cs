@@ -177,6 +177,18 @@ namespace ORTS
             CylPressurePSIA = BrakeLine1PressurePSI = V2P(Car.Train.BrakeLine1PressurePSIorInHg);
             VacResPressurePSIA = V2P(maxVacuumInHg);
         }
+
+        public override void InitializeMoving() // used when initial speed > 0
+        {
+            CylPressurePSIA = BrakeLine1PressurePSI = V2P(Car.Train.BrakeLine1PressurePSIorInHg);
+            VacResPressurePSIA = V2P(64);
+        }
+
+        public override void LocoInitializeMoving() // starting conditions when starting speed > 0
+        {
+        }
+
+
         public override void Connect()
         {
             if (BrakeLine1PressurePSI < 0)
