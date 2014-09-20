@@ -100,6 +100,7 @@ namespace ORTS
             this.linkLabelRestart = new System.Windows.Forms.LinkLabel();
             this.testingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStripTools = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.linkLabelChangeLog = new System.Windows.Forms.LinkLabel();
             this.groupBox1.SuspendLayout();
             this.groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxLogo)).BeginInit();
@@ -882,11 +883,26 @@ namespace ORTS
             this.contextMenuStripTools.Name = "contextMenuStrip1";
             this.contextMenuStripTools.Size = new System.Drawing.Size(114, 26);
             // 
+            // linkLabelChangeLog
+            // 
+            this.linkLabelChangeLog.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.linkLabelChangeLog.Location = new System.Drawing.Point(623, 25);
+            this.linkLabelChangeLog.Name = "linkLabelChangeLog";
+            this.linkLabelChangeLog.Size = new System.Drawing.Size(219, 16);
+            this.linkLabelChangeLog.TabIndex = 39;
+            this.linkLabelChangeLog.TabStop = true;
+            this.linkLabelChangeLog.Text = "What\'s new?";
+            this.linkLabelChangeLog.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            this.linkLabelChangeLog.UseMnemonic = false;
+            this.linkLabelChangeLog.Visible = false;
+            this.linkLabelChangeLog.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelChangeLog_LinkClicked);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(854, 548);
+            this.Controls.Add(this.linkLabelChangeLog);
             this.Controls.Add(this.panelModeTimetable);
             this.Controls.Add(this.panelModeActivity);
             this.Controls.Add(this.radioButtonModeTimetable);
@@ -1003,5 +1019,6 @@ namespace ORTS
         private System.Windows.Forms.LinkLabel linkLabelRestart;
         private System.Windows.Forms.ToolStripMenuItem testingToolStripMenuItem;
         private System.Windows.Forms.ContextMenuStrip contextMenuStripTools;
+        private System.Windows.Forms.LinkLabel linkLabelChangeLog;
     }
 }

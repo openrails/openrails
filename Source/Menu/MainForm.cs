@@ -243,6 +243,9 @@ namespace ORTS
 
         void CheckForUpdate()
         {
+            // This is known directly from the chosen channel so doesn't need to wait for the update check itself.
+            linkLabelChangeLog.Visible = !string.IsNullOrEmpty(UpdateManager.ChangeLogLink);
+
             new Task<UpdateManager>(this, () =>
             {
                 UpdateManager.Clean();
@@ -469,6 +472,11 @@ namespace ORTS
             // We tell the new process (which will be applying the update) to wait for us to exit first.
             Process.Start(Application.ExecutablePath, String.Format("/WAITPID={0}", Process.GetCurrentProcess().Id));
             Application.Exit();
+        }
+
+        void linkLabelChangeLog_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            Process.Start(UpdateManager.ChangeLogLink);
         }
 
         void buttonTools_Click(object sender, EventArgs e)

@@ -39,6 +39,8 @@ namespace ORTS.Settings
         [Default("")]
         public string URL { get; set; }
         public TimeSpan TTL { get; set; }
+        [Default("")]
+        public string ChangeLogLink { get; set; }
 
         #endregion
 

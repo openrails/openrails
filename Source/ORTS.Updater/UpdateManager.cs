@@ -47,6 +47,8 @@ namespace ORTS.Updater
 
         public Exception UpdateError { get; private set; }
 
+        public string ChangeLogLink { get { return Channel != null ? Channel.ChangeLogLink : null; } }
+
         public UpdateManager(string basePath, string productName, string productVersion)
         {
             if (!Directory.Exists(basePath)) throw new ArgumentException("The specified path must be valid and exist as a directory.", "basePath");
