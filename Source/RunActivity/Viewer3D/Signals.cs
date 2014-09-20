@@ -160,7 +160,6 @@ namespace ORTS.Viewer3D
             float SemaphorePos;
             float SemaphoreTarget;
             float SemaphoreSpeed;
-            float SemaphoreInfo;
             AnimatedPart SemaphorePart;
             int DisplayState = -1;
 
@@ -189,7 +188,6 @@ namespace ORTS.Viewer3D
 
                 var mstsSignalType = viewer.SIGCFG.SignalTypes[mstsSignalSubObj.SignalSubSignalType];
 
-                SemaphoreInfo = mstsSignalType.SemaphoreInfo;
                 SemaphorePart = new AnimatedPart(signalShape);
 
                 if (SignalTypes.ContainsKey(mstsSignalType.Name))
@@ -248,7 +246,7 @@ namespace ORTS.Viewer3D
                     if (SignalTypeData.DrawAspects.ContainsKey(DisplayState))
                     {
                         SemaphoreTarget = SignalTypeData.DrawAspects[DisplayState].SemaphorePos;
-                        SemaphoreSpeed = SemaphoreInfo == 0 ? 0 : (SemaphoreTarget > SemaphorePos ? +1 : -1) / SemaphoreInfo;
+                        SemaphoreSpeed = SignalTypeData.SemaphoreAnimationTime <= 0 ? 0 : (SemaphoreTarget > SemaphorePos ? +1 : -1) / SignalTypeData.SemaphoreAnimationTime;
                         if (Sound != null) Sound.HandleEvent(Event.SemaphoreArm);
                     }
                 }
@@ -289,7 +287,7 @@ namespace ORTS.Viewer3D
                 if (SignalTypeData.Semaphore)
                 {
                     // Now we update and re-animate the semaphore arm.
-                    if (SemaphoreInfo == 0 || initialise)
+                    if (SignalTypeData.SemaphoreAnimationTime <= 0 || initialise)
                     {
                         // No timing (so instant switch) or we're initialising.
                         SemaphorePos = SemaphoreTarget;
@@ -329,6 +327,7 @@ namespace ORTS.Viewer3D
             public readonly float FlashTimeOn;
             public readonly float FlashTimeTotal;
             public readonly bool Semaphore;
+            public readonly float SemaphoreAnimationTime;
 
             public SignalTypeData(Viewer viewer, MSTS.Formats.SignalType mstsSignalType)
             {
@@ -381,6 +380,7 @@ namespace ORTS.Viewer3D
                     FlashTimeOn = mstsSignalType.FlashTimeOn;
                     FlashTimeTotal = mstsSignalType.FlashTimeOn + mstsSignalType.FlashTimeOff;
                     Semaphore = mstsSignalType.Semaphore;
+                    SemaphoreAnimationTime = mstsSignalType.SemaphoreInfo;
                 }
             }
         }

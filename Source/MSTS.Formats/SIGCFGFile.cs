@@ -328,7 +328,7 @@ namespace MSTS.Formats
         /// <summary>Number of blocks ahead which need to be cleared in order to maintain a 'clear' indication
         /// in front of a train. ORTS calculation</summary>
         public int NumClearAhead_ORTS { get; private set; }
-        /// <summary>???</summary>
+        /// <summary>Number of seconds to spend animating a semaphore signal.</summary>
         public float SemaphoreInfo { get; private set; }
         public ApproachControlLimits ApproachControlDetails;
 
@@ -337,7 +337,7 @@ namespace MSTS.Formats
         /// </summary>
         private SignalType()
         {
-            SemaphoreInfo = -1; //[Rob Roeterdink] default -1 as 0 is active value
+            SemaphoreInfo = 1; // Default animation time for semaphore signals (1 second).
             LightTextureName = String.Empty;
             FlashTimeOn = 1.0f;
             FlashTimeOff = 1.0f;
