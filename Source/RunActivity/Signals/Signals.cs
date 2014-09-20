@@ -11302,15 +11302,24 @@ namespace ORTS
                 }
             }
             File.AppendAllText(@"C:\Temp\deadlock.txt", "\n Available Inverse paths : \n");
-            foreach (int avroute in PathReferences[endSection.Index])
+
+            if (PathReferences.ContainsKey(endSection.Index))
             {
-                File.AppendAllText(@"C:\Temp\deadlock.txt", "Path index : " + avroute.ToString() + " : \n");
-                Train.TCSubpathRoute thisPath = AvailablePathList[avroute].Path;
-                foreach (Train.TCRouteElement thisElement in thisPath)
+                foreach (int avroute in PathReferences[endSection.Index])
                 {
-                    File.AppendAllText(@"C:\Temp\deadlock.txt", "   - Element : " + thisElement.TCSectionIndex.ToString() + "\n");
+                    File.AppendAllText(@"C:\Temp\deadlock.txt", "Path index : " + avroute.ToString() + " : \n");
+                    Train.TCSubpathRoute thisPath = AvailablePathList[avroute].Path;
+                    foreach (Train.TCRouteElement thisElement in thisPath)
+                    {
+                        File.AppendAllText(@"C:\Temp\deadlock.txt", "   - Element : " + thisElement.TCSectionIndex.ToString() + "\n");
+                    }
                 }
             }
+            else
+            {
+                File.AppendAllText(@"C:\Temp\deadlock.txt", "\n No Inverse paths available \n");
+            }
+
             File.AppendAllText(@"C:\Temp\deadlock.txt", "\n Inverse references : \n");
             foreach (KeyValuePair<int, int> inverseDetail in InverseInfo)
             {
