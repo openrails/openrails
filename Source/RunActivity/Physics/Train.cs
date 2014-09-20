@@ -1348,15 +1348,25 @@ namespace ORTS
             MUThrottlePercent = InitialThrottlepercent;
             MUGearboxGearIndex = 3;
             MUDynamicBrakePercent = -1;
+            AITrainThrottlePercent = InitialThrottlepercent;
+            aiBrakePercent = 0;
+            AITrainBrakePercent = 0;
+            if (LeadLocomotiveIndex >= 0)
+            {
+                MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
+                if (lead.TrainBrakeController != null)
+                {
+                    BrakeLine1PressurePSIorInHg = lead.TrainBrakeController.MaxPressurePSI;
+                }
+            }
+
 //            BrakeLine1PressurePSIorInHg = inf.ReadSingle();
 //            BrakeLine2PressurePSI = inf.ReadSingle();
 //            BrakeLine3PressurePSI = inf.ReadSingle();
 //            BrakeLine4PressurePSI = inf.ReadSingle();
-            aiBrakePercent = 0;
 //            RetainerSetting = (RetainerSetting)inf.ReadInt32();
 //            RetainerPercent = inf.ReadInt32();
-            AITrainThrottlePercent = InitialThrottlepercent;
-            AITrainBrakePercent = 0;
+
             TraincarsInitializeMoving();
         }
 

@@ -192,9 +192,7 @@ namespace ORTS
             BrakeLine2PressurePSI = Car.Train.BrakeLine2PressurePSI;
             BrakeLine3PressurePSI = 0;
             AuxResPressurePSI = BrakeLine1PressurePSI;
-             // release brakes immediately (for AI trains)
-//            if (immediateRelease)
-                AutoCylPressurePSI = 0;
+            AutoCylPressurePSI = 0;
             TripleValveState = ValveState.Lap;
             HandbrakePercent = 0;
         }
