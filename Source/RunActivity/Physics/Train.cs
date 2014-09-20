@@ -1347,7 +1347,7 @@ namespace ORTS
             MUDirection = Direction.Forward;
             MUThrottlePercent = InitialThrottlepercent;
             MUGearboxGearIndex = 3;
-            MUDynamicBrakePercent = 0;
+            MUDynamicBrakePercent = -1;
 //            BrakeLine1PressurePSIorInHg = inf.ReadSingle();
 //            BrakeLine2PressurePSI = inf.ReadSingle();
 //            BrakeLine3PressurePSI = inf.ReadSingle();
@@ -1355,7 +1355,7 @@ namespace ORTS
             aiBrakePercent = 0;
 //            RetainerSetting = (RetainerSetting)inf.ReadInt32();
 //            RetainerPercent = inf.ReadInt32();
-            AITrainThrottlePercent = 25;
+            AITrainThrottlePercent = InitialThrottlepercent;
             AITrainBrakePercent = 0;
             TraincarsInitializeMoving();
         }

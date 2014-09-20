@@ -242,11 +242,10 @@ namespace ORTS
 
         public override void InitializeMoving()
         {
-             base.InitializeMoving();
-             WheelSpeedMpS = SpeedMpS;
-             DynamicBrakePercent = -1;
-             ThrottleController.CurrentValue = Train.InitialThrottlepercent/100;
-             if (ThrottleController.NotchCount() > 0) ThrottleController.SetValue(Train.InitialThrottlepercent / 100);
+            base.InitializeMoving();
+            WheelSpeedMpS = SpeedMpS;
+            DynamicBrakePercent = -1;
+            ThrottleController.SetValue(Train.InitialThrottlepercent / 100);
         }
 
         /// <summary>
