@@ -223,6 +223,18 @@ namespace ORTS
             CircuitBreaker.Initialize();
         }
 
+
+        //================================================================================================//
+        /// <summary>
+        /// Initialization when simulation starts with moving train
+        /// <\summary>
+        public void InitializeMoving()
+        {
+            State = PowerSupplyState.PowerOn;
+            AuxiliaryState = PowerSupplyState.PowerOn;
+            CircuitBreaker.InitializeMoving();
+        }
+
         public void Update(float elapsedClockSeconds)
         {
             CircuitBreaker.Update(elapsedClockSeconds);

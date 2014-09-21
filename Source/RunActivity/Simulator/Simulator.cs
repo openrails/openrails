@@ -370,10 +370,10 @@ namespace ORTS
                 {
                     PlayerLocomotive = car;
                     playerTrain.LeadLocomotive = car;
-                    if (playerTrain.InitialSpeed == 0 || 
-                       ! ((PlayerLocomotive is MSTSDieselLocomotive) && //TODO: extend to other types of locos
-                    ((MSTSDieselLocomotive)PlayerLocomotive).GearBox == null && ((MSTSDieselLocomotive)PlayerLocomotive).GearBoxController == null &&
-                        ! (((MSTSDieselLocomotive)PlayerLocomotive).BrakeSystem is VacuumSinglePipe)))
+ /*                   if (playerTrain.InitialSpeed == 0 || 
+                       (PlayerLocomotive is MSTSSteamLocomotive) || ((PlayerLocomotive is MSTSDieselLocomotive) && //TODO: extend to other types of locos
+                    ((MSTSDieselLocomotive)PlayerLocomotive).GearBox != null || ((MSTSDieselLocomotive)PlayerLocomotive).GearBoxController != null) ||
+                        ! (PlayerLocomotive.BrakeSystem is AirSinglePipe)) */
                     playerTrain.InitializeBrakes();
                     PlayerLocomotive.LocalThrottlePercent = playerTrain.AITrainThrottlePercent;
                     break;
@@ -803,9 +803,9 @@ namespace ORTS
 
             if (Activity != null && train.InitialSpeed > 0)
             {
-                if ((PlayerLocomotive is MSTSDieselLocomotive) && // TODO: extend to other types of locos
-                    ((MSTSDieselLocomotive)PlayerLocomotive).GearBox == null && ((MSTSDieselLocomotive)PlayerLocomotive).GearBoxController == null &&
-                    !(((MSTSDieselLocomotive)PlayerLocomotive).BrakeSystem is VacuumSinglePipe))
+                if (((PlayerLocomotive is MSTSElectricLocomotive) || ((PlayerLocomotive is MSTSDieselLocomotive) &&// TODO: extend to other types of locos
+                    ((MSTSDieselLocomotive)PlayerLocomotive).GearBox == null && ((MSTSDieselLocomotive)PlayerLocomotive).GearBoxController == null)) &&
+                    (PlayerLocomotive.BrakeSystem is AirSinglePipe))
                     train.InitializeMoving();
              }
             else train.AITrainBrakePercent = 100;

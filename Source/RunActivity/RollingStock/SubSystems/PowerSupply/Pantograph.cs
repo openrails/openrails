@@ -245,6 +245,11 @@ namespace ORTS
             TimeS = inf.ReadSingle();
         }
 
+        public void InitializeMoving()
+        {
+            State = PantographState.Up;
+        }
+
         public void Initialize()
         {
 

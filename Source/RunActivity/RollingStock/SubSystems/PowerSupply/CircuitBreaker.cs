@@ -108,6 +108,11 @@ namespace ORTS
             }
         }
 
+        public void InitializeMoving()
+        {
+            State = CircuitBreakerState.Closed;
+        }
+
         public void Update(float elapsedSeconds)
         {
             if (Script == null)

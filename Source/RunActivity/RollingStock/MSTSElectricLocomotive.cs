@@ -128,6 +128,24 @@ namespace ORTS
             base.Initialize();
         }
 
+        //================================================================================================//
+        /// <summary>
+        /// Initialization when simulation starts with moving train
+        /// <\summary>
+        /// 
+        public override void InitializeMoving()
+        {
+            base.InitializeMoving();
+            WheelSpeedMpS = SpeedMpS;
+            DynamicBrakePercent = -1;
+            ThrottleController.SetValue(Train.InitialThrottlepercent / 100);
+            if (Pantographs[1] != null) Pantographs[1].InitializeMoving();
+            else if (Pantographs[2] != null) Pantographs[2].InitializeMoving();
+            PowerSupply.InitializeMoving();
+        }
+
+
+
         /// <summary>
         /// This is a periodic update to calculate physics 
         /// parameters and update the base class's MotiveForceN 
