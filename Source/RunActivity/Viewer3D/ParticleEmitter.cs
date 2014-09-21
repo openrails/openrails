@@ -20,44 +20,17 @@
 // Enable this define to debug the inputs to the particle emitters from other parts of the program.
 //#define DEBUG_EMITTER_INPUT
 
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Graphics.PackedVector;
+using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Graphics.PackedVector;
-using MSTS.Formats;
-using MSTS.Parsers;
-using ORTS.Common;
 
 namespace ORTS.Viewer3D
 {
-    public struct ParticleEmitterData
-    {
-        public readonly Vector3 XNALocation;
-        public readonly Vector3 XNADirection;
-        public readonly float NozzleWidth;
-        public readonly float MaxParticlesPerSecond;
-        public readonly float MaxParticleDuration;
-
-        public ParticleEmitterData(STFReader stf)
-        {
-            stf.MustMatch("(");
-            XNALocation.X = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            XNALocation.Y = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            XNALocation.Z = -stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            XNADirection.X = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            XNADirection.Y = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            XNADirection.Z = -stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            XNADirection.Normalize();
-            NozzleWidth = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            MaxParticlesPerSecond = 50f;
-            MaxParticleDuration = 50f;
-            stf.SkipRestOfBlock();
-        }
-    }
-
     public class ParticleEmitterViewer
     {
         public const float VolumeScale = 1f / 100;
@@ -66,6 +39,9 @@ namespace ORTS.Viewer3D
         public const float InitialSpreadRate = 1;
         public const float SpreadRate = 0.75f;
         public const float DurationVariation = 0.5f; // Duration varies +/-50%
+
+        public const float MaxParticlesPerSecond = 50f;
+        public const float MaxParticleDuration = 50f;
 
         readonly Viewer Viewer;
         readonly float EmissionHoleM2 = 1;
@@ -99,26 +75,29 @@ namespace ORTS.Viewer3D
         public void SetOutput(float volumeM3pS)
         {
             // TODO: The values here are out by a factor of 100 here it seems. The XNAInitialVelocity should need no multiplication or division factors.
-            Emitter.ParticlesPerSecond = volumeM3pS / EmissionHoleM2 * Rate;
             Emitter.XNAInitialVelocity = Emitter.EmitterData.XNADirection * volumeM3pS / EmissionHoleM2 * VolumeScale;
+            Emitter.ParticlesPerSecond = volumeM3pS / EmissionHoleM2 * Rate;
+
 #if DEBUG_EMITTER_INPUT
             if (InputCycle == 0)
-                Trace.TraceInformation("Emitter{0}({1:F6}m^2) V={2,7:F3}m^3/s P={3,7:F3}p/s IV={4,7:F3}m/s", EmitterID, EmissionHoleM2, volumeM3pS, Emitter.ParticlesPerSecond, Emitter.XNAInitialVelocity.Length());
+                Trace.TraceInformation("Emitter{0}({1:F6}m^2) V={2,7:F3}m^3/s IV={3,7:F3}m/s P={4,7:F3}p/s (V)", EmitterID, EmissionHoleM2, volumeM3pS, Emitter.XNAInitialVelocity.Length(), Emitter.ParticlesPerSecond);
 #endif
         }
 
-        public void SetOutput(float volumeM3pS, float durationS, Color particleColor )
+        // Called for diesel locomotive emissions
+        public void SetOutput(float volumeM3pS, float durationS, Color color)
         {
             SetOutput(volumeM3pS);
             Emitter.ParticleDuration = durationS;
-            Emitter.ParticleColor = particleColor;
+            Emitter.ParticleColor = color;
 
 #if DEBUG_EMITTER_INPUT
             if (InputCycle == 0)
-                Trace.TraceInformation("Emitter{0}({1:F6}m^3) D={2,3}s", EmitterID, EmissionHoleM2, durationS);
+                Trace.TraceInformation("Emitter{0}({1:F6}m^3) D={2,3}s C={3} (V, D, C)", EmitterID, EmissionHoleM2, durationS, color);
 #endif
         }
 
+        // Called for steam locomotive emissions (non-main stack)
         public void SetOutput(float initialVelocityMpS, float volumeM3pS)
         {
             Emitter.XNAInitialVelocity = Emitter.EmitterData.XNADirection * initialVelocityMpS;
@@ -126,19 +105,20 @@ namespace ORTS.Viewer3D
 
 #if DEBUG_EMITTER_INPUT
             if (InputCycle == 0)
-                Trace.TraceInformation("Emitter{0}({1:F6}m^2) V={2,7:F3}m^3/s P={3,7:F3}p/s IV={4,7:F3}m/s", EmitterID, EmissionHoleM2, volumeM3pS, Emitter.ParticlesPerSecond, Emitter.XNAInitialVelocity.Length());
+                Trace.TraceInformation("Emitter{0}({1:F6}m^2) IV={2,7:F3}m/s V={3,7:F3}m^3/s P={4,7:F3}p/s (IV, V)", EmitterID, EmissionHoleM2, initialVelocityMpS, volumeM3pS, Emitter.ParticlesPerSecond);
 #endif
         }
 
-        public void SetOutput(float initialVelocityMpS, float volumeM3pS, float durationS, Color particleColor)
+        // Called for steam locomotive emissions (main stack)
+        public void SetOutput(float initialVelocityMpS, float volumeM3pS, float durationS, Color color)
         {
             SetOutput(initialVelocityMpS, volumeM3pS);
             Emitter.ParticleDuration = durationS;
-            Emitter.ParticleColor = particleColor;
+            Emitter.ParticleColor = color;
 
 #if DEBUG_EMITTER_INPUT
             if (InputCycle == 0)
-                Trace.TraceInformation("Emitter{0}({1:F6}m^2) V={2,7:F3}m^3/s P={3,7:F3}p/s IV={4,7:F3}m/s D={5,3}s", EmitterID, EmissionHoleM2, volumeM3pS, Emitter.ParticlesPerSecond, Emitter.XNAInitialVelocity.Length(), durationS);
+                Trace.TraceInformation("Emitter{0}({1:F6}m^2) IV={2,7:F3}m/s V={3,7:F3}m^3/s P={4,7:F3}p/s D={5,3}s C={6} (IV, V, D, C)", EmitterID, EmissionHoleM2, initialVelocityMpS, volumeM3pS, Emitter.ParticlesPerSecond, durationS, color);
 #endif
         }
 
@@ -236,8 +216,8 @@ namespace ORTS.Viewer3D
         {
             this.viewer = viewer;
             this.graphicsDevice = viewer.GraphicsDevice;
-            
-            MaxParticles = (int)(data.MaxParticlesPerSecond * data.MaxParticleDuration);
+
+            MaxParticles = (int)(ParticleEmitterViewer.MaxParticlesPerSecond * ParticleEmitterViewer.MaxParticleDuration);
             Vertices = new ParticleVertex[MaxParticles * VerticiesPerParticle];
             VertexDeclaration = new VertexDeclaration(graphicsDevice, ParticleVertex.VertexElements);
             VertexStride = Marshal.SizeOf(typeof(ParticleVertex));

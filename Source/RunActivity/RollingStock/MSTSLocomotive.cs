@@ -2540,4 +2540,25 @@ namespace ORTS
 
     } // End Class ExtendedCVF
 
+    public struct ParticleEmitterData
+    {
+        public readonly Vector3 XNALocation;
+        public readonly Vector3 XNADirection;
+        public readonly float NozzleWidth;
+
+        public ParticleEmitterData(STFReader stf)
+        {
+            stf.MustMatch("(");
+            XNALocation.X = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
+            XNALocation.Y = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
+            XNALocation.Z = -stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
+            XNADirection.X = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
+            XNADirection.Y = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
+            XNADirection.Z = -stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
+            XNADirection.Normalize();
+            NozzleWidth = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
+            stf.SkipRestOfBlock();
+        }
+    }
+
 }
