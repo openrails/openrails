@@ -792,14 +792,7 @@ namespace ORTS
             if (wheels.Length == 8)
             {
                 if (wheels == "WHEELS11" || wheels == "WHEELS12" || wheels == "WHEELS13")
-                    if (wheels2IsPresent && bogieID == 1)
-                    {
-                        // BogieID will become BogieIndex used later on in the process.
-                        bogieID = 2;
-                        WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
-                    }
-                    else
-                        WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
+                    WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
                 else if (wheels == "WHEELS21" || wheels == "WHEELS22" || wheels == "WHEELS23")
                 {
                     // The process would assign 2 to the id because WHEELS21 or WHEELS22 would contain the number 2.
@@ -951,51 +944,31 @@ namespace ORTS
             bool articulatedFront = !WheelAxles.Any(a => a.OffsetM < 0);
             bool articulatedRear = !WheelAxles.Any(a => a.OffsetM > 0);
             // If the car is articulated, steal some wheels from nearby cars.
-
-            // Since each articulated car is made differently, we must make sure
-            //    that each car has an axle count of 3 or more before entering the ComputePosition() process.
-            // If not, the ComputePosition() process will be unable to process the car correctly.
-            // In this case, the result is usually a car that does not show up.
-            // This check is for the front articulated cars which for some reason needs to be done???????
-
-            //  I will have to look into the possibility of rewriting this procedure.
-            
-                if (articulatedFront || articulatedRear)
+            if (articulatedFront || articulatedRear)
+            {
+                if (articulatedFront && carIndex > 0)
                 {
-                    if (articulatedFront && carIndex > 0)
+                    var otherCar = Train.Cars[carIndex - 1];
+                    var otherPart = otherCar.Parts.OrderBy(p => p.OffsetM).FirstOrDefault();
+                    if (otherPart == null)
+                        WheelAxles.Add(new WheelAxle(-LengthM / 2, 0, 0) { Part = Parts[0] });
+                    else
                     {
-                        var otherCar = Train.Cars[carIndex - 1];
-                        var otherPart = otherCar.Parts.OrderBy(p => p.OffsetM).FirstOrDefault();
-                        if (otherPart == null ||WheelAxles.Count < 3)
-                            WheelAxles.Add(new WheelAxle(-LengthM / 2, 0, 0) { Part = Parts[0] });
-                        else
-                        {
-                            var offset = otherCar.LengthM / 2 - LengthM / 2;
-                            var otherPartIndex = otherCar.Parts.IndexOf(otherPart);
-                            var otherAxles = otherCar.WheelAxles.Where(a => a.BogieIndex == otherPartIndex);
-                            var part = new TrainCarPart(otherPart.OffsetM + offset, 0) { SumWgt = otherPart.SumWgt };
-                            WheelAxles.AddRange(otherAxles.Select(a => new WheelAxle(a.OffsetM + offset, Parts.Count, 0) { Part = part }));
-                            Parts.Add(part);
-                        }
+                        var offset = otherCar.LengthM / 2 - LengthM / 2;
+                        var otherPartIndex = otherCar.Parts.IndexOf(otherPart);
+                        var otherAxles = otherCar.WheelAxles.Where(a => a.BogieIndex <= otherPartIndex);
+                        var part = new TrainCarPart(otherPart.OffsetM + offset, 0) { SumWgt = otherPart.SumWgt };
+                        WheelAxles.AddRange(otherAxles.Select(a => new WheelAxle(a.OffsetM + offset, Parts.Count, 0) { Part = part }));
+                        Parts.Add(part);
                     }
-                    if (articulatedRear && carIndex < Train.Cars.Count - 1)
-                    {
-                        var otherCar = Train.Cars[carIndex + 1];
-                        var otherPart = otherCar.Parts.OrderBy(p => -p.OffsetM).FirstOrDefault();
-                        if (otherPart == null)
-                            WheelAxles.Add(new WheelAxle(LengthM / 2, 0, 0) { Part = Parts[0] });
-                        else
-                        {
-                            var offset = otherCar.LengthM / 2 + LengthM / 2;
-                            var otherPartIndex = otherCar.Parts.IndexOf(otherPart);
-                            var otherAxles = otherCar.WheelAxles.Where(a => a.BogieIndex == otherPartIndex);
-                            var part = new TrainCarPart(otherPart.OffsetM + offset, 0) { SumWgt = otherPart.SumWgt };
-                            WheelAxles.AddRange(otherAxles.Select(a => new WheelAxle(a.OffsetM + offset, Parts.Count, 0) { Part = part }));
-                            Parts.Add(part);
-                        }
-                    }
-                    WheelAxles.Sort(WheelAxles[0]);
                 }
+                // Original method which was not working was removed since testing cars that have not
+                // been processed yet is not a valid process.
+                if (articulatedRear && WheelAxles.Count < 3)
+                    WheelAxles.Add(new WheelAxle(LengthM / 2, 0, 0) { Part = Parts[0] });
+                WheelAxles.Sort(WheelAxles[0]);
+            }
+            
            
 #if DEBUG_WHEELS
             Console.WriteLine(WagFilePath);
