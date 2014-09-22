@@ -266,6 +266,16 @@ namespace ORTS
             // gravity force, M32 is up component of forward vector
             GravityForceN = MassKG * GravitationalAccelerationMpS2 * WorldPosition.XNAMatrix.M32;
             CurrentElevationPercent = 100f * WorldPosition.XNAMatrix.M32;
+
+            //TODO: next if block has been inserted to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
+            // To achieve the same result with other means, without flipping trainset physics, the block should be deleted
+            //                 GravityForceN = CurrentElevationPercent = 100f * WorldPosition.XNAMatrix.M32;
+            if (IsDriveable && Train != null & Train.TrainType == Train.TRAINTYPE.PLAYER && (this as MSTSLocomotive).UsingRearCab)
+            {
+                GravityForceN = -GravityForceN;
+                CurrentElevationPercent = -CurrentElevationPercent;
+            }
+ 
             UpdateCurveSpeedLimit(); // call this first as it will provide inputs for the curve force.
             UpdateCurveForce();
             
