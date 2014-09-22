@@ -202,7 +202,6 @@ namespace ORTS.Viewer3D
         int FirstFreeParticle;
         int FirstRetiredParticle;
 
-        float ParticlesToEmit;
         float TimeParticlesLastEmitted;
         int DrawCounter;
 
@@ -333,9 +332,10 @@ namespace ORTS.Viewer3D
             RetireActiveParticles(currentTime);
             FreeRetiredParticles();
 
-            ParticlesToEmit += elapsedTime.ClockSeconds * ParticlesPerSecond;
+            if (ParticlesPerSecond < 0.1)
+                TimeParticlesLastEmitted = currentTime;
 
-            var numToBeEmitted = (int)ParticlesToEmit;
+            var numToBeEmitted = (int)((currentTime - TimeParticlesLastEmitted) * ParticlesPerSecond);
             var numCanBeEmitted = GetCountFreeParticles();
             var numToEmit = Math.Min(numToBeEmitted, numCanBeEmitted);
 
@@ -388,7 +388,6 @@ namespace ORTS.Viewer3D
                     }
 
                     FirstFreeParticle = particle;
-                    ParticlesToEmit--;
                 }
 
                 TimeParticlesLastEmitted = time;
