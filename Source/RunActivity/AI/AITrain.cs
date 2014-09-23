@@ -421,6 +421,14 @@ namespace ORTS
                 File.AppendAllText(@"C:\temp\checktrain.txt", "Start : " + StartTime.Value.ToString() + "\n");
                 File.AppendAllText(@"C:\temp\checktrain.txt", "State : " + MovementState.ToString() + "\n");
                 File.AppendAllText(@"C:\temp\checktrain.txt", "Sttion: " + atStation.ToString() + "\n");
+                if (Delay.HasValue)
+                {
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "Delay : " + Delay.Value.TotalMinutes.ToString() + "\n");
+                }
+                else
+                {
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "Delay : - \n");
+                }
                 File.AppendAllText(@"C:\temp\checktrain.txt", "ValPos: " + validPosition.ToString() + "\n");
             }
 
@@ -2681,7 +2689,12 @@ namespace ORTS
                     AdjustControlsBrakeMore(MaxDecelMpSS, elapsedClockSeconds, 20);
                 }
 
-                AdjustControlsFixedSpeed(AllowedMaxSpeedMpS);
+                // clamp speed if still too high
+                if (SpeedMpS > AllowedMaxSpeedMpS)
+                {
+                    AdjustControlsFixedSpeed(AllowedMaxSpeedMpS);
+                }
+
                 Alpha10 = 5;
             }
             else if (SpeedMpS > requiredSpeedMpS && distanceToGoM < 0)
@@ -2904,8 +2917,15 @@ namespace ORTS
                     {
                         trainInfo = thisSection.TestTrainAhead(this,
                              PresentPosition[0].TCOffset, PresentPosition[0].TCDirection);
-                        if (trainInfo.Count <= 0)
+                        if (trainInfo.Count > 0)  // train found
+                        {
+                            // ensure train in section is aware of this train in same section if this is required
+                            UpdateTrainOnEnteringSection(thisSection, trainInfo);
+                        }
+                        else
+                        {
                             accDistance -= PresentPosition[0].TCOffset;  // compensate for offset
+                        }
                     }
                     else
                     {
@@ -3405,6 +3425,47 @@ namespace ORTS
                 FirstCar.BrakeSystem.AISetPercent(AITrainBrakePercent);
             }
 
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Set correct state for train allready in section when entering occupied section
+        /// <\summary>
+
+        public void UpdateTrainOnEnteringSection(TrackCircuitSection thisSection, Dictionary<Train, float> trainsInSection)
+        {
+            foreach (KeyValuePair<Train, float> trainAhead in trainsInSection) // always just one
+            {
+                Train OtherTrain = trainAhead.Key;
+                if (OtherTrain.ControlMode == TRAIN_CONTROL.AUTO_SIGNAL) // train is still in signal mode, might need adjusting
+                {
+                    // check directions of this and other train
+                    int owndirection = -1;
+                    int otherdirection = -1;
+
+                    foreach (KeyValuePair<TrainRouted, int> checkTrainInfo in thisSection.CircuitState.TrainOccupy)
+                    {
+                        TrainRouted checkTrain = checkTrainInfo.Key;
+
+                        if (checkTrain.Train.Number == Number)  // this train
+                        {
+                            owndirection = checkTrainInfo.Value;
+                        }
+                        else if (checkTrain.Train.Number == OtherTrain.Number)
+                        {
+                            otherdirection = checkTrainInfo.Value;
+                        }
+                    }
+
+                    if (owndirection >= 0 && otherdirection >= 0) // both trains found
+                    {
+                        if (owndirection != otherdirection) // opposite directions - this train is now ahead of train in section
+                        {
+                            OtherTrain.SwitchToNodeControl(thisSection.Index);
+                        }
+                    }
+                }
+            }
         }
 
         //================================================================================================//
@@ -4294,6 +4355,8 @@ namespace ORTS
             }
 
 #if DEBUG_DEADLOCK
+            File.AppendAllText(@"C:\Temp\deadlock.txt", "\n === Remove train : " + Number + " - Clearing Deadlocks : \n");
+
             foreach (TrackCircuitSection thisSection in Simulator.Signals.TrackCircuitList)
             {
                 if (thisSection.DeadlockTraps.Count > 0)
@@ -4615,7 +4678,7 @@ namespace ORTS
                 AllowedMaxSpeedMpS = speedInfo.MaxSpeedMpSLimit;
             }
             // <CScomment> following statement should be valid in general, as it seems there was a bug here in the original SW
-            if (!Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility) AllowedMaxSpeedMpS = Math.Min(AllowedMaxSpeedMpS, TrainMaxSpeedMpS);
+            AllowedMaxSpeedMpS = Math.Min(AllowedMaxSpeedMpS, TrainMaxSpeedMpS);
 
             if (MovementState == AI_MOVEMENT_STATE.RUNNING && SpeedMpS < AllowedMaxSpeedMpS - 2.0f * hysterisMpS)
             {
