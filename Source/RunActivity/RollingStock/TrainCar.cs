@@ -801,7 +801,7 @@ namespace ORTS
             Headlight = other.Headlight;
         }
 
-        public void AddWheelSet(float offset, int bogieID, int parentMatrix, string wheels, bool wheels1IsPresent, bool wheels2IsPresent)
+        public void AddWheelSet(float offset, int bogieID, int parentMatrix, string wheels, int numWheels1, int numWheels2)
         {
             if (WheelAxlesLoaded || WheelHasBeenSet)
                 return;
@@ -816,7 +816,7 @@ namespace ORTS
                 {
                     // The process would assign 2 to the id because WHEELS21 or WHEELS22 would contain the number 2.
                     // If the shape file contained only one set of WHEELS that was labeled as WHEELS21 && WHEELS22 then BogieIndex would be 2, not 1.
-                    if (wheels2IsPresent && !wheels1IsPresent)
+                    if (numWheels2 <= 2 && numWheels1 == 0)
                     {
                         bogieID -= 1;
                         WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
@@ -830,26 +830,26 @@ namespace ORTS
                 WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
         } // end AddWheelSet()
 
-        public void AddBogie(float offset, int matrix, int id, string bogie, bool bogie1IsPresent, bool bogie2IsPresent)
+        public void AddBogie(float offset, int matrix, int id, string bogie, int numBogie1, int numBogie2, int numBogie)
         {
             if (WheelAxlesLoaded || WheelHasBeenSet)
                 return;
+            foreach (var p in Parts) if (p.bogie && offset.AlmostEqual(p.OffsetM, 0.05f)) { offset = p.OffsetM + 0.1f; break; }
             if (bogie == "BOGIE1")
             {
-                foreach (var p in Parts) if (p.bogie && offset.AlmostEqual(p.OffsetM, 0.05f)) { offset = p.OffsetM + 0.1f; break; }
                 while (Parts.Count <= id)
                     Parts.Add(new TrainCarPart(0, 0));
                 Parts[id].OffsetM = offset;
                 Parts[id].iMatrix = matrix;
                 Parts[id].bogie = true;//identify this is a bogie, will be used for hold rails on track
             }
-            if (bogie == "BOGIE2")
+            else if (bogie == "BOGIE2")
             {
                 // This was the initial problem.  If the shape file contained only one entry that was labeled as BOGIE2(should be BOGIE1)
                 // the process would assign 2 to id, causing it to create 2 Parts entries( or 2 bogies) when one was only needed.  It is possible that
                 // this issue created many of the problems with articulated wagons later on in the process.
                 // 2 would be assigned to id, not because there were 2 entries, but because 2 was in BOGIE2.
-                if (bogie2IsPresent && !bogie1IsPresent)
+                if (numBogie2 == 1 && numBogie1 == 0)
                 {
                     id -= 1;
                     while (Parts.Count <= id)
@@ -866,6 +866,14 @@ namespace ORTS
                     Parts[id].iMatrix = matrix;
                     Parts[id].bogie = true;//identify this is a bogie, will be used for hold rails on track
                 }
+            }
+            else if (bogie == "BOGIE")
+            {
+                while (Parts.Count <= id)
+                    Parts.Add(new TrainCarPart(0, 0));
+                Parts[id].OffsetM = offset;
+                Parts[id].iMatrix = matrix;
+                Parts[id].bogie = true;//identify this is a bogie, will be used for hold rails on track
             }
         } // end AddBogie()
 
