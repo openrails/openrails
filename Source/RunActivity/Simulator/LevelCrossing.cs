@@ -156,7 +156,7 @@ namespace ORTS
                     //  Add generic actions if needed
                     if (train is AITrain)
                     {
-                        ((AITrain)train).AuxActionsContain.CheckGenActions(this.GetType(), rearDist, frontDist, crossing.Location, crossing.TrackIndex);
+                        ((AITrain)train).AuxActionsContain.CheckGenActions(this.GetType(), crossing.Location, rearDist, frontDist, crossing.TrackIndex);
                     }
 #endif
                     crossing.AddTrain(train);

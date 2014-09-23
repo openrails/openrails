@@ -65,9 +65,6 @@ namespace ORTS
         public float MaxVelocityA = 30.0f;               // max velocity as set in .con file
         public Service_Definition ServiceDefinition;     // train's service definition in .act file
 
-#if NEW_ACTION
-        public AuxActionsContainer AuxActionsContain;          // Action To Do during activity, like WP
-#endif
 
         public enum AI_MOVEMENT_STATE
         {
@@ -138,18 +135,12 @@ namespace ORTS
             Name = String.Copy(name);
             TrafficService = trafficService;
             MaxVelocityA = maxVelocityA;
-#if NEW_ACTION
-            AuxActionsContain = new AuxActionsContainer(this);
-#endif
         }
 
         public AITrain(Simulator simulator)
             : base(simulator)
         {
             TrainType = TRAINTYPE.AI_NOTSTARTED;
-#if NEW_ACTION
-            AuxActionsContain = new AuxActionsContainer(this);
-#endif
 
         }
 
@@ -795,9 +786,11 @@ namespace ORTS
             {
                 bool[] stillExist;
 #if NEW_ACTION
-                if (nextGenAction != null)
+                //if (nextGenAction != null)
                 {
-                    nextGenAction.ProcessAction(this, presentTime, elapsedClockSeconds, MovementState);
+                    //AuxActionsContain.SetAuxAction(this);
+                    AuxActionsContain.ProcessGenAction(this, presentTime, elapsedClockSeconds, MovementState);
+                    MovementState = AuxActionsContain.ProcessSpecAction(this, presentTime, elapsedClockSeconds, MovementState);
                 }
 #endif
 
@@ -1149,15 +1142,6 @@ namespace ORTS
                 else NextStopDistanceM = ComputeDistanceToReversalPoint() - clearingDistanceM;
             }
         }
-
-#if NEW_ACTION
-        public void CheckRequiredAuxAction()
-        {
-            //nextActionInfo = null;
-
-            AuxActionsContain.SetAuxAction(this);
-        }
-#endif
 
         //================================================================================================//
         /// <summary>
@@ -1554,6 +1538,7 @@ namespace ORTS
                 Update(0);   // stop the wheels from moving etc
                 AITrainThrottlePercent = 0;
                 AITrainBrakePercent = 100;
+
             }
 
             // check if train ahead - if so, determine speed and distance
@@ -2027,7 +2012,7 @@ namespace ORTS
             else if (thisStation.ExitSignal >= 0 && NextSignalObject[0] != null && NextSignalObject[0].thisRef == thisStation.ExitSignal)
             {
                 MstsSignalAspect nextAspect = GetNextSignalAspect(0);
-                if (nextAspect == MstsSignalAspect.STOP)
+                if (nextAspect == MstsSignalAspect.STOP && !NextSignalObject[0].HasLockForTrain(Number, TCRoute.activeSubpath))
                 {
                     return;  // do not depart if exit signal at danger
                 }
@@ -2124,6 +2109,7 @@ namespace ORTS
             // check if action still required
 
             bool clearAction = false;
+
             float distanceToGoM = clearingDistanceM;
             if (nextActionInfo != null && nextActionInfo.RequiredSpeedMpS == 99999f)  //  RequiredSpeed doesn't matter
             {
@@ -2862,7 +2848,6 @@ namespace ORTS
         {
 
             // check speed
-
             if (((SpeedMpS - LastSpeedMpS) / elapsedClockSeconds) < 0.5f * MaxAccelMpSS)
             {
                 AdjustControlsAccelMore(Efficiency * 0.5f * MaxAccelMpSS, elapsedClockSeconds, 10);
@@ -3609,11 +3594,81 @@ namespace ORTS
 
         public override void BuildWaitingPointList(float clearingDistanceM)
         {
-
+            bool insertSigDelegate = false;
             // loop through all waiting points - back to front as the processing affects the actual routepaths
 
 #if NEW_ACTION
+            List<int> signalIndex = new List<int>();
             for (int iWait = 0; iWait <= TCRoute.WaitingPoints.Count - 1; iWait++)
+            {
+                int[] waitingPoint = TCRoute.WaitingPoints[iWait];
+
+                //check if waiting point is in existing subpath
+                if (waitingPoint[0] >= TCRoute.TCRouteSubpaths.Count)
+                {
+                    Trace.TraceInformation("Waiting point for train " + Number.ToString() + " is not on route - point removed");
+                    continue;
+                }
+
+                TCSubpathRoute thisRoute = TCRoute.TCRouteSubpaths[waitingPoint[0]];
+                int routeIndex = thisRoute.GetRouteIndex(waitingPoint[1], 0);
+                int lastIndex = routeIndex;
+                if (iWait < TCRoute.WaitingPoints.Count - 1 && TCRoute.WaitingPoints[iWait + 1][1] != waitingPoint[1])
+                    insertSigDelegate = true;
+
+
+                // check if waiting point is in route - else give warning and skip
+                if (routeIndex < 0)
+                {
+                    Trace.TraceInformation("Waiting point for train " + Number.ToString() + " is not on route - point removed");
+                    continue;
+                }
+
+                bool endSectionFound = false;
+                int endSignalIndex = -1;
+
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisRoute[routeIndex].TCSectionIndex];
+                TrackCircuitSection nextSection =
+                    routeIndex < thisRoute.Count - 2 ? signalRef.TrackCircuitList[thisRoute[routeIndex + 1].TCSectionIndex] : null;
+                int direction = thisRoute[routeIndex].Direction;
+                if (thisSection.EndSignals[direction] != null)
+                {
+                    endSectionFound = true;
+                    endSignalIndex = thisSection.EndSignals[direction].thisRef;
+                }
+
+                // check if next section is junction
+
+                else if (nextSection == null || nextSection.CircuitType != TrackCircuitSection.TrackCircuitType.Normal)
+                {
+                    endSectionFound = true;
+                }
+
+                // try and find next section with signal; if junction is found, stop search
+
+                int nextIndex = routeIndex + 1;
+                while (nextIndex < thisRoute.Count - 1 && !endSectionFound)
+                {
+                    nextSection = signalRef.TrackCircuitList[thisRoute[nextIndex].TCSectionIndex];
+                    direction = thisRoute[nextIndex].Direction;
+
+                    if (nextSection.EndSignals[direction] != null)
+                    {
+                        endSectionFound = true;
+                        lastIndex = nextIndex;
+                        endSignalIndex = nextSection.EndSignals[direction].thisRef;
+                    }
+                    else if (nextSection.CircuitType != TrackCircuitSection.TrackCircuitType.Normal)
+                    {
+                        endSectionFound = true;
+                        lastIndex = nextIndex - 1;
+                    }
+                    nextIndex++;
+                }
+                signalIndex.Add(endSignalIndex);
+            }
+            for (int iWait = 0; iWait <= TCRoute.WaitingPoints.Count - 1; iWait++)
+
 #else
             int prevSection = -1;
             int TCElmtSignalIdx = -1;
@@ -3632,6 +3687,9 @@ namespace ORTS
                 TCSubpathRoute thisRoute = TCRoute.TCRouteSubpaths[waitingPoint[0]];
                 int routeIndex = thisRoute.GetRouteIndex(waitingPoint[1], 0);
                 int lastIndex = routeIndex;
+                if (iWait < TCRoute.WaitingPoints.Count - 1 && signalIndex[iWait + 1] != signalIndex[iWait])
+                    insertSigDelegate = true;
+
 
                 // check if waiting point is in route - else give warning and skip
                 if (routeIndex < 0)
@@ -3715,10 +3773,7 @@ namespace ORTS
                         offset = nextSection.Length - junctionOverlapM;  // use this section length if next section is junction
                     }
                 }
-#endif
                 // move sections beyond waiting point to next subroute
-
-#if !NEW_ACTION
                 TCSubpathRoute nextRoute = null;
                 if ((waitingPoint[0] + 1) > (TCRoute.TCRouteSubpaths.Count - 1))
                 {
@@ -3760,6 +3815,17 @@ namespace ORTS
                 AIActionWPRef action = new AIActionWPRef(this, waitingPoint[5], 0f, waitingPoint[0], thisRoute[lastIndex].TCSectionIndex, lastIndex, direction);
                 action.SetDelay(waitingPoint[2]);
                 AuxActionsContain.Add(action);
+                if (insertSigDelegate && signalIndex[iWait] > -1)
+                {
+                    AIActSigDelegateRef delegateAction = new AIActSigDelegateRef(this, waitingPoint[5], 0f, waitingPoint[0], thisRoute[lastIndex].TCSectionIndex, lastIndex, direction);
+                    signalRef.SignalObjects[signalIndex[iWait]].LockForTrain(this.Number, waitingPoint[0]);
+                    delegateAction.SetEndSignalIndex(signalIndex[iWait]);
+                    delegateAction.Delay = 1;   //   waitingPoint[2] <= 5 ? 5 : waitingPoint[2];
+                    delegateAction.SetSignalObject(signalRef.SignalObjects[signalIndex[iWait]]);
+                    
+                    AuxActionsContain.Add(delegateAction);
+                }
+                insertSigDelegate = false;
 #else
 
                 StationStop thisStation = new StationStop(
@@ -4477,7 +4543,6 @@ namespace ORTS
             requiredActions.RemovePendingAIActionItems(false);
 
 #if NEW_ACTION
-            //nextGenAction = AuxActionsContain.ResetNextGenAction(nextGenAction);
             AuxActionsContain.SetAuxAction(this);
 #endif
             if (StationStops.Count > 0)
@@ -4514,9 +4579,14 @@ namespace ORTS
                 {
                     ProcessActionItem(thisAction as AIActionItem);
                 }
-                else if (thisAction is AuxActionItem)
+                else if (thisAction is AuxActionWPItem)
                 {
                     ((AuxActionItem)thisAction).ValidAction(this);
+                }
+                else if (thisAction is AuxActionItem)
+                {
+                    int presentTime = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
+                    ((AuxActionItem)thisAction).ProcessAction(this, presentTime);
                 }
 #else
                 else if (thisAction is AIActionItem)
@@ -5010,7 +5080,7 @@ namespace ORTS
                     AIAuxActionsRef actionRef = action.ActionRef;
                     if (actionRef.IsGeneric)
                     {
-                        nextGenAction = thisItem;   //  SPA In order to manage GenericAuxAction without perturbing normal actions
+                        nextGenAction = thisItem;   //  SPA In order to manage GenericAuxAction without disturbing normal actions
                         requiredActions.Remove(thisItem);
                     }
                     else
@@ -5585,29 +5655,33 @@ namespace ORTS
         //
         //  Generic Handler for all derived class
         //
-        public virtual bool ValidAction(AITrain thisTrain)
+        public virtual bool ValidAction(Train thisTrain)
         {
             return false;
         }
 
-        public virtual AITrain.AI_MOVEMENT_STATE InitAction(AITrain thisTrain, int presentTime, float elapsedClockSeconds, AITrain.AI_MOVEMENT_STATE movementState)
+        public virtual AITrain.AI_MOVEMENT_STATE InitAction(Train thisTrain, int presentTime, float elapsedClockSeconds, AITrain.AI_MOVEMENT_STATE movementState)
         {
             return movementState;
         }
 
-        public virtual AITrain.AI_MOVEMENT_STATE EndAction(AITrain thisTrain, int presentTime, float elapsedClockSeconds, AITrain.AI_MOVEMENT_STATE movementState)
+        public virtual AITrain.AI_MOVEMENT_STATE EndAction(Train thisTrain, int presentTime, float elapsedClockSeconds, AITrain.AI_MOVEMENT_STATE movementState)
         {
             return movementState;
         }
 
-        public virtual AITrain.AI_MOVEMENT_STATE HandleAction(AITrain thisTrain, int presentTime, float elapsedClockSeconds, AITrain.AI_MOVEMENT_STATE movementState)
+        public virtual AITrain.AI_MOVEMENT_STATE HandleAction(Train thisTrain, int presentTime, float elapsedClockSeconds, AITrain.AI_MOVEMENT_STATE movementState)
         {
             return movementState;
         }
 
-        public virtual AITrain.AI_MOVEMENT_STATE ProcessAction(AITrain thisTrain, int presentTime, float elapsedClockSeconds, AITrain.AI_MOVEMENT_STATE movementState)
+        public virtual AITrain.AI_MOVEMENT_STATE ProcessAction(Train thisTrain, int presentTime, float elapsedClockSeconds, AITrain.AI_MOVEMENT_STATE movementState)
         {
             return movementState;
+        }
+
+        public virtual void ProcessAction(Train thisTrain, int presentTime)
+        {
         }
 
         public virtual string AsString(AITrain thisTrain)

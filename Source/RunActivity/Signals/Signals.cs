@@ -5326,6 +5326,7 @@ namespace ORTS
 
             thisTrain.Train.requiredActions.InsertAction(new Train.ClearSectionItem(distanceToClear, Index));
 
+
             // set deadlock trap if required
 
             if (thisTrain.Train.DeadlockInfo.ContainsKey(Index))
@@ -6985,6 +6986,7 @@ namespace ORTS
         public bool ApproachControlCleared;     // set in case signal has cleared on approach control
 
         public bool StationHold = false;        // Set if signal must be held at station - processed by signal script
+        protected List<KeyValuePair<int , int>> LockedTrains;
 
         public bool enabled
         {
@@ -7041,6 +7043,7 @@ namespace ORTS
 
         public SignalObject()
         {
+            LockedTrains = new List<KeyValuePair<int, int>>();
         }
 
         //================================================================================================//
@@ -7054,6 +7057,12 @@ namespace ORTS
             WorldObject = new SignalWorldObject(copy.WorldObject);
 
             trackNode = copy.trackNode;
+            LockedTrains = new List<KeyValuePair<int, int>>();
+            foreach (var lockInfo in copy.LockedTrains)
+            {
+                KeyValuePair<int, int> oneLock = new KeyValuePair<int, int>(lockInfo.Key, lockInfo.Value);
+                LockedTrains.Add(oneLock);
+            }
 
             TCReference = copy.TCReference;
             TCOffset = copy.TCOffset;
@@ -7121,6 +7130,7 @@ namespace ORTS
             ApproachControlCleared = inf.ReadBoolean();
             ReqNumClearAhead = inf.ReadInt32();
             StationHold = inf.ReadBoolean();
+            LockedTrains = new List<KeyValuePair<int, int>>();
 
             // set dummy train, route direction index will be set later on restore of train
 
@@ -8406,7 +8416,7 @@ namespace ORTS
         // request to clear signal
         //
 
-        public void requestClearSignal(Train.TCSubpathRoute RoutePart, Train.TrainRouted thisTrain,
+        public bool requestClearSignal(Train.TCSubpathRoute RoutePart, Train.TrainRouted thisTrain,
                         int clearNextSignals, bool requestIsPropagated, SignalObject lastSignal)
         {
 
@@ -8453,9 +8463,12 @@ namespace ORTS
                 thisTrain.Train.SwitchToNodeControl(thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].TCSectionIndex);
                 otherTrain.Train.SwitchToNodeControl(otherTrain.Train.PresentPosition[otherTrain.TrainRouteDirectionIndex].TCSectionIndex);
                 procstate = -1;
-                return;
+                return false;
             }
-
+            if (HasLockForTrain(thisTrain.Train.Number, thisTrain.Train.TCRoute.activeSubpath))
+            {
+                return false;
+            }
             if (enabledTrain != thisTrain) // new allocation - reset next signals
             {
                 for (int fntype = 0; fntype < (int)MstsSignalFunction.UNKNOWN; fntype++)
@@ -8502,7 +8515,7 @@ namespace ORTS
                     enabledTrain = null;
                     // if signal on holding list, set hold state
                     if (thisTrain.Train.HoldingSignals.Contains(thisRef) && holdState == HoldState.None) holdState = HoldState.StationStop;
-                    return;
+                    return false;
                 }
             }
 
@@ -8546,7 +8559,7 @@ namespace ORTS
                     TrackCircuitSection routeSection = signalRef.TrackCircuitList[routeElement.TCSectionIndex];
                     if (routeSection.CircuitState.ThisTrainOccupying(thisTrain))
                     {
-                        return;  // train has passed signal - clear request is invalid
+                        return false;  // train has passed signal - clear request is invalid
                     }
                 }
             }
@@ -8609,6 +8622,10 @@ namespace ORTS
             {
                 propagateRequest();
             }
+            if (this_sig_mr(MstsSignalFunction.NORMAL) != MstsSignalAspect.STOP)
+                return true;
+            else
+                return false;
         }
 
         //================================================================================================//
@@ -9828,6 +9845,39 @@ namespace ORTS
                 File.AppendAllText(dumpfile, sob.ToString());
             }
             return (false);
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// LockForTrain
+        /// Add a lock for a train and a specific subpath (default 0).  This allow the control of this signal by a specific action
+        /// </summary>
+
+        public bool LockForTrain(int trainNumber, int subpath = 0)
+        {
+            KeyValuePair<int, int> newLock = new KeyValuePair<int, int>(trainNumber, subpath);
+            LockedTrains.Add(newLock);
+            return false;
+        }
+
+        public bool UnlockForTrain(int trainNumber, int subpath = 0)
+        {
+            bool info = LockedTrains.Remove(LockedTrains.First(item => item.Key.Equals(trainNumber) && item.Value.Equals(subpath)));
+            return info;
+        }
+
+        public bool HasLockForTrain(int trainNumber, int subpath = 0)
+        {
+            bool info = LockedTrains.Exists(item => item.Key.Equals(trainNumber) && item.Value.Equals(subpath));
+            return info;
+        }
+
+        public bool CleanAllLock(int trainNumber)
+        {
+            int info = LockedTrains.RemoveAll(item => item.Key.Equals(trainNumber));
+            if (info > 0)
+                return true;
+            return false;
         }
 
         //================================================================================================//
