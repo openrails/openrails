@@ -73,6 +73,7 @@
     <Compile Include="Drawing\DrawableTrackItem.cs" />
     <Compile Include="Drawing\DrawArea.cs" />
     <Compile Include="Drawing\DrawColors.cs" />
+    <Compile Include="Drawing\DrawMultiplePaths.cs" />
     <Compile Include="Drawing\DrawScaleRuler.cs" />
     <Compile Include="Drawing\DrawTerrain.cs" />
     <Compile Include="Drawing\DrawTrackDB.cs" />
@@ -110,6 +111,9 @@
     <Compile Include="UserInterface\MenuControl.xaml.cs">
       <DependentUpon>MenuControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserInterface\OtherPathsWindow.xaml.cs">
+      <DependentUpon>OtherPathsWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UserInterface\SearchControl.xaml.cs">
       <DependentUpon>SearchControl.xaml</DependentUpon>
     </Compile>
@@ -130,6 +134,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UserInterface\MenuControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserInterface\OtherPathsWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

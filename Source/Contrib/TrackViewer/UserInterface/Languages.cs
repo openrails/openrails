@@ -28,7 +28,7 @@ namespace ORTS.TrackViewer.UserInterface
         public IEnumerable<Language> Languages { get; private set; }
 
         /// <summary>Returns the code for the current language</summary>
-        public string CurrentLanguageCode { get { return ORTS.TrackViewer.Properties.Settings.Default.language; } }
+        public static string CurrentLanguageCode { get { return ORTS.TrackViewer.Properties.Settings.Default.language; } }
 
         /// <summary>
         /// Constructor. This will also search for available languages and store these
@@ -71,7 +71,7 @@ namespace ORTS.TrackViewer.UserInterface
         /// <summary>
         /// Load the language (from stored preferences). This needs to be called before any menu steup is done.
         /// </summary>
-        public void LoadLanguage()
+        public static void LoadLanguage()
         {
             string preferenceLanguageCode = ORTS.TrackViewer.Properties.Settings.Default.language;
             if (preferenceLanguageCode.Length > 0)

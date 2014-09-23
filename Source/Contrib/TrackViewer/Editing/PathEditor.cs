@@ -455,14 +455,17 @@ namespace ORTS.TrackViewer.Editing
                 FindActiveTrackLocation(drawnPathData);
             }
 
+            float textureSize = 8f;
+            int minPixelSize = 7;
+            int maxPixelSize = 24;
             if (activeNode != null)
             {
-                drawArea.DrawTexture(activeNode.Location, "ring", 8f, 7, DrawColors.colorsNormal.ActiveNode);
+                drawArea.DrawTexture(activeNode.Location, "ring", textureSize, minPixelSize, maxPixelSize, DrawColors.colorsNormal.ActiveNode);
 
             }
             if (activeTrackLocation != null && activeTrackLocation.Location != null)
             {
-                drawArea.DrawTexture(activeTrackLocation.Location, "ring", 8f, 7, DrawColors.colorsNormal.CandidateNode);
+                drawArea.DrawTexture(activeTrackLocation.Location, "ring", textureSize, minPixelSize, maxPixelSize, DrawColors.colorsNormal.CandidateNode);
             }
 
         }
@@ -659,7 +662,8 @@ namespace ORTS.TrackViewer.Editing
         public void SaveStationNames()
         {
             string[] stationNames = trainpath.StationNames();
-            new SaveStationNames(stationNames); // will be discarded immediately
+            SaveStationNames saveStationNames = new Editing.SaveStationNames();
+            saveStationNames.SaveToFile(stationNames);
         }
 
         /// <summary>

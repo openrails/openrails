@@ -48,18 +48,30 @@ namespace ORTS.TrackViewer.Editing
 
         private TrackDB trackDB;
         private TSectionDatFile tsectionDat;
+        internal ColorScheme colorSchemeSiding { get; set; }
+        internal ColorScheme colorSchemeMain { get; set; }
 
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="trackDB"></param>
-        /// <param name="tsectionDat"></param>
-         public DrawPath (TrackDB trackDB, TSectionDatFile tsectionDat)
+        public DrawPath (TrackDB trackDB, TSectionDatFile tsectionDat)
         {
             this.trackDB = trackDB;
             this.tsectionDat = tsectionDat;
+            this.colorSchemeMain = DrawColors.colorsPathMain;
+            this.colorSchemeSiding = DrawColors.colorsPathSiding;
         }
 
+        /// <summary>
+        /// Draw the actual path coded in the PATfile, completely.
+        /// </summary>
+        /// <param name="drawArea">Area to draw upon</param>
+        /// <param name="firstNode">The first node of the path to draw</param>
+        public void Draw(DrawArea drawArea, TrainpathNode firstNode)
+        {
+            DrawnPathData dummyData = new DrawnPathData();
+            Draw(drawArea, firstNode, null, int.MaxValue, dummyData);
+        }
  
         /// <summary>
         /// Draw the actual path coded in the PATfile (for a number of nodes that can be extended or reduced)
@@ -85,7 +97,7 @@ namespace ORTS.TrackViewer.Editing
             if (CurrentMainNode == null)
             {
                 // no path, but there might still be a tail
-                DrawTail(drawArea, DrawColors.colorsNormal, null, firstNodeOfTail);
+                DrawTail(drawArea, colorSchemeMain, null, firstNodeOfTail);
                 return 0;
             }
          
@@ -109,7 +121,7 @@ namespace ORTS.TrackViewer.Editing
                         TrainpathNode nextNodeOnSiding = currentSidingNode.NextSidingNode;
                         if (nextNodeOnSiding != null) // because also this path can run off at the end
                         {
-                            DrawPathOnVectorNode(drawArea, DrawColors.colorsPathSiding, currentSidingNode, nextNodeOnSiding, currentSidingNode.NextSidingTvnIndex);
+                            DrawPathOnVectorNode(drawArea, colorSchemeSiding, currentSidingNode, nextNodeOnSiding, currentSidingNode.NextSidingTvnIndex);
                             drawnNodes.Add(nextNodeOnSiding);
                             drawnPathData.AddNode(nextNodeOnSiding);
                             //siding nodes will not be added to drawnPathData
@@ -130,7 +142,7 @@ namespace ORTS.TrackViewer.Editing
                 TrainpathNode nextSidingNode = CurrentMainNode.NextSidingNode;             
                 if (nextSidingNode != null)
                 {
-                    DrawPathOnVectorNode(drawArea, DrawColors.colorsPathSiding, CurrentMainNode, nextSidingNode, CurrentMainNode.NextSidingTvnIndex);
+                    DrawPathOnVectorNode(drawArea, colorSchemeSiding, CurrentMainNode, nextSidingNode, CurrentMainNode.NextSidingTvnIndex);
                     drawnNodes.Add(nextSidingNode);
                     drawnPathData.AddNode(nextSidingNode);
                     currentSidingNode = nextSidingNode;
@@ -140,7 +152,7 @@ namespace ORTS.TrackViewer.Editing
                 TrainpathNode nextMainNode = CurrentMainNode.NextMainNode;
                 if (nextMainNode != null)
                 {
-                    DrawPathOnVectorNode(drawArea, DrawColors.colorsPathMain, CurrentMainNode, nextMainNode, CurrentMainNode.NextMainTvnIndex);
+                    DrawPathOnVectorNode(drawArea, colorSchemeMain, CurrentMainNode, nextMainNode, CurrentMainNode.NextMainTvnIndex);
                     drawnNodes.Add(nextMainNode);
                     drawnPathData.AddNode(nextMainNode);
                     drawnPathData.NoteAsDrawn(CurrentMainNode, nextMainNode);
@@ -160,7 +172,7 @@ namespace ORTS.TrackViewer.Editing
                 DrawNodeItself(drawArea, node);
             }
 
-            DrawTail(drawArea, DrawColors.colorsNormal, drawnNodes.Last(), firstNodeOfTail);
+            DrawTail(drawArea, colorSchemeMain, drawnNodes.Last(), firstNodeOfTail);
 
             return numberDrawn;
         }
@@ -172,31 +184,32 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         /// <param name="drawArea">area to Draw upon</param>
         /// <param name="trainpathNode">current node for which we need to draw our texture</param>
-        static void DrawNodeItself(DrawArea drawArea, TrainpathNode trainpathNode)
+        private void DrawNodeItself(DrawArea drawArea, TrainpathNode trainpathNode)
         {
             float pathPointSize = 7f; // in meters
             int minPixelSize = 7;
+            int maxPixelSize = 24;
             float angle = trainpathNode.TrackAngle;
 
-            Color colorMain = DrawColors.colorsPathMain.TrackStraight;
-            Color colorSiding = DrawColors.colorsPathSiding.TrackStraight;
-            Color colorBroken = DrawColors.colorsNormal.BrokenNode;
+            Color colorMain = this.colorSchemeMain.TrackStraight;
+            Color colorSiding = this.colorSchemeSiding.TrackStraight;
+            Color colorBroken = this.colorSchemeMain.BrokenNode;
 
             switch (trainpathNode.NodeType)
             {
                 case TrainpathNodeType.Start:
                     // first node; texture is not rotated
-                    drawArea.DrawTexture(trainpathNode.Location, "pathStart", pathPointSize, minPixelSize, colorMain);
+                    drawArea.DrawTexture(trainpathNode.Location, "pathStart", pathPointSize, minPixelSize, maxPixelSize, colorMain);
                     break;
                 case TrainpathNodeType.End:
                     // formal end node; texture is not rotated
-                    drawArea.DrawTexture(trainpathNode.Location, "pathEnd", pathPointSize, minPixelSize, colorMain);
+                    drawArea.DrawTexture(trainpathNode.Location, "pathEnd", pathPointSize, minPixelSize, maxPixelSize, colorMain);
                     break;
                 case TrainpathNodeType.Reverse:
-                    drawArea.DrawTexture(trainpathNode.Location, "pathReverse", pathPointSize, minPixelSize, angle, colorMain);
+                    drawArea.DrawTexture(trainpathNode.Location, "pathReverse", pathPointSize, minPixelSize, maxPixelSize, colorMain, angle);
                     break;
                 case TrainpathNodeType.Stop:
-                    drawArea.DrawTexture(trainpathNode.Location, "pathWait", pathPointSize, minPixelSize, colorMain);
+                    drawArea.DrawTexture(trainpathNode.Location, "pathWait", pathPointSize, minPixelSize, maxPixelSize, colorMain);
                     break;
 #if COUPLE
                 case TrainpathNodeType.Uncouple:
@@ -206,7 +219,7 @@ namespace ORTS.TrackViewer.Editing
                 default:
                     if ((trainpathNode.NextMainNode == null) && (trainpathNode.NextSidingNode != null))
                     {   // siding node;
-                        drawArea.DrawTexture(trainpathNode.Location, "pathNormal", pathPointSize, minPixelSize, angle, colorSiding);
+                        drawArea.DrawTexture(trainpathNode.Location, "pathNormal", pathPointSize, minPixelSize, maxPixelSize, colorSiding, angle);
                     }
                     else if ((trainpathNode.NextMainNode == null)
                           && (trainpathNode.NextSidingNode == null)
@@ -214,19 +227,19 @@ namespace ORTS.TrackViewer.Editing
                           && (trainpathNode.PrevNode.NextSidingNode == trainpathNode))
                     {
                         // end of a siding path without it being a siding end
-                        drawArea.DrawTexture(trainpathNode.Location, "pathNormal", pathPointSize, minPixelSize, angle, colorMain);
-                        drawArea.DrawTexture(trainpathNode.Location, "crossedRing", pathPointSize, minPixelSize, colorBroken);
+                        drawArea.DrawTexture(trainpathNode.Location, "pathNormal", pathPointSize, minPixelSize, maxPixelSize, colorMain, angle);
+                        drawArea.DrawTexture(trainpathNode.Location, "crossedRing", pathPointSize, minPixelSize, maxPixelSize, colorBroken);
                     }
                     else
                     {   // normal node
-                        drawArea.DrawTexture(trainpathNode.Location, "pathNormal", pathPointSize, minPixelSize, angle, colorMain);
+                        drawArea.DrawTexture(trainpathNode.Location, "pathNormal", pathPointSize, minPixelSize, maxPixelSize, colorMain, angle);
                     }
                     break;
             }
 
             if (trainpathNode.IsBroken)
             {
-                drawArea.DrawTexture(trainpathNode.Location, "crossedRing", pathPointSize, minPixelSize, colorBroken);
+                drawArea.DrawTexture(trainpathNode.Location, "crossedRing", pathPointSize, minPixelSize, maxPixelSize, colorBroken);
             }       
             
         }
@@ -241,7 +254,7 @@ namespace ORTS.TrackViewer.Editing
         /// <param name="TvnIndex">The index of the track vector node that is between the two path nodes</param>
         /// <remarks>Note that it is not clear yet whether the direction of current to next is the same as the
         /// direction of the vector node</remarks>
-        void DrawPathOnVectorNode(DrawArea drawArea, ColorScheme colors, TrainpathNode currentNode, TrainpathNode nextNode, int TvnIndex)
+        private void DrawPathOnVectorNode(DrawArea drawArea, ColorScheme colors, TrainpathNode currentNode, TrainpathNode nextNode, int TvnIndex)
         {
             if (currentNode.IsBroken || nextNode.IsBroken || (TvnIndex == -1))
             {
@@ -327,7 +340,7 @@ namespace ORTS.TrackViewer.Editing
         /// <param name="sectionOffsetStart">start-offset in the first track section to draw</param>
         /// <param name="sectionOffsetStop">stop-offset in the last track section to draw</param>
         /// <remarks>Very similar to DrawVectorNode in class DrawTrackDB, but this one allows to draw partial vector nodes.</remarks>
-        void DrawVectorNode(DrawArea drawArea, TrackNode tn, ColorScheme colors, int tvsiStart, int tvsiStop,
+        private void DrawVectorNode(DrawArea drawArea, TrackNode tn, ColorScheme colors, int tvsiStart, int tvsiStop,
                 float sectionOffsetStart, float sectionOffsetStop)
         {
             TrVectorSection tvs;
@@ -399,7 +412,7 @@ namespace ORTS.TrackViewer.Editing
         /// <param name="colors">Colorscheme to use</param>
         /// <param name="currentNode">node to draw from</param>
         /// <param name="nextNode">node to draw to</param>
-        static void DrawPathBrokenNode(DrawArea drawArea, ColorScheme colors, TrainpathNode currentNode, TrainpathNode nextNode)
+        private static void DrawPathBrokenNode(DrawArea drawArea, ColorScheme colors, TrainpathNode currentNode, TrainpathNode nextNode)
         {
             drawArea.DrawLine(1f, colors.BrokenPath , currentNode.Location, nextNode.Location);
         }
@@ -411,13 +424,13 @@ namespace ORTS.TrackViewer.Editing
         /// <param name="colors">Colors to use for drawing</param>
         /// <param name="lastDrawnNode">Last drawn node, used as a starting point of connecting dashed line. Can be null</param>
         /// <param name="firstTailNode">Node where the tail starts</param>
-        static void DrawTail(DrawArea drawArea, ColorScheme colors, TrainpathNode lastDrawnNode, TrainpathNode firstTailNode)
+        private void DrawTail(DrawArea drawArea, ColorScheme colors, TrainpathNode lastDrawnNode, TrainpathNode firstTailNode)
         {
             if (firstTailNode == null) return;
 
             if (lastDrawnNode != null)
             {
-                drawArea.DrawDashedLine(1f, DrawColors.colorsNormal.BrokenPath, lastDrawnNode.Location, firstTailNode.Location);
+                drawArea.DrawDashedLine(1f, colors.BrokenPath, lastDrawnNode.Location, firstTailNode.Location);
             }
             DrawNodeItself(drawArea, firstTailNode);
             drawArea.DrawTexture(firstTailNode.Location, "ring", 8f, 7, colors.BrokenPath);

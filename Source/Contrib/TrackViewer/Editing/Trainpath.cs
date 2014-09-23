@@ -581,7 +581,7 @@ namespace ORTS.TrackViewer.Editing
                 currentNode = currentNode.NextMainNode;
             }
 
-            return StationNamesNoDoubles(stationNames);
+            return RemoveDoubles(stationNames);
             
         }
 
@@ -592,7 +592,6 @@ namespace ORTS.TrackViewer.Editing
             if (tvnIndex < 0) return stationNames;
 
             TrackNode tn = trackDB.TrackNodes[tvnIndex];
-            TrackNode[] tnArray = {tn};
             TrVectorNode tvn = tn.TrVectorNode;
             if (tvn == null) return stationNames;
             if (tvn.TrItemRefs == null) return stationNames;
@@ -620,26 +619,30 @@ namespace ORTS.TrackViewer.Editing
             return stationNames;
         }
 
-        private string[] StationNamesNoDoubles(List<string> stationNames)
+        /// <summary>
+        /// Remove double occurences of a string in a list. But only if they are subsequent.
+        /// To be precise, keep only the odd occurences in a series (so remove second, fourth).
+        /// </summary>
+        private static string[] RemoveDoubles(List<string> strings)
         {
-            List<string> cleanedStationNames = new List<string>();
+            List<string> cleanedStrings = new List<string>();
 
-            string lastStation = String.Empty;
+            string lastItem = String.Empty;
 
-            foreach (string station in stationNames)
+            foreach (string item in strings)
             {
-                if (station.Equals(lastStation))
+                if (item.Equals(lastItem))
                 {
-                    lastStation = String.Empty;
+                    lastItem = String.Empty;
                 }
                 else
                 {
-                    cleanedStationNames.Add(station);
-                    lastStation = station;
+                    cleanedStrings.Add(item);
+                    lastItem = item;
                 }
             }
 
-            return cleanedStationNames.ToArray();
+            return cleanedStrings.ToArray();
         }
         #endregion
 
@@ -701,7 +704,7 @@ namespace ORTS.TrackViewer.Editing
             mainNodes[lastIndex].NodeType = TrainpathNodeType.End;
         }
 
-        void ReverseSidingPath(TrainpathNode oldSidingStart)
+        static void ReverseSidingPath(TrainpathNode oldSidingStart)
         {
             List<TrainpathNode> sidingNodes = new List<TrainpathNode>();
             sidingNodes.Add(oldSidingStart);

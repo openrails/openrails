@@ -167,7 +167,7 @@ namespace ORTS.TrackViewer.Drawing
             {
                 float size = 7f; // in meters
                 int minPixelSize = 5;
-                drawArea.DrawTexture(this.WorldLocation, "signal" + colors.nameExtension, size, minPixelSize, this.angle);
+                drawArea.DrawTexture(this.WorldLocation, "signal" + colors.nameExtension, size, minPixelSize, colors.None, this.angle);
                 return true;
             }
             return false;

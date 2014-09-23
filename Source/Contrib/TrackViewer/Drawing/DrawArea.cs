@@ -710,20 +710,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="minPixelSize">Minimum size in pixels, to make sure you always see something</param>
         public void DrawTexture(WorldLocation location, string textureName, float size, int minPixelSize)
         {
-            DrawTexture(location, textureName, size, minPixelSize, 0, Color.White);
-        }
-
-        /// <summary>
-        /// Draw a texture, determined by its name.
-        /// </summary>
-        /// <param name="location">Location where to draw the texture</param>
-        /// <param name="textureName">Name identifying the texture</param>
-        /// <param name="angle">Rotation angle for the texture</param>
-        /// <param name="size">Size of the texture in world-meters</param>
-        /// <param name="minPixelSize">Minimum size in pixels, to make sure you always see something</param>
-        public void DrawTexture(WorldLocation location, string textureName, float size, int minPixelSize, float angle)
-        {
-            DrawTexture(location, textureName, size, minPixelSize, angle, Color.White);
+            DrawTexture(location, textureName, size, minPixelSize, Color.White, 0);
         }
 
         /// <summary>
@@ -736,7 +723,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="color">Color you want the simple texture to have</param>
         public void DrawTexture(WorldLocation location, string textureName, float size, int minPixelSize, Color color)
         {
-            DrawTexture(location, textureName, size, minPixelSize, 0, color);
+            DrawTexture(location, textureName, size, minPixelSize, color, 0);
         }
 
         /// <summary>
@@ -748,10 +735,42 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="size">Size of the texture in world-meters</param>
         /// <param name="minPixelSize">Minimum size in pixels, to make sure you always see something</param>
         /// <param name="color">Color you want the simple texture to have</param>
-        public void DrawTexture(WorldLocation location, string textureName, float size, int minPixelSize, float angle, Color color)
+        public void DrawTexture(WorldLocation location, string textureName, float size, int minPixelSize, Color color, float angle)
         {
             if (OutOfArea(location)) return;
             float pixelSize = (float)Math.Max(GetWindowSize(size), minPixelSize);
+            BasicShapes.DrawTexture(GetWindowVector(location), textureName, angle, pixelSize, color);
+        }
+
+
+        /// <summary>
+        /// Draw a texture, determined by its name.
+        /// </summary>
+        /// <param name="location">Location where to draw the texture</param>
+        /// <param name="textureName">Name identifying the texture</param>
+        /// <param name="size">Size of the texture in world-meters</param>
+        /// <param name="minPixelSize">Minimum size in pixels, to make sure you always see something</param>
+        /// <param name="maxPixelSize">Maximum size in pixels, to make sure icons are not becoming too big</param>
+        /// <param name="color">Color you want the simple texture to have</param>
+        public void DrawTexture(WorldLocation location, string textureName, float size, int minPixelSize, int maxPixelSize, Color color)
+        {
+            DrawTexture(location, textureName, size, minPixelSize, maxPixelSize, color, 0);
+        }
+
+        /// <summary>
+        /// Draw a texture, determined by its name.
+        /// </summary>
+        /// <param name="location">Location where to draw the texture</param>
+        /// <param name="textureName">Name identifying the texture</param>
+        /// <param name="angle">Rotation angle for the texture</param>
+        /// <param name="size">Size of the texture in world-meters</param>
+        /// <param name="minPixelSize">Minimum size in pixels, to make sure you always see something</param>
+        /// <param name="maxPixelSize">Maximum size in pixels, to make sure icons are not becoming too big</param>
+        /// <param name="color">Color you want the simple texture to have</param>
+        public void DrawTexture(WorldLocation location, string textureName, float size, int minPixelSize, int maxPixelSize, Color color, float angle)
+        {
+            if (OutOfArea(location)) return;
+            float pixelSize = (float)Math.Min(Math.Max(GetWindowSize(size), minPixelSize), maxPixelSize);
             BasicShapes.DrawTexture(GetWindowVector(location), textureName, angle, pixelSize, color);
         }
 

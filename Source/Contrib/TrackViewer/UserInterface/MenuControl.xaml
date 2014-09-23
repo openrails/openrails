@@ -104,7 +104,7 @@
             <MenuItem Header="Preferences" Name="menuPreferences">
                 <MenuItem Header="Zooming is centered on mouse (m)" Name="menuZoomIsCenteredOnMouse" IsCheckable="True" IsChecked="True"
                           Click="UpdateMenuSettings"/>
-                <MenuItem Header="Select language" Name="menuSelectLanguage">
+                <MenuItem Header="Select language">
                     <ComboBox Name="comboBoxLanguage" SelectionChanged="comboBoxLanguage_SelectionChanged"
                               DisplayMemberPath="Name" SelectedValuePath="Code"/>
                 </MenuItem>
@@ -115,6 +115,7 @@
                           SubmenuOpened="menuNeedingMouseOpened" SubmenuClosed="menuNeedingMouseClosed">
                     <ComboBox Name="menuSelectPathCombobox" SelectionChanged="menuSelectPathCombobox_SelectionChanged"/>
                 </MenuItem>
+                <MenuItem Header="Show other paths" Name="menuShowOtherPaths" IsCheckable="False" Click="menuShowOtherPaths_Click"/>
                 <Separator/>
                 <MenuItem Header="Save path" Name="menuSavePath" IsCheckable="False" Click="menuSavePath_Click"/>
                 <MenuItem Header="Save visited stations" Name="menuSaveStations" IsCheckable="False" Click="menuSaveStations_Click"/>

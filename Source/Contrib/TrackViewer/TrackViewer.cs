@@ -122,7 +122,7 @@ namespace ORTS.TrackViewer
     {
         #region Public members
         /// <summary>String showing the date of the program</summary>
-        public readonly static string TrackViewerVersion = "2014/09/17";
+        public readonly static string TrackViewerVersion = "2014/09/23";
         /// <summary>Path where the content (like .png files) is stored</summary>
         public string ContentPath { get; private set; }
         /// <summary>Folder where MSTS is installed (or at least, where the files needed for tracks, routes and paths are stored)</summary>
@@ -145,9 +145,11 @@ namespace ORTS.TrackViewer
         public DrawArea DrawArea { get; private set; }
         /// <summary>The frame rate</summary>
         public SmoothedData FrameRate { get; private set; }
-
+        /// <summary>The routines to select and draw multiple paths</summary>
+        public DrawMultiplePaths DrawMultiplePaths { get; private set; }
+        
         /// <summary>The language manager to deal with various languages.</summary>
-        public LanguageManager languageManager { get; private set; }
+        public LanguageManager LanguageManager { get; private set; }
 
         /// <summary>The Path editor</summary>
         public PathEditor PathEditor { get; private set; }
@@ -158,6 +160,7 @@ namespace ORTS.TrackViewer
         public bool MenuHasMouse { get; set; }
 
         #endregion
+        
         #region Private members
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -172,6 +175,7 @@ namespace ORTS.TrackViewer
         DrawTrains drawTrains;
         /// <summary>The routines to draw the world tiles</summary>
         DrawWorldTiles drawWorldTiles;
+        
         // /// <summary>The routines to draw the terrain textures</summary>
         //DrawTerrain drawTerrain;
 
@@ -191,10 +195,7 @@ namespace ORTS.TrackViewer
         private FontManager fontManager;
         #endregion
 
-        /// <summary>
-        /// This is the 'catalog' needed for localization of TrackViewer (meaning translating it to different languages)
-        /// </summary>
-        public static GettextResourceManager catalog = new GettextResourceManager("Contrib");
+        #region Constructor and Initialization methods
 
         /// <summary>
         /// Constructor. This is where it all starts.
@@ -218,30 +219,9 @@ namespace ORTS.TrackViewer
             FrameRate = new SmoothedData(0.5f);
             InitLogging();
 
-            languageManager = new LanguageManager();
-            languageManager.LoadLanguage(); // need this before all menus and stuff are initialized.
+            LanguageManager = new LanguageManager();
+            LanguageManager.LoadLanguage(); // need this before all menus and stuff are initialized.
 
-        }
-
-        /// <summary>
-        /// Set aliasing depending on the settings (set in the menu)
-        /// </summary>
-        public void SetAliasing()
-        {
-            // Personally, I do not think anti-aliasing looks crisp at all. Poddibly because not enough multi-sampling is used.
-            // If someone knows how to get better/best antisampling depending on available hardware, be my guess.
-            graphics.PreferMultiSampling = Properties.Settings.Default.doAntiAliasing;
-        }
-
-        void Window_ClientSizeChanged(object sender, EventArgs e)
-        {
-            ScreenW = Window.ClientBounds.Width;
-            ScreenH = Window.ClientBounds.Height;
-            if (ScreenW == 0 || ScreenH == 0)
-            {   // if something went wrong during fast window switching, let's not continue
-                return;
-            }
-            setSubwindowSizes();
         }
 
         /// <summary>
@@ -332,6 +312,32 @@ namespace ORTS.TrackViewer
             // Unload any non ContentManager content here
         }
 
+        /// <summary>
+        /// Simplified Draw routine that only shows background and a message. 
+        /// </summary>
+        /// <param name="message">The message you want to show</param>
+        private void DrawLoadingMessage(string message)
+        {
+            // This is not really a game State, because it is not used interactively. In fact, Draw itself is
+            // probably not called because the program is doing other things
+            BeginDraw();
+            GraphicsDevice.Clear(DrawColors.colorsNormal.ClearWindow);
+            spriteBatch.Begin();
+            // it is better to have integer locations, otherwise text is difficult to read
+            Vector2 messageLocation = new Vector2((float)Math.Round(ScreenW / 2f), (float)Math.Round(ScreenH / 2f));
+            BasicShapes.DrawStringCentered(messageLocation, DrawColors.colorsNormal.Text, message);
+
+            // we have to redo the string drawing, because we now first have to load the characters into textures.
+            fontManager.Update(GraphicsDevice);
+            BasicShapes.DrawStringCentered(messageLocation, DrawColors.colorsNormal.Text, message);
+
+            spriteBatch.End();
+            EndDraw();
+        }
+
+        #endregion
+        
+        #region Main game methods
         /// <summary>
         /// Allows the game to run logic such as updating the world,
         /// checking for collisions, gathering input, and playing audio.
@@ -491,29 +497,6 @@ namespace ORTS.TrackViewer
         }
         
         /// <summary>
-        /// Simplified Draw routine that only shows background and a message. 
-        /// </summary>
-        /// <param name="message">The message you want to show</param>
-        private void DrawLoadingMessage(string message)
-        {
-            // This is not really a game State, because it is not used interactively. In fact, Draw itself is
-            // probably not called because the program is doing other things
-            BeginDraw();
-            GraphicsDevice.Clear(DrawColors.colorsNormal.ClearWindow);
-            spriteBatch.Begin();
-            // it is better to have integer locations, otherwise text is difficult to read
-            Vector2 messageLocation = new Vector2((float) Math.Round(ScreenW / 2f), (float) Math.Round(ScreenH / 2f));
-            BasicShapes.DrawStringCentered(messageLocation, DrawColors.colorsNormal.Text, message);
-
-            // we have to redo the string drawing, because we now first have to load the characters into textures.
-            fontManager.Update(GraphicsDevice);
-            BasicShapes.DrawStringCentered(messageLocation, DrawColors.colorsNormal.Text, message);
-
-            spriteBatch.End();
-            EndDraw();
-        }
-
-        /// <summary>
         /// This is called when the game should draw itself.
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
@@ -555,6 +538,7 @@ namespace ORTS.TrackViewer
                 drawAreaInset.DrawBorder(Color.Black);
             }
 
+            if (DrawMultiplePaths != null ) DrawMultiplePaths.Draw(DrawArea);
             if (DrawPATfile != null && Properties.Settings.Default.showPATfile) DrawPATfile.Draw(DrawArea);
             if (PathEditor != null && Properties.Settings.Default.showTrainpath) PathEditor.Draw(DrawArea);
 
@@ -576,11 +560,29 @@ namespace ORTS.TrackViewer
             base.Draw(gameTime);
             skipDrawAmount = maxSkipDrawAmount;
         }
- 
-        void CalculateFPS(GameTime gameTime)
+
+        #endregion
+
+        #region User actions
+        /// <summary>
+        /// Set aliasing depending on the settings (set in the menu)
+        /// </summary>
+        public void SetAliasing()
         {
-            float elapsedRealTime = (float)gameTime.ElapsedRealTime.TotalSeconds;
-            FrameRate.Update(elapsedRealTime, 1f / elapsedRealTime);
+            // Personally, I do not think anti-aliasing looks crisp at all. Poddibly because not enough multi-sampling is used.
+            // If someone knows how to get better/best antisampling depending on available hardware, be my guess.
+            graphics.PreferMultiSampling = Properties.Settings.Default.doAntiAliasing;
+        }
+
+        void Window_ClientSizeChanged(object sender, EventArgs e)
+        {
+            ScreenW = Window.ClientBounds.Width;
+            ScreenH = Window.ClientBounds.Height;
+            if (ScreenW == 0 || ScreenH == 0)
+            {   // if something went wrong during fast window switching, let's not continue
+                return;
+            }
+            setSubwindowSizes();
         }
 
         /// <summary>
@@ -599,14 +601,17 @@ namespace ORTS.TrackViewer
                 this.Exit();
             }
         }
- 
+        #endregion
+
+        #region Folder and Route methods
         /// <summary>
         /// Open up a dialog so the user can select the install directory 
         /// (which should contain a sub-directory called ROUTES).
         /// </summary>
-        public void SelectInstallFolder ()
+        /// <returns>True if indeed a new path has been loaded</returns>
+        public bool SelectInstallFolder()
         {
-            if (!CanDiscardModifiedPath()) return;
+            if (!CanDiscardModifiedPath()) return false;
             string folderPath = "";
 
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
@@ -622,27 +627,31 @@ namespace ORTS.TrackViewer
                 folderPath = folderBrowserDialog.SelectedPath;
             }
 
-            if (!String.IsNullOrEmpty(folderPath))
+            if (String.IsNullOrEmpty(folderPath))
             {
-
-                Folder newInstallFolder = new Folder("installFolder", folderPath);
-                bool foundroutes = findRoutes(newInstallFolder);
-                if (!foundroutes)
-                {
-                    MessageBox.Show(catalog.GetString("Directory is not a valid install directory.\nThe install directory needs to contain ROUTES, GLOBAL, ..."));
-                    return;
-                }
-
-                InstallFolder = newInstallFolder;
-
-                // make sure the current route is disabled,
-                CurrentRoute = null;
-                DrawTrackDB = null;
-                PathEditor = null;
-
-                Properties.Settings.Default.installDirectory = folderPath;
-                Properties.Settings.Default.Save();         
+                return false;
             }
+
+            Folder newInstallFolder = new Folder("installFolder", folderPath);
+            bool foundroutes = findRoutes(newInstallFolder);
+            if (!foundroutes)
+            {
+                MessageBox.Show(catalog.GetString("Directory is not a valid install directory.\nThe install directory needs to contain ROUTES, GLOBAL, ..."));
+                return false;
+            }
+
+            InstallFolder = newInstallFolder;
+
+            // make sure the current route is disabled,
+            CurrentRoute = null;
+            DrawTrackDB = null;
+            PathEditor = null;
+            DrawMultiplePaths = null;
+
+            Properties.Settings.Default.installDirectory = folderPath;
+            Properties.Settings.Default.Save();
+
+            return true;
         }
 
         /// <summary>
@@ -666,8 +675,7 @@ namespace ORTS.TrackViewer
                         DefaultRoute = tryRoute;
                     }
                 }
-                //setRoute(defaultRoute);
-
+                
                 Routes = new Collection<Route>(newRoutes);
                 menuControl.PopulateRoutes();
                 return true;
@@ -681,9 +689,16 @@ namespace ORTS.TrackViewer
         /// <summary>
         /// Load the default route. This would be either the route used last time, the current route, or else the first available route.
         /// </summary>
-        public void SetDefaultRoute()
+        public void ReloadRoute()
         {
-            SetRoute(DefaultRoute);
+            if (CurrentRoute != null)
+            {
+                SetRoute(CurrentRoute);
+            }
+            else
+            {
+                SetRoute(DefaultRoute);
+            }
         }
 
         /// <summary>
@@ -713,17 +728,17 @@ namespace ORTS.TrackViewer
                 DrawArea.ZoomReset(DrawTrackDB);
                 drawAreaInset.ZoomReset(DrawTrackDB);
                 SetTitle();
+                
             }
             catch
             {
                 MessageBox.Show(catalog.GetString("Route cannot be loaded. Sorry"));
             }
 
-
-
             if (CurrentRoute == null) return;
 
             PathEditor = null;
+            DrawMultiplePaths = null;
             try
             {
                 findPaths();
@@ -738,6 +753,7 @@ namespace ORTS.TrackViewer
             }
             catch { }
 
+            
             menuControl.PopulatePlatforms();
             menuControl.PopulateStations();
             menuControl.PopulateSidings();
@@ -753,6 +769,9 @@ namespace ORTS.TrackViewer
             Window.Title = assemblyTitle.Title + ": " + DrawTrackDB.RouteName;
         }
 
+        #endregion
+
+        #region Path methods
         /// <summary>
         /// Find the paths (.pat files) belonging to the current route, and update the menu
         /// </summary>
@@ -761,7 +780,8 @@ namespace ORTS.TrackViewer
             List<Path> newPaths = Path.GetPaths(CurrentRoute, true).OrderBy(r => r.Name).ToList();
             Paths = new Collection<Path>(newPaths);
             menuControl.PopulatePaths();
-            SetPath(null);   
+            SetPath(null);
+            DrawMultiplePaths = new DrawMultiplePaths(DrawTrackDB.TrackDB, DrawTrackDB.TsectionDat, Paths);
         }
 
         /// <summary>
@@ -814,6 +834,9 @@ namespace ORTS.TrackViewer
             return (dialogResult == DialogResult.OK);
         }
 
+        #endregion
+
+        #region Centering methods
         /// <summary>
         /// Find a track node, center around it and highlight it
         /// </summary>
@@ -874,6 +897,9 @@ namespace ORTS.TrackViewer
 
         }
 
+        #endregion 
+        
+        #region Debug methods
         void runDebug()
         {
             //Properties.Settings.Default.statusShowFPS = true;
@@ -892,6 +918,30 @@ namespace ORTS.TrackViewer
             //pathEditor.ExtendPathFull();
             ////Exit();
         }
+        
+        static void InitLogging()
+        {   // debug only
+            //string logFileName = "C:\\tvlog.txt";
+            //System.IO.File.Delete(logFileName);
+            //Console.SetOut(new FileTeeLogger(logFileName, Console.Out));
+            //// Make Console.Error go to the new Console.Out.
+            //Console.SetError(Console.Out);
+            //Console.WriteLine("started logging");
+        }
+
+        void CalculateFPS(GameTime gameTime)
+        {
+            float elapsedRealTime = (float)gameTime.ElapsedRealTime.TotalSeconds;
+            FrameRate.Update(elapsedRealTime, 1f / elapsedRealTime);
+        }
+
+        #endregion
+
+        #region Language and localization
+        /// <summary>
+        /// This is the 'catalog' needed for localization of TrackViewer (meaning translating it to different languages)
+        /// </summary>
+        public static GettextResourceManager catalog = new GettextResourceManager("Contrib");
 
         /// <summary>
         /// Routine to localize (make languague-dependent) a WPF/framework element, like a menu.
@@ -927,22 +977,13 @@ namespace ORTS.TrackViewer
         /// <param name="languageCode">Two-letter code for the new language</param>
         public void SelectLanguage(string languageCode)
         {
-            languageManager.SelectLanguage(languageCode);
+            LanguageManager.SelectLanguage(languageCode);
             //The lines below work from system/english to another language, but not from another language to system/english
             //languageManager.LoadLanguage();
             //Localize(menuControl);
             //Localize(statusBarControl);
         }
-
-        static void InitLogging()
-        {   // debug only
-            //string logFileName = "C:\\tvlog.txt";
-            //System.IO.File.Delete(logFileName);
-            //Console.SetOut(new FileTeeLogger(logFileName, Console.Out));
-            //// Make Console.Error go to the new Console.Out.
-            //Console.SetError(Console.Out);
-            //Console.WriteLine("started logging");
-        }
+        #endregion
     }
 }
 

@@ -299,13 +299,13 @@ namespace ORTS.TrackViewer.Editing
     /// <summary>
     /// Class to simply save a list of stationNames to a unicode text file.
     /// </summary>
-    public class SaveStationNames
+    class SaveStationNames
     {
         /// <summary>
-        /// Constructor and only public method
+        /// Saves the station names to a file
         /// </summary>
         /// <param name="stationNames">String array containing the names of the stations.</param>
-        public SaveStationNames(string[] stationNames)
+        public void SaveToFile(string[] stationNames)
         {
             string fullFilePath = GetFileName();
             if (String.IsNullOrEmpty(fullFilePath)) return;

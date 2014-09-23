@@ -57,6 +57,8 @@ namespace ORTS.TrackViewer.Drawing
         static ColorsGroupBackground backgroundWithTilesGroup = new ColorsGroupBackground();
         static ColorsGroupBackground backgroundWithoutTilesGroup = new ColorsGroupBackground();
 
+        public static ColorWithHighlights otherPathsReferenceColor;
+
         /// <summary>
         /// Do the initialization of the settings (set the defaults)
         /// </summary>
@@ -66,18 +68,27 @@ namespace ORTS.TrackViewer.Drawing
             SetTrackColors();
             SetPathColors(preferenceChanger);
             SetBackgroundColors(preferenceChanger);
-            
+            SetShadedColors(preferenceChanger);
+
             SetColoursFromOptions(true, false); //just a default
          }
 
         private static void SetPathColors(IPreferenceChanger preferenceChanger)
         {
+            ColorWithHighlights brokenPath = new ColorWithHighlights(Color.Salmon, 40);
+            brokenPath.MakeIntoUserPreference(preferenceChanger, "brokenpath",
+                TrackViewer.catalog.GetString("Select broken path color"));
+
+            ColorWithHighlights brokenNode = new ColorWithHighlights(Color.Red, 40);
+
             ColorWithHighlights pathMain = new ColorWithHighlights(Color.Yellow, 20);
             pathMain.MakeIntoUserPreference(preferenceChanger, "pathmain", 
                 TrackViewer.catalog.GetString("Select path color (main)"));
             ColorsGroupTrack pathMainGroup = new ColorsGroupTrack();
             pathMainGroup.TrackCurved = pathMain;
             pathMainGroup.TrackStraight = pathMain;
+            pathMainGroup.BrokenNode = brokenNode;
+            pathMainGroup.BrokenPath = brokenPath;
             colorsPathMain.TrackColors = pathMainGroup;
 
             ColorWithHighlights pathSiding = new ColorWithHighlights(Color.Orange, 20);
@@ -86,7 +97,12 @@ namespace ORTS.TrackViewer.Drawing
             ColorsGroupTrack pathSidingGroup = new ColorsGroupTrack();
             pathSidingGroup.TrackCurved = pathSiding;
             pathSidingGroup.TrackStraight = pathSiding;
+            pathSidingGroup.BrokenNode = brokenNode;
+            pathSidingGroup.BrokenPath = brokenPath;
             colorsPathSiding.TrackColors = pathSidingGroup;
+
+
+            
         }
 
         private static void SetTrackColors()
@@ -163,14 +179,6 @@ namespace ORTS.TrackViewer.Drawing
                 TrackViewer.catalog.GetString("Select speedpost color"));
             basicColors.Speedpost = basicColor;
 
-            basicColor = new ColorWithHighlights(Color.Salmon, 40);
-            basicColor.MakeIntoUserPreference(preferenceChanger, "speedpost", 
-                TrackViewer.catalog.GetString("Select broken path color"));
-            basicColors.BrokenPath = basicColor;
-
-            basicColor = new ColorWithHighlights(Color.Red, 40);
-            basicColors.BrokenNode = basicColor;
-
             basicColor = new ColorWithHighlights(Color.Blue, 40);
             basicColors.CandidateNode = basicColor;
 
@@ -228,6 +236,29 @@ namespace ORTS.TrackViewer.Drawing
                 colorsRoadsHotlight.TrackColors = roadTrackGroupFlat;
             }
         }
+
+        static void SetShadedColors(IPreferenceChanger preferenceChanger)
+        {
+            otherPathsReferenceColor = new ColorWithHighlights(Color.Fuchsia, 0);
+            otherPathsReferenceColor.MakeIntoUserPreference(preferenceChanger, "otherPaths",
+                TrackViewer.catalog.GetString("Select other-paths color"));
+        }
+
+        public static ColorScheme ShadeColor(ColorWithHighlights referenceColor, int index, int count)
+        {
+            ColorWithHighlights trackColor = ColorWithHighlights.ReshadeColorWithHighlights(referenceColor, index, count);
+
+            ColorsGroupTrack colorsGroup = new ColorsGroupTrack();
+            colorsGroup.TrackStraight = trackColor;
+            colorsGroup.TrackCurved = trackColor;
+            colorsGroup.BrokenNode = trackColor;
+            colorsGroup.BrokenPath = trackColor;
+
+            ColorScheme shadedColorScheme = new ColorScheme();
+            shadedColorScheme.TrackColors = colorsGroup;
+
+            return shadedColorScheme;
+        }
     }
     #endregion
 
@@ -243,8 +274,6 @@ namespace ORTS.TrackViewer.Drawing
         public ColorWithHighlights Text { get; set; }
         public ColorWithHighlights ClearWindowInset { get; set; }
 
-        public ColorWithHighlights BrokenPath { get; set; }
-        public ColorWithHighlights BrokenNode { get; set; }
         public ColorWithHighlights ActiveNode { get; set; }
         public ColorWithHighlights CandidateNode { get; set; }
     }
@@ -257,6 +286,8 @@ namespace ORTS.TrackViewer.Drawing
 
     class ColorsGroupTrack
     {
+        public ColorWithHighlights BrokenPath { get; set; }
+        public ColorWithHighlights BrokenNode { get; set; }
         public ColorWithHighlights TrackStraight { get; set; }
         public ColorWithHighlights TrackCurved { get; set; }
     }
@@ -264,7 +295,9 @@ namespace ORTS.TrackViewer.Drawing
 
     #region class ColorScheme
     /// <summary>
-    /// Class to store colors used for drawing tracks etc. Exists mainly to facilitate highlight colors
+    /// Class to store colors used for drawing tracks etc. 
+    /// Exists to facilitate drawing the same thing multiple times but in different colors, like 
+    /// highlight colors, path colors, ...
     /// </summary>
     class ColorScheme
     {
@@ -279,8 +312,6 @@ namespace ORTS.TrackViewer.Drawing
         public Color Speedpost { get { return TrackItemColors.Speedpost.Colors[highlightType]; } }
         public Color Siding { get { return TrackItemColors.Siding.Colors[highlightType]; } }
 
-        public Color BrokenPath { get { return TrackItemColors.BrokenPath.Colors[highlightType]; } }
-        public Color BrokenNode { get { return TrackItemColors.BrokenNode.Colors[highlightType]; } }
         public Color ActiveNode { get { return TrackItemColors.ActiveNode.Colors[highlightType]; } }
         public Color CandidateNode { get { return TrackItemColors.CandidateNode.Colors[highlightType]; } }
 
@@ -289,11 +320,13 @@ namespace ORTS.TrackViewer.Drawing
 
         public Color TrackStraight { get { return TrackColors.TrackStraight.Colors[highlightType]; } }
         public Color TrackCurved { get { return TrackColors.TrackCurved.Colors[highlightType]; } }
-
+        public Color BrokenPath { get { return TrackColors.BrokenPath.Colors[highlightType]; } }
+        public Color BrokenNode { get { return TrackColors.BrokenNode.Colors[highlightType]; } }
+        
         public Color ClearWindow { get { return BackgroundColors.ClearWindow.Colors[highlightType]; } }
         public Color Tile { get { return BackgroundColors.Tile.Colors[highlightType]; } }
 
-       
+        public Color None { get { return Color.White; } }       
         
         private static Dictionary<HighlightType, string> nameExtensions = new Dictionary<HighlightType, string>
         {
@@ -489,6 +522,51 @@ namespace ORTS.TrackViewer.Drawing
             newColor.G = (byte)Math.Min(color.G + effectiveOffset, 255);
             return newColor;
             //return new Color(color.ToVector4() * scale);
+        }
+
+        public static ColorWithHighlights ReshadeColorWithHighlights(ColorWithHighlights original, int index, int count)
+        {
+            Color reshadedNominal = ReshadedColor(original.Colors[HighlightType.Normal], index, count);
+            return new ColorWithHighlights(reshadedNominal, 0);
+        }
+
+        /// <summary>
+        /// Change the complete color to be part of a set of shaded colors
+        /// </summary>
+        /// <param name="color">Original non-shaded color</param>
+        /// <param name="index">Index describing which of the colors we need to make in a spectrum</param>
+        /// <param name="count">Total amount of colors in the spectrion</param>
+        /// <returns>The changed-color</returns>
+        public static Color ReshadedColor(Color color, int index, int count)
+        {
+            Color newColor = new Color();
+            newColor.A = color.A;
+
+            newColor.R = ReshadeSingleChannel(color.R, index, count);
+            newColor.G = ReshadeSingleChannel(color.G, index, count);
+            newColor.B = ReshadeSingleChannel(color.B, index, count);
+            
+            return newColor;
+        }
+
+        /// <summary>
+        /// Return a changed single channel of a color to be part of a set of shaded colors
+        /// </summary>
+        /// <param name="original">Original non-shaded color</param>
+        /// <param name="index">Index describing which of the colors we need to make in a spectrum</param>
+        /// <param name="count">Total amount of colors in the spectrion</param>
+        static byte ReshadeSingleChannel(byte original, int index, int count)
+        {
+            float newvalue;
+            if (original >= 128)
+            {
+                newvalue = original * (count + index + 1) / (2 * count);
+            }
+            else
+            {
+                newvalue = 255 - ((255-original) * (count + index + 1) / (2 * count));
+            }
+            return (byte)newvalue;
         }
 
     }

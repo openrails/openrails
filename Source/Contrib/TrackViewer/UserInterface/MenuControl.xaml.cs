@@ -214,6 +214,7 @@ namespace ORTS.TrackViewer.UserInterface
 
             menuSelectPath.IsEnabled = (trackViewer.CurrentRoute != null);
             menuNewPath.IsEnabled = (trackViewer.CurrentRoute != null);
+            menuShowOtherPaths.IsEnabled = (trackViewer.CurrentRoute != null);
             menuSavePath.IsEnabled = (trackViewer.PathEditor != null);
             menuSaveStations.IsEnabled = (trackViewer.PathEditor != null);
             menuEnableEditing.IsEnabled = (trackViewer.PathEditor != null);
@@ -281,8 +282,12 @@ namespace ORTS.TrackViewer.UserInterface
 
         private void menuInstallFolder_Click(object sender, RoutedEventArgs e)
         {
-            trackViewer.SelectInstallFolder();
-            PopulateRoutes();
+            bool newFolderWasInstalled = trackViewer.SelectInstallFolder();
+            if (newFolderWasInstalled)
+            {
+                CloseOtherPathsWindow();
+                PopulateRoutes();
+            }
         }
 
         /// <summary>
@@ -315,6 +320,7 @@ namespace ORTS.TrackViewer.UserInterface
             {
                 if (route.Name == (string)selectedMenuItem.Header)
                 {
+                    CloseOtherPathsWindow();
                     trackViewer.SetRoute(route);
                     UpdateMenuSettings();
                     return;
@@ -327,7 +333,8 @@ namespace ORTS.TrackViewer.UserInterface
         /// </summary>
         private void menuReloadRoute_Click(object sender, RoutedEventArgs e)
         {
-            trackViewer.SetDefaultRoute();
+            CloseOtherPathsWindow();
+            trackViewer.ReloadRoute();
             UpdateMenuSettings();
         }
 
@@ -340,7 +347,7 @@ namespace ORTS.TrackViewer.UserInterface
             List<string> paths = new List<string>();
             foreach (ORTS.Menu.Path path in trackViewer.Paths)
             {
-                paths.Add(makeHeader(path));
+                paths.Add(MakePathMenyEntryName(path));
             }
             paths.Insert(0, TrackViewer.catalog.GetString("<Select path>"));
             menuSelectPathCombobox.ItemsSource = paths;
@@ -439,36 +446,13 @@ namespace ORTS.TrackViewer.UserInterface
         /// <summary>
         /// The user has selected a path. Find out which one and load it
         /// </summary>
-        private void menuSelectPath_Click(object sender, RoutedEventArgs e)
-        {
-            MenuItem selectedMenuItem = sender as MenuItem;
-
-            foreach (ORTS.Menu.Path path in trackViewer.Paths)
-            {
-                if (makeHeader(path) == (string)selectedMenuItem.Header)
-                {
-                    trackViewer.SetPath(path);
-                    trackViewer.PathEditor.EditingIsActive = menuEnableEditing.IsChecked;
-                    if (!menuShowPATfile.IsChecked)
-                    {   // make sure path is visible either raw or (preferably) processed.
-                        menuShowTrainpath.IsChecked = true;
-                    }
-                    UpdateMenuSettings();
-                    return;
-                }
-            }
-        }
-
-        /// <summary>
-        /// The user has selected a path. Find out which one and load it
-        /// </summary>
         private void menuSelectPathCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             string selectedPath = menuSelectPathCombobox.SelectedItem as string;
             if (selectedPath == null) return;
             foreach (ORTS.Menu.Path path in trackViewer.Paths)
             {
-                if (makeHeader(path) == selectedPath)
+                if (MakePathMenyEntryName(path) == selectedPath)
                 {
                     menuPathEditor.IsSubmenuOpen = false;
                     trackViewer.SetPath(path);
@@ -489,7 +473,7 @@ namespace ORTS.TrackViewer.UserInterface
         /// </summary>
         /// <param name="path">The path containing name and filepath</param>
         /// <returns>string that can be used to defined menu header</returns>
-        private static string makeHeader(ORTS.Menu.Path path)
+        public static string MakePathMenyEntryName(ORTS.Menu.Path path)
         {
             string[] pathArr = path.FilePath.Split('\\');
             string fileName = pathArr.Last();
@@ -868,8 +852,8 @@ namespace ORTS.TrackViewer.UserInterface
         /// </summary>
         public void PopulateLanguages()
         {
-            comboBoxLanguage.ItemsSource = trackViewer.languageManager.Languages;
-            comboBoxLanguage.SelectedValue = trackViewer.languageManager.CurrentLanguageCode; 
+            comboBoxLanguage.ItemsSource = trackViewer.LanguageManager.Languages;
+            comboBoxLanguage.SelectedValue = LanguageManager.CurrentLanguageCode; 
         }
 
         private void comboBoxLanguage_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -878,8 +862,21 @@ namespace ORTS.TrackViewer.UserInterface
             trackViewer.SelectLanguage(selectedLanguage.Code);
         }
 
+        OtherPathsWindow otherPathsWindow;
+        private void menuShowOtherPaths_Click(object sender, RoutedEventArgs e)
+        {
+            otherPathsWindow = new OtherPathsWindow(trackViewer.DrawMultiplePaths);
+            TrackViewer.Localize(otherPathsWindow);
+            otherPathsWindow.Show();
+        }
 
-
+        private void CloseOtherPathsWindow()
+        {
+            if (otherPathsWindow != null)
+            {
+                otherPathsWindow.Close();
+            }
+        }
 
     }
 
