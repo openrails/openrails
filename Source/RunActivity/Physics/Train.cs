@@ -97,7 +97,7 @@ namespace ORTS
         public int NPull;
         public int NPush;
         public int LeadLocomotiveIndex = -1;
-        public bool IsFreight;                           // has at least one freight car; mainly used for maxspeed calculation
+        public bool IsFreight;                           // has at least one freight car
         public int PassengerCarsNumber = 0;              // Number of passenger cars
         public float SlipperySpotDistanceM;              // distance to extra slippery part of track
         public float SlipperySpotLengthM;
@@ -4723,9 +4723,18 @@ namespace ORTS
                         {
                             if (!MayDepart)
                             {
-                                MayDepart = true;
-                                DisplayMessage = Catalog.GetString("Passenger boarding completed. You may depart now.");
-                                Program.Simulator.SoundNotify = Event.PermissionToDepart;
+                                // check if signal ahead is cleared - if not, do not allow depart
+                                if (NextSignalObject[0] != null && NextSignalObject[0].this_sig_lr(MstsSignalFunction.NORMAL) == MstsSignalAspect.STOP
+                                    && NextSignalObject[0].hasPermission != SignalObject.Permission.Granted)
+                                {
+                                    DisplayMessage = Catalog.GetString("Passenger boarding completed. Waiting for signal ahead to clear.");
+                                }
+                                else
+                                {
+                                    MayDepart = true;
+                                    DisplayMessage = Catalog.GetString("Passenger boarding completed. You may depart now.");
+                                    Program.Simulator.SoundNotify = Event.PermissionToDepart;
+                                }
                             }
                         }
                         else
@@ -4814,13 +4823,17 @@ namespace ORTS
                         bool missedStation = false;
 
                         int stationRouteIndex = ValidRoute[0].GetRouteIndex(StationStops[0].TCSectionIndex, 0);
-                        if (stationRouteIndex < 0)
+
+                        if (StationStops[0].SubrouteIndex == TCRoute.activeSubpath)
                         {
-                            missedStation = true;
-                        }
-                        else if (stationRouteIndex < PresentPosition[1].RouteListIndex)
-                        {
-                            missedStation = ValidRoute[0].GetDistanceAlongRoute(stationRouteIndex, StationStops[0].StopOffset, PresentPosition[1].RouteListIndex, PresentPosition[1].TCOffset, true, signalRef) > 500f;
+                            if (stationRouteIndex < 0)
+                            {
+                                missedStation = true;
+                            }
+                            else if (stationRouteIndex < PresentPosition[1].RouteListIndex)
+                            {
+                                missedStation = ValidRoute[0].GetDistanceAlongRoute(stationRouteIndex, StationStops[0].StopOffset, PresentPosition[1].RouteListIndex, PresentPosition[1].TCOffset, true, signalRef) > 500f;
+                            }
                         }
 
                         if (missedStation)
@@ -5576,16 +5589,19 @@ namespace ORTS
                 {
                     actualWaitTimeS = 0.0f;
                     ClaimState = false;
+
+                    //<RRComment reset any invalid claims (occurs on WAIT commands, reason still to be checked! - not unclaiming causes deadlocks
+                    for (int iIndex = PresentPosition[0].RouteListIndex; iIndex <= ValidRoute[0].Count - 1; iIndex++)
+                    {
+                        int sectionIndex = ValidRoute[0][iIndex].TCSectionIndex;
+                        TrackCircuitSection claimSection = signalRef.TrackCircuitList[sectionIndex];
+                        if (claimSection.CircuitState.TrainClaimed.ContainsTrain(routedForward))
+                        {
+                            claimSection.UnclaimTrain(routedForward);
+                        }
+                    }
                 }
 
-                //                if (hasClaimed && !ClaimState)
-                //                {
-                //                    foreach (TCRouteElement thisElement in NextSignalObject[0].signalRoute)
-                //                    {
-                //                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
-                //                        thisSection.UnreserveTrain(routedForward, false);
-                //                    }
-                //                }
             }
             else
             {
@@ -7715,6 +7731,24 @@ namespace ORTS
 
         public virtual void SwitchToNodeControl(int thisSectionIndex)
         {
+            // reset enabled signal if required
+            if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL && NextSignalObject[0] != null && NextSignalObject[0].enabledTrain == routedForward)
+            {
+                // reset any claims
+                foreach (TCRouteElement thisElement in NextSignalObject[0].signalRoute)
+                {
+                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                    if (thisSection.CircuitState.TrainClaimed.ContainsTrain(routedForward))
+                    {
+                        thisSection.UnclaimTrain(routedForward);
+                    }
+                }
+
+                // reset signal
+                NextSignalObject[0].enabledTrain = null;
+                NextSignalObject[0].ResetSignal(true);
+            }
+
             // use direction forward only
             float maxDistance = Math.Max(AllowedMaxSpeedMpS * maxTimeS, minCheckDistanceM);
             float clearedDistanceM = 0.0f;
@@ -9059,7 +9093,8 @@ namespace ORTS
                 }
             }
 #if DEBUG_DEADLOCK
-            File.AppendAllText(@"C:\Temp\deadlock.txt", "\n=================\nTrain : " + Number.ToString() + "\n");
+            File.AppendAllText(@"C:\Temp\deadlock.txt", "\n================= Check Deadlock \nTrain : " + Number.ToString() + "\n");
+
             foreach (KeyValuePair<int, List<Dictionary<int, int>>> thisDeadlock in DeadlockInfo)
             {
                 File.AppendAllText(@"C:\Temp\deadlock.txt", "Section : " + thisDeadlock.Key.ToString() + "\n");
@@ -12034,14 +12069,40 @@ namespace ORTS
                 newRoute.Add(altRoute[iElement]);
             }
 
-            // check for any deadlocks on abandoned path
+            // check for any deadlocks on abandoned path - but only if not on new path
 
             int lastAlternativeSectionIndex = thisRoute.GetRouteIndex(altRoute[altRoute.Count - 1].TCSectionIndex, startElementIndex);
             for (int iElement = startElementIndex; iElement <= lastAlternativeSectionIndex; iElement++)
             {
                 TrackCircuitSection abdSection = signalRef.TrackCircuitList[thisRoute[iElement].TCSectionIndex];
-                abdSection.ClearDeadlockTrap(Number);
+
+#if DEBUG_DEADLOCK
+                File.AppendAllText(@"C:\temp\deadlock.txt","Abandoning section " + abdSection.Index + " for Train " + Number + "\n");
+#endif
+
+                if (newRoute.GetRouteIndex(abdSection.Index, 0) < 0)
+                {
+
+#if DEBUG_DEADLOCK
+                File.AppendAllText(@"C:\temp\deadlock.txt","Removing deadlocks for section " + abdSection.Index + " for Train " + Number + "\n");
+#endif
+
+                    abdSection.ClearDeadlockTrap(Number);
+                }
+
+#if DEBUG_DEADLOCK
+                else
+                {
+                    File.AppendAllText(@"C:\temp\deadlock.txt","Section " + abdSection.Index + " for Train " + Number + " in new route, not removing deadlocks\n");
+                }
+                File.AppendAllText(@"C:\temp\deadlock.txt", "\n");
+#endif
+
             }
+
+#if DEBUG_DEADLOCK
+            File.AppendAllText(@"C:\temp\deadlock.txt", "\n");
+#endif
 
             // continued path
 
@@ -12137,7 +12198,7 @@ namespace ORTS
             foreach (KeyValuePair<int, List<Dictionary<int, int>>> thisDeadlock in DeadlockInfo)
             {
 #if DEBUG_DEADLOCK
-                File.AppendAllText(@"C:\Temp\deadlock.txt", "Removed Train : " + Number.ToString() + "\n");
+                File.AppendAllText(@"C:\Temp\deadlock.txt", "\n === Removed Train : " + Number.ToString() + "\n");
                 File.AppendAllText(@"C:\Temp\deadlock.txt", "Deadlock at section : " + thisDeadlock.Key.ToString() + "\n");
 #endif
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisDeadlock.Key];
@@ -12214,7 +12275,7 @@ namespace ORTS
 
             StationStop thisStationStop = StationStops.Count > 0 ? StationStops[StationStops.Count - 1] : null;
 
-            switch (thisCommand.CommandToken)
+            switch (thisCommand.CommandToken.Trim())
             {
                 // WAIT command
                 case "wait":
@@ -12655,7 +12716,7 @@ namespace ORTS
                 }
             }
 
-            // if common section, check directions
+            // set actual start
 
             TCRouteElement thisTrainElement = null;
             TCRouteElement otherTrainElement = null;
@@ -12663,6 +12724,15 @@ namespace ORTS
             int thisTrainStartSubpathIndex = reqWait.startSubrouteIndex;
             int thisTrainStartRouteIndex = TCRoute.TCRouteSubpaths[thisTrainStartSubpathIndex].GetRouteIndex(reqWait.startSectionIndex, 0);
 
+            // if valid wait but wait is in next subpath, use start section of next subpath
+
+            if (validWait && thisTrainStartSubpathIndex < thisSubpath)
+            {
+                thisTrainStartSubpathIndex = thisSubpath;
+                thisTrainStartRouteIndex = 0;
+            }
+
+            // check directions
             if (validWait)
             {
                 thisTrainElement = TCRoute.TCRouteSubpaths[thisSubpath][thisIndex];
@@ -12857,7 +12927,9 @@ namespace ORTS
             bool waitState = false;
 
             // check if first wait is this section
-            WaitInfo firstWait = WaitList[0];
+
+            int processedWait = 0;
+            WaitInfo firstWait = WaitList[processedWait];
 
             // if first wait is connect : no normal waits or follows to process
             if (firstWait.WaitType == WaitInfo.WaitInfoType.Connect)
@@ -12880,9 +12952,25 @@ namespace ORTS
 
                 // if not awaited, check for further waits
                 // wait list may have changed if first item is no longer valid
-                if (!waitState && WaitList.Count > 0)
+                if (!waitState)
                 {
-                    firstWait = WaitList[0];
+                    if (processedWait > WaitList.Count - 1)
+                    {
+                        break; // no more waits to check
+                    }
+                    else if (firstWait == WaitList[processedWait])  // wait was maintained
+                    {
+                        processedWait++;
+                    }
+
+                    if (WaitList.Count > processedWait)
+                    {
+                        firstWait = WaitList[processedWait];
+                    }
+                    else
+                    {
+                        break; // no more waits to check
+                    }
                 }
                 else
                 {
@@ -17825,4 +17913,5 @@ namespace ORTS
         }
     }// class Train
 }
+
 
