@@ -245,6 +245,19 @@ namespace ORTS
             base.InitializeMoving();
             WheelSpeedMpS = SpeedMpS;
             DynamicBrakePercent = -1;
+            if (DieselEngines[0].GearBox != null && GearBoxController != null) 
+            {
+                DieselEngines[0].GearBox.InitializeMoving();
+                DieselEngines[0].InitializeMoving();
+                if (IsLeadLocomotive())
+                {
+                    Train.MUGearboxGearIndex = DieselEngines[0].GearBox.CurrentGearIndex+1;
+                    Train.AITrainGearboxGearIndex = DieselEngines[0].GearBox.CurrentGearIndex+1;
+                }
+                GearBoxController.CurrentNotch = Train.MUGearboxGearIndex;
+                GearboxGearIndex = DieselEngines[0].GearBox.CurrentGearIndex+1;
+                GearBoxController.SetValue((float)GearBoxController.CurrentNotch);
+            }
             ThrottleController.SetValue(Train.InitialThrottlepercent / 100);
         }
 

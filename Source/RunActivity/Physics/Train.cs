@@ -1358,7 +1358,6 @@ namespace ORTS
             SpeedMpS = InitialSpeed;
             MUDirection = Direction.Forward;
             MUThrottlePercent = InitialThrottlepercent;
-            MUGearboxGearIndex = 3;
             MUDynamicBrakePercent = -1;
             AITrainThrottlePercent = InitialThrottlepercent;
             aiBrakePercent = 0;
@@ -1389,7 +1388,7 @@ namespace ORTS
 
         private void TraincarsInitializeMoving ()
         {
-            for (int i = 0; i < Cars.Count-1; ++i)
+            for (int i = 0; i < Cars.Count; ++i)
             {
                 TrainCar car = Cars[i];
                 car.InitializeMoving();

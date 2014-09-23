@@ -285,7 +285,8 @@ namespace ORTS
         }
 
         float clutch;
-        public float ClutchPercent { set { clutch = (value > 100.0f ? 100f : (value < -100f ? -100f : value)) / 100f; } get { return clutch * 100f; } }
+        public float ClutchPercent { set { clutch = (value > 100.0f ? 100f : (value < -100f ? -100f : value)) / 100f; }
+            get { return clutch * 100f; } }
 
         public bool AutoClutch = true;
 
@@ -377,6 +378,22 @@ namespace ORTS
             outf.Write(gearedUp);
             outf.Write(gearedDown);
             outf.Write(clutchOn);
+        }
+
+        public void InitializeMoving ()
+        {
+            for (int iGear = 0; iGear < Gears.Count; iGear++)
+            {
+                if (Gears[iGear].MaxSpeedMpS < CurrentSpeedMpS) continue;
+                else currentGearIndex = nextGearIndex = iGear;
+                break;
+             } 
+
+            gearedUp = false;
+            gearedDown = false;
+            clutchOn = true;
+            clutch = 0.4f;
+            DieselEngine.RealRPM = ShaftRPM;
         }
 
         public bool IsInitialized { get { return mstsParams.IsInitialized; } }

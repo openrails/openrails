@@ -748,6 +748,11 @@ namespace ORTS
             }
         }
 
+        public void InitializeMoving()
+        {
+            EngineStatus = Status.Running;
+        }
+
         public void InitFromMSTS(MSTSDieselLocomotive loco)
         {
             IdleRPM = loco.IdleRPM;

@@ -666,7 +666,16 @@ namespace ORTS
         public virtual void InitializeMoving()
         {
             BrakeSystem.InitializeMoving();
-            SpeedMpS = Train.InitialSpeed;
+            //TODO: next if/else block has been inserted to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
+            // To achieve the same result with other means, without flipping trainset physics, the if/else block should be deleted and replaced by following instruction:
+            //            SpeedMpS = Flipped ? -Train.InitialSpeed : Train.InitialSpeed;
+            if (IsDriveable && Train.TrainType == Train.TRAINTYPE.PLAYER)
+            {
+                var loco = this as MSTSLocomotive;
+                SpeedMpS = Flipped ^ loco.UsingRearCab ? -Train.InitialSpeed : Train.InitialSpeed;
+            }
+
+            else SpeedMpS = Flipped ? -Train.InitialSpeed : Train.InitialSpeed; 
             _PrevSpeedMpS = SpeedMpS;
         }
 

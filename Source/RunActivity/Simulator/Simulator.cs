@@ -803,8 +803,7 @@ namespace ORTS
 
             if (Activity != null && train.InitialSpeed > 0)
             {
-                if (((PlayerLocomotive is MSTSElectricLocomotive) || ((PlayerLocomotive is MSTSDieselLocomotive) &&// TODO: extend to other types of locos
-                    ((MSTSDieselLocomotive)PlayerLocomotive).GearBox == null && ((MSTSDieselLocomotive)PlayerLocomotive).GearBoxController == null)) &&
+                if (((PlayerLocomotive is MSTSElectricLocomotive) || (PlayerLocomotive is MSTSDieselLocomotive)) &&
                     (PlayerLocomotive.BrakeSystem is AirSinglePipe))
                     train.InitializeMoving();
              }
