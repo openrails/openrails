@@ -1130,6 +1130,8 @@ namespace ORTS
             {
                 if (MovementState != AI_MOVEMENT_STATE.STATION_STOP && MovementState != AI_MOVEMENT_STATE.STOPPED)
                 {
+                    if (!Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility &&
+                        MovementState != AI_MOVEMENT_STATE.INIT_ACTION && MovementState != AI_MOVEMENT_STATE.HANDLE_ACTION && MovementState != AI_MOVEMENT_STATE.END_ACTION)
                     MovementState = AI_MOVEMENT_STATE.FOLLOWING;  // start following
                 }
             }
@@ -3031,6 +3033,8 @@ namespace ORTS
 
                             if (deltaDistance < distanceToTrain) // perform to normal braking to handle action
                             {
+                                if (!Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility)
+                                    MovementState = AI_MOVEMENT_STATE.BRAKING;  
                                 UpdateBrakingState(elapsedClockSeconds, presentTime);
                                 return;
                             }

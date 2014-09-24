@@ -180,8 +180,11 @@ namespace ORTS
 
         public override void InitializeMoving() // used when initial speed > 0
         {
-            CylPressurePSIA = BrakeLine1PressurePSI = V2P(Car.Train.BrakeLine1PressurePSIorInHg);
-            VacResPressurePSIA = V2P(64);
+            BrakeLine1PressurePSI = V2P(Car.Train.BrakeLine1PressurePSIorInHg);
+            BrakeLine2PressurePSI = 0;
+            BrakeLine3PressurePSI = 0; 
+            CylPressurePSIA = 0;
+            VacResPressurePSIA = V2P(Car.Train.BrakeLine1PressurePSIorInHg)*0.95f;
         }
 
         public override void LocoInitializeMoving() // starting conditions when starting speed > 0

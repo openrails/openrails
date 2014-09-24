@@ -877,6 +877,16 @@ namespace ORTS
             if (CutoffController != null)
                 CutoffController.SetValue(Train.MUReverserPercent / 100);
         }
+
+                //================================================================================================//
+        /// <summary>
+        /// Set starting conditions  when initial speed > 0 
+        /// 
+
+        public override void InitializeMoving()
+        {
+            base.InitializeMoving();
+        }
  
         // +++++++++++++++++++++ Main Simulation - Start ++++++++++++++++++++++++++++++++
         /// <summary>
