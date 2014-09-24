@@ -258,7 +258,7 @@ namespace ORTS
                 GearboxGearIndex = DieselEngines[0].GearBox.CurrentGearIndex+1;
                 GearBoxController.SetValue((float)GearBoxController.CurrentNotch);
             }
-            ThrottleController.SetValue(Train.InitialThrottlepercent / 100);
+            ThrottleController.SetValue(Train.MUThrottlePercent / 100);
         }
 
         /// <summary>

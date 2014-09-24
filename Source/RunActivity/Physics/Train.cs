@@ -1357,14 +1357,27 @@ namespace ORTS
         {
             SpeedMpS = InitialSpeed;
             MUDirection = Direction.Forward;
-            MUThrottlePercent = InitialThrottlepercent;
+            float initialThrottlepercent = InitialThrottlepercent;
             MUDynamicBrakePercent = -1;
-            AITrainThrottlePercent = InitialThrottlepercent;
             aiBrakePercent = 0;
             AITrainBrakePercent = 0;
             if (LeadLocomotiveIndex >= 0)
             {
                 MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
+                lead.CurrentElevationPercent = 100f * lead.WorldPosition.XNAMatrix.M32;
+
+                //TODO: next if block has been inserted to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
+                // To achieve the same result with other means, without flipping trainset physics, the block should be deleted
+                //         
+                if (lead.IsDriveable  && (lead as MSTSLocomotive).UsingRearCab)
+                {
+                    lead.CurrentElevationPercent = -lead.CurrentElevationPercent;
+                }
+                // give it a bit more gas if it is uphill
+                if (lead.CurrentElevationPercent < -2.0) initialThrottlepercent = 40f;
+                // better block gas if it is downhill
+                else if (lead.CurrentElevationPercent > 1.0) initialThrottlepercent = 0f;
+
                 if (lead.TrainBrakeController != null)
                 {
                     BrakeLine1PressurePSIorInHg = lead.TrainBrakeController.MaxPressurePSI;
@@ -1377,6 +1390,8 @@ namespace ORTS
 //            BrakeLine4PressurePSI = inf.ReadSingle();
 //            RetainerSetting = (RetainerSetting)inf.ReadInt32();
 //            RetainerPercent = inf.ReadInt32();
+            MUThrottlePercent = initialThrottlepercent;
+            AITrainThrottlePercent = initialThrottlepercent;
 
             TraincarsInitializeMoving();
         }
