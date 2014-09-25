@@ -419,7 +419,8 @@ namespace ORTS
                 viewPointList.Add(viewPoint);
             }
             var cabViewType = new CabViewType();
-            cabViewType = (viewPointList[0].StartDirection.Y >= 90 || viewPointList[0].StartDirection.Y <= -90) ? CabViewType.Rear : CabViewType.Front;
+            cabViewType = ((viewPointList[0].StartDirection.Y >= 90 && viewPointList[0].StartDirection.Y <= 270)
+                || (viewPointList[0].StartDirection.Y <= -90 && viewPointList[0].StartDirection.Y >= -270)) ? CabViewType.Rear : CabViewType.Front;
 
             if (!(this is MSTSSteamLocomotive))
             {
