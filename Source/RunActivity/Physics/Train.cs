@@ -512,6 +512,13 @@ namespace ORTS
             routedForward = new TrainRouted(this, 0);
             routedBackward = new TrainRouted(this, 1);
 
+#if WITH_SAVE_DEBUG
+            string trainStart;
+            trainStart = inf.ReadString();
+            if (!trainStart.Equals("TrainStart"))
+                File.AppendAllText(@"C:\temp\checkpath.txt", "error while reading TrainStart");
+#endif
+
             Simulator = simulator;
             RestoreCars(simulator, inf);
             CheckFreight();
@@ -768,6 +775,9 @@ namespace ORTS
                 }
             }
 
+#if NEW_ACTION
+            //AuxActionsContain = new AuxActionsContainer(this, inf);
+#endif
             RestoreDeadlockInfo(inf);
 
             // restore leadlocomotive
@@ -777,11 +787,16 @@ namespace ORTS
                 Program.Simulator.PlayerLocomotive = LeadLocomotive;
             }
 
+
             // restore logfile
             if (DatalogTrainSpeed)
             {
                 CreateLogFile();
             }
+#if WITH_SAVE_DEBUG
+            if (inf.ReadString() != "TrainEnd")
+                File.AppendAllText(@"C:\temp\checkpath.txt", "error while reading TrainEnd");
+#endif
         }
 
         private void RestoreCars(Simulator simulator, BinaryReader inf)
@@ -855,6 +870,9 @@ namespace ORTS
 
         public virtual void Save(BinaryWriter outf)
         {
+#if WITH_SAVE_DEBUG
+            outf.Write((string)"TrainStart");
+#endif
             SaveCars(outf);
             outf.Write(Number);
             outf.Write(Name);
@@ -1060,14 +1078,20 @@ namespace ORTS
             PresentPosition[0].Save(outf);
             PresentPosition[1].Save(outf);
             PreviousPosition[0].Save(outf);
-
+            //  Save requiredAction, the original actions
             outf.Write(requiredActions.Count);
             foreach (DistanceTravelledItem thisAction in requiredActions)
             {
                 thisAction.Save(outf);
             }
-            
+            //  Then, save the Auxiliary Action Container
+            //SaveAuxContainer(outf);
+
             SaveDeadlockInfo(outf);
+#if WITH_SAVE_DEBUG
+            outf.Write("TrainEnd");
+#endif
+
         }
 
         private void SaveCars(BinaryWriter outf)
@@ -1114,6 +1138,13 @@ namespace ORTS
                 }
             }
         }
+
+        private void SaveAuxContainer(BinaryWriter outf)
+        {
+            AuxActionsContain.Save(outf, Convert.ToInt32(Math.Floor(Simulator.ClockTime)));
+        }
+
+
         //================================================================================================//
         /// <summary>
         /// Changes the Lead locomotive (i.e. the loco which the player controls) to the next in the consist.
@@ -16653,9 +16684,6 @@ namespace ORTS
             public void RemovePendingAIActionItems(bool removeAll)
             {
                 List<DistanceTravelledItem> itemsToRemove = new List<DistanceTravelledItem>();
-
-                if (removeAll)
-                    Trace.TraceInformation("No Actions");
 
                 foreach (var thisAction in this)
                 {
