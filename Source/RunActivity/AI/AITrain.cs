@@ -4306,28 +4306,29 @@ namespace ORTS
             direction = (int)attachTrain.RearTDBTraveller.Direction;
 
             attachTrain.PresentPosition[1].SetTCPosition(tn.TCCrossReference, offset, direction);
-
-            // remove train from track and clear actions
-            attachTrain.RemoveFromTrack();
-            attachTrain.ClearActiveSectionItems();
-
-            // set new track sections occupied
-            Train.TCSubpathRoute tempRouteTrain = signalRef.BuildTempRoute(attachTrain, attachTrain.PresentPosition[1].TCSectionIndex,
-                attachTrain.PresentPosition[1].TCOffset, attachTrain.PresentPosition[1].TCDirection, attachTrain.Length, false, true, false);
-
-            for (int iIndex = 0; iIndex < tempRouteTrain.Count; iIndex++)
+            if (Simulator.TimetableMode || !Simulator.Settings.EnhancedActCompatibility)
             {
-                TrackCircuitSection thisSection = signalRef.TrackCircuitList[tempRouteTrain[iIndex].TCSectionIndex];
-                thisSection.SetOccupied(attachTrain.routedForward);
-            }
+                // remove train from track and clear actions
+                attachTrain.RemoveFromTrack();
+                attachTrain.ClearActiveSectionItems();
 
+                // set new track sections occupied
+                Train.TCSubpathRoute tempRouteTrain = signalRef.BuildTempRoute(attachTrain, attachTrain.PresentPosition[1].TCSectionIndex,
+                    attachTrain.PresentPosition[1].TCOffset, attachTrain.PresentPosition[1].TCDirection, attachTrain.Length, false, true, false);
+
+                for (int iIndex = 0; iIndex < tempRouteTrain.Count; iIndex++)
+                {
+                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[tempRouteTrain[iIndex].TCSectionIndex];
+                    thisSection.SetOccupied(attachTrain.routedForward);
+                }
+            }
             // set various items
             attachTrain.CheckFreight();
             attachCar.SignalEvent(Event.Couple);
 
             if (MovementState != AI_MOVEMENT_STATE.AI_STATIC)
             {
-                InitializeSignals(true);
+               if (Simulator.TimetableMode || !Simulator.Settings.EnhancedActCompatibility) InitializeSignals(true);
             }
 
             InitializeBrakes();
