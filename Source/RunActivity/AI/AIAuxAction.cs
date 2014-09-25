@@ -74,6 +74,11 @@ namespace ORTS
                 SetGenAuxActions((AITrain)thisTrain);
             }
             ThisTrain = thisTrain;
+#if WITH_SAVE_DEBUG
+            int check = inf.ReadInt32();
+            if (check != 9999)
+                File.AppendAllText(@"C:\temp\checkpath.txt", "error while reading container");
+#endif
             int cntAuxActionSpec = inf.ReadInt32();
             for (int idx = 0; idx < cntAuxActionSpec; idx++)
             {
@@ -91,18 +96,30 @@ namespace ORTS
                         action = new AIActionHornRef(thisTrain, inf);
                         SpecAuxActions.Add(action);
                         break;
+                    case AIAuxActionsRef.AI_AUX_ACTION.SIGNAL_DELEGATE:
+                        action = new AIActSigDelegateRef(thisTrain, inf);
+                        SpecAuxActions.Add(action);
+                        break;
                     default:
                         break;
                 }
             }
+#if WITH_SAVE_DEBUG
+            check = inf.ReadInt32();
+            if (check != 9999)
+                File.AppendAllText(@"C:\temp\checkpath.txt", "error while reading container");
+#endif
         }
 
         public void Save(BinaryWriter outf, int currentClock)
         {
             int cnt = 0;
+#if WITH_SAVE_DEBUG
+            outf.Write((int)9999);
+#endif
             outf.Write(SpecAuxActions.Count);
 #if WITH_PATH_DEBUG
-            File.AppendAllText(@"C:\temp\checkpath.txt", "SaveAIAuxActions, count :" + SpecAuxActions.Count + 
+            File.AppendAllText(@"C:\temp\checkpath.txt", "SaveAuxContainer, count :" + SpecAuxActions.Count + 
                 "Position in file: " + outf.BaseStream.Position + "\n");
 #endif
             if (ThisTrain is AITrain && ((AITrain)ThisTrain).MovementState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION)
@@ -119,10 +136,12 @@ namespace ORTS
             }
             foreach (var action in SpecAuxActions)
             {
-
                 action.save(outf, cnt);
                 cnt++;
             }
+#if WITH_SAVE_DEBUG
+            outf.Write((int)9999);
+#endif
         }
 #if false
             int cnt = 0;
@@ -601,6 +620,7 @@ namespace ORTS
             outf.Write(Direction);
             outf.Write(TriggerDistance);
             outf.Write(IsGeneric);
+
             //if (LinkedAuxAction != null)
             //    outf.Write(LinkedAuxAction.NextAction.ToString());
             //else
@@ -1158,6 +1178,33 @@ namespace ORTS
                 brakeSection = distance;
         }
 
+        public AIActSigDelegateRef(Train thisTrain, BinaryReader inf)
+            : base (thisTrain, inf)
+        {
+            Delay = inf.ReadInt32();
+            brakeSection = (float)inf.ReadSingle();
+            NextAction = AI_AUX_ACTION.WAITING_POINT;
+#if WITH_PATH_DEBUG
+            File.AppendAllText(@"C:\temp\checkpath.txt", "\tRestore one WPAuxAction" +
+                "Position in file: " + inf.BaseStream.Position +
+                " type Action: " + NextAction.ToString() +
+                " Delay: " + Delay + "\n");
+#endif
+        }
+
+        public override void save(BinaryWriter outf, int cnt)
+        {
+#if WITH_PATH_DEBUG
+            File.AppendAllText(@"C:\temp\checkpath.txt", "\tSave one SigDelegate, count :" + cnt +
+                "Position in file: " + outf.BaseStream.Position +
+                " type Action: " + NextAction.ToString() +
+                " Delay: " + Delay + "\n");
+#endif
+            base.save(outf, cnt);
+            outf.Write(Delay);
+            outf.Write(brakeSection);
+        }
+
         public override bool CallFreeAction(Train thisTrain)
         {
             if (AssociatedItem != null && AssociatedItem.SignalReferenced != null)
@@ -1522,7 +1569,7 @@ namespace ORTS
                         else if (distanceToGoM < AITrain.signalApproachDistanceM && aiTrain.SpeedMpS == 0)
                         {
                             aiTrain.AdjustControlsBrakeMore(aiTrain.MaxDecelMpSS, elapsedClockSeconds, 100);
-                            movementState = AITrain.AI_MOVEMENT_STATE.END_ACTION;
+                            movementState = AITrain.AI_MOVEMENT_STATE.INIT_ACTION;
                         }
                     }
                     else
