@@ -907,9 +907,6 @@ namespace ORTS
             {
                 foreach (var w in WheelAxles)
                 {
-                    if (!articFront && !articRear && Parts[0].SumWgt < 1.5)
-                        if (w.BogieIndex >= Parts.Count - 1)
-                            w.BogieIndex = 0;
                     if (w.BogieIndex >= Parts.Count)
                         w.BogieIndex = 0;
                     if (w.BogieMatrix > 0 && w.BogieIndex > 0)
@@ -923,6 +920,16 @@ namespace ORTS
                     }
                     w.Part = Parts[w.BogieIndex];
                     w.Part.SumWgt++;
+                }
+                // This check is for the single axle/bogie issue.
+                // Check SumWgt using Part.SumWgt.
+                // Using Parts[0].SumWgt created issues.
+                foreach (var w in WheelAxles)
+                {
+                    if (!articFront && !articRear && w.Part.SumWgt < 1.5)
+                        if (w.BogieIndex >= Parts.Count - 1)
+                            w.BogieIndex = 0;
+                    w.Part = Parts[w.BogieIndex];
                 }
                 // Make sure the axles are sorted by OffsetM along the car.
                 // Attempting to sort car w/o WheelAxles will resort to an error.
