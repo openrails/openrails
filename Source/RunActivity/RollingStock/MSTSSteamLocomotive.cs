@@ -886,6 +886,11 @@ namespace ORTS
         public override void InitializeMoving()
         {
             base.InitializeMoving();
+            WheelSpeedMpS = SpeedMpS;
+            DynamicBrakePercent = -1;
+            CutoffController.SetValue(Train.MUReverserPercent / 100);
+            ThrottleController.SetValue(Train.MUThrottlePercent / 100);
+            HotStart = true;
         }
  
         // +++++++++++++++++++++ Main Simulation - Start ++++++++++++++++++++++++++++++++

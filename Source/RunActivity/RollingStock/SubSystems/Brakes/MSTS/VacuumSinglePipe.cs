@@ -182,13 +182,15 @@ namespace ORTS
         {
             BrakeLine1PressurePSI = V2P(Car.Train.BrakeLine1PressurePSIorInHg);
             BrakeLine2PressurePSI = 0;
-            BrakeLine3PressurePSI = 0; 
-            CylPressurePSIA = 0;
-            VacResPressurePSIA = V2P(Car.Train.BrakeLine1PressurePSIorInHg)*0.95f;
+            BrakeLine3PressurePSI = 0;
+            CylPressurePSIA = V2P(Car.Train.BrakeLine1PressurePSIorInHg);
+            VacResPressurePSIA = V2P(Car.Train.BrakeLine1PressurePSIorInHg);
+            HandbrakePercent = 0;
         }
 
         public override void LocoInitializeMoving() // starting conditions when starting speed > 0
         {
+            VacResPressurePSIA = V2P(Car.Train.BrakeLine1PressurePSIorInHg);
         }
 
 

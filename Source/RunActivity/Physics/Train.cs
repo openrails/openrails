@@ -1373,11 +1373,12 @@ namespace ORTS
             MUDirection = Direction.Forward;
             float initialThrottlepercent = InitialThrottlepercent;
             MUDynamicBrakePercent = -1;
-            aiBrakePercent = 0;
-            AITrainBrakePercent = 0;
+//            aiBrakePercent = 0;
+//            AITrainBrakePercent = 0;
             if (LeadLocomotiveIndex >= 0)
             {
                 MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
+                if (lead is MSTSSteamLocomotive) MUReverserPercent = 25;
                 lead.CurrentElevationPercent = 100f * lead.WorldPosition.XNAMatrix.M32;
 
                 //TODO: next if block has been inserted to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
