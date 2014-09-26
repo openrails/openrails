@@ -406,6 +406,7 @@ namespace ORTS
                 outf.Write(referenceDetails.Key);
                 outf.Write(referenceDetails.Value);
             }
+
         }
 
         //================================================================================================//
@@ -7197,7 +7198,6 @@ namespace ORTS
             ApproachControlCleared = inf.ReadBoolean();
             ReqNumClearAhead = inf.ReadInt32();
             StationHold = inf.ReadBoolean();
-            LockedTrains = new List<KeyValuePair<int, int>>();
 
             // set dummy train, route direction index will be set later on restore of train
 
@@ -7207,6 +7207,15 @@ namespace ORTS
                 Train thisTrain = new Train(trainNumber);
                 Train.TrainRouted thisTrainRouted = new Train.TrainRouted(thisTrain, 0);
                 enabledTrain = thisTrainRouted;
+            }
+            //  Retrieve lock table
+            LockedTrains = new List<KeyValuePair<int, int>>();
+            int cntLock = inf.ReadInt32();
+            for (int cnt = 0; cnt < cntLock; cnt++)
+            {
+                KeyValuePair<int, int> lockInfo = new KeyValuePair<int, int>(inf.ReadInt32(), inf.ReadInt32());
+                LockedTrains.Add (lockInfo);
+
             }
         }
 
@@ -7328,6 +7337,13 @@ namespace ORTS
             outf.Write(isPropagated);
             outf.Write(ReqNumClearAhead);
             outf.Write(StationHold);
+            outf.Write(LockedTrains.Count);
+            for (int cnt = 0; cnt < LockedTrains.Count; cnt++)
+            {
+                outf.Write(LockedTrains[cnt].Key);
+                outf.Write(LockedTrains[cnt].Value);
+            }
+
         }
 
         //================================================================================================//

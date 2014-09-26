@@ -74,11 +74,6 @@ namespace ORTS
                 SetGenAuxActions((AITrain)thisTrain);
             }
             ThisTrain = thisTrain;
-#if WITH_SAVE_DEBUG
-            int check = inf.ReadInt32();
-            if (check != 9999)
-                File.AppendAllText(@"C:\temp\checkpath.txt", "error while reading container");
-#endif
             int cntAuxActionSpec = inf.ReadInt32();
             for (int idx = 0; idx < cntAuxActionSpec; idx++)
             {
@@ -104,19 +99,11 @@ namespace ORTS
                         break;
                 }
             }
-#if WITH_SAVE_DEBUG
-            check = inf.ReadInt32();
-            if (check != 9999)
-                File.AppendAllText(@"C:\temp\checkpath.txt", "error while reading container");
-#endif
         }
 
         public void Save(BinaryWriter outf, int currentClock)
         {
             int cnt = 0;
-#if WITH_SAVE_DEBUG
-            outf.Write((int)9999);
-#endif
             outf.Write(SpecAuxActions.Count);
 #if WITH_PATH_DEBUG
             File.AppendAllText(@"C:\temp\checkpath.txt", "SaveAuxContainer, count :" + SpecAuxActions.Count + 
@@ -139,9 +126,6 @@ namespace ORTS
                 action.save(outf, cnt);
                 cnt++;
             }
-#if WITH_SAVE_DEBUG
-            outf.Write((int)9999);
-#endif
         }
 #if false
             int cnt = 0;
@@ -553,7 +537,11 @@ namespace ORTS
             TriggerDistance = inf.ReadInt32();
             IsGeneric = inf.ReadBoolean();
             AskingTrain = new List<KeyValuePair<int, WorldLocation>>();
-            EndSignalIndex = -1;
+            EndSignalIndex = inf.ReadInt32();
+            if (EndSignalIndex >= 0)
+                SetSignalObject(thisTrain.signalRef.SignalObjects[EndSignalIndex]);
+            else
+                SetSignalObject(null);
         }
 
         public virtual KeyValuePair<System.Type, AIAuxActionsRef> GetCallFunction()
@@ -620,6 +608,7 @@ namespace ORTS
             outf.Write(Direction);
             outf.Write(TriggerDistance);
             outf.Write(IsGeneric);
+            outf.Write(EndSignalIndex);
 
             //if (LinkedAuxAction != null)
             //    outf.Write(LinkedAuxAction.NextAction.ToString());
@@ -1183,7 +1172,7 @@ namespace ORTS
         {
             Delay = inf.ReadInt32();
             brakeSection = (float)inf.ReadSingle();
-            NextAction = AI_AUX_ACTION.WAITING_POINT;
+            NextAction = AI_AUX_ACTION.SIGNAL_DELEGATE;
 #if WITH_PATH_DEBUG
             File.AppendAllText(@"C:\temp\checkpath.txt", "\tRestore one WPAuxAction" +
                 "Position in file: " + inf.BaseStream.Position +

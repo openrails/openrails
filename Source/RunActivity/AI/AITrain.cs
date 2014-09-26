@@ -218,9 +218,8 @@ namespace ORTS
             int serviceListCount = inf.ReadInt32();
             if (serviceListCount > 0) RestoreServiceDefinition(inf, serviceListCount);
 
-#if NEW_ACTION
-            AuxActionsContain = new AuxActionsContainer(this, inf);
-#endif            // set signals and actions if train is active train
+            // set signals and actions if train is active train
+
             bool activeTrain = true;
 
             if (TrainType == TRAINTYPE.AI_NOTSTARTED) activeTrain = false;
@@ -280,14 +279,7 @@ namespace ORTS
             outf.Write(MaxVelocityA);
             if (!Program.Simulator.TimetableMode && ServiceDefinition != null ) ServiceDefinition.Save(outf);
             else outf.Write(-1);
-            SaveAIAuxActions(outf);
         }
-
-        private void SaveAIAuxActions(BinaryWriter outf)
-        {
-            AuxActionsContain.Save(outf, Convert.ToInt32(Math.Floor(Simulator.ClockTime)));
-        }
-
 
         //================================================================================================//
         /// <summary>

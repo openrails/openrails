@@ -512,12 +512,6 @@ namespace ORTS
             routedForward = new TrainRouted(this, 0);
             routedBackward = new TrainRouted(this, 1);
 
-#if WITH_SAVE_DEBUG
-            string trainStart;
-            trainStart = inf.ReadString();
-            if (!trainStart.Equals("TrainStart"))
-                File.AppendAllText(@"C:\temp\checkpath.txt", "error while reading TrainStart");
-#endif
 
             Simulator = simulator;
             RestoreCars(simulator, inf);
@@ -776,7 +770,7 @@ namespace ORTS
             }
 
 #if NEW_ACTION
-            //AuxActionsContain = new AuxActionsContainer(this, inf);
+            AuxActionsContain = new AuxActionsContainer(this, inf);
 #endif
             RestoreDeadlockInfo(inf);
 
@@ -793,10 +787,6 @@ namespace ORTS
             {
                 CreateLogFile();
             }
-#if WITH_SAVE_DEBUG
-            if (inf.ReadString() != "TrainEnd")
-                File.AppendAllText(@"C:\temp\checkpath.txt", "error while reading TrainEnd");
-#endif
         }
 
         private void RestoreCars(Simulator simulator, BinaryReader inf)
@@ -870,9 +860,6 @@ namespace ORTS
 
         public virtual void Save(BinaryWriter outf)
         {
-#if WITH_SAVE_DEBUG
-            outf.Write((string)"TrainStart");
-#endif
             SaveCars(outf);
             outf.Write(Number);
             outf.Write(Name);
@@ -1085,13 +1072,9 @@ namespace ORTS
                 thisAction.Save(outf);
             }
             //  Then, save the Auxiliary Action Container
-            //SaveAuxContainer(outf);
+            SaveAuxContainer(outf);
 
             SaveDeadlockInfo(outf);
-#if WITH_SAVE_DEBUG
-            outf.Write("TrainEnd");
-#endif
-
         }
 
         private void SaveCars(BinaryWriter outf)
