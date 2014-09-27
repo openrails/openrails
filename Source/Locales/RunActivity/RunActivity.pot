@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-09-10 02:46:16+0200\n"
-"PO-Revision-Date: 2014-09-10 02:46:17+0200\n"
+"POT-Creation-Date: 2014-09-27 15:32:15+0200\n"
+"PO-Revision-Date: 2014-09-27 15:32:17+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -11,69 +11,69 @@ msgstr ""
 "X-Generator: MonoDevelop Gettext addin\n"
 
 
-#: ../../RunActivity/Common/Scripting/BrakeController.cs:211
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:217
 msgid "Release"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting/BrakeController.cs:212
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:218
 msgid "Quick Release"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting/BrakeController.cs:213
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:219
 msgid "Running"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting/BrakeController.cs:214
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:220
 msgid "Neutral"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting/BrakeController.cs:215
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:221
 msgid "Apply"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting/BrakeController.cs:216
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:222
 msgid "EPApply"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting/BrakeController.cs:217
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:223
 msgid "Emergency"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting/BrakeController.cs:218
-#: ../../RunActivity/Common/Scripting/BrakeController.cs:221
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:224
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:227
 msgid "Lap"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting/BrakeController.cs:219
-#: ../../RunActivity/Common/Scripting/BrakeController.cs:220
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:225
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:226
 msgid "Service"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting/BrakeController.cs:222
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:228
 msgid "Suppression"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting/BrakeController.cs:223
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:229
 msgid "Cont. Service"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting/BrakeController.cs:224
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:230
 msgid "Full Service"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting/BrakeController.cs:225
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:231
 msgid "Overcharge"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting/BrakeController.cs:226
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:232
 msgid "Emergency Braking Push Button"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting/BrakeController.cs:227
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:233
 msgid "TCS Emergency Braking"
 msgstr ""
 
-#: ../../RunActivity/Common/Scripting/BrakeController.cs:228
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:234
 msgid "TCS Full Service Braking"
 msgstr ""
 
@@ -339,153 +339,157 @@ msgid_plural "Cannot decouple: train has {0} players, need to completely stop."
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../../RunActivity/Physics/Train.cs:1457
+#: ../../RunActivity/Physics/Train.cs:1549
 msgid "Coupler broken!"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:1460
+#: ../../RunActivity/Physics/Train.cs:1552
 msgid "Coupler overloaded!"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:4432
-#: ../../RunActivity/Physics/Train.cs:4437
+#: ../../RunActivity/Physics/Train.cs:4552
+#: ../../RunActivity/Physics/Train.cs:4557
 msgid "Other train is blocking path"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:4563
+#: ../../RunActivity/Physics/Train.cs:4686
 msgid "Held for connecting train : "
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:4618
+#: ../../RunActivity/Physics/Train.cs:4744
+msgid "Passenger boarding completed. Waiting for signal ahead to clear."
+msgstr ""
+
+#: ../../RunActivity/Physics/Train.cs:4749
 #: ../../RunActivity/Simulator/Activity.cs:861
 msgid "Passenger boarding completed. You may depart now."
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5601
+#: ../../RunActivity/Physics/Train.cs:5740
 msgid "Stopped due to errors in route setting"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6263
-#: ../../RunActivity/Physics/Train.cs:7336
+#: ../../RunActivity/Physics/Train.cs:6402
+#: ../../RunActivity/Physics/Train.cs:7475
 msgid "No signal in train's path"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6271
+#: ../../RunActivity/Physics/Train.cs:6410
 msgid "Next signal already allocated to other train"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6332
+#: ../../RunActivity/Physics/Train.cs:6471
 msgid "Request to clear signal cannot be processed"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6438
-#: ../../RunActivity/Physics/Train.cs:7456
+#: ../../RunActivity/Physics/Train.cs:6577
+#: ../../RunActivity/Physics/Train.cs:7595
 msgid "No switch found"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7679
+#: ../../RunActivity/Physics/Train.cs:7836
 msgid "Train is not back on original route"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7688
+#: ../../RunActivity/Physics/Train.cs:7845
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7701
+#: ../../RunActivity/Physics/Train.cs:7858
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7796
+#: ../../RunActivity/Physics/Train.cs:7953
 msgid "Reversal required and rear of train not on required route"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7983
+#: ../../RunActivity/Physics/Train.cs:8140
 msgid "Cannot clear signal behind train while in AUTO mode"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:4624
+#: ../../RunActivity/Physics/Train.cs:4756
 #: ../../RunActivity/Simulator/Activity.cs:854
 #, csharp-format
 msgid "Passenger boarding completes in {0:D2}:{1:D2}"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:8228
+#: ../../RunActivity/Physics/Train.cs:8392
 #, csharp-format
 msgid "Allowed speed raised to {0}"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:8270
+#: ../../RunActivity/Physics/Train.cs:8434
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr ""
 
-#: ../../RunActivity/Processes/GameStateRunActivity.cs:1080
+#: ../../RunActivity/Processes/GameStateRunActivity.cs:1081
 #, csharp-format
 msgid "Activity Save file '*.save' not found in folder {0}"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:200
+#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:218
 msgid "No power line!"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:202
+#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:220
 msgid "Power line condition overridden."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1069
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1084
 msgid "Tender coal supply is empty. Your loco will fail."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1083
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1098
 msgid "Tender water supply is empty. Your loco will fail."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1137
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1152
 msgid "Fire has dropped too far. Your loco will fail."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1189
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1204
 msgid ""
 "FireMass is getting low. Your fireman will shovel faster, but don't wear him "
 "out."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1201
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1216
 msgid "FireMass is back within limits. Your fireman will shovel as per normal."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1784
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1799
 msgid ""
 "You are exceeding the maximum recommended speed. Continued operation at this "
 "speed may cause damage."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1972
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1987
 msgid "Water level dropped too far. Plug has fused and loco has failed."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1979
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1994
 msgid "Boiler overfull and priming."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1985
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:2000
 msgid "Boiler no longer priming."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/TrainCar.cs:373
+#: ../../RunActivity/RollingStock/TrainCar.cs:397
 msgid ""
 "You are traveling too fast for this curve. Slow down, your freight may be "
 "damaged and your train may derail."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/TrainCar.cs:377
+#: ../../RunActivity/RollingStock/TrainCar.cs:401
 msgid ""
 "You are travelling too fast for this curve. Slow down, your passengers are "
 "feeling uncomfortable and your train may derail."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/TrainCar.cs:412
+#: ../../RunActivity/RollingStock/TrainCar.cs:436
 msgid "Your train has overturned."
 msgstr ""
 
@@ -1104,42 +1108,42 @@ msgstr ""
 msgid "Trackside"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1747
+#: ../../RunActivity/Viewer3D/Cameras.cs:1748
 msgid "3D Cab"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:569
-#: ../../RunActivity/Viewer3D/Viewer.cs:685
+#: ../../RunActivity/Viewer3D/Viewer.cs:570
+#: ../../RunActivity/Viewer3D/Viewer.cs:686
 msgid "Cab view not available"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:631
+#: ../../RunActivity/Viewer3D/Viewer.cs:632
 msgid "In MP, use Alt-F4 to quit directly"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:696
+#: ../../RunActivity/Viewer3D/Viewer.cs:697
 msgid "3D Cab view not available"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:723
+#: ../../RunActivity/Viewer3D/Viewer.cs:724
 msgid "Will not ratate cab and land"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1138
+#: ../../RunActivity/Viewer3D/Viewer.cs:1139
 msgid "Game saved"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:714
+#: ../../RunActivity/Viewer3D/Viewer.cs:715
 #, csharp-format
 msgid "Vibrating at level {0}"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:722
+#: ../../RunActivity/Viewer3D/Viewer.cs:723
 #, csharp-format
 msgid "Rotating cab {0}/4, rotating land {1}/4"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:751
+#: ../../RunActivity/Viewer3D/Viewer.cs:752
 #, csharp-format
 msgid "{0} viewpoint stored. Use Shift+8 to restore viewpoints."
 msgid_plural "{0} viewpoints stored. Use Shift+8 to restore viewpoints."
