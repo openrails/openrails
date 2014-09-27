@@ -156,10 +156,10 @@ namespace ORTS.TrackViewer.UserInterface
             Commands[(int)TVUserCommands.ZoomOutSlow]= new ORTS.Settings.UserCommandKeyInput(0x0C, ORTS.Settings.KeyModifiers.Shift);
             Commands[(int)TVUserCommands.ZoomReset]  = new ORTS.Settings.UserCommandKeyInput(0x13);
             Commands[(int)TVUserCommands.ZoomToTile] = new ORTS.Settings.UserCommandKeyInput(0x2C);
-            Commands[(int)TVUserCommands.ShiftLeft]  = new ORTS.Settings.UserCommandKeyInput(0x1E);
-            Commands[(int)TVUserCommands.ShiftRight] = new ORTS.Settings.UserCommandKeyInput(0x20);
-            Commands[(int)TVUserCommands.ShiftUp]    = new ORTS.Settings.UserCommandKeyInput(0x11);
-            Commands[(int)TVUserCommands.ShiftDown]  = new ORTS.Settings.UserCommandKeyInput(0x1F);
+            Commands[(int)TVUserCommands.ShiftLeft]  = new ORTS.Settings.UserCommandKeyInput(0x4B);
+            Commands[(int)TVUserCommands.ShiftRight] = new ORTS.Settings.UserCommandKeyInput(0x4D);
+            Commands[(int)TVUserCommands.ShiftUp]    = new ORTS.Settings.UserCommandKeyInput(0x48);
+            Commands[(int)TVUserCommands.ShiftDown]  = new ORTS.Settings.UserCommandKeyInput(0x50);
             Commands[(int)TVUserCommands.ShiftToPathLocation] = new ORTS.Settings.UserCommandKeyInput(0x2E);
             Commands[(int)TVUserCommands.ShiftToMouseLocation] = new ORTS.Settings.UserCommandKeyInput(0x2E, ORTS.Settings.KeyModifiers.Shift);
             Commands[(int)TVUserCommands.ToggleZoomAroundMouse] = new ORTS.Settings.UserCommandKeyInput(0x32);

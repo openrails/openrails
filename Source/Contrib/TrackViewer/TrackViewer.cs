@@ -234,6 +234,9 @@ namespace ORTS.TrackViewer
         {
             TVInputSettings.SetDefaults();
 
+            // This control is purely here to capture focus and prevent it slipping out and on to the menu.
+            Control.FromHandle(Window.Handle).Controls.Add(new TextBox() { Top = -100 });
+
             statusBarControl = new StatusBarControl(this);
             menuControl = new MenuControl(this);
             menuControl.PopulateLanguages();
