@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2013 by the Open Rails project.
+﻿// COPYRIGHT 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -15,28 +15,52 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
 using MSTS.Parsers;
+using System;
+using System.IO;
+using System.Text;
 using Xunit;
 
 namespace Tests.Msts.Parsers
 {
-    /// <summary>
-    /// Test the STF (Structure Text Format) reader
-    /// </summary>
-    public static class StfReaderTest
+    public static class StfReader
     {
-        const double Metre3ToLitres = 1000;
-        const double PascalToPSI = 0.0001450377438972831;
+        /* All conversion factors have been sourced from:
+         *   - https://en.wikipedia.org/wiki/Conversion_of_units
+         *   - Windows 8.1 Calculator utility
+         * 
+         * In any case where there is disagreement or only 1 source available, the
+         * chosen source is specified. In all other cases, all sources exist and agree.
+         * 
+         *********************************************************************
+         * DO NOT CHANGE ANY OF THESE WITHOUT CONSULTING OTHER TEAM MEMBERS! *
+         *********************************************************************/
 
-        /// <summary>
-        /// Check empty file parsing
-        /// </summary>
+        const double BarToPascal = 100000;
+        const double CelsiusToKelvin = 273.15;
+        const double DayToSecond = 86400;
+        const double FahrenheitToKelvinA = 459.67;
+        const double FahrenheitToKelvinB = 5 / 9;
+        const double FeetToMetre = 0.3048;
+        const double GallonUSToCubicMetre = 0.003785411784; // (fluid; Wine)
+        const double HorsepowerToWatt = 745.69987158227022; // (imperial mechanical hoursepower)
+        const double HourToSecond = 3600;
+        const double InchOfMercuryToPascal = 3386.389; // (conventional)
+        const double InchToMetre = 0.0254;
+        const double KilometrePerHourToMetrePerSecond = 1 / 3.6;
+        const double LitreToCubicMetre = 0.001;
+        const double MilePerHourToMetrePerSecond = 0.44704;
+        const double MileToMetre = 1609.344;
+        const double MinuteToSecond = 60;
+        const double PascalToPSI = 0.0001450377438972831; // Temporary while pressure values are returned in PSI instead of Pascal.
+        const double PoundForceToNewton = 4.4482216152605; // Conversion_of_units
+        const double PoundToKG = 0.45359237;
+        const double PSIToPascal = 6894.757;
+        const double TonLongToKG = 1016.0469088;
+        const double TonneToKG = 1000;
+        const double TonShortToKG = 907.18474;
+
         [Fact]
         public static void EmptyFile()
         {
@@ -51,7 +75,6 @@ namespace Tests.Msts.Parsers
                 Assert.Throws<Xunit.Sdk.TraceAssertException>(() => reader.Tree);
 
                 // All of the following will execute successfully at EOF...
-                // But warnings will be printed to output window!
                 reader.MustMatch("ANYTHING GOES");
                 reader.ParseBlock(new STFReader.TokenProcessor[0]);
                 reader.ParseFile(new STFReader.TokenProcessor[0]);
@@ -75,39 +98,24 @@ namespace Tests.Msts.Parsers
             }
         }
 
-        /// <summary>
-        /// Check ASCII encoding
-        /// </summary>
         [Fact]
         public static void EncodingAscii()
         {
             using (var reader = new STFReader(new MemoryStream(Encoding.ASCII.GetBytes("TheBlock()")), "", Encoding.ASCII, false))
             {
                 reader.MustMatch("TheBlock");
-                // Must finish reading because Dispose expects to be at the end of file
-                reader.MustMatch("("); 
-                reader.SkipRestOfBlock();
             }
         }
 
-        /// <summary>
-        /// Check UTF16 encoding
-        /// </summary>
         [Fact]
         public static void EncodingUtf16()
         {
             using (var reader = new STFReader(new MemoryStream(Encoding.Unicode.GetBytes("TheBlock()")), "", Encoding.Unicode, false))
             {
                 reader.MustMatch("TheBlock");
-                // Must finish reading because Dispose expects to be at the end of file
-                reader.MustMatch("(");
-                reader.SkipRestOfBlock();
             }
         }
 
-        /// <summary>
-        /// Check empty blocks
-        /// </summary>
         [Fact]
         public static void EmptyBlock()
         {
@@ -119,13 +127,8 @@ namespace Tests.Msts.Parsers
                 Assert.Equal("EmptyBlock.stf", reader.FileName);
                 Assert.Equal(1, reader.LineNumber);
                 Assert.Equal(null, reader.SimisSignature);
-
-                //This will give a warning to the output window!
                 Assert.Throws<STFException>(() => reader.MustMatch("Something Else"));
                 // We can't rewind the STFReader and it has advanced forward now. :(
-
-                // Must finish reading because Dispose expects to be at the end of file
-                reader.SkipRestOfBlock();
             }
             using (var reader = new STFReader(new MemoryStream(Encoding.Unicode.GetBytes("TheBlock()")), "", Encoding.Unicode, false))
             {
@@ -137,14 +140,13 @@ namespace Tests.Msts.Parsers
                 reader.VerifyStartOfBlock(); // Same as reader.MustMatch("(");
                 Assert.False(reader.Eof, "STFReader.Eof");
                 Assert.False(reader.EOF(), "STFReader.EOF()");
-                Assert.True(reader.EndOfBlock(), "STFReader.EndOfBlock()"); // This consumes the last ')'
+                Assert.True(reader.EndOfBlock(), "STFReader.EndOfBlock()");
                 Assert.Equal(1, reader.LineNumber);
-                //The next line will give a warning to the default output, so we should not even get here!
-                //reader.MustMatch(")");
-                //Assert.True(reader.Eof, "STFReader.Eof");
-                //Assert.True(reader.EOF(), "STFReader.EOF()");
-                //Assert.True(reader.EndOfBlock(), "STFReader.EndOfBlock()");
-                //Assert.Equal(1, reader.LineNumber);
+                reader.MustMatch(")");
+                Assert.True(reader.Eof, "STFReader.Eof");
+                Assert.True(reader.EOF(), "STFReader.EOF()");
+                Assert.True(reader.EndOfBlock(), "STFReader.EndOfBlock()");
+                Assert.Equal(1, reader.LineNumber);
             }
             using (var reader = new STFReader(new MemoryStream(Encoding.Unicode.GetBytes("TheBlock()")), "", Encoding.Unicode, false))
             {
@@ -172,9 +174,6 @@ namespace Tests.Msts.Parsers
             }
         }
 
-        /// <summary>
-        /// Check the various numeric formats
-        /// </summary>
         [Fact]
         public static void NumericFormats()
         {
@@ -197,9 +196,6 @@ namespace Tests.Msts.Parsers
             }
         }
 
-        /// <summary>
-        /// Checn string formats
-        /// </summary>
         [Fact]
         public static void StringFormats()
         {
@@ -218,9 +214,6 @@ namespace Tests.Msts.Parsers
             }
         }
 
-        /// <summary>
-        /// Check numeric blocks
-        /// </summary>
         [Fact]
         public static void BlockNumericFormats()
         {
@@ -245,9 +238,6 @@ namespace Tests.Msts.Parsers
             }
         }
 
-        /// <summary>
-        /// Check string blocks
-        /// </summary>
         [Fact]
         public static void BlockStringFormats()
         {
@@ -263,9 +253,6 @@ namespace Tests.Msts.Parsers
             }
         }
 
-        /// <summary>
-        /// Check vector bloks
-        /// </summary>
         [Fact]
         public static void BlockVectorFormats()
         {
@@ -281,9 +268,6 @@ namespace Tests.Msts.Parsers
             }
         }
 
-        /// <summary>
-        /// Check presence or absence of units is handled correctly
-        /// </summary>
         [Fact]
         public static void Units()
         {
@@ -292,9 +276,7 @@ namespace Tests.Msts.Parsers
                 Assert.Equal(1.10000f, reader.ReadFloat(STFReader.UNITS.None, null), 5);
                 Assert.Equal(1.20000f, reader.ReadFloat(STFReader.UNITS.Distance, null), 5);
                 Assert.Equal(1300.00000f, reader.ReadFloat(STFReader.UNITS.Distance, null), 5);
-                // TODO, Um, shouldn't the next line fail or something?
-                // Well, it does not fail, it only shows a warning in the output window. Which we should test-for, but how?
-                Assert.Equal(1.40000f, reader.ReadFloat(STFReader.UNITS.Distance | STFReader.UNITS.Compulsory, null), 5); 
+                Assert.Equal(1.40000f, reader.ReadFloat(STFReader.UNITS.Distance | STFReader.UNITS.Compulsory, null), 5); // TODO: Um, shouldn't this fail or something?
                 Assert.Equal(1500.00000f, reader.ReadFloat(STFReader.UNITS.Distance | STFReader.UNITS.Compulsory, null), 5);
                 Assert.True(reader.Eof, "STFReader.Eof");
             }
@@ -302,14 +284,9 @@ namespace Tests.Msts.Parsers
 
         static void UnitConversionTest(string input, double output, STFReader.UNITS unit)
         {
-            UnitConversionTest(input, output, unit, 6); // default accuracy
-        }
-
-        static void UnitConversionTest(string input, double output, STFReader.UNITS unit, int digitsAccuracyAfterPoint)
-        {   // we allow a varying amount of digits after the point, because some tests have too much digits before the point
             using (var reader = new STFReader(new MemoryStream(Encoding.Unicode.GetBytes(input)), "", Encoding.Unicode, false))
             {
-                Assert.Equal(output, reader.ReadFloat(unit, null), digitsAccuracyAfterPoint);
+                Assert.Equal(output, reader.ReadFloat(unit, null), 6);
                 Assert.True(reader.Eof, "STFReader.Eof");
             }
         }
@@ -336,29 +313,23 @@ namespace Tests.Msts.Parsers
          *     ka        Kilo-amp
          *     ma        Mega-amp
          */
-        /// <summary>
-        /// Check current-based unit conversions
-        /// </summary>
         [Fact]
         public static void UnitConversionBaseMstsCurrent()
         {
             UnitConversionTest("1.2a", 1.2, STFReader.UNITS.Current);
-            // TODO: UnitConversionTest("1.2ka", 1200, STFReader.UNITS.Current);
-            // TODO: UnitConversionTest("1.2ma", 1200000, STFReader.UNITS.Current);
+            // TODO not implemented yet: UnitConversionTest("1.2ka", 1.2 * 1000, STFReader.UNITS.Current);
+            // TODO not implemented yet: UnitConversionTest("1.2ma", 1.2 * 1000 * 1000, STFReader.UNITS.Current);
         }
 
         /* Base units for energy available in MSTS:
          *     j         Joule
          *     nm        Newton meter
          */
-        /// <summary>
-        /// Check energy based unit conversions
-        /// </summary>
         [Fact]
         public static void UnitConversionBaseMstsEnergy()
         {
-            // TODO: UnitConversionTest("1.2j", 1.2, STFReader.UNITS.Energy);
-            // TODO: UnitConversionTest("1.2nm", 1.2, STFReader.UNITS.Energy);
+            // TODO not implemented yet: UnitConversionTest("1.2j", 1.2, STFReader.UNITS.Energy);
+            // TODO not implemented yet: UnitConversionTest("1.2nm", 1.2, STFReader.UNITS.Energy);
         }
 
         /* Base units for force available in MSTS:
@@ -366,15 +337,12 @@ namespace Tests.Msts.Parsers
          *     kn        Kilo-newton
          *     lbf       Pound-force
          */
-        /// <summary>
-        /// Check force-based unit conversions
-        /// </summary>
         [Fact]
         public static void UnitConversionBaseMstsForce()
         {
             UnitConversionTest("1.2n", 1.2, STFReader.UNITS.Force);
-            UnitConversionTest("1.2kn", 1200, STFReader.UNITS.Force);
-            UnitConversionTest("1.2lbf", 5.3378659383126, STFReader.UNITS.Force); // http://en.wikipedia.org/wiki/Pound-force#Definitions
+            UnitConversionTest("1.2kn", 1.2 * 1000, STFReader.UNITS.Force);
+            UnitConversionTest("1.2lbf", 1.2 * PoundForceToNewton, STFReader.UNITS.Force);
         }
 
         /* Base units for length available in MSTS:
@@ -388,60 +356,50 @@ namespace Tests.Msts.Parsers
          *     ft        Foot
          *     mil       Mile
          */
-        /// <summary>
-        /// Check length-based unit conversions
-        /// </summary>
         [Fact]
         public static void UnitConversionBaseMstsLength()
         {
-            UnitConversionTest("1.2mm", 0.0012, STFReader.UNITS.Distance);
-            UnitConversionTest("1.2cm", 0.012, STFReader.UNITS.Distance);
+            UnitConversionTest("1.2mm", 1.2 / 1000, STFReader.UNITS.Distance);
+            UnitConversionTest("1.2cm", 1.2 / 100, STFReader.UNITS.Distance);
             UnitConversionTest("1.2m", 1.2, STFReader.UNITS.Distance);
-            UnitConversionTest("1.2km", 1200, STFReader.UNITS.Distance);
-            // TODO: UnitConversionTest("1.2\"", 0.03048, STFReader.UNITS.Distance);
-            UnitConversionTest("1.2in", 0.03048, STFReader.UNITS.Distance);
-            // TODO: UnitConversionTest("1.2\'", 0.36576, STFReader.UNITS.Distance);
-            UnitConversionTest("1.2ft", 0.36576, STFReader.UNITS.Distance);
-            // TODO: UnitConversionTest("1.2mil", 1931.2128, STFReader.UNITS.Distance);
+            UnitConversionTest("1.2km", 1.2 * 1000, STFReader.UNITS.Distance);
+            // TODO not implemented yet: UnitConversionTest("1.2\"", 1.2 * InchToMetre, STFReader.UNITS.Distance);
+            UnitConversionTest("1.2in", 1.2 * InchToMetre, STFReader.UNITS.Distance);
+            // TODO not implemented yet: UnitConversionTest("1.2\'", 1.2 * FeetToMetre, STFReader.UNITS.Distance);
+            UnitConversionTest("1.2ft", 1.2 * FeetToMetre, STFReader.UNITS.Distance);
+            // TODO not implemented yet: UnitConversionTest("1.2mil", 1.2 * MileToMetre, STFReader.UNITS.Distance);
         }
 
         /* Base units for mass available in MSTS:
          *     g         Gram
          *     kg        Kilogram
          *     t         Tonne
-         *     tn        Short/US ton?
-         *     ton       Long/UK ton?
+         *     tn        Short/US ton
+         *     ton       Long/UK ton
          *     lb        Pound
          *     lbs       Pound
          */
-        /// <summary>
-        /// Check mass-based unit conversions
-        /// </summary>
         [Fact]
         public static void UnitConversionBaseMstsMass()
         {
-            // Note: This unit returns values in kg, not g.
-            // TODO: UnitConversionTest("1.2g", 0.0012, STFReader.UNITS.Mass);
+            // TODO not implemented yet: UnitConversionTest("1.2g", 1.2 / 1000, STFReader.UNITS.Mass);
             UnitConversionTest("1.2kg", 1.2, STFReader.UNITS.Mass);
-            UnitConversionTest("1.2t", 1200, STFReader.UNITS.Mass);
-            // TODO: UnitConversionTest("1.2tn", 1088.621688, STFReader.UNITS.Mass);
-            // TODO: UnitConversionTest("1.2ton", 1219.25629056, STFReader.UNITS.Mass);
-            UnitConversionTest("1.2lb", 0.544310844, STFReader.UNITS.Mass);
-            // TODO: UnitConversionTest("1.2lbs", 0.544310844, STFReader.UNITS.Mass);
+            UnitConversionTest("1.2t", 1.2 * TonneToKG, STFReader.UNITS.Mass);
+            // TODO not implemented yet: UnitConversionTest("1.2tn", 1.2 * TonShortToKG, STFReader.UNITS.Mass);
+            // TODO not implemented yet: UnitConversionTest("1.2ton", 1.2 * TonLongToKG, STFReader.UNITS.Mass);
+            UnitConversionTest("1.2lb", 1.2 * PoundToKG, STFReader.UNITS.Mass);
+            // TODO not implemented yet: UnitConversionTest("1.2lbs", 1.2 * PoundToKG, STFReader.UNITS.Mass);
         }
 
         /* Base units for power available in MSTS:
          *     kw        Kilowatt
          *     hp        Horsepower
          */
-        /// <summary>
-        /// Check power-based unit conversions
-        /// </summary>
         [Fact]
         public static void UnitConversionBaseMstsPower()
         {
-            UnitConversionTest("1.2kw", 1200, STFReader.UNITS.Power);
-            UnitConversionTest("1.2hp", 894.839904785156, STFReader.UNITS.Power);
+            UnitConversionTest("1.2kw", 1.2 * 1000, STFReader.UNITS.Power);
+            UnitConversionTest("1.2hp", 1.2 * HorsepowerToWatt, STFReader.UNITS.Power);
         }
 
         /* Base units for pressure available in MSTS:
@@ -450,35 +408,28 @@ namespace Tests.Msts.Parsers
          *     bar       Bar
          *     psi       psi
          */
-        /// <summary>
-        /// Check pressure-based unit conversions
-        /// </summary>
         [Fact]
         public static void UnitConversionBaseMstsPressure()
         {
-            // Note: This unit returns values in PSI, not pascal.
-            // TODO: UnitConversionTest("1.2pascal", 1.2 * PascalToPSI, STFReader.UNITS.PressureDefaultInHg);
-            // TODO: UnitConversionTest("1.2pascal", 1.2 * PascalToPSI, STFReader.UNITS.PressureDefaultPSI);
-            // TODO: UnitConversionTest("1.2mbar", 120 * PascalToPSI, STFReader.UNITS.PressureDefaultInHg);
-            // TODO: UnitConversionTest("1.2mbar", 120 * PascalToPSI, STFReader.UNITS.PressureDefaultPSI);
-            UnitConversionTest("1.2bar", 120000 * PascalToPSI, STFReader.UNITS.PressureDefaultInHg, 5);
-            UnitConversionTest("1.2bar", 120000 * PascalToPSI, STFReader.UNITS.PressureDefaultPSI, 5);
-            UnitConversionTest("1.2psi", 8273.7084 * PascalToPSI, STFReader.UNITS.PressureDefaultInHg);
-            UnitConversionTest("1.2psi", 8273.7084 * PascalToPSI, STFReader.UNITS.PressureDefaultPSI);
+            // TODO not implemented yet: UnitConversionTest("1.2pascal", 1.2, STFReader.UNITS.PressureDefaultInHg);
+            // TODO not implemented yet: UnitConversionTest("1.2pascal", 1.2, STFReader.UNITS.PressureDefaultPSI);
+            // TODO not implemented yet: UnitConversionTest("1.2mbar", 1.2 / 1000 * BarToPascal, STFReader.UNITS.PressureDefaultInHg);
+            // TODO not implemented yet: UnitConversionTest("1.2mbar", 1.2 / 1000 * BarToPascal, STFReader.UNITS.PressureDefaultPSI);
+            // TODO not using SI units: UnitConversionTest("1.2bar", 1.2 * BarToPascal, STFReader.UNITS.PressureDefaultInHg);
+            // TODO not using SI units: UnitConversionTest("1.2bar", 1.2 * BarToPascal, STFReader.UNITS.PressureDefaultPSI);
+            // TODO not using SI units: UnitConversionTest("1.2psi", 1.2 * PSIToPascal, STFReader.UNITS.PressureDefaultInHg);
+            // TODO not using SI units: UnitConversionTest("1.2psi", 1.2 * PSIToPascal, STFReader.UNITS.PressureDefaultPSI);
         }
 
         /* Base units for rotation available in MSTS:
          *     deg       Degree
          *     rad       Radian
          */
-        /// <summary>
-        /// Check rotation-based unit conversions
-        /// </summary>
         [Fact]
         public static void UnitConversionBaseMstsRotation()
         {
-            // TODO: UnitConversionTest("1.2deg", 1.2, STFReader.UNITS.Rotation);
-            // TODO: UnitConversionTest("1.2rad", 1.2 * Math.PI / 180, STFReader.UNITS.Rotation);
+            // TODO not implemented yet: UnitConversionTest("1.2deg", 1.2, STFReader.UNITS.Rotation);
+            // TODO not implemented yet: UnitConversionTest("1.2rad", 1.2 * Math.PI / 180, STFReader.UNITS.Rotation);
         }
 
         /* Base units for temperature available in MSTS:
@@ -486,15 +437,12 @@ namespace Tests.Msts.Parsers
          *     c         Celsius
          *     f         Fahrenheit
          */
-        /// <summary>
-        ///Check temperature based unit conversions 
-        /// </summary>
         [Fact]
         public static void UnitConversionBaseMstsTemperature()
         {
-            // TODO: UnitConversionTest("1.2k", -271.95, STFReader.UNITS.Temperature);
-            // TODO: UnitConversionTest("1.2c", 1.2, STFReader.UNITS.Temperature);
-            // TODO: UnitConversionTest("1.2f", -17.11111111111111, STFReader.UNITS.Temperature);
+            // TODO not implemented yet: UnitConversionTest("1.2k", 1.2, STFReader.UNITS.Temperature);
+            // TODO not implemented yet: UnitConversionTest("1.2c", 1.2 + CelsiusToKelvin, STFReader.UNITS.Temperature);
+            // TODO not implemented yet: UnitConversionTest("1.2f", (1.2 + FahrenheitToKelvinA) * FahrenheitToKelvinB, STFReader.UNITS.Temperature);
         }
 
         /* Base units for time available in MSTS:
@@ -505,46 +453,40 @@ namespace Tests.Msts.Parsers
          *     h         Hour
          *     d         Day
          */
-        /// <summary>
-        /// Check time-based unit conversions
-        /// </summary>
         [Fact]
         public static void UnitConversionBaseMstsTime()
         {
-            // TODO: UnitConversionTest("1.2us", 0.0000012, STFReader.UNITS.Time);
-            // TODO: UnitConversionTest("1.2us", 0.0000012, STFReader.UNITS.TimeDefaultM);
-            // TODO: UnitConversionTest("1.2us", 0.0000012, STFReader.UNITS.TimeDefaultH);
-            // TODO: UnitConversionTest("1.2ms", 0.0012, STFReader.UNITS.Time);
-            // TODO: UnitConversionTest("1.2ms", 0.0012, STFReader.UNITS.TimeDefaultM);
-            // TODO: UnitConversionTest("1.2ms", 0.0012, STFReader.UNITS.TimeDefaultH);
+            // TODO not implemented yet: UnitConversionTest("1.2us", 1.2 / 1000000, STFReader.UNITS.Time);
+            // TODO not implemented yet: UnitConversionTest("1.2us", 1.2 / 1000000, STFReader.UNITS.TimeDefaultM);
+            // TODO not implemented yet: UnitConversionTest("1.2us", 1.2 / 1000000, STFReader.UNITS.TimeDefaultH);
+            // TODO not implemented yet: UnitConversionTest("1.2ms", 1.2 / 1000, STFReader.UNITS.Time);
+            // TODO not implemented yet: UnitConversionTest("1.2ms", 1.2 / 1000, STFReader.UNITS.TimeDefaultM);
+            // TODO not implemented yet: UnitConversionTest("1.2ms", 1.2 / 1000, STFReader.UNITS.TimeDefaultH);
             UnitConversionTest("1.2s", 1.2, STFReader.UNITS.Time);
             UnitConversionTest("1.2s", 1.2, STFReader.UNITS.TimeDefaultM);
             UnitConversionTest("1.2s", 1.2, STFReader.UNITS.TimeDefaultH);
-            // TODO: UnitConversionTest("1.2min", 72, STFReader.UNITS.Time);
-            // TODO: UnitConversionTest("1.2min", 72, STFReader.UNITS.TimeDefaultM);
-            // TODO: UnitConversionTest("1.2min", 72, STFReader.UNITS.TimeDefaultH);
-            UnitConversionTest("1.2h", 4320, STFReader.UNITS.Time);
-            UnitConversionTest("1.2h", 4320, STFReader.UNITS.TimeDefaultM);
-            UnitConversionTest("1.2h", 4320, STFReader.UNITS.TimeDefaultH);
-            // TODO: UnitConversionTest("1.2d", 103680, STFReader.UNITS.Time);
-            // TODO: UnitConversionTest("1.2d", 103680, STFReader.UNITS.TimeDefaultM);
-            // TODO: UnitConversionTest("1.2d", 103680, STFReader.UNITS.TimeDefaultH);
+            // TODO not implemented yet: UnitConversionTest("1.2min", 1.2 * MinuteToSecond, STFReader.UNITS.Time);
+            // TODO not implemented yet: UnitConversionTest("1.2min", 1.2 * MinuteToSecond, STFReader.UNITS.TimeDefaultM);
+            // TODO not implemented yet: UnitConversionTest("1.2min", 1.2 * MinuteToSecond, STFReader.UNITS.TimeDefaultH);
+            UnitConversionTest("1.2h", 1.2 * HourToSecond, STFReader.UNITS.Time);
+            UnitConversionTest("1.2h", 1.2 * HourToSecond, STFReader.UNITS.TimeDefaultM);
+            UnitConversionTest("1.2h", 1.2 * HourToSecond, STFReader.UNITS.TimeDefaultH);
+            // TODO not implemented yet: UnitConversionTest("1.2d", 1.2 * DayToSecond, STFReader.UNITS.Time);
+            // TODO not implemented yet: UnitConversionTest("1.2d", 1.2 * DayToSecond, STFReader.UNITS.TimeDefaultM);
+            // TODO not implemented yet: UnitConversionTest("1.2d", 1.2 * DayToSecond, STFReader.UNITS.TimeDefaultH);
         }
 
         /* Base units for velocity available in MSTS:
          *     kmh       Kilometers/hour
          *     mph       Miles/hour
          */
-        /// <summary>
-        /// Check velocity based unit conversions
-        /// </summary>
         [Fact]
         public static void UnitConversionBaseMstsVelocity()
         {
-            UnitConversionTest("1.2kmh", 0.3333333333333333, STFReader.UNITS.Speed);
-            UnitConversionTest("1.2kmh", 0.3333333333333333, STFReader.UNITS.SpeedDefaultMPH);
-            UnitConversionTest("1.2mph", 0.536448, STFReader.UNITS.Speed);
-            UnitConversionTest("1.2mph", 0.536448, STFReader.UNITS.SpeedDefaultMPH);
+            UnitConversionTest("1.2kmh", 1.2 * KilometrePerHourToMetrePerSecond, STFReader.UNITS.Speed);
+            UnitConversionTest("1.2kmh", 1.2 * KilometrePerHourToMetrePerSecond, STFReader.UNITS.SpeedDefaultMPH);
+            UnitConversionTest("1.2mph", 1.2 * MilePerHourToMetrePerSecond, STFReader.UNITS.Speed);
+            UnitConversionTest("1.2mph", 1.2 * MilePerHourToMetrePerSecond, STFReader.UNITS.SpeedDefaultMPH);
         }
 
         /* Base units for voltage available in MSTS:
@@ -552,164 +494,125 @@ namespace Tests.Msts.Parsers
          *     kv        Kilovolt
          *     mv        Megavolt
          */
-        /// <summary>
-        /// Check voltage based unit conversions
-        /// </summary>
         [Fact]
         public static void UnitConversionBaseMstsVoltage()
         {
-            UnitConversionTest("1.2V", 1.2, STFReader.UNITS.Voltage);
-            // TODO: UnitConversionTest("1.2kV", 1200, STFReader.UNITS.Voltage);
-            // TODO: UnitConversionTest("1.2mV", 1200000, STFReader.UNITS.Voltage);
+            UnitConversionTest("1.2v", 1.2, STFReader.UNITS.Voltage);
+            UnitConversionTest("1.2kv", 1.2 * 1000, STFReader.UNITS.Voltage);
+            // TODO not implemented yet: UnitConversionTest("1.2mv", 1.2 * 1000 * 1000, STFReader.UNITS.Voltage);
         }
 
         /* Base units for volume available in MSTS:
          *     l         Liter
          *     gal       Gallon (US)
          */
-        /// <summary>
-        /// Check volume-based unit conversions
-        /// </summary>
         [Fact]
         public static void UnitConversionBaseMstsVolume()
         {
-            UnitConversionTest("1.2l", 1.2, STFReader.UNITS.Volume);
-            UnitConversionTest("1.2l", 1.2, STFReader.UNITS.VolumeDefaultFT3);
-            UnitConversionTest("1.2gal", 4.5424941408, STFReader.UNITS.Volume, 5); // Note: US gallons.
-            UnitConversionTest("1.2gal", 4.5424941408, STFReader.UNITS.VolumeDefaultFT3, 5); // Note: US gallons.
+            // TODO not using SI units: UnitConversionTest("1.2l", 1.2 * LitreToCubicMetre, STFReader.UNITS.Volume);
+            // TODO not using SI units: UnitConversionTest("1.2l", 1.2 * LitreToCubicMetre, STFReader.UNITS.VolumeDefaultFT3);
+            // TODO not using SI units: UnitConversionTest("1.2gal", 1.2 * GallonUSToCubicMetre, STFReader.UNITS.Volume);
+            // TODO not using SI units: UnitConversionTest("1.2gal", 1.2 * GallonUSToCubicMetre, STFReader.UNITS.VolumeDefaultFT3);
         }
 
-        /// <summary>
-        /// Check area-based unit conversions
-        /// </summary>
         [Fact]
         public static void UnitConversionDerivedMstsArea()
         {
-            // TODO: UnitConversionTest("1.2mm^2", 0.0000012, STFReader.UNITS.AreaDefaultFT2);
-            // TODO: UnitConversionTest("1.2cm^2", 0.00012, STFReader.UNITS.AreaDefaultFT2);
+            // TODO not implemented yet: UnitConversionTest("1.2mm^2", 1.2 / 1000 / 1000, STFReader.UNITS.AreaDefaultFT2);
+            // TODO not implemented yet: UnitConversionTest("1.2cm^2", 1.2 / 100 / 100, STFReader.UNITS.AreaDefaultFT2);
             UnitConversionTest("1.2m^2", 1.2, STFReader.UNITS.AreaDefaultFT2);
-            // TODO: UnitConversionTest("1.2km^2", 1200000, STFReader.UNITS.AreaDefaultFT2);
-            // TODO: UnitConversionTest("1.2\"^2", 0.000774192, STFReader.UNITS.AreaDefaultFT2);
-            // TODO: UnitConversionTest("1.2in^2", 0.000774192, STFReader.UNITS.AreaDefaultFT2);
-            // TODO: UnitConversionTest("1.2\'^2", 0.111483648, STFReader.UNITS.AreaDefaultFT2);
-            UnitConversionTest("1.2ft^2", 0.111483648, STFReader.UNITS.AreaDefaultFT2);
-            // TODO: UnitConversionTest("1.2mil^2", 3107985.7324032, STFReader.UNITS.AreaDefaultFT2);
+            // TODO not implemented yet: UnitConversionTest("1.2km^2", 1.2 * 1000 * 1000, STFReader.UNITS.AreaDefaultFT2);
+            // TODO not implemented yet: UnitConversionTest("1.2\"^2", 1.2 * InchToMetre * InchToMetre, STFReader.UNITS.AreaDefaultFT2);
+            // TODO not implemented yet: UnitConversionTest("1.2in^2", 1.2 * InchToMetre * InchToMetre, STFReader.UNITS.AreaDefaultFT2);
+            // TODO not implemented yet: UnitConversionTest("1.2\'^2", 1.2 * FeetToMetre * FeetToMetre, STFReader.UNITS.AreaDefaultFT2);
+            UnitConversionTest("1.2ft^2", 1.2 * FeetToMetre * FeetToMetre, STFReader.UNITS.AreaDefaultFT2);
+            // TODO not implemented yet: UnitConversionTest("1.2mil^2", 1.2 * MileToMetre * MileToMetre, STFReader.UNITS.AreaDefaultFT2);
         }
 
-        /// <summary>
-        /// Check damping-based unit conversions
-        /// </summary>
         [Fact]
         public static void UnitConversionDerivedMstsDamping()
         {
             UnitConversionTest("1.2n/m/s", 1.2, STFReader.UNITS.Resistance);
         }
 
-        /// <summary>
-        /// Check mass-rate-based unit conversions
-        /// </summary>
         [Fact]
         public static void UnitConversionDerivedMstsMassRate()
         {
-            UnitConversionTest("1.2lb/h", 1.2, STFReader.UNITS.MassRateDefaultLBpH);
+            // TODO not using SI units: UnitConversionTest("1.2lb/h", 1.2 * PoundToKG / HourToSecond, STFReader.UNITS.MassRateDefaultLBpH);
         }
 
-        /// <summary>
-        /// Check stiffness-based unit conversions
-        /// </summary>
         [Fact]
         public static void UnitConversionDerivedMstsStiffness()
         {
             UnitConversionTest("1.2n/m", 1.2, STFReader.UNITS.Stiffness);
         }
 
-        /// <summary>
-        /// check velocity-based unit conversions
-        /// </summary>
         [Fact]
         public static void UnitConversionDerivedMstsVelocity()
         {
             UnitConversionTest("1.2m/s", 1.2, STFReader.UNITS.Speed);
             UnitConversionTest("1.2m/s", 1.2, STFReader.UNITS.SpeedDefaultMPH);
-            UnitConversionTest("1.2km/h", 0.333333333333333, STFReader.UNITS.Speed);
-            UnitConversionTest("1.2km/h", 0.333333333333333, STFReader.UNITS.SpeedDefaultMPH);
+            UnitConversionTest("1.2km/h", 1.2 * 1000 / HourToSecond, STFReader.UNITS.Speed);
+            UnitConversionTest("1.2km/h", 1.2 * 1000 / HourToSecond, STFReader.UNITS.SpeedDefaultMPH);
         }
 
-        /// <summary>
-        /// Check volume-based unit conversions
-        /// </summary>
         [Fact]
         public static void UnitConversionDerivedMstsVolume()
         {
-            // Note: This unit returns values in litres, not cubic metres.
-            // TODO: UnitConversionTest("1.2mm^3", 0.0000000012 * Metre3ToLitres, STFReader.UNITS.Volume);
-            // TODO: UnitConversionTest("1.2cm^3", 0.0000012 * Metre3ToLitres, STFReader.UNITS.Volume);
-            UnitConversionTest("1.2m^3", 1.2 * Metre3ToLitres, STFReader.UNITS.Volume);
-            // TODO: UnitConversionTest("1.2km^3", 1200000000 * Metre3ToLitres, STFReader.UNITS.Volume);
-            // TODO: UnitConversionTest("1.2\"^3", 0.0000196644768 * Metre3ToLitres, STFReader.UNITS.Volume);
-            UnitConversionTest("1.2in^3", 0.0000196644768 * Metre3ToLitres, STFReader.UNITS.Volume, 5); //one less digit, value too small?
-            // TODO: UnitConversionTest("1.2\'^3", 0.0339802159104 * Metre3ToLitres, STFReader.UNITS.Volume);
-            UnitConversionTest("1.2ft^3", 0.0339802159104 * Metre3ToLitres, STFReader.UNITS.Volume, 4);
-            // TODO: UnitConversionTest("1.2mil^3", 5001818190.5286955008 * Metre3ToLitres, STFReader.UNITS.Volume);
+            // TODO not implemented yet: UnitConversionTest("1.2mm^3", 1.2 * 1000 / 1000 / 1000, STFReader.UNITS.Volume);
+            // TODO not implemented yet: UnitConversionTest("1.2cm^3", 1.2 / 100 / 100 / 100, STFReader.UNITS.Volume);
+            // TODO not using SI units: UnitConversionTest("1.2m^3", 1.2, STFReader.UNITS.Volume);
+            // TODO not implemented yet: UnitConversionTest("1.2km^3", 1.2 * 1000 * 1000 * 1000, STFReader.UNITS.Volume);
+            // TODO not implemented yet: UnitConversionTest("1.2\"^3", 1.2 * InchToMetre * InchToMetre * InchToMetre, STFReader.UNITS.Volume);
+            // TODO not using SI units: UnitConversionTest("1.2in^3", 1.2 * InchToMetre * InchToMetre * InchToMetre, STFReader.UNITS.Volume);
+            // TODO not implemented yet: UnitConversionTest("1.2\'^3", 1.2 * FeetToMetre * FeetToMetre * FeetToMetre, STFReader.UNITS.Volume);
+            // TODO not using SI units: UnitConversionTest("1.2ft^3", 1.2 * FeetToMetre * FeetToMetre * FeetToMetre, STFReader.UNITS.Volume);
+            // TODO not implemented yet: UnitConversionTest("1.2mil^3", 1.2 * MileToMetre * MileToMetre * MileToMetre, STFReader.UNITS.Volume);
         }
 
-        /* Default unit for pressure in MSTS is seconds.
+        /* Default unit for pressure in MSTS is UNKNOWN.
          */
-        /// <summary>
-        /// Check pressure-based default units
-        /// </summary>
         [Fact]
         public static void UnitConversionDefaultMstsPressure()
         {
-            UnitConversionTest("1.2", 4063.6668 * PascalToPSI, STFReader.UNITS.PressureDefaultInHg);
-            UnitConversionTest("1.2", 8273.7084 * PascalToPSI, STFReader.UNITS.PressureDefaultPSI);
+            //UnitConversionTest("1.2", UNKNOWN, STFReader.UNITS.Pressure);
+            UnitConversionTest("1.2", 1.2 * InchOfMercuryToPascal * PascalToPSI, STFReader.UNITS.PressureDefaultInHg);
+            UnitConversionTest("1.2", 1.2, STFReader.UNITS.PressureDefaultPSI);
         }
 
         /* Default unit for time in MSTS is seconds.
          */
-        /// <summary>
-        /// Check default units for time
-        /// </summary>
         [Fact]
         public static void UnitConversionDefaultMstsTime()
         {
             UnitConversionTest("1.2", 1.2, STFReader.UNITS.Time);
-            UnitConversionTest("1.2", 72, STFReader.UNITS.TimeDefaultM);
-            UnitConversionTest("1.2", 4320, STFReader.UNITS.TimeDefaultH);
+            UnitConversionTest("1.2", 1.2 * MinuteToSecond, STFReader.UNITS.TimeDefaultM);
+            UnitConversionTest("1.2", 1.2 * HourToSecond, STFReader.UNITS.TimeDefaultH);
         }
 
         /* Default unit for velocity in MSTS is UNKNOWN.
          */
-        /// <summary>
-        /// check default units for velocity
-        /// </summary>
         [Fact]
         public static void UnitConversionDefaultMstsVelocity()
         {
             //UnitConversionTest("1.2", UNKNOWN, STFReader.UNITS.Speed);
-            UnitConversionTest("1.2", 0.536448, STFReader.UNITS.SpeedDefaultMPH);
+            UnitConversionTest("1.2", 1.2 * MilePerHourToMetrePerSecond, STFReader.UNITS.SpeedDefaultMPH);
         }
 
         /* Default unit for volume in MSTS is UNKNOWN.
          */
-        /// <summary>
-        /// Check default unit for volume
-        /// </summary>
         [Fact]
         public static void UnitConversionDefaultMstsVolume()
         {
-            // Note: This unit returns values in litres, not cubic metres.
             //UnitConversionTest("1.2", UNKNOWN, STFReader.UNITS.Volume);
-            // Note: This unit is broken and returns values in ft^3, not cubic metres.
-            UnitConversionTest("1.2", 0.0339802159104 * Metre3ToLitres, STFReader.UNITS.VolumeDefaultFT3, 4);  //code seems fine, so numerical inaccuracy
+            // TODO not using SI units: UnitConversionTest("1.2", 1.2 * FeetToMetre * FeetToMetre * FeetToMetre, STFReader.UNITS.VolumeDefaultFT3);
         }
 
-        /* The following units are currently accepted by Open Rails but have no bearing in MSTS:
+        /* The following units are currently accepted by Open Rails but have no meaning in MSTS:
          *     amps
          *     btu/lb
          *     degc
          *     degf
-         *     g/h
          *     gals
          *     g-uk
          *     g-us
@@ -717,6 +620,7 @@ namespace Tests.Msts.Parsers
          *     inhg
          *     inhg/s
          *     kj/kg
+         *     kmph
          *     kpa
          *     kpa/s
          *     kph
@@ -725,55 +629,63 @@ namespace Tests.Msts.Parsers
          *     rps
          *     t-uk
          *     t-us
+         *     w
          */
 
-        
-
-        /// <summary>
-        /// Check a particular bug on comments/skip as last item of block
-        /// </summary>
         [Fact]
         public static void Bug1274713ParentheticalComment()
         {
-            string firstpart =
+            var part1 =
                 "Wagon(\n" +
                 "    Lights(\n" +
                 "        Light( 1 )\n" +
-                "        #(Comment)\n" +
-                "        Light( 2 )\n";
-            string lastpart =
+                "";
+            var part2 =
+                "        Light( 2 )\n" +
+                "";
+            var part3 =
                 "    )\n" +
                 "    Sound( test.sms )\n" +
                 ")";
-            Bug1274713ParenthicalCommentSingle(firstpart + " #(Comment)\n" + lastpart);
-            Bug1274713ParenthicalCommentSingle(firstpart + " Skip ( ** comment ** ) \n" + lastpart);               
+            var middles = new[] {
+                "        #(Comment)\n",
+                "        # (Comment)\n",
+                "        Skip( ** comment ** ) \n",
+                "        Skip ( ** comment ** ) \n"
+            };
+            foreach (var middle in middles)
+                Bug1274713ParenthicalCommentSingle(part1 + middle + part2 + part3);
+            foreach (var middle in middles)
+                Bug1274713ParenthicalCommentSingle(part1 + part2 + middle + part3);
         }
 
         static void Bug1274713ParenthicalCommentSingle(string inputString)
         {
-            using (var reader = new STFReader(new MemoryStream(Encoding.Unicode.GetBytes(
-                inputString)), "", Encoding.Unicode, true))
+            using (var reader = new STFReader(new MemoryStream(Encoding.Unicode.GetBytes(inputString)), "", Encoding.Unicode, true))
             {
                 reader.ReadItem();
-                Assert.Equal("wagon", reader.Tree.ToLower());  // Note, fxCop wants culture info, and if added, it wants ToUpper. Let's leave it at this
+                Assert.Equal("wagon", reader.Tree.ToLower());
                 reader.MustMatch("(");
 
                 reader.ReadItem();
                 Assert.Equal("wagon(lights", reader.Tree.ToLower());
                 reader.MustMatch("(");
 
-                int lightNo=0;
-                reader.ParseBlock(new[] {
-                    new STFReader.TokenProcessor("light", ()=>{
-                        Assert.Equal("wagon(lights(light", reader.Tree.ToLower());
-                        reader.MustMatch("(");
-                        Assert.Equal(++lightNo, reader.ReadInt(null));
-                        reader.SkipRestOfBlock();
-                        Assert.Equal("wagon(lights()", reader.Tree.ToLower());
-                    }),
-                });
+                reader.ReadItem();
+                Assert.Equal("wagon(lights(light", reader.Tree.ToLower());
+                reader.MustMatch("(");
+                Assert.Equal(1, reader.ReadInt(null));
+                reader.SkipRestOfBlock();
+                Assert.Equal("wagon(lights()", reader.Tree.ToLower());
 
-                Assert.Equal(2, lightNo);
+                reader.ReadItem();
+                Assert.Equal("wagon(lights(light", reader.Tree.ToLower());
+                reader.MustMatch("(");
+                Assert.Equal(2, reader.ReadInt(null));
+                reader.SkipRestOfBlock();
+                Assert.Equal("wagon(lights()", reader.Tree.ToLower());
+
+                reader.ReadItem();
                 Assert.Equal("wagon()", reader.Tree.ToLower());
 
                 reader.ReadItem();
