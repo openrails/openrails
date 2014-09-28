@@ -46,6 +46,10 @@ namespace ORTS.Viewer3D.Popups
 
         readonly int ProcessorCount = System.Environment.ProcessorCount;
 
+        readonly PerformanceCounter AllocatedBytesPerSecCounter; // \.NET CLR Memory(*)\Allocated Bytes/sec
+        SmoothedData AllocatedBytesPerSecLastValue = new SmoothedData(30);
+        int AllocatedBytesPerSecLastGCValue;
+
         readonly Viewer Viewer;
         readonly Action<TableData>[] TextPages;
         readonly WindowTextFont TextFont;
@@ -81,6 +85,17 @@ namespace ORTS.Viewer3D.Popups
             ProcessHandle = OpenProcess(0x410 /* PROCESS_QUERY_INFORMATION | PROCESS_VM_READ */, false, Process.GetCurrentProcess().Id);
             ProcessMemoryCounters = new PROCESS_MEMORY_COUNTERS() { Size = 40 };
             ProcessVirtualAddressLimit = GetVirtualAddressLimit();
+
+            var counterDotNetClrMemory = new PerformanceCounterCategory(".NET CLR Memory");
+            foreach (var process in counterDotNetClrMemory.GetInstanceNames())
+            {
+                var processId = new PerformanceCounter(".NET CLR Memory", "Process ID", process);
+                if (processId.NextValue() == Process.GetCurrentProcess().Id)
+                {
+                    AllocatedBytesPerSecCounter = new PerformanceCounter(".NET CLR Memory", "Allocated Bytes/sec", process);
+                    break;
+                }
+            }
 
             Debug.Assert(GC.MaxGeneration == 2, "Runtime is expected to have a MaxGeneration of 2.");
 
@@ -641,9 +656,20 @@ namespace ORTS.Viewer3D.Popups
         {
             TextPageHeading(table, "DEBUG INFORMATION");
 
+            var allocatedBytesPerSecGCValue = GC.CollectionCount(0);
+            if (AllocatedBytesPerSecLastGCValue != allocatedBytesPerSecGCValue)
+            {
+                AllocatedBytesPerSecLastValue.Update(1, AllocatedBytesPerSecCounter.NextValue());
+                AllocatedBytesPerSecLastGCValue = allocatedBytesPerSecGCValue;
+            }
+            else
+            {
+                AllocatedBytesPerSecLastValue.Update(1, AllocatedBytesPerSecLastValue.Value);
+            }
+
             TableAddLabelValue(table, "Logging enabled", "{0}", Viewer.Settings.DataLogger);
             TableAddLabelValue(table, "Build", "{0}", VersionInfo.Build);
-            TableAddLabelValue(table, "Memory", "{0:F0} MB ({5}, {6}, {7}, {8}, {1:F0} MB managed, {2:F0}/{3:F0}/{4:F0} GCs)", GetWorkingSetSize() / 1024 / 1024, GC.GetTotalMemory(false) / 1024 / 1024, GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2), Viewer.TextureManager.GetStatus(), Viewer.MaterialManager.GetStatus(), Viewer.ShapeManager.GetStatus(), Viewer.World.Terrain.GetStatus());
+            TableAddLabelValue(table, "Memory", "{0:F0} MB ({5}, {6}, {7}, {8}, {1:F0} MB managed, {9:F0} kB/frame allocated, {2:F0}/{3:F0}/{4:F0} GCs)", GetWorkingSetSize() / 1024 / 1024, GC.GetTotalMemory(false) / 1024 / 1024, GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2), Viewer.TextureManager.GetStatus(), Viewer.MaterialManager.GetStatus(), Viewer.ShapeManager.GetStatus(), Viewer.World.Terrain.GetStatus(), AllocatedBytesPerSecLastValue.SmoothedValue / Viewer.RenderProcess.FrameRate.SmoothedValue / 1024);
             TableAddLabelValue(table, "CPU", "{0:F0}% ({1} logical processors)", (Viewer.RenderProcess.Profiler.CPU.SmoothedValue + Viewer.UpdaterProcess.Profiler.CPU.SmoothedValue + Viewer.LoaderProcess.Profiler.CPU.SmoothedValue + Viewer.SoundProcess.Profiler.CPU.SmoothedValue) / ProcessorCount, ProcessorCount);
             TableAddLabelValue(table, "GPU", "{0:F0} FPS (50th/95th/99th percentiles {1:F1} / {2:F1} / {3:F1} ms, shader model {4})", Viewer.RenderProcess.FrameRate.SmoothedValue, Viewer.RenderProcess.FrameTime.SmoothedP50 * 1000, Viewer.RenderProcess.FrameTime.SmoothedP95 * 1000, Viewer.RenderProcess.FrameTime.SmoothedP99 * 1000, Viewer.Settings.ShaderModel);
             TableAddLabelValue(table, "Adapter", "{0} ({1:F0} MB)", Viewer.AdapterDescription, Viewer.AdapterMemory / 1024 / 1024);

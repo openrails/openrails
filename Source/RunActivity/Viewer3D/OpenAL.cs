@@ -105,7 +105,7 @@ namespace ORTS.Viewer3D
         [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alGetBufferi(int buffer, int attribute, out int val);
         [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern string alGetString(int state);
+        public static extern IntPtr alGetString(int state);
         [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern int alGetError();
         [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
@@ -201,7 +201,8 @@ namespace ORTS.Viewer3D
             IntPtr context = alcCreateContext(device, attribs);
             alcMakeContextCurrent(context);
 
-            Trace.TraceInformation("Initialized OpenAL {0}; device '{1}' by '{2}'", alGetString(AL_VERSION), alGetString(AL_RENDERER), alGetString(AL_VENDOR));
+            // Note: Must use custom marshalling here because the returned strings must NOT be automatically deallocated by runtime.
+            Trace.TraceInformation("Initialized OpenAL {0}; device '{1}' by '{2}'", Marshal.PtrToStringAnsi(alGetString(AL_VERSION)), Marshal.PtrToStringAnsi(alGetString(AL_RENDERER)), Marshal.PtrToStringAnsi(alGetString(AL_VENDOR)));
         }
     }
 
