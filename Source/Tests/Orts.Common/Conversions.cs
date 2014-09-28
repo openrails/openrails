@@ -15,25 +15,17 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using ORTS.Common;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Xunit;
-using ORTS.Common;
 
 namespace Tests.Orts.Common
 {
-    /// <summary>
-    /// Test the conversions between various units
-    /// </summary>
-    public static class ConversionsTest
+    public static class Conversions
     {
-        private const int RequestedAccuracy=6; // There is no reason to require less accuracy, it is free.
+        static readonly IEqualityComparer<double> RequestedAccuracy = DynamicPrecisionEqualityComparer.Float;
 
-        /// <summary>
-        /// Check a few real values. Most of them are not tested, because that would mean replicating code
-        /// </summary>
         [Fact]
         public static void ConversionValues()
         {
@@ -41,9 +33,6 @@ namespace Tests.Orts.Common
             Assert.Equal(-20, C.FromF(-4f), RequestedAccuracy);
         }
 
-        /// <summary>
-        /// Check the calculations going forth and back
-        /// </summary>
         [Fact]
         public static void InverseRelations()
         {
@@ -61,12 +50,12 @@ namespace Tests.Orts.Common
 
             Assert.Equal(1.2f, MpS.FromMpH(MpS.ToMpH(1.2f)), RequestedAccuracy);
             Assert.Equal(1.2f, MpS.FromKpH(MpS.ToKpH(1.2f)), RequestedAccuracy);
-            
+
             Assert.Equal(1.2f, Kg.FromLb(Kg.ToLb(1.2f)), RequestedAccuracy);
             Assert.Equal(1.2f, Kg.FromTUS(Kg.ToTUS(1.2f)), RequestedAccuracy);
             Assert.Equal(1.2f, Kg.FromTUK(Kg.ToTUK(1.2f)), RequestedAccuracy);
             Assert.Equal(1.2f, Kg.FromTonne(Kg.ToTonne(1.2f)), RequestedAccuracy);
-            
+
             Assert.Equal(1.2f, N.FromLbf(N.ToLbf(1.2f)), RequestedAccuracy);
 
             Assert.Equal(1.2f, KgpS.FromLbpH(KgpS.ToLbpH(1.2f)), RequestedAccuracy);
@@ -84,39 +73,36 @@ namespace Tests.Orts.Common
             Assert.Equal(1.2f, Bar.FromPSI(Bar.ToPSI(1.2f)), RequestedAccuracy);
             Assert.Equal(1.2f, Bar.FromInHg(Bar.ToInHg(1.2f)), RequestedAccuracy);
             Assert.Equal(1.2f, Bar.FromKgfpCm2(Bar.ToKgfpCm2(1.2f)), RequestedAccuracy);
-            
+
             Assert.Equal(1.2f, BarpS.FromPSIpS(BarpS.ToPSIpS(1.2f)), RequestedAccuracy);
 
             Assert.Equal(1.2f, KJpKg.FromBTUpLb(KJpKg.ToBTUpLb(1.2f)), RequestedAccuracy);
-            
+
             Assert.Equal(1.2f, L.FromGUK(L.ToGUK(1.2f)), RequestedAccuracy);
             Assert.Equal(1.2f, L.FromGUS(L.ToGUS(1.2f)), RequestedAccuracy);
 
             Assert.Equal(1.2f, pS.FrompM(pS.TopM(1.2f)), RequestedAccuracy);
             Assert.Equal(1.2f, pS.FrompH(pS.TopH(1.2f)), RequestedAccuracy);
-            
+
             Assert.Equal(1.2f, S.FromM(S.ToM(1.2f)), RequestedAccuracy);
             Assert.Equal(1.2f, S.FromH(S.ToH(1.2f)), RequestedAccuracy);
 
             Assert.Equal(1.2f, C.FromF(C.ToF(1.2f)), RequestedAccuracy);
-            Assert.Equal(1.2f, C.FromK(C.ToK(1.2f)), RequestedAccuracy-2); // we have too many digits before the .
+            Assert.Equal(1.2f, C.FromK(C.ToK(1.2f)), RequestedAccuracy);
         }
 
-        /// <summary>
-        /// test that related conversions (multiplications of various units) are consistent
-        /// </summary>
         [Fact]
         public static void RelatedConversions()
         {
-            Assert.Equal(1.44f, Me2.FromFt2((float)Math.Pow(Me.ToFt(1.2f), 2)), RequestedAccuracy-1);
-            Assert.Equal(1.44f, Me2.ToFt2((float)Math.Pow(Me.FromFt(1.2f), 2)), RequestedAccuracy-1);
-            Assert.Equal(1.44f, Me2.FromIn2((float)Math.Pow(Me.ToIn(1.2f), 2)), RequestedAccuracy-1);
-            Assert.Equal(1.44f, Me2.ToIn2((float)Math.Pow(Me.FromIn(1.2f), 2)), RequestedAccuracy-1);
+            Assert.Equal(1.44f, Me2.FromFt2((float)Math.Pow(Me.ToFt(1.2f), 2)), RequestedAccuracy);
+            Assert.Equal(1.44f, Me2.ToFt2((float)Math.Pow(Me.FromFt(1.2f), 2)), RequestedAccuracy);
+            Assert.Equal(1.44f, Me2.FromIn2((float)Math.Pow(Me.ToIn(1.2f), 2)), RequestedAccuracy);
+            Assert.Equal(1.44f, Me2.ToIn2((float)Math.Pow(Me.FromIn(1.2f), 2)), RequestedAccuracy);
 
-            Assert.Equal(1.728f, Me3.FromFt3((float)Math.Pow(Me.ToFt(1.2f), 3)), RequestedAccuracy-1);
-            Assert.Equal(1.728f, Me3.ToFt3((float)Math.Pow(Me.FromFt(1.2f), 3)), RequestedAccuracy-1);
-            Assert.Equal(1.728f, Me3.FromIn3((float)Math.Pow(Me.ToIn(1.2f), 3)), RequestedAccuracy-1);
-            Assert.Equal(1.728f, Me3.ToIn3((float)Math.Pow(Me.FromIn(1.2f), 3)), RequestedAccuracy-1);
+            Assert.Equal(1.728f, Me3.FromFt3((float)Math.Pow(Me.ToFt(1.2f), 3)), RequestedAccuracy);
+            Assert.Equal(1.728f, Me3.ToFt3((float)Math.Pow(Me.FromFt(1.2f), 3)), RequestedAccuracy);
+            Assert.Equal(1.728f, Me3.FromIn3((float)Math.Pow(Me.ToIn(1.2f), 3)), RequestedAccuracy);
+            Assert.Equal(1.728f, Me3.ToIn3((float)Math.Pow(Me.FromIn(1.2f), 3)), RequestedAccuracy);
 
             Assert.Equal(1.2f, KPa.FromBar(Bar.FromKPa(1.2f)), RequestedAccuracy);
             Assert.Equal(1.2f, KPa.ToBar(Bar.ToKPa(1.2f)), RequestedAccuracy);
@@ -127,13 +113,12 @@ namespace Tests.Orts.Common
             Assert.Equal(1.2f, KPa.FromKgfpCm2(Bar.ToKgfpCm2(KPa.ToBar(1.2f))), RequestedAccuracy);
             Assert.Equal(1.2f, KPa.ToKgfpCm2(KPa.FromBar(Bar.FromKgfpCm2(1.2f))), RequestedAccuracy);
         }
-        
-        /// <summary>
-        /// Check that units that differ only by another unit, give the same conversion ratios
-        /// </summary>
+
         [Fact]
         public static void RelatedConversionNonPhysical()
-        {   // related conversions that should hold mathematically, but perhaps not physically because of unit mismatch
+        {
+            // Note: Related conversions that should hold mathematically, but perhaps not physically because of unit mismatch.
+
             Assert.Equal(1.2f, BarpS.FromPSIpS(Bar.ToPSI(1.2f)), RequestedAccuracy);
             Assert.Equal(1.2f, Bar.FromPSI(BarpS.ToPSIpS(1.2f)), RequestedAccuracy);
             Assert.Equal(1.2f, BarpS.ToPSIpS(Bar.FromPSI(1.2f)), RequestedAccuracy);
@@ -145,9 +130,6 @@ namespace Tests.Orts.Common
             Assert.Equal(1.2f, pS.TopH(S.ToH(1.2f)), RequestedAccuracy);
         }
 
-        /// <summary>
-        /// Check the conversions that have an extra parameter to enable conversion to/from two or more other units
-        /// </summary>
         [Fact]
         public static void MultiUnitConversions()
         {
@@ -169,23 +151,20 @@ namespace Tests.Orts.Common
             Assert.Equal(1.2f, KPa.ToKgfpCm2(KPa.ToKPa(1.2f, PressureUnit.KgfpCm2)), RequestedAccuracy);
             Assert.Equal(1.2f, KPa.ToPSI(KPa.ToKPa(1.2f, PressureUnit.PSI)), RequestedAccuracy);
             Assert.Throws<ArgumentOutOfRangeException>(() => KPa.ToKPa(1.2f, PressureUnit.None));
-        
         }
 
-        /// <summary>
-        /// Check the time comparison routines
-        /// </summary>
         [Fact]
         public static void CompareTime()
         {
-            int time4 = 4 * 3600;
-            int time7 = 7 * 3600;
-            int time8 = 8 * 3600;
-            int time12 = 12 * 3600;
-            int time15 = 15 * 3600;
-            int time16 = 16 * 3600;
-            int time20 = 20 * 3600;
+            var time4 = 4 * 3600;
+            var time7 = 7 * 3600;
+            var time8 = 8 * 3600;
+            var time12 = 12 * 3600;
+            var time15 = 15 * 3600;
+            var time16 = 16 * 3600;
+            var time20 = 20 * 3600;
 
+            // Simple cases
             Assert.Equal(time7, CompareTimes.LatestTime(time4, time7));
             Assert.Equal(time12, CompareTimes.LatestTime(time4, time12));
             Assert.Equal(time15, CompareTimes.LatestTime(time4, time15));
@@ -214,7 +193,7 @@ namespace Tests.Orts.Common
 
             Assert.Equal(time15, CompareTimes.EarliestTime(time15, time20));
 
-            //boundary cases
+            // Boundary cases
             Assert.Equal(time4, CompareTimes.EarliestTime(time8, time4));
             Assert.Equal(time8, CompareTimes.EarliestTime(time8, time12));
             Assert.Equal(time8, CompareTimes.EarliestTime(time8, time20));
@@ -230,54 +209,49 @@ namespace Tests.Orts.Common
             Assert.Equal(time16, CompareTimes.LatestTime(time16, time4));
             Assert.Equal(time16, CompareTimes.LatestTime(time16, time12));
             Assert.Equal(time20, CompareTimes.LatestTime(time16, time20));
-
         }
 
-        /// <summary>
-        /// Check the string outputs
-        /// </summary>
         [Fact]
         public static void FormattedStrings()
         {
-            // Note, only pressure is tested at the moment, mainly because of its complexity
+            // Note: Only pressure is tested at the moment, mainly because of its complexity.
 
             Assert.Equal(String.Empty, FormatStrings.FormatPressure(1.2f, PressureUnit.None, PressureUnit.KPa, true));
             Assert.Equal(String.Empty, FormatStrings.FormatPressure(1.2f, PressureUnit.KPa, PressureUnit.None, true));
 
-            Assert.Equal("1 kPa",FormatStrings.FormatPressure(1.2f,PressureUnit.KPa, PressureUnit.KPa,true));
+            Assert.Equal("1 kPa", FormatStrings.FormatPressure(1.2f, PressureUnit.KPa, PressureUnit.KPa, true));
             Assert.Equal("1 kPa", FormatStrings.FormatPressure(KPa.ToBar(1.2f), PressureUnit.Bar, PressureUnit.KPa, true));
             Assert.Equal("1 kPa", FormatStrings.FormatPressure(KPa.ToInHg(1.2f), PressureUnit.InHg, PressureUnit.KPa, true));
             Assert.Equal("1 kPa", FormatStrings.FormatPressure(KPa.ToKgfpCm2(1.2f), PressureUnit.KgfpCm2, PressureUnit.KPa, true));
             Assert.Equal("1 kPa", FormatStrings.FormatPressure(KPa.ToPSI(1.2f), PressureUnit.PSI, PressureUnit.KPa, true));
 
-            string barResult = string.Format(System.Globalization.CultureInfo.CurrentCulture, "{0:F1} bar", 1.2f);
+            var barResult = string.Format(System.Globalization.CultureInfo.CurrentCulture, "{0:F1} bar", 1.2f);
             Assert.Equal(barResult, FormatStrings.FormatPressure(Bar.ToKPa(1.2f), PressureUnit.KPa, PressureUnit.Bar, true));
             Assert.Equal(barResult, FormatStrings.FormatPressure(1.2f, PressureUnit.Bar, PressureUnit.Bar, true));
             Assert.Equal(barResult, FormatStrings.FormatPressure(Bar.ToInHg(1.2f), PressureUnit.InHg, PressureUnit.Bar, true));
             Assert.Equal(barResult, FormatStrings.FormatPressure(Bar.ToKgfpCm2(1.2f), PressureUnit.KgfpCm2, PressureUnit.Bar, true));
             Assert.Equal(barResult, FormatStrings.FormatPressure(Bar.ToPSI(1.2f), PressureUnit.PSI, PressureUnit.Bar, true));
 
-            string psiResult = string.Format(System.Globalization.CultureInfo.CurrentCulture, "{0:F0} psi", 1.2f);
+            var psiResult = string.Format(System.Globalization.CultureInfo.CurrentCulture, "{0:F0} psi", 1.2f);
             Assert.Equal(psiResult, FormatStrings.FormatPressure(KPa.FromPSI(1.2f), PressureUnit.KPa, PressureUnit.PSI, true));
             Assert.Equal(psiResult, FormatStrings.FormatPressure(KPa.ToBar(KPa.FromPSI(1.2f)), PressureUnit.Bar, PressureUnit.PSI, true));
             Assert.Equal(psiResult, FormatStrings.FormatPressure(KPa.ToInHg(KPa.FromPSI(1.2f)), PressureUnit.InHg, PressureUnit.PSI, true));
             Assert.Equal(psiResult, FormatStrings.FormatPressure(KPa.ToKgfpCm2(KPa.FromPSI(1.2f)), PressureUnit.KgfpCm2, PressureUnit.PSI, true));
             Assert.Equal(psiResult, FormatStrings.FormatPressure(KPa.ToPSI(KPa.FromPSI(1.2f)), PressureUnit.PSI, PressureUnit.PSI, true));
 
-            string inhgResult = string.Format(System.Globalization.CultureInfo.CurrentCulture, "{0:F0} inHg", 1.2f);
+            var inhgResult = string.Format(System.Globalization.CultureInfo.CurrentCulture, "{0:F0} inHg", 1.2f);
             Assert.Equal(inhgResult, FormatStrings.FormatPressure(KPa.FromInHg(1.2f), PressureUnit.KPa, PressureUnit.InHg, true));
             Assert.Equal(inhgResult, FormatStrings.FormatPressure(KPa.ToBar(KPa.FromInHg(1.2f)), PressureUnit.Bar, PressureUnit.InHg, true));
             Assert.Equal(inhgResult, FormatStrings.FormatPressure(KPa.ToInHg(KPa.FromInHg(1.2f)), PressureUnit.InHg, PressureUnit.InHg, true));
             Assert.Equal(inhgResult, FormatStrings.FormatPressure(KPa.ToKgfpCm2(KPa.FromInHg(1.2f)), PressureUnit.KgfpCm2, PressureUnit.InHg, true));
             Assert.Equal(inhgResult, FormatStrings.FormatPressure(KPa.ToPSI(KPa.FromInHg(1.2f)), PressureUnit.PSI, PressureUnit.InHg, true));
 
-            string kgfResult = string.Format(System.Globalization.CultureInfo.CurrentCulture, "{0:F1} kgf/cm^2", 1.2f);
+            var kgfResult = string.Format(System.Globalization.CultureInfo.CurrentCulture, "{0:F1} kgf/cm^2", 1.2f);
             Assert.Equal(kgfResult, FormatStrings.FormatPressure(KPa.FromKgfpCm2(1.2f), PressureUnit.KPa, PressureUnit.KgfpCm2, true));
             Assert.Equal(kgfResult, FormatStrings.FormatPressure(KPa.ToBar(KPa.FromKgfpCm2(1.2f)), PressureUnit.Bar, PressureUnit.KgfpCm2, true));
             Assert.Equal(kgfResult, FormatStrings.FormatPressure(KPa.ToInHg(KPa.FromKgfpCm2(1.2f)), PressureUnit.InHg, PressureUnit.KgfpCm2, true));
             Assert.Equal(kgfResult, FormatStrings.FormatPressure(KPa.ToKgfpCm2(KPa.FromKgfpCm2(1.2f)), PressureUnit.KgfpCm2, PressureUnit.KgfpCm2, true));
             Assert.Equal(kgfResult, FormatStrings.FormatPressure(KPa.ToPSI(KPa.FromKgfpCm2(1.2f)), PressureUnit.PSI, PressureUnit.KgfpCm2, true));
-
         }
     }
 }

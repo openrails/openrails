@@ -53,8 +53,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DynamicPrecisionEqualityComparer.cs" />
     <Compile Include="Msts.Parsers\StfReader.cs" />
-    <Compile Include="ORTS.Common\Conversions.cs" />
+    <Compile Include="Orts.Common\Conversions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

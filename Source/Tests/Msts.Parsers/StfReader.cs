@@ -273,11 +273,11 @@ namespace Tests.Msts.Parsers
         {
             using (var reader = new STFReader(new MemoryStream(Encoding.Unicode.GetBytes("1.1 1.2 1.3km 1.4 1.5km")), "", Encoding.Unicode, false))
             {
-                Assert.Equal(1.10000f, reader.ReadFloat(STFReader.UNITS.None, null), 5);
-                Assert.Equal(1.20000f, reader.ReadFloat(STFReader.UNITS.Distance, null), 5);
-                Assert.Equal(1300.00000f, reader.ReadFloat(STFReader.UNITS.Distance, null), 5);
-                Assert.Equal(1.40000f, reader.ReadFloat(STFReader.UNITS.Distance | STFReader.UNITS.Compulsory, null), 5); // TODO: Um, shouldn't this fail or something?
-                Assert.Equal(1500.00000f, reader.ReadFloat(STFReader.UNITS.Distance | STFReader.UNITS.Compulsory, null), 5);
+                Assert.Equal(1.10000f, reader.ReadFloat(STFReader.UNITS.None, null), DynamicPrecisionEqualityComparer.Float);
+                Assert.Equal(1.20000f, reader.ReadFloat(STFReader.UNITS.Distance, null), DynamicPrecisionEqualityComparer.Float);
+                Assert.Equal(1300.00000f, reader.ReadFloat(STFReader.UNITS.Distance, null), DynamicPrecisionEqualityComparer.Float);
+                Assert.Equal(1.40000f, reader.ReadFloat(STFReader.UNITS.Distance | STFReader.UNITS.Compulsory, null), DynamicPrecisionEqualityComparer.Float); // TODO: Um, shouldn't this fail or something?
+                Assert.Equal(1500.00000f, reader.ReadFloat(STFReader.UNITS.Distance | STFReader.UNITS.Compulsory, null), DynamicPrecisionEqualityComparer.Float);
                 Assert.True(reader.Eof, "STFReader.Eof");
             }
         }
@@ -286,7 +286,7 @@ namespace Tests.Msts.Parsers
         {
             using (var reader = new STFReader(new MemoryStream(Encoding.Unicode.GetBytes(input)), "", Encoding.Unicode, false))
             {
-                Assert.Equal(output, reader.ReadFloat(unit, null), 6);
+                Assert.Equal(output, reader.ReadFloat(unit, null), DynamicPrecisionEqualityComparer.Float);
                 Assert.True(reader.Eof, "STFReader.Eof");
             }
         }
