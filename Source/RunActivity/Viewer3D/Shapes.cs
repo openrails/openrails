@@ -1519,23 +1519,23 @@ namespace ORTS.Viewer3D
                     chosenDistanceLevel.ViewingDistance = lodControl.DistanceLevels[lodControl.DistanceLevels.Length - 1].ViewingDistance;
 
                 for (var i = 0; i < chosenDistanceLevel.SubObjects.Length; i++)
-                {
+				{
                     var subObject = chosenDistanceLevel.SubObjects[i];
-
+                   
                     // The 1st subobject (note that index 0 is the main object itself) is hidden during the day if HasNightSubObj is true.
-                    if ((subObjVisible != null && !subObjVisible[i]) || (i == 1 && HasNightSubObj && Viewer.MaterialManager.sunDirection.Y >= 0))
-                        continue;
+					if ((subObjVisible != null && !subObjVisible[i]) || (i == 1 && HasNightSubObj && Viewer.MaterialManager.sunDirection.Y >= 0))
+						continue;
 
-                    foreach (var shapePrimitive in subObject.ShapePrimitives)
-                    {
-                        var xnaMatrix = Matrix.Identity;
-                        var hi = shapePrimitive.HierarchyIndex;
-                        while (hi >= 0 && hi < shapePrimitive.Hierarchy.Length && shapePrimitive.Hierarchy[hi] != -1)
-                        {
-                            Matrix.Multiply(ref xnaMatrix, ref animatedXNAMatrices[hi], out xnaMatrix);
-                            hi = shapePrimitive.Hierarchy[hi];
-                        }
-                        Matrix.Multiply(ref xnaMatrix, ref xnaDTileTranslation, out xnaMatrix);
+					foreach (var shapePrimitive in subObject.ShapePrimitives)
+					{
+						var xnaMatrix = Matrix.Identity;
+						var hi = shapePrimitive.HierarchyIndex;
+						while (hi >= 0 && hi < shapePrimitive.Hierarchy.Length && shapePrimitive.Hierarchy[hi] != -1)
+						{
+							Matrix.Multiply(ref xnaMatrix, ref animatedXNAMatrices[hi], out xnaMatrix);
+							hi = shapePrimitive.Hierarchy[hi];
+						}
+						Matrix.Multiply(ref xnaMatrix, ref xnaDTileTranslation, out xnaMatrix);
 
                         // TODO make shadows depend on shape overrides
 

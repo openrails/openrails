@@ -533,7 +533,7 @@ namespace ORTS.Viewer3D
                 ShaderPasses.Current.Begin();
                 foreach (var item in renderItems)
                 {
-                    shader.SetMatrix(ref item.XNAMatrix, ref viewproj);
+                    shader.SetMatrix(item.XNAMatrix, ref viewproj);
                     shader.ZBias = item.RenderPrimitive.ZBias;
                     shader.CommitChanges();
                     item.RenderPrimitive.Draw(graphicsDevice);

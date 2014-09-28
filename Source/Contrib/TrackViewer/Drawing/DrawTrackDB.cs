@@ -869,9 +869,9 @@ namespace ORTS.TrackViewer.Drawing
         /// <returns>The eturn the (center) location of a tracknode or null if no tracknode could be identified</returns>
         public WorldLocation TrackNodeHighlightOverride(int tni)
         {
-            if ((tni < 0) || (tni >= TrackDB.TrackNodes.Length)) return null;
+            if ((tni < 0) || (tni >= TrackDB.TrackNodes.Length)) return WorldLocation.None;
             TrackNode tn = TrackDB.TrackNodes[tni];
-            if (tn == null) return null;
+            if (tn == null) return WorldLocation.None;
 
             IsHighlightOverridden = true;
             if (tn.TrJunctionNode != null )
@@ -902,10 +902,10 @@ namespace ORTS.TrackViewer.Drawing
         /// <returns>The eturn the (center) location of a tracknode or null if no tracknode could be identified</returns>
         public WorldLocation TrackNodeHighlightOverrideRoad(int tni)
         {
-            if (roadTrackDB == null) return null;
-            if ((tni < 0) || (tni >= roadTrackDB.TrackNodes.Length)) return null;
+            if (roadTrackDB == null) return WorldLocation.None;
+            if ((tni < 0) || (tni >= roadTrackDB.TrackNodes.Length)) return WorldLocation.None;
             TrackNode tn = roadTrackDB.TrackNodes[tni];
-            if (tn == null) return null;
+            if (tn == null) return WorldLocation.None;
 
             IsHighlightOverridden = true;
             
@@ -930,7 +930,7 @@ namespace ORTS.TrackViewer.Drawing
         public WorldLocation TrackItemHighlightOverride(int itemIndex)
         {
             IsHighlightOverriddenTrItem = false; // do not show all items, just yet. Only after CheckForHighlightOverride
-            if ((itemIndex < 0) || (itemIndex >= railTrackItemTable.Length)) return null;
+            if ((itemIndex < 0) || (itemIndex >= railTrackItemTable.Length)) return WorldLocation.None;
             IsHighlightOverridden = true;
             DrawableTrackItem item = railTrackItemTable[itemIndex];
             searchTrItem = new CloseToMouseItem(item);
@@ -945,8 +945,8 @@ namespace ORTS.TrackViewer.Drawing
         public WorldLocation TrackItemHighlightOverrideRoad(int itemIndex)
         {
             IsHighlightOverriddenTrItem = false; // do not show all items, just yet. Only after CheckForHighlightOverride
-            if (roadTrackDB == null) return null;
-            if ((itemIndex < 0) || (itemIndex >= roadTrackItemTable.Length)) return null;
+            if (roadTrackDB == null) return WorldLocation.None;
+            if ((itemIndex < 0) || (itemIndex >= roadTrackItemTable.Length)) return WorldLocation.None;
             IsHighlightOverridden = true;
             DrawableTrackItem item = roadTrackItemTable[itemIndex];
             searchTrItem = new CloseToMouseItem(item);
@@ -1068,14 +1068,14 @@ namespace ORTS.TrackViewer.Drawing
         /// <remarks>Obviously, a single location is always an estimate. Currently tries to find middle of end points</remarks>
         static private WorldLocation TrackLocation(TrackNode tn, TrackNode nodeBehind, TrackNode nodeAhead)
         {
-            if (tn.TrVectorNode == null) return null;
+            if (tn.TrVectorNode == null) return WorldLocation.None;
             if (nodeBehind == null)
             {
                 if (nodeAhead == null)
                 {
                     // no junctions or end node at both sides. Oh, well, just take the first point
                     TrVectorSection tvs = tn.TrVectorNode.TrVectorSections[0];
-                    if (tvs == null) return null;
+                    if (tvs == null) return WorldLocation.None;
                     return new WorldLocation(tvs.TileX, tvs.TileZ, tvs.X, 0, tvs.Z);
                 }
                 else
@@ -1136,7 +1136,7 @@ namespace ORTS.TrackViewer.Drawing
             }
             catch
             {
-                return null;
+                return WorldLocation.None;
             }
         }
 

@@ -165,11 +165,11 @@ namespace ORTS.Processes
                 }
                 else
                 {
-                    trainLocation = null;
+                    trainLocation = WorldLocation.None;
                 }
             }
             catch {
-                trainLocation = null;
+                trainLocation = WorldLocation.None;
             }
             return trainLocation;
         }

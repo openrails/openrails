@@ -499,7 +499,7 @@ namespace ORTS.Viewer3D
                 pass.Begin();
                 foreach (var item in renderItems)
                 {
-                    SceneryShader.SetMatrix(ref item.XNAMatrix, ref viewProj);
+                    SceneryShader.SetMatrix(item.XNAMatrix, ref viewProj);
                     SceneryShader.CommitChanges();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
@@ -568,7 +568,7 @@ namespace ORTS.Viewer3D
                 {
                     var slp = item.RenderPrimitive as SignalLightPrimitive;
                     SceneryShader.ZBias = MathHelper.Lerp(slp.GlowIntensityDay, slp.GlowIntensityNight, NightEffect);
-                    SceneryShader.SetMatrix(ref item.XNAMatrix, ref viewProj);
+                    SceneryShader.SetMatrix(item.XNAMatrix, ref viewProj);
                     SceneryShader.CommitChanges();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }

@@ -199,7 +199,7 @@ namespace ORTS.TrackViewer.Drawing
         {
             base.Reset();
             DrawableTrackItem = null;
-            worldLocation = null;
+            worldLocation = WorldLocation.None;
        }
 
         /// <summary>

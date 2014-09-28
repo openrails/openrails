@@ -302,6 +302,10 @@ namespace ORTS.Viewer3D.Popups
 		{
 			WindowLayout.HandleUserInput(new WindowMouseEvent(Owner, this));
 		}
+
+		public virtual void Mark()
+		{
+		}
 	}
 
 	public class WindowMouseEvent

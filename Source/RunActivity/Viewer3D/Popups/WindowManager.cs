@@ -344,6 +344,8 @@ namespace ORTS.Viewer3D.Popups
             WindowManagerMaterial.Mark();
             PopupWindowMaterial.Mark();
             Label3DMaterial.Mark();
+			foreach (var window in Windows)
+                window.Mark();
         }
 
         [CallOnThread("Loader")]

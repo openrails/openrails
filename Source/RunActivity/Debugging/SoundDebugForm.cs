@@ -26,6 +26,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using ORTS.Viewer3D;
+using ORTS.Common;
 
 namespace ORTS.Debugging
 {
@@ -152,7 +153,7 @@ namespace ORTS.Debugging
                             break;
                     }
 
-                if (selectedSoundSource.WorldLocation != null && selectedSoundSource.SoundStreams.Count > 0)
+                if (selectedSoundSource.WorldLocation != WorldLocation.None && selectedSoundSource.SoundStreams.Count > 0)
                 {
                     //Source distance:
                     //distance.Text = Math.Sqrt(selectedSoundSource.DistanceSquared).ToString("F1");

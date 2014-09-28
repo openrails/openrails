@@ -158,22 +158,16 @@ namespace ORTS.Common
     /// <summary>
     /// Represents the position of an object within a tile in MSTS coordinates.
     /// </summary>
-    public class WorldLocation
+    public struct WorldLocation
     {
+		public static WorldLocation None = new WorldLocation();
+
         /// <summary>The x-value of the tile</summary>
-        public int TileX { get; set; }
+        public int TileX;
         /// <summary>The z-value of the tile</summary>
-        public int TileZ { get; set; }
+        public int TileZ;
         /// <summary>The vector to the location within a tile, relative to center of tile in MSTS coordinates</summary>
         public Vector3 Location;
-
-        /// <summary>
-        /// Default empty constructor
-        /// </summary>
-        public WorldLocation()
-        {
-            Location = new Vector3();
-        }
 
         /// <summary>
         /// Constructor from another location
@@ -304,5 +298,15 @@ namespace ORTS.Common
             Location.Y = inf.ReadSingle();
             Location.Z = inf.ReadSingle();
         }
-    }
+
+        public static bool operator ==(WorldLocation a, WorldLocation b)
+        {
+            return a.TileX == b.TileX && a.TileZ == b.TileZ && a.Location == b.Location;
+        }
+
+        public static bool operator !=(WorldLocation a, WorldLocation b)
+        {
+            return a.TileX != b.TileX || a.TileZ != b.TileZ || a.Location != b.Location;
+        }
+	}
 }

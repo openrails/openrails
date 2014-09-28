@@ -122,7 +122,7 @@ namespace ORTS.Viewer3D
     }
 
     [DebuggerDisplay("{Material} {RenderPrimitive} {Flags}")]
-    public class RenderItem
+    public struct RenderItem
     {
         public Material Material;
         public RenderPrimitive RenderPrimitive;
@@ -166,6 +166,185 @@ namespace ORTS.Viewer3D
         }
     }
 
+	public class RenderItemCollection : IList<RenderItem>, IEnumerator<RenderItem>
+	{
+		RenderItem[] Items = new RenderItem[4];
+		int ItemCount;
+		int EnumeratorIndex;
+
+		public RenderItemCollection()
+		{
+		}
+
+        public int Capacity
+        {
+            get
+            {
+                return Items.Length;
+            }
+        }
+
+		public int Count
+		{
+            get
+            {
+                return ItemCount;
+            }
+		}
+
+		public void Sort(IComparer<RenderItem> comparer)
+		{
+			Array.Sort(Items, 0, ItemCount, comparer);
+		}
+
+		#region IList<RenderItem> Members
+
+		public int IndexOf(RenderItem item)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void Insert(int index, RenderItem item)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void RemoveAt(int index)
+		{
+			throw new NotImplementedException();
+		}
+
+		public RenderItem this[int index]
+		{
+			get
+			{
+				throw new NotImplementedException();
+			}
+			set
+			{
+				throw new NotImplementedException();
+			}
+		}
+
+		#endregion
+
+		#region ICollection<RenderItem> Members
+
+		public void Add(RenderItem item)
+		{
+			if (ItemCount == Items.Length)
+			{
+				var items = new RenderItem[Items.Length * 2];
+				Array.Copy(Items, 0, items, 0, Items.Length);
+                Items = items;
+			}
+			Items[ItemCount] = item;
+			ItemCount++;
+		}
+
+		public void Clear()
+		{
+			Array.Clear(Items, 0, ItemCount);
+			ItemCount = 0;
+		}
+
+		public bool Contains(RenderItem item)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void CopyTo(RenderItem[] array, int arrayIndex)
+		{
+			throw new NotImplementedException();
+		}
+
+		int ICollection<RenderItem>.Count
+		{
+            get
+            {
+                throw new NotImplementedException();
+            }
+		}
+
+		public bool IsReadOnly
+		{
+            get
+            {
+                throw new NotImplementedException();
+            }
+		}
+
+		public bool Remove(RenderItem item)
+		{
+			throw new NotImplementedException();
+		}
+
+		#endregion
+
+		#region IEnumerable<RenderItem> Members
+
+		public IEnumerator<RenderItem> GetEnumerator()
+		{
+			Reset();
+			return this;
+		}
+
+		#endregion
+
+		#region IEnumerable Members
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		#endregion
+
+		#region IEnumerator<RenderItem> Members
+
+		public RenderItem Current
+		{
+            get
+            {
+                return Items[EnumeratorIndex];
+            }
+		}
+
+		#endregion
+
+		#region IEnumerator Members
+
+		object System.Collections.IEnumerator.Current
+		{
+            get
+            {
+                return Current;
+            }
+		}
+
+		public bool MoveNext()
+		{
+			EnumeratorIndex++;
+			return EnumeratorIndex < ItemCount;
+		}
+
+		public void Reset()
+		{
+			EnumeratorIndex = -1;
+		}
+
+		#endregion
+
+		#region IDisposable Members
+
+		public void Dispose()
+		{
+			// No op.
+		}
+
+		#endregion
+    }
+
     public class RenderFrame
     {
         readonly Game Game;
@@ -185,12 +364,9 @@ namespace ORTS.Viewer3D
         Vector3 ShadowMapY;
         Vector3[] ShadowMapCenter;
 
-        readonly List<RenderItem> AllRenderItems = new List<RenderItem>();
-        int UsedRenderItems;
-
         readonly Material DummyBlendedMaterial;
-        readonly Dictionary<Material, List<RenderItem>>[] RenderItems = new Dictionary<Material, List<RenderItem>>[(int)RenderPrimitiveSequence.Sentinel];
-        readonly List<RenderItem>[] RenderShadowItems;
+		readonly Dictionary<Material, RenderItemCollection>[] RenderItems = new Dictionary<Material, RenderItemCollection>[(int)RenderPrimitiveSequence.Sentinel];
+		readonly RenderItemCollection[] RenderShadowItems;
 
         public bool IsScreenChanged { get; internal set; }
         ShadowMapMaterial ShadowMapMaterial;
@@ -208,7 +384,7 @@ namespace ORTS.Viewer3D
             DummyBlendedMaterial = new EmptyMaterial(null);
 
             for (int i = 0; i < RenderItems.Length; i++)
-                RenderItems[i] = new Dictionary<Material, List<RenderItem>>();
+				RenderItems[i] = new Dictionary<Material, RenderItemCollection>();
 
             if (Game.Settings.DynamicShadows)
             {
@@ -228,9 +404,9 @@ namespace ORTS.Viewer3D
                 ShadowMapLightViewProjShadowProj = new Matrix[RenderProcess.ShadowMapCount];
                 ShadowMapCenter = new Vector3[RenderProcess.ShadowMapCount];
 
-                RenderShadowItems = new List<RenderItem>[RenderProcess.ShadowMapCount];
+				RenderShadowItems = new RenderItemCollection[RenderProcess.ShadowMapCount];
                 for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
-                    RenderShadowItems[shadowMapIndex] = new List<RenderItem>();
+					RenderShadowItems[shadowMapIndex] = new RenderItemCollection();
             }
 
             XNACameraView = Matrix.Identity;
@@ -239,13 +415,6 @@ namespace ORTS.Viewer3D
 
         public void Clear()
         {
-            // If we didn't use them all, remove 1 per frame.
-            if (UsedRenderItems < AllRenderItems.Count)
-                AllRenderItems.RemoveAt(AllRenderItems.Count - 1);
-
-            // Reset usage count.
-            UsedRenderItems = 0;
-
             // Attempt to clean up unused materials over time (max 1 per RenderPrimitiveSequence).
             for (var i = 0; i < RenderItems.Length; i++)
             {
@@ -259,10 +428,12 @@ namespace ORTS.Viewer3D
                 }
             }
             
+            // Clear out (reset) all of the RenderItem lists.
             for (var i = 0; i < RenderItems.Length; i++)
                 foreach (var mat in RenderItems[i].Keys)
                     RenderItems[i][mat].Clear();
 
+            // Clear out (reset) all of the shadow mapping RenderItem lists.
             if (Game.Settings.DynamicShadows)
                 for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
                     RenderShadowItems[shadowMapIndex].Clear();
@@ -383,7 +554,7 @@ namespace ORTS.Viewer3D
             var getBlending = material.GetBlending();
             var blending = getBlending && material is SceneryMaterial ? PrimitiveBlendedScenery : getBlending ? PrimitiveBlended : PrimitiveNotBlended;
 
-            List<RenderItem> items;
+            RenderItemCollection items;
             foreach (var blended in blending)
             {
                 var sortingMaterial = blended ? DummyBlendedMaterial : material;
@@ -391,10 +562,10 @@ namespace ORTS.Viewer3D
 
                 if (!sequence.TryGetValue(sortingMaterial, out items))
                 {
-                    items = new List<RenderItem>();
+                    items = new RenderItemCollection();
                     sequence.Add(sortingMaterial, items);
                 }
-                items.Add(ReuseOrCreateRenderItem(material, primitive, ref xnaMatrix, flags));
+                items.Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
             }
             if (((flags & ShapeFlags.AutoZBias) != 0) && (primitive.ZBias == 0))
                 primitive.ZBias = 1;
@@ -403,21 +574,7 @@ namespace ORTS.Viewer3D
         [CallOnThread("Updater")]
         void AddShadowPrimitive(int shadowMapIndex, Material material, RenderPrimitive primitive, ref Matrix xnaMatrix, ShapeFlags flags)
         {
-            RenderShadowItems[shadowMapIndex].Add(ReuseOrCreateRenderItem(material, primitive, ref xnaMatrix, flags));
-        }
-
-        static Matrix MatrixIdentity = Matrix.Identity;
-
-        [CallOnThread("Updater")]
-        RenderItem ReuseOrCreateRenderItem(Material material, RenderPrimitive primitive, ref Matrix xnaMatrix, ShapeFlags flags)
-        {
-            if (UsedRenderItems == AllRenderItems.Count)
-                AllRenderItems.Add(new RenderItem(null, null, ref MatrixIdentity, 0));
-            AllRenderItems[UsedRenderItems].Material = material;
-            AllRenderItems[UsedRenderItems].RenderPrimitive = primitive;
-            AllRenderItems[UsedRenderItems].XNAMatrix = xnaMatrix;
-            AllRenderItems[UsedRenderItems].Flags = flags;
-            return AllRenderItems[UsedRenderItems++];
+            RenderShadowItems[shadowMapIndex].Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
         }
 
         [CallOnThread("Updater")]
@@ -607,7 +764,7 @@ namespace ORTS.Viewer3D
             if (Game.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && SceneryShader != null)
                 SceneryShader.SetShadowMap(ShadowMapLightViewProjShadowProj, ShadowMap, RenderProcess.ShadowMapLimit);
 
-            var renderItems = new List<RenderItem>();
+			var renderItems = new RenderItemCollection();
             for (var i = 0; i < (int)RenderPrimitiveSequence.Sentinel; i++)
             {
                 if (logging) Console.WriteLine("    {0} {{", (RenderPrimitiveSequence)i);

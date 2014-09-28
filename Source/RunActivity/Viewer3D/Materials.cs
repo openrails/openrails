@@ -299,7 +299,7 @@ namespace ORTS.Viewer3D
         {
             foreach (var path in MaterialMarks.Where(kvp => !kvp.Value).Select(kvp => kvp.Key))
                 Materials.Remove(path);
-        }
+		}
 
         [CallOnThread("Updater")]
         public string GetStatus()
@@ -688,7 +688,7 @@ namespace ORTS.Viewer3D
                 ShaderPasses.Current.Begin();
                 foreach (var item in renderItems)
                 {
-                    shader.SetMatrix(ref item.XNAMatrix, ref viewProj);
+                    shader.SetMatrix(item.XNAMatrix, ref viewProj);
                     shader.ZBias = item.RenderPrimitive.ZBias;
                     shader.CommitChanges();
                     item.RenderPrimitive.Draw(graphicsDevice);
@@ -768,7 +768,7 @@ namespace ORTS.Viewer3D
             base.Mark();
         }
     }
-    
+
     public class ShadowMapMaterial : Material
     {
         IEnumerator<EffectPass> ShaderPassesShadowMap;
@@ -1096,7 +1096,7 @@ namespace ORTS.Viewer3D
                 ShaderPassesGraph.Current.Begin();
                 foreach (var item in renderItems)
                 {
-                    shader.SetMatrix(ref item.XNAMatrix, ref viewproj);
+                    shader.SetMatrix(item.XNAMatrix, ref viewproj);
                     shader.CommitChanges();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }

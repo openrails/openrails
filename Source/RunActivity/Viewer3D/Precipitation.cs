@@ -447,9 +447,8 @@ namespace ORTS.Viewer3D
                     // Note: This is quite a hack. We ideally should be able to pass this through RenderItem somehow.
                     shader.cameraTileXZ.SetValue(new Vector2(item.XNAMatrix.M21, item.XNAMatrix.M22));
                     shader.currentTime.SetValue(item.XNAMatrix.M11);
-                    item.XNAMatrix = Matrix.Identity;
 
-                    shader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
+                    shader.SetMatrix(Matrix.Identity, ref XNAViewMatrix, ref XNAProjectionMatrix);
                     shader.CommitChanges();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }

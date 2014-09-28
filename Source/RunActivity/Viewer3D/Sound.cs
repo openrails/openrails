@@ -267,7 +267,7 @@ namespace ORTS.Viewer3D
         /// <param name="smsFilePath"></param>
         public SoundSource(Viewer viewer, Events.Source eventSource, string smsFilePath)
         {
-            Initialize(viewer, null, eventSource, smsFilePath);
+            Initialize(viewer, WorldLocation.None, eventSource, smsFilePath);
         }
 
         /// <summary>

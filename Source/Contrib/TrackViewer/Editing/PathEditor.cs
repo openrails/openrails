@@ -73,7 +73,7 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>Return current node (last drawn) node</summary>
         public TrainpathNode CurrentNode { get { return drawPath.CurrentMainNode; } }
         /// <summary>Return the location of the current (last drawn) node</summary>
-        public WorldLocation CurrentLocation { get { return CurrentNode != null ? CurrentNode.Location : null; } }
+        public WorldLocation CurrentLocation { get { return CurrentNode != null ? CurrentNode.Location : WorldLocation.None; } }
         #endregion
 
         #region Private members
@@ -503,7 +503,7 @@ namespace ORTS.TrackViewer.Editing
             if (drawTrackDB.ClosestTrack == null ||
                 drawTrackDB.ClosestTrack.TrackNode == null)
             {
-                activeTrackLocation.Location = null;
+                activeTrackLocation.Location = WorldLocation.None;
                 return;
             }
 
@@ -512,7 +512,7 @@ namespace ORTS.TrackViewer.Editing
 
             if (!drawnPathData.TrackHasBeenDrawn(tni_int) && trainpath.FirstNode != null)
             {
-                activeTrackLocation.Location = null;
+                activeTrackLocation.Location = WorldLocation.None;
                 return;
             }
 
@@ -533,7 +533,7 @@ namespace ORTS.TrackViewer.Editing
                 TrainpathNode prevNode = FindPrevNodeOfActiveTrack(drawnPathData, tni_int);
                 if (prevNode == null || prevNode.HasSidingPath)
                 {
-                    activeTrackLocation.Location = null;
+                    activeTrackLocation.Location = WorldLocation.None;
                 }
                 else
                 {

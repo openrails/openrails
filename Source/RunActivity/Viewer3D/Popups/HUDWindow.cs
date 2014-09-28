@@ -53,6 +53,7 @@ namespace ORTS.Viewer3D.Popups
         readonly Viewer Viewer;
         readonly Action<TableData>[] TextPages;
         readonly WindowTextFont TextFont;
+		readonly HUDGraphMaterial HUDGraphMaterial;
 
         int TextPage;
         TableData TextTable = new TableData() { Cells = new string[0, 0] };
@@ -111,19 +112,19 @@ namespace ORTS.Viewer3D.Popups
 
             TextFont = owner.TextFontDefaultOutlined;
 
-            var graphMaterial = (HUDGraphMaterial)Viewer.MaterialManager.Load("Debug");
+			HUDGraphMaterial = (HUDGraphMaterial)Viewer.MaterialManager.Load("Debug");
 
-            LocomotiveGraphs = new HUDGraphSet(Viewer, graphMaterial);
+			LocomotiveGraphs = new HUDGraphSet(Viewer, HUDGraphMaterial);
             LocomotiveGraphsThrottle = LocomotiveGraphs.Add("Throttle", "0", "100%", Color.Blue, 50);
             LocomotiveGraphsInputPower = LocomotiveGraphs.Add("Power In/Out", "0", "100%", Color.Yellow, 50);
             LocomotiveGraphsOutputPower = LocomotiveGraphs.AddOverlapped(Color.Green, 50);
 
-            ForceGraphs = new HUDGraphSet(Viewer, graphMaterial);
+			ForceGraphs = new HUDGraphSet(Viewer, HUDGraphMaterial);
             ForceGraphMotiveForce = ForceGraphs.Add("Motive force", "0%", "100%", Color.Green, 75);
             ForceGraphDynamicForce = ForceGraphs.AddOverlapped(Color.Red, 75);
             ForceGraphNumOfSubsteps = ForceGraphs.Add("Num of substeps", "0", "300", Color.Blue, 25);
 
-            DebugGraphs = new HUDGraphSet(Viewer, graphMaterial);
+			DebugGraphs = new HUDGraphSet(Viewer, HUDGraphMaterial);
             DebugGraphMemory = DebugGraphs.Add("Memory", "0GB", String.Format("{0:F0}GB", (float)ProcessVirtualAddressLimit / 1024 / 1024 / 1024), Color.Orange, 50);
             DebugGraphGCs = DebugGraphs.Add("GCs", "0", "2", Color.Magenta, 20); // Multiple of 4
             DebugGraphFrameTime = DebugGraphs.Add("Frame time", "0.0s", "0.1s", Color.LightGreen, 50);
@@ -149,6 +150,12 @@ namespace ORTS.Viewer3D.Popups
             if (page >= 0 && page <= TextPages.Length)
                 TextPage = page;
         }
+
+		public override void Mark()
+		{
+			base.Mark();
+			HUDGraphMaterial.Mark();
+		}
 
         public override bool Interactive
         {

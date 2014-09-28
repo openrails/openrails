@@ -89,7 +89,7 @@ namespace ORTS.Viewer3D
             sideVector.SetValue(Vector3.Normalize(Vector3.Cross(_eyeVector, Vector3.Down)));
         }
 
-        public void SetMatrix(ref Matrix w, ref Matrix vp)
+        public void SetMatrix(Matrix w, ref Matrix vp)
         {
             world.SetValue(w);
             worldViewProjection.SetValue(w * vp);
@@ -671,7 +671,7 @@ namespace ORTS.Viewer3D
             graphSample = Parameters["GraphSample"];
         }
 
-        public void SetMatrix(ref Matrix matrix, ref Matrix viewproj)
+        public void SetMatrix(Matrix matrix, ref Matrix viewproj)
         {
             worldViewProjection.SetValue(matrix * viewproj);
         }

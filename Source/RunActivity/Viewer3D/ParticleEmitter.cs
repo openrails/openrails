@@ -466,7 +466,7 @@ namespace ORTS.Viewer3D
             if (Viewer.Settings.UseMSTSEnv == false)
                 shader.LightVector = Viewer.World.Sky.solarDirection;
             else
-                shader.LightVector = Viewer.World.MSTSSky.mstsskysolarDirection;
+                shader.LightVector = Viewer.World.MSTSSky.mstsskysolarDirection; 
 
             var rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = true;
@@ -489,12 +489,11 @@ namespace ORTS.Viewer3D
                     // Note: This is quite a hack. We ideally should be able to pass this through RenderItem somehow.
                     shader.CameraTileXY = new Vector2(item.XNAMatrix.M21, item.XNAMatrix.M22);
                     shader.CurrentTime = item.XNAMatrix.M11;
-                    item.XNAMatrix = Matrix.Identity;
 
                     var emitter = (ParticleEmitterPrimitive)item.RenderPrimitive;
                     shader.EmitSize = emitter.EmitSize;
                     shader.Texture = Texture;
-                    shader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
+                    shader.SetMatrix(Matrix.Identity, ref XNAViewMatrix, ref XNAProjectionMatrix);
                     shader.CommitChanges();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
