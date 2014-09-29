@@ -50,7 +50,7 @@ namespace ORTS.TrackViewer.Drawing
         {
             // Get location from RunActivity
             trainLocation = ORTS.Processes.TrackviewerIpc.PlayerTrainTraveller();
-            if (trainLocation != null)
+            if (trainLocation != WorldLocation.None)
             {
                 drawArea.ShiftToLocation(trainLocation);
                 return true;
@@ -64,7 +64,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="drawArea">The drawarea to draw upon</param>
         public void Draw(DrawArea drawArea)
         {
-            if (trainLocation != null)
+            if (trainLocation != WorldLocation.None)
             {
                 float size = 9f; // in meters
                 int minPixelSize = 7;

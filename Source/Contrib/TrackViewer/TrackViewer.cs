@@ -122,7 +122,7 @@ namespace ORTS.TrackViewer
     {
         #region Public members
         /// <summary>String showing the date of the program</summary>
-        public readonly static string TrackViewerVersion = "2014/09/23";
+        public readonly static string TrackViewerVersion = "2014/09/29";
         /// <summary>Path where the content (like .png files) is stored</summary>
         public string ContentPath { get; private set; }
         /// <summary>Folder where MSTS is installed (or at least, where the files needed for tracks, routes and paths are stored)</summary>
@@ -865,7 +865,7 @@ namespace ORTS.TrackViewer
         public void CenterAroundTrackItem(int trackItemIndex)
         {
             WorldLocation itemLocation = DrawTrackDB.TrackItemHighlightOverride(trackItemIndex);
-            if (itemLocation == null) return;
+            if (itemLocation == WorldLocation.None) return;
             CenterAround(itemLocation);
         }
 
@@ -876,7 +876,7 @@ namespace ORTS.TrackViewer
         public void CenterAroundTrackItemRoad(int trackItemIndex)
         {
             WorldLocation itemLocation = DrawTrackDB.TrackItemHighlightOverrideRoad(trackItemIndex);
-            if (itemLocation == null) return;
+            if (itemLocation == WorldLocation.None) return;
             CenterAround(itemLocation);
         }
 
@@ -887,7 +887,7 @@ namespace ORTS.TrackViewer
         /// <param name="centerLocation">Location to center the view window around</param>
         public void CenterAround(WorldLocation centerLocation)
         {
-            if (centerLocation == null) return;
+            if (centerLocation == WorldLocation.None) return;
 
             DrawArea.ShiftToLocation(centerLocation);
             DrawArea.Update();

@@ -562,7 +562,7 @@ namespace ORTS.TrackViewer.Editing
         {
             if (Trainpath.FirstNode == null) return false;
             if (Trainpath.HasEnd) return false;
-            return (ActiveTrackLocation.Location != null
+            return (ActiveTrackLocation.Location != WorldLocation.None
                  && !ActiveTrackLocation.PrevNode.HasSidingPath
                  && Trainpath.FirstNodeOfTail == null);
         }
@@ -626,7 +626,7 @@ namespace ORTS.TrackViewer.Editing
         {
             if (Trainpath.FirstNode == null) return false;
             if (Trainpath.HasEnd) return false;
-            return (ActiveTrackLocation.Location != null
+            return (ActiveTrackLocation.Location != WorldLocation.None
                 && !ActiveTrackLocation.PrevNode.HasSidingPath);
         }
 
@@ -722,7 +722,7 @@ namespace ORTS.TrackViewer.Editing
         protected override bool CanExecuteAction()
         {
             if (Trainpath.FirstNode == null) return false;
-            return (ActiveTrackLocation.Location != null
+            return (ActiveTrackLocation.Location != WorldLocation.None
                 && !ActiveTrackLocation.PrevNode.HasSidingPath);
         }
 
@@ -1277,7 +1277,7 @@ namespace ORTS.TrackViewer.Editing
             TrainpathNode lastEditableNode = ActiveNode.PrevNode;
             ActiveNode.PrevNode = null;
             
-lastEditableNode.NextMainNode = null;
+            lastEditableNode.NextMainNode = null;
         }
     }
     #endregion
@@ -2102,7 +2102,7 @@ lastEditableNode.NextMainNode = null;
         {
 
             if ( (nodeBeingDragged.TvnIndex == ActiveTrackLocation.TvnIndex)
-              && (ActiveTrackLocation.Location != null)
+              && (ActiveTrackLocation.Location != WorldLocation.None)
               && (ActiveTrackLocation.IsBetween(dragLimitNode1, dragLimitNode2)))
             {
                 nodeBeingDragged.Location                = ActiveTrackLocation.Location;

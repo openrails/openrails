@@ -866,7 +866,7 @@ namespace ORTS.TrackViewer.Drawing
         /// From the track node index find the tracknode, find its location, and prepare hightlighting
         /// </summary>
         /// <param name="tni">The trackNodeIndex identifying the tracknode</param>
-        /// <returns>The eturn the (center) location of a tracknode or null if no tracknode could be identified</returns>
+        /// <returns>The eturn the (center) location of a tracknode or WorldLocation.None if no tracknode could be identified</returns>
         public WorldLocation TrackNodeHighlightOverride(int tni)
         {
             if ((tni < 0) || (tni >= TrackDB.TrackNodes.Length)) return WorldLocation.None;
@@ -899,7 +899,7 @@ namespace ORTS.TrackViewer.Drawing
         /// From the track node index find the tracknode, find its location, and prepare hightlighting
         /// </summary>
         /// <param name="tni">The trackNodeIndex identifying the tracknode</param>
-        /// <returns>The eturn the (center) location of a tracknode or null if no tracknode could be identified</returns>
+        /// <returns>The eturn the (center) location of a tracknode or Worldlocation.None if no tracknode could be identified</returns>
         public WorldLocation TrackNodeHighlightOverrideRoad(int tni)
         {
             if (roadTrackDB == null) return WorldLocation.None;
@@ -926,7 +926,7 @@ namespace ORTS.TrackViewer.Drawing
         /// Find the item with the given index. And if it exists, prepare for highlighting it
         /// </summary>
         /// <param name="itemIndex"></param>
-        /// <returns>The location of the found item (or null)</returns>
+        /// <returns>The location of the found item (or WorldLocation.None)</returns>
         public WorldLocation TrackItemHighlightOverride(int itemIndex)
         {
             IsHighlightOverriddenTrItem = false; // do not show all items, just yet. Only after CheckForHighlightOverride
@@ -941,7 +941,7 @@ namespace ORTS.TrackViewer.Drawing
         /// Find the road item with the given index. And if it exists, prepare for highlighting it
         /// </summary>
         /// <param name="itemIndex"></param>
-        /// <returns>The location of the found item (or null)</returns>
+        /// <returns>The location of the found item (or WorldLocation.None)</returns>
         public WorldLocation TrackItemHighlightOverrideRoad(int itemIndex)
         {
             IsHighlightOverriddenTrItem = false; // do not show all items, just yet. Only after CheckForHighlightOverride

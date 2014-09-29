@@ -388,7 +388,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="location">New worldLocation at center of area</param>
         public void ShiftToLocation(WorldLocation location)
         {
-            if (location == null) return;
+            if (location == WorldLocation.None) return;
             // Basic equation areaX = scale * (worldX - offsetX)
             // We want middle of screen to shift to new worldX, so areaW/2 = scale * (worldX - offsetX)
             // Similarly

@@ -463,7 +463,7 @@ namespace ORTS.TrackViewer.Editing
                 drawArea.DrawTexture(activeNode.Location, "ring", textureSize, minPixelSize, maxPixelSize, DrawColors.colorsNormal.ActiveNode);
 
             }
-            if (activeTrackLocation != null && activeTrackLocation.Location != null)
+            if (activeTrackLocation != null && activeTrackLocation.Location != WorldLocation.None)
             {
                 drawArea.DrawTexture(activeTrackLocation.Location, "ring", textureSize, minPixelSize, maxPixelSize, DrawColors.colorsNormal.CandidateNode);
             }
