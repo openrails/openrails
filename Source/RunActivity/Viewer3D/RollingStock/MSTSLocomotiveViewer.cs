@@ -656,7 +656,7 @@ namespace ORTS.Viewer3D.RollingStock
             LightTextures.Add(FileName, viewer.TextureManager.Get(lightpath));
         }
 
-        static Texture2D[] Disassemble(GraphicsDevice graphicsDevice, Texture2D texture, Point controlSize, int frameCount, Point frameGrid, string fileName)
+        static Texture2D[] Disassemble(GraphicsDevice graphicsDevice, Texture2D texture, int frameCount, Point frameGrid, string fileName)
         {
             if (frameGrid.X < 1 || frameGrid.Y < 1 || frameCount < 1)
             {
@@ -668,18 +668,6 @@ namespace ORTS.Viewer3D.RollingStock
             var frames = new Texture2D[frameCount];
             var frameIndex = 0;
 
-            if (controlSize.X < frameSize.X || controlSize.Y < frameSize.Y)
-            {
-                //some may mess up the dimension, will try to reverse
-                if (frameGrid.X != 1 && frameGrid.Y != 1)
-                {
-                    Trace.TraceWarning("Cab control size {1}x{2} is smaller than frame size {3}x{4} (frames may be cut-off) for {0}\nOR will try to reverse the dimension (may not work), better to change the CVF file accordingly.", fileName, controlSize.X, controlSize.Y, frameSize.X, frameSize.Y);
-                    var tmp = frameGrid.X; frameGrid.X = frameGrid.Y; frameGrid.Y = tmp;
-                    frameSize = new Point(texture.Width / frameGrid.X, texture.Height / frameGrid.Y);
-                }
-                else Trace.TraceWarning("Cab control size {1}x{2} is smaller than frame size {3}x{4} (frames may be cut-off) for {0}.", fileName, controlSize.X, controlSize.Y, frameSize.X, frameSize.Y);
-
-            }
             if (frameCount > frameGrid.X * frameGrid.Y)
                 Trace.TraceWarning("Cab control frame count {1} is larger than the number of frames {2}*{3}={4} (some frames will be blank) for {0}", fileName, frameCount, frameGrid.X, frameGrid.Y, frameGrid.X * frameGrid.Y);
 
@@ -689,18 +677,19 @@ namespace ORTS.Viewer3D.RollingStock
             }
             else
             {
-                var copySize = new Point(Math.Min(controlSize.X, frameSize.X), Math.Min(controlSize.Y, frameSize.Y));
+                var copySize = new Point(frameSize.X, frameSize.Y);
+                Point controlSize;
                 if (texture.Format == SurfaceFormat.Dxt1)
                 {
-                    controlSize.X = (int)Math.Ceiling((float)controlSize.X / 4) * 4;
-                    controlSize.Y = (int)Math.Ceiling((float)controlSize.Y / 4) * 4;
+                    controlSize.X = (int)Math.Ceiling((float)copySize.X / 4) * 4;
+                    controlSize.Y = (int)Math.Ceiling((float)copySize.Y / 4) * 4;
                     var buffer = new byte[(int)Math.Ceiling((float)copySize.X / 4) * 4 * (int)Math.Ceiling((float)copySize.Y / 4) * 4 / 2];
                     frameIndex = DisassembleFrames(graphicsDevice, texture, frameCount, frameGrid, frames, frameSize, copySize, controlSize, buffer);
                 }
                 else
                 {
                     var buffer = new Color[copySize.X * copySize.Y];
-                    frameIndex = DisassembleFrames(graphicsDevice, texture, frameCount, frameGrid, frames, frameSize, copySize, controlSize, buffer);
+                    frameIndex = DisassembleFrames(graphicsDevice, texture, frameCount, frameGrid, frames, frameSize, copySize, copySize, buffer);
                 }
             }
 
@@ -741,7 +730,6 @@ namespace ORTS.Viewer3D.RollingStock
         /// <param name="framesY">Number of frames in the Y direction</param>
         public static void DisassembleTexture(GraphicsDevice graphicsDevice, string fileName, int width, int height, int frameCount, int framesX, int framesY)
         {
-            var controlSize = new Point(width, height);
             var frameGrid = new Point(framesX, framesY);
 
             PDayTextures[fileName] = null;
@@ -750,7 +738,7 @@ namespace ORTS.Viewer3D.RollingStock
                 var texture = DayTextures[fileName];
                 if (texture != SharedMaterialManager.MissingTexture)
                 {
-                    PDayTextures[fileName] = Disassemble(graphicsDevice, texture, controlSize, frameCount, frameGrid, fileName + ":day");
+                    PDayTextures[fileName] = Disassemble(graphicsDevice, texture, frameCount, frameGrid, fileName + ":day");
                 }
             }
 
@@ -760,7 +748,7 @@ namespace ORTS.Viewer3D.RollingStock
                 var texture = NightTextures[fileName];
                 if (texture != SharedMaterialManager.MissingTexture)
                 {
-                    PNightTextures[fileName] = Disassemble(graphicsDevice, texture, controlSize, frameCount, frameGrid, fileName + ":night");
+                    PNightTextures[fileName] = Disassemble(graphicsDevice, texture, frameCount, frameGrid, fileName + ":night");
                 }
             }
 
@@ -770,7 +758,7 @@ namespace ORTS.Viewer3D.RollingStock
                 var texture = LightTextures[fileName];
                 if (texture != SharedMaterialManager.MissingTexture)
                 {
-                    PLightTextures[fileName] = Disassemble(graphicsDevice, texture, controlSize, frameCount, frameGrid, fileName + ":light");
+                    PLightTextures[fileName] = Disassemble(graphicsDevice, texture, frameCount, frameGrid, fileName + ":light");
                 }
             }
         }
@@ -1522,7 +1510,8 @@ namespace ORTS.Viewer3D.RollingStock
         {
             ControlDiscrete = control;
             CABTextureManager.DisassembleTexture(viewer.GraphicsDevice, Control.ACEFile, (int)Control.Width, (int)Control.Height, ControlDiscrete.FramesCount, ControlDiscrete.FramesX, ControlDiscrete.FramesY);
-            SourceRectangle = new Rectangle(0, 0, (int)ControlDiscrete.Width, (int)ControlDiscrete.Height);
+            Texture = CABTextureManager.GetTextureByIndexes(Control.ACEFile, 0, false, false, out IsNightTexture);
+            SourceRectangle = new Rectangle(0, 0, (int)Texture.Width, (int)Texture.Height);
         }
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
