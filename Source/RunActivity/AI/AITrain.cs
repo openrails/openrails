@@ -4358,8 +4358,8 @@ namespace ORTS
             {
                if (Simulator.TimetableMode || !Simulator.Settings.EnhancedActCompatibility) InitializeSignals(true);
             }
-
-            InitializeBrakes();
+            //  <CSComment> Why initialize brakes of a disappeared train?    
+//            InitializeBrakes();
             attachTrain.physicsUpdate(0);   // stop the wheels from moving etc
 
             // remove original train
