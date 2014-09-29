@@ -3,7 +3,7 @@
 
 #define NetRedistPath "..\..\..\Microsoft .NET Framework Redistributable 3.5 SP1 download manager"
 #define NetRedist "dotnetfx35setup.exe"
-#define OutputBaseFilename "setup_OR_pre-v1.0_from_download"
+#define OutputBaseFilename "OR_X_setup"
 
 #include "..\OpenRails shared\OpenRails.iss"
 
@@ -13,7 +13,7 @@ var
   ResultCode: Integer;
 begin
   StatusText := WizardForm.StatusLabel.Caption;
-  WizardForm.StatusLabel.Caption := 'Installing Framework .NET v3.5 SP1 (downloads 240MB and takes about 10 mins) ...';
+  WizardForm.StatusLabel.Caption := 'Installing {#DotNETName} (downloads 240MB and takes about 10 mins)...';
   WizardForm.ProgressGauge.Style := npbstMarquee;
   try
     begin
@@ -21,7 +21,7 @@ begin
       if not Exec(ExpandConstant('{tmp}\{#NetRedist}'), ' /q /noreboot', '', SW_SHOW, ewWaitUntilTerminated, ResultCode) then
       begin
         // Tell the user why the installation failed
-        MsgBox('Installing Framework .NET v3.5 SP1 failed with code: ' + IntToStr(ResultCode) + '.', mbError, MB_OK);
+        MsgBox('Installing {#DotNETName} failed with code: ' + IntToStr(ResultCode) + '.', mbError, MB_OK);
       end;
     end;
   finally
@@ -29,4 +29,3 @@ begin
     WizardForm.ProgressGauge.Style := npbstNormal;
   end;
 end;
-

@@ -5,15 +5,27 @@
 ; Included from "OpenRails from DVD\OpenRails from DVD.iss" or from "OpenRails from download\OpenRails from download.iss"
 
 #define MyAppName "Open Rails"
-#define MyAppVersion "pre-v1.0"
+#include "Version.iss"
 #define MyAppPublisher "Open Rails"
-#define MyAppURL "http://www.OpenRails.org"
-#define MyAppSupport "http://launchpad.net/or"
+#define MyAppManualName "Open Rails manual"
+#define MyAppSourceName "Download Open Rails source code"
+#define MyAppBugName "Report a bug in Open Rails"
+
+#define DotNETName "Microsoft .NET Framework 3.5 SP1"
+#define XNAName "Microsoft XNA Framework 3.1"
+
+#define MyAppURL "http://openrails.org"
+#define MyAppSourceURL "http://openrails.org/download/source/"
+#define MyAppSupportURL "http://launchpad.net/or"
+
 #define MyAppExeName "OpenRails.exe"
+#define MyAppManual "Documentation\Manual.doc"
+
 #define XNARedistPath "..\..\..\Microsoft XNA Framework Redistributable 3.1"
 #define XNARedist "xnafx31_redist.msi"
 #define MyAppProgPath "..\..\..\Open Rails\Program"
 #define MyAppDocPath "..\..\..\Open Rails\Documentation"
+
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -22,10 +34,10 @@
 AppId={{94E15E08-869D-4B69-B8D7-8C82075CB51C} ; Generated for OpenRails pre-v1.0
 AppName         ={#MyAppName}
 AppVersion      ={#MyAppVersion}
-;AppVerName={#MyAppName} {#MyAppVersion}
+AppVerName      ={#MyAppName} {#MyAppVersion}
 AppPublisher    ={#MyAppPublisher}
 AppPublisherURL ={#MyAppURL}
-AppSupportURL   ={#MyAppSupport}
+AppSupportURL   ={#MyAppSupportURL}
 AppUpdatesURL   ={#MyAppURL}
 DefaultDirName  ={pf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
@@ -37,8 +49,10 @@ OutputBaseFilename={#OutputBaseFilename}
 Compression     =lzma
 SolidCompression=yes
 Uninstallable   =yes
+UninstallDisplayIcon={app}\{#MyAppExeName}
 ; Windows XP SP2
 MinVersion      =5.1sp2
+
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
@@ -90,12 +104,15 @@ Source: {#MyAppDocPath}\*; DestDir: {app}\Documentation; Flags: ignoreversion re
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
+Name: "{group}\{#MyAppManualName}"; Filename: "{app}\{#MyAppManual}"
+Name: "{group}\{#MyAppSourceName}"; Filename: "{#MyAppSourceURL}"
+Name: "{group}\{#MyAppBugName}"; Filename: "{#MyAppSupportURL}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: quicklaunchicon
 
 [Run]
 ; 'skipifdoesntexist' ensures that install of XNA is skipped if file is missing.
-Filename: msiexec.exe; StatusMsg: "Installing missing Framework XNA 3.1 (takes about 1 min) ..."; Parameters: "/qn /i ""{tmp}\{#XNARedist}"""; Flags: skipifdoesntexist;
+Filename: msiexec.exe; StatusMsg: "Installing {#XNAName} (takes about 1 min) ..."; Parameters: "/qn /i ""{tmp}\{#XNARedist}"""; Flags: skipifdoesntexist;
 
 Filename: "{app}\{#MyAppExeName}"; StatusMsg: "Installing Open Rails ..."; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
  
@@ -107,7 +124,7 @@ var
 begin
   // Gets left on screen while file is unpacked.
   StatusText := WizardForm.StatusLabel.Caption;
-  WizardForm.StatusLabel.Caption := 'Framework NET 3.5 SP1 not installed, so unpacking file ...';
+  WizardForm.StatusLabel.Caption := 'Unpacking {#DotNETName}...';
   result := true;
   if (RegQueryDWordValue(HKLM, 'Software\Microsoft\NET Framework Setup\NDP\v3.5', 'Install', data)) then begin
     if (data = 1) then begin
@@ -115,7 +132,7 @@ begin
         if (data = 1) then begin
           result := false
           // Prompt is repeated. Help suggests a way around this.
-          //MsgBox('Framework .NET v3.5 SP1 is already installed', mbError, MB_OK);
+          //MsgBox('{#DotNETName} is already installed', mbError, MB_OK);
         end;
       end;
     end;
@@ -138,7 +155,7 @@ begin
   end;
   if RegQueryDWordValue(HKLM, key, 'Installed', data) and (data = 1) then begin
     DeleteFile(ExpandConstant('{tmp}\{#XNARedist}')); // So the [Run]Filename is skipped.
-    //MsgBox('Framework XNA v3.1 is already installed', mbError, MB_OK);
+    //MsgBox('{#XNAName} is already installed', mbError, MB_OK);
   end;                                                              
 end;
 
@@ -149,7 +166,7 @@ var
     data: cardinal;
 begin
   // Gets left on screen while file is unpacked.
-  WizardForm.StatusLabel.Caption := 'Framework XNA 3.1 not installed, so unpacking file ...';
+  WizardForm.StatusLabel.Caption := 'Unpacking {#XNAName}...';
   if IsWin64 then begin
     key := 'SOFTWARE\Wow6432Node\Microsoft\XNA\Framework\v3.1';
   end else begin
@@ -158,7 +175,7 @@ begin
   result := true;
   if RegQueryDWordValue(HKLM, key, 'Installed', data) and (data = 1) then begin
     result := false;
-    //MsgBox('Framework XNA v3.1 is already installed', mbError, MB_OK);
+    //MsgBox('{#XNAName} is already installed', mbError, MB_OK);
   end;                                                              
 end;
 
@@ -168,7 +185,7 @@ var
   ResultCode: Integer;
 begin
   StatusText := WizardForm.StatusLabel.Caption;
-  WizardForm.StatusLabel.Caption := 'Installing Framework XNA v3.1 ...';
+  WizardForm.StatusLabel.Caption := 'Installing {#XNAName}...';
   WizardForm.ProgressGauge.Style := npbstMarquee;
   try
     // XNA setup execution code
@@ -180,7 +197,7 @@ begin
       //if not ShellExec('', ExpandConstant('{app}\README.txt'), '', '', SW_SHOW, ewNoWait, ResultCode) then
            begin
         // Tell the user why the installation failed
-        MsgBox('Installing Framework XNA failed with code: ' + IntToStr(ResultCode) + '.', mbError, MB_OK);
+        MsgBox('Installing {#XNAName} failed with code: ' + IntToStr(ResultCode) + '.', mbError, MB_OK);
       end;
     end;
   finally
