@@ -797,7 +797,7 @@ namespace ORTS
 
             PlayerLocomotive = InitialPlayerLocomotive ();
 
-            train.AITrainBrakePercent = 100;
+            train.AITrainBrakePercent = 100; //<CSComment> This seems a tricky way for the brake modules to test if it is an AI train or not
             if (Activity != null && train.InitialSpeed > 0)
             {
                 if ((PlayerLocomotive.BrakeSystem is AirSinglePipe) || (PlayerLocomotive.BrakeSystem is VacuumSinglePipe))

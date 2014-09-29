@@ -739,8 +739,11 @@ namespace ORTS
             float maxPowerW = MaxPowerW * LocalThrottlePercent * LocalThrottlePercent/10000;
             if (AverageForceN * SpeedMpS > maxPowerW) AverageForceN = maxPowerW / SpeedMpS;
             LocomotiveAxle.FilterMovingAverage.Initialize(AverageForceN);
+            if (Train.TrainType == Train.TRAINTYPE.PLAYER)
+            { 
             TrainBrakeController.InitializeMoving();
             BrakeSystem.LocoInitializeMoving();
+            }
         }
 
         /// <summary>

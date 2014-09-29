@@ -79,7 +79,7 @@ namespace ORTS
         }
 
         // convert vacuum in inhg to pressure in psia
-        static float V2P(float v)
+        public static float V2P(float v)
         {
             //return OneAtmospherePSIA * (1 - v / OneAtmosphereInHg);
             return KPa.ToPSI(OneAtmosphereKPa - KPa.FromInHg(v));
@@ -174,7 +174,7 @@ namespace ORTS
 
         public override void Initialize(bool handbrakeOn, float maxVacuumInHg, float fullServVacuumInHg, bool immediateRelease)
         {
-            CylPressurePSIA = BrakeLine1PressurePSI = V2P(Car.Train.BrakeLine1PressurePSIorInHg);
+            CylPressurePSIA = BrakeLine1PressurePSI = V2P(fullServVacuumInHg);
             VacResPressurePSIA = V2P(maxVacuumInHg);
         }
 
@@ -183,6 +183,12 @@ namespace ORTS
             BrakeLine1PressurePSI = V2P(Car.Train.BrakeLine1PressurePSIorInHg);
             BrakeLine2PressurePSI = 0;
             BrakeLine3PressurePSI = 0;
+/*            if (Car.Train.AITrainBrakePercent == 0)
+            {
+                CylPressurePSIA = 0;
+                Car.BrakeForceN = 0;
+            }
+            else */
             CylPressurePSIA = V2P(Car.Train.BrakeLine1PressurePSIorInHg);
             VacResPressurePSIA = V2P(Car.Train.BrakeLine1PressurePSIorInHg);
             HandbrakePercent = 0;
@@ -193,6 +199,10 @@ namespace ORTS
             VacResPressurePSIA = V2P(Car.Train.BrakeLine1PressurePSIorInHg);
         }
 
+        public override float TrainBrakePToBrakeSystemBrakeP(float trainBrakeLine1PressurePSIorInHg)
+        {
+            return V2P(trainBrakeLine1PressurePSIorInHg);
+        }
 
         public override void Connect()
         {
@@ -244,14 +254,18 @@ namespace ORTS
                 f = MaxHandbrakeForceN * HandbrakePercent / 100;
             Car.BrakeForceN = f;
 
+
             // Temporary patch until problem with vacuum brakes is solved
             // This will immediately fully release the brakes
+            /* Patch no more needed
             if (Car.Train.AITrainBrakePercent == 0)
             {
                 CylPressurePSIA = 0;
                 Car.BrakeForceN = 0;
             }
+             */
             // End of patch
+
 
         }
 

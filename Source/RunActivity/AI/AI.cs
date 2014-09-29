@@ -111,7 +111,7 @@ namespace ORTS
                     train.BrakeLine3PressurePSI = 0;
 
                     // insert in start list
-
+ //                   if (train.InitialSpeed > 0) train.InitializeMoving();
                     StartList.InsertTrain(train);
                     Simulator.StartReference.Add(train.Number);
                 }
@@ -340,6 +340,11 @@ namespace ORTS
                 {
                     Simulator.StartReference.Remove(thisTrain.Number);
                     AddToWorld(thisTrain);
+                    if (thisTrain.InitialSpeed > 0)
+                        // Add extra run to allow setting signals
+                    {
+                        thisTrain.AIPreUpdate(0);
+                    }
                 }
             }
             foreach (AITrain train in AITrains)
@@ -413,6 +418,7 @@ namespace ORTS
             // also set Route max speed for speedpost-processing in train.cs
             train.TrainMaxSpeedMpS = (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;
 
+            train.InitialSpeed = srvFile.TimeTable.InitialSpeed;
 
             if (maxVelocityA > 0 && srvFile.Efficiency > 0)
             {
@@ -514,6 +520,9 @@ namespace ORTS
                 Simulator.TrainDictionary.Add(thisTrain.Number, thisTrain);
                 if (Simulator.NameDictionary.ContainsKey(thisTrain.Name.ToLower())) Simulator.NameDictionary.Remove(thisTrain.Name.ToLower());
                 Simulator.NameDictionary.Add(thisTrain.Name.ToLower(), thisTrain);
+                if (thisTrain.InitialSpeed > 0) 
+                    thisTrain.InitializeMoving();
+                    thisTrain.MovementState = AITrain.AI_MOVEMENT_STATE.BRAKING;
 
                 if (MPManager.IsServer())
                 {

@@ -774,6 +774,8 @@ namespace ORTS
 #endif
             RestoreDeadlockInfo(inf);
 
+            InitialSpeed = inf.ReadSingle();
+
             // restore leadlocomotive
             if (LeadLocomotiveIndex >= 0)
             {
@@ -1075,6 +1077,8 @@ namespace ORTS
             SaveAuxContainer(outf);
 
             SaveDeadlockInfo(outf);
+            // Save initial speed
+            outf.Write(InitialSpeed);
         }
 
         private void SaveCars(BinaryWriter outf)
@@ -1367,7 +1371,7 @@ namespace ORTS
         /// Set starting conditions when speed > 0 
         /// <\summary>
         
-        public void InitializeMoving()
+        public virtual void InitializeMoving()
         {
             SpeedMpS = InitialSpeed;
             MUDirection = Direction.Forward;
@@ -1416,7 +1420,7 @@ namespace ORTS
         /// Set starting conditions for TrainCars when speed > 0 
         /// <\summary>
 
-        private void TraincarsInitializeMoving ()
+        public void TraincarsInitializeMoving ()
         {
             for (int i = 0; i < Cars.Count; ++i)
             {
@@ -3063,7 +3067,7 @@ namespace ORTS
                 {
                     if (car.BrakeSystem.BrakeLine1PressurePSI < 0)
                         continue;
-                    car.BrakeSystem.BrakeLine1PressurePSI = BrakeLine1PressurePSIorInHg;
+                    car.BrakeSystem.BrakeLine1PressurePSI = car.BrakeSystem.TrainBrakePToBrakeSystemBrakeP(BrakeLine1PressurePSIorInHg);
                     car.BrakeSystem.BrakeLine2PressurePSI = BrakeLine2PressurePSI;
                     car.BrakeSystem.BrakeLine3PressurePSI = 0;
                 }

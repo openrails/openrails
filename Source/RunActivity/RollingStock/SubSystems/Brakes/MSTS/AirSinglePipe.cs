@@ -202,6 +202,11 @@ namespace ORTS
             BrakePercent = 0;
         }
 
+        public override float TrainBrakePToBrakeSystemBrakeP(float trainBrakeLine1PressurePSIorInHg)
+        {
+            return trainBrakeLine1PressurePSIorInHg;
+        }
+
 
         public override void Connect()
         {

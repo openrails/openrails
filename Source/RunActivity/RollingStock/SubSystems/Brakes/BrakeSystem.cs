@@ -49,6 +49,7 @@ namespace ORTS
         public abstract void SetRetainer(RetainerSetting setting);
         public abstract void InitializeMoving(); // starting conditions when starting speed > 0
         public abstract void LocoInitializeMoving(); // starting conditions when starting speed > 0
+        public abstract float TrainBrakePToBrakeSystemBrakeP(float trainBrakeLine1PressurePSIorInHg);
     }
 
     public enum RetainerSetting

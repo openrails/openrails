@@ -283,6 +283,33 @@ namespace ORTS
 
         //================================================================================================//
         /// <summary>
+        /// Set starting conditions when speed > 0 
+        /// <\summary>
+        /// 
+
+        public override void InitializeMoving() // TODO
+        {
+            {
+                SpeedMpS = InitialSpeed;
+                MUDirection = Direction.Forward;
+                float initialThrottlepercent = InitialThrottlepercent;
+                MUDynamicBrakePercent = -1;
+                AITrainBrakePercent = 0;
+
+                FirstCar.CurrentElevationPercent = 100f * FirstCar.WorldPosition.XNAMatrix.M32;
+                // give it a bit more gas if it is uphill
+                if (FirstCar.CurrentElevationPercent < -2.0) initialThrottlepercent = 40f;
+                // better block gas if it is downhill
+                else if (FirstCar.CurrentElevationPercent > 1.0) initialThrottlepercent = 0f;
+                AdjustControlsBrakeOff();
+                AITrainThrottlePercent = initialThrottlepercent;
+
+                TraincarsInitializeMoving();
+            }
+        }
+
+        //================================================================================================//
+        /// <summary>
         /// Clone
         /// <\summary>
 
@@ -3969,11 +3996,20 @@ namespace ORTS
         {
             float maxPressurePSI = 90;
             float fullServPressurePSI = 64;
+            float maxPressurePSIVacuum = 21;
+            float fullServReductionPSI = -5;
+            float max = maxPressurePSI;
+            float fullServ = fullServPressurePSI;
             BrakeLine3PressurePSI = BrakeLine4PressurePSI = 0;
-            BrakeLine1PressurePSIorInHg = BrakeLine2PressurePSI = maxPressurePSI;
+            if (FirstCar != null && FirstCar.BrakeSystem is VacuumSinglePipe)
+            {
+                max = maxPressurePSIVacuum;
+                fullServ = fullServReductionPSI;
+            }
+                BrakeLine1PressurePSIorInHg = BrakeLine2PressurePSI = max;
             foreach (TrainCar car in Cars)
             {
-                car.BrakeSystem.Initialize(false, maxPressurePSI, fullServPressurePSI, true);
+                car.BrakeSystem.Initialize(false, max, fullServ, true);
             }
         }
 
