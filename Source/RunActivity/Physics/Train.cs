@@ -10398,6 +10398,12 @@ namespace ORTS
                     }
                 }
 
+                if (!Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility && Simulator.Settings.NoForcedRedAtStationStops)
+                {
+                    // We don't want reds at exit signal in this case
+                    HoldSignal = false;
+                }
+
                 // build and add station stop
 
                 TCRouteElement lastElement = thisRoute[lastRouteIndex];

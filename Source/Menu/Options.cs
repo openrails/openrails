@@ -200,6 +200,7 @@ namespace ORTS
             checkBoxSignalLightGlow.Checked = Settings.SignalLightGlow;
             checkBoxEnhancedActCompatibility.Checked = Settings.EnhancedActCompatibility;
             checkBoxAuxAction.Checked = Settings.AuxActionEnabled;
+            checkBoxNoForcedRedAtStationStops.Checked = Settings.NoForcedRedAtStationStops;
 
             Initialized = true;
         }
@@ -371,6 +372,7 @@ namespace ORTS
             Settings.SignalLightGlow = checkBoxSignalLightGlow.Checked;
             Settings.EnhancedActCompatibility = checkBoxEnhancedActCompatibility.Checked;
             Settings.AuxActionEnabled = checkBoxAuxAction.Checked;
+            Settings.NoForcedRedAtStationStops = checkBoxNoForcedRedAtStationStops.Checked;
 
             Settings.Save();
 

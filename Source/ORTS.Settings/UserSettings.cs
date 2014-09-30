@@ -222,6 +222,9 @@ namespace ORTS.Settings
         public int AdhesionFactorChange { get; set; }
         [Default(false)]
         public bool AdhesionProportionalToWeather { get; set; }
+        [Default(false)]
+        public bool NoForcedRedAtStationStops { get; set; }
+
 
         // Hidden settings:
 		[Default(0)]

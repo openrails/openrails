@@ -138,6 +138,7 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.checkBoxNoForcedRedAtStationStops = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -1178,6 +1179,7 @@
             // 
             // tabPageExperimental
             // 
+            this.tabPageExperimental.Controls.Add(this.checkBoxNoForcedRedAtStationStops);
             this.tabPageExperimental.Controls.Add(this.AdhesionFactorChangeValueLabel);
             this.tabPageExperimental.Controls.Add(this.AdhesionFactorValueLabel);
             this.tabPageExperimental.Controls.Add(this.AdhesionLevelValue);
@@ -1589,6 +1591,17 @@
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
             // 
+            // checkBoxNoForcedRedAtStationStops
+            // 
+            this.checkBoxNoForcedRedAtStationStops.AutoSize = true;
+            this.checkBoxNoForcedRedAtStationStops.ForeColor = System.Drawing.Color.Black;
+            this.checkBoxNoForcedRedAtStationStops.Location = new System.Drawing.Point(6, 263);
+            this.checkBoxNoForcedRedAtStationStops.Name = "checkBoxNoForcedRedAtStationStops";
+            this.checkBoxNoForcedRedAtStationStops.Size = new System.Drawing.Size(165, 17);
+            this.checkBoxNoForcedRedAtStationStops.TabIndex = 43;
+            this.checkBoxNoForcedRedAtStationStops.Text = "No forced red at station stops";
+            this.checkBoxNoForcedRedAtStationStops.UseVisualStyleBackColor = true;
+            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -1755,5 +1768,6 @@
         private System.Windows.Forms.CheckBox checkUseLargeAddressAware;
         private System.Windows.Forms.TrackBar trackDayAmbientLight;
         private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.CheckBox checkBoxNoForcedRedAtStationStops;
     }
 }
