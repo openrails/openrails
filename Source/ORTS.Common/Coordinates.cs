@@ -160,6 +160,9 @@ namespace ORTS.Common
     /// </summary>
     public struct WorldLocation
     {
+        /// <summary>
+        /// Returns a WorldLocation representing no location at all.
+        /// </summary>
 		public static WorldLocation None = new WorldLocation();
 
         /// <summary>The x-value of the tile</summary>
@@ -307,6 +310,19 @@ namespace ORTS.Common
         public static bool operator !=(WorldLocation a, WorldLocation b)
         {
             return a.TileX != b.TileX || a.TileZ != b.TileZ || a.Location != b.Location;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null || GetType() != obj.GetType())
+                return false;
+            var other = (WorldLocation)obj;
+            return this == other;
+        }
+
+        public override int GetHashCode()
+        {
+            return TileX.GetHashCode() ^ TileZ.GetHashCode() ^ Location.GetHashCode();
         }
 	}
 }

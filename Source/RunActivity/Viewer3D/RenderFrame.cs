@@ -201,28 +201,28 @@ namespace ORTS.Viewer3D
 
 		public int IndexOf(RenderItem item)
 		{
-			throw new NotImplementedException();
+            throw new NotSupportedException();
 		}
 
 		public void Insert(int index, RenderItem item)
 		{
-			throw new NotImplementedException();
+            throw new NotSupportedException();
 		}
 
 		public void RemoveAt(int index)
 		{
-			throw new NotImplementedException();
+            throw new NotSupportedException();
 		}
 
 		public RenderItem this[int index]
 		{
 			get
 			{
-				throw new NotImplementedException();
+				throw new NotSupportedException();
 			}
 			set
 			{
-				throw new NotImplementedException();
+                throw new NotSupportedException();
 			}
 		}
 
@@ -250,19 +250,19 @@ namespace ORTS.Viewer3D
 
 		public bool Contains(RenderItem item)
 		{
-			throw new NotImplementedException();
+            throw new NotSupportedException();
 		}
 
 		public void CopyTo(RenderItem[] array, int arrayIndex)
 		{
-			throw new NotImplementedException();
+            throw new NotSupportedException();
 		}
 
 		int ICollection<RenderItem>.Count
 		{
             get
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException();
             }
 		}
 
@@ -270,13 +270,13 @@ namespace ORTS.Viewer3D
 		{
             get
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException();
             }
 		}
 
 		public bool Remove(RenderItem item)
 		{
-			throw new NotImplementedException();
+			throw new NotSupportedException();
 		}
 
 		#endregion
