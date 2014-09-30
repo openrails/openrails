@@ -437,7 +437,7 @@ namespace ORTS.Viewer3D
             {
                 if (WasOutOfDistance)
                 {
-                    var ignore3D = WorldLocation == null | Ignore3D | !IsExternal;
+                    var ignore3D = WorldLocation == WorldLocation.None | Ignore3D | !IsExternal;
                     foreach (SoundStream stream in SoundStreams)
                     {
                         stream.HardActivate(ignore3D);
@@ -510,7 +510,7 @@ namespace ORTS.Viewer3D
 
             bool needsFrequentUpdate = false;
 
-            if (Car == null && WorldLocation != null && !Ignore3D && IsExternal)
+            if (Car == null && WorldLocation != WorldLocation.None && !Ignore3D && IsExternal)
             {
                 WorldLocation.NormalizeTo(Camera.SoundBaseTile.X, Camera.SoundBaseTile.Y);
                 float[] position = new float[] {
@@ -543,7 +543,7 @@ namespace ORTS.Viewer3D
         /// <returns>True, if is now out-of-scope</returns>
         public bool isOutOfDistance()
         {
-            if (WorldLocation == null)
+            if (WorldLocation == WorldLocation.None)
             {
                 DistanceSquared = 0;
                 return false;
@@ -574,7 +574,7 @@ namespace ORTS.Viewer3D
 
             if (ConditionsMet(ActivationConditions))
             {
-                if (WorldLocation != null)
+                if (WorldLocation != WorldLocation.None)
                 {
                     // (ActivationConditions.Distance == 0) means distance checking disabled
                     if ((ActivationConditions.Distance == 0 || DistanceSquared < ActivationConditions.Distance * ActivationConditions.Distance) &&
@@ -600,7 +600,7 @@ namespace ORTS.Viewer3D
             if (ConditionsMet(DeactivationConditions))
                 return true;
 
-            if (WorldLocation != null)
+            if (WorldLocation != WorldLocation.None)
             {
                 if (DeactivationConditions.Distance != 0 && DistanceSquared > DeactivationConditions.Distance * DeactivationConditions.Distance ||
                     DistanceSquared > CUTOFFDISTANCE)
