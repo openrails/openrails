@@ -1504,6 +1504,7 @@ namespace ORTS.Viewer3D.RollingStock
         public readonly float CVCFlashTimeOn = 0.75f;
         public readonly float CVCFlashTimeTotal = 1.5f;
         float CumulativeTime;
+        float Scale = 1;
 
         public CabViewDiscreteRenderer(Viewer viewer, MSTSLocomotive locomotive, CVCWithFrames control, CabShader shader)
             : base(viewer, locomotive, control, shader)
@@ -1511,7 +1512,8 @@ namespace ORTS.Viewer3D.RollingStock
             ControlDiscrete = control;
             CABTextureManager.DisassembleTexture(viewer.GraphicsDevice, Control.ACEFile, (int)Control.Width, (int)Control.Height, ControlDiscrete.FramesCount, ControlDiscrete.FramesX, ControlDiscrete.FramesY);
             Texture = CABTextureManager.GetTextureByIndexes(Control.ACEFile, 0, false, false, out IsNightTexture);
-            SourceRectangle = new Rectangle(0, 0, (int)Texture.Width, (int)Texture.Height);
+            SourceRectangle = new Rectangle(0, 0, Texture.Width, Texture.Height);
+            Scale = (float)(Control.Height / Texture.Height);
         }
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
@@ -1570,8 +1572,8 @@ namespace ORTS.Viewer3D.RollingStock
                 Shader.CurrentTechnique.Passes[0].Begin();
             }
             if (Viewer.Simulator.UseSuperElevation > 0 || Viewer.Simulator.CarVibrating > 0 || Locomotive.Train.tilted)
-                ControlView.SpriteBatch.Draw(Texture, DrawPosition, SourceRectangle, Color.White, Locomotive.CabRotationZ, Vector2.Zero, new Vector2((float)Viewer.DisplaySize.X / 640,
-                    (float)Viewer.CabHeightPixels / 480), SpriteEffects.None, 0f);
+                ControlView.SpriteBatch.Draw(Texture, DrawPosition, SourceRectangle, Color.White, Locomotive.CabRotationZ, Vector2.Zero, new Vector2((float)Viewer.DisplaySize.X / 640 * Scale,
+                    (float)Viewer.CabHeightPixels / 480 * Scale), SpriteEffects.None, 0f);
             else
                 ControlView.SpriteBatch.Draw(Texture, DestinationRectangle, SourceRectangle, Color.White);
             if (Shader != null)
