@@ -418,6 +418,9 @@ namespace ORTS
             TotalNumber++;
             SignalObjectItems = new List<ObjectItemInfo>();
             signalRef = simulator.Signals;
+#if NEW_ACTION
+            AuxActionsContain = new AuxActionsContainer(this);
+#endif
 
             if (orgTrain.TrafficService != null)
             {

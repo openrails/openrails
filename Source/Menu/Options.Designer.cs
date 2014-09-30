@@ -107,6 +107,7 @@
             this.tabPageUpdater = new System.Windows.Forms.TabPage();
             this.labelUpdateChannel = new System.Windows.Forms.Label();
             this.tabPageExperimental = new System.Windows.Forms.TabPage();
+            this.checkBoxNoForcedRedAtStationStops = new System.Windows.Forms.CheckBox();
             this.AdhesionFactorChangeValueLabel = new System.Windows.Forms.Label();
             this.AdhesionFactorValueLabel = new System.Windows.Forms.Label();
             this.AdhesionLevelValue = new System.Windows.Forms.Label();
@@ -117,7 +118,6 @@
             this.AdhesionFactorTrackBar1 = new System.Windows.Forms.TrackBar();
             this.AdhesionPropToWeatherCheckBox = new System.Windows.Forms.CheckBox();
             this.checkBoxEnhancedActCompatibility = new System.Windows.Forms.CheckBox();
-            this.checkBoxAuxAction = new System.Windows.Forms.CheckBox();
             this.checkBoxCircularSpeedGauge = new System.Windows.Forms.CheckBox();
             this.checkBoxSignalLightGlow = new System.Windows.Forms.CheckBox();
             this.checkUseMSTSEnv = new System.Windows.Forms.CheckBox();
@@ -138,7 +138,6 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.checkBoxNoForcedRedAtStationStops = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -1190,7 +1189,6 @@
             this.tabPageExperimental.Controls.Add(this.AdhesionFactorTrackBar1);
             this.tabPageExperimental.Controls.Add(this.AdhesionPropToWeatherCheckBox);
             this.tabPageExperimental.Controls.Add(this.checkBoxEnhancedActCompatibility);
-            this.tabPageExperimental.Controls.Add(this.checkBoxAuxAction);
             this.tabPageExperimental.Controls.Add(this.checkBoxCircularSpeedGauge);
             this.tabPageExperimental.Controls.Add(this.checkBoxSignalLightGlow);
             this.tabPageExperimental.Controls.Add(this.checkUseMSTSEnv);
@@ -1218,6 +1216,17 @@
             this.tabPageExperimental.TabIndex = 3;
             this.tabPageExperimental.Text = "Experimental";
             this.tabPageExperimental.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxNoForcedRedAtStationStops
+            // 
+            this.checkBoxNoForcedRedAtStationStops.AutoSize = true;
+            this.checkBoxNoForcedRedAtStationStops.ForeColor = System.Drawing.Color.Black;
+            this.checkBoxNoForcedRedAtStationStops.Location = new System.Drawing.Point(6, 240);
+            this.checkBoxNoForcedRedAtStationStops.Name = "checkBoxNoForcedRedAtStationStops";
+            this.checkBoxNoForcedRedAtStationStops.Size = new System.Drawing.Size(165, 17);
+            this.checkBoxNoForcedRedAtStationStops.TabIndex = 43;
+            this.checkBoxNoForcedRedAtStationStops.Text = "No forced red at station stops";
+            this.checkBoxNoForcedRedAtStationStops.UseVisualStyleBackColor = true;
             // 
             // AdhesionFactorChangeValueLabel
             // 
@@ -1321,24 +1330,12 @@
             // 
             this.checkBoxEnhancedActCompatibility.AutoSize = true;
             this.checkBoxEnhancedActCompatibility.ForeColor = System.Drawing.Color.Black;
-            this.checkBoxEnhancedActCompatibility.Location = new System.Drawing.Point(6, 240);
+            this.checkBoxEnhancedActCompatibility.Location = new System.Drawing.Point(6, 217);
             this.checkBoxEnhancedActCompatibility.Name = "checkBoxEnhancedActCompatibility";
             this.checkBoxEnhancedActCompatibility.Size = new System.Drawing.Size(234, 17);
             this.checkBoxEnhancedActCompatibility.TabIndex = 32;
             this.checkBoxEnhancedActCompatibility.Text = "Enhanced compatibility with MSTS activities";
             this.checkBoxEnhancedActCompatibility.UseVisualStyleBackColor = true;
-            // 
-            // checkBoxAuxAction
-            // 
-            this.checkBoxAuxAction.AutoSize = true;
-            this.checkBoxAuxAction.Enabled = false;
-            this.checkBoxAuxAction.ForeColor = System.Drawing.Color.Black;
-            this.checkBoxAuxAction.Location = new System.Drawing.Point(6, 217);
-            this.checkBoxAuxAction.Name = "checkBoxAuxAction";
-            this.checkBoxAuxAction.Size = new System.Drawing.Size(136, 17);
-            this.checkBoxAuxAction.TabIndex = 42;
-            this.checkBoxAuxAction.Text = "Enable auxiliary actions";
-            this.checkBoxAuxAction.UseVisualStyleBackColor = true;
             // 
             // checkBoxCircularSpeedGauge
             // 
@@ -1591,17 +1588,6 @@
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
             // 
-            // checkBoxNoForcedRedAtStationStops
-            // 
-            this.checkBoxNoForcedRedAtStationStops.AutoSize = true;
-            this.checkBoxNoForcedRedAtStationStops.ForeColor = System.Drawing.Color.Black;
-            this.checkBoxNoForcedRedAtStationStops.Location = new System.Drawing.Point(6, 263);
-            this.checkBoxNoForcedRedAtStationStops.Name = "checkBoxNoForcedRedAtStationStops";
-            this.checkBoxNoForcedRedAtStationStops.Size = new System.Drawing.Size(165, 17);
-            this.checkBoxNoForcedRedAtStationStops.TabIndex = 43;
-            this.checkBoxNoForcedRedAtStationStops.Text = "No forced red at station stops";
-            this.checkBoxNoForcedRedAtStationStops.UseVisualStyleBackColor = true;
-            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -1763,7 +1749,6 @@
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.TrackBar AdhesionFactorTrackBar1;
         private System.Windows.Forms.CheckBox AdhesionPropToWeatherCheckBox;
-        private System.Windows.Forms.CheckBox checkBoxAuxAction;
         private System.Windows.Forms.CheckBox checkBoxModelInstancing;
         private System.Windows.Forms.CheckBox checkUseLargeAddressAware;
         private System.Windows.Forms.TrackBar trackDayAmbientLight;
