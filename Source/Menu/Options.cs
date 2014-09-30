@@ -372,7 +372,7 @@ namespace ORTS
             Settings.SignalLightGlow = checkBoxSignalLightGlow.Checked;
             Settings.EnhancedActCompatibility = checkBoxEnhancedActCompatibility.Checked;
             Settings.AuxActionEnabled = checkBoxAuxAction.Checked;
-            Settings.NoForcedRedAtStationStops = checkBoxNoForcedRedAtStationStops.Checked;
+            Settings.NoForcedRedAtStationStops =  checkBoxNoForcedRedAtStationStops.Checked;
 
             Settings.Save();
 
