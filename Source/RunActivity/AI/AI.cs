@@ -343,7 +343,7 @@ namespace ORTS
                     if (thisTrain.InitialSpeed > 0)
                         // Add extra run to allow setting signals
                     {
-                        thisTrain.AIPreUpdate(0);
+                       thisTrain.AIPreUpdate(0);
                     }
                 }
             }
@@ -520,9 +520,11 @@ namespace ORTS
                 Simulator.TrainDictionary.Add(thisTrain.Number, thisTrain);
                 if (Simulator.NameDictionary.ContainsKey(thisTrain.Name.ToLower())) Simulator.NameDictionary.Remove(thisTrain.Name.ToLower());
                 Simulator.NameDictionary.Add(thisTrain.Name.ToLower(), thisTrain);
-                if (thisTrain.InitialSpeed > 0) 
+                if (thisTrain.InitialSpeed > 0 && thisTrain.MovementState != AITrain.AI_MOVEMENT_STATE.STATION_STOP)
+                {
                     thisTrain.InitializeMoving();
                     thisTrain.MovementState = AITrain.AI_MOVEMENT_STATE.BRAKING;
+                }
 
                 if (MPManager.IsServer())
                 {
