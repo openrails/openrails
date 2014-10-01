@@ -573,6 +573,8 @@ namespace ORTS
             DynamicBrakeAutoBailOff = locoCopy.DynamicBrakeAutoBailOff;
             HasCombCtrl = locoCopy.HasCombCtrl;
             DynamicBrakeDelayS = locoCopy.DynamicBrakeDelayS;
+            MaxDynamicBrakeForceN = locoCopy.MaxDynamicBrakeForceN;
+            HasSmoothStruc = locoCopy.HasSmoothStruc;
             NumWheelsAdhesionFactor = locoCopy.NumWheelsAdhesionFactor;
             AntiSlip = locoCopy.AntiSlip;
             EffectData = locoCopy.EffectData;
