@@ -224,10 +224,7 @@ namespace ORTS
 
         public float travelled;                                          // distance travelled, but not exactly
         public DistanceTravelledActions requiredActions = new DistanceTravelledActions(); // distance travelled action list
-#if NEW_ACTION
         public AuxActionsContainer AuxActionsContain;          // Action To Do during activity, like WP
-#endif
-
 
         public float ClearanceAtRearM = -1;              // save distance behind train (when moving backward)
         public SignalObject RearSignalObject;            // direct reference to signal at rear (when moving backward)
@@ -383,10 +380,7 @@ namespace ORTS
 
             routedForward = new TrainRouted(this, 0);
             routedBackward = new TrainRouted(this, 1);
-#if NEW_ACTION
             AuxActionsContain = new AuxActionsContainer(this);
-#endif
-
         }
 
         //================================================================================================//
@@ -398,10 +392,7 @@ namespace ORTS
         public Train(int number)
         {
             Number = number;
-#if NEW_ACTION
             AuxActionsContain = new AuxActionsContainer(this);
-#endif
-
         }
 
         //================================================================================================//
@@ -418,10 +409,8 @@ namespace ORTS
             TotalNumber++;
             SignalObjectItems = new List<ObjectItemInfo>();
             signalRef = simulator.Signals;
-#if NEW_ACTION
-            AuxActionsContain = new AuxActionsContainer(this);
-#endif
 
+            AuxActionsContain = new AuxActionsContainer(this);
             if (orgTrain.TrafficService != null)
             {
                 TrafficService = new Traffic_Service_Definition();
@@ -772,9 +761,7 @@ namespace ORTS
                 }
             }
 
-#if NEW_ACTION
             AuxActionsContain = new AuxActionsContainer(this, inf);
-#endif
             RestoreDeadlockInfo(inf);
 
             InitialSpeed = inf.ReadSingle();
@@ -1905,9 +1892,7 @@ namespace ORTS
                     CheckDeadlock(ValidRoute[0], Number);    // Check deadlock against all other trains (not for static trains)
                 if (TCRoute != null) TCRoute.SetReversalOffset(Length);
 
-#if NEW_ACTION
                 AuxActionsContain.SetAuxAction(this);
-#endif
             }
 
             // set train speed logging flag (valid per activity, so will be restored after save)
@@ -4241,14 +4226,12 @@ namespace ORTS
                 {
                     PerformActions(nowActions);
                 }
-#if NEW_ACTION
                 nowActions = AuxActionsContain.specRequiredActions.GetAuxActions(this, DistanceTravelledM);
 
                 if (nowActions.Count > 0)
                 {
                     PerformActions(nowActions);
                 }
-#endif
             }
         }
 
@@ -4632,9 +4615,8 @@ namespace ORTS
             if (PresentPosition[0].RouteListIndex >= 0) directionNow = ValidRoute[0][PresentPosition[0].RouteListIndex].Direction;
 
             bool[] nextRoute = UpdateRouteActions(elapsedClockSeconds);
-#if NEW_ACTION
+
             AuxActionsContain.SetAuxAction(this);
-#endif
             if (!nextRoute[0]) return;  // not at end of route
 
             // check if train reversed
@@ -8357,13 +8339,11 @@ namespace ORTS
                 {
                     SetPendingSpeedLimit(thisAction as ActivateSpeedLimit);
                 }
-#if NEW_ACTION
                 else if (thisAction is AuxActionItem)
                 {
                     int presentTime = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
                     ((AuxActionItem)thisAction).ProcessAction(this, presentTime);
                 }
-#endif
             }
         }
 
@@ -10516,12 +10496,7 @@ namespace ORTS
 
             // loop through all waiting points - back to front as the processing affects the actual routepaths
 
-#if NEW_ACTION
             for (int iWait = 0; iWait <= TCRoute.WaitingPoints.Count - 1; iWait++)
-#else
-            int prevSection = -1;
-            for (int iWait = TCRoute.WaitingPoints.Count - 1; iWait >= 0; iWait--)
-#endif
             {
                 int[] waitingPoint = TCRoute.WaitingPoints[iWait];
 
@@ -10538,101 +10513,7 @@ namespace ORTS
                     continue;
                 }
 
-#if NEW_ACTION
                 int direction = thisRoute[routeIndex].Direction;
-#else
-                // waiting point is in same section as previous - add time to previous point, remove this point
-                if (waitingPoint[1] == prevSection)
-                {
-                    int[] prevWP = TCRoute.WaitingPoints[iWait + 1];
-                    prevWP[2] += waitingPoint[2];
-                    TCRoute.WaitingPoints.RemoveAt(iWait);
-                    Trace.TraceInformation("Waiting points for train " + Number.ToString() + " combined, total time set to " + prevWP[2].ToString());
-                    continue;
-                }
-
-                // check if section has signal
-                prevSection = waitingPoint[1];  // save
-
-                bool endSectionFound = false;
-                int endSignalIndex = -1;
-
-                TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisRoute[routeIndex].TCSectionIndex];
-                TrackCircuitSection nextSection =
-                    routeIndex < thisRoute.Count - 2 ? signalRef.TrackCircuitList[thisRoute[routeIndex + 1].TCSectionIndex] : null;
-
-                int direction = thisRoute[routeIndex].Direction;
-                if (thisSection.EndSignals[direction] != null)
-                {
-                    endSectionFound = true;
-                    endSignalIndex = thisSection.EndSignals[direction].thisRef;
-                }
-
-                // check if next section is junction
-
-                else if (nextSection == null || nextSection.CircuitType != TrackCircuitSection.TrackCircuitType.Normal)
-                {
-                    endSectionFound = true;
-                }
-
-                // try and find next section with signal; if junction is found, stop search
-
-                int nextIndex = routeIndex + 1;
-                while (nextIndex < thisRoute.Count - 1 && !endSectionFound)
-                {
-                    nextSection = signalRef.TrackCircuitList[thisRoute[nextIndex].TCSectionIndex];
-                    direction = thisRoute[nextIndex].Direction;
-
-                    if (nextSection.EndSignals[direction] != null)
-                    {
-                        endSectionFound = true;
-                        lastIndex = nextIndex;
-                        endSignalIndex = nextSection.EndSignals[direction].thisRef;
-                    }
-                    else if (nextSection.CircuitType != TrackCircuitSection.TrackCircuitType.Normal)
-                    {
-                        endSectionFound = true;
-                        lastIndex = nextIndex - 1;
-                    }
-                    nextIndex++;
-                }
-                if (Simulator.TimetableMode || !Simulator.Settings.EnhancedActCompatibility)
-                { 
-                    // move sections beyond waiting point to next subroute
-
-                    TCSubpathRoute nextRoute = null;
-                    if ((waitingPoint[0] + 1) > (TCRoute.TCRouteSubpaths.Count - 1))
-                    {
-                        nextRoute = new TCSubpathRoute();
-                        TCRoute.TCRouteSubpaths.Add(nextRoute);
-                        TCReversalInfo nextReversalPoint = new TCReversalInfo(); // also add dummy reversal info to match total number
-                        TCRoute.ReversalInfo.Add(nextReversalPoint);
-                        TCRoute.LoopEnd.Add(-1); // also add dummy loopend
-                    }
-                    else
-                    {
-                        nextRoute = TCRoute.TCRouteSubpaths[waitingPoint[0] + 1];
-                    }
-
-                    for (int iElement = thisRoute.Count - 1; iElement >= lastIndex + 1; iElement--)
-                    {
-                        nextRoute.Insert(0, thisRoute[iElement]);
-                        thisRoute.RemoveAt(iElement);
-                    }
-
-                    // repeat actual waiting section in next subroute
-
-                    nextRoute.Insert(0, thisRoute[thisRoute.Count - 1]);
-
-                    // add end signal to hold list, set ref in waiting point
-
-                    if (endSignalIndex >= 0)
-                    {
-                        TCRoute.WaitingPoints[iWait][4] = endSignalIndex;
-                        HoldingSignals.Add(endSignalIndex);
-                    }
-                }
-#endif
                 bool endSectionFound = false;
                 int endSignalIndex = -1;
 
@@ -10684,42 +10565,6 @@ namespace ORTS
                     action.Delay = waitingPoint[2] <= 5 ? 5 : waitingPoint[2];
                     AuxActionsContain.Add(action);
                 }
-#if !NEW_ACTION
-                // retest for loop ends
-
-                for (int iLoop = TCRoute.TCRouteSubpaths.Count - 1; iLoop >= 0; iLoop--)
-                {
-                    int loopSection = TCRoute.LoopEnd[iLoop];
-                    if (loopSection >= 0)
-                    {
-                        // if no longer on this subpath, test if on any of the following subpaths
-                        if (TCRoute.TCRouteSubpaths[iLoop].GetRouteIndex(loopSection, 0) < 0)
-                        {
-                            for (int iLoop2 = iLoop + 1; iLoop2 <= TCRoute.TCRouteSubpaths.Count - 1; iLoop2++)
-                            {
-                                if (TCRoute.TCRouteSubpaths[iLoop2].GetRouteIndex(loopSection, 0) >= 0)
-                                {
-                                    if (iLoop2 <= TCRoute.TCRouteSubpaths.Count - 2 && TCRoute.TCRouteSubpaths[iLoop2 + 1].GetRouteIndex(loopSection, 0) >= 0) // must also be on next subpath
-                                    {
-                                        TCRoute.LoopEnd[iLoop2] = loopSection;
-                                        Trace.TraceInformation("Loop section " + loopSection + " moved to " + iLoop2 + "\n");
-                                    }
-                                }
-                            }
-
-                            TCRoute.LoopEnd[iLoop] = -1;
-
-                        }
-                        else
-                        {
-                            if (iLoop > TCRoute.TCRouteSubpaths.Count - 2 || TCRoute.TCRouteSubpaths[iLoop + 1].GetRouteIndex(loopSection, 0) < 0) // check if also still on next subpath
-                            {
-                                TCRoute.LoopEnd[iLoop] = -1;
-                            }
-                        }
-                    }
-                }
-#endif
             }
         }
 
@@ -13342,9 +13187,6 @@ namespace ORTS
 
                 thisPathNode = thisPathNode.NextMainNode;
                 int reversal = 0;
-#if !NEW_ACTION
-                bool breakpoint = false;
-#endif
 
                 while (thisPathNode != null)
                 {
@@ -13429,16 +13271,6 @@ namespace ORTS
                             continue;          // process this node again in reverse direction
                         }
                             //  SPA:    WP: New forms 
-#if !NEW_ACTION
-                        else if (breakpoint)
-                        {
-                            sublist++;
-                            thisSubpath = new TCSubpathRoute();
-                            TCRouteSubpaths.Add(thisSubpath);
-
-                            breakpoint = false;
-                        }
-#endif
 
                         //
                         // process junction section
@@ -13538,23 +13370,9 @@ namespace ORTS
                         }
                         else if (nextPathNode.Type == AIPathNodeType.Stop)
                         {
-#if NEW_ACTION
                             int validDir = currentDir;
                             if (reversal % 2 == 1) validDir = validDir == 1 ? 0 : 1;                            
                             offset = GetOffsetToPathNode(aiPath, validDir, nextPathNode);
-#else
-                            TrackNode WPNode = aiPath.TrackDB.TrackNodes[nextPathNode.NextMainTVNIndex];
-                                TrVectorSection firstSection = WPNode.TrVectorNode.TrVectorSections[0];
-                                Traveller TDBTrav = new Traveller(aiPath.TSectionDat, aiPath.TrackDB.TrackNodes, WPNode,
-                                    firstSection.TileX, firstSection.TileZ,
-                                    firstSection.X, firstSection.Z, (Traveller.TravellerDirection)1);
-
-                                offset = TDBTrav.DistanceTo(WPNode,
-                                    nextPathNode.Location.TileX, nextPathNode.Location.TileZ,
-                                    nextPathNode.Location.Location.X,
-                                    nextPathNode.Location.Location.Y,
-                                    nextPathNode.Location.Location.Z);
-#endif
                             int[] waitingPoint = new int[6];
                             waitingPoint[0] = sublist + reversal;
                             waitingPoint[1] = ConvertWaitingPoint(nextPathNode, aiPath.TrackDB, aiPath.TSectionDat, currentDir);
@@ -13564,9 +13382,6 @@ namespace ORTS
                             waitingPoint[4] = -1; // hold signal set later
                             waitingPoint[5] = (int)offset;
                             WaitingPoints.Add(waitingPoint);
-#if !NEW_ACTION
-                            breakpoint = true;
-#endif
                         }
 
                         // other type of path need not be processed
@@ -16684,11 +16499,7 @@ namespace ORTS
 
                 foreach (var thisAction in this)
                 {
-#if NEW_ACTION
                     if ((thisAction is AIActionItem && !(thisAction is AuxActionItem)) || removeAll)
-#else
-                    if ((thisAction is AIActionItem) || removeAll)
-#endif
                     {
                         DistanceTravelledItem thisItem = thisAction;
                         itemsToRemove.Add(thisItem);

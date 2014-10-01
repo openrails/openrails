@@ -32,7 +32,7 @@ using MSTS.Formats;
 using MSTS.Parsers;
 using ORTS.Common;
 using ORTS.Viewer3D.Popups;
-#if NEW_ACTION
+
 namespace ORTS
 {
     #region AuxActionsContainer
@@ -2213,5 +2213,3 @@ namespace ORTS
 
 #endregion
 }
-
-#endif

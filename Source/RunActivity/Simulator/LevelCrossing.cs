@@ -152,24 +152,20 @@ namespace ORTS
 
                 if (frontDist <= reqDist && (train.ReservedTrackLengthM <= 0 || frontDist < train.ReservedTrackLengthM) && rearDist <= minimumDist)
                 {
-#if NEW_ACTION
                     //  Add generic actions if needed
                     if (train is AITrain)
                     {
                         ((AITrain)train).AuxActionsContain.CheckGenActions(this.GetType(), crossing.Location, rearDist, frontDist, crossing.TrackIndex);
                     }
-#endif
                     crossing.AddTrain(train);
                 }
                 else
                 {
-#if NEW_ACTION
                     //  Add generic actions if needed
                     if (train is AITrain)
                     {
                         ((AITrain)train).AuxActionsContain.RemoveGenActions(this.GetType(), crossing.Location);
                     }
-#endif
                     crossing.RemoveTrain(train);
                 }
             }

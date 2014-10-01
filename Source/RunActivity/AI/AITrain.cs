@@ -411,9 +411,8 @@ namespace ORTS
                 SetEndOfRouteAction();              // set action to ensure train stops at end of route
 
                 // check if train starts at station stop
-#if NEW_ACTION                                                                                                                                                              
+                                                                                                                                                              
                 AuxActionsContain.SetAuxAction(this);
-#endif
                 if (StationStops.Count > 0)
                 {
                     atStation = CheckInitialStation();
@@ -803,23 +802,11 @@ namespace ORTS
 #if WITH_PATH_DEBUG
             currentAIStation = " ---";
 #endif
-#if NEW_ACTION
-            //if (nextActionInfo != null && nextActionInfo.GetType().IsSubclassOf(typeof(AuxActionItem)))
-            //{
-            //    MovementState = nextActionInfo.UpdateAuxAction(this, presentTime, elapsedClockSeconds, MovementState);
-            //}
-            //else  SPA: Don't know yet
-#endif
             {
                 bool[] stillExist;
-#if NEW_ACTION
-                //if (nextGenAction != null)
-                {
-                    //AuxActionsContain.SetAuxAction(this);
-                    AuxActionsContain.ProcessGenAction(this, presentTime, elapsedClockSeconds, MovementState);
-                    MovementState = AuxActionsContain.ProcessSpecAction(this, presentTime, elapsedClockSeconds, MovementState);
-                }
-#endif
+
+                AuxActionsContain.ProcessGenAction(this, presentTime, elapsedClockSeconds, MovementState);
+                MovementState = AuxActionsContain.ProcessSpecAction(this, presentTime, elapsedClockSeconds, MovementState);
 
                 switch (MovementState)
                 {
@@ -827,13 +814,11 @@ namespace ORTS
                         UpdateAIStaticState(presentTime);
                         break;
                     case AI_MOVEMENT_STATE.STOPPED:
-#if NEW_ACTION
                         if (nextActionInfo != null && nextActionInfo.GetType().IsSubclassOf(typeof(AuxActionItem)))
                         {
                             MovementState = nextActionInfo.ProcessAction(this, presentTime, elapsedClockSeconds, MovementState);
                         }
                         else
-#endif
                         {
                             stillExist = ProcessEndOfPath(presentTime);
                             if (stillExist[1]) UpdateStoppedState();
@@ -865,12 +850,10 @@ namespace ORTS
                         UpdateStoppedState();
                         break;
                     default:
-#if NEW_ACTION
                         if(nextActionInfo != null && nextActionInfo.GetType().IsSubclassOf(typeof(AuxActionItem)))
                         {
                             MovementState = nextActionInfo.ProcessAction(this, presentTime, elapsedClockSeconds, MovementState);
                         }
-#endif
                         break;
 
                 }
@@ -1774,13 +1757,11 @@ namespace ORTS
                         }
                     }
                 }
-#if NEW_ACTION
                 else if (nextActionInfo != null &&
                     nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.AUX_ACTION)
                 {
                     MovementState = AI_MOVEMENT_STATE.BRAKING;
                 }
-#endif
                 else if (nextActionInfo == null || nextActionInfo.NextAction != AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_STOP)
                 {
                     if (nextAspect != MstsSignalAspect.STOP)
@@ -2516,13 +2497,11 @@ namespace ORTS
                         return;
                     }
                 }
-#if NEW_ACTION
                 else if(nextActionInfo.GetType().IsSubclassOf(typeof(AuxActionItem)))
                 {
                     NextStopDistanceM = distanceToGoM;
                     MovementState = nextActionInfo.ProcessAction(this, presentTime, elapsedClockSeconds, MovementState);
                 }
-#endif
                 // check speed reduction position reached
 
                 else if (nextActionInfo.RequiredSpeedMpS > 0)
@@ -3681,7 +3660,6 @@ namespace ORTS
             bool insertSigDelegate = false;
             // loop through all waiting points - back to front as the processing affects the actual routepaths
 
-#if NEW_ACTION
             List<int> signalIndex = new List<int>();
             for (int iWait = 0; iWait <= TCRoute.WaitingPoints.Count - 1; iWait++)
             {
@@ -3752,12 +3730,6 @@ namespace ORTS
                 signalIndex.Add(endSignalIndex);
             }
             for (int iWait = 0; iWait <= TCRoute.WaitingPoints.Count - 1; iWait++)
-
-#else
-            int prevSection = -1;
-            int TCElmtSignalIdx = -1;
-            for (int iWait = TCRoute.WaitingPoints.Count - 1; iWait >= 0; iWait--)
-#endif
             {
                 int[] waitingPoint = TCRoute.WaitingPoints[iWait];
 
@@ -3781,121 +3753,8 @@ namespace ORTS
                     Trace.TraceInformation("Waiting point for train " + Number.ToString() + " is not on route - point removed");
                     continue;
                 }
-#if NEW_ACTION
                 int direction = thisRoute[routeIndex].Direction;
-#else
 
-                // waiting point is in same section as previous - add time to previous point, remove this point
-                if (waitingPoint[1] == prevSection)
-                {
-                    int[] prevWP = TCRoute.WaitingPoints[iWait + 1];
-                    prevWP[2] += waitingPoint[2];
-                    TCRoute.WaitingPoints.RemoveAt(iWait);
-                    StationStops[StationStops.Count - 1].DepartTime = -prevWP[2];
-                    StationStops[StationStops.Count - 1].ActualDepart = -prevWP[2];
-                    Trace.TraceInformation("Waiting points for train " + Number.ToString() + " combined, total time set to " + prevWP[2].ToString());
-                    continue;
-                }
-
-                // check if section has signal
-
-                prevSection = waitingPoint[1];  // save
-
-                int exitSignalReference = -1;
-                float offset = 0.0f;
-                bool endSectionFound = false;
-
-                TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisRoute[routeIndex].TCSectionIndex];
-                TrackCircuitSection nextSection =
-                    routeIndex < thisRoute.Count - 2 ? signalRef.TrackCircuitList[thisRoute[routeIndex + 1].TCSectionIndex] : null;
-
-                int direction = thisRoute[routeIndex].Direction;
-                
-                if (TCElmtSignalIdx == -1)
-                {
-                    if (thisSection.EndSignals[direction] != null)
-                    {
-                        endSectionFound = true;
-                        offset = thisSection.Length - clearingDistanceM - 1.0f; // 1 m short to force as first action
-                        exitSignalReference = thisSection.EndSignals[direction] == null ? -1 : thisSection.EndSignals[direction].thisRef;
-                        TCElmtSignalIdx = thisSection.Index;
-                    }
-                }
-
-                // check if next section is junction
-
-                else if (nextSection == null || nextSection.CircuitType != TrackCircuitSection.TrackCircuitType.Normal)
-                {
-                    endSectionFound = true;
-                    offset = thisSection.Length - junctionOverlapM;
-                }
-                TCElmtSignalIdx = -1;
-                // try and find next section with signal; if junction is found, stop search
-
-                int nextIndex = routeIndex + 1;
-                while (nextIndex < thisRoute.Count - 1 && !endSectionFound)
-                {
-                    nextSection = signalRef.TrackCircuitList[thisRoute[nextIndex].TCSectionIndex];
-                    direction = thisRoute[nextIndex].Direction;
-
-                    if (nextSection.EndSignals[direction] != null)
-                    {
-                        endSectionFound = true;
-                        lastIndex = nextIndex;
-                        offset = nextSection.Length - clearingDistanceM - 1.0f; // 1 m short to force as first action
-                        exitSignalReference = thisSection.EndSignals[direction] == null ? -1 : thisSection.EndSignals[direction].thisRef;
-                    }
-                    else if (nextSection.CircuitType != TrackCircuitSection.TrackCircuitType.Normal)
-                    {
-                        endSectionFound = true;
-                        lastIndex = nextIndex - 1;
-                    }
-
-                    if (!endSectionFound)
-                    {
-                        nextIndex++;
-                        offset = nextSection.Length - junctionOverlapM;  // use this section length if next section is junction
-                    }
-                }
-                // move sections beyond waiting point to next subroute
-                TCSubpathRoute nextRoute = null;
-                if ((waitingPoint[0] + 1) > (TCRoute.TCRouteSubpaths.Count - 1))
-                {
-                    nextRoute = new TCSubpathRoute();
-                    TCRoute.TCRouteSubpaths.Add(nextRoute);
-                    TCReversalInfo nextReversalPoint = new TCReversalInfo(); // also add dummy reversal info to match total number
-                    TCRoute.ReversalInfo.Add(nextReversalPoint);
-                    if (!Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility)
-                    {
-                        TCRoute.ReversalInfo[TCRoute.ReversalInfo.Count - 1].ReversalIndex = TCRoute.ReversalInfo[TCRoute.ReversalInfo.Count - 2].ReversalIndex + 1;
-                        TCRoute.ReversalInfo[TCRoute.ReversalInfo.Count - 1].ReversalSectionIndex = TCRoute.ReversalInfo[TCRoute.ReversalInfo.Count - 2].ReversalSectionIndex;
-                        TCRoute.ReversalInfo[TCRoute.ReversalInfo.Count - 1].ReverseReversalOffset = TCRoute.ReversalInfo[TCRoute.ReversalInfo.Count - 2].ReverseReversalOffset;
-                    }
-                    TCRoute.LoopEnd.Add(-1); // also add dummy loop end
-                }
-                else
-                {
-                    nextRoute = TCRoute.TCRouteSubpaths[waitingPoint[0] + 1];
-                }
-
-                for (int iElement = thisRoute.Count - 1; iElement >= lastIndex + 1; iElement--)
-                {
-                    nextRoute.Insert(0, thisRoute[iElement]);
-                    thisRoute.RemoveAt(iElement);
-                }
-                // repeat actual waiting section in next subroute (if not allready there)
-
-                if (nextRoute.Count <= 0 || nextRoute[0].TCSectionIndex != thisRoute[thisRoute.Count - 1].TCSectionIndex)
-                    nextRoute.Insert(0, thisRoute[thisRoute.Count - 1]);
-
-                // build station stop
-
-                bool HoldSignal = exitSignalReference >= 0;
-
-                int DepartTime = waitingPoint[2] > 0 ? -waitingPoint[2] : waitingPoint[3];
-#endif
-
-#if NEW_ACTION
                 AIActionWPRef action = new AIActionWPRef(this, waitingPoint[5], 0f, waitingPoint[0], thisRoute[lastIndex].TCSectionIndex, lastIndex, direction);
                 action.SetDelay(waitingPoint[2]);
                 AuxActionsContain.Add(action);
@@ -3910,81 +3769,7 @@ namespace ORTS
                     AuxActionsContain.Add(delegateAction);
                 }
                 insertSigDelegate = false;
-#else
-
-                StationStop thisStation = new StationStop(
-                        -1,
-                        null,
-                        waitingPoint[0],
-                        lastIndex,
-                        thisRoute[lastIndex].TCSectionIndex,
-                        direction,
-                        exitSignalReference,
-                        HoldSignal,
-                        offset,
-                        0,
-                        DepartTime,
-                        StationStop.STOPTYPE.WAITING_POINT);
-                StationStops.Add(thisStation);
             }
-
-            // adjust station stop indices for removed subpaths
-            for (int i = 0; i < StationStops.Count; i++)
-            {
-                var WPcur = StationStops[i];
-                for (int iTC = TCRoute.TCRouteSubpaths.Count - 1; iTC >= 0; iTC--)
-                {
-                    var tcRS = TCRoute.TCRouteSubpaths[iTC];
-                    for (int iTCE = tcRS.Count - 1; iTCE >= 0; iTCE--)
-                    {
-                        var tcSR = tcRS[iTCE];
-                        if (WPcur.TCSectionIndex == tcSR.TCSectionIndex)
-                        {
-                            WPcur.SubrouteIndex = iTC;
-                            WPcur.RouteIndex = iTCE;
-                        }
-                    }
-                }
-            }
-
-            // rebuild loop info
-            // retest for loop ends
-
-            for (int iLoop = TCRoute.TCRouteSubpaths.Count - 1; iLoop >= 0; iLoop--)
-            {
-                int loopSection = TCRoute.LoopEnd[iLoop];
-                if (loopSection >= 0)
-                {
-                    // if no longer on this subpath, test if on any of the following subpaths
-                    if (TCRoute.TCRouteSubpaths[iLoop].GetRouteIndex(loopSection, 0) < 0)
-                    {
-                        for (int iLoop2 = iLoop + 1; iLoop2 <= TCRoute.TCRouteSubpaths.Count - 1; iLoop2++)
-                        {
-                            if (TCRoute.TCRouteSubpaths[iLoop2].GetRouteIndex(loopSection, 0) >= 0)
-                            {
-                                if (iLoop2 <= TCRoute.TCRouteSubpaths.Count - 2 && TCRoute.TCRouteSubpaths[iLoop2 + 1].GetRouteIndex(loopSection, 0) >= 0) // must also be on next subpath
-                                {
-                                    TCRoute.LoopEnd[iLoop2] = loopSection;
-                                    Trace.TraceInformation("Loop section " + loopSection + " moved to " + iLoop2 + "\n");
-                                }
-                            }
-                        }
-
-                        TCRoute.LoopEnd[iLoop] = -1;
-
-                    }
-                    else
-                    {
-                        if (iLoop > TCRoute.TCRouteSubpaths.Count - 2 || TCRoute.TCRouteSubpaths[iLoop + 1].GetRouteIndex(loopSection, 0) < 0) // check if also still on next subpath
-                        {
-                            TCRoute.LoopEnd[iLoop] = -1;
-                        }
-                    }
-                }
-#endif
-            }
-            
-        
         }
 
         //================================================================================================//
@@ -4638,9 +4423,8 @@ namespace ORTS
             }
             requiredActions.RemovePendingAIActionItems(false);
 
-#if NEW_ACTION
+
             AuxActionsContain.SetAuxAction(this);
-#endif
             if (StationStops.Count > 0)
                 SetNextStationAction();
             if (setEndOfPath)
@@ -4670,7 +4454,7 @@ namespace ORTS
                 {
                     SetAIPendingSpeedLimit(thisAction as ActivateSpeedLimit);
                 }
-#if NEW_ACTION
+
                 else if (thisAction is AIActionItem && !(thisAction is AuxActionItem))
                 {
                     ProcessActionItem(thisAction as AIActionItem);
@@ -4684,12 +4468,6 @@ namespace ORTS
                     int presentTime = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
                     ((AuxActionItem)thisAction).ProcessAction(this, presentTime);
                 }
-#else
-                else if (thisAction is AIActionItem)
-                {
-                    ProcessActionItem(thisAction as AIActionItem);
-                }
-#endif
             }
         }
 
@@ -5540,11 +5318,8 @@ namespace ORTS
             {
                 actionString = String.Concat(actionString, " ASL(", action.RequiredDistance.ToString("F0"), "m):");
             }
-#if NEW_ACTION
+
             else if (action.GetType() == typeof(AIActionItem) || action.GetType().IsSubclassOf(typeof(AuxActionItem)))
-#else
-            else if (action.GetType() == typeof(AIActionItem))
-#endif
             {
                 AIActionItem AIaction = action as AIActionItem;
                 {
@@ -5587,13 +5362,13 @@ namespace ORTS
                         case AIActionItem.AI_ACTION_TYPE.NONE:
                             actionString = String.Concat(actionString, " None(", NextStopDistanceM.ToString("F0"), "m):");
                             break;
-#if NEW_ACTION
+
                         case AIActionItem.AI_ACTION_TYPE.AUX_ACTION:
                             string coord = String.Concat("X:", this.FrontTDBTraveller.X.ToString(), ", Z:", this.FrontTDBTraveller.Z.ToString());
                             actionString = String.Concat(actionString, AIaction.AsString(this), NextStopDistanceM.ToString("F0"), "m):", coord);
                             //actionString = String.Concat(actionString, " AUX(", NextStopDistanceM.ToString("F0"), "m):");
                             break;
-#endif
+
                     }
                 }
             }
@@ -5746,7 +5521,7 @@ namespace ORTS
 
             outf.Write(ActiveItem.processed);
         }
-#if NEW_ACTION
+
         //================================================================================================//
         //
         //  Generic Handler for all derived class
@@ -5784,8 +5559,6 @@ namespace ORTS
         {
             return " ??(";
         }
-
-#endif
     }
 
 }
