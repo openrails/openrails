@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-09-27 15:32:15+0200\n"
-"PO-Revision-Date: 2014-09-27 15:32:17+0200\n"
+"POT-Creation-Date: 2014-10-01 19:59:16+0200\n"
+"PO-Revision-Date: 2014-10-01 19:59:18+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -187,14 +187,14 @@ msgstr ""
 msgid "MessageViewer"
 msgstr ""
 
-#: ../../RunActivity/Debugging/SoundDebugForm.cs:171
-#: ../../RunActivity/Debugging/SoundDebugForm.cs:201
+#: ../../RunActivity/Debugging/SoundDebugForm.cs:172
 #: ../../RunActivity/Debugging/SoundDebugForm.cs:202
 #: ../../RunActivity/Debugging/SoundDebugForm.cs:203
+#: ../../RunActivity/Debugging/SoundDebugForm.cs:204
 msgid "-"
 msgstr ""
 
-#: ../../RunActivity/Debugging/SoundDebugForm.cs:200
+#: ../../RunActivity/Debugging/SoundDebugForm.cs:201
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:337
 msgid "0"
 msgstr ""
@@ -339,87 +339,87 @@ msgid_plural "Cannot decouple: train has {0} players, need to completely stop."
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../../RunActivity/Physics/Train.cs:1549
+#: ../../RunActivity/Physics/Train.cs:1556
 msgid "Coupler broken!"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:1552
+#: ../../RunActivity/Physics/Train.cs:1559
 msgid "Coupler overloaded!"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:4552
-#: ../../RunActivity/Physics/Train.cs:4557
+#: ../../RunActivity/Physics/Train.cs:4559
+#: ../../RunActivity/Physics/Train.cs:4564
 msgid "Other train is blocking path"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:4686
+#: ../../RunActivity/Physics/Train.cs:4693
 msgid "Held for connecting train : "
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:4744
+#: ../../RunActivity/Physics/Train.cs:4751
 msgid "Passenger boarding completed. Waiting for signal ahead to clear."
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:4749
+#: ../../RunActivity/Physics/Train.cs:4756
 #: ../../RunActivity/Simulator/Activity.cs:861
 msgid "Passenger boarding completed. You may depart now."
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5740
+#: ../../RunActivity/Physics/Train.cs:5747
 msgid "Stopped due to errors in route setting"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6402
-#: ../../RunActivity/Physics/Train.cs:7475
+#: ../../RunActivity/Physics/Train.cs:6409
+#: ../../RunActivity/Physics/Train.cs:7482
 msgid "No signal in train's path"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6410
+#: ../../RunActivity/Physics/Train.cs:6417
 msgid "Next signal already allocated to other train"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6471
+#: ../../RunActivity/Physics/Train.cs:6478
 msgid "Request to clear signal cannot be processed"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6577
-#: ../../RunActivity/Physics/Train.cs:7595
+#: ../../RunActivity/Physics/Train.cs:6584
+#: ../../RunActivity/Physics/Train.cs:7602
 msgid "No switch found"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7836
+#: ../../RunActivity/Physics/Train.cs:7843
 msgid "Train is not back on original route"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7845
+#: ../../RunActivity/Physics/Train.cs:7852
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7858
+#: ../../RunActivity/Physics/Train.cs:7865
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7953
+#: ../../RunActivity/Physics/Train.cs:7960
 msgid "Reversal required and rear of train not on required route"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:8140
+#: ../../RunActivity/Physics/Train.cs:8147
 msgid "Cannot clear signal behind train while in AUTO mode"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:4756
+#: ../../RunActivity/Physics/Train.cs:4763
 #: ../../RunActivity/Simulator/Activity.cs:854
 #, csharp-format
 msgid "Passenger boarding completes in {0:D2}:{1:D2}"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:8392
+#: ../../RunActivity/Physics/Train.cs:8399
 #, csharp-format
 msgid "Allowed speed raised to {0}"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:8434
+#: ../../RunActivity/Physics/Train.cs:8441
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr ""

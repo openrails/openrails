@@ -1513,7 +1513,7 @@ namespace ORTS.Viewer3D.RollingStock
             CABTextureManager.DisassembleTexture(viewer.GraphicsDevice, Control.ACEFile, (int)Control.Width, (int)Control.Height, ControlDiscrete.FramesCount, ControlDiscrete.FramesX, ControlDiscrete.FramesY);
             Texture = CABTextureManager.GetTextureByIndexes(Control.ACEFile, 0, false, false, out IsNightTexture);
             SourceRectangle = new Rectangle(0, 0, Texture.Width, Texture.Height);
-            Scale = (float)(Control.Height / Texture.Height);
+            Scale = (float)(Math.Min(Control.Height, Texture.Height) / Texture.Height); // Allow only downscaling of the texture, and not upscaling
         }
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
@@ -1540,26 +1540,19 @@ namespace ORTS.Viewer3D.RollingStock
             // Cab view height and vertical position adjusted to allow for clip or stretch.
             var xratio = (float)Viewer.DisplaySize.X / 640;
             var yratio = (float)Viewer.CabHeightPixels / 480;
+            DestinationRectangle.X = (int)(xratio * Control.PositionX * 1.0001);
+            DestinationRectangle.Y = (int)(yratio * Control.PositionY * 1.0001) + Viewer.CabYOffsetPixels;
+            DestinationRectangle.Width = (int)(xratio * Math.Min(Control.Width, Texture.Width));  // Allow only downscaling of the texture, and not upscaling
+            DestinationRectangle.Height = (int)(yratio * Math.Min(Control.Height, Texture.Height));  // Allow only downscaling of the texture, and not upscaling
 
             if (Viewer.Simulator.UseSuperElevation > 0 || Viewer.Simulator.CarVibrating > 0 || Locomotive.Train.tilted)
             {
-                DestinationRectangle.X = (int)(xratio * Control.PositionX * 1.0001);
-                DestinationRectangle.Y = (int)(yratio * Control.PositionY * 1.0001) + Viewer.CabYOffsetPixels;
-                DestinationRectangle.Width = (int)(xratio * Control.Width);
-                DestinationRectangle.Height = (int)(yratio * Control.Height);
                 var Position = new Vector2(DestinationRectangle.X - Viewer.DisplaySize.X / 2, DestinationRectangle.Y - Viewer.CabHeightPixels / 2 - Viewer.CabYOffsetPixels);
 
                 Position = Vector2.Transform(Position, Matrix.CreateRotationZ(Locomotive.CabRotationZ));
                 Position.X += Viewer.DisplaySize.X / 2 + 0.5f; Position.Y += Viewer.CabHeightPixels / 2 + Viewer.CabYOffsetPixels + 0.5f;
                 DestinationRectangle.X = (int)Position.X; DestinationRectangle.Y = (int)Position.Y;
                 DrawPosition.X = Position.X; DrawPosition.Y = Position.Y;
-            }
-            else
-            {
-                DestinationRectangle.X = (int)(xratio * Control.PositionX * 1.0001);
-                DestinationRectangle.Y = (int)(yratio * Control.PositionY * 1.0001) + Viewer.CabYOffsetPixels;
-                DestinationRectangle.Width = (int)(xratio * Control.Width);
-                DestinationRectangle.Height = (int)(yratio * Control.Height);
             }
         }
 

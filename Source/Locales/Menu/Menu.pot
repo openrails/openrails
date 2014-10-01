@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-09-27 15:32:14+0200\n"
-"PO-Revision-Date: 2014-09-27 15:32:14+0200\n"
+"POT-Creation-Date: 2014-10-01 19:59:04+0200\n"
+"PO-Revision-Date: 2014-10-01 19:59:04+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -136,7 +136,7 @@ msgid "Rain"
 msgstr ""
 
 #: ../../Menu/MainForm.cs:143
-#: ../../Menu/Options.cs:446
+#: ../../Menu/Options.cs:447
 msgid "Easy"
 msgstr ""
 
@@ -145,7 +145,7 @@ msgid "Medium"
 msgstr ""
 
 #: ../../Menu/MainForm.cs:145
-#: ../../Menu/Options.cs:452
+#: ../../Menu/Options.cs:453
 msgid "Hard"
 msgstr ""
 
@@ -315,7 +315,7 @@ msgid "Logging"
 msgstr ""
 
 #: ../../Menu/MainForm.Designer.cs:200
-#: ../../Menu/Options.Designer.cs:1607
+#: ../../Menu/Options.Designer.cs:1606
 msgid "Options"
 msgstr ""
 
@@ -481,56 +481,56 @@ msgstr ""
 msgid "No automatic updates."
 msgstr ""
 
-#: ../../Menu/Options.cs:272
+#: ../../Menu/Options.cs:273
 msgid "Click to change this key"
 msgstr ""
 
-#: ../../Menu/Options.cs:288
+#: ../../Menu/Options.cs:289
 msgid ""
 "Continue with conflicting key assignments?\n"
 "\n"
 msgstr ""
 
-#: ../../Menu/Options.cs:382
+#: ../../Menu/Options.cs:383
 msgid "Remove all custom key assignments?"
 msgstr ""
 
-#: ../../Menu/Options.cs:393
+#: ../../Menu/Options.cs:394
 msgid ""
 "A listing of all keyboard commands and keys has been placed here:\n"
 "\n"
 msgstr ""
 
-#: ../../Menu/Options.cs:402
+#: ../../Menu/Options.cs:403
 msgid "No errors found."
 msgstr ""
 
-#: ../../Menu/Options.cs:427
+#: ../../Menu/Options.cs:428
 msgid "Please restart Open Rails in order to load the new language."
 msgstr ""
 
-#: ../../Menu/Options.cs:444
+#: ../../Menu/Options.cs:445
 msgid "Very easy"
 msgstr ""
 
-#: ../../Menu/Options.cs:448
+#: ../../Menu/Options.cs:449
 msgid "MSTS Compatibile"
 msgstr ""
 
-#: ../../Menu/Options.cs:450
-#: ../../Menu/Options.Designer.cs:1247
+#: ../../Menu/Options.cs:451
+#: ../../Menu/Options.Designer.cs:1258
 msgid "Normal"
 msgstr ""
 
-#: ../../Menu/Options.cs:454
+#: ../../Menu/Options.cs:455
 msgid "Very Hard"
 msgstr ""
 
-#: ../../Menu/Options.cs:456
+#: ../../Menu/Options.cs:457
 msgid "Good luck!"
 msgstr ""
 
-#: ../../Menu/Options.cs:416
+#: ../../Menu/Options.cs:417
 #, csharp-format
 msgid ""
 "{0:F0}° vertical FOV is the same as:\n"
@@ -762,96 +762,96 @@ msgstr ""
 msgid "Experimental"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1227
+#: ../../Menu/Options.Designer.cs:1228
+msgid "No forced red at station stops"
+msgstr ""
+
+#: ../../Menu/Options.Designer.cs:1238
 msgid "10%"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1237
+#: ../../Menu/Options.Designer.cs:1248
 msgid "130%"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1256
+#: ../../Menu/Options.Designer.cs:1267
 msgid "Level:"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1265
+#: ../../Menu/Options.Designer.cs:1276
 msgid "Adhesion factor random change:"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1289
+#: ../../Menu/Options.Designer.cs:1300
 msgid "Adhesion factor correction:"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1314
+#: ../../Menu/Options.Designer.cs:1325
 msgid "Adhesion proportional to rain/snow/fog"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1326
+#: ../../Menu/Options.Designer.cs:1337
 msgid "Enhanced compatibility with MSTS activities"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1338
-msgid "Enable auxiliary actions"
-msgstr ""
-
-#: ../../Menu/Options.Designer.cs:1348
+#: ../../Menu/Options.Designer.cs:1347
 msgid "ETCS circular speed gauge"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1358
+#: ../../Menu/Options.Designer.cs:1357
 msgid "Signal light glow"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1368
+#: ../../Menu/Options.Designer.cs:1367
 msgid "MSTS environments"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1378
+#: ../../Menu/Options.Designer.cs:1377
 msgid "Always use highest detail objects"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1388
+#: ../../Menu/Options.Designer.cs:1387
 msgid "Location-linked passing path processing"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1399
+#: ../../Menu/Options.Designer.cs:1398
 msgid "Target frame rate"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1437
+#: ../../Menu/Options.Designer.cs:1436
 msgid "Automatically tune settings to keep performance level"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1447
+#: ../../Menu/Options.Designer.cs:1446
 msgid "Double overhead wires"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1457
+#: ../../Menu/Options.Designer.cs:1456
 msgid "Extend object maximum viewing distance to horizon"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1468
+#: ../../Menu/Options.Designer.cs:1467
 msgid "Gauge (mm)"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1506
+#: ../../Menu/Options.Designer.cs:1505
 msgid "Minimum length (m)"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1545
+#: ../../Menu/Options.Designer.cs:1544
 msgid "Level"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1556
+#: ../../Menu/Options.Designer.cs:1555
 msgid ""
 "Experimental features that may slow down the game, use at your own risk."
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1580
+#: ../../Menu/Options.Designer.cs:1579
 msgid "Super-elevation"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1589
+#: ../../Menu/Options.Designer.cs:1588
 msgid "Load DDS textures in preference to ACE"
 msgstr ""
 
@@ -867,13 +867,13 @@ msgid "Sound Volume 0-100"
 msgstr ""
 
 #: ../../Menu/Options.Designer.cs:506
-#: ../../Menu/Options.Designer.cs:1278
-#: ../../Menu/Options.Designer.cs:1303
+#: ../../Menu/Options.Designer.cs:1289
+#: ../../Menu/Options.Designer.cs:1314
 msgid "Default is 100"
 msgstr ""
 
 #: ../../Menu/Options.Designer.cs:561
-#: ../../Menu/Options.Designer.cs:1423
+#: ../../Menu/Options.Designer.cs:1422
 msgid "Distance to see mountains"
 msgstr ""
 
@@ -885,11 +885,11 @@ msgstr ""
 msgid "Check for incorrect key assignments."
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1530
+#: ../../Menu/Options.Designer.cs:1529
 msgid "Shortest curve to have elevation"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1570
+#: ../../Menu/Options.Designer.cs:1569
 msgid "0: no elevation, 1: 9cm max; 10: 18cm max"
 msgstr ""
 
