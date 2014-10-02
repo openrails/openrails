@@ -87,15 +87,23 @@ namespace ORTS.Viewer3D.Popups
             ProcessMemoryCounters = new PROCESS_MEMORY_COUNTERS() { Size = 40 };
             ProcessVirtualAddressLimit = GetVirtualAddressLimit();
 
-            var counterDotNetClrMemory = new PerformanceCounterCategory(".NET CLR Memory");
-            foreach (var process in counterDotNetClrMemory.GetInstanceNames())
+            try
             {
-                var processId = new PerformanceCounter(".NET CLR Memory", "Process ID", process);
-                if (processId.NextValue() == Process.GetCurrentProcess().Id)
+                var counterDotNetClrMemory = new PerformanceCounterCategory(".NET CLR Memory");
+                foreach (var process in counterDotNetClrMemory.GetInstanceNames())
                 {
-                    AllocatedBytesPerSecCounter = new PerformanceCounter(".NET CLR Memory", "Allocated Bytes/sec", process);
-                    break;
+                    var processId = new PerformanceCounter(".NET CLR Memory", "Process ID", process);
+                    if (processId.NextValue() == Process.GetCurrentProcess().Id)
+                    {
+                        AllocatedBytesPerSecCounter = new PerformanceCounter(".NET CLR Memory", "Allocated Bytes/sec", process);
+                        break;
+                    }
                 }
+            }
+            catch (Exception error)
+            {
+                Trace.WriteLine(error);
+                Trace.TraceWarning("Unable to access Microsoft .NET Framework performance counters. This may be resolved by following the instructions at http://support.microsoft.com/kb/300956");
             }
 
             Debug.Assert(GC.MaxGeneration == 2, "Runtime is expected to have a MaxGeneration of 2.");
@@ -664,7 +672,7 @@ namespace ORTS.Viewer3D.Popups
             TextPageHeading(table, "DEBUG INFORMATION");
 
             var allocatedBytesPerSecGCValue = GC.CollectionCount(0);
-            if (AllocatedBytesPerSecLastGCValue != allocatedBytesPerSecGCValue)
+            if (AllocatedBytesPerSecLastGCValue != allocatedBytesPerSecGCValue && AllocatedBytesPerSecCounter != null)
             {
                 AllocatedBytesPerSecLastValue.Update(1, AllocatedBytesPerSecCounter.NextValue());
                 AllocatedBytesPerSecLastGCValue = allocatedBytesPerSecGCValue;
