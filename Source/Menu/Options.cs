@@ -200,6 +200,7 @@ namespace ORTS
             checkBoxSignalLightGlow.Checked = Settings.SignalLightGlow;
             checkBoxEnhancedActCompatibility.Checked = Settings.EnhancedActCompatibility;
             checkBoxNoForcedRedAtStationStops.Checked = Settings.NoForcedRedAtStationStops;
+            checkBoxConditionalLoadOfNightTextures.Checked = Settings.ConditionalLoadOfNightTextures;
 
 
             Initialized = true;
@@ -372,6 +373,7 @@ namespace ORTS
             Settings.SignalLightGlow = checkBoxSignalLightGlow.Checked;
             Settings.EnhancedActCompatibility = checkBoxEnhancedActCompatibility.Checked;
             Settings.NoForcedRedAtStationStops =  checkBoxNoForcedRedAtStationStops.Checked;
+            Settings.ConditionalLoadOfNightTextures = checkBoxConditionalLoadOfNightTextures.Checked;
 
             Settings.Save();
 

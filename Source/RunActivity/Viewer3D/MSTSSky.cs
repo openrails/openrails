@@ -261,6 +261,27 @@ namespace ORTS.Viewer3D
             frame.AddPrimitive(MSTSSkyMaterial, MSTSSkyMesh, RenderPrimitiveGroup.Sky, ref XNASkyWorldLocation);
         }
 
+        public void LoadPrep()
+        {
+            if (mstsskyseasonType != (int)MSTSSkyViewer.Simulator.Season)
+            {
+                mstsskyseasonType = (int)MSTSSkyViewer.Simulator.Season;
+                date.ordinalDate = 82 + mstsskyseasonType * 91;
+                date.month = 1 + date.ordinalDate / 30;
+                date.day = 21;
+                date.year = 2010;
+            }
+            mstsskyworldLoc = new WorldLatLon();
+            // Get the current latitude and longitude coordinates
+            mstsskyworldLoc.ConvertWTC(MSTSSkyViewer.Camera.TileX, MSTSSkyViewer.Camera.TileZ, MSTSSkyViewer.Camera.Location, ref mstsskylatitude, ref mstsskylongitude);
+            float fractClockTime = (float)MSTSSkyViewer.Simulator.ClockTime / 86400;
+            mstsskysolarDirection = SunMoonPos.SolarAngle(mstsskylatitude, mstsskylongitude, fractClockTime, date);
+            mstsskyworldLoc = null;
+            mstsskylatitude = 0;
+            mstsskylongitude = 0;
+
+        }
+
         [CallOnThread("Loader")]
         internal void Mark()
         {

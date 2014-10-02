@@ -182,6 +182,26 @@ namespace ORTS.Viewer3D
             frame.AddPrimitive(Material, Primitive, RenderPrimitiveGroup.Sky, ref XNASkyWorldLocation);
         }
 
+        public void LoadPrep()
+        {
+            if (seasonType != (int)Viewer.Simulator.Season)
+            {
+                seasonType = (int)Viewer.Simulator.Season;
+                date.ordinalDate = 82 + seasonType * 91;
+                date.month = 1 + date.ordinalDate / 30;
+                date.day = 21;
+                date.year = 2010;
+            }
+            worldLoc = new WorldLatLon();
+            // Get the current latitude and longitude coordinates
+            worldLoc.ConvertWTC(Viewer.Camera.TileX, Viewer.Camera.TileZ, Viewer.Camera.Location, ref latitude, ref longitude);
+            float fractClockTime = (float)Viewer.Simulator.ClockTime / 86400;
+            solarDirection = SunMoonPos.SolarAngle(latitude, longitude, fractClockTime, date);
+            worldLoc = null;
+            latitude = 0;
+            longitude = 0;
+        }
+
         [CallOnThread("Loader")]
         internal void Mark()
         {

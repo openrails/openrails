@@ -138,6 +138,7 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.checkBoxConditionalLoadOfNightTextures = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -1178,6 +1179,7 @@
             // 
             // tabPageExperimental
             // 
+            this.tabPageExperimental.Controls.Add(this.checkBoxConditionalLoadOfNightTextures);
             this.tabPageExperimental.Controls.Add(this.checkBoxNoForcedRedAtStationStops);
             this.tabPageExperimental.Controls.Add(this.AdhesionFactorChangeValueLabel);
             this.tabPageExperimental.Controls.Add(this.AdhesionFactorValueLabel);
@@ -1588,6 +1590,17 @@
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
             // 
+            // checkBoxConditionalLoadOfNightTextures
+            // 
+            this.checkBoxConditionalLoadOfNightTextures.AutoSize = true;
+            this.checkBoxConditionalLoadOfNightTextures.ForeColor = System.Drawing.Color.Black;
+            this.checkBoxConditionalLoadOfNightTextures.Location = new System.Drawing.Point(6, 263);
+            this.checkBoxConditionalLoadOfNightTextures.Name = "checkBoxConditionalLoadOfNightTextures";
+            this.checkBoxConditionalLoadOfNightTextures.Size = new System.Drawing.Size(206, 17);
+            this.checkBoxConditionalLoadOfNightTextures.TabIndex = 44;
+            this.checkBoxConditionalLoadOfNightTextures.Text = "Load night textures only when needed";
+            this.checkBoxConditionalLoadOfNightTextures.UseVisualStyleBackColor = true;
+            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -1754,5 +1767,6 @@
         private System.Windows.Forms.TrackBar trackDayAmbientLight;
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.CheckBox checkBoxNoForcedRedAtStationStops;
+        private System.Windows.Forms.CheckBox checkBoxConditionalLoadOfNightTextures;
     }
 }

@@ -74,8 +74,12 @@ namespace ORTS.Viewer3D
         [CallOnThread("Loader")]
         public void Load()
         {
+            
             if (TileX != VisibleTileX || TileZ != VisibleTileZ)
             {
+                Viewer.DontLoadNightTextures = (Program.Simulator.Settings.ConditionalLoadOfNightTextures &&
+                ((Viewer.MaterialManager.sunDirection.Y > 0.10f && Program.Simulator.ClockTime < 43200) ||
+                (Viewer.MaterialManager.sunDirection.Y > 0.15f && Program.Simulator.ClockTime >= 43200))) ? true : false;
                 TileX = VisibleTileX;
                 TileZ = VisibleTileZ;
                 var worldFiles = WorldFiles;
@@ -96,6 +100,12 @@ namespace ORTS.Viewer3D
                 foreach (var tile in oldWorldFiles)
                     tile.Dispose();
                 WorldFiles = newWorldFiles;
+            }
+            else if (Viewer.NightTexturesNotLoaded && Program.Simulator.ClockTime >= 43200 && Viewer.MaterialManager.sunDirection.Y < 0.10f)
+            {
+                // Night is coming, it's time to load the night textures
+                Viewer.MaterialManager.LoadNightTextures();
+                Viewer.NightTexturesNotLoaded = false;
             }
         }
 

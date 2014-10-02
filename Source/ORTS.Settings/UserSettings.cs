@@ -224,6 +224,8 @@ namespace ORTS.Settings
         public bool AdhesionProportionalToWeather { get; set; }
         [Default(false)]
         public bool NoForcedRedAtStationStops { get; set; }
+        [Default(false)]
+        public bool ConditionalLoadOfNightTextures { get; set; }
 
 
         // Hidden settings:

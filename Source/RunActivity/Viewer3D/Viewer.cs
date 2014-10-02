@@ -181,6 +181,9 @@ namespace ORTS.Viewer3D
             }
         }
 
+        public bool DontLoadNightTextures; // Checkbox set and time of day allows not to load textures
+        public bool NightTexturesNotLoaded; // At least one night texture hasn't been loaded
+
         /// <summary>
         /// Finds time of last entry to set ReplayEndsAt and provide the Replay started message.
         /// </summary>
@@ -278,6 +281,7 @@ namespace ORTS.Viewer3D
             // Set these so RenderFrame can use them when its thread gets control.
             SaveActivityFileStem = fileStem;
             SaveActivityThumbnail = true;
+            outf.Write(NightTexturesNotLoaded);
         }
 
         [CallOnThread("Render")]
@@ -298,6 +302,7 @@ namespace ORTS.Viewer3D
                 WellKnownCameras[cameraToRestore].Activate();
             Camera.Restore(inf);
             CabYOffsetPixels = inf.ReadInt32();
+            NightTexturesNotLoaded = inf.ReadBoolean();
 
         }
 
@@ -358,6 +363,8 @@ namespace ORTS.Viewer3D
             // This ensures that a) we have all the required objects loaded when the 3D view first appears and b) that
             // all loading is performed on a single thread that we can handle in debugging and tracing.
             World.LoadPrep();
+            if (Simulator.Settings.ConditionalLoadOfNightTextures) // We need to compute sun height only in this case
+            MaterialManager.LoadPrep();
             Load();
 
             // MUST be after loading is done! (Or we try and load shapes on the main thread.)

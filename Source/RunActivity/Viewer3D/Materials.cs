@@ -282,6 +282,18 @@ namespace ORTS.Viewer3D
             return Materials[materialKey];
         }
 
+       public void LoadNightTextures()
+        {
+            foreach (KeyValuePair<string, Material> materialPair in Materials)
+            {
+                 if (materialPair.Value is SceneryMaterial)
+                {
+                    var material = materialPair.Value as SceneryMaterial;
+                    material.LoadNightTexture();
+                }
+            }
+        }
+
         public void Mark()
         {
             MaterialMarks = new Dictionary<string, bool>(Materials.Count);
@@ -300,6 +312,21 @@ namespace ORTS.Viewer3D
             foreach (var path in MaterialMarks.Where(kvp => !kvp.Value).Select(kvp => kvp.Key))
                 Materials.Remove(path);
 		}
+
+        public void LoadPrep()
+        {
+            if (Viewer.Settings.UseMSTSEnv == false)
+            {
+                Viewer.World.Sky.LoadPrep();
+                sunDirection = Viewer.World.Sky.solarDirection;
+            }
+            else
+            {
+                Viewer.World.MSTSSky.LoadPrep();
+                sunDirection = Viewer.World.MSTSSky.mstsskysolarDirection;
+            }
+        }
+
 
         [CallOnThread("Updater")]
         public string GetStatus()
@@ -510,7 +537,8 @@ namespace ORTS.Viewer3D
         readonly SceneryMaterialOptions Options;
         readonly float MipMapBias;
         readonly Texture2D Texture;
-        readonly Texture2D NightTexture;
+        private readonly string TexturePath;
+        private Texture2D NightTexture;
         byte AceAlphaBits;   // the number of bits in the ace file's alpha channel 
         IEnumerator<EffectPass> ShaderPassesDarkShade;
         IEnumerator<EffectPass> ShaderPassesFullBright;
@@ -524,12 +552,18 @@ namespace ORTS.Viewer3D
         {
             Options = options;
             MipMapBias = mipMapBias;
+            TexturePath = texturePath;
             Texture = Viewer.TextureManager.Get(texturePath);
-            if (!String.IsNullOrEmpty(texturePath) && (Options & SceneryMaterialOptions.NightTexture) != 0)
+            if (!String.IsNullOrEmpty(texturePath) && (Options & SceneryMaterialOptions.NightTexture) != 0 && !viewer.DontLoadNightTextures)
             {
                 var nightTexturePath = Helpers.GetNightTextureFile(Viewer.Simulator, texturePath);
                 if (!String.IsNullOrEmpty(nightTexturePath))
                     NightTexture = Viewer.TextureManager.Get(nightTexturePath.ToLower());
+            }
+            else if ((Options & SceneryMaterialOptions.NightTexture) != 0 && viewer.DontLoadNightTextures)
+            {
+                NightTexture = SharedMaterialManager.MissingTexture;
+                viewer.NightTexturesNotLoaded = true;
             }
 
             // Record the number of bits in the alpha channel of the original ace file
@@ -538,6 +572,16 @@ namespace ORTS.Viewer3D
             else
                 AceAlphaBits = 0;
 
+        }
+
+       public void LoadNightTexture ()
+         {
+            if (((Options & SceneryMaterialOptions.NightTexture) != 0) && (NightTexture == SharedMaterialManager.MissingTexture))               
+            {
+                var nightTexturePath = Helpers.GetNightTextureFile(Viewer.Simulator, TexturePath);
+                if (!String.IsNullOrEmpty(nightTexturePath))
+                    NightTexture = Viewer.TextureManager.Get(nightTexturePath.ToLower());
+            }      
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
