@@ -211,8 +211,13 @@ namespace ORTS.TrackViewer.Editing
                 case TrainpathNodeType.Stop:
                     drawArea.DrawTexture(trainpathNode.Location, "pathWait", pathPointSize, minPixelSize, maxPixelSize, colorMain);
                     break;
+                case TrainpathNodeType.Temporary:
+                    drawArea.DrawTexture(trainpathNode.Location, "crossedRing", pathPointSize, minPixelSize, colorBroken);
+                    break;
                 default:
-                    Color normalColor = (trainpathNode.NextMainNode != null) ? colorMain : colorSiding;
+                    bool isSidingNode = (trainpathNode.NextMainNode == null) &&
+                        ( (trainpathNode.NextSidingNode != null) || trainpathNode.IsBroken);  // The IsBroken condition should indicate a dangling siding node
+                    Color normalColor = (isSidingNode) ? colorSiding : colorMain;
                     drawArea.DrawTexture(trainpathNode.Location, "pathNormal", pathPointSize, minPixelSize, maxPixelSize, normalColor, angle);
                     break;
             }
@@ -220,7 +225,8 @@ namespace ORTS.TrackViewer.Editing
             if (trainpathNode.IsBroken)
             {
                 drawArea.DrawTexture(trainpathNode.Location, "crossedRing", pathPointSize, minPixelSize, maxPixelSize, colorBroken);
-            }       
+            }
+            //drawArea.DrawExpandingString(trainpathNode.Location, trainpathNode.NodeType.ToString()); //debug only
             
         }
 

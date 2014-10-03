@@ -51,12 +51,14 @@ namespace ORTS.TrackViewer.Editing
         protected TrainpathNode ActiveNode { get; private set; }
         /// <summary>The currently active location on a track node on which the action of (some) subclasses will act</summary>
         protected TrainpathVectorNode ActiveTrackLocation { get; private set; }
-        /// <summary>The currently active location on a track node on which the action of (some) subclasses will act</summary>
-        protected int NetNodesAdded { get; set; }
+        
         /// <summary>x-location of the mouse</summary>
         protected int MouseX { get; set; }
         /// <summary>y-location of the mouse</summary>
         protected int MouseY { get; set; }
+
+        /// <summary>The tools (strategy) to do modifications to the path</summary>
+        protected ModificationTools modificationTools { get; set; }
 
         private AfterEditDelegate afterEditCallback;
         #endregion
@@ -85,6 +87,8 @@ namespace ORTS.TrackViewer.Editing
                     Height = 14,
                 };
             }
+
+            modificationTools = new ModificationTools();
         }
         
         /// <summary>
@@ -125,297 +129,35 @@ namespace ORTS.TrackViewer.Editing
         public void DoAction()
         {
             Trainpath.StoreCurrentPath();
-            NetNodesAdded = 0;
+            modificationTools.Reset();
             ExecuteAction();
             Trainpath.DetermineIfBroken(); // instead of keeping track of when to do this or not, just do it always.
+            UpdateNodeCount();
+        }
+
+        /// <summary>
+        /// Update the caller with the (net) amount of nodes added
+        /// </summary>
+        protected void UpdateNodeCount()
+        {
             if (afterEditCallback != null)
             {
-                afterEditCallback(NetNodesAdded);
+                afterEditCallback(NetMainNodesAdded());
             }
+            modificationTools.Reset();
+
         }
 
         /// <summary>Can the action be executed given the current path and active nodes?</summary>
         protected abstract void ExecuteAction();
         /// <summary>Execute the action. This assumes that the action can be executed</summary>
         protected abstract bool CanExecuteAction();
-
-        #region Common path modification methods
-        /// <summary>
-        /// Add an additional node, where the next track node is not yet given.
-        /// </summary>
-        /// <param name="lastNode">currently last node</param>
-        /// <param name="isMainPath">Do we add the node to the main path or not</param>
-        /// <returns>The newly created (unlinked) path node</returns>
-        public TrainpathNode AddAdditionalNode(TrainpathNode lastNode, bool isMainPath)
+        /// <summary>Returns the net amount of main nodes added.</summary>
+        /// <remarks> Has a default implementation but can be overriden</remarks>
+        protected virtual int NetMainNodesAdded()
         {
-            TrainpathVectorNode lastNodeAsVector = lastNode as TrainpathVectorNode;
-            if (lastNodeAsVector != null)
-            {
-                return AddAdditionalNode(lastNode, lastNodeAsVector.TvnIndex, isMainPath);
-            }
-
-            TrainpathJunctionNode junctionNode = lastNode as TrainpathJunctionNode;
-            if (junctionNode.IsEndNode) return null;  // if it happens to be the end of a path, forget about it.
-
-            if (junctionNode.IsFacingPoint)
-            {
-                return AddAdditionalNode(lastNode, junctionNode.MainTvn, isMainPath);
-            }
-            else
-            {
-                return AddAdditionalNode(lastNode, junctionNode.TrailingTvn, isMainPath);
-            }
+            return modificationTools.NetNodesAdded;
         }
-
-        /// <summary>
-        /// Add an additional node starting at the given node, following the TvnIndex,
-        /// but take care of a possible need for disambiguity. 
-        /// </summary>
-        /// <param name="lastNode">Node after which a new node needs to be added</param>
-        /// <param name="tvnIndex">TrackVectorNode index of the track the path needs to be on</param>
-        /// <param name="isMainPath">Do we add the node to the main path or not</param>
-        /// <returns>The newly created path node</returns>
-        protected TrainpathNode AddAdditionalNode(TrainpathNode lastNode, int tvnIndex, bool isMainPath)
-        {
-            TrainpathVectorNode lastNodeAsVector = lastNode as TrainpathVectorNode;
-            if (lastNodeAsVector != null)
-            {
-                return AddAdditionalJunctionNode(lastNode, lastNodeAsVector.TvnIndex, isMainPath);
-            }
-
-            TrainpathJunctionNode junctionNode = lastNode as TrainpathJunctionNode;
-            if (junctionNode.IsSimpleSidingStart())
-            {   // start of a simple siding. So the next node should be a node to remove disambiguity.
-                TrainpathVectorNode halfwayNode = CreateHalfWayNode(junctionNode, tvnIndex);
-                return AddAdditionalVectorNode(junctionNode, halfwayNode, isMainPath);
-            }
-            else
-            {
-                return AddAdditionalJunctionNode(junctionNode, tvnIndex, isMainPath);
-            }
-        }
-
-        /// <summary>
-        /// Add an additional node, from the current last node along the next TrackNodeVector (given by index)
-        /// The added node will always be a junction node.
-        /// </summary>
-        /// <param name="lastNode">Currently last node of path</param>
-        /// <param name="nextTvnIndex">TrackNodeVector index along which to place the track</param>
-        /// <param name="isMainPath">Are we adding a node on the main path (alternative is passing path)</param>
-        /// <returns>The newly created junction path node</returns>
-        TrainpathJunctionNode AddAdditionalJunctionNode(TrainpathNode lastNode, int nextTvnIndex, bool isMainPath)
-        {
-            // we add a new activeNodeAsJunction
-            TrainpathJunctionNode newNode = new TrainpathJunctionNode(lastNode);
-
-            TrackNode linkingTrackNode = TrackExtensions.TrackNode(nextTvnIndex);
-            if (linkingTrackNode == null)
-            {
-                return null; // apparently there is some issue in the track.
-            }
-
-            newNode.JunctionIndex = lastNode.GetNextJunctionIndex(nextTvnIndex);
-            newNode.SetLocationFromTrackNode();
-            
-            // simple linking
-            newNode.PrevNode = lastNode;
-            if (isMainPath)
-            {
-                lastNode.NextMainTvnIndex = nextTvnIndex;
-                lastNode.NextMainNode = newNode;
-            }
-            else
-            {
-                lastNode.NextSidingTvnIndex = nextTvnIndex;
-                lastNode.NextSidingNode = newNode;
-            }
-
-            newNode.SetFacingPoint();
-            newNode.DetermineOrientation(lastNode, nextTvnIndex);
-
-            NetNodesAdded++;
-            return newNode;
-        }
-
-        /// <summary>
-        /// Add a new vector path node at the location of nodeCandidate.
-        /// </summary>
-        /// <param name="lastNode">node that will be predecessor of the new nodeCandidate</param>
-        /// <param name="nodeCandidate">partial trainpath vector node describing the current mouse location</param>
-        /// <param name="isMainPath">Do we add the node to the main path or not</param>
-        /// <returns>The newly created vector node</returns>
-        protected TrainpathVectorNode AddAdditionalVectorNode(TrainpathNode lastNode, TrainpathVectorNode nodeCandidate, bool isMainPath)
-        {
-            // we add a new activeNodeAsJunction
-            TrainpathVectorNode newNode = new TrainpathVectorNode(nodeCandidate);
-
-            newNode.DetermineOrientation(lastNode, newNode.TvnIndex);
-
-            // simple linking
-            if (isMainPath)
-            {
-                lastNode.NextMainTvnIndex = newNode.NextMainTvnIndex;
-                lastNode.NextMainNode = newNode;
-                newNode.PrevNode = lastNode;
-            }
-            else
-            {
-                lastNode.NextSidingTvnIndex = newNode.NextMainTvnIndex;
-                newNode.NextSidingTvnIndex = newNode.NextMainTvnIndex;
-                lastNode.NextSidingNode = newNode;
-            }
-
-            NetNodesAdded++; // We want to keep the path drawn to the same node as before adding a node
-            return newNode;
-        }
-
-        /// <summary>
-        /// Create a (still unlinked) node halfway through the next section (so halfway between this
-        /// and the next junction. Needed specially for disambiguity.
-        /// </summary>
-        /// <param name="junctionNode">The junction node where we start</param>
-        /// <param name="tvnIndex">The TrackVectorNode index for the path</param>
-        /// <returns>An unlinked vectorNode at the midpoint.</returns>
-        protected static TrainpathVectorNode CreateHalfWayNode(TrainpathJunctionNode junctionNode, int tvnIndex)
-        {   // The idea here is to use all the code in traveller to make life easier.
-
-            // move the traveller halfway through the next vector section
-            Traveller traveller = junctionNode.PlaceTravellerAfterJunction(tvnIndex);      
-            float distanceToTravel = traveller.TrackNodeLength / 2;
-            traveller.Move(distanceToTravel);
-
-            TrainpathVectorNode halfwayNode = new TrainpathVectorNode(junctionNode, traveller);
-            halfwayNode.DetermineOrientation(junctionNode, tvnIndex);
-
-            return halfwayNode;
-        }
-        
-        /// <summary>
-        /// Remove the current active point and all of the path that follows. Add a new next node along the path.
-        /// </summary>
-        protected void ReplaceNodeAndFollowingByNewNode(TrainpathNode firstNodeToRemove)
-        {
-            if (firstNodeToRemove == null)
-            {
-                return;
-            }
-            // assumption is that there is no siding next to this point.
-            TrainpathNode prevNode = firstNodeToRemove.PrevNode;
-            prevNode.NextMainNode = null;
-            prevNode.NextSidingNode = null; // should not be needed
-            prevNode.NextSidingTvnIndex = 0;
-            // Since we already know the TVN, simply add a node (meaning removing the end will extend the path. 
-            AddAdditionalNode(prevNode, prevNode.NextMainTvnIndex, true);
-        }
-
-        /// <summary>
-        /// Add a new vector node at the given location in the middle of a path
-        /// </summary>
-        /// <param name="nodeCandidate"></param>
-        /// <returns>The just created node</returns>
-        protected TrainpathVectorNode AddIntermediateMainNode(TrainpathVectorNode nodeCandidate)
-        {
-            TrainpathNode prevNode = nodeCandidate.PrevNode;
-            TrainpathNode nextNode = prevNode.NextMainNode;
-
-            TrainpathVectorNode newNode = AddAdditionalVectorNode(prevNode, nodeCandidate, true);
-
-            prevNode.NextMainNode = newNode;
-            prevNode.NextSidingNode = null; // should not be needed
-            prevNode.NextMainTvnIndex = newNode.TvnIndex;
-            newNode.PrevNode = prevNode;
-
-            newNode.NextMainNode = nextNode;
-            newNode.NextSidingNode = null; // should not be needed
-            nextNode.PrevNode = newNode;
-
-            CleanAmbiguityNodes(newNode);
-
-            NetNodesAdded++;
-            return newNode;
-        }
-
-        /// <summary>
-        /// Check the next and the previous nodes on whether they are disambiguity node, and if yes, remove them.
-        /// </summary>
-        /// <param name="keepNode">The (vector) node to keep</param>
-        protected void CleanAmbiguityNodes(TrainpathNode keepNode)
-        {
-            TrainpathNode[] nodesToCheck = {keepNode.PrevNode, keepNode.NextMainNode};
-            foreach (TrainpathNode node in nodesToCheck)
-            {
-                if (   node != null
-                    && node.NodeType == TrainpathNodeType.Other
-                    && node is TrainpathVectorNode)
-                {
-                    RemoveIntermediatePoint(node);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Remove a intermediate vector node. Possibly add a disambiguity node if needed.
-        /// </summary>
-        /// <param name="curNode">Node to be removed</param>
-        protected void RemoveIntermediatePoint(TrainpathNode curNode)
-        {
-            TrainpathNode prevNode = curNode.PrevNode;
-            prevNode.NextMainNode = curNode.NextMainNode;
-            prevNode.NextSidingNode = null; // should not be needed
-            //lastNodeSidingPath.NextMainTvnIndex should be the same still
-            if (prevNode.NextMainNode != null)
-            {   // there might not be a next node.
-                prevNode.NextMainNode.PrevNode = prevNode;
-            }
-            NetNodesAdded--;
-
-            //Check if we need to add an disambiguity node
-            TrainpathJunctionNode prevJunctionNode = prevNode as TrainpathJunctionNode;
-            if (prevJunctionNode!= null && (prevNode.NextMainNode is TrainpathJunctionNode))
-            {
-                if (prevJunctionNode.IsSimpleSidingStart())
-                {
-                    TrainpathVectorNode halfwayNode = CreateHalfWayNode(prevJunctionNode, prevJunctionNode.NextMainTvnIndex);
-                    halfwayNode.PrevNode = prevNode;
-                    AddIntermediateMainNode(halfwayNode);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Create a partial path from the current node, along the new track vector index, until we can reconnect again
-        /// </summary>
-        /// <param name="currentNode">Starting place of the new partial path</param>
-        /// <param name="newTvnIndex">Index of the new track vector node along which the path starts</param>
-        /// <param name="reconnectNode">Node at we will reconnect to current path again</param>
-        /// <param name="isMainPath">Do we add the node to the main path or not</param>
-        /// <returns>The last node on the partial path, just before the reconnect node.</returns>
-        protected TrainpathNode CreatePartialPath(TrainpathNode currentNode, int newTvnIndex, TrainpathJunctionNode reconnectNode, bool isMainPath)
-        {
-            bool newHasSidingPath = isMainPath && currentNode.HasSidingPath;
-            currentNode.HasSidingPath = newHasSidingPath;
-
-            TrainpathNode newNode = AddAdditionalNode(currentNode, newTvnIndex, isMainPath);
-            do
-            {
-                TrainpathJunctionNode newNodeAsJunction = newNode as TrainpathJunctionNode;
-                if (newNodeAsJunction != null && (newNodeAsJunction.JunctionIndex == reconnectNode.JunctionIndex))
-                {
-                    //we have reached the reconnection point
-                    break;
-                }
-                currentNode = newNode;
-                currentNode.HasSidingPath = newHasSidingPath;
-                newNode = AddAdditionalNode(currentNode, isMainPath);
-
-            } while (newNode != null); // if we get here, something is wrong, because we checked we could reconnect
-
-            // The returned node will not be the last node created, because that one is at the same location as the reconnect node
-            return currentNode;
-        }
-
-
-        #endregion
     }
     #endregion
 
@@ -461,9 +203,14 @@ namespace ORTS.TrackViewer.Editing
         protected override void ExecuteAction()
         {
             Trainpath.FirstNode = new TrainpathVectorNode(ActiveTrackLocation);
-            NetNodesAdded++; // first node is not counted automatically
             Trainpath.FirstNode.NodeType = TrainpathNodeType.Start;
-            AddAdditionalNode(Trainpath.FirstNode, true); // make sure also the second node is available and drawn.
+            modificationTools.AddAdditionalNode(Trainpath.FirstNode, true); // make sure also the second node is available and drawn.
+        }
+
+        /// <summary>Returns the net amount of main nodes added.</summary>
+       protected override int NetMainNodesAdded()
+        {
+            return modificationTools.NetNodesAdded + 1; // first node is not counted automatically
         }
     }
     #endregion
@@ -543,7 +290,7 @@ namespace ORTS.TrackViewer.Editing
             Trainpath.FirstNode.NextMainNode = null;
             Trainpath.FirstNode.NextSidingNode = null;
             Trainpath.FirstNode.ReverseOrientation();
-            AddAdditionalNode(Trainpath.FirstNode, true);
+            modificationTools.AddAdditionalNode(Trainpath.FirstNode, true);
         }
     }
     #endregion
@@ -578,9 +325,9 @@ namespace ORTS.TrackViewer.Editing
             lastNode.NextSidingNode = null;
             lastNode.NextMainNode = null;
 
-            TrainpathVectorNode newNode = AddAdditionalVectorNode(lastNode, ActiveTrackLocation, true);
+            TrainpathVectorNode newNode = modificationTools.AddAdditionalVectorNode(lastNode, ActiveTrackLocation, true);
             newNode.NodeType = TrainpathNodeType.End;
-            CleanAmbiguityNodes(newNode);
+            modificationTools.CleanAmbiguityNodes(newNode);
             Trainpath.HasEnd = true;
         }
     }
@@ -606,7 +353,7 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>Execute the action. This assumes that the action can be executed</summary>
         protected override void ExecuteAction()
         {
-            ReplaceNodeAndFollowingByNewNode(ActiveNode);
+            modificationTools.ReplaceNodeAndFollowingByNewNode(ActiveNode);
             Trainpath.HasEnd = false;
         }
     }
@@ -635,7 +382,7 @@ namespace ORTS.TrackViewer.Editing
         {
             TrainpathNode lastNode = ActiveTrackLocation.PrevNode;
 
-            TrainpathVectorNode newNode = AddAdditionalVectorNode(lastNode, ActiveTrackLocation, true);
+            TrainpathVectorNode newNode = modificationTools.AddAdditionalVectorNode(lastNode, ActiveTrackLocation, true);
             newNode.NodeType = TrainpathNodeType.Reverse;
             lastNode.NextMainNode = newNode;
             lastNode.NextSidingNode = null; // should not be needed
@@ -643,7 +390,7 @@ namespace ORTS.TrackViewer.Editing
             newNode.PrevNode = lastNode;
 
             newNode.ReverseOrientation(); // reverse because, well, this is a reverse point.
-            CleanAmbiguityNodes(newNode);
+            modificationTools.CleanAmbiguityNodes(newNode);
         }
     }
     #endregion
@@ -668,7 +415,7 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>Execute the action. This assumes that the action can be executed</summary>
         protected override void ExecuteAction()
         {
-            ReplaceNodeAndFollowingByNewNode(ActiveNode);
+            modificationTools.ReplaceNodeAndFollowingByNewNode(ActiveNode);
         }
     }
     #endregion
@@ -729,7 +476,7 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>Execute the action. This assumes that the action can be executed</summary>
         protected override void ExecuteAction()
         {
-            TrainpathVectorNode newNode = AddIntermediateMainNode(ActiveTrackLocation);
+            TrainpathVectorNode newNode = modificationTools.AddIntermediateMainNode(ActiveTrackLocation);
             newNode.NodeType = TrainpathNodeType.Stop;
             EditWaitMetaData(newNode);
         }
@@ -782,11 +529,11 @@ namespace ORTS.TrackViewer.Editing
             //Assumption, there is no siding next to it. but this might not be true. Not clear if the assumption is needed
             if (ActiveNode.NextMainNode != null)
             {
-                RemoveIntermediatePoint(ActiveNode);
+                modificationTools.RemoveIntermediatePoint(ActiveNode);
             }
             else
             {
-                ReplaceNodeAndFollowingByNewNode(ActiveNode);
+                modificationTools.ReplaceNodeAndFollowingByNewNode(ActiveNode);
             }
         }
     }
@@ -805,9 +552,15 @@ namespace ORTS.TrackViewer.Editing
         protected int NewTvnIndex { get; private set; }
         /// <summary>List of junction indices on the new path we want to create</summary>
         private List<int> newMainJunctionIndexes;
+        /// <summary>Tooling to do auto connect</summary>
+        private AutoConnectTools autoConnectTools;
 
         /// <summary>Constructor</summary>
-        protected EditorActionOtherExit(string header, string pngFileName) : base(header, pngFileName) { }
+        protected EditorActionOtherExit(string header, string pngFileName)
+            : base(header, pngFileName)
+        {
+            autoConnectTools = new AutoConnectTools();
+        }
 
         /// <summary>
         /// Calculate whether it is possible to take the other exit (possibly needing to reconnect automatically using main tracks at sidings)
@@ -874,6 +627,38 @@ namespace ORTS.TrackViewer.Editing
         }
 
         /// <summary>
+        /// Find the list of junction node indexes of all junction nodes on the siding path but not being either siding
+        /// start or siding end.
+        /// </summary>
+        /// <param name="mainNode">Node on main track for which we want to find the siding junction node indices</param>
+        /// <returns>The list with the junction indexes</returns>
+        private List<int> IntermediateSidingJunctionIndexes(TrainpathNode mainNode)
+        {
+            List<int> sidingJunctionIndexes = new List<int>();
+            if (!mainNode.HasSidingPath) return sidingJunctionIndexes;
+
+            //first find siding start
+            while (mainNode.NodeType != TrainpathNodeType.SidingStart)
+            {
+                mainNode = mainNode.PrevNode;
+            }
+
+            //now follow along siding path.
+            TrainpathNode sidingNode = mainNode.NextSidingNode;
+            while (sidingNode.NextSidingNode != null)
+            {
+                TrainpathJunctionNode sidingJunctionNode = sidingNode as TrainpathJunctionNode;
+                if (sidingJunctionNode != null)
+                {
+                    sidingJunctionIndexes.Add(sidingJunctionNode.JunctionIndex);
+                }
+                sidingNode = sidingNode.NextSidingNode;
+            }
+
+            return sidingJunctionIndexes;
+        }
+
+        /// <summary>
         /// Determine whether we can reconnect from the current junction node to the main track, if we take 
         /// the new TvnIndex
         /// </summary>
@@ -883,7 +668,7 @@ namespace ORTS.TrackViewer.Editing
         private TrainpathJunctionNode FindReconnectNode(TrainpathJunctionNode startJunctionNode, int newTvnIndex)
         {
             //First find the list of nodes we might be able to reconnect to. They should all be junction nodes
-            List<TrainpathJunctionNode> reconnectNodes = FindReconnectNodeCandidates(startJunctionNode);
+            List<TrainpathNode> reconnectNodes = autoConnectTools.FindReconnectNodeCandidates(startJunctionNode, true, false);
             newMainJunctionIndexes = new List<int>();
 
             //next we need to follow the new path from the newTvnIndex, and see whether we can reconnect
@@ -919,84 +704,7 @@ namespace ORTS.TrackViewer.Editing
             }
             return null;
         }
-
-        /// <summary>
-        /// Find the nodes that can be used to relink either a siding path, or a 'take-other-exit' path.
-        /// The reconnecing nodes all have to be before the first special node (wait, reverse, end).
-        /// They also have to be before the end of the (current path), even if it does not have a formal end,
-        /// and they have to be before a possible next siding start.
-        /// At last, it needs to be a non-facing junction.
-        /// </summary>
-        /// <param name="startJunctionNode">Junction node on train path to start searching</param>
-        /// <returns>List of possible reconnect nodes. Might be empty</returns>
-        static List<TrainpathJunctionNode> FindReconnectNodeCandidates(TrainpathJunctionNode startJunctionNode)
-        {
-            List<TrainpathJunctionNode> reconnectNodeCandidates = new List<TrainpathJunctionNode>();
-            TrainpathNode mainNode = startJunctionNode.NextMainNode;
-            //follow the train path and see what we find
-            while (mainNode != null)
-            {
-                TrainpathJunctionNode mainNodeAsJunction = mainNode as TrainpathJunctionNode;
-                    
-                if (mainNodeAsJunction != null)
-                {
-                    if (mainNode.NodeType == TrainpathNodeType.SidingStart)
-                    {   // if a new siding path is started, stop searching
-                        break;
-                    }
-                    if (!mainNodeAsJunction.IsFacingPoint)
-                    {   // add the trailing junction.
-                        reconnectNodeCandidates.Add(mainNodeAsJunction);
-                    }
-                    if (mainNode.NodeType == TrainpathNodeType.SidingEnd)
-                    {   // for a main path we cannot reconnect past the end of the current siding path, but the siding end itself is still allowed
-                        // for adding a passing path this should never happen
-                        break;
-                    }
-                }
-                else
-                {
-                    if (mainNode.NodeType != TrainpathNodeType.Other)
-                    {   // if it is not an other-node (so not a disambiguity node), stop searching
-                        break;
-                    }
-                }
-                mainNode = mainNode.NextMainNode;
-            }
-            return reconnectNodeCandidates;
-        }
-
-        /// <summary>
-        /// Find the list of junction node indexes of all junction nodes on the siding path but not being either siding
-        /// start or siding end.
-        /// </summary>
-        /// <param name="mainNode">Node on main track for which we want to find the siding junction node indices</param>
-        /// <returns>The list with the junction indexes</returns>
-        static List<int> IntermediateSidingJunctionIndexes(TrainpathNode mainNode)
-        {
-            List<int> sidingJunctionIndexes = new List<int>();
-            if (!mainNode.HasSidingPath) return sidingJunctionIndexes;
-
-            //first find siding start
-            while (mainNode.NodeType != TrainpathNodeType.SidingStart)
-            {
-                mainNode = mainNode.PrevNode;
-            }
-
-            //now follow along siding path.
-            TrainpathNode sidingNode = mainNode.NextSidingNode;
-            while (sidingNode.NextSidingNode != null)
-            {
-                TrainpathJunctionNode sidingJunctionNode = sidingNode as TrainpathJunctionNode;
-                if (sidingJunctionNode != null)
-                {
-                    sidingJunctionIndexes.Add(sidingJunctionNode.JunctionIndex);
-                }
-                sidingNode = sidingNode.NextSidingNode;
-            }
-
-            return sidingJunctionIndexes;
-        }
+      
     }
     #endregion
 
@@ -1006,6 +714,8 @@ namespace ORTS.TrackViewer.Editing
     /// </summary>
     public class EditorActionTakeOtherExit : EditorActionOtherExit
     {
+        private int nodesRemoved;
+
         /// <summary>Constructor</summary>
         public EditorActionTakeOtherExit() : base(TrackViewer.catalog.GetString("Take other exit"), "activeNode") { }
 
@@ -1023,20 +733,26 @@ namespace ORTS.TrackViewer.Editing
             if (ReconnectNode == null)
             {   //really take other exit and discard rest of path
                 activeNodeAsJunction.NextMainTvnIndex = NewTvnIndex;
-                ReplaceNodeAndFollowingByNewNode(ActiveNode.NextMainNode);
+                modificationTools.ReplaceNodeAndFollowingByNewNode(ActiveNode.NextMainNode);
+                nodesRemoved = 0; // we do not care.
                 return;
             }
 
             //correct NumberToDraw with nodes we will remove
-            int numberOfNodesInOldTrack = Trainpath.GetNodeNumber(ReconnectNode) - Trainpath.GetNodeNumber(ActiveNode);
-            NetNodesAdded -= numberOfNodesInOldTrack;
+            nodesRemoved = Trainpath.GetNodeNumber(ReconnectNode) - Trainpath.GetNodeNumber(ActiveNode);
 
             //we can reconnect, so create a path to reconnection point
-            TrainpathNode lastNodeNewPath = CreatePartialPath(ActiveNode, NewTvnIndex, ReconnectNode, true);
+            TrainpathNode lastNodeNewPath = modificationTools.CreatePartialPath(ActiveNode, NewTvnIndex, ReconnectNode, true);
 
             //Reconnect.
             lastNodeNewPath.NextMainNode = ReconnectNode;
             ReconnectNode.PrevNode = lastNodeNewPath;
+        }
+
+        /// <summary>Returns the net amount of main nodes added.</summary>
+        protected override int NetMainNodesAdded()
+        {
+            return modificationTools.NetNodesAdded - nodesRemoved;
         }
     }
     #endregion
@@ -1060,7 +776,7 @@ namespace ORTS.TrackViewer.Editing
         protected override void ExecuteAction()
         {
             ActiveNode.NodeType = TrainpathNodeType.SidingStart;
-            TrainpathNode lastNodeSidingPath = CreatePartialPath(ActiveNode, NewTvnIndex, ReconnectNode, false);
+            TrainpathNode lastNodeSidingPath = modificationTools.CreatePartialPath(ActiveNode, NewTvnIndex, ReconnectNode, false);
 
             //reconnect. At this point, newNode is already the same node as reconnectNode. We will discard it
             lastNodeSidingPath.NextSidingNode = ReconnectNode;
@@ -1071,8 +787,12 @@ namespace ORTS.TrackViewer.Editing
             {
                 curMainNode.HasSidingPath = true;
             }
+        }
 
-            NetNodesAdded = 0; // for passing paths we do not add net nodes
+        /// <summary>Returns the net amount of main nodes added.</summary>
+        protected override int NetMainNodesAdded()
+        {
+            return 0; // for passing paths we do not add main nodes;
         }
     }
     #endregion
@@ -1103,12 +823,18 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>Execute the action. This assumes that the action can be executed</summary>
         protected override void ExecuteAction()
         {
-            // we do add an extra siding path node. We make it broken.
+            // we do add an extra siding path node, which is not well-connected.
+            // We will draw it as broken. It will be recognized as broken as well.
             // Main track is not set to hasSidingNode.
-            TrainpathNode danglingNode = AddAdditionalNode(ActiveNode, NewTvnIndex, false);
+            TrainpathNode danglingNode = modificationTools.AddAdditionalNode(ActiveNode, NewTvnIndex, false);
             danglingNode.SetBroken(NodeStatus.Dangling);
             ActiveNode.NodeType = TrainpathNodeType.SidingStart;
-            NetNodesAdded = 0; // no main nodes added
+        }
+
+        /// <summary>Returns the net amount of main nodes added.</summary>
+        protected override int NetMainNodesAdded()
+        {
+            return 0; // for passing paths we do not add main nodes;
         }
 
         /// <summary>
@@ -1271,401 +997,42 @@ namespace ORTS.TrackViewer.Editing
         }
     }
     #endregion
-
-    #region AutoFix (Common)
-    /// <summary>
-    /// Subclass to define common methods related to autofixing a path. This contains the routines that actually search for the path.
-    /// </summary>
-    public abstract class EditorActionAutoFix : EditorAction
-    {
-        /// <summary>The list/collection of junction indexes that are not allowed during path auto-fixing</summary>
-        protected Collection<int> DisAllowedJunctionIndexes { get; private set; }
-        private const int maxNumberNodesToCheckForAutoFix = 20; // maximum number of nodes we will try before we conclude not reconnection is possible.
-
-        #region private members to store the path
-        List<int> linkingTvns;
-        TrainpathNode autoFixStartNode;
-        TrainpathNode autoFixReconnectNode;
-        bool startNodeNeedsReverse;
-        bool reconnectNodeNeedsReverse;
-        #endregion
-
-        /// <summary>Constructor</summary>
-        protected EditorActionAutoFix(string header, string pngFileName) : base(header, pngFileName) { 
-            DisAllowedJunctionIndexes = new Collection<int>();
-            linkingTvns = new List<int>();
-        }
-
-        /// <summary>
-        /// Try to find a connection between the current junction and a reconnect junction.
-        /// We do a depth-first search, using the main tracks first.
-        /// The result (the path) is stored in a list of linking tvns.
-        /// In case there are DisAllowedJunctionIndexes we will not allow the connection to go over these junctions
-        /// </summary>
-        /// <param name="currentJunctionIndex">Index of the current junction</param>
-        /// <param name="currentJunctionIsFacing">true if the current junction is a facing junction</param>
-        /// <param name="reconnectJunctionIndex">Index of the junction we need to link to</param>
-        /// <param name="reconnectJunctionIsFacing">Is the junction we need to link to a facing junction</param>
-        /// <param name="linkingTvns">Current list of linking tvns that we have found</param>
-        /// <returns>true if a path was found</returns>
-        private bool TryToFindConnection(int currentJunctionIndex, bool currentJunctionIsFacing,
-                                 int reconnectJunctionIndex, bool reconnectJunctionIsFacing,
-                                 List<int> linkingTvns)
-        {
-            // Did we succeed?
-            if (currentJunctionIndex == reconnectJunctionIndex)
-            {   // we found a connection. Now we just need to check if it is in the right direction
-                // If it is not in the right direction, we did not succeed.
-                return (currentJunctionIsFacing == reconnectJunctionIsFacing);
-            }
-
-            // Did we go as deep as we want wanted to go?
-            if (linkingTvns.Count == maxNumberNodesToCheckForAutoFix)
-            {
-                return false;
-            }
-
-            // Search further along the next Tvns that we can try.
-            TrackNode tn = TrackExtensions.TrackNode(currentJunctionIndex);
-            if (tn.TrEndNode)
-            {
-                return false;
-            }
-
-            if (currentJunctionIsFacing)
-            {
-                return TryToFindConnectionVia(tn.MainTvn(),
-                    currentJunctionIndex, reconnectJunctionIndex, reconnectJunctionIsFacing, linkingTvns)
-                  ||   TryToFindConnectionVia(tn.SidingTvn(),
-                    currentJunctionIndex, reconnectJunctionIndex, reconnectJunctionIsFacing, linkingTvns);
-            }
-            else
-            { 
-                return TryToFindConnectionVia(tn.TrailingTvn(),
-                    currentJunctionIndex, reconnectJunctionIndex, reconnectJunctionIsFacing, linkingTvns);
-            }
-        }
-
-        /// <summary>
-        /// Try to find a connection between the current junction and a reconnect junction, along the given TVN
-        /// We do a depth-first search, using the main tracks first.
-        /// The result (the path) is stored in a list of linking tvns. 
-        /// </summary>
-        /// <param name="nextTvn">The TVN (Track Vector Node index) that we will take.</param>
-        /// <param name="currentJunctionIndex">Index of the current junction</param>
-        /// <param name="reconnectJunctionIndex">Index of the junction we need to link to</param>
-        /// <param name="reconnectJunctionIsFacing">Is the junction we need to link to a facing junction</param>
-        /// <param name="linkingTvns">Current list of linking tvns that we have found</param>
-        /// <returns>true if a path was found</returns>
-        private bool TryToFindConnectionVia(int nextTvn,
-            int currentJunctionIndex, int reconnectJunctionIndex, bool reconnectJunctionIsFacing, List<int> linkingTvns)
-        {
-            if (nextTvn <= 0) return false; // something wrong in train database.
-
-            int nextJunctionIndex = TrackExtensions.GetNextJunctionIndex(currentJunctionIndex, nextTvn);
-            if (DisAllowedJunctionIndexes.Contains(nextJunctionIndex)) {
-                return false;
-            }
-            bool nextJunctionIsFacing = (nextTvn == TrackExtensions.TrackNode(nextJunctionIndex).TrailingTvn());
-
-            linkingTvns.Add(nextTvn);
-            bool succeeded = TryToFindConnection(nextJunctionIndex, nextJunctionIsFacing, 
-                                                 reconnectJunctionIndex, reconnectJunctionIsFacing,
-                                                 linkingTvns);
-            if (!succeeded)
-            {   //Pop the index that did not work
-                linkingTvns.RemoveAt(linkingTvns.Count - 1); 
-            }
-
-            return succeeded;
-        }
-
-        /// <summary>
-        /// Try to find a connection. Depth-first search via main track at junctions.
-        /// Also reversing the start or reconnectNode is tried, in case one of these nodes has a non-defined orientation 
-        /// because both before and after the node the path is broken.
-        /// </summary>
-        /// <param name="startNode">Node at which the reconnection should start</param>
-        /// <param name="reconnectNode">Node at which the reconnection should end</param>
-        /// <returns>True if a connection has been found</returns>
-        protected bool FindConnection(TrainpathNode startNode, TrainpathNode reconnectNode)
-        {
-            return FindConnection(startNode, reconnectNode, null);
-        }
-
-        /// <summary>
-        /// Try to find a connection. Depth-first search via main track at junctions.
-        /// Also reversing the start or reconnectNode is tried, in case one of these nodes has a non-defined orientation 
-        /// because both before and after the node the path is broken.
-        /// </summary>
-        /// <param name="startNode">Node at which the reconnection should start</param>
-        /// <param name="reconnectNode">Node at which the reconnection should end</param>
-        /// <param name="firstTvnIndex">In case defined, the index of the first TVN the path has to follow</param>
-        /// <returns>True if a connection has been found</returns>
-        protected bool FindConnection(TrainpathNode startNode, TrainpathNode reconnectNode, int? firstTvnIndex)
-        {
-            // We try to find a connection between two non-broken nodes.
-            // We store the connection as a stack of linking tvns (track-node-vector-indexes)
-            // The connection will only contain junctions (apart from maybe start and end nodes)
-            // We will not consider connections without a single junction in between
-
-            // This will store the path, so we can actually create it later on.
-            autoFixStartNode = startNode;
-            autoFixReconnectNode = reconnectNode;
-            startNodeNeedsReverse = false;
-            reconnectNodeNeedsReverse = false;
-
-            if (FindConnectionSameTrack(firstTvnIndex))
-            {
-                return true;
-            }
-
-            //first try to see if we succeed without re-orienting the startNode or reconnectNode
-            if (FindConnectionThisOrientation(firstTvnIndex))
-            {
-                return true;
-            }
-
-            //perhaps there is a path with a reversed start node.
-            if (CanReverse(startNode))
-            {
-                startNode.ReverseOrientation();
-                startNodeNeedsReverse = FindConnectionThisOrientation(firstTvnIndex);
-                startNode.ReverseOrientation(); // we only do the actual reverse if the user chooses to fix
-                if (startNodeNeedsReverse)
-                {
-                    return true;
-                }
-            }
-
-            //perhaps there is a path with a reversed reconnect node.
-            if (CanReverse(reconnectNode))
-            {
-                reconnectNode.ReverseOrientation();
-                reconnectNodeNeedsReverse = FindConnectionThisOrientation(firstTvnIndex);
-                reconnectNode.ReverseOrientation(); // we only do the actual reverse if the user chooses to fix
-                if (reconnectNodeNeedsReverse)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Try to find a connection. Depth-first search via main track at junctions.
-        /// No reversing of the nodes will be allowed. 
-        /// AutoFixStartNode and AutoFixReconnectNode are assumed to be defined already
-        /// </summary>
-        /// <param name="firstTvnIndex">In case defined, the index of the first TVN the path has to follow</param>
-        /// <returns>True if a connection has been found</returns>
-        private bool FindConnectionThisOrientation(int? firstTvnIndex)
-        {
-            linkingTvns.Clear();
-
-            int firstJunctionIndex;
-            int lastJunctionIndex;
-            bool firstJunctionIsFacing;
-            bool lastJunctionIsFacing;
-            
-            // determine the index of the first junction where we start our search
-            TrainpathVectorNode firstNodeAsVector = autoFixStartNode as TrainpathVectorNode;
-            TrainpathJunctionNode firstNodeAsJunction = autoFixStartNode as TrainpathJunctionNode;
-            if (firstNodeAsVector != null)
-            {
-                if (firstTvnIndex.HasValue && (firstTvnIndex.Value != firstNodeAsVector.TvnIndex)) return false;
-                firstJunctionIndex = firstNodeAsVector.GetNextJunctionIndex(firstNodeAsVector.TvnIndex);
-                linkingTvns.Add(firstNodeAsVector.TvnIndex);
-                firstJunctionIsFacing = (firstNodeAsVector.TvnIndex == TrackExtensions.TrackNode(firstJunctionIndex).TrailingTvn());
-            }
-            else
-            {
-                firstJunctionIndex = firstNodeAsJunction.JunctionIndex;
-                firstJunctionIsFacing = firstNodeAsJunction.IsFacingPoint;
-            }
-
-            //now determine the index of the last junction node where we should end our search
-            TrainpathVectorNode lastNodeAsVector = autoFixReconnectNode as TrainpathVectorNode;
-            TrainpathJunctionNode lastNodeAsJunction = autoFixReconnectNode as TrainpathJunctionNode;
-            if (lastNodeAsVector != null)
-            {
-                lastJunctionIndex = lastNodeAsVector.GetPrevJunctionIndex(lastNodeAsVector.TvnIndex);
-                lastJunctionIsFacing = (lastNodeAsVector.TvnIndex != TrackExtensions.TrackNode(lastJunctionIndex).TrailingTvn());  // this node is after the junction!  
-            }
-            else
-            {
-                lastJunctionIndex = lastNodeAsJunction.JunctionIndex;
-                lastJunctionIsFacing = lastNodeAsJunction.IsFacingPoint;
-            }
-
-            //search for a path
-            bool foundConnection;
-            if (firstTvnIndex.HasValue)
-            {
-                foundConnection = TryToFindConnectionVia(firstTvnIndex.Value, firstJunctionIndex, 
-                                                        lastJunctionIndex, lastJunctionIsFacing, 
-                                                        linkingTvns);
-            }
-            else
-            {
-                foundConnection = TryToFindConnection(firstJunctionIndex, firstJunctionIsFacing,
-                                                       lastJunctionIndex, lastJunctionIsFacing,
-                                                       linkingTvns);
-            }
-            
-
-            return foundConnection;
-        }
-
-        /// <summary>
-        /// Find whether it is possible to connect directly two points on the same track
-        /// </summary>
-        /// <param name="firstTvnIndex">In case defined, the index of the first TVN the path has to follow</param>
-        /// <returns>true if such a direct path has been found</returns>
-        private bool FindConnectionSameTrack(int? firstTvnIndex)
-        {
-            TrainpathVectorNode startAsVector     = autoFixStartNode as TrainpathVectorNode;
-            TrainpathVectorNode reconnectAsVector = autoFixReconnectNode as TrainpathVectorNode;
-
-            if (startAsVector == null) return false;
-            if (reconnectAsVector == null) return false;
-            if (startAsVector.TvnIndex != reconnectAsVector.TvnIndex) return false;
-            if (firstTvnIndex.HasValue && (firstTvnIndex.Value != startAsVector.TvnIndex )) return false;
-
-            //for a reverse point the orientation is defined as being after the reversal.
-            bool reconnectIsForward = (reconnectAsVector.NodeType == TrainpathNodeType.Reverse)
-                ? !reconnectAsVector.ForwardOriented
-                :  reconnectAsVector.ForwardOriented;
-            if (startAsVector.ForwardOriented != reconnectIsForward) return false;
-            if (startAsVector.ForwardOriented != startAsVector.IsEarlierOnTrackThan(reconnectAsVector)) return false;
-
-            linkingTvns.Clear(); // Same track so no linking Tvns needed
-            return true;
-        }
-
-        /// <summary>
-        /// A node can be reversed it both the leading and the trailing path are broken.
-        /// </summary>
-        /// <param name="node"></param>
-        /// <returns></returns>
-        private static bool CanReverse(TrainpathNode node)
-        {
-            bool incomingAllowsReversal = true;
-            bool outgoingAllowsReversal;
-
-            if (node.NextSidingNode != null)
-            {   // if there is a siding node, this is a siding start (probably) and things become too complex
-                outgoingAllowsReversal = false;
-            }
-            else
-            {
-                if (node.NextMainNode == null)
-                {   // no next main node, so we are fine with reversing
-                    outgoingAllowsReversal = true; 
-                }
-                else
-                {
-                    outgoingAllowsReversal = node.NextMainNode.IsBroken || (node.NextMainTvnIndex == -1);
-                }
-            }
-
-            if (node.PrevNode == null)
-            {
-                incomingAllowsReversal = true;
-            }
-            else
-            {
-                incomingAllowsReversal = node.PrevNode.IsBroken || (node.PrevNode.NextMainTvnIndex == -1);
-            }
-
-            return incomingAllowsReversal && outgoingAllowsReversal;
-        }
-
-        /// <summary>
-        /// Actually create the path by linking nodes following the stored linking tvns.
-        /// </summary>
-        /// <param name="isMainPath">Do we add the node to the main path or not</param>
-        protected void CreateFoundConnection(bool isMainPath)
-        {
-            if (    startNodeNeedsReverse) autoFixStartNode.ReverseOrientation();
-            if (reconnectNodeNeedsReverse) autoFixReconnectNode.ReverseOrientation();
-
-            //create the new path using the stored Tvns
-            TrainpathNode currentNode = autoFixStartNode;
-            foreach (int tvn in linkingTvns)
-            {
-                currentNode = AddAdditionalNode(currentNode, tvn, isMainPath);
-                while (currentNode is TrainpathVectorNode)
-                {   // apparently a disambiguity node has been added.
-                    currentNode = AddAdditionalNode(currentNode, tvn, isMainPath);
-                }
-            }
-
-            //make the final connections
-            TrainpathVectorNode reconnectNodeAsVector = autoFixReconnectNode as TrainpathVectorNode;
-            if (reconnectNodeAsVector != null)
-            {   // we only need to make the connection between the final junction node and the vectornode
-                if (isMainPath)
-                {
-                    currentNode.NextMainNode = reconnectNodeAsVector;
-                    currentNode.NextMainTvnIndex = reconnectNodeAsVector.TvnIndex;
-                    reconnectNodeAsVector.PrevNode = currentNode;
-                }
-                else
-                {
-                    currentNode.NextSidingNode = reconnectNodeAsVector;
-                    currentNode.NextSidingTvnIndex = reconnectNodeAsVector.TvnIndex;
-                }
-            }
-            else
-            {   // the last node we added is the same junction as the last node we want to keep
-                // so make the needed corrections, and forget about the currentNode afterwards.
-                if (isMainPath)
-                {
-                    currentNode.PrevNode.NextMainNode = autoFixReconnectNode;
-                    autoFixReconnectNode.PrevNode = currentNode.PrevNode;
-                }
-                else
-                {
-                    currentNode.PrevNode.NextSidingNode = autoFixReconnectNode;
-                }
-                NetNodesAdded--;
-            }
-        }   
-    }
-    #endregion
-
+  
     #region AutoFixBrokenNodes
     /// <summary>
     /// Subclass to implement the action: Auto-fix broken nodes
     /// </summary>
-    public class EditorActionAutoFixBrokenNodes : EditorActionAutoFix
+    public class EditorActionAutoFixBrokenNodes : EditorAction
     {
         /// <summary>The node from which we will start the autofix procedure</summary>
         TrainpathNode autoFixStartNode;
         /// <summary>The node to which we need to reconnect during autofix</summary>
         TrainpathNode autoFixReconnectNode;
         /// <summary>The amount of nodes that will be removed if we succeed</summary>
-        int numberOfNodeThatWillBeRemoved;
+        int numberOfNodesThatWillBeRemoved;
+        /// <summary>Tooling to do auto connect</summary>
+        AutoConnectTools autoConnectTools;
 
         /// <summary>Constructor</summary>
         public EditorActionAutoFixBrokenNodes()
-            : base(TrackViewer.catalog.GetString("Auto-fix broken nodes"), "activeBroken") {}
+            : base(TrackViewer.catalog.GetString("Auto-fix broken nodes"), "activeBroken")
+        {
+            autoConnectTools = new AutoConnectTools();
+        }
 
         /// <summary>Can the action be executed given the current path and active nodes?</summary>
         protected override bool CanExecuteAction()
         {
             if (Trainpath.FirstNode == null) return false;
-            numberOfNodeThatWillBeRemoved = 0; // starting value
+            numberOfNodesThatWillBeRemoved = 0; // starting value
 
             if (ActiveNode.IsBroken)
             {   //this node is broken. But we must make sure there are non-broken nodes either before or after.
-                numberOfNodeThatWillBeRemoved++; // this node will also be removed
+                numberOfNodesThatWillBeRemoved++; // this node will also be removed
                 FindNonBrokenSuccessor();
                 FindNonBrokenPredecessor();
                 if ((autoFixStartNode == null) || (autoFixReconnectNode == null)) return false;
-                return FindConnection(autoFixStartNode, autoFixReconnectNode);
+                return autoConnectTools.FindConnection(autoFixStartNode, autoFixReconnectNode);
             }
 
             if (ActiveNode.NextMainNode != null && ActiveNode.NextMainTvnIndex == -1)
@@ -1673,7 +1040,7 @@ namespace ORTS.TrackViewer.Editing
                 autoFixStartNode = ActiveNode;
                 FindNonBrokenSuccessor();
                 if (autoFixReconnectNode == null) return false;
-                return FindConnection(autoFixStartNode, autoFixReconnectNode);
+                return autoConnectTools.FindConnection(autoFixStartNode, autoFixReconnectNode);
             }
 
             TrainpathNode prevNode = ActiveNode.PrevNode;
@@ -1684,7 +1051,7 @@ namespace ORTS.TrackViewer.Editing
                 autoFixReconnectNode = ActiveNode;
                 FindNonBrokenPredecessor();
                 if (autoFixStartNode == null) return false;
-                return FindConnection(autoFixStartNode, autoFixReconnectNode);
+                return autoConnectTools.FindConnection(autoFixStartNode, autoFixReconnectNode);
             }
 
             // Nothing to fix at the activeNode
@@ -1707,7 +1074,7 @@ namespace ORTS.TrackViewer.Editing
                     return;
                 }
                 predecessor = predecessor.PrevNode;
-                numberOfNodeThatWillBeRemoved++;
+                numberOfNodesThatWillBeRemoved++;
             }
         }
 
@@ -1727,27 +1094,21 @@ namespace ORTS.TrackViewer.Editing
                     return;
                 }
                 successor = successor.NextMainNode;
-                numberOfNodeThatWillBeRemoved++;
+                numberOfNodesThatWillBeRemoved++;
             }
         }
 
         /// <summary>Execute the action. This assumes that the action can be executed</summary>
         protected override void ExecuteAction()
         {
-            //bool foundConnection = FindConnection(autoFixStartNode, autoFixReconnectNode);
-            //if (!foundConnection)
-            //{
-            //    MessageBox.Show(TrackViewer.catalog.GetString(
-            //        "Auto fixing broken nodes did not succeed. Sorry.\n" +
-            //        "Perhaps you can try with cutting, storing the tail and then reconnecting."
-            //        ));
-            //    return;
-            //}
-            CreateFoundConnection(true);
+            autoConnectTools.CreateFoundConnection(modificationTools, true);
+        }
 
-            //some nodes are discarded by making the new links:
-            NetNodesAdded -= numberOfNodeThatWillBeRemoved;
-        }       
+        /// <summary>Returns the net amount of main nodes added.</summary>
+        protected override int NetMainNodesAdded()
+        {
+            return modificationTools.NetNodesAdded - numberOfNodesThatWillBeRemoved;
+        }
     }
     #endregion
 
@@ -1755,10 +1116,17 @@ namespace ORTS.TrackViewer.Editing
     /// <summary>
     /// Subclass to implement the action: Auto-connect to the stored tail
     /// </summary>
-    public class EditorActionAutoConnectTail : EditorActionAutoFix
+    public class EditorActionAutoConnectTail : EditorAction
     {
+        /// <summary>Tooling to do auto connect</summary>
+        AutoConnectTools autoConnectTools;
+
         /// <summary>Constructor</summary>
-        public EditorActionAutoConnectTail() : base(TrackViewer.catalog.GetString("Reconnect to tail"), "activeNode") { }
+        public EditorActionAutoConnectTail()
+            : base(TrackViewer.catalog.GetString("Reconnect to tail"), "activeNode")
+        {
+            autoConnectTools = new AutoConnectTools();
+        }
 
         /// <summary>Can the action be executed given the current path and active nodes?</summary>
         protected override bool CanExecuteAction()
@@ -1767,24 +1135,22 @@ namespace ORTS.TrackViewer.Editing
             if (Trainpath.FirstNodeOfTail == null) return false;
             if (ActiveNode.HasSidingPath) return false;
             if (ActiveNode.IsBroken) return false;
-            return FindConnection(ActiveNode, Trainpath.FirstNodeOfTail);
+            return autoConnectTools.FindConnection(ActiveNode, Trainpath.FirstNodeOfTail);
         }
 
         /// <summary>Execute the action. This assumes that the action can be executed</summary>
         protected override void ExecuteAction()
         {
-            //bool foundConnection = FindConnection(ActiveNode, Trainpath.FirstNodeOfTail);
-            //if (!foundConnection)
-            //{
-            //    MessageBox.Show(TrackViewer.catalog.GetString("Connecting to the tail did not succeed. Sorry"));
-            //    return;
-            //}
-
-            CreateFoundConnection(true);
+            autoConnectTools.CreateFoundConnection(modificationTools, true);
 
             Trainpath.FirstNodeOfTail = null;
             Trainpath.HasEnd = Trainpath.TailHasEnd;
-            NetNodesAdded = CountSuccessors(ActiveNode); // just draw everything
+        }
+
+        /// <summary>Returns the net amount of main nodes added.</summary>
+        protected override int NetMainNodesAdded()
+        {
+            return CountSuccessors(ActiveNode); // just draw everything, doesn't matter if we add too much.
         }
 
         /// <summary>
@@ -1810,12 +1176,18 @@ namespace ORTS.TrackViewer.Editing
     /// <summary>
     /// Subclass to implement the action: Auto-connect the started passing path (currently only a stub) to here.
     /// </summary>
-    public class EditorActionReconnectPassingPath : EditorActionAutoFix
+    public class EditorActionReconnectPassingPath : EditorAction
     {
         TrainpathNode sidingStartNode;
- 
+        // <summary>Tooling to do auto connect</summary>
+        AutoConnectTools autoConnectTools;
+
         /// <summary>Constructor</summary>
-        public EditorActionReconnectPassingPath() : base(TrackViewer.catalog.GetString("Reconnect passing path"), "activeNode") { }
+        public EditorActionReconnectPassingPath()
+            : base(TrackViewer.catalog.GetString("Reconnect passing path"), "activeNode")
+        {
+            autoConnectTools = new AutoConnectTools();
+        }
 
         /// <summary>Can the action be executed given the current path and active nodes?</summary>
         protected override bool CanExecuteAction()
@@ -1827,7 +1199,7 @@ namespace ORTS.TrackViewer.Editing
             findPassingPathStub();
             if (sidingStartNode == null) return false;
             if (sidingStartNode.NextSidingNode == ActiveNode) return false;  // this happens when we are at the single siding node we just started
-            return FindConnection(sidingStartNode.NextSidingNode, ActiveNode);
+            return autoConnectTools.FindConnection(sidingStartNode.NextSidingNode, ActiveNode);
         }
 
         /// <summary>
@@ -1836,7 +1208,7 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         void findPassingPathStub() {
             sidingStartNode = null;
-            DisAllowedJunctionIndexes.Clear(); // to prevent the reconnection to go over the main path
+            autoConnectTools.ResetDisallowedJunctions();
 
             TrainpathNode mainNode = ActiveNode.PrevNode;
             //follow the train path backward and see what we find
@@ -1850,7 +1222,7 @@ namespace ORTS.TrackViewer.Editing
                     {   // we found the sidingstart.
                         break;
                     }
-                    DisAllowedJunctionIndexes.Add(mainNodeAsJunction.JunctionIndex);
+                    autoConnectTools.AddDisallowedJunction(mainNodeAsJunction.JunctionIndex);
                     if (mainNode.NodeType == TrainpathNodeType.SidingEnd)
                     {   // if a new siding path is started (going back), stop searching
                         return;
@@ -1876,7 +1248,7 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>Execute the action. This assumes that the action can be executed</summary>
         protected override void ExecuteAction()
         {
-            CreateFoundConnection(false);
+            autoConnectTools.CreateFoundConnection(modificationTools, false);
 
             TrainpathNode sidingEnd = ActiveNode;
 
@@ -1891,10 +1263,13 @@ namespace ORTS.TrackViewer.Editing
                 mainNode.HasSidingPath = true;
                 mainNode = mainNode.NextMainNode;
             }
-
-            NetNodesAdded = 0; // no main nodes added.
         }
 
+        /// <summary>Returns the net amount of main nodes added.</summary>
+        protected override int NetMainNodesAdded()
+        {
+            return 0; // for passing paths we do not add main nodes;
+        }
     }
     #endregion
 
@@ -1902,12 +1277,19 @@ namespace ORTS.TrackViewer.Editing
     /// <summary>
     /// Subclass to implement the action: In a passing path, take the other exit reconnecting to the same siding-end
     /// </summary>
-    public class EditorActionTakeOtherExitPassingPath : EditorActionAutoFix
+    public class EditorActionTakeOtherExitPassingPath : EditorAction
     {
         TrainpathNode sidingEndNode;
+        // <summary>Tooling to do auto connect</summary>
+        AutoConnectTools autoConnectTools;
+
 
         /// <summary>Constructor</summary>
-        public EditorActionTakeOtherExitPassingPath() : base(TrackViewer.catalog.GetString("Take other exit"), "activeNode") { }
+        public EditorActionTakeOtherExitPassingPath()
+            : base(TrackViewer.catalog.GetString("Take other exit"), "activeNode")
+        {
+            autoConnectTools = new AutoConnectTools();
+        }
 
         /// <summary>Can the action be executed given the current path and active nodes?</summary>
         protected override bool CanExecuteAction()
@@ -1928,7 +1310,7 @@ namespace ORTS.TrackViewer.Editing
 
             if (!FindDisAllowedJunctionIndexes()) return false;
             int newNextTvnIndex = activeNodeAsJunction.OtherExitTvnIndex();
-            return FindConnection(ActiveNode,sidingEndNode, newNextTvnIndex);
+            return autoConnectTools.FindConnection(ActiveNode,sidingEndNode, newNextTvnIndex);
         }
 
         /// <summary>
@@ -1957,7 +1339,7 @@ namespace ORTS.TrackViewer.Editing
         /// <returns>false if there was something really wrong</returns>
         bool FindDisAllowedJunctionIndexes()
         {
-            DisAllowedJunctionIndexes.Clear();  
+            autoConnectTools.ResetDisallowedJunctions();
 
             TrainpathNode mainNode = sidingEndNode.PrevNode;
             //follow the train path backward and see what we find
@@ -1971,7 +1353,7 @@ namespace ORTS.TrackViewer.Editing
                     {   // we found the sidingstart. So we are done
                         return true;
                     }
-                    DisAllowedJunctionIndexes.Add(mainNodeAsJunction.JunctionIndex);
+                    autoConnectTools.AddDisallowedJunction(mainNodeAsJunction.JunctionIndex);
                     if (mainNode.NodeType == TrainpathNodeType.SidingEnd)
                     {   // if a new siding path is started (going back), stop searching
                         // in this case the path is really really broken (because we started searching on a siding path)
@@ -1996,49 +1378,110 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>Execute the action. This assumes that the action can be executed</summary>
         protected override void ExecuteAction()
         {
-            CreateFoundConnection(false);
-
-            NetNodesAdded = 0; // no main nodes added.
+            autoConnectTools.CreateFoundConnection(modificationTools, false);
         }
 
+        /// <summary>Returns the net amount of main nodes added.</summary>
+        protected override int NetMainNodesAdded()
+        {
+            return 0; // for passing paths we do not add main nodes;
+        }
     }
     #endregion
 
-    #region MouseDragAll
+    #region MouseDrag (template)
     /// <summary>
-    /// Subclass to implement the actions related to mouse dragging.
-    /// This class is about dragging 
+    /// abstract class for all mouse dragging sub classes.
+    /// Contains implementations for handling history of path (undo/redo functionality during dragging) (template pattern)
+    /// The two methods that need to be overriden are InitDragging and SucceededDragging.
+    /// The hook Cleanup can be overridden if needed.
     /// </summary>
-    public class EditorActionMouseDragAll : EditorAction
+    public abstract class EditorActionMouseDrag : EditorAction
     {
         /// <summary>Constructor</summary>
-        public EditorActionMouseDragAll() : base("", "") { }
+        protected EditorActionMouseDrag(string header, string pngFileName) : base(header, pngFileName) {}
 
-        /// <summary>Can the action be executed given the current path and active nodes?</summary>
-        protected override bool CanExecuteAction()
+        /// <summary>
+        /// Dragging has commenced. Perform initialization actions
+        /// </summary>
+        public void StartDragging()
         {
-            return true;
+            Trainpath.StoreCurrentPath();
+            InitDragging();
+            Dragging(); // Immediate start dragging (the mouse is already somewhere else)
         }
 
-        /// <summary>Execute the action. This assumes that the action can be executed</summary>
-        protected override void ExecuteAction()
+        /// <summary>
+        /// Update the location of the node that is being dragged.
+        /// This is where most of the logic of mouse dragging takes place.
+        /// Do note that this will be called for every update (so in interactive loop)
+        /// </summary>
+        public void Dragging()
         {
+            if (SucceededDragging())
+            {
+                Trainpath.UseLast();
+            }
+            else
+            {
+                Trainpath.UseLastButOne();
+            }
         }
+
+        /// <summary>
+        /// End the dragging and make sure the modified path will be used subsequently, as long as mouse is still in a good position. Otherwise cancel.
+        /// </summary>
+        public void EndDragging()
+        {
+            Dragging(); //make sure we do the latest update!
+            CleanUp();
+        }
+
+        /// <summary>
+        /// End the dragging and but do not use the modified path (but use the previouse version instead)
+        /// </summary>
+        public void CancelDragging()
+        {
+            CleanUp();
+            Trainpath.UseLastButOne();
+        }
+
+        /// <summary>
+        /// Everything you want to initialize before real dragging starts.
+        /// Put here as much as possible of pre-processing, as this is only called once.
+        /// Note that undo/redo is already taken care of.
+        /// </summary>
+        protected abstract void InitDragging();
+
+        /// <summary>
+        /// Determine whether the dragging to the new location can be done, make sure the new path is good and well-connected
+        /// </summary>
+        /// <returns>true if the new path is good and can be shown</returns>
+        protected abstract bool SucceededDragging();
+
+        /// <summary>
+        /// Overridable hook to perform some cleanup actions at the end of dragging (EndDragging or CancelDragging)
+        /// </summary>
+        protected virtual void CleanUp()
+        {// empty default implementation
+        }
+
     }
     #endregion
-
-    #region MouseDrag
+  
+    #region MouseDragVectorNode
     /// <summary>
     /// Subclass to implement the actions related to mouse dragging.
-    /// This class is about dragging only start, end, wait and reverse points
+    /// This class is about dragging only start, end, wait and reverse points: those points can only be
+    /// dragged along the track they are on, so not beyond a junction or so.
     /// </summary>
-    public class EditorActionMouseDrag : EditorAction
+    public class EditorActionMouseDragVectorNode : EditorActionMouseDrag
     {
         TrainpathNode dragLimitNode1, dragLimitNode2; // the dragging node must be between these two limits
         TrainpathVectorNode nodeBeingDragged;               // link to the node (new) that is being dragged.
 
         /// <summary>Constructor</summary>
-        public EditorActionMouseDrag() : base("", "") { }
+        public EditorActionMouseDragVectorNode() : base("", "") { }
 
         /// <summary>Can the action be executed given the current path and active nodes?</summary>
         protected override bool CanExecuteAction()
@@ -2067,12 +1510,12 @@ namespace ORTS.TrackViewer.Editing
         }
 
         /// <summary>
-        /// Dragging has commenced. Perform initialization actions
+        /// Everything you want to initialize before real dragging starts.
+        /// Put here as much as possible of pre-processing, as this is only called once.
+        /// Note that undo/redo is already taken care of.
         /// </summary>
-        public void StartDragging()
-        {
-            Trainpath.StoreCurrentPath();
-            
+        protected override void InitDragging()
+        {          
             switch (ActiveNode.NodeType)
             {
                 case TrainpathNodeType.Start:   FindDraggingLimitsStart(); break;
@@ -2080,15 +1523,13 @@ namespace ORTS.TrackViewer.Editing
                 case TrainpathNodeType.Stop:    FindDraggingLimitsStop(); break;
                 case TrainpathNodeType.Reverse: FindDraggingLimitsReverse(); break;
                 default: break;
-            }
-
-            Dragging();
+            }   
         }
 
         /// <summary>
         /// Update the location of the node that is being dragged.
         /// </summary>
-        public void Dragging()
+        protected override bool SucceededDragging()
         {
 
             if ( (nodeBeingDragged.TvnIndex == ActiveTrackLocation.TvnIndex)
@@ -2098,29 +1539,13 @@ namespace ORTS.TrackViewer.Editing
                 nodeBeingDragged.Location                = ActiveTrackLocation.Location;
                 nodeBeingDragged.TrackVectorSectionIndex = ActiveTrackLocation.TrackVectorSectionIndex;
                 nodeBeingDragged.TrackSectionOffset      = ActiveTrackLocation.TrackSectionOffset;
-            
-                Trainpath.UseLast();
+
+                return true;
             }
             else
             {
-                Trainpath.UseLastButOne();
+                return false;
             }
-        }
-
-        /// <summary>
-        /// End the dragging and make sure the modified path will be used subsequently, as long as mouse is still in a good position. Otherwise cancel.
-        /// </summary>
-        public void EndDragging()
-        {
-            Dragging(); //make sure we do the latest update!
-        }
-
-        /// <summary>
-        /// End the dragging and but do not use the modified path (but use the previouse version instead)
-        /// </summary>
-        public void CancelDragging()
-        {
-            Trainpath.UseLastButOne();
         }
 
         void FindDraggingLimitsStart()
@@ -2204,6 +1629,205 @@ namespace ORTS.TrackViewer.Editing
         }
     }
     #endregion
+
+    #region MouseDragAutoConnect
+    /// <summary>
+    /// Subclass to implement the actions related to mouse dragging.
+    /// This class is about dragging 
+    /// </summary>
+    public class EditorActionMouseDragAutoConnect : EditorActionMouseDrag
+    {
+        /// <summary>Tooling to do auto connect</summary>
+        private ContinuousAutoConnecting autoConnectForward;
+        private ContinuousAutoConnecting autoConnectReverse;
+        private TrainpathVectorNode nodeBeingDragged;               // link to a possibly possibly temporary node that is being dragged.
+
+        //private DebugWindow debugWindow;
+        /// <summary>Constructor</summary>
+        public EditorActionMouseDragAutoConnect()
+            : base("", "")
+        {
+            //debugWindow = new DebugWindow(10, 20);
+        }
+
+        /// <summary>Can the action be executed given the current path and active nodes?</summary>
+        protected override bool CanExecuteAction()
+        {
+            if (Trainpath.FirstNode == null) return false;
+            if (ActiveNode.IsBroken) return false;
+            if (ActiveTrackLocation.Location == null) return false; // we need at least something to start dragging with
+            return true;
+        }
+
+        /// <summary>Execute the action. This assumes that the action can be executed</summary>
+        protected override void ExecuteAction()
+        { //not implemented because mouse dragging has its own methods
+        }
+
+        /// <summary>
+        /// Everything you want to initialize before real dragging starts.
+        /// Put here as much as possible of pre-processing, as this is only called once.
+        /// Note that undo/redo is already taken care of.
+        /// </summary>
+        protected override void InitDragging()
+        {
+            if (ActiveNode is TrainpathJunctionNode || (ActiveNode.NodeType == TrainpathNodeType.Other))
+            {
+                // we need a new vector node here.
+                nodeBeingDragged = modificationTools.AddIntermediateMainNode(ActiveTrackLocation);
+                nodeBeingDragged.NodeType = TrainpathNodeType.Temporary;
+            }
+            else
+            {
+                nodeBeingDragged = (ActiveNode as TrainpathVectorNode);
+            }
+
+            InitAutoConnects();
+        }
+
+        private void InitAutoConnects () {
+            autoConnectForward = new ContinuousAutoConnecting(nodeBeingDragged, true);
+            autoConnectReverse = new ContinuousAutoConnecting(nodeBeingDragged, false);
+        }
+
+        /// <summary>
+        /// Update the location of the node that is being dragged.
+        /// </summary>
+        protected override bool SucceededDragging()
+        {
+            //update location of the node
+            if (ActiveTrackLocation.Location == null) return false;
+
+            bool tvnIndexChanged = (nodeBeingDragged.TvnIndex != ActiveTrackLocation.TvnIndex);
+
+            nodeBeingDragged.Location = ActiveTrackLocation.Location;
+            nodeBeingDragged.TvnIndex = ActiveTrackLocation.TvnIndex;
+            nodeBeingDragged.TrackVectorSectionIndex = ActiveTrackLocation.TrackVectorSectionIndex;
+            nodeBeingDragged.TrackSectionOffset = ActiveTrackLocation.TrackSectionOffset;
+
+            bool succeededToDrag;
+            switch (nodeBeingDragged.NodeType)
+            {
+                case TrainpathNodeType.Start:
+                    succeededToDrag = CouldAndMadeConnectionStart();
+                    break;
+                case TrainpathNodeType.End:
+                    succeededToDrag = CouldAndMadeConnectionEnd();
+                    break;
+                default:
+                    succeededToDrag = CouldAndMadeConnectionNormal();
+                    break;
+            }
+            if (tvnIndexChanged && succeededToDrag)
+            {
+                // The path was changed more than just moving along same track, so we have to re-initialize the possible connections
+                InitAutoConnects();
+                UpdateNodeCount();
+            }
+
+            return succeededToDrag;
+        }
+
+        /// <summary>
+        /// Check if a connection can be made, and if it can, make it.
+        /// For normal situations where both after and before the node a connection needs to be made
+        /// </summary>
+        /// <returns>Connection was found and made</returns>
+        private bool CouldAndMadeConnectionNormal()
+        {
+            bool canConnectForward = autoConnectForward.CanConnect(nodeBeingDragged);
+            bool canConnectReverse = autoConnectReverse.CanConnect(nodeBeingDragged);
+            bool connectionIsSameDirection = (autoConnectForward.NeedsReverse == autoConnectReverse.NeedsReverse);
+            bool connectionIsGood = canConnectForward && canConnectReverse && connectionIsSameDirection;
+
+            //in some cases (e.g. due to loops) there is a good connection but it has not been found yet.
+            //This happens if, due to the loop, for either forward or reverse connect both with and without a reverse
+            //a solution exist. So a second solution might exist. We test this by starting reversed
+            if (!connectionIsGood && canConnectForward && canConnectReverse)
+            {
+                nodeBeingDragged.ReverseOrientation();
+                canConnectForward = autoConnectForward.CanConnect(nodeBeingDragged);
+                canConnectReverse = autoConnectReverse.CanConnect(nodeBeingDragged);
+                connectionIsSameDirection = (autoConnectForward.NeedsReverse == autoConnectReverse.NeedsReverse);
+                connectionIsGood = canConnectForward && canConnectReverse && connectionIsSameDirection;
+
+            }
+
+            //debugWindow.DrawString = String.Format("tvn={0} ({1}), F={2} R={3}: {4} {5} {6}",
+            //    nodeBeingDragged.TvnIndex, nodeBeingDragged.NodeType, canConnectForward, canConnectReverse,
+            //    nodeBeingDragged.PrevNode.ToStringConnection(),
+            //    nodeBeingDragged.ToStringConnection(),
+            //    nodeBeingDragged.NextMainNode.ToStringConnection()
+            //    );
+
+            //debugWindow.DrawString = String.Format("tvn={0} ({1}), F={2} R={3}: A={4}",
+            //    nodeBeingDragged.TvnIndex, nodeBeingDragged.NodeType, canConnectForward, canConnectReverse,
+            //    ActiveNode.ToString()
+            //    );
+            if (connectionIsGood)
+            {
+                autoConnectForward.CreateFoundConnection(modificationTools, true);
+                autoConnectReverse.CreateFoundConnection(modificationTools, true, true);
+            }
+
+            return connectionIsGood;
+        }
+
+        /// <summary>
+        /// Check if a connection can be made, and if it can, make it.
+        /// For a start node where only the connection from the node needs to be made.
+        /// </summary>
+        /// <returns>Connection was found and made</returns>
+        private bool CouldAndMadeConnectionStart()
+        {
+            bool connectionIsGood = autoConnectForward.CanConnect(nodeBeingDragged);
+            
+            if (connectionIsGood)
+            {
+                autoConnectForward.CreateFoundConnection(modificationTools, true);
+            }
+
+            return connectionIsGood;
+        }
+
+        /// <summary>
+        /// Check if a connection can be made, and if it can, make it.
+        /// For a end node where only the connection to the node needs to be made.
+        /// </summary>
+        /// <returns>Connection was found and made</returns>
+        private bool CouldAndMadeConnectionEnd()
+        {
+            bool connectionIsGood = autoConnectReverse.CanConnect(nodeBeingDragged);
+
+            if (connectionIsGood)
+            {
+                autoConnectReverse.CreateFoundConnection(modificationTools, true); // note: reverse is not yet done.
+            }
+
+            return connectionIsGood;
+        }
+
+
+        /// <summary>
+        /// Overridable hook to perform some cleanup actions at the end of dragging (EndDragging or CancelDragging)
+        /// </summary>
+        protected override void CleanUp()
+        {
+            if (nodeBeingDragged.NodeType == TrainpathNodeType.Temporary || nodeBeingDragged.NodeType == TrainpathNodeType.Other)
+            {
+                modificationTools.RemoveIntermediatePoint(nodeBeingDragged);
+            }
+            UpdateNodeCount();
+        }
+        
+        //todo for dragging:
+        // * Passing paths.
+        // * Do not allow to drag over a dangling node.
+        // * limit reconnectable nodes
+        // * Optimize for not changing tvn indexes
+        // * autofix node broken only in .pat file.
+    }
+    #endregion
   
     #region NonInteractiveActions
     /// <summary>
@@ -2231,9 +1855,9 @@ namespace ORTS.TrackViewer.Editing
         public void AddMainNode(TrainpathNode currentNode, AfterEditDelegate callback)
         {
             if (currentNode.IsBroken) return;
-            NetNodesAdded = 0;
-            AddAdditionalNode(currentNode, true);
-            callback(NetNodesAdded);
+            modificationTools.Reset();
+            modificationTools.AddAdditionalNode(currentNode, true);
+            callback(modificationTools.NetNodesAdded);
         }
 
         /// <summary>
@@ -2244,30 +1868,17 @@ namespace ORTS.TrackViewer.Editing
         /// <param name="callback">Callback to call when node has been added</param>
         public void AddMissingDisambiguityNodes(Trainpath trainpath, AfterEditDelegate callback)
         {
-            NetNodesAdded = 0;
+            modificationTools.Reset();
 
             TrainpathNode mainNode = trainpath.FirstNode;
-            if (mainNode == null) return;
-
-            while (mainNode.NextMainNode != null)
+            while (mainNode != null)
             {
-                TrainpathJunctionNode mainNodeAsJunction = mainNode as TrainpathJunctionNode;
-                if ((mainNodeAsJunction != null) && mainNodeAsJunction.IsSimpleSidingStart())
-                {   // this is a simple siding start and therefore needs a disambiguitynode.
-
-                    if (mainNode.NextMainNode is TrainpathJunctionNode)
-                    {   // the next node is a junction, which is not good enough
-                        TrainpathVectorNode halfwayNode = CreateHalfWayNode(mainNodeAsJunction, mainNode.NextMainTvnIndex);
-                        halfwayNode.PrevNode = mainNode;
-                        AddIntermediateMainNode(halfwayNode);
-                        trainpath.IsModified = true;
-                    }
-
-                }
+                modificationTools.AddDisambiguityNodeIfNeeded(mainNode);
                 mainNode = mainNode.NextMainNode;
             }
-             
-            callback(NetNodesAdded);
+
+            trainpath.IsModified = (modificationTools.NetNodesAdded != 0);
+            callback(modificationTools.NetNodesAdded);
         }
 
     }

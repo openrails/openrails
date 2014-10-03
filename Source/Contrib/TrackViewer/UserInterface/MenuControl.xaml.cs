@@ -482,29 +482,31 @@ namespace ORTS.TrackViewer.UserInterface
 
         private void menuShortcuts_Click(object sender, RoutedEventArgs e)
         {
-            string shortcuts = String.Empty;
-            shortcuts += TrackViewer.catalog.GetString("A:  Shift left\n");
-            shortcuts += TrackViewer.catalog.GetString("S:  Shift down\n");
-            shortcuts += TrackViewer.catalog.GetString("D:  Shift right\n");
-            shortcuts += TrackViewer.catalog.GetString("W:  Shift up\n");
-            shortcuts += TrackViewer.catalog.GetString("C:  Shift to center of current path node\n");
-            shortcuts += TrackViewer.catalog.GetString("shift-C:  Shift to center of current mouse location\n");
-            shortcuts += TrackViewer.catalog.GetString("PgUp:  Show more of the path\n");
-            shortcuts += TrackViewer.catalog.GetString("PgDn:  Show less of the path\n");
-            shortcuts += TrackViewer.catalog.GetString("shift-PgUp:  Show the full path\n");
-            shortcuts += TrackViewer.catalog.GetString("shift-PgDn:  Show only start point of path\n");
-            shortcuts += TrackViewer.catalog.GetString("ctrl-Z: Undo in path editor\n");
-            shortcuts += TrackViewer.catalog.GetString("ctrl-Y: Redo in path editor\n");
-            MessageBox.Show(shortcuts);
+            StringBuilder shortcuts = new StringBuilder();
+            shortcuts.Append(TrackViewer.catalog.GetString("left  arrow:  Shift left\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("down  arrow:  Shift down\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("right arrow:  Shift right\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("up    arrow:  Shift up\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("C:  Shift to center of current path node\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("shift-C:  Shift to center of current mouse location\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("PgUp:  Show more of the path\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("PgDn:  Show less of the path\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("shift-PgUp:  Show the full path\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("shift-PgDn:  Show only start point of path\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("ctrl-Z: Undo in path editor\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("ctrl-Y: Redo in path editor\n"));
+            MessageBox.Show(shortcuts.ToString());
         }
 
         private void menuAbout_Click(object sender, RoutedEventArgs e)
         {
-            string shortcuts = String.Empty;
-            shortcuts += TrackViewer.catalog.GetString("This is ORTS TrackViewer, version " + TrackViewer.TrackViewerVersion + "\n");
-            shortcuts += TrackViewer.catalog.GetString("It is a 'Contribution' to ORTS, and as such\n");
-            shortcuts += TrackViewer.catalog.GetString("not an integral part of ORTS.");
-            MessageBox.Show(shortcuts);
+            StringBuilder about = new StringBuilder();
+            about.Append(TrackViewer.catalog.GetString("This is ORTS TrackViewer, version "));
+            about.Append(TrackViewer.TrackViewerVersion);
+            about.Append("\n");
+            about.Append(TrackViewer.catalog.GetString("It is a 'Contribution' to ORTS, and as such\n"));
+            about.Append(TrackViewer.catalog.GetString("not an integral part of ORTS."));
+            MessageBox.Show(about.ToString());
         }
 
         private void menuZoomSave_Click(object sender, RoutedEventArgs e)
@@ -764,17 +766,20 @@ namespace ORTS.TrackViewer.UserInterface
 
         private void menuKnownLimitations_Click(object sender, RoutedEventArgs e)
         {
-            string limitations = String.Empty;
-            limitations += TrackViewer.catalog.GetString("Currently all intended and planned editor features have been implemented.") + "\n";
-            limitations += TrackViewer.catalog.GetString("Documentation is available") + "\n";
-            limitations += "\n";
-            limitations += TrackViewer.catalog.GetString("Known limitations") + ":\n";
-            limitations += TrackViewer.catalog.GetString("* The saved-paths have not been tested with MSTS or ORTS.") + "\n";
-            limitations += TrackViewer.catalog.GetString("* Possibly non-standard junctions (> 1 incoming or > 2 outgoing tracks) might not work.") + "\n";
-            limitations += "\n";
-            limitations += TrackViewer.catalog.GetString("Feedback is appreciated.") + "\n";
-            limitations += "\n";
-            MessageBox.Show(limitations);
+            StringBuilder limitations = new StringBuilder();
+            limitations.Append(TrackViewer.catalog.GetString("Currently all intended and planned editor features have been implemented."));
+            limitations.Append("\n");
+            limitations.Append(TrackViewer.catalog.GetString("Documentation is available"));
+            limitations.Append("\n\n");
+            limitations.Append(TrackViewer.catalog.GetString("Known limitations"));
+            limitations.Append("\n");
+            limitations.Append(TrackViewer.catalog.GetString("* The saved-paths have not been tested with MSTS or ORTS."));
+            limitations.Append("\n");
+            limitations.Append(TrackViewer.catalog.GetString("* Possibly non-standard junctions (> 1 incoming or > 2 outgoing tracks) might not work."));
+            limitations.Append("\n\n");
+            limitations.Append(TrackViewer.catalog.GetString("Feedback is appreciated."));
+            limitations.Append("\n\n");
+            MessageBox.Show(limitations.ToString());
         }
 
         #region IDisposable

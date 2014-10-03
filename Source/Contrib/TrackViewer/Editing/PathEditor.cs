@@ -103,9 +103,12 @@ namespace ORTS.TrackViewer.Editing
         ContextMenu contextMenu;
         MenuItem noActionPossibleMenuItem;
 
+        // Editor actions that are not via the menu
         EditorActionNonInteractive nonInteractiveAction;
-        EditorActionMouseDrag editorActionMouseDrag;
-        bool draggingMouse;
+        EditorActionMouseDragVectorNode editorActionMouseDragVector;
+        EditorActionMouseDragAutoConnect editorActionMouseDragAuto;
+        List<EditorActionMouseDrag> mouseDragActions;   // list of mouse drag actions in the order we will test them
+        EditorActionMouseDrag activeMouseDragAction;
 
         bool _editingIsActive;
         #endregion
@@ -127,12 +130,19 @@ namespace ORTS.TrackViewer.Editing
 
             drawPath = new DrawPath(trackDB, tsectionDat);
 
-            activeTrackLocation = new TrainpathVectorNode(trackDB, tsectionDat);
-            nonInteractiveAction = new EditorActionNonInteractive();
-            editorActionMouseDrag = new EditorActionMouseDrag();
+            CreateNonMenuActions();
             CreateMouseClickEntries();
             CreateContextMenuEntries();
             CreateContextMenu();
+        }
+
+        void CreateNonMenuActions()
+        {
+            activeTrackLocation = new TrainpathVectorNode(trackDB, tsectionDat);
+            nonInteractiveAction = new EditorActionNonInteractive();
+            editorActionMouseDragVector = new EditorActionMouseDragVectorNode();
+            editorActionMouseDragAuto = new EditorActionMouseDragAutoConnect();
+            mouseDragActions = new List<EditorActionMouseDrag>() { editorActionMouseDragAuto };
         }
 
         /// <summary>
@@ -219,7 +229,7 @@ namespace ORTS.TrackViewer.Editing
             editorActionsMouseClicked.Add(new EditorActionTakeOtherExitPassingPath());
             editorActionsMouseClicked.Add(new EditorActionAutoFixBrokenNodes());
             editorActionsMouseClicked.Add(new EditorActionRemovePassingPath());
-            editorActionsMouseClicked.Add(new EditorActionDrawUntilHere(DrawUntilHere));
+            //editorActionsMouseClicked.Add(new EditorActionDrawUntilHere(DrawUntilHere));
 
             // no longer possible because these nodes will be dragged. Can be added when using Alt instead of control?
             //editorActionsMouseClicked.Add(new EditorActionOtherStartDirection());
@@ -325,16 +335,19 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>
         /// See whether an action is possible based on mouse click and perform it.
         /// </summary>
-       /// <param name="mouseX"></param>
+        /// <param name="mouseX"></param>
         /// <param name="mouseY"></param>
         public void OnLeftMouseClick(int mouseX, int mouseY)
         {
-            if (editorActionMouseDrag.MenuState(trainpath, activeNode, activeTrackLocation, UpdateAfterEdits,
-                    mouseX, mouseY))
+            foreach (EditorActionMouseDrag mouseDragAction in mouseDragActions)
             {
-                editorActionMouseDrag.StartDragging();
-                draggingMouse = true;
-                return;
+                if (mouseDragAction.MenuState(trainpath, activeNode, activeTrackLocation, UpdateAfterEdits,
+                        mouseX, mouseY))
+                {
+                    activeMouseDragAction = mouseDragAction;
+                    activeMouseDragAction.StartDragging();
+                    return;
+                }
             }
 
             foreach (EditorAction action in editorActionsMouseClicked)
@@ -354,8 +367,8 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         public void OnLeftMouseMoved()
         {
-            if (!draggingMouse) return;
-            editorActionMouseDrag.Dragging();
+            if (activeMouseDragAction == null) return;
+            activeMouseDragAction.Dragging();
         }
 
         /// <summary>
@@ -363,10 +376,10 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         public void OnLeftMouseRelease()
         {
-            if (!draggingMouse) return;
+            if (activeMouseDragAction == null) return;
 
-            editorActionMouseDrag.EndDragging();
-            draggingMouse = false;
+            activeMouseDragAction.EndDragging();
+            activeMouseDragAction = null;
         }
 
         /// <summary>
@@ -374,10 +387,10 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         public void OnLeftMouseCancel()
         {
-            if (!draggingMouse) return;
+            if (activeMouseDragAction == null) return;
 
-            editorActionMouseDrag.CancelDragging();
-            draggingMouse = false;
+            activeMouseDragAction.CancelDragging();
+            activeMouseDragAction = null;
         }
 
 
@@ -458,7 +471,7 @@ namespace ORTS.TrackViewer.Editing
             float textureSize = 8f;
             int minPixelSize = 7;
             int maxPixelSize = 24;
-            if (activeNode != null)
+            if (activeNode != null && activeNode.Location != null)
             {
                 drawArea.DrawTexture(activeNode.Location, "ring", textureSize, minPixelSize, maxPixelSize, DrawColors.colorsNormal.ActiveNode);
 
@@ -510,7 +523,7 @@ namespace ORTS.TrackViewer.Editing
             uint tni = drawTrackDB.ClosestTrack.TrackNode.Index;
             int tni_int = (int)tni;
 
-            if (!drawnPathData.TrackHasBeenDrawn(tni_int) && trainpath.FirstNode != null)
+            if (!drawnPathData.TrackHasBeenDrawn(tni_int) && trainpath.FirstNode != null && activeMouseDragAction == null)
             {
                 activeTrackLocation.Location = WorldLocation.None;
                 return;
@@ -528,7 +541,7 @@ namespace ORTS.TrackViewer.Editing
             activeTrackLocation.TrackSectionOffset = distance;
             activeTrackLocation.Location = location;
 
-            if ( (trainpath.FirstNode != null) && (!draggingMouse) ) 
+            if ( (trainpath.FirstNode != null) && (activeMouseDragAction == null) ) 
             {   //Only in case this is not the first path.
                 TrainpathNode prevNode = FindPrevNodeOfActiveTrack(drawnPathData, tni_int);
                 if (prevNode == null || prevNode.HasSidingPath)
@@ -755,7 +768,7 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         public void Undo()
         {
-            if (draggingMouse) return;
+            if (activeMouseDragAction != null) return; // do not support Undo while dragging
             trainpath.Undo();
             CloseContextMenu();
         }
@@ -765,7 +778,7 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         public void Redo()
         {
-            if (draggingMouse) return;
+            if (activeMouseDragAction != null) return; // do not support Redo while dragging
             trainpath.Redo();
             CloseContextMenu();
         }

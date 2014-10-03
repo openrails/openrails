@@ -19,10 +19,12 @@
 //
 // ENHANCEMENT list for Trackviewer 
 // Short term 
+//      remove drawTrains?
 //      Path editor: allow dragging junction nodes with the mouse.
+//      Update documentation (including new arrows)
+//      Improve the 'take focus' between menu and main window. Re-introduce alt to give menu focus.
 //     
 // Issues
-//      moving around with cursor buttons. Some XNA-WPF interaction that I have not understood and could not find on internet
 //      Loop is not done OK. Possibly there is not even a right way given the limitations of MSTS format.
 //
 // Additions
@@ -37,20 +39,16 @@
 //          if we are going to write own routines, then use stringbuilder
 //
 // Steps to take for each release.
-//      Always: 1. Update SVN. 
-//              2. look at all to-dos and remove temporary changes. 
-//              3. update version. 
-//              4. remove debug. 
-//              5. run fxcop
-//              6. test
-//
-// Little things
-//      Add y to statusbar, but perhaps only for items?
-//      
-// Looks and usability
+//      Always: * Update SVN. 
+//              * make a release build, clean all XML comment warnings
+//              * look at all to-dos and remove temporary changes. 
+//              * remove debug (no statements in runDebug, all debugWindows should be removed)
+//              * run fxcop
+//              * update version.
+//              * test
 //
 // Code improvements
-//      remove drawTrains?
+//      
 //      remove dependency on ORTS.Settings. Even though it means a bit of code duplication
 //      Colorscheme needs optimalization: now a color needs to go through to many redirections too often. Can I profile this?
 //          Possibly easiest is to have a fixed version that is created once the colorscheme is requested.
@@ -65,12 +63,12 @@
 //      new signalling TrackCircuitSection number. Cumbersome because of dependence on Simulator.
 //      Add milepost and speedpost texture?
 //
-// Further ideas
-//      add crossover?
 //
 // Performance improvements
 //      How can I measure performance. I do not want FPS, but it might help measuring improvement.
 //      Instead of creating arcs from lines, create arc textures depending on need
+//      Possibly for paths it also makes sense to gather all textures into a big texture and specify the location within that
+//          big texture. I read somewhere that it affects the graphics card very much.
 //      Once we use more textures, let draw sort them itself. But this needs that we specify z-depth for all textures
 //      Split basicshapes into 'static' and 'mouse-dependent'
 //          update the static part only when needed.
@@ -558,6 +556,8 @@ namespace ORTS.TrackViewer
 
             drawTrains.Draw(DrawArea);
 
+            DebugWindow.DrawAll();
+
             spriteBatch.End();
 
             base.Draw(gameTime);
@@ -907,19 +907,13 @@ namespace ORTS.TrackViewer
         {
             //Properties.Settings.Default.statusShowFPS = true;
             //ReloadRoute();
-            //SetPath(Paths[13]);
+            //SetPath(Paths[10]);
             //PathEditor.EditingIsActive = true;
             //DrawArea.ZoomToTile();
-            //DrawArea.Zoom(-15);
-            //CenterAroundTrackNode(157);
+            //DrawArea.Zoom(-18);
+            //CenterAroundTrackNode(75);
             //ReversePath();
             //NewPath();
-            //drawArea.ShiftToLocation(pathEditor.CurrentLocation);
-            ////drawArea.ShiftToLocation(pathEditor.trainpath.FirstNode.location);
-
-            //PathEditor.EditingIsActive = true;
-            //pathEditor.ExtendPathFull();
-            ////Exit();
         }
         
         static void InitLogging()
@@ -989,22 +983,3 @@ namespace ORTS.TrackViewer
         #endregion
     }
 }
-
-/*
- * Layer depth of various items (1.0 is back, 0.0 is front)
- *      tiles               lines
- *      grid                lines
- *      track               lines (but perhaps later arcs as well)
- *      track high          idem
- *      track hot           idem
- *      inset background    lines
- *      inset track         lines
- *      inset track high    lines
- *      inset border (or perhaps same as inset track high) lines
- *      items               various textures, and especially here we want to be able to sort.
- *                          Possible alternative is to use a big texture, and use only part of it.
- *      items high          idem
- *      path                lines, textures
- *      ruler               lines
- *      text                text
-*/

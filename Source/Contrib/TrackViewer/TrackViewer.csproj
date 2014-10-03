@@ -69,6 +69,7 @@
   <ItemGroup>
     <Compile Include="Drawing\BasicShapes.cs" />
     <Compile Include="Drawing\CloseToMouse.cs" />
+    <Compile Include="Drawing\DebugWindow.cs" />
     <Compile Include="Drawing\DrawableTrackItem.cs" />
     <Compile Include="Drawing\DrawArea.cs" />
     <Compile Include="Drawing\DrawColors.cs" />
@@ -79,13 +80,16 @@
     <Compile Include="Drawing\DrawTrains.cs" />
     <Compile Include="Drawing\DrawWorldTiles.cs" />
     <Compile Include="Drawing\ShadowDrawArea.cs" />
+    <Compile Include="Editing\AutoConnectTools.cs" />
     <Compile Include="Editing\DrawPATfile.cs" />
     <Compile Include="Editing\DrawPath.cs" />
     <Compile Include="Editing\EditorActions.cs" />
+    <Compile Include="Editing\ModificationTools.cs" />
     <Compile Include="Editing\PathEditor.cs" />
     <Compile Include="Editing\PathMetadataDialog.xaml.cs">
       <DependentUpon>PathMetadataDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Editing\ConnectableNode.cs" />
     <Compile Include="Editing\SavePatFile.cs" />
     <Compile Include="Editing\TrackExtensions.cs" />
     <Compile Include="Editing\Trainpath.cs" />

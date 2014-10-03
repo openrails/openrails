@@ -67,6 +67,8 @@ namespace ORTS.TrackViewer.Editing
         SidingEnd,
         /// <summary>Node is a reversal node</summary>
         Reverse,
+        /// <summary>Temporary node for editing purposes</summary>
+        Temporary,
     };
 
     /// <summary>
@@ -277,6 +279,23 @@ namespace ORTS.TrackViewer.Editing
 
         }
         
+
+        /// <summary>
+        /// String output for shorter debug information
+        /// </summary>
+        public abstract string ToStringShort();
+
+        /// <summary>
+        /// String output for debug information on connections
+        /// </summary>
+        public string ToStringConnection()
+        {
+            return String.Format(System.Globalization.CultureInfo.CurrentCulture, "({0}-{1}-{2}){3}",
+                (this.PrevNode == null) ? "-" : this.PrevNode.ToString(),
+                this.ToString(), 
+                (this.NextMainNode == null) ? "-" : this.NextMainNode.ToString(),
+                (this.NextSidingNode == null) ? String.Empty : this.NextSidingNode.ToString());
+        }
     }
     #endregion
 
@@ -594,9 +613,17 @@ namespace ORTS.TrackViewer.Editing
         public override string ToString()
         {
             return String.Format(System.Globalization.CultureInfo.CurrentCulture, 
-                "TrainPathJunctionNode {0} {1}", this.JunctionIndex, 
-                this.IsFacingPoint ? "(Facing)" : "(Trailing)"
+                "Junction {0}={1} ({2})", this.JunctionIndex, this.NodeType.ToString(), 
+                this.IsFacingPoint ? "Facing" : "Trailing"
                 );
+        }
+
+        /// <summary>
+        /// String output for shorter debug information
+        /// </summary>
+        public override string ToStringShort()
+        {
+            return String.Format(System.Globalization.CultureInfo.CurrentCulture, "J{0} ", this.JunctionIndex);
         }
     }
     #endregion
@@ -965,7 +992,15 @@ namespace ORTS.TrackViewer.Editing
         public override string ToString()
         {
             return String.Format(System.Globalization.CultureInfo.CurrentCulture,
-                "TrainPathVectorNode {0}", this.TvnIndex);
+                "Vector {0}={1}", this.TvnIndex, this.NodeType.ToString());
+        }
+
+        /// <summary>
+        /// String output for shorter debug information
+        /// </summary>
+        public override string ToStringShort()
+        {
+            return String.Format(System.Globalization.CultureInfo.CurrentCulture, "V{0} ", this.TvnIndex);
         }
     }
     #endregion
