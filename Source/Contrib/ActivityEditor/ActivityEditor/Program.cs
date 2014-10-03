@@ -29,7 +29,8 @@ using ActivityEditor.Preference;
 using System.Linq;
 using System.Windows.Forms;
 using ORTS;
-using LibAE;
+using ORTS.Settings;
+using LibAE.Formats;
 using ActivityEditor.Internat;
 
 namespace ActivityEditor
@@ -62,7 +63,7 @@ namespace ActivityEditor
 #endif
 
             var options = args.Where(a => (a.StartsWith("-") || a.StartsWith("/")));
-            UserSettings settings = null;   //   GetSettings(options);
+            UserSettings settings = new UserSettings(options);   //   GetSettings(options);
             intlMngr = new IntalMngr(settings);
 
             Init(settings, args);
@@ -97,13 +98,16 @@ namespace ActivityEditor
                 Console.WriteLine("Weather    = {0}", args[4]);
             }
             aePreference = AEPreference.loadXml();
-            aePreference.setSettings(settings);
+            aePreference.CompleteSettings(settings);
             Arguments = args;
             //  PseudoSim va gérer l'ensemble du système
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             actEditor = new ActEditor();
+            aePreference.ActEditor = actEditor;
             Application.Run(actEditor);
+            Program.aePreference.orConfig.SaveConfig();
+
 
             //Simulator = new PseudoSim(settings);
             //Simulator.Start();

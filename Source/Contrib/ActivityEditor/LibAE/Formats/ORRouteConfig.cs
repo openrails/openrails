@@ -31,6 +31,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using ORTS.Common;
+using ORTS.Settings;
 using MSTS;
 using LibAE.Common;
 using MSTS.Formats;
@@ -54,6 +55,11 @@ namespace LibAE.Formats
         public List<GlobalItem> routeItems;    //  Only the items linked to the route Metadata
         [JsonProperty("RouteName")]
         public string RouteName { get; protected set; }
+        [JsonProperty("GenAuxAction")]
+        public ActionContainer ActionContainer = new ActionContainer();
+        [JsonIgnore]
+        List<AuxActionRef> GenAuxAction { get { return ActionContainer.GetGenAuxActions(); } set { } }
+
 
         [JsonIgnore]
         public List<GlobalItem> AllItems { get; protected set; }       //  All the items, include the activity items, exclude the MSTS Item, not saved
@@ -351,6 +357,102 @@ namespace LibAE.Formats
                 }
             }
             return null;
+        }
+    }
+
+    /// <summary>
+    /// ORConfig is the main class to access the OpenRail generic data for all route.
+    /// </summary>
+
+    public class ORConfig
+    {
+        [JsonProperty("GenAuxAction")]
+        List<AuxActionRef> GenAuxAction;
+
+        [JsonIgnore]
+        string FileName;
+        [JsonIgnore]
+        bool CanSaveConfig = false;
+
+        public ORConfig()
+        {
+            GenAuxAction = new List<AuxActionRef>();
+        }
+
+        public void UpdateGenAction(bool info, AuxActionRef.AUX_ACTION typeAction)
+        {
+            switch (typeAction)
+            {
+                case AuxActionRef.AUX_ACTION.SOUND_HORN:
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        public bool SaveConfig()
+        {
+            if (!CanSaveConfig)
+                return false;
+            return SerializeJSON();
+        }
+
+        static public ORConfig LoadConfig(string dataFolder, ORConfig mainConfig = null)
+        {
+            string currentProgFolder = dataFolder;
+            currentProgFolder = Path.GetDirectoryName(currentProgFolder);
+            string completeFileName = Path.Combine(currentProgFolder, "Open Rails");
+            if (!Directory.Exists(completeFileName)) Directory.CreateDirectory(completeFileName);
+            completeFileName = Path.Combine (completeFileName, "ORConfig.json");
+            ORConfig loaded = DeserializeJSON(completeFileName);
+            return loaded;
+        }
+
+        public bool SerializeJSON()
+        {
+            if (FileName == null || FileName.Length <= 0)
+                return false;
+
+            JsonSerializer serializer = new JsonSerializer();
+            serializer.PreserveReferencesHandling = PreserveReferencesHandling.Objects;
+            serializer.TypeNameHandling = TypeNameHandling.All;
+            serializer.Formatting = Formatting.Indented;
+            using (StreamWriter wr = new StreamWriter(FileName))
+            {
+                using (JsonWriter writer = new JsonTextWriter(wr))
+                {
+                    serializer.Serialize(writer, this);
+                }
+            }
+            return true;
+        }
+
+        static public ORConfig DeserializeJSON(string fileName)
+        {
+            ORConfig p = null;
+
+            try
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                using (StreamReader sr = new StreamReader(fileName))
+                {
+                    ORConfig orConfig = JsonConvert.DeserializeObject<ORConfig>((string)sr.ReadToEnd(), new JsonSerializerSettings
+                    {
+                        PreserveReferencesHandling = PreserveReferencesHandling.Objects,
+                        TypeNameHandling = TypeNameHandling.Auto
+                    });
+                    p = orConfig;
+                    p.FileName = fileName;
+                    p.CanSaveConfig = false;
+                }
+            }
+            catch
+            {
+                p = new ORConfig();
+                p.FileName = fileName;
+                p.CanSaveConfig = false;
+            }
+            return p;
         }
     }
 }

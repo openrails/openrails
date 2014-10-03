@@ -6,6 +6,8 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using LibAE.Formats;
+using ActivityEditor.ActionProperties;
 
 namespace ActivityEditor.Preference
 {
@@ -16,12 +18,13 @@ namespace ActivityEditor.Preference
         public Options()
         {
             InitializeComponent();
+            Program.aePreference.UpdateConfig();
             this.checkBox1.Checked = Program.aePreference.ShowAllSignal;
             this.ShowSnap.Checked = Program.aePreference.ShowSnapCircle;
             this.ShowLabelPlat.Checked = Program.aePreference.ShowPlSiLabel;
             this.MSTSPath.Text = Program.aePreference.MSTSPath;
             this.AEPath.Text = Program.aePreference.AEPath;
-            ListRoutePaths.DataSource = Program.aePreference.routePaths;
+            ListRoutePaths.DataSource = Program.aePreference.RoutePaths;
             routePaths = new List<string> ();
             this.showTiles.Checked = Program.aePreference.ShowTiles;
             this.snapTrack.Checked = Program.aePreference.ShowSnapLine;
@@ -29,6 +32,8 @@ namespace ActivityEditor.Preference
             this.showRuler.Checked = Program.aePreference.ShowRuler;
             this.snapLine.Checked = Program.aePreference.ShowSnapLine;
             this.trackInfo.Checked = Program.aePreference.ShowTrackInfo;
+            this.ListAvailable.DataSource = Program.aePreference.AvailableActions;
+            this.ListUsed.DataSource = Program.aePreference.UsedActions;
         }
         
         private void DrawOnTab(object sender, DrawItemEventArgs e)
@@ -86,24 +91,14 @@ namespace ActivityEditor.Preference
             }
         }
 
-        private void AEBrowse_Click(object sender, EventArgs e)
-        {
-            if (MSTSfolderBrowse.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-            {
-                string path = MSTSfolderBrowse.SelectedPath;
-                AEPath.Text = path;
-                Program.aePreference.AEPath = path;
-            }
-        }
-
         private void AddRoutePaths_Click(object sender, EventArgs e)
         {
             if (MSTSfolderBrowse.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 string path = MSTSfolderBrowse.SelectedPath;
-                Program.aePreference.routePaths.Add(path);
+                Program.aePreference.RoutePaths.Add(path);
                 ListRoutePaths.DataSource = null;
-                ListRoutePaths.DataSource = Program.aePreference.routePaths;
+                ListRoutePaths.DataSource = Program.aePreference.RoutePaths;
                 RemoveRoutePaths.Enabled = true;
             }
         }
@@ -115,9 +110,9 @@ namespace ActivityEditor.Preference
             selected = ListRoutePaths.SelectedIndex;
             if (selected >= 0)
             {
-                Program.aePreference.routePaths.RemoveAt(selected);
+                Program.aePreference.RoutePaths.RemoveAt(selected);
                 ListRoutePaths.DataSource = null;
-                ListRoutePaths.DataSource = Program.aePreference.routePaths;
+                ListRoutePaths.DataSource = Program.aePreference.RoutePaths;
             }
             if (routePaths.Count < 1)
             {
@@ -128,14 +123,14 @@ namespace ActivityEditor.Preference
 
         private void configureRoutePath ()
         {
-            if (Program.aePreference.routePaths.Count <= 0)
+            if (Program.aePreference.RoutePaths.Count <= 0)
             {
                 this.ListRoutePaths.DataSource = null;
                 RemoveRoutePaths.Enabled = false;
             }
             else
             {
-                this.ListRoutePaths.DataSource = Program.aePreference.routePaths;
+                this.ListRoutePaths.DataSource = Program.aePreference.RoutePaths;
                 RemoveRoutePaths.Enabled = true;
             }
         }
@@ -199,7 +194,7 @@ namespace ActivityEditor.Preference
             Program.aePreference.ShowSnapCircle = this.ShowSnap.Checked;
             Program.aePreference.ShowPlSiLabel = this.ShowLabelPlat.Checked;
             Program.aePreference.MSTSPath = this.MSTSPath.Text;
-            Program.aePreference.AEPath = this.AEPath.Text;
+            //Program.aePreference.AEPath = this.AEPath.Text;
             Program.aePreference.ShowTiles = this.showTiles.Checked;
             Program.aePreference.ShowSnapLine = this.snapTrack.Checked;
             Program.aePreference.ShowSnapInfo = this.SnapInfo.Checked;
@@ -217,6 +212,59 @@ namespace ActivityEditor.Preference
         private void trackInfo_changed(object sender, EventArgs e)
         {
             Program.aePreference.ShowTrackInfo = trackInfo.Checked;
+        }
+
+        private void AddToUsed(object sender, EventArgs e)
+        {
+            int selected = -1;
+            //  Trouver le sélectionné
+            selected = ListAvailable.SelectedIndex;
+            if (selected >= 0)
+            {
+                Program.aePreference.AddGenAction(Program.aePreference.AvailableActions[selected]);
+                ListUsed.DataSource = null;
+                ListUsed.DataSource = Program.aePreference.UsedActions;
+
+            }
+            if (routePaths.Count < 1)
+            {
+                return;
+            }
+        }
+
+        private void RemoveFromUsed(object sender, EventArgs e)
+        {
+            int selected = -1;
+            //  Trouver le sélectionné
+            selected = ListUsed.SelectedIndex;
+            if (selected >= 0)
+            {
+                Program.aePreference.RemoveGenAction(selected);
+                ListUsed.DataSource = null;
+                ListUsed.DataSource = Program.aePreference.UsedActions;
+
+            }
+            if (routePaths.Count < 1)
+            {
+                return;
+            }
+        }
+
+        public void EditHornProperties(object sender, EventArgs e)
+        {
+            int selected = -1;
+            //  Trouver le sélectionné
+            selected = ListUsed.SelectedIndex;
+            if (selected >= 0)
+            {
+                AuxActionRef action = Program.aePreference.GetAction(selected);
+                if (action != null)
+                {
+                    HornProperties hornProperties = new HornProperties(action);
+                    hornProperties.ShowDialog();
+                    ((AuxActionHorn)action).SaveProperties(hornProperties.Action);
+                }
+            }
         }
     }
 }

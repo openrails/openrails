@@ -25,6 +25,7 @@ using System.Reflection;
 using System.Linq;
 using System.Text;
 using ORTS;
+using ORTS.Settings;
 
 namespace ActivityEditor.Internat
 {

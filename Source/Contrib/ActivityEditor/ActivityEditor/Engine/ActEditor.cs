@@ -162,7 +162,7 @@ namespace ActivityEditor
         private void activityToolStripMenuItem_Click(object sender, EventArgs e)
         {   //  Try to create a new activity Object with wizard
             ActivityInfo activityInfo = new ActivityInfo();
-            activityInfo.config(Program.aePreference.routePaths);
+            activityInfo.config(Program.aePreference.RoutePaths);
             WizardForm wiz = new WizardForm(activityInfo);
             if (wiz.ShowDialog() == DialogResult.OK)
             {
@@ -386,7 +386,7 @@ namespace ActivityEditor
         private void UpdateRouteCfg(object sender, EventArgs e)
         {
             RouteInfo routeInfo = new RouteInfo();
-            routeInfo.config(Program.aePreference.routePaths);
+            routeInfo.config(Program.aePreference.RoutePaths);
             WizardForm wiz = new WizardForm(routeInfo);
             if (wiz.ShowDialog() == DialogResult.OK)
             {

@@ -27,6 +27,8 @@ using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 using ORTS;
+using ORTS.Settings;
+using LibAE.Formats;
 
 namespace ActivityEditor.Preference
 {
@@ -38,7 +40,7 @@ namespace ActivityEditor.Preference
         {
             get
             {
-                if (routePaths != null && routePaths.Count > 0 && MSTSPath.Length > 0 && AEPath.Length > 0)
+                if (RoutePaths != null && RoutePaths.Count > 0 && MSTSPath.Length > 0)
                     return true;
                 else
                     return false;
@@ -46,10 +48,17 @@ namespace ActivityEditor.Preference
         }
         [XmlIgnore]
         public UserSettings settings;
+        [XmlIgnore]
+        public ORConfig orConfig;   //  OR base configuration for routes
+        [XmlIgnore]
+        public bool SaveConfig = false;
+        [XmlIgnore]
+        public ActEditor ActEditor { get; set; }
 
-        public List<string> routePaths { get; set; }
+
+        public List<string> RoutePaths { get; set; }
         public string MSTSPath { get; set; }
-        public string AEPath { get; set; }
+        public string AEPath { get; set; }  //  No more editable, given through user settings
         public bool ShowAllSignal = false;
         public bool ShowSnapCircle = false;
         public int SnapCircle = 0;
@@ -60,6 +69,56 @@ namespace ActivityEditor.Preference
         public bool ShowSnapInfo { get; set; }
         public bool ShowRuler { get; set; }
         public bool ShowTrackInfo { get; set; }
+        public bool ActivateHorn { get; set; }
+        [XmlIgnore]
+        public ActionContainer ActionContainer 
+        {
+            get
+            {
+                if (ActEditor != null && ActEditor.selectedViewer != null && ActEditor.selectedViewer.Simulator != null)
+                {
+                    return ActEditor.selectedViewer.Simulator.GetOrRouteConfig().ActionContainer;
+                }
+                return null;
+            }
+            protected set { } 
+        }
+        //  Info for AuxAction option window.
+        [XmlIgnore]
+        public List<string> AvailableActions 
+        {
+            get
+            {
+                if (ActionContainer != null)
+                    return ActionContainer.AvailableActions;
+                return new List<string>();
+            }
+            set { }
+        }
+        [XmlIgnore]
+        public List<string> ActionsDescription
+        {
+            get
+            {
+                if (ActionContainer != null)
+                    return ActionContainer.ActionsDescription;
+                return new List<string>();
+            }
+            set { }
+        }
+
+        [XmlIgnore]
+        public List<string> UsedActions
+        {
+            get
+            {
+                if (ActionContainer != null)
+                    return ActionContainer.UsedActions;
+                return new List<string>();
+            }
+            set { }
+        }
+
         public bool AllSignalProperty
         { 
             get 
@@ -74,7 +133,11 @@ namespace ActivityEditor.Preference
 
         public AEPreference()
         {
-            routePaths = new List<string>();
+            RoutePaths = new List<string>();
+            AvailableActions = new List<string>();
+            ActionsDescription = new List<string>();
+            UsedActions = new List<string>();
+
             MSTSPath = "";
             AEPath = "";
             ShowAllSignal = true;
@@ -115,7 +178,9 @@ namespace ActivityEditor.Preference
         public bool saveXml()
         {
             XmlSerializer xs = new XmlSerializer(typeof(AEPreference));
-            using (StreamWriter wr = new StreamWriter("ActivityEditor.pref.xml"))
+            string completeFileName = Path.Combine(AEPath, "ActivityEditor.pref.xml");
+
+            using (StreamWriter wr = new StreamWriter(completeFileName))
             {
                 xs.Serialize(wr, this);
             }
@@ -125,31 +190,65 @@ namespace ActivityEditor.Preference
         static public AEPreference loadXml()
         {
             AEPreference p;
-            XmlSerializer xs = new XmlSerializer(typeof(AEPreference));
             try
             {
-                using (StreamReader rd = new StreamReader("ActivityEditor.pref.xml"))
+                XmlSerializer xs = new XmlSerializer(typeof(AEPreference));
+                string completeFileName = Path.Combine(UserSettings.UserDataFolder, "ActivityEditor.pref.xml");
+
+                using (StreamReader rd = new StreamReader(completeFileName))
                 {
                     p = xs.Deserialize(rd) as AEPreference;
                 }
             }
-            catch (IOException)
+            catch
             {
                 p = new AEPreference();
             }
             return p;
         }
 
-        public void setSettings(UserSettings settings)
+        public void CompleteSettings(UserSettings settings)
         {
             this.settings = settings;
+            orConfig = ORConfig.LoadConfig(UserSettings.UserDataFolder);
+            AEPath = UserSettings.UserDataFolder;
+        }
+
+        public void UpdateConfig()
+        {
+
         }
 
         public bool CheckPrefValidity()
         {
-            if (MSTSPath == "" || AEPath == "" || routePaths.Count() <= 0)
+            if (MSTSPath == "" || RoutePaths.Count() <= 0)
                 return false;
             return true;
         }
+
+        public void UpdateORConfig()
+        {
+        }
+
+        public bool RemoveGenAction(int indx)
+        {
+            if (ActionContainer != null)
+                return ActionContainer.RemoveGenAction(indx);
+            return false;
+        }
+
+        public void AddGenAction(string name)
+        {
+            if (ActionContainer != null)
+                ActionContainer.AddGenAction(name);
+        }
+
+        public AuxActionRef GetAction(int indx)
+        {
+            if (ActionContainer != null)
+                return ActionContainer.GetAction(indx);
+            return null;
+        }
+
     }
 }

@@ -99,6 +99,7 @@ namespace LibAE.Formats
         {
             DefinedPath = new OriginPoint();
             StepInPaths = new OriginPoint();
+            UndefinedPath = new OriginPoint();
             parentFunct = f;
         }
 

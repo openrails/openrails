@@ -31,6 +31,7 @@ using MSTS.Formats;
 using MSTS.Parsers;
 using ORTS;
 using ORTS.Common;
+using ORTS.Settings;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

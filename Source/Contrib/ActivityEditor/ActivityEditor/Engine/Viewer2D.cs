@@ -49,6 +49,7 @@ namespace ActivityEditor.Engine
     public partial class Viewer2D : Form
     {
         public TypeEditor ViewerMode;
+        public string ActivityPath;
         Pen redPen = new Pen(Color.Red);
         Pen greenPen = new Pen(Color.Green);
         Pen orangePen = new Pen(Color.Orange);
@@ -142,6 +143,7 @@ namespace ActivityEditor.Engine
             ViewerMode = TypeEditor.ROUTECONFIG;
             Program.actEditor.DisplayStatusMessage("Load Route for update: please wait");
             loadIcon();
+            ActivityPath = routePath;
 
             //  Simulator retains all datas from MSTS, Route Metadata and Activity.
             Simulator = new PseudoSim(Program.aePreference.settings);

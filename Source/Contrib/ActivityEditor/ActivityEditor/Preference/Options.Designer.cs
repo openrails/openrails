@@ -42,7 +42,6 @@
             this.PathOptions = new System.Windows.Forms.TabPage();
             this.label4 = new System.Windows.Forms.Label();
             this.ListRoutePaths = new System.Windows.Forms.ListBox();
-            this.AEBrowse = new System.Windows.Forms.Button();
             this.AEPath = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.RemoveRoutePaths = new System.Windows.Forms.Button();
@@ -56,28 +55,37 @@
             this.SnapInfo = new System.Windows.Forms.CheckBox();
             this.snapLine = new System.Windows.Forms.CheckBox();
             this.showRuler = new System.Windows.Forms.CheckBox();
+            this.trackInfo = new System.Windows.Forms.CheckBox();
             this.showTiles = new System.Windows.Forms.CheckBox();
             this.label6 = new System.Windows.Forms.Label();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.CommentAction = new System.Windows.Forms.TextBox();
+            this.RemoveAction = new System.Windows.Forms.Button();
+            this.AddAction = new System.Windows.Forms.Button();
+            this.ListUsed = new System.Windows.Forms.ListBox();
+            this.ListAvailable = new System.Windows.Forms.ListBox();
+            this.label7 = new System.Windows.Forms.Label();
             this.MSTSfolderBrowse = new System.Windows.Forms.FolderBrowserDialog();
             this.OptionOK = new System.Windows.Forms.Button();
-            this.trackInfo = new System.Windows.Forms.CheckBox();
             this.tabControl1.SuspendLayout();
             this.EditorOptions.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.PlSiZoomLevel)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.snapCircle)).BeginInit();
             this.PathOptions.SuspendLayout();
             this.tabPage1.SuspendLayout();
+            this.tabPage2.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl1
             // 
             this.tabControl1.Alignment = System.Windows.Forms.TabAlignment.Left;
-            this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tabControl1.Controls.Add(this.EditorOptions);
             this.tabControl1.Controls.Add(this.PathOptions);
             this.tabControl1.Controls.Add(this.tabPage1);
+            this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.DrawMode = System.Windows.Forms.TabDrawMode.OwnerDrawFixed;
             this.tabControl1.ItemSize = new System.Drawing.Size(30, 120);
             this.tabControl1.Location = new System.Drawing.Point(1, 2);
@@ -227,7 +235,6 @@
             // 
             this.PathOptions.Controls.Add(this.label4);
             this.PathOptions.Controls.Add(this.ListRoutePaths);
-            this.PathOptions.Controls.Add(this.AEBrowse);
             this.PathOptions.Controls.Add(this.AEPath);
             this.PathOptions.Controls.Add(this.label3);
             this.PathOptions.Controls.Add(this.RemoveRoutePaths);
@@ -262,20 +269,11 @@
             this.ListRoutePaths.Size = new System.Drawing.Size(279, 121);
             this.ListRoutePaths.TabIndex = 10;
             // 
-            // AEBrowse
-            // 
-            this.AEBrowse.Location = new System.Drawing.Point(325, 266);
-            this.AEBrowse.Name = "AEBrowse";
-            this.AEBrowse.Size = new System.Drawing.Size(80, 19);
-            this.AEBrowse.TabIndex = 9;
-            this.AEBrowse.Text = "Browse";
-            this.AEBrowse.UseVisualStyleBackColor = true;
-            this.AEBrowse.Click += new System.EventHandler(this.AEBrowse_Click);
-            // 
             // AEPath
             // 
             this.AEPath.Location = new System.Drawing.Point(20, 266);
             this.AEPath.Name = "AEPath";
+            this.AEPath.ReadOnly = true;
             this.AEPath.Size = new System.Drawing.Size(282, 20);
             this.AEPath.TabIndex = 8;
             // 
@@ -404,6 +402,17 @@
             this.showRuler.UseVisualStyleBackColor = true;
             this.showRuler.CheckedChanged += new System.EventHandler(this.showRuler_CheckedChanged);
             // 
+            // trackInfo
+            // 
+            this.trackInfo.AutoSize = true;
+            this.trackInfo.Location = new System.Drawing.Point(251, 36);
+            this.trackInfo.Name = "trackInfo";
+            this.trackInfo.Size = new System.Drawing.Size(105, 17);
+            this.trackInfo.TabIndex = 14;
+            this.trackInfo.Text = "Show Track Info";
+            this.trackInfo.UseVisualStyleBackColor = true;
+            this.trackInfo.CheckedChanged += new System.EventHandler(this.trackInfo_changed);
+            // 
             // showTiles
             // 
             this.showTiles.AutoSize = true;
@@ -425,6 +434,78 @@
             this.label6.TabIndex = 13;
             this.label6.Text = "Editor Preference";
             // 
+            // tabPage2
+            // 
+            this.tabPage2.Controls.Add(this.CommentAction);
+            this.tabPage2.Controls.Add(this.RemoveAction);
+            this.tabPage2.Controls.Add(this.AddAction);
+            this.tabPage2.Controls.Add(this.ListUsed);
+            this.tabPage2.Controls.Add(this.ListAvailable);
+            this.tabPage2.Controls.Add(this.label7);
+            this.tabPage2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tabPage2.Location = new System.Drawing.Point(124, 4);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(477, 350);
+            this.tabPage2.TabIndex = 3;
+            this.tabPage2.Text = "tabPage2";
+            this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // CommentAction
+            // 
+            this.CommentAction.Location = new System.Drawing.Point(9, 266);
+            this.CommentAction.Multiline = true;
+            this.CommentAction.Name = "CommentAction";
+            this.CommentAction.Size = new System.Drawing.Size(462, 78);
+            this.CommentAction.TabIndex = 5;
+            // 
+            // RemoveAction
+            // 
+            this.RemoveAction.Location = new System.Drawing.Point(197, 181);
+            this.RemoveAction.Name = "RemoveAction";
+            this.RemoveAction.Size = new System.Drawing.Size(75, 23);
+            this.RemoveAction.TabIndex = 4;
+            this.RemoveAction.Text = "< remove";
+            this.RemoveAction.UseVisualStyleBackColor = true;
+            this.RemoveAction.Click += new System.EventHandler(this.RemoveFromUsed);
+            // 
+            // AddAction
+            // 
+            this.AddAction.Location = new System.Drawing.Point(197, 70);
+            this.AddAction.Name = "AddAction";
+            this.AddAction.Size = new System.Drawing.Size(75, 23);
+            this.AddAction.TabIndex = 3;
+            this.AddAction.Text = "Add >";
+            this.AddAction.UseVisualStyleBackColor = true;
+            this.AddAction.Click += new System.EventHandler(this.AddToUsed);
+            // 
+            // ListUsed
+            // 
+            this.ListUsed.FormattingEnabled = true;
+            this.ListUsed.Location = new System.Drawing.Point(278, 46);
+            this.ListUsed.Name = "ListUsed";
+            this.ListUsed.Size = new System.Drawing.Size(193, 186);
+            this.ListUsed.TabIndex = 2;
+            this.ListUsed.DoubleClick += new System.EventHandler(this.EditHornProperties);
+            // 
+            // ListAvailable
+            // 
+            this.ListAvailable.FormattingEnabled = true;
+            this.ListAvailable.Location = new System.Drawing.Point(9, 46);
+            this.ListAvailable.Name = "ListAvailable";
+            this.ListAvailable.Size = new System.Drawing.Size(182, 186);
+            this.ListAvailable.TabIndex = 1;
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label7.Location = new System.Drawing.Point(6, 13);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(246, 13);
+            this.label7.TabIndex = 0;
+            this.label7.Text = "Configuration for Generic Auxiliary Actions";
+            // 
             // OptionOK
             // 
             this.OptionOK.Location = new System.Drawing.Point(525, 366);
@@ -434,17 +515,6 @@
             this.OptionOK.Text = "OK";
             this.OptionOK.UseVisualStyleBackColor = true;
             this.OptionOK.Click += new System.EventHandler(this.optionOK_click);
-            // 
-            // trackInfo
-            // 
-            this.trackInfo.AutoSize = true;
-            this.trackInfo.Location = new System.Drawing.Point(251, 36);
-            this.trackInfo.Name = "trackInfo";
-            this.trackInfo.Size = new System.Drawing.Size(105, 17);
-            this.trackInfo.TabIndex = 14;
-            this.trackInfo.Text = "Show Track Info";
-            this.trackInfo.UseVisualStyleBackColor = true;
-            this.trackInfo.CheckedChanged += new System.EventHandler(this.trackInfo_changed);
             // 
             // Options
             // 
@@ -465,6 +535,8 @@
             this.PathOptions.PerformLayout();
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
+            this.tabPage2.ResumeLayout(false);
+            this.tabPage2.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -483,7 +555,6 @@
         private System.Windows.Forms.TextBox AEPath;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button RemoveRoutePaths;
-        private System.Windows.Forms.Button AEBrowse;
         private System.Windows.Forms.ListBox ListRoutePaths;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.CheckBox checkBox1;
@@ -503,5 +574,12 @@
         private System.Windows.Forms.Button OptionOK;
         private System.Windows.Forms.CheckBox snapLine;
         private System.Windows.Forms.CheckBox trackInfo;
+        private System.Windows.Forms.TabPage tabPage2;
+        private System.Windows.Forms.TextBox CommentAction;
+        private System.Windows.Forms.Button RemoveAction;
+        private System.Windows.Forms.Button AddAction;
+        private System.Windows.Forms.ListBox ListUsed;
+        private System.Windows.Forms.ListBox ListAvailable;
+        private System.Windows.Forms.Label label7;
     }
 }

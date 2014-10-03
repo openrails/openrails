@@ -57,6 +57,7 @@
     <Compile Include="Divers.cs" />
     <Compile Include="Formats\ActivityInfo.cs" />
     <Compile Include="Formats\AEItems.cs" />
+    <Compile Include="Formats\AuxActionRef.cs" />
     <Compile Include="Formats\MSTSDataConfig.cs" />
     <Compile Include="Formats\ORRouteConfig.cs" />
     <Compile Include="Formats\PathEvent.cs" />
@@ -95,6 +96,10 @@
     <ProjectReference Include="..\..\..\ORTS.Content\ORTS.Content.csproj">
       <Project>{812685a7-2683-4102-a3ca-2a5ced2e61ee}</Project>
       <Name>ORTS.Content</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\ORTS.Settings\ORTS.Settings.csproj">
+      <Project>{67F84996-8769-4FD8-819B-464AF269037B}</Project>
+      <Name>ORTS.Settings</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
