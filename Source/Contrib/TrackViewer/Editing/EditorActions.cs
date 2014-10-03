@@ -922,7 +922,7 @@ namespace ORTS.TrackViewer.Editing
 
         /// <summary>
         /// Find the nodes that can be used to relink either a siding path, or a 'take-other-exit' path.
-        /// The reconnecing nodes all have to be before the first special node (wait, uncouple, reverse, end).
+        /// The reconnecing nodes all have to be before the first special node (wait, reverse, end).
         /// They also have to be before the end of the (current path), even if it does not have a formal end,
         /// and they have to be before a possible next siding start.
         /// At last, it needs to be a non-facing junction.
@@ -1105,7 +1105,8 @@ namespace ORTS.TrackViewer.Editing
         {
             // we do add an extra siding path node. We make it broken.
             // Main track is not set to hasSidingNode.
-            AddAdditionalNode(ActiveNode, NewTvnIndex, false);
+            TrainpathNode danglingNode = AddAdditionalNode(ActiveNode, NewTvnIndex, false);
+            danglingNode.SetBroken(NodeStatus.Dangling);
             ActiveNode.NodeType = TrainpathNodeType.SidingStart;
             NetNodesAdded = 0; // no main nodes added
         }
@@ -1174,37 +1175,26 @@ namespace ORTS.TrackViewer.Editing
     }
     #endregion
 
-    #region RemoveBrokenPoint
+    #region FixInvalidNode
     /// <summary>
-    /// Subclass to implement the action: Remove a broken point
+    /// Subclass to implement the action: Remove the notion of being broken if it is not really broken
     /// </summary>
-    public class EditorActionRemoveBrokenPoint : EditorAction
+    public class EditorActionFixInvalidNode : EditorAction
     {
         /// <summary>Constructor</summary>
-        public EditorActionRemoveBrokenPoint() : base(TrackViewer.catalog.GetString("Remove broken point"), "activeBroken") { }
+        public EditorActionFixInvalidNode() : base(TrackViewer.catalog.GetString("Fix invalid node"), "activeBroken") { }
 
         /// <summary>Can the action be executed given the current path and active nodes?</summary>
         protected override bool CanExecuteAction()
         {
             if (Trainpath.FirstNode == null) return false;
-            return (  ActiveNode.IsBroken
-                && (ActiveNode.NodeType != TrainpathNodeType.Start)     // start can be removed separately
-                && (ActiveNode.NodeType != TrainpathNodeType.End)       // end can be removed separately
-                );
+            return ActiveNode.CanSetUnbroken();
         }
 
         /// <summary>Execute the action. This assumes that the action can be executed</summary>
         protected override void ExecuteAction()
         {
-            //Assumption, there is no siding next to it. but this might not be true. Not clear if the assumption is needed
-            if (ActiveNode.NextMainNode != null)
-            {
-                RemoveIntermediatePoint(ActiveNode);
-            }
-            else
-            {
-                ReplaceNodeAndFollowingByNewNode(ActiveNode);
-            }
+            ActiveNode.SetNonBroken();
         }
     }
     #endregion

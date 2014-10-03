@@ -197,9 +197,9 @@ namespace ORTS.TrackViewer.Editing
             editorActionsActiveTrack.Add(new EditorActionAddStart());
 
             // Actions related to broken nodes/paths
-            editorActionsBroken = new List<EditorAction>();           
+            editorActionsBroken = new List<EditorAction>();
+            editorActionsBroken.Add(new EditorActionFixInvalidNode());
             editorActionsBroken.Add(new EditorActionAutoFixBrokenNodes());
-            //editorActionsBroken.Add(new EditorActionRemoveBrokenPoint());
             editorActionsBroken.Add(new EditorActionDrawToNextBrokenPoint(DrawUntilHere));
             
             // Various other actions

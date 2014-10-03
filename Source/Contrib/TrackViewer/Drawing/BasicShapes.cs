@@ -79,9 +79,6 @@ namespace ORTS.TrackViewer.Drawing
             LoadAndHighlightTexture(graphicsDevice, contentPath, "pathStart", "pathStart",31,31);
             LoadAndHighlightTexture(graphicsDevice, contentPath, "pathEnd", "pathEnd",31,31);
             LoadAndHighlightTexture(graphicsDevice, contentPath, "pathWait", "pathWait",31,31);
-#if COUPLE
-            LoadAndHighlightTexture(graphicsDevice, contentPath, "pathUncouple", "pathUncouple", 31, 31);
-#endif
             LoadAndHighlightTexture(graphicsDevice, contentPath, "pathReverse", "pathReverse", 31, 31);
             //LoadAndHighlightTexture(graphicsDevice, contentPath, "pathSiding", "pathSiding", 31, 31);
 

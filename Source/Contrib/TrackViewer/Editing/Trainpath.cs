@@ -488,7 +488,7 @@ namespace ORTS.TrackViewer.Editing
                 return new Collection<int>();
             }
 
-            List<TrainpathNode> brokenNodes = new List<TrainpathNode>();
+            var brokenNodes = new List<TrainpathNode>();
 
             TrainpathNode currentMainNode = FirstNode;
             while (currentMainNode.NextMainNode != null)
@@ -534,7 +534,7 @@ namespace ORTS.TrackViewer.Editing
                 brokenNodes.Add(currentMainNode);
             }
 
-            IsBroken = (brokenNodes.Count > 0);
+            this.IsBroken = (brokenNodes.Count > 0);
 
             Collection<int> brokenNodeIndexes = new Collection<int>();
             foreach (TrainpathNode node in brokenNodes)

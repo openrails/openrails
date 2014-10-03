@@ -122,7 +122,7 @@ namespace ORTS.TrackViewer
     {
         #region Public members
         /// <summary>String showing the date of the program</summary>
-        public readonly static string TrackViewerVersion = "2014/09/29";
+        public readonly static string TrackViewerVersion = "2014/10/03";
         /// <summary>Path where the content (like .png files) is stored</summary>
         public string ContentPath { get; private set; }
         /// <summary>Folder where MSTS is installed (or at least, where the files needed for tracks, routes and paths are stored)</summary>
@@ -906,12 +906,12 @@ namespace ORTS.TrackViewer
         void runDebug()
         {
             //Properties.Settings.Default.statusShowFPS = true;
-            //SetDefaultRoute();
-            //SetPath(Paths[8]);
+            //ReloadRoute();
+            //SetPath(Paths[13]);
             //PathEditor.EditingIsActive = true;
             //DrawArea.ZoomToTile();
             //DrawArea.Zoom(-15);
-            //CenterAroundTrackNode(1);
+            //CenterAroundTrackNode(157);
             //ReversePath();
             //NewPath();
             //drawArea.ShiftToLocation(pathEditor.CurrentLocation);

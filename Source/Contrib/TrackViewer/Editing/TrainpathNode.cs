@@ -48,6 +48,7 @@ using ORTS.TrackViewer.Drawing;
 
 namespace ORTS.TrackViewer.Editing
 {
+    #region TrainpathNodeType
     /// <summary>
     /// Enumerate the various types of nodes that are available
     /// </summary>
@@ -64,30 +65,48 @@ namespace ORTS.TrackViewer.Editing
         SidingStart,
         /// <summary>Node is a junction node at the end of a siding</summary>
         SidingEnd,
-#if COUPLE
-        /// <summary>Node is a (un)couple point</summary>
-        Uncouple,
-#endif
         /// <summary>Node is a reversal node</summary>
         Reverse,
     };
 
+    /// <summary>
+    /// Store the reason why a path is broken. This makes it easier to make it unbroken.
+    /// </summary>
+    internal enum NodeStatus
+    {
+        /// <summary>Default value is not broken, which all nodes get by default</summary>
+        Unbroken,
+        /// <summary>Node was set to invalid in .pat file</summary>
+        SetAsInvalid,
+        /// <summary>The closest junction is too far away</summary>
+        NotOnJunction,
+        /// <summary>The closest track is too far away</summary>
+        NotOnTrack,
+        /// <summary>The node is dangling siding node</summary>
+        Dangling
+    }
+    #endregion
+
+    #region TrainpathNode
     /// <summary>
     /// base class for all nodes in a trainpath (as defined by MSTS .pat file).
     /// The class is abstract because we only allow either junction of vector nodes
     /// </summary>
     public abstract class TrainpathNode
     {
+
+
         /// <summary> World location of the node, coming directly from .pat file </summary>
         public WorldLocation Location { get; set; }
 
         /// <summary> Stores the type of node (see TrainPathNodeType)</summary>
         public TrainpathNodeType NodeType { get; set; }
-        /// <summary> True if the node is broken, meaning that its location can no longer be found in the track data base
+        /// <summary> True if the node is broken, meaning that its location can not be found in the track data base, is set as invalid or otherwise indicates a broken path.
         /// By having it independent of the NodeType, we can keep the kind of node that was intended, even if it is currently not in the right place.</summary>
-        public bool IsBroken { get; private set; }
-        /// <summary> Reason why the node is broken</summary>
-        public string ReasonForBroken { get; private set; }
+        public bool IsBroken { get { return brokenStatus != NodeStatus.Unbroken; } }
+        /// <summary> True if the node is broken because off-track and therefore not drawable</summary>
+        public bool IsBrokenOffTrack { get { return (brokenStatus == NodeStatus.NotOnJunction) || (brokenStatus == NodeStatus.NotOnTrack); } }
+        private NodeStatus brokenStatus;
         
         // From simple linking:
         /// <summary>Next path node on main path</summary>
@@ -164,7 +183,7 @@ namespace ORTS.TrackViewer.Editing
             Location = new WorldLocation(pdp.TileX, pdp.TileZ, pdp.X, pdp.Y, pdp.Z);
             if (pdp.IsInvalid) // not a valid point
             {
-                this.SetBroken("Set as invalid in .pat file");
+                this.SetBroken(NodeStatus.SetAsInvalid);
             }
         }
 
@@ -213,11 +232,10 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>
         /// Set that the node is broken
         /// </summary>
-        /// <param name="reasonForBroken">description of why it is broken</param>
-        public void SetBroken(string reasonForBroken)
+        /// <param name="reason">description of why it is broken</param>
+        internal void SetBroken(NodeStatus reason)
         {
-            this.IsBroken = true;
-            this.ReasonForBroken = reasonForBroken;
+            brokenStatus = reason;
         }
 
         /// <summary>
@@ -225,11 +243,44 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         public void SetNonBroken()
         {
-            this.IsBroken = false;
+            this.brokenStatus = NodeStatus.Unbroken; //not really needed now but nice to keep clean
         }
-       
-    }
 
+        /// <summary>
+        /// In case a node is broken only because defined as such in the .pat file, 
+        /// it can be made unbroken easily by removing the statement that it is unbroken.
+        /// </summary>
+        /// <returns></returns>
+        public bool CanSetUnbroken()
+        {
+            return this.IsBroken && (this.brokenStatus == NodeStatus.SetAsInvalid);
+        }
+
+        /// <summary>
+        /// Returns a string description with the status (related to being broken) of the node
+        /// </summary>
+        public string BrokenStatusString()
+        {
+            switch (brokenStatus)
+            {
+                case NodeStatus.SetAsInvalid:
+                    return TrackViewer.catalog.GetString("Set as invalid in .pat file");
+                case NodeStatus.NotOnJunction:
+                    return TrackViewer.catalog.GetString("Closest junction is too far away");
+                case NodeStatus.NotOnTrack:
+                    return TrackViewer.catalog.GetString("Not able to place node on track");
+                case NodeStatus.Dangling:
+                    return TrackViewer.catalog.GetString("Dangling siding node");
+                default:
+                    return TrackViewer.catalog.GetString("Unknown");
+            }
+
+        }
+        
+    }
+    #endregion
+
+    #region TrainpathJunctionNode
     /// <summary>
     /// Class to describe junction nodes that are part of a train path.
     /// </summary>
@@ -319,7 +370,7 @@ namespace ORTS.TrackViewer.Editing
             bool broken = (bestDistance2 > maxDistanceAway*maxDistanceAway);
             if (broken)
             {
-                SetBroken(TrackViewer.catalog.GetString("Closest junction is too far away"));
+                SetBroken(NodeStatus.NotOnJunction);
                 bestIndex = 0;
             }
             return bestIndex;
@@ -548,7 +599,9 @@ namespace ORTS.TrackViewer.Editing
                 );
         }
     }
+    #endregion
 
+    #region TrainpathVectorNode
     /// <summary>
     /// Node as part of a train path that is not on a junction but on a vector node. It contains all the relevant extra data
     /// like where exactly on the vector node it is. It also contains all relevant extra data related to the type it is 
@@ -570,10 +623,6 @@ namespace ORTS.TrackViewer.Editing
         public int WaitTimeS { get; set; } 
         /// <summary>clock time to wait until if not zero</summary>
         public int WaitUntil { get; set; }
-#if COUPLE
-        /// <summary>number of cars to uncouple, negative means keep rear</summary>
-        public int NCars { get; set; }
-#endif
 
         private bool _forwardOriented = true;
         /// <summary>is the path oriented forward  or not (with respect of orientation of track itself</summary>
@@ -656,7 +705,7 @@ namespace ORTS.TrackViewer.Editing
             }
             catch
             {
-                SetBroken(TrackViewer.catalog.GetString("Not able to place node on track"));
+                SetBroken(NodeStatus.NotOnTrack);
             }
 
             ForwardOriented = true; // only initial setting
@@ -837,25 +886,6 @@ namespace ORTS.TrackViewer.Editing
                 WaitUntil = 60 * (minute + 60 * hour);
                 WaitTimeS = 0;
             }
-#if COUPLE
-            else if (WaitTimeS >= 40000 && WaitTimeS < 60000)
-            {
-                // Uncouple if a wait=stop point
-                // waitTimeS (in decimal notation) = 4NNSS (uncouple NN cars, wait SS seconds)
-                //                                or 5NNSS (uncouple NN cars, keep rear, wait SS seconds)
-                NCars = (WaitTimeS / 100) % 100;
-                if (WaitTimeS >= 50000)
-                    NCars = -NCars;
-                WaitTimeS %= 100;
-                if (Type == TrainpathNodeType.Stop)
-                    Type = TrainpathNodeType.Uncouple;
-            }
-            else if (WaitTimeS >= 60000)  // this is old and should be removed/reused
-            {
-                // waitTimes = 6xSSS  with waitTime SSS seconds.
-                WaitTimeS %= 1000;
-            }
-#endif
         }
 
         /// <summary>
@@ -876,19 +906,6 @@ namespace ORTS.TrackViewer.Editing
                 case TrainpathNodeType.Reverse:
                     BBBB = 1;
                     break;
-#if COUPLE
-                case TrainpathNodeType.Uncouple:
-                    BBBB = 2;
-                    if (NCars > 0)
-                    {
-                        AAAA = 40000 + NCars * 100 + WaitTimeS; 
-                    }
-                    if (NCars < 0)
-                    {
-                        AAAA = 50000 - NCars * 100 + WaitTimeS; 
-                    }
-                    break;
-#endif
                 case TrainpathNodeType.Stop:
                     BBBB = 2;
                     if (WaitUntil == 0)
@@ -951,4 +968,5 @@ namespace ORTS.TrackViewer.Editing
                 "TrainPathVectorNode {0}", this.TvnIndex);
         }
     }
+    #endregion
 }

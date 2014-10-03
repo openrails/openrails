@@ -256,7 +256,7 @@ namespace ORTS.TrackViewer.UserInterface
                     if (curNode.IsBroken)
                     {
                         statusAdditional.Text += string.Format(System.Globalization.CultureInfo.CurrentCulture,
-                            " Broken: {0} ", curNode.ReasonForBroken);
+                            " Broken: {0} ", curNode.BrokenStatusString());
                     }
                     TrainpathVectorNode curVectorNode = curNode as TrainpathVectorNode;
                     if (curVectorNode != null && curNode.NodeType == TrainpathNodeType.Stop)

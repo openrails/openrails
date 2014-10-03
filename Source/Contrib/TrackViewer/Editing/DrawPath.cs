@@ -211,29 +211,9 @@ namespace ORTS.TrackViewer.Editing
                 case TrainpathNodeType.Stop:
                     drawArea.DrawTexture(trainpathNode.Location, "pathWait", pathPointSize, minPixelSize, maxPixelSize, colorMain);
                     break;
-#if COUPLE
-                case TrainpathNodeType.Uncouple:
-                    drawArea.DrawTexture(trainpathNode.Location, "pathUncouple", 0, pathPointSize, minPixelSize);
-                    break;
-#endif
                 default:
-                    if ((trainpathNode.NextMainNode == null) && (trainpathNode.NextSidingNode != null))
-                    {   // siding node;
-                        drawArea.DrawTexture(trainpathNode.Location, "pathNormal", pathPointSize, minPixelSize, maxPixelSize, colorSiding, angle);
-                    }
-                    else if ((trainpathNode.NextMainNode == null)
-                          && (trainpathNode.NextSidingNode == null)
-                          && (trainpathNode.NodeType != TrainpathNodeType.SidingEnd)
-                          && (trainpathNode.PrevNode.NextSidingNode == trainpathNode))
-                    {
-                        // end of a siding path without it being a siding end
-                        drawArea.DrawTexture(trainpathNode.Location, "pathNormal", pathPointSize, minPixelSize, maxPixelSize, colorMain, angle);
-                        drawArea.DrawTexture(trainpathNode.Location, "crossedRing", pathPointSize, minPixelSize, maxPixelSize, colorBroken);
-                    }
-                    else
-                    {   // normal node
-                        drawArea.DrawTexture(trainpathNode.Location, "pathNormal", pathPointSize, minPixelSize, maxPixelSize, colorMain, angle);
-                    }
+                    Color normalColor = (trainpathNode.NextMainNode != null) ? colorMain : colorSiding;
+                    drawArea.DrawTexture(trainpathNode.Location, "pathNormal", pathPointSize, minPixelSize, maxPixelSize, normalColor, angle);
                     break;
             }
 
@@ -256,7 +236,7 @@ namespace ORTS.TrackViewer.Editing
         /// direction of the vector node</remarks>
         private void DrawPathOnVectorNode(DrawArea drawArea, ColorScheme colors, TrainpathNode currentNode, TrainpathNode nextNode, int TvnIndex)
         {
-            if (currentNode.IsBroken || nextNode.IsBroken || (TvnIndex == -1))
+            if (currentNode.IsBrokenOffTrack || nextNode.IsBrokenOffTrack || (TvnIndex == -1))
             {
                 DrawPathBrokenNode(drawArea, colors, currentNode, nextNode);
                 return;
