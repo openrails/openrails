@@ -380,7 +380,7 @@ namespace ORTS
 
             routedForward = new TrainRouted(this, 0);
             routedBackward = new TrainRouted(this, 1);
-            AuxActionsContain = new AuxActionsContainer(this);
+            AuxActionsContain = new AuxActionsContainer(this, Simulator.orRouteConfig);
         }
 
         //================================================================================================//
@@ -392,7 +392,7 @@ namespace ORTS
         public Train(int number)
         {
             Number = number;
-            AuxActionsContain = new AuxActionsContainer(this);
+            AuxActionsContain = new AuxActionsContainer(this, null);
         }
 
         //================================================================================================//
@@ -410,7 +410,7 @@ namespace ORTS
             SignalObjectItems = new List<ObjectItemInfo>();
             signalRef = simulator.Signals;
 
-            AuxActionsContain = new AuxActionsContainer(this);
+            AuxActionsContain = new AuxActionsContainer(this, Simulator.orRouteConfig);
             if (orgTrain.TrafficService != null)
             {
                 TrafficService = new Traffic_Service_Definition();
@@ -761,7 +761,7 @@ namespace ORTS
                 }
             }
 
-            AuxActionsContain = new AuxActionsContainer(this, inf);
+            AuxActionsContain = new AuxActionsContainer(this, inf, Simulator.RoutePath);
             RestoreDeadlockInfo(inf);
 
             InitialSpeed = inf.ReadSingle();

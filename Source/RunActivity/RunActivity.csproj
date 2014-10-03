@@ -19,7 +19,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\..\Program\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;WINDOWS;NEW_SIGNALLING;NEW_ACTION</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;WINDOWS;NEW_SIGNALLING;NEW_ACTION;WITH_NEW_SAVE;ACTIVITY_EDITOR</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
@@ -28,7 +28,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\..\Program\</OutputPath>
-    <DefineConstants>TRACE;WINDOWS;NEW_SIGNALLING;NEW_ACTION</DefineConstants>
+    <DefineConstants>TRACE;WINDOWS;NEW_SIGNALLING;NEW_ACTION;WITH_NEW_SAVE;ACTIVITY_EDITOR</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
@@ -49,6 +49,10 @@
     </Reference>
     <Reference Include="Microsoft.Xna.Framework, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.Game, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86" />
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\stef\OpenRails\source\Source\3rdPartyLibs\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="PIEHidDotNet, Version=2.2.3.26389, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\3rdPartyLibs\PIEHidDotNet.dll</HintPath>
@@ -359,6 +363,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Contrib\ActivityEditor\LibAE\LibAE.csproj">
+      <Project>{B79691A7-BF8C-40B4-ADE0-5F30F2730414}</Project>
+      <Name>LibAE</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MSTS.Formats\MSTS.Formats.csproj">
       <Project>{570709FA-0C8A-4B1D-BA2D-D9455AFD9B5C}</Project>
       <Name>MSTS.Formats</Name>

@@ -39,6 +39,7 @@ using MSTS.Formats;
 using MSTS.Parsers;
 using ORTS.Common;
 using ORTS.Viewer3D.Popups;
+using LibAE.Formats;
 
 namespace ORTS
 {
@@ -4951,7 +4952,7 @@ namespace ORTS
                 if (thisItem.GetType().IsSubclassOf(typeof(AuxActionItem)))
                 {
                     AuxActionItem action = thisItem as AuxActionItem;
-                    AIAuxActionsRef actionRef = action.ActionRef;
+                    AuxActionRef actionRef = action.ActionRef;
                     if (actionRef.IsGeneric)
                     {
                         nextGenAction = thisItem;   //  SPA In order to manage GenericAuxAction without disturbing normal actions
@@ -5178,12 +5179,12 @@ namespace ORTS
             {
                 if (nextActionInfo != null && nextActionInfo.GetType().IsSubclassOf(typeof(AuxActionItem)))
                 {
-                    AIAuxActionsRef actionRef = ((AuxActionItem)nextActionInfo).ActionRef;
+                    AuxActionRef actionRef = ((AuxActionItem)nextActionInfo).ActionRef;
                     if (actionRef.IsGeneric)
                     {
                         movString = "Gen";
                     }
-                    else if (AuxActionsContain[0] != null && AuxActionsContain[0].NextAction == AIAuxActionsRef.AI_AUX_ACTION.WAITING_POINT)
+                    else if (AuxActionsContain[0] != null && ((AIAuxActionsRef)AuxActionsContain[0]).NextAction == AuxActionRef.AUX_ACTION.WAITING_POINT)
                     {                   
                         movString = "WTP";
                         DateTime baseDT = new DateTime();
