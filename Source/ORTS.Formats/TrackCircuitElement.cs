@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-#if ACTIVITY_EDITOR
+#if !ACTIVITY_EDITOR
 using LibAE.Common;
 using LibAE.Formats;
 

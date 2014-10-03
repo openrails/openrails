@@ -5,7 +5,7 @@ using System.Text;
 using MSTS.Formats;
 using ORTS.Common;
 using ORTS.Formats;
-#if ACTIVITY_EDITOR     //  Don't remove
+#if !ACTIVITY_EDITOR     //  Don't remove
 using LibAE.Common;
 
 namespace LibAE.Formats

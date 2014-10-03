@@ -57,6 +57,10 @@
     <Compile Include="TrackCircuitElement.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Contrib\ActivityEditor\LibAE\LibAE.csproj">
+      <Project>{B79691A7-BF8C-40B4-ADE0-5F30F2730414}</Project>
+      <Name>LibAE</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MSTS.Formats\MSTS.Formats.csproj">
       <Project>{570709FA-0C8A-4B1D-BA2D-D9455AFD9B5C}</Project>
       <Name>MSTS.Formats</Name>
