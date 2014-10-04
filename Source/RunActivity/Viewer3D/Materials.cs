@@ -282,17 +282,29 @@ namespace ORTS.Viewer3D
             return Materials[materialKey];
         }
 
-       public void LoadNightTextures()
+       public bool LoadNightTextures()
         {
+            int count = 0;
             foreach (KeyValuePair<string, Material> materialPair in Materials)
             {
                  if (materialPair.Value is SceneryMaterial)
                 {
                     var material = materialPair.Value as SceneryMaterial;
-                    material.LoadNightTexture();
+                    if (material.LoadNightTexture()) count++;
+                     if (count >= 20)
+                     {
+                         count = 0;
+                         // retest if there is enough free memory left;
+                         var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.HUDWindow.GetWorkingSetSize();
+                         if (remainingMemorySpace < 0)
+                         { 
+                             return false; // too bad, no more space, other night textures won't be loaded
+                         }
+                     }
                 }
             }
-        }
+            return true;
+         }
 
         public void Mark()
         {
@@ -427,6 +439,12 @@ namespace ORTS.Viewer3D
         public virtual bool GetBlending() { return false; }
         public virtual Texture2D GetShadowTexture() { return null; }
         public virtual TextureAddressMode GetShadowTextureAddressMode() { return TextureAddressMode.Wrap; }
+        public int KeyLengthRemainder() //used as a "pseudorandom" number
+        {
+            if (String.IsNullOrEmpty(Key))
+                return 0;
+            return Key.Length%10;
+        }
 
         [CallOnThread("Loader")]
         public virtual void Mark()
@@ -574,14 +592,19 @@ namespace ORTS.Viewer3D
 
         }
 
-       public void LoadNightTexture ()
+       public bool LoadNightTexture ()
          {
+             bool oneMore = false;
             if (((Options & SceneryMaterialOptions.NightTexture) != 0) && (NightTexture == SharedMaterialManager.MissingTexture))               
             {
                 var nightTexturePath = Helpers.GetNightTextureFile(Viewer.Simulator, TexturePath);
                 if (!String.IsNullOrEmpty(nightTexturePath))
+                { 
                     NightTexture = Viewer.TextureManager.Get(nightTexturePath.ToLower());
-            }      
+                    oneMore = true;
+                }
+            }
+            return oneMore;
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
@@ -703,7 +726,8 @@ namespace ORTS.Viewer3D
 
             graphicsDevice.SamplerStates[0].AddressU = graphicsDevice.SamplerStates[0].AddressV = GetShadowTextureAddressMode();
 
-            if (NightTexture != null && Viewer.MaterialManager.sunDirection.Y < 0.0f)
+            var timeOffset = ((float)KeyLengthRemainder())/5000f; // TODO for later use for pseudorandom texture switch time
+            if (NightTexture != null && NightTexture != SharedMaterialManager.MissingTexture && Viewer.MaterialManager.sunDirection.Y < 0.0f - timeOffset)
             {
                 shader.ImageTexture = NightTexture;
                 shader.ImageTextureIsNight = true;
@@ -782,7 +806,8 @@ namespace ORTS.Viewer3D
 
         public override Texture2D GetShadowTexture()
         {
-            if (NightTexture != null && Viewer.MaterialManager.sunDirection.Y < 0.0f)
+            var timeOffset = ((float)KeyLengthRemainder()) / 5000f; // TODO for later use for pseudorandom texture switch time
+            if (NightTexture != null && NightTexture != SharedMaterialManager.MissingTexture && Viewer.MaterialManager.sunDirection.Y < 0.0f - timeOffset)
                 return NightTexture;
 
             return Texture;

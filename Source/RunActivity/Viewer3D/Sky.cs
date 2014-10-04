@@ -142,12 +142,12 @@ namespace ORTS.Viewer3D
             // Using the Lerp() function, so need to calculate the in-between differential
             float diff = (float)(Viewer.Simulator.ClockTime - oldClockTime) / 1200;
             // The rest of this increments/decrements the array indices and checks for overshoot/undershoot.
-            if (Viewer.Simulator.ClockTime >= (oldClockTime + 1200)) // Plus key, or normal forward in time
+            while (Viewer.Simulator.ClockTime >= (oldClockTime + 1200)) // Plus key, or normal forward in time; <CSComment> better so in case of fast forward
             {
                 step1++;
                 step2++;
-                oldClockTime = Viewer.Simulator.ClockTime;
-                diff = 0;
+                oldClockTime = oldClockTime + 1200;
+                diff = (float)(Viewer.Simulator.ClockTime - oldClockTime) / 1200;
                 if (step2 >= maxSteps) // Midnight.
                 {
                     step2 = 0;

@@ -183,6 +183,8 @@ namespace ORTS.Viewer3D
 
         public bool DontLoadNightTextures; // Checkbox set and time of day allows not to load textures
         public bool NightTexturesNotLoaded; // At least one night texture hasn't been loaded
+        public long LoadMemoryThreshold; // Above this threshold loader doesn't bulk load night textures
+        public bool tryLoadingNightTextures = false;
 
         /// <summary>
         /// Finds time of last entry to set ReplayEndsAt and provide the Replay started message.
@@ -303,6 +305,8 @@ namespace ORTS.Viewer3D
             Camera.Restore(inf);
             CabYOffsetPixels = inf.ReadInt32();
             NightTexturesNotLoaded = inf.ReadBoolean();
+            LoadMemoryThreshold = (long)HUDWindow.GetVirtualAddressLimit() - 512 * 1024 * 1024;
+            tryLoadingNightTextures = true;
 
         }
 
@@ -364,7 +368,10 @@ namespace ORTS.Viewer3D
             // all loading is performed on a single thread that we can handle in debugging and tracing.
             World.LoadPrep();
             if (Simulator.Settings.ConditionalLoadOfNightTextures) // We need to compute sun height only in this case
+            { 
             MaterialManager.LoadPrep();
+            LoadMemoryThreshold = (long)HUDWindow.GetVirtualAddressLimit() - 512 * 1024 * 1024;
+            }
             Load();
 
             // MUST be after loading is done! (Or we try and load shapes on the main thread.)

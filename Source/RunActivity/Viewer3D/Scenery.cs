@@ -74,12 +74,11 @@ namespace ORTS.Viewer3D
         [CallOnThread("Loader")]
         public void Load()
         {
-            
+            Viewer.DontLoadNightTextures = (Program.Simulator.Settings.ConditionalLoadOfNightTextures &&
+            ((Viewer.MaterialManager.sunDirection.Y > 0.05f && Program.Simulator.ClockTime%86400 < 43200) ||
+            (Viewer.MaterialManager.sunDirection.Y > 0.15f && Program.Simulator.ClockTime %86400 >= 43200))) ? true : false;            
             if (TileX != VisibleTileX || TileZ != VisibleTileZ)
             {
-                Viewer.DontLoadNightTextures = (Program.Simulator.Settings.ConditionalLoadOfNightTextures &&
-                ((Viewer.MaterialManager.sunDirection.Y > 0.10f && Program.Simulator.ClockTime < 43200) ||
-                (Viewer.MaterialManager.sunDirection.Y > 0.15f && Program.Simulator.ClockTime >= 43200))) ? true : false;
                 TileX = VisibleTileX;
                 TileZ = VisibleTileZ;
                 var worldFiles = WorldFiles;
@@ -100,12 +99,27 @@ namespace ORTS.Viewer3D
                 foreach (var tile in oldWorldFiles)
                     tile.Dispose();
                 WorldFiles = newWorldFiles;
+                Viewer.tryLoadingNightTextures = true; // when Tiles loaded change you can try
             }
-            else if (Viewer.NightTexturesNotLoaded && Program.Simulator.ClockTime >= 43200 && Viewer.MaterialManager.sunDirection.Y < 0.10f)
+            else if (Viewer.NightTexturesNotLoaded && Program.Simulator.ClockTime%86400 >= 43200 && Viewer.tryLoadingNightTextures)
             {
-                // Night is coming, it's time to load the night textures
-                Viewer.MaterialManager.LoadNightTextures();
-                Viewer.NightTexturesNotLoaded = false;
+                var sunHeight = Viewer.MaterialManager.sunDirection.Y;
+                if (sunHeight < 0.10f && sunHeight > 0.01)
+                {
+                    var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.HUDWindow.GetWorkingSetSize();
+                    if (remainingMemorySpace >= 0) // if not we'll try again
+                    {
+                        // Night is coming, it's time to load the night textures
+                        var success = Viewer.MaterialManager.LoadNightTextures();
+                        if (success)
+                        {
+                            Viewer.NightTexturesNotLoaded = false;
+                        }
+                    }
+                    Viewer.tryLoadingNightTextures = false;
+                }
+                else if (sunHeight <= 0.01)
+                    Viewer.NightTexturesNotLoaded = false; // too late to try, we must give up and we don't load the night textures
             }
         }
 
