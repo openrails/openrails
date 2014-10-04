@@ -685,7 +685,14 @@ namespace Tests.Msts.Parsers
                 reader.SkipRestOfBlock();
                 Assert.Equal("wagon(lights()", reader.Tree.ToLower());
 
-                reader.ReadItem();
+                //Possibly it is not nice to have a 'while' loop in a test'
+                //But it is not a requirement that STFreader returns "#\u00b6", it only is a possibility.
+                //If STFreader is ever rewritten, the current test should still pass, but preferably #\u00b6 is not needed anymore
+                string lastItem = reader.ReadItem();
+                while (lastItem == "#\u00b6")
+                {
+                    lastItem = reader.ReadItem();
+                }
                 Assert.Equal("wagon()", reader.Tree.ToLower());
 
                 reader.ReadItem();
