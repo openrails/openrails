@@ -155,11 +155,11 @@ void _VSSignalProjection(uniform bool Glow, in VERTEX_INPUT_SIGNAL In, inout VER
 {
 	// Project position, normal and copy texture coords
 	float3 relPos = mul(In.Position, World) - ViewerPos;
-	// Position 1cm in front of signal.
-	In.Position.z += 0.01;
+	// Position 1.5cm in front of signal.
+	In.Position.z += 0.015;
 	if (Glow) {
-		// Position glow a further 1cm in front of the light.
-		In.Position.z += 0.01;
+		// Position glow a further 1.5cm in front of the light.
+		In.Position.z += 0.015;
 		// The glow around signal lights scales according to distance; there is a cut-off which controls when the glow
 		// starts, a scaling factor which determines how quickly it expands (logarithmically), and ZBias_Lighting.x is
 		// an overall "glow power" control which determines the effectiveness of glow on any individual light. This is
