@@ -249,7 +249,7 @@ namespace ORTS
         bool AcceptUseOfNonvalidSave(Save save)
         {
             var reply = MessageBox.Show(catalog.GetStringFmt(
-                "Restoring from a save made by older version {1} of {0} may be incompatible with current version {2}. Please do not report any problems that may result.\n\nContinue?",
+                "Restoring from a save made by version {1} of {0} may be incompatible with current version {2}. Please do not report any problems that may result.\n\nContinue?",
                 Application.ProductName, save.VersionOrBuild, VersionInfo.VersionOrBuild),
                 Application.ProductName + " " + VersionInfo.VersionOrBuild, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             return reply == DialogResult.Yes;

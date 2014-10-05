@@ -535,7 +535,7 @@ namespace ORTS.Processes
             if (valid == null)
             {
                 //<CJComment> Cannot make this multi-language using Viewer.Catalog as Viewer is still null. </CJCOmment>
-                Trace.TraceWarning("Restoring from a save made by older version {1}\n"
+                Trace.TraceWarning("Restoring from a save made by version {1}\n"
                     + "of {0} may be incompatible with current version {2}.\n"
                     + "Please do not report any problems that may result.\n",
                     Application.ProductName, versionOrBuild, VersionInfo.VersionOrBuild);

@@ -149,19 +149,22 @@ namespace ORTS.Common
         }
 
         /// <summary>
-        /// Find the revision number (e.g. 1648) from the full version (e.g. 0.9.0.1648)
+        /// Find the revision number (e.g. 1648) from the full version (e.g. 0.9.0.1648 or X.1648 or X1648)
         /// </summary>
         /// <param name="version">full version</param>
-        public static int GetRevisionFromVersion(string version)
+        public static int GetRevisionFromVersion(string fullVersion)
         {
-            string[] versionArray = version.Split('.');
+            var versionParts = fullVersion.Split('.');
             var revision = 0;
-            try  // as Convert.ToInt32() can fail and version may be ""
+            try
             {
-                var length = versionArray.Length;
-                revision = Convert.ToInt32(versionArray[length - 1]);
+                var version = versionParts[versionParts.Length - 1];
+                if (version.StartsWith("X"))
+                    version = version.Substring(1);
+                // Might throw an error if it isn't a number like we expect.
+                revision = Convert.ToInt32(version);
             }
-            catch { } // ignore errors
+            catch { }
             return revision;
         }
     }
