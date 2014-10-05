@@ -176,6 +176,11 @@ namespace ORTS.TrackViewer.Editing
         /// <returns>true if such a direct path has been found</returns>
         public bool FoundConnectionSameTrack(ConnectableNode fromNode, int? firstTvnIndex)
         {
+            if (connectableNodeOptions.Count == 0)
+            {
+                return false;
+            }
+
             ConnectableNode candidate = connectableNodeOptions[0];
             
             if (ExistsConnectionSameTrack(fromNode, candidate, firstTvnIndex)) {

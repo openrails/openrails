@@ -812,6 +812,7 @@ namespace ORTS.TrackViewer.Editing
             TrainpathJunctionNode activeNodeAsJunction = ActiveNode as TrainpathJunctionNode;
             if (!CanTakeOtherExitBasic(activeNodeAsJunction)) return false;
             if (ActiveNode.HasSidingPath) return false;
+            if (activeNodeAsJunction.IsSimpleSidingStart()) return false;
             
             //The idea was that if a normal passing path is possible, then there is no need for a complex passing path
             //However, if you want to connect not to the default recnnect node, we do need this
@@ -1641,7 +1642,8 @@ namespace ORTS.TrackViewer.Editing
         private ContinuousAutoConnecting autoConnectForward;
         private ContinuousAutoConnecting autoConnectReverse;
         private TrainpathVectorNode nodeBeingDragged;               // link to a possibly possibly temporary node that is being dragged.
-
+        private int netNodesDeleted;
+        
         //private DebugWindow debugWindow;
         /// <summary>Constructor</summary>
         public EditorActionMouseDragAutoConnect()
@@ -1671,6 +1673,9 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         protected override void InitDragging()
         {
+            modificationTools.Reset();
+            netNodesDeleted = 0;
+
             if (ActiveNode is TrainpathJunctionNode || (ActiveNode.NodeType == TrainpathNodeType.Other))
             {
                 // we need a new vector node here.
@@ -1681,13 +1686,49 @@ namespace ORTS.TrackViewer.Editing
             {
                 nodeBeingDragged = (ActiveNode as TrainpathVectorNode);
             }
-
+            UpdateNodeCount();
             InitAutoConnects();
         }
 
-        private void InitAutoConnects () {
+        private void InitAutoConnects()
+        {
             autoConnectForward = new ContinuousAutoConnecting(nodeBeingDragged, true);
             autoConnectReverse = new ContinuousAutoConnecting(nodeBeingDragged, false);
+
+            int danglingNodeJunctionIndex = FindPossibleDanglingNodeJunctionIndex(nodeBeingDragged);
+            if (danglingNodeJunctionIndex >= 0)
+            {
+                autoConnectForward.AddDisallowedJunction(danglingNodeJunctionIndex);
+                autoConnectReverse.AddDisallowedJunction(danglingNodeJunctionIndex);
+            }
+        }
+
+        /// <summary>
+        /// Possibly a single dangling node is present over which we cannot drag.
+        /// This can only be a node connected from the first sidingstart when looking backwards,
+        /// but it can still affect the forward-connecting path 
+        /// </summary>
+        /// <param name="node">The node to start searching from</param>
+        /// <returns>The index of the dangling node, or -1 if not found</returns>
+        private static int FindPossibleDanglingNodeJunctionIndex(TrainpathNode node)
+        {
+            while (node != null)
+            {
+                if (node.NodeType == TrainpathNodeType.SidingEnd)
+                {
+                    break;
+                }
+                if (node.NodeType == TrainpathNodeType.SidingStart)
+                {
+                    if (node.NextSidingNode.IsBroken)
+                    {   // it is a dangling node
+                        return (node.NextSidingNode as TrainpathJunctionNode).JunctionIndex;
+                    }
+                    break;
+                }
+                node = node.PrevNode;
+            }
+            return -1;
         }
 
         /// <summary>
@@ -1766,6 +1807,7 @@ namespace ORTS.TrackViewer.Editing
             //    );
             if (connectionIsGood)
             {
+                PrepareNodeCountUpdate(autoConnectReverse.ReconnectTrainpathNode, autoConnectForward.ReconnectTrainpathNode, -1);//Node being dragged is added again.   
                 autoConnectForward.CreateFoundConnection(modificationTools, true);
                 autoConnectReverse.CreateFoundConnection(modificationTools, true, true);
             }
@@ -1781,9 +1823,10 @@ namespace ORTS.TrackViewer.Editing
         private bool CouldAndMadeConnectionStart()
         {
             bool connectionIsGood = autoConnectForward.CanConnect(nodeBeingDragged);
-            
+
             if (connectionIsGood)
             {
+                PrepareNodeCountUpdate(nodeBeingDragged, autoConnectForward.ReconnectTrainpathNode, 0);
                 autoConnectForward.CreateFoundConnection(modificationTools, true);
             }
 
@@ -1801,12 +1844,31 @@ namespace ORTS.TrackViewer.Editing
 
             if (connectionIsGood)
             {
-                autoConnectReverse.CreateFoundConnection(modificationTools, true); // note: reverse is not yet done.
+                PrepareNodeCountUpdate(autoConnectReverse.ReconnectTrainpathNode, nodeBeingDragged, 0);                
+                autoConnectReverse.CreateFoundConnection(modificationTools, true); // note: reverse is not yet done, compare 'normal connection'
             }
 
             return connectionIsGood;
         }
 
+        /// <summary>
+        /// Prepare to keep node count up to date. Reset modification tool and calculate the
+        /// amount of nodes deleted (given the reconnectpoint backwards and forwards.
+        /// Number of deleted nodes is the amount of nodes between the two unchanged nodes, plus a possible correction
+        /// </summary>
+        private void PrepareNodeCountUpdate(TrainpathNode lastUnchangedNodeReverse, TrainpathNode firstUnchangedNodeForward, int deletedNodesCorrection)
+        {
+            modificationTools.Reset();
+            int originalNodeNumberReconnectNodeForward = Trainpath.GetNodeNumber(firstUnchangedNodeForward);
+            int originalNodeNumberReconnectNodeReverse = Trainpath.GetNodeNumber(lastUnchangedNodeReverse);
+            netNodesDeleted = originalNodeNumberReconnectNodeForward - originalNodeNumberReconnectNodeReverse - 1;
+            netNodesDeleted += deletedNodesCorrection;
+
+            //debugWindow.DrawString = String.Format("deleted {0} - {1} - 2 = {2}, added {3}", 
+            //    originalNodeNumberReconnectNodeForward, originalNodeNumberReconnectNodeReverse,
+            //    netNodesDeleted, modificationTools.NetNodesAdded);
+
+        }
 
         /// <summary>
         /// Overridable hook to perform some cleanup actions at the end of dragging (EndDragging or CancelDragging)
@@ -1819,13 +1881,14 @@ namespace ORTS.TrackViewer.Editing
             }
             UpdateNodeCount();
         }
-        
+
+        /// <summary>Returns the net amount of main nodes added.</summary>
+        protected override int NetMainNodesAdded()
+        {
+            return modificationTools.NetNodesAdded - netNodesDeleted;
+        }
         //todo for dragging:
         // * Passing paths.
-        // * Do not allow to drag over a dangling node.
-        // * limit reconnectable nodes
-        // * Optimize for not changing tvn indexes
-        // * autofix node broken only in .pat file.
     }
     #endregion
   
@@ -1909,17 +1972,8 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>Execute the action. This assumes that the action can be executed</summary>
         protected override void ExecuteAction()
         {
-            // first backup till we are on main track.
-            int nodesOnSidingPath = 0;
-            TrainpathNode node = ActiveNode;
-            while (node.NextMainNode == null)
-            {
-                node = node.PrevNode;
-                nodesOnSidingPath++;
-            }
-
-            int newNumberToDraw = nodesOnSidingPath + Trainpath.GetNodeNumber(node);
-            callback(newNumberToDraw);
+            int newNumberToDraw = Trainpath.GetNodeNumber(this.ActiveNode);
+            this.callback(newNumberToDraw);
         }
     }
     #endregion

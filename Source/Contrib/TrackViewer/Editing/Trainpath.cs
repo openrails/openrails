@@ -545,25 +545,37 @@ namespace ORTS.TrackViewer.Editing
         }
 
         /// <summary>
-        /// Calculate the number of this node in the total path. FirstNode is 1. The node needs to be on mainpath,
-        /// otherwise -1 will be returned.
+        /// Calculate the number of this node in the total path. FirstNode is 1. 
         /// </summary>
         /// <param name="node">Node for which to calculate the number</param>
-        /// <returns>The sequential number of the node in the main path. -1 in case node is not on main path.</returns>
+        /// <returns>The sequential number of the node in the path. -1 if not found</returns>
         public int GetNodeNumber(TrainpathNode node)
         {
-            int numberFound = 1;
+            // first backup till we are on main track.
+            int nodesOnSidingPath = 0;
+            while (node.NextMainNode == null)
+            {
+                node = node.PrevNode;
+                nodesOnSidingPath++;
+                if (node == null)
+                {
+                    return -1;
+                }
+            }
+
+            int nodesOnMainPath = 1;
             TrainpathNode mainNode = FirstNode;
             while (mainNode != null && mainNode != node)
             {
-                numberFound++;
+                nodesOnMainPath++;
                 mainNode = mainNode.NextMainNode;
             }
+
             if (mainNode == null)
             {
                 return -1;
             }
-            return numberFound;
+            return nodesOnSidingPath + nodesOnMainPath;
         }
 
         /// <summary>

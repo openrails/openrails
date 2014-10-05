@@ -26,7 +26,7 @@ namespace ORTS.TrackViewer.Editing
         }
         #endregion
 
-        /// <summary>Constructor (empty)</summary>
+        /// <summary>Constructor</summary>
         public ModificationTools()
         {
             Reset(); // to give an initial value
@@ -212,18 +212,12 @@ namespace ORTS.TrackViewer.Editing
 
             TrainpathVectorNode newNode = AddAdditionalVectorNode(prevNode, nodeCandidate, true);
 
-            prevNode.NextMainNode = newNode;
-            prevNode.NextSidingNode = null; // should not be needed
-            prevNode.NextMainTvnIndex = newNode.TvnIndex;
-            newNode.PrevNode = prevNode;
-
             newNode.NextMainNode = nextNode;
             newNode.NextSidingNode = null; // should not be needed
             nextNode.PrevNode = newNode;
 
             CleanAmbiguityNodes(newNode);
 
-            NetNodesAdded ++;
             return newNode;
         }
 

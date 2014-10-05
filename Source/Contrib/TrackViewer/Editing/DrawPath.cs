@@ -212,7 +212,7 @@ namespace ORTS.TrackViewer.Editing
                     drawArea.DrawTexture(trainpathNode.Location, "pathWait", pathPointSize, minPixelSize, maxPixelSize, colorMain);
                     break;
                 case TrainpathNodeType.Temporary:
-                    drawArea.DrawTexture(trainpathNode.Location, "crossedRing", pathPointSize, minPixelSize, colorBroken);
+                    drawArea.DrawTexture(trainpathNode.Location, "crossedRing", pathPointSize, minPixelSize, maxPixelSize, colorBroken);
                     break;
                 default:
                     bool isSidingNode = (trainpathNode.NextMainNode == null) &&

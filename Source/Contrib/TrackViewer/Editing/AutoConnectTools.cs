@@ -17,12 +17,15 @@ namespace ORTS.TrackViewer.Editing
         private Collection<int> DisAllowedJunctionIndexes { get; set; }
 
         /// <summary>maximum number of nodes we will try before we conclude not reconnection is possible.</summary>
-        private const int maxNumberNodesToCheckForAutoFix = 20;
+        protected const int maxNumberNodesToCheckForAutoFix = 20;
 
         /// <summary>The node that is connected from, does that need to be reverse to enable the connection?</summary>
         protected bool FromNodeNeedsReverse;
         /// <summary>The node that is connected to, does that need to be reverse to enable the connection?</summary>
         protected bool ToNodeNeedsReverse;
+
+        /// <summary>Returns the node that is being used for reconnecting, once a connection has been found</summary>
+        public TrainpathNode ReconnectTrainpathNode { get { return autoConnectToNodeOptions.ActualReconnectNode.OriginalNode; } }
 
         #region private members to store the path
         /// <summary>List of TVNs that describe how to connect two nodes (via which TrackVectorNodes the connection is made)</summary>
@@ -248,33 +251,38 @@ namespace ORTS.TrackViewer.Editing
                     {
                         if (mainNode.NodeType == TrainpathNodeType.SidingStart)
                         {   // if a new siding path is started, stop searching
+                            // But nevertheless, it is still possible to connect a vector node here
+                            reconnectNodeCandidates.Add(mainNode);
+                            break;
+                        }
+                        if (mainNode.NodeType == TrainpathNodeType.SidingEnd)
+                        {   // A siding end already has already both an incoming main and incoming end node
+                            // So there is no way to reconnect to an empty track
                             break;
                         }
                         if (!mainNodeAsJunction.IsFacingPoint)
                         {   // add the trailing junction.
                             reconnectNodeCandidates.Add(mainNode);
                         }
-                        if (mainNode.NodeType == TrainpathNodeType.SidingEnd)
-                        {   // for a main path we cannot reconnect past the end of the current siding path, but the siding end itself is still allowed
-                            // for adding a passing path this should never happen
-                            break;
-                        }
+
                     }
                     else // searching backward
                     {
                         if (mainNode.NodeType == TrainpathNodeType.SidingEnd)
                         {   // if a new siding path is started (looking backwards), stop searching
+                            // But nevertheless, it is still possible to connect a vector node here
+                            reconnectNodeCandidates.Add(mainNode);
+                            break;
+                        }
+                        if (mainNode.NodeType == TrainpathNodeType.SidingStart)
+                        {   // Searching back, a siding start has already two outgoing tracks. so there is no free track we could use
                             break;
                         }
                         if (mainNodeAsJunction.IsFacingPoint)
                         {   // add the facing junction.
                             reconnectNodeCandidates.Add(mainNode);
                         }
-                        if (mainNode.NodeType == TrainpathNodeType.SidingStart)
-                        {   // for a main path we cannot reconnect before the start of the current siding path, but the siding end itself is still allowed
-                            // for adding a passing path this should never happen
-                            break;
-                        }
+
                     }
                 }
             }
@@ -313,16 +321,16 @@ namespace ORTS.TrackViewer.Editing
             linkingTvns.Clear();
             sameTrackConnect = false;
             
+            int firstJunctionIndex = autoConnectFromNode.ConnectingJunctionIndex;
+            if (DisAllowedJunctionIndexes.Contains(firstJunctionIndex)) {
+                return false;
+            }
+
             //search for a path
-            bool foundConnection;
-            if (firstTvnIndex.HasValue)
-            {
-                foundConnection = TryToFindConnectionVia(autoConnectFromNode.ConnectingJunctionIndex, firstTvnIndex.Value);
-            }
-            else
-            {
-                foundConnection = TryToFindConnection(autoConnectFromNode.ConnectingJunctionIndex, autoConnectFromNode.IsConnectingJunctionFacing);
-            }
+            bool foundConnection =
+                (firstTvnIndex.HasValue) ?
+                TryToFindConnectionVia(firstJunctionIndex, firstTvnIndex.Value) :
+                TryToFindConnection(firstJunctionIndex, autoConnectFromNode.IsConnectingJunctionFacing);
 
             return foundConnection;
         }
@@ -440,7 +448,7 @@ namespace ORTS.TrackViewer.Editing
         
         #endregion
 
-        #region debugMethods
+        #region debug methods
         /// <summary>
         /// Return a string describing the track vector node (TVN) indexes that are being used for a connection
         /// </summary>
@@ -461,15 +469,16 @@ namespace ORTS.TrackViewer.Editing
     {
         /// <summary>The Start/From node needs to be reversed to be able to make the connection</summary>
         public bool NeedsReverse { get { return this.FromNodeNeedsReverse;} }
+        /// <summary>The connection is made forward along the path from the Start/From node</summary>
         private bool isForward;
 
-        static Dictionary<bool, Drawing.DebugWindow> debugWindows = new Dictionary<bool, Drawing.DebugWindow>();
-        static ContinuousAutoConnecting()
-        {
-            debugWindows[true] = new Drawing.DebugWindow(10, 40);
-            debugWindows[false] = new Drawing.DebugWindow(10, 60);
-        }
-        private string debugString = String.Empty;
+        //static Dictionary<bool, Drawing.DebugWindow> debugWindows = new Dictionary<bool, Drawing.DebugWindow>();
+        //static ContinuousAutoConnecting()
+        //{
+        //    debugWindows[true] = new Drawing.DebugWindow(10, 40);
+        //    debugWindows[false] = new Drawing.DebugWindow(10, 60);
+        //}
+        //private string debugString = String.Empty;
 
         /// <summary>
         /// Constructor. This will also find store the candidates for reconnecting
@@ -478,31 +487,36 @@ namespace ORTS.TrackViewer.Editing
         /// <param name="isConnectingForward">Is this node connecting forwards (along the path) or not</param>
         public ContinuousAutoConnecting(TrainpathNode startNode, bool isConnectingForward)
         {
-            
             isForward = isConnectingForward;
             List<TrainpathNode> reconnectNodes = this.FindReconnectNodeCandidates(startNode, isConnectingForward, true);
+            
             autoConnectToNodeOptions = new ReconnectNodeOptions(isConnectingForward);
+            int count = 0;
             foreach (TrainpathNode node in reconnectNodes)
             {
                 autoConnectToNodeOptions.AddNode(node, false);
-                debugString += node.ToStringShort();
+                //debugString += node.ToStringShort();
+                if (count++ > maxNumberNodesToCheckForAutoFix)
+                {
+                    break;
+                }
             }
 
         }
 
         /// <summary>
-        /// Determine if a connection can be made (and store the found solution)
+        /// Determine if a connection can be made (and store the found solution), from a 'dynamic node' meaning that
+        /// it can change.
         /// </summary>
-        /// <param name="fromNode"></param>
-        /// <returns></returns>
+        /// <param name="fromNode">The node that is from which to connect</param>
         public bool CanConnect(TrainpathVectorNode fromNode)
         {
             autoConnectFromNode = new ConnectableNode(fromNode, true, isForward);
             FromNodeNeedsReverse = false; // reset to correct value
             bool canIndeedConnect = FindConnectionFromTo(null, true);
-            debugWindows[isForward].DrawString = String.Format("{0}:{1} ({2}) {3}", canIndeedConnect,
-                (autoConnectToNodeOptions.ActualReconnectNode == null ? "none" : autoConnectToNodeOptions.ActualReconnectNode.OriginalNode.ToStringShort()),
-                LinkingTvnsAsString(), debugString);
+            //debugWindows[isForward].DrawString = String.Format("{0}:{1} ({2}) {3}", canIndeedConnect,
+            //    (autoConnectToNodeOptions.ActualReconnectNode == null ? "none" : autoConnectToNodeOptions.ActualReconnectNode.OriginalNode.ToStringShort()),
+            //    LinkingTvnsAsString(), debugString);
             return canIndeedConnect;
         }
     }

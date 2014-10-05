@@ -19,8 +19,7 @@
 //
 // ENHANCEMENT list for Trackviewer 
 // Short term 
-//      remove drawTrains?
-//      Path editor: allow dragging junction nodes with the mouse.
+//      Path editor: improve dragging junction nodes with the mouse.
 //      Update documentation (including new arrows)
 //      Improve the 'take focus' between menu and main window. Re-introduce alt to give menu focus.
 //     
@@ -29,6 +28,7 @@
 //
 // Additions
 //      Draw ground textures from .ace files.
+//      Add coloring for speed?
 //
 // Ideas from others
 //      Adding color option also for 'black' parts of path textures
@@ -48,7 +48,7 @@
 //              * test
 //
 // Code improvements
-//      
+//      remove drawTrains. Perhaps it is nice to keep it for later when .ace is supported and link to runActivity can be made
 //      remove dependency on ORTS.Settings. Even though it means a bit of code duplication
 //      Colorscheme needs optimalization: now a color needs to go through to many redirections too often. Can I profile this?
 //          Possibly easiest is to have a fixed version that is created once the colorscheme is requested.
@@ -120,7 +120,7 @@ namespace ORTS.TrackViewer
     {
         #region Public members
         /// <summary>String showing the date of the program</summary>
-        public readonly static string TrackViewerVersion = "2014/10/03";
+        public readonly static string TrackViewerVersion = "2014/10/05";
         /// <summary>Path where the content (like .png files) is stored</summary>
         public string ContentPath { get; private set; }
         /// <summary>Folder where MSTS is installed (or at least, where the files needed for tracks, routes and paths are stored)</summary>
@@ -908,12 +908,13 @@ namespace ORTS.TrackViewer
             //Properties.Settings.Default.statusShowFPS = true;
             //ReloadRoute();
             //SetPath(Paths[10]);
+            //NewPath(); 
             //PathEditor.EditingIsActive = true;
             //DrawArea.ZoomToTile();
             //DrawArea.Zoom(-18);
-            //CenterAroundTrackNode(75);
+            //CenterAroundTrackNode(383);
             //ReversePath();
-            //NewPath();
+            
         }
         
         static void InitLogging()
