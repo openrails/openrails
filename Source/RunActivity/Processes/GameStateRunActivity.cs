@@ -381,20 +381,20 @@ namespace ORTS.Processes
                     var restorePosition = inf.BaseStream.Position;
                     var savePosition = inf.ReadInt64();
                     if (restorePosition != savePosition)
-                    {
-                        throw new IncompatibleSaveException(saveFile, versionOrBuild);
-                    }
+                        throw new InvalidDataException("Saved game stream position is incorrect.");
                 }
                 catch (Exception error)
                 {
-                    Trace.WriteLine(new FatalException(error));
                     if (saveRevision > settings.YoungestFailedToRestore)
                     {
                         settings.YoungestFailedToRestore = saveRevision;
                         settings.Save("YoungestFailedToRestore");
                         Trace.TraceInformation("YoungestFailedToRestore set to Save's revision: {0}", saveRevision);
                     }
-                    throw new IncompatibleSaveException(saveFile, versionOrBuild);
+                    // Rethrow the existing error if it is already an IncompatibleSaveException.
+                    if (error is IncompatibleSaveException)
+                        throw error;
+                    throw new IncompatibleSaveException(saveFile, versionOrBuild, error);
                 }
 
                 // Reload the command log
@@ -531,9 +531,7 @@ namespace ORTS.Processes
             var versionOrBuild = version.Length > 0 ? version : build;
             var valid = VersionInfo.GetValidity(version, build, settings.YoungestFailedToRestore);
             if (valid == false) // This is usually detected in ResumeForm.cs but a Resume can also be launched from the command line.
-            {
                 throw new IncompatibleSaveException(saveFile, versionOrBuild);
-            }
             if (valid == null)
             {
                 //<CJComment> Cannot make this multi-language using Viewer.Catalog as Viewer is still null. </CJCOmment>
@@ -1343,10 +1341,16 @@ namespace ORTS.Processes
         public readonly string SaveFile;
         public readonly string VersionOrBuild;
 
-        public IncompatibleSaveException(string saveFile, string versionOrBuild)
+        public IncompatibleSaveException(string saveFile, string versionOrBuild, Exception innerException)
+            : base(null, innerException)
         {
             SaveFile = saveFile;
             VersionOrBuild = versionOrBuild;
+        }
+
+        public IncompatibleSaveException(string saveFile, string versionOrBuild)
+            : this(saveFile, versionOrBuild, null)
+        {
         }
     }
 
