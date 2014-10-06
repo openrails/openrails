@@ -1049,10 +1049,7 @@ namespace LibAE.Formats
 
     #region StationAreaItem
 
-#if !JSON_OR_XML
-    [Serializable()]
-#else
-#endif
+
     public class StationAreaItem : GlobalItem
     {
         [JsonProperty("Connector")]
@@ -1155,10 +1152,6 @@ namespace LibAE.Formats
         }
     }
 
-#if !JSON_OR_XML
-    [Serializable()]
-#else
-#endif
     public class StationConnector
     {
         [JsonProperty("dirConnector")]

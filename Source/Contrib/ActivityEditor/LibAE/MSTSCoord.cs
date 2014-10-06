@@ -35,15 +35,8 @@ using LibAE;
 using LibAE.Formats;
 //using XnaGeometry;
 using Microsoft.Xna.Framework;
-
-#if !JSON_OR_XML
-using System.Xml.Serialization;
-using System.Runtime.Serialization;
-#else
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-#endif
-
 
 namespace LibAE
 {
@@ -128,12 +121,8 @@ namespace LibAE
         }
     }
 
-#if !JSON_OR_XML
-    [Serializable()]
-    public class MSTSCoord : ISerializable
-#else
     public class MSTSCoord
-#endif
+
     {
         public float TileX { get; set; }
         public float TileY { get; set; }
@@ -287,26 +276,6 @@ namespace LibAE
             //File.AppendAllText(@"F:\temp\AE.txt", "/ donne :" + info + "\n");
             return info;
         }
-
-#if !JSON_OR_XML
-        public void GetObjectData(SerializationInfo info, StreamingContext ctxt)
-        {
-            info.AddValue("TileX", this.TileX);
-            info.AddValue("TileY", this.TileY);
-            info.AddValue("X", this.X);
-            info.AddValue("Y", this.Y);
-        }
-
-        public MSTSCoord(SerializationInfo info, StreamingContext ctxt)
-        {
-            TileX = (int)info.GetValue("TileX", typeof(float));
-            TileY = (int)info.GetValue("TileY", typeof(float));
-            X = (int)info.GetValue("X", typeof(float));
-            Y = (int)info.GetValue("Y", typeof(float));
-        }
-#else
-
-#endif
     }
 
 }

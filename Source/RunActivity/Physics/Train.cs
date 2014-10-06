@@ -13195,8 +13195,7 @@ namespace ORTS
                     // process siding items
                     //  SPA:  Station: à adapter
                     //  if (orgSignals.UseLocationPassingPaths) ??
-#if ACTIVITY_EDITOR
-#else
+
                     if (thisPathNode.Type == AIPathNodeType.SidingStart)
                     {
                         TrackNode sidingNode = aiPath.TrackDB.TrackNodes[thisPathNode.JunctionIndex];
@@ -13221,7 +13220,7 @@ namespace ORTS
 
                         thisPathNode.Type = AIPathNodeType.Other;
                     }
-#endif
+
 
                     //
                     // process last non-junction section
