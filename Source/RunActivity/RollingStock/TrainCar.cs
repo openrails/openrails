@@ -921,16 +921,7 @@ namespace ORTS
                     w.Part = Parts[w.BogieIndex];
                     w.Part.SumWgt++;
                 }
-                // This check is for the single axle/bogie issue.
-                // Check SumWgt using Part.SumWgt.
-                // Using Parts[0].SumWgt created issues.
-                foreach (var w in WheelAxles)
-                {
-                    if (!articFront && !articRear && w.Part.SumWgt < 1.5)
-                        if (w.BogieIndex >= Parts.Count - 1)
-                            w.BogieIndex = 0;
-                    w.Part = Parts[w.BogieIndex];
-                }
+                
                 // Make sure the axles are sorted by OffsetM along the car.
                 // Attempting to sort car w/o WheelAxles will resort to an error.
                 WheelAxles.Sort(WheelAxles[0]);
@@ -939,6 +930,24 @@ namespace ORTS
             for (var i = 1; i < Parts.Count; i++)
                 if (Parts[i].SumWgt > 1.5)
                     Parts[0].SumWgt++;
+
+            // This check is for the single axle/bogie issue.
+            // Check SumWgt using Parts[0].SumWgt.
+            // Certain locomotives do not test well when using Part.SumWgt versus Parts[0].SumWgt.
+            // Make sure test using Parts[0] is performed after the above for loop.
+            foreach (var w in WheelAxles)
+            {
+                if (!articFront && !articRear && Parts[0].SumWgt < 1.5)
+                {
+                    if (w.BogieIndex >= Parts.Count - 1)
+                    {
+                        w.BogieIndex = 0;
+                        w.Part = Parts[w.BogieIndex];
+
+                    }
+                }
+            }
+            WheelAxles.Sort(WheelAxles[0]);
             
             // Using WheelAxles.Count test to control WheelAxlesLoaded flag.
             if (WheelAxles.Count > 2)
@@ -977,29 +986,18 @@ namespace ORTS
             // to the car in front) at the front. Likewise for the rear.
             bool articulatedFront = !WheelAxles.Any(a => a.OffsetM < 0);
             bool articulatedRear = !WheelAxles.Any(a => a.OffsetM > 0);
-            // If the car is articulated, steal some wheels from nearby cars.
+            // Original process originally used caused too many issues.
+            // The original process did include the below process of just using WheelAxles.Add
+            //  if the initial test did not work.  Since the below process is working without issues the
+            //  original process was stripped down to what is below
             if (articulatedFront || articulatedRear)
             {
-                if (articulatedFront && carIndex > 0)
-                {
-                    var otherCar = Train.Cars[carIndex - 1];
-                    var otherPart = otherCar.Parts.OrderBy(p => p.OffsetM).FirstOrDefault();
-                    if (otherPart == null)
-                        WheelAxles.Add(new WheelAxle(-LengthM / 2, 0, 0) { Part = Parts[0] });
-                    else
-                    {
-                        var offset = otherCar.LengthM / 2 - LengthM / 2;
-                        var otherPartIndex = otherCar.Parts.IndexOf(otherPart);
-                        var otherAxles = otherCar.WheelAxles.Where(a => a.BogieIndex <= otherPartIndex);
-                        var part = new TrainCarPart(otherPart.OffsetM + offset, 0) { SumWgt = otherPart.SumWgt };
-                        WheelAxles.AddRange(otherAxles.Select(a => new WheelAxle(a.OffsetM + offset, Parts.Count, 0) { Part = part }));
-                        Parts.Add(part);
-                    }
-                }
-                // Original method which was not working was removed since testing cars that have not
-                // been processed yet is not a valid process.
-                if (articulatedRear && WheelAxles.Count < 3)
+                if (articulatedFront && WheelAxles.Count <= 3)
+                    WheelAxles.Add(new WheelAxle(-LengthM / 2, 0, 0) { Part = Parts[0] });
+
+                if (articulatedRear && WheelAxles.Count <= 3)
                     WheelAxles.Add(new WheelAxle(LengthM / 2, 0, 0) { Part = Parts[0] });
+
                 WheelAxles.Sort(WheelAxles[0]);
             }
             
