@@ -947,8 +947,7 @@ namespace ORTS
                     }
                 }
             }
-            WheelAxles.Sort(WheelAxles[0]);
-            
+                        
             // Using WheelAxles.Count test to control WheelAxlesLoaded flag.
             if (WheelAxles.Count > 2)
                 WheelAxlesLoaded = true;
