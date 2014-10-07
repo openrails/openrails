@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
-"POT-Creation-Date: 2014-10-01 19:59:16+0200\n"
-"PO-Revision-Date: 2014-10-01 20:13+0100\n"
+"POT-Creation-Date: 2014-10-07 20:03:28+0200\n"
+"PO-Revision-Date: 2014-10-07 20:06+0100\n"
 "Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: hu\n"
@@ -353,100 +353,100 @@ msgstr[1] ""
 "Nem lehet szétcsatolni: a vonatnak {0} vezetője van, teljesen meg kell "
 "állítani."
 
-#: ../../RunActivity/Physics/Train.cs:1556
+#: ../../RunActivity/Physics/Train.cs:1543
 msgid "Coupler broken!"
 msgstr "Vonatszakadás!"
 
-#: ../../RunActivity/Physics/Train.cs:1559
+#: ../../RunActivity/Physics/Train.cs:1546
 msgid "Coupler overloaded!"
 msgstr "A kapcsoló túlterhelt!"
 
-#: ../../RunActivity/Physics/Train.cs:4559
-#: ../../RunActivity/Physics/Train.cs:4564
+#: ../../RunActivity/Physics/Train.cs:4542
+#: ../../RunActivity/Physics/Train.cs:4547
 msgid "Other train is blocking path"
 msgstr "Másik vonat foglalja a vágányt"
 
-#: ../../RunActivity/Physics/Train.cs:4693
+#: ../../RunActivity/Physics/Train.cs:4675
 msgid "Held for connecting train : "
 msgstr "Várakoztatás csatlakozó vonat miatt: "
 
-#: ../../RunActivity/Physics/Train.cs:4751
+#: ../../RunActivity/Physics/Train.cs:4733
 msgid "Passenger boarding completed. Waiting for signal ahead to clear."
 msgstr "Az utasok le- és felszállása befejeződött. Várakozás szabad kijáratra."
 
-#: ../../RunActivity/Physics/Train.cs:4756
+#: ../../RunActivity/Physics/Train.cs:4738
 #: ../../RunActivity/Simulator/Activity.cs:861
 msgid "Passenger boarding completed. You may depart now."
 msgstr "Az utasok le- és felszállása befejeződött. A vonat indítható."
 
-#: ../../RunActivity/Physics/Train.cs:5747
+#: ../../RunActivity/Physics/Train.cs:5729
 msgid "Stopped due to errors in route setting"
 msgstr "Pályával kapcsolatos hiba miatt megállítva"
 
-#: ../../RunActivity/Physics/Train.cs:6409
-#: ../../RunActivity/Physics/Train.cs:7482
+#: ../../RunActivity/Physics/Train.cs:6391
+#: ../../RunActivity/Physics/Train.cs:7464
 msgid "No signal in train's path"
 msgstr "Nincs jelző a vonat vágányútján"
 
-#: ../../RunActivity/Physics/Train.cs:6417
+#: ../../RunActivity/Physics/Train.cs:6399
 msgid "Next signal already allocated to other train"
 msgstr "A következő jelző már másik vonatnak lett beállítve"
 
-#: ../../RunActivity/Physics/Train.cs:6478
+#: ../../RunActivity/Physics/Train.cs:6460
 msgid "Request to clear signal cannot be processed"
 msgstr "A kérelem a jelző szabaddá tételére nem értelmezhető"
 
-#: ../../RunActivity/Physics/Train.cs:6584
-#: ../../RunActivity/Physics/Train.cs:7602
+#: ../../RunActivity/Physics/Train.cs:6566
+#: ../../RunActivity/Physics/Train.cs:7584
 msgid "No switch found"
 msgstr "Nem található váltó"
 
-#: ../../RunActivity/Physics/Train.cs:7843
+#: ../../RunActivity/Physics/Train.cs:7825
 msgid "Train is not back on original route"
 msgstr "A vonat még nem tért vissza az eredeti útvonalára"
 
-#: ../../RunActivity/Physics/Train.cs:7852
+#: ../../RunActivity/Physics/Train.cs:7834
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
 "Az eredeti útvonal az ellenkező irányba vezet, állítsd meg a vonatot a "
 "váltás előtt"
 
-#: ../../RunActivity/Physics/Train.cs:7865
+#: ../../RunActivity/Physics/Train.cs:7847
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr "Nem lehet helyi forgalomirányításra váltani vonalbejárás közben"
 
-#: ../../RunActivity/Physics/Train.cs:7960
+#: ../../RunActivity/Physics/Train.cs:7942
 msgid "Reversal required and rear of train not on required route"
 msgstr ""
 "Visszafogás lenne szükséges, de a vonat vége nincs a megfelelő vágányúton"
 
-#: ../../RunActivity/Physics/Train.cs:8147
+#: ../../RunActivity/Physics/Train.cs:8129
 msgid "Cannot clear signal behind train while in AUTO mode"
 msgstr ""
 "Nem lehet a vonat mögötti jelzőt szabaddá tenni központi forgalomirányítás "
 "felügyelete alatt"
 
-#: ../../RunActivity/Physics/Train.cs:4763
+#: ../../RunActivity/Physics/Train.cs:4745
 #: ../../RunActivity/Simulator/Activity.cs:854
 #, csharp-format
 msgid "Passenger boarding completes in {0:D2}:{1:D2}"
 msgstr ""
 "Az utasok le- és felszállása {0:D2}:{1:D2} másodpercen belül befejeződik."
 
-#: ../../RunActivity/Physics/Train.cs:8399
+#: ../../RunActivity/Physics/Train.cs:8379
 #, csharp-format
 msgid "Allowed speed raised to {0}"
 msgstr "A megengedett sebesség {0}-ra emelkedett"
 
-#: ../../RunActivity/Physics/Train.cs:8441
+#: ../../RunActivity/Physics/Train.cs:8421
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr ""
 "A vonat a {0}. sz. vonattal kapcsolatos probléma miatt lett megállítva, oka: "
 "{1}"
 
-#: ../../RunActivity/Processes/GameStateRunActivity.cs:1081
+#: ../../RunActivity/Processes/GameStateRunActivity.cs:1079
 #, csharp-format
 msgid "Activity Save file '*.save' not found in folder {0}"
 msgstr "A {0} könyvtár nem tartalmaz '*.save' mentést"
@@ -531,7 +531,7 @@ msgstr "Nincs"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:27
 msgid "Information"
-msgstr "Információ"
+msgstr "Tájékoztatás"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:28
 msgid "Warning"
@@ -1149,38 +1149,38 @@ msgstr "Pályamenti "
 msgid "3D Cab"
 msgstr "3D vezérállás"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:570
-#: ../../RunActivity/Viewer3D/Viewer.cs:686
+#: ../../RunActivity/Viewer3D/Viewer.cs:584
+#: ../../RunActivity/Viewer3D/Viewer.cs:700
 msgid "Cab view not available"
 msgstr "Vezérállás nem elérhető"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:632
+#: ../../RunActivity/Viewer3D/Viewer.cs:646
 msgid "In MP, use Alt-F4 to quit directly"
 msgstr "Többrésztvevős módól csak Alt+F4 -gyel lehet kilépni."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:697
+#: ../../RunActivity/Viewer3D/Viewer.cs:711
 msgid "3D Cab view not available"
 msgstr "3D vezérállásnézet nem elérhető"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:724
+#: ../../RunActivity/Viewer3D/Viewer.cs:738
 msgid "Will not ratate cab and land"
 msgstr "Nincs sem a vezérállás, sem a horizont elforgatva."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1139
+#: ../../RunActivity/Viewer3D/Viewer.cs:1153
 msgid "Game saved"
 msgstr "A játékállás elmentve."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:715
+#: ../../RunActivity/Viewer3D/Viewer.cs:729
 #, csharp-format
 msgid "Vibrating at level {0}"
 msgstr "Vibrálás szintje: {0}"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:723
+#: ../../RunActivity/Viewer3D/Viewer.cs:737
 #, csharp-format
 msgid "Rotating cab {0}/4, rotating land {1}/4"
 msgstr "Vezérállás elforgatása {0}/4, horizont elforgatása {1}/4"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:752
+#: ../../RunActivity/Viewer3D/Viewer.cs:766
 #, csharp-format
 msgid "{0} viewpoint stored. Use Shift+8 to restore viewpoints."
 msgid_plural "{0} viewpoints stored. Use Shift+8 to restore viewpoints."
@@ -1404,11 +1404,18 @@ msgstr "Eljárások"
 
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:54
 msgid "Next Station"
-msgstr "Következő állomás"
+msgstr "Menetrend"
 
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:322
 msgid "Activity completed."
 msgstr "Szolgálat teljesítve."
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:124
+#, csharp-format
+msgid "Current Delay: {0} minute"
+msgid_plural "Current Delay: {0} minutes"
+msgstr[0] "Pillanatnyi késés: {0} perc"
+msgstr[1] "Pillanatnyi késés: {0} perc"
 
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:187
 msgid "No more stations."

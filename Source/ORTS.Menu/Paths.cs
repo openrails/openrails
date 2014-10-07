@@ -146,10 +146,11 @@ namespace ORTS.Menu
         /// <returns>array of strings with the user-readable information</returns>
         public string[] ToInfo()
         {
-            string[] infoString = new string[3];
-            infoString[0] = String.Concat("Path Name  : ", Name);
-            infoString[1] = String.Concat("Start at   : ", Start);
-            infoString[2] = String.Concat("Heading to : ", End);
+            string[] infoString = new string[] {
+                catalog.GetStringFmt("Path Name: {0}", Name),
+                catalog.GetStringFmt("Start at: {0}", Start),
+                catalog.GetStringFmt("Heading to: {0}", End),
+            };
 
             return (infoString);
         }

@@ -35,6 +35,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.IO;
+using GNU.Gettext;
 
 namespace ORTS.Formats
 {
@@ -183,6 +184,8 @@ namespace ORTS.Formats
             public string Path;               // path definition
             public string StartTime;          // starttime definition
 
+            GettextResourceManager Catalog = new GettextResourceManager("ORTS.Formats");
+
             public TTTrainPreInfo(int column, string train)
             {
                 Column = column;
@@ -203,9 +206,10 @@ namespace ORTS.Formats
 
             public string[] ToInfo()
             {
-                string[] infoString = new string[2];
-                infoString[0] = String.Concat("Selected train : ", Train);
-                infoString[1] = String.Concat("Start time     : ", StartTime);
+                string[] infoString = new string[] {
+                    Catalog.GetStringFmt("Selected train: {0}", Train),
+                    Catalog.GetStringFmt("Start time: {0}", StartTime),
+                };
 
                 return (infoString);
             }

@@ -121,7 +121,7 @@ namespace ORTS.Viewer3D.Popups
                 Train playerTrain = Owner.Viewer.Simulator.PlayerLocomotive.Train;
                 if (playerTrain.Delay.HasValue)
                 {
-                    CurrentDelay.Text = String.Concat("Current Delay : ", playerTrain.Delay.Value.TotalMinutes.ToString("00"), " mins");
+                    CurrentDelay.Text = Viewer.Catalog.GetPluralStringFmt("Current Delay: {0} minute", "Current Delay: {0} minutes", (long)playerTrain.Delay.Value.TotalMinutes);
                 }
                 else
                 {
