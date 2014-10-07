@@ -5311,7 +5311,13 @@ namespace ORTS
             {
                 if (Overlap > 0)
                 {
-                    distanceToClear = thisTrain.Train.DistanceTravelledM + Length + Convert.ToSingle(Overlap) + thisTrain.Train.standardOverlapM;
+                    if (Program.Simulator.TimetableMode || !Program.Simulator.Settings.EnhancedActCompatibility)
+                        distanceToClear = thisTrain.Train.DistanceTravelledM + Length + Convert.ToSingle(Overlap) + thisTrain.Train.standardOverlapM;
+                    else if (thisTrain.Train.TrainType == Train.TRAINTYPE.AI && thisTrain.Train.PresentPosition[0].TCSectionIndex == Pins[0, 0].Link)
+                        // if the switch is now facing the back of the train, overlap can be quite small
+                        distanceToClear = thisTrain.Train.DistanceTravelledM + Length + 5;
+                    else
+                        distanceToClear = thisTrain.Train.DistanceTravelledM + Length + Convert.ToSingle(Overlap);
                 }
                 else
                 {

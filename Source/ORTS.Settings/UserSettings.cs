@@ -226,6 +226,8 @@ namespace ORTS.Settings
         public bool NoForcedRedAtStationStops { get; set; }
         [Default(false)]
         public bool ConditionalLoadOfNightTextures { get; set; }
+        [Default(false)]
+        public bool ExtendedAIShunting { get; set; }
 
 
         // Hidden settings:

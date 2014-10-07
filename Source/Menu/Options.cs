@@ -201,7 +201,7 @@ namespace ORTS
             checkBoxEnhancedActCompatibility.Checked = Settings.EnhancedActCompatibility;
             checkBoxNoForcedRedAtStationStops.Checked = Settings.NoForcedRedAtStationStops;
             checkBoxConditionalLoadOfNightTextures.Checked = Settings.ConditionalLoadOfNightTextures;
-
+            checkBoxExtendedAIShunting.Checked = Settings.ExtendedAIShunting;
 
             Initialized = true;
         }
@@ -374,6 +374,7 @@ namespace ORTS
             Settings.EnhancedActCompatibility = checkBoxEnhancedActCompatibility.Checked;
             Settings.NoForcedRedAtStationStops =  checkBoxNoForcedRedAtStationStops.Checked;
             Settings.ConditionalLoadOfNightTextures = checkBoxConditionalLoadOfNightTextures.Checked;
+            Settings.ExtendedAIShunting = checkBoxExtendedAIShunting.Checked;
 
             Settings.Save();
 

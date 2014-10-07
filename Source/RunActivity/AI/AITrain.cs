@@ -2995,7 +2995,7 @@ namespace ORTS
                                 PresentPosition[rearOrFront].TCSectionIndex == OtherTrain.PresentPosition[1].TCSectionIndex)
                             {
                                 if (OtherTrain.TrainType == TRAINTYPE.STATIC || PresentPosition[0].TCSectionIndex ==
-                                    TCRoute.TCRouteSubpaths[TCRoute.TCRouteSubpaths.Count - 1][TCRoute.TCRouteSubpaths[TCRoute.TCRouteSubpaths.Count - 1].Count - 1].TCSectionIndex)
+                                    TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1].TCSectionIndex)
                                 { 
                                 attachToTrain = true;
                                 AttachTo = OtherTrain.Number;
@@ -4054,50 +4054,294 @@ namespace ORTS
             SpeedMpS = 0;
             AdjustControlsThrottleOff();
             physicsUpdate(0);
+            if (Simulator.Settings.ExtendedAIShunting)
+            { 
+            // check for length of remaining path
+                if (attachTrain.TrainType == Train.TRAINTYPE.STATIC && (TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count-1 || ValidRoute[0].Count > 5))
+                {
+                    CoupleAIToStatic (attachTrain, thisTrainFront, attachTrainFront);
+                    return;
+                }
+                else if (attachTrain.TrainType != Train.TRAINTYPE.STATIC && TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1)
+                {
+                    CoupleAIToLiving(attachTrain, thisTrainFront, attachTrainFront);
+                    return;
+                }
+            }
+            
+            {
+                // check on reverse formation
+                if (thisTrainFront == attachTrainFront)
+                {
+                    ReverseFormation(false);
+                }
 
+                var attachCar = Cars[0];
+
+                // attach to front of waiting train
+                if (attachTrainFront)
+                {
+                    attachCar = Cars[Cars.Count - 1];
+                    for (int iCar = Cars.Count - 1; iCar >= 0; iCar--)
+                    {
+                        var car = Cars[iCar];
+                        car.Train = attachTrain;
+                        car.CarID = String.Copy(attachTrain.Name);
+                        attachTrain.Cars.Insert(0, car);
+                    }
+                    //<CSComment this should be a bug; now corrected only when Enhanced flag on
+                    if (!Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility && attachTrain.LeadLocomotiveIndex >= 0)
+                        attachTrain.LeadLocomotiveIndex += Cars.Count;
+                }
+                // attach to rear of waiting train
+                else
+                {
+                    foreach (var car in Cars)
+                    {
+                        car.Train = attachTrain;
+                        car.CarID = String.Copy(attachTrain.Name);
+                        attachTrain.Cars.Add(car);
+                    }
+                }
+
+                // remove cars from this train
+                Cars.Clear();
+                attachTrain.Length += Length;
+
+                // recalculate position of formed train
+                if (attachTrainFront)  // coupled to front, so rear position is still valid
+                {
+                    attachTrain.CalculatePositionOfCars(0);
+                    DistanceTravelledM += Length;
+                }
+                else // coupled to rear so front position is still valid
+                {
+                    attachTrain.RepositionRearTraveller();    // fix the rear traveller
+                    attachTrain.CalculatePositionOfCars(0);
+                }
+
+                // update positions train
+                TrackNode tn = attachTrain.FrontTDBTraveller.TN;
+                float offset = attachTrain.FrontTDBTraveller.TrackNodeOffset;
+                int direction = (int)attachTrain.FrontTDBTraveller.Direction;
+
+                attachTrain.PresentPosition[0].SetTCPosition(tn.TCCrossReference, offset, direction);
+                attachTrain.PresentPosition[0].CopyTo(ref attachTrain.PreviousPosition[0]);
+
+                attachTrain.DistanceTravelledM = 0.0f;
+
+                tn = attachTrain.RearTDBTraveller.TN;
+                offset = attachTrain.RearTDBTraveller.TrackNodeOffset;
+                direction = (int)attachTrain.RearTDBTraveller.Direction;
+
+                attachTrain.PresentPosition[1].SetTCPosition(tn.TCCrossReference, offset, direction);
+                if (Simulator.TimetableMode || !Simulator.Settings.EnhancedActCompatibility)
+                {
+                    // remove train from track and clear actions
+                    attachTrain.RemoveFromTrack();
+                    attachTrain.ClearActiveSectionItems();
+
+                    // set new track sections occupied
+                    Train.TCSubpathRoute tempRouteTrain = signalRef.BuildTempRoute(attachTrain, attachTrain.PresentPosition[1].TCSectionIndex,
+                        attachTrain.PresentPosition[1].TCOffset, attachTrain.PresentPosition[1].TCDirection, attachTrain.Length, false, true, false);
+
+                    for (int iIndex = 0; iIndex < tempRouteTrain.Count; iIndex++)
+                    {
+                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[tempRouteTrain[iIndex].TCSectionIndex];
+                        thisSection.SetOccupied(attachTrain.routedForward);
+                    }
+                }
+                // set various items
+                attachTrain.CheckFreight();
+                attachCar.SignalEvent(Event.Couple);
+
+                if (MovementState != AI_MOVEMENT_STATE.AI_STATIC)
+                {
+                    if (Simulator.TimetableMode || !Simulator.Settings.EnhancedActCompatibility) InitializeSignals(true);
+                }
+                //  <CSComment> Why initialize brakes of a disappeared train?    
+                //            InitializeBrakes();
+                attachTrain.physicsUpdate(0);   // stop the wheels from moving etc
+
+                // remove original train
+                RemoveTrain();
+            }
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Couple AI train to static train
+        /// <\summary>
+        /// 
+
+        public void CoupleAIToStatic(Train attachTrain, bool thisTrainFront, bool attachTrainFront)
+        {
             // check on reverse formation
             if (thisTrainFront == attachTrainFront)
             {
-                ReverseFormation(false);
+                attachTrain.ReverseFormation(false);
             }
-
-            var attachCar = Cars[0];
-
-            // attach to front of waiting train
-            if (attachTrainFront)
+            // Move cars from attachTrain to train
+            // attach to front of this train
+            var attachCar = Cars[Cars.Count-1];
+            if (thisTrainFront)
             {
-                attachCar = Cars[Cars.Count - 1];
-                for (int iCar = Cars.Count - 1; iCar >= 0; iCar--)
+                attachCar = Cars[0];
+                for (int iCar = attachTrain.Cars.Count - 1; iCar >= 0; iCar--)
                 {
-                    var car = Cars[iCar];
-                    car.Train = attachTrain;
-                    car.CarID = String.Copy(attachTrain.Name);
-                    attachTrain.Cars.Insert(0, car);
+                    var car = attachTrain.Cars[iCar];
+                    car.Train = this;
+                    car.CarID = String.Copy(Name);
+                    Cars.Insert(0, car);
                 }
-                //<CSComment this should be a bug; now corrected only when Enhanced flag on
-                if (!Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility && attachTrain.LeadLocomotiveIndex >= 0)
-                    attachTrain.LeadLocomotiveIndex += Cars.Count ;
             }
-            // attach to rear of waiting train
             else
-            {
-                foreach (var car in Cars)
+            { 
+                foreach (var car in attachTrain.Cars)
                 {
-                    car.Train = attachTrain;
-                    car.CarID = String.Copy(attachTrain.Name);
-                    attachTrain.Cars.Add(car);
+                    car.Train = this;
+                    car.CarID = String.Copy(Name);
+                    Cars.Add(car);
                 }
             }
-
-            // remove cars from this train
-            Cars.Clear();
-            attachTrain.Length += Length;
+                // remove cars from attached train
+            Length += attachTrain.Length;
+            attachTrain.Cars.Clear();
 
             // recalculate position of formed train
+            if (thisTrainFront)  // coupled to front, so rear position is still valid
+            {
+                CalculatePositionOfCars(0);
+                DistanceTravelledM += Length;
+            }
+            else // coupled to rear so front position is still valid
+            {
+                RepositionRearTraveller();    // fix the rear traveller
+                CalculatePositionOfCars(0);
+            }
+
+            // update positions train
+            TrackNode tn = FrontTDBTraveller.TN;
+            float offset = FrontTDBTraveller.TrackNodeOffset;
+            int direction = (int)FrontTDBTraveller.Direction;
+
+            PresentPosition[0].SetTCPosition(tn.TCCrossReference, offset, direction);
+            PresentPosition[0].CopyTo(ref PreviousPosition[0]);
+
+            DistanceTravelledM = 0.0f;
+
+            tn = RearTDBTraveller.TN;
+            offset = RearTDBTraveller.TrackNodeOffset;
+            direction = (int)RearTDBTraveller.Direction;
+
+            PresentPosition[1].SetTCPosition(tn.TCCrossReference, offset, direction);
+            // set various items
+            CheckFreight();
+            attachCar.SignalEvent(Event.Couple);
+
+            physicsUpdate(0);   // stop the wheels from moving etc
+
+            // remove attached train
+            if (attachTrain.TrainType == TRAINTYPE.AI) 
+                ((AITrain)attachTrain).RemoveTrain();
+            else
+            {
+                attachTrain.RemoveFromTrack();
+                Simulator.Trains.Remove(attachTrain);
+                Simulator.TrainDictionary.Remove(attachTrain.Number);
+                Simulator.NameDictionary.Remove(attachTrain.Name.ToLower());
+            }
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Couple AI train to living train (AI or player); both remain alive in this case
+        /// <\summary>
+        /// 
+
+        public void CoupleAIToLiving(Train attachTrain, bool thisTrainFront, bool attachTrainFront)
+        {
+            // find set of cars between loco and attachtrain and pass them to train to attachtrain
+            if (thisTrainFront)
+            {
+                while (0 < Cars.Count-1)
+                {
+                    var car = Cars[0];
+                    if (car is MSTSLocomotive)
+                    { 
+                        break;
+                    }
+                    else
+                    {
+                        if (attachTrainFront)
+                        {
+                            attachTrain.Cars.Insert(0, car);
+                            car.Train = attachTrain;
+                            car.Flipped = !car.Flipped;
+                        }
+                        else
+                        {
+                            attachTrain.Cars.Add(car);
+                            car.Train = attachTrain;
+                        }
+                        attachTrain.Length += car.LengthM;
+                        Length -= car.LengthM;
+                        Cars.Remove(car);
+                    }
+                }
+                Cars[0].SignalEvent(Event.Couple);
+            }
+            else
+            {
+                var car = Cars[Cars.Count - 1];
+                while (0 <Cars.Count-1)
+                {
+                    if (car is MSTSLocomotive)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        if (!attachTrainFront)
+                        {
+                            attachTrain.Cars.Add(car);
+                            car.Train = attachTrain;
+                            car.Flipped = !car.Flipped;
+                        }
+                        else
+                        {
+                            attachTrain.Cars.Insert(0, car);
+                            car.Train = attachTrain;
+                        }
+                        attachTrain.Length += car.LengthM;
+                        Length -= car.LengthM;
+                        Cars.Remove(car);
+                    }
+                }
+                Cars[Cars.Count-1].SignalEvent(Event.Couple);
+            }
+            // uncouple
+            UncoupledFrom = attachTrain;
+            attachTrain.UncoupledFrom = this;
+
+
+            // recalculate position of coupling train
+            if (thisTrainFront)  // coupled to front, so rear position is still valid
+            {
+                CalculatePositionOfCars(0);
+                DistanceTravelledM += Length;
+            }
+            else // coupled to rear so front position is still valid
+            {
+                RepositionRearTraveller();    // fix the rear traveller
+                CalculatePositionOfCars(0);
+            }
+
+            // recalculate position of coupled train
             if (attachTrainFront)  // coupled to front, so rear position is still valid
             {
                 attachTrain.CalculatePositionOfCars(0);
-                DistanceTravelledM += Length;
+                attachTrain.DistanceTravelledM += Length;
             }
             else // coupled to rear so front position is still valid
             {
@@ -4105,13 +4349,30 @@ namespace ORTS
                 attachTrain.CalculatePositionOfCars(0);
             }
 
-            // update positions train
-            TrackNode tn = attachTrain.FrontTDBTraveller.TN;
-            float offset = attachTrain.FrontTDBTraveller.TrackNodeOffset;
-            int direction = (int)attachTrain.FrontTDBTraveller.Direction;
+
+            // update positions of coupling train
+            TrackNode tn = FrontTDBTraveller.TN;
+            float offset = FrontTDBTraveller.TrackNodeOffset;
+            int direction = (int)FrontTDBTraveller.Direction;
+
+            PresentPosition[0].SetTCPosition(tn.TCCrossReference, offset, direction);
+            PresentPosition[0].CopyTo(ref PreviousPosition[0]);
+
+            DistanceTravelledM = 0.0f;
+
+            tn = RearTDBTraveller.TN;
+            offset = RearTDBTraveller.TrackNodeOffset;
+            direction = (int)RearTDBTraveller.Direction;
+
+            PresentPosition[1].SetTCPosition(tn.TCCrossReference, offset, direction);
+
+            // update positions of coupled train
+            tn = attachTrain.FrontTDBTraveller.TN;
+            offset = attachTrain.FrontTDBTraveller.TrackNodeOffset;
+            direction = (int)attachTrain.FrontTDBTraveller.Direction;
 
             attachTrain.PresentPosition[0].SetTCPosition(tn.TCCrossReference, offset, direction);
-            attachTrain.PresentPosition[0].CopyTo(ref attachTrain.PreviousPosition[0]);
+            attachTrain.PresentPosition[0].CopyTo(ref PreviousPosition[0]);
 
             attachTrain.DistanceTravelledM = 0.0f;
 
@@ -4120,36 +4381,15 @@ namespace ORTS
             direction = (int)attachTrain.RearTDBTraveller.Direction;
 
             attachTrain.PresentPosition[1].SetTCPosition(tn.TCCrossReference, offset, direction);
-            if (Simulator.TimetableMode || !Simulator.Settings.EnhancedActCompatibility)
-            {
-                // remove train from track and clear actions
-                attachTrain.RemoveFromTrack();
-                attachTrain.ClearActiveSectionItems();
-
-                // set new track sections occupied
-                Train.TCSubpathRoute tempRouteTrain = signalRef.BuildTempRoute(attachTrain, attachTrain.PresentPosition[1].TCSectionIndex,
-                    attachTrain.PresentPosition[1].TCOffset, attachTrain.PresentPosition[1].TCDirection, attachTrain.Length, false, true, false);
-
-                for (int iIndex = 0; iIndex < tempRouteTrain.Count; iIndex++)
-                {
-                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[tempRouteTrain[iIndex].TCSectionIndex];
-                    thisSection.SetOccupied(attachTrain.routedForward);
-                }
-            }
             // set various items
+            CheckFreight();
             attachTrain.CheckFreight();
-            attachCar.SignalEvent(Event.Couple);
+            // anticipate reversal point and remove active action
+            TCRoute.ReversalInfo[TCRoute.activeSubpath].ReverseReversalOffset = PresentPosition[0].TCOffset - 10f;
+            ResetActions(true);
 
-            if (MovementState != AI_MOVEMENT_STATE.AI_STATIC)
-            {
-               if (Simulator.TimetableMode || !Simulator.Settings.EnhancedActCompatibility) InitializeSignals(true);
-            }
-            //  <CSComment> Why initialize brakes of a disappeared train?    
-//            InitializeBrakes();
-            attachTrain.physicsUpdate(0);   // stop the wheels from moving etc
+            physicsUpdate(0);   // stop the wheels from moving etc
 
-            // remove original train
-            RemoveTrain();
         }
 
         //================================================================================================//
