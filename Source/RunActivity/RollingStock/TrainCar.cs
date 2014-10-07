@@ -935,9 +935,9 @@ namespace ORTS
             // Check SumWgt using Parts[0].SumWgt.
             // Certain locomotives do not test well when using Part.SumWgt versus Parts[0].SumWgt.
             // Make sure test using Parts[0] is performed after the above for loop.
-            foreach (var w in WheelAxles)
+            if (!articFront && !articRear && (Parts[0].SumWgt < 1.5))
             {
-                if (!articFront && !articRear && Parts[0].SumWgt < 1.5)
+                foreach (var w in WheelAxles)
                 {
                     if (w.BogieIndex >= Parts.Count - 1)
                     {
@@ -947,7 +947,6 @@ namespace ORTS
                     }
                 }
             }
-                        
             // Using WheelAxles.Count test to control WheelAxlesLoaded flag.
             if (WheelAxles.Count > 2)
                 WheelAxlesLoaded = true;
