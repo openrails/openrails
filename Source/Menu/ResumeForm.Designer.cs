@@ -52,12 +52,16 @@
             this.label1 = new System.Windows.Forms.Label();
             this.numericReplayPauseBeforeEnd = new System.Windows.Forms.NumericUpDown();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.panelSaves = new System.Windows.Forms.Panel();
+            this.panelScreenshot = new System.Windows.Forms.Panel();
             ((System.ComponentModel.ISupportInitialize)(this.gridSaves)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.saveBindingSource)).BeginInit();
             this.groupBoxInvalid.SuspendLayout();
             this.tableLayoutPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxScreenshot)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericReplayPauseBeforeEnd)).BeginInit();
+            this.panelSaves.SuspendLayout();
+            this.panelScreenshot.SuspendLayout();
             this.SuspendLayout();
             // 
             // gridSaves
@@ -68,6 +72,7 @@
             this.gridSaves.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCells;
             this.gridSaves.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
             this.gridSaves.BackgroundColor = System.Drawing.SystemColors.Window;
+            this.gridSaves.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.gridSaves.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
             this.gridSaves.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
             this.gridSaves.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
@@ -80,19 +85,18 @@
             this.currentTileDataGridViewTextBoxColumn,
             this.validDataGridViewCheckBoxColumn,
             this.Blank});
-            this.tableLayoutPanel.SetColumnSpan(this.gridSaves, 2);
             this.gridSaves.DataSource = this.saveBindingSource;
             this.gridSaves.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.gridSaves.Location = new System.Drawing.Point(3, 3);
+            this.gridSaves.Location = new System.Drawing.Point(0, 0);
             this.gridSaves.Name = "gridSaves";
             this.gridSaves.ReadOnly = true;
             this.gridSaves.RowHeadersVisible = false;
             this.gridSaves.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             this.gridSaves.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.gridSaves.Size = new System.Drawing.Size(407, 339);
+            this.gridSaves.Size = new System.Drawing.Size(405, 337);
             this.gridSaves.TabIndex = 0;
-            this.gridSaves.DoubleClick += new System.EventHandler(this.gridSaves_DoubleClick);
             this.gridSaves.SelectionChanged += new System.EventHandler(this.gridSaves_SelectionChanged);
+            this.gridSaves.DoubleClick += new System.EventHandler(this.gridSaves_DoubleClick);
             // 
             // fileDataGridViewTextBoxColumn
             // 
@@ -203,9 +207,9 @@
             // 
             // labelInvalidSaves
             // 
-            this.labelInvalidSaves.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelInvalidSaves.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.labelInvalidSaves.Location = new System.Drawing.Point(6, 16);
             this.labelInvalidSaves.Name = "labelInvalidSaves";
             this.labelInvalidSaves.Size = new System.Drawing.Size(314, 59);
@@ -249,9 +253,9 @@
             // 
             // tableLayoutPanel
             // 
-            this.tableLayoutPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.tableLayoutPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tableLayoutPanel.ColumnCount = 5;
             this.tableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
@@ -260,8 +264,6 @@
             this.tableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel.Controls.Add(this.groupBoxInvalid, 0, 1);
-            this.tableLayoutPanel.Controls.Add(this.gridSaves, 0, 0);
-            this.tableLayoutPanel.Controls.Add(this.pictureBoxScreenshot, 2, 0);
             this.tableLayoutPanel.Controls.Add(this.buttonImportExportSaves, 1, 3);
             this.tableLayoutPanel.Controls.Add(this.buttonReplayFromPreviousSave, 2, 4);
             this.tableLayoutPanel.Controls.Add(this.buttonReplayFromStart, 3, 4);
@@ -271,6 +273,8 @@
             this.tableLayoutPanel.Controls.Add(this.numericReplayPauseBeforeEnd, 3, 3);
             this.tableLayoutPanel.Controls.Add(this.buttonDelete, 1, 1);
             this.tableLayoutPanel.Controls.Add(this.buttonUndelete, 1, 2);
+            this.tableLayoutPanel.Controls.Add(this.panelSaves, 0, 0);
+            this.tableLayoutPanel.Controls.Add(this.panelScreenshot, 2, 0);
             this.tableLayoutPanel.Location = new System.Drawing.Point(9, 9);
             this.tableLayoutPanel.Margin = new System.Windows.Forms.Padding(0);
             this.tableLayoutPanel.Name = "tableLayoutPanel";
@@ -285,12 +289,11 @@
             // 
             // pictureBoxScreenshot
             // 
-            this.pictureBoxScreenshot.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.tableLayoutPanel.SetColumnSpan(this.pictureBoxScreenshot, 3);
             this.pictureBoxScreenshot.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pictureBoxScreenshot.Location = new System.Drawing.Point(416, 3);
+            this.pictureBoxScreenshot.Location = new System.Drawing.Point(0, 0);
+            this.pictureBoxScreenshot.Margin = new System.Windows.Forms.Padding(0);
             this.pictureBoxScreenshot.Name = "pictureBoxScreenshot";
-            this.pictureBoxScreenshot.Size = new System.Drawing.Size(387, 339);
+            this.pictureBoxScreenshot.Size = new System.Drawing.Size(385, 337);
             this.pictureBoxScreenshot.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBoxScreenshot.TabIndex = 5;
             this.pictureBoxScreenshot.TabStop = false;
@@ -330,8 +333,8 @@
             // 
             // label1
             // 
-            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(429, 403);
             this.label1.Name = "label1";
@@ -342,8 +345,8 @@
             // 
             // numericReplayPauseBeforeEnd
             // 
-            this.numericReplayPauseBeforeEnd.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)));
+            this.numericReplayPauseBeforeEnd.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.numericReplayPauseBeforeEnd.Location = new System.Drawing.Point(572, 406);
             this.numericReplayPauseBeforeEnd.Maximum = new decimal(new int[] {
             3600,
@@ -363,6 +366,28 @@
             // openFileDialog1
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
+            // 
+            // panelSaves
+            // 
+            this.panelSaves.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tableLayoutPanel.SetColumnSpan(this.panelSaves, 2);
+            this.panelSaves.Controls.Add(this.gridSaves);
+            this.panelSaves.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panelSaves.Location = new System.Drawing.Point(3, 3);
+            this.panelSaves.Name = "panelSaves";
+            this.panelSaves.Size = new System.Drawing.Size(407, 339);
+            this.panelSaves.TabIndex = 11;
+            // 
+            // panelScreenshot
+            // 
+            this.panelScreenshot.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tableLayoutPanel.SetColumnSpan(this.panelScreenshot, 3);
+            this.panelScreenshot.Controls.Add(this.pictureBoxScreenshot);
+            this.panelScreenshot.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panelScreenshot.Location = new System.Drawing.Point(416, 3);
+            this.panelScreenshot.Name = "panelScreenshot";
+            this.panelScreenshot.Size = new System.Drawing.Size(387, 339);
+            this.panelScreenshot.TabIndex = 12;
             // 
             // ResumeForm
             // 
@@ -384,6 +409,8 @@
             this.tableLayoutPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxScreenshot)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericReplayPauseBeforeEnd)).EndInit();
+            this.panelSaves.ResumeLayout(false);
+            this.panelScreenshot.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -416,5 +443,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn currentTileDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewCheckBoxColumn validDataGridViewCheckBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn Blank;
+        private System.Windows.Forms.Panel panelSaves;
+        private System.Windows.Forms.Panel panelScreenshot;
     }
 }
