@@ -633,6 +633,9 @@ namespace ORTS
                     if (OverspeedMonitor != null)
                         if (OverspeedWarning && OverspeedMonitor.ResetOnResetButton)
                             OverspeedAlarmTimer.Start();
+
+                    if (ExternalEmergency && SpeedMpS() < 0.1f)
+                        ExternalEmergency = false;
                     break;
             }
         }
