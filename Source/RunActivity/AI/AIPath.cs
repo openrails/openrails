@@ -388,7 +388,10 @@ namespace ORTS
             {
                 // bit 0 is not set, but bit 1 is set:waiting point
                 Type = AIPathNodeType.Stop;
-                if (pdp.IsInvalid) // not a valid point
+                //<CSComment> tests showed me that value 9 in pdp is generated  when the waiting point (or also 
+                //a path start or end point) are dragged within the path editor of the MSTS activity editor; the points are still valid;
+                // however, as a contradictory case of the past has been reported, the check is skipped only when the enhanced compatibility flag is on;
+                if (pdp.IsInvalid && (Program.Simulator.TimetableMode || !Program.Simulator.Settings.EnhancedActCompatibility)) // not a valid point
                 {
                     Type = AIPathNodeType.Invalid;
                 }
