@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-10-07 20:09:10+0200\n"
-"PO-Revision-Date: 2014-10-07 20:09:12+0200\n"
+"POT-Creation-Date: 2014-10-10 21:02:33+0200\n"
+"PO-Revision-Date: 2014-10-10 21:02:35+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -437,43 +437,43 @@ msgstr ""
 msgid "Power line condition overridden."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1084
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1145
 msgid "Tender coal supply is empty. Your loco will fail."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1098
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1159
 msgid "Tender water supply is empty. Your loco will fail."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1152
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1213
 msgid "Fire has dropped too far. Your loco will fail."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1204
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1265
 msgid ""
 "FireMass is getting low. Your fireman will shovel faster, but don't wear him "
 "out."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1216
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1277
 msgid "FireMass is back within limits. Your fireman will shovel as per normal."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1799
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1860
 msgid ""
 "You are exceeding the maximum recommended speed. Continued operation at this "
 "speed may cause damage."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1987
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:2048
 msgid "Water level dropped too far. Plug has fused and loco has failed."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1994
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:2055
 msgid "Boiler overfull and priming."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:2000
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:2061
 msgid "Boiler no longer priming."
 msgstr ""
 
@@ -1366,6 +1366,10 @@ msgstr ""
 msgid "Next Station"
 msgstr ""
 
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:187
+msgid "No more stations."
+msgstr ""
+
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:322
 msgid "Activity completed."
 msgstr ""
@@ -1376,10 +1380,6 @@ msgid "Current Delay: {0} minute"
 msgid_plural "Current Delay: {0} minutes"
 msgstr[0] ""
 msgstr[1] ""
-
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:187
-msgid "No more stations."
-msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/NoticeWindow.cs:104
 #, csharp-format

@@ -184,7 +184,7 @@ namespace ORTS.Viewer3D.Popups
                         StationNextDepartScheduled.Text = "";
                         StationNextDistance.Text = "";
 
-                        Message.Text = "No more stations.";
+                        Message.Text = Viewer.Catalog.GetString("No more stations.");
                     }
                     else
                     {
