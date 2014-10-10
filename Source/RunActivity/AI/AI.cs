@@ -525,6 +525,8 @@ namespace ORTS
                     thisTrain.InitializeMoving();
                     thisTrain.MovementState = AITrain.AI_MOVEMENT_STATE.BRAKING;
                 }
+                else if (thisTrain.InitialSpeed == 0)
+                    thisTrain.InitializeBrakes();
 
                 if (MPManager.IsServer())
                 {
