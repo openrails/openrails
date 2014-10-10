@@ -79,6 +79,30 @@ namespace ORTS.Viewer3D.RollingStock
         {
             SteamLocomotive.StartReverseDecrease(null);
         }
+        
+        /// <summary>
+        /// Overrides the base method as steam locomotives have only rudimentary gear boxes. 
+        /// </summary>
+        protected override void StartGearBoxIncrease()
+        {
+            SteamLocomotive.SteamStartGearBoxIncrease();
+        }        
+                
+        protected override void StopGearBoxIncrease()
+        {
+           SteamLocomotive.SteamStopGearBoxIncrease();
+        }
+
+        protected override void StartGearBoxDecrease()
+        {
+            SteamLocomotive.SteamStartGearBoxDecrease();
+        }
+
+        protected override void StopGearBoxDecrease()
+        {
+            SteamLocomotive.SteamStopGearBoxDecrease();
+        }
+                
 
         public override void InitializeUserInputCommands()
         {
