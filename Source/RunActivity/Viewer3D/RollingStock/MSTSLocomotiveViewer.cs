@@ -473,7 +473,7 @@ namespace ORTS.Viewer3D.RollingStock
                         {
                             foreach (var pickup in worldFile.PickupList)
                             {
-                                if (pickup.Location == null)
+                                if (pickup.Location == WorldLocation.None)
                                     pickup.Location = new WorldLocation(
                                         worldFile.TileX, worldFile.TileZ,
                                         pickup.Position.X, pickup.Position.Y, pickup.Position.Z);
