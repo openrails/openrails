@@ -3790,7 +3790,7 @@ namespace ORTS
             if (FirstCar != null && FirstCar.BrakeSystem is VacuumSinglePipe)
             {
                 max = maxPressurePSIVacuum;
-                fullServ = fullServReductionPSI;
+                fullServ = maxPressurePSIVacuum + fullServReductionPSI;
             }
                 BrakeLine1PressurePSIorInHg = BrakeLine2PressurePSI = max;
             foreach (TrainCar car in Cars)
