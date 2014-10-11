@@ -47,8 +47,7 @@ namespace ORTS.Viewer3D.Popups
         readonly int ProcessorCount = System.Environment.ProcessorCount;
 
         readonly PerformanceCounter AllocatedBytesPerSecCounter; // \.NET CLR Memory(*)\Allocated Bytes/sec
-        SmoothedData AllocatedBytesPerSecLastValue = new SmoothedData(30);
-        int AllocatedBytesPerSecLastGCValue;
+        float AllocatedBytesPerSecLastValue;
 
         readonly Viewer Viewer;
         readonly Action<TableData>[] TextPages;
@@ -671,20 +670,13 @@ namespace ORTS.Viewer3D.Popups
         {
             TextPageHeading(table, "DEBUG INFORMATION");
 
-            var allocatedBytesPerSecGCValue = GC.CollectionCount(0);
-            if (AllocatedBytesPerSecLastGCValue != allocatedBytesPerSecGCValue && AllocatedBytesPerSecCounter != null)
-            {
-                AllocatedBytesPerSecLastValue.Update(1, AllocatedBytesPerSecCounter.NextValue());
-                AllocatedBytesPerSecLastGCValue = allocatedBytesPerSecGCValue;
-            }
-            else
-            {
-                AllocatedBytesPerSecLastValue.Update(1, AllocatedBytesPerSecLastValue.Value);
-            }
+            var allocatedBytesPerSecond = AllocatedBytesPerSecCounter.NextValue();
+            if (allocatedBytesPerSecond >= 1 && AllocatedBytesPerSecLastValue != allocatedBytesPerSecond)
+                AllocatedBytesPerSecLastValue = allocatedBytesPerSecond;
 
             TableAddLabelValue(table, "Logging enabled", "{0}", Viewer.Settings.DataLogger);
             TableAddLabelValue(table, "Build", "{0}", VersionInfo.Build);
-            TableAddLabelValue(table, "Memory", "{0:F0} MB ({5}, {6}, {7}, {8}, {1:F0} MB managed, {9:F0} kB/frame allocated, {2:F0}/{3:F0}/{4:F0} GCs)", GetWorkingSetSize() / 1024 / 1024, GC.GetTotalMemory(false) / 1024 / 1024, GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2), Viewer.TextureManager.GetStatus(), Viewer.MaterialManager.GetStatus(), Viewer.ShapeManager.GetStatus(), Viewer.World.Terrain.GetStatus(), AllocatedBytesPerSecLastValue.SmoothedValue / Viewer.RenderProcess.FrameRate.SmoothedValue / 1024);
+            TableAddLabelValue(table, "Memory", "{0:F0} MB ({5}, {6}, {7}, {8}, {1:F0} MB managed, {9:F0} kB/frame allocated, {2:F0}/{3:F0}/{4:F0} GCs)", GetWorkingSetSize() / 1024 / 1024, GC.GetTotalMemory(false) / 1024 / 1024, GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2), Viewer.TextureManager.GetStatus(), Viewer.MaterialManager.GetStatus(), Viewer.ShapeManager.GetStatus(), Viewer.World.Terrain.GetStatus(), AllocatedBytesPerSecLastValue / Viewer.RenderProcess.FrameRate.SmoothedValue / 1024);
             TableAddLabelValue(table, "CPU", "{0:F0}% ({1} logical processors)", (Viewer.RenderProcess.Profiler.CPU.SmoothedValue + Viewer.UpdaterProcess.Profiler.CPU.SmoothedValue + Viewer.LoaderProcess.Profiler.CPU.SmoothedValue + Viewer.SoundProcess.Profiler.CPU.SmoothedValue) / ProcessorCount, ProcessorCount);
             TableAddLabelValue(table, "GPU", "{0:F0} FPS (50th/95th/99th percentiles {1:F1} / {2:F1} / {3:F1} ms, shader model {4})", Viewer.RenderProcess.FrameRate.SmoothedValue, Viewer.RenderProcess.FrameTime.SmoothedP50 * 1000, Viewer.RenderProcess.FrameTime.SmoothedP95 * 1000, Viewer.RenderProcess.FrameTime.SmoothedP99 * 1000, Viewer.Settings.ShaderModel);
             TableAddLabelValue(table, "Adapter", "{0} ({1:F0} MB)", Viewer.AdapterDescription, Viewer.AdapterMemory / 1024 / 1024);

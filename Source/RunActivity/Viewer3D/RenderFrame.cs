@@ -366,7 +366,10 @@ namespace ORTS.Viewer3D
 
         readonly Material DummyBlendedMaterial;
 		readonly Dictionary<Material, RenderItemCollection>[] RenderItems = new Dictionary<Material, RenderItemCollection>[(int)RenderPrimitiveSequence.Sentinel];
-		readonly RenderItemCollection[] RenderShadowItems;
+        readonly RenderItemCollection[] RenderShadowSceneryItems;
+        readonly RenderItemCollection[] RenderShadowForestItems;
+        readonly RenderItemCollection[] RenderShadowTerrainItems;
+        readonly RenderItemCollection RenderItemsSequence = new RenderItemCollection();
 
         public bool IsScreenChanged { get; internal set; }
         ShadowMapMaterial ShadowMapMaterial;
@@ -404,9 +407,15 @@ namespace ORTS.Viewer3D
                 ShadowMapLightViewProjShadowProj = new Matrix[RenderProcess.ShadowMapCount];
                 ShadowMapCenter = new Vector3[RenderProcess.ShadowMapCount];
 
-				RenderShadowItems = new RenderItemCollection[RenderProcess.ShadowMapCount];
+                RenderShadowSceneryItems = new RenderItemCollection[RenderProcess.ShadowMapCount];
+                RenderShadowForestItems = new RenderItemCollection[RenderProcess.ShadowMapCount];
+                RenderShadowTerrainItems = new RenderItemCollection[RenderProcess.ShadowMapCount];
                 for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
-					RenderShadowItems[shadowMapIndex] = new RenderItemCollection();
+                {
+                    RenderShadowSceneryItems[shadowMapIndex] = new RenderItemCollection();
+                    RenderShadowForestItems[shadowMapIndex] = new RenderItemCollection();
+                    RenderShadowTerrainItems[shadowMapIndex] = new RenderItemCollection();
+                }
             }
 
             XNACameraView = Matrix.Identity;
@@ -435,8 +444,14 @@ namespace ORTS.Viewer3D
 
             // Clear out (reset) all of the shadow mapping RenderItem lists.
             if (Game.Settings.DynamicShadows)
+            {
                 for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
-                    RenderShadowItems[shadowMapIndex].Clear();
+                {
+                    RenderShadowSceneryItems[shadowMapIndex].Clear();
+                    RenderShadowForestItems[shadowMapIndex].Clear();
+                    RenderShadowTerrainItems[shadowMapIndex].Clear();
+                }
+            }
         }
 
         public void PrepareFrame(Viewer viewer)
@@ -574,7 +589,14 @@ namespace ORTS.Viewer3D
         [CallOnThread("Updater")]
         void AddShadowPrimitive(int shadowMapIndex, Material material, RenderPrimitive primitive, ref Matrix xnaMatrix, ShapeFlags flags)
         {
-            RenderShadowItems[shadowMapIndex].Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
+            if (material is SceneryMaterial)
+                RenderShadowSceneryItems[shadowMapIndex].Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
+            else if (material is ForestMaterial)
+                RenderShadowForestItems[shadowMapIndex].Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
+            else if (material is TerrainMaterial)
+                RenderShadowTerrainItems[shadowMapIndex].Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
+            else
+                Debug.Fail("Only scenery, forest and terrain materials allowed in shadow map.");
         }
 
         [CallOnThread("Updater")]
@@ -667,7 +689,7 @@ namespace ORTS.Viewer3D
             for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
                 DrawShadows(graphicsDevice, logging, shadowMapIndex);
             for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
-                Game.RenderProcess.ShadowPrimitiveCount[shadowMapIndex] = RenderShadowItems[shadowMapIndex].Count;
+                Game.RenderProcess.ShadowPrimitiveCount[shadowMapIndex] = RenderShadowSceneryItems[shadowMapIndex].Count + RenderShadowForestItems[shadowMapIndex].Count + RenderShadowTerrainItems[shadowMapIndex].Count;
             if (logging) Console.WriteLine("  }");
         }
 
@@ -684,32 +706,31 @@ namespace ORTS.Viewer3D
             ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.Normal);
 
             // Render non-terrain, non-forest shadow items first.
-            if (logging) Console.WriteLine("      {0,-5} * SceneryMaterial (normal)", RenderShadowItems[shadowMapIndex].Count(ri => ri.Material is SceneryMaterial));
-            ShadowMapMaterial.Render(graphicsDevice, RenderShadowItems[shadowMapIndex].Where(ri => ri.Material is SceneryMaterial), ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
+            if (logging) Console.WriteLine("      {0,-5} * SceneryMaterial (normal)", RenderShadowSceneryItems[shadowMapIndex].Count);
+            ShadowMapMaterial.Render(graphicsDevice, RenderShadowSceneryItems[shadowMapIndex], ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
 
             // Prepare for normal (non-blocking) rendering of forests.
             ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.Forest);
 
             // Render forest shadow items next.
-            if (logging) Console.WriteLine("      {0,-5} * ForestMaterial (forest)", RenderShadowItems[shadowMapIndex].Count(ri => ri.Material is ForestMaterial));
-            ShadowMapMaterial.Render(graphicsDevice, RenderShadowItems[shadowMapIndex].Where(ri => ri.Material is ForestMaterial), ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
+            if (logging) Console.WriteLine("      {0,-5} * ForestMaterial (forest)", RenderShadowForestItems[shadowMapIndex].Count);
+            ShadowMapMaterial.Render(graphicsDevice, RenderShadowForestItems[shadowMapIndex], ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
 
             // Prepare for normal (non-blocking) rendering of terrain.
             ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.Normal);
 
             // Render terrain shadow items now, with their magic.
-            if (logging) Console.WriteLine("      {0,-5} * TerrainMaterial (normal)", RenderShadowItems[shadowMapIndex].Count(ri => ri.Material is TerrainMaterial));
+            if (logging) Console.WriteLine("      {0,-5} * TerrainMaterial (normal)", RenderShadowTerrainItems[shadowMapIndex].Count);
             graphicsDevice.VertexDeclaration = TerrainPrimitive.SharedPatchVertexDeclaration;
             graphicsDevice.Indices = TerrainPrimitive.SharedPatchIndexBuffer;
-            ShadowMapMaterial.Render(graphicsDevice, RenderShadowItems[shadowMapIndex].Where(ri => ri.Material is TerrainMaterial && (ri.Material is TerrainSharedMaterial)), ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
-            ShadowMapMaterial.Render(graphicsDevice, RenderShadowItems[shadowMapIndex].Where(ri => ri.Material is TerrainMaterial && !(ri.Material is TerrainSharedMaterial)), ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
+            ShadowMapMaterial.Render(graphicsDevice, RenderShadowTerrainItems[shadowMapIndex], ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
 
             // Prepare for blocking rendering of terrain.
             ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.Blocker);
 
             // Render terrain shadow items in blocking mode.
-            if (logging) Console.WriteLine("      {0,-5} * TerrainMaterial (blocker)", RenderShadowItems[shadowMapIndex].Count(ri => ri.Material is TerrainMaterial));
-            ShadowMapMaterial.Render(graphicsDevice, RenderShadowItems[shadowMapIndex].Where(ri => ri.Material is TerrainMaterial), ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
+            if (logging) Console.WriteLine("      {0,-5} * TerrainMaterial (blocker)", RenderShadowTerrainItems[shadowMapIndex].Count);
+            ShadowMapMaterial.Render(graphicsDevice, RenderShadowTerrainItems[shadowMapIndex], ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
 
             // All done.
             ShadowMapMaterial.ResetState(graphicsDevice);
@@ -764,7 +785,8 @@ namespace ORTS.Viewer3D
             if (Game.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && SceneryShader != null)
                 SceneryShader.SetShadowMap(ShadowMapLightViewProjShadowProj, ShadowMap, RenderProcess.ShadowMapLimit);
 
-			var renderItems = new RenderItemCollection();
+            var renderItems = RenderItemsSequence;
+            renderItems.Clear();
             for (var i = 0; i < (int)RenderPrimitiveSequence.Sentinel; i++)
             {
                 if (logging) Console.WriteLine("    {0} {{", (RenderPrimitiveSequence)i);
