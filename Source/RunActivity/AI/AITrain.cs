@@ -4064,8 +4064,16 @@ namespace ORTS
                 }
                 else if (attachTrain.TrainType != Train.TRAINTYPE.STATIC && TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1)
                 {
-                    CoupleAIToLiving(attachTrain, thisTrainFront, attachTrainFront);
-                    return;
+                    if ((thisTrainFront && Cars[0] is MSTSLocomotive) || (!thisTrainFront && Cars[Cars.Count - 1] is MSTSLocomotive))
+                    {
+                        StealCarsToLivingTrain(attachTrain, thisTrainFront, attachTrainFront);
+                        return;
+                    }
+                    else
+                    {
+                        LeaveCarsToLivingTrain(attachTrain, thisTrainFront, attachTrainFront);
+                        return;
+                    }
                 }
             }
             
@@ -4255,11 +4263,11 @@ namespace ORTS
 
         //================================================================================================//
         /// <summary>
-        /// Couple AI train to living train (AI or player); both remain alive in this case
+        /// Couple AI train to living train (AI or player) and leave cars to it; both remain alive in this case
         /// <\summary>
         /// 
 
-        public void CoupleAIToLiving(Train attachTrain, bool thisTrainFront, bool attachTrainFront)
+        public void LeaveCarsToLivingTrain(Train attachTrain, bool thisTrainFront, bool attachTrainFront)
         {
             // find set of cars between loco and attachtrain and pass them to train to attachtrain
             if (thisTrainFront)
@@ -4268,7 +4276,7 @@ namespace ORTS
                 {
                     var car = Cars[0];
                     if (car is MSTSLocomotive)
-                    { 
+                    {
                         break;
                     }
                     else
@@ -4293,9 +4301,9 @@ namespace ORTS
             }
             else
             {
-                var car = Cars[Cars.Count - 1];
-                while (0 <Cars.Count-1)
+                 while (0 <Cars.Count-1)
                 {
+                    var car = Cars[Cars.Count - 1];
                     if (car is MSTSLocomotive)
                     {
                         break;
@@ -4320,6 +4328,89 @@ namespace ORTS
                 }
                 Cars[Cars.Count-1].SignalEvent(Event.Couple);
             }
+
+            TerminateCoupling(attachTrain, thisTrainFront, attachTrainFront);
+         }
+
+        //================================================================================================//
+        /// <summary>
+        /// Coupling AI train steals cars to coupled AI train
+        /// <\summary>
+
+        public void StealCarsToLivingTrain(Train attachTrain, bool thisTrainFront, bool attachTrainFront)
+        {
+            if (attachTrainFront)
+            {
+                while (0 < attachTrain.Cars.Count-1)
+                {
+                    var car = attachTrain.Cars[0];
+                    if (car is MSTSLocomotive)
+                    {
+                        // no other car to steal, leave to the attached train its loco
+                        break;
+                    }
+                    else
+                    {
+                        if (thisTrainFront)
+                        {
+                            Cars.Insert(0, car);
+                            car.Train = this;
+                            car.Flipped = !car.Flipped;
+                        }
+                        else
+                        {
+                            Cars.Add(car);
+                            car.Train = this;
+                        }
+                        Length += car.LengthM;
+                        attachTrain.Length -= car.LengthM;
+                        attachTrain.Cars.Remove(car);
+                    }
+                }
+                attachTrain.Cars[0].SignalEvent(Event.Couple);
+            }
+            else
+            {
+                while (0 <attachTrain.Cars.Count-1)
+                {
+                    var car = attachTrain.Cars[attachTrain.Cars.Count - 1];
+                    if (car is MSTSLocomotive)
+                    {
+                        // ditto
+                        break;
+                    }
+                    else
+                    {
+                        if (!thisTrainFront)
+                        {
+                            Cars.Add(car);
+                            car.Train = this;
+                            car.Flipped = !car.Flipped;
+                        }
+                        else
+                        {
+                            Cars.Insert(0, car);
+                            car.Train = this;
+                        }
+                        Length += car.LengthM;
+                        attachTrain.Length -= car.LengthM;
+                        attachTrain.Cars.Remove(car);
+                    }
+                }
+                attachTrain.Cars[attachTrain.Cars.Count-1].SignalEvent(Event.Couple);
+            }
+
+            TerminateCoupling (attachTrain, thisTrainFront, attachTrainFront);
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Uncouple and perform housekeeping
+        /// <\summary>
+        /// 
+        public void TerminateCoupling (Train attachTrain, bool thisTrainFront, bool attachTrainFront)
+        {
+        
             // uncouple
             UncoupledFrom = attachTrain;
             attachTrain.UncoupledFrom = this;
@@ -4391,6 +4482,7 @@ namespace ORTS
             physicsUpdate(0);   // stop the wheels from moving etc
 
         }
+
 
         //================================================================================================//
         /// <summary>
