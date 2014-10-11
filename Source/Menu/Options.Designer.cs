@@ -107,6 +107,7 @@
             this.tabPageUpdater = new System.Windows.Forms.TabPage();
             this.labelUpdateChannel = new System.Windows.Forms.Label();
             this.tabPageExperimental = new System.Windows.Forms.TabPage();
+            this.checkBoxExtendedAIShunting = new System.Windows.Forms.CheckBox();
             this.checkBoxConditionalLoadOfNightTextures = new System.Windows.Forms.CheckBox();
             this.checkBoxNoForcedRedAtStationStops = new System.Windows.Forms.CheckBox();
             this.AdhesionFactorChangeValueLabel = new System.Windows.Forms.Label();
@@ -139,7 +140,6 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.checkBoxExtendedAIShunting = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -984,11 +984,6 @@
             // 
             this.comboDataLoggerSeparator.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboDataLoggerSeparator.FormattingEnabled = true;
-            this.comboDataLoggerSeparator.Items.AddRange(new object[] {
-            "comma",
-            "semicolon",
-            "tab",
-            "space"});
             this.comboDataLoggerSeparator.Location = new System.Drawing.Point(5, 37);
             this.comboDataLoggerSeparator.Margin = new System.Windows.Forms.Padding(2);
             this.comboDataLoggerSeparator.Name = "comboDataLoggerSeparator";
@@ -1085,23 +1080,10 @@
             // checkedListBoxDataLogTSContents
             // 
             this.checkedListBoxDataLogTSContents.FormattingEnabled = true;
-            this.checkedListBoxDataLogTSContents.Items.AddRange(new object[] {
-            "Time",
-            "Train Speed",
-            "Max. Speed",
-            "Signal State",
-            "Track Elevation",
-            "Direction",
-            "Control Mode",
-            "Distance Travelled",
-            "Throttle %",
-            "Brake Cyl Press",
-            "Dyn Brake %",
-            "Gear Setting"});
             this.checkedListBoxDataLogTSContents.Location = new System.Drawing.Point(26, 55);
             this.checkedListBoxDataLogTSContents.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
             this.checkedListBoxDataLogTSContents.Name = "checkedListBoxDataLogTSContents";
-            this.checkedListBoxDataLogTSContents.Size = new System.Drawing.Size(120, 184);
+            this.checkedListBoxDataLogTSContents.Size = new System.Drawing.Size(148, 214);
             this.checkedListBoxDataLogTSContents.TabIndex = 17;
             // 
             // labelDataLogTSInterval
@@ -1117,7 +1099,7 @@
             // checkDataLogStationStops
             // 
             this.checkDataLogStationStops.AutoSize = true;
-            this.checkDataLogStationStops.Location = new System.Drawing.Point(6, 245);
+            this.checkDataLogStationStops.Location = new System.Drawing.Point(6, 280);
             this.checkDataLogStationStops.Name = "checkDataLogStationStops";
             this.checkDataLogStationStops.Size = new System.Drawing.Size(106, 17);
             this.checkDataLogStationStops.TabIndex = 15;
@@ -1220,6 +1202,16 @@
             this.tabPageExperimental.TabIndex = 3;
             this.tabPageExperimental.Text = "Experimental";
             this.tabPageExperimental.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxExtendedAIShunting
+            // 
+            this.checkBoxExtendedAIShunting.AutoSize = true;
+            this.checkBoxExtendedAIShunting.Location = new System.Drawing.Point(301, 263);
+            this.checkBoxExtendedAIShunting.Name = "checkBoxExtendedAIShunting";
+            this.checkBoxExtendedAIShunting.Size = new System.Drawing.Size(150, 17);
+            this.checkBoxExtendedAIShunting.TabIndex = 45;
+            this.checkBoxExtendedAIShunting.Text = "Extended AI train shunting";
+            this.checkBoxExtendedAIShunting.UseVisualStyleBackColor = true;
             // 
             // checkBoxConditionalLoadOfNightTextures
             // 
@@ -1602,16 +1594,6 @@
             this.checkPreferDDSTexture.TabIndex = 16;
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
-            // 
-            // checkBoxExtendedAIShunting
-            // 
-            this.checkBoxExtendedAIShunting.AutoSize = true;
-            this.checkBoxExtendedAIShunting.Location = new System.Drawing.Point(301, 263);
-            this.checkBoxExtendedAIShunting.Name = "checkBoxExtendedAIShunting";
-            this.checkBoxExtendedAIShunting.Size = new System.Drawing.Size(150, 17);
-            this.checkBoxExtendedAIShunting.TabIndex = 45;
-            this.checkBoxExtendedAIShunting.Text = "Extended AI train shunting";
-            this.checkBoxExtendedAIShunting.UseVisualStyleBackColor = true;
             // 
             // OptionsForm
             // 

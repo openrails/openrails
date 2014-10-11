@@ -123,7 +123,16 @@ namespace ORTS
             InitializeKeyboardSettings();
 
             // DataLogger tab
-            comboDataLoggerSeparator.Text = settings.DataLoggerSeparator;
+            Dictionary<string, string> dictionaryDataLoggerSeparator = new Dictionary<string, string>();
+            dictionaryDataLoggerSeparator.Add("comma",catalog.GetString("comma"));
+            dictionaryDataLoggerSeparator.Add("semicolon", catalog.GetString("semicolon"));
+            dictionaryDataLoggerSeparator.Add("tab", catalog.GetString("tab"));
+            dictionaryDataLoggerSeparator.Add("space", catalog.GetString("space"));
+            comboDataLoggerSeparator.DataSource = new BindingSource(dictionaryDataLoggerSeparator, null);
+            comboDataLoggerSeparator.DisplayMember = "Value";
+            comboDataLoggerSeparator.ValueMember = "Key";
+            comboDataLoggerSeparator.Text = catalog.GetString(settings.DataLoggerSeparator);
+
             comboDataLogSpeedUnits.Text = settings.DataLogSpeedUnits;
             checkDataLogger.Checked = Settings.DataLogger;
             checkDataLogPerformance.Checked = settings.DataLogPerformance;
@@ -131,6 +140,20 @@ namespace ORTS
             checkDataLogMisc.Checked = settings.DataLogMisc;
 
             // Evaluation tab
+            this.checkedListBoxDataLogTSContents.Items.AddRange(new object[] {
+                catalog.GetString("Time"),
+                catalog.GetString("Train Speed"),
+                catalog.GetString("Max. Speed"),
+                catalog.GetString("Signal State"),
+                catalog.GetString("Track Elevation"),
+                catalog.GetString("Direction"),
+                catalog.GetString("Control Mode"),
+                catalog.GetString("Distance Travelled"),
+                catalog.GetString("Throttle %"),
+                catalog.GetString("Brake Cyl Press"),
+                catalog.GetString("Dyn Brake %"),
+                catalog.GetString("Gear Setting")
+            });
             checkDataLogTrainSpeed.Checked = Settings.DataLogTrainSpeed;
             numericDataLogTSInterval.Value = Settings.DataLogTSInterval;
             for (var i = 0; i < checkedListBoxDataLogTSContents.Items.Count; i++)
@@ -332,7 +355,7 @@ namespace ORTS
             // These are edited live.
             
             // DataLogger tab
-            Settings.DataLoggerSeparator = comboDataLoggerSeparator.Text;
+            Settings.DataLoggerSeparator = ((KeyValuePair<string, string>)comboDataLoggerSeparator.SelectedItem).Key;
             Settings.DataLogSpeedUnits = comboDataLogSpeedUnits.Text;
             Settings.DataLogger = checkDataLogger.Checked;
             Settings.DataLogPerformance = checkDataLogPerformance.Checked;
