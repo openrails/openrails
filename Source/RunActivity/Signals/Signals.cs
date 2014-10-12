@@ -3161,7 +3161,10 @@ namespace ORTS
 
                         if (thisSection.EndSignals[thisElement.Direction] != null)
                         {
-                            thisTrain.Train.SwitchToSignalControl(thisSection.EndSignals[thisElement.Direction]);
+                            if (Program.Simulator.TimetableMode || !Program.Simulator.Settings.EnhancedActCompatibility || routeIndex < routePart.Count)
+                            {
+                                thisTrain.Train.SwitchToSignalControl(thisSection.EndSignals[thisElement.Direction]);                                
+                            }
                             furthestRouteCleared = true;
                             if (thisTrain.Train.CheckTrain)
                             {
@@ -4934,12 +4937,15 @@ namespace ORTS
                 return (true);
             }
 
-            if (!Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility && thisTrain.Train.TrainType == Train.TRAINTYPE.AI_NOTSTARTED)
+            if (!Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility && 
+                (thisTrain.Train.TrainType == Train.TRAINTYPE.AI_NOTSTARTED ||
+                (thisTrain.Train.TrainType == Train.TRAINTYPE.PLAYER && thisTrain.Train.DistanceTravelledM == 0.0 &&
+                thisTrain.Train.TCRoute != null && thisTrain.Train.TCRoute.activeSubpath == 0))) // We are at start of run
             { 
-            if ( CircuitState.TrainReserved != null && CircuitState.TrainReserved.Train != thisTrain.Train)
-            {
-                ClearSectionsOfTrainBehind(CircuitState.TrainReserved, this);
-            }
+                if ( CircuitState.TrainReserved != null && CircuitState.TrainReserved.Train != thisTrain.Train)
+                {
+                    ClearSectionsOfTrainBehind(CircuitState.TrainReserved, this);
+                }
             }
             else if ( CircuitState.TrainReserved != null && CircuitState.TrainReserved.Train != thisTrain.Train)
             {
