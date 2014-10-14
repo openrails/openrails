@@ -3161,11 +3161,13 @@ namespace ORTS
 
                         if (thisSection.EndSignals[thisElement.Direction] != null)
                         {
-                            thisTrain.Train.SwitchToSignalControl(thisSection.EndSignals[thisElement.Direction]);
+                            if (Program.Simulator.TimetableMode || !Program.Simulator.Settings.EnhancedActCompatibility || routeIndex < routePart.Count)
+                            {
+                                thisTrain.Train.SwitchToSignalControl(thisSection.EndSignals[thisElement.Direction]);                                
+                            }
                             furthestRouteCleared = true;
                             if (thisTrain.Train.CheckTrain)
-                            {
-                                File.AppendAllText(@"C:\temp\checktrain.txt",
+                            {                                File.AppendAllText(@"C:\temp\checktrain.txt",
                                     String.Format("Has end signal : {0}\n",
                                     thisSection.EndSignals[thisElement.Direction].thisRef));
                             }
