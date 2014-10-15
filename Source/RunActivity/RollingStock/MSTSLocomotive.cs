@@ -85,6 +85,15 @@ namespace ORTS
             FuelDiesel = 7,
             FuelWood = 8    // Think this is new to OR and not recognised by MSTS
         }
+        
+        public enum CombinedControl
+        {
+            None,
+            ThrottleDynamic,
+            ThrottleAir,
+            ThrottleDynamicAir,
+            DynamicAir,
+        }
 
         // simulation parameters
         public bool Horn;
@@ -133,11 +142,9 @@ namespace ORTS
         public float DynamicBrakeDelayS;
         public bool DynamicBrakeAutoBailOff;
         public bool UsingRearCab;
-
-        public bool HasCombCtrl;
-        public bool HasCombThrottleTrainBrake;
-        public bool RDHasCombThrottleTrainBrake;    // Temp added for RD exception bug #
-        public bool HasDefectiveComboDynamicBreak;
+        
+        public CombinedControl CombinedControlType;
+        public float CombinedControlSplitPosition;
         public bool HasSmoothStruc;
         public int ComboCtrlCrossOver = 5;
 
@@ -178,6 +185,14 @@ namespace ORTS
         public AirSinglePipe.ValveState EngineBrakeState = AirSinglePipe.ValveState.Lap;
         public MSTSNotchController DynamicBrakeController;
         public MSTSNotchController GearBoxController;
+
+        public float EngineBrakeIntervention = -1;
+        public float TrainBrakeIntervention = -1;
+        public float ThrottleIntervention = -1;
+        public float DynamicBrakeIntervention = -1;
+        protected float PreviousDynamicBrakeIntervention = -1;
+
+        public ScriptedTrainControlSystem TrainControlSystem;
 
         public Axle LocomotiveAxle;
         public IIRFilter CurrentFilter;
@@ -500,11 +515,7 @@ namespace ORTS
                 case "engine(emergencystopmonitor":
                 case "engine(awsmonitor":
                 case "engine(overspeedmonitor": VigilanceMonitor = true; TrainControlSystem.Parse(lowercasetoken, stf); break;
-
-                // case "engine(enginecontrollers(combined_control": HasCombCtrl = true; if (!DynamicBrakeController.IsValid()) DynamicBrakeController = new MSTSNotchController(0, 1, .05f); break;
-                case "engine(enginecontrollers(combined_control":
-                    ParseCombData(lowercasetoken, stf); break;
-
+                case "engine(enginecontrollers(combined_control": ParseCombData(lowercasetoken, stf); break;
                 case "engine(airbrakesmainresvolume": MainResVolumeFT3 = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null); break;
                 case "engine(airbrakesmainmaxairpressure": MainResPressurePSI = MaxMainResPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(airbrakescompressorrestartpressure": CompressorRestartPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
@@ -571,7 +582,8 @@ namespace ORTS
             ContinuousForceTimeFactor = locoCopy.ContinuousForceTimeFactor;
             DynamicBrakeForceCurves = locoCopy.DynamicBrakeForceCurves;
             DynamicBrakeAutoBailOff = locoCopy.DynamicBrakeAutoBailOff;
-            HasCombCtrl = locoCopy.HasCombCtrl;
+            CombinedControlType = locoCopy.CombinedControlType;
+            CombinedControlSplitPosition = locoCopy.CombinedControlSplitPosition;
             DynamicBrakeDelayS = locoCopy.DynamicBrakeDelayS;
             MaxDynamicBrakeForceN = locoCopy.MaxDynamicBrakeForceN;
             HasSmoothStruc = locoCopy.HasSmoothStruc;
@@ -654,42 +666,43 @@ namespace ORTS
 
         private void ParseCombData(string lowercasetoken, STFReader stf)
         {
-            HasCombCtrl = true;
+            var throttle = false;
+            var train = false;
+            var dynamic = false;
+            var independent = false;
+
+            stf.MustMatch("(");
+            var minValue = stf.ReadFloat(STFReader.UNITS.None, 0);
+            var maxValue = stf.ReadFloat(STFReader.UNITS.None, 1);
+            var split = stf.ReadFloat(STFReader.UNITS.None, 0.5f);
+            var defaultValue = stf.ReadFloat(STFReader.UNITS.None, 0.5f);
 
             string s;
-            int i = 0;
-            string[] comboData = new string[10];
-
             while ((s = stf.ReadItem()) != ")")
             {
-                comboData[i] = s;
-                i++;
+                throttle |= s == "throttle";
+                train |= s == "train";
+                dynamic |= s == "dynamic";
+                independent |= s == "independent";
             }
 
-            if (comboData[6] == "train")
-            {
-                // ComboBrakeType = "train";
-                // HasCombThrottleTrainBrake = true;    not to be enabled until train/brake logic is correct
-                RDHasCombThrottleTrainBrake = true;
-                //if (!TrainBrakeController.IsValid())
-                //    TrainBrakeController = new MSTSBrakeController(Simulator);
-            }
+            CombinedControlSplitPosition = (split - minValue) / (maxValue - minValue);
 
-            // TODO: Future use
-            //if (comboData[6] == "dynamic")
-            //{
-            //    // ComboBrakeType = "dynamic";
-            //    DynamicBrake = true;
-            //    if (!DynamicBrakeController.IsValid())
-            //        DynamicBrakeController = new MSTSNotchController(0, 1, .05f);
-            //}
+            if (throttle && dynamic && train)
+                CombinedControlType = CombinedControl.ThrottleDynamicAir;
+            else if (throttle && train)
+                CombinedControlType = CombinedControl.ThrottleAir;
+            else if (throttle && dynamic)
+                CombinedControlType = CombinedControl.ThrottleDynamic;
+            else if (dynamic && train)
+                CombinedControlType = CombinedControl.DynamicAir;
 
-            // Note: We are always setting a dynamic !!!
-            // This should be corrected when proper operation for Combo throttle/train is correct
-            // RDHasCombThrottleTrainBrake was added to fix bug # when RailDriver is activeated
-            DynamicBrake = true;
-            if (!DynamicBrakeController.IsValid())
+            if (train && !TrainBrakeController.IsValid())
+                TrainBrakeController = new ScriptedBrakeController(this);
+            if (dynamic && !DynamicBrakeController.IsValid())
                 DynamicBrakeController = new MSTSNotchController(0, 1, .05f);
+            if (dynamic)
+                DynamicBrake = true;
         }
 
         /// <summary>
@@ -757,7 +770,7 @@ namespace ORTS
         public override void Update(float elapsedClockSeconds)
         {
             TrainControlSystem.Update();
-
+            
             TrainBrakeController.Update(elapsedClockSeconds);
             if (TrainBrakeController.UpdateValue > 0.0)
             {
@@ -782,7 +795,7 @@ namespace ORTS
                 }
             }
 
-            if ((DynamicBrakeController != null) && (DynamicBrakePercent >= 0))
+            if (DynamicBrakeController != null && (DynamicBrakePercent >= 0 || IsLeadLocomotive() && DynamicBrakeIntervention >= 0))
             {
                 if (!DynamicBrake)
                 {
@@ -796,11 +809,18 @@ namespace ORTS
                         Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.On); // Keeping status string on screen so user knows what's happening
                 }
                 else if (this.IsLeadLocomotive())
-                    DynamicBrakePercent = DynamicBrakeController.Update(elapsedClockSeconds) * 100.0f;
+                {
+                    DynamicBrakeController.Update(elapsedClockSeconds);
+                    DynamicBrakePercent = (DynamicBrakeIntervention < 0 ? DynamicBrakeController.CurrentValue : DynamicBrakeIntervention) * 100.0f;
+
+                    if (DynamicBrakeIntervention < 0 && PreviousDynamicBrakeIntervention >= 0 && DynamicBrakePercent == 0)
+                        DynamicBrakePercent = -1;
+                    PreviousDynamicBrakeIntervention = DynamicBrakeIntervention;
+                }
                 else
                     DynamicBrakeController.Update(elapsedClockSeconds);
             }
-            else if ((DynamicBrakeController != null) && (DynamicBrakePercent < 0) && (DynamicBrake))
+            else if (DynamicBrakeController != null && DynamicBrakePercent < 0 && (DynamicBrakeIntervention < 0 || !IsLeadLocomotive()) && DynamicBrake)
             {
      // <CScomment> accordingly to shown documentation dynamic brake delay is required only when engaging
      //           if (DynamicBrakeController.CommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)
@@ -817,7 +837,8 @@ namespace ORTS
             //So only the lead locomotive updates it, the others only updates the controller (actually useless)
             if (this.IsLeadLocomotive() || (!AcceptMUSignals))
             {
-                ThrottlePercent = ThrottleController.Update(elapsedClockSeconds) * 100.0f;
+                ThrottleController.Update(elapsedClockSeconds);
+                ThrottlePercent = (ThrottleIntervention < 0 ? ThrottleController.CurrentValue : ThrottleIntervention) * 100.0f;
                 ConfirmWheelslip( elapsedClockSeconds );
                 LocalThrottlePercent = ThrottlePercent;
             }
@@ -1448,132 +1469,81 @@ namespace ORTS
 
         public void StartThrottleIncrease(float? target)
         {
+            if (ThrottleController.CurrentValue >= ThrottleController.MaximumValue)
+                return;
+            
+            if (target != null) ThrottleController.StartIncrease(target);
+            else new NotchedThrottleCommand(Simulator.Confirmer.Viewer.Log, true);
+            
+            SignalEvent(Event.ThrottleChange);
             AlerterReset(TCSEvent.ThrottleChanged);
-            if (ThrottleController.CurrentValue != ThrottleController.MaximumValue) SignalEvent(Event.ThrottleChange);
-            ThrottleController.StartIncrease(target);
-            //Not needed, Update() handles it:
-            // Simulator.Confirmer.ConfirmWithPerCent( CabControl.Regulator, CabSetting.Increase, ThrottleController.CurrentValue * 100 );
-        }
-
-        public bool StartThrottleIncrease()
-        {
-            bool notchedThrottleCommandNeeded = false;
-            AlerterReset(TCSEvent.ThrottleChanged);
-
             CommandStartTime = Simulator.ClockTime;
-
-            if (!HasCombCtrl && DynamicBrakePercent >= 0
-                || !(DynamicBrakePercent == -1 && !DynamicBrake || DynamicBrakePercent >= 0 && DynamicBrake))
-                // signal sound
-                return notchedThrottleCommandNeeded;
-
-            float? smoothMax = ThrottleController.SmoothMax();
-
-            if (HasCombCtrl && !HasCombThrottleTrainBrake && DynamicBrake)
-            {
-                StartDynamicBrakeDecrease(null);
-                if (!HasSmoothStruc)
-                    StopDynamicBrakeDecrease();
-            }
-            else if (smoothMax == null)
-            {
-                notchedThrottleCommandNeeded = true;
-                if (ThrottleController.CurrentValue != ThrottleController.MaximumValue) SignalEvent(Event.ThrottleChange);
-            }
-            else
-            {
-                StartThrottleIncrease(smoothMax);
-            }
-            return notchedThrottleCommandNeeded;
         }
 
-        public bool StopThrottleIncrease()
+        public void StartThrottleIncrease()
         {
-            bool continuousThrottleCommandNeeded = false;
+            if (CombinedControlType != CombinedControl.ThrottleDynamic && DynamicBrakePercent >= 0
+                || !(DynamicBrakePercent == -1 && !DynamicBrake || DynamicBrakePercent >= 0 && DynamicBrake))
+            {
+                Simulator.Confirmer.Warning(CabControl.Throttle, CabSetting.Warn1);
+                return;
+            }
 
+            if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrake)
+                StartDynamicBrakeDecrease(null);
+            else if (CombinedControlType == CombinedControl.ThrottleAir && TrainBrakeController.CurrentValue > 0)
+                StartTrainBrakeDecrease(null);
+            else
+                StartThrottleIncrease(ThrottleController.SmoothMax());
+        }
+
+        public void StopThrottleIncrease()
+        {
             AlerterReset(TCSEvent.ThrottleChanged);
-            if (!HasCombCtrl && DynamicBrakePercent >= 0)
-                // signal sound
-                return continuousThrottleCommandNeeded;
             ThrottleController.StopIncrease();
-
-            if (ThrottleController.SmoothMax() != null)
-            {
-                continuousThrottleCommandNeeded = true;
-            }
-
-            if (HasCombCtrl && !HasCombThrottleTrainBrake)
-            {
-                if (ThrottlePercent == 0)
-                    StopDynamicBrakeDecrease();
-            }
-            return continuousThrottleCommandNeeded;
+            
+            if (CombinedControlType == CombinedControl.ThrottleDynamic)
+                StopDynamicBrakeDecrease();
+            else if (CombinedControlType == CombinedControl.ThrottleAir)
+                StopTrainBrakeDecrease();
+            else if (ThrottleController.SmoothMax() != null)
+                new ContinuousThrottleCommand(Simulator.Confirmer.Viewer.Log, true, ThrottleController.CurrentValue, CommandStartTime);
         }
 
         public void StartThrottleDecrease(float? target)
         {
+            if (ThrottleController.CurrentValue <= ThrottleController.MinimumValue)
+                return;
+            
+            if (target != null) ThrottleController.StartDecrease(target);
+            else new NotchedThrottleCommand(Simulator.Confirmer.Viewer.Log, false);
+            
+            SignalEvent(Event.ThrottleChange);
             AlerterReset(TCSEvent.ThrottleChanged);
             CommandStartTime = Simulator.ClockTime;
-            if (HasCombCtrl || ThrottleController.CurrentValue != ThrottleController.MinimumValue) SignalEvent(Event.ThrottleChange);
-            ThrottleController.StartDecrease(target);
-            //Not needed, Update() handles it:
-            //Simulator.Confirmer.ConfirmWithPerCent( CabControl.Regulator, CabSetting.Decrease, ThrottleController.CurrentValue * 100 );
         }
 
-        public bool StartThrottleDecrease()
+        public void StartThrottleDecrease()
         {
-            bool notchedThrottleCommandNeeded = false;
-            AlerterReset(TCSEvent.ThrottleChanged);
-
-            CommandStartTime = Simulator.ClockTime;
-
-            if (!HasCombCtrl && DynamicBrakePercent >= 0
-                || !(DynamicBrakePercent == -1 && !DynamicBrake || DynamicBrakePercent >= 0 && DynamicBrake))
-                // signal sound
-                return notchedThrottleCommandNeeded;
-
-            float? smoothMin = ThrottleController.SmoothMin();
-
-            if (HasCombCtrl && !HasCombThrottleTrainBrake && ThrottlePercent <= 0)
-            {
+            if (CombinedControlType == CombinedControl.ThrottleDynamic && ThrottleController.CurrentValue <= 0)
                 StartDynamicBrakeIncrease(null);
-                if (!HasSmoothStruc)
-                    StopDynamicBrakeIncrease();
-            }
-            else if (smoothMin == null)
-            {
-                notchedThrottleCommandNeeded = true;
-                if (HasCombCtrl || ThrottleController.CurrentValue != ThrottleController.MinimumValue) SignalEvent(Event.ThrottleChange);
-            }
+            else if (CombinedControlType == CombinedControl.ThrottleAir && ThrottleController.CurrentValue <= 0)
+                StartTrainBrakeIncrease(null);
             else
-            {
-                StartThrottleDecrease(smoothMin);
-            }
-            return notchedThrottleCommandNeeded;
+                StartThrottleDecrease(ThrottleController.SmoothMin());
         }
 
-        public bool StopThrottleDecrease()
+        public void StopThrottleDecrease()
         {
-            bool continuousThrottleCommandNeeded = false;
             AlerterReset(TCSEvent.ThrottleChanged);
-
-            if (!HasCombCtrl && DynamicBrakePercent >= 0)
-                // signal sound
-                return continuousThrottleCommandNeeded;
-
             ThrottleController.StopDecrease();
 
+            if (CombinedControlType == CombinedControl.ThrottleDynamic)
+                StopDynamicBrakeIncrease();
+            else if (CombinedControlType == CombinedControl.ThrottleAir)
+                StopTrainBrakeIncrease();
             if (ThrottleController.SmoothMin() != null)
-            {
-                continuousThrottleCommandNeeded = true;
-            }
-
-            if (HasCombCtrl && !HasCombThrottleTrainBrake)
-            {
-                if (ThrottlePercent == 0)
-                    StopDynamicBrakeIncrease();
-            }
-            return continuousThrottleCommandNeeded;
+                new ContinuousThrottleCommand(Simulator.Confirmer.Viewer.Log, false, ThrottleController.CurrentValue, CommandStartTime);
         }
 
         /// <summary>
@@ -1621,11 +1591,11 @@ namespace ORTS
 
         public void SetThrottlePercent(float percent)
         {
-            ThrottlePercent = ThrottleController.SetPercent(percent);
+            ThrottleController.SetPercent(percent);
         }
 
          public virtual void ChangeGearUp()
-      {
+        {
         }
 
         public virtual void StartGearBoxIncrease()
@@ -1861,7 +1831,7 @@ namespace ORTS
         private bool CanUseDynamicBrake()
         {
             return (DynamicBrakeController != null
-                && ThrottlePercent == 0 && !HasDefectiveComboDynamicBreak);
+                && ThrottlePercent == 0);
         }
 
         public void StartDynamicBrakeIncrease(float? target)
@@ -1904,7 +1874,7 @@ namespace ORTS
             if (!CanUseDynamicBrake())
                 return;
 
-            if (DynamicBrakePercent <= 0 && DynamicBrake) // Deactivate
+            if (DynamicBrakePercent <= 0 && DynamicBrake && DynamicBrakeIntervention < 0) // Deactivate
             {
                 SignalEvent(Event.DynamicBrakeOff);
                 DynamicBrakePercent = -1;
@@ -1937,9 +1907,7 @@ namespace ORTS
         {
             if (!CanUseDynamicBrake())
                 return;
-            DynamicBrakePercent = DynamicBrakeController.SetPercent(percent);
-            if (percent < 0)
-                DynamicBrakePercent = percent;
+            DynamicBrakeController.SetPercent(percent);
         }
 
         public override string GetDynamicBrakeStatus()
@@ -2020,8 +1988,6 @@ namespace ORTS
             return UsingRearCab;
         }
 #endif
-
-        public ScriptedTrainControlSystem TrainControlSystem;
 
         public void AlerterReset()
         {

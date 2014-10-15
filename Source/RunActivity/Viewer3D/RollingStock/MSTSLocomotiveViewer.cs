@@ -67,128 +67,6 @@ namespace ORTS.Viewer3D.RollingStock
                         new SoundSource(Viewer, Locomotive, Locomotive.TrainControlSystem.Sounds[script])});
         }
 
-        bool SwapControl()
-        {
-            if (Locomotive.HasCombThrottleTrainBrake)
-                return true;
-            else
-                return false;
-        }
-
-        void StartThrottleIncrease()
-        {
-            if (!SwapControl()) // tests for CombThrottleTrainBreak
-            {
-                if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0)
-                {
-                    Viewer.Simulator.Confirmer.Warning(CabControl.Throttle, CabSetting.Warn1);
-                    return;
-                }
-                else
-                {
-                    if (Locomotive.StartThrottleIncrease())
-                        new NotchedThrottleCommand(Viewer.Log, true);
-                }
-            }
-            else
-            {
-                float trainBreakPercent = Locomotive.TrainBrakeController.CurrentValue * 100.0f;
-                float throttlePercent = Locomotive.ThrottlePercent;
-
-                //if (trainBreakPercent > 0)
-                if (throttlePercent == 0 && trainBreakPercent > 0)
-                {
-                    Locomotive.StopThrottleIncrease();
-                    Locomotive.StartTrainBrakeDecrease(null);
-                }
-            }
-        }
-
-        void StopThrottleIncrease()
-        {
-            if (!SwapControl()) // tests for CombThrottleTrainBreak
-            {
-                if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0)
-                {
-                    Viewer.Simulator.Confirmer.Warning(CabControl.Throttle, CabSetting.Warn1);
-                    return;
-                }
-                else
-                    if (Locomotive.StopThrottleIncrease())
-                        new ContinuousThrottleCommand(Viewer.Log, true, Locomotive.ThrottleController.CurrentValue, Locomotive.CommandStartTime);
-            }
-            else
-            {
-                float trainBreakPercent = Locomotive.TrainBrakeController.CurrentValue * 100.0f;
-                float throttlePercent = Locomotive.ThrottlePercent;
-
-                if (throttlePercent == 0 && trainBreakPercent > 0)
-                {
-                    Locomotive.StopTrainBrakeDecrease();
-                }
-                else
-                {
-                    Locomotive.StartThrottleIncrease();
-                    Locomotive.StopThrottleIncrease();
-                }
-            }
-        }
-
-        void StartThrottleDecrease()
-        {
-            if (!SwapControl())
-            {
-                if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0)
-                {
-                    Viewer.Simulator.Confirmer.Warning(CabControl.Throttle, CabSetting.Warn1);
-                    return;
-                }
-                else
-                {
-                    if (Locomotive.StartThrottleDecrease())
-                        new NotchedThrottleCommand(Viewer.Log, false);
-                }
-            }
-            else
-            {
-                float trainBreakPercent = Locomotive.TrainBrakeController.CurrentValue * 100.0f;
-                float throttlePercent = Locomotive.ThrottlePercent;
-
-                if (throttlePercent == 0 && trainBreakPercent >= 0)
-                {
-                    Locomotive.StopThrottleDecrease();
-                    Locomotive.StartTrainBrakeIncrease(null);
-                }
-                else
-                {
-                    Locomotive.StartThrottleDecrease();
-                }
-            }
-        }
-
-        void StopThrottleDecrease()
-        {
-            if (!SwapControl()) // tests for CombThrottleTrainBrea
-            {
-                if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0)
-                {
-                    Viewer.Simulator.Confirmer.Warning(CabControl.Throttle, CabSetting.Warn1);
-                    return;
-                }
-                else
-                    if (Locomotive.StopThrottleDecrease())
-                        new ContinuousThrottleCommand(Viewer.Log, false, Locomotive.ThrottleController.CurrentValue, Locomotive.CommandStartTime);
-            }
-            else
-            {
-                float trainBreakPercent = Locomotive.TrainBrakeController.CurrentValue * 100.0f;
-                float throttlePercent = Locomotive.ThrottlePercent;
-
-                if (throttlePercent == 0 && trainBreakPercent >= 0)
-                    Locomotive.StopTrainBrakeIncrease();
-            }
-        }
-
         protected virtual void StartGearBoxIncrease()
         {
             if (Locomotive.GearBoxController != null)
@@ -245,8 +123,8 @@ namespace ORTS.Viewer3D.RollingStock
             if (!UserInputCommands.ContainsKey(UserCommands.ControlBackwards))
                 UserInputCommands.Add(UserCommands.ControlBackwards, new Action[] { Noop, () => ReverserControlBackwards() });
 
-            UserInputCommands.Add(UserCommands.ControlThrottleIncrease, new Action[] { () => StopThrottleIncrease(), () => StartThrottleIncrease() });
-            UserInputCommands.Add(UserCommands.ControlThrottleDecrease, new Action[] { () => StopThrottleDecrease(), () => StartThrottleDecrease() });
+            UserInputCommands.Add(UserCommands.ControlThrottleIncrease, new Action[] { () => Locomotive.StopThrottleIncrease(), () => Locomotive.StartThrottleIncrease() });
+            UserInputCommands.Add(UserCommands.ControlThrottleDecrease, new Action[] { () => Locomotive.StopThrottleDecrease(), () => Locomotive.StartThrottleDecrease() });
             UserInputCommands.Add(UserCommands.ControlGearUp, new Action[] { () => StopGearBoxIncrease(), () => StartGearBoxIncrease() });
             UserInputCommands.Add(UserCommands.ControlGearDown, new Action[] { () => StopGearBoxDecrease(), () => StartGearBoxDecrease() });
             UserInputCommands.Add(UserCommands.ControlTrainBrakeIncrease, new Action[] { () => Locomotive.StopTrainBrakeIncrease(), () => Locomotive.StartTrainBrakeIncrease(null) });
@@ -309,8 +187,7 @@ namespace ORTS.Viewer3D.RollingStock
                     Locomotive.SetThrottlePercent(UserInput.RDState.ThrottlePercent);
                     Locomotive.SetTrainBrakePercent(UserInput.RDState.TrainBrakePercent);
                     Locomotive.SetEngineBrakePercent(UserInput.RDState.EngineBrakePercent);
-                    // Locomotive.SetDynamicBrakePercent(UserInput.RDState.DynamicBrakePercent);
-                    if (!Locomotive.RDHasCombThrottleTrainBrake)
+                    if (Locomotive.CombinedControlType != MSTSLocomotive.CombinedControl.ThrottleAir)
                         Locomotive.SetDynamicBrakePercent(UserInput.RDState.DynamicBrakePercent);
                     if (UserInput.RDState.DirectionPercent > 50)
                         Locomotive.SetDirection(Direction.Forward);
@@ -333,8 +210,18 @@ namespace ORTS.Viewer3D.RollingStock
                         Locomotive.Headlight--;
                 }
             }
-
-            base.HandleUserInput(elapsedTime);
+            
+            foreach (var command in UserInputCommands.Keys)
+            {
+                if (UserInput.IsPressed(command))
+                {
+                    UserInputCommands[command][1]();
+                }
+                else if (UserInput.IsReleased(command))
+                {
+                    UserInputCommands[command][0]();
+                }
+            }
         }
 
         /// <summary>
@@ -1629,29 +1516,19 @@ namespace ORTS.Viewer3D.RollingStock
                     break;
                 case CABViewControlTypes.CPH_DISPLAY:
                 case CABViewControlTypes.CP_HANDLE:
-                    var currentThrottleNotch = Locomotive.ThrottleController.CurrentNotch;
-                    var throttleNotchCount = Locomotive.ThrottleController.NotchCount();
-                    if (dynamicBrakePercent < 0)
+                    if (Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleDynamic && dynamicBrakePercent < 0
+                        || Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleAir && Locomotive.TrainBrakeController.CurrentValue <= 0)
                     {
-                        if (currentThrottleNotch == 0)
-                            index = throttleNotchCount - 1;
-                        else
-                            index = (throttleNotchCount - 1) - currentThrottleNotch;
+                        index = (int)(ControlDiscrete.FramesCount * Locomotive.CombinedControlSplitPosition * (1 - Locomotive.ThrottleController.CurrentValue));
                     }
-                    else // dynamic break enabled
+                    else if (Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleDynamic && dynamicBrakePercent >= 0)
                     {
-                        if (!Locomotive.HasSmoothStruc)
-                        {
-                            index = (dynamicNotchCount - 1) + currentDynamicNotch;
-                        }
-                        else
-                        {
-                            // This section for dispaly is based on 3DTS smooth controls
-                            // The # of discreet positons for the display is based on how
-                            // MSTS displayed them, so a dummy emulation is supplied here.
-                            index = DummyDynamicToIndex(dynamicBrakePercent) + 9;
-                        }
-                    } // End Dynamic != null
+                        index = (int)(ControlDiscrete.FramesCount * (Locomotive.CombinedControlSplitPosition + (1 - Locomotive.CombinedControlSplitPosition) * Locomotive.DynamicBrakeController.CurrentValue));
+                    }
+                    else if (Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleAir && Locomotive.TrainBrakeController.CurrentValue > 0)
+                    {
+                        index = (int)(ControlDiscrete.FramesCount * (Locomotive.CombinedControlSplitPosition + (1 - Locomotive.CombinedControlSplitPosition) * Locomotive.TrainBrakeController.CurrentValue));
+                    }
                     break;
                 case CABViewControlTypes.ALERTER_DISPLAY:
                 case CABViewControlTypes.RESET:
@@ -1720,42 +1597,6 @@ namespace ORTS.Viewer3D.RollingStock
             else if (ControlDiscrete.MaxValue != ControlDiscrete.MinValue)
             {
                 index = (int)(percent / (ControlDiscrete.MaxValue - ControlDiscrete.MinValue) * ControlDiscrete.FramesCount);
-            }
-
-            return index;
-        }
-
-        static readonly float[] IndexToPercent = new float[]
-        {
-            0.0f,
-            .1111f,
-            .2222f,
-            .3333f,
-            .4444f,
-            .5555f,
-            .6666f,
-            .7777f,
-            .8888f,
-            1.0f
-        };
-
-        static int DummyDynamicToIndex(float percent)
-        {
-            var index = 0;
-
-            if (percent > 1)
-                percent /= 100f;
-
-            for (var i = 0; i < 10; i++)
-            {
-                var value = IndexToPercent[i];
-                if (percent >= value)
-                {
-                    index = i;
-                    continue;
-                }
-                if (percent <= value)
-                    break;
             }
 
             return index;
@@ -2000,34 +1841,44 @@ namespace ORTS.Viewer3D.RollingStock
 					typeName = matrixName.Split('-')[0]; //a part may have several sub-parts, like ASPECT_SIGNAL:0:0-1, ASPECT_SIGNAL:0:0-2
 					type = CABViewControlTypes.NONE;
 					tmpPart = null;
-					try
+					int order, parameter, key;
+                    CabViewControlRenderer style = null;
+					//ASPECT_SIGNAL:0:0
+					var tmp = typeName.Split(':');
+                    try
+                    {
+                        order = int.Parse(tmp[1]);
+                        parameter = int.Parse(tmp[2].Trim());
+                    }
+                    catch { continue; }
+
+                    try
+                    {
+                        type = (CABViewControlTypes)Enum.Parse(typeof(CABViewControlTypes), tmp[0].Trim(), true); //convert from string to enum
+    					key = 1000 * (int)type + order;
+                        style = locoViewer._CabRenderer.ControlMap[key];
+                    }
+                    catch
+                    {
+                        type = CABViewControlTypes.NONE;
+                        continue;
+                    }
+
+					if (style != null && style is CabViewDigitalRenderer)//digits?
 					{
-						int order; string parameter;
-						//ASPECT_SIGNAL:0:0
-						var tmp = typeName.Split(':');
-						order = int.Parse(tmp[1]); parameter = tmp[2].Trim();
-
-						type = (CABViewControlTypes)Enum.Parse(typeof(CABViewControlTypes), tmp[0].Trim(), true); //convert from string to enum
-
-						int key = 1000 * (int)type + order;
-						var style = locoViewer._CabRenderer.ControlMap[key];
-						if (style is CabViewDigitalRenderer)//digits?
-						{
-							DigitParts.Add(key, new DigitalDisplay(viewer, TrainCarShape, iMatrix, int.Parse(parameter), locoViewer._CabRenderer.ControlMap[key]));
-						}
-						else//others
-						{
-							//if there is a part already, will insert this into it, otherwise, create a new
-							if (!AnimateParts.ContainsKey(key))
-							{
-								tmpPart = new AnimatedPartMultiState(TrainCarShape, type, key);
-								AnimateParts.Add(key, tmpPart);
-							}
-							else tmpPart = AnimateParts[key];
-							tmpPart.AddMatrix(iMatrix); //tmpPart.SetPosition(false);
-						}
+						DigitParts.Add(key, new DigitalDisplay(viewer, TrainCarShape, iMatrix, parameter, locoViewer._CabRenderer.ControlMap[key]));
 					}
-					catch { type = CABViewControlTypes.NONE; }
+					else//others
+					{
+						//if there is a part already, will insert this into it, otherwise, create a new
+						if (!AnimateParts.ContainsKey(key))
+						{
+							tmpPart = new AnimatedPartMultiState(TrainCarShape, type, key);
+							AnimateParts.Add(key, tmpPart);
+						}
+						else tmpPart = AnimateParts[key];
+						tmpPart.AddMatrix(iMatrix); //tmpPart.SetPosition(false);
+					}
 				}
 			}
 		}
@@ -2051,7 +1902,7 @@ namespace ORTS.Viewer3D.RollingStock
 			}
 		}
 
-		/// <summary>
+        /// <summary>
 		/// We are about to display a video frame.  Calculate positions for 
 		/// animated objects, and add their primitives to the RenderFrame list.
 		/// </summary>
