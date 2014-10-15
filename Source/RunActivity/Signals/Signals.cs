@@ -4938,10 +4938,25 @@ namespace ORTS
 
             if (!Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility && thisTrain.Train.TrainType == Train.TRAINTYPE.AI_NOTSTARTED)
             { 
-            if ( CircuitState.TrainReserved != null && CircuitState.TrainReserved.Train != thisTrain.Train)
-            {
-                ClearSectionsOfTrainBehind(CircuitState.TrainReserved, this);
+                if ( CircuitState.TrainReserved != null && CircuitState.TrainReserved.Train != thisTrain.Train)
+                {
+                    ClearSectionsOfTrainBehind(CircuitState.TrainReserved, this);
+                }
             }
+            else if (!Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility &&
+                thisTrain.Train.TrainType == Train.TRAINTYPE.PLAYER && thisTrain.Train.DistanceTravelledM == 0.0 &&
+                thisTrain.Train.TCRoute != null && thisTrain.Train.TCRoute.activeSubpath == 0) // We are at initial placement
+                // Check if section is under train, and therefore can be unreserved from other trains
+            {
+                int thisRouteIndex = thisTrain.Train.ValidRoute[0].GetRouteIndex(Index, 0);
+                if ((thisRouteIndex <= thisTrain.Train.PresentPosition[0].RouteListIndex && Index >= thisTrain.Train.PresentPosition[1].RouteListIndex)||
+                    (thisRouteIndex >= thisTrain.Train.PresentPosition[0].RouteListIndex && Index <= thisTrain.Train.PresentPosition[1].RouteListIndex))
+                { 
+                    if (CircuitState.TrainReserved != null && CircuitState.TrainReserved.Train != thisTrain.Train)
+                    {
+                        UnreserveTrain(CircuitState.TrainReserved, true);
+                    }
+                }
             }
             else if ( CircuitState.TrainReserved != null && CircuitState.TrainReserved.Train != thisTrain.Train)
             {
