@@ -6057,6 +6057,11 @@ namespace ORTS
                                 distanceTrainAheadM = thisTrainDistanceM;
                                 trainFound = nextTrain.Train;
                             }
+                            else if (thisTrainOffset < offset && thisTrainOffset + nextTrain.Train.Length > offset) // our front is in the middle of the train
+                            {
+                                distanceTrainAheadM = offset; // set distance to 0
+                                trainFound = nextTrain.Train;
+                            }
                         }
                         else
                         {
