@@ -807,7 +807,12 @@ namespace ORTS
             // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
             MaxIndicatedHorsePowerHP = SpeedFactor * (MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;
 
-          //  Trace.TraceWarning("Motive Gear Force {0}", MotiveForceGearRatio);
+            if(CylinderEfficiencyRate == 0)
+            {
+                CylinderEfficiencyRate = 1.0f; // If no cyldinder efficiency rate in the ENG file set to mormal (1.0)
+            }
+
+            CylinderEfficiencyRate = MathHelper.Clamp(CylinderEfficiencyRate, 0.6f, 1.2f); // Clamp Cylinder Efficiency Rate to between 0.6 & 1.2
 
             #endregion
 
@@ -1892,8 +1897,8 @@ namespace ORTS
                     }
                     if (absSpeedMpS > SteamGearFailureFactor * MpS.FromMpH(MaxLocoSpeedMpH))
                     {
-                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("Continued operation at high speed has caused gear damage."));
-
+                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("Continued operation at high speed has caused broken gears."));
+                        MotiveForceGearRatio = 0.0f; // Set to zero to simulate broken gears.
                     }
                 }
                 else
@@ -1905,8 +1910,7 @@ namespace ORTS
             // Caculate the current piston speed - purely for display purposes at the moment 
            // Piston Speed (Ft p Min) = (Stroke length x 2) x (Ft in Mile x Train Speed (mph) / ( Circum of Drv Wheel x 60))
             PistonSpeedFtpM = Me.ToFt(pS.TopM(CylinderStrokeM * 2.0f * DrvWheelRevRpS)) * SteamGearRatio;
-            
-            CylinderEfficiencyRate = MathHelper.Clamp(CylinderEfficiencyRate, 0.6f, 1.2f); // Clamp Cylinder Efficiency Rate to between 0.6 & 1.2
+             
             TractiveEffortLbsF = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MeanEffectivePressurePSI * CylinderEfficiencyRate * MotiveForceGearRatio;
             TractiveEffortLbsF = MathHelper.Clamp(TractiveEffortLbsF, 0, TractiveEffortLbsF);
                       
@@ -1972,7 +1976,7 @@ namespace ORTS
             if (BoilerIsPriming)
                 MotiveForceN *= BoilerPrimingDeratingFactor;
             // Find the maximum TE for debug i.e. @ start and full throttle
-            if (absSpeedMpS < 2.0)
+            if (absSpeedMpS < 1.0)
             {
                 if (MotiveForceN > StartTractiveEffortN)
                 {
