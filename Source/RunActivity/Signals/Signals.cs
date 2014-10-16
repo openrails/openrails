@@ -9836,7 +9836,7 @@ namespace ORTS
         // Test if train has call-on set
         //
 
-        public bool TrainHasCallOn(string dumpfile)
+        public bool TrainHasCallOn(bool callOnNonePlatform, string dumpfile)
         {
             // no train approaching
             if (enabledTrain == null)
@@ -9942,10 +9942,10 @@ namespace ORTS
                     if (!String.IsNullOrEmpty(dumpfile))
                     {
                         var sob = new StringBuilder();
-                        sob.AppendFormat("CALL ON : Train {0} : valid - route does not lead into platform \n", enabledTrain.Train.Name);
+                        sob.AppendFormat("CALL ON : Train {0} : {1} - route does not lead into platform \n", enabledTrain.Train.Name, callOnNonePlatform);
                         File.AppendAllText(dumpfile, sob.ToString());
                     }
-                    return (true);
+                    return (callOnNonePlatform);
                 }
             }
 

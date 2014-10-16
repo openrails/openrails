@@ -80,6 +80,7 @@ namespace ORTS
             APPROACH_CONTROL_POSITION,
             APPROACH_CONTROL_SPEED,
             TRAINHASCALLON,
+            TRAINHASCALLON_RESTRICTED,
             DEBUG_HEADER,
             DEBUG_OUT,
             RETURN,
@@ -3496,7 +3497,29 @@ namespace ORTS
                         dumpfile = String.Concat(dpr_fileLoc, "printproc.txt");
                     }
 #endif
-                    temp_value = thisHead.mainSignal.TrainHasCallOn(dumpfile);
+                    temp_value = thisHead.mainSignal.TrainHasCallOn(true, dumpfile);
+                    return_value = Convert.ToInt32(temp_value);
+                    break;
+
+                // Check for CallOn
+
+                case (SCRExternalFunctions.TRAINHASCALLON_RESTRICTED):
+                    dumpfile = String.Empty;
+
+#if DEBUG_PRINT_ENABLED
+                    if (thisHead.mainSignal.enabledTrain != null)
+                    {
+                        dumpfile = String.Concat(dpe_fileLoc, "printproc.txt");
+                    }
+#endif
+
+#if DEBUG_PRINT_PROCESS
+                    if (TDB_debug_ref.Contains(thisHead.TDBIndex))
+                    {
+                        dumpfile = String.Concat(dpr_fileLoc, "printproc.txt");
+                    }
+#endif
+                    temp_value = thisHead.mainSignal.TrainHasCallOn(false, dumpfile);
                     return_value = Convert.ToInt32(temp_value);
                     break;
 
