@@ -149,7 +149,7 @@ namespace ORTS.Viewer3D
         }
 
         public override string ToString() {
-            return String.Format( "{0} Event: {1} Duration: {2}", base.ToString(), EventNameLabel, PauseDurationS );
+            return String.Format( "{0} Event: {1} ActionDuration: {2}", base.ToString(), EventNameLabel, PauseDurationS );
         }
     } // </Superclasses>
 

@@ -52,7 +52,6 @@ namespace AEWizard
 	{
         ActivityInfo activityInfo;
         RouteInfo routeInfo;
-        int mode = 0;
         // ==================================================================
         // Public Constants
         // ==================================================================
@@ -135,7 +134,6 @@ namespace AEWizard
         public WizardForm(ActivityInfo activity)
 		{
 			// Required for Windows Form Designer support
-            mode = 1;
 			InitializeComponent();
             activityInfo = activity;
             wiz1 = new ActivityDescr();
@@ -153,7 +151,6 @@ namespace AEWizard
 		}
         public WizardForm(RouteInfo info)
         {
-            mode = 2;
             InitializeComponent();
             routeInfo = info;
             wiz3 = new SelectRoute();

@@ -1465,6 +1465,10 @@ namespace ORTS
                 {
                     CheckRouteActions(elapsedClockSeconds);                                     // check routepath (AI check at other point) //
                 }
+                else if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL)
+                {
+                    int i = 0;
+                }
 
                 UpdateRouteClearanceAhead(SignalObjIndex, movedBackward, elapsedClockSeconds);  // update route clearance  //
                 if (!(TrainType == TRAINTYPE.REMOTE && MultiPlayer.MPManager.IsClient()))
@@ -8211,7 +8215,6 @@ namespace ORTS
 
         public float GetDistanceToTrain(int sectionIndex, float endOffset)
         {
-
             // use start of list to see if passed position
 
             int endListIndex = ValidRoute[0].GetRouteIndex(sectionIndex, PresentPosition[0].RouteListIndex);

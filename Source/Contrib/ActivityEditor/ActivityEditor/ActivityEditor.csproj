@@ -51,6 +51,18 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActionProperties\ControlStartProperties.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ActionProperties\ControlStartProperties.designer.cs">
+      <DependentUpon>ControlStartProperties.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ActionProperties\ControlStoppedProperties.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ActionProperties\ControlStoppedProperties.Designer.cs">
+      <DependentUpon>ControlStoppedProperties.cs</DependentUpon>
+    </Compile>
     <Compile Include="ActionProperties\HornProperties.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -69,6 +81,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="AboutActEdit.resx">
       <DependentUpon>AboutActEdit.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ActionProperties\ControlStartProperties.resx">
+      <DependentUpon>ControlStartProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ActionProperties\ControlStoppedProperties.resx">
+      <DependentUpon>ControlStoppedProperties.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ActionProperties\HornProperties.resx">
       <DependentUpon>HornProperties.cs</DependentUpon>

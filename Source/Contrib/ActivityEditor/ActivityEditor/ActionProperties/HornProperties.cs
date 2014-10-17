@@ -17,8 +17,8 @@ namespace ActivityEditor.ActionProperties
         {
             Action = (AuxActionHorn)action;
             InitializeComponent();
-            textBox1.Text = action.Delay.ToString();
-            textBox2.Text = action.RequiredDistance.ToString();
+            textBox1.Text = Action.Delay.ToString();
+            textBox2.Text = Action.RequiredDistance.ToString();
         }
 
         private void HornOK_Click(object sender, EventArgs e)

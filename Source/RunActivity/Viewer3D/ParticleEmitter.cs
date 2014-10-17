@@ -38,7 +38,7 @@ namespace ORTS.Viewer3D
         public const float DecelerationTime = 0.2f;
         public const float InitialSpreadRate = 1;
         public const float SpreadRate = 0.75f;
-        public const float DurationVariation = 0.5f; // Duration varies +/-50%
+        public const float DurationVariation = 0.5f; // ActionDuration varies +/-50%
 
         public const float MaxParticlesPerSecond = 50f;
         public const float MaxParticleDuration = 50f;
@@ -375,7 +375,7 @@ namespace ORTS.Viewer3D
                     targetVelocity.X += windDisplacementX;
                     targetVelocity.Z += windDisplacementZ;
 
-                    // Duration is variable too.
+                    // ActionDuration is variable too.
                     var duration = ParticleDuration * (1 + Noise.Generate(time + PerlinStart[3]) * ParticleEmitterViewer.DurationVariation);
 
                     for (var j = 0; j < VerticiesPerParticle; j++)

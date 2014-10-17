@@ -26,8 +26,6 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.IO;
-using System.Collections.Generic;
-
 using MSTS.Formats;
 using MSTS.Parsers;
 using ORTS.Common;
@@ -88,6 +86,19 @@ namespace LibAE.Formats
             return "";
         }
 
+        public static string GetLongDescr(string name)
+        {
+            if (_dict.Count() > 0)
+            {
+                foreach (var description in _longDescr)
+                {
+                    if (description.Key == name)
+                        return description.Value;
+                }
+            }
+            return "";
+        }
+
         public static string GetKey(string shortDescr)
         {
             foreach (var action in _shortDescr)
@@ -115,7 +126,6 @@ namespace LibAE.Formats
         protected List<KeyValuePair<System.Type, AuxActionRef>> GenFunctions;
         [JsonIgnore]
         public List<string> AvailableActions;      //  List of current actions available as string
-        public List<string> ActionsDescription;
         public List<string> UsedActions;
 
         public ActionContainer()
@@ -124,11 +134,12 @@ namespace LibAE.Formats
             GenAuxActions = new List<KeyValuePair<string, AuxActionRef>>();
             GenFunctions = new List<KeyValuePair<System.Type, AuxActionRef>>();
             AvailableActions = new List<string>();
-            ActionsDescription = new List<string>();
             UsedActions = new List<string>();
             //
             //  Register all action, avoiding to give the same index
             AuxActionHorn.Register("AuxActionHorn");
+            AuxControlStart.Register("AuxControlStart");
+            AuxControlStopped.Register("AuxControlStopped");
             LoadAvailableActions();
         }
 
@@ -172,6 +183,14 @@ namespace LibAE.Formats
             return true;
         }
 
+        public string GetComment(string name)
+        {
+            string keyShort = ActionFactory<AuxActionRef>.GetKey(name);
+            if (keyShort == null)
+                return "No Comment";
+            return ActionFactory<AuxActionRef>.GetLongDescr(keyShort);
+
+        }
         public bool RemoveGenAction(string name)
         {
             string keyShort = ActionFactory<AuxActionRef>.GetKey(name);
@@ -217,7 +236,6 @@ namespace LibAE.Formats
                 for (int cnt = 0; cnt < GetCountAvailableAction(); cnt++)
                 {
                     AvailableActions.Add(GetShortDescr(cnt));
-                    ActionsDescription.Add(GetLongDescr(cnt));
                 }
             }
         }
@@ -234,6 +252,15 @@ namespace LibAE.Formats
         }
     }
 
+    public class ActionParameter
+    {
+        protected List<KeyValuePair<string, object>> Parameters;
+
+        public ActionParameter()
+        {
+            Parameters = new List<KeyValuePair<string, object>>();
+        }
+    }
     //================================================================================================//
     /// <summary>
     /// AuxActionRef
@@ -242,29 +269,31 @@ namespace LibAE.Formats
 
     public class AuxActionRef
     {
-        [JsonProperty("Location")]
-        WorldLocation? Location;
-        [JsonProperty("RequiredSpeed")]
-        public float RequiredSpeedMpS;
         [JsonProperty("IsGeneric")]
         public bool IsGeneric { get; set; }
-        [JsonProperty("EndSignalIndex")]
-        public int EndSignalIndex { get; protected set; }
         [JsonProperty("ActionType")]
         public AUX_ACTION ActionType;
-        [JsonProperty("Delay")]
-        public int Delay;
-        [JsonProperty("RequiredDistance")]
-        public float RequiredDistance;
-
+        //[JsonProperty("Location")]
+        //WorldLocation? Location;
+        //[JsonProperty("RequiredSpeed")]
+        //public float RequiredSpeedMpS;
+        //[JsonProperty("EndSignalIndex")]
+        //public int EndSignalIndex { get; protected set; }
+        //[JsonProperty("Delay")]
+        //public int Delay;
+        //[JsonProperty("RequiredDistance")]
+        //public float RequiredDistance;
+        //[JsonProperty("Param")]
+        //public List<Object> Parameter;
+        
 
         public enum AUX_ACTION
         {
             WAITING_POINT,
             SOUND_HORN,
-            SIGNAL_DELAY,
+            CONTROL_START,
             SIGNAL_DELEGATE,
-            CONTROLLED_START,
+            CONTROL_STOPPED,
             NONE
         }
 
@@ -274,25 +303,32 @@ namespace LibAE.Formats
         /// The specific datas are used to fired the Action.
         /// </summary>
 
-        public AuxActionRef(float requiredSpeedMpS, WorldLocation? location, AUX_ACTION actionType = AuxActionRef.AUX_ACTION.NONE)
+        public AuxActionRef(AUX_ACTION actionType, bool isGeneric)  //, WorldLocation? location, float requiredSpeedMpS, int endSignalIndex, int delay = 2, float requiredDistance = 0)
         {
-            Location = location;
-            if (Location == null)
-                IsGeneric = true;
-            else
-                IsGeneric = false;
-            RequiredSpeedMpS = requiredSpeedMpS;
-            EndSignalIndex = -1;
+            IsGeneric = isGeneric;
             ActionType = actionType;
+            //Location = location;
+            //if (Location == null)
+            //    IsGeneric = true;
+            //else
+            //RequiredSpeedMpS = requiredSpeedMpS;
+            //EndSignalIndex = -1;
+            //Delay = delay;
+            //RequiredDistance = requiredDistance;
         }
 
         public AuxActionRef(AUX_ACTION actionType = AuxActionRef.AUX_ACTION.NONE)
         {
-            RequiredSpeedMpS = 0;
             IsGeneric = true;
-            EndSignalIndex = -1;
-            Location = null;
             ActionType = actionType;
+            //RequiredSpeedMpS = 0;
+            //EndSignalIndex = -1;
+            //Location = null;
+        }
+
+        public virtual string GetComment()
+        {
+            return "comment";
         }
     }
 
@@ -303,10 +339,22 @@ namespace LibAE.Formats
 
     public class AuxActionWP : AuxActionRef
     {
-        public AuxActionWP(float requiredSpeedMpS, WorldLocation location, int delay = 5):
-            base(requiredSpeedMpS, location, AuxActionRef.AUX_ACTION.WAITING_POINT)
+        [JsonProperty("Location")]
+        WorldLocation? Location;
+        [JsonProperty("EndSignalIndex")]
+        public int EndSignalIndex { get; protected set; }
+        [JsonProperty("Delay")]
+        public int Delay;
+        [JsonProperty("RequiredDistance")]
+        public float RequiredDistance;
+
+        public AuxActionWP(bool isGeneric, WorldLocation? location, int endSignalIndex, int delay = 2, float requiredDistance = 0) :   //, float requiredSpeedMpS) :
+            base(AUX_ACTION.WAITING_POINT, isGeneric)                             //, location, requiredSpeedMpS, endSignalIndex, delay, requiredDistance)
         {
+            EndSignalIndex = endSignalIndex;
+            Location = location;
             Delay = delay;
+            RequiredDistance = requiredDistance;
         }
 
         public static void Register(string key)
@@ -318,17 +366,21 @@ namespace LibAE.Formats
     //  AuxActionHorn is always a Generic Action, no need to specify a location
     public class AuxActionHorn : AuxActionRef
     {
-        public AuxActionHorn(float requiredSpeedMpS, WorldLocation? location, int delay = 2) :
-            base(requiredSpeedMpS, null, AuxActionRef.AUX_ACTION.SOUND_HORN)
+        [JsonProperty("Delay")]
+        public int Delay;
+        [JsonProperty("RequiredDistance")]
+        public float RequiredDistance;
+
+        public AuxActionHorn(bool isGeneric, int delay = 2, float requiredDistance = 0) :    //WorldLocation? location, float requiredSpeedMpS, , int endSignalIndex = -1, AUX_ACTION actionType = AUX_ACTION.SOUND_HORN, , float requiredDistance = 0) :
+            base(AUX_ACTION.SOUND_HORN ,isGeneric)                                          //location, requiredSpeedMpS, , endSignalIndex, actionType, delay, requiredDistance)
         {
             Delay = delay;
-            IsGeneric = true;
-            RequiredDistance = 100f;
+            RequiredDistance = requiredDistance;
         }
 
         public static void Register(string key)
         {
-            ActionFactory<AuxActionRef>.Register(key, () => new AuxActionHorn(-1, null, 0),
+            ActionFactory<AuxActionRef>.Register(key, () => new AuxActionHorn(true),        //null, -1f, true),
                 "Horn at Level Crossing", "Generic Action used to sound AI Horn when it reach a Level cross");
         }
 
@@ -339,10 +391,40 @@ namespace LibAE.Formats
         }
     }
 
+    public class AuxControlStart : AuxActionRef
+    {
+        [JsonProperty("ActivationDelay")]
+        public int ActivationDelay;
+        [JsonProperty("ActionDuration")]
+        public int ActionDuration = 10;
+
+        public AuxControlStart(bool isGeneric, int duration = 10) :             //WorldLocation? location, float requiredSpeedMpS, , int endSignalIndex = -1, AUX_ACTION actionType = AUX_ACTION.CONTROL_START, int delay = 2, float requiredDistance = 0) :
+            base(AUX_ACTION.CONTROL_START, isGeneric)       //location, requiredSpeedMpS, isGeneric, endSignalIndex, actionType, delay, requiredDistance)
+        {
+            ActionDuration = duration;
+        }
+
+        public static void Register(string key)
+        {
+            ActionFactory<AuxActionRef>.Register(key, () => new AuxControlStart(true),
+                "Control Start", "Action used to manage the starting of AI Train");
+        }
+
+        public void SaveProperties(AuxControlStart action)
+        {
+            ActivationDelay = action.ActivationDelay;
+            ActionDuration = action.ActionDuration;
+        }
+
+    }
+
     public class AuxActionSigDelegate : AuxActionRef
     {
-        public AuxActionSigDelegate (float requiredSpeedMpS, WorldLocation location, int delay = 10) :
-            base(requiredSpeedMpS, location, AuxActionRef.AUX_ACTION.SIGNAL_DELEGATE)
+        [JsonProperty("Delay")]
+        public int Delay;
+
+        public AuxActionSigDelegate(bool isGeneric, int delay = 2) :                //WorldLocation? location, float requiredSpeedMpS, , int endSignalIndex = -1, AUX_ACTION actionType = AUX_ACTION.SIGNAL_DELEGATE, float requiredDistance = 0) :
+            base(AUX_ACTION.SIGNAL_DELEGATE, isGeneric)             //location, requiredSpeedMpS, isGeneric, endSignalIndex, actionType, delay, requiredDistance)
         {
             Delay = delay;
         }
@@ -351,5 +433,23 @@ namespace LibAE.Formats
         {
         }
 
+    }
+    
+    public class AuxControlStopped : AuxActionRef
+    {
+        public AuxControlStopped(bool isGeneric):               //WorldLocation? location, float requiredSpeedMpS, bool isGeneric, int endSignalIndex = -1, AUX_ACTION actionType = AUX_ACTION.CONTROL_START, int delay = 2, float requiredDistance = 0, int duration = 10) :
+            base(AUX_ACTION.CONTROL_STOPPED, isGeneric)           //location, requiredSpeedMpS, isGeneric, endSignalIndex, actionType, delay, requiredDistance)
+        {
+        }
+
+        public static void Register(string key)
+        {
+            ActionFactory<AuxActionRef>.Register(key, () => new AuxControlStopped(true),
+                "Control Stopped", "Action used to manage a Stopped AITrain");
+        }
+
+        public void SaveProperties(AuxControlStopped action)
+        {
+        }
     }
 }

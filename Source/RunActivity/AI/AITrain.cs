@@ -671,7 +671,8 @@ namespace ORTS
                 thisStation.ActualDepart = -1;
                 MovementState = AI_MOVEMENT_STATE.STATION_STOP;
 
-                AIActionItem newAction = new AIActionItem(-10f, 0.0f, 0.0f, 0.0f, null, AIActionItem.AI_ACTION_TYPE.STATION_STOP);
+                AIActionItem newAction = new AIActionItem(null, AIActionItem.AI_ACTION_TYPE.STATION_STOP);
+                newAction.SetParam(-10f, 0.0f, 0.0f, 0.0f);
                 nextActionInfo = newAction;
                 NextStopDistanceM = 0.0f;
 
@@ -782,7 +783,8 @@ namespace ORTS
                         }
                         else
                         { 
-                            nextActionInfo = new AIActionItem(reqDistance, 0.0f, 0.0f, PresentPosition[0].DistanceTravelledM, null, AIActionItem.AI_ACTION_TYPE.REVERSAL);
+                            nextActionInfo = new AIActionItem(null, AIActionItem.AI_ACTION_TYPE.REVERSAL);
+                            nextActionInfo.SetParam(reqDistance, 0.0f, 0.0f, PresentPosition[0].DistanceTravelledM);
                             MovementState = AI_MOVEMENT_STATE.BRAKING;
                         }
  
@@ -1334,9 +1336,8 @@ namespace ORTS
                 else
                 {
                     validStop = true;
-                    AIActionItem newAction = new AIActionItem(distancesM[1], 0.0f, distancesM[0], DistanceTravelledM,
-                            null, AIActionItem.AI_ACTION_TYPE.STATION_STOP);
-
+                    AIActionItem newAction = new AIActionItem(null, AIActionItem.AI_ACTION_TYPE.STATION_STOP);
+                    newAction.SetParam(distancesM[1], 0.0f, distancesM[0], DistanceTravelledM);
                     requiredActions.InsertAction(newAction);
 
 #if DEBUG_REPORTS
@@ -4602,9 +4603,8 @@ namespace ORTS
 
             // create and insert action
 
-            AIActionItem newAction = new AIActionItem(triggerDistanceM, reqSpeedMpS, activateDistanceTravelledM,
-                    DistanceTravelledM, thisItem, thisAction);
-
+            AIActionItem newAction = new AIActionItem(thisItem, thisAction);
+            newAction.SetParam(triggerDistanceM, reqSpeedMpS, activateDistanceTravelledM,DistanceTravelledM);
             requiredActions.InsertAction(newAction);
 
 #if DEBUG_REPORTS
@@ -5750,17 +5750,20 @@ namespace ORTS
         /// constructor for AIActionItem
         /// </summary>
 
-        public AIActionItem(float distance, float requiredSpeedMpS, float activateDistance, float insertedDistance,
-            ObjectItemInfo thisItem, AI_ACTION_TYPE thisAction)
+        public AIActionItem(ObjectItemInfo thisItem, AI_ACTION_TYPE thisAction)
         {
-            RequiredDistance = distance;
-            RequiredSpeedMpS = requiredSpeedMpS;
-            ActivateDistanceM = activateDistance;
-            InsertedDistanceM = insertedDistance;
             ActiveItem = thisItem;
             NextAction = thisAction;
-
         }
+
+        public void SetParam(float requiredDistance, float requiredSpeedMpS, float activateDistanceM, float insertedDistanceM)
+        {
+            RequiredDistance = requiredDistance;
+            RequiredSpeedMpS = requiredSpeedMpS;
+            ActivateDistanceM = activateDistanceM;
+            InsertedDistanceM = insertedDistanceM;
+        }
+
 
         //================================================================================================//
         //

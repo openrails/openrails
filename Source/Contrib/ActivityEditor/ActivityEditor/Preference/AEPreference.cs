@@ -96,18 +96,6 @@ namespace ActivityEditor.Preference
             set { }
         }
         [XmlIgnore]
-        public List<string> ActionsDescription
-        {
-            get
-            {
-                if (ActionContainer != null)
-                    return ActionContainer.ActionsDescription;
-                return new List<string>();
-            }
-            set { }
-        }
-
-        [XmlIgnore]
         public List<string> UsedActions
         {
             get
@@ -135,7 +123,6 @@ namespace ActivityEditor.Preference
         {
             RoutePaths = new List<string>();
             AvailableActions = new List<string>();
-            ActionsDescription = new List<string>();
             UsedActions = new List<string>();
 
             MSTSPath = "";
@@ -241,6 +228,16 @@ namespace ActivityEditor.Preference
         {
             if (ActionContainer != null)
                 ActionContainer.AddGenAction(name);
+        }
+
+        public string GetComment(string name)
+        {
+            string comment = "Some comment";
+            if (ActionContainer != null)
+            {
+                comment = ActionContainer.GetComment(name);
+            }
+            return comment;
         }
 
         public AuxActionRef GetAction(int indx)

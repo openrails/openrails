@@ -112,7 +112,7 @@ namespace AEWizard
         /// when the Finish button is pressed.  Return <c>false</c> to
         /// prevent the wizard from finishing.
         /// </remarks>
-        protected internal virtual bool OnWizardFinish()
+        protected internal override bool OnWizardFinish()
         {
             // Finish the wizard
             return true;

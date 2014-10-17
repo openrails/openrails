@@ -42,7 +42,7 @@ namespace LibAE.Formats
 {
     public class Possibility : Dictionary<string, StationPath>
     {
-        public new Possibility Add(StationPath path)
+        public Possibility Add(StationPath path)
         {
             if (ContainsKey(path.PathName))
             {

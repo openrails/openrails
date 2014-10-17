@@ -448,7 +448,7 @@
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage2.Size = new System.Drawing.Size(477, 350);
             this.tabPage2.TabIndex = 3;
-            this.tabPage2.Text = "tabPage2";
+            this.tabPage2.Text = "Actions Configuration";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
             // CommentAction
@@ -486,7 +486,10 @@
             this.ListUsed.Name = "ListUsed";
             this.ListUsed.Size = new System.Drawing.Size(193, 186);
             this.ListUsed.TabIndex = 2;
-            this.ListUsed.DoubleClick += new System.EventHandler(this.EditHornProperties);
+            this.ListUsed.Click += new System.EventHandler(this.ShowCommentUsed);
+            this.ListUsed.DoubleClick += new System.EventHandler(this.EditProperties);
+            this.ListUsed.Enter += new System.EventHandler(this.EditProperties);
+            this.ListUsed.MouseDown += new System.Windows.Forms.MouseEventHandler(this.MouseDownUsed);
             // 
             // ListAvailable
             // 
@@ -495,6 +498,7 @@
             this.ListAvailable.Name = "ListAvailable";
             this.ListAvailable.Size = new System.Drawing.Size(182, 186);
             this.ListAvailable.TabIndex = 1;
+            this.ListAvailable.Click += new System.EventHandler(this.ShowCommentAvailable);
             // 
             // label7
             // 

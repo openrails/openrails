@@ -247,6 +247,11 @@ namespace LibAE
             return true;
         }
 
+        public override int GetHashCode()
+        {
+            return 0;
+        }
+
 
         public PointF ConvertToPointF()
         {

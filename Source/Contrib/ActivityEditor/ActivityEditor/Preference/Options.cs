@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -88,6 +89,15 @@ namespace ActivityEditor.Preference
                 string path = MSTSfolderBrowse.SelectedPath;
                 MSTSPath.Text = path;
                 Program.aePreference.MSTSPath = path;
+                string completeFileName = Path.Combine(path, "routes");
+                if (Directory.Exists(completeFileName))
+                {
+                    Program.aePreference.RoutePaths.Add(completeFileName);
+                    ListRoutePaths.DataSource = null;
+                    ListRoutePaths.DataSource = Program.aePreference.RoutePaths;
+                    RemoveRoutePaths.Enabled = true;
+
+                }
             }
         }
 
@@ -250,7 +260,7 @@ namespace ActivityEditor.Preference
             }
         }
 
-        public void EditHornProperties(object sender, EventArgs e)
+        public void EditProperties(object sender, EventArgs e)
         {
             int selected = -1;
             //  Trouver le sélectionné
@@ -260,11 +270,69 @@ namespace ActivityEditor.Preference
                 AuxActionRef action = Program.aePreference.GetAction(selected);
                 if (action != null)
                 {
-                    HornProperties hornProperties = new HornProperties(action);
-                    hornProperties.ShowDialog();
-                    ((AuxActionHorn)action).SaveProperties(hornProperties.Action);
+                    if (action.GetType() == typeof(AuxActionHorn))
+                        EditHornProperties(action);
+                    else if (action.GetType() == typeof(AuxControlStart))
+                        EditControlStartProperties(action);
                 }
             }
         }
+
+        public void EditHornProperties(AuxActionRef action)
+        {
+            HornProperties hornProperties = new HornProperties(action);
+            hornProperties.ShowDialog();
+            ((AuxActionHorn)action).SaveProperties(hornProperties.Action);
+
+        }
+
+        public void EditControlStartProperties(AuxActionRef action)
+        {
+            ControlStartProperties controlStartProperties = new ControlStartProperties(action);
+            controlStartProperties.ShowDialog();
+            ((AuxControlStart)action).SaveProperties(controlStartProperties.Action);
+        }
+
+        public void ShowCommentUsed(object sender, EventArgs e)
+        {
+            int selected = -1;
+            //  Trouver le sélectionné
+            selected = ListUsed.SelectedIndex;
+            if (selected >= 0)
+            {
+                CommentAction.Text = Program.aePreference.GetComment(Program.aePreference.AvailableActions[selected]);
+            }
+        }
+
+        public void ShowCommentAvailable(object sender, EventArgs e)
+        {
+            int selected = -1;
+            //  Trouver le sélectionné
+            selected = ListAvailable.SelectedIndex;
+            if (selected >= 0)
+            {
+                CommentAction.Text = Program.aePreference.GetComment(Program.aePreference.AvailableActions[selected]);
+            }
+        }
+
+        private void MouseDownUsed(object sender, MouseEventArgs e)
+        {
+            ListUsed.SelectedIndex = ListUsed.IndexFromPoint(e.X, e.Y);
+            int index = ListUsed.SelectedIndex;
+
+            if (e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+                CommentAction.Text = Program.aePreference.GetComment(Program.aePreference.AvailableActions[index]);
+                AuxActionRef action = Program.aePreference.GetAction(index);
+                if (action != null)
+                {
+                    if (action.GetType() == typeof(AuxActionHorn))
+                        EditHornProperties(action);
+                    else if (action.GetType() == typeof(AuxControlStart))
+                        EditControlStartProperties(action);
+                }
+            }
+        }
+
     }
 }

@@ -73,6 +73,8 @@ namespace LibAE.Formats
         public MSTSBase TileBase { get; set; }
         [JsonIgnore]
         public int a;
+        [JsonIgnore]
+        private System.Object lockThis = new System.Object();
 
         /// <summary>
         /// The class constructor, but, don't use it.  Prefer to use the static method 'LoadConfig' wich return this object
@@ -171,7 +173,7 @@ namespace LibAE.Formats
             return AllItems[cnt];
         }
 
-        public bool SaveConfig()
+        public int SaveConfig()
         {
             foreach (var item in AllItems)
             {
@@ -196,24 +198,34 @@ namespace LibAE.Formats
             return loaded;
         }
 
-        public bool SerializeJSON()
+        public int SerializeJSON()
         {
-            if (FileName == null || FileName.Length <= 0)
-                return false;
-            string completeFileName = Path.Combine(RoutePath, FileName);
-
-            JsonSerializer serializer = new JsonSerializer();
-            serializer.PreserveReferencesHandling = PreserveReferencesHandling.Objects;
-            serializer.TypeNameHandling = TypeNameHandling.All;
-            serializer.Formatting = Formatting.Indented;
-            using (StreamWriter wr = new StreamWriter(completeFileName))
+            lock (lockThis)
             {
-                using (JsonWriter writer = new JsonTextWriter(wr))
+                try
                 {
-                    serializer.Serialize(writer, this);
+                    if (FileName == null || FileName.Length <= 0)
+                        return -1;
+                    string completeFileName = Path.Combine(RoutePath, FileName);
+
+                    JsonSerializer serializer = new JsonSerializer();
+                    serializer.PreserveReferencesHandling = PreserveReferencesHandling.Objects;
+                    serializer.TypeNameHandling = TypeNameHandling.All;
+                    serializer.Formatting = Formatting.Indented;
+                    using (StreamWriter wr = new StreamWriter(completeFileName))
+                    {
+                        using (JsonWriter writer = new JsonTextWriter(wr))
+                        {
+                            serializer.Serialize(writer, this);
+                        }
+                    }
+                }
+                catch
+                {
+                    return -1;
                 }
             }
-            return true;
+            return 0;
         }
 
         static public ORRouteConfig DeserializeJSON(string fileName, TypeEditor interfaceType)

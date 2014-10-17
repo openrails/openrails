@@ -8733,6 +8733,11 @@ namespace ORTS
             {
                 propagateRequest();
             }
+            if (thisTrain != null && thisTrain.Train is AITrain && thisTrain.Train.SpeedMpS == 0)
+            {
+                WorldLocation location = this.tdbtraveller.WorldLocation;
+                ((AITrain)thisTrain.Train).AuxActionsContain.CheckGenActions(this.GetType(), location, 0f, 0f, this.tdbtraveller.TrackNodeIndex);
+            }
             if (this_sig_mr(MstsSignalFunction.NORMAL) != MstsSignalAspect.STOP)
                 return true;
             else

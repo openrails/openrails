@@ -2011,8 +2011,8 @@ namespace ORTS
             {
                 case Event.VigilanceAlarmOn: { AlerterSnd = true; if (Simulator.Settings.Alerter) Simulator.Confirmer.Confirm(CabControl.Alerter, CabSetting.On); break; }
                 case Event.VigilanceAlarmOff: { AlerterSnd = false; if (Simulator.Settings.Alerter) Simulator.Confirmer.Confirm(CabControl.Alerter, CabSetting.Off); break; }
-                case Event.BellOn: { Bell = true; if (Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Bell, CabSetting.On); break; }
-                case Event.BellOff: { Bell = false; Simulator.Confirmer.Confirm(CabControl.Bell, CabSetting.Off); break; }
+                case Event.BellOn: { Bell = true; if (Simulator.Confirmer != null && IsPlayerTrain) Simulator.Confirmer.Confirm(CabControl.Bell, CabSetting.On); break; }
+                case Event.BellOff: { Bell = false; if (Simulator.Confirmer != null && IsPlayerTrain) Simulator.Confirmer.Confirm(CabControl.Bell, CabSetting.Off); break; }
                 case Event.HornOn:
                 case Event.HornOff:
                     Horn = evt == Event.HornOn;
@@ -2021,8 +2021,8 @@ namespace ORTS
                     if (this == Program.Simulator.PlayerLocomotive)
                         Simulator.Confirmer.Confirm(this is MSTSSteamLocomotive ? CabControl.Whistle : CabControl.Horn, Horn ? CabSetting.On : CabSetting.Off);
                     break;
-                case Event.SanderOn: { Sander = true; if (this.IsLeadLocomotive() && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Sander, CabSetting.On); break; }
-                case Event.SanderOff: { Sander = false; if (this.IsLeadLocomotive()) Simulator.Confirmer.Confirm(CabControl.Sander, CabSetting.Off); break; }
+                case Event.SanderOn: { Sander = true; if (this.IsLeadLocomotive() && Simulator.Confirmer != null && IsPlayerTrain) Simulator.Confirmer.Confirm(CabControl.Sander, CabSetting.On); break; }
+                case Event.SanderOff: { Sander = false; if (this.IsLeadLocomotive() && IsPlayerTrain) Simulator.Confirmer.Confirm(CabControl.Sander, CabSetting.Off); break; }
                 case Event.WiperOn: { Wiper = true; if (this == Program.Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Wipers, CabSetting.On); break; }
                 case Event.WiperOff: { Wiper = false; if (this == Program.Simulator.PlayerLocomotive)  Simulator.Confirmer.Confirm(CabControl.Wipers, CabSetting.Off); break; }
 
