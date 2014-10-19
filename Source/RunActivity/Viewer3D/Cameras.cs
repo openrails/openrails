@@ -909,7 +909,10 @@ namespace ORTS.Viewer3D
             lookAtPosition = Vector3.Transform(lookAtPosition, attachedCar.GetXNAMatrix());
             if (tiltingLand && Program.Simulator.CabRotating > 0)
             {
-				if (attachedCar.HasFreightAnim && !attachedCar.HasInsideView && !attachedCar.HasPassengerCapacity)
+                var loco = attachedCar as MSTSLocomotive;
+				if (attachedCar.HasFreightAnim && !attachedCar.HasInsideView && !attachedCar.HasPassengerCapacity && loco.CabViewList != null &&
+                    (( loco.CabViewList[0] != null && loco.CabViewList[0].NoseAhead && !loco.UsingRearCab) ||
+                    (loco.CabViewList[1] != null && loco.CabViewList[1].NoseAhead && loco.UsingRearCab)))
 				//cars with freight animation  will rotate only camera (except passenger motor units), the land will rotate with the camera, so the FA can follow
 				{
 					var up = (Matrix.CreateRotationZ( Program.Simulator.CabRotating * attachedCar.totalRotationZ) * attachedCar.GetXNAMatrix()).Up;

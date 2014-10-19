@@ -65,6 +65,7 @@ namespace ORTS.Viewer3D.Popups
 			{ Train.OUTOFCONTROL.SLIPPED_INTO_PATH, "Splipped" },
 			{ Train.OUTOFCONTROL.SLIPPED_TO_ENDOFTRACK, "Slipped" },
 			{ Train.OUTOFCONTROL.OUT_OF_TRACK, "Off Track" },
+			{ Train.OUTOFCONTROL.UNDEFINED, "Undefined" },
 		};
 
         // Constructor

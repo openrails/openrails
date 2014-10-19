@@ -412,6 +412,7 @@ namespace ORTS
         {
             var viewPointList = new List<ViewPoint>();
             var extendedCVF = new ExtendedCVF();
+            bool noseAhead = false;
 
             var cvfBasePath = Path.Combine(Path.GetDirectoryName(wagFilePath), "CABVIEW");
             var cvfFilePath = Path.Combine(cvfBasePath, cvfFileName);
@@ -436,12 +437,41 @@ namespace ORTS
             var cabViewType = new CabViewType();
             cabViewType = ((viewPointList[0].StartDirection.Y >= 90 && viewPointList[0].StartDirection.Y <= 270)
                 || (viewPointList[0].StartDirection.Y <= -90 && viewPointList[0].StartDirection.Y >= -270)) ? CabViewType.Rear : CabViewType.Front;
-
+            var wag = this as MSTSWagon;
+            var wagFolderSlash = Path.GetDirectoryName(wag.WagFilePath) + @"\";
+            string shapeFilePath;
+            bool boundingLimitsFound = false;
+            SDFile shapeFile = new SDFile();
+            if (wag.FreightShapeFileName != null)
+            {
+                shapeFilePath = wagFolderSlash + wag.FreightShapeFileName;
+                if (shapeFilePath != null && File.Exists(shapeFilePath + "d"))
+                {
+                    shapeFile = new SDFile(shapeFilePath + "d");
+                    if (shapeFile.shape.ESD_Bounding_Box != null) boundingLimitsFound = true;
+                }
+            }
+            if (!boundingLimitsFound)
+            {
+                shapeFilePath = wagFolderSlash + wag.MainShapeFileName;
+                if (shapeFilePath != null && File.Exists(shapeFilePath + "d"))
+                {
+                    shapeFile = new SDFile(shapeFilePath + "d");
+                    if (shapeFile.shape.ESD_Bounding_Box != null) boundingLimitsFound = true;               
+                }
+            }
+            if (boundingLimitsFound)
+            {
+                if (cabViewType == CabViewType.Front)
+                    noseAhead = (viewPointList[0].Location.Z + 0.5f < shapeFile.shape.ESD_Bounding_Box.Max.Z) ? true : false;
+                else if (cabViewType == CabViewType.Rear)
+                    noseAhead = (viewPointList[0].Location.Z -0.5f > shapeFile.shape.ESD_Bounding_Box.Min.Z) ? true : false;
+            }
             if (!(this is MSTSSteamLocomotive))
             {
                 InitializeFromORTSSpecific(cvfFilePath, extendedCVF);
             }
-            return new CabView(cvfFile, viewPointList, extendedCVF, cabViewType);
+            return new CabView(cvfFile, viewPointList, extendedCVF, cabViewType, noseAhead);
         }
 
         protected void ParseEffects(string lowercasetoken, STFReader stf)
@@ -2460,13 +2490,15 @@ namespace ORTS
         public List<ViewPoint> ViewPointList;
         public ExtendedCVF ExtendedCVF;
         public CabViewType CabViewType;
+        public bool NoseAhead; // if cabview is not in front of engine; used to define how terrain tilts if there is freightanimation
 
-        public CabView(CVFFile cvfFile, List<ViewPoint> viewPointList, ExtendedCVF extendedCVF, CabViewType cabViewType)
+        public CabView(CVFFile cvfFile, List<ViewPoint> viewPointList, ExtendedCVF extendedCVF, CabViewType cabViewType, bool noseAhead)
         {
             CVFFile = cvfFile;
             ViewPointList = viewPointList;
             ExtendedCVF = extendedCVF;
             CabViewType = cabViewType;
+            NoseAhead = noseAhead;
         }
     }
 
