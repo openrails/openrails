@@ -2623,44 +2623,52 @@ namespace ORTS
         {
             if (IsSelectGeared)
             {
-                if (SteamGearPosition < 2.0f) // Maximum number of gears is two
+                if (throttle == 0)   // only change gears if throttle is at zero
                 {
-                    SteamGearPosition += 1.0f;
-                    Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, SteamGearPosition);
-                    if(SteamGearPosition == 0.0)
+                    if (SteamGearPosition < 2.0f) // Maximum number of gears is two
                     {
-                        // Re -initialise the following for the new gear setting - set to zero as in neutral speed
-                        MotiveForceGearRatio = 0.0f;
-                        MaxLocoSpeedMpH = 0.0f;
-                        SteamGearRatio = 0.0f;
-                        MaxTractiveEffortLbf = 0.0f;
-                        MaxIndicatedHorsePowerHP = 0.0f;
+                        SteamGearPosition += 1.0f;
+                        Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, SteamGearPosition);
+                        if (SteamGearPosition == 0.0)
+                        {
+                            // Re -initialise the following for the new gear setting - set to zero as in neutral speed
+                            MotiveForceGearRatio = 0.0f;
+                            MaxLocoSpeedMpH = 0.0f;
+                            SteamGearRatio = 0.0f;
+                            MaxTractiveEffortLbf = 0.0f;
+                            MaxIndicatedHorsePowerHP = 0.0f;
 
-                    }
-                    else if (SteamGearPosition == 1.0)
-                    {
-                        // Re -initialise the following for the new gear setting
-                        MotiveForceGearRatio = SteamGearRatioLow;
-                        MaxLocoSpeedMpH = MpS.ToMpH(LowMaxGearedSpeedMpS);
-                        SteamGearRatio = SteamGearRatioLow;
-                        
-                        MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio;
+                        }
+                        else if (SteamGearPosition == 1.0)
+                        {
+                            // Re -initialise the following for the new gear setting
+                            MotiveForceGearRatio = SteamGearRatioLow;
+                            MaxLocoSpeedMpH = MpS.ToMpH(LowMaxGearedSpeedMpS);
+                            SteamGearRatio = SteamGearRatioLow;
 
-                        // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
-                        MaxIndicatedHorsePowerHP = SpeedFactor * (MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;
-                    }
-                    else if (SteamGearPosition == 2.0)
-                    {
-                        // Re -initialise the following for the new gear setting
-                        MotiveForceGearRatio = SteamGearRatioHigh;
-                        MaxLocoSpeedMpH = MpS.ToMpH(HighMaxGearedSpeedMpS);
-                        SteamGearRatio = SteamGearRatioHigh;
-                   
-                        MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio;
+                            MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio;
 
-                        // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
-                        MaxIndicatedHorsePowerHP = SpeedFactor * (MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;
+                            // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
+                            MaxIndicatedHorsePowerHP = SpeedFactor * (MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;
+                        }
+                        else if (SteamGearPosition == 2.0)
+                        {
+                            // Re -initialise the following for the new gear setting
+                            MotiveForceGearRatio = SteamGearRatioHigh;
+                            MaxLocoSpeedMpH = MpS.ToMpH(HighMaxGearedSpeedMpS);
+                            SteamGearRatio = SteamGearRatioHigh;
+
+                            MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio;
+
+                            // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
+                            MaxIndicatedHorsePowerHP = SpeedFactor * (MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;
+                        }
                     }
+                }
+                else
+                {
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("Gears can't be changed unless throttle is at zero."));
+
                 }
             }
         }
@@ -2674,32 +2682,40 @@ namespace ORTS
         {
             if (IsSelectGeared)
             {
-                if (SteamGearPosition > 0.0f) // Gear number can't go below zero
+                if (throttle == 0)  // only change gears if throttle is at zero
                 {
-                    SteamGearPosition -= 1.0f;
-                    Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, SteamGearPosition);
-                    if (SteamGearPosition == 1.0)
+                    if (SteamGearPosition > 0.0f) // Gear number can't go below zero
                     {
-                     
-                        // Re -initialise the following for the new gear setting
-                        MotiveForceGearRatio = SteamGearRatioLow;
-                        MaxLocoSpeedMpH = MpS.ToMpH(LowMaxGearedSpeedMpS);
-                        SteamGearRatio = SteamGearRatioLow;
-                        MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio;
+                        SteamGearPosition -= 1.0f;
+                        Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, SteamGearPosition);
+                        if (SteamGearPosition == 1.0)
+                        {
 
-                        // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
-                        MaxIndicatedHorsePowerHP = SpeedFactor * (MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;
+                            // Re -initialise the following for the new gear setting
+                            MotiveForceGearRatio = SteamGearRatioLow;
+                            MaxLocoSpeedMpH = MpS.ToMpH(LowMaxGearedSpeedMpS);
+                            SteamGearRatio = SteamGearRatioLow;
+                            MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio;
 
+                            // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
+                            MaxIndicatedHorsePowerHP = SpeedFactor * (MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;
+
+                        }
+                        else if (SteamGearPosition == 0.0)
+                        {
+                            // Re -initialise the following for the new gear setting - set to zero as in neutral speed
+                            MotiveForceGearRatio = 0.0f;
+                            MaxLocoSpeedMpH = 0.0f;
+                            SteamGearRatio = 0.0f;
+                            MaxTractiveEffortLbf = 0.0f;
+                            MaxIndicatedHorsePowerHP = 0.0f;
+                        }
                     }
-                    else if (SteamGearPosition == 0.0)
-                    {
-                        // Re -initialise the following for the new gear setting - set to zero as in neutral speed
-                        MotiveForceGearRatio = 0.0f;
-                        MaxLocoSpeedMpH = 0.0f;
-                        SteamGearRatio = 0.0f;
-                        MaxTractiveEffortLbf = 0.0f;
-                        MaxIndicatedHorsePowerHP = 0.0f;
-                    }
+                }
+                else
+                {
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("Gears can't be changed unless throttle is at zero."));
+
                 }
             }
         }
