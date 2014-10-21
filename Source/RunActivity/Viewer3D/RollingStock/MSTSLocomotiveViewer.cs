@@ -1470,9 +1470,6 @@ namespace ORTS.Viewer3D.RollingStock
         public int GetDrawIndex()
         {
             var data = Locomotive.GetDataOf(Control);
-            var currentDynamicNotch = Locomotive.DynamicBrakeController != null ? Locomotive.DynamicBrakeController.CurrentNotch : 0;
-            var dynamicNotchCount = Locomotive.DynamicBrakeController != null ? Locomotive.DynamicBrakeController.NotchCount() : 0;
-            var dynamicBrakePercent = Locomotive.Train.MUDynamicBrakePercent;
 
             var index = 0;
             switch (ControlDiscrete.ControlType)
@@ -1502,33 +1499,26 @@ namespace ORTS.Viewer3D.RollingStock
                 case CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY:
                     if (Locomotive.DynamicBrakeController != null)
                     {
-                        if (dynamicBrakePercent == -1)
+                        if (Locomotive.DynamicBrakePercent == -1)
                             break;
                         if (!Locomotive.HasSmoothStruc)
-                            index = currentDynamicNotch;
+                            index = Locomotive.DynamicBrakeController != null ? Locomotive.DynamicBrakeController.CurrentNotch : 0;
                         else
-                            index = PercentToIndex(dynamicBrakePercent);
+                            index = PercentToIndex(Locomotive.DynamicBrakePercent);
                     }
                     else
                     {
-                        index = PercentToIndex(dynamicBrakePercent);
+                        index = PercentToIndex(Locomotive.DynamicBrakePercent);
                     }
                     break;
                 case CABViewControlTypes.CPH_DISPLAY:
                 case CABViewControlTypes.CP_HANDLE:
-                    if (Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleDynamic && dynamicBrakePercent < 0
-                        || Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleAir && Locomotive.TrainBrakeController.CurrentValue <= 0)
-                    {
-                        index = (int)(ControlDiscrete.FramesCount * Locomotive.CombinedControlSplitPosition * (1 - Locomotive.ThrottleController.CurrentValue));
-                    }
-                    else if (Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleDynamic && dynamicBrakePercent >= 0)
-                    {
-                        index = (int)(ControlDiscrete.FramesCount * (Locomotive.CombinedControlSplitPosition + (1 - Locomotive.CombinedControlSplitPosition) * Locomotive.DynamicBrakeController.CurrentValue));
-                    }
+                    if (Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleDynamic && Locomotive.DynamicBrakePercent >= 0)
+                        index = (int)((ControlDiscrete.FramesCount * (Locomotive.CombinedControlSplitPosition + (1 - Locomotive.CombinedControlSplitPosition) * Locomotive.DynamicBrakeController.CurrentValue)));
                     else if (Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleAir && Locomotive.TrainBrakeController.CurrentValue > 0)
-                    {
                         index = (int)(ControlDiscrete.FramesCount * (Locomotive.CombinedControlSplitPosition + (1 - Locomotive.CombinedControlSplitPosition) * Locomotive.TrainBrakeController.CurrentValue));
-                    }
+                    else
+                        index = (int)((ControlDiscrete.FramesCount - 1) * Locomotive.CombinedControlSplitPosition * (1 - Locomotive.ThrottleController.CurrentValue));
                     break;
                 case CABViewControlTypes.ALERTER_DISPLAY:
                 case CABViewControlTypes.RESET:

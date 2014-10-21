@@ -1674,6 +1674,9 @@ namespace ORTS
 
         public void StartTrainBrakeIncrease(float? target)
         {
+            if (CombinedControlType == CombinedControl.ThrottleAir)
+                ThrottleController.SetValue(0);
+
             AlerterReset(TCSEvent.TrainBrakeChanged);
             TrainBrakeController.StartIncrease(target);
             TrainBrakeController.CommandStartTime = Simulator.ClockTime;
@@ -1870,13 +1873,11 @@ namespace ORTS
             if (!CanUseDynamicBrake())
                 return;
 
-            if (DynamicBrakePercent < 0 && !DynamicBrake) // Activate
+            if (DynamicBrakePercent < 0)
             {
-                DynamicBrakePercent = 0;
-                DynamicBrakeController.CommandStartTime = Simulator.ClockTime;
-                StopDynamicBrakeIncrease();
+                DynamicBrakeChangeActiveState(true);
             }
-            else if (DynamicBrakePercent >= 0 && DynamicBrake)
+            else if (DynamicBrake)
             {
                 SignalEvent(Event.DynamicBrakeChange);
                 DynamicBrakeController.StartIncrease(target);
@@ -1887,7 +1888,7 @@ namespace ORTS
                 }
             }
         }
-
+        
         public void StopDynamicBrakeIncrease()
         {
             AlerterReset(TCSEvent.DynamicBrakeChanged);
@@ -1904,14 +1905,11 @@ namespace ORTS
             if (!CanUseDynamicBrake())
                 return;
 
-            if (DynamicBrakePercent <= 0 && DynamicBrake && DynamicBrakeIntervention < 0) // Deactivate
+            if (DynamicBrakePercent <= 0)
             {
-                SignalEvent(Event.DynamicBrakeOff);
-                DynamicBrakePercent = -1;
-                DynamicBrakeController.CommandStartTime = Simulator.ClockTime;
-                StopDynamicBrakeDecrease();
+                DynamicBrakeChangeActiveState(false);
             }
-            else if (DynamicBrakePercent >= 0 && DynamicBrake)
+            else if (DynamicBrake)
             {
                 SignalEvent(Event.DynamicBrakeChange);
                 DynamicBrakeController.StartDecrease(target);
@@ -1938,6 +1936,24 @@ namespace ORTS
             if (!CanUseDynamicBrake())
                 return;
             DynamicBrakeController.SetPercent(percent);
+            DynamicBrakeChangeActiveState(percent >= 0);
+        }
+
+        public void DynamicBrakeChangeActiveState(bool toState)
+        {
+            if (toState && !DynamicBrake)
+            {
+                DynamicBrakePercent = 0;
+                DynamicBrakeController.CommandStartTime = Simulator.ClockTime;
+                StopDynamicBrakeIncrease();
+            }
+            else if (!toState && DynamicBrake && DynamicBrakeIntervention < 0)
+            {
+                SignalEvent(Event.DynamicBrakeOff);
+                DynamicBrakePercent = -1;
+                DynamicBrakeController.CommandStartTime = Simulator.ClockTime;
+                StopDynamicBrakeIncrease();
+            }
         }
 
         public override string GetDynamicBrakeStatus()
