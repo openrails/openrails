@@ -212,6 +212,9 @@ namespace ORTS.MultiPlayer
 					{
 							found = true;
 							t.ToDoUpdate(m.trackNodeIndex, m.TileX, m.TileZ, m.X, m.Z, m.travelled, m.speed, m.direction, m.tdbDir, m.Length);
+                        // This is necessary as sometimes a train isn't in the Trains list
+                            MPManager.Instance().AddOrRemoveTrain(t, true);
+
 					}
 				}
 				if (found == false) //I do not have the train, tell server to send it to me
