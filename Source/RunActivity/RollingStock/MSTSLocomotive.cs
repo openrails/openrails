@@ -346,6 +346,10 @@ namespace ORTS
                                 PressureUnit unit = PressureUnit.None;
                                 switch (cvc.Units)
                                 {
+                                    case CABViewControlUnits.KILOPASCALS:
+                                        unit = PressureUnit.KPa;
+                                        break;
+
                                     case CABViewControlUnits.BAR:
                                         unit = PressureUnit.Bar;
                                         break;
@@ -2432,7 +2436,7 @@ namespace ORTS
         protected static float ConvertFromPSI(CabViewControl cvc, float data)
         {
             if (cvc.Units == CABViewControlUnits.BAR)
-                data = KPa.ToBar(KPa.FromPSI(data));
+                data = Bar.FromPSI(data);
             else if (cvc.Units == CABViewControlUnits.KILOPASCALS)
                 data = KPa.FromPSI(data);
             else if (cvc.Units == CABViewControlUnits.KGS_PER_SQUARE_CM)
