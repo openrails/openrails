@@ -361,6 +361,8 @@ namespace ORTS
         float MaxGearedSpeedMpS; // Max speed of the geared locomotive
         float MotiveForceGearRatio; // mulitplication factor to be used in calculating motive force etc, when a geared locomotive.
         float SteamGearPosition = 0.0f; // Position of Gears if set
+        float MaxSpeedMpS; // Max speed of steam locomotive at "maximum HP"
+        float DisplayTractiveEffortLbsF; // Value of Tractive eefort to display in HUD
 
 
   #endregion 
@@ -1923,38 +1925,17 @@ namespace ORTS
            
            // This section updates the force calculations and maintains them at the current values.
 
-            float SteamGearFailureFactor = 2.0f; // Factor to allow failure of gear when excessive speed applied.
-            if (IsGearedSteamLoco)
-            {
-                if (absSpeedMpS > MpS.FromMpH(MaxLocoSpeedMpH))
-                {
-                    if (!IsGearedSpeedExcess)
-                    {
-                        IsGearedSpeedExcess = true;     // set excess speed flag
-                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("You are exceeding the maximum recommended speed. Continued operation at this speed may cause damage."));
-                    }
-                    if (absSpeedMpS > SteamGearFailureFactor * MpS.FromMpH(MaxLocoSpeedMpH))
-                    {
-                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("Continued operation at high speed has caused broken gears."));
-                        MotiveForceGearRatio = 0.0f; // Set to zero to simulate broken gears.
-                    }
-                }
-                else
-                {
-                    if (absSpeedMpS < MpS.FromMpH(MaxLocoSpeedMpH) - 1.0)
-                        IsGearedSpeedExcess = false;     // reset excess speed flag
-                }
-            }
-            // Caculate the current piston speed - purely for display purposes at the moment 
+           // Caculate the current piston speed - purely for display purposes at the moment 
            // Piston Speed (Ft p Min) = (Stroke length x 2) x (Ft in Mile x Train Speed (mph) / ( Circum of Drv Wheel x 60))
             PistonSpeedFtpM = Me.ToFt(pS.TopM(CylinderStrokeM * 2.0f * DrvWheelRevRpS)) * SteamGearRatio;
              
             TractiveEffortLbsF = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MeanEffectivePressurePSI * CylinderEfficiencyRate * MotiveForceGearRatio;
             TractiveEffortLbsF = MathHelper.Clamp(TractiveEffortLbsF, 0, TractiveEffortLbsF);
+            DisplayTractiveEffortLbsF = TractiveEffortLbsF;
                       
             // Calculate IHP
             // IHP = (MEP x CylStroke(ft) x cylArea(sq in) x No Strokes (/min)) / 33000) - this is per cylinder
-            IndicatedHorsePowerHP = NumCylinders * ((MeanEffectivePressurePSI * Me.ToFt(CylinderStrokeM) *  Me2.ToIn2(Me2.FromFt2(CylinderPistonAreaFt2)) * pS.TopM(DrvWheelRevRpS) * CylStrokesPerCycle / 33000.0f));
+            IndicatedHorsePowerHP = NumCylinders * MotiveForceGearRatio * ((MeanEffectivePressurePSI * Me.ToFt(CylinderStrokeM) *  Me2.ToIn2(Me2.FromFt2(CylinderPistonAreaFt2)) * pS.TopM(DrvWheelRevRpS) * CylStrokesPerCycle / 33000.0f));
        
             DrawBarPullLbsF = -1.0f * N.ToLbf(CouplerForceU);
             DrawbarHorsePowerHP = -1.0f * (N.ToLbf(CouplerForceU) * Me.ToFt(absSpeedMpS)) / 550.0f;  // TE in this instance is a maximum, and not at the wheel???
@@ -1990,7 +1971,10 @@ namespace ORTS
 
             // Set maximum force for the locomotive
             MaxForceN = N.FromLbf(MaxTractiveEffortLbf * CylinderEfficiencyRate);
-         
+
+            // Set Max Velocity of locomotive
+            MaxSpeedMpS = Me.FromMi(pS.FrompH(MaxLocoSpeedMpH)); // Note this is not the true max velocity of the locomotive, but  the speed at which max HP is reached
+                     
         // Set "current" motive force based upon the throttle, cylinders, steam pressure, etc	
             MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(TractiveEffortLbsF);
 
@@ -2001,13 +1985,19 @@ namespace ORTS
             }
             // If "critical" speed of locomotive is reached, limit max IHP
             CriticalSpeedTractiveEffortLbf = (MaxIndicatedHorsePowerHP * 375.0f) / MaxLocoSpeedMpH;
-            // Based upon max IHP, limit motive force.
-            if (absSpeedMpS > pS.FrompH(Me.FromMi(MaxLocoSpeedMpH)) && IndicatedHorsePowerHP > MaxIndicatedHorsePowerHP)
+
+            // Based upon max IHP and critical speed, limit motive force.
+            if (absSpeedMpS > pS.FrompH(Me.FromMi(MaxLocoSpeedMpH)) || IndicatedHorsePowerHP >= MaxIndicatedHorsePowerHP)
             {
-                IndicatedHorsePowerHP = MaxIndicatedHorsePowerHP; // Set IHP to maximum value
+                if(IndicatedHorsePowerHP >= MaxIndicatedHorsePowerHP)
+                {
+                    IndicatedHorsePowerHP = MaxIndicatedHorsePowerHP; // Set IHP to maximum value
+                }
+                
                 if(TractiveEffortLbsF > CriticalSpeedTractiveEffortLbf)
                 {
                     MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(CriticalSpeedTractiveEffortLbf * CylinderEfficiencyRate);
+                    DisplayTractiveEffortLbsF = CriticalSpeedTractiveEffortLbf;
                 }
             }
             // Derate when priming is occurring.
@@ -2016,7 +2006,7 @@ namespace ORTS
             // Find the maximum TE for debug i.e. @ start and full throttle
             if (absSpeedMpS < 1.0)
             {
-                if (MotiveForceN > StartTractiveEffortN)
+                if (MotiveForceN > StartTractiveEffortN && MotiveForceN < MaxForceN)
                 {
                     StartTractiveEffortN = MotiveForceN; // update to new maximum TE
                 }
@@ -2604,7 +2594,7 @@ namespace ORTS
             status.AppendFormat("Force:\tMax TE\t{0:N0}\tStart TE\t{1:N0} lbf\tTE\t{2:N0} lbf\tDraw\t{3:N0} lbf\tCritic\t{4:N0} lbf\tCrit Speed {5:N1} mph\n",
                 MaxTractiveEffortLbf,
                 N.ToLbf(StartTractiveEffortN),
-                TractiveEffortLbsF,
+                DisplayTractiveEffortLbsF,
                 DrawBarPullLbsF,
                 CriticalSpeedTractiveEffortLbf,
                 MaxLocoSpeedMpH);
