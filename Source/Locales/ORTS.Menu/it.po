@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Menu\n"
-"POT-Creation-Date: 2014-10-10 20:35:55+0200\n"
-"PO-Revision-Date: 2014-10-10 20:40+0100\n"
+"POT-Creation-Date: 2014-10-24 21:13:35+0200\n"
+"PO-Revision-Date: 2014-10-24 21:15+0100\n"
 "Last-Translator: Roberto Ceccarelli (The Strawberry Field) <strawberry."
 "field@libero.it>\n"
 "Language-Team: Open Rails Dev Team\n"
@@ -18,7 +18,8 @@ msgid "- Explore Route -"
 msgstr "- Esplorazione scenario -"
 
 #: ../../ORTS.Menu/Activities.cs:75 ../../ORTS.Menu/Consists.cs:47
-#: ../../ORTS.Menu/Consists.cs:143 ../../ORTS.Menu/Paths.cs:63
+#: ../../ORTS.Menu/Consists.cs:143 ../../ORTS.Menu/ORTimetables.cs:55
+#: ../../ORTS.Menu/ORTimetables.cs:77 ../../ORTS.Menu/Paths.cs:63
 #: ../../ORTS.Menu/Routes.cs:47
 msgid "load error:"
 msgstr "errore caricamento:"
@@ -31,7 +32,8 @@ msgid "unnamed:"
 msgstr "senza nome:"
 
 #: ../../ORTS.Menu/Activities.cs:84 ../../ORTS.Menu/Consists.cs:54
-#: ../../ORTS.Menu/Consists.cs:151 ../../ORTS.Menu/Paths.cs:71
+#: ../../ORTS.Menu/Consists.cs:151 ../../ORTS.Menu/ORTimetables.cs:60
+#: ../../ORTS.Menu/ORTimetables.cs:82 ../../ORTS.Menu/Paths.cs:71
 #: ../../ORTS.Menu/Routes.cs:54
 msgid "missing:"
 msgstr "mancante:"

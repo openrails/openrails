@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.IO;
 using MSTS.Formats;
 using ORTS.Formats;
+using GNU.Gettext;
 
 namespace ORTS.Menu
 {
@@ -37,6 +38,8 @@ namespace ORTS.Menu
         // note : file is read preliminary only, extracting description and train information
         // all other information is read only when activity is started
 
+        GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
+
         protected TimetableInfo(string filePath)
         {
             if (File.Exists(filePath))
@@ -49,12 +52,12 @@ namespace ORTS.Menu
                 }
                 catch
                 {
-                    Description = "<" + "load error:" + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                    Description = "<" + catalog.GetString("load error:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
                 }
             }
             else
             {
-                Description = "<" + "missing:" + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                Description = "<" + catalog.GetString("missing:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
             }
         }
 
@@ -71,12 +74,12 @@ namespace ORTS.Menu
                 }
                 catch
                 {
-                    Description = "<" + "load error:" + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                    Description = "<" + catalog.GetString("load error:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
                 }
             }
             else
             {
-                Description = "<" + "missing:" + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                Description = "<" + catalog.GetString("missing:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
             }
         }
 
