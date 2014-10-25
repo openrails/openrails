@@ -430,7 +430,11 @@ namespace ORTS.Viewer3D.Popups
 
             if (MultiPlayer.MPManager.IsMultiPlayer())
             {
-                TableAddLine(table, "MultiPlayer Status");
+                var status = "MultiPlayerStatus: ";
+                if (MultiPlayer.MPManager.IsServer()) status += "dispatcher";
+                else if (MultiPlayer.MPManager.Instance().AmAider) status += "helper";
+                else if (MultiPlayer.MPManager.IsClient()) status += "client";
+                TableAddLine(table, status);
                 var text = MultiPlayer.MPManager.Instance().GetOnlineUsersInfo();
                 var temp = text.Split('\t');
                 foreach (var t in temp) TableAddLabelValue(table, "", "{0}", t);
