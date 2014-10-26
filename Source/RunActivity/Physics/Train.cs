@@ -3718,7 +3718,7 @@ namespace ORTS
                     }
                     else
                     {
-                        Trace.TraceWarning("Not sufficient track to place train {0}", Number);
+                        Trace.TraceWarning("Not sufficient track to place train {0} , service name {1} ", Number, Name);
                         sectionAvailable = false;
                     }
                 }
@@ -3820,7 +3820,7 @@ namespace ORTS
             int frontIndex = ValidRoute[0].GetRouteIndex(PresentPosition[0].TCSectionIndex, 0);
             if (frontIndex < 0)
             {
-                Trace.TraceWarning("Start position of front of train {0} not on route ", Number);
+                Trace.TraceWarning("Start position of front of train {0}, service name {1} not on route ", Number, Name);
                 frontIndex = 0;
             }
 

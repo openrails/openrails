@@ -795,7 +795,7 @@ namespace ORTS
         public void ToggleDoorsLeft()
         {
             DoorLeftOpen = !DoorLeftOpen;
-            if (Simulator.PlayerLocomotive == this)
+            if (Simulator.PlayerLocomotive == this || Train.LeadLocomotive == this) // second part for remote trains
             {//inform everyone else in the train
                 foreach (var car in Train.Cars)
                 {
@@ -815,7 +815,7 @@ namespace ORTS
         public void ToggleDoorsRight()
         {
             DoorRightOpen = !DoorRightOpen;
-            if (Simulator.PlayerLocomotive == this)
+            if (Simulator.PlayerLocomotive == this || Train.LeadLocomotive == this) // second part for remote trains
             { //inform everyone else in the train
                 foreach (TrainCar car in Train.Cars)
                 {

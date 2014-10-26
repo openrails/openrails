@@ -700,6 +700,8 @@ namespace ORTS.MultiPlayer
         int BellCount;
         int WiperCount;
         int HeadLightCount;
+        int DoorLeftCount;
+        int DoorRightCount;
 
 		public void handleUserInput()
 		{
@@ -724,6 +726,10 @@ namespace ORTS.MultiPlayer
             if (UserInput.IsPressed(UserCommands.ControlBellToggle)) Notify((new MSGEvent(GetUserName(), "BELL", (++BellCount) % 2)).ToString());
 
             if (UserInput.IsPressed(UserCommands.ControlWiper)) Notify((new MSGEvent(GetUserName(), "WIPER", (++WiperCount) % 2)).ToString());
+
+            if (UserInput.IsPressed(UserCommands.ControlDoorLeft)) Notify((new MSGEvent(GetUserName(), "DOORL", (++DoorLeftCount) % 2)).ToString());
+
+            if (UserInput.IsPressed(UserCommands.ControlDoorRight)) Notify((new MSGEvent(GetUserName(), "DOORR", (++DoorRightCount) % 2)).ToString());
 
 			if (UserInput.IsPressed(UserCommands.ControlHeadlightIncrease))
 			{

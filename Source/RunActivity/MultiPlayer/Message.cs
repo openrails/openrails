@@ -1822,7 +1822,7 @@ namespace ORTS.MultiPlayer
             }
             else if (EventName == "PANTO2")
             {
-                t.SignalEvent((EventState == 1 ? PowerSupplyEvent.RaisePantograph : PowerSupplyEvent.LowerPantograph), 1);
+                t.SignalEvent((EventState == 1 ? PowerSupplyEvent.RaisePantograph : PowerSupplyEvent.LowerPantograph), 2);
 
                 MPManager.BroadCast(this.ToString()); //if the server, will broadcast
             }
@@ -1836,6 +1836,16 @@ namespace ORTS.MultiPlayer
                 if (t.LeadLocomotive != null) t.LeadLocomotive.SignalEvent(EventState == 0 ? Event.WiperOff : Event.WiperOn);
 				MPManager.BroadCast(this.ToString()); //if the server, will broadcast
 			}
+            else if (EventName == "DOORL")
+            {
+                if (t.LeadLocomotive != null) ((MSTSWagon)(t.LeadLocomotive)).ToggleDoorsLeft();
+                MPManager.BroadCast(this.ToString()); //if the server, will broadcast
+            }
+            else if (EventName == "DOORR")
+            {
+                if (t.LeadLocomotive != null) ((MSTSWagon)(t.LeadLocomotive)).ToggleDoorsRight();
+                MPManager.BroadCast(this.ToString()); //if the server, will broadcast
+            }
 			else if (EventName == "HEADLIGHT")
 			{
                 if (t.LeadLocomotive != null && EventState == 0) t.LeadLocomotive.SignalEvent(Event._HeadlightOff);
