@@ -1,50 +1,67 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Menu\n"
-"POT-Creation-Date: 2014-02-28 18:43:36+0000\n"
-"PO-Revision-Date: 2014-05-24 18:14+0100\n"
+"POT-Creation-Date: 2014-10-24 21:13:35+0200\n"
+"PO-Revision-Date: 2014-10-26 13:31+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
+"Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.6.5\n"
+"X-Generator: Poedit 1.6.9\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"Language: de\n"
 
-#: ../../ORTS.Menu/Activities.cs:45
+#: ../../ORTS.Menu/Activities.cs:46
 msgid "- Explore Route -"
 msgstr "- Route erkunden -"
 
-#: ../../ORTS.Menu/Activities.cs:69 ../../ORTS.Menu/Consists.cs:46
-#: ../../ORTS.Menu/Consists.cs:127 ../../ORTS.Menu/Paths.cs:49
+#: ../../ORTS.Menu/Activities.cs:75 ../../ORTS.Menu/Consists.cs:47
+#: ../../ORTS.Menu/Consists.cs:143 ../../ORTS.Menu/ORTimetables.cs:55
+#: ../../ORTS.Menu/ORTimetables.cs:77 ../../ORTS.Menu/Paths.cs:63
 #: ../../ORTS.Menu/Routes.cs:47
 msgid "load error:"
 msgstr "Ladefehler:"
 
-#: ../../ORTS.Menu/Activities.cs:72 ../../ORTS.Menu/Consists.cs:49
-#: ../../ORTS.Menu/Consists.cs:130 ../../ORTS.Menu/Paths.cs:52
-#: ../../ORTS.Menu/Paths.cs:53 ../../ORTS.Menu/Paths.cs:54
+#: ../../ORTS.Menu/Activities.cs:78 ../../ORTS.Menu/Consists.cs:50
+#: ../../ORTS.Menu/Consists.cs:146 ../../ORTS.Menu/Paths.cs:65
+#: ../../ORTS.Menu/Paths.cs:66 ../../ORTS.Menu/Paths.cs:67
 #: ../../ORTS.Menu/Routes.cs:49
 msgid "unnamed:"
 msgstr "unbenannt:"
 
-#: ../../ORTS.Menu/Activities.cs:78 ../../ORTS.Menu/Consists.cs:53
-#: ../../ORTS.Menu/Consists.cs:135 ../../ORTS.Menu/Paths.cs:58
+#: ../../ORTS.Menu/Activities.cs:84 ../../ORTS.Menu/Consists.cs:54
+#: ../../ORTS.Menu/Consists.cs:151 ../../ORTS.Menu/ORTimetables.cs:60
+#: ../../ORTS.Menu/ORTimetables.cs:82 ../../ORTS.Menu/Paths.cs:71
 #: ../../ORTS.Menu/Routes.cs:54
 msgid "missing:"
 msgstr "fehlt:"
 
-#: ../../ORTS.Menu/Activities.cs:71
+#: ../../ORTS.Menu/Activities.cs:77
 #, csharp-format
 msgid "Activity '{0}' is excluded."
 msgstr "Aufgabe '{0}' wurde ausgeschlossen."
 
-#: ../../ORTS.Menu/Consists.cs:113
+#: ../../ORTS.Menu/Consists.cs:129
 msgid "- Any Locomotive -"
 msgstr "- Beliebige Lokomotive -"
 
-#: ../../ORTS.Menu/Consists.cs:129
+#: ../../ORTS.Menu/Consists.cs:145
 #, csharp-format
 msgid "Locomotive '{0}' is excluded."
 msgstr "Lokomotive '{0}' wurde ausgeschlossen."
+
+#: ../../ORTS.Menu/Paths.cs:150
+#, csharp-format
+msgid "Path Name: {0}"
+msgstr "Name der Fahrstraße: {0}"
+
+#: ../../ORTS.Menu/Paths.cs:151
+#, csharp-format
+msgid "Start at: {0}"
+msgstr "Startpunkt: {0}"
+
+#: ../../ORTS.Menu/Paths.cs:152
+#, csharp-format
+msgid "Heading to: {0}"
+msgstr "Richtung: {0}"
