@@ -77,7 +77,11 @@ namespace ORTS.ContentManager
         {
             var content = new List<Content>();
 
-            if (type == ContentType.Activity)
+            if (type == ContentType.Package)
+            {
+                content.Add(new ContentMSTSPackage(Path.GetDirectoryName(Path.GetDirectoryName(PathName))));
+            }
+            else if (type == ContentType.Activity)
             {
                 var path = Path.Combine(PathName, "Activities");
                 if (Directory.Exists(path))
@@ -124,6 +128,15 @@ namespace ORTS.ContentManager
             }
 
             return content;
+        }
+
+        public override Content Get(string name, ContentType type)
+        {
+            if (type == ContentType.Package)
+            {
+                return new ContentMSTSPackage(Path.GetDirectoryName(Path.GetDirectoryName(PathName)));
+            }
+            return base.Get(name, type);
         }
     }
 

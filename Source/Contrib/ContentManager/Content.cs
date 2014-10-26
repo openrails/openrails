@@ -27,7 +27,7 @@ namespace ORTS.ContentManager
     //     Route
     //       Activity
     //       Service
-    //       Traffic
+    //       Traffic (MSTS only?)
     //       Path
     //       Scenery
     //       Model

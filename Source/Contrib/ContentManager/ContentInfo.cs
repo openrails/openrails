@@ -15,12 +15,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using MSTS.Formats;
+using ORTS.ContentManager.Formats;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
-using MSTS.Formats;
-using System.IO;
 
 namespace ORTS.ContentManager
 {
@@ -35,13 +36,37 @@ namespace ORTS.ContentManager
 
             try
             {
-                if (content is ContentMSTSRoute)
+                if (content.Type == ContentType.Route)
+                {
+                    var file = new Route(content);
+                    details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, file.Name);
+                    details.AppendFormat("Description:\t{0}{0}{1}{0}{0}", Environment.NewLine, file.Description);
+                }
+                else if (content is ContentMSTSRoute)
                 {
                     var file = new TRKFile(Path.Combine(content.PathName, content.Name + ".trk"));
+                    details.AppendFormat("Package:\t\u0001{1}\u0002Package\u0001{0}", Environment.NewLine, content.Get(ContentType.Package).Select(p => p.Name).FirstOrDefault());
                     details.AppendFormat("Route ID:\t{1}{0}", Environment.NewLine, file.Tr_RouteFile.RouteID);
                     details.AppendFormat("Route Key:\t{1}{0}", Environment.NewLine, file.Tr_RouteFile.FileName);
                     details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, file.Tr_RouteFile.Name);
                     details.AppendFormat("Description:\t{0}{0}{1}{0}{0}", Environment.NewLine, file.Tr_RouteFile.Description);
+                }
+                else if (content.Type == ContentType.Activity)
+                {
+                    var file = new Activity(content);
+                    details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, file.Name);
+                    if (file.PlayerService != null)
+                    {
+                        details.AppendFormat("Player:\t\u0001{1}\u0002Service\u0001{0}", Environment.NewLine, file.PlayerService);
+                    }
+                    // TODO: Traffic link
+                    foreach (var service in file.Services)
+                    {
+                        details.AppendFormat("Traffic:\t\u0001{1}\u0002Service\u0001{0}", Environment.NewLine, service);
+                    }
+                    details.AppendLine();
+                    details.AppendFormat("Description:\t{0}{0}{1}{0}{0}", Environment.NewLine, file.Description);
+                    details.AppendFormat("Briefing:\t{0}{0}{1}{0}{0}", Environment.NewLine, file.Briefing);
                 }
                 else if (content is ContentMSTSActivity)
                 {

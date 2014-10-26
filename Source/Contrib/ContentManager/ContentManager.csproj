@@ -58,6 +58,9 @@
     </Compile>
     <Compile Include="ContentManager.cs" />
     <Compile Include="ContentMSTS.cs" />
+    <Compile Include="Formats\Activity.cs" />
+    <Compile Include="Formats\Route.cs" />
+    <Compile Include="Formats\Service.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="ContentManagerGUI.resx">
