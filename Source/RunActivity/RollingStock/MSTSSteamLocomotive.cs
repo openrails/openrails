@@ -79,7 +79,6 @@ namespace ORTS
         bool safety3IsOn = false; // Safety valve #3 is on and opertaing
         bool safety4IsOn = false; // Safety valve #4 is on and opertaing
         bool IsGearedSteamLoco = false; // Indicates that it is a geared locomotive
-        bool IsGearedSpeedExcess = false; // Flag indicating that geared locomotive speed has been exceeded
         bool IsFixGeared = false;
         bool IsSelectGeared = false; 
 
@@ -200,6 +199,9 @@ namespace ORTS
         Interpolator InitialPressureDropRatioRpMtoX; // Allowance for wire-drawing - ie drop in initial pressure (cutoff) as speed increases
         Interpolator CutoffPressureDropRatioRpMtoX; // Allowance for pressure drop in Cut-off pressure compared to Initial Pressure - NB only curve for 50% cutoff done
         Interpolator SteamChestPressureDropRatioRpMtoX; // Allowance for pressure drop in Steam chest pressure compared to Boiler Pressure
+        
+        Interpolator SaturatedSpeedFactorSpeedDropFtpMintoX; // Allowance for drop in TE for a saturated locomotive due to piston speed limitations
+        Interpolator SuperheatedSpeedFactorSpeedDropFtpMintoX; // Allowance for drop in TE for a superheated locomotive due to piston speed limitations
         
         float CylinderPressurePSI;
         float BackPressurePSI;
@@ -358,10 +360,8 @@ namespace ORTS
         float SteamGearRatioHigh;   // Gear ratio for a two speed geared locomotive, such as a Climax
         float LowMaxGearedSpeedMpS;  // Max speed of the geared locomotive - Low Gear
         float HighMaxGearedSpeedMpS; // Max speed of the geared locomotive - High Gear
-        float MaxGearedSpeedMpS; // Max speed of the geared locomotive
         float MotiveForceGearRatio; // mulitplication factor to be used in calculating motive force etc, when a geared locomotive.
         float SteamGearPosition = 0.0f; // Position of Gears if set
-        float MaxSpeedMpS; // Max speed of steam locomotive at "maximum HP"
         float DisplayTractiveEffortLbsF; // Value of Tractive eefort to display in HUD
 
 
@@ -633,6 +633,10 @@ namespace ORTS
             InitialPressureDropRatioRpMtoX = SteamTable.InitialPressureDropRatioInterpolatorRpMtoX();
             CutoffPressureDropRatioRpMtoX = SteamTable.CutoffPressureDropRatioInterpolatorRpMtoX();
             SteamChestPressureDropRatioRpMtoX = SteamTable.SteamChestPressureDropRatioInterpolatorRpMtoX();
+            
+            SaturatedSpeedFactorSpeedDropFtpMintoX = SteamTable.SaturatedSpeedFactorSpeedDropFtpMintoX();
+            SuperheatedSpeedFactorSpeedDropFtpMintoX = SteamTable.SuperheatedSpeedFactorSpeedDropFtpMintoX();            
+            
 
             if (BoilerEfficiencyGrateAreaLBpFT2toX == null)
             {
@@ -789,17 +793,17 @@ namespace ORTS
 	        if ( HasSuperheater)
 	        {
                 MaxPistonSpeedFtpM = 1000.0f; // if superheated locomotive
-                SpeedFactor = 0.445f;
-	        }
+                SpeedFactor = SuperheatedSpeedFactorSpeedDropFtpMintoX[MaxPistonSpeedFtpM];
+   	        }
 	        else if (IsGearedSteamLoco)
 	        {
                 MaxPistonSpeedFtpM = MaxSteamGearPistonRateFtpM;  // if geared locomotive
-                SpeedFactor = 0.412f;   // Assume the same as saturated locomotive for time being.
+                SpeedFactor = SaturatedSpeedFactorSpeedDropFtpMintoX[MaxPistonSpeedFtpM];   // Assume the same as saturated locomotive for time being.
 	        }
 	        else
 	        {
                 MaxPistonSpeedFtpM = 700.0f;  // if saturated locomotive
-                SpeedFactor = 0.412f;	        
+                SpeedFactor = SaturatedSpeedFactorSpeedDropFtpMintoX[MaxPistonSpeedFtpM];
 	        }
 
            // Calculate max velocity of the locomotive based upon above piston speed
@@ -1981,22 +1985,36 @@ namespace ORTS
             // On starting allow maximum motive force to be used
             if (absSpeedMpS < 1.0f && cutoff > 0.70f && throttle > 0.98f)
             {
-                MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(MaxForceN);
+                MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * MaxForceN;
             }
             // If "critical" speed of locomotive is reached, limit max IHP
-            CriticalSpeedTractiveEffortLbf = (MaxIndicatedHorsePowerHP * 375.0f) / MaxLocoSpeedMpH;
-
-            // Based upon max IHP and critical speed, limit motive force.
-            if (absSpeedMpS > pS.FrompH(Me.FromMi(MaxLocoSpeedMpH)) || IndicatedHorsePowerHP >= MaxIndicatedHorsePowerHP)
+            CriticalSpeedTractiveEffortLbf = (MaxTractiveEffortLbf * CylinderEfficiencyRate) * SpeedFactor;
+            
+            // Based upon max IHP, limit motive force.
+            if (PistonSpeedFtpM > MaxPistonSpeedFtpM || IndicatedHorsePowerHP > MaxIndicatedHorsePowerHP)
             {
-                if(IndicatedHorsePowerHP >= MaxIndicatedHorsePowerHP)
+
+                if (IndicatedHorsePowerHP >= MaxIndicatedHorsePowerHP)
                 {
                     IndicatedHorsePowerHP = MaxIndicatedHorsePowerHP; // Set IHP to maximum value
                 }
+                // Calculate the speed factor for the locomotive, based upon piston speed    
+                if ( HasSuperheater)
+	        {
+                SpeedFactor = SuperheatedSpeedFactorSpeedDropFtpMintoX[PistonSpeedFtpM];
+	        }
+	        else if (IsGearedSteamLoco)
+	        {
+                SpeedFactor = SaturatedSpeedFactorSpeedDropFtpMintoX[PistonSpeedFtpM];   // Assume the same as saturated locomotive for time being.
+	        }
+	        else
+	        {
+                SpeedFactor = SaturatedSpeedFactorSpeedDropFtpMintoX[PistonSpeedFtpM];	        
+	        }
                 
-                if(TractiveEffortLbsF > CriticalSpeedTractiveEffortLbf)
+                if((TractiveEffortLbsF * CylinderEfficiencyRate) > CriticalSpeedTractiveEffortLbf)
                 {
-                    MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(CriticalSpeedTractiveEffortLbf * CylinderEfficiencyRate);
+                    MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(CriticalSpeedTractiveEffortLbf);
                     DisplayTractiveEffortLbsF = CriticalSpeedTractiveEffortLbf;
                 }
             }
@@ -2599,8 +2617,9 @@ namespace ORTS
                 CriticalSpeedTractiveEffortLbf,
                 MaxLocoSpeedMpH);
 
-            status.AppendFormat("Move:\tPiston\t{0:N0}ft/m\tDrv\t{1:N0} rpm\tMF- Gear {2:N2}\n",
+            status.AppendFormat("Move:\tPiston\t{0:N0}ft/m\tSp. Fact.\t{1:N3}\tDrv\t{2:N0} rpm\tMF- Gear {3:N2}\n",
                 PistonSpeedFtpM,
+                SpeedFactor,
                 pS.TopM(DrvWheelRevRpS),
                 MotiveForceGearRatio);
 
