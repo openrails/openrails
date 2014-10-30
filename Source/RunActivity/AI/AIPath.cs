@@ -407,7 +407,8 @@ namespace ORTS
                 WaitUntil = 60 * (minute + 60 * hour);
                 WaitTimeS = 0;
             }
-            else if (WaitTimeS >= 40000 && WaitTimeS < 60000)
+            // computations are made within AITrain.cs
+/*            else if (WaitTimeS >= 40000 && WaitTimeS < 60000)
             {
                 // Uncouple if a wait=stop point
                 // waitTimeS (in decimal notation) = 4NNSS (uncouple NN cars, wait SS seconds)
@@ -423,7 +424,7 @@ namespace ORTS
             {
                 // waitTimes = 6xSSS  with waitTime SSS seconds.
                 WaitTimeS %= 1000;
-            }
+            } */
 
         }
 

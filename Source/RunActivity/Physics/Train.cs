@@ -1558,7 +1558,7 @@ namespace ORTS
 
                         if (Simulator.BreakCouplers)
                         {
-                            Simulator.UncoupleBehind(uncoupleBehindCar);
+                            Simulator.UncoupleBehind(uncoupleBehindCar, true);
                             uncoupleBehindCar.CouplerOverloaded = false;
                             Simulator.Confirmer.Warning(Viewer.Catalog.GetString("Coupler broken!"));
                         }
@@ -8947,7 +8947,7 @@ namespace ORTS
 
             }
 
-            // player train
+            // player train or AI train
 
             else
             {

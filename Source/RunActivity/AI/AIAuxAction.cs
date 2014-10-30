@@ -1564,6 +1564,8 @@ namespace ORTS
                 // repeat stopping of train, because it could have been moved by UpdateBrakingState after ProcessAction
                 aiTrain.AdjustControlsBrakeMore(aiTrain.MaxDecelMpSS, elapsedClockSeconds, 100);
                 int correctedTime = presentTime;
+                // If delay between 40000 and 60000 an uncoupling is performed and delay is returned with the two lowest digits of the original one
+                aiTrain.TestUncouple( ref Delay);
                 ActualDepart = correctedTime + Delay;
                 aiTrain.AuxActionsContain.CheckGenActions(this.GetType(), aiTrain.RearTDBTraveller.WorldLocation, Delay);
 
@@ -1689,6 +1691,9 @@ namespace ORTS
         }
 
     }
+
+
+
 
     //================================================================================================//
     /// <summary>

@@ -1038,10 +1038,10 @@ namespace ORTS
         public void UncoupleBehind(int carPosition)
         {
             // check on car position in case of mouse jitter
-            if (carPosition <= PlayerLocomotive.Train.Cars.Count - 1) UncoupleBehind(PlayerLocomotive.Train.Cars[carPosition]);
+            if (carPosition <= PlayerLocomotive.Train.Cars.Count - 1) UncoupleBehind(PlayerLocomotive.Train.Cars[carPosition], true);
         }
 
-        public void UncoupleBehind(TrainCar car)
+        public void UncoupleBehind(TrainCar car, bool keepFront)
         {
             Train train = car.Train;
 
@@ -1072,11 +1072,11 @@ namespace ORTS
             train.LastCar.CouplerSlackM = 0;
 
             // ensure player train keeps the original number (in single mode, it is always no. 0)
-            if (PlayerLocomotive != null && PlayerLocomotive.Train == train2)
+            if ((PlayerLocomotive != null && PlayerLocomotive.Train == train2) || !keepFront)
             {
                 var temp = train.Number;
                 train.Number = train2.Number;    // train gets new number
-                train2.Number = temp;               // player train keeps the original number
+                train2.Number = temp;               // player or AI train keeps the original number
             }
 
             // and fix up the travellers
@@ -1091,11 +1091,11 @@ namespace ORTS
             train2.SpeedMpS = train.SpeedMpS;
             train2.AITrainBrakePercent = train.AITrainBrakePercent;
             train2.AITrainDirectionForward = train.AITrainDirectionForward;
-            if (PlayerLocomotive != null && PlayerLocomotive.Train == train2)
+            if ((PlayerLocomotive != null && PlayerLocomotive.Train == train2 || !keepFront))
             {
                 train2.AITrainThrottlePercent = train.AITrainThrottlePercent;
                 train.AITrainThrottlePercent = 0;
-                train2.TrainType = Train.TRAINTYPE.PLAYER;
+                train2.TrainType = train.TrainType;
                 train.TrainType = Train.TRAINTYPE.STATIC;
                 train2.LeadLocomotive = lead;
                 train.LeadLocomotive = null;

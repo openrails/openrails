@@ -3290,7 +3290,6 @@ namespace ORTS
                                 "Train Ahead \n");
                         }
                     }
-
                     // check for train further ahead and determine distance to train
                     Dictionary<Train, float> trainAhead =
                                             thisSection.TestTrainAhead(thisTrain.Train, offset, reqDirection);
@@ -6078,8 +6077,17 @@ namespace ORTS
                             }
                             else  // if index is greater, train has moved on - return section length minus offset
                             {
-                                distanceTrainAheadM = Length - offset;
-                                trainFound = nextTrain.Train;
+                                if (nextRouteRearIndex < routeIndex)  // train spans section so offset in section is 0//
+                                {
+                                    distanceTrainAheadM = 0;
+                                    trainFound = nextTrain.Train;
+                                }
+                                     // check if there is space between the two rears
+                                else if (thisTrain == null || (nextRouteRearIndex == routeIndex && offset - thisTrain.Length < Length - nextRear.TCOffset))
+                                {
+                                    distanceTrainAheadM = Length - offset;
+                                    trainFound = nextTrain.Train;
+                                } // else trains are separate, running in opposite directions and back to back
                             }
                         }
 

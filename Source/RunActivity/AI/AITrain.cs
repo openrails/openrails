@@ -4487,6 +4487,70 @@ namespace ORTS
 
         }
 
+        //================================================================================================//
+        /// <summary>
+        /// TestUncouple
+        /// Tests if Waiting point delay >40000 and <59999; under certain conditions this means that
+        /// an uncoupling action happens
+        ///delay (in decimal notation) = 4NNSS (uncouple cars after NNth from train front (locos included), wait SS seconds)
+        //                            or 5NNSS (uncouple cars before NNth from train rear (locos included), keep rear, wait SS seconds)
+        /// remember that for AI trains train front is the one of the actual moving direction, so train front changes at every reverse point
+        /// </summary>
+        /// 
+       public void TestUncouple(ref int delay)
+        {
+            if (Program.Simulator.TimetableMode || !Program.Simulator.Settings.EnhancedActCompatibility || !Program.Simulator.Settings.ExtendedAIShunting) return;
+            if (delay <= 40000 || delay >= 60000) return;
+            bool keepFront = true;
+            int carsToKeep;
+            if (delay > 50000 && delay < 60000)
+            {
+                keepFront = false;
+                delay = delay - 10000;
+            }
+            carsToKeep = (delay - 40000) / 100;
+            delay = delay - 40000 - carsToKeep * 100;
+            UncoupleSomeWagons(carsToKeep, keepFront);
+        }
+
+       //================================================================================================//
+       /// <summary>
+       /// UncoupleSomeWagons
+       /// Uncouples some wagons, starting from rear if keepFront is true and from front if it is false
+       /// Uncoupled wagons become a static consist
+       /// </summary>
+       /// 
+        private void UncoupleSomeWagons (int carsToKeep, bool keepFront)
+       {
+            // first test that carsToKeep is smaller than number of cars of train
+           if (carsToKeep >= Cars.Count) 
+           {
+               carsToKeep = Cars.Count - 1;
+               Trace.TraceWarning("Train {0} Service {1} reduced cars to uncouple", Number, Name);
+           }
+            // then test if there is at least one loco in the not-uncoupled part
+            int startCarIndex = keepFront? 0: Cars.Count-carsToKeep;
+            int endCarIndex = keepFront? carsToKeep-1: Cars.Count-1;
+            bool foundLoco = false;
+            for (int carIndex = startCarIndex; carIndex <= endCarIndex; carIndex++)
+            {
+                if (Cars[carIndex] is MSTSLocomotive)
+                {
+                    foundLoco = true;
+                    break;
+                }
+            }
+            if (!foundLoco)
+            {
+                // no loco in remaining part, abort operation
+                Trace.TraceWarning("Train {0} Service {1} Uncoupling not executed, no loco in remaining part of train", Number, Name);
+                return;
+            }
+            int uncouplePoint = keepFront? carsToKeep-1 : Cars.Count-carsToKeep;
+            Simulator.UncoupleBehind( Cars[uncouplePoint], keepFront);
+
+
+       }
 
         //================================================================================================//
         /// <summary>
