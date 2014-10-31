@@ -61,6 +61,11 @@ namespace ORTS.Processes
         public LoaderProcess LoaderProcess { get; private set; }
 
         /// <summary>
+        /// Exposes access to the <see cref="SoundProcess"/> for the game.
+        /// </summary>
+        public SoundProcess SoundProcess { get; private set; }
+
+        /// <summary>
         /// Gets the current <see cref="GameState"/>, if there is one, or <c>null</c>.
         /// </summary>
         public GameState State { get { return States.Count > 0 ? States.Peek() : null; } }
@@ -80,6 +85,7 @@ namespace ORTS.Processes
             RenderProcess = new RenderProcess(this);
             UpdaterProcess = new UpdaterProcess(this);
             LoaderProcess = new LoaderProcess(this);
+            SoundProcess = new SoundProcess(this);
             States = new Stack<GameState>();
         }
 
@@ -87,6 +93,7 @@ namespace ORTS.Processes
         protected override void BeginRun()
         {
             // At this point, GraphicsDevice is initialized and set up.
+            SoundProcess.Start();
             LoaderProcess.Start();
             UpdaterProcess.Start();
             RenderProcess.Start();
@@ -135,6 +142,7 @@ namespace ORTS.Processes
             RenderProcess.Stop();
             UpdaterProcess.Stop();
             LoaderProcess.Stop();
+            SoundProcess.Stop();
         }
 
         [ThreadName("Render")]

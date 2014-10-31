@@ -18,6 +18,7 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 using ORTS.Common;
+using ORTS.Processes;
 using ORTS.Viewer3D;
 using System;
 using System.Collections.Generic;
@@ -29,103 +30,50 @@ namespace ORTS
 {
     public class SoundProcess
     {
-		public readonly bool Threaded;
-		public readonly Profiler Profiler = new Profiler("Sound");
-        readonly Viewer Viewer;
-		readonly Thread Thread;
+        public readonly Profiler Profiler = new Profiler("Sound");
+        readonly ProcessState State = new ProcessState("Sound");
+        readonly Game Game;
+        readonly Thread Thread;
+
+        // THREAD SAFETY:
+        //   All accesses must be done in local variables. No modifications to the objects are allowed except by
+        //   assignment of a new instance (possibly cloned and then modified).
+        Dictionary<object, List<SoundSourceBase>> SoundSources = new Dictionary<object, List<SoundSourceBase>>();
 
         private int UpdateCounter = -1;
         private const int FULLUPDATECYCLE = 4; // Number of frequent updates needed till a full update
 
-        public SoundProcess(Viewer viewer)
+        public SoundProcess(Game game)
         {
-            Threaded = true;
-            Viewer = viewer;
-            if (Viewer.Settings.SoundDetailLevel > 0)
-            {
-                if (Threaded)
-                {
-                    Thread = new Thread(SoundThread);
-                    Thread.Start();
-                }
-            }
+            Game = game;
+            Thread = new Thread(SoundThread);
+        }
+
+        public void Start()
+        {
+            if (Game.Settings.SoundDetailLevel > 0)
+                Thread.Start();
         }
 
         public void Stop()
         {
-            if (Threaded && Thread != null)
-                Thread.Abort();
+            State.SignalTerminate();
         }
 
-        Dictionary<object, List<SoundSourceBase>> SoundSources = new Dictionary<object, List<SoundSourceBase>>();
-
-        public void GetSoundSources(ref Dictionary<object, List<SoundSourceBase>> soundSources)
-        {
-            soundSources = new Dictionary<object, List<SoundSourceBase>>(SoundSources);
-        }
-
-        public List<SoundSourceBase> GetSoundSources(object viewer)
-        {
-            return SoundSources[viewer];
-        }
-
-        /// <summary>
-        /// Adds a SoundSource list attached to an object to the playable sounds.
-        /// </summary>
-        /// <param name="viewer">The viewer object, could be anything</param>
-        /// <param name="sources">List of SoundSources to play</param>
-        public void AddSoundSource(object viewer, List<SoundSourceBase> sources)
-        {
-            lock (SoundSources)
-            {
-                if (!SoundSources.Keys.Contains(viewer)) 
-                    SoundSources.Add(viewer, sources);
-            }
-        }
-
-        /// <summary>
-        /// Removes a SoundSource list attached to an object from the playable sounds.
-        /// </summary>
-        /// <param name="viewer">The viewer object the sounds attached to</param>
-        public void RemoveSoundSource(object viewer)
-        {
-            List<SoundSourceBase> ls = null;
-            // Try to remove the given SoundSource
-            lock (SoundSources)
-            {
-                if (SoundSources.Keys.Contains(viewer))
-                {
-                    ls = SoundSources[viewer];
-                    SoundSources.Remove(viewer);
-                }
-            }
-            // Uninitialize its sounds
-            if (ls != null)
-            {
-                foreach (var ss in ls)
-					ss.Uninitialize();
-            }
-        }
-        
-		[ThreadName("Sound")]
+        [ThreadName("Sound")]
         void SoundThread()
         {
             Profiler.SetThread();
 
-            while (Viewer.RealTime == 0)
-                Thread.Sleep(100);
-
             OpenAL.Initialize();
 
-            lock (SoundSources)
-                foreach (List<SoundSourceBase> src in SoundSources.Values)
-                    foreach (SoundSourceBase ss in src)
-                        ss.InitInitials();
-
-            while (Thread.CurrentThread.ThreadState == System.Threading.ThreadState.Running)
+            while (true)
             {
-                DoSound();
                 Thread.Sleep(50);
+                if (State.Terminated)
+                    break;
+                if (!DoSound())
+                    return;
             }
         }
 
@@ -144,12 +92,10 @@ namespace ORTS
                 }
                 catch (Exception error)
                 {
-                    if (!(error is ThreadAbortException))
-                    {
-                        // Report error and die.
-                        Viewer.Game.ProcessReportError(error);
-                        return false;
-                    }
+                    // Unblock anyone waiting for us, report error and die.
+                    State.SignalTerminate();
+                    Game.ProcessReportError(error);
+                    return false;
                 }
             }
             return true;
@@ -159,59 +105,121 @@ namespace ORTS
         void Sound()
         {
             Profiler.Start();
-			try
-			{
-                OpenAL.alListenerf(OpenAL.AL_GAIN, Program.Simulator.Paused ? 0 : (float)Program.Simulator.Settings.SoundVolumePercent / 100f);
-                
-				// Update activity sounds
-                if (Viewer.Simulator.SoundNotify != Event.None)
-				{
-                    if (Viewer.World.GameSounds != null) Viewer.World.GameSounds.HandleEvent(Viewer.Simulator.SoundNotify);
-                    Viewer.Simulator.SoundNotify = Event.None;
-				}
+            try
+            {
+                var viewer = Game.RenderProcess.Viewer;
+                if (viewer == null)
+                    return;
+
+                OpenAL.alListenerf(OpenAL.AL_GAIN, Program.Simulator.Paused ? 0 : (float)Game.Settings.SoundVolumePercent / 100f);
+
+                // Update activity sounds
+                if (viewer.Simulator.SoundNotify != Event.None)
+                {
+                    if (viewer.World.GameSounds != null) viewer.World.GameSounds.HandleEvent(viewer.Simulator.SoundNotify);
+                    viewer.Simulator.SoundNotify = Event.None;
+                }
 
                 // Update all sound in our list
-				lock (SoundSources)
-				{
-                    UpdateCounter++;
-                    UpdateCounter %= FULLUPDATECYCLE;
+                UpdateCounter++;
+                UpdateCounter %= FULLUPDATECYCLE;
 
-					List<KeyValuePair<List<SoundSourceBase>, SoundSourceBase>> remove = null;
-					foreach (List<SoundSourceBase> src in SoundSources.Values)
-					{
-						foreach (SoundSourceBase ss in src)
-						{
-                            if (!ss.NeedsFrequentUpdate && UpdateCounter > 0)
-                                continue;
+                var soundSources = SoundSources;
+                List<KeyValuePair<object, SoundSourceBase>> removals = null;
+                foreach (var sources in soundSources)
+                {
+                    foreach (var source in sources.Value)
+                    {
+                        if (!source.NeedsFrequentUpdate && UpdateCounter > 0)
+                            continue;
 
-							if (!ss.Update())
-							{
-								if (remove == null)
-									remove = new List<KeyValuePair<List<SoundSourceBase>, SoundSourceBase>>();
-								remove.Add(new KeyValuePair<List<SoundSourceBase>, SoundSourceBase>(src, ss));
-							}
-						}
-					}
-					if (remove != null)
-					{
-						foreach (KeyValuePair<List<SoundSourceBase>, SoundSourceBase> ss in remove)
-						{
-							ss.Value.Dispose();
-							ss.Key.Remove(ss.Value);
-						}
-					}
-				}
-			}
-			catch { }
+                        if (!source.Update())
+                        {
+                            if (removals == null)
+                                removals = new List<KeyValuePair<object, SoundSourceBase>>();
+                            removals.Add(new KeyValuePair<object, SoundSourceBase>(sources.Key, source));
+                        }
+                    }
+                }
+                if (removals != null)
+                {
+                    // We use an interlocked compare-exchange to thread-safely update the list. Note that on each
+                    // failure, we must recompute the modifications from SoundSources.
+                    Dictionary<object, List<SoundSourceBase>> newSoundSources;
+                    do
+                    {
+                        soundSources = SoundSources;
+                        newSoundSources = new Dictionary<object, List<SoundSourceBase>>(soundSources);
+                        foreach (var removal in removals)
+                        {
+                            // If either of the key or value no longer exist, we can't remove them - so skip over them.
+                            if (newSoundSources.ContainsKey(removal.Key) && newSoundSources[removal.Key].Contains(removal.Value))
+                            {
+                                removal.Value.Dispose();
+                                newSoundSources[removal.Key] = new List<SoundSourceBase>(newSoundSources[removal.Key]);
+                                newSoundSources[removal.Key].Remove(removal.Value);
+                            }
+                        }
+                    } while (soundSources != Interlocked.CompareExchange(ref SoundSources, newSoundSources, soundSources));
+                }
+            }
             finally
             {
                 Profiler.Stop();
             }
         }
 
-        internal void RemoveAllSources()
+        public void GetSoundSources(ref Dictionary<object, List<SoundSourceBase>> soundSources)
         {
-            // TODO: Clear all and exit
+            soundSources = new Dictionary<object, List<SoundSourceBase>>(SoundSources);
+        }
+
+        public List<SoundSourceBase> GetSoundSources(object viewer)
+        {
+            return SoundSources[viewer];
+        }
+
+        /// <summary>
+        /// Adds a SoundSource list attached to an object to the playable sounds.
+        /// </summary>
+        /// <param name="viewer">The viewer object, could be anything</param>
+        /// <param name="sources">List of SoundSources to play</param>
+        public void AddSoundSource(object viewer, List<SoundSourceBase> sources)
+        {
+            // We use an interlocked compare-exchange to thread-safely update the list. Note that on each
+            // failure, we must recompute the modifications from SoundSources.
+            Dictionary<object, List<SoundSourceBase>> soundSources;
+            Dictionary<object, List<SoundSourceBase>> newSoundSources;
+            do
+            {
+                soundSources = SoundSources;
+                newSoundSources = new Dictionary<object, List<SoundSourceBase>>(soundSources);
+                if (!newSoundSources.ContainsKey(viewer))
+                    newSoundSources.Add(viewer, sources);
+            } while (soundSources != Interlocked.CompareExchange(ref SoundSources, newSoundSources, soundSources));
+        }
+
+        /// <summary>
+        /// Removes a SoundSource list attached to an object from the playable sounds.
+        /// </summary>
+        /// <param name="viewer">The viewer object the sounds attached to</param>
+        public void RemoveSoundSource(object viewer)
+        {
+            // We use an interlocked compare-exchange to thread-safely update the list. Note that on each
+            // failure, we must recompute the modifications from SoundSources.
+            Dictionary<object, List<SoundSourceBase>> soundSources;
+            Dictionary<object, List<SoundSourceBase>> newSoundSources;
+            do
+            {
+                soundSources = SoundSources;
+                newSoundSources = new Dictionary<object, List<SoundSourceBase>>(soundSources);
+                if (newSoundSources.ContainsKey(viewer))
+                {
+                    foreach (var source in newSoundSources[viewer])
+                        source.Uninitialize();
+                    newSoundSources.Remove(viewer);
+                }
+            } while (soundSources != Interlocked.CompareExchange(ref SoundSources, newSoundSources, soundSources));
         }
     }
 }

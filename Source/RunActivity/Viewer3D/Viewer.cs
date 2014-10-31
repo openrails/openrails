@@ -225,6 +225,7 @@ namespace ORTS.Viewer3D
             RenderProcess = game.RenderProcess;
             UpdaterProcess = game.UpdaterProcess;
             LoaderProcess = game.LoaderProcess;
+            SoundProcess = game.SoundProcess;
 
             WellKnownCameras = new List<Camera>();
             WellKnownCameras.Add(CabCamera = new CabCamera(this));
@@ -355,7 +356,6 @@ namespace ORTS.Viewer3D
 
             InfoDisplay = new InfoDisplay(this);
 
-            SoundProcess = new SoundProcess(this);
             World = new World(this);
 
             Simulator.Confirmer = new Confirmer(this, 1.5);
@@ -970,8 +970,6 @@ namespace ORTS.Viewer3D
         internal void Terminate()
         {
             InfoDisplay.Terminate();
-            SoundProcess.RemoveAllSources();
-            SoundProcess.Stop();
         }
 
         private int trainCount;

@@ -26,8 +26,12 @@ namespace ORTS
     public class ProcessState
     {
         public bool Finished { get; private set; }
-        ManualResetEvent StartEvent = new ManualResetEvent(false);
-        ManualResetEvent FinishEvent = new ManualResetEvent(true);
+        public bool Terminated { get; private set; }
+        readonly ManualResetEvent StartEvent = new ManualResetEvent(false);
+        readonly ManualResetEvent FinishEvent = new ManualResetEvent(true);
+        readonly ManualResetEvent TerminateEvent = new ManualResetEvent(false);
+        readonly WaitHandle[] StartEvents;
+        readonly WaitHandle[] FinishEvents;
 #if DEBUG_THREAD_PERFORMANCE
         StreamWriter DebugFileStream;
 #endif
@@ -35,6 +39,8 @@ namespace ORTS
         public ProcessState(string name)
         {
             Finished = true;
+            StartEvents = new[] { StartEvent, TerminateEvent };
+            FinishEvents = new[] { FinishEvent, TerminateEvent };
 #if DEBUG_THREAD_PERFORMANCE
             DebugFileStream = new StreamWriter(File.OpenWrite("debug_thread_" + name.ToLowerInvariant() + "_state.csv"));
             DebugFileStream.Write("Time,Event\n");
@@ -61,12 +67,21 @@ namespace ORTS
             FinishEvent.Set();
         }
 
+        public void SignalTerminate()
+        {
+#if DEBUG_THREAD_PERFORMANCE
+            DebugFileStream.Write("{0},ST\n", DateTime.Now.Ticks);
+#endif
+            Terminated = true;
+            TerminateEvent.Set();
+        }
+
         public void WaitTillStarted()
         {
 #if DEBUG_THREAD_PERFORMANCE
             DebugFileStream.Write("{0},WTS+\n", DateTime.Now.Ticks);
 #endif
-            StartEvent.WaitOne();
+            WaitHandle.WaitAny(StartEvents);
 #if DEBUG_THREAD_PERFORMANCE
             DebugFileStream.Write("{0},WTS-\n", DateTime.Now.Ticks);
 #endif
@@ -77,7 +92,7 @@ namespace ORTS
 #if DEBUG_THREAD_PERFORMANCE
             DebugFileStream.Write("{0},WTF+\n", DateTime.Now.Ticks);
 #endif
-            FinishEvent.WaitOne();
+            WaitHandle.WaitAny(FinishEvents);
 #if DEBUG_THREAD_PERFORMANCE
             DebugFileStream.Write("{0},WTF-\n", DateTime.Now.Ticks);
 #endif

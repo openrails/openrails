@@ -89,6 +89,8 @@ namespace ORTS.Viewer3D
                 {
                     for (var z = -needed; z <= needed; z++)
                     {
+                        if (Viewer.LoaderProcess.Terminated)
+                            break;
                         var tile = worldFiles.FirstOrDefault(t => t.TileX == TileX + x && t.TileZ == TileZ + z);
                         if (tile == null)
                             tile = LoadWorldFile(TileX + x, TileZ + z, x == 0 && z == 0);
@@ -243,6 +245,10 @@ namespace ORTS.Viewer3D
             {
                 if (worldObject.StaticDetailLevel > viewer.Settings.WorldObjectDensity)
                     continue;
+
+                // If the loader has been asked to temrinate, bail out early.
+                if (viewer.LoaderProcess.Terminated)
+                    break;
 
                 // Get the position of the scenery object into ORTS coordinate space.
                 WorldPosition worldMatrix;

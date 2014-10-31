@@ -18,6 +18,12 @@
 // Define this to include extra data on loading performance and progress indications.
 //#define DEBUG_LOADING
 
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using ORTS.Common;
+using ORTS.MultiPlayer;
+using ORTS.Settings;
+using ORTS.Viewer3D;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -27,14 +33,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Windows.Forms;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using ORTS.Common;
-using ORTS.MultiPlayer;
-using ORTS.Settings;
-using ORTS.Viewer3D;
 
 namespace ORTS.Processes
 {
@@ -188,10 +187,6 @@ namespace ORTS.Processes
                 try
                 {
                     doAction();
-                }
-                catch (ThreadAbortException)
-                {
-                    // This occurs if we're aborting the loading. Don't report this.
                 }
                 catch (Exception error)
                 {

@@ -44,7 +44,7 @@ namespace ORTS.Processes
 
         public void Stop()
         {
-            Thread.Abort();
+            State.SignalTerminate();
         }
 
         public bool Finished
@@ -52,6 +52,14 @@ namespace ORTS.Processes
             get
             {
                 return State.Finished;
+            }
+        }
+
+        public bool Terminated
+        {
+            get
+            {
+                return State.Terminated;
             }
         }
 
@@ -65,10 +73,12 @@ namespace ORTS.Processes
         {
             Profiler.SetThread();
 
-            while (Thread.CurrentThread.ThreadState == System.Threading.ThreadState.Running)
+            while (true)
             {
                 // Wait for a new Update() command
                 State.WaitTillStarted();
+                if (State.Terminated)
+                    break;
                 try
                 {
                     if (!DoLoad())
@@ -104,13 +114,10 @@ namespace ORTS.Processes
                 }
                 catch (Exception error)
                 {
-                    if (!(error is ThreadAbortException))
-                    {
-                        // Unblock anyone waiting for us, report error and die.
-                        State.SignalFinish();
-                        Game.ProcessReportError(error);
-                        return false;
-                    }
+                    // Unblock anyone waiting for us, report error and die.
+                    State.SignalTerminate();
+                    Game.ProcessReportError(error);
+                    return false;
                 }
             }
             return true;

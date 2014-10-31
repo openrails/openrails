@@ -53,7 +53,9 @@ namespace ORTS.Viewer3D
                 var newCars = new Dictionary<TrainCar, TrainCarViewer>();
                 foreach (var car in visibleCars)
                 {
-					try
+                    if (Viewer.LoaderProcess.Terminated)
+                        break;
+                    try
 					{
 						if (cars.ContainsKey(car))
 							newCars.Add(car, cars[car]);
