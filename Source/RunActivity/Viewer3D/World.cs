@@ -66,7 +66,7 @@ namespace ORTS.Viewer3D
                 ALSoundSource.MuteAll();
                 // TODO: This looks kinda evil; do something about it.
                 GameSounds = new SoundSource(viewer, Events.Source.MSTSInGame, viewer.Simulator.RoutePath + "\\Sound\\ingame.sms");
-                Viewer.SoundProcess.AddSoundSource(GameSounds.SMSFolder + "\\" + GameSounds.SMSFileName, new List<SoundSourceBase>() { GameSounds });
+                Viewer.SoundProcess.AddSoundSources(GameSounds.SMSFolder + "\\" + GameSounds.SMSFileName, new List<SoundSourceBase>() { GameSounds });
                 Sounds = new WorldSounds(viewer);
             }
         }

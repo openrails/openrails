@@ -110,12 +110,12 @@ namespace ORTS.Viewer3D
 
         void UpdateWeatherParameters()
         {
-            Viewer.SoundProcess.RemoveSoundSource(this);
+            Viewer.SoundProcess.RemoveSoundSources(this);
             switch (Viewer.Simulator.Weather)
             {
-                case MSTS.Formats.WeatherType.Clear: pricipitationIntensityPPSPM2 = 0; Viewer.SoundProcess.AddSoundSource(this, ClearSound); break;
-                case MSTS.Formats.WeatherType.Rain: pricipitationIntensityPPSPM2 = 0.010f; Viewer.SoundProcess.AddSoundSource(this, RainSound); break;
-                case MSTS.Formats.WeatherType.Snow: pricipitationIntensityPPSPM2 = 0.010f; Viewer.SoundProcess.AddSoundSource(this, SnowSound); break;
+                case MSTS.Formats.WeatherType.Clear: pricipitationIntensityPPSPM2 = 0; Viewer.SoundProcess.AddSoundSources(this, ClearSound); break;
+                case MSTS.Formats.WeatherType.Rain: pricipitationIntensityPPSPM2 = 0.010f; Viewer.SoundProcess.AddSoundSources(this, RainSound); break;
+                case MSTS.Formats.WeatherType.Snow: pricipitationIntensityPPSPM2 = 0.010f; Viewer.SoundProcess.AddSoundSources(this, SnowSound); break;
             }
 
             // WeatherControl is created during World consturction so this needs to be skipped.

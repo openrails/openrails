@@ -39,12 +39,16 @@ namespace ORTS.Debugging
 
         private List<SoundSource> ActiveSoundSources;
         private List<SoundSource> InactiveSoundSources;
-        private Dictionary<object, List<SoundSourceBase>> SoundSources;
         private SoundSource selectedSoundSource;
 
         public SoundDebugForm(Viewer viewer)
         {
             InitializeComponent();
+
+            // Windows 2000 and XP should use 8.25pt Tahoma, while Windows
+            // Vista and later should use 9pt "Segoe UI". We'll use the
+            // Message Box font to allow for user-customizations, though.
+            Font = SystemFonts.MessageBoxFont;
 
             Viewer = viewer;
 
@@ -73,7 +77,7 @@ namespace ORTS.Debugging
 
         void UpdateContent()
         {
-            Viewer.SoundProcess.GetSoundSources(ref SoundSources);
+            var soundSources = Viewer.SoundProcess.GetSoundSources();
             activeSoundList.BeginUpdate();
             inactiveSoundList.BeginUpdate();
 
@@ -82,7 +86,7 @@ namespace ORTS.Debugging
             for (int i = 0; i < inactiveSoundList.Nodes.Count; i++)
                 inactiveSoundList.Nodes[i].Nodes.Clear();
 
-            foreach (var src in SoundSources.Values)
+            foreach (var src in soundSources.Values)
                 foreach (var ssb in src)
                 {
                     if (ssb is SoundSource)

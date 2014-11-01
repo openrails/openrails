@@ -47,12 +47,16 @@ namespace ORTS.Debugging
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SoundDebugForm));
             this.inactiveSoundList = new System.Windows.Forms.TreeView();
             this.activeSoundList = new System.Windows.Forms.TreeView();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.groupBoxActiveSounds = new System.Windows.Forms.GroupBox();
+            this.groupBoxInactiveSounds = new System.Windows.Forms.GroupBox();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.streamProperties = new System.Windows.Forms.GroupBox();
+            this.groupBoxCache = new System.Windows.Forms.GroupBox();
+            this.cache = new System.Windows.Forms.TextBox();
+            this.groupBoxSelectedSound = new System.Windows.Forms.GroupBox();
             this.sound3D = new System.Windows.Forms.CheckBox();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.smsVolume = new System.Windows.Forms.TextBox();
@@ -67,38 +71,38 @@ namespace ORTS.Debugging
             this.label2 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
-            this.label7 = new System.Windows.Forms.Label();
-            this.cache = new System.Windows.Forms.TextBox();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
+            this.groupBoxActiveSounds.SuspendLayout();
+            this.groupBoxInactiveSounds.SuspendLayout();
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
-            this.groupBox1.SuspendLayout();
-            this.streamProperties.SuspendLayout();
+            this.groupBoxCache.SuspendLayout();
+            this.groupBoxSelectedSound.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // inactiveSoundList
             // 
             this.inactiveSoundList.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.inactiveSoundList.Location = new System.Drawing.Point(0, 0);
+            this.inactiveSoundList.Location = new System.Drawing.Point(3, 16);
             this.inactiveSoundList.Name = "inactiveSoundList";
-            this.inactiveSoundList.Size = new System.Drawing.Size(288, 289);
-            this.inactiveSoundList.TabIndex = 3;
-            this.inactiveSoundList.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.inactiveSoundList_KeyPress);
+            this.inactiveSoundList.Size = new System.Drawing.Size(276, 264);
+            this.inactiveSoundList.TabIndex = 0;
             this.inactiveSoundList.KeyDown += new System.Windows.Forms.KeyEventHandler(this.inactiveSoundList_KeyDown);
+            this.inactiveSoundList.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.inactiveSoundList_KeyPress);
             // 
             // activeSoundList
             // 
             this.activeSoundList.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.activeSoundList.Location = new System.Drawing.Point(0, 0);
+            this.activeSoundList.Location = new System.Drawing.Point(3, 16);
             this.activeSoundList.Name = "activeSoundList";
-            this.activeSoundList.Size = new System.Drawing.Size(288, 519);
-            this.activeSoundList.TabIndex = 4;
-            this.activeSoundList.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.activeSoundList_KeyPress);
+            this.activeSoundList.Size = new System.Drawing.Size(276, 494);
+            this.activeSoundList.TabIndex = 0;
             this.activeSoundList.KeyDown += new System.Windows.Forms.KeyEventHandler(this.activeSoundList_KeyDown);
+            this.activeSoundList.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.activeSoundList_KeyPress);
             // 
             // splitContainer1
             // 
@@ -109,14 +113,38 @@ namespace ORTS.Debugging
             // 
             // splitContainer1.Panel1
             // 
-            this.splitContainer1.Panel1.Controls.Add(this.activeSoundList);
+            this.splitContainer1.Panel1.Controls.Add(this.groupBoxActiveSounds);
+            this.splitContainer1.Panel1.Padding = new System.Windows.Forms.Padding(3);
             // 
             // splitContainer1.Panel2
             // 
-            this.splitContainer1.Panel2.Controls.Add(this.inactiveSoundList);
+            this.splitContainer1.Panel2.Controls.Add(this.groupBoxInactiveSounds);
+            this.splitContainer1.Panel2.Padding = new System.Windows.Forms.Padding(3);
             this.splitContainer1.Size = new System.Drawing.Size(288, 812);
             this.splitContainer1.SplitterDistance = 519;
             this.splitContainer1.TabIndex = 5;
+            // 
+            // groupBoxActiveSounds
+            // 
+            this.groupBoxActiveSounds.Controls.Add(this.activeSoundList);
+            this.groupBoxActiveSounds.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.groupBoxActiveSounds.Location = new System.Drawing.Point(3, 3);
+            this.groupBoxActiveSounds.Name = "groupBoxActiveSounds";
+            this.groupBoxActiveSounds.Size = new System.Drawing.Size(282, 513);
+            this.groupBoxActiveSounds.TabIndex = 5;
+            this.groupBoxActiveSounds.TabStop = false;
+            this.groupBoxActiveSounds.Text = "Active sounds";
+            // 
+            // groupBoxInactiveSounds
+            // 
+            this.groupBoxInactiveSounds.Controls.Add(this.inactiveSoundList);
+            this.groupBoxInactiveSounds.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.groupBoxInactiveSounds.Location = new System.Drawing.Point(3, 3);
+            this.groupBoxInactiveSounds.Name = "groupBoxInactiveSounds";
+            this.groupBoxInactiveSounds.Size = new System.Drawing.Size(282, 283);
+            this.groupBoxInactiveSounds.TabIndex = 4;
+            this.groupBoxInactiveSounds.TabStop = false;
+            this.groupBoxInactiveSounds.Text = "Inactive sounds";
             // 
             // splitContainer2
             // 
@@ -128,7 +156,9 @@ namespace ORTS.Debugging
             // 
             // splitContainer2.Panel1
             // 
-            this.splitContainer2.Panel1.Controls.Add(this.groupBox1);
+            this.splitContainer2.Panel1.Controls.Add(this.groupBoxCache);
+            this.splitContainer2.Panel1.Controls.Add(this.groupBoxSelectedSound);
+            this.splitContainer2.Panel1.Padding = new System.Windows.Forms.Padding(3);
             // 
             // splitContainer2.Panel2
             // 
@@ -137,41 +167,51 @@ namespace ORTS.Debugging
             this.splitContainer2.SplitterDistance = 142;
             this.splitContainer2.TabIndex = 6;
             // 
-            // groupBox1
+            // groupBoxCache
             // 
-            this.groupBox1.Controls.Add(this.streamProperties);
-            this.groupBox1.Controls.Add(this.label7);
-            this.groupBox1.Controls.Add(this.cache);
-            this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupBox1.Location = new System.Drawing.Point(0, 0);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(142, 812);
-            this.groupBox1.TabIndex = 0;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Current SMS";
+            this.groupBoxCache.Controls.Add(this.cache);
+            this.groupBoxCache.Dock = System.Windows.Forms.DockStyle.Top;
+            this.groupBoxCache.Location = new System.Drawing.Point(3, 196);
+            this.groupBoxCache.Name = "groupBoxCache";
+            this.groupBoxCache.Size = new System.Drawing.Size(136, 39);
+            this.groupBoxCache.TabIndex = 8;
+            this.groupBoxCache.TabStop = false;
+            this.groupBoxCache.Text = "Sound cache";
             // 
-            // streamProperties
+            // cache
             // 
-            this.streamProperties.Controls.Add(this.sound3D);
-            this.streamProperties.Controls.Add(this.tableLayoutPanel2);
-            this.streamProperties.Location = new System.Drawing.Point(6, 19);
-            this.streamProperties.Name = "streamProperties";
-            this.streamProperties.Size = new System.Drawing.Size(133, 200);
-            this.streamProperties.TabIndex = 2;
-            this.streamProperties.TabStop = false;
-            this.streamProperties.Text = "Stream Properties";
+            this.cache.Dock = System.Windows.Forms.DockStyle.Top;
+            this.cache.Location = new System.Drawing.Point(3, 16);
+            this.cache.Name = "cache";
+            this.cache.ReadOnly = true;
+            this.cache.Size = new System.Drawing.Size(130, 20);
+            this.cache.TabIndex = 0;
+            this.cache.Text = "0";
+            this.cache.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // groupBoxSelectedSound
+            // 
+            this.groupBoxSelectedSound.Controls.Add(this.sound3D);
+            this.groupBoxSelectedSound.Controls.Add(this.tableLayoutPanel2);
+            this.groupBoxSelectedSound.Dock = System.Windows.Forms.DockStyle.Top;
+            this.groupBoxSelectedSound.Location = new System.Drawing.Point(3, 3);
+            this.groupBoxSelectedSound.Name = "groupBoxSelectedSound";
+            this.groupBoxSelectedSound.Size = new System.Drawing.Size(136, 193);
+            this.groupBoxSelectedSound.TabIndex = 0;
+            this.groupBoxSelectedSound.TabStop = false;
+            this.groupBoxSelectedSound.Text = "Selected sound";
             // 
             // sound3D
             // 
             this.sound3D.AutoSize = true;
-            this.sound3D.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.sound3D.Dock = System.Windows.Forms.DockStyle.Top;
             this.sound3D.Enabled = false;
-            this.sound3D.Location = new System.Drawing.Point(3, 180);
+            this.sound3D.Location = new System.Drawing.Point(3, 167);
             this.sound3D.Name = "sound3D";
-            this.sound3D.Size = new System.Drawing.Size(127, 17);
-            this.sound3D.TabIndex = 3;
+            this.sound3D.Padding = new System.Windows.Forms.Padding(3);
+            this.sound3D.Size = new System.Drawing.Size(130, 23);
+            this.sound3D.TabIndex = 0;
             this.sound3D.Text = "3D";
-            this.sound3D.UseVisualStyleBackColor = true;
             // 
             // tableLayoutPanel2
             // 
@@ -201,35 +241,35 @@ namespace ORTS.Debugging
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(127, 158);
-            this.tableLayoutPanel2.TabIndex = 6;
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(130, 151);
+            this.tableLayoutPanel2.TabIndex = 8;
             // 
             // smsVolume
             // 
             this.smsVolume.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.smsVolume.Location = new System.Drawing.Point(73, 133);
+            this.smsVolume.Location = new System.Drawing.Point(73, 128);
             this.smsVolume.Name = "smsVolume";
             this.smsVolume.ReadOnly = true;
-            this.smsVolume.Size = new System.Drawing.Size(51, 20);
-            this.smsVolume.TabIndex = 0;
+            this.smsVolume.Size = new System.Drawing.Size(54, 20);
+            this.smsVolume.TabIndex = 5;
             // 
             // distance
             // 
             this.distance.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.distance.Location = new System.Drawing.Point(73, 107);
+            this.distance.Location = new System.Drawing.Point(73, 103);
             this.distance.Name = "distance";
             this.distance.ReadOnly = true;
-            this.distance.Size = new System.Drawing.Size(51, 20);
-            this.distance.TabIndex = 8;
+            this.distance.Size = new System.Drawing.Size(54, 20);
+            this.distance.TabIndex = 4;
             // 
             // variable3
             // 
             this.variable3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.variable3.Location = new System.Drawing.Point(73, 81);
+            this.variable3.Location = new System.Drawing.Point(73, 78);
             this.variable3.Name = "variable3";
             this.variable3.ReadOnly = true;
-            this.variable3.Size = new System.Drawing.Size(51, 20);
-            this.variable3.TabIndex = 7;
+            this.variable3.Size = new System.Drawing.Size(54, 20);
+            this.variable3.TabIndex = 3;
             // 
             // label1
             // 
@@ -244,26 +284,26 @@ namespace ORTS.Debugging
             // variable2
             // 
             this.variable2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.variable2.Location = new System.Drawing.Point(73, 55);
+            this.variable2.Location = new System.Drawing.Point(73, 53);
             this.variable2.Name = "variable2";
             this.variable2.ReadOnly = true;
-            this.variable2.Size = new System.Drawing.Size(51, 20);
-            this.variable2.TabIndex = 6;
+            this.variable2.Size = new System.Drawing.Size(54, 20);
+            this.variable2.TabIndex = 2;
             // 
             // variable1
             // 
             this.variable1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.variable1.Location = new System.Drawing.Point(73, 29);
+            this.variable1.Location = new System.Drawing.Point(73, 28);
             this.variable1.Name = "variable1";
             this.variable1.ReadOnly = true;
-            this.variable1.Size = new System.Drawing.Size(51, 20);
-            this.variable1.TabIndex = 5;
+            this.variable1.Size = new System.Drawing.Size(54, 20);
+            this.variable1.TabIndex = 1;
             // 
             // label3
             // 
             this.label3.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(3, 58);
+            this.label3.Location = new System.Drawing.Point(3, 56);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(54, 13);
             this.label3.TabIndex = 3;
@@ -275,14 +315,14 @@ namespace ORTS.Debugging
             this.speed.Location = new System.Drawing.Point(73, 3);
             this.speed.Name = "speed";
             this.speed.ReadOnly = true;
-            this.speed.Size = new System.Drawing.Size(51, 20);
+            this.speed.Size = new System.Drawing.Size(54, 20);
             this.speed.TabIndex = 0;
             // 
             // label4
             // 
             this.label4.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(3, 84);
+            this.label4.Location = new System.Drawing.Point(3, 81);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(54, 13);
             this.label4.TabIndex = 4;
@@ -292,7 +332,7 @@ namespace ORTS.Debugging
             // 
             this.label2.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(3, 32);
+            this.label2.Location = new System.Drawing.Point(3, 31);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(54, 13);
             this.label2.TabIndex = 2;
@@ -302,7 +342,7 @@ namespace ORTS.Debugging
             // 
             this.label5.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(3, 110);
+            this.label5.Location = new System.Drawing.Point(3, 106);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(49, 13);
             this.label5.TabIndex = 4;
@@ -312,30 +352,11 @@ namespace ORTS.Debugging
             // 
             this.label6.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(3, 137);
+            this.label6.Location = new System.Drawing.Point(3, 131);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(42, 13);
             this.label6.TabIndex = 4;
             this.label6.Text = "Volume";
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(6, 237);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(116, 26);
-            this.label7.TabIndex = 4;
-            this.label7.Text = "Total number of sound \r\nfiles in cache:";
-            // 
-            // cache
-            // 
-            this.cache.Location = new System.Drawing.Point(9, 266);
-            this.cache.Name = "cache";
-            this.cache.ReadOnly = true;
-            this.cache.Size = new System.Drawing.Size(51, 20);
-            this.cache.TabIndex = 0;
-            this.cache.Text = "0";
-            this.cache.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
             // SoundDebugForm
             // 
@@ -343,20 +364,23 @@ namespace ORTS.Debugging
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(434, 812);
             this.Controls.Add(this.splitContainer2);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "SoundDebugForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
-            this.Text = "SoundDebugForm";
+            this.Text = "Sound Debug";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SoundDebugForm_FormClosing);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             this.splitContainer1.ResumeLayout(false);
+            this.groupBoxActiveSounds.ResumeLayout(false);
+            this.groupBoxInactiveSounds.ResumeLayout(false);
             this.splitContainer2.Panel1.ResumeLayout(false);
             this.splitContainer2.Panel2.ResumeLayout(false);
             this.splitContainer2.ResumeLayout(false);
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
-            this.streamProperties.ResumeLayout(false);
-            this.streamProperties.PerformLayout();
+            this.groupBoxCache.ResumeLayout(false);
+            this.groupBoxCache.PerformLayout();
+            this.groupBoxSelectedSound.ResumeLayout(false);
+            this.groupBoxSelectedSound.PerformLayout();
             this.tableLayoutPanel2.ResumeLayout(false);
             this.tableLayoutPanel2.PerformLayout();
             this.ResumeLayout(false);
@@ -369,11 +393,14 @@ namespace ORTS.Debugging
         private System.Windows.Forms.TreeView activeSoundList;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.SplitContainer splitContainer2;
+        private System.Windows.Forms.GroupBox groupBoxSelectedSound;
+        private System.Windows.Forms.GroupBox groupBoxActiveSounds;
+        private System.Windows.Forms.GroupBox groupBoxInactiveSounds;
+        private System.Windows.Forms.GroupBox groupBoxCache;
+        private System.Windows.Forms.TextBox cache;
         private System.Windows.Forms.CheckBox sound3D;
-        private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.TextBox smsVolume;
-        private System.Windows.Forms.GroupBox streamProperties;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
+        private System.Windows.Forms.TextBox smsVolume;
         private System.Windows.Forms.TextBox distance;
         private System.Windows.Forms.TextBox variable3;
         private System.Windows.Forms.Label label1;
@@ -385,7 +412,5 @@ namespace ORTS.Debugging
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.TextBox cache;
     }
 }

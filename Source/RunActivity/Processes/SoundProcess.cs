@@ -17,6 +17,9 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+// Define this to log each change of the sound sources.
+//#define DEBUG_SOURCE_SOURCES
+
 using ORTS.Common;
 using ORTS.Processes;
 using ORTS.Viewer3D;
@@ -143,6 +146,7 @@ namespace ORTS
                 }
                 if (removals != null)
                 {
+                    Trace.TraceInformation("SoundProcess: sound source self-removal on " + Thread.CurrentThread.Name);
                     // We use an interlocked compare-exchange to thread-safely update the list. Note that on each
                     // failure, we must recompute the modifications from SoundSources.
                     Dictionary<object, List<SoundSourceBase>> newSoundSources;
@@ -169,23 +173,21 @@ namespace ORTS
             }
         }
 
-        public void GetSoundSources(ref Dictionary<object, List<SoundSourceBase>> soundSources)
+        internal Dictionary<object, List<SoundSourceBase>> GetSoundSources()
         {
-            soundSources = new Dictionary<object, List<SoundSourceBase>>(SoundSources);
-        }
-
-        public List<SoundSourceBase> GetSoundSources(object viewer)
-        {
-            return SoundSources[viewer];
+            return SoundSources;
         }
 
         /// <summary>
-        /// Adds a SoundSource list attached to an object to the playable sounds.
+        /// Adds the collection of <see cref="SoundSourceBase"/> for a particular <paramref name="owner"/> to the playable sounds.
         /// </summary>
-        /// <param name="viewer">The viewer object, could be anything</param>
-        /// <param name="sources">List of SoundSources to play</param>
-        public void AddSoundSource(object viewer, List<SoundSourceBase> sources)
+        /// <param name="owner">The object to which the sound sources are attached.</param>
+        /// <param name="sources">The sound sources to add.</param>
+        public void AddSoundSources(object owner, List<SoundSourceBase> sources)
         {
+#if DEBUG_SOURCE_SOURCES
+            Trace.TraceInformation("SoundProcess: AddSoundSources on " + Thread.CurrentThread.Name + " by " + owner);
+#endif
             // We use an interlocked compare-exchange to thread-safely update the list. Note that on each
             // failure, we must recompute the modifications from SoundSources.
             Dictionary<object, List<SoundSourceBase>> soundSources;
@@ -194,17 +196,20 @@ namespace ORTS
             {
                 soundSources = SoundSources;
                 newSoundSources = new Dictionary<object, List<SoundSourceBase>>(soundSources);
-                if (!newSoundSources.ContainsKey(viewer))
-                    newSoundSources.Add(viewer, sources);
+                newSoundSources.Add(owner, sources);
             } while (soundSources != Interlocked.CompareExchange(ref SoundSources, newSoundSources, soundSources));
         }
 
         /// <summary>
-        /// Removes a SoundSource list attached to an object from the playable sounds.
+        /// Adds a single <see cref="SoundSourceBase"/> to the playable sounds.
         /// </summary>
-        /// <param name="viewer">The viewer object the sounds attached to</param>
-        public void RemoveSoundSource(object viewer)
+        /// <param name="owner">The object to which the sound is attached.</param>
+        /// <param name="source">The sound source to add.</param>
+        public void AddSoundSource(object owner, SoundSourceBase source)
         {
+#if DEBUG_SOURCE_SOURCES
+            Trace.TraceInformation("SoundProcess: AddSoundSource on " + Thread.CurrentThread.Name + " by " + owner);
+#endif
             // We use an interlocked compare-exchange to thread-safely update the list. Note that on each
             // failure, we must recompute the modifications from SoundSources.
             Dictionary<object, List<SoundSourceBase>> soundSources;
@@ -213,11 +218,46 @@ namespace ORTS
             {
                 soundSources = SoundSources;
                 newSoundSources = new Dictionary<object, List<SoundSourceBase>>(soundSources);
-                if (newSoundSources.ContainsKey(viewer))
+                if (!newSoundSources.ContainsKey(owner))
+                    newSoundSources.Add(owner, new List<SoundSourceBase>());
+                newSoundSources[owner].Add(source);
+            } while (soundSources != Interlocked.CompareExchange(ref SoundSources, newSoundSources, soundSources));
+        }
+
+        /// <summary>
+        /// Returns whether a particular sound source in the playable sounds is owned by a particular <paramref name="owner"/>.
+        /// </summary>
+        /// <param name="owner">The object to which the sound might be owned.</param>
+        /// <param name="source">The sound source to check.</param>
+        /// <returns><see cref="true"/> for a match between <paramref name="owner"/> and <paramref name="source"/>, <see cref="false"/> otherwise.</returns>
+        public bool IsSoundSourceOwnedBy(object owner, SoundSourceBase source)
+        {
+            var soundSources = SoundSources;
+            return soundSources.ContainsKey(owner) && soundSources[owner].Contains(source);
+        }
+
+        /// <summary>
+        /// Removes the collection of <see cref="SoundSourceBase"/> for a particular <paramref name="owner"/> from the playable sounds.
+        /// </summary>
+        /// <param name="owner">The object to which the sound sources are attached.</param>
+        public void RemoveSoundSources(object owner)
+        {
+#if DEBUG_SOURCE_SOURCES
+            Trace.TraceInformation("SoundProcess: RemoveSoundSources on " + Thread.CurrentThread.Name + " by " + owner);
+#endif
+            // We use an interlocked compare-exchange to thread-safely update the list. Note that on each
+            // failure, we must recompute the modifications from SoundSources.
+            Dictionary<object, List<SoundSourceBase>> soundSources;
+            Dictionary<object, List<SoundSourceBase>> newSoundSources;
+            do
+            {
+                soundSources = SoundSources;
+                newSoundSources = new Dictionary<object, List<SoundSourceBase>>(soundSources);
+                if (newSoundSources.ContainsKey(owner))
                 {
-                    foreach (var source in newSoundSources[viewer])
+                    foreach (var source in newSoundSources[owner])
                         source.Uninitialize();
-                    newSoundSources.Remove(viewer);
+                    newSoundSources.Remove(owner);
                 }
             } while (soundSources != Interlocked.CompareExchange(ref SoundSources, newSoundSources, soundSources));
         }

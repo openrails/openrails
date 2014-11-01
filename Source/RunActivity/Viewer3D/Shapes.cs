@@ -654,7 +654,7 @@ namespace ORTS.Viewer3D
                     try
                     {
                         Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSCrossing, soundPath);
-                        viewer.SoundProcess.AddSoundSource(this, new List<SoundSourceBase>() { Sound });
+                        viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                     }
                     catch (Exception error)
                     {
@@ -677,7 +677,7 @@ namespace ORTS.Viewer3D
         {
             if (Sound != null)
             {
-                Viewer.SoundProcess.RemoveSoundSource(this);
+                Viewer.SoundProcess.RemoveSoundSources(this);
                 Sound.Dispose();
             }
         }

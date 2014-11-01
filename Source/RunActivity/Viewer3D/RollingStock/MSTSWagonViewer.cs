@@ -33,7 +33,6 @@ namespace ORTS.Viewer3D.RollingStock
         protected PoseableShape TrainCarShape;
         protected AnimatedShape FreightShape;
         protected AnimatedShape InteriorShape;
-        protected List<SoundSourceBase> SoundSources = new List<SoundSourceBase>();
         public static readonly Action Noop = () => { };
         /// <summary>
         /// Dictionary of built-in locomotive control keyboard commands, Action[] is in the order {KeyRelease, KeyPress}
@@ -90,9 +89,6 @@ namespace ORTS.Viewer3D.RollingStock
             LoadCarSounds(wagonFolderSlash);
             if (!(MSTSWagon is MSTSLocomotive))
                 LoadTrackSounds();
-
-            // Adding all loaded SoundSource to the main sound update thread
-            Viewer.SoundProcess.AddSoundSource(this, SoundSources);
 
             // Determine if it has first pantograph. So we can match unnamed panto parts correctly
             for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
@@ -393,8 +389,7 @@ namespace ORTS.Viewer3D.RollingStock
         public override void Unload()
         {
             // Removing sound sources from sound update thread
-            Viewer.SoundProcess.RemoveSoundSource(this);
-            SoundSources.Clear();
+            Viewer.SoundProcess.RemoveSoundSources(this);
         }
 
 
@@ -432,7 +427,7 @@ namespace ORTS.Viewer3D.RollingStock
 
             try
             {
-                SoundSources.Add(new SoundSource(Viewer, MSTSWagon, smsFilePath));
+                Viewer.SoundProcess.AddSoundSource(this, new SoundSource(Viewer, MSTSWagon, smsFilePath));
             }
             catch (Exception error)
             {
@@ -471,7 +466,7 @@ namespace ORTS.Viewer3D.RollingStock
                 Trace.TraceWarning("Cannot find track sound file {0}", filename);
                 return;
             }
-            SoundSources.Add(new SoundSource(Viewer, MSTSWagon, path));
+            Viewer.SoundProcess.AddSoundSource(this, new SoundSource(Viewer, MSTSWagon, path));
         }
 
         internal override void Mark()

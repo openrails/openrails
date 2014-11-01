@@ -1117,7 +1117,7 @@ namespace ORTS.Viewer3D
             {
                 try
                 {
-                    if (SoundStream.SoundSource.Car.Simulator.Confirmer.Viewer.SoundProcess.GetSoundSources(viewer).Contains(SoundStream.SoundSource as SoundSourceBase))
+                    if (SoundStream.SoundSource.Car.Simulator.Confirmer.Viewer.SoundProcess.IsSoundSourceOwnedBy(viewer, SoundStream.SoundSource))
                     {
                         Triggered = true;
                     }
@@ -1747,7 +1747,6 @@ namespace ORTS.Viewer3D
         Dictionary<string, List<WorldSoundRegion>> SoundRegions = new Dictionary<string, List<WorldSoundRegion>>();
         private Viewer Viewer;
         private SoundSource ss;
-        private List<SoundSourceBase> ls;
 
         public WorldSounds(Viewer viewer)
         {
@@ -1923,7 +1922,7 @@ namespace ORTS.Viewer3D
             {
                 string[] pathArray = {Viewer.Simulator.RoutePath, Viewer.Simulator.BasePath};
                 
-                ls = new List<SoundSourceBase>();
+                var ls = new List<SoundSourceBase>();
                 foreach (var fss in wf.TR_WorldSoundFile.SoundSources)
                 {
                     WorldLocation wl = new WorldLocation(TileX, TileZ, fss.X, fss.Y, fss.Z);
@@ -1935,7 +1934,7 @@ namespace ORTS.Viewer3D
                             ls.Add(ss);
                     }
                 }
-                Viewer.SoundProcess.AddSoundSource(name, ls);
+                Viewer.SoundProcess.AddSoundSources(name, ls);
 
                 lock (SoundRegions)
                 {
@@ -1950,7 +1949,7 @@ namespace ORTS.Viewer3D
         public void RemoveByTile(int TileX, int TileZ)
         {
             string name = Viewer.Simulator.RoutePath + @"\WORLD\" + WorldFile.WorldFileNameFromTileCoordinates(TileX, TileZ) + "s";
-            Viewer.SoundProcess.RemoveSoundSource(name);
+            Viewer.SoundProcess.RemoveSoundSources(name);
             lock (SoundRegions)
             {
                 if (SoundRegions.ContainsKey(name))

@@ -205,7 +205,7 @@ namespace ORTS.Viewer3D
                         try
                         {
                             Sound = new SoundSource(Viewer, SignalShape.Location.WorldLocation, Events.Source.MSTSSignal, soundPath);
-                            Viewer.SoundProcess.AddSoundSource(this, new List<SoundSourceBase>() { Sound });
+                            Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                         }
                         catch (Exception error)
                         {
@@ -225,7 +225,7 @@ namespace ORTS.Viewer3D
             {
                 if (Sound != null)
                 {
-                    Viewer.SoundProcess.RemoveSoundSource(this);
+                    Viewer.SoundProcess.RemoveSoundSources(this);
                     Sound.Dispose();
                 }
             }
