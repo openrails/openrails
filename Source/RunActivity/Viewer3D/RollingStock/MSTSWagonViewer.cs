@@ -68,7 +68,8 @@ namespace ORTS.Viewer3D.RollingStock
             {
                 car.HasFreightAnim = true;
                 FreightShape = new AnimatedShape(viewer, wagonFolderSlash + car.FreightShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
-                if (MSTSWagon.IsTender)
+                // Reproducing MSTS "bug" of not allowing tender animation in case both minLevel and maxLevel is 0
+                if (MSTSWagon.IsTender && (MSTSWagon.FreightAnimMinLevelM != 0 || MSTSWagon.FreightAnimMaxLevelM != 0))
                 {
                     // Force allowing animation:
                     if (FreightShape.SharedShape.LodControls.Length > 0 && FreightShape.SharedShape.LodControls[0].DistanceLevels.Length > 0 && FreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects.Length > 0 && FreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives.Length > 0 && FreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy.Length > 0)
