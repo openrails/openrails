@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -31,20 +31,24 @@ namespace ORTS.Processes
         readonly ProcessState State = new ProcessState("Updater");
         readonly Game Game;
         readonly Thread Thread;
+        readonly WatchdogToken WatchdogToken;
 
         public UpdaterProcess(Game game)
         {
             Game = game;
             Thread = new Thread(UpdaterThread);
+            WatchdogToken = new WatchdogToken(Thread);
         }
 
         public void Start()
         {
+            Game.WatchdogProcess.Register(WatchdogToken);
             Thread.Start();
         }
 
         public void Stop()
         {
+            Game.WatchdogProcess.Unregister(WatchdogToken);
             State.SignalTerminate();
         }
 
@@ -57,7 +61,7 @@ namespace ORTS.Processes
         void UpdaterThread()
         {
             Profiler.SetThread();
-            Game.LoadLanguage();
+            Game.SetThreadLanguage();
 
             while (true)
             {
@@ -120,6 +124,7 @@ namespace ORTS.Processes
             Profiler.Start();
             try
             {
+                WatchdogToken.Ping();
                 CurrentFrame.Clear();
                 Game.State.Update(CurrentFrame, TotalRealSeconds);
                 CurrentFrame.Sort();

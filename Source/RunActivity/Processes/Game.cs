@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2013 by the Open Rails project.
+﻿// COPYRIGHT 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -46,6 +46,11 @@ namespace ORTS.Processes
         public string ContentPath { get; private set; }
 
         /// <summary>
+        /// Exposes access to the <see cref="WatchdogProcess"/> for the game.
+        /// </summary>
+        public WatchdogProcess WatchdogProcess { get; private set; }
+
+        /// <summary>
         /// Exposes access to the <see cref="RenderProcess"/> for the game.
         /// </summary>
         public RenderProcess RenderProcess { get; private set; }
@@ -79,9 +84,9 @@ namespace ORTS.Processes
         public Game(UserSettings settings)
         {
             Settings = settings;
-            LoadLanguage();
             ContentPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Content");
             Exiting += new System.EventHandler(Game_Exiting);
+            WatchdogProcess = new WatchdogProcess(this);
             RenderProcess = new RenderProcess(this);
             UpdaterProcess = new UpdaterProcess(this);
             LoaderProcess = new LoaderProcess(this);
@@ -97,6 +102,7 @@ namespace ORTS.Processes
             LoaderProcess.Start();
             UpdaterProcess.Start();
             RenderProcess.Start();
+            WatchdogProcess.Start();
             base.BeginRun();
         }
 
@@ -139,6 +145,7 @@ namespace ORTS.Processes
         protected override void EndRun()
         {
             base.EndRun();
+            WatchdogProcess.Stop();
             RenderProcess.Stop();
             UpdaterProcess.Stop();
             LoaderProcess.Stop();
@@ -181,7 +188,14 @@ namespace ORTS.Processes
             Trace.TraceInformation("Game.ReplaceState({0})  {1}", state.GetType().Name, String.Join(" | ", States.Select(s => s.GetType().Name).ToArray()));
         }
 
-        public void LoadLanguage()
+        /// <summary>
+        /// Updates the calling thread's <see cref="Thread.CurrentUICulture"/> to match the <see cref="Game"/>'s <see cref="Settings"/>.
+        /// </summary>
+        [CallOnThread("Render")]
+        [CallOnThread("Updater")]
+        [CallOnThread("Loader")]
+        [CallOnThread("Watchdog")]
+        public void SetThreadLanguage()
         {
             if (Settings.Language.Length > 0)
             {
@@ -200,6 +214,7 @@ namespace ORTS.Processes
         [CallOnThread("Render")]
         [CallOnThread("Updater")]
         [CallOnThread("Loader")]
+        [CallOnThread("Sound")]
         public void ProcessReportError(Exception error)
         {
             // Log the error first in case we're burning.

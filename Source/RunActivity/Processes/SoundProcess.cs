@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -37,6 +37,7 @@ namespace ORTS
         readonly ProcessState State = new ProcessState("Sound");
         readonly Game Game;
         readonly Thread Thread;
+        readonly WatchdogToken WatchdogToken;
 
         // THREAD SAFETY:
         //   All accesses must be done in local variables. No modifications to the objects are allowed except by
@@ -50,17 +51,25 @@ namespace ORTS
         {
             Game = game;
             Thread = new Thread(SoundThread);
+            WatchdogToken = new WatchdogToken(Thread);
         }
 
         public void Start()
         {
             if (Game.Settings.SoundDetailLevel > 0)
+            {
+                Game.WatchdogProcess.Register(WatchdogToken);
                 Thread.Start();
+            }
         }
 
         public void Stop()
         {
-            State.SignalTerminate();
+            if (Game.Settings.SoundDetailLevel > 0)
+            {
+                Game.WatchdogProcess.Unregister(WatchdogToken);
+                State.SignalTerminate();
+            }
         }
 
         [ThreadName("Sound")]
@@ -110,6 +119,8 @@ namespace ORTS
             Profiler.Start();
             try
             {
+                WatchdogToken.Ping();
+
                 var viewer = Game.RenderProcess.Viewer;
                 if (viewer == null)
                     return;
@@ -146,7 +157,9 @@ namespace ORTS
                 }
                 if (removals != null)
                 {
+#if DEBUG_SOURCE_SOURCES
                     Trace.TraceInformation("SoundProcess: sound source self-removal on " + Thread.CurrentThread.Name);
+#endif
                     // We use an interlocked compare-exchange to thread-safely update the list. Note that on each
                     // failure, we must recompute the modifications from SoundSources.
                     Dictionary<object, List<SoundSourceBase>> newSoundSources;

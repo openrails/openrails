@@ -143,6 +143,7 @@
     <Compile Include="Processes\RenderProcess.cs" />
     <Compile Include="Processes\SoundProcess.cs" />
     <Compile Include="Processes\UpdaterProcess.cs" />
+    <Compile Include="Processes\WatchdogProcess.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RollingStock\- RollingStock.cs" />

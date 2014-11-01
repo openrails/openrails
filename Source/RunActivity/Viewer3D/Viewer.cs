@@ -220,8 +220,6 @@ namespace ORTS.Viewer3D
             Game = game;
             Settings = simulator.Settings;
 
-            Game.LoadLanguage();
-
             RenderProcess = game.RenderProcess;
             UpdaterProcess = game.UpdaterProcess;
             LoaderProcess = game.LoaderProcess;

@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -30,20 +30,24 @@ namespace ORTS.Processes
         readonly ProcessState State = new ProcessState("Loader");
         readonly Game Game;
         readonly Thread Thread;
+        readonly WatchdogToken WatchdogToken;
 
         public LoaderProcess(Game game)
         {
             Game = game;
             Thread = new Thread(LoaderThread);
+            WatchdogToken = new WatchdogToken(Thread);
         }
 
         public void Start()
         {
+            Game.WatchdogProcess.Register(WatchdogToken);
             Thread.Start();
         }
 
         public void Stop()
         {
+            Game.WatchdogProcess.Unregister(WatchdogToken);
             State.SignalTerminate();
         }
 
@@ -59,6 +63,8 @@ namespace ORTS.Processes
         {
             get
             {
+                // Specially for the loader process: this keeps it "alive" while objects are loading, as they check Terminated periodically.
+                WatchdogToken.Ping();
                 return State.Terminated;
             }
         }
@@ -72,6 +78,7 @@ namespace ORTS.Processes
         void LoaderThread()
         {
             Profiler.SetThread();
+            Game.SetThreadLanguage();
 
             while (true)
             {
@@ -129,6 +136,7 @@ namespace ORTS.Processes
             Profiler.Start();
             try
             {
+                WatchdogToken.Ping();
                 Game.State.Load();
             }
             finally

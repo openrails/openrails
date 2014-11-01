@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -40,9 +40,10 @@ namespace ORTS.Processes
 
         public Profiler Profiler { get; private set; }
 
-        Game Game;
-        Form GameForm;
-        Point GameWindowSize;
+        readonly Game Game;
+        readonly Form GameForm;
+        readonly Point GameWindowSize;
+        readonly WatchdogToken WatchdogToken;
 
         public GraphicsDeviceManager GraphicsDeviceManager { get; private set; }
 
@@ -67,10 +68,14 @@ namespace ORTS.Processes
 
         internal RenderProcess(Game game)
         {
-            Profiler = new Profiler("Render");
             Game = game;
             GameForm = (Form)Control.FromHandle(Game.Window.Handle);
+
+            WatchdogToken = new WatchdogToken(System.Threading.Thread.CurrentThread);
+
+            Profiler = new Profiler("Render");
             Profiler.SetThread();
+            Game.SetThreadLanguage();
 
             Game.Window.Title = "Open Rails";
             GraphicsDeviceManager = new GraphicsDeviceManager(game);
@@ -122,6 +127,8 @@ namespace ORTS.Processes
 
         internal void Start()
         {
+            Game.WatchdogProcess.Register(WatchdogToken);
+
             DisplaySize = new Point(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
             if (Game.Settings.ShaderModel == 0)
@@ -266,6 +273,7 @@ namespace ORTS.Processes
                 return;
 
             Profiler.Start();
+            WatchdogToken.Ping();
 
             // Sort-of hack to allow the NVIDIA PerfHud to display correctly.
             GraphicsDevice.RenderState.DepthBufferEnable = true;
@@ -326,6 +334,7 @@ namespace ORTS.Processes
 
         internal void Stop()
         {
+            Game.WatchdogProcess.Unregister(WatchdogToken);
         }
 
         static void SwapFrames(ref RenderFrame frame1, ref RenderFrame frame2)
