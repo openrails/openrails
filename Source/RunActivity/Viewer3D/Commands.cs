@@ -516,7 +516,8 @@ namespace ORTS.Viewer3D
 
         public override void Redo() {
             if( ToState ) {
-                Receiver.Train.SignalEvent(Event.SanderOn);
+                if (!Receiver.Sander)
+                    Receiver.Train.SignalEvent(Event.SanderOn);
             } else {
                 Receiver.Train.SignalEvent(Event.SanderOff);
             }
@@ -578,7 +579,15 @@ namespace ORTS.Viewer3D
         }
 
         public override void Redo() {
-            Receiver.SignalEvent(ToState ? Event.BellOn : Event.BellOff);
+            if (ToState)
+            {
+                if (!Receiver.Bell)
+                    Receiver.SignalEvent(Event.BellOn);
+            }
+            else
+            {
+                Receiver.SignalEvent(Event.BellOff);
+            }
             // Report();
         }
 
