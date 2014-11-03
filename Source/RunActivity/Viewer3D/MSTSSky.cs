@@ -33,9 +33,9 @@ namespace ORTS.Viewer3D
         Viewer viewer;
 
         // Sky dome constants
-        public static int skyRadius = 6000;  //MSTS radius from .env file  Todo:  Pull from .env file.
-        public const int skySides = 24;  //MSTS doesn't specify this, but we still need it.
-        public static int skyHeight; //Todo:  Pull from .env file.
+        public static int skyRadius = 6000;
+        public const int skySides = 24;
+        public static int skyHeight;
         public const short skyLevels = 6;
         public static bool IsNight = false;
     }
@@ -323,20 +323,15 @@ namespace ORTS.Viewer3D
 
         public MSTSSkyMesh(RenderProcess renderProcess)
         {
-            var tileFactor = 1;
-            if (MSTSSkyConstants.IsNight == true)
-                tileFactor = 8;
-            else
-                tileFactor = 1;
             // Initialize the vertex and point-index buffers
             vertexList = new VertexPositionNormalTexture[numVertices];
             triangleListIndices = new short[indexCount];
 
             // Sky dome
-            MSTSSkyDomeVertexList(0, mstsskyRadius, 1.0f, tileFactor);
+            MSTSSkyDomeVertexList(0, mstsskyRadius, 1.0f, 8.0f, 8.0f);
             MSTSSkyDomeTriangleList(0, 0);
             // Cloud dome
-            MSTSSkyDomeVertexList((numVertices - 4) / 2, mstsskyRadius - mstscloudDomeRadiusDiff, 0.4f, tileFactor);
+            MSTSSkyDomeVertexList((numVertices - 4) / 2, mstsskyRadius - mstscloudDomeRadiusDiff, 0.4f, 2.0f, 2.0f);
             MSTSSkyDomeTriangleList((short)((indexCount - 6) / 2), 1);
             // Moon quad
             MoonLists(numVertices - 5, indexCount - 6);//(144, 792);
@@ -389,7 +384,7 @@ namespace ORTS.Viewer3D
         /// <param name="index">The starting vertex number</param>
         /// <param name="radius">The radius of the dome</param>
         /// <param name="oblate">The amount the dome is flattened</param>
-        private void MSTSSkyDomeVertexList(int index, int radius, float oblate, float texturetiling)
+        private void MSTSSkyDomeVertexList(int index, int radius, float oblate, float tile_u, float tile_v)
         {
             int vertexIndex = index;
             int texDivisor = (oblate == 1.0f) ? mstsskyLevels : mstsskyLevels + 1;
@@ -408,9 +403,9 @@ namespace ORTS.Viewer3D
 
                     // UV coordinates - top overlay
                     float uvRadius;
-                    uvRadius = 0.5f - (float)(0.5f * (i - 1)) / texDivisor;
-                    float uv_u = 0.5f - ((float)Math.Cos(MathHelper.ToRadians((360 / mstsskySides) * (mstsskySides - j))) * uvRadius);
-                    float uv_v = 0.5f - ((float)Math.Sin(MathHelper.ToRadians((360 / mstsskySides) * (mstsskySides - j))) * uvRadius);
+                    uvRadius = (0.5f - (float)(0.5f * (i - 1)) / texDivisor);
+                    float uv_u = tile_u *(0.5f - ((float)Math.Cos(MathHelper.ToRadians((360 / mstsskySides) * (mstsskySides - j))) * uvRadius));
+                    float uv_v = tile_v * (0.5f - ((float)Math.Sin(MathHelper.ToRadians((360 / mstsskySides) * (mstsskySides - j))) * uvRadius));
 
                     // Store the position, texture coordinates and normal (normalized position vector) for the current vertex
                     vertexList[vertexIndex].Position = new Vector3(x, y, z);
@@ -556,8 +551,6 @@ namespace ORTS.Viewer3D
         List<IEnumerator<EffectPass>>ShaderPassesClouds = new List<IEnumerator<EffectPass>>();
 
 
-
-
         public MSTSSkyMaterial(Viewer viewer)
             : base(viewer, null)
         {
@@ -573,17 +566,22 @@ namespace ORTS.Viewer3D
                 for (int i = 0; i < Viewer.ENVFile.SkyLayers.Count; i++)
                 {
                     mstsSkyTexture[i] = Viewer.Simulator.RoutePath + @"\envfiles\textures\" + mstsskytexture[i].TextureName.ToString();
-                    if (i < 2)
+                    MSTSSkyTexture.Add(MSTS.Formats.ACEFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkyTexture[i]));
+                    if( i == 0 )
                     {
-                        MSTSSkyTexture.Add(MSTS.Formats.ACEFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkyTexture[i]));
+                        MSTSDayTexture = MSTSSkyTexture[i];
+                    }
+                    else if(mstsskytexture[i].Fadein_Begin_Time != null)
+                    {
+                        MSTSSkyStarTexture = MSTSSkyTexture[i];
                     }
                     else
                     {
                         MSTSSkyCloudTexture.Add(MSTS.Formats.ACEFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkyTexture[i]));
                     }
                 }
-                MSTSDayTexture = MSTSSkyTexture[0];
-                MSTSSkyStarTexture = MSTSSkyTexture[1];
+                
+                
             }
             else
             {
@@ -608,6 +606,8 @@ namespace ORTS.Viewer3D
 
             ShaderPassesSky = MSTSSkyShader.Techniques["Sky"].Passes.GetEnumerator();
             ShaderPassesMoon = MSTSSkyShader.Techniques["Moon"].Passes.GetEnumerator();
+
+
             for (int i = 0; i < Viewer.ENVFile.SkyLayers.Count - 2; i++)
             {
                 ShaderPassesClouds.Add(MSTSSkyShader.Techniques["Clouds"].Passes.GetEnumerator());
@@ -645,20 +645,69 @@ namespace ORTS.Viewer3D
             rs.DepthBufferWriteEnable = false;
             Matrix viewXNASkyProj = XNAViewMatrix * Camera.XNASkyProjection;
 
-            for (int i = 0; i < Viewer.ENVFile.SkyLayers.Count; i++)
+            MSTSSkyShader.CurrentTechnique = MSTSSkyShader.Techniques["Sky"];
+            Viewer.World.MSTSSky.MSTSSkyMesh.drawIndex = 1;
+
+            MSTSSkyShader.SetViewMatrix(ref XNAViewMatrix);
+            MSTSSkyShader.Begin();
+            ShaderPassesSky.Reset();
+            while (ShaderPassesSky.MoveNext())
+            {
+                ShaderPassesSky.Current.Begin();
+                foreach (var item in renderItems)
+                {
+                    Matrix wvp = item.XNAMatrix * viewXNASkyProj;
+                    MSTSSkyShader.SetMatrix(ref wvp);
+                    MSTSSkyShader.CommitChanges();
+                    item.RenderPrimitive.Draw(graphicsDevice);
+                }
+                ShaderPassesSky.Current.End();
+                MSTSSkyShader.End();
+            }
+            MSTSSkyShader.CurrentTechnique = MSTSSkyShader.Techniques["Moon"];
+            Viewer.World.MSTSSky.MSTSSkyMesh.drawIndex = 2;
+
+            rs.AlphaBlendEnable = true;
+            rs.CullMode = CullMode.CullClockwiseFace;
+            rs.DestinationBlend = Blend.InverseSourceAlpha;
+            rs.SourceBlend = Blend.SourceAlpha;
+
+            // Send the transform matrices to the shader
+            int mstsskyRadius = Viewer.World.MSTSSky.MSTSSkyMesh.mstsskyRadius;
+            int mstscloudRadiusDiff = Viewer.World.MSTSSky.MSTSSkyMesh.mstscloudDomeRadiusDiff;
+            XNAMoonMatrix = Matrix.CreateTranslation(Viewer.World.MSTSSky.mstsskylunarDirection * (mstsskyRadius));
+            Matrix XNAMoonMatrixView = XNAMoonMatrix * XNAViewMatrix;
+
+            MSTSSkyShader.Begin();
+            ShaderPassesMoon.Reset();
+            while (ShaderPassesMoon.MoveNext())
+            {
+                ShaderPassesMoon.Current.Begin();
+                foreach (var item in renderItems)
+                {
+                    Matrix wvp = item.XNAMatrix * XNAMoonMatrixView * Camera.XNASkyProjection;
+                    MSTSSkyShader.SetMatrix(ref wvp);
+                    MSTSSkyShader.CommitChanges();
+                    item.RenderPrimitive.Draw(graphicsDevice);
+                }
+                ShaderPassesMoon.Current.End();
+            }
+            MSTSSkyShader.End();
+
+            for (int i = 0; i < MSTSSkyCloudTexture.Count; i++)
                 if (i == 0)
                 {
-                    MSTSSkyShader.CurrentTechnique = MSTSSkyShader.Techniques["Sky"];
-                    Viewer.World.MSTSSky.MSTSSkyMesh.drawIndex = 1;
 
-                    Viewer.World.MSTSSky.MSTSSkyMesh.mstsskyRadius = Viewer.ENVFile.SkyLayers[i]._edge_radius;
+                    MSTSSkyShader.CurrentTechnique = MSTSSkyShader.Techniques["Clouds"];
+                    Viewer.World.MSTSSky.MSTSSkyMesh.drawIndex = 3;
 
-                    MSTSSkyShader.SetViewMatrix(ref XNAViewMatrix);
+                    rs.CullMode = CullMode.CullCounterClockwiseFace;
+
                     MSTSSkyShader.Begin();
-                    ShaderPassesSky.Reset();
-                    while (ShaderPassesSky.MoveNext())
+                    ShaderPassesClouds[0].Reset();
+                    while (ShaderPassesClouds[0].MoveNext())
                     {
-                        ShaderPassesSky.Current.Begin();
+                        ShaderPassesClouds[0].Current.Begin();
                         foreach (var item in renderItems)
                         {
                             Matrix wvp = item.XNAMatrix * viewXNASkyProj;
@@ -666,66 +715,12 @@ namespace ORTS.Viewer3D
                             MSTSSkyShader.CommitChanges();
                             item.RenderPrimitive.Draw(graphicsDevice);
                         }
-                        ShaderPassesSky.Current.End();
-                        MSTSSkyShader.End();
+                        ShaderPassesClouds[0].Current.End();
                     }
-                    if (i == 1)
-                    {
-                        MSTSSkyShader.CurrentTechnique = MSTSSkyShader.Techniques["Moon"];
-                        Viewer.World.MSTSSky.MSTSSkyMesh.drawIndex = 2;
+                    MSTSSkyShader.End();
 
-                        rs.AlphaBlendEnable = true;
-                        rs.CullMode = CullMode.CullClockwiseFace;
-                        rs.DestinationBlend = Blend.InverseSourceAlpha;
-                        rs.SourceBlend = Blend.SourceAlpha;
+                    rs.CullMode = CullMode.CullCounterClockwiseFace;
 
-                        // Send the transform matrices to the shader
-                        int mstsskyRadius = Viewer.World.MSTSSky.MSTSSkyMesh.mstsskyRadius;
-                        int mstscloudRadiusDiff = Viewer.World.MSTSSky.MSTSSkyMesh.mstscloudDomeRadiusDiff;
-                        XNAMoonMatrix = Matrix.CreateTranslation(Viewer.World.MSTSSky.mstsskylunarDirection * (mstsskyRadius));
-                        Matrix XNAMoonMatrixView = XNAMoonMatrix * XNAViewMatrix;
-
-                        MSTSSkyShader.Begin();
-                        ShaderPassesMoon.Reset();
-                        while (ShaderPassesMoon.MoveNext())
-                        {
-                            ShaderPassesMoon.Current.Begin();
-                            foreach (var item in renderItems)
-                            {
-                                Matrix wvp = item.XNAMatrix * XNAMoonMatrixView * Camera.XNASkyProjection;
-                                MSTSSkyShader.SetMatrix(ref wvp);
-                                MSTSSkyShader.CommitChanges();
-                                item.RenderPrimitive.Draw(graphicsDevice);
-                            }
-                            ShaderPassesMoon.Current.End();
-                        }
-                        MSTSSkyShader.End();
-                    }
-                    if (i >= 2)
-                    {
-                        MSTSSkyShader.CurrentTechnique = MSTSSkyShader.Techniques["Clouds"];
-                        Viewer.World.MSTSSky.MSTSSkyMesh.drawIndex = 3;
-
-                        rs.CullMode = CullMode.CullCounterClockwiseFace;
-
-                        MSTSSkyShader.Begin();
-                        ShaderPassesClouds[0].Reset();
-                        while (ShaderPassesClouds[0].MoveNext())
-                        {
-                            ShaderPassesClouds[0].Current.Begin();
-                            foreach (var item in renderItems)
-                            {
-                                Matrix wvp = item.XNAMatrix * viewXNASkyProj;
-                                MSTSSkyShader.SetMatrix(ref wvp);
-                                MSTSSkyShader.CommitChanges();
-                                item.RenderPrimitive.Draw(graphicsDevice);
-                            }
-                            ShaderPassesClouds[0].Current.End();
-                        }
-                        MSTSSkyShader.End();
-
-                        rs.CullMode = CullMode.CullCounterClockwiseFace;
-                    }
                 }
         }
 

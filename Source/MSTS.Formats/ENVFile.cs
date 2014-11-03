@@ -116,33 +116,33 @@ namespace MSTS.Formats
 
     public class ENVFileSkyLayer
     {
-
+        public string Fadein_Begin_Time;
+        public string Fadein_End_Time; 
         public string TextureName;
         public string TextureMode;
-        public int _edge_radius;
-        public int _edge_height;
+        public float TileX;
+        public float TileY;
+
 
         public ENVFileSkyLayer(STFReader stf)
         {
             stf.MustMatch("(");
-            stf.ParseBlock(new STFReader.TokenProcessor[] {
-                    new STFReader.TokenProcessor("world_sky_layer_edge", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
-                    new STFReader.TokenProcessor("world_sky_layer_edge_steps", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
-                        new STFReader.TokenProcessor("world_sky_layer_edge_step_height", ()=>{ stf.MustMatch("("); _edge_height = stf.ReadInt(null);  stf.ParseBlock(new STFReader.TokenProcessor[] {
-                            });}),
-                        new STFReader.TokenProcessor("world_sky_layer_edge_step_radius", ()=>{ stf.MustMatch("("); _edge_radius = stf.ReadInt(null);  stf.ParseBlock(new STFReader.TokenProcessor[] {
-                            });}),
-                    });}),
-                    });}),
+                stf.ParseBlock(new STFReader.TokenProcessor[] {
+                        new STFReader.TokenProcessor("world_sky_layer_fadein", ()=>{ stf.MustMatch("("); Fadein_Begin_Time = stf.ReadString(); Fadein_End_Time = stf.ReadString(); stf.SkipRestOfBlock();}),
                         new STFReader.TokenProcessor("world_anim_shader", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
-                        new STFReader.TokenProcessor("world_shader", ()=>{ stf.MustMatch("("); TextureMode = stf.ReadString(); stf.ParseBlock(new STFReader.TokenProcessor[] {
-                            new STFReader.TokenProcessor("terrain_texslots", ()=>{ stf.MustMatch("("); stf.ReadInt(null)/*Count*/; stf.ParseBlock(new STFReader.TokenProcessor[] {
-                                new STFReader.TokenProcessor("terrain_texslot", ()=>{ stf.MustMatch("("); TextureName = stf.ReadString(); stf.SkipRestOfBlock(); }),
-
-});}),
+                            new STFReader.TokenProcessor("world_anim_shader_frames", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
+                                new STFReader.TokenProcessor("world_anim_shader_frame", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
+                                    new STFReader.TokenProcessor("world_anim_shader_frame_uvtiles", ()=>{ stf.MustMatch("("); TileX = stf.ReadFloat(STFReader.UNITS.Any, 1.0f); TileY = stf.ReadFloat(STFReader.UNITS.Any, 1.0f); stf.ParseBlock(new STFReader.TokenProcessor[] {
+                                    });}),  
+                                });}),
                             });}),
-                    });}),
-                });
+                            new STFReader.TokenProcessor("world_shader", ()=>{ stf.MustMatch("("); TextureMode = stf.ReadString(); stf.ParseBlock(new STFReader.TokenProcessor[] {
+                                new STFReader.TokenProcessor("terrain_texslots", ()=>{ stf.MustMatch("("); stf.ReadInt(null)/*Count*/; stf.ParseBlock(new STFReader.TokenProcessor[] {
+                                    new STFReader.TokenProcessor("terrain_texslot", ()=>{ stf.MustMatch("("); TextureName = stf.ReadString(); stf.SkipRestOfBlock(); }),
+                                    });}),
+                                });}),
+                            });}),
+            });
 
         }
     }
