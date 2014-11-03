@@ -36,6 +36,7 @@ using System.IO;
 using MSTS.Formats;
 using ORTS.MultiPlayer;
 using ORTS.Scripting.Api;
+using ORTS.Processes;
 
 namespace ORTS
 {
@@ -57,7 +58,7 @@ namespace ORTS
         /// Creates a queue of AI trains in the order they should appear.
         /// At the moment AI trains are also created off scene so the rendering code will know about them.
         /// </summary>
-        public AI(Simulator simulator, double activityStartTime)
+        public AI(Simulator simulator, LoaderProcess loader, double activityStartTime)
         {
             Simulator = simulator;
 #if WITH_PATH_DEBUG
@@ -75,6 +76,8 @@ namespace ORTS
                 {
                     AITrain train = CreateAITrain(sd,
                     simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition.TrafficFile.TrafficDefinition);
+                    if (loader.Terminated)
+                        return;
                 }
             }
 

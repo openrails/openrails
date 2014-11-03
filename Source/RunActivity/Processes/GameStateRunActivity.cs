@@ -190,6 +190,8 @@ namespace ORTS.Processes
                 }
                 catch (Exception error)
                 {
+                    // Turn off the watchdog since we're going down.
+                    Game.WatchdogProcess.Stop();
                     Trace.WriteLine(new FatalException(error));
                     if (settings.ShowErrorDialogs)
                     {
@@ -278,7 +280,7 @@ namespace ORTS.Processes
                     break;
 
                 default:
-                    Simulator.Start();
+                    Simulator.Start(Game.LoaderProcess);
                     break;
             }
 
@@ -419,7 +421,7 @@ namespace ORTS.Processes
                 savedValues values = GetSavedValues(inf);
                 Acttype = values.acttype;
                 InitSimulator(settings, values.args, "Replay", values.acttype);
-                Simulator.Start();
+                Simulator.Start(Game.LoaderProcess);
                 Viewer = new Viewer(Simulator, Game);
             }
 
@@ -490,7 +492,7 @@ namespace ORTS.Processes
                     savedValues values = GetSavedValues(inf);
                     InitSimulator(settings, values.args, "Replay");
                 }
-                Simulator.Start();
+                Simulator.Start(Game.LoaderProcess);
                 Viewer = new Viewer(Simulator, Game);
             }
             else
@@ -548,7 +550,7 @@ namespace ORTS.Processes
             try
             {
                 InitSimulator(settings, args, "Test");
-                Simulator.Start();
+                Simulator.Start(Game.LoaderProcess);
                 Viewer = new Viewer(Simulator, Game);
                 Viewer.Log = new CommandLog(Viewer);
                 Game.ReplaceState(exitGameState);

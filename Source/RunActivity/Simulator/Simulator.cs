@@ -49,6 +49,7 @@ using System.Windows.Forms;
 using LibAE;
 using LibAE.Formats;
 using LibAE.Common;
+using ORTS.Processes;
 #endif
 
 namespace ORTS
@@ -246,12 +247,12 @@ namespace ORTS
             Weather = (WeatherType)int.Parse(weather);
         }
 
-        public void Start()
+        public void Start(LoaderProcess loader)
         {
             Signals = new Signals(this, SIGCFG);
             LevelCrossings = new LevelCrossings(this);
             Train playerTrain = InitializeTrains();
-            AI = new AI(this, ClockTime);
+            AI = new AI(this, loader, ClockTime);
             if (playerTrain != null)
             {
                 playerTrain.PostInit();  // place player train after pre-running of AI trains

@@ -217,6 +217,8 @@ namespace ORTS.Processes
         [CallOnThread("Sound")]
         public void ProcessReportError(Exception error)
         {
+            // Turn off the watchdog since we're going down.
+            WatchdogProcess.Stop();
             // Log the error first in case we're burning.
             Trace.WriteLine(new FatalException(error));
             // Stop the world!
