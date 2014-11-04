@@ -837,7 +837,7 @@ namespace ORTS
             MirrorOpen = !MirrorOpen;
             if (MirrorOpen) SignalEvent(Event.MirrorOpen); // hook for sound trigger
             else SignalEvent(Event.MirrorClose);
-            Simulator.Confirmer.Confirm(CabControl.Mirror, MirrorOpen ? CabSetting.On : CabSetting.Off);
+            if (Simulator.PlayerLocomotive == this) Simulator.Confirmer.Confirm(CabControl.Mirror, MirrorOpen ? CabSetting.On : CabSetting.Off);
         }
 
         public void FindTendersSteamLocomotive()

@@ -702,6 +702,7 @@ namespace ORTS.MultiPlayer
         int HeadLightCount;
         int DoorLeftCount;
         int DoorRightCount;
+        int MirrorsCount;
 
 		public void handleUserInput()
 		{
@@ -730,6 +731,8 @@ namespace ORTS.MultiPlayer
             if (UserInput.IsPressed(UserCommands.ControlDoorLeft)) Notify((new MSGEvent(GetUserName(), "DOORL", (++DoorLeftCount) % 2)).ToString());
 
             if (UserInput.IsPressed(UserCommands.ControlDoorRight)) Notify((new MSGEvent(GetUserName(), "DOORR", (++DoorRightCount) % 2)).ToString());
+
+            if (UserInput.IsPressed(UserCommands.ControlMirror)) Notify((new MSGEvent(GetUserName(), "MIRRORS", (++MirrorsCount) % 2)).ToString());
 
 			if (UserInput.IsPressed(UserCommands.ControlHeadlightIncrease))
 			{

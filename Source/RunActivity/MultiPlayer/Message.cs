@@ -1846,6 +1846,11 @@ namespace ORTS.MultiPlayer
                 if (t.LeadLocomotive != null) ((MSTSWagon)(t.LeadLocomotive)).ToggleDoorsRight();
                 MPManager.BroadCast(this.ToString()); //if the server, will broadcast
             }
+            else if (EventName == "MIRRORS")
+            {
+                if (t.LeadLocomotive != null) ((MSTSWagon)(t.LeadLocomotive)).ToggleMirrors();
+                MPManager.BroadCast(this.ToString()); //if the server, will broadcast
+            }
 			else if (EventName == "HEADLIGHT")
 			{
                 if (t.LeadLocomotive != null && EventState == 0) t.LeadLocomotive.SignalEvent(Event._HeadlightOff);
