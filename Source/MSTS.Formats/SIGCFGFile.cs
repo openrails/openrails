@@ -850,7 +850,7 @@ namespace MSTS.Formats
         public SignalShape(STFReader stf)
         {
             stf.MustMatch("(");
-            ShapeFileName = stf.ReadString().ToUpper();
+            ShapeFileName = Path.GetFileName(stf.ReadString()).ToUpper();
             Description = stf.ReadString();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("signalsubobjs", ()=>{ SignalSubObjs = ReadSignalSubObjects(stf); }),
