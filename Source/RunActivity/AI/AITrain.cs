@@ -4552,6 +4552,26 @@ namespace ORTS
 
        }
 
+              //================================================================================================//
+        /// <summary>
+        /// TestAbsDelay
+        /// Tests if Waiting point delay >=30000 and <4000; under certain conditions this means that
+        /// delay represents an absolute time of day, with format 3HHMM
+        /// </summary>
+        /// 
+        public void TestAbsDelay(ref int delay, int correctedTime)
+        {
+            if (Program.Simulator.TimetableMode || !Program.Simulator.Settings.ExtendedAIShunting) return;
+            if (delay < 30000 || delay >= 40000) return;
+            int hour = (delay / 100) % 100;
+            int minute = delay % 100;
+            int waitUntil = 60 * (minute + 60 * hour);
+            int latest = CompareTimes.LatestTime(waitUntil, correctedTime);
+            if (latest == waitUntil && waitUntil >= correctedTime) delay = waitUntil - correctedTime;
+            else if (latest == correctedTime) delay = 1; // put 1 second delay if waitUntil is already over
+            else delay = waitUntil - correctedTime + 3600 * 24; // we are over midnight here
+        }
+
         //================================================================================================//
         /// <summary>
         /// Remove train

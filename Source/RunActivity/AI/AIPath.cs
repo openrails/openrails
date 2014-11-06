@@ -398,7 +398,8 @@ namespace ORTS
             }
 
             WaitTimeS = (int)((tpn.pathFlags >> 16) & 0xffff); // get the AAAA part.
-            if (WaitTimeS >= 30000 && WaitTimeS < 40000)
+            // computations for absolute wait times are made within AITrain.cs
+/*            if (WaitTimeS >= 30000 && WaitTimeS < 40000)
             {
                 // real wait time. 
                 // waitTimeS (in decimal notation) = 3HHMM  (hours and minuts)
@@ -406,7 +407,7 @@ namespace ORTS
                 int minute = WaitTimeS % 100;
                 WaitUntil = 60 * (minute + 60 * hour);
                 WaitTimeS = 0;
-            }
+            }*/
             // computations are made within AITrain.cs
 /*            else if (WaitTimeS >= 40000 && WaitTimeS < 60000)
             {

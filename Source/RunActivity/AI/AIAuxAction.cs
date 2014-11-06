@@ -1566,6 +1566,8 @@ namespace ORTS
                 int correctedTime = presentTime;
                 // If delay between 40000 and 60000 an uncoupling is performed and delay is returned with the two lowest digits of the original one
                 aiTrain.TestUncouple( ref Delay);
+                // If delay between 30000 and 40000 it is considered an absolute delay in the form 3HHMM, where HH and MM are hour and minute where the delay ends
+                aiTrain.TestAbsDelay(ref Delay, correctedTime);
                 ActualDepart = correctedTime + Delay;
                 aiTrain.AuxActionsContain.CheckGenActions(this.GetType(), aiTrain.RearTDBTraveller.WorldLocation, Delay);
 
