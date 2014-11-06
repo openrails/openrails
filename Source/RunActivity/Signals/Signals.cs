@@ -10582,7 +10582,7 @@ namespace ORTS
 
             // get filename in Uppercase
 
-            SFileName = SignalWorldItem.FileName.ToUpperInvariant();
+            SFileName = Path.GetFileName(SignalWorldItem.FileName).ToUpperInvariant();
 
             // search defined shapes in SIGCFG to find signal definition
 
