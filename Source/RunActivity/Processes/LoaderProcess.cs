@@ -37,6 +37,7 @@ namespace ORTS.Processes
             Game = game;
             Thread = new Thread(LoaderThread);
             WatchdogToken = new WatchdogToken(Thread);
+            WatchdogToken.SpecialDispensationFactor = 6;
         }
 
         public void Start()
@@ -59,6 +60,21 @@ namespace ORTS.Processes
             }
         }
 
+        /// <summary>
+        /// Returns whether the loading process has been terminated, i.e. all loading should stop.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// All loading code should periodically (e.g. between loading each file) check this and exit as soon as it is
+        /// seen to be true.
+        /// </para>
+        /// <para>
+        /// Reading this property implicitly causes the <see cref="WatchdogToken"/> to be pinged, informing the
+        /// <see cref="WatchdogProcess"/> that the loader is still responsive. Therefore the remarks about the
+        /// <see cref="WatchdogToken.Ping()"/> method apply to this property regarding when it should and should not
+        /// be used.
+        /// </para>
+        /// </remarks>
         public bool Terminated
         {
             get

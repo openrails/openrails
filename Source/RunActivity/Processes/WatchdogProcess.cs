@@ -63,7 +63,7 @@ namespace ORTS.Processes
         /// <summary>
         /// Registers a new thread token for monitoring by the watchdog.
         /// </summary>
-        /// <param name="token"></param>
+        /// <param name="token">The token representing the thread to start monitoring.</param>
         public void Register(WatchdogToken token)
         {
             // We must do this elaborate routine because:
@@ -82,7 +82,7 @@ namespace ORTS.Processes
         /// <summary>
         /// Unregisters a thread token from monitoring by the watchdog.
         /// </summary>
-        /// <param name="token"></param>
+        /// <param name="token">The token representing the thread to stop monitoring.</param>
         public void Unregister(WatchdogToken token)
         {
             // We must do this elaborate routine because:
@@ -145,24 +145,41 @@ namespace ORTS.Processes
         }
     }
 
+    /// <summary>
+    /// A token which represents a single thread which can be monitored by the <see cref="WatchdogProcess"/> for responsiveness.
+    /// </summary>
     [DebuggerDisplay("WatchdogToken({Thread.Name})")]
     public class WatchdogToken
     {
-        const int MinimumLaxnessS = 2;
+        const int MinimumLaxnessS = 5;
         const int MaximumLaxnessS = 10;
 
         internal readonly Thread Thread;
 
-        int Counter { get { return _counter; } }
+        /// <summary>
+        /// Gets and sets a multiplier for how long a thread must stop responding before it is considered to have hung.
+        /// </summary>
+        public int SpecialDispensationFactor { get; set; }
 
+        /// <summary>
+        /// Returns the number of <see cref="Step"/> (scaled by <see cref="SpecialDispensationFactor"/>) since the thread last called <see cref="Ping"/>.
+        /// </summary>
+        internal int Counter { get { return _counter / SpecialDispensationFactor; } }
+
+        /// <summary>
+        /// Returns whether the thread this <see cref="WatchdogToken"/> represents is considered to be responding.
+        /// </summary>
         internal bool IsResponding
         {
             get
             {
-                return Counter <= MaximumLaxnessS;
+                return Counter < MaximumLaxnessS;
             }
         }
 
+        /// <summary>
+        /// Returns whether the thread this <see cref="WatchdogToken"/> represents is considered to be waiting (a subset of not responding).
+        /// </summary>
         internal bool IsWaiting
         {
             get
@@ -171,19 +188,63 @@ namespace ORTS.Processes
             }
         }
 
+        /// <summary>
+        /// Returns the list of <see cref="StackTrace"/> that have been collected so far.
+        /// </summary>
+        internal List<StackTrace> Stacks { get; private set; }
+
         // THREAD SAFETY:
         //   This field is modified on multiple threads; all such writes must be performed in a thread-safe,
         //   lock-free way, e.g. with the Interlocked class.
         int _counter;
 
-        internal List<StackTrace> Stacks { get; private set; }
-
+        /// <summary>
+        /// Creates a new token for watching when a <see cref="Thread"/> for not responding.
+        /// </summary>
+        /// <param name="thread"></param>
         public WatchdogToken(Thread thread)
         {
             Thread = thread;
+            SpecialDispensationFactor = 1;
             Stacks = new List<StackTrace>();
         }
 
+        /// <summary>
+        /// Calling this identifies that the thread is still making progress by resetting the <see cref="Counter"/>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This method should be called (directly or indirectly) whenever a thread makes significant progress, such as
+        /// when it is about to start processing the next file during loading. It must never be called inside a loop
+        /// which is not guaranteed to exit (such as a while-true loop). It may be called within a loop that has fixed,
+        /// known bounds (such as a typical for loop).
+        /// </para>
+        /// <para>
+        /// The requirements on when this should be or not be called are important: failure to call this (directly or
+        /// indirectly) during a long but guaranteed-to-terminate loop will cause unnecessary hang reports, and
+        /// calling this during a potentially infinite loop will result in hangs that are not reported.
+        /// </para>
+        /// <para>
+        /// When it doubt, and for processes which are expected to take considerable time, the
+        /// <see cref="SpecialDispensationFactor"/> may be used to temporarily grant the thread more time to work
+        /// before considering it to have stopped responding.
+        /// </para>
+        /// <example>
+        /// This examples shows how to temporarily grant some long-running code extra time to complete without giving
+        /// up on the ability to detect hangs.
+        /// <code>
+        /// void Test(WatchdogToken token) {
+        ///     // Increase available working time.
+        ///     token.SpecialDispensationFactor *= 10;
+        ///     
+        ///     // ... long-running process here ...
+        ///     
+        ///     // Reset available working time.
+        ///     token.SpecialDispensationFactor /= 10;
+        /// }
+        /// </code>
+        /// </example>
+        /// </remarks>
         public void Ping()
         {
             Interlocked.Exchange(ref _counter, 0);
