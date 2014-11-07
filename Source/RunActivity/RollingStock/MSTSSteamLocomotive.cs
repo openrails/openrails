@@ -81,6 +81,7 @@ namespace ORTS
         bool IsGearedSteamLoco = false; // Indicates that it is a geared locomotive
         bool IsFixGeared = false;
         bool IsSelectGeared = false; 
+        bool IsLocoSlip = false; 	// locomotive is slipping
 
         float PulseTracker;
         int NextPulse = 1;
@@ -364,6 +365,11 @@ namespace ORTS
         float SteamGearPosition = 0.0f; // Position of Gears if set
         float DisplayTractiveEffortLbsF; // Value of Tractive eefort to display in HUD
 
+       float TangentialCrankWheelForceLbf; 		// Tangential force on wheel
+       float StaticWheelFrictionForceLbf; 		// Static force on wheel due to adhesion	
+       float PistonForceLbf;    // Max force exerted by piston.
+       float FrictionCoeff; // Co-efficient of friction
+       float TangentialWheelTreadForceLbf; // Tangential force at the wheel tread.
 
   #endregion 
 
@@ -828,6 +834,14 @@ namespace ORTS
             }
 
             CylinderEfficiencyRate = MathHelper.Clamp(CylinderEfficiencyRate, 0.6f, 1.2f); // Clamp Cylinder Efficiency Rate to between 0.6 & 1.2
+
+          // If DrvWheelWeight is not in ENG file, then calculate from Factor of Adhesion(FoA) = DrvWheelWeight / Start (Max) Tractive Effort, assume FoA = 4.2
+
+            if (DrvWheelWeightKg == 0) // if DrvWheelWeightKg not in ENG file.
+            {
+                const float FactorofAdhesion = 4.2f; // Assume a typical factor of adhesion
+                DrvWheelWeightKg = Kg.FromLb(FactorofAdhesion * MaxTractiveEffortLbf); // calculate Drive wheel weight if not in ENG file
+            }  
 
             #endregion
 
@@ -2018,6 +2032,112 @@ namespace ORTS
                     DisplayTractiveEffortLbsF = CriticalSpeedTractiveEffortLbf;
                 }
             }
+
+#region - Experimental Steam Slip Monitor
+
+	// Based upon information presented in "Locomotive Operation" by Henderson
+	// At its simplest slip occurs when the wheel tangential force exceeds the static frictional force
+	// Static frictional force = weight on the locomotive driving wheels * frictional co-efficient
+	// Tangential force = Effective force (Interia + Piston force) * Tangential factor (sin (crank angle) + (crank radius / connecting rod length) * sin (crank angle) * cos (crank angle))
+	// Typically tangential force will be greater at starting then when the locomotive is at speed, as interia and reduce steam pressure will decrease the value. 
+    // Thus we will only consider slip impacts at start of the locomotive
+
+
+	// Assume set crank radius & connecting rod length 
+	float CrankRadiusFt = 1.08f;        // Assume crank and rod lengths to give a 1:10 ratio - a reasonable av for steam locomotives?
+	float ConnectRodLengthFt = 10.8f;
+
+	// Starting tangential force - at starting piston force is based upon cutoff pressure  & interia = 0
+	PistonForceLbf = Me2.ToIn2(Me2.FromFt2(CylinderPistonAreaFt2)) * InitialPressurePSI; // Piston force is equal to pressure in piston and piston area
+
+    // At starting Maximum tangential force occurs at the following crank angles:
+    // Backward - 45 deg & 135 deg, Forward - 135 deg & 45 deg. To calculate the maximum we only need to select one of these points
+    // To calculate total tangential force we need to calculate the left and right hand side of the locomotive, LHS & RHS will be 90 deg apart
+    float RadConvert = (float)Math.PI / 180.0f;  // Conversion of degs to radians
+    float CrankAngleLeft = RadConvert * 45.0f;	// Maximum tangential force occurs at a crank angle of 90 deg
+    float TangentialCrankForceFactorLeft = ((float)Math.Sin(CrankAngleLeft) + ((CrankRadiusFt / ConnectRodLengthFt) * (float)Math.Sin(CrankAngleLeft) * (float)Math.Cos(CrankAngleLeft)));
+
+   
+    float CrankAngleRight = RadConvert * 45.0f;	// Maximum tangential force occurs at a crank angle of 90 deg
+    float TangentialCrankForceFactorRight = ((float)Math.Sin(CrankAngleRight) + ((CrankRadiusFt / ConnectRodLengthFt) * (float)Math.Sin(CrankAngleRight) * (float)Math.Cos(CrankAngleRight)));
+
+    TangentialCrankWheelForceLbf = PistonForceLbf * TangentialCrankForceFactorLeft + PistonForceLbf * TangentialCrankForceFactorRight;
+
+    // Calculate internal resistance - IR = 3.8 * diameter of cylinder^2 * stroke * dia of drivers (all in inches)
+
+    float InternalResistance = 3.8f * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (Me.ToIn(WheelRadiusM) * 2.0f);
+
+//    Trace.TraceWarning("Internal Resist  {0} TangentialTread {1}", InternalResistance, TangentialWheelTreadForceLbf);
+
+     // To convert the force at the crank to the force at wheel tread = Crank Force * Cylinder Stroke / Diameter of Drive Wheel (inches) - internal friction should be deducted from this as well.
+
+    TangentialWheelTreadForceLbf = (TangentialCrankWheelForceLbf * Me.ToIn(CylinderStrokeM) / (Me.ToIn(WheelRadiusM) * 2.0f)) - InternalResistance;
+
+ //   TangentialWheelTreadForceLbf = (TangentialCrankWheelForceLbf * Me.ToIn(CylinderStrokeM) / (Me.ToIn(WheelRadiusM) * 2.0f));
+
+//   Trace.TraceWarning("Internal Resist  {0} TangentialTread {1}", InternalResistance, TangentialWheelTreadForceLbf);
+
+    // Vertical thrust of the connecting rod will reduce or increase the effect of the adhesive weight of the locomotive
+    // Vert Thrust = Piston Force * 3/4 * r/l * sin(crank angle)
+    float VerticalThrustFactorLeft = 3.0f / 4.0f * (CrankRadiusFt / ConnectRodLengthFt) * (float)Math.Sin(CrankAngleLeft);
+    float VerticalThrustFactorRight = 3.0f / 4.0f * (CrankRadiusFt / ConnectRodLengthFt) * (float)Math.Sin(CrankAngleRight);
+
+    float VerticalThrustForceLeft = PistonForceLbf * VerticalThrustFactorLeft;
+    float VerticalThrustForceRight = PistonForceLbf * VerticalThrustFactorRight;
+
+  // Determine weather conditions and friction coeff
+  // Typical coefficients of friction
+  // Sand ----  40% increase of friction coeff., sand on wet railes, tends to make adhesion as good as dry rails.
+  // Normal, wght per wheel > 10,000lbs   == 0.35
+  // Normal, wght per wheel < 10,000lbs   == 0.25
+  // Damp or frosty rails   == 0.20
+
+
+    if (Program.Simulator.Weather == WeatherType.Rain || Program.Simulator.Weather == WeatherType.Snow)
+  {
+    FrictionCoeff = 0.20f;  // Wet track
+  } 
+  else
+  {
+    FrictionCoeff = 0.35f;  // Dry track
+  }
+   if ( Sander )
+      {
+      FrictionCoeff = 0.4f;  // Sand track
+      }
+
+	// Static Friction Force - adhesive factor increased by vertical thrust when travelling forward, and reduced by vertical thrust when travelling backwards
+
+  if (Direction == Direction.Forward)
+  {
+      StaticWheelFrictionForceLbf = (Kg.ToLb(DrvWheelWeightKg) + VerticalThrustForceLeft + VerticalThrustForceRight) * FrictionCoeff;
+  }
+  else
+  {
+      StaticWheelFrictionForceLbf = (Kg.ToLb(DrvWheelWeightKg) - VerticalThrustForceLeft - VerticalThrustForceRight) * FrictionCoeff;
+  }
+
+    if (absSpeedMpS < 1.0)  // Test only when the locomotive is starting
+    {
+        if (TangentialWheelTreadForceLbf > StaticWheelFrictionForceLbf)
+        {
+            IsLocoSlip = true; 	// locomotive is slipping
+        }
+        else
+        {
+            IsLocoSlip = false; 	// locomotive is slipping
+        }
+    }
+    else
+    {
+        IsLocoSlip = false; 	// locomotive is slipping
+
+    }
+
+#endregion
+
+
+
             // Derate when priming is occurring.
             if (BoilerIsPriming)
                 MotiveForceN *= BoilerPrimingDeratingFactor;
@@ -2034,14 +2154,7 @@ namespace ORTS
         protected override float GetSteamLocoMechFrictN()
         {
             // Calculate steam locomotive mechanical friction value, ie 20 (or 98.0667 metric) x DrvWheelWeight x Valve Factor, Assume VF = 1
-            // If DrvWheelWeight is not in ENG file, then calculate from Factor of Adhesion(FoA) = DrvWheelWeight / Start (Max) Tractive Effort, assume FoA = 4.0
-
-            if (DrvWheelWeightKg == 0) // if DrvWheelWeightKg not in ENG file.
-            {
-                const float FactorofAdhesion = 4.0f; // Assume a typical factor of adhesion
-                DrvWheelWeightKg = Kg.FromLb(FactorofAdhesion * MaxTractiveEffortLbf); // calculate Drive wheel weight if not in ENG file
-            }  
-              
+                          
             const float MetricTonneFromKg = 1000.0f;    // Conversion factor to convert from kg to tonnes
             return 98.0667f * (DrvWheelWeightKg / MetricTonneFromKg);
         }
@@ -2519,6 +2632,7 @@ namespace ORTS
 
             status.AppendFormat("\n\t\t === Key Inputs === \t\t{0:N0} lb/h\n",
             pS.TopH(EvaporationLBpS));
+
             status.AppendFormat("Input:\tEvap\t{0:N0} ft^2\tGrate\t{1:N0} ft^2\tBoil.\t{2:N0} ft^3\tSup\t{3:N0} ft^2\tFuel Cal.\t{4:N0} btu/lb\n",
                 Me2.ToFt2(EvaporationAreaM2),
                 Me2.ToFt2(GrateAreaM2),
@@ -2528,11 +2642,13 @@ namespace ORTS
 
             status.AppendFormat("\n\t\t === Steam Production === \t\t{0:N0} lb/h\n",
             pS.TopH(EvaporationLBpS));
+
             status.AppendFormat("Boiler:\tPower\t{0:N0} bhp\tMass\t{1:N0} lb\tOut.\t{2:N0} lb/h\t\tBoiler Eff\t{3:N2}\n",
                 BoilerKW * BoilerKWtoBHP,
                 BoilerMassLB,
                 MaxBoilerOutputLBpH,
                 BoilerEfficiencyGrateAreaLBpFT2toX[(pS.TopH(Kg.ToLb(FuelBurnRateKGpS)) / Me2.ToFt2(GrateAreaM2))]);
+
             status.AppendFormat("Heat:\tIn\t{0:N0} btu\tOut\t{1:N0} btu\tSteam\t{2:N0} btu/lb\t\tWater\t{3:N0} btu/lb\tand\t{4:N0} btu/ft^3\t\tHeat\t{5:N0} btu\t\tMax\t{6:N0} btu\n",
                 BoilerHeatInBTUpS,
                 PreviousBoilerHeatOutBTUpS,
@@ -2541,6 +2657,7 @@ namespace ORTS
                 WaterHeatBTUpFT3,
                 BoilerHeatSmoothBTU.Value,
                 MaxBoilerHeatBTU);
+
             status.AppendFormat("Temp.:\tFlue\t{0:N0} F\tWater\t{1:N0} F\tS Ratio\t{2:N2}\t\tMaxSuper {3:N0} F\t\tCurSuper {4:N0} F",
                 C.ToF(C.FromK(FlueTempK)),
                 C.ToF(C.FromK(BoilerWaterTempK)),
@@ -2550,6 +2667,7 @@ namespace ORTS
 
             status.AppendFormat("\n\t\t === Steam Usage === \t\t{0:N0} lb/h\n",
                 pS.TopH(PreviousTotalSteamUsageLBpS));
+
             status.AppendFormat("Usage.:\tCyl.\t{0:N0} lb/h\tBlower\t{1:N0} lb/h\tRad.\t{2:N0} lb/h\tComp.\t{3:N0} lb/h\tSafety\t{4:N0} lb/h\tCock\t{5:N0} lb/h\tGen.\t{6:N0} lb/h\tStoke\t{7:N0} lb/h\n",
             pS.TopH(CylinderSteamUsageLBpS),
             pS.TopH(BlowerSteamUsageLBpS),
@@ -2559,6 +2677,7 @@ namespace ORTS
             pS.TopH(CylCockSteamUsageLBpS),
             pS.TopH(GeneratorSteamUsageLBpS),
             pS.TopH(StokerSteamUsageLBpS));
+
             status.AppendFormat("Press.:\tChest\t{0:N0} psi\tBack\t{1:N0} psi\tMEP\t{2:N0} psi\tComp\t{3:N0} psi\tExhaust\t{4:N0} psi\tSup Fact\t{5:N2}\tMax Safe\t{6:N0} lb/h ({7} x {8:N1})\n",
             SteamChestPressurePSI,
             BackPressurePSI,
@@ -2569,6 +2688,7 @@ namespace ORTS
             pS.TopH(MaxSafetyValveDischargeLbspS),
             NumSafetyValves,
             SafetyValveSizeIn);
+
             status.AppendFormat("Status.:\tSafety\t{0}\tPlug\t{1}\tPrime\t{2}\tBoil. Heat\t{3}\tSuper\t{4}\tGear\t{5}",
                 SafetyIsOn,
                 FusiblePlugIsBlown,
@@ -2585,6 +2705,7 @@ namespace ORTS
                 pS.TopH(Kg.ToLb(FuelFeedRateKGpS)),
                 pS.TopH(Kg.ToLb(FuelBurnRateKGpS)),
                 (pS.TopH(GrateCombustionRateLBpFt2)));
+
             status.AppendFormat("Injector:\tMax\t{0:N0} gal(uk)/h\t\t({1:N0}mm)\tInj. 1\t{2:N0} gal(uk)/h\t\ttemp\t{3:N0} F\t\tInj. 2\t{4:N0} gal(uk)/h\t\ttemp 2\t{5:N0} F\n",
                 pS.TopH(InjectorFlowRateLBpS) / WaterLBpUKG,
                 InjectorSize,
@@ -2592,11 +2713,13 @@ namespace ORTS
                 Injector1WaterDelTempF,
                 Injector2Fraction * pS.TopH(InjectorFlowRateLBpS) / WaterLBpUKG,
                 Injector2WaterDelTempF);
+
             status.AppendFormat("Tender:\tCoal\t{0:N0} lb\t{1:N0} %\tWater\t{2:N0} gal(uk)\t\t{3:F0} %\n",
                 Kg.ToLb(TenderCoalMassKG),
                 (TenderCoalMassKG / MaxTenderCoalMassKG) * 100,
                 TenderWaterVolumeUKG,
                 (TenderWaterVolumeUKG / (Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG)) * 100);
+
             status.AppendFormat("Status.:\tCoalOut\t{0}\t\tWaterOut\t{1}\tFireOut\t{2}\tStoker\t{3}\tBoost\t{4}",
                 CoalIsExhausted,
                 WaterIsExhausted,
@@ -2609,6 +2732,7 @@ namespace ORTS
                 MaxIndicatedHorsePowerHP,
                 IndicatedHorsePowerHP,
                 DrawbarHorsePowerHP);
+
             status.AppendFormat("Force:\tMax TE\t{0:N0}\tStart TE\t{1:N0} lbf\tTE\t{2:N0} lbf\tDraw\t{3:N0} lbf\tCritic\t{4:N0} lbf\tCrit Speed {5:N1} mph\n",
                 MaxTractiveEffortLbf,
                 N.ToLbf(StartTractiveEffortN),
@@ -2622,6 +2746,14 @@ namespace ORTS
                 SpeedFactor,
                 pS.TopM(DrvWheelRevRpS),
                 MotiveForceGearRatio);
+
+ 	status.AppendFormat("\n\t\t === Experimental - Slip Monitor === \n");
+    status.AppendFormat("Slip:\tPiston\t{0:N0}\tTang(c)\t{1:N0}lbf\tTang(t)\t{2:N0}lbf\tStatic\t{3:N0}lbf\tSlip\t{4}\n",
+                PistonForceLbf,
+                TangentialCrankWheelForceLbf,
+                TangentialWheelTreadForceLbf,
+                StaticWheelFrictionForceLbf,
+                IsLocoSlip);
 
             return status.ToString();
         }
