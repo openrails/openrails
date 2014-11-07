@@ -39,6 +39,7 @@ using ORTS.MultiPlayer;
 using ORTS.Viewer3D;
 using ORTS.Viewer3D.Popups;
 using ORTS.Formats;
+using ORTS.Processes;
 using ORTS;
 
 namespace ORTS
@@ -89,7 +90,7 @@ namespace ORTS
         /// </summary>
         /// <param name="arguments"></param>
         /// <returns>List of extracted Trains</returns>
-        public List<AITrain> ProcessTimetable(string[] arguments, ref Train reqPlayerTrain)
+        public List<AITrain> ProcessTimetable(string[] arguments, ref Train reqPlayerTrain, LoaderProcess loader)
         {
             List<AITrain> trainList = new List<AITrain>();
             List<TTTrainInfo> trainInfoList = new List<TTTrainInfo>();
@@ -113,14 +114,14 @@ namespace ORTS
 #endif
 
                 // convert to train info
-                indexcount = ConvertFileContents(fileContents, simulator.Signals, ref trainInfoList, indexcount, filePath);
+                indexcount = ConvertFileContents(fileContents, simulator.Signals, ref trainInfoList, indexcount, filePath, loader);
             }
 
             // read and pre-process routes
 
             Trace.Write(" TTROUTES:" + Paths.Count.ToString() + " ");
 
-            PreProcessRoutes();
+            PreProcessRoutes(loader);
 
             Trace.Write(" TTTRAINS:" + trainInfoList.Count.ToString() + " ");
 
@@ -134,7 +135,7 @@ namespace ORTS
             }
 
             // reduce trainlist using player train info and parameters
-            trainList = ReduceAITrains(trainInfoList, playerTrain, arguments);
+            trainList = ReduceAITrains(trainInfoList, playerTrain, arguments, loader);
 
             // set references (required to process commands)
             foreach (Train thisTrain in trainList)
@@ -213,7 +214,7 @@ namespace ORTS
         /// <param name="signalRef"></param>
         /// <param name="TDB"></param>
         /// <param name="trainInfoList"></param>
-        private int ConvertFileContents(TTContents fileContents, Signals signalRef, ref List<TTTrainInfo> trainInfoList, int indexcount, string filePath)
+        private int ConvertFileContents(TTContents fileContents, Signals signalRef, ref List<TTTrainInfo> trainInfoList, int indexcount, string filePath, LoaderProcess loader)
         {
             int consistRow = -1;
             int pathRow = -1;
@@ -478,6 +479,7 @@ namespace ORTS
                     }
 
                     trainInfo[iColumn].BuildTrain(fileContents.trainStrings, RowInfo, pathRow, consistRow, startRow, disposeRow, description, stationNames, this);
+                    if (loader.Terminated) ; // ping loader watchdog
                 }
             }
 
@@ -558,7 +560,7 @@ namespace ORTS
         /// <param name="allTrains"></param>
         /// <param name="playerTrain"></param>
         /// <param name="arguments"></param>
-        private List<AITrain> ReduceAITrains(List<TTTrainInfo> allTrains, TTTrainInfo playerTrain, string[] arguments)
+        private List<AITrain> ReduceAITrains(List<TTTrainInfo> allTrains, TTTrainInfo playerTrain, string[] arguments, LoaderProcess loader)
         {
             List<AITrain> trainList = new List<AITrain>();
 
@@ -583,6 +585,7 @@ namespace ORTS
 
                 // add AI train to output list
                 trainList.Add(reqTrain.AITrain);
+                if (loader.Terminated) ; // ping loader watchdog
             }
 
             // process dispose commands
@@ -592,6 +595,7 @@ namespace ORTS
                 {
                     reqTrain.ProcessDisposeInfo(ref trainList, playerTrain, simulator);
                 }
+                if (loader.Terminated) ; // ping loader watchdog
             }
 
             return (trainList);
@@ -705,7 +709,7 @@ namespace ORTS
         /// <summary>
         /// Pre-process all routes : read routes and convert to AIPath structure
         /// </summary>
-        public void PreProcessRoutes()
+        public void PreProcessRoutes(LoaderProcess loader)
         {
 
             // extract names
@@ -729,6 +733,7 @@ namespace ORTS
                 AIPath newPath = new AIPath(simulator.TDB, simulator.TSectionDat, thisRoute);
 #endif
                 Paths.Add(thisRoute, newPath);
+                if (loader.Terminated) ;  // ping loader watchdog
             }
         }
 
@@ -1362,6 +1367,7 @@ namespace ORTS
                 trainList.Add(formedTrain);
 
                 Train.TCSubpathRoute lastSubpath = rrtrain.TCRoute.TCRouteSubpaths[rrtrain.TCRoute.TCRouteSubpaths.Count - 1];
+                if (atStart) lastSubpath = rrtrain.TCRoute.TCRouteSubpaths[0]; // if runround at start use first subpath
                 bool reverseTrain = CheckFormedReverse(lastSubpath, formedTrain.TCRoute.TCRouteSubpaths[0]);
 
                 if (atStart)

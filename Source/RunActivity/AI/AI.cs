@@ -76,13 +76,13 @@ namespace ORTS
                 {
                     AITrain train = CreateAITrain(sd,
                     simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition.TrafficFile.TrafficDefinition);
-                    if (loader.Terminated)
+                    if (loader.Terminated) // ping loader watchdog
                         return;
                 }
             }
 
             // prerun trains
-            PrerunAI(-1, null);
+            PrerunAI(-1, null, loader);
 
             clockTime = Simulator.ClockTime;
             localTime = false;
@@ -90,7 +90,7 @@ namespace ORTS
 
         // constructor for Timetable trains
         // trains allready have a number - must not be changed!
-        public AI(Simulator simulator, List<AITrain> allTrains, double ClockTime, int playerTrainOriginalTrain, Train playerTrain)
+        public AI(Simulator simulator, List<AITrain> allTrains, double ClockTime, int playerTrainOriginalTrain, Train playerTrain, LoaderProcess loader)
         {
             Simulator = simulator;
 
@@ -125,7 +125,7 @@ namespace ORTS
             Simulator.NameDictionary.Clear();
 
             // prerun trains
-            PrerunAI(playerTrainOriginalTrain, playerTrain);
+            PrerunAI(playerTrainOriginalTrain, playerTrain, loader);
 
             clockTime = Simulator.ClockTime;
             localTime = false;
@@ -197,7 +197,7 @@ namespace ORTS
             }
         }
 
-        private void PrerunAI(int playerTrainOriginalTrain, Train playerTrain)
+        private void PrerunAI(int playerTrainOriginalTrain, Train playerTrain, LoaderProcess loader)
         {
             float firstAITime = StartList.GetNextTime();
             if (firstAITime > 0 && firstAITime < Simulator.ClockTime)
@@ -218,6 +218,7 @@ namespace ORTS
                     AIUpdate((float)(runTime - clockTime), PreUpdate);
                     Simulator.Signals.Update(true);
                     clockTime = runTime;
+                    if (loader.Terminated) return; // ping watchdog process
                 }
 
                 // prerun finished - check if train from which player train originates has run and is finished

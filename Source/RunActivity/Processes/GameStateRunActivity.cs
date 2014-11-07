@@ -276,7 +276,7 @@ namespace ORTS.Processes
             switch (acttype)
             {
                 case "timetable":
-                    Simulator.StartTimetable(args);
+                    Simulator.StartTimetable(args, Game.LoaderProcess);
                     break;
 
                 default:
@@ -371,7 +371,7 @@ namespace ORTS.Processes
                     var values = GetSavedValues(inf);
                     Acttype = values.acttype;
                     InitSimulator(settings, values.args, "Resume", values.acttype);
-                    Simulator.Restore(inf, values.initialTileX, values.initialTileZ);
+                    Simulator.Restore(inf, values.initialTileX, values.initialTileZ, Game.LoaderProcess);
                     Viewer = new Viewer(Simulator, Game);
                     Viewer.Restore(inf);
 
@@ -504,7 +504,7 @@ namespace ORTS.Processes
 
                     var values = GetSavedValues(inf);
                     InitSimulator(settings, values.args, "Resume", values.acttype);
-                    Simulator.Restore(inf, values.initialTileX, values.initialTileZ);
+                    Simulator.Restore(inf, values.initialTileX, values.initialTileZ, Game.LoaderProcess);
                     Viewer = new Viewer(Simulator, Game);
                     Viewer.Restore(inf);
                 }

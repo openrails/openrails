@@ -249,7 +249,7 @@ namespace ORTS
 
         public void Start(LoaderProcess loader)
         {
-            Signals = new Signals(this, SIGCFG);
+            Signals = new Signals(this, SIGCFG, loader);
             LevelCrossings = new LevelCrossings(this);
             Train playerTrain = InitializeTrains();
             AI = new AI(this, loader, ClockTime);
@@ -272,10 +272,10 @@ namespace ORTS
             }
         }
 
-        public void StartTimetable(string[] arguments)
+        public void StartTimetable(string[] arguments, LoaderProcess loader)
         {
             TimetableMode = true;
-            Signals = new Signals(this, SIGCFG);
+            Signals = new Signals(this, SIGCFG, loader);
             LevelCrossings = new LevelCrossings(this);
             Trains = new TrainList(this);
             PathName = String.Copy(arguments[1]);
@@ -283,10 +283,10 @@ namespace ORTS
             TimetableInfo TTinfo = new TimetableInfo(this);
 
             Train playerTrain = null;
-            List<AITrain> allTrains = TTinfo.ProcessTimetable(arguments, ref playerTrain);
+            List<AITrain> allTrains = TTinfo.ProcessTimetable(arguments, ref playerTrain, loader);
             Trains[0] = playerTrain;
 
-            AI = new AI(this, allTrains, ClockTime, playerTrain.FormedOf, playerTrain);
+            AI = new AI(this, allTrains, ClockTime, playerTrain.FormedOf, playerTrain, loader);
 
             Season = (SeasonType)int.Parse(arguments[3]);
             Weather = (WeatherType)int.Parse(arguments[4]);
@@ -319,7 +319,7 @@ namespace ORTS
             if (MPManager.IsMultiPlayer()) MPManager.Stop();
         }
 
-        public void Restore(BinaryReader inf, float initialTileX, float initialTileZ)
+        public void Restore(BinaryReader inf, float initialTileX, float initialTileZ, LoaderProcess loader)
         {
             ClockTime = inf.ReadDouble();
             Season = (SeasonType)inf.ReadInt32();
@@ -328,7 +328,7 @@ namespace ORTS
             InitialTileX = initialTileX;
             InitialTileZ = initialTileZ;
 
-            Signals = new Signals(this, SIGCFG, inf);
+            Signals = new Signals(this, SIGCFG, inf, loader);
             RestoreTrains(inf);
             LevelCrossings = new LevelCrossings(this);
             AI = new AI(this, inf);

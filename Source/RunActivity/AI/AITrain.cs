@@ -330,7 +330,7 @@ namespace ORTS
         {
 
 #if DEBUG_CHECKTRAIN
-            if (Number == 2043)
+            if (Number == 3889)
             {
                 CheckTrain = true;
             }
@@ -695,7 +695,7 @@ namespace ORTS
         public void AIUpdate(float elapsedClockSeconds, double clockTime, bool preUpdate)
         {
 #if DEBUG_CHECKTRAIN
-            if (Number == 2043)
+            if (Number == 3889)
             {
                 CheckTrain = true;
             }
@@ -1136,9 +1136,17 @@ namespace ORTS
             {
                 if (MovementState != AI_MOVEMENT_STATE.STATION_STOP && MovementState != AI_MOVEMENT_STATE.STOPPED)
                 {
-                    if (!Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility &&
-                        MovementState != AI_MOVEMENT_STATE.INIT_ACTION && MovementState != AI_MOVEMENT_STATE.HANDLE_ACTION && MovementState != AI_MOVEMENT_STATE.END_ACTION)
-                    MovementState = AI_MOVEMENT_STATE.FOLLOWING;  // start following
+                    if (Simulator.TimetableMode || !Simulator.Settings.EnhancedActCompatibility)
+                    {
+                        MovementState = AI_MOVEMENT_STATE.FOLLOWING;  // start following
+                    }
+                    else
+                    {
+                        if (MovementState != AI_MOVEMENT_STATE.INIT_ACTION && MovementState != AI_MOVEMENT_STATE.HANDLE_ACTION && MovementState != AI_MOVEMENT_STATE.END_ACTION)
+                        {
+                            MovementState = AI_MOVEMENT_STATE.FOLLOWING;  // start following
+                        }
+                    }
                 }
             }
             else if (EndAuthorityType[0] == END_AUTHORITY.RESERVED_SWITCH || EndAuthorityType[0] == END_AUTHORITY.LOOP)

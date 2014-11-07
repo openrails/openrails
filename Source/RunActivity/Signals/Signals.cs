@@ -38,6 +38,8 @@ using MSTS.Formats;
 using MSTS.Parsers;
 using ORTS.Common;
 using ORTS.Viewer3D.Popups;
+using ORTS.Processes;
+
 #if ACTIVITY_EDITOR
 using ORTS.Formats;
 using LibAE.Formats;
@@ -90,7 +92,7 @@ namespace ORTS
         /// Constructor
         ///
 
-        public Signals(Simulator simulator, SIGCFGFile sigcfg)
+        public Signals(Simulator simulator, SIGCFGFile sigcfg, LoaderProcess loader)
         {
 
 #if DEBUG_REPORTS
@@ -112,7 +114,7 @@ namespace ORTS
 
             // build list of signal world file information
 
-            BuildSignalWorld(simulator, sigcfg);
+            BuildSignalWorld(simulator, sigcfg, loader);
 
             // build list of signals in TDB file
 
@@ -278,8 +280,8 @@ namespace ORTS
         /// Overlay constructor for restore after saved game
         ///
 
-        public Signals(Simulator simulator, SIGCFGFile sigcfg, BinaryReader inf)
-            : this(simulator, sigcfg)
+        public Signals(Simulator simulator, SIGCFGFile sigcfg, BinaryReader inf, LoaderProcess loader)
+            : this(simulator, sigcfg, loader)
         {
             int signalIndex = inf.ReadInt32();
             while (signalIndex >= 0)
@@ -427,7 +429,7 @@ namespace ORTS
         /// Read all world files to get signal flags
         ///
 
-        private void BuildSignalWorld(Simulator simulator, SIGCFGFile sigcfg)
+        private void BuildSignalWorld(Simulator simulator, SIGCFGFile sigcfg, LoaderProcess loader)
         {
 
             // get all filesnames in World directory
@@ -441,6 +443,7 @@ namespace ORTS
 
             foreach (var fileName in Directory.GetFiles(WFilePath, "*.w"))
             {
+                if (loader.Terminated) return; // ping loader watchdog
                 // validate file name a little bit
 
                 if (Path.GetFileName(fileName).Length != 17)
