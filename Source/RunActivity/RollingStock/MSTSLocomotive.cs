@@ -424,7 +424,9 @@ namespace ORTS
                 return null;
 
             var cvfFile = new CVFFile(cvfFilePath, cvfBasePath);
-            var viewPoint = new ViewPoint();                    // Set up camera locations for the cab views
+            var viewPoint = new ViewPoint();
+            if (cvfFile.Locations.Count <= 0) return null; //check for Protrain's dummy cab
+            // Set up camera locations for the cab views
             for (int i = 0; i < cvfFile.Locations.Count; ++i)
             {
                 if (i >= cvfFile.Locations.Count || i >= cvfFile.Directions.Count)
