@@ -67,14 +67,19 @@ namespace ORTS
 #if ACTIVITY_EDITOR
             orRouteConfig = orRouteConf;
 #endif
-
+            bool fatalerror = false;
+            if (patFile.TrPathNodes.Count <= 0)
+            {
+                fatalerror = true;
+                Nodes = null;
+                return;
+            }
             foreach (TrPathNode tpn in patFile.TrPathNodes)
                 Nodes.Add(new AIPathNode(tpn, patFile.TrackPDPs[(int)tpn.fromPDP], TrackDB));
             FirstNode = Nodes[0];
             //LastVisitedNode = FirstNode;            
 
             // Connect the various nodes to each other
-            bool fatalerror = false;
             for (int i = 0; i < Nodes.Count; i++)
             {
                 AIPathNode node = Nodes[i];

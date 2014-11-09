@@ -27,6 +27,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using MSTS.Parsers;
 
@@ -183,8 +184,9 @@ TrackPath (
                     });}),
                 });
             }
-            catch
+            catch (Exception error)
             {
+                Trace.TraceWarning(error.Message);
             }
         }
 
