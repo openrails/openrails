@@ -754,6 +754,11 @@ namespace ORTS
                         AIActionItem actionItem = new AIActionItem(inf, signalRef);
                         requiredActions.InsertAction(actionItem);
                         break;
+                    case 4:
+                         AuxActionItem auxAction = new AuxActionItem(inf, signalRef);
+                        requiredActions.InsertAction(auxAction);
+                        Trace.TraceWarning("DistanceTravelledItem type 4 restored as AuxActionItem");
+                        break;
                     default:
                         Trace.TraceWarning("Unknown type of DistanceTravelledItem (type {0}",
                                 actionType.ToString());
@@ -13284,6 +13289,46 @@ namespace ORTS
                         {
                             while (reversal > 0)
                             {
+                                //<CSComment> following block can be uncommented if it is preferred to leave in the path the double reverse points
+/*                                if (!Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility && sublist > 0 &&
+                                    TCRouteSubpaths[sublist].Count <= 0)
+                                {
+                                    // check if preceding subpath has no sections, and in such case insert the one it should have,
+                                    // taking the last section from the preceding subpath
+                                    thisNode = aiPath.TrackDB.TrackNodes[trackNodeIndex];
+                                    if (currentDir == 0)
+                                    {
+                                        for (int iTC = 0; iTC < thisNode.TCCrossReference.Count; iTC++)
+                                        {
+                                            if (thisNode.TCCrossReference[iTC].Index == RoughReversalInfos[sublist].ReversalSectionIndex)
+                                            {
+                                                TCRouteElement thisElement =
+                                                     new TCRouteElement(thisNode, iTC, currentDir, orgSignals);
+                                                thisSubpath.Add(thisElement);
+                                                //  SPA:    Station:    A adapter, 
+                                                SetStationReference(TCRouteSubpaths, thisElement.TCSectionIndex, orgSignals);
+                                                break;
+                                            }
+                                        }
+                                        newDir = thisNode.TrPins[currentDir].Direction;
+
+                                    }
+                                    else
+                                    {
+                                        for (int iTC = thisNode.TCCrossReference.Count - 1; iTC >= 0; iTC--)
+                                        {
+                                            if (thisNode.TCCrossReference[iTC].Index == RoughReversalInfos[sublist].ReversalSectionIndex)
+                                            {
+                                                TCRouteElement thisElement =
+                                                   new TCRouteElement(thisNode, iTC, currentDir, orgSignals);
+                                                thisSubpath.Add(thisElement);
+                                                SetStationReference(TCRouteSubpaths, thisElement.TCSectionIndex, orgSignals);
+                                                break;
+                                            }
+                                        }
+                                        newDir = thisNode.TrPins[currentDir].Direction;
+                                    }
+                                }*/
                                 sublist++;
                                 thisSubpath = new TCSubpathRoute();
                                 TCRouteSubpaths.Add(thisSubpath);
@@ -13691,13 +13736,10 @@ namespace ORTS
                 // calculate new indices
                 for (int iSub = 0; iSub <= orgCount - 1; iSub++) //<CSComment> maybe comparison only with less than?
                 {
+                    newIndices.Add(iSub, iSub - removed);
                     if (subRemoved.Contains(iSub))
                     {
                         removed++;
-                    }
-                    else
-                    {
-                        newIndices.Add(iSub, iSub - removed);
                     }
                 }
 
@@ -13710,16 +13752,13 @@ namespace ORTS
                     }
 
                     // if remove, update indices of alternative paths
-                    foreach (KeyValuePair<int, int[]> thisAltPath in AlternativeRoutes)
+                    Dictionary<int, int[]> copyAltRoutes = AlternativeRoutes;
+                    AlternativeRoutes.Clear();
+                    foreach (KeyValuePair<int, int[]> thisAltPath in copyAltRoutes)
                     {
-                        TCSubpathRoute thisAltpath = new TCSubpathRoute();
-
-                        int startSection = thisAltPath.Key;
                         int[] pathDetails = thisAltPath.Value;
-                        int sublistRef = pathDetails[0];
-
-                        int newSublistRef = newIndices[sublistRef];
-                        pathDetails[0] = newSublistRef;
+                        pathDetails[0] = newIndices[pathDetails[0]];
+                        AlternativeRoutes.Add(thisAltPath.Key, pathDetails);
                     }
 
                     // if remove, update indices in station xref

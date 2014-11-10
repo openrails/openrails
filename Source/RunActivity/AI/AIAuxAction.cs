@@ -1407,6 +1407,16 @@ namespace ORTS
             ActionRef = thisItem;
         }
 
+        //================================================================================================//
+        //
+        // Restore
+        //
+
+        public AuxActionItem(BinaryReader inf, Signals signalRef)
+            : base(inf, signalRef)
+        {
+        }
+
         public virtual bool CanActivate(Train thisTrain, float SpeedMpS, bool reschedule)
         {
             return false;
