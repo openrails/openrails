@@ -222,8 +222,8 @@ namespace ORTS
         float MaxTenderWaterMassKG;         // Maximum read from Eng file
         float TenderCoalMassKG              // Decreased by firing and increased by refilling
         {
-            get { return FuelController.CurrentValue * Kg.ToLb(MaxTenderCoalMassKG); }
-            set { FuelController.CurrentValue = value / Kg.ToLb(MaxTenderCoalMassKG); }
+            get { return FuelController.CurrentValue * MaxTenderCoalMassKG; }
+            set { FuelController.CurrentValue = value / MaxTenderCoalMassKG; }
         }
         float TenderWaterVolumeUKG          // Decreased by running injectors and increased by refilling
         {
