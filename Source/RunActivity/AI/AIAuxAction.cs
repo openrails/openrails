@@ -1567,7 +1567,7 @@ namespace ORTS
                 // If delay between 40000 and 60000 an uncoupling is performed and delay is returned with the two lowest digits of the original one
                 aiTrain.TestUncouple( ref Delay);
                 // If delay between 30000 and 40000 it is considered an absolute delay in the form 3HHMM, where HH and MM are hour and minute where the delay ends
-                aiTrain.TestAbsDelay(ref Delay, correctedTime);
+                thisTrain.TestAbsDelay(ref Delay, correctedTime);
                 ActualDepart = correctedTime + Delay;
                 aiTrain.AuxActionsContain.CheckGenActions(this.GetType(), aiTrain.RearTDBTraveller.WorldLocation, Delay);
 
@@ -2472,7 +2472,10 @@ namespace ORTS
 
         public override AITrain.AI_MOVEMENT_STATE InitAction(Train thisTrain, int presentTime, float elapsedClockSeconds, AITrain.AI_MOVEMENT_STATE movementState)
         {
-            ActualDepart = presentTime + ((AIActSigDelegateRef)ActionRef).Delay;
+            int delay = ((AIActSigDelegateRef)ActionRef).Delay;
+            // If delay between 30000 and 40000 it is considered an absolute delay in the form 3HHMM, where HH and MM are hour and minute where the delay ends
+            thisTrain.TestAbsDelay(ref delay, presentTime);
+            ActualDepart = presentTime + delay;
 #if WITH_PATH_DEBUG
             File.AppendAllText(@"C:\temp\checkpath.txt", "SigDelegate, init action for train " + thisTrain.Number + " at " + 
                 presentTime + "(HANDLE_ACTION)\n");
