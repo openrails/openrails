@@ -2826,7 +2826,6 @@ namespace ORTS
                     }
                     else if (actualSpeedMpS < 0 && thisObject.speed_reset == 0)
                     {
-                        validSpeedLimitMpS = (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;
                         float newSpeedMpS1 = Math.Min(validSpeedSignalMpS, validSpeedLimitMpS);
 
                         if (newSpeedMpS1 != validSpeedMpS)
