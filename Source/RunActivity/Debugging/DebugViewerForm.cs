@@ -314,7 +314,7 @@ namespace ORTS.Debugging
 					  if (si.SigObj >=0  && si.SigObj < simulator.Signals.SignalObjects.Length)
 					  {
 						  SignalObject s = simulator.Signals.SignalObjects[si.SigObj];
-						  if (s.isSignal && s.isSignalNormal()) signals.Add(new SignalWidget(si, s));
+						  if (s != null && s.isSignal && s.isSignalNormal()) signals.Add(new SignalWidget(si, s));
 					  }
 				  }
 

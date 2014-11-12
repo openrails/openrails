@@ -1919,10 +1919,28 @@ namespace ORTS
 
             if (thisItem.ItemType == TrItem.trItemType.trSIGNAL)
             {
+                if (!Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility)
+                {
+                    try
+                    {
+                        SignalItem tryItem = (SignalItem)thisItem;
+                    }
+                    catch (Exception error)
+                    {
+                        Trace.TraceWarning(error.Message);
+                        Trace.TraceWarning("Signal item not consistent with signal database");
+                        return newLastDistance;
+                    }
+                }
                 SignalItem sigItem = (SignalItem)thisItem;
                 if (sigItem.SigObj >= 0)
                 {
                     SignalObject thisSignal = SignalObjects[sigItem.SigObj];
+                    if (!Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility && thisSignal == null)
+                {
+                    Trace.TraceWarning("Signal item with TrItemID = {0} not consistent with signal database", sigItem.TrItemId);
+                    return newLastDistance;
+                }
                     float signalDistance = thisSignal.DistanceTo(TDBTrav);
                     if (thisSignal.direction == 1)
                     {
