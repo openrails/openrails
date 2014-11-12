@@ -19,7 +19,7 @@
 					This is a list of all the code changes included in the latest Supporters' Download. Those since the previous Supporters' Download are <span style="color: blue;">highlighted</span>.
 				</p>
 
-				<ul>
+				<ul class="revisions">
 					<?php include "../../scripts/experimental_changelog.html" ?>
 				</ul>
 
