@@ -53,6 +53,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssertWarnings.cs" />
     <Compile Include="DynamicPrecisionEqualityComparer.cs" />
     <Compile Include="Msts.Parsers\StfReader.cs" />
     <Compile Include="Orts.Common\Conversions.cs" />

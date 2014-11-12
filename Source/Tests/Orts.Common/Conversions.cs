@@ -88,7 +88,7 @@ namespace Tests.Orts.Common
             Assert.Equal(1.2f, S.FromH(S.ToH(1.2f)), RequestedAccuracy);
 
             Assert.Equal(1.2f, C.FromF(C.ToF(1.2f)), RequestedAccuracy);
-            Assert.Equal(1.2f, C.FromK(C.ToK(1.2f)), RequestedAccuracy);
+            Assert.Equal(12f, C.FromK(C.ToK(12f)), RequestedAccuracy); // we loose accuracy because of the large 273.15
         }
 
         [Fact]
