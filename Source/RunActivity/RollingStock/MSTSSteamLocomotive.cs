@@ -2050,39 +2050,56 @@ namespace ORTS
 	// Starting tangential force - at starting piston force is based upon cutoff pressure  & interia = 0
 	PistonForceLbf = Me2.ToIn2(Me2.FromFt2(CylinderPistonAreaFt2)) * InitialPressurePSI; // Piston force is equal to pressure in piston and piston area
 
-    // At starting Maximum tangential force occurs at the following crank angles:
+    // At starting, for 2 cylinder locomotive, maximum tangential force occurs at the following crank angles:
     // Backward - 45 deg & 135 deg, Forward - 135 deg & 45 deg. To calculate the maximum we only need to select one of these points
     // To calculate total tangential force we need to calculate the left and right hand side of the locomotive, LHS & RHS will be 90 deg apart
     float RadConvert = (float)Math.PI / 180.0f;  // Conversion of degs to radians
-    float CrankAngleLeft = RadConvert * 45.0f;	// Maximum tangential force occurs at a crank angle of 90 deg
-    float TangentialCrankForceFactorLeft = ((float)Math.Sin(CrankAngleLeft) + ((CrankRadiusFt / ConnectRodLengthFt) * (float)Math.Sin(CrankAngleLeft) * (float)Math.Cos(CrankAngleLeft)));
+    float CrankAngleLeft;
+    float CrankAngleRight;
+    float CrankAngleMiddle;
+    float TangentialCrankForceFactorLeft;
+    float TangentialCrankForceFactorMiddle = 0.0f;
+    float TangentialCrankForceFactorRight;
 
-   
-    float CrankAngleRight = RadConvert * 45.0f;	// Maximum tangential force occurs at a crank angle of 90 deg
-    float TangentialCrankForceFactorRight = ((float)Math.Sin(CrankAngleRight) + ((CrankRadiusFt / ConnectRodLengthFt) * (float)Math.Sin(CrankAngleRight) * (float)Math.Cos(CrankAngleRight)));
+            
+    if (NumCylinders == 3.0)
+    {
+     CrankAngleLeft = RadConvert * 30.0f;	// For 3 Cylinder locomotive, cranks are 120 deg apart, and maximum occurs @ 
+     CrankAngleMiddle = RadConvert * 150.0f;	// 30, 150, 270 deg crank angles
+     CrankAngleRight = RadConvert * 270.0f;
+     TangentialCrankForceFactorLeft = ((float)Math.Sin(CrankAngleLeft) + ((CrankRadiusFt / ConnectRodLengthFt) * (float)Math.Sin(CrankAngleLeft) * (float)Math.Cos(CrankAngleLeft)));
+     TangentialCrankForceFactorMiddle = ((float)Math.Sin(CrankAngleMiddle) + ((CrankRadiusFt / ConnectRodLengthFt) * (float)Math.Sin(CrankAngleMiddle) * (float)Math.Cos(CrankAngleMiddle)));
+     TangentialCrankForceFactorRight = ((float)Math.Sin(CrankAngleRight) + ((CrankRadiusFt / ConnectRodLengthFt) * (float)Math.Sin(CrankAngleRight) * (float)Math.Cos(CrankAngleRight)));
+    }
+    else
+    {
+    CrankAngleLeft = RadConvert * 315.0f;	// For 2 Cylinder locomotive, cranks are 90 deg apart, and maximum occurs @ 
+    CrankAngleRight = RadConvert * 45.0f;	// 315 & 45 deg crank angles
+    TangentialCrankForceFactorLeft = ((float)Math.Sin(CrankAngleLeft) + ((CrankRadiusFt / ConnectRodLengthFt) * (float)Math.Sin(CrankAngleLeft) * (float)Math.Cos(CrankAngleLeft)));
+    TangentialCrankForceFactorRight = ((float)Math.Sin(CrankAngleRight) + ((CrankRadiusFt / ConnectRodLengthFt) * (float)Math.Sin(CrankAngleRight) * (float)Math.Cos(CrankAngleRight)));
+    TangentialCrankForceFactorMiddle = 0.0f;
+    }
 
-    TangentialCrankWheelForceLbf = PistonForceLbf * TangentialCrankForceFactorLeft + PistonForceLbf * TangentialCrankForceFactorRight;
+
+    TangentialCrankWheelForceLbf = Math.Abs(PistonForceLbf * TangentialCrankForceFactorLeft) + Math.Abs(PistonForceLbf * TangentialCrankForceFactorMiddle) + Math.Abs(PistonForceLbf * TangentialCrankForceFactorRight);
 
     // Calculate internal resistance - IR = 3.8 * diameter of cylinder^2 * stroke * dia of drivers (all in inches)
 
-    float InternalResistance = 3.8f * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (Me.ToIn(WheelRadiusM) * 2.0f);
-
-//    Trace.TraceWarning("Internal Resist  {0} TangentialTread {1}", InternalResistance, TangentialWheelTreadForceLbf);
+    float InternalResistance = 3.8f * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (Me.ToIn(DriverWheelRadiusM) * 2.0f);
 
      // To convert the force at the crank to the force at wheel tread = Crank Force * Cylinder Stroke / Diameter of Drive Wheel (inches) - internal friction should be deducted from this as well.
 
-    TangentialWheelTreadForceLbf = (TangentialCrankWheelForceLbf * Me.ToIn(CylinderStrokeM) / (Me.ToIn(WheelRadiusM) * 2.0f)) - InternalResistance;
-
- //   TangentialWheelTreadForceLbf = (TangentialCrankWheelForceLbf * Me.ToIn(CylinderStrokeM) / (Me.ToIn(WheelRadiusM) * 2.0f));
-
-//   Trace.TraceWarning("Internal Resist  {0} TangentialTread {1}", InternalResistance, TangentialWheelTreadForceLbf);
+    TangentialWheelTreadForceLbf = (TangentialCrankWheelForceLbf * Me.ToIn(CylinderStrokeM) / (Me.ToIn(DriverWheelRadiusM) * 2.0f)) - InternalResistance;
 
     // Vertical thrust of the connecting rod will reduce or increase the effect of the adhesive weight of the locomotive
     // Vert Thrust = Piston Force * 3/4 * r/l * sin(crank angle)
     float VerticalThrustFactorLeft = 3.0f / 4.0f * (CrankRadiusFt / ConnectRodLengthFt) * (float)Math.Sin(CrankAngleLeft);
+    float VerticalThrustFactorMiddle = 3.0f / 4.0f * (CrankRadiusFt / ConnectRodLengthFt) * (float)Math.Sin(CrankAngleLeft);
     float VerticalThrustFactorRight = 3.0f / 4.0f * (CrankRadiusFt / ConnectRodLengthFt) * (float)Math.Sin(CrankAngleRight);
+    float VerticalThrustForceMiddle = 0.0f;
 
     float VerticalThrustForceLeft = PistonForceLbf * VerticalThrustFactorLeft;
+    VerticalThrustForceMiddle = PistonForceLbf * VerticalThrustFactorMiddle;
     float VerticalThrustForceRight = PistonForceLbf * VerticalThrustFactorRight;
 
   // Determine weather conditions and friction coeff
@@ -2091,15 +2108,32 @@ namespace ORTS
   // Normal, wght per wheel > 10,000lbs   == 0.35
   // Normal, wght per wheel < 10,000lbs   == 0.25
   // Damp or frosty rails   == 0.20
+  //
+  // Dynamic (kinetic) friction = 0.242  // dynamic friction at slow speed
 
+   
 
     if (Program.Simulator.Weather == WeatherType.Rain || Program.Simulator.Weather == WeatherType.Snow)
   {
-    FrictionCoeff = 0.20f;  // Wet track
+    if (IsLocoSlip)   // If loco is slipping then coeff of friction will be decreased below static value.
+    {
+    FrictionCoeff = 0.20f;  // Wet track - dynamic friction
+    }
+    else
+    {
+    FrictionCoeff = 0.20f;  // Wet track - static friction
+    }
   } 
   else
   {
-    FrictionCoeff = 0.35f;  // Dry track
+    if (IsLocoSlip)    // If loco is slipping then coeff of friction will be decreased below static value.
+    {
+    FrictionCoeff = 0.242f;  // Dry track - dynamic friction
+    }
+    else
+    {
+    FrictionCoeff = 0.35f;  // Dry track - static friction
+    }
   }
    if ( Sander )
       {
@@ -2110,22 +2144,28 @@ namespace ORTS
 
   if (Direction == Direction.Forward)
   {
-      StaticWheelFrictionForceLbf = (Kg.ToLb(DrvWheelWeightKg) + VerticalThrustForceLeft + VerticalThrustForceRight) * FrictionCoeff;
+      StaticWheelFrictionForceLbf = (Kg.ToLb(DrvWheelWeightKg) + Math.Abs(VerticalThrustForceLeft) + Math.Abs(VerticalThrustForceRight)) * FrictionCoeff;
   }
   else
   {
-      StaticWheelFrictionForceLbf = (Kg.ToLb(DrvWheelWeightKg) - VerticalThrustForceLeft - VerticalThrustForceRight) * FrictionCoeff;
+      StaticWheelFrictionForceLbf = (Kg.ToLb(DrvWheelWeightKg) - Math.Abs(VerticalThrustForceLeft) - Math.Abs(VerticalThrustForceRight)) * FrictionCoeff;
   }
 
     if (absSpeedMpS < 1.0)  // Test only when the locomotive is starting
     {
-        if (TangentialWheelTreadForceLbf > StaticWheelFrictionForceLbf)
+        if (!IsLocoSlip)
         {
-            IsLocoSlip = true; 	// locomotive is slipping
+            if (TangentialWheelTreadForceLbf > StaticWheelFrictionForceLbf)
+            {
+                IsLocoSlip = true; 	// locomotive is slipping
+            }
         }
-        else
+        else if (IsLocoSlip)
         {
-            IsLocoSlip = false; 	// locomotive is slipping
+            if (TangentialWheelTreadForceLbf < StaticWheelFrictionForceLbf)
+            {
+                IsLocoSlip = false; 	// locomotive is slipping
+            }
         }
     }
     else
@@ -2748,11 +2788,12 @@ namespace ORTS
                 MotiveForceGearRatio);
 
  	status.AppendFormat("\n\t\t === Experimental - Slip Monitor === \n");
-    status.AppendFormat("Slip:\tPiston\t{0:N0}\tTang(c)\t{1:N0}lbf\tTang(t)\t{2:N0}lbf\tStatic\t{3:N0}lbf\tSlip\t{4}\n",
+    status.AppendFormat("Slip:\tPiston\t{0:N0}\tTang(c)\t{1:N0}lbf\tTang(t)\t{2:N0}lbf\tStatic\t{3:N0}lbf\tCoeff\t{4:N2}\tSlip\t{5}\n",
                 PistonForceLbf,
                 TangentialCrankWheelForceLbf,
                 TangentialWheelTreadForceLbf,
                 StaticWheelFrictionForceLbf,
+                FrictionCoeff,
                 IsLocoSlip);
 
             return status.ToString();
