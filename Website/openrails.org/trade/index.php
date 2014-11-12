@@ -52,6 +52,13 @@ These vendors sell or distribute products suitable for MSTS:
   <li><a href="http://www.mapleleaftracks.com" target="_blank">Maple Leaf Tracks</a> - Canada</li>
   <li><a href="http://www.uktrainsim.com" target="_blank">UKTrainSim</a> - UK</li>
 </ul>
+<p>
+These MSTS vendors sell or distribute products which have been successfully used with Open Rails:
+</p>
+<ul>
+  <li><a href="http://www.eisenbahndiscount.de/microsoft-train-simulator">ProTrains</a> - Germany</li>
+</ul>
+<p>&nbsp;</p>
 <p class=small>(New or missing names are welcome.)</p>
 			</div>
 		</div>

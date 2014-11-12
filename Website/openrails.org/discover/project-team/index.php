@@ -35,28 +35,29 @@ Less frequently, they get to add something entirely new and then stand ready to 
         <p>&nbsp;</p>
           <table>
           <tr><td>BillC</td></tr>
-          <tr><td>CSantucci</td></tr>
+          <tr><td>Cédric Gniewek (Serana)</td></tr>
           <tr><td>Chris Jakeman * (cjakeman)</td></tr>
+          <tr><td>CSantucci</td></tr>
           <tr><td>edwardk</td></tr>
           <tr><td>Peter Gulyas (gpz)</td></tr>
           <tr><td>James Ross *</td></tr>
           <tr><td>jeroenp</td></tr>
           </table>
+        <p class="small"><br>
+          * Open Rails Management Team
+        </p>
       </div>
 			<div class="col-md-3">
         <p>&nbsp;</p>
           <table>
           <tr><td>JTang</td></tr>
           <tr><td>Matej Pacha</td></tr>
+          <tr><td>Rob Roeterdink (roeter)</td></tr>
           <tr><td>rdamurphy</td></tr>
-          <tr><td>Cédric Gniewek (Serana)</td></tr>
           <tr><td>steamer_ctn</td></tr>
           <tr><td>Stefan PAITONI</td></tr>
           <tr><td>wacampbell</td></tr>
           </table>
-        <p class="small"><br>
-          * Open Rails Management Team
-        </p>
       </div>
     </div>
 		<div class="row">
@@ -72,15 +73,18 @@ These are the experts in creating buildings, locos, routes, signs, even grass. T
       </div>
       <div class="col-md-3">
         <p>&nbsp;</p>
-          <table>
-            <tr><td>Brailsford</td></tr>
-            <tr><td>Buttercup</td></tr>
-            <tr><td>captain_bazza</td></tr>
-            <tr><td>chalky</td></tr>
-            <tr><td>coonskin</td></tr>
-            <tr><td>Copperpen</td></tr>
-            <tr><td>Eldorado.Railroad</td></tr>
-          </table>
+        <table>
+          <tr><td>Brailsford</td></tr>
+          <tr><td>Buttercup</td></tr>
+          <tr><td>captain_bazza</td></tr>
+          <tr><td>chalky</td></tr>
+          <tr><td>coonskin *</td></tr>
+          <tr><td>Copperpen</td></tr>
+          <tr><td>Eldorado.Railroad</td></tr>
+        </table>
+        <p class="small"><br>
+          * Open Rails Management Team
+        </p>
       </div>
       <div class="col-md-3">
         <p>&nbsp;</p>
