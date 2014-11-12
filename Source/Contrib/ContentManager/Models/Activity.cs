@@ -23,7 +23,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace ORTS.ContentManager.Formats
+namespace ORTS.ContentManager.Models
 {
     public class Activity
     {
@@ -37,16 +37,16 @@ namespace ORTS.ContentManager.Formats
         public Activity(Content content)
         {
             Debug.Assert(content.Type == ContentType.Activity);
-            if (Path.GetExtension(content.PathName).Equals(".act", StringComparison.OrdinalIgnoreCase))
+            if (System.IO.Path.GetExtension(content.PathName).Equals(".act", StringComparison.OrdinalIgnoreCase))
             {
                 var file = new ACTFile(content.PathName);
                 Name = file.Tr_Activity.Tr_Activity_Header.Name;
                 Description = file.Tr_Activity.Tr_Activity_Header.Description;
                 Briefing = file.Tr_Activity.Tr_Activity_Header.Briefing;
-                PlayerService = file.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name;
+                PlayerService = String.Format("Player|{0}", file.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name);
                 if (file.Tr_Activity.Tr_Activity_File.Traffic_Definition != null)
                     Services = from service in file.Tr_Activity.Tr_Activity_File.Traffic_Definition.ServiceDefinitionList
-                               select service.Name;
+                               select String.Format("AI|{0}|{1}", service.Name, file.Tr_Activity.Tr_Activity_File.Traffic_Definition.Name);
                 else
                     Services = new string[0];
             }

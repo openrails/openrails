@@ -35,8 +35,8 @@
             // 
             // treeViewContent
             // 
-            this.treeViewContent.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)));
+            this.treeViewContent.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.treeViewContent.Location = new System.Drawing.Point(12, 12);
             this.treeViewContent.Name = "treeViewContent";
             this.treeViewContent.Size = new System.Drawing.Size(300, 514);
@@ -46,9 +46,9 @@
             // 
             // richTextBoxContent
             // 
-            this.richTextBoxContent.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.richTextBoxContent.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.richTextBoxContent.Location = new System.Drawing.Point(318, 12);
             this.richTextBoxContent.Name = "richTextBoxContent";
             this.richTextBoxContent.ReadOnly = true;

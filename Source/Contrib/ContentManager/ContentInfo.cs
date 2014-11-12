@@ -16,12 +16,13 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using MSTS.Formats;
-using ORTS.ContentManager.Formats;
+using ORTS.ContentManager.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Path = ORTS.ContentManager.Models.Path;
 
 namespace ORTS.ContentManager
 {
@@ -38,92 +39,112 @@ namespace ORTS.ContentManager
             {
                 if (content.Type == ContentType.Route)
                 {
-                    var file = new Route(content);
-                    details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, file.Name);
-                    details.AppendFormat("Description:\t{0}{0}{1}{0}{0}", Environment.NewLine, file.Description);
-                }
-                else if (content is ContentMSTSRoute)
-                {
-                    var file = new TRKFile(Path.Combine(content.PathName, content.Name + ".trk"));
-                    details.AppendFormat("Package:\t\u0001{1}\u0002Package\u0001{0}", Environment.NewLine, content.Get(ContentType.Package).Select(p => p.Name).FirstOrDefault());
-                    details.AppendFormat("Route ID:\t{1}{0}", Environment.NewLine, file.Tr_RouteFile.RouteID);
-                    details.AppendFormat("Route Key:\t{1}{0}", Environment.NewLine, file.Tr_RouteFile.FileName);
-                    details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, file.Tr_RouteFile.Name);
-                    details.AppendFormat("Description:\t{0}{0}{1}{0}{0}", Environment.NewLine, file.Tr_RouteFile.Description);
+                    var data = new Route(content);
+                    details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, data.Name);
+                    details.AppendFormat("Description:\t{0}{0}{1}{0}{0}", Environment.NewLine, data.Description);
+
+                    if (content is ContentMSTSRoute)
+                    {
+                        var file = new TRKFile(System.IO.Path.Combine(content.PathName, content.Name + ".trk"));
+                        details.AppendFormat("Route ID:\t{1}{0}", Environment.NewLine, file.Tr_RouteFile.RouteID);
+                        details.AppendFormat("Route Key:\t{1}{0}", Environment.NewLine, file.Tr_RouteFile.FileName);
+                    }
                 }
                 else if (content.Type == ContentType.Activity)
                 {
-                    var file = new Activity(content);
-                    details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, file.Name);
-                    if (file.PlayerService != null)
-                    {
-                        details.AppendFormat("Player:\t\u0001{1}\u0002Service\u0001{0}", Environment.NewLine, file.PlayerService);
-                    }
-                    // TODO: Traffic link
-                    foreach (var service in file.Services)
-                    {
+                    var data = new Activity(content);
+                    details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, data.Name);
+                    if (data.PlayerService != null)
+                        details.AppendFormat("Player:\t\u0001{1}\u0002Service\u0001{0}", Environment.NewLine, data.PlayerService);
+                    foreach (var service in data.Services)
                         details.AppendFormat("Traffic:\t\u0001{1}\u0002Service\u0001{0}", Environment.NewLine, service);
-                    }
                     details.AppendLine();
-                    details.AppendFormat("Description:\t{0}{0}{1}{0}{0}", Environment.NewLine, file.Description);
-                    details.AppendFormat("Briefing:\t{0}{0}{1}{0}{0}", Environment.NewLine, file.Briefing);
+                    details.AppendFormat("Description:\t{0}{0}{1}{0}{0}", Environment.NewLine, data.Description);
+                    details.AppendFormat("Briefing:\t{0}{0}{1}{0}{0}", Environment.NewLine, data.Briefing);
                 }
-                else if (content is ContentMSTSActivity)
+                else if (content.Type == ContentType.Service)
                 {
-                    var file = new ACTFile(content.PathName);
-                    details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, file.Tr_Activity.Tr_Activity_Header.Name);
-                    details.AppendFormat("Route ID:\t\u0001{1}\u0002Route\u0001{0}", Environment.NewLine, file.Tr_Activity.Tr_Activity_Header.RouteID);
-                    details.AppendFormat("Path ID:\t\u0001{1}\u0002Path\u0001{0}", Environment.NewLine, file.Tr_Activity.Tr_Activity_Header.PathID);
+                    var data = new Service(content);
+                    details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, data.Name);
+                    details.AppendFormat("ID:\t{1}{0}", Environment.NewLine, data.ID);
+                    details.AppendFormat("Start time:\t{1}{0}", Environment.NewLine, FormatDateTime(data.StartTime));
+                    details.AppendFormat("Consist:\t\u0001{1}\u0002Consist\u0001{0}", Environment.NewLine, data.Consist);
+                    details.AppendFormat("Path:\t\u0001{1}\u0002Path\u0001{0}", Environment.NewLine, data.Path);
                     details.AppendLine();
-                    details.AppendLine("Player:\t");
-                    details.AppendFormat("  Service ID:\t\u0001{1}\u0002Service\u0001{0}", Environment.NewLine, file.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name);
-                    details.AppendFormat("  Start time:\t{1}{0}", Environment.NewLine, file.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Player_Traffic_Definition.Time);
-                    details.AppendFormat("  Platform ID:\tDistance down path:\tArrival time:\tDeparture time:\t{0}", Environment.NewLine);
-                    foreach (var item in file.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Player_Traffic_Definition.Player_Traffic_List)
-                        details.AppendFormat("  {1}\t{2}\t{3}\t{4}{0}", Environment.NewLine, item.PlatformStartID, item.DistanceDownPath, item.ArrivalTime, item.DepartTime);
+                    details.AppendFormat("Platform ID:\tDistance down path:\tArrival time:\tDeparture time:\t{0}", Environment.NewLine);
+                    foreach (var item in data.Stops)
+                        details.AppendFormat("{2}\t{3}\t{4}\t{5}{0}", Environment.NewLine, item.StationID, item.PlatformID, item.Distance, FormatDateTime(item.ArrivalTime), FormatDateTime(item.DepartureTime));
+
+                    //        details.AppendFormat("  Platform ID:\tDistance down path:\tSkip count:\tEfficiency:\t{0}", Environment.NewLine);
+                    //        foreach (var item in traffic.ServiceList)
+                    //            details.AppendFormat("  {1}\t{2}\t{3}\t{4}{0}", Environment.NewLine, item.PlatformStartID, item.DistanceDownPath, item.SkipCount, item.Efficiency);
+                    //details.AppendFormat("Efficiency:\t{1}{0}{0}", Environment.NewLine, file.Efficiency);
+                }
+                else if (content.Type == ContentType.Path)
+                {
+                    var data = new Path(content);
+                    details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, data.Name);
+                    details.AppendFormat("Start:\t{1}{0}", Environment.NewLine, data.StartName);
+                    details.AppendFormat("End:\t{1}{0}", Environment.NewLine, data.EndName);
                     details.AppendLine();
-                    details.AppendLine("Open Rails does not support loading the player's service data (effeciency per-station stop).");
-                    details.AppendLine();
-                    details.AppendFormat("Traffic ID:\t\u0001{1}\u0002Traffic\u0001{0}", Environment.NewLine, file.Tr_Activity.Tr_Activity_File.Traffic_Definition.Name);
-                    foreach (var traffic in file.Tr_Activity.Tr_Activity_File.Traffic_Definition.ServiceDefinitionList)
+                    details.AppendFormat("Path:\tLocation:\tFlags:\t{0}", Environment.NewLine);
+                    var visitedNodes = new HashSet<Path.Node>();
+                    var rejoinNodes = new HashSet<Path.Node>();
+                    foreach (var node in data.Nodes)
                     {
-                        details.AppendLine();
-                        details.AppendLine("Traffic:\t");
-                        details.AppendFormat("  Service ID:\t\u0001{1}\u0002Service\u0001{0}", Environment.NewLine, traffic.Name);
-                        details.AppendFormat("  UID:\t{1}{0}", Environment.NewLine, traffic.UiD);
-                        details.AppendFormat("  Start time:\t{1}{0}", Environment.NewLine, traffic.Time);
-                        details.AppendFormat("  Platform ID:\tDistance down path:\tSkip count:\tEfficiency:\t{0}", Environment.NewLine);
-                        foreach (var item in traffic.ServiceList)
-                            details.AppendFormat("  {1}\t{2}\t{3}\t{4}{0}", Environment.NewLine, item.PlatformStartID, item.DistanceDownPath, item.SkipCount, item.Efficiency);
+                        foreach (var nextNode in node.Next)
+                        {
+                            if (!visitedNodes.Contains(nextNode))
+                                visitedNodes.Add(nextNode);
+                            else if (!rejoinNodes.Contains(nextNode))
+                                rejoinNodes.Add(nextNode);
+                        }
                     }
-                    details.AppendLine();
-                    details.AppendFormat("Description:\t{0}{0}{1}{0}{0}", Environment.NewLine, file.Tr_Activity.Tr_Activity_Header.Description);
-                    details.AppendFormat("Briefing:\t{0}{0}{1}{0}{0}", Environment.NewLine, file.Tr_Activity.Tr_Activity_Header.Briefing);
-                }
-                else if (content is ContentMSTSService)
-                {
-                    var file = new SRVFile(content.PathName);
-                    details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, file.Name);
-                    details.AppendFormat("Consist ID:\t\u0001{1}\u0002Consist\u0001{0}", Environment.NewLine, file.Train_Config);
-                    details.AppendFormat("Path ID:\t\u0001{1}\u0002Path\u0001{0}", Environment.NewLine, file.PathID);
-                    details.AppendFormat("Efficiency:\t{1}{0}{0}", Environment.NewLine, file.Efficiency);
-                    details.AppendFormat("This format is not supported by Open Rails.{0}{0}", Environment.NewLine);
-                }
-                else if (content is ContentMSTSTraffic)
-                {
-                    var file = new TRFFile(content.PathName);
-                    details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, file.TrafficDefinition.Name);
-                    foreach (var service in file.TrafficDefinition.TrafficItems)
+                    var tracks = new List<Path.Node>() { data.Nodes.First() };
+                    var activeTrack = 0;
+                    while (tracks.Count > 0)
                     {
-                        details.AppendLine();
-                        details.AppendLine("Service:\t");
-                        details.AppendFormat("  Service ID:\t\u0001{1}\u0002Service\u0001{0}", Environment.NewLine, service.Service_Definition);
-                        details.AppendFormat("  Start time:\t{1}{0}", Environment.NewLine, service.Time);
-                        details.AppendFormat("  Platform ID:\tDistance down path:\tArrival time:\tDeparture time:\t{0}", Environment.NewLine);
-                        foreach (var item in service.TrafficDetails)
-                            details.AppendFormat("  {1}\t{2}\t{3}\t{4}{0}", Environment.NewLine, item.PlatformStartID, item.DistanceDownPath, item.ArrivalTime, item.DepartTime);
+                        var node = tracks[activeTrack];
+                        var line = new StringBuilder();
+                        line.Append(" ");
+                        for (var i = 0; i < tracks.Count; i++)
+                            line.Append(i == activeTrack ? " |" : " .");
+                        if ((node.Flags & Path.Flags.Wait) != 0)
+                            line.AppendFormat("\t{1}\t{2} (wait for {3} seconds){0}", Environment.NewLine, node.Location, node.Flags, node.WaitTime);
+                        else
+                            line.AppendFormat("\t{1}\t{2}{0}", Environment.NewLine, node.Location, node.Flags);
+                        if (node.Next.Count() == 0)
+                        {
+                            line.Append(" ");
+                            for (var i = 0; i < tracks.Count; i++)
+                                line.Append(i == activeTrack ? @"  " : @" .");
+                            line.Append(Environment.NewLine);
+                        }
+                        else if (node.Next.Count() == 2)
+                        {
+                            line.Append(" ");
+                            for (var i = 0; i < tracks.Count; i++)
+                                line.Append(i == activeTrack ? @" |\" : @" .");
+                            line.Append(Environment.NewLine);
+                        }
+                        tracks.RemoveAt(activeTrack);
+                        tracks.InsertRange(activeTrack, node.Next);
+                        if (node.Next.Count() >= 1 && rejoinNodes.Contains(tracks[activeTrack]))
+                        {
+                            activeTrack++;
+                            activeTrack %= tracks.Count;
+                            if (rejoinNodes.Contains(tracks[activeTrack]))
+                            {
+                                activeTrack = tracks.IndexOf(tracks[activeTrack]);
+                                tracks.RemoveAt(tracks.LastIndexOf(tracks[activeTrack]));
+                                line.Append(" ");
+                                for (var i = 0; i < tracks.Count; i++)
+                                    line.Append(i == activeTrack ? @" |/" : @" .");
+                                line.Append(Environment.NewLine);
+                            }
+                        }
+                        details.Append(line);
                     }
-                    details.AppendLine();
                 }
                 else if (content is ContentMSTSPath)
                 {
@@ -187,16 +208,25 @@ namespace ORTS.ContentManager
                 }
                 else if (content is ContentMSTSCab)
                 {
-                    var file = new CVFFile(content.PathName, Path.GetDirectoryName(content.PathName));
+                    var file = new CVFFile(content.PathName, System.IO.Path.GetDirectoryName(content.PathName));
                     details.AppendFormat("Position:\tDimensions:\tStyle:\tType:\t{0}", Environment.NewLine);
                     foreach (var control in file.CabViewControls)
                         details.AppendFormat("{1},{2}\t{3}x{4}\t{5}\t{6}{0}", Environment.NewLine, control.PositionX, control.PositionY, control.Width, control.Height, control.ControlStyle, control.ControlType);
                     details.AppendFormat("{0}", Environment.NewLine);
                 }
             }
-            catch { }
+            catch (Exception error)
+            {
+                details.AppendLine();
+                details.Append(error);
+            }
 
             return details.ToString();
+        }
+
+        static string FormatDateTime(DateTime dateTime)
+        {
+            return String.Format("{0} {1}", dateTime.Year - 2000, dateTime.ToLongTimeString());
         }
     }
 }

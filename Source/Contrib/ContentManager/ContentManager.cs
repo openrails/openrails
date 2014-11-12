@@ -31,6 +31,7 @@ namespace ORTS.ContentManager
         public override ContentType Type { get { return ContentType.Root; } }
 
         public ContentManager(FolderSettings settings)
+            : base(null)
         {
             Settings = settings;
             Name = "Content Manager";
@@ -45,7 +46,7 @@ namespace ORTS.ContentManager
             {
                 // TODO: Support OR content folders.
                 foreach (var folder in Settings.Folders)
-                    content.Add(new ContentMSTSPackage(folder.Value));
+                    yield return new ContentMSTSPackage(this, folder.Key, folder.Value);
             }
             //else if (type == ContentType.Route)
             //{
@@ -57,30 +58,6 @@ namespace ORTS.ContentManager
             //            content.Add(new ContentMSTSRoute(Path.Combine(path, route)));
             //    }
             //}
-
-            return content;
-        }
-
-        public override Content Get(string name, ContentType type)
-        {
-            if (type == ContentType.Package)
-            {
-                // TODO: Support OR content folders.
-                if (Settings.Folders.ContainsKey(name))
-                    return new ContentMSTSPackage(Settings.Folders[name]);
-            }
-            //else if (type == ContentType.Route)
-            //{
-            //    foreach (var folder in Settings.Folders)
-            //    {
-            //        // TODO: Support OR content folders.
-            //        var path = Path.Combine(Path.Combine(folder.Value, "Routes"), name);
-            //        if (File.Exists(path))
-            //            return new ContentMSTSRoute(path);
-            //    }
-            //}
-
-            return null;
         }
     }
 }

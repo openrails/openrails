@@ -26,17 +26,16 @@ namespace ORTS.ContentManager
     //   Package
     //     Route
     //       Activity
-    //       Service
-    //       Traffic (MSTS only?)
-    //       Path
+    //       Service - the timetabled stops and other actions along a path
+    //       Path - the physical route taken
     //       Scenery
     //       Model
     //       Texture
     //     Consist
-    //     Trainset
-    //       Car
-    //       Cab
+    //     Car
     //       Model
+    //       Texture
+    //     Cab
     //       Texture
     public enum ContentType
     {
@@ -45,10 +44,8 @@ namespace ORTS.ContentManager
         Route,
         Activity,
         Service,
-        Traffic,
         Path,
         Consist,
-        Trainset,
         Car,
         Cab,
         Scenery,
@@ -58,18 +55,24 @@ namespace ORTS.ContentManager
 
     public abstract class Content
     {
+        public Content Parent { get; set; }
         public abstract ContentType Type { get; }
         public string Name { get; protected set; }
         public string PathName { get; protected set; }
 
         public static bool operator ==(Content left, Content right)
         {
-            return !Object.ReferenceEquals(left, null) && left.Equals(right);
+            return Object.ReferenceEquals(left, null) ? Object.ReferenceEquals(left, right) : left.Equals(right);
         }
 
         public static bool operator !=(Content left, Content right)
         {
-            return Object.ReferenceEquals(left, null) || !left.Equals(right);
+            return !(left == right);
+        }
+
+        protected Content(Content parent)
+        {
+            Parent = parent;
         }
 
         public override bool Equals(object obj)
@@ -90,6 +93,7 @@ namespace ORTS.ContentManager
             return String.Format("{0}({1})", Type, PathName);
         }
 
+        // TODO: Be abstract.
         public virtual IEnumerable<Content> Get(ContentType type)
         {
             return new Content[0];
@@ -97,6 +101,14 @@ namespace ORTS.ContentManager
 
         public virtual Content Get(string name, ContentType type)
         {
+            // This is a very naive implementation which is meant only for prototyping and maybe as a final backstop.
+            foreach (var child in Get(type))
+                if (child.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                    return child;
+            // This is how Get(name, type) is meant to work: stepping up the hierarchy as needed.
+            if (Parent != null)
+                return Parent.Get(name, type);
+            // We're at the top, sorry.
             return null;
         }
     }

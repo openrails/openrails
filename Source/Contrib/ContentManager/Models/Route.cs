@@ -23,7 +23,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace ORTS.ContentManager.Formats
+namespace ORTS.ContentManager.Models
 {
     public class Route
     {
@@ -33,7 +33,7 @@ namespace ORTS.ContentManager.Formats
         public Route(Content content)
         {
             Debug.Assert(content.Type == ContentType.Route);
-            if (Path.GetExtension(content.PathName).Equals("", StringComparison.OrdinalIgnoreCase))
+            if (System.IO.Path.GetExtension(content.PathName).Equals("", StringComparison.OrdinalIgnoreCase))
             {
                 var file = new TRKFile(GetTRKFileName(content.PathName));
                 Name = file.Tr_RouteFile.Name;
@@ -47,7 +47,7 @@ namespace ORTS.ContentManager.Formats
                 throw new DirectoryNotFoundException(folderPath);
             var fileNames = Directory.GetFiles(folderPath, "*.trk");
             if (fileNames.Length == 0)
-                throw new FileNotFoundException("TRK file not found in '" + folderPath + "'.", Path.Combine(folderPath, "*.trk"));
+                throw new FileNotFoundException("TRK file not found in '" + folderPath + "'.", System.IO.Path.Combine(folderPath, "*.trk"));
             return fileNames[0];
         }
     }
