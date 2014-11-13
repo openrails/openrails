@@ -91,6 +91,8 @@ namespace ORTS.Viewer3D
     {
         private int _prevTType = -1;
         private int _curTType = -1;
+        private int _roughcurTType = -1; // used in case track type out of range to trace error only once
+        private int _roughprevTType = -1;
         private SoundSource _activeInSource;
         private SoundSource _activeOutSource;
         private List<SoundSource> _inSources;
@@ -112,6 +114,7 @@ namespace ORTS.Viewer3D
 
                 LoadTrackSound(ttdf.OutsideSound, false);
             }
+
         }
 
         private void LoadTrackSound(string filename, bool isInside)
@@ -144,6 +147,8 @@ namespace ORTS.Viewer3D
 
             _curTType = 0;
             _prevTType = 0;
+            _roughcurTType = 0;
+            _roughprevTType = 0;
         }
 
         public void UpdateTType()
@@ -155,6 +160,13 @@ namespace ORTS.Viewer3D
             {
                 //_curTType = Viewer.WorldSounds.GetTType(_tdbObjs);
                 _curTType = Viewer.World.Sounds.GetTType(Car.Train);
+                _roughcurTType = _curTType;
+                if (_curTType > Viewer.TrackTypes.Count - 1 && _curTType != int.MaxValue)
+                {
+                    // Track type out of range
+                    _curTType = 0;
+                    if (_roughcurTType != _roughprevTType) Trace.TraceWarning("Sound region {0} out of range", _roughcurTType);
+                 }
                 if (_curTType != _prevTType && _curTType != int.MaxValue)
                 {
                     if (_activeInSource != null)
@@ -178,6 +190,7 @@ namespace ORTS.Viewer3D
 
                     _prevTType = _curTType;
                 }
+                _roughprevTType = _roughcurTType;
             }
         }
 
