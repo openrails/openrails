@@ -603,10 +603,10 @@ namespace ORTS
                 DriverWheelRadiusM = 1;
             if (ZeroError(MaxBoilerPressurePSI, "MaxBoilerPressure"))
                 MaxBoilerPressurePSI = 1;
-            if (ZeroError(MaxBoilerOutputLBpH, "MaxBoilerOutput"))
-                MaxBoilerOutputLBpH = 1;
-            if (ZeroError(ExhaustLimitLBpH, "ExhaustLimit"))
-                ExhaustLimitLBpH = MaxBoilerOutputLBpH;
+     //       if (ZeroError(MaxBoilerOutputLBpH, "MaxBoilerOutput"))
+     //           MaxBoilerOutputLBpH = 1;
+    //        if (ZeroError(ExhaustLimitLBpH, "ExhaustLimit"))
+    //            ExhaustLimitLBpH = MaxBoilerOutputLBpH;
             if (ZeroError(BoilerVolumeFT3, "BoilerVolume"))
                 BoilerVolumeFT3 = 1;
 
@@ -647,7 +647,7 @@ namespace ORTS
             if (BoilerEfficiencyGrateAreaLBpFT2toX == null)
             {
                 BoilerEfficiencyGrateAreaLBpFT2toX = SteamTable.BoilerEfficiencyGrateAreaInterpolatorLbstoX();
-                Trace.TraceWarning("BoilerEfficiencyGrateAreaLBpFT2toX not read in ENG file {0} ", BoilerEfficiencyGrateAreaLBpFT2toX[35.0f]);
+                Trace.TraceInformation("BoilerEfficiencyGrateAreaLBpFT2toX - default information read from SteamTables" );
             }
 
             RefillTenderWithCoal();
