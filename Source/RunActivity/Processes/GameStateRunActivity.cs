@@ -1229,7 +1229,7 @@ namespace ORTS.Processes
 
             virtual protected Texture2D GetTexture(Game game)
             {
-                return Texture2D.FromFile(game.RenderProcess.GraphicsDevice, Path.Combine(game.ContentPath, "Loading.png"));
+                return SharedTextureManager.Get(game.RenderProcess.GraphicsDevice, Path.Combine(game.ContentPath, "Loading.png"));
             }
 
             public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)

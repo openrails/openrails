@@ -96,10 +96,10 @@ namespace ORTS.Viewer3D.Popups
             }
             if (ScrollbarTexture == null)
                 // TODO: This should happen on the loader thread.
-                ScrollbarTexture = Texture2D.FromFile(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "WindowScrollbar.png"));
+                ScrollbarTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "WindowScrollbar.png"));
             if (LabelShadowTexture == null)
                 // TODO: This should happen on the loader thread.
-                LabelShadowTexture = Texture2D.FromFile(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "WindowLabelShadow.png"));
+                LabelShadowTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "WindowLabelShadow.png"));
             if (NoticeTexture == null)
             {
                 var size = 256;

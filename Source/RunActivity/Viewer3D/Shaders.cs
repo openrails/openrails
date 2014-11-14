@@ -258,6 +258,7 @@ namespace ORTS.Viewer3D
         readonly EffectParameter overcast;
         readonly EffectParameter windDisplacement;
         readonly EffectParameter skyColor;
+        readonly EffectParameter fogColor;
         readonly EffectParameter fog;
         readonly EffectParameter moonColor;
         readonly EffectParameter moonTexCoord;
@@ -275,7 +276,7 @@ namespace ORTS.Viewer3D
         {
             set
             {
-                lightVector.SetValue(value);
+                lightVector.SetValue(new Vector4(value, 1f / value.Length()));
 
                 cloudColor.SetValue(Day2Night(0.2f, -0.2f, 0.15f, value.Y));
                 var skyColor1 = Day2Night(0.25f, -0.25f, -0.5f, value.Y);
@@ -293,7 +294,8 @@ namespace ORTS.Viewer3D
 
         public void SetFog(float depth, ref Color color)
         {
-            fog.SetValue(new Vector4(color.R / 255f, color.G / 255f, color.B / 255f, depth));
+            fogColor.SetValue(new Vector3(color.R / 255f, color.G / 255f, color.B / 255f));
+            fog.SetValue(new Vector4(5000f / depth, 0.015f * MathHelper.Clamp(depth / 5000f, 0, 1), MathHelper.Clamp(depth / 10000f, 0, 1), 0.05f * MathHelper.Clamp(depth / 10000f, 0, 1)));
         }
 
         float _time;
@@ -321,10 +323,10 @@ namespace ORTS.Viewer3D
             set
             {
                 if (value < 0.2f)
-                    overcast.SetValue(new Vector3(4 * value + 0.2f, 0.0f, 0.0f));
+                    overcast.SetValue(new Vector4(4 * value + 0.2f, 0.0f, 0.0f, 0.0f));
                 else
                     // Coefficients selected by author to achieve the desired appearance
-                    overcast.SetValue(new Vector3(MathHelper.Clamp(2 * value - 0.4f, 0, 1), 1.25f - 1.125f * value, 1.15f - 0.75f * value));
+                    overcast.SetValue(new Vector4(MathHelper.Clamp(2 * value - 0.4f, 0, 1), 1.25f - 1.125f * value, 1.15f - 0.75f * value, 1f));
             }
         }
 
@@ -375,6 +377,7 @@ namespace ORTS.Viewer3D
             overcast = Parameters["Overcast"];
             windDisplacement = Parameters["WindDisplacement"];
             skyColor = Parameters["SkyColor"];
+            fogColor = Parameters["FogColor"];
             fog = Parameters["Fog"];
             moonColor = Parameters["MoonColor"];
             moonTexCoord = Parameters["MoonTexCoord"];
@@ -564,7 +567,7 @@ namespace ORTS.Viewer3D
             screenSize = Parameters["ScreenSize"];
             screenTexture = Parameters["ScreenTexture"];
             // TODO: This should happen on the loader thread.
-            Parameters["WindowTexture"].SetValue(Texture2D.FromFile(graphicsDevice, System.IO.Path.Combine(viewer.ContentPath, "Window.png")));
+            Parameters["WindowTexture"].SetValue(SharedTextureManager.Get(graphicsDevice, System.IO.Path.Combine(viewer.ContentPath, "Window.png")));
         }
     }
 

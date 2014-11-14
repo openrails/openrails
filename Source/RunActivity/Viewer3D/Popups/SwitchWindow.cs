@@ -58,7 +58,7 @@ namespace ORTS.Viewer3D.Popups
             base.Initialize();
             if (SwitchStates == null)
                 // TODO: This should happen on the loader thread.
-                SwitchStates = Texture2D.FromFile(Owner.Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Owner.Viewer.ContentPath, "SwitchStates.png"));
+                SwitchStates = SharedTextureManager.Get(Owner.Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Owner.Viewer.ContentPath, "SwitchStates.png"));
         }
 
 #if !NEW_SIGNALLING

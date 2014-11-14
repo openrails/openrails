@@ -104,6 +104,37 @@ namespace ORTS.Viewer3D
             }
         }
 
+        public static Texture2D Get(GraphicsDevice graphicsDevice, string path)
+        {
+            if (path == null || path == "")
+                return SharedMaterialManager.MissingTexture;
+
+            path = path.ToLowerInvariant();
+            var ext = Path.GetExtension(path);
+
+            if (ext == ".ace")
+                return MSTS.Formats.ACEFile.Texture2DFromFile(graphicsDevice, path);
+
+            using (var stream = File.OpenRead(path))
+            {
+                if (ext == ".gif" || ext == ".jpg" || ext == ".png")
+                    return Texture2D.FromFile(graphicsDevice, stream);
+                else if (ext == ".bmp")
+                    using (var image = System.Drawing.Image.FromStream(stream))
+                    {
+                        using (var memoryStream = new MemoryStream())
+                        {
+                            image.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Png);
+                            memoryStream.Seek(0, SeekOrigin.Begin);
+                            return Texture2D.FromFile(graphicsDevice, memoryStream);
+                        }
+                    }
+                else
+                    Trace.TraceWarning("Unsupported texture format: {0}", path);
+                return SharedMaterialManager.MissingTexture;
+            }
+        }
+        
         public void Mark()
         {
             TextureMarks = new Dictionary<string, bool>(Textures.Count);
@@ -181,7 +212,7 @@ namespace ORTS.Viewer3D
             DebugShader = new DebugShader(viewer.RenderProcess.GraphicsDevice);
 
             // TODO: This should happen on the loader thread.
-            MissingTexture = Texture2D.FromFile(viewer.RenderProcess.GraphicsDevice, Path.Combine(viewer.ContentPath, "blank.bmp"));
+            MissingTexture = SharedTextureManager.Get(viewer.RenderProcess.GraphicsDevice, Path.Combine(viewer.ContentPath, "blank.bmp"));
         }
 
         public Material Load(string materialName)

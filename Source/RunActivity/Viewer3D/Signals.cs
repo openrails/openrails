@@ -534,7 +534,7 @@ namespace ORTS.Viewer3D
             : base(viewer, null)
         {
             SceneryShader = Viewer.MaterialManager.SceneryShader;
-            Texture = Texture2D.FromFile(Viewer.GraphicsDevice, Path.Combine(Viewer.ContentPath, "SignalLightGlow.png"));
+            Texture = SharedTextureManager.Get(Viewer.GraphicsDevice, Path.Combine(Viewer.ContentPath, "SignalLightGlow.png"));
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
