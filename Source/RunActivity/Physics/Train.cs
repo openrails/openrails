@@ -10422,6 +10422,21 @@ namespace ORTS
                 else
                 {
                     StationStops.Add(thisStation);
+
+                    // if station has hold signal and this signal is the same as the exit signal for previous station, remove the exit signal from the previous station
+
+                    if (HoldSignal && StationStops.Count > 1)
+                    {
+                        if (EndSignal == StationStops[StationStops.Count - 2].ExitSignal && StationStops[StationStops.Count - 2].HoldSignal)
+                        {
+                            StationStops[StationStops.Count - 2].HoldSignal = false;
+                            StationStops[StationStops.Count - 2].ExitSignal = -1;
+                            if (HoldingSignals.Contains(EndSignal))
+                            {
+                                HoldingSignals.Remove(EndSignal);
+                            }
+                        }
+                    }
                 }
 
                 // add signal to list of hold signals

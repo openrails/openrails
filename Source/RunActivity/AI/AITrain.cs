@@ -1724,21 +1724,23 @@ namespace ORTS
                         StartMoving(AI_START_MOVEMENT.SIGNAL_CLEARED);
                     }
                 }
-                //else if (nextActionInfo != null &&
-                // nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.STATION_STOP &&
-                // StationStops[0].SubrouteIndex == TCRoute.activeSubpath &&
-                // ValidRoute[0].GetRouteIndex(StationStops[0].TCSectionIndex, PresentPosition[0].RouteListIndex) <= PresentPosition[0].RouteListIndex)
-                //// assume to be in station
-                //{
-                //    MovementState = AI_MOVEMENT_STATE.STATION_STOP;
 
-                //    if (CheckTrain)
-                //    {
-                //        File.AppendAllText(@"C:\temp\checktrain.txt", "Train " + Number + " assumed to be in station : " +
-                //            StationStops[0].PlatformItem.Name + "( present section = " + PresentPosition[0].TCSectionIndex +
-                //            " ; station section = " + StationStops[0].TCSectionIndex + " )\n");
-                //    }
-                //}
+                else if (nextAspect == MstsSignalAspect.STOP)
+                {
+                    // if stop but train is not in section ahead of signal - train is not actually waiting for signal
+                    if (ValidRoute[0][PresentPosition[0].RouteListIndex].TCSectionIndex != NextSignalObject[0].TCReference)
+                    {
+                        MovementState = AI_MOVEMENT_STATE.ACCELERATING;
+                        StartMoving(AI_START_MOVEMENT.PATH_ACTION);
+                    }
+                    // if stop but train is well away from signal allow to close in
+                    else if (distanceToSignal > 10 * signalApproachDistanceM)
+                    {
+                        MovementState = AI_MOVEMENT_STATE.ACCELERATING;
+                        StartMoving(AI_START_MOVEMENT.PATH_ACTION);
+                    }
+                }
+                
                 else if (nextActionInfo != null &&
                  nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.STATION_STOP)
                 {
