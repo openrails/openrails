@@ -139,8 +139,8 @@ namespace ORTS
             WheelSpeedMpS = SpeedMpS;
             DynamicBrakePercent = -1;
             ThrottleController.SetValue(Train.MUThrottlePercent / 100);
-            if (Pantographs[1] != null) Pantographs[1].InitializeMoving();
-            else if (Pantographs[2] != null) Pantographs[2].InitializeMoving();
+
+            Pantographs.InitializeMoving();
             PowerSupply.InitializeMoving();
         }
 

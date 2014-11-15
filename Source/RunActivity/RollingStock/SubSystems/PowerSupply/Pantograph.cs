@@ -98,6 +98,19 @@ namespace ORTS
             }
         }
 
+        public void InitializeMoving()
+        {
+            foreach (Pantograph pantograph in List)
+            {
+                if (pantograph != null)
+                {
+                    pantograph.InitializeMoving();
+
+                    break;
+                }
+            }
+        }
+
         public void Update(float elapsedClockSeconds)
         {
             foreach (Pantograph pantograph in List)

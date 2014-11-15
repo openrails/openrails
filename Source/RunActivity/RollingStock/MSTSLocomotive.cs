@@ -792,8 +792,8 @@ namespace ORTS
             LocomotiveAxle.FilterMovingAverage.Initialize(AverageForceN);
             if (Train.TrainType == Train.TRAINTYPE.PLAYER)
             { 
-            TrainBrakeController.InitializeMoving();
-            BrakeSystem.LocoInitializeMoving();
+                TrainBrakeController.InitializeMoving();
+                BrakeSystem.LocoInitializeMoving();
             }
         }
 
