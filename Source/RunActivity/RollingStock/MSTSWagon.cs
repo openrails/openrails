@@ -359,6 +359,7 @@ namespace ORTS
         public virtual void Copy(MSTSWagon copy)
         {
             MainShapeFileName = copy.MainShapeFileName;
+            HasPassengerCapacity = copy.HasPassengerCapacity;
             IsFreight = copy.IsFreight;
             IsTender = copy.IsTender;
             IsPassenger = copy.IsPassenger;

@@ -382,14 +382,27 @@ namespace ORTS
                 {
                     MaxAccelMpSS = MaxAccelMpSSP;  // set passenger accel and decel
                     MaxDecelMpSS = MaxDecelMpSSP;
-                    if (TrainMaxSpeedMpS > 40.0f)
-                    {
-                        MaxDecelMpSS = 1.5f * MaxDecelMpSSP;  // higher decel for high speed trains
-                    }
                     if (TrainMaxSpeedMpS > 55.0f)
                     {
                         MaxDecelMpSS = 2.5f * MaxDecelMpSSP;  // higher decel for very high speed trains
                     }
+                    else if (TrainMaxSpeedMpS > 40.0f)
+                    {
+                        MaxDecelMpSS = 1.5f * MaxDecelMpSSP;  // higher decel for high speed trains
+                    
+                    }
+                    else if (!Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility)
+                    {
+                        var carF = Cars[0];
+                        var carL = Cars[Cars.Count - 1];
+                        if (carF.IsDriveable && carF.HasPassengerCapacity && (carF is MSTSElectricLocomotive)
+                            && carL.IsDriveable && carL.HasPassengerCapacity && (carL is MSTSElectricLocomotive))  // EMU or DMU train, higher decel
+                        {
+                            MaxAccelMpSS = 1.5f * MaxAccelMpSS;
+                            MaxDecelMpSS = 2f * MaxDecelMpSSP;
+                        }
+                    }
+
                 }
 
                 BuildWaitingPointList(clearingDistanceM);
@@ -2629,8 +2642,10 @@ namespace ORTS
             }
 
             lowestSpeedMpS = Math.Min(lowestSpeedMpS, AllowedMaxSpeedMpS);
-
-            float maxPossSpeedMpS = distanceToGoM > 0 ? (float)Math.Sqrt(0.25f * MaxDecelMpSS * distanceToGoM) : 0.0f;
+            float maxPossSpeedMpS;
+            if (Simulator.TimetableMode || !Simulator.Settings.EnhancedActCompatibility)
+            maxPossSpeedMpS = distanceToGoM > 0 ? (float)Math.Sqrt(0.25f * MaxDecelMpSS * distanceToGoM) : 0.0f;
+            else maxPossSpeedMpS = distanceToGoM > 0 ? (float)Math.Sqrt(0.45f * MaxDecelMpSS * distanceToGoM) : 0.0f;
             float idealSpeedMpS = Math.Min(AllowedMaxSpeedMpS, Math.Max(maxPossSpeedMpS, lowestSpeedMpS));
 
             if (requiredSpeedMpS > 0)
@@ -2876,7 +2891,9 @@ namespace ORTS
             // check speed
             if (((SpeedMpS - LastSpeedMpS) / elapsedClockSeconds) < 0.5f * MaxAccelMpSS)
             {
-                AdjustControlsAccelMore(Efficiency * 0.5f * MaxAccelMpSS, elapsedClockSeconds, 10);
+                int stepSize = (Simulator.TimetableMode || !Simulator.Settings.EnhancedActCompatibility || !PreUpdate) ? 10 : 40;
+                float corrFactor = (Simulator.TimetableMode || !Simulator.Settings.EnhancedActCompatibility || !PreUpdate) ? 0.5f : 1.0f;
+                AdjustControlsAccelMore(Efficiency * corrFactor * MaxAccelMpSS, elapsedClockSeconds, stepSize);
             }
 
             if (SpeedMpS > (AllowedMaxSpeedMpS - ((9.0f - 6.0f * Efficiency) * hysterisMpS)))
@@ -3432,7 +3449,7 @@ namespace ORTS
             {
                 MovementState = AI_MOVEMENT_STATE.ACCELERATING;
                 Alpha10 = 10;
-                AITrainThrottlePercent = 25;
+                AITrainThrottlePercent = (Simulator.TimetableMode || !Simulator.Settings.EnhancedActCompatibility || !PreUpdate)? 25 : 50;
                 AdjustControlsBrakeOff();
             }
 
@@ -4656,7 +4673,6 @@ namespace ORTS
             {
                 triggerDistanceM = activateDistanceTravelledM - fullPartRangeM;
             }
-
             // if distance from max speed is too long and from present speed too short and train not at max speed,
             // remaining distance calculation :
             // max. time to reach allowed max speed : Tacc = (Vmax - Vnow) / MaxAccel
