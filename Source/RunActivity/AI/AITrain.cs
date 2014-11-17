@@ -3707,7 +3707,7 @@ namespace ORTS
                 TCSubpathRoute thisRoute = TCRoute.TCRouteSubpaths[waitingPoint[0]];
                 int routeIndex = thisRoute.GetRouteIndex(waitingPoint[1], 0);
                 int lastIndex = routeIndex;
-                if (iWait < TCRoute.WaitingPoints.Count - 1 && TCRoute.WaitingPoints[iWait + 1][1] != waitingPoint[1])
+                if (iWait == TCRoute.WaitingPoints.Count -1 || TCRoute.WaitingPoints[iWait + 1][1] != waitingPoint[1])
                     insertSigDelegate = true;
 
 
@@ -3775,7 +3775,7 @@ namespace ORTS
                 TCSubpathRoute thisRoute = TCRoute.TCRouteSubpaths[waitingPoint[0]];
                 int routeIndex = thisRoute.GetRouteIndex(waitingPoint[1], 0);
                 int lastIndex = routeIndex;
-                if (iWait < TCRoute.WaitingPoints.Count - 1 && signalIndex[iWait + 1] != signalIndex[iWait])
+                if (iWait == TCRoute.WaitingPoints.Count -1 || signalIndex[iWait + 1] != signalIndex[iWait])
                     insertSigDelegate = true;
 
 

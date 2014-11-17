@@ -1619,6 +1619,8 @@ namespace ORTS
 #if WITH_PATH_DEBUG
             File.AppendAllText(@"C:\temp\checkpath.txt", "WP, Action ended for train " + thisTrain.Number + " at " + presentTime + "(STOPPED)\n");
 #endif
+            if (thisTrain.AuxActionsContain.CountSpec() > 0)
+                thisTrain.AuxActionsContain.Remove(this);
             return AITrain.AI_MOVEMENT_STATE.STOPPED;
         }
 
@@ -1673,10 +1675,12 @@ namespace ORTS
                     }
                     break;
                 case AITrain.AI_MOVEMENT_STATE.STOPPED:
+                    if (!(thisTrain is AITrain))
+                        if (thisTrain.AuxActionsContain.CountSpec() > 0)
+                            thisTrain.AuxActionsContain.Remove(this);
 
-                    if (thisTrain.AuxActionsContain.CountSpec() > 0)
-                        thisTrain.AuxActionsContain.Remove(this);
-#if WITH_PATH_DEBUG
+
+ #if WITH_PATH_DEBUG
                     else
                     {
                         File.AppendAllText(@"C:\temp\checkpath.txt", "AITRain " + thisTrain.Number + "!  No more AuxActions...\n");
@@ -1687,7 +1691,7 @@ namespace ORTS
                         AITrain aiTrain = thisTrain as AITrain;
 
                         //movementState = thisTrain.UpdateStoppedState();   // Don't call UpdateStoppedState(), WP can't touch Signal
-                        movementState = AITrain.AI_MOVEMENT_STATE.BRAKING;
+                         movementState = AITrain.AI_MOVEMENT_STATE.BRAKING;
                         aiTrain.ResetActions(true);
 #if WITH_PATH_DEBUG
                         File.AppendAllText(@"C:\temp\checkpath.txt", "AITRain " + aiTrain.Number + " is " + movementState.ToString() + " at " + presentTime + "\n");
@@ -2511,7 +2515,7 @@ namespace ORTS
                 if (!SignalReferenced.UnlockForTrain(thisTrain.Number, thisTrain.TCRoute.activeSubpath))
                     locked = true;
             }
-            if (ClearSignal(thisTrain))
+            if (ClearSignal(thisTrain) || (thisTrain.NextSignalObject[0].this_sig_lr(MstsSignalFunction.NORMAL) > MstsSignalAspect.STOP))
                 movementState = AITrain.AI_MOVEMENT_STATE.END_ACTION;
             return movementState;
         }
@@ -2535,11 +2539,10 @@ namespace ORTS
         }
         public override AITrain.AI_MOVEMENT_STATE ProcessAction(Train thisTrain, int presentTime, float elapsedClockSeconds, AITrain.AI_MOVEMENT_STATE movementState)
         {
-            base.ProcessAction(thisTrain, presentTime, elapsedClockSeconds, movementState);
-            return AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION;
+         movementState = base.ProcessAction(thisTrain, presentTime, elapsedClockSeconds, movementState);
+            return movementState;
         }
     }
-
 
 #endregion
 }
