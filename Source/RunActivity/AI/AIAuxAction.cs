@@ -2515,7 +2515,8 @@ namespace ORTS
                 if (!SignalReferenced.UnlockForTrain(thisTrain.Number, thisTrain.TCRoute.activeSubpath))
                     locked = true;
             }
-            if (ClearSignal(thisTrain) || (thisTrain.NextSignalObject[0].this_sig_lr(MstsSignalFunction.NORMAL) > MstsSignalAspect.STOP))
+            if (ClearSignal(thisTrain) || (thisTrain.NextSignalObject[0].this_sig_lr(MstsSignalFunction.NORMAL) > MstsSignalAspect.STOP) ||
+                thisTrain.PresentPosition[0].TCSectionIndex == thisTrain.ValidRoute[0][thisTrain.ValidRoute[0].Count-1].TCSectionIndex)
                 movementState = AITrain.AI_MOVEMENT_STATE.END_ACTION;
             return movementState;
         }
