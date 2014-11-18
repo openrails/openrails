@@ -3762,7 +3762,7 @@ namespace MSTS.Parsers
         /// <summary> Create a trace warning</summary>
         public static void TraceWarning(string fileName, int lineNumber, string message)
         {
-            System.Diagnostics.Trace.TraceWarning("{2} in {0}:line {1}\n", fileName, lineNumber, message);
+            System.Diagnostics.Trace.TraceWarning("{2} in {0}:line {1}", fileName, lineNumber, message);
         }
 
         /// <summary> Create a trace warning</summary>
