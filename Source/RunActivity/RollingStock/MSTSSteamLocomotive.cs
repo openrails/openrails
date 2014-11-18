@@ -370,6 +370,7 @@ namespace ORTS
        float PistonForceLbf;    // Max force exerted by piston.
        float FrictionCoeff; // Co-efficient of friction
        float TangentialWheelTreadForceLbf; // Tangential force at the wheel tread.
+       float WheelWeightLbs; // Weight per locomotive drive wheel
 
   #endregion 
 
@@ -2110,7 +2111,8 @@ namespace ORTS
   // Damp or frosty rails   == 0.20
   //
   // Dynamic (kinetic) friction = 0.242  // dynamic friction at slow speed
-
+    float DrvWheelNum = GetLocoNumWheels();
+    WheelWeightLbs = Kg.ToLb(DrvWheelWeightKg / (DrvWheelNum * 2.0f)); // Calculate the weight per wheel
    
 
     if (Program.Simulator.Weather == WeatherType.Rain || Program.Simulator.Weather == WeatherType.Snow)
@@ -2132,7 +2134,14 @@ namespace ORTS
     }
     else
     {
-    FrictionCoeff = 0.35f;  // Dry track - static friction
+        if (WheelWeightLbs < 10000)
+        {
+            FrictionCoeff = 0.25f;  // Dry track - static friction for vehicles with wheel weights less then 10,000lbs
+        }
+        else
+        {
+            FrictionCoeff = 0.35f;  // Dry track - static friction for vehicles with wheel weights greater then 10,000lbs
+        }
     }
   }
    if ( Sander )
@@ -2788,13 +2797,14 @@ namespace ORTS
                 MotiveForceGearRatio);
 
  	status.AppendFormat("\n\t\t === Experimental - Slip Monitor === \n");
-    status.AppendFormat("Slip:\tPiston\t{0:N0}\tTang(c)\t{1:N0}lbf\tTang(t)\t{2:N0}lbf\tStatic\t{3:N0}lbf\tCoeff\t{4:N2}\tSlip\t{5}\n",
+    status.AppendFormat("Slip:\tPiston\t{0:N0}\tTang(c)\t{1:N0}lbf\tTang(t)\t{2:N0}lbf\tStatic\t{3:N0}lbf\tCoeff\t{4:N2}\tSlip\t{5}\tWhWght \t{6:N0} lbs\n",
                 PistonForceLbf,
                 TangentialCrankWheelForceLbf,
                 TangentialWheelTreadForceLbf,
                 StaticWheelFrictionForceLbf,
                 FrictionCoeff,
-                IsLocoSlip);
+                IsLocoSlip,
+               WheelWeightLbs);
 
             return status.ToString();
         }
