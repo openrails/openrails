@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using ORTS.Common;
 
 namespace ORTS
@@ -95,7 +96,7 @@ namespace ORTS
                 CylPressurePSI = BrakeLine3PressurePSI;
             else
                 CylPressurePSI = AutoCylPressurePSI;
-            float f = MaxBrakeForceN * CylPressurePSI / MaxCylPressurePSI;
+            float f = MaxBrakeForceN * Math.Min(CylPressurePSI / MaxCylPressurePSI, 1);
             if (f < MaxHandbrakeForceN * HandbrakePercent / 100)
                 f = MaxHandbrakeForceN * HandbrakePercent / 100;
             Car.BrakeForceN = f;

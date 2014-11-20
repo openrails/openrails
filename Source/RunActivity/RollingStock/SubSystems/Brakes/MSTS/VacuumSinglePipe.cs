@@ -249,7 +249,7 @@ namespace ORTS
                     BrakeLine1PressurePSI -= dp * vr;
             }
             float vrp = VacResPressureAdjPSIA();
-            float f = CylPressurePSIA <= vrp ? 0 : MaxBrakeForceN * (CylPressurePSIA - vrp) / MaxForcePressurePSI;
+            float f = CylPressurePSIA <= vrp ? 0 : MaxBrakeForceN * Math.Min((CylPressurePSIA - vrp) / MaxForcePressurePSI, 1);
             if (f < MaxHandbrakeForceN * HandbrakePercent / 100)
                 f = MaxHandbrakeForceN * HandbrakePercent / 100;
             Car.BrakeForceN = f;

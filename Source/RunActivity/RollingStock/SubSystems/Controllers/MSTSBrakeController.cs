@@ -98,7 +98,7 @@ namespace ORTS
                             break;
                         case ControllerState.Running:
                             if (notch.Smooth)
-                                x = .1f * (1 - x);
+                                x = .05f * (1 - x);
                             pressureBar += x * ReleaseRateBarpS() * elapsedClockSeconds;
                             break;
                         case ControllerState.Apply:

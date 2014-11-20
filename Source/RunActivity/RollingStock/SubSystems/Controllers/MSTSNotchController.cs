@@ -379,7 +379,12 @@ namespace ORTS
                 //decreasing, again check if the current notch has changed
                 else if((direction < 0) && (CurrentNotch > 0) && (IntermediateValue < Notches[CurrentNotch].Value))
                 {
-                    CurrentNotch--;
+                    // Prevent TrainBrake to switch continuously from Lap to Release-style operation.
+                    // This is especially important for non-self-lapping steam locomotives.
+                    if (Notches[CurrentNotch].Type == ControllerState.Lap)
+                        IntermediateValue = Notches[CurrentNotch].Value;
+                    else
+                        CurrentNotch--;
                 }
 
                 //If the notch is smooth, we use intermediate value that is being update smooth thought the frames
