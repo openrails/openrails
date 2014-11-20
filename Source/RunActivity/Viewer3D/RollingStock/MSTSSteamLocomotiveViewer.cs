@@ -199,13 +199,5 @@ namespace ORTS.Viewer3D.RollingStock
 
             base.PrepareFrame(frame, elapsedTime);
         }
-
-        /// <summary>
-        /// This doesn't function yet.
-        /// </summary>
-        public override void Unload()
-        {
-            base.Unload();
-        }
     }
 }

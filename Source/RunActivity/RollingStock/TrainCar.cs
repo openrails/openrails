@@ -1368,7 +1368,6 @@ namespace ORTS
         }
     }
 
-
     public abstract class TrainCarViewer
     {
          // TODO add view location and limits
@@ -1395,10 +1394,8 @@ namespace ORTS
         /// </summary>
         public abstract void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime);
 
-        /// <summary>
-        /// Unload and release the car - its not longer being displayed
-        /// </summary>
-        public abstract void Unload();
+        [CallOnThread("Loader")]
+        public virtual void Unload() { }
 
         [CallOnThread("Loader")]
         internal virtual void LoadForPlayer() { }

@@ -35,7 +35,7 @@ namespace ORTS.Viewer3D
         //   All accesses must be done in local variables. No modifications to the objects are allowed except by
         //   assignment of a new instance (possibly cloned and then modified).
         public Dictionary<TrainCar, TrainCarViewer> Cars = new Dictionary<TrainCar, TrainCarViewer>();
-        public List<TrainCar> VisibleCars = new List<TrainCar>();
+        List<TrainCar> VisibleCars = new List<TrainCar>();
         TrainCar PlayerCar;
 
         public TrainDrawer(Viewer viewer)
@@ -79,6 +79,7 @@ namespace ORTS.Viewer3D
 			}
 
             // Ensure the player locomotive has a cab view loaded and anything else they need.
+            cars = Cars;
             if (PlayerCar != null && cars.ContainsKey(PlayerCar))
                 cars[PlayerCar].LoadForPlayer();
         }

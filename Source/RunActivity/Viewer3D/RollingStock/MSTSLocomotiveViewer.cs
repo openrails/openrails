@@ -285,14 +285,6 @@ namespace ORTS.Viewer3D.RollingStock
         }
 
         /// <summary>
-        /// This doesn't function yet.
-        /// </summary>
-        public override void Unload()
-        {
-            base.Unload();
-        }
-
-        /// <summary>
         /// Finds the pickup point which is closest to the loco or tender that uses coal, water or diesel oil.
         /// Uses that pickup to refill the loco or tender.
         /// Not implemented yet:
@@ -1911,22 +1903,10 @@ namespace ORTS.Viewer3D.RollingStock
 			TrainCarShape.PrepareFrame(frame, elapsedTime);
 		}
 
-		internal override void LoadForPlayer()
-		{
-		}
-
 		internal override void Mark()
 		{
+            // TODO: This is likely wrong; we should mark textures, shapes and other graphical resources here.
 		}
-
-		/// <summary>
-		/// This doesn't function yet.
-		/// </summary>
-		public override void Unload()
-		{
-		}
-
-
 	} // Class ThreeDimentionCabViewer
 
 	public class DigitalDisplay

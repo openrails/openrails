@@ -391,6 +391,8 @@ namespace ORTS.Viewer3D.RollingStock
         {
             // Removing sound sources from sound update thread
             Viewer.SoundProcess.RemoveSoundSources(this);
+
+            base.Unload();
         }
 
 
