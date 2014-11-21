@@ -118,7 +118,7 @@ namespace ORTS
                         var distance = String.Format("{0:F1}", Math.Sqrt(Math.Pow(currentTileX - initialTileX, 2) + Math.Pow(currentTileZ - initialTileZ, 2)) * 2048);
 
                         PathName = pathName;
-                        RouteName = routeName;
+                        RouteName = routeName.Trim();
                         GameTime = gameTime;
                         RealTime = realTime;
                         CurrentTile = currentTile;
