@@ -528,7 +528,7 @@ namespace ORTS.Viewer3D
             if (ComposeMessageWindow.Visible == true)
             {
                 UserInput.Handled();
-                ComposeMessageWindow.AppendMessage(UserInput.KeyboardState.GetPressedKeys(), UserInput.LastKeyboardState.GetPressedKeys());
+                ComposeMessageWindow.AppendMessage(UserInput.GetPressedKeys(), UserInput.GetPreviousPressedKeys());
             }
 
             Simulator.Update(elapsedTime.ClockSeconds);
@@ -614,10 +614,10 @@ namespace ORTS.Viewer3D
         [CallOnThread("Updater")]
         void HandleUserInput(ElapsedTime elapsedTime)
         {
-            if (UserInput.IsMouseLeftButtonDown())
+            if (UserInput.IsMouseLeftButtonDown)
             {
-                Vector3 nearsource = new Vector3((float)UserInput.MouseState.X, (float)UserInput.MouseState.Y, 0f);
-                Vector3 farsource = new Vector3((float)UserInput.MouseState.X, (float)UserInput.MouseState.Y, 1f);
+                Vector3 nearsource = new Vector3((float)UserInput.MouseX, (float)UserInput.MouseY, 0f);
+                Vector3 farsource = new Vector3((float)UserInput.MouseX, (float)UserInput.MouseY, 1f);
                 Matrix world = Matrix.CreateTranslation(0, 0, 0);
                 NearPoint = GraphicsDevice.Viewport.Unproject(nearsource, Camera.XnaProjection, Camera.XnaView, world);
                 FarPoint = GraphicsDevice.Viewport.Unproject(farsource, Camera.XnaProjection, Camera.XnaView, world);
@@ -862,7 +862,7 @@ namespace ORTS.Viewer3D
             if (!Simulator.Paused && UserInput.IsDown(UserCommands.GameSwitchWithMouse))
             {
                 isMouseShouldVisible = true;
-                if (UserInput.MouseState.LeftButton == ButtonState.Pressed && UserInput.Changed)
+                if (UserInput.IsMouseLeftButtonPressed)
                 {
                     TryThrowSwitchAt();
                     UserInput.Handled();
@@ -871,7 +871,7 @@ namespace ORTS.Viewer3D
             else if (!Simulator.Paused && UserInput.IsDown(UserCommands.GameUncoupleWithMouse))
             {
                 isMouseShouldVisible = true;
-                if (UserInput.MouseState.LeftButton == ButtonState.Pressed && UserInput.Changed)
+                if (UserInput.IsMouseLeftButtonPressed)
                 {
                     TryUncoupleAt();
                     UserInput.Handled();

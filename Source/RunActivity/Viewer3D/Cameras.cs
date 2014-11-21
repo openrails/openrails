@@ -264,9 +264,9 @@ namespace ORTS.Viewer3D
         {
             // Will not zoom-in-out when help windows is up.
             // TODO: Propery input processing through WindowManager.
-            if (UserInput.IsMouseWheelChanged() && !Viewer.HelpWindow.Visible)
+            if (UserInput.IsMouseWheelChanged && !Viewer.HelpWindow.Visible)
             {
-                var fieldOfView = MathHelper.Clamp(FieldOfView - speed * UserInput.MouseWheelChange() / 10, 1, 135);
+                var fieldOfView = MathHelper.Clamp(FieldOfView - speed * UserInput.MouseWheelChange / 10, 1, 135);
                 new FieldOfViewCommand(Viewer.Log, fieldOfView);
             }
         }
@@ -456,20 +456,20 @@ namespace ORTS.Viewer3D
 
         protected virtual void RotateByMouse()
         {
-            if (UserInput.IsMouseRightButtonDown())
+            if (UserInput.IsMouseRightButtonDown)
             {
                 // Mouse movement doesn't use 'var speed' because the MouseMove 
                 // parameters are already scaled down with increasing frame rates, 
-                RotationXRadians += GetMouseDelta(UserInput.MouseMoveY());
-                RotationYRadians += GetMouseDelta(UserInput.MouseMoveX());
+                RotationXRadians += GetMouseDelta(UserInput.MouseMoveY);
+                RotationYRadians += GetMouseDelta(UserInput.MouseMoveX);
             }
             // Support for replaying mouse movements
-            if (UserInput.IsMouseRightButtonPressed())
+            if (UserInput.IsMouseRightButtonPressed)
             {
                 Viewer.CheckReplaying();
                 CommandStartTime = Viewer.Simulator.ClockTime;
             }
-            if (UserInput.IsMouseRightButtonReleased())
+            if (UserInput.IsMouseRightButtonReleased)
             {
                 var commandEndTime = Viewer.Simulator.ClockTime;
                 new CameraMouseRotateCommand(Viewer.Log, CommandStartTime, commandEndTime, RotationXRadians, RotationYRadians);
@@ -1356,7 +1356,7 @@ namespace ORTS.Viewer3D
         protected override void RotateByMouse()
         {
             base.RotateByMouse();
-            if (UserInput.IsMouseRightButtonReleased())
+            if (UserInput.IsMouseRightButtonReleased)
             {
                 var viewPoint = attachedCar.PassengerViewpoints[0];
                 viewPoint.RotationXRadians = RotationXRadians;

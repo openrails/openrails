@@ -285,9 +285,9 @@ namespace ORTS.Viewer3D.Popups
 		[CallOnThread("Updater")]
         public void HandleUserInput(ElapsedTime elapsedTime)
         {
-			if (UserInput.IsMouseLeftButtonPressed())
+			if (UserInput.IsMouseLeftButtonPressed)
 			{
-				mouseDownPosition = new Point(UserInput.MouseState.X, UserInput.MouseState.Y);
+				mouseDownPosition = new Point(UserInput.MouseX, UserInput.MouseY);
                 mouseActiveWindow = VisibleWindows.LastOrDefault(w => w.Interactive && w.Location.Contains(mouseDownPosition));
                 if ((mouseActiveWindow != null) && (mouseActiveWindow != WindowsZOrder.Last()))
                     BringWindowToTop(mouseActiveWindow);
@@ -295,12 +295,12 @@ namespace ORTS.Viewer3D.Popups
 
 			if (mouseActiveWindow != null)
 			{
-				if (UserInput.IsMouseLeftButtonPressed())
+				if (UserInput.IsMouseLeftButtonPressed)
 					mouseActiveWindow.MouseDown();
-				else if (UserInput.IsMouseLeftButtonReleased())
+				else if (UserInput.IsMouseLeftButtonReleased)
 					mouseActiveWindow.MouseUp();
 
-				if (UserInput.IsMouseMoved())
+				if (UserInput.IsMouseMoved)
 					mouseActiveWindow.MouseMove();
 
 				if (Viewer.RealTime - LastUpdateRealTime >= 0.1)
@@ -309,7 +309,7 @@ namespace ORTS.Viewer3D.Popups
 					mouseActiveWindow.HandleUserInput();
 				}
 
-				if (UserInput.IsMouseLeftButtonReleased())
+				if (UserInput.IsMouseLeftButtonReleased)
 					mouseActiveWindow = null;
 			}
 		}

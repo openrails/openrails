@@ -317,9 +317,9 @@ namespace ORTS.Viewer3D.Popups
 
 		public WindowMouseEvent(WindowManager windowManager, Window window)
 		{
-			MousePosition = new Point(UserInput.MouseState.X - window.Location.X, UserInput.MouseState.Y - window.Location.Y);
+			MousePosition = new Point(UserInput.MouseX - window.Location.X, UserInput.MouseY - window.Location.Y);
 			MouseDownPosition = new Point(windowManager.MouseDownPosition.X - window.Location.X, windowManager.MouseDownPosition.Y - window.Location.Y);
-			MouseScreenPosition = new Point(UserInput.MouseState.X, UserInput.MouseState.Y);
+			MouseScreenPosition = new Point(UserInput.MouseX, UserInput.MouseY);
 			MouseDownScreenPosition = windowManager.MouseDownPosition;
 		}
 	}
@@ -360,9 +360,9 @@ namespace ORTS.Viewer3D.Popups
 		{
 			if (base.HandleMouseMove(e))
 				return true;
-			if (UserInput.IsMouseLeftButtonDown() && !Dragging && (DragWindowOffset != DragInvalid) && ((MathHelper.Distance(e.MouseScreenPosition.X, e.MouseDownScreenPosition.X) > WindowManager.DragMinimumDistance) || (MathHelper.Distance(e.MouseScreenPosition.Y, e.MouseDownScreenPosition.Y) > WindowManager.DragMinimumDistance)))
+			if (UserInput.IsMouseLeftButtonDown && !Dragging && (DragWindowOffset != DragInvalid) && ((MathHelper.Distance(e.MouseScreenPosition.X, e.MouseDownScreenPosition.X) > WindowManager.DragMinimumDistance) || (MathHelper.Distance(e.MouseScreenPosition.Y, e.MouseDownScreenPosition.Y) > WindowManager.DragMinimumDistance)))
 				Dragging = true;
-			else if (UserInput.IsMouseLeftButtonDown() && Dragging)
+			else if (UserInput.IsMouseLeftButtonDown && Dragging)
 				Window.MoveTo(e.MouseScreenPosition.X - DragWindowOffset.X, e.MouseScreenPosition.Y - DragWindowOffset.Y);
 			return true;
 		}

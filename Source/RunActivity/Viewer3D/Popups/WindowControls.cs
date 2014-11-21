@@ -485,7 +485,7 @@ namespace ORTS.Viewer3D.Popups
 
         internal override bool HandleUserInput(WindowMouseEvent e)
         {
-            if (UserInput.IsMouseLeftButtonDown())
+            if (UserInput.IsMouseLeftButtonDown)
             {
                 Client.Position.Width = Client.CurrentLeft;
                 if (e.MouseDownPosition.Y > Position.Bottom - ScrollbarSize)
@@ -568,7 +568,7 @@ namespace ORTS.Viewer3D.Popups
 
         internal override bool HandleUserInput(WindowMouseEvent e)
         {
-            if (UserInput.IsMouseLeftButtonDown())
+            if (UserInput.IsMouseLeftButtonDown)
             {
                 Client.Position.Height = Client.CurrentTop;
                 if (e.MouseDownPosition.X > Position.Right - ScrollbarSize)
