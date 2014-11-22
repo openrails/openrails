@@ -178,7 +178,11 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Sets the current value of the brake controller (must have a value)
         /// </summary>
-        SetCurrentValue
+        SetCurrentValue,
+        /// <summary>
+        /// Starts a full quick brake release.
+        /// </summary>
+        FullQuickRelease
     }
 
     public enum ControllerState
