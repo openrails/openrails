@@ -34,7 +34,6 @@ namespace ORTS.Scripting
         readonly Simulator Simulator;
         readonly Dictionary<string, Assembly> Scripts = new Dictionary<string, Assembly>();
         static readonly CSharpCodeProvider Compiler = new CSharpCodeProvider(new Dictionary<string, string>() { { "CompilerVersion", "v3.5" } });
-        static readonly CompilerParameters CompilerParameters = GetCompilerParameters();
 
         static CompilerParameters GetCompilerParameters()
         {
@@ -81,7 +80,7 @@ namespace ORTS.Scripting
 
             try
             {
-                var compilerResults = Compiler.CompileAssemblyFromFile(CompilerParameters, path);
+                var compilerResults = Compiler.CompileAssemblyFromFile(GetCompilerParameters(), path);
                 if (!compilerResults.Errors.HasErrors)
                 {
                     var script = compilerResults.CompiledAssembly;
