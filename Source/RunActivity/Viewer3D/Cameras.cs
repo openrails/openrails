@@ -1689,13 +1689,11 @@ namespace ORTS.Viewer3D
 
             // TODO: What is this code trying to do?
             //if (train != Viewer.PlayerTrain && train.LeadLocomotive == null) train.ChangeToNextCab();
-            if (train.LeadLocomotive == null)
-            {
-                return;
-            }
+            var trainForwards = true;
+            if (train.LeadLocomotive != null)
             //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
             // To achieve the same result with other means, without flipping trainset physics, maybe the line should be changed
-            var trainForwards = (train.LeadLocomotive.SpeedMpS >= 0) ^ train.LeadLocomotive.Flipped ^ ((MSTSLocomotive)train.LeadLocomotive).UsingRearCab;
+            trainForwards = (train.LeadLocomotive.SpeedMpS >= 0) ^ train.LeadLocomotive.Flipped ^ ((MSTSLocomotive)train.LeadLocomotive).UsingRearCab;
             targetLocation = attachedCar.WorldPosition.WorldLocation;
 
             // Train is close enough if the last car we used is part of the same train and still close enough.
