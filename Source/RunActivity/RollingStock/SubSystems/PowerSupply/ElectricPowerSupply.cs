@@ -15,9 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-// Define this to log the wheel configurations on cars as they are loaded.
-//#define DEBUG_WHEELS
-
 using System;
 using System.IO;
 using MSTS.Parsers;

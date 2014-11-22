@@ -35,6 +35,7 @@ namespace ORTS
         private float DelayS = 0f;
 
         public CircuitBreakerState State { get; private set; }
+        public bool DriverCloseAuthorization { get; private set; }
 
         public ScriptedCircuitBreaker(MSTSElectricLocomotive locomotive)
         {
@@ -99,9 +100,11 @@ namespace ORTS
                     else
                         return false;
                 };
+                Script.DriverCloseAuthorization = () => DriverCloseAuthorization;
                 Script.ClosingDelayS = () => DelayS;
 
                 Script.SetCurrentState = (value) => State = value;
+                Script.SetDriverCloseAuthorization = (value) => DriverCloseAuthorization = value;
 
                 Script.Initialize();
                 Activated = true;
@@ -115,16 +118,16 @@ namespace ORTS
 
         public void Update(float elapsedSeconds)
         {
-            if (Script == null)
-                return;
-
             if (Locomotive.Train.TrainType == Train.TRAINTYPE.AI || Locomotive.Train.TrainType == Train.TRAINTYPE.AI_AUTOGENERATE)
             {
                 State = CircuitBreakerState.Closed;
             }
             else
             {
-                Script.Update(elapsedSeconds);
+                if (Script != null)
+                {
+                    Script.Update(elapsedSeconds);
+                }
             }
         }
 
@@ -152,6 +155,8 @@ namespace ORTS
         {
             ClosingTimer = new Timer(this);
             ClosingTimer.Setup(ClosingDelayS());
+
+            SetDriverCloseAuthorization(true);
         }
 
         public override void Update(float elapsedSeconds)

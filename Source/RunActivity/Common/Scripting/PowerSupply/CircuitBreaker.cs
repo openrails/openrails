@@ -41,6 +41,10 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<bool> TCSCloseAuthorization;
         /// <summary>
+        /// Driver authorization
+        /// </summary>
+        public Func<bool> DriverCloseAuthorization;
+        /// <summary>
         /// Delay before circuit breaker closing
         /// </summary>
         public Func<float> ClosingDelayS;
@@ -49,6 +53,10 @@ namespace ORTS.Scripting.Api
         /// Sets the current state of the circuit breaker
         /// </summary>
         public Action<CircuitBreakerState> SetCurrentState;
+        /// <summary>
+        /// Sets the driver authorization
+        /// </summary>
+        public Action<bool> SetDriverCloseAuthorization;
 
         /// <summary>
         /// Called once at initialization time.
@@ -68,6 +76,7 @@ namespace ORTS.Scripting.Api
     public enum CircuitBreakerState
     {
         Open,
+        Closing,
         Closed
     }
 }
