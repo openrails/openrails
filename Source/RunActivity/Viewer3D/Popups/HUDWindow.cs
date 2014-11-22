@@ -393,7 +393,20 @@ namespace ORTS.Viewer3D.Popups
                     }
                 }
 
+                StringBuilder cbAuthorization = new StringBuilder();
+                cbAuthorization.Append("TCS ");
+                if (loco.TrainControlSystem.PowerAuthorization)
+                    cbAuthorization.Append("OK");
+                else
+                    cbAuthorization.Append("NOTOK");
+                cbAuthorization.Append(", driver ");
+                if (loco.PowerSupply.CircuitBreaker.DriverCloseAuthorization)
+                    cbAuthorization.Append("OK");
+                else
+                    cbAuthorization.Append("NOTOK");
+
                 TableAddLabelValue(table, "Pantographs", pantographStatus.ToString());
+                TableAddLabelValue(table, "CB authorization", cbAuthorization.ToString());
                 TableAddLabelValue(table, "Circuit breaker", loco.PowerSupply.CircuitBreaker.State.ToString());
                 TableAddLabelValue(table, "Electric power", loco.PowerSupply.State.ToString());
                 TableAddLabelValue(table, "Auxiliary power", loco.PowerSupply.AuxiliaryState.ToString());
