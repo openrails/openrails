@@ -201,14 +201,17 @@ namespace ORTS
                         Simulator.Confirmer.Confirm(CabControl.Pantograph1, CabSetting.Off);
                         Simulator.Confirmer.Confirm(CabControl.Pantograph2, CabSetting.Off);
                         break;
-
-                    case PowerSupplyEvent.CloseCircuitBreaker:
-                    case PowerSupplyEvent.OpenCircuitBreaker:
-                    case PowerSupplyEvent.GiveCircuitBreakerClosingAuthority:
-                    case PowerSupplyEvent.RemoveCircuitBreakerClosingAuthority:
-                        PowerSupply.HandleEvent(evt);
-                        break;
                 }
+            }
+
+            switch (evt)
+            {
+                case PowerSupplyEvent.CloseCircuitBreaker:
+                case PowerSupplyEvent.OpenCircuitBreaker:
+                case PowerSupplyEvent.GiveCircuitBreakerClosingAuthority:
+                case PowerSupplyEvent.RemoveCircuitBreakerClosingAuthority:
+                    PowerSupply.HandleEvent(evt);
+                    break;
             }
 
             base.SignalEvent(evt);
