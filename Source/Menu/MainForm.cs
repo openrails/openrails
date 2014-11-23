@@ -15,6 +15,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using GNU.Gettext;
+using GNU.Gettext.WinForms;
+using ORTS.Common;
+using ORTS.Formats;
+using ORTS.Menu;
+using ORTS.Settings;
+using ORTS.Updater;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -26,13 +33,6 @@ using System.Resources;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
-using GNU.Gettext;
-using GNU.Gettext.WinForms;
-using ORTS.Common;
-using ORTS.Formats;
-using ORTS.Menu;
-using ORTS.Settings;
-using ORTS.Updater;
 using Path = ORTS.Menu.Path;
 
 namespace ORTS
@@ -59,6 +59,7 @@ namespace ORTS
         List<Consist> Consists = new List<Consist>();
         List<Path> Paths = new List<Path>();
         List<TimetableInfo> ORTimeTables = new List<TimetableInfo>();
+        Task<List<Folder>> FolderLoader;
         Task<List<Route>> RouteLoader;
         Task<List<Activity>> ActivityLoader;
         Task<List<Consist>> ConsistLoader;
@@ -66,6 +67,7 @@ namespace ORTS
         Task<List<TimetableInfo>> ORTimeTableLoader;
         readonly ResourceManager Resources = new ResourceManager("ORTS.Properties.Resources", typeof(MainForm).Assembly);
         readonly UpdateManager UpdateManager;
+        readonly Image ElevationIcon;
 
         internal string RunActivityProgram
         {
@@ -98,7 +100,7 @@ namespace ORTS
         GettextResourceManager catalog = new GettextResourceManager("Menu");
 
         #region Main Form
-        public MainForm(UpdateManager updateManager)
+        public MainForm()
         {
             InitializeComponent();
 
@@ -115,7 +117,8 @@ namespace ORTS
             panelModeTimetable.Location = panelModeActivity.Location;
             ShowDetails();
             UpdateEnabled();
-            UpdateManager = updateManager;
+            UpdateManager = new UpdateManager(System.IO.Path.GetDirectoryName(Application.ExecutablePath), Application.ProductName, VersionInfo.VersionOrBuild);
+            ElevationIcon = new Icon(SystemIcons.Shield, SystemInformation.SmallIconSize).ToBitmap();
         }
 
         void MainForm_Shown(object sender, EventArgs e)
@@ -248,19 +251,27 @@ namespace ORTS
 
             new Task<UpdateManager>(this, () =>
             {
-                UpdateManager.Clean();
                 UpdateManager.Check();
                 return null;
             }, _ =>
             {
-                if (UpdateManager.LatestUpdateError != null)
+                if (UpdateManager.LastCheckError != null)
                     linkLabelUpdate.Text = catalog.GetString("Update check failed");
-                else if (UpdateManager.LatestUpdate != null && UpdateManager.LatestUpdate.Version != ORTS.Common.VersionInfo.Version)
-                    linkLabelUpdate.Text = catalog.GetStringFmt("Update to {0}", UpdateManager.LatestUpdate.Version);
+                else if (UpdateManager.LastUpdate != null && UpdateManager.LastUpdate.Version != VersionInfo.Version)
+                    linkLabelUpdate.Text = catalog.GetStringFmt("Update to {0}", UpdateManager.LastUpdate.Version);
                 else
                     linkLabelUpdate.Text = "";
                 linkLabelUpdate.Enabled = true;
-                linkLabelUpdate.Visible = linkLabelUpdate.Text.Length > 0 && !linkLabelRestart.Visible;
+                linkLabelUpdate.Visible = linkLabelUpdate.Text.Length > 0;
+                // Update link's elevation icon and size/position.
+                if (UpdateManager.LastCheckError == null && UpdateManager.LastUpdate != null && UpdateManager.LastUpdate.Version != VersionInfo.Version && UpdateManager.UpdaterNeedsElevation)
+                    linkLabelUpdate.Image = ElevationIcon;
+                else
+                    linkLabelUpdate.Image = null;
+                linkLabelUpdate.AutoSize = true;
+                linkLabelUpdate.Left = linkLabelChangeLog.Right - linkLabelUpdate.Width - ElevationIcon.Width;
+                linkLabelUpdate.AutoSize = false;
+                linkLabelUpdate.Width = linkLabelChangeLog.Right - linkLabelUpdate.Left;
             });
         }
 
@@ -438,40 +449,19 @@ namespace ORTS
         #region Misc. buttons and options
         void linkLabelUpdate_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            if (UpdateManager.LatestUpdateError != null)
+            if (UpdateManager.LastCheckError != null)
             {
-                MessageBox.Show(catalog.GetStringFmt("The update check failed due to an error:\n\n{0}", UpdateManager.LatestUpdateError), Application.ProductName);
+                MessageBox.Show(catalog.GetStringFmt("The update check failed due to an error:\n\n{0}", UpdateManager.LastCheckError), Application.ProductName);
                 return;
             }
 
-            linkLabelUpdate.Text = catalog.GetStringFmt("Updating to {0}...", UpdateManager.LatestUpdate.Version);
-            linkLabelUpdate.Enabled = false;
-            linkLabelUpdate.Visible = true;
-            new Task<UpdateManager>(this, () =>
-            {
-                UpdateManager.Prepare();
-                return null;
-            }, _ =>
-            {
-                if (UpdateManager.UpdateError != null)
-                {
-                    MessageBox.Show(catalog.GetStringFmt("The update failed due to an error:\n\n{0}", UpdateManager.UpdateError), Application.ProductName);
-                    linkLabelUpdate.Visible = false;
-                    CheckForUpdate();
-                }
-                else
-                {
-                    linkLabelUpdate.Visible = false;
-                    linkLabelRestart.Visible = true;
-                }
-            });
-        }
+            UpdateManager.Update(this.Handle);
 
-        void linkLabelRestart_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            // We tell the new process (which will be applying the update) to wait for us to exit first.
-            Process.Start(Application.ExecutablePath, String.Format("/WAITPID={0}", Process.GetCurrentProcess().Id));
-            Application.Exit();
+            if (UpdateManager.LastUpdateError != null)
+            {
+                MessageBox.Show(catalog.GetStringFmt("The update failed due to an error:\n\n{0}", UpdateManager.LastUpdateError), Application.ProductName);
+                return;
+            }
         }
 
         void linkLabelChangeLog_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -610,7 +600,7 @@ namespace ORTS
             Folders.Clear();
             ShowFolderList();
 
-            new Task<List<Folder>>(this, () => Folder.GetFolders(Settings).OrderBy(f => f.Name).ToList(), (folders) =>
+            FolderLoader = new Task<List<Folder>>(this, () => Folder.GetFolders(Settings).OrderBy(f => f.Name).ToList(), (folders) =>
             {
                 Folders = folders;
                 if (Folders.Count == 0)

@@ -26,13 +26,12 @@
  * be a native program so it can check for .NET as well.
  */
 
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
-using Microsoft.Win32;
-
 
 namespace ORTS
 {
@@ -60,7 +59,8 @@ namespace ORTS
 
 			// Default menu
 			var menu = "Menu.exe";
-			Process.Start(Path.Combine(path, menu));
+			var process = Process.Start(Path.Combine(path, menu));
+            process.WaitForInputIdle();
 		}
 
 		static void CheckNetFx(List<string> missing)

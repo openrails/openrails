@@ -97,7 +97,6 @@ namespace ORTS
             this.comboBoxTimetable = new System.Windows.Forms.ComboBox();
             this.label15 = new System.Windows.Forms.Label();
             this.linkLabelUpdate = new System.Windows.Forms.LinkLabel();
-            this.linkLabelRestart = new System.Windows.Forms.LinkLabel();
             this.testingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStripTools = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.linkLabelChangeLog = new System.Windows.Forms.LinkLabel();
@@ -846,6 +845,7 @@ namespace ORTS
             // linkLabelUpdate
             // 
             this.linkLabelUpdate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.linkLabelUpdate.ImageAlign = System.Drawing.ContentAlignment.TopLeft;
             this.linkLabelUpdate.Location = new System.Drawing.Point(623, 9);
             this.linkLabelUpdate.Name = "linkLabelUpdate";
             this.linkLabelUpdate.Size = new System.Drawing.Size(219, 16);
@@ -854,20 +854,6 @@ namespace ORTS
             this.linkLabelUpdate.UseMnemonic = false;
             this.linkLabelUpdate.Visible = false;
             this.linkLabelUpdate.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelUpdate_LinkClicked);
-            // 
-            // linkLabelRestart
-            // 
-            this.linkLabelRestart.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.linkLabelRestart.Location = new System.Drawing.Point(623, 9);
-            this.linkLabelRestart.Name = "linkLabelRestart";
-            this.linkLabelRestart.Size = new System.Drawing.Size(219, 16);
-            this.linkLabelRestart.TabIndex = 38;
-            this.linkLabelRestart.TabStop = true;
-            this.linkLabelRestart.Text = "Restart to apply update";
-            this.linkLabelRestart.TextAlign = System.Drawing.ContentAlignment.TopRight;
-            this.linkLabelRestart.UseMnemonic = false;
-            this.linkLabelRestart.Visible = false;
-            this.linkLabelRestart.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelRestart_LinkClicked);
             // 
             // testingToolStripMenuItem
             // 
@@ -908,7 +894,6 @@ namespace ORTS
             this.Controls.Add(this.radioButtonModeTimetable);
             this.Controls.Add(this.radioButtonModeActivity);
             this.Controls.Add(this.label25);
-            this.Controls.Add(this.linkLabelRestart);
             this.Controls.Add(this.linkLabelUpdate);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.buttonFolderEdit);
@@ -1016,7 +1001,6 @@ namespace ORTS
         private System.Windows.Forms.ComboBox comboBoxTimetable;
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.LinkLabel linkLabelUpdate;
-        private System.Windows.Forms.LinkLabel linkLabelRestart;
         private System.Windows.Forms.ToolStripMenuItem testingToolStripMenuItem;
         private System.Windows.Forms.ContextMenuStrip contextMenuStripTools;
         private System.Windows.Forms.LinkLabel linkLabelChangeLog;

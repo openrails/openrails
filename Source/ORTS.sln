@@ -47,6 +47,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORTS.Viewer3D", "ORTS.Viewe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataCollector", "Contrib\DataCollector\DataCollector.csproj", "{22CC0DE5-5E0C-4CA4-9CC0-FF1FE6C6B2BA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Updater", "Updater\Updater.csproj", "{9C6D17E1-DC48-4B96-B9DA-A9B41F685327}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -141,6 +143,10 @@ Global
 		{22CC0DE5-5E0C-4CA4-9CC0-FF1FE6C6B2BA}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{22CC0DE5-5E0C-4CA4-9CC0-FF1FE6C6B2BA}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{22CC0DE5-5E0C-4CA4-9CC0-FF1FE6C6B2BA}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{9C6D17E1-DC48-4B96-B9DA-A9B41F685327}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{9C6D17E1-DC48-4B96-B9DA-A9B41F685327}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{9C6D17E1-DC48-4B96-B9DA-A9B41F685327}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{9C6D17E1-DC48-4B96-B9DA-A9B41F685327}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
