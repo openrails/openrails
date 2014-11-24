@@ -32,6 +32,7 @@ namespace Updater
     {
         string BasePath;
         string LauncherPath;
+        bool RelaunchApplication;
 
         public UpdaterProgress()
         {
@@ -43,19 +44,44 @@ namespace Updater
             Font = SystemFonts.MessageBoxFont;
 
             BasePath = Path.GetDirectoryName(Application.ExecutablePath);
-            LauncherPath = Path.Combine(BasePath, "OpenRails.exe");
+            LauncherPath = UpdateManager.GetMainExecutable(BasePath, Application.ProductName);
         }
 
         void UpdaterProgress_Load(object sender, EventArgs e)
         {
-            new Thread(UpdaterThread).Start();
+            // If /RELAUNCH=1 is set, we're expected to re-launch the main application when we're done.
+            RelaunchApplication = Environment.GetCommandLineArgs().Any(a => a == UpdateManager.RelaunchCommandLine + "1");
+
+            // If /ELEVATE=1 is set, we're an elevation wrapper used to preserve the integrity level of the caller.
+            var needsElevation = Environment.GetCommandLineArgs().Any(a => a == UpdateManager.ElevationCommandLine + "1");
+
+            // Run everything in a new thread so the UI is responsive and visible.
+            new Thread(needsElevation ? (ThreadStart)ElevationThread : (ThreadStart)UpdaterThread).Start();
+        }
+
+        void ElevationThread()
+        {
+            // Remove both the /RELAUNCH= and /ELEVATE= command-line flags from the child process - it should not do either.
+            var processInfo = new ProcessStartInfo(Application.ExecutablePath, String.Join(" ", Environment.GetCommandLineArgs().Skip(1).Where(a => !a.StartsWith(UpdateManager.RelaunchCommandLine)).Where(a => !a.StartsWith(UpdateManager.ElevationCommandLine)).ToArray()));
+            processInfo.Verb = "runas";
+
+            var process = Process.Start(processInfo);
+            process.WaitForInputIdle();
+            if (!IsDisposed)
+                Invoke((Action)Hide);
+            process.WaitForExit();
+
+            if (RelaunchApplication)
+                LaunchApplication();
+
+            Environment.Exit(0);
         }
 
         void UpdaterThread()
         {
             // We wait for any processes identified by /WAITPID=<pid> to exit before starting up so that the updater
             // will not try and apply an update whilst the previous instance is still lingering.
-            var waitPids = Environment.GetCommandLineArgs().Where(a => a.StartsWith("/WAITPID="));
+            var waitPids = Environment.GetCommandLineArgs().Where(a => a.StartsWith(UpdateManager.WaitProcessIdCommandLine));
             foreach (var waitPid in waitPids)
             {
                 try
@@ -109,14 +135,22 @@ namespace Updater
                 return;
             }
 
-            var appProcess = Process.Start(LauncherPath);
-            appProcess.WaitForExit();
+            if (RelaunchApplication)
+                LaunchApplication();
+
             Environment.Exit(0);
         }
 
         void UpdaterProgress_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Process.Start(LauncherPath);
+            if (RelaunchApplication)
+                LaunchApplication();
+        }
+
+        void LaunchApplication()
+        {
+            var process = Process.Start(LauncherPath);
+            process.WaitForExit();
         }
     }
 }

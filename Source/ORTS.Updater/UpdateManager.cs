@@ -37,6 +37,10 @@ namespace ORTS.Updater
         // The date on this is fairly arbitrary - it's only used in a calculation to round the DateTime up to the next TimeSpan period.
         readonly DateTime BaseDateTimeMidnightLocal = new DateTime(2010, 1, 1, 0, 0, 0, DateTimeKind.Local);
 
+        public const string WaitProcessIdCommandLine = "/WAITPID=";
+        public const string RelaunchCommandLine = "/RELAUNCH=";
+        public const string ElevationCommandLine = "/ELEVATE=";
+
         public event EventHandler<ProgressChangedEventArgs> ApplyProgressChanged;
 
         readonly string BasePath;
@@ -53,6 +57,21 @@ namespace ORTS.Updater
         public Exception LastCheckError { get; private set; }
         public Exception LastUpdateError { get; private set; }
         public bool UpdaterNeedsElevation { get; private set; }
+
+        public static string GetMainExecutable(string pathName, string productName)
+        {
+            foreach (var file in Directory.GetFiles(pathName, "*.exe"))
+            {
+                try
+                {
+                    var versionInfo = FileVersionInfo.GetVersionInfo(file);
+                    if (versionInfo.FileDescription == productName)
+                        return file;
+                }
+                catch { }
+            }
+            return null;
+        }
 
         public UpdateManager(string basePath, string productName, string productVersion)
         {
@@ -164,14 +183,8 @@ namespace ORTS.Updater
             if (LastUpdate == null) throw new InvalidOperationException("Cannot get update when no LatestUpdate exists.");
             try
             {
-                var processInfo = new ProcessStartInfo(FileUpdater, String.Format("/WAITPID={0}", Process.GetCurrentProcess().Id));
-                if (UpdaterNeedsElevation)
-                    processInfo.Verb = "runas";
-                var process = Process.Start(processInfo);
-                if (UpdaterNeedsElevation)
-                    Thread.Sleep(1000);
-                else
-                    process.WaitForInputIdle();
+                var process = Process.Start(FileUpdater, String.Format("{0}{1} {2}{3} {4}{5}", WaitProcessIdCommandLine, Process.GetCurrentProcess().Id, RelaunchCommandLine, 1, ElevationCommandLine, UpdaterNeedsElevation ? 1 : 0));
+                process.WaitForInputIdle();
                 Environment.Exit(0);
             }
             catch (Exception error)
@@ -264,7 +277,7 @@ namespace ORTS.Updater
         string PathUpdateDirty { get { return Path.Combine(PathUpdateTemp, "UpdateDirty"); } }
         string PathUpdateStage { get { return Path.Combine(PathUpdateTemp, "UpdateStage"); } }
         string FileUpdateStage { get { return Path.Combine(PathUpdateStage, "Update.zip"); } }
-        string FileUpdateStageIsReady { get { return Path.Combine(PathUpdateStage, "OpenRails.exe"); } }
+        string FileUpdateStageIsReady { get { return GetMainExecutable(PathUpdateStage, ProductName); } }
         string FileSettings { get { return Path.Combine(BasePath, "OpenRails.ini"); } }
         string FileUpdater { get { return Path.Combine(BasePath, "Updater.exe"); } }
 
