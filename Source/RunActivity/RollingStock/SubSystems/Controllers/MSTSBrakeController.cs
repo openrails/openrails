@@ -96,11 +96,6 @@ namespace ORTS
                             pressureBar += x * QuickReleaseRateBarpS() * elapsedClockSeconds;
                             epPressureBar -= x * QuickReleaseRateBarpS() * elapsedClockSeconds;
                             break;
-                        case ControllerState.Running:
-                            if (notch.Smooth)
-                                x = .05f * (1 - x);
-                            pressureBar += x * ReleaseRateBarpS() * elapsedClockSeconds;
-                            break;
                         case ControllerState.Apply:
                         case ControllerState.FullServ:
                             pressureBar -= x * ApplyRateBarpS() * elapsedClockSeconds;
@@ -158,15 +153,6 @@ namespace ORTS
                     case ControllerState.Release:
                         pressureBar -= x * ReleaseRateBarpS() * elapsedClockSeconds;
                         break;
-                    case ControllerState.Running:
-                        pressureBar -= ReleaseRateBarpS() * elapsedClockSeconds;
-                        break;
-#if false
-                    case BrakeControllerState.Apply:
-                    case BrakeControllerState.FullServ:
-                        pressurePSI += x * ApplyRatePSIpS * elapsedClockSeconds;
-                        break;
-#endif
                     case ControllerState.Emergency:
                         pressureBar += EmergencyRateBarpS() * elapsedClockSeconds;
                         break;
