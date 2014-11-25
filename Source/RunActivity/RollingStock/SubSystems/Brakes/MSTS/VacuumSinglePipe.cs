@@ -218,7 +218,12 @@ namespace ORTS
         public override void Update(float elapsedClockSeconds)
         {
             if (BrakeLine1PressurePSI < 0)
-                return; // pipes not connected
+            {
+                // Brake line is disconnected.
+                Car.BrakeForceN = 0;
+                return;
+            }
+
             if (BrakeLine1PressurePSI < VacResPressurePSIA)
             {
                 float dp = elapsedClockSeconds * MaxReleaseRatePSIpS * CylVol / VacResVol;
