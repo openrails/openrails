@@ -1112,7 +1112,7 @@ namespace ORTS
 
             // Variable1 is proportional to angular speed, value of 10 means 1 rotation/second.
             Variable1 = (Simulator.UseAdvancedAdhesion && Train.TrainType == ORTS.Train.TRAINTYPE.PLAYER ? LocomotiveAxle.AxleSpeedMpS : SpeedMpS) / DriverWheelRadiusM / MathHelper.Pi * 5;
-            Variable2 = Math.Min(CylinderPressurePSI / MaxBoilerPressurePSI * 100f, 100f);
+            Variable2 = MathHelper.Clamp((CylinderPressurePSI - OneAtmospherePSI) / BoilerPressurePSI * 100f, 0, 100);
             Variable3 = FuelRateSmooth * 100;
 
             const int rotations = 2;
