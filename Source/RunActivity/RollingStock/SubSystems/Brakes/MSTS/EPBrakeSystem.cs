@@ -32,14 +32,6 @@ namespace ORTS
 
         public override void Update(float elapsedClockSeconds)
         {
-            if (BrakeLine1PressurePSI < 0)
-            {
-                // Brake lines are disconnected.
-                TripleValveState = ValveState.Release;
-                Car.BrakeForceN = 0;
-                return;
-            }
-
             ValveState prevState = epState;
             RetainerPressureThresholdPSI = Car.Train.BrakeLine4PressurePSI;
             if (AutoCylPressurePSI > RetainerPressureThresholdPSI)
