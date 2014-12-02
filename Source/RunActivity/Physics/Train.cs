@@ -358,9 +358,6 @@ namespace ORTS
                         //if (lead.EngineBrakeController != null)
                         //    lead.EngineBrakeController.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, 1000);
                     }
-                if (LeadLocomotiveIndex < 0)
-                    foreach (TrainCar car in Cars)
-                        car.BrakeSystem.BrakeLine1PressurePSI = -1;
             }
         }
 
@@ -1316,6 +1313,17 @@ namespace ORTS
             // Shift all the coupler data along the train by 1 car.
             for (var i = Cars.Count - 1; i > 0; i--)
                 Cars[i].CopyCoupler(Cars[i - 1]);
+            // Reverse brake hose connections and angle cocks
+            for (var i = 0; i < Cars.Count; i++)
+            {
+                var ac = Cars[i].BrakeSystem.AngleCockAOpen;
+                Cars[i].BrakeSystem.AngleCockAOpen = Cars[i].BrakeSystem.AngleCockBOpen;
+                Cars[i].BrakeSystem.AngleCockBOpen = ac;
+                if (i == Cars.Count - 1)
+                    Cars[i].BrakeSystem.FrontBrakeHoseConnected = false;
+                else
+                    Cars[i].BrakeSystem.FrontBrakeHoseConnected = Cars[i + 1].BrakeSystem.FrontBrakeHoseConnected;
+            }
             // Reverse the actual order of the cars in the train.
             Cars.Reverse();
             // Update leading locomotive index.
@@ -2904,12 +2912,10 @@ namespace ORTS
             }
             BrakeLine2PressurePSI = maxPressurePSI;
             foreach (TrainCar car in Cars)
-            {
                 car.BrakeSystem.Initialize(LeadLocomotiveIndex < 0, maxPressurePSI, fullServPressurePSI, false);
-                if (LeadLocomotiveIndex < 0)
-                    car.BrakeSystem.BrakeLine1PressurePSI = -1;
-            }
-        }
+            if (LeadLocomotiveIndex >= 0)
+                ConnectBrakeHoses();
+       }
 
         //================================================================================================//
         /// <summary>
@@ -2933,8 +2939,13 @@ namespace ORTS
         {
             if (SpeedMpS < -.1 || SpeedMpS > .1)
                 return;
-            foreach (TrainCar car in Cars)
-                car.BrakeSystem.Connect();
+            for (var i = 0; i < Cars.Count; i++ )
+            {
+                Cars[i].BrakeSystem.FrontBrakeHoseConnected = i > 0;
+                Cars[i].BrakeSystem.AngleCockAOpen = i > 0;
+                Cars[i].BrakeSystem.AngleCockBOpen = i < Cars.Count - 1;
+                Cars[i].BrakeSystem.BleedOffValveOpen = false;
+            }
         }
 
         //================================================================================================//
@@ -2951,10 +2962,9 @@ namespace ORTS
             FindLeadLocomotives(ref first, ref last);
             for (int i = 0; i < Cars.Count; i++)
             {
-                if (first <= i && i <= last)
-                    continue;
-                TrainCar car = Cars[i];
-                car.BrakeSystem.Disconnect();
+                Cars[i].BrakeSystem.FrontBrakeHoseConnected = first < i && i <= last;
+                Cars[i].BrakeSystem.AngleCockAOpen = i != first;
+                Cars[i].BrakeSystem.AngleCockBOpen = i != last;
             }
         }
 
@@ -3061,11 +3071,15 @@ namespace ORTS
             {
                 foreach (TrainCar car in Cars)
                 {
-                    if (car.BrakeSystem.BrakeLine1PressurePSI < 0)
-                        continue;
+                    if (!car.BrakeSystem.FrontBrakeHoseConnected || !car.BrakeSystem.AngleCockAOpen)
+                        break;
+
                     car.BrakeSystem.BrakeLine1PressurePSI = car.BrakeSystem.TrainBrakePToBrakeSystemBrakeP(BrakeLine1PressurePSIorInHg);
                     car.BrakeSystem.BrakeLine2PressurePSI = BrakeLine2PressurePSI;
                     car.BrakeSystem.BrakeLine3PressurePSI = 0;
+
+                    if (!car.BrakeSystem.AngleCockBOpen)
+                        break;
                 }
             }
         }

@@ -1090,6 +1090,7 @@ namespace ORTS
             train.UncoupledFrom = train2;
             train2.UncoupledFrom = train;
             train2.SpeedMpS = train.SpeedMpS;
+            train2.Cars[0].BrakeSystem.FrontBrakeHoseConnected = false;
             train2.AITrainBrakePercent = train.AITrainBrakePercent;
             train2.AITrainDirectionForward = train.AITrainDirectionForward;
             if ((PlayerLocomotive != null && PlayerLocomotive.Train == train2 || !keepFront))
@@ -1202,6 +1203,7 @@ namespace ORTS
             train.UncoupledFrom = newTrain;
             newTrain.UncoupledFrom = train;
             newTrain.SpeedMpS = train.SpeedMpS = 0;
+            newTrain.Cars[0].BrakeSystem.FrontBrakeHoseConnected = false;
             newTrain.TrainMaxSpeedMpS = train.TrainMaxSpeedMpS;
             newTrain.AITrainBrakePercent = train.AITrainBrakePercent;
             newTrain.AITrainDirectionForward = true;

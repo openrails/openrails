@@ -24,10 +24,6 @@ namespace ORTS.Scripting.Api
     public abstract class BrakeController : AbstractScriptClass
     {
         /// <summary>
-        /// True if the Graduated Brake Release setting is set.
-        /// </summary>
-        public Func<bool> GraduatedRelease;
-        /// <summary>
         /// True if the driver has asked for an emergency braking (push button)
         /// </summary>
         public Func<bool> EmergencyBrakingPushButton;

@@ -127,6 +127,23 @@ namespace ORTS
         string WagonType;
 
         /// <summary>
+        /// True if vehicle is equipped with an additional emergency brake reservoir
+        /// </summary>
+        public bool EmergencyReservoirPresent;
+        /// <summary>
+        /// True if triple valve is capable of releasing brake gradually
+        /// </summary>
+        public bool DistributorPresent;
+        /// <summary>
+        /// True if equipped with handbrake. (Not common for older steam locomotives.)
+        /// </summary>
+        public bool HandBrakePresent;
+        /// <summary>
+        /// Number of available retainer positions. (Used on freight cars, mostly.) Might be 0, 3 or 4.
+        /// </summary>
+        public int RetainerPositions;
+        
+        /// <summary>
         /// Attached steam locomotive in case this wagon is a tender
         /// </summary>
         public MSTSSteamLocomotive TendersSteamLocomotive { get; private set; }
@@ -271,6 +288,20 @@ namespace ORTS
                     brakeSystemType = stf.ReadStringBlock(null).ToLower();
                     BrakeSystem = MSTSBrakeSystem.Create(brakeSystemType, this);
                     break;
+                case "wagon(brakeequipmenttype":
+                    foreach (var equipment in stf.ReadStringBlock("").ToLower().Replace(" ", "").Split(','))
+                    {
+                        switch (equipment)
+                        {
+                            case "distributor":
+                            case "graduated_release_triple_valve": DistributorPresent = true; break;
+                            case "emergency_brake_reservoir": EmergencyReservoirPresent = true; break;
+                            case "handbrake": HandBrakePresent = true; break;
+                            case "retainer_3_position": RetainerPositions = 3; break;
+                            case "retainer_4_position": RetainerPositions = 4; break;
+                        }
+                    }
+                    break;
                 case "wagon(coupling":
                     Couplers.Add(new MSTSCoupling());
                     break;
@@ -395,6 +426,10 @@ namespace ORTS
             IsFrictionBearing = copy.IsFrictionBearing;
             brakeSystemType = copy.brakeSystemType;
             BrakeSystem = MSTSBrakeSystem.Create(brakeSystemType, this);
+            EmergencyReservoirPresent = copy.EmergencyReservoirPresent;
+            DistributorPresent = copy.DistributorPresent;
+            HandBrakePresent = copy.HandBrakePresent;
+            RetainerPositions = copy.RetainerPositions;
             InteriorShapeFileName = copy.InteriorShapeFileName;
             InteriorSoundFileName = copy.InteriorSoundFileName;
             Cab3DShapeFileName = copy.Cab3DShapeFileName;

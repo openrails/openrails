@@ -251,6 +251,7 @@ namespace ORTS
                 if (Script == null)
                 {
                     Script = new MSTSBrakeController() as BrakeController;
+                    (Script as MSTSBrakeController).ForceControllerReleaseGraduated = Simulator.Settings.GraduatedRelease;
                 }
 
                 // AbstractScriptClass
@@ -258,7 +259,6 @@ namespace ORTS
                 Script.DistanceM = () => Locomotive.DistanceM;
 
                 // BrakeController
-                Script.GraduatedRelease = () => Simulator.Settings.GraduatedRelease;
                 Script.EmergencyBrakingPushButton = () => EmergencyBrakingPushButton;
                 Script.TCSEmergencyBraking = () => TCSEmergencyBraking;
                 Script.TCSFullServiceBraking = () => TCSFullServiceBraking;

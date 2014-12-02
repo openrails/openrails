@@ -32,6 +32,11 @@ namespace ORTS
     {
         MSTSNotchController NotchController;
 
+        /// <summary>
+        /// Setting to workaround MSTS bug of not abling to set this function correctly in .eng file
+        /// </summary>
+        public bool ForceControllerReleaseGraduated;
+
 		public MSTSBrakeController()
         {
         }
@@ -113,7 +118,7 @@ namespace ORTS
                         case ControllerState.GSelfLap:
                             x = MaxPressureBar() - MinReductionBar() * (1 - x) - FullServReductionBar() * x;
                             DecreasePressure(ref pressureBar, x, ApplyRateBarpS(), elapsedClockSeconds);
-                            if (GraduatedRelease())
+                            if (ForceControllerReleaseGraduated)
                                 IncreasePressure(ref pressureBar, x, ReleaseRateBarpS(), elapsedClockSeconds);
                             break;
                         case ControllerState.Emergency:

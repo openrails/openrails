@@ -506,6 +506,102 @@ namespace ORTS.Viewer3D
     }
 
     [Serializable()]
+    public class WagonBrakeHoseConnectCommand : BooleanCommand
+    {
+        public static MSTSWagon Receiver { get; set; }
+
+        public WagonBrakeHoseConnectCommand(CommandLog log, MSTSWagon car, bool toState)
+            : base(log, toState)
+        {
+            Receiver = car;
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.BrakeSystem.FrontBrakeHoseConnected = ToState;
+            // Report();
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " - " + (ToState ? "connect" : "disconnect");
+        }
+    }
+
+    [Serializable()]
+    public class ToggleAngleCockACommand : BooleanCommand
+    {
+        public static MSTSWagon Receiver { get; set; }
+
+        public ToggleAngleCockACommand(CommandLog log, MSTSWagon car, bool toState)
+            : base(log, toState)
+        {
+            Receiver = car;
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.BrakeSystem.AngleCockAOpen = ToState;
+            // Report();
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " - " + (ToState ? "open" : "close");
+        }
+    }
+
+    [Serializable()]
+    public class ToggleAngleCockBCommand : BooleanCommand
+    {
+        public static MSTSWagon Receiver { get; set; }
+
+        public ToggleAngleCockBCommand(CommandLog log, MSTSWagon car, bool toState)
+            : base(log, toState)
+        {
+            Receiver = car;
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.BrakeSystem.AngleCockBOpen = ToState;
+            // Report();
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " - " + (ToState ? "open" : "close");
+        }
+    }
+
+    [Serializable()]
+    public class ToggleBleedOffValveCommand : BooleanCommand
+    {
+        public static MSTSWagon Receiver { get; set; }
+
+        public ToggleBleedOffValveCommand(CommandLog log, MSTSWagon car, bool toState)
+            : base(log, toState)
+        {
+            Receiver = car;
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.BrakeSystem.BleedOffValveOpen = ToState;
+            // Report();
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " - " + (ToState ? "open" : "close");
+        }
+    }
+
+    [Serializable()]
     public class SanderCommand : BooleanCommand {
         public static MSTSLocomotive Receiver { get; set; }
 

@@ -88,9 +88,7 @@ namespace ORTS
 
         public override string[] GetDebugStatus(PressureUnit unit)
         {
-            if (BrakeLine1PressurePSI < 0)
-                return new string[0];
-            var rv = new string[9];
+            var rv = new string[11];
             rv[0] = "EP";
             rv[1] = string.Format("BC {0}", FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, unit, false));
             rv[2] = string.Format("MRP {0}", FormatStrings.FormatPressure(BrakeLine2PressurePSI, PressureUnit.PSI, unit, false));
@@ -100,6 +98,8 @@ namespace ORTS
             rv[6] = string.Format("State {0}", TripleValveState);
             rv[7] = string.Empty; // Spacer because the state above needs 2 columns.
             rv[8] = HandbrakePercent > 0 ? string.Format("Handbrake {0:F0}%", HandbrakePercent) : string.Empty;
+            rv[9] = FrontBrakeHoseConnected ? "I" : "T";
+            rv[10] = string.Format("AC A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-");
             return rv;
         }
         public override void PropagateBrakePressure(float elapsedClockSeconds)

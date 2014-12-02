@@ -101,8 +101,6 @@ namespace ORTS
 
         public override string GetStatus(PressureUnit unit)
         {
-            if (BrakeLine1PressurePSI < 0)
-                return "";
             return string.Format(" BP {0}", FormatStrings.FormatPressure(P2V(BrakeLine1PressurePSI), PressureUnit.InHg, PressureUnit.InHg, false));
         }
 
@@ -118,15 +116,15 @@ namespace ORTS
 
         public override string[] GetDebugStatus(PressureUnit unit)
         {
-            if (BrakeLine1PressurePSI < 0)
-                return new string[0];
-            var rv = new string[6];
+            var rv = new string[8];
             rv[0] = "V";
             rv[1] = string.Format("BC {0}", FormatStrings.FormatPressure(P2V(CylPressurePSIA), PressureUnit.InHg, PressureUnit.InHg, false));
             rv[2] = string.Format("VR {0}", FormatStrings.FormatPressure(P2V(VacResPressureAdjPSIA()), PressureUnit.InHg, PressureUnit.InHg, false));
             rv[3] = string.Format("BP {0}", FormatStrings.FormatPressure(P2V(BrakeLine1PressurePSI), PressureUnit.InHg, PressureUnit.InHg, false));
             rv[4] = string.Empty; // Spacer because the state above needs 2 columns.
             rv[5] = HandbrakePercent > 0 ? string.Format("Handbrake {0:F0}%", HandbrakePercent) : string.Empty;
+            rv[6] = FrontBrakeHoseConnected ? "I" : "T";
+            rv[7] = string.Format("AC A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-");
             return rv;
         }
 
@@ -204,22 +202,8 @@ namespace ORTS
             return V2P(trainBrakeLine1PressurePSIorInHg);
         }
 
-        public override void Connect()
-        {
-            if (BrakeLine1PressurePSI < 0)
-                BrakeLine1PressurePSI = KPa.ToPSI(OneAtmosphereKPa);
-        }
-        public override void Disconnect()
-        {
-            BrakeLine1PressurePSI = -1;
-            CylPressurePSIA = KPa.ToPSI(OneAtmosphereKPa);
-            VacResPressurePSIA = KPa.ToPSI(OneAtmosphereKPa);
-        }
         public override void Update(float elapsedClockSeconds)
         {
-            if (BrakeLine1PressurePSI < 0)
-                return;
-
             if (BrakeLine1PressurePSI < VacResPressurePSIA)
             {
                 float dp = elapsedClockSeconds * MaxReleaseRatePSIpS * CylVol / VacResVol;
@@ -254,20 +238,6 @@ namespace ORTS
             if (f < MaxHandbrakeForceN * HandbrakePercent / 100)
                 f = MaxHandbrakeForceN * HandbrakePercent / 100;
             Car.BrakeForceN = f;
-
-
-            // Temporary patch until problem with vacuum brakes is solved
-            // This will immediately fully release the brakes
-            /* Patch no more needed
-            if (Car.Train.AITrainBrakePercent == 0)
-            {
-                CylPressurePSIA = 0;
-                Car.BrakeForceN = 0;
-            }
-             */
-            // End of patch
-
-
         }
 
         public override void PropagateBrakePressure(float elapsedClockSeconds)
@@ -297,11 +267,22 @@ namespace ORTS
                 foreach (TrainCar car in train.Cars)
                 {
                     float p1 = car.BrakeSystem.BrakeLine1PressurePSI;
-                    if (p0 >= 0 && p1 >= 0)
+                    if (car.BrakeSystem.FrontBrakeHoseConnected && car.BrakeSystem.AngleCockAOpen && car0.BrakeSystem.AngleCockBOpen)
                     {
                         float dp = dt * (p1 - p0) / PipeTimeFactorS;
                         car.BrakeSystem.BrakeLine1PressurePSI -= dp;
                         car0.BrakeSystem.BrakeLine1PressurePSI += dp;
+                    }
+                    if (!car.BrakeSystem.FrontBrakeHoseConnected)
+                    {
+                        if (car.BrakeSystem.AngleCockAOpen)
+                            car.BrakeSystem.BrakeLine1PressurePSI -= dt * p1 / PipeTimeFactorS;
+                        if (car0.BrakeSystem.AngleCockBOpen && car != car0)
+                            car0.BrakeSystem.BrakeLine1PressurePSI -= dt * p0 / PipeTimeFactorS;
+                    }
+                    if (car == train.Cars[train.Cars.Count - 1] && car.BrakeSystem.AngleCockBOpen)
+                    {
+                        car.BrakeSystem.BrakeLine1PressurePSI -= dt * p1 / PipeTimeFactorS;
                     }
                     p0 = p1;
                     car0 = car;

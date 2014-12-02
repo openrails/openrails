@@ -27,6 +27,23 @@ namespace ORTS
         public float BrakeLine3PressurePSI;         // engine brake cylinder equalization pipe pressure
         public float BrakePipeVolumeFT3 = .5f;      // volume of a single brake line
 
+        /// <summary>
+        /// Front brake hoses connection status
+        /// </summary>
+        public bool FrontBrakeHoseConnected;
+        /// <summary>
+        /// Front angle cock opened/closed status
+        /// </summary>
+        public bool AngleCockAOpen = true;
+        /// <summary>
+        /// Rear angle cock opened/closed status
+        /// </summary>
+        public bool AngleCockBOpen = true;
+        /// <summary>
+        /// Auxiliary brake reservoir vent valve open/closed status
+        /// </summary>
+        public bool BleedOffValveOpen;
+
         public abstract void AISetPercent(float percent);
 
         public abstract string GetStatus(PressureUnit unit);
@@ -42,8 +59,6 @@ namespace ORTS
         public abstract void PropagateBrakePressure(float elapsedClockSeconds);
 
         public abstract void Initialize(bool handbrakeOn, float maxPressurePSI, float fullServPressurePSI, bool immediateRelease);
-        public abstract void Connect();
-        public abstract void Disconnect();
         public abstract void SetHandbrakePercent(float percent);
         public abstract bool GetHandbrakeStatus();
         public abstract void SetRetainer(RetainerSetting setting);

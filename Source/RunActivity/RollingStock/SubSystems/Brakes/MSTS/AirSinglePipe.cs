@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -51,6 +51,9 @@ namespace ORTS
         {
             Car = car;
             BrakePipeVolumeFT3 = .028f * (1 + car.LengthM);
+
+            // Force graduated releasable brakes. Workaround for MSTS with bugs preventing to set eng/wag files correctly for this.
+            (Car as MSTSWagon).DistributorPresent = Car.Simulator.Settings.GraduatedRelease;
         }
 
         public override bool GetHandbrakeStatus()
@@ -77,16 +80,13 @@ namespace ORTS
 
         public override string GetStatus(PressureUnit unit)
         {
-            if (BrakeLine1PressurePSI < 0)
-                return "";
             return string.Format("BP {0}", FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, unit, true));
         }
 
         public override string GetFullStatus(BrakeSystem lastCarBrakeSystem, PressureUnit unit)
         {
             string s = string.Format(" EQ {0}", FormatStrings.FormatPressure(Car.Train.BrakeLine1PressurePSIorInHg, PressureUnit.PSI, unit, true));
-            if (BrakeLine1PressurePSI >= 0)
-                s += string.Format(" BC {0} BP {1}", FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, unit, false), FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, unit, false));
+            s += string.Format(" BC {0} BP {1}", FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, unit, false), FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, unit, false));
             if (lastCarBrakeSystem != null && lastCarBrakeSystem != this)
                 s += " EOT " + lastCarBrakeSystem.GetStatus(unit);
             if (HandbrakePercent > 0)
@@ -96,17 +96,18 @@ namespace ORTS
 
         public override string[] GetDebugStatus(PressureUnit unit)
         {
-            if (BrakeLine1PressurePSI < 0)
-                return new string[0];
-            var rv = new string[8];
+            var rv = new string[11];
             rv[0] = "1P";
             rv[1] = string.Format("BC {0}", FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, unit, false));
             rv[2] = string.Format("BP {0}", FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, unit, false));
             rv[3] = string.Format("AR {0}", FormatStrings.FormatPressure(AuxResPressurePSI, PressureUnit.PSI, unit, false));
-            rv[4] = string.Format("ER {0}", FormatStrings.FormatPressure(EmergResPressurePSI, PressureUnit.PSI, unit, false));
+            rv[4] = (Car as MSTSWagon).EmergencyReservoirPresent ? string.Format("ER {0}", FormatStrings.FormatPressure(EmergResPressurePSI, PressureUnit.PSI, unit, false)) : string.Empty;
             rv[5] = string.Format("State {0}", TripleValveState);
             rv[6] = string.Empty; // Spacer because the state above needs 2 columns.
             rv[7] = HandbrakePercent > 0 ? string.Format("Handbrake {0:F0}%", HandbrakePercent) : string.Empty;
+            rv[8] = FrontBrakeHoseConnected ? "I" : "T";
+            rv[9] = string.Format("AC A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-");
+            rv[10] = BleedOffValveOpen ? "BleedOff" : string.Empty;
             return rv;
         }
 
@@ -208,22 +209,33 @@ namespace ORTS
             return trainBrakeLine1PressurePSIorInHg;
         }
 
-
-        public override void Connect()
-        {
-            if (BrakeLine1PressurePSI < 0)
-                BrakeLine1PressurePSI = 0;// Car.Train.BrakeLine1PressurePSI;
-        }
-        public override void Disconnect()
-        {
-            Initialize(false, 0, 0, false);
-            BrakeLine1PressurePSI = -1;
-            BrakeLine2PressurePSI = 0;
-        }
         public override void Update(float elapsedClockSeconds)
         {
             ValveState prevTripleValueState = TripleValveState;
-            if (BrakeLine1PressurePSI < FullServPressurePSI - 1)
+
+            if (BleedOffValveOpen)
+            {
+                if (AuxResPressurePSI < 0.01f && AutoCylPressurePSI < 0.01f && EmergResPressurePSI < 0.01f)
+                {
+                    BleedOffValveOpen = false;
+                }
+                else
+                {
+                    AuxResPressurePSI -= elapsedClockSeconds * MaxApplicationRatePSIpS;
+                    if (AuxResPressurePSI < 0)
+                        AuxResPressurePSI = 0;
+                    AutoCylPressurePSI -= elapsedClockSeconds * MaxReleaseRatePSIpS;
+                    if (AutoCylPressurePSI < 0)
+                        AutoCylPressurePSI = 0;
+                    if ((Car as MSTSWagon).EmergencyReservoirPresent)
+                    {
+                        EmergResPressurePSI -= elapsedClockSeconds * EmergResChargingRatePSIpS;
+                        if (EmergResPressurePSI < 0)
+                            EmergResPressurePSI = 0;
+                    }
+                }
+            }
+            else if (BrakeLine1PressurePSI < FullServPressurePSI - 1)
                 TripleValveState = ValveState.Emergency;
             else if (BrakeLine1PressurePSI > AuxResPressurePSI + 1)
                 TripleValveState = ValveState.Release;
@@ -238,14 +250,14 @@ namespace ORTS
                 float dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
                 if (AuxResPressurePSI - dp / AuxCylVolumeRatio < AutoCylPressurePSI + dp)
                     dp = (AuxResPressurePSI - AutoCylPressurePSI) * AuxCylVolumeRatio / (1 + AuxCylVolumeRatio);
-                if (BrakeLine1PressurePSI > AuxResPressurePSI - dp / AuxCylVolumeRatio)
+                if (BrakeLine1PressurePSI > AuxResPressurePSI - dp / AuxCylVolumeRatio && !BleedOffValveOpen)
                 {
                     dp = (AuxResPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio;
                     TripleValveState = ValveState.Lap;
                 }
                 AuxResPressurePSI -= dp / AuxCylVolumeRatio;
                 AutoCylPressurePSI += dp;
-                if (TripleValveState == ValveState.Emergency)
+                if (TripleValveState == ValveState.Emergency && (Car as MSTSWagon).EmergencyReservoirPresent)
                 {
                     dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
                     if (EmergResPressurePSI - dp < AuxResPressurePSI + dp * EmergAuxVolumeRatio)
@@ -257,8 +269,10 @@ namespace ORTS
             if (TripleValveState == ValveState.Release)
             {
                 float threshold = RetainerPressureThresholdPSI;
-                if (Car.Simulator.Settings.GraduatedRelease)
+                if ((Car as MSTSWagon).DistributorPresent)
                 {
+                    // Emergency reservoir's second role (only here, in OpenRails) is to act as a control reservoir, maintaining a reference pressure.
+                    // Thus this pressure must be set even in brake systems ER not present otherwise. It just stays static in this case.
                     float t = (EmergResPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio;
                     if (threshold < t)
                         threshold = t;
@@ -269,34 +283,30 @@ namespace ORTS
                     if (AutoCylPressurePSI < threshold)
                         AutoCylPressurePSI = threshold;
                 }
-                if (!Car.Simulator.Settings.GraduatedRelease && AuxResPressurePSI < EmergResPressurePSI && AuxResPressurePSI < BrakeLine1PressurePSI)
-                {
-                    float dp = elapsedClockSeconds * EmergResChargingRatePSIpS;
-                    if (EmergResPressurePSI - dp < AuxResPressurePSI + dp * EmergAuxVolumeRatio)
-                        dp = (EmergResPressurePSI - AuxResPressurePSI) / (1 + EmergAuxVolumeRatio);
-                    if (BrakeLine1PressurePSI < AuxResPressurePSI + dp * EmergAuxVolumeRatio)
-                        dp = (BrakeLine1PressurePSI - AuxResPressurePSI) / EmergAuxVolumeRatio;
-                    EmergResPressurePSI -= dp;
-                    AuxResPressurePSI += dp * EmergAuxVolumeRatio;
-                }
-                if (AuxResPressurePSI > EmergResPressurePSI)
-                {
-                    float dp = elapsedClockSeconds * EmergResChargingRatePSIpS;
-                    if (EmergResPressurePSI + dp > AuxResPressurePSI - dp * EmergAuxVolumeRatio)
-                        dp = (AuxResPressurePSI - EmergResPressurePSI) / (1 + EmergAuxVolumeRatio);
-                    EmergResPressurePSI += dp;
-                    AuxResPressurePSI -= dp * EmergAuxVolumeRatio;
-                }
+                if ((Car as MSTSWagon).EmergencyReservoirPresent)
+				{
+                    if (!(Car as MSTSWagon).DistributorPresent && AuxResPressurePSI < EmergResPressurePSI && AuxResPressurePSI < BrakeLine1PressurePSI)
+					{
+						float dp = elapsedClockSeconds * EmergResChargingRatePSIpS;
+						if (EmergResPressurePSI - dp < AuxResPressurePSI + dp * EmergAuxVolumeRatio)
+							dp = (EmergResPressurePSI - AuxResPressurePSI) / (1 + EmergAuxVolumeRatio);
+						if (BrakeLine1PressurePSI < AuxResPressurePSI + dp * EmergAuxVolumeRatio)
+							dp = (BrakeLine1PressurePSI - AuxResPressurePSI) / EmergAuxVolumeRatio;
+						EmergResPressurePSI -= dp;
+						AuxResPressurePSI += dp * EmergAuxVolumeRatio;
+					}
+					if (AuxResPressurePSI > EmergResPressurePSI)
+					{
+						float dp = elapsedClockSeconds * EmergResChargingRatePSIpS;
+						if (EmergResPressurePSI + dp > AuxResPressurePSI - dp * EmergAuxVolumeRatio)
+							dp = (AuxResPressurePSI - EmergResPressurePSI) / (1 + EmergAuxVolumeRatio);
+						EmergResPressurePSI += dp;
+						AuxResPressurePSI -= dp * EmergAuxVolumeRatio;
+					}
+				}
                 if (AuxResPressurePSI < BrakeLine1PressurePSI)
                 {
-#if false
-                    float dp = .1f * (BrakeLine1PressurePSI - AuxResPressurePSI);
-                    if (dp > 1)
-                        dp = .5f;
-                    dp *= elapsedClockSeconds * MaxAuxilaryChargingRate;
-#else
                     float dp = elapsedClockSeconds * MaxAuxilaryChargingRatePSIpS;
-#endif
                     if (AuxResPressurePSI + dp > BrakeLine1PressurePSI - dp * AuxBrakeLineVolumeRatio)
                         dp = (BrakeLine1PressurePSI - AuxResPressurePSI) / (1 + AuxBrakeLineVolumeRatio);
                     AuxResPressurePSI += dp;
@@ -381,16 +391,27 @@ namespace ORTS
                     }
                     else if (lead.BrakeSystem.BrakeLine1PressurePSI > train.BrakeLine1PressurePSIorInHg)
                         lead.BrakeSystem.BrakeLine1PressurePSI *= (1 - dt / serviceTimeFactor);
-                    TrainCar car0 = Car.Train.Cars[0];
+                    TrainCar car0 = train.Cars[0];
                     float p0 = car0.BrakeSystem.BrakeLine1PressurePSI;
                     foreach (TrainCar car in train.Cars)
                     {
                         float p1 = car.BrakeSystem.BrakeLine1PressurePSI;
-                        if (p0 >= 0 && p1 >= 0)
+                        if (car == train.Cars[0] || car.BrakeSystem.FrontBrakeHoseConnected && car.BrakeSystem.AngleCockAOpen && car0.BrakeSystem.AngleCockBOpen)
                         {
                             float dp = dt * (p1 - p0) / lead.BrakePipeTimeFactorS;
                             car.BrakeSystem.BrakeLine1PressurePSI -= dp;
                             car0.BrakeSystem.BrakeLine1PressurePSI += dp;
+                        }
+                        if (!car.BrakeSystem.FrontBrakeHoseConnected)
+                        {
+                            if (car.BrakeSystem.AngleCockAOpen)
+                                car.BrakeSystem.BrakeLine1PressurePSI -= dt * p1 / lead.BrakePipeTimeFactorS;
+                            if (car0.BrakeSystem.AngleCockBOpen && car != car0)
+                                car0.BrakeSystem.BrakeLine1PressurePSI -= dt * p0 / lead.BrakePipeTimeFactorS;
+                        }
+                        if (car == train.Cars[train.Cars.Count - 1] && car.BrakeSystem.AngleCockBOpen)
+                        {
+                            car.BrakeSystem.BrakeLine1PressurePSI -= dt * p1 / lead.BrakePipeTimeFactorS;
                         }
                         p0 = p1;
                         car0 = car;
@@ -405,8 +426,8 @@ namespace ORTS
             for (int i = 0; i < train.Cars.Count; i++)
             {
                 BrakeSystem brakeSystem = train.Cars[i].BrakeSystem;
-                if (brakeSystem.BrakeLine1PressurePSI < 0)
-                    continue;
+                if (i > 0 && (!brakeSystem.FrontBrakeHoseConnected || !brakeSystem.AngleCockAOpen || !train.Cars[i - 1].BrakeSystem.AngleCockBOpen))
+                    break;
                 if (i < first || i > last)
                 {
                     brakeSystem.BrakeLine3PressurePSI = 0;
@@ -465,8 +486,8 @@ namespace ORTS
             for (int i = 0; i < train.Cars.Count; i++)
             {
                 TrainCar car = train.Cars[i];
-                if (car.BrakeSystem.BrakeLine1PressurePSI < 0)
-                    continue;
+                if (i > 0 && (!car.BrakeSystem.FrontBrakeHoseConnected || !car.BrakeSystem.AngleCockAOpen || !train.Cars[i - 1].BrakeSystem.AngleCockBOpen))
+                    break;
                 if (i < first || i > last)
                 {
                     car.BrakeSystem.BrakeLine2PressurePSI = twoPipes ? sumpv : 0;
@@ -490,12 +511,12 @@ namespace ORTS
                     ReleaseRatePSIpS = MaxReleaseRatePSIpS;
                     break;
                 case RetainerSetting.HighPressure:
-                    RetainerPressureThresholdPSI = 20;
+                    RetainerPressureThresholdPSI = (Car as MSTSWagon).RetainerPositions > 0 ? 20 : 0;
                     ReleaseRatePSIpS = (50 - 20) / 90f;
                     break;
                 case RetainerSetting.LowPressure:
-                    RetainerPressureThresholdPSI = 10;
-                    ReleaseRatePSIpS = (50 - 10) / 60f;
+                    RetainerPressureThresholdPSI = (Car as MSTSWagon).RetainerPositions > 3 ? 10 : 20;
+                    ReleaseRatePSIpS = (Car as MSTSWagon).RetainerPositions > 3 ? (50 - 10) / 60f : (50 - 20) / 90f;
                     break;
                 case RetainerSetting.SlowDirect:
                     RetainerPressureThresholdPSI = 0;
@@ -506,6 +527,11 @@ namespace ORTS
 
         public override void SetHandbrakePercent(float percent)
         {
+            if (!(Car as MSTSWagon).HandBrakePresent)
+            {
+                HandbrakePercent = 0;
+                return;
+            }
             if (percent < 0) percent = 0;
             if (percent > 100) percent = 100;
             HandbrakePercent = percent;
