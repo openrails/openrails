@@ -153,14 +153,14 @@ namespace ORTS.Viewer3D
             readonly int Index;
 #endif
             readonly SignalHead SignalHead;
-            readonly int MatrixIndex;
+            readonly List<int> MatrixIndices = new List<int>();
             readonly SignalTypeData SignalTypeData;
             readonly SoundSource Sound;
             float CumulativeTime;
             float SemaphorePos;
             float SemaphoreTarget;
             float SemaphoreSpeed;
-            AnimatedPart SemaphorePart;
+            List<AnimatedPart> SemaphoreParts = new List<AnimatedPart>();
             int DisplayState = -1;
 
             public SignalShapeHead(Viewer viewer, SignalShape signalShape, int index, SignalHead signalHead,
@@ -172,23 +172,18 @@ namespace ORTS.Viewer3D
                 Index = index;
 #endif
                 SignalHead = signalHead;
-                MatrixIndex = signalShape.SharedShape.MatrixNames.IndexOf(mstsSignalSubObj.MatrixName);
+                for (int mindex = 0; mindex <= signalShape.SharedShape.MatrixNames.Count - 1; mindex++)
+                {
+                    string MatrixName = signalShape.SharedShape.MatrixNames[mindex];
+                    if (String.Equals(MatrixName, mstsSignalSubObj.MatrixName))
+                        MatrixIndices.Add(mindex);
+                }
 
-#if !NEW_SIGNALLING
-                if (MatrixIndex == -1)
-                    throw new InvalidDataException(String.Format("Skipped {0} signal {1} unit {2} with sub-object {3} which is missing from shape {4}", signalShape.Location, signalShape.UID, index, mstsSignalSubObj.MatrixName, signalShape.SharedShape.FilePath));
-#endif
 
                 if (!viewer.SIGCFG.SignalTypes.ContainsKey(mstsSignalSubObj.SignalSubSignalType))
-#if !NEW_SIGNALLING
-                    throw new InvalidDataException(String.Format("Skipped {0} signal {1} unit {2} with SigSubSType {3} which is not defined in SignalTypes", signalShape.Location, signalShape.UID, index, mstsSignalSubObj.SignalSubSignalType));
-#else
                     return;
-#endif
 
                 var mstsSignalType = viewer.SIGCFG.SignalTypes[mstsSignalSubObj.SignalSubSignalType];
-
-                SemaphorePart = new AnimatedPart(signalShape);
 
                 if (SignalTypes.ContainsKey(mstsSignalType.Name))
                     SignalTypeData = SignalTypes[mstsSignalType.Name];
@@ -197,7 +192,12 @@ namespace ORTS.Viewer3D
 
                 if (SignalTypeData.Semaphore)
                 {
-                    SemaphorePart.AddMatrix(MatrixIndex);
+                    foreach (int mindex in MatrixIndices)
+                    {
+                        AnimatedPart SemaphorePart = new AnimatedPart(signalShape);
+                        SemaphorePart.AddMatrix(mindex);
+                        SemaphoreParts.Add(SemaphorePart);
+                    }
 
                     if (Viewer.Simulator.TRK.Tr_RouteFile.DefaultSignalSMS != null)
                     {
@@ -262,7 +262,10 @@ namespace ORTS.Viewer3D
                 {
                     // We reset the animation matrix before preparing the lights, because they need to be positioned
                     // based on the original matrix only.
-                    SemaphorePart.SetFrameWrap(0);
+                    foreach (AnimatedPart SemaphorePart in SemaphoreParts)
+                    {
+                        SemaphorePart.SetFrameWrap(0);
+                    }
                 }
 
                 for (var i = 0; i < SignalTypeData.Lights.Count; i++)
@@ -275,8 +278,11 @@ namespace ORTS.Viewer3D
                         continue;
 
                     var xnaMatrix = Matrix.CreateTranslation(SignalTypeData.Lights[i].Position);
-                    if (MatrixIndex >= 0)
+
+                    foreach (int MatrixIndex in MatrixIndices)
+                    {
                         Matrix.Multiply(ref xnaMatrix, ref SignalShape.XNAMatrices[MatrixIndex], out xnaMatrix);
+                    }
                     Matrix.Multiply(ref xnaMatrix, ref xnaTileTranslation, out xnaMatrix);
 
                     frame.AddPrimitive(SignalTypeData.Material, SignalTypeData.Lights[i], RenderPrimitiveGroup.Lights, ref xnaMatrix);
@@ -303,7 +309,10 @@ namespace ORTS.Viewer3D
                             SemaphoreSpeed = 0;
                         }
                     }
-                    SemaphorePart.SetFrameCycle(SemaphorePos);
+                    foreach (AnimatedPart SemaphorePart in SemaphoreParts)
+                    {
+                        SemaphorePart.SetFrameCycle(SemaphorePos);
+                    }
                 }
             }
 

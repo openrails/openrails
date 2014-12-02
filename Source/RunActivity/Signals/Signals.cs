@@ -1779,16 +1779,16 @@ namespace ORTS
                 else
                 {
 					var thisXRef = thisTrack.TCCrossReference;
-					var thisSection = TrackCircuitList[thisXRef[0].Index];
+					var thisSection = TrackCircuitList[thisXRef[0].CrossRefIndex];
 					tcbb.AppendFormat("     Original node : {0}\n", thisSection.OriginalIndex);
 
 					foreach (var thisReference in thisXRef)
                     {
-                        tcbb.AppendFormat("        Ref Index : {0} : " + "Length : {1} at : {2} - {3}\n", thisReference.Index, thisReference.Length, thisReference.OffsetLength[0], thisReference.OffsetLength[1]);
+						tcbb.AppendFormat("        Ref Index : {0} : " + "Length : {1} at : {2} - {3}\n", thisReference.CrossRefIndex, thisReference.Length, thisReference.Position[0], thisReference.Position[1]);
                     }
 					tcbb.Append("\n");
 
-                    if (thisXRef[thisXRef.Count - 1].OffsetLength[1] != 0)
+                    if (thisXRef[thisXRef.Count - 1].Position[1] != 0)
                     {
 						tcbb.Append(" >>> INVALID XREF\n");
                     }
@@ -2333,17 +2333,7 @@ namespace ORTS
             replSection.Length = position;
             newSection.Length = orgSection.Length - position;
 
-            // take care of rounding errors
-
-            if (newSection.Length < 0 || Math.Abs(newSection.Length) < 0.01f)
-            {
-                newSection.Length = 0.01f;
-            }
-            if (replSection.Length < 0 || Math.Abs(replSection.Length) < 0.01f)
-            {
-                replSection.Length = 0.01f;
-            }
-
+#if DEBUG_REPORTS
             // check for invalid lengths - report and correct
 
             if (newSection.Length < 0)
@@ -2351,12 +2341,28 @@ namespace ORTS
                 Trace.TraceWarning("Invalid Length for new section {0}: length {1}, split on {2}",
                         newSection.Index, orgSection.Length, position);
                 newSection.Length = 0.1f;
+                replSection.Length -= 0.01f;  // take length off other part
             }
             if (replSection.Length < 0)
             {
                 Trace.TraceWarning("Invalid Length for replacement section {0}: length {1}, split on {2}",
                         newSection.Index, orgSection.Length, position);
                 replSection.Length = 0.1f;
+                newSection.Length -= 0.01f;  // take length off other part
+            }
+#endif
+
+            // take care of rounding errors
+
+            if (newSection.Length < 0 || Math.Abs(newSection.Length) < 0.01f)
+            {
+                newSection.Length = 0.01f;
+                replSection.Length -= 0.01f;  // take length off other part
+            }
+            if (replSection.Length < 0 || Math.Abs(replSection.Length) < 0.01f)
+            {
+                replSection.Length = 0.01f;
+                newSection.Length -= 0.01f;  // take length off other part
             }
 
             // set lengths and offset
@@ -5674,7 +5680,7 @@ namespace ORTS
             int routeIndex = usedRoute.GetRouteIndex(Index, 0);
 
             // run down route and clear all claims for found trains, until end 
-            for (int iRouteIndex = routeIndex + 1; iRouteIndex <= usedRoute.Count - 1 && (claimedTrains.Count > 0); iRouteIndex++)
+            for (int iRouteIndex = routeIndex; iRouteIndex <= usedRoute.Count - 1 && (claimedTrains.Count > 0); iRouteIndex++)
             {
                 TrackCircuitSection nextSection = signalRef.TrackCircuitList[usedRoute[iRouteIndex].TCSectionIndex];
 
@@ -7738,7 +7744,7 @@ namespace ORTS
         public ObjectSpeedInfo this_sig_speed(MstsSignalFunction fn_type)
         {
             var sigAsp = MstsSignalAspect.STOP;
-            var set_speed = new ObjectSpeedInfo(-1, -1, false, false);
+            var set_speed = new ObjectSpeedInfo(-1, -1, false, false, false);
 
             foreach (SignalHead sigHead in SignalHeads)
             {
@@ -7753,12 +7759,41 @@ namespace ORTS
 
         //================================================================================================//
         //
+        // this_sig_noSpeedReduction : Returns the setting if speed must be reduced on RESTRICTED or STOP_AND_PROCEED
+        // returns TRUE if speed reduction must be suppressed
+        //
+
+        public bool this_sig_noSpeedReduction(MstsSignalFunction fn_type)
+        {
+            var sigAsp = MstsSignalAspect.STOP;
+            bool setNoReduction = false;
+
+            foreach (SignalHead sigHead in SignalHeads)
+            {
+                if (sigHead.sigFunction == fn_type && sigHead.state >= sigAsp)
+                {
+                    sigAsp = sigHead.state;
+                    if (sigAsp <= MstsSignalAspect.RESTRICTING)
+                    {
+                        setNoReduction = sigHead.speed_info[(int)sigAsp].speed_noSpeedReduction == 1;
+                    }
+                    else
+                    {
+                        setNoReduction = false;
+                    }
+                }
+            }
+            return setNoReduction;
+        }//this_sig_noSpeedReduction
+
+        //================================================================================================//
+        //
         // this_lim_speed : Returns the lowest allowed speed (for speedpost and speed signal)
         //
 
         public ObjectSpeedInfo this_lim_speed(MstsSignalFunction fn_type)
         {
-            var set_speed = new ObjectSpeedInfo(9E9f, 9E9f, false, false);
+            var set_speed = new ObjectSpeedInfo(9E9f, 9E9f, false, false, false);
 
             foreach (SignalHead sigHead in SignalHeads)
             {
@@ -10202,7 +10237,7 @@ namespace ORTS
 
             float passSpeed = speedItem.IsPassenger ? speedMpS : -1;
             float freightSpeed = speedItem.IsFreight ? speedMpS : -1;
-            ObjectSpeedInfo speedinfo = new ObjectSpeedInfo(passSpeed, freightSpeed, false, false);
+            ObjectSpeedInfo speedinfo = new ObjectSpeedInfo(passSpeed, freightSpeed, false, false, false);
             speed_info[(int)state] = speedinfo;
         }
 
@@ -10224,7 +10259,7 @@ namespace ORTS
                 foreach (SignalAspect thisAspect in signalType.Aspects)
                 {
                     int arrindex = (int)thisAspect.Aspect;
-                    speed_info[arrindex] = new ObjectSpeedInfo(thisAspect.SpeedMpS, thisAspect.SpeedMpS, thisAspect.Asap, thisAspect.Reset);
+                    speed_info[arrindex] = new ObjectSpeedInfo(thisAspect.SpeedMpS, thisAspect.SpeedMpS, thisAspect.Asap, thisAspect.Reset, thisAspect.NoSpeedReduction);
                 }
 
                 // update overall SignalNumClearAhead
@@ -10727,8 +10762,9 @@ namespace ORTS
         // set active by TRAIN
         public float speed_passenger;                // -1 if not set
         public float speed_freight;                  // -1 if not set
-        public uint speed_flag;
-        public uint speed_reset;
+        public int speed_flag;
+        public int speed_reset;
+        public int speed_noSpeedReduction;
         public float actual_speed;                   // set active by TRAIN
 
         public bool processed;                       // for AI trains, set active by TRAIN
@@ -10755,6 +10791,7 @@ namespace ORTS
                 speed_freight = -1;                      // set active by TRAIN
                 speed_flag = 0;                       // set active by TRAIN
                 speed_reset = 0;                      // set active by TRAIN
+                speed_noSpeedReduction = 0;
             }
             else
             {
@@ -10765,6 +10802,7 @@ namespace ORTS
                 speed_freight = speed_info.speed_freight;
                 speed_flag = speed_info.speed_flag;
                 speed_reset = speed_info.speed_reset;
+                speed_noSpeedReduction = speed_info.speed_noSpeedReduction;
             }
         }
 
@@ -10788,26 +10826,22 @@ namespace ORTS
 
         public float speed_pass;
         public float speed_freight;
-        public uint speed_flag;
-        public uint speed_reset;
+        public int speed_flag;
+        public int speed_reset;
+        public int speed_noSpeedReduction;
 
         //================================================================================================//
         //
         // Constructor
         //
 
-        public ObjectSpeedInfo(float pass, float freight, bool asap, bool reset)
+        public ObjectSpeedInfo(float pass, float freight, bool asap, bool reset, bool nospeedreduction)
         {
             speed_pass = pass;
             speed_freight = freight;
-            if (asap)
-            {
-                speed_flag = 1;
-            }
-            if (reset)
-            {
-                speed_reset = 1;
-            }
+            speed_flag = asap ? 1 : 0;
+            speed_reset = reset ? 1 : 0;
+            speed_noSpeedReduction = nospeedreduction ? 1 : 0;
         }
     }
 
@@ -11512,7 +11546,7 @@ namespace ORTS
             }
             else
             {
-                File.AppendAllText(@"C:\Temp\deadlock.txt", "\n No Inverse paths available \n");
+                File.AppendAllText(@"C:\Temp\deadlock.txt", "\nNo Inverse paths available \n");
             }
 
             File.AppendAllText(@"C:\Temp\deadlock.txt", "\n Inverse references : \n");
@@ -11715,7 +11749,7 @@ namespace ORTS
                 // no single path conflicts - so all free paths are available
 
 #if DEBUG_DEADLOCK
-                File.AppendAllText(@"C:\Temp\deadlock.txt", "\n\n ----- No signle paths conflicts - all paths available : \n");
+                File.AppendAllText(@"C:\Temp\deadlock.txt", "\n\n ----- No single paths conflicts - all paths available : \n");
                 foreach (int iRoute in freePaths)
                 {
                     File.AppendAllText(@"C:\Temp\deadlock.txt", " Route : " + iRoute.ToString() + "\n");

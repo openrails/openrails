@@ -1289,9 +1289,12 @@ namespace ORTS
                         }
                         else if (thisInfo.distance_to_train > 2.0f * signalApproachDistanceM) // set restricted only if not close
                         {
-                            CreateTrainAction(validSpeed, 0.0f,
-                                    thisInfo.distance_to_train, thisInfo,
-                                    AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_RESTRICTED);
+                            if (!thisInfo.ObjectDetails.this_sig_noSpeedReduction(MstsSignalFunction.NORMAL))
+                            {
+                                CreateTrainAction(validSpeed, 0.0f,
+                                        thisInfo.distance_to_train, thisInfo,
+                                        AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_RESTRICTED);
+                            }
                             processedList.Add(thisInfo);
                         }
                     }
@@ -1740,14 +1743,8 @@ namespace ORTS
 
                 else if (nextAspect == MstsSignalAspect.STOP)
                 {
-                    // if stop but train is not in section ahead of signal - train is not actually waiting for signal
-                    if (ValidRoute[0][PresentPosition[0].RouteListIndex].TCSectionIndex != NextSignalObject[0].TCReference)
-                    {
-                        MovementState = AI_MOVEMENT_STATE.ACCELERATING;
-                        StartMoving(AI_START_MOVEMENT.PATH_ACTION);
-                    }
-                    // if stop but train is well away from signal allow to close in
-                    else if (distanceToSignal > 10 * signalApproachDistanceM)
+                    // if stop but train is well away from signal allow to close
+                    if (distanceToSignal > 5 * signalApproachDistanceM)
                     {
                         MovementState = AI_MOVEMENT_STATE.ACCELERATING;
                         StartMoving(AI_START_MOVEMENT.PATH_ACTION);
@@ -2301,7 +2298,8 @@ namespace ORTS
                 else if (nextActionInfo.ActiveItem.signal_state != MstsSignalAspect.STOP)
                 {
                     nextActionInfo.NextAction = AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_RESTRICTED;
-                    if ((nextActionInfo.ActivateDistanceM - PresentPosition[0].DistanceTravelledM) < signalApproachDistanceM)
+                    if ( ((nextActionInfo.ActivateDistanceM - PresentPosition[0].DistanceTravelledM) < signalApproachDistanceM) ||
+                         nextActionInfo.ActiveItem.ObjectDetails.this_sig_noSpeedReduction(MstsSignalFunction.NORMAL))
                     {
                         clearAction = true;
 #if DEBUG_REPORTS
@@ -5062,7 +5060,8 @@ namespace ORTS
                 else if (thisItem.ActiveItem.signal_state != MstsSignalAspect.STOP)
                 {
                     thisItem.NextAction = AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_RESTRICTED;
-                    if ((thisItem.ActivateDistanceM - PresentPosition[0].DistanceTravelledM) < signalApproachDistanceM)
+                    if ( ((thisItem.ActivateDistanceM - PresentPosition[0].DistanceTravelledM) < signalApproachDistanceM) ||
+                         thisItem.ActiveItem.ObjectDetails.this_sig_noSpeedReduction(MstsSignalFunction.NORMAL))
                     {
                         actionValid = false;
                         actionCleared = true;
@@ -5894,7 +5893,7 @@ namespace ORTS
 
             thisInfo.speed_passenger = inf.ReadSingle();
             thisInfo.speed_freight = inf.ReadSingle();
-            thisInfo.speed_flag = inf.ReadUInt32();
+            thisInfo.speed_flag = inf.ReadInt32();
             thisInfo.actual_speed = inf.ReadSingle();
 
             thisInfo.processed = inf.ReadBoolean();

@@ -754,6 +754,8 @@ namespace MSTS.Formats
         public bool Asap { get; private set; }
         /// <summary>Set to true if SignalFlags RESET option specified (ORTS only)</summary>
         public bool Reset; 
+        /// <summary>Set to true if no speed reduction is required for RESTRICTED or STOP_AND_PROCEED aspects (ORTS only) </summary>
+        public bool NoSpeedReduction;
 
         /// <summary>
         /// constructor for dummy entries
@@ -766,6 +768,7 @@ namespace MSTS.Formats
             DrawStateName = String.Copy(reqName);
             SpeedMpS = -1;
             Asap = false;
+            NoSpeedReduction = false;
         }
 
         /// <summary>
@@ -797,6 +800,7 @@ namespace MSTS.Formats
                         {
                             case "asap": Asap = true; break;
                             case "or_speedreset": Reset = true; break;
+                            case "or_nospeedreduction": NoSpeedReduction = true; break;
                             default: stf.StepBackOneItem(); STFException.TraceInformation(stf, "Skipped unknown DrawLight flag " + stf.ReadString()); break;
                         }
                 }),
