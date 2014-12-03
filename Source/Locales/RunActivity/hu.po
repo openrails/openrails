@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
 "POT-Creation-Date: 2014-12-03 20:28:12+0100\n"
-"PO-Revision-Date: 2014-12-03 21:55+0100\n"
+"PO-Revision-Date: 2014-12-03 22:44+0100\n"
 "Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: hu\n"
@@ -1256,11 +1256,11 @@ msgstr "Gép indítása/leállítása"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:69
 msgid "Toggle MU Connection"
-msgstr "Távvezérlés kapcsolása"
+msgstr "Távvezérlőkábel (szét)csatolása"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:73
 msgid "Toggle Brake Hose Connection"
-msgstr "Távvezérlőkábel csatolása"
+msgstr "Féktömlő (szét)csatolása"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:77
 msgid "Open/Close Front Angle Cock"

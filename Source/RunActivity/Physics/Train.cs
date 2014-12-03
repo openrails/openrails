@@ -2905,16 +2905,15 @@ namespace ORTS
                     if (MUDynamicBrakePercent == 0)
                         MUDynamicBrakePercent = -1;
                 }
+                BrakeLine2PressurePSI = maxPressurePSI;
+                ConnectBrakeHoses();
             }
             else
             {
-                BrakeLine1PressurePSIorInHg = BrakeLine3PressurePSI = BrakeLine4PressurePSI = 0;
+                BrakeLine1PressurePSIorInHg = BrakeLine2PressurePSI = BrakeLine3PressurePSI = BrakeLine4PressurePSI = maxPressurePSI = 0;
             }
-            BrakeLine2PressurePSI = maxPressurePSI;
             foreach (TrainCar car in Cars)
-                car.BrakeSystem.Initialize(LeadLocomotiveIndex < 0, maxPressurePSI, fullServPressurePSI, false);
-            if (LeadLocomotiveIndex >= 0)
-                ConnectBrakeHoses();
+                car.BrakeSystem.Initialize(LeadLocomotiveIndex < 0, maxPressurePSI, fullServPressurePSI, LeadLocomotiveIndex < 0);
        }
 
         //================================================================================================//
