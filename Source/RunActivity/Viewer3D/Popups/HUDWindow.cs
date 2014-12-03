@@ -519,10 +519,10 @@ namespace ORTS.Viewer3D.Popups
             var train = Viewer.PlayerLocomotive.Train;
             TableAddLabelValue(table, "Main reservoir", "{0}", FormatStrings.FormatPressure(train.BrakeLine2PressurePSI, PressureUnit.PSI, (Viewer.PlayerLocomotive as MSTSLocomotive).PressureUnit, true));
 
-            var n = Math.Min(10, train.Cars.Count);
+            var n = train.Cars.Count; // Number of lines to show
             for (var i = 0; i < n; i++)
             {
-                var j = i == 0 ? 0 : i * (train.Cars.Count - 1) / (n - 1);
+                var j = i < 2 ? i : i * (train.Cars.Count - 1) / (n - 1);
                 var car = train.Cars[j];
                 TableSetCell(table, 0, "{0}", j + 1);
                 TableSetCells(table, 1, car.BrakeSystem.GetDebugStatus((Viewer.PlayerLocomotive as MSTSLocomotive).PressureUnit));

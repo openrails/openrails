@@ -152,6 +152,10 @@ namespace ORTS
             outf.Write(EmergResPressurePSI);
             outf.Write(FullServPressurePSI);
             outf.Write((int)TripleValveState);
+            outf.Write(FrontBrakeHoseConnected);
+            outf.Write(AngleCockAOpen);
+            outf.Write(AngleCockBOpen);
+            outf.Write(BleedOffValveOpen);
         }
 
         public override void Restore(BinaryReader inf)
@@ -168,6 +172,10 @@ namespace ORTS
             EmergResPressurePSI = inf.ReadSingle();
             FullServPressurePSI = inf.ReadSingle();
             TripleValveState = (ValveState)inf.ReadInt32();
+            FrontBrakeHoseConnected = inf.ReadBoolean();
+            AngleCockAOpen = inf.ReadBoolean();
+            AngleCockBOpen = inf.ReadBoolean();
+            BleedOffValveOpen = inf.ReadBoolean();
         }
 
         public override void Initialize(bool handbrakeOn, float maxPressurePSI, float fullServPressurePSI, bool immediateRelease)

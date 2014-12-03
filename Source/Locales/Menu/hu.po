@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
-"POT-Creation-Date: 2014-10-07 20:08:57+0200\n"
-"PO-Revision-Date: 2014-10-07 20:16+0100\n"
+"POT-Creation-Date: 2014-12-03 20:27:56+0100\n"
+"PO-Revision-Date: 2014-12-03 22:01+0100\n"
 "Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: hu\n"
@@ -12,11 +12,11 @@ msgstr ""
 "X-Generator: Poedit 1.6.7\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../../Menu/FolderForm.Designer.cs:56 ../../Menu/Options.Designer.cs:178
+#: ../../Menu/FolderForm.Designer.cs:56 ../../Menu/Options.Designer.cs:179
 msgid "OK"
 msgstr "OK"
 
-#: ../../Menu/FolderForm.Designer.cs:67 ../../Menu/Options.Designer.cs:232
+#: ../../Menu/FolderForm.Designer.cs:67 ../../Menu/Options.Designer.cs:233
 #: ../../Menu/TestingForm.Designer.cs:84
 msgid "Cancel"
 msgstr "Mégse"
@@ -106,87 +106,87 @@ msgstr "Nyomj meg egy gombot"
 msgid "Reset to default"
 msgstr "Alapbeállítás visszaállítása"
 
-#: ../../Menu/MainForm.cs:132
+#: ../../Menu/MainForm.cs:135
 msgid "Spring"
 msgstr "Tavasz"
 
-#: ../../Menu/MainForm.cs:133
+#: ../../Menu/MainForm.cs:136
 msgid "Summer"
 msgstr "Nyár"
 
-#: ../../Menu/MainForm.cs:134
+#: ../../Menu/MainForm.cs:137
 msgid "Autumn"
 msgstr "Ősz"
 
-#: ../../Menu/MainForm.cs:135
+#: ../../Menu/MainForm.cs:138
 msgid "Winter"
 msgstr "Tél"
 
-#: ../../Menu/MainForm.cs:138
+#: ../../Menu/MainForm.cs:141
 msgid "Clear"
 msgstr "Tiszta"
 
-#: ../../Menu/MainForm.cs:139
+#: ../../Menu/MainForm.cs:142
 msgid "Snow"
 msgstr "Havas"
 
-#: ../../Menu/MainForm.cs:140
+#: ../../Menu/MainForm.cs:143
 msgid "Rain"
 msgstr "Esős"
 
-#: ../../Menu/MainForm.cs:143 ../../Menu/Options.cs:449
+#: ../../Menu/MainForm.cs:146 ../../Menu/Options.cs:472
 msgid "Easy"
 msgstr "Könnyű"
 
-#: ../../Menu/MainForm.cs:144
+#: ../../Menu/MainForm.cs:147
 msgid "Medium"
 msgstr "Közepes"
 
-#: ../../Menu/MainForm.cs:145 ../../Menu/Options.cs:455
+#: ../../Menu/MainForm.cs:148 ../../Menu/Options.cs:478
 msgid "Hard"
 msgstr "Nehéz"
 
-#: ../../Menu/MainForm.cs:149
+#: ../../Menu/MainForm.cs:152
 msgid "Monday"
 msgstr "Hétfő"
 
-#: ../../Menu/MainForm.cs:150
+#: ../../Menu/MainForm.cs:153
 msgid "Tuesday"
 msgstr "Kedd"
 
-#: ../../Menu/MainForm.cs:151
+#: ../../Menu/MainForm.cs:154
 msgid "Wednesday"
 msgstr "Szerda"
 
-#: ../../Menu/MainForm.cs:152
+#: ../../Menu/MainForm.cs:155
 msgid "Thursday"
 msgstr "Csütörtök"
 
-#: ../../Menu/MainForm.cs:153
+#: ../../Menu/MainForm.cs:156
 msgid "Friday"
 msgstr "Péntek"
 
-#: ../../Menu/MainForm.cs:154
+#: ../../Menu/MainForm.cs:157
 msgid "Saturday"
 msgstr "Szombat"
 
-#: ../../Menu/MainForm.cs:155
+#: ../../Menu/MainForm.cs:158
 msgid "Sunday"
 msgstr "Vasárnap"
 
-#: ../../Menu/MainForm.cs:257
+#: ../../Menu/MainForm.cs:259
 msgid "Update check failed"
 msgstr "A frissítések ellenőrzése nem sikerült"
 
-#: ../../Menu/MainForm.cs:295
+#: ../../Menu/MainForm.cs:306
 msgid "Select a the installation profile (MSTS folder) to add:"
 msgstr "Telepítési profil (MSTS könyvtár) kiválasztása:"
 
-#: ../../Menu/MainForm.cs:333
+#: ../../Menu/MainForm.cs:344
 msgid "Path: "
 msgstr "Útvonal:"
 
-#: ../../Menu/MainForm.cs:333
+#: ../../Menu/MainForm.cs:344
 msgid ""
 "\n"
 "Name: "
@@ -194,7 +194,7 @@ msgstr ""
 "\n"
 "Név: "
 
-#: ../../Menu/MainForm.cs:333
+#: ../../Menu/MainForm.cs:344
 msgid ""
 "\n"
 "\n"
@@ -204,7 +204,7 @@ msgstr ""
 "\n"
 "Töröljük ezt a telepítési profilt az Open Railsből?"
 
-#: ../../Menu/MainForm.cs:430
+#: ../../Menu/MainForm.cs:441
 msgid ""
 "User name must be 4-10 characters long, cannot contain space, ', \" or - and "
 "must not start with a digit."
@@ -212,14 +212,14 @@ msgstr ""
 "A felhasználónévnek 4-10 karakter hosszúnak kell lennie, nem tartalmazhat "
 "szóközt, ', \" vagy - jeleket, és nem szabad számmal kezdődnie."
 
-#: ../../Menu/MainForm.cs:617
+#: ../../Menu/MainForm.cs:607
 msgid ""
 "Microsoft Train Simulator doesn't appear to be installed but is optional.\n"
 msgstr ""
 "Úgy tűnik, a Microsoft Train Simulator nincs telepítve, de ez nem is "
 "kötelező\n"
 
-#: ../../Menu/MainForm.cs:618
+#: ../../Menu/MainForm.cs:608
 msgid ""
 "Click on 'Add...' to point Open Rails at a folder containing folders ROUTES, "
 "TRAINS etc.."
@@ -227,36 +227,36 @@ msgstr ""
 "Kattints a \"Hozzáadás...\"-ra a ROUTES, TRAINS, stb. könyvtárak helyének "
 "beállításához."
 
-#: ../../Menu/MainForm.cs:884
+#: ../../Menu/MainForm.cs:874
 msgid "Activity Briefing"
 msgstr "Menetokmányok:"
 
-#: ../../Menu/MainForm.cs:891 ../../Menu/MainForm.Designer.cs:426
+#: ../../Menu/MainForm.cs:881 ../../Menu/MainForm.Designer.cs:425
 msgid "Timetable"
 msgstr "Menetrend"
 
-#: ../../Menu/MainForm.cs:895
+#: ../../Menu/MainForm.cs:885
 msgid "Player Timetable"
 msgstr "Játékos menetrendje"
 
-#: ../../Menu/MainForm.cs:899
+#: ../../Menu/MainForm.cs:889
 msgid "Player Train"
 msgstr "Játékos vonata"
 
-#: ../../Menu/MainForm.cs:902
+#: ../../Menu/MainForm.cs:892
 msgid "Consist : "
 msgstr "Szerelvény:"
 
-#: ../../Menu/MainForm.cs:910
+#: ../../Menu/MainForm.cs:900
 msgid "Path : "
 msgstr "Útvonal:"
 
-#: ../../Menu/MainForm.cs:259
+#: ../../Menu/MainForm.cs:261
 #, csharp-format
 msgid "Update to {0}"
 msgstr "Frissítés: {0}"
 
-#: ../../Menu/MainForm.cs:443
+#: ../../Menu/MainForm.cs:454
 #, csharp-format
 msgid ""
 "The update check failed due to an error:\n"
@@ -267,12 +267,7 @@ msgstr ""
 "\n"
 "{0}"
 
-#: ../../Menu/MainForm.cs:447
-#, csharp-format
-msgid "Updating to {0}..."
-msgstr "Frissítés a {0}. verzióra..."
-
-#: ../../Menu/MainForm.cs:458
+#: ../../Menu/MainForm.cs:462
 #, csharp-format
 msgid ""
 "The update failed due to an error:\n"
@@ -283,217 +278,277 @@ msgstr ""
 "\n"
 "{0}"
 
-#: ../../Menu/MainForm.cs:875
+#: ../../Menu/MainForm.cs:865
 #, csharp-format
 msgid "Route: {0}"
 msgstr "Pálya: {0}"
 
-#: ../../Menu/MainForm.cs:880 ../../Menu/MainForm.cs:905
+#: ../../Menu/MainForm.cs:870 ../../Menu/MainForm.cs:895
 #, csharp-format
 msgid "Locomotive: {0}"
 msgstr "Jármű: {0}"
 
-#: ../../Menu/MainForm.cs:883
+#: ../../Menu/MainForm.cs:873
 #, csharp-format
 msgid "Activity: {0}"
 msgstr "Szolgálat: {0}"
 
-#: ../../Menu/MainForm.Designer.cs:122
+#: ../../Menu/MainForm.Designer.cs:121
 msgid "Windowed"
 msgstr "Ablakban futás"
 
-#: ../../Menu/MainForm.Designer.cs:132
+#: ../../Menu/MainForm.Designer.cs:131
 msgid "Start"
 msgstr "Indítás"
 
-#: ../../Menu/MainForm.Designer.cs:145
+#: ../../Menu/MainForm.Designer.cs:144
 msgid "open"
 msgstr "open"
 
-#: ../../Menu/MainForm.Designer.cs:157
+#: ../../Menu/MainForm.Designer.cs:156
 msgid "rails"
 msgstr "rails"
 
-#: ../../Menu/MainForm.Designer.cs:165
+#: ../../Menu/MainForm.Designer.cs:164
 msgid "Add..."
 msgstr "Hozzáadás..."
 
-#: ../../Menu/MainForm.Designer.cs:179
+#: ../../Menu/MainForm.Designer.cs:178
 msgid "Remove"
 msgstr "Törlés"
 
-#: ../../Menu/MainForm.Designer.cs:191
+#: ../../Menu/MainForm.Designer.cs:190
 msgid "Logging"
 msgstr "Naplózás"
 
-#: ../../Menu/MainForm.Designer.cs:200 ../../Menu/Options.Designer.cs:1619
+#: ../../Menu/MainForm.Designer.cs:199 ../../Menu/Options.Designer.cs:1613
 msgid "Options"
 msgstr "Beállítások"
 
-#: ../../Menu/MainForm.Designer.cs:210
+#: ../../Menu/MainForm.Designer.cs:209
 msgid "Resume/ Replay..."
 msgstr "Folytatás, Visszajátszás"
 
-#: ../../Menu/MainForm.Designer.cs:219
+#: ../../Menu/MainForm.Designer.cs:218
 msgid "Tools ▼"
 msgstr "Eszközök ▼"
 
-#: ../../Menu/MainForm.Designer.cs:254
+#: ../../Menu/MainForm.Designer.cs:253
 msgid "Route:"
 msgstr "Pálya:"
 
-#: ../../Menu/MainForm.Designer.cs:273
+#: ../../Menu/MainForm.Designer.cs:272
 msgid "Host/port:"
 msgstr "Szerver/port:"
 
-#: ../../Menu/MainForm.Designer.cs:284
+#: ../../Menu/MainForm.Designer.cs:283
 msgid "User name:"
 msgstr "Felhasználónév:"
 
-#: ../../Menu/MainForm.Designer.cs:294
+#: ../../Menu/MainForm.Designer.cs:293
 msgid "Client"
 msgstr "Résztvevő"
 
-#: ../../Menu/MainForm.Designer.cs:304
+#: ../../Menu/MainForm.Designer.cs:303
 msgid "Server"
 msgstr "Kiszolgáló"
 
-#: ../../Menu/MainForm.Designer.cs:329
+#: ../../Menu/MainForm.Designer.cs:328
 msgid "Multiplayer"
 msgstr "Többrésztvevős"
 
-#: ../../Menu/MainForm.Designer.cs:341
+#: ../../Menu/MainForm.Designer.cs:340
 msgid "Singleplayer"
 msgstr "Egyrésztvevős"
 
-#: ../../Menu/MainForm.Designer.cs:351
+#: ../../Menu/MainForm.Designer.cs:350
 msgid "Installation profile:"
 msgstr "Telepítési profil:"
 
-#: ../../Menu/MainForm.Designer.cs:383
+#: ../../Menu/MainForm.Designer.cs:382
 msgid "Edit"
 msgstr "Szerkesztés"
 
-#: ../../Menu/MainForm.Designer.cs:405
+#: ../../Menu/MainForm.Designer.cs:404
 msgid "Mode:"
 msgstr "Mód:"
 
-#: ../../Menu/MainForm.Designer.cs:416 ../../Menu/TestingForm.Designer.cs:182
+#: ../../Menu/MainForm.Designer.cs:415 ../../Menu/TestingForm.Designer.cs:182
 msgid "Activity"
 msgstr "Egyedi szolgálat"
 
-#: ../../Menu/MainForm.Designer.cs:466
+#: ../../Menu/MainForm.Designer.cs:465
 msgid "Activity:"
 msgstr "Szolgálat:"
 
-#: ../../Menu/MainForm.Designer.cs:489
+#: ../../Menu/MainForm.Designer.cs:488
 msgid "Locomotive:"
 msgstr "Jármű:"
 
-#: ../../Menu/MainForm.Designer.cs:526
+#: ../../Menu/MainForm.Designer.cs:525
 msgid "Consist:"
 msgstr "Szerelvény:"
 
-#: ../../Menu/MainForm.Designer.cs:537
+#: ../../Menu/MainForm.Designer.cs:536
 msgid "Starting at:"
 msgstr "Szolgálatfelvételi hely:"
 
-#: ../../Menu/MainForm.Designer.cs:561
+#: ../../Menu/MainForm.Designer.cs:560
 msgid "Heading to:"
 msgstr "Útirány:"
 
-#: ../../Menu/MainForm.Designer.cs:585
+#: ../../Menu/MainForm.Designer.cs:584
 msgid "Duration:"
 msgstr "Időtartam:"
 
-#: ../../Menu/MainForm.Designer.cs:596
+#: ../../Menu/MainForm.Designer.cs:595
 msgid "Time:"
 msgstr "Kezdési idő:"
 
-#: ../../Menu/MainForm.Designer.cs:645 ../../Menu/MainForm.Designer.cs:790
+#: ../../Menu/MainForm.Designer.cs:644 ../../Menu/MainForm.Designer.cs:789
 msgid "Weather:"
 msgstr "Időjárás:"
 
-#: ../../Menu/MainForm.Designer.cs:669
+#: ../../Menu/MainForm.Designer.cs:668
 msgid "Difficulty:"
 msgstr "Nehézség:"
 
-#: ../../Menu/MainForm.Designer.cs:692 ../../Menu/MainForm.Designer.cs:812
+#: ../../Menu/MainForm.Designer.cs:691 ../../Menu/MainForm.Designer.cs:811
 msgid "Season:"
 msgstr "Évszak:"
 
-#: ../../Menu/MainForm.Designer.cs:724
+#: ../../Menu/MainForm.Designer.cs:723
 msgid "Train:"
 msgstr "Vonat:"
 
-#: ../../Menu/MainForm.Designer.cs:745
+#: ../../Menu/MainForm.Designer.cs:744
 msgid "Timetable:"
 msgstr "Menetrend:"
 
-#: ../../Menu/MainForm.Designer.cs:767
+#: ../../Menu/MainForm.Designer.cs:766
 msgid "Day:"
 msgstr "Nap:"
 
-#: ../../Menu/MainForm.Designer.cs:843
+#: ../../Menu/MainForm.Designer.cs:842
 msgid "Timetable set:"
 msgstr "Menetrend beállítása:"
 
-#: ../../Menu/MainForm.Designer.cs:866
-msgid "Restart to apply update"
-msgstr "A frissítés  befejezéséhez újraindítás szükséges"
-
-#: ../../Menu/MainForm.Designer.cs:876 ../../Menu/TestingForm.Designer.cs:295
+#: ../../Menu/MainForm.Designer.cs:862 ../../Menu/TestingForm.Designer.cs:295
 msgid "Testing"
 msgstr "Tesztelés"
 
-#: ../../Menu/MainForm.Designer.cs:894
+#: ../../Menu/MainForm.Designer.cs:880
 msgid "What's new?"
 msgstr "Újdonságok"
 
-#: ../../Menu/MainForm.Designer.cs:933
+#: ../../Menu/MainForm.Designer.cs:918
 msgid "Open Rails"
 msgstr "Open Rails"
 
-#: ../../Menu/Options.cs:142
+#: ../../Menu/Options.cs:126
+msgid "comma"
+msgstr "vessző"
+
+#: ../../Menu/Options.cs:127
+msgid "semicolon"
+msgstr "pontosvessző"
+
+#: ../../Menu/Options.cs:128
+msgid "tab"
+msgstr "tabulátor"
+
+#: ../../Menu/Options.cs:129
+msgid "space"
+msgstr "szóköz"
+
+#: ../../Menu/Options.cs:143 ../../Menu/ResumeForm.Designer.cs:129
+msgid "Time"
+msgstr "Idő"
+
+#: ../../Menu/Options.cs:144
+msgid "Train Speed"
+msgstr "Vonat sebessége"
+
+#: ../../Menu/Options.cs:145
+msgid "Max. Speed"
+msgstr "Max. sebesség"
+
+#: ../../Menu/Options.cs:146
+msgid "Signal State"
+msgstr "Jelzőállás"
+
+#: ../../Menu/Options.cs:147
+msgid "Track Elevation"
+msgstr "Pályaemelkedés"
+
+#: ../../Menu/Options.cs:148
+msgid "Direction"
+msgstr "Irány"
+
+#: ../../Menu/Options.cs:149
+msgid "Control Mode"
+msgstr "Irányítási mód"
+
+#: ../../Menu/Options.cs:150
+msgid "Distance Travelled"
+msgstr "Megtett távolság"
+
+#: ../../Menu/Options.cs:151
+msgid "Throttle %"
+msgstr "Menetsz. %"
+
+#: ../../Menu/Options.cs:152
+msgid "Brake Cyl Press"
+msgstr "Fékhengernyomás"
+
+#: ../../Menu/Options.cs:153
+msgid "Dyn Brake %"
+msgstr "Din. fék %"
+
+#: ../../Menu/Options.cs:154
+msgid "Gear Setting"
+msgstr "Sebességfokozat"
+
+#: ../../Menu/Options.cs:164
 msgid "Release channel (Recommended for users)"
 msgstr "Kiadási csatorna (felhasználóknak javasolt)"
 
-#: ../../Menu/Options.cs:143
+#: ../../Menu/Options.cs:165
 msgid "Experimental channel (For supporters)"
 msgstr "Kísérleti csatorna (támogatóknak)"
 
-#: ../../Menu/Options.cs:144
+#: ../../Menu/Options.cs:166
 msgid "Nightly channel (For developers)"
 msgstr "Éjjeli csatorna (fejlesztőknek)"
 
-#: ../../Menu/Options.cs:145
+#: ../../Menu/Options.cs:167
 msgid "None"
 msgstr "Nincs"
 
-#: ../../Menu/Options.cs:148
+#: ../../Menu/Options.cs:170
 msgid ""
 "The release channel contains only official, hand-picked stable versions."
 msgstr ""
 "A kiadási csatorna csak hivatalos, kiválasztott, stabil verziókat tartalmaz."
 
-#: ../../Menu/Options.cs:149
+#: ../../Menu/Options.cs:171
 msgid ""
 "The experimental channel contains automatically generated weekly versions."
 msgstr "A kísérleti csatorna heti automatikusan generált verziókat tartalmaz."
 
-#: ../../Menu/Options.cs:150
+#: ../../Menu/Options.cs:172
 msgid "The nightly channel contains every single version created."
 msgstr "Az éjjeli csatorna tartalmaz minden egyes újabb verziót."
 
-#: ../../Menu/Options.cs:151
+#: ../../Menu/Options.cs:173
 msgid "No automatic updates."
 msgstr "Nincs automatikus frissítés."
 
-#: ../../Menu/Options.cs:274
+#: ../../Menu/Options.cs:296
 msgid "Click to change this key"
 msgstr "Kattints ide a billentyű megváltoztatásához"
 
-#: ../../Menu/Options.cs:290
+#: ../../Menu/Options.cs:312
 msgid ""
 "Continue with conflicting key assignments?\n"
 "\n"
@@ -501,11 +556,11 @@ msgstr ""
 "Folytassuk ütköző billentyűzethozzárendelésekkel?\n"
 "\n"
 
-#: ../../Menu/Options.cs:385
+#: ../../Menu/Options.cs:408
 msgid "Remove all custom key assignments?"
 msgstr "Töröljünk minden saját billentyűbeállítást?"
 
-#: ../../Menu/Options.cs:396
+#: ../../Menu/Options.cs:419
 msgid ""
 "A listing of all keyboard commands and keys has been placed here:\n"
 "\n"
@@ -513,35 +568,35 @@ msgstr ""
 "A billentyűparancsok listája ide lett mentve:\n"
 "\n"
 
-#: ../../Menu/Options.cs:405
+#: ../../Menu/Options.cs:428
 msgid "No errors found."
 msgstr "Nincsenek hibák."
 
-#: ../../Menu/Options.cs:430
+#: ../../Menu/Options.cs:453
 msgid "Please restart Open Rails in order to load the new language."
 msgstr "Az OpenRails-t újra kell indítani az új nyelv betöltéséhez."
 
-#: ../../Menu/Options.cs:447
+#: ../../Menu/Options.cs:470
 msgid "Very easy"
 msgstr "Nagyon könnyű"
 
-#: ../../Menu/Options.cs:451
+#: ../../Menu/Options.cs:474
 msgid "MSTS Compatibile"
 msgstr "MSTS-kompatibilis"
 
-#: ../../Menu/Options.cs:453 ../../Menu/Options.Designer.cs:1260
+#: ../../Menu/Options.cs:476 ../../Menu/Options.Designer.cs:1265
 msgid "Normal"
 msgstr "Normális"
 
-#: ../../Menu/Options.cs:457
+#: ../../Menu/Options.cs:480
 msgid "Very Hard"
 msgstr "Nagyon nehéz"
 
-#: ../../Menu/Options.cs:459
+#: ../../Menu/Options.cs:482
 msgid "Good luck!"
 msgstr "Sok szerencsét!"
 
-#: ../../Menu/Options.cs:419
+#: ../../Menu/Options.cs:442
 #, csharp-format
 msgid ""
 "{0:F0}° vertical FOV is the same as:\n"
@@ -552,332 +607,336 @@ msgstr ""
 "{1:F0}° vízszintes képszögnek 4:3-ban\n"
 "{2:F0}° vízszintes képszögnek 16:9-ben"
 
-#: ../../Menu/Options.Designer.cs:212
+#: ../../Menu/Options.Designer.cs:213
 msgid "Brake pipe charging rate (PSI/s)"
 msgstr "Főlégvezeték töltési sebessége [psi/s]"
 
-#: ../../Menu/Options.Designer.cs:221
+#: ../../Menu/Options.Designer.cs:222
 msgid "Graduated release air brakes"
 msgstr "Légfék fokozatos kiengedése"
 
-#: ../../Menu/Options.Designer.cs:242
+#: ../../Menu/Options.Designer.cs:243
 msgid "Alerter"
 msgstr "Éberségjelző"
 
-#: ../../Menu/Options.Designer.cs:252
+#: ../../Menu/Options.Designer.cs:253
 msgid "Suppress control confirmations"
 msgstr "Vezérlővisszajelzések letiltása"
 
-#: ../../Menu/Options.Designer.cs:262
+#: ../../Menu/Options.Designer.cs:263
 msgid "Dispatcher window"
 msgstr "Forgalomirányító ablak"
 
-#: ../../Menu/Options.Designer.cs:304
+#: ../../Menu/Options.Designer.cs:305
 msgid "General"
 msgstr "Általános"
 
-#: ../../Menu/Options.Designer.cs:315
+#: ../../Menu/Options.Designer.cs:316
 msgid "Pressure unit"
 msgstr "Nyomás mértékegysége"
 
-#: ../../Menu/Options.Designer.cs:324
+#: ../../Menu/Options.Designer.cs:325
 msgid "Large address aware binaries (for all 64bit and 3GB tuning on 32bit)"
 msgstr ""
 "Magas memóriacímzés-támogatású (LAA) változat használata (64 bit és 3GB-os "
 "32 bit)"
 
-#: ../../Menu/Options.Designer.cs:350
+#: ../../Menu/Options.Designer.cs:351
 msgid "Language"
 msgstr "Nyelv"
 
-#: ../../Menu/Options.Designer.cs:370
+#: ../../Menu/Options.Designer.cs:371
 msgid "Disable alerter in external views"
 msgstr "Éberségjelző letiltása külső nézetben"
 
-#: ../../Menu/Options.Designer.cs:385
+#: ../../Menu/Options.Designer.cs:386
 msgid "Audio"
 msgstr "Hang"
 
-#: ../../Menu/Options.Designer.cs:419
+#: ../../Menu/Options.Designer.cs:420
 msgid "% sound volume"
 msgstr "% hangerősség"
 
-#: ../../Menu/Options.Designer.cs:429
+#: ../../Menu/Options.Designer.cs:430
 msgid "Sound detail level"
 msgstr "Hang részletessége"
 
-#: ../../Menu/Options.Designer.cs:450
+#: ../../Menu/Options.Designer.cs:451
 msgid "MSTS Bin compatible sound"
 msgstr "MSTS Bin kompatibilis hang"
 
-#: ../../Menu/Options.Designer.cs:482
+#: ../../Menu/Options.Designer.cs:483
 msgid "Video"
 msgstr "Megjelenés"
 
-#: ../../Menu/Options.Designer.cs:492
+#: ../../Menu/Options.Designer.cs:493
 msgid "Model instancing"
 msgstr "Hardveres modellpéldány-kezelés"
 
-#: ../../Menu/Options.Designer.cs:518
+#: ../../Menu/Options.Designer.cs:519
 msgid "Ambient daylight brightness"
 msgstr "Nappali környezeti fényerő"
 
-#: ../../Menu/Options.Designer.cs:527
+#: ../../Menu/Options.Designer.cs:528
 msgid "Vertical sync"
 msgstr "Függőleges képszinkronizáció"
 
-#: ../../Menu/Options.Designer.cs:538
+#: ../../Menu/Options.Designer.cs:539
 msgid "Viewing distance (km)"
 msgstr "Látótávolság [km]"
 
-#: ../../Menu/Options.Designer.cs:576
+#: ../../Menu/Options.Designer.cs:577
 msgid "Fast full-screen alt-tab"
 msgstr "Gyors teljes képernyő Alt+Tab-bal"
 
-#: ../../Menu/Options.Designer.cs:586
+#: ../../Menu/Options.Designer.cs:587
 msgid "Distant mountains"
 msgstr "Távoli hegyek"
 
-#: ../../Menu/Options.Designer.cs:597
+#: ../../Menu/Options.Designer.cs:598
 msgid "Viewing distance (m)"
 msgstr "Látótávolság [m]"
 
-#: ../../Menu/Options.Designer.cs:634
+#: ../../Menu/Options.Designer.cs:635
 msgid "XXX"
 msgstr "XXX"
 
-#: ../../Menu/Options.Designer.cs:667
+#: ../../Menu/Options.Designer.cs:668
 msgid "Viewing vertical FOV"
 msgstr "Látható függőleges képszög"
 
-#: ../../Menu/Options.Designer.cs:691
+#: ../../Menu/Options.Designer.cs:692
 msgid "% cab 2D stretch"
 msgstr "%-os vezetőállás-széthúzás"
 
-#: ../../Menu/Options.Designer.cs:701
+#: ../../Menu/Options.Designer.cs:702
 msgid "World object density"
 msgstr "Objektumsűrűség"
 
-#: ../../Menu/Options.Designer.cs:746
+#: ../../Menu/Options.Designer.cs:747
 msgid "Glass on in-game windows"
 msgstr "Üveg a játékbeli ablakokon"
 
-#: ../../Menu/Options.Designer.cs:757
+#: ../../Menu/Options.Designer.cs:758
 msgid "Window size"
 msgstr "Ablak képfelbontása"
 
-#: ../../Menu/Options.Designer.cs:766
+#: ../../Menu/Options.Designer.cs:767
 msgid "Dynamic shadows"
 msgstr "Dinamikus árnyékok"
 
-#: ../../Menu/Options.Designer.cs:776
+#: ../../Menu/Options.Designer.cs:777
 msgid "Overhead wire"
 msgstr "Felsővezeték"
 
-#: ../../Menu/Options.Designer.cs:794
+#: ../../Menu/Options.Designer.cs:795
 msgid "Simulation"
 msgstr "Szimuláció"
 
-#: ../../Menu/Options.Designer.cs:804
+#: ../../Menu/Options.Designer.cs:805
 msgid "Steam locomotive hot start"
 msgstr "Gőzmozdony felfűtött indulással"
 
-#: ../../Menu/Options.Designer.cs:814
+#: ../../Menu/Options.Designer.cs:815
 msgid "Curve dependent speed limit"
 msgstr "Ívfüggő megengedett sebesség"
 
-#: ../../Menu/Options.Designer.cs:824
+#: ../../Menu/Options.Designer.cs:825
 msgid "Curve dependent resistance"
 msgstr "Ívfüggő ellenállás"
 
-#: ../../Menu/Options.Designer.cs:834
+#: ../../Menu/Options.Designer.cs:835
 msgid "Override non-electrified route line-voltage"
 msgstr "Villamosítatlan vonal vonali feszültségének felülírása"
 
-#: ../../Menu/Options.Designer.cs:845
+#: ../../Menu/Options.Designer.cs:846
 msgid "Adhesion moving average filter size"
 msgstr "Súrlódás mozgóátlag-szűrőjének mérete"
 
-#: ../../Menu/Options.Designer.cs:872
+#: ../../Menu/Options.Designer.cs:873
 msgid "Break couplers"
 msgstr "Vonatszakadás"
 
-#: ../../Menu/Options.Designer.cs:882
+#: ../../Menu/Options.Designer.cs:883
 msgid "Advanced adhesion model"
 msgstr "Fejlett súrlódási modell használata"
 
-#: ../../Menu/Options.Designer.cs:897
+#: ../../Menu/Options.Designer.cs:898
 msgid "Keyboard"
 msgstr "Billentyűzet"
 
-#: ../../Menu/Options.Designer.cs:907
+#: ../../Menu/Options.Designer.cs:908
 msgid "Export"
 msgstr "Exportálás"
 
-#: ../../Menu/Options.Designer.cs:920
+#: ../../Menu/Options.Designer.cs:921
 msgid "Defaults"
 msgstr "Visszaállítás"
 
-#: ../../Menu/Options.Designer.cs:932
+#: ../../Menu/Options.Designer.cs:933
 msgid "Check"
 msgstr "Ellenőrzés"
 
-#: ../../Menu/Options.Designer.cs:964
+#: ../../Menu/Options.Designer.cs:965
 msgid "Data logger"
 msgstr "Adatrögzítés"
 
-#: ../../Menu/Options.Designer.cs:1005
+#: ../../Menu/Options.Designer.cs:1001
 msgid "Speed units"
 msgstr "Sebesség mértékegysége"
 
-#: ../../Menu/Options.Designer.cs:1026
+#: ../../Menu/Options.Designer.cs:1022
 msgid "Log miscellaneous data"
 msgstr "Egyéb adatok rögzítése"
 
-#: ../../Menu/Options.Designer.cs:1036
+#: ../../Menu/Options.Designer.cs:1032
 msgid "Log performance data"
 msgstr "Teljesítményadatok rögzítése"
 
-#: ../../Menu/Options.Designer.cs:1046
+#: ../../Menu/Options.Designer.cs:1042
 msgid "Start logging with the simulation start"
 msgstr "Adatrögzítés indítása a szimuláció indulásakor"
 
-#: ../../Menu/Options.Designer.cs:1057
+#: ../../Menu/Options.Designer.cs:1053
 msgid "Separator"
 msgstr "Elválasztójel"
 
-#: ../../Menu/Options.Designer.cs:1066
+#: ../../Menu/Options.Designer.cs:1062
 msgid "Log physics data"
 msgstr "Fizikai adatok rögzítése"
 
-#: ../../Menu/Options.Designer.cs:1081
+#: ../../Menu/Options.Designer.cs:1077
 msgid "Evaluation"
 msgstr "Kiértékelés"
 
-#: ../../Menu/Options.Designer.cs:1114
+#: ../../Menu/Options.Designer.cs:1097
 msgid "Interval (sec)"
 msgstr "Időköz [s]"
 
-#: ../../Menu/Options.Designer.cs:1123
+#: ../../Menu/Options.Designer.cs:1106
 msgid "Log station stops"
 msgstr "Állomási megállások rögzítése"
 
-#: ../../Menu/Options.Designer.cs:1156
+#: ../../Menu/Options.Designer.cs:1139
 msgid "Log train speed"
 msgstr "Vonat sebességének rögzítése"
 
-#: ../../Menu/Options.Designer.cs:1167
+#: ../../Menu/Options.Designer.cs:1150
 msgid "Updater"
 msgstr "Frissítés"
 
-#: ../../Menu/Options.Designer.cs:1178
+#: ../../Menu/Options.Designer.cs:1161
 msgid "Update channel:"
 msgstr "Frissítési csatorna:"
 
-#: ../../Menu/Options.Designer.cs:1219
+#: ../../Menu/Options.Designer.cs:1203
 msgid "Experimental"
 msgstr "Kísérleti"
 
-#: ../../Menu/Options.Designer.cs:1230
+#: ../../Menu/Options.Designer.cs:1213
+msgid "Extended AI train shunting"
+msgstr "Kiterjesztett AI tolatás"
+
+#: ../../Menu/Options.Designer.cs:1224
+msgid "Load night textures only when needed"
+msgstr "Éjjeli textúrák betöltése csak szükség esetén"
+
+#: ../../Menu/Options.Designer.cs:1235
 msgid "No forced red at station stops"
 msgstr "Nincs kényszerített vörös állomási megállásnál"
 
-#: ../../Menu/Options.Designer.cs:1240
+#: ../../Menu/Options.Designer.cs:1245
 msgid "10%"
 msgstr "10%"
 
-#: ../../Menu/Options.Designer.cs:1250
+#: ../../Menu/Options.Designer.cs:1255
 msgid "130%"
 msgstr "130%"
 
-#: ../../Menu/Options.Designer.cs:1269
+#: ../../Menu/Options.Designer.cs:1274
 msgid "Level:"
 msgstr "Szint:"
 
-#: ../../Menu/Options.Designer.cs:1278
+#: ../../Menu/Options.Designer.cs:1283
 msgid "Adhesion factor random change:"
 msgstr "Tapadási együttható véletlenszerű változtatása:"
 
-#: ../../Menu/Options.Designer.cs:1302
+#: ../../Menu/Options.Designer.cs:1307
 msgid "Adhesion factor correction:"
 msgstr "Tapadási együttható finomhangolása:"
 
-#: ../../Menu/Options.Designer.cs:1327
+#: ../../Menu/Options.Designer.cs:1332
 msgid "Adhesion proportional to rain/snow/fog"
 msgstr "Tapadás az eső/hó/köd függvényében"
 
-#: ../../Menu/Options.Designer.cs:1339
+#: ../../Menu/Options.Designer.cs:1344
 msgid "Enhanced compatibility with MSTS activities"
 msgstr "Bővített kompatibilitás az MSTS activity-kkel"
 
-#: ../../Menu/Options.Designer.cs:1349
+#: ../../Menu/Options.Designer.cs:1354
 msgid "ETCS circular speed gauge"
 msgstr "ETCS köralakú sebességmérő használata"
 
-#: ../../Menu/Options.Designer.cs:1359
+#: ../../Menu/Options.Designer.cs:1364
 msgid "Signal light glow"
 msgstr "Jelzőfény ragyogása"
 
-#: ../../Menu/Options.Designer.cs:1369
+#: ../../Menu/Options.Designer.cs:1374
 msgid "MSTS environments"
 msgstr "MSTS környezetek használata"
 
-#: ../../Menu/Options.Designer.cs:1379
+#: ../../Menu/Options.Designer.cs:1384
 msgid "Always use highest detail objects"
 msgstr "Objektumok legnagyobb részletességének állandó használata"
 
-#: ../../Menu/Options.Designer.cs:1389
+#: ../../Menu/Options.Designer.cs:1394
 msgid "Location-linked passing path processing"
 msgstr "Állomásfüggő áthaladási vágányút használata"
 
-#: ../../Menu/Options.Designer.cs:1400
+#: ../../Menu/Options.Designer.cs:1405
 msgid "Target frame rate"
 msgstr "Megcélzott képfrissítési fekvencia"
 
-#: ../../Menu/Options.Designer.cs:1438
+#: ../../Menu/Options.Designer.cs:1443
 msgid "Automatically tune settings to keep performance level"
 msgstr "Beállítások auto-hangolása állandó teljesítményszinthez"
 
-#: ../../Menu/Options.Designer.cs:1448
+#: ../../Menu/Options.Designer.cs:1453
 msgid "Double overhead wires"
 msgstr "Kettős felsővezeték"
 
-#: ../../Menu/Options.Designer.cs:1458
+#: ../../Menu/Options.Designer.cs:1463
 msgid "Extend object maximum viewing distance to horizon"
 msgstr "Objektumok láthatóságának kiterjesztése a láthatárig"
 
-#: ../../Menu/Options.Designer.cs:1469
+#: ../../Menu/Options.Designer.cs:1474
 msgid "Gauge (mm)"
 msgstr "Nyomtáv [mm]"
 
-#: ../../Menu/Options.Designer.cs:1507
+#: ../../Menu/Options.Designer.cs:1512
 msgid "Minimum length (m)"
 msgstr "Legkisebb hossz [m]"
 
-#: ../../Menu/Options.Designer.cs:1546
+#: ../../Menu/Options.Designer.cs:1551
 msgid "Level"
 msgstr "Szint"
 
-#: ../../Menu/Options.Designer.cs:1557
+#: ../../Menu/Options.Designer.cs:1562
 msgid ""
 "Experimental features that may slow down the game, use at your own risk."
 msgstr ""
 "Kísérleti lehetőségek, amik lelassíthatják a játékot. Csak saját "
 "felelősségre."
 
-#: ../../Menu/Options.Designer.cs:1581
+#: ../../Menu/Options.Designer.cs:1586
 msgid "Super-elevation"
 msgstr "Ívtúlemelés"
 
-#: ../../Menu/Options.Designer.cs:1590
+#: ../../Menu/Options.Designer.cs:1595
 msgid "Load DDS textures in preference to ACE"
 msgstr "DDS textúrák betöltése ACE helyett"
 
-#: ../../Menu/Options.Designer.cs:1601
-msgid "Load night textures only when needed"
-msgstr "Éjjeli textúrák betöltése csak szükség esetén"
-
-#: ../../Menu/Options.Designer.cs:1016
+#: ../../Menu/Options.Designer.cs:1012
 msgid ""
 "Use data logger to record your simulation data (in-game command: F12).\r\n"
 "Please remember that the size of the dump file grows with the simulation "
@@ -887,36 +946,36 @@ msgstr ""
 "F12).\n"
 "Megjegyzendő, hogy a naplófájl mérete folyamatosan nő a játékidő teltével!"
 
-#: ../../Menu/Options.Designer.cs:404
+#: ../../Menu/Options.Designer.cs:405
 msgid "Sound Volume 0-100"
 msgstr "Hangerősség 0-100"
 
-#: ../../Menu/Options.Designer.cs:507 ../../Menu/Options.Designer.cs:1291
-#: ../../Menu/Options.Designer.cs:1316
+#: ../../Menu/Options.Designer.cs:508 ../../Menu/Options.Designer.cs:1296
+#: ../../Menu/Options.Designer.cs:1321
 msgid "Default is 100"
 msgstr "Az alapbeállítás 100"
 
-#: ../../Menu/Options.Designer.cs:562 ../../Menu/Options.Designer.cs:1424
+#: ../../Menu/Options.Designer.cs:563 ../../Menu/Options.Designer.cs:1429
 msgid "Distance to see mountains"
 msgstr "Hegyek látótávolsága"
 
-#: ../../Menu/Options.Designer.cs:921
+#: ../../Menu/Options.Designer.cs:922
 msgid "Load the factory default key assignments."
 msgstr "Billentyűzet visszaállítása az eredeti beállításokra."
 
-#: ../../Menu/Options.Designer.cs:933
+#: ../../Menu/Options.Designer.cs:934
 msgid "Check for incorrect key assignments."
 msgstr "Helytelen billentyűhozzárendelés keresése."
 
-#: ../../Menu/Options.Designer.cs:1531
+#: ../../Menu/Options.Designer.cs:1536
 msgid "Shortest curve to have elevation"
 msgstr "A legrövidebb ív, ami még túlemelésre kerül"
 
-#: ../../Menu/Options.Designer.cs:1571
+#: ../../Menu/Options.Designer.cs:1576
 msgid "0: no elevation, 1: 9cm max; 10: 18cm max"
 msgstr "0: nincs; 1: max. 9 cm; 10: max. 18 cm"
 
-#: ../../Menu/Options.Designer.cs:680
+#: ../../Menu/Options.Designer.cs:681
 msgid ""
 "0 to clip cab view, 100 to stretch it. For cab views that match the display, "
 "use 100."
@@ -924,7 +983,7 @@ msgstr ""
 "Levágáshoz 0, széthúzáshoz 100. Ha a vezetőfülkekép mérete megegyezik a "
 "képernyőével, 100 használandó."
 
-#: ../../Menu/Options.Designer.cs:908
+#: ../../Menu/Options.Designer.cs:909
 msgid ""
 "Generate a listing of your keyboard assignments.  \r\n"
 "The output is placed on your desktop."
@@ -987,83 +1046,79 @@ msgstr ""
 "{0} érvénytelen mentés törölve\n"
 "{1} mentés maradt"
 
-#: ../../Menu/ResumeForm.Designer.cs:176
+#: ../../Menu/ResumeForm.Designer.cs:180
 msgid "Resume"
 msgstr "Folytatás"
 
-#: ../../Menu/ResumeForm.Designer.cs:187
+#: ../../Menu/ResumeForm.Designer.cs:191
 msgid "Delete"
 msgstr "Törlés"
 
-#: ../../Menu/ResumeForm.Designer.cs:199
+#: ../../Menu/ResumeForm.Designer.cs:203
 msgid "Undelete"
 msgstr "Visszaállítás"
 
-#: ../../Menu/ResumeForm.Designer.cs:221
+#: ../../Menu/ResumeForm.Designer.cs:225
 msgid "Delete all invalid saves in Open Rails"
 msgstr "Minden érvénytelen mentés törlése az OpenRailsből"
 
-#: ../../Menu/ResumeForm.Designer.cs:232
+#: ../../Menu/ResumeForm.Designer.cs:236
 msgid "Import/ export"
 msgstr "Importálás / Exportálás"
 
-#: ../../Menu/ResumeForm.Designer.cs:248
+#: ../../Menu/ResumeForm.Designer.cs:252
 msgid "Invalid saves"
 msgstr "Érvénytelen mentések"
 
-#: ../../Menu/ResumeForm.Designer.cs:305
+#: ../../Menu/ResumeForm.Designer.cs:308
 msgid "Replay from previous save"
 msgstr "Visszajátszás utolsó mentéstől"
 
-#: ../../Menu/ResumeForm.Designer.cs:315
+#: ../../Menu/ResumeForm.Designer.cs:318
 msgid "Replay from start"
 msgstr "Visszajátszás az elejétől"
 
-#: ../../Menu/ResumeForm.Designer.cs:328
+#: ../../Menu/ResumeForm.Designer.cs:331
 msgid "Pause replay at end"
 msgstr "Visszajátszás végén szünet"
 
-#: ../../Menu/ResumeForm.Designer.cs:340
+#: ../../Menu/ResumeForm.Designer.cs:343
 msgid "Pause seconds before end:"
 msgstr "Szünet hossza a befejezés előtt [s]:"
 
-#: ../../Menu/ResumeForm.Designer.cs:378
+#: ../../Menu/ResumeForm.Designer.cs:403
 msgid "Saved Games"
 msgstr "Mentett játékok"
 
-#: ../../Menu/ResumeForm.Designer.cs:100
+#: ../../Menu/ResumeForm.Designer.cs:104
 msgid "File"
 msgstr "Fájl"
 
-#: ../../Menu/ResumeForm.Designer.cs:109
+#: ../../Menu/ResumeForm.Designer.cs:113
 msgid "Saved At"
 msgstr "Mentési időpont"
 
-#: ../../Menu/ResumeForm.Designer.cs:117
+#: ../../Menu/ResumeForm.Designer.cs:121
 msgid "Path"
 msgstr "Útvonal"
 
-#: ../../Menu/ResumeForm.Designer.cs:125
-msgid "Time"
-msgstr "Idő"
-
-#: ../../Menu/ResumeForm.Designer.cs:135
+#: ../../Menu/ResumeForm.Designer.cs:139
 msgid "Distance"
 msgstr "Távolság"
 
-#: ../../Menu/ResumeForm.Designer.cs:143
+#: ../../Menu/ResumeForm.Designer.cs:147
 msgid "Tile"
 msgstr "Mező"
 
-#: ../../Menu/ResumeForm.Designer.cs:151
+#: ../../Menu/ResumeForm.Designer.cs:155
 msgid "Valid"
 msgstr "Érvényesség"
 
-#: ../../Menu/ResumeForm.Designer.cs:188
+#: ../../Menu/ResumeForm.Designer.cs:192
 msgid "Deletes the currently selected save or saves."
 msgstr "A kiválasztott mentések törlése."
 
-#: ../../Menu/ResumeForm.Designer.cs:200 ../../Menu/ResumeForm.Designer.cs:233
+#: ../../Menu/ResumeForm.Designer.cs:204 ../../Menu/ResumeForm.Designer.cs:237
 msgid "Restores all saves deleted in this session."
 msgstr "Az ebben a játékban törölt mentések visszaállítása"
 
@@ -1126,6 +1181,12 @@ msgstr "Terhelés"
 #: ../../Menu/TestingForm.Designer.cs:228
 msgid "FPS"
 msgstr "FPS"
+
+#~ msgid "Updating to {0}..."
+#~ msgstr "Frissítés a {0}. verzióra..."
+
+#~ msgid "Restart to apply update"
+#~ msgstr "A frissítés  befejezéséhez újraindítás szükséges"
 
 #~ msgid "Enable auxiliary actions"
 #~ msgstr "Vonat"
