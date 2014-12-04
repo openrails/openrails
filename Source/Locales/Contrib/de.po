@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Contrib\n"
-"POT-Creation-Date: 2014-10-10 21:02:30+0200\n"
-"PO-Revision-Date: 2014-12-04 20:53+0100\n"
+"POT-Creation-Date: 2014-12-03 20:27:45+0100\n"
+"PO-Revision-Date: 2014-12-04 21:04+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -50,16 +50,52 @@ msgstr "Version 0.1"
 msgid "AboutActEdit"
 msgstr "Über den Aufgabeneditor"
 
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:47
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStoppedProperties.Designer.cs:41
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/HornProperties.Designer.cs:44
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:162
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:390
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:56
-#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:515
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:519
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:110
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:48
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.Designer.cs:42
 msgid "OK"
 msgstr "OK"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:74
+msgid "ActionDuration"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:85
+msgid "Pre-delay :"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:100
+msgid "ControlStartProperties"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:75
+msgid ""
+"ActionDuration:\r\n"
+"How long does the action takes.  With a minimum of 10sec and a maximum of "
+"25sec.\r\n"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:86
+msgid ""
+"Pre-Delay:\r\n"
+"Define the advance period for this action before the end of caller.\r\n"
+"Minimum 1sec, maximu 20sec, and not over the ActionDuration\r\n"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStoppedProperties.Designer.cs:52
+msgid "No Parameter to set"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStoppedProperties.Designer.cs:62
+msgid "ControlStoppedProperties"
+msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/HornProperties.Designer.cs:55
 msgid "Delay :"
@@ -217,7 +253,7 @@ msgid "Tools"
 msgstr "Werkzeuge"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:214
-#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:528
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:532
 msgid "Options"
 msgstr "Optionen"
 
@@ -433,7 +469,7 @@ msgid "Show Tiles"
 msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:451
-msgid "tabPage2"
+msgid "Actions Configuration"
 msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:468
@@ -444,7 +480,7 @@ msgstr "< Entfernen"
 msgid "Add >"
 msgstr "Hinzufügen >"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:507
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:511
 msgid "Configuration for Generic Auxiliary Actions"
 msgstr ""
 
@@ -589,23 +625,23 @@ msgid "Train Name (Opt.)"
 msgstr "Name des Zuges (optional)"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:191
-#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:194
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:191
 msgid "< &Back"
 msgstr "< &Zurück"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:200
-#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:203
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:200
 msgid "&Next >"
 msgstr "&Weiter >"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:210
-#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:213
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:210
 #: ../../Contrib/TrackViewer/UserInterface/SearchControl.xaml:12
 msgid "Cancel"
 msgstr "Abbrechen"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:219
-#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:222
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:219
 msgid "&Finish"
 msgstr "&Fertig"
 
