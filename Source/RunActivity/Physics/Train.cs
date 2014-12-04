@@ -3071,14 +3071,11 @@ namespace ORTS
                 foreach (TrainCar car in Cars)
                 {
                     if (!car.BrakeSystem.FrontBrakeHoseConnected || !car.BrakeSystem.AngleCockAOpen)
-                        break;
+                        continue;
 
                     car.BrakeSystem.BrakeLine1PressurePSI = car.BrakeSystem.TrainBrakePToBrakeSystemBrakeP(BrakeLine1PressurePSIorInHg);
                     car.BrakeSystem.BrakeLine2PressurePSI = BrakeLine2PressurePSI;
                     car.BrakeSystem.BrakeLine3PressurePSI = 0;
-
-                    if (!car.BrakeSystem.AngleCockBOpen)
-                        break;
                 }
             }
         }

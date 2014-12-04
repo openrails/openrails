@@ -357,10 +357,11 @@ namespace ORTS
         }
         protected void SetUniformBrakePressures()
         {
+            // Is this method ever executed? - GP
             Train train = Car.Train;
             foreach (TrainCar car in Car.Train.Cars)
             {
-                if (car.BrakeSystem.BrakeLine1PressurePSI < 0)
+                if (!FrontBrakeHoseConnected)
                     continue;
                 car.BrakeSystem.BrakeLine1PressurePSI = train.BrakeLine1PressurePSIorInHg;
                 car.BrakeSystem.BrakeLine2PressurePSI = train.BrakeLine2PressurePSI;
@@ -435,7 +436,7 @@ namespace ORTS
             {
                 BrakeSystem brakeSystem = train.Cars[i].BrakeSystem;
                 if (i > 0 && (!brakeSystem.FrontBrakeHoseConnected || !brakeSystem.AngleCockAOpen || !train.Cars[i - 1].BrakeSystem.AngleCockBOpen))
-                    break;
+                    continue;
                 if (i < first || i > last)
                 {
                     brakeSystem.BrakeLine3PressurePSI = 0;
@@ -495,7 +496,7 @@ namespace ORTS
             {
                 TrainCar car = train.Cars[i];
                 if (i > 0 && (!car.BrakeSystem.FrontBrakeHoseConnected || !car.BrakeSystem.AngleCockAOpen || !train.Cars[i - 1].BrakeSystem.AngleCockBOpen))
-                    break;
+                    continue;
                 if (i < first || i > last)
                 {
                     car.BrakeSystem.BrakeLine2PressurePSI = twoPipes ? sumpv : 0;
