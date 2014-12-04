@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
 "POT-Creation-Date: 2014-10-11 14:27:38+0200\n"
-"PO-Revision-Date: 2014-11-01 19:26+0100\n"
-"Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
+"PO-Revision-Date: 2014-11-16 11:38+0100\n"
+"Last-Translator: Daniel Heitepriem <semirben12@googlemail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
@@ -837,7 +837,6 @@ msgid "Updater"
 msgstr "Auto-Updater"
 
 #: ../../Menu/Options.Designer.cs:1161
-#, fuzzy
 msgid "Update channel:"
 msgstr "Zu benutzender Update-Kanal:"
 
@@ -846,14 +845,12 @@ msgid "Experimental"
 msgstr "Experimentell"
 
 #: ../../Menu/Options.Designer.cs:1213
-#, fuzzy
 msgid "Extended AI train shunting"
 msgstr "Erweitertes Rangieren für KI-Züge"
 
 #: ../../Menu/Options.Designer.cs:1224
-#, fuzzy
 msgid "Load night textures only when needed"
-msgstr "Nachttexturen nur wenn nötig laden"
+msgstr "Nachttexturen nur laden, wenn benötigt"
 
 #: ../../Menu/Options.Designer.cs:1235
 msgid "No forced red at station stops"
@@ -1041,15 +1038,15 @@ msgstr ""
 "gültig."
 
 #: ../../Menu/ResumeForm.cs:220
-#, fuzzy, csharp-format
+#, csharp-format
 msgid ""
 "Restoring from a save made by version {1} of {0} may be incompatible with "
 "current version {2}. Please do not report any problems that may result.\n"
 "\n"
 "Continue?"
 msgstr ""
-"Fortsetzten eines gespeicherten Spielstandes einer älteren Version ({1} von "
-"{0}) kann kompatibilitätsprobleme mit der aktuellen Version {2} verursachen. "
+"Fortsetzen eines gespeicherten Spielstandes einer älteren Version ({1} von "
+"{0}) kann Kompatibilitätsprobleme mit der aktuellen Version {2} verursachen. "
 "Bitte melden Sie keine resultierenden Probleme.\n"
 "\n"
 "Fortsetzen?"

@@ -2,14 +2,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
 "POT-Creation-Date: 2014-10-10 21:02:33+0200\n"
-"PO-Revision-Date: 2014-10-26 13:32+0100\n"
+"PO-Revision-Date: 2014-12-04 20:55+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.6.9\n"
+"X-Generator: Poedit 1.6.10\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:217
@@ -63,8 +63,9 @@ msgid "Full Service"
 msgstr "Vollservice"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:231
+#, fuzzy
 msgid "Overcharge"
-msgstr ""
+msgstr "Überlastung"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:232
 msgid "Emergency Braking Push Button"
@@ -1411,8 +1412,8 @@ msgstr "Aufgabe abgeschlossen."
 #, csharp-format
 msgid "Current Delay: {0} minute"
 msgid_plural "Current Delay: {0} minutes"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Aktuelle Verspätung: {0} Minute"
+msgstr[1] "Aktuelle Verspätung: {0} Minuten"
 
 #: ../../RunActivity/Viewer3D/Popups/NoticeWindow.cs:104
 #, csharp-format

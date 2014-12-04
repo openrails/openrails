@@ -2,14 +2,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Contrib\n"
 "POT-Creation-Date: 2014-10-10 21:02:30+0200\n"
-"PO-Revision-Date: 2014-10-26 13:21+0100\n"
+"PO-Revision-Date: 2014-12-04 20:53+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.6.9\n"
+"X-Generator: Poedit 1.6.10\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:17
@@ -132,7 +132,7 @@ msgstr "Name der Aufgabe:"
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:238
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:249
 msgid "Traffic Description"
-msgstr ""
+msgstr "Verkehrsbeschreibung"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:464
 msgid "StartActivity"
@@ -140,7 +140,7 @@ msgstr "Aufgabe starten"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:67
 msgid "Give your description :"
-msgstr ""
+msgstr "Bitte Beschreibung eingeben:"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:76
 msgid "Environment"
@@ -184,7 +184,7 @@ msgstr "Aufgabe"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:143
 msgid "Traffic"
-msgstr ""
+msgstr "KI-Verkehr"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:154
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/SimpleTextEd.Designer.cs:68
@@ -193,7 +193,7 @@ msgstr "Speichern"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:161
 msgid "Metadata"
-msgstr ""
+msgstr "Metadaten"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:169
 msgid "Save As"
@@ -205,7 +205,7 @@ msgstr "Aufgabe laden"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:184
 msgid "Load Metada"
-msgstr ""
+msgstr "Lade Metadaten"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:192
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:83
@@ -223,7 +223,7 @@ msgstr "Optionen"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:221
 msgid "Import"
-msgstr ""
+msgstr "Importieren"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:229
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:131
@@ -240,13 +240,13 @@ msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:252
 msgid "Status"
-msgstr ""
+msgstr "Status"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:302
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2026
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2128
 msgid "v"
-msgstr ""
+msgstr "v"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:312
 msgid "Edit Description"
@@ -275,7 +275,7 @@ msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:431
 msgid "Move"
-msgstr ""
+msgstr "Bewegen"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:441
 msgid "Rotate"
@@ -337,7 +337,7 @@ msgstr "Anzeuge"
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2015
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2117
 msgid "x"
-msgstr ""
+msgstr "x"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2041
 msgid "Tag"
@@ -357,7 +357,7 @@ msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:124
 msgid "Show Platform Label"
-msgstr ""
+msgstr "Bahnsteigbeschriftung anzeigen"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:190
 msgid "Zoom level :"
@@ -373,7 +373,7 @@ msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:220
 msgid "Show all Signal"
-msgstr ""
+msgstr "Signale anzeigen"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:232
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:435
@@ -422,7 +422,7 @@ msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:401
 msgid "Show Ruler"
-msgstr ""
+msgstr "Maßstab anzeigen"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:412
 msgid "Show Track Info"
@@ -438,11 +438,11 @@ msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:468
 msgid "< remove"
-msgstr ""
+msgstr "< Entfernen"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:478
 msgid "Add >"
-msgstr ""
+msgstr "Hinzufügen >"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:507
 msgid "Configuration for Generic Auxiliary Actions"
@@ -452,7 +452,7 @@ msgstr ""
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.cs:57
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.cs:28
 msgid "Please, give a name"
-msgstr ""
+msgstr "Bitte Namen hinzufügen"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:56
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:104
@@ -501,7 +501,7 @@ msgstr "###"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:161
 msgid "Loaded:"
-msgstr ""
+msgstr "Geladen:"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:94
 msgid "Station :"
@@ -517,19 +517,19 @@ msgstr "Nach"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:185
 msgid "Max. Platform Length"
-msgstr ""
+msgstr "Maximale Bahnsteigslänge"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:196
 msgid "Max. Siding Length"
-msgstr ""
+msgstr "Maximale Nebengleislänge"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:207
 msgid "Number of Platform"
-msgstr ""
+msgstr "Nummer des Bahnsteiges"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:218
 msgid "Number of Siding"
-msgstr ""
+msgstr "Nummer des Nebengleises"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:229
 msgid "Max. Passing Length"
@@ -581,12 +581,12 @@ msgstr "Aufgabeneditor: Zuginformationen angeben"
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/TrainInfo.cs:194
 #: ../../Contrib/ActivityEditor/AEWizard/TrainInfo.cs:194
 msgid "Select Train Consist"
-msgstr ""
+msgstr "Zugverband auswählen"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/TrainInfo.cs:211
 #: ../../Contrib/ActivityEditor/AEWizard/TrainInfo.cs:211
 msgid "Train Name (Opt.)"
-msgstr ""
+msgstr "Name des Zuges (optional)"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:191
 #: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:194
@@ -638,9 +638,8 @@ msgid "The path you are working on has un-saved changes.\n"
 msgstr "Die gerade bearbeitete Fahrstraße wurde nicht gespeichert. \n"
 
 #: ../../Contrib/TrackViewer/TrackViewer.cs:600
-#, fuzzy
 msgid "Do you really want to Quit?"
-msgstr "Wollen Sie das Programm beenden?"
+msgstr "Wollen Sie das Programm wirklich beenden?"
 
 #: ../../Contrib/TrackViewer/TrackViewer.cs:642
 msgid ""
@@ -849,7 +848,7 @@ msgstr "Fahrstraßen mit unterbrochenen Punkten können nicht gespeichert werden
 
 #: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:269
 msgid "Set as invalid in .pat file"
-msgstr ""
+msgstr "In .PAT-Datei als ungültig markieren"
 
 #: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:271
 msgid "Closest junction is too far away"
@@ -865,7 +864,7 @@ msgstr ""
 
 #: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:277
 msgid "Unknown"
-msgstr ""
+msgstr "Unbekannt"
 
 #: ../../Contrib/TrackViewer/UserInterface/Languages.cs:65
 msgid "Please restart TrackViewer in order to load the new language."
@@ -873,19 +872,19 @@ msgstr "Bitte starten Sie Track Viewer erneut, um die neue Sprache zu laden."
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:352
 msgid "<Select path>"
-msgstr ""
+msgstr "<Fahrstraße auswählen>"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:366
 msgid "<Select station>"
-msgstr ""
+msgstr "<Bahnhof auswählen>"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:379
 msgid "<Select platform>"
-msgstr ""
+msgstr "<Bahnsteig auswählen>"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:392
 msgid "<Select siding>"
-msgstr ""
+msgstr "<Nebengleis auswählen>"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:486
 msgid "left  arrow:  Shift left\n"
@@ -1189,11 +1188,12 @@ msgstr "Keine anzeigen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:63
 msgid "Highlight items (shift-F10)"
-msgstr ""
+msgstr "Elemente hervorheben (Shift+F10)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:64
+#, fuzzy
 msgid "Junctions/ends"
-msgstr ""
+msgstr "Weichen / Prellböcke"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:65
 msgid "Show junctions"
@@ -1333,7 +1333,7 @@ msgstr "Fahrstraße laden"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:118
 msgid "Show other paths"
-msgstr ""
+msgstr "Andere Fahrstraßen anzeigen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:120
 msgid "Save path"
@@ -1341,7 +1341,7 @@ msgstr "Fahrstraße speichern"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:121
 msgid "Save visited stations"
-msgstr ""
+msgstr "Besuchte Bahnhöfe speichern"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:123
 msgid "Enable editing"
@@ -1368,12 +1368,13 @@ msgid "About"
 msgstr "Über Trackviewer"
 
 #: ../../Contrib/TrackViewer/UserInterface/OtherPathsWindow.xaml:8
+#, fuzzy
 msgid "Paths to draw"
-msgstr ""
+msgstr "Anzuzeigende Fahrstraßen"
 
 #: ../../Contrib/TrackViewer/UserInterface/OtherPathsWindow.xaml:27
 msgid "Clear all"
-msgstr ""
+msgstr "Alles löschen"
 
 #: ../../Contrib/TrackViewer/UserInterface/SearchControl.xaml:4
 #: ../../Contrib/TrackViewer/UserInterface/SearchControl.xaml:13
@@ -1402,8 +1403,9 @@ msgid "Index in the Track DataBase (.tdb) file"
 msgstr "Index in der Schienendatenbankdatei (.tdb)"
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:66
+#, fuzzy
 msgid "Item"
-msgstr ""
+msgstr "Element"
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:99
 msgid "Any other relevant information. Make your choice via Statusbar menu"
