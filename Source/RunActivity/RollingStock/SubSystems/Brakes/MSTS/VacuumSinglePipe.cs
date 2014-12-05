@@ -159,6 +159,10 @@ namespace ORTS
             outf.Write(BrakeLine3PressurePSI);
             outf.Write(CylPressurePSIA);
             outf.Write(VacResPressurePSIA);
+            outf.Write(FrontBrakeHoseConnected);
+            outf.Write(AngleCockAOpen);
+            outf.Write(AngleCockBOpen);
+            outf.Write(BleedOffValveOpen);
         }
 
         public override void Restore(BinaryReader inf)
@@ -168,6 +172,10 @@ namespace ORTS
             BrakeLine3PressurePSI = inf.ReadSingle();
             CylPressurePSIA = inf.ReadSingle();
             VacResPressurePSIA = inf.ReadSingle();
+            FrontBrakeHoseConnected = inf.ReadBoolean();
+            AngleCockAOpen = inf.ReadBoolean();
+            AngleCockBOpen = inf.ReadBoolean();
+            BleedOffValveOpen = inf.ReadBoolean();
         }
 
         public override void Initialize(bool handbrakeOn, float maxVacuumInHg, float fullServVacuumInHg, bool immediateRelease)

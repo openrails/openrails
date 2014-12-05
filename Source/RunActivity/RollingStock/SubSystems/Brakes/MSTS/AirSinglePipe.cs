@@ -435,7 +435,8 @@ namespace ORTS
             for (int i = 0; i < train.Cars.Count; i++)
             {
                 BrakeSystem brakeSystem = train.Cars[i].BrakeSystem;
-                if (i > 0 && (!brakeSystem.FrontBrakeHoseConnected || !brakeSystem.AngleCockAOpen || !train.Cars[i - 1].BrakeSystem.AngleCockBOpen))
+                if (i < first && (!train.Cars[i + 1].BrakeSystem.FrontBrakeHoseConnected || !brakeSystem.AngleCockBOpen || !train.Cars[i + 1].BrakeSystem.AngleCockAOpen)
+                    || i > last && i > 0 && (!brakeSystem.FrontBrakeHoseConnected || !brakeSystem.AngleCockAOpen || !train.Cars[i - 1].BrakeSystem.AngleCockBOpen))
                     continue;
                 if (i < first || i > last)
                 {
@@ -495,7 +496,8 @@ namespace ORTS
             for (int i = 0; i < train.Cars.Count; i++)
             {
                 TrainCar car = train.Cars[i];
-                if (i > 0 && (!car.BrakeSystem.FrontBrakeHoseConnected || !car.BrakeSystem.AngleCockAOpen || !train.Cars[i - 1].BrakeSystem.AngleCockBOpen))
+                if (i < first && (!train.Cars[i + 1].BrakeSystem.FrontBrakeHoseConnected || !car.BrakeSystem.AngleCockBOpen || !train.Cars[i + 1].BrakeSystem.AngleCockAOpen)
+                    || i > last && i > 0 && (!car.BrakeSystem.FrontBrakeHoseConnected || !car.BrakeSystem.AngleCockAOpen || !train.Cars[i - 1].BrakeSystem.AngleCockBOpen))
                     continue;
                 if (i < first || i > last)
                 {
