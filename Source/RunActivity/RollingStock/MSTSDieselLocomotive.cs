@@ -269,7 +269,7 @@ namespace ORTS
         /// </summary>
         public override void Update(float elapsedClockSeconds)
         {
-            if (this.Train.TrainType == Train.TRAINTYPE.AI)
+            if (this.Train.TrainType == Train.TRAINTYPE.AI || this.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
             {
                 foreach (DieselEngine de in DieselEngines)
                 {
@@ -578,7 +578,7 @@ namespace ORTS
             } // end when not lead loco
 #else
 
-            if (Train.TrainType == Train.TRAINTYPE.PLAYER)
+            if (Train.IsPlayerDriven)
             {
                 if (this.IsLeadLocomotive())
                 {
@@ -644,15 +644,18 @@ namespace ORTS
             switch (this.Train.TrainType)
             {
                 case Train.TRAINTYPE.AI:
+                case Train.TRAINTYPE.AI_PLAYERHOSTING:
                     if (!PowerOn)
                         PowerOn = true;
                     //LimitMotiveForce(elapsedClockSeconds);    //calls the advanced physics
                     LimitMotiveForce();                         //let's call the basic physics instead for now
+                    if (Train.IsActualPlayerTrain) FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
                     WheelSpeedMpS = Flipped ? -currentSpeedMpS : currentSpeedMpS;            //make the wheels go round
                     break;
                 case Train.TRAINTYPE.STATIC:
                     break;
                 case Train.TRAINTYPE.PLAYER:
+                case Train.TRAINTYPE.AI_PLAYERDRIVEN:
                 case Train.TRAINTYPE.REMOTE:
                     // For notched throttle controls (e.g. Dash 9 found on Marias Pass) UpdateValue is always 0.0
                     if (ThrottleController.UpdateValue != 0.0)
@@ -728,7 +731,7 @@ namespace ORTS
             if (CompressorIsOn)
                 MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
             
-            if (Train.TrainType == Train.TRAINTYPE.PLAYER && this.IsLeadLocomotive())
+            if (Train.IsPlayerDriven && this.IsLeadLocomotive())
                 TrainControlSystem.Update();
 
             FuelController.Update(elapsedClockSeconds);
@@ -873,6 +876,26 @@ namespace ORTS
                 return FuelController.CurrentValue;
             }
             return 0f;
+        }
+
+       /// <summary>
+        /// Restores the type of gearbox, that was forced to
+        /// automatic for AI trains
+        /// </summary>
+        public override void SwitchToPlayerControl()
+        {
+            foreach (DieselEngine de in DieselEngines)
+            {
+                if (de.GearBox != null)
+                    de.GearBox.GearBoxOperation = de.GearBox.OriginalGearBoxOperation;
+            }
+            if (DieselEngines[0].GearBox != null && GearBoxController != null)
+            {
+                GearBoxController.CurrentNotch = DieselEngines[0].GearBox.CurrentGearIndex + 1;
+                GearboxGearIndex = DieselEngines[0].GearBox.CurrentGearIndex + 1;
+                GearBoxController.SetValue((float)GearBoxController.CurrentNotch);
+            }
+
         }
     } // class DieselLocomotive
 }

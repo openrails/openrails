@@ -169,6 +169,24 @@ namespace ORTS
                 AutoGenTrains.Add(aiTrain);
                 Simulator.AutoGenDictionary.Add(aiTrain.Number, aiTrain);
             }
+            if (Simulator.PlayerLocomotive.Train is AITrain) ((AITrain)Simulator.PlayerLocomotive.Train).AI = this;
+        }
+
+        // Restore in autopilot mode
+
+        public AI (Simulator simulator, BinaryReader inf, bool autopilot)
+        {
+            Debug.Assert(simulator.Trains != null, "Cannot restore AI without Simulator.Trains.");
+            Simulator = simulator;
+            AITrain aiTrain = new AITrain(Simulator, inf);
+            int PlayerLocomotiveIndex = inf.ReadInt32();
+            if (PlayerLocomotiveIndex >=0) Simulator.PlayerLocomotive = aiTrain.Cars[PlayerLocomotiveIndex];
+            Simulator.Trains.Add(aiTrain);
+        }
+
+        public AI(Simulator simulator)
+        {
+            Simulator = simulator;
         }
 
         // save game state
@@ -177,7 +195,6 @@ namespace ORTS
 
             RemoveTrains();   // remove trains waiting to be removed
             AddTrains();      // add trains waiting to be added
-
             outf.Write(AITrains.Count);
             foreach (AITrain train in AITrains)
             {
@@ -195,6 +212,24 @@ namespace ORTS
             {
                 train.Save(outf);
             }
+        }
+
+        // Saves train in autopilot mode
+        public void SaveAutopil(Train train, BinaryWriter outf)
+        {
+            ((AITrain)train).Save(outf);
+            if (Simulator.PlayerLocomotive != null)
+            {
+                var j = 0;
+                int PlayerLocomotiveIndex = -1;
+                foreach (TrainCar car in train.Cars)
+                {
+                    if (car == Simulator.PlayerLocomotive) { PlayerLocomotiveIndex = j; break; }
+                    j++;
+                }
+                outf.Write(PlayerLocomotiveIndex);
+            }
+            else outf.Write (-1);
         }
 
         private void PrerunAI(int playerTrainOriginalTrain, Train playerTrain, LoaderProcess loader)
@@ -365,7 +400,6 @@ namespace ORTS
 
         /// <summary>
         /// Creates an AI train
-        /// Moves the models down 1000M to make them invisible.
         /// </summary>
         private AITrain CreateAITrain(Service_Definition sd, Traffic_Traffic_Definition trd)
         {
@@ -385,7 +419,24 @@ namespace ORTS
                     break;
                 }
             }
+            AITrain train = CreateAITrainDetail (sd, trfDef, false);
+            if (train != null)
+            {
+                // insert in start list
 
+                StartList.InsertTrain(train);
+                Simulator.StartReference.Add(train.Number);
+            }
+            return train;
+        }
+
+        /// <summary>
+        /// Creates the detail of an AI train
+        /// Moves the models down 1000M to make them invisible.
+        /// called also in case of autopilot mode
+        /// </summary>
+        public AITrain CreateAITrainDetail(Service_Definition sd, Traffic_Service_Definition trfDef, bool isInitialPlayerTrain)
+        {
             // read service and consist file
 
             SRVFile srvFile = new SRVFile(Simulator.RoutePath + @"\SERVICES\" + sd.Name + ".SRV");
@@ -457,6 +508,8 @@ namespace ORTS
                     car.Train = train;
                     car.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
                     train.Length += car.LengthM;
+                    if (isInitialPlayerTrain) car.CarID = "0 - " + wagon.UiD;
+                    else car.CarID = "AI" + train.Number.ToString() + " - " + (train.Cars.Count - 1).ToString();
                 }
                 catch (Exception error)
                 {
@@ -483,10 +536,6 @@ namespace ORTS
             train.AITrainDirectionForward = true;
             train.BrakeLine3PressurePSI = 0;
 
-            // insert in start list
-
-            StartList.InsertTrain(train);
-            Simulator.StartReference.Add(train.Number);
 
             return train;
         }

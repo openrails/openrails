@@ -402,7 +402,7 @@ namespace ORTS
         public void Update()
         {
             // If script not loaded or not in player's locomotive = all restrictions disabled
-            if (Script == null || Locomotive.Train.TrainType != Train.TRAINTYPE.PLAYER || !Locomotive.IsLeadLocomotive())
+            if (Script == null || Locomotive != Simulator.PlayerLocomotive || !Locomotive.IsLeadLocomotive())
             {
                 PowerAuthorization = true;
                 if (Locomotive.TrainBrakeController != null)

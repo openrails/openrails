@@ -1694,6 +1694,9 @@ namespace ORTS.Viewer3D
             //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
             // To achieve the same result with other means, without flipping trainset physics, maybe the line should be changed
             trainForwards = (train.LeadLocomotive.SpeedMpS >= 0) ^ train.LeadLocomotive.Flipped ^ ((MSTSLocomotive)train.LeadLocomotive).UsingRearCab;
+            else if (Viewer.PlayerLocomotive != null && train.IsActualPlayerTrain)
+                trainForwards = (Viewer.PlayerLocomotive.SpeedMpS >= 0) ^ Viewer.PlayerLocomotive.Flipped ^ ((MSTSLocomotive)Viewer.PlayerLocomotive).UsingRearCab;
+
             targetLocation = attachedCar.WorldPosition.WorldLocation;
 
             // Train is close enough if the last car we used is part of the same train and still close enough.
@@ -1746,7 +1749,8 @@ namespace ORTS.Viewer3D
 	public class ThreeDimCabCamera : NonTrackingCamera
 	{
 		public override Styles Style { get { return Styles.ThreeDimCab; } }
-        public override bool IsAvailable { get { return Viewer.SelectedTrain != null && Viewer.SelectedTrain.LeadLocomotive != null && Viewer.SelectedTrain.LeadLocomotive.CabViewpoints != null; } }
+        public override bool IsAvailable { get { return Viewer.SelectedTrain != null && Viewer.SelectedTrain.IsActualPlayerTrain && 
+            Viewer.PlayerLocomotive != null && Viewer.PlayerLocomotive.CabViewpoints != null; } }
 		public override float NearPlane { get { return 0.1f; } }
 		public override string Name { get { return Viewer.Catalog.GetString("3D Cab"); } }
 		bool StartDirectionSet = false;
@@ -1760,10 +1764,11 @@ namespace ORTS.Viewer3D
 
 		protected override List<TrainCar> GetCameraCars()
 		{
-            if (Viewer.SelectedTrain != null && Viewer.SelectedTrain.LeadLocomotive != null && Viewer.SelectedTrain.LeadLocomotive.CabViewpoints != null)
+            if (Viewer.SelectedTrain != null && Viewer.SelectedTrain.IsActualPlayerTrain &&
+            Viewer.PlayerLocomotive != null && Viewer.PlayerLocomotive.CabViewpoints != null)
 			{
 				List<TrainCar> l = new List<TrainCar>();
-				l.Add(Viewer.SelectedTrain.LeadLocomotive);
+                l.Add(Viewer.PlayerLocomotive);
 				return l;
 			}
 			else return base.GetCameraCars();

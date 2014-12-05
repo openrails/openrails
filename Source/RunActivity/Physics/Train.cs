@@ -131,7 +131,9 @@ namespace ORTS
             AI,
             AI_NOTSTARTED,
             AI_AUTOGENERATE,
-            REMOTE
+            REMOTE,
+            AI_PLAYERDRIVEN,   //Player is on board and is durrently driving train
+            AI_PLAYERHOSTING   //Player is on board, but train is currently autopiloted
         }
 
         public TRAINTYPE TrainType = TRAINTYPE.PLAYER;
@@ -185,6 +187,27 @@ namespace ORTS
         // cell 0 : index of switch, cell 1 : required linked section; -1 if not valid
         public Dictionary<int, float> PassedSignalSpeeds = new Dictionary<int, float>();  // list of signals and related speeds pending processing (manual and explorer mode)
         public int[] LastPassedSignal = new int[2] { -1, -1 };  // index of last signal which set speed limit per direction (manual and explorer mode)
+
+        // Variables used for autopilot mode
+        public bool IsActualPlayerTrain
+        {
+            get
+            {
+                return this == Simulator.PlayerLocomotive.Train;
+            }
+        }
+        public bool IsPlayerDriven
+        {
+            get
+            {
+                return (TrainType == TRAINTYPE.PLAYER || TrainType == TRAINTYPE.AI_PLAYERDRIVEN);
+            }
+        }
+
+ 
+
+        // End variables used for autopilot mode
+
 
         public TrainRouted routedForward;                 // routed train class for forward moves (used in signalling)
         public TrainRouted routedBackward;                // routed train class for backward moves (used in signalling)
@@ -369,6 +392,7 @@ namespace ORTS
         public Train(Simulator simulator)
         {
             Simulator = simulator;
+            if (Simulator.IsAutopilotMode && TotalNumber == 1 && Simulator.TrainDictionary.Count == 0) TotalNumber = 0; //The autopiloted train has number 0
             Number = TotalNumber;
             TotalNumber++;
             SignalObjectItems = new List<ObjectItemInfo>();
@@ -1405,13 +1429,6 @@ namespace ORTS
                     BrakeLine1PressurePSIorInHg = lead.TrainBrakeController.MaxPressurePSI;
                 }
             }
-
-//            BrakeLine1PressurePSIorInHg = inf.ReadSingle();
-//            BrakeLine2PressurePSI = inf.ReadSingle();
-//            BrakeLine3PressurePSI = inf.ReadSingle();
-//            BrakeLine4PressurePSI = inf.ReadSingle();
-//            RetainerSetting = (RetainerSetting)inf.ReadInt32();
-//            RetainerPercent = inf.ReadInt32();
             MUThrottlePercent = initialThrottlepercent;
             AITrainThrottlePercent = initialThrottlepercent;
 
@@ -1474,7 +1491,7 @@ namespace ORTS
                     CheckStationTask();
                 }
 
-                if (TrainType != TRAINTYPE.AI && ControlMode != TRAIN_CONTROL.OUT_OF_CONTROL)
+                if ((TrainType != TRAINTYPE.AI && TrainType != TRAINTYPE.AI_PLAYERHOSTING) && ControlMode != TRAIN_CONTROL.OUT_OF_CONTROL)
                 {
                     CheckRouteActions(elapsedClockSeconds);                                     // check routepath (AI check at other point) //
                 }
@@ -1540,7 +1557,7 @@ namespace ORTS
                 //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
                 // To achieve the same result with other means, without flipping trainset physics, the line should be changed as follows:
                 //                 if (car.Flipped)
-                if (car.Flipped ^ (car.IsDriveable && car.Train.TrainType == TRAINTYPE.PLAYER && ((MSTSLocomotive)car).UsingRearCab))
+                if (car.Flipped ^ (car.IsDriveable && car.Train.IsPlayerDriven && ((MSTSLocomotive)car).UsingRearCab))
                 {
                     car.TotalForceN = -car.TotalForceN;
                     car.SpeedMpS = -car.SpeedMpS;
@@ -1605,8 +1622,8 @@ namespace ORTS
                 //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
                 // To achieve the same result with other means, without flipping trainset physics, the line should be changed as follows:
                 //                 if (car1.Flipped)
-                if (car1.Flipped ^ (car1.IsDriveable && car1.Train.TrainType == TRAINTYPE.PLAYER && ((MSTSLocomotive)car1).UsingRearCab))
-                    car1.SpeedMpS = -car1.SpeedMpS;
+                if (car1.Flipped ^ (car1.IsDriveable && car1.Train.IsPlayerDriven && ((MSTSLocomotive)car1).UsingRearCab))
+                car1.SpeedMpS = -car1.SpeedMpS;
             }
             SpeedMpS /= Cars.Count;
 
@@ -1914,7 +1931,7 @@ namespace ORTS
 
             // set train speed logging flag (valid per activity, so will be restored after save)
 
-            if (TrainType == TRAINTYPE.PLAYER)
+            if (IsActualPlayerTrain)
             {
                 DatalogTrainSpeed = Simulator.Settings.DataLogTrainSpeed;
                 DatalogTSInterval = Simulator.Settings.DataLogTSInterval;
@@ -3297,12 +3314,12 @@ namespace ORTS
                 //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
                 // To achieve the same result with other means, without flipping trainset physics, the line should be changed as follows:
                 //                 car1.SpeedMpS = car1.Flipped ? -SpeedMpS : SpeedMpS;
-                car1.SpeedMpS = car1.Flipped ^ (car1.IsDriveable && car1.Train.TrainType == TRAINTYPE.PLAYER && ((MSTSLocomotive)car1).UsingRearCab) ? -SpeedMpS : SpeedMpS;
+                car1.SpeedMpS = car1.Flipped ^ (car1.IsDriveable && car1.Train.IsPlayerDriven && ((MSTSLocomotive)car1).UsingRearCab) ? -SpeedMpS : SpeedMpS;
             foreach (TrainCar car2 in otherTrain.Cars)
                 //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
                 // To achieve the same result with other means, without flipping trainset physics, the line should be changed as follows:
                 //                 car2.SpeedMpS = car2.Flipped ? -SpeedMpS : SpeedMpS;
-                car2.SpeedMpS = car2.Flipped ^ (car2.IsDriveable && car2.Train.TrainType == TRAINTYPE.PLAYER && ((MSTSLocomotive)car2).UsingRearCab) ? -SpeedMpS : SpeedMpS;
+                car2.SpeedMpS = car2.Flipped ^ (car2.IsDriveable && car2.Train.IsPlayerDriven && ((MSTSLocomotive)car2).UsingRearCab) ? -SpeedMpS : SpeedMpS;
         }
 
 
@@ -4643,11 +4660,11 @@ namespace ORTS
             {
                 if (positionNow == PresentPosition[0].TCSectionIndex && directionNow != PresentPosition[0].TCDirection)
                 {
-                    ReverseFormation(true);
+                    ReverseFormation(IsActualPlayerTrain);
                 }
                 else if (positionNow == PresentPosition[1].TCSectionIndex && directionNow != PresentPosition[1].TCDirection)
                 {
-                    ReverseFormation(true);
+                    ReverseFormation(IsActualPlayerTrain);
                 }
             }
 
@@ -5048,7 +5065,8 @@ namespace ORTS
                         }
                     }
                     else lengthToGo = ComputeDistanceToReversalPoint();
-                    float compatibilityNegligibleRouteChunk = (TrainType == TRAINTYPE.AI && TCRoute.TCRouteSubpaths.Count - 1 == TCRoute.activeSubpath) ? 40f : 5f;
+                    float compatibilityNegligibleRouteChunk = ((TrainType == TRAINTYPE.AI || TrainType == TRAINTYPE.AI_PLAYERHOSTING) 
+                        && TCRoute.TCRouteSubpaths.Count - 1 == TCRoute.activeSubpath) ? 40f : 5f;
                     float negligibleRouteChunk = (!Simulator.Settings.EnhancedActCompatibility || Simulator.TimetableMode)? 150f : compatibilityNegligibleRouteChunk;
 
                     if (lengthToGo < negligibleRouteChunk && !junctionFound && 
@@ -7846,7 +7864,12 @@ namespace ORTS
 
         public void RequestToggleManualMode()
         {
-            if (ControlMode == TRAIN_CONTROL.MANUAL)
+            if (TrainType == TRAINTYPE.AI_PLAYERHOSTING)
+            {
+                if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("You cannot enter manual mode when autopiloted"));
+            }
+            else if (ControlMode == TRAIN_CONTROL.MANUAL)
             {
                 // check if train is back on path
 
@@ -8407,7 +8430,7 @@ namespace ORTS
                "Overall : " + AllowedMaxSpeedMpS.ToString() + "\n");
 
 #endif
-            if (TrainType == TRAINTYPE.PLAYER && AllowedMaxSpeedMpS > prevMaxSpeedMpS && !Simulator.Confirmer.Viewer.TrackMonitorWindow.Visible && Simulator.Confirmer != null)
+            if (IsActualPlayerTrain && AllowedMaxSpeedMpS > prevMaxSpeedMpS && !Simulator.Confirmer.Viewer.TrackMonitorWindow.Visible && Simulator.Confirmer != null)
             {
                 var message = Viewer.Catalog.GetStringFmt("Allowed speed raised to {0}", FormatStrings.FormatSpeedDisplay(AllowedMaxSpeedMpS, Simulator.Confirmer.Viewer.MilepostUnitsMetric));
                 Simulator.Confirmer.Message(ConfirmLevel.Information, message);
@@ -10632,7 +10655,7 @@ namespace ORTS
         /// Clear station from list, clear exit signal if required
         /// <\summary>
 
-        public void ClearStation(uint id1, uint id2)
+        public void ClearStation(uint id1, uint id2, bool removeStation)
         {
             int foundStation = -1;
             StationStop thisStation = null;
@@ -10664,10 +10687,12 @@ namespace ORTS
                     }
                 }
             }
-
-            for (int iStation = foundStation; iStation >= 0; iStation--)
+            if (removeStation)
             {
-                StationStops.RemoveAt(iStation);
+                for (int iStation = foundStation; iStation >= 0; iStation--)
+                {
+                    StationStops.RemoveAt(iStation);
+                }
             }
         }
 
@@ -11409,7 +11434,7 @@ namespace ORTS
             thisInfo.direction = MUDirection == Direction.Forward ? 0 : (MUDirection == Direction.Reverse ? 1 : -1);
 
             // set orientation
-            thisInfo.cabOrientation = (LeadLocomotive.Flipped ^ LeadLocomotive.GetCabFlipped()) ? 1 : 0;
+            thisInfo.cabOrientation = (Simulator.PlayerLocomotive.Flipped ^ Simulator.PlayerLocomotive.GetCabFlipped()) ? 1 : 0;
 
             // set reversal point
 
@@ -11692,7 +11717,7 @@ namespace ORTS
             thisInfo.direction = MUDirection == Direction.Forward ? 0 : 1;
 
             // set orientation
-            thisInfo.cabOrientation = (LeadLocomotive.Flipped ^ LeadLocomotive.GetCabFlipped()) ? 1 : 0;
+            thisInfo.cabOrientation = (Simulator.PlayerLocomotive.Flipped ^ Simulator.PlayerLocomotive.GetCabFlipped()) ? 1 : 0;
 
             // set out of control reason
             TrainObjectItem thisItem = new TrainObjectItem(OutOfControlReason);
@@ -17075,7 +17100,7 @@ namespace ORTS
                 var distancePlatformTailtoTrainTail = distancePlatformHeadtoTrainHead - PlatformItem.Length + stopTrain.Length;
                 var trainPartOutsidePlatformBackward = distancePlatformTailtoTrainTail > 0 ? distancePlatformTailtoTrainTail : 0;
                 if (trainPartOutsidePlatformBackward >= stopTrain.Length) return (int)PlatformItem.MinWaitingTime; // train actually stopped before platform; should not happen
-                if (stopTrain.TrainType == TRAINTYPE.PLAYER)
+                if (stopTrain.IsActualPlayerTrain)
                 {
                     if (trainPartOutsidePlatformForward == 0 && trainPartOutsidePlatformBackward == 0) passengerCarsWithinPlatform = stopTrain.PassengerCarsNumber;
                     else

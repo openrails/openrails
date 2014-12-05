@@ -70,6 +70,7 @@ namespace ORTS
         // station stop logging flags - these are saved to resume correct logging after save
         private string StationStopLogFile;   // logfile name
         private bool StationStopLogActive;   // logging is active
+        private Train MyPlayerTrain; // shortcut to access train data
 
         private Activity(BinaryReader inf, Simulator simulator, List<EventWrapper> oldEventList)
         {
@@ -167,13 +168,16 @@ namespace ORTS
                     if (Current is ActivityTaskPassengerStopAt)
                     {
                         ActivityTaskPassengerStopAt task = Current as ActivityTaskPassengerStopAt;
-                        // If the simulation starts with a scheduled start in the past, assume the train arrived on time.
-                        if (task.SchArrive < new DateTime().Add(TimeSpan.FromSeconds(Program.Simulator.ClockTime)))
+                        if (!Program.Simulator.Settings.EnhancedActCompatibility)
                         {
-                            task.ActArrive = task.SchArrive;
+                            // If the simulation starts with a scheduled start in the past, assume the train arrived on time.
+                            if (task.SchArrive < new DateTime().Add(TimeSpan.FromSeconds(Program.Simulator.ClockTime)))
+                            {
+                                task.ActArrive = task.SchArrive;
+                            }
+                            // If the simulation starts with a scheduled start in the future and the player's train already
+                            // stationary in the platform, the events will fire leading to an ActArrive time = Game Start time.
                         }
-                        // If the simulation starts with a scheduled start in the future and the player's train already
-                        // stationary in the platform, the events will fire leading to an ActArrive time = Game Start time.
                     }
                 }
             }
@@ -604,7 +608,7 @@ namespace ORTS
         public PlatformItem PlatformEnd2;
 
         private double BoardingS;   // MSTS calls this the Load/Unload time. Cargo gets loaded, but passengers board the train.
-        private double BoardingEndS;
+        public double BoardingEndS;
         int TimerChk;
         bool arrived;
         bool maydepart;
@@ -772,7 +776,15 @@ namespace ORTS
                     else
                     {
                     // <CSComment> MSTS mode - player
-                                BoardingS = (double)Program.Simulator.PlayerLocomotive.Train.StationStops[0].ComputeBoardingTime(Program.Simulator.PlayerLocomotive.Train);
+                        if (Program.Simulator.GameTime < 2)
+                        {
+                            // If the simulation starts with a scheduled start in the past, assume the train arrived on time.
+                            if (SchArrive < new DateTime().Add(TimeSpan.FromSeconds(Program.Simulator.ClockTime)))
+                            {
+                                ActArrive = SchArrive;
+                            }
+                        }
+                        BoardingS = (double)Program.Simulator.PlayerLocomotive.Train.StationStops[0].ComputeBoardingTime(Program.Simulator.PlayerLocomotive.Train);
                         if (BoardingS > 0 || ((double)(SchDepart - SchArrive).TotalSeconds > 0 &&
                             Program.Simulator.PlayerLocomotive.Train.PassengerCarsNumber == 1 && Program.Simulator.PlayerLocomotive.Train.Cars.Count > 10 ))
                         {
@@ -805,9 +817,10 @@ namespace ORTS
                 {
                     ActDepart = new DateTime().Add(TimeSpan.FromSeconds(Program.Simulator.ClockTime));
                     CompletedAt = ActDepart.Value;
-                    // Completeness is depend on the elapsed waiting time
+                    // Completeness depends on the elapsed waiting time
                     IsCompleted = maydepart;
-                    Program.Simulator.PlayerLocomotive.Train.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId);
+                   if (Program.Simulator.PlayerLocomotive.Train.TrainType != ORTS.Train.TRAINTYPE.AI_PLAYERHOSTING)
+                       Program.Simulator.PlayerLocomotive.Train.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId, true);
 
                     if (LogStationStops)
                     {
@@ -843,9 +856,9 @@ namespace ORTS
                     else if (remaining < 11) DisplayColor = new Color(255, 255, 128);
                     else DisplayColor = Color.White;
 
-                    if (remaining < 120)
+                    if (remaining < 120 && (Program.Simulator.PlayerLocomotive.Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING))
                     {
-                        Program.Simulator.PlayerLocomotive.Train.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId);
+                        Program.Simulator.PlayerLocomotive.Train.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId, false);
                     }
 
                     // Still have to wait
@@ -897,7 +910,7 @@ namespace ORTS
                                 stringBuild.Append("\n");
                                 File.AppendAllText(LogStationLogFile, stringBuild.ToString());
                             }
-
+                            
                             Program.Simulator.Confirmer.Viewer.QuitWindow.Visible = Program.Simulator.Paused = true;
                         }
                     }
@@ -908,9 +921,9 @@ namespace ORTS
                     int tmp = (int)(Program.Simulator.ClockTime % 10);
                     if (tmp != TimerChk)
                     {
-                        if (IsMissedStation())
+                        if (IsMissedStation() && (Program.Simulator.PlayerLocomotive.Train.TrainType != ORTS.Train.TRAINTYPE.AI_PLAYERHOSTING))
                         {
-                            Program.Simulator.PlayerLocomotive.Train.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId);
+                            Program.Simulator.PlayerLocomotive.Train.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId, true);
                             IsCompleted = false;
 
                             if (LogStationStops)

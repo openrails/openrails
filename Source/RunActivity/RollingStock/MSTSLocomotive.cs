@@ -790,7 +790,7 @@ namespace ORTS
             float maxPowerW = MaxPowerW * LocalThrottlePercent * LocalThrottlePercent/10000;
             if (AverageForceN * SpeedMpS > maxPowerW) AverageForceN = maxPowerW / SpeedMpS;
             LocomotiveAxle.FilterMovingAverage.Initialize(AverageForceN);
-            if (Train.TrainType == Train.TRAINTYPE.PLAYER)
+            if (Train.IsActualPlayerTrain)
             { 
                 TrainBrakeController.InitializeMoving();
                 BrakeSystem.LocoInitializeMoving();
@@ -971,7 +971,7 @@ namespace ORTS
                 } // foreach
             } // end when not lead loco
 #else
-            if (Train.TrainType == Train.TRAINTYPE.PLAYER) // for player locomotives
+            if (Train.IsPlayerDriven) // for player locomotives
             {
                 if (this.IsLeadLocomotive())
                 {
@@ -1044,17 +1044,20 @@ namespace ORTS
             switch (this.Train.TrainType)
             {
                 case Train.TRAINTYPE.AI:
+                case Train.TRAINTYPE.AI_PLAYERHOSTING:
                     if (!PowerOn)
                     {
                         Train.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
                     }
                     //LimitMotiveForce(elapsedClockSeconds);    //calls the advanced physics
                     LimitMotiveForce();                         //let's call the basic physics instead for now
+                    if (Train.IsActualPlayerTrain) FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
                     WheelSpeedMpS = Flipped ? -currentSpeedMpS : currentSpeedMpS;            //make the wheels go round
                     break;
                 case Train.TRAINTYPE.STATIC:
                     break;
                 case Train.TRAINTYPE.PLAYER:
+                case Train.TRAINTYPE.AI_PLAYERDRIVEN:
                 case Train.TRAINTYPE.REMOTE:
                     // For notched throttle controls (e.g. Dash 9 found on Marias Pass) UpdateValue is always 0.0
                     if (ThrottleController.UpdateValue != 0.0)
@@ -1145,7 +1148,7 @@ namespace ORTS
 
         public void ConfirmWheelslip( float elapsedClockSeconds )
         {
-            if (elapsedClockSeconds > 0 && Simulator.GameTime > 5)
+            if (elapsedClockSeconds > 0 && Simulator.GameTime -LocomotiveAxle.ResetTime> 5)
             { 
                 if (Simulator.UseAdvancedAdhesion)
                 {
@@ -1392,7 +1395,7 @@ namespace ORTS
             WheelSlip = false;
 
             // always set AntiSlip for AI trains
-            if (Train.TrainType == Train.TRAINTYPE.AI)
+            if (Train.TrainType == Train.TRAINTYPE.AI || Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
             {
                 AntiSlip = true;
             }
@@ -1416,7 +1419,7 @@ namespace ORTS
 
             //This doesn't help at all, the force is already limited!!! The "AntiSlip = true;" statement is much better.
             // overrule wheelslip for AI trains
-            if (Train.TrainType == Train.TRAINTYPE.AI)
+            if (Train.TrainType == Train.TRAINTYPE.AI || Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
             {
                 WheelSlip = false;
             }
@@ -2063,8 +2066,8 @@ namespace ORTS
             {
                 case Event.VigilanceAlarmOn: { AlerterSnd = true; if (Simulator.Settings.Alerter) Simulator.Confirmer.Confirm(CabControl.Alerter, CabSetting.On); break; }
                 case Event.VigilanceAlarmOff: { AlerterSnd = false; if (Simulator.Settings.Alerter) Simulator.Confirmer.Confirm(CabControl.Alerter, CabSetting.Off); break; }
-                case Event.BellOn: { Bell = true; if (Simulator.Confirmer != null && IsPlayerTrain) Simulator.Confirmer.Confirm(CabControl.Bell, CabSetting.On); break; }
-                case Event.BellOff: { Bell = false; if (Simulator.Confirmer != null && IsPlayerTrain) Simulator.Confirmer.Confirm(CabControl.Bell, CabSetting.Off); break; }
+                case Event.BellOn: { Bell = true; if (this == Program.Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Bell, CabSetting.On); break; }
+                case Event.BellOff: { Bell = false; if (this == Program.Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Bell, CabSetting.Off); break; }
                 case Event.HornOn:
                 case Event.HornOff:
                     Horn = evt == Event.HornOn;
@@ -2073,8 +2076,8 @@ namespace ORTS
                     if (this == Program.Simulator.PlayerLocomotive)
                         Simulator.Confirmer.Confirm(this is MSTSSteamLocomotive ? CabControl.Whistle : CabControl.Horn, Horn ? CabSetting.On : CabSetting.Off);
                     break;
-                case Event.SanderOn: { Sander = true; if (this.IsLeadLocomotive() && Simulator.Confirmer != null && IsPlayerTrain) Simulator.Confirmer.Confirm(CabControl.Sander, CabSetting.On); break; }
-                case Event.SanderOff: { Sander = false; if (this.IsLeadLocomotive() && IsPlayerTrain) Simulator.Confirmer.Confirm(CabControl.Sander, CabSetting.Off); break; }
+                case Event.SanderOn: { Sander = true; if (this.IsLeadLocomotive() && this == Program.Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Sander, CabSetting.On); break; }
+                case Event.SanderOff: { Sander = false; if (this.IsLeadLocomotive() && this == Program.Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Sander, CabSetting.Off); break; }
                 case Event.WiperOn: { Wiper = true; if (this == Program.Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Wipers, CabSetting.On); break; }
                 case Event.WiperOff: { Wiper = false; if (this == Program.Simulator.PlayerLocomotive)  Simulator.Confirmer.Confirm(CabControl.Wipers, CabSetting.Off); break; }
 
@@ -2342,7 +2345,7 @@ namespace ORTS
                     }
                 case CABViewControlTypes.WHEELSLIP:
                     {
-                        if (Simulator.UseAdvancedAdhesion)
+                        if (Simulator.UseAdvancedAdhesion && Train.TrainType != ORTS.Train.TRAINTYPE.AI_PLAYERHOSTING)
                             data = LocomotiveAxle.IsWheelSlipWarning ? 1 : 0;
                         else
                             data = WheelSlip ? 1 : 0;
@@ -2504,6 +2507,19 @@ namespace ORTS
         {
             return 0f;
         }
+
+        public override void SwitchToPlayerControl()
+        {
+            base.SwitchToPlayerControl();
+            return;
+        }
+
+        public override void SwitchToAutopilotControl()
+        {
+            base.SwitchToAutopilotControl();
+            return;
+        }
+
     } // End Class MSTSLocomotive
 
     public class CabView

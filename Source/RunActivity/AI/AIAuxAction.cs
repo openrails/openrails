@@ -117,18 +117,30 @@ namespace ORTS
             File.AppendAllText(@"C:\temp\checkpath.txt", "SaveAuxContainer, count :" + SpecAuxActions.Count + 
                 "Position in file: " + outf.BaseStream.Position + "\n");
 #endif
-            if (ThisTrain is AITrain && ((AITrain)ThisTrain).MovementState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION)
+            AITrain aiTrain = ThisTrain as AITrain;
+            if (ThisTrain.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || ThisTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING ||
+                ThisTrain.TrainType == Train.TRAINTYPE.PLAYER)
             {
-                AITrain aiTrain = ThisTrain as AITrain;
-                if (aiTrain.nextActionInfo != null &&
-                    aiTrain.nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.AUX_ACTION &&
-                    (AuxActionWPItem)aiTrain.nextActionInfo != null)
+                if (SpecAuxActions.Count > 0 && SpecAuxActions[0] != null &&
+                    specRequiredActions.First != null && specRequiredActions.First.Value is AuxActSigDelegate)
+
+                // SigDelegate WP is running
+                {
+                    if (((AuxActSigDelegate)specRequiredActions.First.Value).currentMvmtState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION)
+                    {
+                        int remainingDelay = ((AuxActSigDelegate)specRequiredActions.First.Value).ActualDepart - currentClock;
+                        ((AIActSigDelegateRef)SpecAuxActions[0]).SetDelay(remainingDelay);
+                    }
+                }
+            }
+            else if (ThisTrain is AITrain && aiTrain.MovementState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION && aiTrain.nextActionInfo != null &&
+                aiTrain.nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.AUX_ACTION &&
+                (AuxActionWPItem)aiTrain.nextActionInfo != null)
                 // WP is running
                 {
                     int remainingDelay = ((AuxActionWPItem)aiTrain.nextActionInfo).ActualDepart - currentClock;
                     ((AIActionWPRef)SpecAuxActions[0]).SetDelay(remainingDelay);
                 }
-            }
             foreach (var action in SpecAuxActions)
             {
                 ((AIAuxActionsRef)action).save(outf, cnt);
@@ -407,7 +419,7 @@ namespace ORTS
             float[] distancesM;
             while (!validAction)
             {
-                if (thisTrain is AITrain)
+                if (thisTrain is AITrain && thisTrain.TrainType != Train.TRAINTYPE.AI_PLAYERDRIVEN)
                 {
                     AITrain aiTrain = thisTrain as AITrain;
                     distancesM = thisAction.CalculateDistancesToNextAction(aiTrain, ((AITrain)aiTrain).TrainMaxSpeedMpS, true);
@@ -437,11 +449,26 @@ namespace ORTS
                     {
                         if (thisTrain is AITrain && newAction is AuxActionWPItem)   // Put only the WP for AI into the requiredAction, other are on the container
                         {
-                            thisTrain.requiredActions.InsertAction(newAction);
-                            ((AITrain)thisTrain).nextActionInfo = newAction;
+                            bool found = false;
+                            if (thisTrain.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN && thisTrain.requiredActions.Count > 0)
+                            {
+                                // check if action already inserted
+                                foreach (Train.DistanceTravelledItem item in thisTrain.requiredActions)
+                                {
+                                    if (item is AuxActionWPItem)
+                                    {
+                                        found = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (!found)
+                            {
+                                thisTrain.requiredActions.InsertAction(newAction);
+                                ((AITrain)thisTrain).nextActionInfo = newAction;
+                            }
                         }
-                        else
-                            specRequiredActions.InsertAction(newAction);
+                        else specRequiredActions.InsertAction(newAction);
                     }
                 }
             }
@@ -823,6 +850,8 @@ namespace ORTS
 
         public override float[] CalculateDistancesToNextAction(Train thisTrain, float presentSpeedMpS, bool reschedule)
         {
+            float[] distancesM = new float[2];
+
             int thisSectionIndex = thisTrain.PresentPosition[0].TCSectionIndex;
             TrackCircuitSection thisSection = thisTrain.signalRef.TrackCircuitList[thisSectionIndex];
             float leftInSectionM = thisSection.Length - thisTrain.PresentPosition[0].TCOffset;
@@ -832,54 +861,74 @@ namespace ORTS
             int actionIndex0 = thisTrain.ValidRoute[0].GetRouteIndex(thisTrain.PresentPosition[0].TCSectionIndex, thisTrain.PresentPosition[0].RouteListIndex);
             float activateDistanceTravelledM = thisTrain.PresentPosition[0].DistanceTravelledM + thisTrain.ValidRoute[0].GetDistanceAlongRoute(actionIndex0, leftInSectionM, TCSectionIndex, this.RequiredDistance, thisTrain.AITrainDirectionForward, thisTrain.signalRef);
 
+
             // if reschedule, use actual speed
 
             float triggerDistanceM = TriggerDistance;
 
-            if (thisTrain is AITrain)
+            if (thisTrain.TrainType != Train.TRAINTYPE.AI_PLAYERDRIVEN)
             {
-                AITrain aiTrain = thisTrain as AITrain;
-                if (reschedule)
+
+                if (thisTrain is AITrain)
                 {
-                    float firstPartTime = 0.0f;
-                    float firstPartRangeM = 0.0f;
-                    float secndPartRangeM = 0.0f;
-                    float remainingRangeM = activateDistanceTravelledM - thisTrain.PresentPosition[0].DistanceTravelledM;
-
-                    firstPartTime = presentSpeedMpS / (0.25f * aiTrain.MaxDecelMpSS);
-                    firstPartRangeM = 0.25f * aiTrain.MaxDecelMpSS * (firstPartTime * firstPartTime);
-
-                    if (firstPartRangeM < remainingRangeM && thisTrain.SpeedMpS < thisTrain.TrainMaxSpeedMpS) // if distance left and not at max speed
-                    // split remaining distance based on relation between acceleration and deceleration
+                    AITrain aiTrain = thisTrain as AITrain;
+                    if (reschedule)
                     {
-                        secndPartRangeM = (remainingRangeM - firstPartRangeM) * (2.0f * aiTrain.MaxDecelMpSS) / (aiTrain.MaxDecelMpSS + aiTrain.MaxAccelMpSS);
-                    }
+                        float firstPartTime = 0.0f;
+                        float firstPartRangeM = 0.0f;
+                        float secndPartRangeM = 0.0f;
+                        float remainingRangeM = activateDistanceTravelledM - thisTrain.PresentPosition[0].DistanceTravelledM;
 
-                    triggerDistanceM = activateDistanceTravelledM - (firstPartRangeM + secndPartRangeM);
+                        firstPartTime = presentSpeedMpS / (0.25f * aiTrain.MaxDecelMpSS);
+                        firstPartRangeM = 0.25f * aiTrain.MaxDecelMpSS * (firstPartTime * firstPartTime);
+
+                        if (firstPartRangeM < remainingRangeM && thisTrain.SpeedMpS < thisTrain.TrainMaxSpeedMpS) // if distance left and not at max speed
+                        // split remaining distance based on relation between acceleration and deceleration
+                        {
+                            secndPartRangeM = (remainingRangeM - firstPartRangeM) * (2.0f * aiTrain.MaxDecelMpSS) / (aiTrain.MaxDecelMpSS + aiTrain.MaxAccelMpSS);
+                        }
+
+                        triggerDistanceM = activateDistanceTravelledM - (firstPartRangeM + secndPartRangeM);
+                    }
+                    else
+
+                    // use maximum speed
+                    {
+                        float deltaTime = thisTrain.TrainMaxSpeedMpS / aiTrain.MaxDecelMpSS;
+                        float brakingDistanceM = (thisTrain.TrainMaxSpeedMpS * deltaTime) + (0.5f * aiTrain.MaxDecelMpSS * deltaTime * deltaTime);
+                        triggerDistanceM = activateDistanceTravelledM - brakingDistanceM;
+                    }
                 }
                 else
-
-                // use maximum speed
                 {
-                    float deltaTime = thisTrain.TrainMaxSpeedMpS / aiTrain.MaxDecelMpSS;
-                    float brakingDistanceM = (thisTrain.TrainMaxSpeedMpS * deltaTime) + (0.5f * aiTrain.MaxDecelMpSS * deltaTime * deltaTime);
-                    triggerDistanceM = activateDistanceTravelledM - brakingDistanceM;
+                    activateDistanceTravelledM = thisTrain.PresentPosition[0].DistanceTravelledM + thisTrain.ValidRoute[0].GetDistanceAlongRoute(actionIndex0, leftInSectionM, TCSectionIndex, this.RequiredDistance, true, thisTrain.signalRef);
+                    triggerDistanceM = activateDistanceTravelledM;
                 }
+
+                distancesM[1] = triggerDistanceM;
+                if (activateDistanceTravelledM < thisTrain.PresentPosition[0].DistanceTravelledM &&
+                    thisTrain.PresentPosition[0].DistanceTravelledM - activateDistanceTravelledM < thisTrain.Length)
+                    activateDistanceTravelledM = thisTrain.PresentPosition[0].DistanceTravelledM;
+                distancesM[0] = activateDistanceTravelledM;
+
+                return (distancesM);
             }
             else
             {
                 activateDistanceTravelledM = thisTrain.PresentPosition[0].DistanceTravelledM + thisTrain.ValidRoute[0].GetDistanceAlongRoute(actionIndex0, leftInSectionM, TCSectionIndex, this.RequiredDistance, true, thisTrain.signalRef);
-                triggerDistanceM = activateDistanceTravelledM;
+                triggerDistanceM = activateDistanceTravelledM - Math.Min(this.RequiredDistance, 300); 
+
+                if (activateDistanceTravelledM < thisTrain.PresentPosition[0].DistanceTravelledM &&
+                    thisTrain.PresentPosition[0].DistanceTravelledM - activateDistanceTravelledM < thisTrain.Length)
+                {
+                    activateDistanceTravelledM = thisTrain.PresentPosition[0].DistanceTravelledM;
+                    triggerDistanceM = activateDistanceTravelledM;
+                }
+                distancesM[1] = triggerDistanceM;
+                distancesM[0] = activateDistanceTravelledM;
+
+                return (distancesM);
             }
-
-            float[] distancesM = new float[2];
-            distancesM[1] = triggerDistanceM;
-            if (activateDistanceTravelledM < thisTrain.PresentPosition[0].DistanceTravelledM &&
-                thisTrain.PresentPosition[0].DistanceTravelledM - activateDistanceTravelledM < thisTrain.Length)
-                activateDistanceTravelledM = thisTrain.PresentPosition[0].DistanceTravelledM;
-            distancesM[0] = activateDistanceTravelledM;
-
-            return (distancesM);
         }
 
 
@@ -1248,10 +1297,8 @@ namespace ORTS
         {
             NextAction = AUX_ACTION.SIGNAL_DELEGATE;
             IsGeneric = true;
-            if (thisTrain is AITrain)
-                brakeSection = 1;   //  Do not extend the available length for AI Train
-            else
-                brakeSection = distance;
+ 
+                brakeSection = distance; // Set to 1 later when applicable
         }
 
         public AIActSigDelegateRef(Train thisTrain, BinaryReader inf)
@@ -1356,7 +1403,9 @@ namespace ORTS
             //else
             {
                 activateDistanceTravelledM = thisTrain.PresentPosition[0].DistanceTravelledM + thisTrain.ValidRoute[0].GetDistanceAlongRoute(actionIndex0, leftInSectionM, TCSectionIndex, this.RequiredDistance, true, thisTrain.signalRef);
-                triggerDistanceM = activateDistanceTravelledM - brakeSection;   //  TODO, add the size of train
+
+                var currBrakeSection = (thisTrain is AITrain && !(thisTrain.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN)) ? 1 : brakeSection;
+                triggerDistanceM = activateDistanceTravelledM - Math.Min(this.RequiredDistance, 300);   //  TODO, add the size of train
             }
 
             float[] distancesM = new float[2];
@@ -1374,7 +1423,23 @@ namespace ORTS
             EndSignalIndex = idx;
         }
 
+        //================================================================================================//
+        /// <summary>
+        /// SetDelay
+        /// To fullfill the waiting delay.
+        /// </summary>
+
+        public void SetDelay(int delay)
+        {
+#if WITH_PATH_DEBUG
+            File.AppendAllText(@"C:\temp\checkpath.txt", "\tDelay set to: " + delay + "\n");
+#endif
+            Delay = delay;
+        }
+
     }
+
+
 
     #endregion
 
@@ -1391,7 +1456,7 @@ namespace ORTS
         public AuxActionRef ActionRef;
         public bool Triggered = false;
         public bool Processing = false;
-        protected AITrain.AI_MOVEMENT_STATE currentMvmtState = AITrain.AI_MOVEMENT_STATE.INIT_ACTION;
+        public AITrain.AI_MOVEMENT_STATE currentMvmtState = AITrain.AI_MOVEMENT_STATE.INIT_ACTION;
         public SignalObject SignalReferenced { get { return ((AIAuxActionsRef)ActionRef).SignalReferenced; } set {} }
 
         //================================================================================================//
@@ -1534,15 +1599,25 @@ namespace ORTS
             if (ActionRef == null)
                 return false;
             float[] distancesM = ((AIAuxActionsRef)ActionRef).CalculateDistancesToNextAction(thisTrain, SpeedMpS, reschedule);
-
-            if (RequiredDistance < thisTrain.DistanceTravelledM) // trigger point
+            if (thisTrain.TrainType != Train.TRAINTYPE.AI_PLAYERDRIVEN)
             {
-                return true;
-            }
+                if (RequiredDistance < thisTrain.DistanceTravelledM) // trigger point
+                {
+                    return true;
+                }
 
-            RequiredDistance = distancesM[1];
-            ActivateDistanceM = distancesM[0];
-            return false;
+                RequiredDistance = distancesM[1];
+                ActivateDistanceM = distancesM[0];
+                return false;
+            }
+            else
+            {
+                if (thisTrain.SpeedMpS == 0f && distancesM[1] <= thisTrain.DistanceTravelledM)
+                {
+                    return true;
+                }
+                return false;
+            }
         }
 
         public void SetDelay(int delay)
@@ -1552,8 +1627,10 @@ namespace ORTS
 
         public override bool ValidAction(Train thisTrain)
         {
-            bool actionValid = CanActivate(thisTrain, thisTrain.SpeedMpS, true);
-            if (thisTrain is AITrain)
+            bool actionValid = false;
+
+            actionValid = CanActivate(thisTrain, thisTrain.SpeedMpS, true);
+            if (thisTrain is AITrain && thisTrain.TrainType != Train.TRAINTYPE.AI_PLAYERDRIVEN)
             {
                 AITrain aiTrain = thisTrain as AITrain;
                 if (!actionValid)
@@ -1713,8 +1790,8 @@ namespace ORTS
 
     //================================================================================================//
     /// <summary>
-    /// AuxActionWPItem
-    /// A specific class used at run time to manage a Waiting Point Action
+    /// AuxActionHornItem
+    /// A specific class used at run time to manage a Horn Action
     /// </summary>
 
     public class AuxActionHornItem : AuxActionItem
@@ -1727,8 +1804,8 @@ namespace ORTS
 
         //================================================================================================//
         /// <summary>
-        /// AuxActionWPItem
-        /// The specific constructor for WP action
+        /// AuxActionhornItem
+        /// The specific constructor for horn action
         /// </summary>
 
         public AuxActionHornItem(AuxActionRef thisItem, AI_ACTION_TYPE thisAction) :
@@ -1906,8 +1983,8 @@ namespace ORTS
 
         //================================================================================================//
         /// <summary>
-        /// AuxActionWPItem
-        /// The specific constructor for WP action
+        /// AuxActionControlStartItem
+        /// The specific constructor for Controlled Start action
         /// </summary>
 
         public AuxActionControlStartItem(AuxActionRef thisItem, AI_ACTION_TYPE thisAction) :
@@ -2082,7 +2159,7 @@ namespace ORTS
 
     //================================================================================================//
     /// <summary>
-    /// AuxActionControlledStartItem
+    /// AuxActionControlStoppedItem
     /// A specific class used at run time to manage the starting of a steam train
     /// </summary>
 
@@ -2105,8 +2182,8 @@ namespace ORTS
 
         //================================================================================================//
         /// <summary>
-        /// AuxActionWPItem
-        /// The specific constructor for WP action
+        /// AuxActionControlItem
+        /// The specific constructor for Control Stopped action
         /// </summary>
 
         public AuxActionControlStoppedItem(AuxActionRef thisItem, AI_ACTION_TYPE thisAction) :
@@ -2281,8 +2358,8 @@ namespace ORTS
 
     //================================================================================================//
     /// <summary>
-    /// AuxActionWPItem
-    /// A specific class used at run time to manage a Waiting Point Action
+    /// AuxActionSignalItem
+    /// A specific class used at run time to manage a Signal Action
     /// </summary>
 
     public class AuxActionSignalItem : AuxActionItem
@@ -2294,8 +2371,8 @@ namespace ORTS
 
         //================================================================================================//
         /// <summary>
-        /// AuxActionWPItem
-        /// The specific constructor for WP action
+        /// AuxActionSignalItem
+        /// The specific constructor for Signal action
         /// </summary>
 
         public AuxActionSignalItem(AuxActionRef thisItem, AI_ACTION_TYPE thisAction) :
@@ -2394,7 +2471,7 @@ namespace ORTS
     //================================================================================================//
     /// <summary>
     /// AuxActSigDelegate
-    /// Used to post pone de signal clear after WP
+    /// Used to postpone the signal clear after WP
     /// </summary>
 
     public class AuxActSigDelegate : AuxActionItem
@@ -2404,8 +2481,8 @@ namespace ORTS
 
         //================================================================================================//
         /// <summary>
-        /// AuxActionWPItem
-        /// The specific constructor for WP action
+        /// AuxActSigDelegate Item
+        /// The specific constructor for AuxActSigDelegate action
         /// </summary>
 
         public AuxActSigDelegate(AuxActionRef thisItem, AI_ACTION_TYPE thisAction) :

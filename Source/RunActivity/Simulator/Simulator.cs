@@ -141,6 +141,7 @@ namespace ORTS
 #if ACTIVITY_EDITOR
         public ORRouteConfig orRouteConfig;
 #endif
+        public bool IsAutopilotMode = false;
 
         public Simulator(UserSettings settings, string activityPath, bool useOpenRailsDirectory)
         {
@@ -235,6 +236,7 @@ namespace ORTS
             {
                 ORTS.Activity.AddRestrictZones(TRK.Tr_RouteFile, TSectionDat, TDB.TrackDB, Activity.Tr_Activity.Tr_Activity_File.ActivityRestrictedSpeedZones);
             }
+            IsAutopilotMode = Settings.Autopilot;
         }
         public void SetExplore(string path, string consist, string start, string season, string weather)
         {
@@ -251,13 +253,17 @@ namespace ORTS
         {
             Signals = new Signals(this, SIGCFG, loader);
             LevelCrossings = new LevelCrossings(this);
-            Train playerTrain = InitializeTrains();
-            AI = new AI(this, loader, ClockTime);
-            if (playerTrain != null)
+            Trains = new TrainList(this);
+            Train playerTrain;
+
+            switch (IsAutopilotMode)
             {
-                playerTrain.PostInit();  // place player train after pre-running of AI trains
-                TrainDictionary.Add(playerTrain.Number, playerTrain);
-                NameDictionary.Add(playerTrain.Name, playerTrain);
+                case true:
+                    playerTrain = InitializeAPTrains(loader);
+                    break;
+                default:
+                    playerTrain = InitializeTrains(loader);
+                    break;                 
             }
             MPManager.Instance().RememberOriginalSwitchState();
 
@@ -351,13 +357,39 @@ namespace ORTS
             ORTS.Activity.Save(outf, ActivityRun);
         }
 
-        Train InitializeTrains()
+        Train InitializeTrains(LoaderProcess loader)
         {
-            Trains = new TrainList(this);
             Train playerTrain = InitializePlayerTrain();
             InitializeStaticConsists();
+            AI = new AI(this, loader, ClockTime);
+            if (playerTrain != null)
+            {
+                playerTrain.PostInit();  // place player train after pre-running of AI trains
+                TrainDictionary.Add(playerTrain.Number, playerTrain);
+                NameDictionary.Add(playerTrain.Name, playerTrain);
+            }
             return (playerTrain);
         }
+
+        AITrain InitializeAPTrains(LoaderProcess loader)
+        {
+            AITrain playerTrain = InitializeAPPlayerTrain();
+            InitializeStaticConsists();
+            AI = new AI(this, loader, ClockTime);
+            if (playerTrain != null)
+            {
+                playerTrain.PostInit();  // place player train after pre-running of AI trains
+                 if (playerTrain.InitialSpeed > 0 && playerTrain.MovementState != AITrain.AI_MOVEMENT_STATE.STATION_STOP)
+                {
+                    playerTrain.InitializeMoving();
+                    playerTrain.MovementState = AITrain.AI_MOVEMENT_STATE.BRAKING;
+                }
+                else if (playerTrain.InitialSpeed == 0)
+                    playerTrain.InitializeBrakes();
+            }
+            return (playerTrain);
+        }
+
 
         /// <summary>
         /// Which locomotive does the activity specify for the player.
@@ -408,7 +440,7 @@ namespace ORTS
             if (PlayerLocomotive != null)
             {
                 movingTrains.Add(PlayerLocomotive.Train);
-                if (String.Compare(PlayerLocomotive.Train.LeadLocomotive.CarID, PlayerLocomotive.CarID) != 0)
+                if ((PlayerLocomotive.Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING) && String.Compare(PlayerLocomotive.Train.LeadLocomotive.CarID, PlayerLocomotive.CarID) != 0)
                 {
                     if (!MPManager.IsMultiPlayer()) PlayerLocomotive = PlayerLocomotive.Train.LeadLocomotive; //in MP, will not change player locomotive, By JTang
                 }
@@ -434,9 +466,13 @@ namespace ORTS
                     }
                     catch (Exception e) { Trace.TraceWarning(e.Message); }
                 }
-                else
+                else if (train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
                 {
                     train.Update(elapsedClockSeconds);
+                }
+                else
+                {
+                    ((AITrain)train).AIUpdate(elapsedClockSeconds, ClockTime, false);
                 }
             }
             // This has to be done also for stopped trains
@@ -672,7 +708,7 @@ namespace ORTS
             // first extract the player service definition from the activity file
             // this gives the consist and path
 
-            Train train = new Train(this);
+            Train train  = new Train(this);
             train.TrainType = Train.TRAINTYPE.PLAYER;
             train.Number = 0;
             train.Name = "PLAYER";
@@ -823,6 +859,54 @@ namespace ORTS
             return (train);
         }
 
+        private AITrain InitializeAPPlayerTrain()
+        {
+            string playerServiceFileName = Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name;
+            SRVFile srvFile = new SRVFile(RoutePath + @"\SERVICES\" + playerServiceFileName + ".SRV");
+            Player_Traffic_Definition player_Traffic_Definition = Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Player_Traffic_Definition;
+            Traffic_Service_Definition aPPlayer_Traffic_Definition = new Traffic_Service_Definition(playerServiceFileName, player_Traffic_Definition);
+            Service_Definition aPPlayer_Service_Definition = new Service_Definition(playerServiceFileName, player_Traffic_Definition);
+            AI AI = new AI(this);
+            AITrain train = AI.CreateAITrainDetail(aPPlayer_Service_Definition, aPPlayer_Traffic_Definition, true);
+            AI = null;
+            train.Name = "PLAYER";
+            train.Cars[0].Headlight = 0;
+            train.Efficiency = 0.9f; // Forced efficiency, as considered most similar to human player
+            bool canPlace = true;
+            Train.TCSubpathRoute tempRoute = train.CalculateInitialTrainPosition(ref canPlace);
+            if (tempRoute.Count == 0 || !canPlace)
+            {
+                throw new InvalidDataException("Player train original position not clear");
+            }
+            train.SetInitialTrainRoute(tempRoute);
+            train.CalculatePositionOfCars(0);
+            train.ResetInitialTrainRoute(tempRoute);
+
+            train.CalculatePositionOfCars(0);
+            train.TrainType = Train.TRAINTYPE.AI_PLAYERDRIVEN;
+            Trains.Add(train);
+
+            // Note the initial position to be stored by a Save and used in Menu.exe to calculate DistanceFromStartM 
+            InitialTileX = Trains[0].FrontTDBTraveller.TileX + (Trains[0].FrontTDBTraveller.X / 2048);
+            InitialTileZ = Trains[0].FrontTDBTraveller.TileZ + (Trains[0].FrontTDBTraveller.Z / 2048);
+
+            PlayerLocomotive = InitialPlayerLocomotive();
+/*            train.LeadLocomotive = null;
+            train.LeadLocomotiveIndex = -1; */
+            if (train.MaxVelocityA <= 0f || train.MaxVelocityA == 40f)
+                train.TrainMaxSpeedMpS = Math.Min((float)TRK.Tr_RouteFile.SpeedLimit, ((MSTSLocomotive)PlayerLocomotive).MaxSpeedMpS);
+            else
+                train.TrainMaxSpeedMpS = Math.Min((float)TRK.Tr_RouteFile.SpeedLimit, train.MaxVelocityA);
+            if (train.InitialSpeed > 0 && train.MovementState != AITrain.AI_MOVEMENT_STATE.STATION_STOP)
+            {
+                train.InitializeMoving();
+                train.MovementState = AITrain.AI_MOVEMENT_STATE.BRAKING;
+            }
+            else if (train.InitialSpeed == 0)
+                train.InitializeBrakes();
+            return train;
+        }
+
         /// <summary>
         /// Set up trains based on info in the static consists listed in the activity file.
         /// </summary>
@@ -928,10 +1012,15 @@ namespace ORTS
 
             foreach (Train train in Trains)
             {
-                if (train.TrainType != Train.TRAINTYPE.AI)
+                if (train.TrainType != Train.TRAINTYPE.AI && train.TrainType != Train.TRAINTYPE.AI_PLAYERDRIVEN && train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
                 {
                     outf.Write(0);
                     train.Save(outf);
+                }
+                else if (train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
+                {
+                    outf.Write(-2);
+                    AI.SaveAutopil(train, outf);
                 }
             }
             outf.Write(-1);
@@ -949,16 +1038,22 @@ namespace ORTS
             Trains = new TrainList(this);
 
             int trainType = inf.ReadInt32();
-            while (trainType >= 0)
+            while (trainType != -1)
             {
-                Trains.Add(new Train(this, inf));
+                if (trainType >= 0) Trains.Add(new Train(this, inf));
+                else if (trainType == -2)                   // Autopilot mode
+                {
+                    AI = new AI(this, inf, true);
+                    AI = null;
+                }
                 trainType = inf.ReadInt32();
             }
 
             // find player train
             foreach (Train thisTrain in Trains)
             {
-                if (thisTrain.TrainType == Train.TRAINTYPE.PLAYER)
+                if (thisTrain.TrainType == Train.TRAINTYPE.PLAYER
+                    || thisTrain.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || thisTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
                 {
                     TrainDictionary.Add(thisTrain.Number, thisTrain);
                     NameDictionary.Add(thisTrain.Name, thisTrain);
@@ -971,7 +1066,7 @@ namespace ORTS
                     {
                         thisTrain.RestoreManualMode();
                     }
-                    else
+                    else if (thisTrain.TrainType == Train.TRAINTYPE.PLAYER)
                     {
                         thisTrain.InitializeSignals(true);
                     }
@@ -1053,37 +1148,75 @@ namespace ORTS
             ++i;
 
             TrainCar lead = train.LeadLocomotive;
-            // move rest of cars to the new train
             Train train2 = new Train(this, train);
             if (MPManager.IsMultiPlayer()) train2.ControlMode = Train.TRAIN_CONTROL.EXPLORER;
-
-            for (int k = i; k < train.Cars.Count; ++k)
+            // Player locomotive is in first or in second part of train?
+            int j = 0;
+            while (train.Cars[j] != PlayerLocomotive && j < i) j++;
+          
+            // This is necessary, because else we had to create an AI train and not a train in following case
+            if ((train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING) && j >= i)
             {
-                TrainCar newcar = train.Cars[k];
-                train2.Cars.Add(newcar);
-                newcar.Train = train2;
+                // Player locomotive in second part of train, move first part of cars to the new train
+                    for (int k = 0; k < i; ++k)
+                    {
+                        TrainCar newcar = train.Cars[k];
+                        train2.Cars.Add(newcar);
+                        newcar.Train = train2;
+                    }
+
+                    // and drop them from the old train
+                    for (int k = i-1; k >=0; --k)
+                    {
+                        train.Cars.RemoveAt(k);
+                    }
+
+                    train.FirstCar.CouplerSlackM = 0;
+                    if (train.LeadLocomotiveIndex >= 0) train.LeadLocomotiveIndex -= i;
+             }
+            else
+            {
+                // move rest of cars to the new train
+
+                for (int k = i; k < train.Cars.Count; ++k)
+                {
+                    TrainCar newcar = train.Cars[k];
+                    train2.Cars.Add(newcar);
+                    newcar.Train = train2;
+                }
+
+                // and drop them from the old train
+                for (int k = train.Cars.Count - 1; k >= i; --k)
+                {
+                    train.Cars.RemoveAt(k);
+                }
+
+                train.LastCar.CouplerSlackM = 0;
+
+                // ensure player train keeps the original number (in single mode, it is always no. 0)
+                if ((PlayerLocomotive != null && PlayerLocomotive.Train == train2) || !keepFront)
+                {
+                    var temp = train.Number;
+                    train.Number = train2.Number;    // train gets new number
+                    train2.Number = temp;               // player or AI train keeps the original number
+                }
             }
 
-            // and drop them from the old train
-            for (int k = train.Cars.Count - 1; k >= i; --k)
+                // and fix up the travellers
+            if ((train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING) && j >= i)
             {
-                train.Cars.RemoveAt(k);
+                train2.FrontTDBTraveller = new Traveller(train.FrontTDBTraveller);
+                train.CalculatePositionOfCars(0);
+                train2.RearTDBTraveller = new Traveller(train.FrontTDBTraveller);
+                train2.CalculatePositionOfCars(0);  // fix the front traveller
+                train.DistanceTravelledM -= train2.Length;
             }
-
-            train.LastCar.CouplerSlackM = 0;
-
-            // ensure player train keeps the original number (in single mode, it is always no. 0)
-            if ((PlayerLocomotive != null && PlayerLocomotive.Train == train2) || !keepFront)
+            else
             {
-                var temp = train.Number;
-                train.Number = train2.Number;    // train gets new number
-                train2.Number = temp;               // player or AI train keeps the original number
+                train2.RearTDBTraveller = new Traveller(train.RearTDBTraveller);
+                train2.CalculatePositionOfCars(0);  // fix the front traveller
+                train.RepositionRearTraveller();    // fix the rear traveller
             }
-
-            // and fix up the travellers
-            train2.RearTDBTraveller = new Traveller(train.RearTDBTraveller);
-            train2.CalculatePositionOfCars(0);  // fix the front traveller
-            train.RepositionRearTraveller();    // fix the rear traveller
 
             Trains.Add(train2);
 

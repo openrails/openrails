@@ -1111,7 +1111,7 @@ namespace ORTS
             SmokeColor.Update(elapsedClockSeconds, MathHelper.Clamp((RadiationSteamLossLBpS + BlowerBurnEffect + DamperBurnEffect) / PreviousTotalSteamUsageLBpS - 0.2f, 0.25f, 1));
 
             // Variable1 is proportional to angular speed, value of 10 means 1 rotation/second.
-            Variable1 = (Simulator.UseAdvancedAdhesion && Train.TrainType == ORTS.Train.TRAINTYPE.PLAYER ? LocomotiveAxle.AxleSpeedMpS : SpeedMpS) / DriverWheelRadiusM / MathHelper.Pi * 5;
+            Variable1 = (Simulator.UseAdvancedAdhesion && Train.IsPlayerDriven ? LocomotiveAxle.AxleSpeedMpS : SpeedMpS) / DriverWheelRadiusM / MathHelper.Pi * 5;
             Variable2 = MathHelper.Clamp((CylinderPressurePSI - OneAtmospherePSI) / BoilerPressurePSI * 100f, 0, 100);
             Variable3 = FuelRateSmooth * 100;
 
@@ -1966,9 +1966,11 @@ namespace ORTS
             switch (this.Train.TrainType)
             {
                 case Train.TRAINTYPE.AI:
+                case Train.TRAINTYPE.AI_PLAYERHOSTING:
                 case Train.TRAINTYPE.STATIC:
                     break;
                 case Train.TRAINTYPE.PLAYER:
+                case Train.TRAINTYPE.AI_PLAYERDRIVEN:
                 case Train.TRAINTYPE.REMOTE:
                     LimitMotiveForce(elapsedClockSeconds);
                     break;
@@ -3307,6 +3309,38 @@ namespace ORTS
 			Injector2Controller.CurrentValue = I2;
 			Injector2Controller.UpdateValue = 0.0f;
 		}
+
+        public override void SwitchToPlayerControl()
+        {
+            if (Train.MUReverserPercent == 100)
+            {
+                Train.MUReverserPercent = 25;
+                if ((Flipped ^ UsingRearCab)) CutoffController.SetValue(-0.25f);
+                else CutoffController.SetValue(0.25f);
+
+            }
+            else if (Train.MUReverserPercent == -100)
+            {
+                Train.MUReverserPercent = -25;
+                if ((Flipped ^ UsingRearCab)) CutoffController.SetValue(0.25f);
+                else CutoffController.SetValue(-0.25f);
+
+            }
+            base.SwitchToPlayerControl();
+        }
+
+        public override void SwitchToAutopilotControl()
+        {
+            if (Train.MUDirection == Direction.Forward)
+            {
+                Train.MUReverserPercent = 100;
+            }
+            else if (Train.MUDirection == Direction.Reverse)
+            {
+                Train.MUReverserPercent = -100;
+            }
+            base.SwitchToAutopilotControl();
+        }
 
     } // class SteamLocomotive
 }

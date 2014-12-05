@@ -495,6 +495,8 @@ namespace ORTS
         /// </summary>
         public float SlipWarningTresholdPercent { set; get; }
 
+        public double ResetTime = 0;
+
         /// <summary>
         /// Nonparametric constructor of Axle class instance
         /// - sets motor parameter to null
@@ -736,6 +738,7 @@ namespace ORTS
         /// <param name="initValue">Initial condition</param>
         public void Reset(float initValue)
         {
+            ResetTime = Program.Simulator.GameTime;
             AxleRevolutionsInt.InitialCondition = initValue;
             AxleRevolutionsInt.Reset();
             AxleRevolutionsInt.InitialCondition = 0.0f;

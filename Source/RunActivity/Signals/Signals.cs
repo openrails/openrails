@@ -3763,7 +3763,8 @@ namespace ORTS
                             int nextPinIndex = nextSection.Pins[(nextDirection == 0 ? 1 : 0), 0].Link == thisIndex ? 0 : 1;
                             if (nextPinDirection == 1 && nextSection.JunctionLastRoute != nextPinIndex)
                             {
-                                if (nextSection.AILock && thisTrain != null && thisTrain.TrainType == Train.TRAINTYPE.AI)
+                                if (nextSection.AILock && thisTrain != null && (thisTrain.TrainType == Train.TRAINTYPE.AI
+                                    || thisTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING))
                                 {
                                     endOfRoute = true;
                                 }
@@ -4970,8 +4971,8 @@ namespace ORTS
                 }
             }
             else if (!Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility &&
-                thisTrain.Train.TrainType == Train.TRAINTYPE.PLAYER && thisTrain.Train.DistanceTravelledM == 0.0 &&
-                thisTrain.Train.TCRoute != null && thisTrain.Train.TCRoute.activeSubpath == 0) // We are at initial placement
+                thisTrain.Train.IsPlayerDriven && thisTrain.Train.DistanceTravelledM == 0.0  &&
+                thisTrain.Train.TCRoute != null && thisTrain.Train.ValidRoute[0] != null && thisTrain.Train.TCRoute.activeSubpath == 0) // We are at initial placement
                 // Check if section is under train, and therefore can be unreserved from other trains
             {
                 int thisRouteIndex = thisTrain.Train.ValidRoute[0].GetRouteIndex(Index, 0);
@@ -5356,7 +5357,8 @@ namespace ORTS
                 {
                     if (Program.Simulator.TimetableMode || !Program.Simulator.Settings.EnhancedActCompatibility)
                         distanceToClear = thisTrain.Train.DistanceTravelledM + Length + Convert.ToSingle(Overlap) + thisTrain.Train.standardOverlapM;
-                    else if (thisTrain.Train.TrainType == Train.TRAINTYPE.AI && thisTrain.Train.PresentPosition[0].TCSectionIndex == Pins[0, 0].Link)
+                    else if ((thisTrain.Train.TrainType == Train.TRAINTYPE.AI || thisTrain.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING) 
+                        && thisTrain.Train.PresentPosition[0].TCSectionIndex == Pins[0, 0].Link)
                         // if the switch is now facing the back of the train, overlap can be quite small
                         distanceToClear = thisTrain.Train.DistanceTravelledM + Length + 5;
                     else

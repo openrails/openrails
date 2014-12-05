@@ -291,6 +291,7 @@ namespace ORTS
         public bool AutoClutch = true;
 
         public GearBoxOperation GearBoxOperation = GearBoxOperation.Manual;
+        public GearBoxOperation OriginalGearBoxOperation = GearBoxOperation.Manual;
 
         public float MotiveForceN
         {
@@ -348,6 +349,7 @@ namespace ORTS
                     Gears[i].Ratio = mstsParams.GearBoxMaxSpeedForGearsMpS[i] / DieselEngine.MaxRPM;
                 }
                 GearBoxOperation = mstsParams.GearBoxOperation;
+                OriginalGearBoxOperation = mstsParams.GearBoxOperation;
             }
 
         }      

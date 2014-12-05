@@ -540,6 +540,22 @@ namespace MSTS.Formats
             });
         }
 
+        // This is used to convert the player traffic definition into an AI train service definition for autopilot mode
+        public Service_Definition(string service_Definition, Player_Traffic_Definition player_Traffic_Definition)
+        {
+            Name = service_Definition;
+            Time = player_Traffic_Definition.Time;
+            UiD = 0;
+            foreach (Player_Traffic_Item player_Traffic_Item in player_Traffic_Definition.Player_Traffic_List)
+            {
+                efficiency = 0.95f; // Not present in player traffic definition
+                distanceDownPath = player_Traffic_Item.DistanceDownPath;
+                platformStartID = player_Traffic_Item.PlatformStartID;
+                skipCount = 0;
+                ServiceList.Add(new Service_Item(efficiency, skipCount, distanceDownPath, platformStartID));
+            }
+        }
+
         //================================================================================================//
         /// <summary>
         /// For restore

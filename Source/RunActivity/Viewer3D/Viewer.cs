@@ -324,6 +324,11 @@ namespace ORTS.Viewer3D
 
             if (PlayerLocomotive == null) PlayerLocomotive = Simulator.InitialPlayerLocomotive();
             SelectedTrain = PlayerTrain;
+            if (PlayerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
+            {
+                Simulator.Trains[0].LeadLocomotive = null;
+                Simulator.Trains[0].LeadLocomotiveIndex = -1;           
+            }
 
             TextureManager = new SharedTextureManager(this, GraphicsDevice);
             MaterialManager = new SharedMaterialManager(this);
@@ -836,6 +841,24 @@ namespace ORTS.Viewer3D
 
                 }
             }
+            if (UserInput.IsPressed(UserCommands.GameAutopilotMode))
+            {
+                if (PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
+                {
+                    var success = ((AITrain)PlayerLocomotive.Train).SwitchToPlayerControl();
+                    if (success) Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer.Catalog.GetString("Switched to player control"));
+                }
+                else if (PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN)
+                {
+                    if (PlayerLocomotive.Train.ControlMode == Train.TRAIN_CONTROL.MANUAL)
+                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("You can't switch from manual to autopilot mode"));
+                    else
+                    {
+                        var success = ((AITrain)PlayerLocomotive.Train).SwitchToAutopilotControl();
+                        if (success) Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer.Catalog.GetString("Switched to autopilot"));
+                    }
+                }
+             }
 
             if (UserInput.IsPressed(UserCommands.DebugDumpKeymap))
             {

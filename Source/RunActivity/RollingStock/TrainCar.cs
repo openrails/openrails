@@ -95,7 +95,8 @@ namespace ORTS
 
         // instance variables set by train physics when it creates the traincar
         public Train Train;  // the car is connected to this train
-        public bool IsPlayerTrain { get { return Train.TrainType == ORTS.Train.TRAINTYPE.PLAYER ? true : false; } set { } }
+//        public bool IsPlayerTrain { get { return Train.TrainType == ORTS.Train.TRAINTYPE.PLAYER ? true : false; } set { } }
+        public bool IsPlayerTrain { get { return Train.IsPlayerDriven; } set { } }
         public bool Flipped; // the car is reversed in the consist
         public int UiD;
         public string CarID = "AI"; //CarID = "0 - UID" if player train, "ActivityID - UID" if loose consist, "AI" if AI train
@@ -184,8 +185,8 @@ namespace ORTS
         {
             //TODO: following code lines have been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
             // To achieve the same result with other means, without flipping trainset physics, the code lines probably should be changed
-            get { 
-                    if (IsDriveable && Train.TrainType == Train.TRAINTYPE.PLAYER)
+            get {
+                if (IsDriveable && Train.IsActualPlayerTrain)
                     {
                         var loco = this as MSTSLocomotive;
                         return Flipped ^ loco.UsingRearCab ? DirectionControl.Flip(Train.MUDirection) : Train.MUDirection;
@@ -195,7 +196,7 @@ namespace ORTS
                 } 
             set {
                     var loco = this as MSTSLocomotive;
-                    Train.MUDirection = Flipped ^ loco.UsingRearCab ? DirectionControl.Flip(value) : value;
+                    Train.MUDirection = Flipped ^ loco.UsingRearCab? DirectionControl.Flip(value) : value;
             }
                 }
         public BrakeSystem BrakeSystem;
@@ -271,7 +272,7 @@ namespace ORTS
             //TODO: next if block has been inserted to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
             // To achieve the same result with other means, without flipping trainset physics, the block should be deleted
             //      
-            if (IsDriveable && Train != null & Train.TrainType == Train.TRAINTYPE.PLAYER && (this as MSTSLocomotive).UsingRearCab)
+            if (IsDriveable && Train != null & Train.IsPlayerDriven && (this as MSTSLocomotive).UsingRearCab)
             {
                 GravityForceN = -GravityForceN;
                 CurrentElevationPercent = -CurrentElevationPercent;
@@ -392,7 +393,7 @@ namespace ORTS
                         {
                             IsMaxSafeCurveSpeed = true; // set flag for IsMaxEqualLoadSpeed reached
                            
-                          if (Train.TrainType == ORTS.Train.TRAINTYPE.PLAYER)   
+                          if (Train.IsPlayerDriven)   
                                 {
                                     if (Train.IsFreight)
                                         {
@@ -433,7 +434,7 @@ namespace ORTS
                         {
                             IsCriticalSpeed = true; // set flag for IsMaxEqualLoadSpeed reached
                             
-                            if (Train.TrainType == ORTS.Train.TRAINTYPE.PLAYER)
+                            if (Train.IsPlayerDriven)
                             {
                               Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Your train has overturned."));
                             }
@@ -1270,6 +1271,16 @@ namespace ORTS
                 OpenAL.alSourcefv(soundSourceID, OpenAL.AL_POSITION, position);
                 OpenAL.alSourcefv(soundSourceID, OpenAL.AL_VELOCITY, Velocity);
             }
+        }
+
+        public virtual void SwitchToPlayerControl()
+        {
+            return;
+        }
+
+        public virtual void SwitchToAutopilotControl()
+        {
+            return;
         }
     }
 

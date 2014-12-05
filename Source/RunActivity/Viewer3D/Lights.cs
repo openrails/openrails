@@ -210,8 +210,8 @@ namespace ORTS.Viewer3D
 
         bool UpdateState()
         {
-			Debug.Assert(Viewer.PlayerTrain.LeadLocomotive == Viewer.PlayerLocomotive, "PlayerTrain.LeadLocomotive must be PlayerLocomotive.");
-			var locomotive = Car.Train != null && Car.Train.LeadLocomotive != null ? Car.Train.LeadLocomotive : null;
+			Debug.Assert(Viewer.PlayerTrain.LeadLocomotive == Viewer.PlayerLocomotive ||Viewer.PlayerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING, "PlayerTrain.LeadLocomotive must be PlayerLocomotive.");
+			var locomotive = Car.Train != null && Car.Train.IsActualPlayerTrain ? Viewer.PlayerLocomotive : null;
 			var mstsLocomotive = locomotive as MSTSLocomotive;
 
             // Headlight

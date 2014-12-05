@@ -224,6 +224,7 @@ namespace ORTS
             checkBoxNoForcedRedAtStationStops.Checked = Settings.NoForcedRedAtStationStops;
             checkBoxConditionalLoadOfNightTextures.Checked = Settings.ConditionalLoadOfNightTextures;
             checkBoxExtendedAIShunting.Checked = Settings.ExtendedAIShunting;
+            checkBoxAutopilot.Checked = Settings.Autopilot;
 
             Initialized = true;
         }
@@ -397,6 +398,7 @@ namespace ORTS
             Settings.NoForcedRedAtStationStops =  checkBoxNoForcedRedAtStationStops.Checked;
             Settings.ConditionalLoadOfNightTextures = checkBoxConditionalLoadOfNightTextures.Checked;
             Settings.ExtendedAIShunting = checkBoxExtendedAIShunting.Checked;
+            Settings.Autopilot = checkBoxAutopilot.Checked;
 
             Settings.Save();
 

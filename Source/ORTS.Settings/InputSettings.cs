@@ -60,6 +60,7 @@ namespace ORTS.Settings
         [GetString("Game Clear Signal Backward")] GameClearSignalBackward,
         [GetString("Game Reset Signal Forward")] GameResetSignalForward,
         [GetString("Game Reset Signal Backward")] GameResetSignalBackward,
+        [GetString("Game Autopilot Mode")] GameAutopilotMode,
 
         [GetString("Display Next Window Tab")] DisplayNextWindowTab,
         [GetString("Display Help Window")] DisplayHelpWindow,
@@ -587,6 +588,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommands.DisplayTrackMonitorWindow] = new UserCommandKeyInput(0x3E);
             Commands[(int)UserCommands.DisplayTrainOperationsWindow] = new UserCommandKeyInput(0x43);
 
+            Commands[(int)UserCommands.GameAutopilotMode] = new UserCommandKeyInput(0x1E, KeyModifiers.Alt);
             Commands[(int)UserCommands.GameChangeCab] = new UserCommandKeyInput(0x12, KeyModifiers.Control);
             Commands[(int)UserCommands.GameClearSignalBackward] = new UserCommandKeyInput(0x0F, KeyModifiers.Shift);
             Commands[(int)UserCommands.GameClearSignalForward] = new UserCommandKeyInput(0x0F);

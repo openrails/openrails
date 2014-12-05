@@ -94,6 +94,27 @@ namespace MSTS.Formats
                 }),
             });
         }
+        // This is used to convert the player data taken from the .act file into a traffic service definition for autopilot mode
+        public Traffic_Service_Definition(string service_Definition, Player_Traffic_Definition player_Traffic_Definition)
+        {
+            var arrivalTime = 0;
+            var departTime = 0;
+            var skipCount = 0;
+            var distanceDownPath = 0F;
+            var platformStartID = 0;
+
+            Service_Definition = service_Definition;
+            Time = player_Traffic_Definition.Time;
+            foreach (Player_Traffic_Item player_Traffic_Item in player_Traffic_Definition.Player_Traffic_List)
+            {
+                arrivalTime = (int)player_Traffic_Item.ArrivalTime.TimeOfDay.TotalSeconds;
+                departTime = (int)player_Traffic_Item.DepartTime.TimeOfDay.TotalSeconds;
+                distanceDownPath = player_Traffic_Item.DistanceDownPath;
+                platformStartID = player_Traffic_Item.PlatformStartID;
+                TrafficDetails.Add(new Traffic_Traffic_Item(arrivalTime, departTime, skipCount, distanceDownPath, platformStartID));
+            }
+        }
+
     }
 
     public class Traffic_Traffic_Item

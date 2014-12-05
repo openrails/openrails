@@ -228,6 +228,8 @@ namespace ORTS.Settings
         public bool ConditionalLoadOfNightTextures { get; set; }
         [Default(false)]
         public bool ExtendedAIShunting { get; set; }
+        [Default(false)]
+        public bool Autopilot { get; set; }
 
 
         // Hidden settings:

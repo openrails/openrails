@@ -140,6 +140,7 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.checkBoxAutopilot = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -1162,6 +1163,7 @@
             // 
             // tabPageExperimental
             // 
+            this.tabPageExperimental.Controls.Add(this.checkBoxAutopilot);
             this.tabPageExperimental.Controls.Add(this.checkBoxExtendedAIShunting);
             this.tabPageExperimental.Controls.Add(this.checkBoxConditionalLoadOfNightTextures);
             this.tabPageExperimental.Controls.Add(this.checkBoxNoForcedRedAtStationStops);
@@ -1595,6 +1597,17 @@
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
             // 
+            // checkBoxAutopilot
+            // 
+            this.checkBoxAutopilot.AutoSize = true;
+            this.checkBoxAutopilot.ForeColor = System.Drawing.Color.Black;
+            this.checkBoxAutopilot.Location = new System.Drawing.Point(6, 286);
+            this.checkBoxAutopilot.Name = "checkBoxAutopilot";
+            this.checkBoxAutopilot.Size = new System.Drawing.Size(67, 17);
+            this.checkBoxAutopilot.TabIndex = 46;
+            this.checkBoxAutopilot.Text = "Autopilot";
+            this.checkBoxAutopilot.UseVisualStyleBackColor = true;
+            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -1763,5 +1776,6 @@
         private System.Windows.Forms.CheckBox checkBoxNoForcedRedAtStationStops;
         private System.Windows.Forms.CheckBox checkBoxConditionalLoadOfNightTextures;
         private System.Windows.Forms.CheckBox checkBoxExtendedAIShunting;
+        private System.Windows.Forms.CheckBox checkBoxAutopilot;
     }
 }
