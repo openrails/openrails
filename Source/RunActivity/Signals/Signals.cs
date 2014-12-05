@@ -7775,7 +7775,7 @@ namespace ORTS
                 if (sigHead.sigFunction == fn_type && sigHead.state >= sigAsp)
                 {
                     sigAsp = sigHead.state;
-                    if (sigAsp <= MstsSignalAspect.RESTRICTING)
+                    if (sigAsp <= MstsSignalAspect.RESTRICTING && sigHead.speed_info != null && sigHead.speed_info[(int)sigAsp] != null)
                     {
                         setNoReduction = sigHead.speed_info[(int)sigAsp].speed_noSpeedReduction == 1;
                     }
