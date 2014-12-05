@@ -441,10 +441,14 @@ namespace ORTS
                 if (!atStation)
                 {
                     if (StationStops.Count > 0)
-                    { 
-                               SetNextStationAction();               // set station details
+                    {
+                        SetNextStationAction();               // set station details
                     }
-                    MovementState = AI_MOVEMENT_STATE.INIT;   // start in STOPPED mode to collect info
+
+                    if (TrainHasPower())
+                    {
+                        MovementState = AI_MOVEMENT_STATE.INIT;   // start in STOPPED mode to collect info
+                    }
                 }
             }
 
@@ -755,7 +759,11 @@ namespace ORTS
 
             // update position, route clearance and objects
 
-            if (MovementState != AI_MOVEMENT_STATE.AI_STATIC)
+            if (MovementState == AI_MOVEMENT_STATE.AI_STATIC)
+            {
+                physicsUpdate(elapsedClockSeconds);   //required to make train visible                                                     // position update -required to ensure train is visible //
+            }
+            else
             {
                 if (!preUpdate)
                 {

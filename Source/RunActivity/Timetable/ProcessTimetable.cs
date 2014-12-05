@@ -819,6 +819,8 @@ namespace ORTS
 
                 // set name
                 AITrain.Name = Name + ":" + TTDescription;
+                AITrain.MovementState = ORTS.AITrain.AI_MOVEMENT_STATE.AI_STATIC;
+
                 Train.Name = Name + ":" + TTDescription;
 
                 // derive various directory paths
