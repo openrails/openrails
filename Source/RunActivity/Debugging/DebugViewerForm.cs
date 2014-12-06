@@ -824,7 +824,7 @@ namespace ORTS.Debugging
 						worldPos = t.Cars[0].WorldPosition;
 						name = GetTrainName(t.Cars[0].CarID);
 						if (t.TrainType == Train.TRAINTYPE.AI)
-							name = t.Name;
+							name = t.Number.ToString() + ":" +t.Name;
 						firstCar = t.Cars[0];
 					}
 					else continue;
