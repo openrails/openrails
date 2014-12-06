@@ -3817,6 +3817,7 @@ namespace ORTS
                 }
                 signalIndex.Add(endSignalIndex);
             }
+            insertSigDelegate = false;
             for (int iWait = 0; iWait <= TCRoute.WaitingPoints.Count - 1; iWait++)
             {
                 int[] waitingPoint = TCRoute.WaitingPoints[iWait];
