@@ -231,7 +231,7 @@ namespace ORTS.Viewer3D.Popups
         int[] eyePosition          = new int[5] {  42,  -4, -20, 24, 24 };
         int[] trainPosition        = new int[5] {  42, -12, -12, 24, 24 }; // Relative positioning
         int[] otherTrainPosition   = new int[5] {  42, -24,   0, 24, 24 }; // Relative positioning
-        int[] stationPosition      = new int[5] {  42,   0, -24, 24, 24 }; // Relative positioning
+        int[] stationPosition      = new int[5] {  42,   0, -24, 24, 12 }; // Relative positioning
         int[] reversalPosition     = new int[5] {  42, -21,  -3, 24, 24 }; // Relative positioning
         int[] endAuthorityPosition = new int[5] {  42, -14, -10, 24, 24 }; // Relative positioning
         int[] signalPosition       = new int[5] { 134, -16,   0, 16, 16 }; // Relative positioning
@@ -741,7 +741,8 @@ namespace ORTS.Viewer3D.Popups
             {
                 var itemOffset = Convert.ToInt32(thisItem.DistanceToTrainM * distanceFactor);
                 var itemLocation = forward ? zeroPoint - itemOffset : zeroPoint + itemOffset;
-                var markerPlacement = new Rectangle(offset.X + stationPosition[0], offset.Y + itemLocation + stationPosition[forward ? 1 : 2], stationPosition[3], stationPosition[4]);
+                var startOfPlatform = (int)Math.Max(stationPosition[4], thisItem.StationPlatformLength * distanceFactor);
+                var markerPlacement = new Rectangle(offset.X + stationPosition[0], offset.Y + itemLocation + stationPosition[forward ? 1 : 2], stationPosition[3], startOfPlatform);
                 spriteBatch.Draw(TrackMonitorImages, markerPlacement, displayItem, Color.White);
             }
 

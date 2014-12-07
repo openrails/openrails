@@ -11525,7 +11525,7 @@ namespace ORTS
                 (!maxAuthSet || StationStops[0].DistanceToTrainM < DistanceToEndNodeAuthorityM[0]) &&
                 StationStops[0].SubrouteIndex == TCRoute.activeSubpath)
             {
-                TrainObjectItem nextItem = new TrainObjectItem(StationStops[0].DistanceToTrainM);
+                TrainObjectItem nextItem = new TrainObjectItem(StationStops[0].DistanceToTrainM, (int)StationStops[0].PlatformItem.Length);
                 thisInfo.ObjectInfoForward.Add(nextItem);
             }
 
@@ -17648,6 +17648,7 @@ namespace ORTS
             public float AllowedSpeedMpS;
             public float DistanceToTrainM;
             public bool Enabled;
+            public int StationPlatformLength;
 
             // field validity :
             // if ItemType == SIGNAL :
@@ -17699,13 +17700,14 @@ namespace ORTS
             }
 
             // Constructor for Station
-            public TrainObjectItem(float thisDistanceM)
+            public TrainObjectItem(float thisDistanceM, int thisPlatformLength)
             {
                 ItemType = TRAINOBJECTTYPE.STATION;
                 AuthorityType = END_AUTHORITY.NO_PATH_RESERVED;
                 SignalState = TrackMonitorSignalAspect.Clear_2;
                 AllowedSpeedMpS = -1;
                 DistanceToTrainM = thisDistanceM;
+                StationPlatformLength = thisPlatformLength;
             }
 
             // Constructor for Reversal
