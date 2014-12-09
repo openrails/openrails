@@ -4970,7 +4970,7 @@ namespace ORTS
                 }
             }
             else if (!Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility &&
-                thisTrain.Train.IsPlayerDriven && thisTrain.Train.DistanceTravelledM == 0.0  &&
+                thisTrain.Train.IsPlayerDriven && thisTrain.Train.ControlMode != Train.TRAIN_CONTROL.MANUAL && thisTrain.Train.DistanceTravelledM == 0.0 &&
                 thisTrain.Train.TCRoute != null && thisTrain.Train.ValidRoute[0] != null && thisTrain.Train.TCRoute.activeSubpath == 0) // We are at initial placement
                 // Check if section is under train, and therefore can be unreserved from other trains
             {
