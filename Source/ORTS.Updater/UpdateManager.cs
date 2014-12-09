@@ -41,6 +41,8 @@ namespace ORTS.Updater
         public const string RelaunchCommandLine = "/RELAUNCH=";
         public const string ElevationCommandLine = "/ELEVATE=";
 
+        const string TemporaryDirectoryName = "Open Rails Updater Temporary Files";
+
         public event EventHandler<ProgressChangedEventArgs> ApplyProgressChanged;
 
         readonly string BasePath;
@@ -153,6 +155,9 @@ namespace ORTS.Updater
                     return;
                 }
 
+                // Clean up any remaining bits from the just-applied update.
+                CleanDirectories();
+
                 // Fetch the update URL (adding ?force=true if forced) and cache the update/error.
                 var client = new WebClient()
                 {
@@ -196,6 +201,8 @@ namespace ORTS.Updater
 
         public void Apply()
         {
+            if (LastUpdate == null) throw new InvalidOperationException("There is no update to apply.");
+
             TriggerApplyProgressChanged(0);
             try
             {
@@ -273,7 +280,9 @@ namespace ORTS.Updater
         }
 
         string PathUpdateTest { get { return Path.Combine(BasePath, "UpdateTest"); } }
-        string PathUpdateTemp { get { return Path.Combine(Path.GetTempPath(), "Open Rails"); } }
+        // The temporary path is always on the same drive as the base path - this avoids problems with moving files
+        // and directories across drives (in-use files and all directories will fail otherwise).
+        string PathUpdateTemp { get { return Path.Combine(Path.GetPathRoot(BasePath), TemporaryDirectoryName); } }
         string PathUpdateDirty { get { return Path.Combine(PathUpdateTemp, "UpdateDirty"); } }
         string PathUpdateStage { get { return Path.Combine(PathUpdateTemp, "UpdateStage"); } }
         string FileUpdateStage { get { return Path.Combine(PathUpdateStage, "Update.zip"); } }
@@ -289,11 +298,8 @@ namespace ORTS.Updater
 
         void CleanDirectories()
         {
-            if (Directory.Exists(PathUpdateDirty))
-                Directory.Delete(PathUpdateDirty, true);
-
-            if (Directory.Exists(PathUpdateStage))
-                Directory.Delete(PathUpdateStage, true);
+            if (Directory.Exists(PathUpdateTemp))
+                Directory.Delete(PathUpdateTemp, true);
         }
 
         void DownloadUpdate(int progressMin, int progressLength)
@@ -394,7 +400,7 @@ namespace ORTS.Updater
         void ApplyUpdate()
         {
             var basePathFiles = Directory.GetFiles(BasePath).Where(file => !file.Equals(FileSettings, StringComparison.OrdinalIgnoreCase)).ToArray();
-            var basePathDirectories = Directory.GetDirectories(BasePath).Where(directory => !directory.Equals(PathUpdateDirty, StringComparison.OrdinalIgnoreCase) && !directory.Equals(PathUpdateStage, StringComparison.OrdinalIgnoreCase)).ToArray();
+            var basePathDirectories = Directory.GetDirectories(BasePath);
             var updateStageFiles = Directory.GetFiles(PathUpdateStage);
             var updateStageDirectories = Directory.GetDirectories(PathUpdateStage);
 
