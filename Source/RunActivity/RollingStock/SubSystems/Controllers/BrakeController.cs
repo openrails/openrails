@@ -304,16 +304,14 @@ namespace ORTS
                 return 0;
         }
 
-        public void UpdatePressure(ref float pressurePSI, float elapsedClockSeconds, ref float epPressurePSI)
+        public void UpdatePressure(ref float pressurePSI, float elapsedClockSeconds, ref float epControllerState)
         {
             if (Script != null)
             {
                 // Conversion is needed until the pressures of the brake system are converted to bar.
                 float pressureBar = Bar.FromPSI(pressurePSI);
-                float epPressureBar = Bar.FromPSI(epPressurePSI);
-                Script.UpdatePressure(ref pressureBar, elapsedClockSeconds, ref epPressureBar);
+                Script.UpdatePressure(ref pressureBar, elapsedClockSeconds, ref epControllerState);
                 pressurePSI = Bar.ToPSI(pressureBar);
-                epPressurePSI = Bar.ToPSI(epPressureBar);
             }
         }
 

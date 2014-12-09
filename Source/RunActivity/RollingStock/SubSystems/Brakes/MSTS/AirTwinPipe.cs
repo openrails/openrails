@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -25,132 +25,21 @@ namespace ORTS
         public AirTwinPipe(TrainCar car)
             : base(car)
         {
+            TwoPipes = true;
+            DebugType = "2P";
             (Car as MSTSWagon).DistributorPresent = true;
+            (Car as MSTSWagon).EmergencyReservoirPresent = false;
         }
 
-        public override void Update(float elapsedClockSeconds)
+        public override void UpdateTripleValveState(float controlPressurePSI)
         {
-            if (BleedOffValveOpen)
-            {
-                if (AutoCylPressurePSI < 0.01f && AuxResPressurePSI < 0.01f && BrakeLine1PressurePSI < 0.01f)
-                {
-                    BleedOffValveOpen = false;
-                }
-                else
-                {
-                    AutoCylPressurePSI -= elapsedClockSeconds * MaxReleaseRatePSIpS;
-                    if (AutoCylPressurePSI < 0)
-                        AutoCylPressurePSI = 0;
-                }
-            }
-            
-            ValveState prevTripleValueState = TripleValveState;
-            float threshold = RetainerPressureThresholdPSI;
-
-            // Emergency reservoir's second role (only here, in OpenRails) is to act as a control reservoir, maintaining a reference pressure.
-            // Thus this pressure must be set even in brake systems ER not present otherwise. It just stays static in this case.
-            float t = (EmergResPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio;
-            if (threshold < t)
-                threshold = t;
-            if (AutoCylPressurePSI > threshold)
-            {
+            if (controlPressurePSI < AutoCylPressurePSI - (TripleValveState != ValveState.Release ? 2.2f : 0f) 
+                || controlPressurePSI < 2.2f) // The latter is a UIC regulation (0.15 bar)
                 TripleValveState = ValveState.Release;
-                AutoCylPressurePSI -= elapsedClockSeconds * ReleaseRatePSIpS;
-                if (AutoCylPressurePSI < threshold)
-                    AutoCylPressurePSI = threshold;
-            }
-            else if (AutoCylPressurePSI < threshold)
-            {
+            else if (controlPressurePSI > AutoCylPressurePSI + (TripleValveState != ValveState.Apply ? 2.2f : 0f))
                 TripleValveState = ValveState.Apply;
-                float dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
-                if (AuxResPressurePSI - dp / AuxCylVolumeRatio < AutoCylPressurePSI + dp)
-                    dp = (AuxResPressurePSI - AutoCylPressurePSI) * AuxCylVolumeRatio / (1 + AuxCylVolumeRatio);
-                if (threshold < AutoCylPressurePSI + dp)
-                    dp = threshold - AutoCylPressurePSI;
-                AuxResPressurePSI -= dp / AuxCylVolumeRatio;
-                AutoCylPressurePSI += dp;
-            }
             else
                 TripleValveState = ValveState.Lap;
-            if ((Car as MSTSWagon).EmergencyReservoirPresent)
-            {
-                if (BrakeLine1PressurePSI > EmergResPressurePSI)
-                {
-                    float dp = elapsedClockSeconds * EmergResChargingRatePSIpS;
-                    if (EmergResPressurePSI + dp > BrakeLine1PressurePSI - dp * EmergAuxVolumeRatio * AuxBrakeLineVolumeRatio)
-                        dp = (BrakeLine1PressurePSI - EmergResPressurePSI) / (1 + EmergAuxVolumeRatio * AuxBrakeLineVolumeRatio);
-                    EmergResPressurePSI += dp;
-                    BrakeLine1PressurePSI -= dp * EmergAuxVolumeRatio * AuxBrakeLineVolumeRatio;
-                    TripleValveState = ValveState.Release;
-                }
-            }
-            if (BrakeLine2PressurePSI > BrakeLine1PressurePSI && AuxResPressurePSI < BrakeLine2PressurePSI)
-            {
-                float dp = elapsedClockSeconds * MaxAuxilaryChargingRatePSIpS;
-                if (AuxResPressurePSI + dp > BrakeLine2PressurePSI - dp * AuxBrakeLineVolumeRatio)
-                    dp = (BrakeLine2PressurePSI - AuxResPressurePSI) / (1 + AuxBrakeLineVolumeRatio);
-                AuxResPressurePSI += dp;
-                BrakeLine2PressurePSI -= dp * AuxBrakeLineVolumeRatio;
-            }
-            else if (AuxResPressurePSI < BrakeLine1PressurePSI)
-            {
-                float dp = elapsedClockSeconds * MaxAuxilaryChargingRatePSIpS;
-                if (AuxResPressurePSI + dp > BrakeLine1PressurePSI - dp * AuxBrakeLineVolumeRatio)
-                    dp = (BrakeLine1PressurePSI - AuxResPressurePSI) / (1 + AuxBrakeLineVolumeRatio);
-                AuxResPressurePSI += dp;
-                BrakeLine1PressurePSI -= dp * AuxBrakeLineVolumeRatio;
-            }
-            if (TripleValveState != prevTripleValueState)
-            {
-                switch (TripleValveState)
-                {
-                    case ValveState.Release: Car.SignalEvent(Event.TrainBrakePressureIncrease); break;
-                    case ValveState.Apply:
-                    case ValveState.Emergency: Car.SignalEvent(Event.TrainBrakePressureDecrease); break;
-                }
-            }
-            if (BrakeLine3PressurePSI >= 1000)
-            {
-                BrakeLine3PressurePSI -= 1000;
-                AutoCylPressurePSI -= MaxReleaseRatePSIpS * elapsedClockSeconds;
-            }
-            if (AutoCylPressurePSI < 0)
-                AutoCylPressurePSI = 0;
-            if (AutoCylPressurePSI < BrakeLine3PressurePSI)
-                CylPressurePSI = BrakeLine3PressurePSI;
-            else
-                CylPressurePSI = AutoCylPressurePSI;
-            float f = MaxBrakeForceN * Math.Min(CylPressurePSI / MaxCylPressurePSI, 1);
-            if (f < MaxHandbrakeForceN * HandbrakePercent / 100)
-                f = MaxHandbrakeForceN * HandbrakePercent / 100;
-            Car.BrakeForceN = f;
-            //Car.FrictionForceN += f;
-        }
-
-        public override string[] GetDebugStatus(PressureUnit unit)
-        {
-            var rv = new string[12];
-            rv[0] = "2P";
-            rv[1] = string.Format("BC {0}", FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, unit, false));
-            rv[2] = string.Format("BP {0}", FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, unit, false));
-            rv[3] = string.Format("AR {0}", FormatStrings.FormatPressure(AuxResPressurePSI, PressureUnit.PSI, unit, false));
-            rv[4] = (Car as MSTSWagon).EmergencyReservoirPresent ? string.Format("ER {0}", FormatStrings.FormatPressure(EmergResPressurePSI, PressureUnit.PSI, unit, false)) : string.Empty;
-            rv[5] = string.Format("MRP {0}", FormatStrings.FormatPressure(BrakeLine2PressurePSI, PressureUnit.PSI, unit, false));
-            rv[6] = string.Format("State {0}", TripleValveState);
-            rv[7] = string.Empty; // Spacer because the state above needs 2 columns.
-            rv[8] = HandbrakePercent > 0 ? string.Format("Handbrake {0:F0}%", HandbrakePercent) : string.Empty;
-            rv[9] = FrontBrakeHoseConnected ? "I" : "T";
-            rv[10] = string.Format("AC A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-");
-            rv[11] = BleedOffValveOpen ? "BleedOff" : string.Empty;
-            return rv;
-        }
-        public override void PropagateBrakePressure(float elapsedClockSeconds)
-        {
-            MSTSLocomotive lead = (MSTSLocomotive)Car.Train.LeadLocomotive;
-            if (lead == null)
-                SetUniformBrakePressures();
-            else
-                PropagateBrakeLinePressures(elapsedClockSeconds, lead, true);
         }
     }
 }

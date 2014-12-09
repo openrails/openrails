@@ -43,6 +43,10 @@ namespace ORTS
         /// Auxiliary brake reservoir vent valve open/closed status
         /// </summary>
         public bool BleedOffValveOpen;
+        /// <summary>
+        /// Indicates whether the main reservoir pipe is available
+        /// </summary>
+        public bool TwoPipes { get; protected set; }
 
         public abstract void AISetPercent(float percent);
 

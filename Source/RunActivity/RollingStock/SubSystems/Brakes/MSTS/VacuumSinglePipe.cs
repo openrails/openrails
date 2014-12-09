@@ -300,6 +300,11 @@ namespace ORTS
 
         public override void SetHandbrakePercent(float percent)
         {
+            if (!(Car as MSTSWagon).HandBrakePresent)
+            {
+                HandbrakePercent = 0;
+                return;
+            }
             if (percent < 0) percent = 0;
             if (percent > 100) percent = 100;
             HandbrakePercent = percent;

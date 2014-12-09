@@ -1224,8 +1224,12 @@ namespace ORTS
             train2.UncoupledFrom = train;
             train2.SpeedMpS = train.SpeedMpS;
             train2.Cars[0].BrakeSystem.FrontBrakeHoseConnected = false;
-            train2.AITrainBrakePercent = train.AITrainBrakePercent;
             train2.AITrainDirectionForward = train.AITrainDirectionForward;
+
+            // It is an action, not just a simple copy, thus don't do it if the train is driven by the player:
+            if (PlayerLocomotive == null)
+                train2.AITrainBrakePercent = train.AITrainBrakePercent;
+
             if ((PlayerLocomotive != null && PlayerLocomotive.Train == train2 || !keepFront))
             {
                 train2.AITrainThrottlePercent = train.AITrainThrottlePercent;

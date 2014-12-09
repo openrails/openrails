@@ -68,8 +68,10 @@ namespace ORTS
             return value;
         }
 
-        public override void UpdatePressure(ref float pressureBar, float elapsedClockSeconds, ref float epPressureBar)
+        public override void UpdatePressure(ref float pressureBar, float elapsedClockSeconds, ref float epControllerState)
         {
+            var epState = -1f;
+
             if (EmergencyBrakingPushButton() || TCSEmergencyBraking())
             {
                 pressureBar -= EmergencyRateBarpS() * elapsedClockSeconds;
@@ -90,27 +92,24 @@ namespace ORTS
                 }
                 else
                 {
+                    epState = 0;
                     float x = NotchController.GetNotchFraction();
                     switch (notch.Type)
                     {
                         case ControllerState.Release:
                             pressureBar += x * ReleaseRateBarpS() * elapsedClockSeconds;
-                            epPressureBar -= x * ReleaseRateBarpS() * elapsedClockSeconds;
+                            epState = -1;
                             break;
                         case ControllerState.FullQuickRelease:
                             pressureBar += x * QuickReleaseRateBarpS() * elapsedClockSeconds;
-                            epPressureBar -= x * QuickReleaseRateBarpS() * elapsedClockSeconds;
+                            epState = -1;
                             break;
                         case ControllerState.Apply:
                         case ControllerState.FullServ:
                             pressureBar -= x * ApplyRateBarpS() * elapsedClockSeconds;
                             break;
                         case ControllerState.EPApply:
-                            pressureBar += x * ReleaseRateBarpS() * elapsedClockSeconds;
-                            if (notch.Smooth)
-                                IncreasePressure(ref epPressureBar, x * FullServReductionBar(), ApplyRateBarpS(), elapsedClockSeconds);
-                            else
-                                epPressureBar += x * ApplyRateBarpS() * elapsedClockSeconds;
+                            epState = x;
                             break;
                         case ControllerState.GSelfLapH:
                         case ControllerState.Suppression:
@@ -128,6 +127,7 @@ namespace ORTS
                             x *= MaxPressureBar() - FullServReductionBar();
                             IncreasePressure(ref pressureBar, x, ReleaseRateBarpS(), elapsedClockSeconds);
                             DecreasePressure(ref pressureBar, x, ApplyRateBarpS(), elapsedClockSeconds);
+                            epState = -1;
                             break;
                     }
                 }
@@ -137,10 +137,7 @@ namespace ORTS
                 pressureBar = MaxPressureBar();
             if (pressureBar < 0)
                 pressureBar = 0;
-            if (epPressureBar > MaxPressureBar())
-                epPressureBar = MaxPressureBar();
-            if (epPressureBar < 0)
-                epPressureBar = 0;
+            epControllerState = epState;
         }
 
         public override void UpdateEngineBrakePressure(ref float pressureBar, float elapsedClockSeconds)

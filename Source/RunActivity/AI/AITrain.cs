@@ -3907,7 +3907,7 @@ namespace ORTS
             float fullServReductionPSI = -5;
             float max = maxPressurePSI;
             float fullServ = fullServPressurePSI;
-            BrakeLine3PressurePSI = BrakeLine4PressurePSI = 0;
+            BrakeLine3PressurePSI = BrakeLine4 = 0;
             if (FirstCar != null && FirstCar.BrakeSystem is VacuumSinglePipe)
             {
                 max = maxPressurePSIVacuum;
