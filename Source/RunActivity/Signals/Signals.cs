@@ -256,7 +256,6 @@ namespace ORTS
                                     " ; NextTC : " + thisSignal.TCNextTC +
                                     " ; TN : " + thisSignal.trackNode);
                             }
-
                             if (thisSignal.TCReference < 0) // signal is not on any track - remove it!
                             {
                                 Trace.TraceInformation("Signal removed " + thisSignal.thisRef +
@@ -6469,7 +6468,7 @@ namespace ORTS
             {
                 if (startTCSectionIndex == signalRef.TrackCircuitList[trainRouted.Train.ValidRoute[0][iindex].TCSectionIndex]) 
                 {
-                    startindex = iindex + 1;
+                    startindex = iindex+1;
                     break;
                 }
             }
@@ -6481,6 +6480,18 @@ namespace ORTS
                         break;
                     thisSection.UnreserveTrain(trainRouted, true);
                 }
+//                signalRef.BreakDownRouteList(trainRouted.Train.ValidRoute[trainRouted.TrainRouteDirectionIndex], startindex-1, trainRouted);
+            // Reset signal behind new train
+            for (int iindex = startindex-2; iindex >= trainRouted.Train.PresentPosition[0].RouteListIndex; iindex--)
+            {
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[trainRouted.Train.ValidRoute[trainRouted.TrainRouteDirectionIndex][iindex].TCSectionIndex];
+                SignalObject thisSignal = thisSection.EndSignals[trainRouted.Train.ValidRoute[trainRouted.TrainRouteDirectionIndex][iindex].Direction];
+                if (thisSignal != null)
+                {
+                    thisSignal.ResetSignal(false);
+                    break;
+                }
+            }
         }
 
         //================================================================================================//

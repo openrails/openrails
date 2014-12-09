@@ -1584,6 +1584,7 @@ namespace ORTS
         internal AITrain.AI_MOVEMENT_STATE UpdateStoppedState()      //  SPA:    Change private to internal, used by new AIActionItems
         {
             var AuxActionnextActionInfo = nextActionInfo;
+            var tryBraking = true;
             if (SpeedMpS > 0)   // if train still running force it to stop
             {
                 SpeedMpS = 0;
@@ -1762,6 +1763,7 @@ namespace ORTS
                         MovementState = AI_MOVEMENT_STATE.ACCELERATING;
                         StartMoving(AI_START_MOVEMENT.PATH_ACTION);
                     }
+                    else tryBraking = false;
 /*                    else if (IsActualPlayerTrain && NextSignalObject[0].hasPermission == SignalObject.Permission.Granted)
                     {
                         MovementState = AI_MOVEMENT_STATE.ACCELERATING;
@@ -1849,7 +1851,7 @@ namespace ORTS
                     }
                 }
             }
-            if (AuxActionnextActionInfo != null && MovementState == AI_MOVEMENT_STATE.STOPPED)   // && ControlMode == TRAIN_CONTROL.AUTO_NODE)
+            if (AuxActionnextActionInfo != null && MovementState == AI_MOVEMENT_STATE.STOPPED && tryBraking && distanceToSignal > clearingDistanceM)   // && ControlMode == TRAIN_CONTROL.AUTO_NODE)
             {
                 MovementState = AI_MOVEMENT_STATE.BRAKING;
             }
@@ -3745,12 +3747,13 @@ namespace ORTS
 
         public override void BuildWaitingPointList(float clearingDistanceM)
         {
-            bool insertSigDelegate = false;
+            bool insertSigDelegate;
             // loop through all waiting points - back to front as the processing affects the actual routepaths
 
             List<int> signalIndex = new List<int>();
             for (int iWait = 0; iWait <= TCRoute.WaitingPoints.Count - 1; iWait++)
             {
+                insertSigDelegate = false;
                 int[] waitingPoint = TCRoute.WaitingPoints[iWait];
 
                 //check if waiting point is in existing subpath
@@ -3776,6 +3779,7 @@ namespace ORTS
 
                 bool endSectionFound = false;
                 int endSignalIndex = -1;
+                float distanceToEndOfWPSection = 0;
 
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisRoute[routeIndex].TCSectionIndex];
                 TrackCircuitSection nextSection =
@@ -3814,8 +3818,17 @@ namespace ORTS
                         lastIndex = nextIndex - 1;
                     }
                     nextIndex++;
+                    if (nextSection != null) distanceToEndOfWPSection += nextSection.Length;
                 }
                 signalIndex.Add(endSignalIndex);
+                // move backwards WPs within clearingDistanceM
+                for (int rWP = iWait; insertSigDelegate && signalIndex[iWait] != -1 && rWP >= 0 ; rWP--)
+                {
+                    int[] currWP = TCRoute.WaitingPoints[rWP];
+                    if (currWP[1] != thisSection.Index || currWP[5] < (int)( thisSection.Length + distanceToEndOfWPSection- clearingDistanceM - 1)) break;
+                    currWP[5] = (int)(thisSection.Length + distanceToEndOfWPSection - clearingDistanceM - 1);
+                }
+                
             }
             insertSigDelegate = false;
             for (int iWait = 0; iWait <= TCRoute.WaitingPoints.Count - 1; iWait++)
