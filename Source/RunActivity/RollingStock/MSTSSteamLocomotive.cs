@@ -300,7 +300,7 @@ namespace ORTS
         float OneAtmospherePSI = 14.696f;      // Atmospheric Pressure
         
         float StartTractiveEffortN = 0.0f;      // Record starting tractive effort
-        float SuperheaterFactor = 1.0f;               // Currently 2 values respected: 1.0 for no superheat (default), > 1.0 for typical superheat
+        float SuperheaterFactor = 1.0f;               // Currently 2 values respected: 0.0 for no superheat (default), > 1.0 for typical superheat
         float SuperheaterSteamUsageFactor = 1.0f;       // Below 1.0, reduces steam usage due to superheater
         float Stoker = 0.0f;                // Currently 2 values respected: 0.0 for no mechanical stoker (default), = 1.0 for typical mechanical stoker
         float StokerMaxUsage = 0.01f;       // Max steam usage of stoker - 1% of max boiler output
@@ -316,7 +316,7 @@ namespace ORTS
         float SpeedEquivMpS = 27.0f;          // Equvalent speed of 60mph in mps (27m/s) - used for damper control
         float MeanEffectivePressurePSI;         // Mean effective pressure
         float RatioOfExpansion;             // Ratio of expansion
-        float CylinderClearancePC = 0.1f;    // Assume a cylinder clearance of 10% of the piston displacement
+        float CylinderClearancePC = 0.8f;    // Assume cylinder clearance of 8% of the piston displacement for saturated locomotives and 9% for superheated locomotive - default to saturated locomotive value
         float CylinderCompressionPC = 0.5f; // Compression occurs at % - 50% assumes 0.5 left
         float CylinderPistonShaftFt3;   // Volume taken up by the cylinder piston shaft
         float CylinderPistonShaftDiaIn = 3.5f; // Assume cylinder piston shaft to be 3.5 inches
@@ -707,11 +707,14 @@ namespace ORTS
             // Determine if Superheater in use
             if (SuperheatAreaM2 == 0) // If super heating area not specified
             {
-                if (SuperheaterFactor > 1.0) // check if MSTS value, then set superheating
+                if (SuperheaterFactor > 1.0 || SuperheaterFactor == 1.0) // check if MSTS value, then set superheating
                 {
                     HasSuperheater = true;
                     SuperheatRefTempF = 200.0f; // Assume a superheating temp of 250degF
                     SuperheatTempRatio = SuperheatRefTempF / SuperheatTempLbpHtoDegF[pS.TopH(TheoreticalMaxSteamOutputLBpS)];
+                    SuperheatAreaM2 = Me2.FromFt2((SuperheatRefTempF * pS.TopH(TheoreticalMaxSteamOutputLBpS)) / (C.ToF(C.FromK(MaxFlueTempK)) * SuperheatKFactor)); // Back calculate Superheat area for display purposes only.
+                    CylinderClearancePC = 0.9f;
+                    
                 }
                 else
                 {
@@ -719,7 +722,7 @@ namespace ORTS
                     SuperheatRefTempF = 0.0f;
                 }
             }
-            else  // if OR value set then calculate
+            else  // if OR value implies a superheater is present then calculate
             {
 
                 HasSuperheater = true;
@@ -729,8 +732,8 @@ namespace ORTS
                 // Formula has been simplified as follows: SuperTemp = (SuperHeatArea x FlueTempK x SFactor) / SteamQuantity
                 // SFactor is a "loose reprentation" =  (HeatTransmissionCoeff / MeanSpecificSteamHeat) - Av figure calculate by comparing a number of "known" units for superheat.
                 SuperheatRefTempF = (Me2.ToFt2(SuperheatAreaM2) * C.ToF(C.FromK(MaxFlueTempK)) * SuperheatKFactor) / pS.TopH(TheoreticalMaxSteamOutputLBpS);
-                SuperheatTempRatio = SuperheatRefTempF / SuperheatTempLbpHtoDegF[pS.TopH(TheoreticalMaxSteamOutputLBpS)];    // calculate a ratio figure for known value against reference curve.      
-
+                SuperheatTempRatio = SuperheatRefTempF / SuperheatTempLbpHtoDegF[pS.TopH(TheoreticalMaxSteamOutputLBpS)];    // calculate a ratio figure for known value against reference curve. 
+                CylinderClearancePC = 0.9f;
             }
 
             // Determine whether to start locomotive in Hot or Cold State
