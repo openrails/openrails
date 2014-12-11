@@ -4980,7 +4980,10 @@ namespace ORTS
                 { 
                     if (CircuitState.TrainReserved != null && CircuitState.TrainReserved.Train != thisTrain.Train)
                     {
-                        UnreserveTrain(CircuitState.TrainReserved, true);
+                        Train.TrainRouted trainRouted = CircuitState.TrainReserved;
+                        ClearSectionsOfTrainBehind(trainRouted, this);
+                        if (trainRouted.Train.TrainType == Train.TRAINTYPE.AI || trainRouted.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
+                            ((AITrain)trainRouted.Train).ResetActions(true);
                     }
                 }
             }
