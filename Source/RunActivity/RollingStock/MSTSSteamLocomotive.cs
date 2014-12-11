@@ -316,7 +316,7 @@ namespace ORTS
         float SpeedEquivMpS = 27.0f;          // Equvalent speed of 60mph in mps (27m/s) - used for damper control
         float MeanEffectivePressurePSI;         // Mean effective pressure
         float RatioOfExpansion;             // Ratio of expansion
-        float CylinderClearancePC = 0.8f;    // Assume cylinder clearance of 8% of the piston displacement for saturated locomotives and 9% for superheated locomotive - default to saturated locomotive value
+        float CylinderClearancePC = 0.08f;    // Assume cylinder clearance of 8% of the piston displacement for saturated locomotives and 9% for superheated locomotive - default to saturated locomotive value
         float CylinderCompressionPC = 0.5f; // Compression occurs at % - 50% assumes 0.5 left
         float CylinderPistonShaftFt3;   // Volume taken up by the cylinder piston shaft
         float CylinderPistonShaftDiaIn = 3.5f; // Assume cylinder piston shaft to be 3.5 inches
@@ -713,7 +713,7 @@ namespace ORTS
                     SuperheatRefTempF = 200.0f; // Assume a superheating temp of 250degF
                     SuperheatTempRatio = SuperheatRefTempF / SuperheatTempLbpHtoDegF[pS.TopH(TheoreticalMaxSteamOutputLBpS)];
                     SuperheatAreaM2 = Me2.FromFt2((SuperheatRefTempF * pS.TopH(TheoreticalMaxSteamOutputLBpS)) / (C.ToF(C.FromK(MaxFlueTempK)) * SuperheatKFactor)); // Back calculate Superheat area for display purposes only.
-                    CylinderClearancePC = 0.9f;
+                    CylinderClearancePC = 0.09f;
                     
                 }
                 else
@@ -733,7 +733,7 @@ namespace ORTS
                 // SFactor is a "loose reprentation" =  (HeatTransmissionCoeff / MeanSpecificSteamHeat) - Av figure calculate by comparing a number of "known" units for superheat.
                 SuperheatRefTempF = (Me2.ToFt2(SuperheatAreaM2) * C.ToF(C.FromK(MaxFlueTempK)) * SuperheatKFactor) / pS.TopH(TheoreticalMaxSteamOutputLBpS);
                 SuperheatTempRatio = SuperheatRefTempF / SuperheatTempLbpHtoDegF[pS.TopH(TheoreticalMaxSteamOutputLBpS)];    // calculate a ratio figure for known value against reference curve. 
-                CylinderClearancePC = 0.9f;
+                CylinderClearancePC = 0.09f;
             }
 
             // Determine whether to start locomotive in Hot or Cold State
