@@ -10064,7 +10064,7 @@ namespace ORTS
 
         public bool HasLockForTrain(int trainNumber, int subpath = 0)
         {
-            bool info = LockedTrains.Exists(item => item.Key.Equals(trainNumber) && item.Value.Equals(subpath));
+            bool info = (LockedTrains.Count > 0 && LockedTrains.Exists(item => item.Key.Equals(trainNumber) && item.Value.Equals(subpath)));
             return info;
         }
 
