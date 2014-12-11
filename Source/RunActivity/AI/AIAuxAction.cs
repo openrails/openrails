@@ -2589,8 +2589,14 @@ namespace ORTS
             if (locked && SignalReferenced != null)
             {
                 locked = false;
-                if (!SignalReferenced.UnlockForTrain(thisTrain.Number, thisTrain.TCRoute.activeSubpath))
-                    locked = true;
+                if (SignalReferenced.HasLockForTrain(thisTrain.Number, thisTrain.TCRoute.activeSubpath))
+                    SignalReferenced.UnlockForTrain(thisTrain.Number, thisTrain.TCRoute.activeSubpath);
+                else
+                {
+//                    locked = true;
+                    Trace.TraceWarning("SignalObject trItem={0}, trackNode={1}, wasn't locked for train {2}.",
+                        SignalReferenced.trItem, SignalReferenced.trackNode, thisTrain.Number);
+                }
             }
             if (ClearSignal(thisTrain) ||(thisTrain.NextSignalObject[0] !=null && (thisTrain.NextSignalObject[0].this_sig_lr(MstsSignalFunction.NORMAL) > MstsSignalAspect.STOP)) ||
                 thisTrain.PresentPosition[0].TCSectionIndex == thisTrain.ValidRoute[0][thisTrain.ValidRoute[0].Count-1].TCSectionIndex)
