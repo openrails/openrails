@@ -3913,7 +3913,8 @@ namespace ORTS
                 max = maxPressurePSIVacuum;
                 fullServ = maxPressurePSIVacuum + fullServReductionPSI;
             }
-                BrakeLine1PressurePSIorInHg = BrakeLine2PressurePSI = max;
+            BrakeLine1PressurePSIorInHg = BrakeLine2PressurePSI = max;
+            ConnectBrakeHoses();
             foreach (TrainCar car in Cars)
             {
                 car.BrakeSystem.Initialize(false, max, fullServ, true);

@@ -1238,11 +1238,17 @@ namespace ORTS
                 train.TrainType = Train.TRAINTYPE.STATIC;
                 train2.LeadLocomotive = lead;
                 train.LeadLocomotive = null;
+                train.Cars[0].BrakeSystem.PropagateBrakePressure(5);
+                foreach (MSTSWagon wagon in train.Cars)
+                    wagon.MSTSBrakeSystem.Update(5);
             }
             else
             {
                 train2.TrainType = Train.TRAINTYPE.STATIC;
                 train2.LeadLocomotive = null;
+                train2.Cars[0].BrakeSystem.PropagateBrakePressure(5);
+                foreach (MSTSWagon wagon in train2.Cars)
+                    wagon.MSTSBrakeSystem.Update(5);
             }
 
             train.UpdateTrackActionsUncoupling(true);
