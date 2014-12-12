@@ -424,7 +424,7 @@ namespace ORTS.Viewer3D.RollingStock
                 return;
             }
 
-            float distanceToPickupM = GetDistanceToM(match) - 1f; // Deduct an extra 1 meter as pickups are never on the centre line of the track.
+            float distanceToPickupM = GetDistanceToM(match) - 2.5f; // Deduct an extra 2.5 so that the tedious placement is less of an issue.
             if (distanceToPickupM > match.IntakePoint.WidthM / 2)
             {
                 Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: Distance to {0} supply is {1}.",
@@ -439,14 +439,14 @@ namespace ORTS.Viewer3D.RollingStock
             }
             if (loco.SpeedMpS < match.Pickup.SpeedRange.MinMpS)
             {
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: Loco speed must exceed {0}.", 
+                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: Loco speed must exceed {0}.",
                     FormatStrings.FormatSpeedLimit(match.Pickup.SpeedRange.MinMpS, Viewer.MilepostUnitsMetric)));
                 return;
             }
             if (loco.SpeedMpS > match.Pickup.SpeedRange.MinMpS)
             {
                 var speedLimitMpH = MpS.ToMpH(match.Pickup.SpeedRange.MaxMpS);
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: Loco speed must not exceed {0}.", 
+                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: Loco speed must not exceed {0}.",
                     FormatStrings.FormatSpeedLimit(match.Pickup.SpeedRange.MaxMpS, Viewer.MilepostUnitsMetric)));
                 return;
             }
@@ -457,8 +457,12 @@ namespace ORTS.Viewer3D.RollingStock
                     PickupTypeDictionary[(uint)match.Pickup.PickupType]));
                 return;
             }
-            StartRefilling((uint)match.Pickup.PickupType);
-            MatchedWagonAndPickup = match;  // Save away for HandleUserInput() to use when key is released.
+            // Without the else, the fueling process was never taking place.
+            else
+            {
+                StartRefilling((uint)match.Pickup.PickupType);
+                MatchedWagonAndPickup = match;  // Save away for HandleUserInput() to use when key is released.
+            }
         }
 
         /// <summary>
