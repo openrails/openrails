@@ -132,8 +132,8 @@ namespace ORTS
         public float BrakeServiceTimeFactorS = 1.009f;
         public float BrakeEmergencyTimeFactorS = .1f;
         public float BrakePipeChargingRatePSIpS;
-        public Interpolator2D TractiveForceCurves;
-        public Interpolator2D DynamicBrakeForceCurves;
+        public InterpolatorDiesel2D TractiveForceCurves;
+        public InterpolatorDiesel2D DynamicBrakeForceCurves;
         public float DynamicBrakeSpeed1MpS = MpS.FromKpH(5);
         public float DynamicBrakeSpeed2MpS = MpS.FromKpH(30);
         public float DynamicBrakeSpeed3MpS = MpS.FromKpH(999);
@@ -309,7 +309,7 @@ namespace ORTS
 
             if (DynamicBrakeForceCurves == null && MaxDynamicBrakeForceN > 0)
             {
-                DynamicBrakeForceCurves = new Interpolator2D(2);
+                DynamicBrakeForceCurves = new InterpolatorDiesel2D(2);
                 Interpolator interp = new Interpolator(2);
                 interp[0] = 0;
                 interp[100] = 0;
@@ -562,9 +562,9 @@ namespace ORTS
                 case "engine(ortsbrakeservicetimefactor": BrakeServiceTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(ortsbrakeemergencytimefactor": BrakeEmergencyTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(ortsbrakepipechargingrate": BrakePipeChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
-                case "engine(ortsmaxtractiveforcecurves": TractiveForceCurves = new Interpolator2D(stf, false); break;
-                case "engine(ortstractioncharacteristics": TractiveForceCurves = new Interpolator2D(stf, true); break;
-                case "engine(ortsdynamicbrakeforcecurves": DynamicBrakeForceCurves = new Interpolator2D(stf, false); break;
+                case "engine(ortsmaxtractiveforcecurves": TractiveForceCurves = new InterpolatorDiesel2D(stf, false); break;
+                case "engine(ortstractioncharacteristics": TractiveForceCurves = new InterpolatorDiesel2D(stf, true); break;
+                case "engine(ortsdynamicbrakeforcecurves": DynamicBrakeForceCurves = new InterpolatorDiesel2D(stf, false); break;
                 case "engine(ortscontinuousforcetimefactor": ContinuousForceTimeFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(orts(ortssanderspeedeffectupto": SanderSpeedEffectUpToMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                 case "engine(orts(ortsemergencycausespowerdown": EmergencyCausesPowerDown = stf.ReadBoolBlock(false); break;

@@ -242,20 +242,20 @@ namespace ORTS
         }
     }
     /// <summary>
-    /// two dimensional Interpolated table lookup
+    /// two dimensional Interpolated table lookup - for use in Diesel
     /// </summary>
-    public class Interpolator2D
+    public class InterpolatorDiesel2D
     {
         float[] X;  // must be in increasing order
         Interpolator[] Y;
         int Size;       // number of values populated
         int PrevIndex;  // used to speed up repeated evaluations with similar x values
-        public Interpolator2D(int n)
+        public InterpolatorDiesel2D(int n)
         {
             X = new float[n];
             Y = new Interpolator[n];
         }
-        public Interpolator2D(Interpolator2D other)
+        public InterpolatorDiesel2D(InterpolatorDiesel2D other)
         {
             X = other.X;
             Size = other.Size;
@@ -263,7 +263,7 @@ namespace ORTS
             for (int i = 0; i < Size; i++)
                 Y[i] = new Interpolator(other.Y[i]);
         }
-        public Interpolator2D(STFReader stf, bool tab)
+        public InterpolatorDiesel2D(STFReader stf, bool tab)
         {
             List<float> xlist = new List<float>();
             List<Interpolator> ilist = new List<Interpolator>();
@@ -456,4 +456,109 @@ namespace ORTS
                 X[i] *= factor;
         }
     }
+
+     /// <summary>
+     /// two dimensional Interpolated table lookup - Generic
+     /// </summary>
+    public class Interpolator2D
+    {
+        float[] X;  // must be in increasing order
+        Interpolator[] Y;
+        int Size = 0;       // number of values populated
+        int PrevIndex = 0;  // used to speed up repeated evaluations with similar x values
+        public Interpolator2D(int n)
+        {
+            X = new float[n];
+            Y = new Interpolator[n];
+        }
+        public Interpolator2D(float[] x, Interpolator[] y)
+        {
+            X = x;
+            Y = y;
+            Size = X.Length;
+        }
+        public Interpolator2D(Interpolator2D other)
+        {
+            X = other.X;
+            Size = other.Size;
+            Y = new Interpolator[Size];
+            for (int i = 0; i < Size; i++)
+                Y[i] = new Interpolator(other.Y[i]);
+        }
+        public Interpolator2D(STFReader stf)
+        {
+            List<float> xlist = new List<float>();
+            List<Interpolator> ilist = new List<Interpolator>();
+            stf.MustMatch("(");
+            while (!stf.EndOfBlock())
+            {
+                xlist.Add(stf.ReadFloat(STFReader.UNITS.Any, null));
+                ilist.Add(new Interpolator(stf));
+            }
+            stf.SkipRestOfBlock();
+            int n = xlist.Count;
+            if (n < 2)
+                STFException.TraceWarning(stf, "Interpolator must have at least two x values.");
+            X = new float[n];
+            Y = new Interpolator[n];
+            Size = n;
+            for (int i = 0; i < n; i++)
+            {
+                X[i] = xlist[i];
+                Y[i] = ilist[i];
+                if (i > 0 && X[i - 1] >= X[i])
+                    STFException.TraceWarning(stf, " Interpolator x values must be increasing.");
+            }
+        }
+        public float Get(float x, float y)
+        {
+            if (x < X[PrevIndex] || x > X[PrevIndex + 1])
+            {
+                if (x < X[1])
+                    PrevIndex = 0;
+                else if (x > X[Size - 2])
+                    PrevIndex = Size - 2;
+                else
+                {
+                    int i = 0;
+                    int j = Size - 1;
+                    while (j - i > 1)
+                    {
+                        int k = (i + j) / 2;
+                        if (X[k] > x)
+                            j = k;
+                        else
+                            i = k;
+                    }
+                    PrevIndex = i;
+                }
+            }
+            float d = X[PrevIndex + 1] - X[PrevIndex];
+            float a = (X[PrevIndex + 1] - x) / d;
+            float b = (x - X[PrevIndex]) / d;
+            float z = 0;
+            if (a != 0)
+                z += a * Y[PrevIndex][y];
+            if (b != 0)
+                z += b * Y[PrevIndex + 1][y];
+            return z;
+        }
+        public Interpolator this[float x]
+        {
+            set
+            {
+                X[Size] = x;
+                Y[Size] = value;
+                Size++;
+            }
+        }
+        public float MinX() { return X[0]; }
+        public float MaxX() { return X[Size - 1]; }
+        public void ScaleX(float factor)
+        {
+            for (int i = 0; i < Size; i++)
+                X[i] *= factor;
+        }
+    }
+
 }
