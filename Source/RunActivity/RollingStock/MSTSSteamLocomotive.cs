@@ -1900,10 +1900,18 @@ namespace ORTS
             // Absolute Mean Pressure = Ratio of Expansion
             SteamChestPressurePSI = (throttle * SteamChestPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)] * BoilerPressurePSI); // pressure in cylinder steam chest - allowance for pressure drop between boiler and steam chest
             // Initial pressure will be decreased depending upon locomotive speed
-                InitialPressurePSI = ((throttle * BoilerPressurePSI) + OneAtmospherePSI) * InitialPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)]; // This is the gauge pressure + atmospheric pressure to find the absolute pressure - pressure drop gas been allowed for as the steam goes into the cylinder through the opening in the steam chest port.
-           
-            
-            MeanPressureStrokePSI = InitialPressurePSI * (cutoff + ((cutoff + CylinderClearancePC) * (float)Math.Log(RatioOfExpansion)));
+            InitialPressurePSI = ((throttle * BoilerPressurePSI) + OneAtmospherePSI) * InitialPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)]; // This is the gauge pressure + atmospheric pressure to find the absolute pressure - pressure drop gas been allowed for as the steam goes into the cylinder through the opening in the steam chest port.
+
+
+            // Calculate Cut-off Pressure
+            float CutoffDropUpper = CutoffInitialPressureDropRatioUpper.Get(pS.TopM(DrvWheelRevRpS), cutoff);  // Get Cutoff Pressure to Initial pressure drop - upper limit
+            float CutoffDropLower = CutoffInitialPressureDropRatioLower.Get(pS.TopM(DrvWheelRevRpS), cutoff);  // Get Cutoff Pressure to Initial pressure drop - lower limit
+
+            // calculate value based upon setting of Cylinder port opening
+
+            CutoffPressureDropRatio = (((CylinderPortOpeningFactor - CylinderPortOpeningLower) / (CylinderPortOpeningUpper - CylinderPortOpeningLower)) * (CutoffDropUpper - CutoffDropLower)) + CutoffDropLower;
+
+            MeanPressureStrokePSI = InitialPressurePSI * (cutoff + ((cutoff + CylinderClearancePC) * (float)Math.Log(RatioOfExpansion))) * CutoffPressureDropRatio;
                     
            // mean pressure during stroke = ((absolute mean pressure + (clearance + cylstroke)) - (initial pressure + clearance)) / cylstroke
            // Mean effective pressure = cylpressure - backpressure
@@ -1930,16 +1938,8 @@ namespace ORTS
             CylinderPressurePSI = MathHelper.Clamp(CylinderPressurePSI, 0, MaxBoilerPressurePSI + OneAtmospherePSI); // Make sure that Cylinder pressure does not go negative
             BackPressurePSI = BackPressureLBpStoPSI[CylinderSteamUsageLBpS - CylCockSteamUsageLBpS];
 
-            // Calculate Cut-off Pressure
-            float CutoffDropUpper = CutoffInitialPressureDropRatioUpper.Get(pS.TopM(DrvWheelRevRpS), cutoff);  // Get Cutoff Pressure to Initial pressure drop - upper limit
-            float CutoffDropLower = CutoffInitialPressureDropRatioLower.Get(pS.TopM(DrvWheelRevRpS), cutoff);  // Get Cutoff Pressure to Initial pressure drop - lower limit
-
-            // calculate value based upon setting of Cylinder port opening
-
-            CutoffPressureDropRatio = (((CylinderPortOpeningFactor - CylinderPortOpeningLower) / (CylinderPortOpeningUpper - CylinderPortOpeningLower)) * (CutoffDropUpper - CutoffDropLower)) + CutoffDropLower;
- 
             MeanBackPressurePSI = (BackPressurePSI + OneAtmospherePSI) * ((1.0f - CylinderCompressionPC) + ((CylinderCompressionPC + CylinderClearancePC) * (float)Math.Log((CylinderCompressionPC + CylinderClearancePC) / CylinderClearancePC)));
-            MeanEffectivePressurePSI = (MeanPressureStrokePSI - MeanBackPressurePSI) * CutoffPressureDropRatio;
+            MeanEffectivePressurePSI = (MeanPressureStrokePSI - MeanBackPressurePSI);
             MeanEffectivePressurePSI = MathHelper.Clamp(MeanEffectivePressurePSI, 0, MaxBoilerPressurePSI); // Make sure that Cylinder pressure does not go negative
             // Calculate PV const at cutoff, and then the terminal pressure at the end of cylinder stroke.
             CylinderPressureVolumeCutoffFactor = InitialPressurePSI * cutoff * CylinderStrokeM; // Pressure doesn't need to be in absolute, as steam density figures appear to be in gauge pressure.
@@ -2737,7 +2737,7 @@ namespace ORTS
                 BoilerHeatSmoothBTU.Value,
                 MaxBoilerHeatBTU);
 
-            status.AppendFormat("Temp.:\tFlue\t{0:N0} F\tWater\t{1:N0} F\tS Ratio\t{2:N2}\t\tMaxSuper {3:N0} F\t\tCurSuper {4:N0} F\tSup Fact\t{5:N2}",
+            status.AppendFormat("Temp.:\tFlue\t{0:N0} F\tWater\t{1:N0} F\tS Ratio\t{2:N2}\t\tMaxSuper\t{3:N0} F\t\tCurSuper\t{4:N0} F\tSup Fact\t{5:N2}",
                 C.ToF(C.FromK(FlueTempK)),
                 C.ToF(C.FromK(BoilerWaterTempK)),
                 SuperheatVolumeRatio,
@@ -2765,7 +2765,7 @@ namespace ORTS
             CylinderCompressionPressurePSI,
             CylinderExhaustPressurePSI,
             InitialPressurePSI-OneAtmospherePSI,
-            CutoffPressureDropRatio*InitialPressurePSI,
+            CutoffPressureDropRatio*InitialPressurePSI-OneAtmospherePSI,
             pS.TopH(MaxSafetyValveDischargeLbspS),
             NumSafetyValves,
             SafetyValveSizeIn);
