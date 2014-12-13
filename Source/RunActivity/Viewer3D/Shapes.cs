@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -27,18 +27,16 @@
 // Adds bright green arrows to all normal shapes indicating the direction of their normals.
 //#define DEBUG_SHAPE_NORMALS
 
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using MSTS.Formats;
+using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using MSTS.Formats;
-using MSTSMath;
-using ORTS.Common;
 
 namespace ORTS.Viewer3D
 {
@@ -143,6 +141,11 @@ namespace ORTS.Viewer3D
         public virtual void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             SharedShape.PrepareFrame(frame, Location, Flags);
+        }
+
+        [CallOnThread("Loader")]
+        public virtual void Unload()
+        {
         }
 
         [CallOnThread("Loader")]
@@ -632,7 +635,7 @@ namespace ORTS.Viewer3D
         }
     } // class SpeedPostShape
 
-    public class LevelCrossingShape : PoseableShape, IDisposable
+    public class LevelCrossingShape : PoseableShape
     {
         readonly LevelCrossingObj CrossingObj;
 		readonly SoundSource Sound;
@@ -671,18 +674,15 @@ namespace ORTS.Viewer3D
             AnimationFrames = CrossingObj.levelCrTiming.animTiming < 0 ? SharedShape.Animations[0].FrameCount : 1;
         }
 
-        #region IDisposable Members
-
-        public void Dispose()
+        public override void Unload()
         {
             if (Sound != null)
             {
                 Viewer.SoundProcess.RemoveSoundSources(this);
                 Sound.Dispose();
             }
+            base.Unload();
         }
-
-        #endregion
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
@@ -721,7 +721,7 @@ namespace ORTS.Viewer3D
         }
     }
 
-	public class HazzardShape : PoseableShape, IDisposable
+	public class HazzardShape : PoseableShape
 	{
 		readonly HazardObj HazardObj;
 		readonly Hazzard Hazzard;
@@ -737,6 +737,7 @@ namespace ORTS.Viewer3D
 			return new HazzardShape(viewer, viewer.Simulator.BasePath + @"\Global\Shapes\" + h.HazFile.Tr_HazardFile.FileName + "\0" + viewer.Simulator.BasePath + @"\Global\Textures", position, shapeFlags, hObj, h);
 
 		}
+
 		public HazzardShape(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, HazardObj hObj, Hazzard h)
 			: base(viewer, path, position, shapeFlags)
 		{
@@ -745,14 +746,11 @@ namespace ORTS.Viewer3D
 			AnimationFrames = SharedShape.Animations[0].FrameCount;
 		}
 
-		#region IDisposable Members
-
-		public void Dispose()
+		public override void Unload()
 		{
 			Viewer.Simulator.HazzardManager.RemoveHazzardFromGame(HazardObj.itemId);
+            base.Unload();
 		}
-
-		#endregion
 
 		public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
 		{

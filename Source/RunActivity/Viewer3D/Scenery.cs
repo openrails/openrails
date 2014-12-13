@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -42,14 +42,14 @@
  * 
  */
 
+using Microsoft.Xna.Framework;
+using MSTS.Formats;
+using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Microsoft.Xna.Framework;
-using MSTS.Formats;
-using ORTS.Common;
 
 namespace ORTS.Viewer3D
 {
@@ -99,7 +99,7 @@ namespace ORTS.Viewer3D
                     }
                 }
                 foreach (var tile in oldWorldFiles)
-                    tile.Dispose();
+                    tile.Unload();
                 WorldFiles = newWorldFiles;
                 Viewer.tryLoadingNightTextures = true; // when Tiles loaded change you can try
             }
@@ -189,7 +189,7 @@ namespace ORTS.Viewer3D
     }
 
     [CallOnThread("Loader")]
-    public class WorldFile : IDisposable
+    public class WorldFile
     {
         const int MinimumInstanceCount = 5;
 
@@ -446,30 +446,13 @@ namespace ORTS.Viewer3D
             if (Viewer.World.Sounds != null) Viewer.World.Sounds.AddByTile(TileX, TileZ);
         }
 
-        #region IDisposable Members
-
-        public void Dispose()
+        [CallOnThread("Loader")]
+        public void Unload()
         {
-            DisposeAndClearList(ref sceneryObjects);
-            DisposeAndClearList(ref dTrackList);
-            DisposeAndClearList(ref forestList);
-            DisposeAndClearList(ref carSpawners);
-            DisposeAndClearList(ref sidings);
-            DisposeAndClearList(ref platforms);
+            foreach (var obj in sceneryObjects)
+                obj.Unload();
             if (Viewer.World.Sounds != null) Viewer.World.Sounds.RemoveByTile(TileX, TileZ);
-            // TODO: Do we need this when we don't have a destructor or Finalize()?
-            GC.SuppressFinalize(true);
         }
-
-        static void DisposeAndClearList<T>(ref List<T> objects)
-        {
-            foreach (var obj in objects)
-                if (obj is IDisposable)
-                    (obj as IDisposable).Dispose();
-            objects = new List<T>();
-        }
-
-        #endregion
 
         [CallOnThread("Loader")]
         internal void Mark()

@@ -20,16 +20,14 @@
 // Prints out lots of diagnostic information about the construction of signals from shape data and their state changes.
 //#define DEBUG_SIGNAL_SHAPES
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS.Formats;
 using ORTS.Common;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 
 namespace ORTS.Viewer3D
 {
@@ -136,6 +134,13 @@ namespace ORTS.Viewer3D
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, SubObjVisible, Flags);
         }
 
+        public override void Unload()
+        {
+            foreach (var head in Heads)
+                head.Unload();
+            base.Unload();
+        }
+
         internal override void Mark()
         {
             foreach (var head in Heads)
@@ -143,7 +148,7 @@ namespace ORTS.Viewer3D
             base.Mark();
         }
 
-        class SignalShapeHead : IDisposable
+        class SignalShapeHead
         {
             static readonly Dictionary<string, SignalTypeData> SignalTypes = new Dictionary<string, SignalTypeData>();
 
@@ -219,9 +224,8 @@ namespace ORTS.Viewer3D
 #endif
             }
 
-            #region IDisposable Members
-
-            public void Dispose()
+            [CallOnThread("Loader")]
+            public void Unload()
             {
                 if (Sound != null)
                 {
@@ -229,8 +233,6 @@ namespace ORTS.Viewer3D
                     Sound.Dispose();
                 }
             }
-
-            #endregion
 
             public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, Matrix xnaTileTranslation)
             {
