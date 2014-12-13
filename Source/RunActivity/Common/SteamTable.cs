@@ -229,16 +229,7 @@ namespace ORTS
             0.98f, 0.95f, 0.927f, 0.90f, 0.874f, 0.85f, 0.82f, 0.81f
         };
         
-                // Allowance for pressure drop in Cut-off pressure compared to Initial Pressure - NB only curve for 50% cutoff done - Ref LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON
-        static float[] CutoffPressureDropRatio = new float[]
-        {
-         //     1.0f, 0.90f,   0.85f,   0.8125f, 0.78f,  0.76f,   0.73f, 0.72f    //   - 0.5
-            1.0f, 0.88f,   0.825f,   0.785f, 0.755f,  0.735f,   0.715f, 0.685f    //   - 0.4
-     //         1.0f, 0.8775f, 0.8125f, 0.7725f, 0.7425f, 0.725f,  0.70f,   0.6775f   //    - 0.35
-    //        1.0f, 0.865f,   0.80f,   0.76f,  0.73f,   0.715f,   0.685f, 0.67f  // - 0.3
-        };
-
-                // Allowance for pressure drop in Steam chest pressure compared to Boiler Pressure - Ref LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON
+       // Allowance for pressure drop in Steam chest pressure compared to Boiler Pressure - Ref LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON
         static float[] SteamChestPressureDropRatio = new float[]
         {
             0.99f, 0.97f, 0.95f, 0.94f, 0.93f, 0.92f, 0.91f, 0.90f
@@ -287,12 +278,6 @@ namespace ORTS
             return new Interpolator(WheelRotationRpM, SteamChestPressureDropRatio);
         }       
 
-       // Allowance for pressure drop in Cut-off pressure compared to Initial Pressure - NB only curve for 50% cutoff done - Ref LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON
-        public static Interpolator CutoffPressureDropRatioInterpolatorRpMtoX()
-        {
-            return new Interpolator(WheelRotationRpM, CutoffPressureDropRatio);
-        }            
-        
         // Allowance for wire-drawing - ie drop in initial pressure (cutoff) as speed increases - Ref Principles of Locomotive Operation
         public static Interpolator InitialPressureDropRatioInterpolatorRpMtoX()
         {
@@ -430,9 +415,9 @@ namespace ORTS
             return new Interpolator(PressureTablePSI, TemperatureTableF);
         }
 
-         // Experimental ++++++++++++++++++++++++++++++++
+         // ++++++++++++++++++++++++++++++++
         // Interpolator2D for Cut-off pressure to Initial Pressure - Ref Plate 10 - LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON
-        // Based upon graph in ?????
+        // 
 
         // revolutions - z value
         static float[] WheelRevolutionsRpM = new float[]
@@ -440,14 +425,15 @@ namespace ORTS
             0.0f, 50.0f, 100.0f //, 150.0f, 200.0f, 250.0f, 300.0f, 350.0f  
         };
 
-
         // Cutoff - x Value
         static float[] CutOff = new float[]
         {
             0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f  
         };
+       
+        // ++++++++++++++++++++++ Upper Limit ++++++++++++
 
-        // % Initial Pressure @ 0rpm - y Value
+       // % Initial Pressure @ 0rpm - y Value
         static float[] InitialPressureUpper0RpM = new float[]
         {
             1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f
@@ -494,10 +480,6 @@ namespace ORTS
         {
               0.6125f, 0.63f, 0.65f, 0.663f, 0.6875f, 0.7125f, 0.7425f, 0.775f, 0.809f, 0.8375f, 0.865f
         };
-
-
-
-
 
 
         // Do intial Interpolation
@@ -567,6 +549,129 @@ namespace ORTS
         {
             return new Interpolator2D(WheelRevolutionsRpM, Initial_pressure_upper);
         }
+
+      // ++++++++++++++++++++++ Lower Limit ++++++++++++
+
+        // % Initial Pressure @ 0rpm - y Value
+        static float[] InitialPressureLower0RpM = new float[]
+        {
+            1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f
+        };
+
+        // % Initial Pressure @ 50rpm - y Value
+        static float[] InitialPressureLower50RpM = new float[]
+        {
+              0.745f, 0.76f, 0.77f, 0.7875f, 0.8125f, 0.8375f, 0.865f, 0.9f, 0.93f, 0.97f, 1.0f
+        };
+
+
+        // % Initial Pressure @ 100rpm - y Value
+        static float[] InitialPressureLower100RpM = new float[]
+        {
+              0.6875f, 0.6875f, 0.69f, 0.708f, 0.725f, 0.755f, 0.79f, 0.83f, 0.88f, 0.9325f, 0.9875f
+        };
+
+        // % Initial Pressure @ 150rpm - y Value
+        static float[] InitialPressureLower150RpM = new float[]
+        {
+              0.64f, 0.64f, 0.645f, 0.6525f, 0.67f, 0.6975f, 0.731f, 0.775f, 0.825f, 0.875f, 0.93f
+        };
+
+        // % Initial Pressure @ 200rpm - y Value
+        static float[] InitialPressureLower200RpM = new float[]
+        {
+              0.61f, 0.61f, 0.61f, 0.6125f, 0.625f, 0.65f, 0.68f, 0.72f, 0.775f, 0.83f, 0.88f
+        };
+
+
+        // % Initial Pressure @ 250rpm - y Value
+        static float[] InitialPressureLower250RpM = new float[]
+        {
+              0.5775f,  0.5775f, 0.5775f, 0.585f, 0.595f, 0.62f, 0.653f, 0.69f, 0.7375f, 0.7825f, 0.825f
+        };
+
+
+        // % Initial Pressure @ 300rpm - y Value
+        static float[] InitialPressureLower300RpM = new float[]
+        {
+              0.55f, 0.55f, 0.55f, 0.5575f, 0.57f, 0.59f, 0.62f, 0.6575f, 0.6925f, 0.73f, 0.7675f
+        };
+
+        // % Initial Pressure @ 350rpm - y Value
+        static float[] InitialPressureLower350RpM = new float[]
+        {
+              0.52f, 0.52f, 0.52f, 0.528f, 0.545f, 0.57f, 0.60f, 0.635f, 0.67f, 0.7075f, 0.74f
+        };
+
+
+        // Do intial Interpolation
+        // 0RpM
+        public static Interpolator CutOffInitialPressureLower0RpM()
+        {
+            return new Interpolator(CutOff, InitialPressureLower0RpM);
+        }
+        // 50RpM
+        public static Interpolator CutOffInitialPressureLower50RpM()
+        {
+            return new Interpolator(CutOff, InitialPressureLower50RpM);
+        }
+        // 100RpM
+        public static Interpolator CutOffInitialPressureLower100RpM()
+        {
+            return new Interpolator(CutOff, InitialPressureLower100RpM);
+        }
+
+        // 150RpM
+        public static Interpolator CutOffInitialPressureLower150RpM()
+        {
+            return new Interpolator(CutOff, InitialPressureLower150RpM);
+        }
+
+        // 200RpM
+        public static Interpolator CutOffInitialPressureLower200RpM()
+        {
+            return new Interpolator(CutOff, InitialPressureLower200RpM);
+        }
+
+        // 250RpM
+        public static Interpolator CutOffInitialPressureLower250RpM()
+        {
+            return new Interpolator(CutOff, InitialPressureLower250RpM);
+        }
+
+        // 300RpM
+        public static Interpolator CutOffInitialPressureLower300RpM()
+        {
+            return new Interpolator(CutOff, InitialPressureLower300RpM);
+        }
+
+        // 350RpM
+        public static Interpolator CutOffInitialPressureLower350RpM()
+        {
+            return new Interpolator(CutOff, InitialPressureLower350RpM);
+        }
+
+
+
+        // Build Combined Interpolator Array
+        static Interpolator[] Initial_pressure_lower = new Interpolator[]
+        {
+              CutOffInitialPressureLower0RpM(),
+              CutOffInitialPressureLower50RpM(),
+              CutOffInitialPressureLower100RpM(),
+              CutOffInitialPressureLower150RpM(),
+              CutOffInitialPressureLower200RpM(),
+              CutOffInitialPressureLower250RpM(),
+              CutOffInitialPressureLower300RpM(),
+              CutOffInitialPressureLower350RpM(),
+        };
+
+        // Final call
+        public static Interpolator2D CutoffInitialPressureLower()
+        {
+            return new Interpolator2D(WheelRevolutionsRpM, Initial_pressure_lower);
+        }
+
 
     }
 }
