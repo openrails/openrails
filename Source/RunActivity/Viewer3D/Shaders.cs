@@ -148,11 +148,11 @@ namespace ORTS.Viewer3D
             lightVector_ZFar.SetValue(new Vector4(sunDirection.X, sunDirection.Y, sunDirection.Z, zFar));
         }
 
-        public void SetHeadlight(ref Vector3 position, ref Vector3 direction, float distance, float minDotProduct, float fadeTime, float fadeDuration, ref Vector4 color)
+        public void SetHeadlight(ref Vector3 position, ref Vector3 direction, float distance, float minDotProduct, float fadeTime, float fadeDuration, float clampValue, ref Vector4 color)
         {
-            var lighting = fadeTime / fadeDuration;
+            var lighting = fadeTime / fadeDuration * clampValue;
             if (lighting < 0) lighting = 1 + lighting;
-            headlightPosition.SetValue(new Vector4(position, MathHelper.Clamp(lighting, 0, 1)));
+            headlightPosition.SetValue(new Vector4(position, MathHelper.Clamp(lighting, 0, clampValue)));
             headlightDirection.SetValue(new Vector4(direction, 0.5f * (1 - minDotProduct))); // We want 50% brightness at the given dot product.
             headlightRcpDistance.SetValue(1f / distance); // Needed to be separated (direction * distance) because no pre-shaders are supported in XNA 4
             headlightColor.SetValue(color);

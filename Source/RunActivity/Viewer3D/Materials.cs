@@ -383,6 +383,7 @@ namespace ORTS.Viewer3D
         bool lastLightState;
         double fadeStartTimer;
         float fadeDuration = -1;
+        float clampValue = 1;
         internal void UpdateShaders()
         {
             if(Viewer.Settings.UseMSTSEnv == false)
@@ -421,7 +422,12 @@ namespace ORTS.Viewer3D
                     // This occurs when switching locos and needs to be handled or we get lingering light.
                     SceneryShader.SetHeadlightOff();
                 else
-                    SceneryShader.SetHeadlight(ref lightDrawer.LightConePosition, ref lightDrawer.LightConeDirection, lightDrawer.LightConeDistance, lightDrawer.LightConeMinDotProduct, (float)(Viewer.Simulator.GameTime - fadeStartTimer), fadeDuration, ref lightDrawer.LightConeColor);
+                {
+                    if (sunDirection.Y <= -0.05) clampValue = 1; // at nighttime max headlight
+                    else if (sunDirection.Y >= 0.15) clampValue = 0.2f; // at daytime min headlight
+                    else clampValue = 0.2f + 4*(sunDirection.Y + 0.05f); // in the meantime interpolate
+                    SceneryShader.SetHeadlight(ref lightDrawer.LightConePosition, ref lightDrawer.LightConeDirection, lightDrawer.LightConeDistance, lightDrawer.LightConeMinDotProduct, (float)(Viewer.Simulator.GameTime - fadeStartTimer), fadeDuration, clampValue, ref lightDrawer.LightConeColor);
+                }
             }
             else
             {
