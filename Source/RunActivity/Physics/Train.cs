@@ -2903,6 +2903,12 @@ namespace ORTS
 
             float maxPressurePSI = 90;
             float fullServPressurePSI = 64;
+            if (FirstCar != null && FirstCar.BrakeSystem is VacuumSinglePipe)
+            {
+                maxPressurePSI = 21;
+                fullServPressurePSI = 16;
+            }
+
             if (LeadLocomotiveIndex >= 0)
             {
                 MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
@@ -2910,7 +2916,7 @@ namespace ORTS
                 {
                     lead.TrainBrakeController.UpdatePressure(ref BrakeLine1PressurePSIorInHg, 1000, ref BrakeLine4);
                     maxPressurePSI = lead.TrainBrakeController.MaxPressurePSI;
-                    fullServPressurePSI = maxPressurePSI - lead.TrainBrakeController.FullServReductionPSI;
+                    fullServPressurePSI = lead.BrakeSystem is VacuumSinglePipe ? 16 : maxPressurePSI - lead.TrainBrakeController.FullServReductionPSI;
                     BrakeLine1PressurePSIorInHg =
                             MathHelper.Max(BrakeLine1PressurePSIorInHg, fullServPressurePSI);
                 }
@@ -2954,8 +2960,6 @@ namespace ORTS
 
         public void ConnectBrakeHoses()
         {
-            if (SpeedMpS < -.1 || SpeedMpS > .1)
-                return;
             for (var i = 0; i < Cars.Count; i++ )
             {
                 Cars[i].BrakeSystem.FrontBrakeHoseConnected = i > 0;
@@ -3086,20 +3090,7 @@ namespace ORTS
             }
             else
             {
-                SetUniformBrakePressures();
-            }
-        }
-
-        public void SetUniformBrakePressures()
-        {
-            foreach (TrainCar car in Cars)
-            {
-                if (!car.BrakeSystem.FrontBrakeHoseConnected || !car.BrakeSystem.AngleCockAOpen)
-                    continue;
-
-                car.BrakeSystem.BrakeLine1PressurePSI = car.BrakeSystem.TrainBrakePToBrakeSystemBrakeP(BrakeLine1PressurePSIorInHg);
-                car.BrakeSystem.BrakeLine2PressurePSI = BrakeLine2PressurePSI;
-                car.BrakeSystem.BrakeLine3PressurePSI = 0;
+                Cars[0].BrakeSystem.PropagateBrakePressure(elapsedClockSeconds);
             }
         }
 

@@ -182,6 +182,7 @@ namespace ORTS
         {
             CylPressurePSIA = BrakeLine1PressurePSI = V2P(fullServVacuumInHg);
             VacResPressurePSIA = V2P(maxVacuumInHg);
+            HandbrakePercent = handbrakeOn & (Car as MSTSWagon).HandBrakePresent ? 100 : 0;
         }
 
         public override void InitializeMoving() // used when initial speed > 0
@@ -203,11 +204,6 @@ namespace ORTS
         public override void LocoInitializeMoving() // starting conditions when starting speed > 0
         {
             VacResPressurePSIA = V2P(Car.Train.BrakeLine1PressurePSIorInHg);
-        }
-
-        public override float TrainBrakePToBrakeSystemBrakeP(float trainBrakeLine1PressurePSIorInHg)
-        {
-            return V2P(trainBrakeLine1PressurePSIorInHg);
         }
 
         public override void Update(float elapsedClockSeconds)
@@ -284,13 +280,23 @@ namespace ORTS
                     if (!car.BrakeSystem.FrontBrakeHoseConnected)
                     {
                         if (car.BrakeSystem.AngleCockAOpen)
-                            car.BrakeSystem.BrakeLine1PressurePSI -= dt * p1 / PipeTimeFactorS;
+                        {
+                            car.BrakeSystem.BrakeLine1PressurePSI += dt * p1 / PipeTimeFactorS;
+                            if (car.BrakeSystem.BrakeLine1PressurePSI > KPa.ToPSI(OneAtmosphereKPa))
+                                car.BrakeSystem.BrakeLine1PressurePSI = KPa.ToPSI(OneAtmosphereKPa);
+                        }
                         if (car0.BrakeSystem.AngleCockBOpen && car != car0)
-                            car0.BrakeSystem.BrakeLine1PressurePSI -= dt * p0 / PipeTimeFactorS;
+                        {
+                            car0.BrakeSystem.BrakeLine1PressurePSI += dt * p0 / PipeTimeFactorS;
+                            if (car0.BrakeSystem.BrakeLine1PressurePSI > KPa.ToPSI(OneAtmosphereKPa))
+                                car0.BrakeSystem.BrakeLine1PressurePSI = KPa.ToPSI(OneAtmosphereKPa);
+                        }
                     }
                     if (car == train.Cars[train.Cars.Count - 1] && car.BrakeSystem.AngleCockBOpen)
                     {
-                        car.BrakeSystem.BrakeLine1PressurePSI -= dt * p1 / PipeTimeFactorS;
+                        car.BrakeSystem.BrakeLine1PressurePSI += dt * p1 / PipeTimeFactorS;
+                        if (car.BrakeSystem.BrakeLine1PressurePSI > KPa.ToPSI(OneAtmosphereKPa))
+                            car.BrakeSystem.BrakeLine1PressurePSI = KPa.ToPSI(OneAtmosphereKPa);
                     }
                     p0 = p1;
                     car0 = car;

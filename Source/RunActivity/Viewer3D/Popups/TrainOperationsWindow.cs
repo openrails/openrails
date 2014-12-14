@@ -99,6 +99,8 @@ namespace ORTS.Viewer3D.Popups
 
         void TrainOperationsCoupler_Click( Control arg1, Point arg2 ) {
             new UncoupleCommand( Viewer.Log, CarPosition );
+            if (Viewer.CarOperationsWindow.CarPosition > CarPosition)
+                Viewer.CarOperationsWindow.Visible = false;
         }
     }
 

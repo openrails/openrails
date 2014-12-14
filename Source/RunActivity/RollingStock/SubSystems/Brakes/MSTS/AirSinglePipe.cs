@@ -108,6 +108,7 @@ namespace ORTS
                 string.Format("State {0}", TripleValveState),
                 string.Empty, // Spacer because the state above needs 2 columns.
                 HandbrakePercent > 0 ? string.Format("Handbrake {0:F0}%", HandbrakePercent) : string.Empty,
+                string.Empty, // Spacer because the state above needs 2 columns.
                 FrontBrakeHoseConnected ? "I" : "T",
                 string.Format("AC A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-"),
                 BleedOffValveOpen ? "BleedOff" : string.Empty,
@@ -188,14 +189,9 @@ namespace ORTS
             if ((Car as MSTSWagon).EmergencyReservoirPresent || maxPressurePSI != 0)
                 EmergResPressurePSI = maxPressurePSI;
             FullServPressurePSI = fullServPressurePSI;
-            AutoCylPressurePSI = (maxPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio;
-            if (AutoCylPressurePSI > MaxCylPressurePSI)
-                AutoCylPressurePSI = MaxCylPressurePSI;
-            // release brakes immediately (for AI trains)
-            if (immediateRelease)
-                AutoCylPressurePSI = 0;
+            AutoCylPressurePSI = immediateRelease ? 0 : Math.Min((maxPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio, MaxCylPressurePSI);
             TripleValveState = ValveState.Lap;
-            HandbrakePercent = handbrakeOn ? 100 : 0;
+            HandbrakePercent = handbrakeOn & (Car as MSTSWagon).HandBrakePresent ? 100 : 0;
         }
 
         public override void InitializeMoving () // used when initial speed > 0
@@ -212,11 +208,6 @@ namespace ORTS
         public override void LocoInitializeMoving() // starting conditions when starting speed > 0
         {
             AISetPercent(0);
-        }
-
-        public override float TrainBrakePToBrakeSystemBrakeP(float trainBrakeLine1PressurePSIorInHg)
-        {
-            return trainBrakeLine1PressurePSIorInHg;
         }
 
         public virtual void UpdateTripleValveState(float controlPressurePSI)
