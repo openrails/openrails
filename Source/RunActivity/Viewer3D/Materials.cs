@@ -384,6 +384,7 @@ namespace ORTS.Viewer3D
         double fadeStartTimer;
         float fadeDuration = -1;
         float clampValue = 1;
+        float distance = 1000;
         internal void UpdateShaders()
         {
             if(Viewer.Settings.UseMSTSEnv == false)
@@ -423,10 +424,23 @@ namespace ORTS.Viewer3D
                     SceneryShader.SetHeadlightOff();
                 else
                 {
-                    if (sunDirection.Y <= -0.05) clampValue = 1; // at nighttime max headlight
-                    else if (sunDirection.Y >= 0.15) clampValue = 0.2f; // at daytime min headlight
-                    else clampValue = 1 - 4*(sunDirection.Y + 0.05f); // in the meantime interpolate
-                    SceneryShader.SetHeadlight(ref lightDrawer.LightConePosition, ref lightDrawer.LightConeDirection, lightDrawer.LightConeDistance, lightDrawer.LightConeMinDotProduct, (float)(Viewer.Simulator.GameTime - fadeStartTimer), fadeDuration, clampValue, ref lightDrawer.LightConeColor);
+                    if (sunDirection.Y <= -0.05)
+                    {
+                        clampValue = 1; // at nighttime max headlight
+                        distance = lightDrawer.LightConeDistance; // and max distance
+                    }
+                    else if (sunDirection.Y >= 0.15)
+                    {
+                        clampValue = 0.5f; // at daytime min headlight
+                        distance = lightDrawer.LightConeDistance*0.1f; // and min distance
+
+                    }
+                    else
+                    {
+                        clampValue = 1 - 2.5f * (sunDirection.Y + 0.05f); // in the meantime interpolate
+                        distance = lightDrawer.LightConeDistance*(1-4.5f*(sunDirection.Y + 0.05f)); //ditto
+                    }
+                    SceneryShader.SetHeadlight(ref lightDrawer.LightConePosition, ref lightDrawer.LightConeDirection, distance, lightDrawer.LightConeMinDotProduct, (float)(Viewer.Simulator.GameTime - fadeStartTimer), fadeDuration, clampValue, ref lightDrawer.LightConeColor);
                 }
             }
             else
