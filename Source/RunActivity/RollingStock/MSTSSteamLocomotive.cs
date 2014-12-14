@@ -1949,6 +1949,7 @@ namespace ORTS
             // MeanEffectivePressurePSI = (MeanPressureStrokePSI - MeanBackPressurePSI);
             MeanEffectivePressurePSI = (MeanPressureStrokePSI - MeanBackPressurePSI) * CutoffPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)];
 
+         //   Temporary restoration of original steam model
 
             MeanEffectivePressurePSI = MathHelper.Clamp(MeanEffectivePressurePSI, 0, MaxBoilerPressurePSI); // Make sure that Cylinder pressure does not go negative
             // Calculate PV const at cutoff, and then the terminal pressure at the end of cylinder stroke.
