@@ -167,6 +167,7 @@
     <Compile Include="RollingStock\SubSystems\Controllers\IController.cs" />
     <Compile Include="RollingStock\SubSystems\Controllers\MSTSBrakeController.cs" />
     <Compile Include="RollingStock\SubSystems\Controllers\MSTSNotchController.cs" />
+    <Compile Include="RollingStock\SubSystems\PowerSupply\AbstractPowerSupply.cs" />
     <Compile Include="RollingStock\SubSystems\PowerSupply\CircuitBreaker.cs" />
     <Compile Include="RollingStock\SubSystems\PowerSupply\DieselEngine.cs" />
     <Compile Include="RollingStock\SubSystems\PowerSupply\ElectricPowerSupply.cs" />

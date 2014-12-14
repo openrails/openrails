@@ -24,7 +24,7 @@ using ORTS.Scripting.Api;
 namespace ORTS
 {
 
-    public class ScriptedElectricPowerSupply
+    public class ScriptedElectricPowerSupply : AbstractPowerSupply
     {
         private readonly MSTSElectricLocomotive Locomotive;
         private readonly Simulator Simulator;
@@ -35,80 +35,6 @@ namespace ORTS
         private string ScriptName = "Default";
         private ElectricPowerSupply Script;
 
-        private PowerSupplyState state;
-        public PowerSupplyState State
-        {
-            get
-            {
-                return state;
-            }
-
-            private set
-            {
-                if (state != value)
-                {
-                    state = value;
-
-                    switch (state)
-                    {
-                        case PowerSupplyState.PowerOff:
-                            Locomotive.SignalEvent(Event.EnginePowerOff);
-                            break;
-
-                        case PowerSupplyState.PowerOn:
-                            Locomotive.SignalEvent(Event.EnginePowerOn);
-                            break;
-                    }
-
-                    Locomotive.PowerOn = PowerOn;
-                }
-            }
-        }
-        public bool PowerOn
-        {
-            get
-            {
-                return State == PowerSupplyState.PowerOn;
-            }
-        }
-
-        private PowerSupplyState auxiliaryState;
-        public PowerSupplyState AuxiliaryState
-        {
-            get
-            {
-                return auxiliaryState;
-            }
-
-            private set
-            {
-                if (auxiliaryState != value)
-                {
-                    auxiliaryState = value;
-
-                    if (Locomotive.Train != null && Locomotive.IsLeadLocomotive())
-                    {
-                        foreach (TrainCar car in Locomotive.Train.Cars)
-                        {
-                            MSTSWagon wagon = car as MSTSWagon;
-
-                            if (wagon != null)
-                            {
-                                wagon.AuxPowerOn = AuxPowerOn;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        public bool AuxPowerOn
-        {
-            get
-            {
-                return auxiliaryState == PowerSupplyState.PowerOn;
-            }
-        }
-
         public bool RouteElectrified
         {
             get
@@ -118,10 +44,9 @@ namespace ORTS
         }
 
         public float FilterVoltageV { get; set; }
-        private float PowerOnDelayS = 0;
-        private float AuxPowerOnDelayS = 0;
 
-        public ScriptedElectricPowerSupply(MSTSElectricLocomotive locomotive)
+        public ScriptedElectricPowerSupply(MSTSElectricLocomotive locomotive) :
+            base(locomotive)
         {
             Locomotive = locomotive;
             Simulator = locomotive.Simulator;
@@ -138,14 +63,6 @@ namespace ORTS
         {
             switch (lowercasetoken)
             {
-                case "engine(ortspowerondelay":
-                    PowerOnDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null);
-                    break;
-
-                case "engine(ortsauxpowerondelay":
-                    AuxPowerOnDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null);
-                    break;
-
                 case "engine(ortspowersupply":
                     ScriptName = stf.ReadStringBlock(null);
                     break;
@@ -154,19 +71,18 @@ namespace ORTS
                 case "engine(ortscircuitbreakerclosingdelay":
                     CircuitBreaker.Parse(lowercasetoken, stf);
                     break;
+
+                default:
+                    base.Parse(lowercasetoken, stf);
+                    break;
             }
         }
 
         public void Copy(ScriptedElectricPowerSupply other)
         {
             ScriptName = other.ScriptName;
-            
-            State = other.State;
-            AuxiliaryState = other.AuxiliaryState;
 
-            PowerOnDelayS = other.PowerOnDelayS;
-            AuxPowerOnDelayS = other.AuxPowerOnDelayS;
-
+            base.Copy(other);            
             CircuitBreaker.Copy(other.CircuitBreaker);
         }
 
@@ -174,12 +90,7 @@ namespace ORTS
         {
             ScriptName = inf.ReadString();
 
-            State = (PowerSupplyState) Enum.Parse(typeof(PowerSupplyState), inf.ReadString());
-            AuxiliaryState = (PowerSupplyState)Enum.Parse(typeof(PowerSupplyState), inf.ReadString());
-
-            PowerOnDelayS = inf.ReadSingle();
-            AuxPowerOnDelayS = inf.ReadSingle();
-
+            base.Restore(inf);
             CircuitBreaker.Restore(inf);
         }
 
@@ -227,8 +138,7 @@ namespace ORTS
         /// <\summary>
         public void InitializeMoving()
         {
-            State = PowerSupplyState.PowerOn;
-            AuxiliaryState = PowerSupplyState.PowerOn;
+            base.InitializeMoving();
             CircuitBreaker.InitializeMoving();
         }
 
@@ -249,12 +159,7 @@ namespace ORTS
         {
             outf.Write(ScriptName);
 
-            outf.Write(State.ToString());
-            outf.Write(AuxiliaryState.ToString());
-
-            outf.Write(PowerOnDelayS);
-            outf.Write(AuxPowerOnDelayS);
-
+            base.Save(outf);
             CircuitBreaker.Save(outf);
         }
     }
