@@ -198,6 +198,7 @@ namespace ORTS
         Interpolator SuperheatTempLimitXtoDegF;  // Table to find Super heat temp required to prevent cylinder condensation - Ref Elseco Superheater manual
         Interpolator SuperheatTempLbpHtoDegF;  // Table to find Super heat temp per lbs of steam to cylinder - from BTC Test Results for Std 8
         Interpolator InitialPressureDropRatioRpMtoX; // Allowance for wire-drawing - ie drop in initial pressure (cutoff) as speed increases
+        Interpolator CutoffPressureDropRatioRpMtoX; // Allowance for pressure drop in Cut-off pressure compared to Initial Pressure - NB only curve for 50% cutoff done
         Interpolator SteamChestPressureDropRatioRpMtoX; // Allowance for pressure drop in Steam chest pressure compared to Boiler Pressure
         
         Interpolator SaturatedSpeedFactorSpeedDropFtpMintoX; // Allowance for drop in TE for a saturated locomotive due to piston speed limitations
@@ -647,6 +648,7 @@ namespace ORTS
             SuperheatTempLimitXtoDegF = SteamTable.SuperheatTempLimitInterpolatorXtoDegF();
             SuperheatTempLbpHtoDegF = SteamTable.SuperheatTempInterpolatorLbpHtoDegF();
             InitialPressureDropRatioRpMtoX = SteamTable.InitialPressureDropRatioInterpolatorRpMtoX();
+            CutoffPressureDropRatioRpMtoX = SteamTable.CutoffPressureDropRatioInterpolatorRpMtoX();
             SteamChestPressureDropRatioRpMtoX = SteamTable.SteamChestPressureDropRatioInterpolatorRpMtoX();
             
             SaturatedSpeedFactorSpeedDropFtpMintoX = SteamTable.SaturatedSpeedFactorSpeedDropFtpMintoX();
@@ -1911,8 +1913,12 @@ namespace ORTS
 
             CutoffPressureDropRatio = (((CylinderPortOpeningFactor - CylinderPortOpeningLower) / (CylinderPortOpeningUpper - CylinderPortOpeningLower)) * (CutoffDropUpper - CutoffDropLower)) + CutoffDropLower;
 
-            MeanPressureStrokePSI = InitialPressurePSI * (cutoff + ((cutoff + CylinderClearancePC) * (float)Math.Log(RatioOfExpansion))) * CutoffPressureDropRatio;
-                    
+          
+            //  MeanPressureStrokePSI = InitialPressurePSI * (cutoff + ((cutoff + CylinderClearancePC) * (float)Math.Log(RatioOfExpansion))) * CutoffPressureDropRatio;
+            MeanPressureStrokePSI = InitialPressurePSI * (cutoff + ((cutoff + CylinderClearancePC) * (float)Math.Log(RatioOfExpansion)));
+        
+
+
            // mean pressure during stroke = ((absolute mean pressure + (clearance + cylstroke)) - (initial pressure + clearance)) / cylstroke
            // Mean effective pressure = cylpressure - backpressure
            // Cylinder pressure also reduced by steam vented through cylinder cocks.
@@ -1939,7 +1945,11 @@ namespace ORTS
             BackPressurePSI = BackPressureLBpStoPSI[CylinderSteamUsageLBpS - CylCockSteamUsageLBpS];
 
             MeanBackPressurePSI = (BackPressurePSI + OneAtmospherePSI) * ((1.0f - CylinderCompressionPC) + ((CylinderCompressionPC + CylinderClearancePC) * (float)Math.Log((CylinderCompressionPC + CylinderClearancePC) / CylinderClearancePC)));
-            MeanEffectivePressurePSI = (MeanPressureStrokePSI - MeanBackPressurePSI);
+            
+            // MeanEffectivePressurePSI = (MeanPressureStrokePSI - MeanBackPressurePSI);
+            MeanEffectivePressurePSI = (MeanPressureStrokePSI - MeanBackPressurePSI) * CutoffPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)];
+
+
             MeanEffectivePressurePSI = MathHelper.Clamp(MeanEffectivePressurePSI, 0, MaxBoilerPressurePSI); // Make sure that Cylinder pressure does not go negative
             // Calculate PV const at cutoff, and then the terminal pressure at the end of cylinder stroke.
             CylinderPressureVolumeCutoffFactor = InitialPressurePSI * cutoff * CylinderStrokeM; // Pressure doesn't need to be in absolute, as steam density figures appear to be in gauge pressure.
@@ -1948,7 +1958,10 @@ namespace ORTS
             // Calculate Cylinder compression pressure, and increases inversley proportional to drop in initial pressure, and with speed of locomotive
             // CylinderCompressionPressurePSI = 0.25f * InitialPressurePSI * (1.0f / (CylinderCompressionPressureFactor * InitialPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)]));
             float CylinderCompressionPressureFactor = 0.2f; // factor to increase cpmnpresion pressure by as lcomotive goes faster
-            CylinderCompressionPressurePSI = 0.1f * InitialPressurePSI * (1.0f / (CylinderCompressionPressureFactor * CutoffPressureDropRatio));
+           
+            // CylinderCompressionPressurePSI = 0.1f * InitialPressurePSI * (1.0f / (CylinderCompressionPressureFactor * CutoffPressureDropRatio));
+            CylinderCompressionPressurePSI = 0.1f * InitialPressurePSI * (1.0f / (CylinderCompressionPressureFactor * CutoffPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)]));
+
 
           float CalculatedCylinderSteamUsageLBpS = NumCylinders * DrvWheelRevRpS * CylStrokesPerCycle * ((CylinderSweptVolumeFT3pFT * CylinderSteamDensityPSItoLBpFT3[CylinderExhaustPressurePSI]) - (2.0f * CylinderClearancePC * CylinderSweptVolumeFT3pFT * CylinderSteamDensityPSItoLBpFT3[CylinderCompressionPressurePSI])) * SuperheaterSteamUsageFactor;
 

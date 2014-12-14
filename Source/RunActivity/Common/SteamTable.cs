@@ -672,6 +672,24 @@ namespace ORTS
             return new Interpolator2D(WheelRevolutionsRpM, Initial_pressure_lower);
         }
 
+//
+// Temp restoration of Cutoff Pressure
+//
+        // Allowance for pressure drop in Cut-off pressure compared to Initial Pressure - NB only curve for 50% cutoff done - Ref LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON
+        static float[] CutoffPressureDropRatio = new float[]
+        {
+         //     1.0f, 0.90f,   0.85f,   0.8125f, 0.78f,  0.76f,   0.73f, 0.72f    //   - 0.5
+            1.0f, 0.88f,   0.825f,   0.785f, 0.755f,  0.735f,   0.715f, 0.685f    //   - 0.4
+     //         1.0f, 0.8775f, 0.8125f, 0.7725f, 0.7425f, 0.725f,  0.70f,   0.6775f   //    - 0.35
+    //        1.0f, 0.865f,   0.80f,   0.76f,  0.73f,   0.715f,   0.685f, 0.67f  // - 0.3
+        };
+
+        // Allowance for pressure drop in Cut-off pressure compared to Initial Pressure - NB only curve for 50% cutoff done - Ref LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON
+        public static Interpolator CutoffPressureDropRatioInterpolatorRpMtoX()
+        {
+            return new Interpolator(WheelRotationRpM, CutoffPressureDropRatio);
+        }    
+
 
     }
 }
