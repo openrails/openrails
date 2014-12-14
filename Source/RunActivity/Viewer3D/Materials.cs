@@ -426,7 +426,7 @@ namespace ORTS.Viewer3D
                     if (sunDirection.Y <= -0.05) clampValue = 1; // at nighttime max headlight
                     else if (sunDirection.Y >= 0.15) clampValue = 0.2f; // at daytime min headlight
                     else clampValue = 1 - 4*(sunDirection.Y + 0.05f); // in the meantime interpolate
-                    SceneryShader.SetHeadlight(ref lightDrawer.LightConePosition, ref lightDrawer.LightConeDirection, lightDrawer.LightConeDistance, lightDrawer.LightConeMinDotProduct, (float)(Viewer.Simulator.GameTime - fadeStartTimer), fadeDuration, clampValue, ref lightDrawer.LightConeColor, sunDirection.Y);
+                    SceneryShader.SetHeadlight(ref lightDrawer.LightConePosition, ref lightDrawer.LightConeDirection, lightDrawer.LightConeDistance, lightDrawer.LightConeMinDotProduct, (float)(Viewer.Simulator.GameTime - fadeStartTimer), fadeDuration, clampValue, ref lightDrawer.LightConeColor);
                 }
             }
             else
