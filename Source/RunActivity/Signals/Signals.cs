@@ -155,6 +155,12 @@ namespace ORTS
             ProcessPlatforms(platformList, trackDB.TrItemTable, trackDB.TrackNodes);
 
             //
+            // Process tunnel information
+            //
+
+            ProcessTunnels();
+
+            //
             // Print all info (DEBUG only)
             //
 
@@ -256,6 +262,7 @@ namespace ORTS
                                     " ; NextTC : " + thisSignal.TCNextTC +
                                     " ; TN : " + thisSignal.trackNode);
                             }
+
                             if (thisSignal.TCReference < 0) // signal is not on any track - remove it!
                             {
                                 Trace.TraceInformation("Signal removed " + thisSignal.thisRef +
@@ -1752,6 +1759,18 @@ namespace ORTS
 					tcbb.AppendFormat("    Overlap : {0}\n", thisSection.Overlap);
                 }
 
+                if (thisSection.TunnelInfo != null && thisSection.TunnelInfo.Count > 0)
+                {
+                    tcbb.Append("\nTunnel Info : \n");
+                    foreach (TrackCircuitSection.tunnelInfoData[] thisTunnelInfo in thisSection.TunnelInfo)
+                    {
+                        tcbb.AppendFormat("\nDirection 0 : Start : {0} ; End : {1} ; Length in TCS : {2} ; Overall length : {3} ; Tunnel offset : {4} \n",
+                            thisTunnelInfo[0].TunnelStart, thisTunnelInfo[0].TunnelEnd, thisTunnelInfo[0].LengthInTCS, thisTunnelInfo[0].TotalLength, thisTunnelInfo[0].TCSStartOffset);
+                        tcbb.AppendFormat("\nDirection 1 : Start : {0} ; End : {1} ; Length in TCS : {2} ; Overall length : {3} ; Tunnel offset : {4} \n",
+                            thisTunnelInfo[1].TunnelStart, thisTunnelInfo[1].TunnelEnd, thisTunnelInfo[1].LengthInTCS, thisTunnelInfo[1].TotalLength, thisTunnelInfo[1].TCSStartOffset);
+                    }
+                }
+
 				tcbb.Append("}\n");
             }
 
@@ -1778,16 +1797,16 @@ namespace ORTS
                 else
                 {
 					var thisXRef = thisTrack.TCCrossReference;
-					var thisSection = TrackCircuitList[thisXRef[0].CrossRefIndex];
+					var thisSection = TrackCircuitList[thisXRef[0].Index];
 					tcbb.AppendFormat("     Original node : {0}\n", thisSection.OriginalIndex);
 
 					foreach (var thisReference in thisXRef)
                     {
-						tcbb.AppendFormat("        Ref Index : {0} : " + "Length : {1} at : {2} - {3}\n", thisReference.CrossRefIndex, thisReference.Length, thisReference.Position[0], thisReference.Position[1]);
+						tcbb.AppendFormat("        Ref Index : {0} : " + "Length : {1} at : {2} - {3}\n", thisReference.Index, thisReference.Length, thisReference.OffsetLength[0], thisReference.OffsetLength[1]);
                     }
 					tcbb.Append("\n");
 
-                    if (thisXRef[thisXRef.Count - 1].Position[1] != 0)
+                    if (thisXRef[thisXRef.Count - 1].OffsetLength[1] != 0)
                     {
 						tcbb.Append(" >>> INVALID XREF\n");
                     }
@@ -4343,6 +4362,185 @@ namespace ORTS
 
         //================================================================================================//
         //
+        // ProcessTunnels
+        // Process tunnel sections and add info to TrackCircuitSections
+        //
+
+        public void ProcessTunnels()
+        {
+            // loop through tracknodes
+            foreach (TrackNode thisNode in trackDB.TrackNodes)
+            {
+                if (thisNode != null && thisNode.TrVectorNode != null)
+                {
+                    bool inTunnel = false;
+                    List<float[]> tunnelInfo = new List<float[]>();
+                    float[] lastTunnel = null;
+                    float totalLength = 0f;
+
+                    // loop through all sections in node
+                    TrVectorNode thisVNode = thisNode.TrVectorNode;
+                    foreach (TrVectorSection thisSection in thisVNode.TrVectorSections)
+                    {
+                        float thisLength = 0f;
+                        MSTS.Formats.TrackSection TS = tsectiondat.TrackSections[thisSection.SectionIndex];
+
+                        // determine length
+                        if (TS.SectionCurve != null)
+                        {
+                            thisLength =
+                                    MathHelper.ToRadians(Math.Abs(TS.SectionCurve.Angle)) * TS.SectionCurve.Radius;
+                        }
+                        else
+                        {
+                            thisLength = TS.SectionSize.Length;
+
+                        }
+
+                        // check tunnel shape
+
+                        bool tunnelShape = false;
+
+                        if (tsectiondat.TrackShapes.ContainsKey(thisSection.ShapeIndex))
+                        {
+                            TrackShape thisShape = tsectiondat.TrackShapes[thisSection.ShapeIndex];
+                            tunnelShape = thisShape.TunnelShape;
+                        }
+
+                        if (tunnelShape)
+                        {
+                            if (inTunnel)
+                            {
+                                lastTunnel[1] += thisLength;
+                            }
+                            else
+                            {
+                                lastTunnel = new float[2];
+                                lastTunnel[0] = totalLength;
+                                lastTunnel[1] = thisLength;
+                                inTunnel = true;
+                            }
+                        }
+                        else if (inTunnel)
+                        {
+                            tunnelInfo.Add(lastTunnel);
+                            inTunnel = false;
+                        }
+                        totalLength += thisLength;
+                    }
+
+                    // add last tunnel item
+                    if (inTunnel)
+                    {
+                        tunnelInfo.Add(lastTunnel);
+                    }
+
+                    // add tunnel info to TrackCircuitSections
+
+                    if (tunnelInfo.Count > 0)
+                    {
+                        bool TCSInTunnel = false;
+                        float[] tunnelData = tunnelInfo[0];
+                        float processedLength = 0;
+
+                        foreach (TrackCircuitSectionXref TCSXRef in thisNode.TCCrossReference)
+                        {
+                            // forward direction
+                            float TCSStartOffset = TCSXRef.OffsetLength[0];
+                            float TCSLength = TCSXRef.Length;
+                            TrackCircuitSection thisTCS = TrackCircuitList[TCSXRef.Index];
+
+                            // if tunnel starts in TCS
+                            while (tunnelData != null && tunnelData[0] <= (TCSStartOffset + TCSLength))
+                            {
+                                TrackCircuitSection.tunnelInfoData[] TCSTunnelData = new TrackCircuitSection.tunnelInfoData[2];
+                                float tunnelStart = 0;
+
+                                // if in tunnel, set start in tunnel and check end
+                                if (TCSInTunnel)
+                                {
+                                    TCSTunnelData[0].TunnelStart = -1;
+                                    TCSTunnelData[0].TCSStartOffset = processedLength;
+                                }
+                                else
+                                // else start new tunnel
+                                {
+                                    TCSTunnelData[0].TunnelStart = tunnelData[0] - TCSStartOffset;
+                                    tunnelStart = TCSTunnelData[0].TunnelStart;
+                                    TCSTunnelData[0].TCSStartOffset = -1;
+                                }
+
+                                if ((TCSStartOffset + TCSLength) >= (tunnelData[0] + tunnelData[1]))  // tunnel end is in this section
+                                {
+                                    TCSInTunnel = false;
+                                    TCSTunnelData[0].TunnelEnd = tunnelStart + tunnelData[1] - processedLength;
+
+                                    TCSTunnelData[0].LengthInTCS = TCSTunnelData[0].TunnelEnd - tunnelStart;
+                                    TCSTunnelData[0].TotalLength = tunnelData[1];
+
+                                    processedLength = 0;
+
+                                    if (thisTCS.TunnelInfo == null) thisTCS.TunnelInfo = new List<TrackCircuitSection.tunnelInfoData[]>();
+                                    thisTCS.TunnelInfo.Add(TCSTunnelData);
+
+                                    if (tunnelInfo.Count >= 2)
+                                    {
+                                        tunnelInfo.RemoveAt(0);
+                                        tunnelData = tunnelInfo[0];
+                                    }
+                                    else
+                                    {
+                                        tunnelData = null;
+                                        break;  // no more tunnels to process
+                                    }
+                                }
+                                else
+                                {
+                                    TCSInTunnel = true;
+
+                                    TCSTunnelData[0].TunnelEnd = -1;
+                                    TCSTunnelData[0].LengthInTCS = TCSLength - tunnelStart;
+                                    TCSTunnelData[0].TotalLength = tunnelData[1];
+
+                                    processedLength += (TCSLength - tunnelStart);
+
+                                    if (thisTCS.TunnelInfo == null) thisTCS.TunnelInfo = new List<TrackCircuitSection.tunnelInfoData[]>();
+                                    thisTCS.TunnelInfo.Add(TCSTunnelData);
+                                    break;  // cannot add more tunnels to section
+                                }
+                            }
+                            // derive tunnel data for other direction
+                            if (thisTCS.TunnelInfo != null)
+                            {
+                                foreach (TrackCircuitSection.tunnelInfoData[] thisTunnelInfo in thisTCS.TunnelInfo)
+                                {
+                                    thisTunnelInfo[1].TunnelStart = thisTunnelInfo[0].TunnelEnd < 0 ? -1 : thisTCS.Length - thisTunnelInfo[0].TunnelEnd;
+                                    thisTunnelInfo[1].TunnelEnd = thisTunnelInfo[0].TunnelStart < 0 ? -1 : thisTCS.Length - thisTunnelInfo[0].TunnelStart;
+                                    thisTunnelInfo[1].LengthInTCS = thisTunnelInfo[0].LengthInTCS;
+                                    thisTunnelInfo[1].TotalLength = thisTunnelInfo[0].TotalLength;
+
+                                    if (thisTunnelInfo[1].TunnelStart >= 0)
+                                    {
+                                        thisTunnelInfo[1].TCSStartOffset = -1;
+                                    }
+                                    else if (thisTunnelInfo[0].TCSStartOffset < 0)
+                                    {
+                                        thisTunnelInfo[1].TCSStartOffset = thisTunnelInfo[1].TotalLength - thisTunnelInfo[1].LengthInTCS;
+                                    }
+                                    else
+                                    {
+                                        thisTunnelInfo[1].TCSStartOffset = thisTunnelInfo[1].TotalLength - thisTunnelInfo[0].TCSStartOffset - thisTCS.Length;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        //================================================================================================//
+        //
         // Find Train
         // Find train in list using number, to restore reference after restore
         //
@@ -4522,6 +4720,18 @@ namespace ORTS
         // new style deadlock definitions
         public int DeadlockReference;                             // index of deadlock to related deadlockinfo object for boundary //
         public Dictionary<int, int> DeadlockBoundaries;           // list of boundaries and path index to boundary for within deadlock //
+
+        // tunnel data
+        public struct tunnelInfoData
+        {
+            public float TunnelStart;                             // start position of tunnel : -1 if start is in tunnel
+            public float TunnelEnd;                               // end position of tunnel : -1 if end is in tunnel
+            public float LengthInTCS;                             // length of tunnel within this TCS
+            public float TotalLength;                             // total length of tunnel
+            public float TCSStartOffset;                          // offset in tunnel of start of this TCS : -1 if tunnel start in this TCS
+        }
+
+        public List<tunnelInfoData[]> TunnelInfo = null;          // full tunnel info data
 
         //================================================================================================//
         //
@@ -6471,7 +6681,7 @@ namespace ORTS
             {
                 if (startTCSectionIndex == signalRef.TrackCircuitList[trainRouted.Train.ValidRoute[0][iindex].TCSectionIndex]) 
                 {
-                    startindex = iindex+1;
+                    startindex = iindex + 1;
                     break;
                 }
             }

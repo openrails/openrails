@@ -63,6 +63,7 @@ namespace ORTS
         public AIActionItem nextGenAction;               // Can't remove GenAction if already active but we need to manage the normal Action, so
         public float NextStopDistanceM;                  // distance to next stop node
         public int? StartTime;                           // starting time
+        public bool PowerState = true;                   // actual power state : true if power in on
         public float MaxVelocityA = 30.0f;               // max velocity as set in .con file
         public Service_Definition ServiceDefinition;     // train's service definition in .act file
 
@@ -210,6 +211,7 @@ namespace ORTS
                 StartTime = startTimeValue;
             }
 
+            PowerState = inf.ReadBoolean();
             Alpha10 = inf.ReadInt32();
 
             MovementState = (AI_MOVEMENT_STATE)inf.ReadInt32();
@@ -274,6 +276,7 @@ namespace ORTS
             {
                 outf.Write(-1);
             }
+            outf.Write(PowerState);
             outf.Write(Alpha10);
 
             outf.Write((int)MovementState);
@@ -1544,6 +1547,7 @@ namespace ORTS
                         loco.SetPower(true);
                     }
                 }
+                PowerState = true;
 
                 PostInit();
                 return;
@@ -1566,13 +1570,18 @@ namespace ORTS
             }
 
             // switch off power for all engines
-            foreach (var car in Cars)
+
+            if (PowerState)
             {
-                if (car is MSTSLocomotive)
+                foreach (var car in Cars)
                 {
-                    MSTSLocomotive loco = car as MSTSLocomotive;
-                    loco.SetPower(false);
+                    if (car is MSTSLocomotive)
+                    {
+                        MSTSLocomotive loco = car as MSTSLocomotive;
+                        loco.SetPower(false);
+                    }
                 }
+                PowerState = false;
             }
         }
 
@@ -1764,11 +1773,11 @@ namespace ORTS
                         StartMoving(AI_START_MOVEMENT.PATH_ACTION);
                     }
                     else tryBraking = false;
-/*                    else if (IsActualPlayerTrain && NextSignalObject[0].hasPermission == SignalObject.Permission.Granted)
-                    {
-                        MovementState = AI_MOVEMENT_STATE.ACCELERATING;
-                        StartMoving(AI_START_MOVEMENT.PATH_ACTION);
-                    }*/
+//                    else if (IsActualPlayerTrain && NextSignalObject[0].hasPermission == SignalObject.Permission.Granted)
+//                    {
+//                        MovementState = AI_MOVEMENT_STATE.ACCELERATING;
+//                        StartMoving(AI_START_MOVEMENT.PATH_ACTION);
+//                    }
                 }
                 
                 else if (nextActionInfo != null &&
