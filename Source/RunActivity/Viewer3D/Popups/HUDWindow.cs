@@ -525,7 +525,7 @@ namespace ORTS.Viewer3D.Popups
             {
                 var j = i < 2 ? i : i * (train.Cars.Count - 1) / (n - 1);
                 var car = train.Cars[j];
-                TableSetCell(table, 0, "{0}", j + 1);
+                TableSetCell(table, 0, "{0}", train.Cars[j].CarID);
                 TableSetCells(table, 1, car.BrakeSystem.GetDebugStatus((Viewer.PlayerLocomotive as MSTSLocomotive).PressureUnit));
                 TableAddLine(table);
             }

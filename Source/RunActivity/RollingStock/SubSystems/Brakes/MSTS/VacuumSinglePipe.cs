@@ -24,8 +24,8 @@ namespace ORTS
 {
     public class VacuumSinglePipe : MSTSBrakeSystem
     {
-        const float OneAtmosphereKPa = 100;
-        //const float OneAtmospherePSIA = 15;
+        readonly static float OneAtmospherePSI = Bar.ToPSI(1);
+        //const float OneAtmosphereKPa = 100;
         //const float OneAtmosphereInHg = 30;
         float MaxHandbrakeForceN;
         float MaxBrakeForceN = 89e3f;
@@ -81,14 +81,12 @@ namespace ORTS
         // convert vacuum in inhg to pressure in psia
         public static float V2P(float v)
         {
-            //return OneAtmospherePSIA * (1 - v / OneAtmosphereInHg);
-            return KPa.ToPSI(OneAtmosphereKPa - KPa.FromInHg(v));
+            return OneAtmospherePSI - Bar.ToPSI(Bar.FromInHg(v));
         }
         // convert pressure in psia to vacuum in inhg
         public static float P2V(float p)
         {
-            //return OneAtmosphereInHg * (1 - p / OneAtmospherePSIA);
-            return KPa.ToInHg(OneAtmosphereKPa - KPa.FromPSI(p));
+            return Bar.ToInHg(Bar.FromPSI(OneAtmospherePSI - p));
         }
         // return vacuum reservior pressure adjusted for piston movement
         float VacResPressureAdjPSIA()
@@ -280,24 +278,12 @@ namespace ORTS
                     if (!car.BrakeSystem.FrontBrakeHoseConnected)
                     {
                         if (car.BrakeSystem.AngleCockAOpen)
-                        {
-                            car.BrakeSystem.BrakeLine1PressurePSI += dt * p1 / PipeTimeFactorS;
-                            if (car.BrakeSystem.BrakeLine1PressurePSI > KPa.ToPSI(OneAtmosphereKPa))
-                                car.BrakeSystem.BrakeLine1PressurePSI = KPa.ToPSI(OneAtmosphereKPa);
-                        }
+                            car.BrakeSystem.BrakeLine1PressurePSI -= dt * (p1 - OneAtmospherePSI) / PipeTimeFactorS;
                         if (car0.BrakeSystem.AngleCockBOpen && car != car0)
-                        {
-                            car0.BrakeSystem.BrakeLine1PressurePSI += dt * p0 / PipeTimeFactorS;
-                            if (car0.BrakeSystem.BrakeLine1PressurePSI > KPa.ToPSI(OneAtmosphereKPa))
-                                car0.BrakeSystem.BrakeLine1PressurePSI = KPa.ToPSI(OneAtmosphereKPa);
-                        }
+                            car0.BrakeSystem.BrakeLine1PressurePSI -= dt * (p0 - OneAtmospherePSI) / PipeTimeFactorS;
                     }
                     if (car == train.Cars[train.Cars.Count - 1] && car.BrakeSystem.AngleCockBOpen)
-                    {
-                        car.BrakeSystem.BrakeLine1PressurePSI += dt * p1 / PipeTimeFactorS;
-                        if (car.BrakeSystem.BrakeLine1PressurePSI > KPa.ToPSI(OneAtmosphereKPa))
-                            car.BrakeSystem.BrakeLine1PressurePSI = KPa.ToPSI(OneAtmosphereKPa);
-                    }
+                        car.BrakeSystem.BrakeLine1PressurePSI -= dt * (p1 - OneAtmospherePSI) / PipeTimeFactorS;
                     p0 = p1;
                     car0 = car;
                 }
@@ -323,7 +309,7 @@ namespace ORTS
         {
             if (percent < 0) percent = 0;
             if (percent > 100) percent = 100;
-            Car.Train.BrakeLine1PressurePSIorInHg = P2V(KPa.ToPSI(OneAtmosphereKPa) - MaxForcePressurePSI * (1 - percent / 100));
+            Car.Train.BrakeLine1PressurePSIorInHg = P2V(OneAtmospherePSI - MaxForcePressurePSI * (1 - percent / 100));
         }
     }
 }
