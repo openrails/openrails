@@ -4443,8 +4443,10 @@ namespace ORTS
                         float[] tunnelData = tunnelInfo[0];
                         float processedLength = 0;
 
-                        foreach (TrackCircuitSectionXref TCSXRef in thisNode.TCCrossReference)
+                        for (int iXRef = thisNode.TCCrossReference.Count - 1; iXRef >= 0; iXRef--)
                         {
+                            TrackCircuitSectionXref TCSXRef = thisNode.TCCrossReference[iXRef];
+
                             // forward direction
                             float TCSStartOffset = TCSXRef.OffsetLength[0];
                             float TCSLength = TCSXRef.Length;
