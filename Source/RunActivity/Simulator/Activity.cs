@@ -70,7 +70,6 @@ namespace ORTS
         // station stop logging flags - these are saved to resume correct logging after save
         private string StationStopLogFile;   // logfile name
         private bool StationStopLogActive;   // logging is active
-        private Train MyPlayerTrain; // shortcut to access train data
 
         private Activity(BinaryReader inf, Simulator simulator, List<EventWrapper> oldEventList)
         {
@@ -614,6 +613,8 @@ namespace ORTS
         bool maydepart;
         public bool LogStationStops;
         public string LogStationLogFile;
+        public float distanceToNextSignal = -1;
+        public Train MyPlayerTrain; // Shortcut to player train
 
         public ActivityTaskPassengerStopAt(ActivityTask prev, DateTime Arrive, DateTime Depart,
                  PlatformItem Platformend1, PlatformItem Platformend2)
@@ -693,8 +694,8 @@ namespace ORTS
         {
             // Check if station is in present train path
 
-            if (Program.Simulator.PlayerLocomotive.Train.StationStops.Count == 0 ||
-                Program.Simulator.PlayerLocomotive.Train.TCRoute.activeSubpath != Program.Simulator.PlayerLocomotive.Train.StationStops[0].SubrouteIndex)
+            if (MyPlayerTrain.StationStops.Count == 0 ||
+                MyPlayerTrain.TCRoute.activeSubpath != MyPlayerTrain.StationStops[0].SubrouteIndex)
             {
                 return (false);
             }
@@ -711,7 +712,7 @@ namespace ORTS
                     PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z);
 
             helper =
-                new TDBTravellerDistanceCalculatorHelper(Program.Simulator.PlayerLocomotive.Train.RearTDBTraveller);
+                new TDBTravellerDistanceCalculatorHelper(MyPlayerTrain.RearTDBTraveller);
 
             TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend3;
             TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend4;
@@ -731,13 +732,13 @@ namespace ORTS
         public override void NotifyEvent(ActivityEventType EventType)
         {
 
-
+            MyPlayerTrain = Program.Simulator.PlayerLocomotive.Train;
             // The train is stopped.
             if (EventType == ActivityEventType.TrainStop)
             {
                 if (IsAtStation())
                 {
-                    if (Program.Simulator.TimetableMode || !Program.Simulator.Settings.EnhancedActCompatibility || Program.Simulator.PlayerLocomotive.Train.StationStops.Count == 0)
+                    if (Program.Simulator.TimetableMode || !Program.Simulator.Settings.EnhancedActCompatibility || MyPlayerTrain.StationStops.Count == 0)
                     {
                         // If yes, we arrived
                         if (ActArrive == null)
@@ -778,21 +779,21 @@ namespace ORTS
                     // <CSComment> MSTS mode - player
                         if (Program.Simulator.GameTime < 2)
                         {
-                            // If the simulation starts with a scheduled start in the past, assume the train arrived on time.
+                            // If the simulation starts with a scheduled arrive in the past, assume the train arrived on time.
                             if (SchArrive < new DateTime().Add(TimeSpan.FromSeconds(Program.Simulator.ClockTime)))
                             {
                                 ActArrive = SchArrive;
                             }
                         }
-                        BoardingS = (double)Program.Simulator.PlayerLocomotive.Train.StationStops[0].ComputeBoardingTime(Program.Simulator.PlayerLocomotive.Train);
+                        BoardingS = (double)MyPlayerTrain.StationStops[0].ComputeBoardingTime(Program.Simulator.PlayerLocomotive.Train);
                         if (BoardingS > 0 || ((double)(SchDepart - SchArrive).TotalSeconds > 0 &&
-                            Program.Simulator.PlayerLocomotive.Train.PassengerCarsNumber == 1 && Program.Simulator.PlayerLocomotive.Train.Cars.Count > 10 ))
+                            MyPlayerTrain.PassengerCarsNumber == 1 && MyPlayerTrain.Cars.Count > 10 ))
                         {
                         // accepted station stop because either freight train or passenger train or fake passenger train with passenger car on platform or fake passenger train
                             // with Scheduled Depart > Scheduled Arrive
                                 // ActArrive is usually same as ClockTime
                                 BoardingEndS = Program.Simulator.ClockTime + BoardingS;
-                                BoardingEndS = CompareTimes.LatestTime((int)SchDepart.TimeOfDay.TotalSeconds, (int)BoardingEndS);
+
                                 if (ActArrive == null)
                                 {
                                     ActArrive = new DateTime().Add(TimeSpan.FromSeconds(Program.Simulator.ClockTime));
@@ -803,10 +804,12 @@ namespace ORTS
                                 double sinceActArriveS = (new DateTime().Add(TimeSpan.FromSeconds(Program.Simulator.ClockTime))
                                                         - ActArrive).Value.TotalSeconds;
                                 BoardingEndS -= sinceActArriveS;
+                                BoardingEndS = CompareTimes.LatestTime((int)SchDepart.TimeOfDay.TotalSeconds, (int)BoardingEndS);
 
                             }
                         }
-
+                    if  (MyPlayerTrain.NextSignalObject[0] != null)
+                           distanceToNextSignal =  MyPlayerTrain.NextSignalObject[0].DistanceTo(MyPlayerTrain.FrontTDBTraveller);
 
                 }
             }
@@ -819,8 +822,8 @@ namespace ORTS
                     CompletedAt = ActDepart.Value;
                     // Completeness depends on the elapsed waiting time
                     IsCompleted = maydepart;
-                   if (Program.Simulator.PlayerLocomotive.Train.TrainType != ORTS.Train.TRAINTYPE.AI_PLAYERHOSTING)
-                       Program.Simulator.PlayerLocomotive.Train.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId, true);
+                   if (MyPlayerTrain.TrainType != ORTS.Train.TRAINTYPE.AI_PLAYERHOSTING)
+                       MyPlayerTrain.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId, true);
 
                     if (LogStationStops)
                     {
@@ -858,7 +861,7 @@ namespace ORTS
 
                     if (remaining < 120 && (Program.Simulator.PlayerLocomotive.Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING))
                     {
-                        Program.Simulator.PlayerLocomotive.Train.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId, false);
+                        MyPlayerTrain.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId, false);
                     }
 
                     // Still have to wait
@@ -870,9 +873,19 @@ namespace ORTS
                     // May depart
                     else if (!maydepart)
                     {
-                        maydepart = true;
-                        DisplayMessage = Catalog.GetString("Passenger boarding completed. You may depart now.");
-                        Program.Simulator.SoundNotify = Event.PermissionToDepart;
+                        // check if signal ahead is cleared - if not, do not allow depart
+                        if (distanceToNextSignal >= 0 && distanceToNextSignal< 300 &&
+                            MyPlayerTrain.NextSignalObject[0].this_sig_lr(MstsSignalFunction.NORMAL) == MstsSignalAspect.STOP
+                            && MyPlayerTrain.NextSignalObject[0].hasPermission != SignalObject.Permission.Granted)
+                        {
+                            DisplayMessage = Catalog.GetString("Passenger boarding completed. Waiting for signal ahead to clear.");
+                        }
+                        else
+                        {
+                            maydepart = true;
+                            DisplayMessage = Catalog.GetString("Passenger boarding completed. You may depart now.");
+                            Program.Simulator.SoundNotify = Event.PermissionToDepart;
+                        }
 
                         // if last task, show closure window
                         // also set times in logfile
@@ -921,9 +934,9 @@ namespace ORTS
                     int tmp = (int)(Program.Simulator.ClockTime % 10);
                     if (tmp != TimerChk)
                     {
-                        if (IsMissedStation() && (Program.Simulator.PlayerLocomotive.Train.TrainType != ORTS.Train.TRAINTYPE.AI_PLAYERHOSTING))
+                        if (IsMissedStation() && (MyPlayerTrain.TrainType != ORTS.Train.TRAINTYPE.AI_PLAYERHOSTING))
                         {
-                            Program.Simulator.PlayerLocomotive.Train.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId, true);
+                            MyPlayerTrain.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId, true);
                             IsCompleted = false;
 
                             if (LogStationStops)
@@ -969,6 +982,7 @@ namespace ORTS
             outf.Write((Int32)TimerChk);
             outf.Write(arrived);
             outf.Write(maydepart);
+            outf.Write(distanceToNextSignal);
         }
 
         public override void Restore(BinaryReader inf)
@@ -989,6 +1003,7 @@ namespace ORTS
             TimerChk = inf.ReadInt32();
             arrived = inf.ReadBoolean();
             maydepart = inf.ReadBoolean();
+            distanceToNextSignal = inf.ReadSingle();
         }
     }
 
