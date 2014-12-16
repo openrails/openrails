@@ -849,10 +849,10 @@ namespace ORTS
 
           if (CylinderEfficiencyRate == 0)
           {
-              CylinderEfficiencyRate = 1.0f; // If no cyldinder efficiency rate in the ENG file set to mormal (1.0)
+              CylinderEfficiencyRate = 1.0f; // If no cylinder efficiency rate in the ENG file set to mormal (1.0)
           }
 
-          CylinderEfficiencyRate = MathHelper.Clamp(CylinderEfficiencyRate, 0.6f, 1.2f); // Clamp Cylinder Efficiency Rate to between 0.6 & 1.2           
+        //  CylinderEfficiencyRate = MathHelper.Clamp(CylinderEfficiencyRate, 0.6f, 1.2f); // Clamp Cylinder Efficiency Rate to between 0.6 & 1.2           
           MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio * CylinderEfficiencyRate;
 
             // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
