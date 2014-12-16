@@ -42,6 +42,7 @@ namespace ORTS.Viewer3D.RollingStock
         protected MSTSLocomotive MSTSLocomotive { get { return (MSTSLocomotive)Car; } }
 
         public bool _hasCabRenderer;
+        public bool _has3DCabRenderer;
         public CabRenderer _CabRenderer;
 		private ThreeDimentionCabViewer ThreeDimentionCabViewer = null;
 
@@ -267,11 +268,14 @@ namespace ORTS.Viewer3D.RollingStock
                         _CabRenderer = new CabRenderer(Viewer, Locomotive);
                 }
             }
-			if (Locomotive.CabViewpoints != null)
-			{
-				ThreeDimentionCabViewer = new ThreeDimentionCabViewer(Viewer, this.Locomotive, this);
-			}
-
+            if (!_has3DCabRenderer)
+            {
+                if (Locomotive.CabViewpoints != null)
+                {
+                    ThreeDimentionCabViewer = new ThreeDimentionCabViewer(Viewer, this.Locomotive, this);
+                    _has3DCabRenderer = true;
+                }
+            }
         }
 
         internal override void Mark()
@@ -1077,6 +1081,10 @@ namespace ORTS.Viewer3D.RollingStock
             CABTextureManager.LoadTextures(Viewer, Control.ACEFile);
         }
 
+        public CABViewControlTypes GetType()
+        {
+            return Control.ControlType;
+        }
         /// <summary>
         /// Gets the requested Locomotive data and returns it as a fraction (from 0 to 1) of the range between Min and Max values.
         /// </summary>
@@ -1519,6 +1527,7 @@ namespace ORTS.Viewer3D.RollingStock
                 case CABViewControlTypes.ALERTER_DISPLAY:
                 case CABViewControlTypes.RESET:
                 case CABViewControlTypes.WIPERS:
+                case CABViewControlTypes.EXTERNALWIPERS:
                 case CABViewControlTypes.HORN:
                 case CABViewControlTypes.WHISTLE:
                 case CABViewControlTypes.BELL:
@@ -1778,6 +1787,76 @@ namespace ORTS.Viewer3D.RollingStock
 			return "";
 		}
 
+        public string Get3DDigits(out bool Alert) //used in 3D cab, with AM/PM added, and determine if we want to use alert color
+        {
+            Alert = false;
+            try
+            {
+                var digital = Control as CVCDigital;
+                string displayedText = "";
+                Num = Locomotive.GetDataOf(Control);
+                if (Math.Abs(Num) < digital.AccuracySwitch)
+                    Format = Format2;
+                else
+                    Format = Format1;
+
+                if (Control.ControlType == CABViewControlTypes.CLOCK)
+                {
+                    // Clock is drawn specially.
+                    var clockSeconds = Locomotive.Simulator.ClockTime;
+                    var hour = (int)(clockSeconds / 3600) % 24;
+                    var minute = (int)(clockSeconds / 60) % 60;
+                    var seconds = (int)clockSeconds % 60;
+
+                    if (hour < 0)
+                        hour += 24;
+                    if (minute < 0)
+                        minute += 60;
+                    if (seconds < 0)
+                        seconds += 60;
+
+                    if (digital.ControlStyle == CABViewControlStyles._12HOUR)
+                    {
+                        if (hour < 12) displayedText = "a";
+                        else displayedText = "p";
+                        hour %= 12;
+                        if (hour == 0)
+                            hour = 12;
+                    }
+                    displayedText = String.Format(digital.Accuracy > 0 ? "{0:D2}:{1:D2}:{2:D2}" : "{0:D2}:{1:D2}", hour, minute, seconds) + displayedText;
+                }
+                else if (digital.OldValue != 0 && digital.OldValue > Num && digital.DecreaseColor.A != 0)
+                {
+                    displayedText = String.Format(Format, Math.Abs(Num));
+                }
+                else if (Num < 0 && digital.NegativeColor.A != 0)
+                {
+                    displayedText = String.Format(Format, Math.Abs(Num));
+                    if ((digital.NumNegativeColors >= 2) && (Num < digital.NegativeSwitchVal))
+                        Alert = true;
+                }
+                else if (digital.PositiveColor.A != 0)
+                {
+                    displayedText = String.Format(Format, Num);
+                    if ((digital.NumPositiveColors >= 2) && (Num > digital.PositiveSwitchVal))
+                        Alert = true;
+                }
+                else
+                {
+                    displayedText = String.Format(Format, Num);
+                }
+                // <CSComment> Speedometer is now managed like the other digitals
+
+                return displayedText;
+            }
+            catch (Exception)
+            {
+                DrawColor = Color.Blue;
+            }
+
+            return "";
+        }
+
 	}
 
 	/// <summary>
@@ -1789,60 +1868,63 @@ namespace ORTS.Viewer3D.RollingStock
 
 		protected PoseableShape TrainCarShape = null;
 		Dictionary<int, AnimatedPartMultiState> AnimateParts = null;
-		Dictionary<int, DigitalDisplay> DigitParts = null;
-		protected MSTSLocomotive MSTSLocomotive { get { return (MSTSLocomotive)Car; } }
+        Dictionary<int, AnimatedPart> OnDemandAnimateParts = null; //like external wipers, and other parts that will be switched on by mouse in the future
+        //Dictionary<int, DigitalDisplay> DigitParts = null;
+        Dictionary<int, ThreeDimCabDigit> DigitParts3D = null;
+        AnimatedPart ExternalWipers;
+        protected MSTSLocomotive MSTSLocomotive { get { return (MSTSLocomotive)Car; } }
 		MSTSLocomotiveViewer LocoViewer;
 		private SpriteBatchMaterial _Sprite2DCabView;
 		WindowTextFont _Font;
-		public ThreeDimentionCabViewer(Viewer viewer, MSTSLocomotive car, MSTSLocomotiveViewer locoViewer)
-			: base(viewer, car)
-		{
-			Locomotive = car;
-			_Sprite2DCabView = (SpriteBatchMaterial)viewer.MaterialManager.Load("SpriteBatch");
-			_Font = viewer.WindowManager.TextManager.Get("Arial", 14, System.Drawing.FontStyle.Regular);
-			LocoViewer = locoViewer;
-			string wagonFolderSlash = Path.GetDirectoryName(car.WagFilePath) + @"\CABVIEW3D\";
-			string shapePath = wagonFolderSlash  + car.Cab3DShapeFileName;
+        public ThreeDimentionCabViewer(Viewer viewer, MSTSLocomotive car, MSTSLocomotiveViewer locoViewer)
+            : base(viewer, car)
+        {
+            Locomotive = car;
+            _Sprite2DCabView = (SpriteBatchMaterial)viewer.MaterialManager.Load("SpriteBatch");
+            _Font = viewer.WindowManager.TextManager.Get("Arial", 14, System.Drawing.FontStyle.Regular);
+            LocoViewer = locoViewer;
+            string wagonFolderSlash = Path.GetDirectoryName(car.WagFilePath) + @"\CABVIEW3D\";
+            string shapePath = wagonFolderSlash + car.Cab3DShapeFileName;
 
-			TrainCarShape = new PoseableShape(viewer, shapePath + '\0' + wagonFolderSlash, car.WorldPosition, ShapeFlags.ShadowCaster);
+            TrainCarShape = new PoseableShape(viewer, shapePath + '\0' + wagonFolderSlash, car.WorldPosition, ShapeFlags.ShadowCaster);
 
-			//TrainCarShape = new PoseableShape(viewer, shapePath, car.WorldPosition, ShapeFlags.ShadowCaster);
+            //TrainCarShape = new PoseableShape(viewer, shapePath, car.WorldPosition, ShapeFlags.ShadowCaster);
 
-			AnimateParts = new Dictionary<int, AnimatedPartMultiState>();
-			DigitParts = new Dictionary<int, DigitalDisplay>();
-
-			CABViewControlTypes type;
-			// Find the animated parts
-			if (TrainCarShape.SharedShape.Animations != null)
-			{
-				string matrixName = ""; string typeName = ""; AnimatedPartMultiState tmpPart = null;
-				for (int iMatrix = 0; iMatrix < TrainCarShape.SharedShape.MatrixNames.Count; ++iMatrix)
-				{
-					matrixName = TrainCarShape.SharedShape.MatrixNames[iMatrix].ToUpper();
-					//Name convention
-					//TYPE:Order:Parameter-PartN
-					//e.g. ASPECT_SIGNAL:0:0-1: first ASPECT_SIGNAL, parameter is 0, this component is part 1 of this cab control
-					//     ASPECT_SIGNAL:0:0-2: first ASPECT_SIGNAL, parameter is 0, this component is part 2 of this cab control
-					//     ASPECT_SIGNAL:1:0  second ASPECT_SIGNAL, parameter is 0, this component is the only one for this cab control
-					typeName = matrixName.Split('-')[0]; //a part may have several sub-parts, like ASPECT_SIGNAL:0:0-1, ASPECT_SIGNAL:0:0-2
-					type = CABViewControlTypes.NONE;
-					tmpPart = null;
-					int order, parameter, key;
+            AnimateParts = new Dictionary<int, AnimatedPartMultiState>();
+            //DigitParts = new Dictionary<int, DigitalDisplay>();
+            DigitParts3D = new Dictionary<int, ThreeDimCabDigit>();
+            OnDemandAnimateParts = new Dictionary<int, AnimatedPart>();
+            CABViewControlTypes type;
+            // Find the animated parts
+            if (TrainCarShape.SharedShape.Animations != null)
+            {
+                string matrixName = ""; string typeName = ""; AnimatedPartMultiState tmpPart = null;
+                for (int iMatrix = 0; iMatrix < TrainCarShape.SharedShape.MatrixNames.Count; ++iMatrix)
+                {
+                    matrixName = TrainCarShape.SharedShape.MatrixNames[iMatrix].ToUpper();
+                    //Name convention
+                    //TYPE:Order:Parameter-PartN
+                    //e.g. ASPECT_SIGNAL:0:0-1: first ASPECT_SIGNAL, parameter is 0, this component is part 1 of this cab control
+                    //     ASPECT_SIGNAL:0:0-2: first ASPECT_SIGNAL, parameter is 0, this component is part 2 of this cab control
+                    //     ASPECT_SIGNAL:1:0  second ASPECT_SIGNAL, parameter is 0, this component is the only one for this cab control
+                    typeName = matrixName.Split('-')[0]; //a part may have several sub-parts, like ASPECT_SIGNAL:0:0-1, ASPECT_SIGNAL:0:0-2
+                    type = CABViewControlTypes.NONE;
+                    tmpPart = null;
+                    int order, parameter, key;
                     CabViewControlRenderer style = null;
-					//ASPECT_SIGNAL:0:0
-					var tmp = typeName.Split(':');
+                    //ASPECT_SIGNAL:0:0
+                    var tmp = typeName.Split(':');
                     try
                     {
                         order = int.Parse(tmp[1]);
                         parameter = int.Parse(tmp[2].Trim());
                     }
                     catch { continue; }
-
                     try
                     {
                         type = (CABViewControlTypes)Enum.Parse(typeof(CABViewControlTypes), tmp[0].Trim(), true); //convert from string to enum
-    					key = 1000 * (int)type + order;
-                        style = locoViewer._CabRenderer.ControlMap[key];
+                        key = 1000 * (int)type + order;
+                        if (type != CABViewControlTypes.EXTERNALWIPERS) style = locoViewer._CabRenderer.ControlMap[key]; //cvf file has no external wipers key word
                     }
                     catch
                     {
@@ -1850,25 +1932,38 @@ namespace ORTS.Viewer3D.RollingStock
                         continue;
                     }
 
-					if (style != null && style is CabViewDigitalRenderer)//digits?
-					{
-						DigitParts.Add(key, new DigitalDisplay(viewer, TrainCarShape, iMatrix, parameter, locoViewer._CabRenderer.ControlMap[key]));
-					}
-					else//others
-					{
-						//if there is a part already, will insert this into it, otherwise, create a new
-						if (!AnimateParts.ContainsKey(key))
-						{
-							tmpPart = new AnimatedPartMultiState(TrainCarShape, type, key);
-							AnimateParts.Add(key, tmpPart);
-						}
-						else tmpPart = AnimateParts[key];
-						tmpPart.AddMatrix(iMatrix); //tmpPart.SetPosition(false);
-					}
-				}
-			}
-		}
 
+                    key = 1000 * (int)type + order;
+                    if (style != null && style is CabViewDigitalRenderer)//digits?
+                    {
+                        //DigitParts.Add(key, new DigitalDisplay(viewer, TrainCarShape, iMatrix, parameter, locoViewer._CabRenderer.ControlMap[key]));
+                        DigitParts3D.Add(key, new ThreeDimCabDigit(viewer, iMatrix, parameter, this.TrainCarShape, locoViewer._CabRenderer.ControlMap[key]));
+                    }
+                    else if (type == CABViewControlTypes.EXTERNALWIPERS)
+                    {
+                        //if there is a part already, will insert this into it, otherwise, create a new
+                        if (!OnDemandAnimateParts.ContainsKey(key))
+                        {
+                            ExternalWipers = new AnimatedPartMultiState(TrainCarShape, type, key);
+                            OnDemandAnimateParts.Add(key, ExternalWipers);
+                        }
+                        else ExternalWipers = OnDemandAnimateParts[key];
+                        ExternalWipers.AddMatrix(iMatrix);
+                    }
+                    else//others
+                    {
+                        //if there is a part already, will insert this into it, otherwise, create a new
+                        if (!AnimateParts.ContainsKey(key))
+                        {
+                            tmpPart = new AnimatedPartMultiState(TrainCarShape, type, key);
+                            AnimateParts.Add(key, tmpPart);
+                        }
+                        else tmpPart = AnimateParts[key];
+                        tmpPart.AddMatrix(iMatrix); //tmpPart.SetPosition(false);
+                    }
+                }
+            }
+        }
         public override void InitializeUserInputCommands() { }
 
 		/// <summary>
@@ -1900,10 +1995,17 @@ namespace ORTS.Viewer3D.RollingStock
 			{
 				p.Value.Update(this.LocoViewer, elapsedTime);
 			}
+            foreach (var p in DigitParts3D)
+            {
+                p.Value.PrepareFrame(frame, elapsedTime);
+            }
+            if (ExternalWipers != null) ExternalWipers.UpdateLoop(Locomotive.Wiper, elapsedTime);
+            /*
 			foreach (var p in DigitParts)
 			{
 				p.Value.PrepareFrame(frame, elapsedTime);
-			}
+			}*/ //removed with 3D digits
+            
 			TrainCarShape.PrepareFrame(frame, elapsedTime);
 		}
 
@@ -1912,6 +2014,249 @@ namespace ORTS.Viewer3D.RollingStock
             // TODO: This is likely wrong; we should mark textures, shapes and other graphical resources here.
 		}
 	} // Class ThreeDimentionCabViewer
+
+    public class ThreeDimCabDigit
+    {
+        PoseableShape TrainCarShape;
+        VertexPositionNormalTexture[] VertexList;
+        int NumVertices;
+        int NumIndices;
+        public short[] TriangleListIndices;// Array of indices to vertices for triangles
+        Matrix XNAMatrix;
+        Viewer Viewer;
+        ShapePrimitive shapePrimitive;
+        CabViewDigitalRenderer CVFR;
+        Material Material;
+        Material AlertMaterial;
+        float Size;
+        public ThreeDimCabDigit(Viewer viewer, int iMatrix, int textSize, PoseableShape trainCarShape, CabViewControlRenderer c)
+        {
+            CVFR = (CabViewDigitalRenderer)c;
+            Viewer = viewer;
+            TrainCarShape = trainCarShape;
+            XNAMatrix = TrainCarShape.SharedShape.Matrices[iMatrix];
+            var maxVertex = 32;// every face has max 5 digits, each has 2 triangles
+            //Material = viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(viewer.Simulator, Helpers.TextureFlags.None, texture), (int)(SceneryMaterialOptions.None | SceneryMaterialOptions.AlphaBlendingBlend), 0);
+            Material = FindMaterial(false);//determine normal material
+            // Create and populate a new ShapePrimitive
+            NumVertices = NumIndices = 0;
+            Size = textSize * 0.001f;
+
+            VertexList = new VertexPositionNormalTexture[maxVertex];
+            TriangleListIndices = new short[maxVertex / 2 * 3]; // as is NumIndices
+
+            //start position is the center of the text
+            var start = new Vector3(0, 0, 0);
+            var rotation = 0;
+
+            //find the left-most of text
+            Vector3 offset;
+
+            offset.X = 0;
+
+            offset.Y = -Size;
+
+            string speed = "000000";
+            for (var j = 0; j < speed.Length; j++)
+            {
+                var tX = GetTextureCoordX(speed[j]); var tY = GetTextureCoordY(speed[j]);
+                var rot = Matrix.CreateRotationY(-rotation);
+
+                //the left-bottom vertex
+                Vector3 v = new Vector3(offset.X, offset.Y, 0.01f);
+                v = Vector3.Transform(v, rot);
+                v += start; Vertex v1 = new Vertex(v.X, v.Y, v.Z, 0, 0, -1, tX, tY);
+
+                //the right-bottom vertex
+                v.X = offset.X + Size; v.Y = offset.Y; v.Z = 0.01f;
+                v = Vector3.Transform(v, rot);
+                v += start; Vertex v2 = new Vertex(v.X, v.Y, v.Z, 0, 0, -1, tX + 0.25f, tY);
+
+                //the right-top vertex
+                v.X = offset.X + Size; v.Y = offset.Y + Size; v.Z = 0.01f;
+                v = Vector3.Transform(v, rot);
+                v += start; Vertex v3 = new Vertex(v.X, v.Y, v.Z, 0, 0, -1, tX + 0.25f, tY - 0.25f);
+
+                //the left-top vertex
+                v.X = offset.X; v.Y = offset.Y + Size; v.Z = 0.01f;
+                v = Vector3.Transform(v, rot);
+                v += start; Vertex v4 = new Vertex(v.X, v.Y, v.Z, 0, 0, -1, tX, tY - 0.25f);
+
+                //create first triangle
+                TriangleListIndices[NumIndices++] = (short)NumVertices;
+                TriangleListIndices[NumIndices++] = (short)(NumVertices + 2);
+                TriangleListIndices[NumIndices++] = (short)(NumVertices + 1);
+                // Second triangle:
+                TriangleListIndices[NumIndices++] = (short)NumVertices;
+                TriangleListIndices[NumIndices++] = (short)(NumVertices + 3);
+                TriangleListIndices[NumIndices++] = (short)(NumVertices + 2);
+
+                //create vertex
+                VertexList[NumVertices].Position = v1.Position; VertexList[NumVertices].Normal = v1.Normal; VertexList[NumVertices].TextureCoordinate = v1.TexCoord;
+                VertexList[NumVertices + 1].Position = v2.Position; VertexList[NumVertices + 1].Normal = v2.Normal; VertexList[NumVertices + 1].TextureCoordinate = v2.TexCoord;
+                VertexList[NumVertices + 2].Position = v3.Position; VertexList[NumVertices + 2].Normal = v3.Normal; VertexList[NumVertices + 2].TextureCoordinate = v3.TexCoord;
+                VertexList[NumVertices + 3].Position = v4.Position; VertexList[NumVertices + 3].Normal = v4.Normal; VertexList[NumVertices + 3].TextureCoordinate = v4.TexCoord;
+                NumVertices += 4;
+                offset.X += Size*0.8f; offset.Y += 0; //move to next digit
+            }
+
+            var i = 0;
+            //create the shape primitive
+            short[] newTList = new short[NumIndices];
+            for (i = 0; i < NumIndices; i++) newTList[i] = TriangleListIndices[i];
+            VertexPositionNormalTexture[] newVList = new VertexPositionNormalTexture[NumVertices];
+            for (i = 0; i < NumVertices; i++) newVList[i] = VertexList[i];
+            IndexBuffer IndexBuffer = new IndexBuffer(viewer.GraphicsDevice, typeof(short),
+                                                            NumIndices, BufferUsage.WriteOnly);
+            IndexBuffer.SetData(newTList);
+            shapePrimitive = new ShapePrimitive(Material, new SharedShape.VertexBufferSet(newVList, viewer.GraphicsDevice), IndexBuffer, 0, NumVertices, NumIndices / 3, new[] { -1 }, 0);
+
+        }
+
+        Material FindMaterial(bool Alert)
+        {
+            string imageName = "";
+            string globalText = Viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\";
+            CABViewControlTypes controltype = CVFR.GetType();
+            Material material = null;
+
+            if (Alert) { imageName = "alert.ace"; }
+            else
+            {
+                switch (controltype)
+                {
+                    case CABViewControlTypes.CLOCK:
+                        imageName = "clock.ace";
+                        break;
+                    case CABViewControlTypes.SPEED_PROJECTED:
+                    case CABViewControlTypes.SPEEDOMETER:
+                        imageName = "speed.ace";
+                        break;
+                    case CABViewControlTypes.SPEEDLIMIT:
+                    case CABViewControlTypes.SPEEDLIM_DISPLAY:
+                        imageName = "speedlim.ace";
+                        break;
+                }
+            }
+            if (String.IsNullOrEmpty(TrainCarShape.SharedShape.ReferencePath))
+            {
+                if (!File.Exists(globalText + imageName))
+                {
+                    Trace.TraceInformation("Ignored missing " + imageName + " using default. You can copy the " + imageName + " from OR\'s AddOns folder to " + globalText +
+                        ", or place it under " + TrainCarShape.SharedShape.ReferencePath);
+                }
+                material = Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(Viewer.Simulator, Helpers.TextureFlags.None, globalText, imageName), (int)(SceneryMaterialOptions.None | SceneryMaterialOptions.AlphaBlendingBlend), 0);
+            }
+            else
+            {
+                if (!File.Exists(TrainCarShape.SharedShape.ReferencePath + imageName))
+                {
+                    Trace.TraceInformation("Ignored missing " + imageName + " using default. You can copy the " + imageName + " from OR\'s AddOns folder to " + globalText +
+                        ", or place it under " + TrainCarShape.SharedShape.ReferencePath);
+                    material = Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(Viewer.Simulator, Helpers.TextureFlags.None, globalText, imageName), (int)(SceneryMaterialOptions.None | SceneryMaterialOptions.AlphaBlendingBlend), 0);
+                }
+                else material = Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(Viewer.Simulator, Helpers.TextureFlags.None, TrainCarShape.SharedShape.ReferencePath, imageName), (int)(SceneryMaterialOptions.None | SceneryMaterialOptions.AlphaBlendingBlend), 0);
+            }
+
+            return material;
+            //Material = Viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(Viewer.Simulator, Helpers.TextureFlags.None, "Speed"), (int)(SceneryMaterialOptions.None | SceneryMaterialOptions.AlphaBlendingBlend), 0);
+        }
+
+        //update the digits with current speed or time
+        public void UpdateDigit()
+        {
+            NumVertices = NumIndices = 0;
+
+            Material UsedMaterial = Material; //use default material
+
+            //update text string
+            bool Alert;
+            string speed = CVFR.Get3DDigits(out Alert);
+
+            if (Alert)//alert use alert meterial
+            {
+                if (AlertMaterial == null) AlertMaterial = FindMaterial(true);
+                UsedMaterial = AlertMaterial;
+            }
+            //update vertex texture coordinate
+            for (var j = 0; j < speed.Length; j++)
+            {
+                var tX = GetTextureCoordX(speed[j]); var tY = GetTextureCoordY(speed[j]);
+                //create first triangle
+                TriangleListIndices[NumIndices++] = (short)NumVertices;
+                TriangleListIndices[NumIndices++] = (short)(NumVertices + 2);
+                TriangleListIndices[NumIndices++] = (short)(NumVertices + 1);
+                // Second triangle:
+                TriangleListIndices[NumIndices++] = (short)NumVertices;
+                TriangleListIndices[NumIndices++] = (short)(NumVertices + 3);
+                TriangleListIndices[NumIndices++] = (short)(NumVertices + 2);
+
+                VertexList[NumVertices].TextureCoordinate.X = tX; VertexList[NumVertices].TextureCoordinate.Y = tY;
+                VertexList[NumVertices + 1].TextureCoordinate.X = tX + 0.25f; VertexList[NumVertices + 1].TextureCoordinate.Y = tY;
+                VertexList[NumVertices + 2].TextureCoordinate.X = tX + 0.25f; VertexList[NumVertices + 2].TextureCoordinate.Y = tY - 0.25f;
+                VertexList[NumVertices + 3].TextureCoordinate.X = tX; VertexList[NumVertices + 3].TextureCoordinate.Y = tY - 0.25f; 
+                NumVertices += 4;
+            }
+
+            var i = 0;
+            //create the new shape primitive
+            short[] newTList = new short[NumIndices];
+            for (i = 0; i < NumIndices; i++) newTList[i] = TriangleListIndices[i];
+            VertexPositionNormalTexture[] newVList = new VertexPositionNormalTexture[NumVertices];
+            for (i = 0; i < NumVertices; i++) newVList[i] = VertexList[i];
+            IndexBuffer IndexBuffer = new IndexBuffer(Viewer.GraphicsDevice, typeof(short),
+                                                            NumIndices, BufferUsage.WriteOnly);
+            IndexBuffer.SetData(newTList);
+            shapePrimitive = null;
+            shapePrimitive = new ShapePrimitive(UsedMaterial, new SharedShape.VertexBufferSet(newVList, Viewer.GraphicsDevice), IndexBuffer, 0, NumVertices, NumIndices / 3, new[] { -1 }, 0);
+
+        }
+
+        
+        //ACE MAP:
+        // 0 1 2 3 
+        // 4 5 6 7
+        // 8 9 : 
+        // . - a p
+        static float GetTextureCoordX(char c)
+        {
+            float x = (c - '0') % 4 * 0.25f;
+            if (c == '.') x = 0;
+            else if (c == ':') x = 0.5f;
+            else if (c == ' ') x = 0.75f;
+            else if (c == '-') x = 0.25f;
+            else if (c == 'a') x = 0.5f; //AM
+            else if (c == 'p') x = 0.75f; //PM
+            if (x < 0) x = 0;
+            if (x > 1) x = 1;
+            return x;
+        }
+
+        static float GetTextureCoordY(char c)
+        {
+            if (c == '0' || c == '1' || c == '2' || c == '3') return 0.25f;
+            if (c == '4' || c == '5' || c == '6' || c == '7') return 0.5f;
+            if (c == '8' || c == '9' || c == ':' || c == ' ') return 0.75f;
+            return 1.0f;
+        }
+
+        public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+        {
+            UpdateDigit();
+            Matrix mx = TrainCarShape.Location.XNAMatrix;
+            mx.M41 += (TrainCarShape.Location.TileX - Viewer.Camera.TileX) * 2048;
+            mx.M43 += (-TrainCarShape.Location.TileZ + Viewer.Camera.TileZ) * 2048;
+            Matrix m = XNAMatrix * mx;
+
+            // TODO: Make this use AddAutoPrimitive instead.
+            frame.AddPrimitive(this.shapePrimitive.Material, this.shapePrimitive, RenderPrimitiveGroup.World, ref m, ShapeFlags.None);
+        }
+
+        internal void Mark()
+        {
+            shapePrimitive.Mark();
+        }
+    } // class ThreeDimCabDigit
 
 	public class DigitalDisplay
 	{
@@ -1941,6 +2286,7 @@ namespace ORTS.Viewer3D.RollingStock
 
 		public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
 		{
+            return; //not used when the 3D text is in effect
 			RecomputeLocation();//not init, or out of range before, recompute
 			if (X == -1000) return; //indicating not able to draw it (out of range or behind camera)
 			text.Text = CVFR.GetDigits(out text.Color);

@@ -143,6 +143,7 @@ namespace MSTS.Formats
         PANTOGRAPHS_4,
         PANTOGRAPHS_4C,
         PANTOGRAPHS_5,
+        EXTERNALWIPERS
     }
 
     public enum CABViewControlStyles
