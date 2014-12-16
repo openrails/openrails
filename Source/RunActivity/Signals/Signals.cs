@@ -4383,6 +4383,12 @@ namespace ORTS
                     foreach (TrVectorSection thisSection in thisVNode.TrVectorSections)
                     {
                         float thisLength = 0f;
+                        if (!tsectiondat.TrackSections.ContainsKey(thisSection.SectionIndex))
+                        {
+                            //TODO : how to sort out the overall length in this situation?
+                            continue;  // section ID is missing
+                        }
+
                         MSTS.Formats.TrackSection TS = tsectiondat.TrackSections[thisSection.SectionIndex];
 
                         // determine length
