@@ -985,6 +985,7 @@ namespace ORTS.Viewer3D
         public animations Animations;
         public LodControl[] LodControls;
         public bool HasNightSubObj;
+        public int RootSubObjectIndex = 0;
 
         readonly Viewer Viewer;
         public readonly string FilePath;
@@ -1067,6 +1068,19 @@ namespace ORTS.Viewer3D
                            select new LodControl(lod, textureFlags, sFile, this)).ToArray();
             if (LodControls.Length == 0)
                 throw new InvalidDataException("Shape file missing lod_control section");
+            else if (LodControls[0].DistanceLevels.Length > 0 && LodControls[0].DistanceLevels[0].SubObjects.Length > 0)
+            {
+                // Look for root subobject, it is not necessarily the first (see ProTrain signal)
+                for (int soIndex=0; soIndex <= LodControls[0].DistanceLevels[0].SubObjects.Length-1; soIndex++)
+                {
+                    sub_object subObject = sFile.shape.lod_controls[0].distance_levels[0].sub_objects[soIndex];
+                    if (subObject.sub_object_header.geometry_info.geometry_node_map[0]==0)
+                    {
+                        RootSubObjectIndex = soIndex;
+                        break;
+                    }
+                }
+             }
         }
 
         public class LodControl

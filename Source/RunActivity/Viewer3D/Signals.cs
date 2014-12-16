@@ -64,13 +64,15 @@ namespace ORTS.Viewer3D
                 if ((((mstsSignal.SignalSubObj >> i) & 0x1) == 1) && (SharedShape.MatrixNames.Contains(mstsSignalShape.SignalSubObjs[i].MatrixName)))
                     visibleMatrixNames[SharedShape.MatrixNames.IndexOf(mstsSignalShape.SignalSubObjs[i].MatrixName)] = true;
 
-            // All sub-objects except the first are hidden by default. For each sub-object beyond the first, look up
-            // its name in the hierarchy and use the visibility of that matrix. Note: parent matricies in the
+            // All sub-objects except the one pointing to the first matrix (99.00% times it is the first one, but not always, see Protrain) are hidden by default.
+            //For each other sub-object, look up its name in the hierarchy and use the visibility of that matrix. Note: parent matricies in the
             // hierarchy are not considered.
             SubObjVisible = new bool[SharedShape.LodControls[0].DistanceLevels[0].SubObjects.Length];
-            SubObjVisible[0] = true;
-            for (var i = 1; i < SharedShape.LodControls[0].DistanceLevels[0].SubObjects.Length; i++)
-                SubObjVisible[i] = visibleMatrixNames[SharedShape.LodControls[0].DistanceLevels[0].SubObjects[i].ShapePrimitives[0].HierarchyIndex];
+            for (var i = 0; i < SharedShape.LodControls[0].DistanceLevels[0].SubObjects.Length; i++)
+            {
+                SubObjVisible[i] = (i==SharedShape.RootSubObjectIndex)?
+                    true : visibleMatrixNames[SharedShape.LodControls[0].DistanceLevels[0].SubObjects[i].ShapePrimitives[0].HierarchyIndex];
+            }
 
 #if DEBUG_SIGNAL_SHAPES
             for (var i = 0; i < mstsSignalShape.SignalSubObjs.Count; i++)
