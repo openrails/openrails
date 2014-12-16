@@ -2933,11 +2933,13 @@ namespace ORTS
             }
             else
             {
-                BrakeLine1PressurePSIorInHg = BrakeLine2PressurePSI = BrakeLine3PressurePSI = maxPressurePSI = 0;
+                BrakeLine1PressurePSIorInHg = BrakeLine2PressurePSI = BrakeLine3PressurePSI = 0;
+                if (TrainType == TRAINTYPE.STATIC)
+                    maxPressurePSI = 0;
                 BrakeLine4 = -1;
             }
             foreach (TrainCar car in Cars)
-                car.BrakeSystem.Initialize(LeadLocomotiveIndex < 0, maxPressurePSI, fullServPressurePSI, LeadLocomotiveIndex < 0);
+                car.BrakeSystem.Initialize(LeadLocomotiveIndex < 0, maxPressurePSI, fullServPressurePSI, false);
        }
 
         //================================================================================================//

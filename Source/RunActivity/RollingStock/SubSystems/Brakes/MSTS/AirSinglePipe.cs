@@ -569,7 +569,7 @@ namespace ORTS
         {
             if (percent < 0) percent = 0;
             if (percent > 100) percent = 100;
-            Car.Train.BrakeLine1PressurePSIorInHg = 90 - 26 * percent / 100;
+            Car.Train.BrakeLine1PressurePSIorInHg = Math.Max(EmergResPressurePSI, 90) - FullServPressurePSI * percent / 100;
         }
     }
 }
