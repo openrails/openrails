@@ -428,7 +428,8 @@ namespace ORTS
                 {
                     distancesM = thisAction.CalculateDistancesToNextAction(thisTrain, thisTrain.SpeedMpS, true);
                 }
-                if (distancesM[0] < 0f)
+                //<CSComment> Next block does not seem useful. distancesM[0] includes distanceTravelledM, so it practically can be 0 only at start of game
+/*                if (distancesM[0]< 0f)
                 {
                     SpecAuxActions.RemoveAt(0);
                     if (SpecAuxActions.Count == 0)
@@ -439,7 +440,7 @@ namespace ORTS
                     thisAction = (AIAuxActionsRef)SpecAuxActions[0];
                     if (thisAction.SubrouteIndex > thisTrain.TCRoute.activeSubpath) return;
                 }
-                else
+                else */
                 {
                     float requiredSpeedMpS = 0;
 
