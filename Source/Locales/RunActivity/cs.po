@@ -1,37 +1,103 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
-"POT-Creation-Date: 2014-02-28 18:43:38+0000\n"
-"PO-Revision-Date: 2014-03-03 22:40+0100\n"
-"Last-Translator: Matej Pacha <matej.pacha@gmail.com>\n"
+"POT-Creation-Date: 2014-12-12 18:49:03+0000\n"
+"PO-Revision-Date: 2014-12-18 07:18+0100\n"
+"Last-Translator: Altmann <altmann@bk.ru>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.6.4\n"
+"X-Generator: Poedit 1.7.1\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
 
-#: ../../RunActivity/Debugging/DebugViewerForm.cs:2074
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:217
+msgid "Release"
+msgstr "Odbrzdit"
+
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:218
+msgid "Quick Release"
+msgstr "Švih (rychlé odbrzdění)"
+
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:219
+msgid "Running"
+msgstr "Jízda"
+
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:220
+msgid "Neutral"
+msgstr "Neutrál"
+
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:221
+msgid "Apply"
+msgstr "Zabrzdit"
+
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:222
+msgid "EPApply"
+msgstr "EP zabrzdit"
+
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:223
+msgid "Emergency"
+msgstr "Záchranná brzda"
+
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:224
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:227
+msgid "Lap"
+msgstr "Přidržení"
+
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:225
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:226
+msgid "Service"
+msgstr "Brzda"
+
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:228
+msgid "Suppression"
+msgstr "Závěr"
+
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:229
+msgid "Cont. Service"
+msgstr "Trvalé zabrzdění"
+
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:230
+msgid "Full Service"
+msgstr "Max. brzdný účinek"
+
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:231
+msgid "Overcharge"
+msgstr "Přetížení"
+
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:232
+msgid "Emergency Braking Push Button"
+msgstr "Tlačítko záchranné brzdy"
+
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:233
+msgid "TCS Emergency Braking"
+msgstr "TCS záchranná brzda"
+
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:234
+msgid "TCS Full Service Braking"
+msgstr "TCS max. brzdný účinek"
+
+#: ../../RunActivity/Debugging/DebugViewerForm.cs:2039
 msgid "Switching Request Sent to the Server"
 msgstr "Povel výhybky byl odeslán serveru"
 
-#: ../../RunActivity/Debugging/DebugViewerForm.cs:197
+#: ../../RunActivity/Debugging/DebugViewerForm.cs:177
 msgid "View Self"
-msgstr "Zobraz vlastní"
+msgstr "Zobrazit vlastní"
 
-#: ../../RunActivity/Debugging/DebugViewerForm.cs:588
+#: ../../RunActivity/Debugging/DebugViewerForm.cs:549
 msgid "MSG to Server"
 msgstr "Zpráva serveru"
 
-#: ../../RunActivity/Debugging/DebugViewerForm.cs:592
+#: ../../RunActivity/Debugging/DebugViewerForm.cs:553
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:227
 msgid "MSG to All"
 msgstr "Zpráva všem"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:93
 msgid "View Train"
-msgstr "Zobraz vlak"
+msgstr "Zobrazit vlak"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:138
 msgid "m"
@@ -47,11 +113,11 @@ msgstr "Výhybky autom."
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:189
 msgid "Show Avatars"
-msgstr "Ukaž avatary"
+msgstr "Zobrazit avatary"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:215
 msgid "MSG to Selected"
-msgstr "Zprávu zvoleným"
+msgstr "Zpráva zvoleným"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:238
 #: ../../RunActivity/Debugging/MessageViewer.Designer.cs:88
@@ -59,9 +125,8 @@ msgid "Compose MSG"
 msgstr "Vytvořit zprávu"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:251
-#, fuzzy
 msgid "Res"
-msgstr "Res"
+msgstr "Měřítko"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:261
 msgid "Reply to Selected"
@@ -69,11 +134,11 @@ msgstr "Odpovědět zvoleným"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:276
 msgid "Draw Path"
-msgstr "Vykresli trasu"
+msgstr "Vykreslit trasu"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:326
 msgid "Pick Signals"
-msgstr "Vybrat signál"
+msgstr "Vybrat návěstidla"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:340
 msgid "Pick Switches"
@@ -81,11 +146,11 @@ msgstr "Vybrat výhybku"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:354
 msgid "Can Join"
-msgstr "Připojení povoleno"
+msgstr "Povolit připojení"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:378
 msgid "Assist"
-msgstr "Pomoc"
+msgstr "Asistovat"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:390
 msgid "Normal"
@@ -93,7 +158,7 @@ msgstr "Normální"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:403
 msgid "Follow"
-msgstr "Následuj"
+msgstr "Následovat"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:418
 msgid "Penalty"
@@ -101,7 +166,7 @@ msgstr "Penalta"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:433
 msgid "Prefer Green"
-msgstr "Preferuj zelenou"
+msgstr "Preferovat zelenou"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:447
 msgid "See in Game"
@@ -110,20 +175,6 @@ msgstr "Zobrazit ve hře"
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:486
 msgid "DispatchViewer"
 msgstr "Dispečerská aplikace"
-
-#: ../../RunActivity/Debugging/GenericObjectViewerForm.cs:89
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:202
-msgid "Resume"
-msgstr "Pokračovat"
-
-#: ../../RunActivity/Debugging/GenericObjectViewerForm.cs:94
-#: ../../RunActivity/Debugging/GenericObjectViewerForm.Designer.cs:67
-msgid "Pause"
-msgstr "Pauza"
-
-#: ../../RunActivity/Debugging/GenericObjectViewerForm.Designer.cs:80
-msgid "GenericObjectViewerForm"
-msgstr "Okno obecného objektu"
 
 #: ../../RunActivity/Debugging/MessageViewer.Designer.cs:46
 msgid "Clear All"
@@ -137,224 +188,341 @@ msgstr "Odpovědět zvoleným"
 msgid "MessageViewer"
 msgstr "Zobrazovač zpráv"
 
-#: ../../RunActivity/Debugging/SoundDebugForm.cs:189
-#: ../../RunActivity/Debugging/SoundDebugForm.cs:219
-#: ../../RunActivity/Debugging/SoundDebugForm.cs:220
-#: ../../RunActivity/Debugging/SoundDebugForm.cs:221
+#: ../../RunActivity/Debugging/SoundDebugForm.cs:176
+#: ../../RunActivity/Debugging/SoundDebugForm.cs:206
+#: ../../RunActivity/Debugging/SoundDebugForm.cs:207
+#: ../../RunActivity/Debugging/SoundDebugForm.cs:208
 msgid "-"
 msgstr "-"
 
-#: ../../RunActivity/Debugging/SoundDebugForm.cs:218
-#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:337
+#: ../../RunActivity/Debugging/SoundDebugForm.cs:205
+#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:189
 msgid "0"
 msgstr "0"
 
-#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:151
-msgid "Current SMS"
-msgstr "Aktuální SMS"
+#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:136
+msgid "Active sounds"
+msgstr "Aktivní zvuky"
 
-#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:162
-msgid "Stream Properties"
-msgstr "Vlastnosti streamu"
+#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:147
+msgid "Inactive sounds"
+msgstr "Neaktivní zvuky"
 
-#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:173
+#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:179
+msgid "Sound cache"
+msgstr "Mezipaměť zvuků"
+
+#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:202
+msgid "Selected sound"
+msgstr "Zvolený zvuk"
+
+#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:214
 msgid "3D"
 msgstr "3D"
 
-#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:242
+#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:282
 msgid "Speed"
 msgstr "Rychlost"
 
-#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:270
+#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:310
 msgid "Variable 2"
-msgstr "Variable 2"
+msgstr "Proměnná 2"
 
-#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:289
+#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:329
 msgid "Variable 3"
-msgstr "Variable 3"
+msgstr "Proměnná 3"
 
-#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:299
+#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:339
 msgid "Variable 1"
-msgstr "Variable 1"
+msgstr "Proměnná 1"
 
-#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:309
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:70
+#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:349
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:72
 msgid "Distance"
 msgstr "Vzdálenost"
 
-#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:319
+#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:359
 msgid "Volume"
 msgstr "Hlasitost"
 
-#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:328
-msgid ""
-"Total number of sound \r\n"
-"files in cache:"
-msgstr ""
-"Celkový počet zvuků \r\n"
-"soubory v paměti:"
+#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:370
+msgid "Sound Debug"
+msgstr "Ladit zvuky"
 
-#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:348
-msgid "SoundDebugForm"
-msgstr "Ladění zvuků"
+#: ../../RunActivity/MultiPlayer/ClientComm.cs:116
+#: ../../RunActivity/MultiPlayer/ClientComm.cs:128
+msgid "Connection to the server is lost, will play as single mode"
+msgstr "Připojení k serveru bylo ztraceno, pokračujeme v režimu jednoho hráče"
 
-#: ../../RunActivity/MultiPlayer/Message.cs:2975
+#: ../../RunActivity/MultiPlayer/ClientComm.cs:145
+msgid "Alt-E to gain control of your train"
+msgstr "Získat kontrolu nad svým vlakem Alt-E"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:647
+msgid "Dispatcher does not allow hand throw at this time"
+msgstr "Dispečer nemůže v tuto chvíli vyhazovat"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:691
+msgid "main route"
+msgstr "hlavní trať"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:691
+msgid "side route"
+msgstr "vedlejší trať"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:1465
+msgid "You are the new dispatcher. Enjoy!"
+msgstr "Jste nový dispečer. Užijte si to!"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:1595
+msgid "Name conflicted with people in the game, will play in single mode"
+msgstr "Toto jméno již někdo používá, pokračujeme v režimu jednoho hráče"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:1670
+#: ../../RunActivity/MultiPlayer/MPManager.cs:130
+msgid "You gained back the control of your train"
+msgstr "Získal jste opět kontrolu nad svým vlakem"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:1885
+msgid "Server quits, will play as single mode"
+msgstr "Server byl ukončen, pokračujeme v režimu jednoho hráče"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:2166
+#: ../../RunActivity/MultiPlayer/Message.cs:2412
+msgid "Trains uncoupled, gain back control by Alt-E"
+msgstr "Vlak je rozpojen, získat nad ním kontrolu stiskem Alt-E"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:2550
+#: ../../RunActivity/MultiPlayer/Message.cs:2658
+msgid "Trains coupled, hit \\ then Shift-? to release brakes"
+msgstr "Vlak je spojen, stiskněte \\ a potom Shift-? pro uvolnění brzd"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:3102
+msgid "You are an assistant now, will be able to handle switches and signals."
+msgstr "Nyní jste asistent, můžete přehazovat výhybky a návěstidla."
+
+#: ../../RunActivity/MultiPlayer/Message.cs:3108
+msgid "You are no longer an assistant."
+msgstr "Již nejste asistent."
+
+#: ../../RunActivity/MultiPlayer/Message.cs:690
+#, csharp-format
+msgid "Switched, current route is {0}"
+msgstr "Přehozeno, aktuální trasa je {0}"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:1472
+#, csharp-format
+msgid "New dispatcher is {0}"
+msgstr "Nový dispečer je {0}"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:1896
+#: ../../RunActivity/MultiPlayer/OnlinePlayer.cs:148
+#, csharp-format
+msgid "{0} quit."
+msgstr "{0} skončilo."
+
+#: ../../RunActivity/MultiPlayer/Message.cs:1968
+#, csharp-format
+msgid "{0} lost."
+msgstr "{0} bylo ztraceno."
+
+#: ../../RunActivity/MultiPlayer/Message.cs:2988
 #, csharp-format
 msgid " From {0}: {1}"
 msgstr "Z {0}: {1}"
 
-#: ../../RunActivity/Physics/Train.cs:1230
+#: ../../RunActivity/MultiPlayer/MPManager.cs:749
+msgid "Missing car, have substituted with other one."
+msgstr "Chybějící vozidlo, bylo nahrazeno jiným."
+
+#: ../../RunActivity/MultiPlayer/MPManager.cs:388
+#, csharp-format
+msgid "Cannot decouple: train has {0} player, need to completely stop."
+msgid_plural "Cannot decouple: train has {0} players, need to completely stop."
+msgstr[0] "Nelze rozpojit: vlak má {0} hráče, je třeba úplně zastavit."
+msgstr[1] "Nelze rozpojit: vlak má {0} hráče, je třeba úplně zastavit."
+msgstr[2] "Nelze rozpojit: vlak má {0} hráčů, je třeba úplně zastavit."
+
+#: ../../RunActivity/Physics/Train.cs:1577
 msgid "Coupler broken!"
 msgstr "Spřáhlo se přetrhlo!"
 
-#: ../../RunActivity/Physics/Train.cs:1233
+#: ../../RunActivity/Physics/Train.cs:1580
 msgid "Coupler overloaded!"
 msgstr "Spřáhlo je přetížené!"
 
-#: ../../RunActivity/Physics/Train.cs:3761
-#: ../../RunActivity/Physics/Train.cs:3766
+#: ../../RunActivity/Physics/Train.cs:4583
+#: ../../RunActivity/Physics/Train.cs:4588
 msgid "Other train is blocking path"
 msgstr "Další vlak blokuje cestu."
 
-#: ../../RunActivity/Physics/Train.cs:4622
-msgid "Stopped due to errors in route setting"
-msgstr "Zastaveno kvůli chybám v nastavení tratě"
+#: ../../RunActivity/Physics/Train.cs:4716
+msgid "Held for connecting train : "
+msgstr "Držet pro připojení vlaku: "
 
-#: ../../RunActivity/Physics/Train.cs:5280
-#: ../../RunActivity/Physics/Train.cs:6353
-msgid "No signal in train's path"
-msgstr "Ve vlakové cestě není návěstidlo"
+#: ../../RunActivity/Physics/Train.cs:4774
+msgid "Passenger boarding completed. Waiting for signal ahead to clear."
+msgstr "Nástup cestujících dokončen. Čekáme na návěstí volno před vlakem."
 
-#: ../../RunActivity/Physics/Train.cs:5288
-msgid "Next signal already allocated to other train"
-msgstr "Následující návěstidlo je vyhrazeno pro jiný vlak"
-
-#: ../../RunActivity/Physics/Train.cs:5349
-msgid "Request to clear signal cannot be processed"
-msgstr "Požadavek na návěst \"volno\" nemůže být zpracován"
-
-#: ../../RunActivity/Physics/Train.cs:5455
-#: ../../RunActivity/Physics/Train.cs:6473
-msgid "No switch found"
-msgstr "Výhybka nenalezena"
-
-#: ../../RunActivity/Physics/Train.cs:6707
-msgid "Train is not back on original route"
-msgstr "Vlak není zpět na původní trase"
-
-#: ../../RunActivity/Physics/Train.cs:6716
-msgid ""
-"Original route is reverse from present direction, stop train before switching"
-msgstr "Původní trasa je určena pro opačný směr. Před změnou směru zastavte"
-
-#: ../../RunActivity/Physics/Train.cs:6729
-msgid "Cannot change to Manual Mode while in Explorer Mode"
-msgstr "Nelze přejít do ručního režimu v režimu Prohlížení tratě"
-
-#: ../../RunActivity/Physics/Train.cs:6822
-msgid "Reversal required and rear of train not on required route"
-msgstr "Je nutná změna směru a přední část vlaku je mimo původní trasu"
-
-#: ../../RunActivity/Physics/Train.cs:7009
-msgid "Cannot clear signal behind train while in AUTO mode"
-msgstr "V režimu AUTO není možné žádat o volnou cestu za vlakem"
-
-#: ../../RunActivity/Physics/Train.cs:7251
-#, csharp-format
-msgid "Allowed speed raised to {0}"
-msgstr "Povolená rychlost stoupla na {0}"
-
-#: ../../RunActivity/Physics/Train.cs:7293
-#, csharp-format
-msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
-msgstr "Vlak zastavil kvůli problémům s dalším vlakem: {0} , důvod: {1}"
-
-#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:258
-#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:269
-msgid "No power line!"
-msgstr "Chybí trolej!"
-
-#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:260
-#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:271
-msgid "Power line condition overridden."
-msgstr "Nepřítomnost troleje není brána v úvahu."
-
-#: ../../RunActivity/RollingStock/MSTSNotchController.cs:118
-msgid "Release"
-msgstr "Odbrzdit"
-
-#: ../../RunActivity/RollingStock/MSTSNotchController.cs:119
-msgid "Quick Release"
-msgstr "Švih (rychlé odbrzdění)"
-
-#: ../../RunActivity/RollingStock/MSTSNotchController.cs:120
-msgid "Running"
-msgstr "Jízda"
-
-#: ../../RunActivity/RollingStock/MSTSNotchController.cs:121
-msgid "Neutral"
-msgstr "Neutrál"
-
-#: ../../RunActivity/RollingStock/MSTSNotchController.cs:122
-msgid "Apply"
-msgstr "Zabrzdit"
-
-#: ../../RunActivity/RollingStock/MSTSNotchController.cs:123
-msgid "EPApply"
-msgstr "EP zabrzdit"
-
-#: ../../RunActivity/RollingStock/MSTSNotchController.cs:124
-msgid "Emergency"
-msgstr "Záchranná brzda"
-
-#: ../../RunActivity/RollingStock/MSTSNotchController.cs:125
-#: ../../RunActivity/RollingStock/MSTSNotchController.cs:128
-msgid "Lap"
-msgstr "Přidržení"
-
-#: ../../RunActivity/RollingStock/MSTSNotchController.cs:126
-#: ../../RunActivity/RollingStock/MSTSNotchController.cs:127
-msgid "Service"
-msgstr "Brzda"
-
-#: ../../RunActivity/RollingStock/MSTSNotchController.cs:129
-msgid "Suppression"
-msgstr "Závěr"
-
-#: ../../RunActivity/RollingStock/MSTSNotchController.cs:130
-msgid "Cont. Service"
-msgstr "Trvalé zabrzdění"
-
-#: ../../RunActivity/RollingStock/MSTSNotchController.cs:131
-msgid "Full Service"
-msgstr "Max. brzdný účinek"
-
-#: ../../RunActivity/Simulator/Activity.cs:774
+#: ../../RunActivity/Physics/Train.cs:4779
+#: ../../RunActivity/Simulator/Activity.cs:874
 msgid "Passenger boarding completed. You may depart now."
 msgstr "Nástup ukončen. Souhlas k odjezdu!"
 
-#: ../../RunActivity/Simulator/Activity.cs:767
+#: ../../RunActivity/Physics/Train.cs:5771
+msgid "Stopped due to errors in route setting"
+msgstr "Zastaveno kvůli chybám v nastavení tratě"
+
+#: ../../RunActivity/Physics/Train.cs:6433
+#: ../../RunActivity/Physics/Train.cs:7506
+msgid "No signal in train's path"
+msgstr "Ve vlakové cestě není návěstidlo"
+
+#: ../../RunActivity/Physics/Train.cs:6441
+msgid "Next signal already allocated to other train"
+msgstr "Následující návěstidlo je vyhrazeno pro jiný vlak"
+
+#: ../../RunActivity/Physics/Train.cs:6502
+msgid "Request to clear signal cannot be processed"
+msgstr "Požadavek na návěst \"volno\" nemůže být zpracován"
+
+#: ../../RunActivity/Physics/Train.cs:6608
+#: ../../RunActivity/Physics/Train.cs:7626
+msgid "No switch found"
+msgstr "Výhybka nenalezena"
+
+#: ../../RunActivity/Physics/Train.cs:7860
+msgid "You cannot enter manual mode when autopiloted"
+msgstr "Nelze přepnout do manuálního režimu, pokud je používán autopilot"
+
+#: ../../RunActivity/Physics/Train.cs:7872
+msgid "Train is not back on original route"
+msgstr "Vlak není zpět na původní trase"
+
+#: ../../RunActivity/Physics/Train.cs:7881
+msgid ""
+"Original route is reverse from present direction, stop train before switching"
+msgstr "Původní trasa je určena pro opačný směr. Před změnou směru zastavte!"
+
+#: ../../RunActivity/Physics/Train.cs:7894
+msgid "Cannot change to Manual Mode while in Explorer Mode"
+msgstr "Nelze přejít do ručního režimu v režimu Prohlížení tratě"
+
+#: ../../RunActivity/Physics/Train.cs:7989
+msgid "Reversal required and rear of train not on required route"
+msgstr "Je nutná změna směru - přední část vlaku je mimo původní trasu"
+
+#: ../../RunActivity/Physics/Train.cs:8176
+msgid "Cannot clear signal behind train while in AUTO mode"
+msgstr "V AUTO režimu není možné žádat o volnou cestu za vlakem"
+
+#: ../../RunActivity/Physics/Train.cs:4786
+#: ../../RunActivity/Simulator/Activity.cs:867
 #, csharp-format
 msgid "Passenger boarding completes in {0:D2}:{1:D2}"
 msgstr "Nástup bude ukončen: {0:D2}:{1:D2}"
 
-#: ../../RunActivity/Simulator/Confirmation.cs:25
+#: ../../RunActivity/Physics/Train.cs:8425
+#, csharp-format
+msgid "Allowed speed raised to {0}"
+msgstr "Povolená rychlost se zvýšila na {0}"
+
+#: ../../RunActivity/Physics/Train.cs:8467
+#, csharp-format
+msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
+msgstr "Vlak zastavil kvůli problémům s dalším vlakem: {0} , důvod: {1}"
+
+#: ../../RunActivity/Processes/GameStateRunActivity.cs:1076
+#, csharp-format
+msgid "Activity Save file '*.save' not found in folder {0}"
+msgstr "Uložený soubor aktivity '*.save' nebyl v adresáři {0} nalezen"
+
+#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:221
+msgid "No power line!"
+msgstr "Chybí trolej!"
+
+#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:223
+msgid "Power line condition overridden."
+msgstr "Nepřítomnost troleje není brána v úvahu."
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1247
+msgid "Tender coal supply is empty. Your loco will fail."
+msgstr "Zásoby uhlí v tenderu došly. Vaše lokomotiva selže."
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1261
+msgid "Tender water supply is empty. Your loco will fail."
+msgstr "Zásoby vody v tenderu došly. Vaše lokomotiva selže."
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1316
+msgid "Fire has dropped too far. Your loco will fail."
+msgstr "Oheň příliš pohasl. Vaše lokomotiva selže."
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1368
+msgid ""
+"FireMass is getting low. Your fireman will shovel faster, but don't wear him "
+"out."
+msgstr "Ohniště vyhasíná. Topič musí přikládat rychleji, ale neunavte ho."
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1380
+msgid "FireMass is back within limits. Your fireman will shovel as per normal."
+msgstr ""
+"Ohniště je opět v rámci limitů. Váš topič může přikládat běžným způsobem."
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:2287
+msgid "Water level dropped too far. Plug has fused and loco has failed."
+msgstr ""
+"Hladina vody klesla příliš mnoho. Olovníky se roztavily a lokomotiva selhala."
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:2294
+msgid "Boiler overfull and priming."
+msgstr "Kotel je přeplněn a propouští vodu do páry"
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:2300
+msgid "Boiler no longer priming."
+msgstr "Kotel již nepropouští vodu do páry"
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:2865
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:2912
+msgid "Gears can't be changed unless throttle is at zero."
+msgstr "Nelze změnit převody, dokud kontrolér není na nule."
+
+#: ../../RunActivity/RollingStock/TrainCar.cs:399
+msgid ""
+"You are traveling too fast for this curve. Slow down, your freight may be "
+"damaged and your train may derail."
+msgstr ""
+"Jedete do této zatáčky moc rychle. Zpomalte, váš náklad může být poškozen a "
+"váš vlak může vykolejit."
+
+#: ../../RunActivity/RollingStock/TrainCar.cs:403
+msgid ""
+"You are travelling too fast for this curve. Slow down, your passengers are "
+"feeling uncomfortable and your train may derail."
+msgstr ""
+"Jedete do této zatáčky moc rychle. Zpomalte, cestující se necítí příjemně a "
+"váš vlak může vykolejit."
+
+#: ../../RunActivity/RollingStock/TrainCar.cs:438
+msgid "Your train has overturned."
+msgstr "Váš vlak se převrátil."
+
+#: ../../RunActivity/Simulator/Confirmation.cs:26
 msgid "None"
 msgstr "Není"
 
-#: ../../RunActivity/Simulator/Confirmation.cs:26
+#: ../../RunActivity/Simulator/Confirmation.cs:27
 msgid "Information"
 msgstr "Informace"
 
-#: ../../RunActivity/Simulator/Confirmation.cs:27
+#: ../../RunActivity/Simulator/Confirmation.cs:28
 msgid "Warning"
 msgstr "Varování"
 
-#: ../../RunActivity/Simulator/Confirmation.cs:28
+#: ../../RunActivity/Simulator/Confirmation.cs:29
 msgid "Error"
 msgstr "Chyba"
 
-#: ../../RunActivity/Simulator/Confirmation.cs:29
+#: ../../RunActivity/Simulator/Confirmation.cs:30
 msgid "MSG"
 msgstr "Zpráva"
 
@@ -413,11 +581,11 @@ msgstr "otevřeno/zvýšeno"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:140
 msgid "locked. Release dynamic brake then re-try."
-msgstr "zablokován. Vypněte dynamickou brzdu a opakujte.."
+msgstr "zablokován. Vypněte dynamickou brzdu a opakujte."
 
 #: ../../RunActivity/Simulator/Confirmation.cs:141
 msgid "Wheel-slip"
-msgstr "Skluz / smyk"
+msgstr "Prokluz kol"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:141
 msgid "over"
@@ -451,7 +619,7 @@ msgstr "Výkon"
 #: ../../RunActivity/Simulator/Confirmation.cs:181
 #: ../../RunActivity/Simulator/Confirmation.cs:182
 msgid "off"
-msgstr "vypnutý"
+msgstr "vypnuto"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:143
 #: ../../RunActivity/Simulator/Confirmation.cs:147
@@ -464,7 +632,7 @@ msgstr "vypnutý"
 #: ../../RunActivity/Simulator/Confirmation.cs:181
 #: ../../RunActivity/Simulator/Confirmation.cs:182
 msgid "on"
-msgstr "zapnutý"
+msgstr "zapnuto"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:144
 msgid "Pantograph 1"
@@ -486,7 +654,7 @@ msgstr "Sběrač 2"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:147
 msgid "Player Diesel Power"
-msgstr "Start/stop dieselu vlastní loko"
+msgstr "Start/stop dieselu hráče"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:147
 msgid "locked. Close throttle then re-try."
@@ -494,7 +662,7 @@ msgstr "blokován. Nastavte kontrolér do nuly a opakujte"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:148
 msgid "Helper Diesel Power"
-msgstr "Start/stop dieselu ostatních loko"
+msgstr "Start/stop dieselu ostatních"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:149
 msgid "Diesel Tank"
@@ -540,7 +708,7 @@ msgstr "zvýšit"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:156
 msgid "Damper"
-msgstr "Damper"
+msgstr "Dyšna"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:157
 msgid "Firebox Door"
@@ -560,16 +728,16 @@ msgstr "Spalování"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:160
 msgid "add shovel-full"
-msgstr "max. Schaufelrate"
+msgstr "Přidat plnou lopatu"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:161
 msgid "Cylinder Cocks"
-msgstr "Zylinderhähne"
+msgstr "Šoupátka válců"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:162
 #: ../../RunActivity/Simulator/Confirmation.cs:163
 msgid "Tender"
-msgstr "Tender"
+msgstr "Tendr"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:162
 msgid "Coal re-filled"
@@ -593,6 +761,7 @@ msgstr "Vlaková (samočinná) brzda"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:165
 #: ../../RunActivity/Simulator/Confirmation.cs:166
+#: ../../RunActivity/Simulator/Confirmation.cs:168
 msgid "release"
 msgstr "odbrzdit"
 
@@ -656,7 +825,7 @@ msgstr "plný"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:172
 msgid "Retainers"
-msgstr "Retainer"
+msgstr "Zarážky"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:172
 msgid "Exhaust"
@@ -672,7 +841,7 @@ msgstr "Nízký tlak"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:172
 msgid "Slow Direct"
-msgstr "langsam lösen"
+msgstr "Pomalu odbrzdit"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:173
 msgid "Brake Hose"
@@ -688,7 +857,7 @@ msgstr "spojit"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:175
 msgid "Sander"
-msgstr "Pískování"
+msgstr "Pískovač"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:176
 msgid "Alerter"
@@ -696,7 +865,7 @@ msgstr "Tlačítko bdělosti"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:176
 msgid "acknowledge"
-msgstr "potvrzeno"
+msgstr "vzít na vědomí"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:177
 msgid "Horn"
@@ -739,6 +908,7 @@ msgid "Wipers"
 msgstr "Stěrače"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:183
+#: ../../RunActivity/Viewer3D/Cameras.cs:1422
 msgid "Cab"
 msgstr "Kabina"
 
@@ -793,7 +963,7 @@ msgstr "Rychlost simulace"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:192
 msgid "reset"
-msgstr "reset"
+msgstr "resetovat"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:193
 msgid "Uncouple After"
@@ -821,50 +991,34 @@ msgstr ""
 "Záznam změny kamery je ignorován. Stiskněte Escape pro obnovení záznamu."
 
 #: ../../RunActivity/Simulator/Confirmation.cs:196
-msgid "Location labels"
-msgstr "Názvy umístění"
-
-#: ../../RunActivity/Simulator/Confirmation.cs:196
-msgid "sidings"
-msgstr "koleje"
-
-#: ../../RunActivity/Simulator/Confirmation.cs:196
-msgid "stations"
-msgstr "stanice"
-
-#: ../../RunActivity/Simulator/Confirmation.cs:196
-msgid "stations and sidings"
-msgstr "stanice a koleje"
-
-#: ../../RunActivity/Simulator/Confirmation.cs:197
 msgid "Gearbox"
 msgstr "Převodovka"
 
-#: ../../RunActivity/Simulator/Confirmation.cs:197
+#: ../../RunActivity/Simulator/Confirmation.cs:196
 msgid "down"
 msgstr "řazení dolů"
 
-#: ../../RunActivity/Simulator/Confirmation.cs:197
+#: ../../RunActivity/Simulator/Confirmation.cs:196
 msgid "up"
 msgstr "řazení nahoru"
 
-#: ../../RunActivity/Simulator/Confirmation.cs:197
+#: ../../RunActivity/Simulator/Confirmation.cs:196
 msgid "locked. Use shaft before changing gear."
 msgstr "zamčeno. Použijte spojku před změnou převodu."
 
-#: ../../RunActivity/Simulator/Confirmation.cs:198
+#: ../../RunActivity/Simulator/Confirmation.cs:197
 msgid "Signal mode"
 msgstr "Režim zabezpečovacího systému"
 
-#: ../../RunActivity/Simulator/Confirmation.cs:198
+#: ../../RunActivity/Simulator/Confirmation.cs:197
 msgid "manual"
 msgstr "ruční"
 
-#: ../../RunActivity/Simulator/Confirmation.cs:198
+#: ../../RunActivity/Simulator/Confirmation.cs:197
 msgid "auto"
-msgstr "auto"
+msgstr "automatické"
 
-#: ../../RunActivity/Simulator/Confirmation.cs:198
+#: ../../RunActivity/Simulator/Confirmation.cs:197
 msgid "locked. Stop train, then re-try."
 msgstr "zamčen. Zastavte vlak a opakujte."
 
@@ -883,7 +1037,7 @@ msgstr "{0}"
 #: ../../RunActivity/Simulator/Confirmation.cs:220
 #, csharp-format
 msgid "{0} to {1:0}%"
-msgstr "{0} bis {1:0}%"
+msgstr "{0} do {1:0}%"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:225
 #, csharp-format
@@ -943,55 +1097,132 @@ msgctxt "Switch"
 msgid "change"
 msgstr "změnit"
 
-#. Context: Labels
-#: ../../RunActivity/Simulator/Confirmation.cs:196
-msgctxt "Labels"
-msgid "none"
-msgstr "není"
+#: ../../RunActivity/Viewer3D/Cameras.cs:595
+msgid "Free"
+msgstr "Volný"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1072
+#: ../../RunActivity/Viewer3D/Cameras.cs:986
+msgid "Outside Front"
+msgstr "Začátek vlaku"
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:986
+msgid "Outside Rear"
+msgstr "Konec vlaku"
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:1242
+msgid "Brakeman"
+msgstr "Brzdař"
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:1285
+msgid "Passenger"
+msgstr "Pasažér"
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:1378
+msgid "Head out"
+msgstr "Boční pohled"
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:1602
+msgid "Trackside"
+msgstr "Trať"
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:1755
+msgid "3D Cab"
+msgstr "3D kabina"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:587
+#: ../../RunActivity/Viewer3D/Viewer.cs:703
+msgid "Cab view not available"
+msgstr "Kabina není dostupná"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:649
+msgid "In MP, use Alt-F4 to quit directly"
+msgstr "V síťové hře lze okamžitě skončit pomocí Alt-F4"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:714
+msgid "3D Cab view not available"
+msgstr "3D kabina není dostupná"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:741
+msgid "Will not ratate cab and land"
+msgstr "Neotáčet kabinu a terén"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:849
+msgid "Switched to player control"
+msgstr "Přepnuto na ovládání hráčem"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:854
+msgid "You can't switch from manual to autopilot mode"
+msgstr "Nelze přepnout z manuálního módu na autopilota"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:858
+msgid "Switched to autopilot"
+msgstr "Přepnuto na autopilota"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:1172
 msgid "Game saved"
 msgstr "Hra uložena"
 
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:44
+#: ../../RunActivity/Viewer3D/Viewer.cs:732
+#, csharp-format
+msgid "Vibrating at level {0}"
+msgstr "Vibrující na úrovni {0}"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:740
+#, csharp-format
+msgid "Rotating cab {0}/4, rotating land {1}/4"
+msgstr "Otáčet kabinu {0}/4, otáčet terén {1}/4"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:769
+#, csharp-format
+msgid "{0} viewpoint stored. Use Shift+8 to restore viewpoints."
+msgid_plural "{0} viewpoints stored. Use Shift+8 to restore viewpoints."
+msgstr[0] "{0} pohled uložen. Pomocí Shift+8 pohledy obnovíte."
+msgstr[1] "{0} pohledy uloženy. Pomocí Shift+8 pohledy obnovíte."
+msgstr[2] "{0} pohledů uloženo. Pomocí Shift+8 pohledy obnovíte."
+
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:45
 msgid "Activity Events"
 msgstr "Události aktivit"
 
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:148
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:149
 msgid "successfully"
 msgstr "úspěšně"
 
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:148
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:149
 msgid "without success"
 msgstr "neúspěšně"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:203
+msgid "Resume"
+msgstr "Pokračovat"
+
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:204
 msgid "Resume and close box"
 msgstr "Pokračovat a zavřít okno"
 
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:204
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:216
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:205
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:217
 msgid "Quit activity"
 msgstr "Opustit aktivitu"
 
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:205
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:226
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:206
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:227
 msgid "Status: Activity paused"
 msgstr "Stav: Aktivita pozastavena"
 
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:215
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:216
 msgid "Close box"
 msgstr "Zavřít okno"
 
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:217
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:218
 msgid "Status: Activity resumed"
 msgstr "Stav: Aktivita pokračuje"
 
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:225
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:226
 msgid "End Activity"
 msgstr "Ukončit aktivitu"
 
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:147
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:148
 #, csharp-format
 msgid ""
 "This activity has ended {0}.\n"
@@ -1000,175 +1231,246 @@ msgstr ""
 "Aktivita {0} byla ukončena.\n"
 "Pro vyhodnocení zobrazte okno nápovědy (F1)."
 
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:232
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:233
 #, csharp-format
 msgid "Event: {0}"
 msgstr "Událost: {0}"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:39
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:40
 msgid "Car Operation Menu"
 msgstr "Příkazy vozidel"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:54
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:55
 msgid "Toggle Handbrake"
 msgstr "Zabrzdit/odbrzdit ruční brzdu"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:63
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:60
 msgid "Toggle Power"
 msgstr "Zapnout/vypnout napájení"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:76
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:69
 msgid "Toggle MU Connection"
 msgstr "Připojit/odpojit mnohočlen"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:87
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:73
+msgid "Toggle Brake Hose Connection"
+msgstr "Přepnout spojení brzdových hadic"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:77
+msgid "Open/Close Front Angle Cock"
+msgstr "Otevřít/zavřít přední vzd. kohout"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:81
+msgid "Open/Close Rear Angle Cock"
+msgstr "Otevřít/zavřít zadní vzd. kohout"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:85
+msgid "Open/Close Bleed Off Valve"
+msgstr "Otevřít/zavřít odvzdušňovací ventil"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:96
 msgid "Close window"
 msgstr "Zavřít okno"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:119
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:128
 msgid "Handbrake set"
 msgstr "Ruční brzda nastavena"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:121
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:130
 msgid "Handbrake off"
 msgstr "Ruční brzda povolena"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:135
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:144
 msgid "Power OFF command sent"
 msgstr "Signál pro vyputí odeslán"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:137
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:146
 msgid "Power ON command sent"
 msgstr "Signál pro zapnutí odeslán"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:140
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:149
 msgid "No power command for this type of car!"
 msgstr "Pro tento typ vozu je příkaz výkonu neplatný!"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:156
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:165
 msgid "MU signal connected"
 msgstr "Mnohočlen zapojen"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:158
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:167
 msgid "MU signal disconnected"
 msgstr "Mnohočlen odpojen"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:161
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:170
 msgid "No MU command for this type of car!"
 msgstr "Pro tento typ vozu je příkaz mnohočlenu neplatný"
 
-#: ../../RunActivity/Viewer3D/Popups/CompassWindow.cs:33
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:179
+msgid "Front brake hose connected"
+msgstr "Přední brzdové hadice spojeny"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:181
+msgid "Front brake hose disconnected"
+msgstr "Přední brzdové hadice rozpojeny"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:188
+msgid "Front angle cock opened"
+msgstr "Přední vzduchový kohout otevřen"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:190
+msgid "Front angle cock closed"
+msgstr "Přední vzduchový kohout uzavřen"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:197
+msgid "Rear angle cock opened"
+msgstr "Zadní vzduchový kohout otevřen"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:199
+msgid "Rear angle cock closed"
+msgstr "Zadní vzduchový kohout uzavřen"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:206
+msgid "Bleed off valve opened"
+msgstr "Odvzdušňovací ventil otevřen"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:208
+msgid "Bleed off valve closed"
+msgstr "Odvzdušňovací ventil uzavřen"
+
+#: ../../RunActivity/Viewer3D/Popups/CompassWindow.cs:34
 msgid "Compass"
 msgstr "Kompas"
 
-#: ../../RunActivity/Viewer3D/Popups/CompassWindow.cs:44
+#: ../../RunActivity/Viewer3D/Popups/CompassWindow.cs:45
 msgid "Lat:"
 msgstr "Šířka:"
 
-#: ../../RunActivity/Viewer3D/Popups/CompassWindow.cs:47
+#: ../../RunActivity/Viewer3D/Popups/CompassWindow.cs:48
 msgid "Lon:"
 msgstr "Délka:"
 
-#: ../../RunActivity/Viewer3D/Popups/ComposeMessage.cs:34
+#: ../../RunActivity/Viewer3D/Popups/ComposeMessage.cs:35
 msgid "Compose Message (e.g.   receiver1, receiver2: message body)"
-msgstr "Sestavit zprávu (e.g. příjemce 1, příjemce 2: text zprávy)"
+msgstr "Sestavit zprávu (tj. příjemce 1, příjemce 2: text zprávy)"
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:41
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:43
 msgid "Help"
 msgstr "Nápověda"
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:43
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:45
 msgid "Key Commands"
-msgstr "Ovládání"
+msgstr "Ovládací klávesy"
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:69
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:71
 msgid "Briefing"
-msgstr "Přehled"
+msgstr "Instrukce"
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:80
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:82
 msgid "Timetable"
 msgstr "Jízdní řád"
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:85
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:69
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:87
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:71
 msgid "Station"
 msgstr "Stanice"
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:86
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:71
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:88
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:73
 msgid "Arrive"
 msgstr "Příjezd"
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:87
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:89
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:72
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:91
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:74
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:76
 msgid "Actual"
 msgstr "Skutečný"
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:88
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:73
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:90
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:75
 msgid "Depart"
 msgstr "Odjezd"
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:104
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:106
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:133
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:136
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:108
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:165
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:242
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:245
 msgid "(missed)"
 msgstr "(nezastaveno)"
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:113
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:115
 msgid "Work Orders"
 msgstr "Pokyny pro posun"
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:118
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:120
 msgid "Task"
 msgstr "Úkoly"
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:119
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:121
 msgid "Car(s)"
 msgstr "Vozy"
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:120
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:122
 msgid "Location"
 msgstr "Umístění"
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:121
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:123
 msgid "Status"
 msgstr "Stav"
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:141
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:143
 msgid "Assemble Train"
 msgstr "Sestavit vlak"
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:145
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:147
 msgid "At Location"
 msgstr "Na koleji"
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:149
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:151
 msgid "Drop Off"
 msgstr "Odstavit"
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:153
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:155
 msgid "Pick Up"
 msgstr "Připojit"
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:227
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:238
 msgid "Done"
 msgstr "Hotovo"
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:240
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:251
 msgid "Procedures"
 msgstr "Postupy"
 
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:53
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:54
 msgid "Next Station"
 msgstr "Následující stanice"
 
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:213
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:187
+msgid "No more stations."
+msgstr "Žádné další stanice."
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:322
 msgid "Activity completed."
-msgstr "Aktivita ukončena."
+msgstr "Aktivita dokončena."
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:124
+#, csharp-format
+msgid "Current Delay: {0} minute"
+msgid_plural "Current Delay: {0} minutes"
+msgstr[0] "Aktuální zpoždění: {0} minuta"
+msgstr[1] "Aktuální zpoždění: {0} minuty"
+msgstr[2] "Aktuální zpoždění: {0} minut"
+
+#: ../../RunActivity/Viewer3D/Popups/NoticeWindow.cs:104
+#, csharp-format
+msgid "Camera: {0}"
+msgstr "Pohled: {0}"
+
+#: ../../RunActivity/Viewer3D/Popups/NoticeWindow.cs:109
+#, csharp-format
+msgid "FOV: {0:F0}°"
+msgstr "Zorné pole FOV: {0:F0}°"
 
 #: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:32
 msgid "Pause Menu"
@@ -1189,54 +1491,145 @@ msgstr "Uložit hru ({0})"
 msgid "Continue playing ({0})"
 msgstr "Pokračovat ({0})"
 
-#: ../../RunActivity/Viewer3D/Popups/SwitchWindow.cs:48
+#: ../../RunActivity/Viewer3D/Popups/SwitchWindow.cs:49
 msgid "Switch"
 msgstr "Výhybka"
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:84
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:73
 msgid "Track Monitor"
 msgstr "Monitor tratě"
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:88
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:77
 msgid "Auto Signal"
-msgstr "Auto návěsti"
+msgstr "Automatické návěsti"
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:89
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:78
 msgid "Node"
 msgstr "Úsek"
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:90
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:79
 msgid "Manual"
 msgstr "Manuální"
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:91
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:80
 msgid "Explorer"
 msgstr "Prohlížení"
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:92
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:81
 msgid "OutOfControl : "
 msgstr "Mimo řízení:"
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:93
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:82
 msgid "Unknown"
 msgstr "Neznámý"
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:112
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:101
 msgid "Speed:"
 msgstr "Rychlost:"
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:119
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:108
 msgid "Projected:"
 msgstr "Projektovaná:"
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:126
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:115
 msgid "Limit:"
 msgstr "Limit:"
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:144
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:133
 msgid " Dist      Speed   Aspect"
-msgstr "Vzdál.    Rychl.  Návěst"
+msgstr "Vzdál.    Rychl.   Návěst"
 
-#: ../../RunActivity/Viewer3D/Popups/TrainOperationsWindow.cs:38
+#: ../../RunActivity/Viewer3D/Popups/TrainOperationsWindow.cs:39
 msgid "Train Operations"
 msgstr "Manipulace s vlakem"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:309
+msgid "water"
+msgstr "voda"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:310
+msgid "coal"
+msgstr "uhlí"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:311
+msgid "diesel oil"
+msgstr "nafta"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:312
+msgid "wood"
+msgstr "dřevo"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:422
+msgid "Refill: No suitable pick-up point anywhere, so refilling immediately."
+msgstr "Doplnit: Neexistuje žádný vhodný přípojný bod, doplňuji okamžitě."
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:430
+#, csharp-format
+msgid "Refill: Distance to {0} supply is {1}."
+msgstr "Doplnit: Vzdálenost pro doplnění suroviny {0} je {1}."
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:436
+#, csharp-format
+msgid "Refill: Loco must be stationary to refill {0}."
+msgstr "Doplnit: Lokomotiva musí zastavit pro doplnění suroviny {0}."
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:442
+#, csharp-format
+msgid "Refill: Loco speed must exceed {0}."
+msgstr "Doplnit: Rychlost lokomotivy musí být vyšší než {0}."
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:449
+#, csharp-format
+msgid "Refill: Loco speed must not exceed {0}."
+msgstr "Doplnit: Rychlost lokomotivy nesmí přesáhnout {0}."
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:456
+#, csharp-format
+msgid "Refill: {0} supply now replenished."
+msgstr "Doplnit: Byla doplněna surovina {0}."
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:431
+#, csharp-format
+msgid "{0} meter"
+msgid_plural "{0} meters"
+msgstr[0] "{0} metr"
+msgstr[1] "{0} metry"
+msgstr[2] "{0} metrů"
+
+#~ msgid "Pause"
+#~ msgstr "Pauza"
+
+#~ msgid "GenericObjectViewerForm"
+#~ msgstr "Okno obecného objektu"
+
+#~ msgid "Current SMS"
+#~ msgstr "Aktuální SMS"
+
+#~ msgid "Stream Properties"
+#~ msgstr "Vlastnosti streamu"
+
+#~ msgid ""
+#~ "Total number of sound \r\n"
+#~ "files in cache:"
+#~ msgstr ""
+#~ "Celkový počet souborů\r\n"
+#~ "zvuků v paměti:"
+
+#~ msgid "SoundDebugForm"
+#~ msgstr "Ladění zvuků"
+
+#~ msgid "Location labels"
+#~ msgstr "Názvy umístění"
+
+#~ msgid "sidings"
+#~ msgstr "koleje"
+
+#~ msgid "stations"
+#~ msgstr "stanice"
+
+#~ msgid "stations and sidings"
+#~ msgstr "stanice a koleje"
+
+#~ msgctxt "Labels"
+#~ msgid "none"
+#~ msgstr "není"

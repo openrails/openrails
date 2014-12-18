@@ -1,37 +1,57 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Common\n"
-"POT-Creation-Date: 2014-02-28 18:43:36+0000\n"
-"PO-Revision-Date: 2014-03-03 17:25+0100\n"
-"Last-Translator: Matej Pacha <matej.pacha@gmail.com>\n"
-"Language-Team: Open Rails Dev Team\n"
-"Language: cs\n"
+"POT-Creation-Date: 2014-12-12 18:48:54+0000\n"
+"PO-Revision-Date: 2014-12-17 18:15+0100\n"
+"Last-Translator: Altmann <altmann@bk.ru>\n"
+"Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.6.4\n"
+"X-Generator: Poedit 1.7.1\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+"Language: cs\n"
 
-#: ../../ORTS.Common/Conversions.cs:88
+#: ../../ORTS.Common/Conversions.cs:492
 msgid "m"
 msgstr "m"
 
-#: ../../ORTS.Common/Conversions.cs:89
+#: ../../ORTS.Common/Conversions.cs:493
 msgid "km"
 msgstr "km"
 
-#: ../../ORTS.Common/Conversions.cs:90
+#: ../../ORTS.Common/Conversions.cs:494
 msgid "mi"
-msgstr "mi"
+msgstr "mil"
 
-#: ../../ORTS.Common/Conversions.cs:91
+#: ../../ORTS.Common/Conversions.cs:495
 msgid "yd"
-msgstr "Yard"
+msgstr "yardů"
 
-#: ../../ORTS.Common/Conversions.cs:92
+#: ../../ORTS.Common/Conversions.cs:496
 msgid "km/h"
 msgstr "km/h"
 
-#: ../../ORTS.Common/Conversions.cs:93
+#: ../../ORTS.Common/Conversions.cs:497
 msgid "mph"
-msgstr "mph"
+msgstr "mil/h"
+
+#: ../../ORTS.Common/Conversions.cs:498
+msgid "kPa"
+msgstr "kPa"
+
+#: ../../ORTS.Common/Conversions.cs:499
+msgid "bar"
+msgstr "barů"
+
+#: ../../ORTS.Common/Conversions.cs:500
+msgid "psi"
+msgstr "libra/palec"
+
+#: ../../ORTS.Common/Conversions.cs:501
+msgid "inHg"
+msgstr "palec rtuti"
+
+#: ../../ORTS.Common/Conversions.cs:502
+msgid "kgf/cm^2"
+msgstr "kg/cm^2"

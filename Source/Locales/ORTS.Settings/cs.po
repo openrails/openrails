@@ -1,20 +1,20 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
-"POT-Creation-Date: 2014-02-24 19:35:33+0000\n"
-"PO-Revision-Date: 2014-03-26 18:31+0100\n"
-"Last-Translator: Matej Pacha <matej.pacha@gmail.com>\n"
+"POT-Creation-Date: 2014-12-12 18:48:59+0000\n"
+"PO-Revision-Date: 2014-12-17 20:24+0100\n"
+"Last-Translator: Altmann <altmann@bk.ru>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.6.4\n"
+"X-Generator: Poedit 1.7.1\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
 
 #: ../../ORTS.Settings/InputSettings.cs:42
 msgid "Game Pause Menu"
-msgstr "Hra Menu pozastavení"
+msgstr "Hra Menu pauza"
 
 #: ../../ORTS.Settings/InputSettings.cs:43
 msgid "Game Save"
@@ -26,11 +26,11 @@ msgstr "Hra Ukončit"
 
 #: ../../ORTS.Settings/InputSettings.cs:45
 msgid "Game Pause"
-msgstr "Hra Pozastavit"
+msgstr "Hra Pauza"
 
 #: ../../ORTS.Settings/InputSettings.cs:46
 msgid "Game Screenshot"
-msgstr "Hra Screenshot"
+msgstr "Hra Uložit obrázek obrazovky"
 
 #: ../../ORTS.Settings/InputSettings.cs:47
 msgid "Game Fullscreen"
@@ -96,502 +96,517 @@ msgstr "Hra Obnov cestu vpřed"
 msgid "Game Reset Signal Backward"
 msgstr "Hra Obnov cestu vzad"
 
-#: ../../ORTS.Settings/InputSettings.cs:64
-msgid "Display Next Window Tab"
-msgstr "Zobrazení Další záložka okna"
+#: ../../ORTS.Settings/InputSettings.cs:63
+msgid "Game Autopilot Mode"
+msgstr "Hra Autopilot"
 
 #: ../../ORTS.Settings/InputSettings.cs:65
-msgid "Display Help Window"
-msgstr "Zobrazení Okno nápovědy"
+msgid "Display Next Window Tab"
+msgstr "Zobrazit Další záložka okna"
 
 #: ../../ORTS.Settings/InputSettings.cs:66
-msgid "Display Track Monitor Window"
-msgstr "Zobrazení Monitor tratě"
+msgid "Display Help Window"
+msgstr "Zobrazit Okno nápovědy"
 
 #: ../../ORTS.Settings/InputSettings.cs:67
-msgid "Display HUD"
-msgstr "Zobrazení Interní veličiny"
+msgid "Display Track Monitor Window"
+msgstr "Zobrazit Monitor tratě"
 
 #: ../../ORTS.Settings/InputSettings.cs:68
-msgid "Display Car Labels"
-msgstr "Zobrazení Popis vozidel"
+msgid "Display HUD"
+msgstr "Zobrazit Interní veličiny"
 
 #: ../../ORTS.Settings/InputSettings.cs:69
-msgid "Display Station Labels"
-msgstr "Zobrazení Popis stanic"
+msgid "Display Car Labels"
+msgstr "Zobrazit Popis vozidel"
 
 #: ../../ORTS.Settings/InputSettings.cs:70
-msgid "Display Switch Window"
-msgstr "Zobrazení Okno výhybky"
+msgid "Display Station Labels"
+msgstr "Zobrazit Popis stanic"
 
 #: ../../ORTS.Settings/InputSettings.cs:71
-msgid "Display Train Operations Window"
-msgstr "Zobrazení Okno vlaku"
+msgid "Display Switch Window"
+msgstr "Zobrazit Okno výhybky"
 
 #: ../../ORTS.Settings/InputSettings.cs:72
-msgid "Display Next Station Window"
-msgstr "Zobrazení Okno následující stanice"
+msgid "Display Train Operations Window"
+msgstr "Zobrazit Okno vlaku"
 
 #: ../../ORTS.Settings/InputSettings.cs:73
-msgid "Display Compass Window"
-msgstr "Zobrazení Kompas"
+msgid "Display Next Station Window"
+msgstr "Zobrazit Okno následující stanice"
 
-#: ../../ORTS.Settings/InputSettings.cs:75
-msgid "Debug Speed Up"
-msgstr "Ladění Zrychlit čas"
+#: ../../ORTS.Settings/InputSettings.cs:74
+msgid "Display Compass Window"
+msgstr "Zobrazit Kompas"
 
 #: ../../ORTS.Settings/InputSettings.cs:76
-msgid "Debug Speed Down"
-msgstr "Ladění Zpomalit čas"
+msgid "Debug Speed Up"
+msgstr "Ladit Zrychlit čas"
 
 #: ../../ORTS.Settings/InputSettings.cs:77
-msgid "Debug Speed Reset"
-msgstr "Ladění Výchozí rychlost"
+msgid "Debug Speed Down"
+msgstr "Ladit Zpomalit čas"
 
 #: ../../ORTS.Settings/InputSettings.cs:78
-msgid "Debug Overcast Increase"
-msgstr "Ladění Přidat oblačnost"
+msgid "Debug Speed Reset"
+msgstr "Ladit Výchozí rychlost"
 
 #: ../../ORTS.Settings/InputSettings.cs:79
-msgid "Debug Overcast Decrease"
-msgstr "Ladění Ubrat oblačnost"
+msgid "Debug Overcast Increase"
+msgstr "Ladit Přidat oblačnost"
 
 #: ../../ORTS.Settings/InputSettings.cs:80
-msgid "Debug Fog Increase"
-msgstr "Ladění Přidat mlhu"
+msgid "Debug Overcast Decrease"
+msgstr "Ladit Ubrat oblačnost"
 
 #: ../../ORTS.Settings/InputSettings.cs:81
-msgid "Debug Fog Decrease"
-msgstr "Ladění Ubrat mlhu"
+msgid "Debug Fog Increase"
+msgstr "Ladit Přidat mlhu"
 
 #: ../../ORTS.Settings/InputSettings.cs:82
-msgid "Debug Weather Change"
-msgstr "Ladění Změna počasí"
+msgid "Debug Fog Decrease"
+msgstr "Ladit Ubrat mlhu"
 
 #: ../../ORTS.Settings/InputSettings.cs:83
-msgid "Debug Clock Forwards"
-msgstr "Ladění Hodiny vpřed"
+msgid "Debug Weather Change"
+msgstr "Ladit Změna počasí"
 
 #: ../../ORTS.Settings/InputSettings.cs:84
-msgid "Debug Clock Backwards"
-msgstr "Ladění Hodiny vzad"
+msgid "Debug Clock Forwards"
+msgstr "Ladit Hodiny vpřed"
 
 #: ../../ORTS.Settings/InputSettings.cs:85
-msgid "Debug Logger"
-msgstr "Ladění Spustit/vypnout záznamník"
+msgid "Debug Clock Backwards"
+msgstr "Ladit Hodiny vzad"
 
 #: ../../ORTS.Settings/InputSettings.cs:86
-msgid "Debug Lock Shadows"
-msgstr "Ladění Uzamknout stíny"
+msgid "Debug Logger"
+msgstr "Ladit Spustit/zastavit logování"
 
 #: ../../ORTS.Settings/InputSettings.cs:87
-msgid "Debug Dump Keymap"
-msgstr "Ladění Výpis mapy kláves do souboru"
+msgid "Debug Lock Shadows"
+msgstr "Ladit Uzamknout stíny"
 
 #: ../../ORTS.Settings/InputSettings.cs:88
-msgid "Debug Log Render Frame"
-msgstr "Ladění Záznamník vykreslování"
+msgid "Debug Dump Keymap"
+msgstr "Ladit Zapsat namapování kláves do souboru"
 
 #: ../../ORTS.Settings/InputSettings.cs:89
-msgid "Debug Tracks"
-msgstr "Ladění Koleje"
+msgid "Debug Log Render Frame"
+msgstr "Ladit Logování vykreslování"
 
 #: ../../ORTS.Settings/InputSettings.cs:90
-msgid "Debug Signalling"
-msgstr "Ladění Zabezpečovací systém"
+msgid "Debug Tracks"
+msgstr "Ladit Koleje"
 
 #: ../../ORTS.Settings/InputSettings.cs:91
-msgid "Debug Reset Wheel Slip"
-msgstr "Ladění Reset modelu skluzu"
+msgid "Debug Signalling"
+msgstr "Ladit Zabezpečovací systém"
 
 #: ../../ORTS.Settings/InputSettings.cs:92
-msgid "Debug Toggle Advanced Adhesion"
-msgstr "Ladění Zapnout/vypnout pokročilou adhezi"
+msgid "Debug Reset Wheel Slip"
+msgstr "Ladit Resetovat prokluz kol"
 
 #: ../../ORTS.Settings/InputSettings.cs:93
-msgid "Debug Sound Form"
-msgstr "Ladění Okno zvuků"
+msgid "Debug Toggle Advanced Adhesion"
+msgstr "Ladit Zapnout/vypnout pokročilou adhezi"
 
 #: ../../ORTS.Settings/InputSettings.cs:94
-msgid "Debug Physics Form"
-msgstr "Ladění Okno fyziky"
+msgid "Debug Sound Form"
+msgstr "Ladit Okno zvuků"
 
 #: ../../ORTS.Settings/InputSettings.cs:95
-msgid "Debug Precipitation Increase"
-msgstr "Ladění Přidat srážky"
+msgid "Debug Physics Form"
+msgstr "Ladit Okno fyziky"
 
 #: ../../ORTS.Settings/InputSettings.cs:96
-msgid "Debug Precipitation Decrease"
-msgstr "Ladění Ubrat srážky"
+msgid "Debug Precipitation Increase"
+msgstr "Ladit Přidat srážky"
 
-#: ../../ORTS.Settings/InputSettings.cs:98
+#: ../../ORTS.Settings/InputSettings.cs:97
+msgid "Debug Precipitation Decrease"
+msgstr "Ladit Ubrat srážky"
+
+#: ../../ORTS.Settings/InputSettings.cs:99
 msgid "Camera Cab"
 msgstr "Pohled Kabina"
 
-#: ../../ORTS.Settings/InputSettings.cs:99
+#: ../../ORTS.Settings/InputSettings.cs:100
+msgid "Camera 3D Cab"
+msgstr "Pohled 3D kabina"
+
+#: ../../ORTS.Settings/InputSettings.cs:101
 msgid "Camera Outside Front"
 msgstr "Pohled Začátek vlaku"
 
-#: ../../ORTS.Settings/InputSettings.cs:100
+#: ../../ORTS.Settings/InputSettings.cs:102
 msgid "Camera Outside Rear"
 msgstr "Pohled Konec vlaku"
 
-#: ../../ORTS.Settings/InputSettings.cs:101
+#: ../../ORTS.Settings/InputSettings.cs:103
 msgid "Camera Trackside"
 msgstr "Pohled Trať"
 
-#: ../../ORTS.Settings/InputSettings.cs:102
+#: ../../ORTS.Settings/InputSettings.cs:104
 msgid "Camera Passenger"
 msgstr "Pohled Cestující"
 
-#: ../../ORTS.Settings/InputSettings.cs:103
+#: ../../ORTS.Settings/InputSettings.cs:105
 msgid "Camera Brakeman"
-msgstr "Pohled Posunovač"
+msgstr "Pohled Brzdař"
 
-#: ../../ORTS.Settings/InputSettings.cs:104
+#: ../../ORTS.Settings/InputSettings.cs:106
 msgid "Camera Free"
 msgstr "Pohled Volný"
 
-#: ../../ORTS.Settings/InputSettings.cs:105
+#: ../../ORTS.Settings/InputSettings.cs:107
 msgid "Camera Previous Free"
 msgstr "Pohled Volný předcházející"
 
-#: ../../ORTS.Settings/InputSettings.cs:106
+#: ../../ORTS.Settings/InputSettings.cs:108
 msgid "Camera HeadOut Forward"
 msgstr "Pohled Boční vpřed"
 
-#: ../../ORTS.Settings/InputSettings.cs:107
+#: ../../ORTS.Settings/InputSettings.cs:109
 msgid "Camera HeadOut Backward"
 msgstr "Pohled Boční vzad"
 
-#: ../../ORTS.Settings/InputSettings.cs:108
+#: ../../ORTS.Settings/InputSettings.cs:110
 msgid "Camera Toggle Show Cab"
 msgstr "Pohled Ukaž kabinu"
 
-#: ../../ORTS.Settings/InputSettings.cs:109
+#: ../../ORTS.Settings/InputSettings.cs:111
 msgid "Camera Reset"
-msgstr "Pohled Reset pozic"
+msgstr "Pohled Resetovat"
 
-#: ../../ORTS.Settings/InputSettings.cs:110
+#: ../../ORTS.Settings/InputSettings.cs:112
 msgid "Camera Move Fast"
 msgstr "Pohled Pohyb rychle"
 
-#: ../../ORTS.Settings/InputSettings.cs:111
+#: ../../ORTS.Settings/InputSettings.cs:113
 msgid "Camera Move Slow"
 msgstr "Pohled Pohyb pomalu"
 
-#: ../../ORTS.Settings/InputSettings.cs:112
+#: ../../ORTS.Settings/InputSettings.cs:114
 msgid "Camera Pan Left"
 msgstr "Pohled Pohyb vlevo"
 
-#: ../../ORTS.Settings/InputSettings.cs:113
+#: ../../ORTS.Settings/InputSettings.cs:115
 msgid "Camera Pan Right"
 msgstr "Pohled Pohyb vpravo"
 
-#: ../../ORTS.Settings/InputSettings.cs:114
+#: ../../ORTS.Settings/InputSettings.cs:116
 msgid "Camera Pan Up"
 msgstr "Pohled Pohyb nahoru"
 
-#: ../../ORTS.Settings/InputSettings.cs:115
+#: ../../ORTS.Settings/InputSettings.cs:117
 msgid "Camera Pan Down"
-msgstr "Pohled  Pohyb dolů"
+msgstr "Pohled Pohyb dolů"
 
-#: ../../ORTS.Settings/InputSettings.cs:116
+#: ../../ORTS.Settings/InputSettings.cs:118
 msgid "Camera Zoom In"
 msgstr "Pohled Přiblížit"
 
-#: ../../ORTS.Settings/InputSettings.cs:117
+#: ../../ORTS.Settings/InputSettings.cs:119
 msgid "Camera Zoom Out"
 msgstr "Pohled Oddálit"
 
-#: ../../ORTS.Settings/InputSettings.cs:118
+#: ../../ORTS.Settings/InputSettings.cs:120
 msgid "Camera Rotate Left"
 msgstr "Pohled Otočit vlevo"
 
-#: ../../ORTS.Settings/InputSettings.cs:119
+#: ../../ORTS.Settings/InputSettings.cs:121
 msgid "Camera Rotate Right"
 msgstr "Pohled Otočit vpravo"
 
-#: ../../ORTS.Settings/InputSettings.cs:120
+#: ../../ORTS.Settings/InputSettings.cs:122
 msgid "Camera Rotate Up"
 msgstr "Pohled Otočit nahoru"
 
-#: ../../ORTS.Settings/InputSettings.cs:121
+#: ../../ORTS.Settings/InputSettings.cs:123
 msgid "Camera Rotate Down"
 msgstr "Pohled Otočit dolů"
 
-#: ../../ORTS.Settings/InputSettings.cs:122
+#: ../../ORTS.Settings/InputSettings.cs:124
 msgid "Camera Car Next"
 msgstr "Pohled Další vozidlo"
 
-#: ../../ORTS.Settings/InputSettings.cs:123
+#: ../../ORTS.Settings/InputSettings.cs:125
 msgid "Camera Car Previous"
 msgstr "Pohled Předchozí vozidlo"
 
-#: ../../ORTS.Settings/InputSettings.cs:124
+#: ../../ORTS.Settings/InputSettings.cs:126
 msgid "Camera Car First"
 msgstr "Pohled První vozidlo"
 
-#: ../../ORTS.Settings/InputSettings.cs:125
+#: ../../ORTS.Settings/InputSettings.cs:127
 msgid "Camera Car Last"
 msgstr "Pohled Poslední vozidlo"
 
-#: ../../ORTS.Settings/InputSettings.cs:126
+#: ../../ORTS.Settings/InputSettings.cs:128
 msgid "Camera Jumping Trains"
 msgstr "Pohled Přepnout vlak"
 
-#: ../../ORTS.Settings/InputSettings.cs:127
+#: ../../ORTS.Settings/InputSettings.cs:129
 msgid "Camera Jump Back Player"
 msgstr "Pohled Vlak hráče"
 
-#: ../../ORTS.Settings/InputSettings.cs:128
+#: ../../ORTS.Settings/InputSettings.cs:130
 msgid "Camera Jump See Switch"
 msgstr "Pohled Výhybka"
 
-#: ../../ORTS.Settings/InputSettings.cs:129
+#: ../../ORTS.Settings/InputSettings.cs:131
 msgid "Camera Vibrate"
 msgstr "Pohled Kývání"
 
-#: ../../ORTS.Settings/InputSettings.cs:130
+#: ../../ORTS.Settings/InputSettings.cs:132
 msgid "Camera Cab Rotate"
 msgstr "Pohled Natáčení kabiny"
 
-#: ../../ORTS.Settings/InputSettings.cs:132
+#: ../../ORTS.Settings/InputSettings.cs:134
 msgid "Control Forwards"
 msgstr "Ovladač Vpřed"
 
-#: ../../ORTS.Settings/InputSettings.cs:133
+#: ../../ORTS.Settings/InputSettings.cs:135
 msgid "Control Backwards"
 msgstr "Ovladač Vzad"
 
-#: ../../ORTS.Settings/InputSettings.cs:134
+#: ../../ORTS.Settings/InputSettings.cs:136
 msgid "Control Throttle Increase"
 msgstr "Ovladač Zvýšit tah"
 
-#: ../../ORTS.Settings/InputSettings.cs:135
+#: ../../ORTS.Settings/InputSettings.cs:137
 msgid "Control Throttle Decrease"
 msgstr "Ovladač Snížit tah"
 
-#: ../../ORTS.Settings/InputSettings.cs:136
+#: ../../ORTS.Settings/InputSettings.cs:138
 msgid "Control Gear Up"
 msgstr "Ovladač Řazení nahoru"
 
-#: ../../ORTS.Settings/InputSettings.cs:137
+#: ../../ORTS.Settings/InputSettings.cs:139
 msgid "Control Gear Down"
 msgstr "Ovladač Řazení dolů"
 
-#: ../../ORTS.Settings/InputSettings.cs:138
+#: ../../ORTS.Settings/InputSettings.cs:140
 msgid "Control Train Brake Increase"
 msgstr "Ovladač Zabrzdit vlakovou brzdu"
 
-#: ../../ORTS.Settings/InputSettings.cs:139
+#: ../../ORTS.Settings/InputSettings.cs:141
 msgid "Control Train Brake Decrease"
 msgstr "Ovladač Odbrzdit vlakovou brzdu"
 
-#: ../../ORTS.Settings/InputSettings.cs:140
+#: ../../ORTS.Settings/InputSettings.cs:142
 msgid "Control Engine Brake Increase"
 msgstr "Ovladač Zabrzdit přídavnou brzdu"
 
-#: ../../ORTS.Settings/InputSettings.cs:141
+#: ../../ORTS.Settings/InputSettings.cs:143
 msgid "Control Engine Brake Decrease"
 msgstr "Ovladač Odbrzdit přídavnou brzdu"
 
-#: ../../ORTS.Settings/InputSettings.cs:142
+#: ../../ORTS.Settings/InputSettings.cs:144
 msgid "Control Dynamic Brake Increase"
 msgstr "Ovladač Zabrzdit dynamickou brzdu"
 
-#: ../../ORTS.Settings/InputSettings.cs:143
+#: ../../ORTS.Settings/InputSettings.cs:145
 msgid "Control Dynamic Brake Decrease"
 msgstr "Ovladač Odbrzdit dynamickou brzdu"
 
-#: ../../ORTS.Settings/InputSettings.cs:144
+#: ../../ORTS.Settings/InputSettings.cs:146
 msgid "Control Bail Off"
 msgstr "Ovladač Odbrzdit"
 
-#: ../../ORTS.Settings/InputSettings.cs:145
+#: ../../ORTS.Settings/InputSettings.cs:147
 msgid "Control Initialize Brakes"
 msgstr "Ovladač Inicializace brzdového systému"
 
-#: ../../ORTS.Settings/InputSettings.cs:146
+#: ../../ORTS.Settings/InputSettings.cs:148
 msgid "Control Handbrake Full"
 msgstr "Ovladač Zabrzdit ruční brzdu"
 
-#: ../../ORTS.Settings/InputSettings.cs:147
+#: ../../ORTS.Settings/InputSettings.cs:149
 msgid "Control Handbrake None"
 msgstr "Ovladač Odbrzdit ruční brzdu"
 
-#: ../../ORTS.Settings/InputSettings.cs:148
+#: ../../ORTS.Settings/InputSettings.cs:150
 msgid "Control Retainers On"
 msgstr "Ovladač Zarážky aktivní"
 
-#: ../../ORTS.Settings/InputSettings.cs:149
+#: ../../ORTS.Settings/InputSettings.cs:151
 msgid "Control Retainers Off"
 msgstr "Ovladač Zarážky neaktivní"
 
-#: ../../ORTS.Settings/InputSettings.cs:150
+#: ../../ORTS.Settings/InputSettings.cs:152
 msgid "Control Brake Hose Connect"
 msgstr "Ovladač Zapojit brzdové hadice"
 
-#: ../../ORTS.Settings/InputSettings.cs:151
+#: ../../ORTS.Settings/InputSettings.cs:153
 msgid "Control Brake Hose Disconnect"
 msgstr "Ovladač Odpojit brzdové hadice"
 
-#: ../../ORTS.Settings/InputSettings.cs:152
+#: ../../ORTS.Settings/InputSettings.cs:154
 msgid "Control Alerter"
 msgstr "Ovladač Tlačítko bdělosti"
 
-#: ../../ORTS.Settings/InputSettings.cs:153
-msgid "Control Emergency"
-msgstr "Ovladač Záchranná brzda"
+#: ../../ORTS.Settings/InputSettings.cs:155
+msgid "Control Emergency Push Button"
+msgstr "Ovladač Nouzové tlačítko"
 
-#: ../../ORTS.Settings/InputSettings.cs:154
+#: ../../ORTS.Settings/InputSettings.cs:156
 msgid "Control Sander"
 msgstr "Ovladač Pískování"
 
-#: ../../ORTS.Settings/InputSettings.cs:155
+#: ../../ORTS.Settings/InputSettings.cs:157
+msgid "Control Sander Toggle"
+msgstr "Ovladač Přepínání pískování"
+
+#: ../../ORTS.Settings/InputSettings.cs:158
 msgid "Control Wiper"
 msgstr "Ovladač Stěrače"
 
-#: ../../ORTS.Settings/InputSettings.cs:156
+#: ../../ORTS.Settings/InputSettings.cs:159
 msgid "Control Horn"
 msgstr "Ovladač Houkačka"
 
-#: ../../ORTS.Settings/InputSettings.cs:157
+#: ../../ORTS.Settings/InputSettings.cs:160
 msgid "Control Bell"
 msgstr "Ovladač Píšťala"
 
-#: ../../ORTS.Settings/InputSettings.cs:158
+#: ../../ORTS.Settings/InputSettings.cs:161
 msgid "Control Bell Toggle"
 msgstr "Ovladač Píšťala (přepnout)"
 
-#: ../../ORTS.Settings/InputSettings.cs:159
+#: ../../ORTS.Settings/InputSettings.cs:162
 msgid "Control Door Left"
 msgstr "Ovladač Dveře levé"
 
-#: ../../ORTS.Settings/InputSettings.cs:160
+#: ../../ORTS.Settings/InputSettings.cs:163
 msgid "Control Door Right"
 msgstr "Ovladač Dveře pravé"
 
-#: ../../ORTS.Settings/InputSettings.cs:161
+#: ../../ORTS.Settings/InputSettings.cs:164
 msgid "Control Mirror"
 msgstr "Ovladač Zrcátka"
 
-#: ../../ORTS.Settings/InputSettings.cs:162
+#: ../../ORTS.Settings/InputSettings.cs:165
 msgid "Control Light"
 msgstr "Ovladač Světlo"
 
-#: ../../ORTS.Settings/InputSettings.cs:163
+#: ../../ORTS.Settings/InputSettings.cs:166
 msgid "Control Pantograph1"
 msgstr "Ovladač Sběrač 1"
 
-#: ../../ORTS.Settings/InputSettings.cs:164
+#: ../../ORTS.Settings/InputSettings.cs:167
 msgid "Control Pantograph2"
 msgstr "Ovladač Sběrač 2"
 
-#: ../../ORTS.Settings/InputSettings.cs:165
+#: ../../ORTS.Settings/InputSettings.cs:168
 msgid "Control Diesel Player"
 msgstr "Ovladač Start/Stop motoru (hráč)"
 
-#: ../../ORTS.Settings/InputSettings.cs:166
+#: ../../ORTS.Settings/InputSettings.cs:169
 msgid "Control Diesel Helper"
 msgstr "Ovladač Start/Stop motoru (ostatní)"
 
-#: ../../ORTS.Settings/InputSettings.cs:167
+#: ../../ORTS.Settings/InputSettings.cs:170
 msgid "Control Headlight Increase"
 msgstr "Ovladač Zapnout světla/reflektory"
 
-#: ../../ORTS.Settings/InputSettings.cs:168
+#: ../../ORTS.Settings/InputSettings.cs:171
 msgid "Control Headlight Decrease"
 msgstr "Ovladač Vypnout světla/reflektory"
 
-#: ../../ORTS.Settings/InputSettings.cs:169
+#: ../../ORTS.Settings/InputSettings.cs:172
 msgid "Control Injector1 Increase"
-msgstr "Ovladač Zvýši Injektor 1"
+msgstr "Ovladač Zvýšit injektor 1"
 
-#: ../../ORTS.Settings/InputSettings.cs:170
+#: ../../ORTS.Settings/InputSettings.cs:173
 msgid "Control Injector1 Decrease"
-msgstr "Ovladač Snížit Injektor 1"
+msgstr "Ovladač Snížit injektor 1"
 
-#: ../../ORTS.Settings/InputSettings.cs:171
+#: ../../ORTS.Settings/InputSettings.cs:174
 msgid "Control Injector1"
 msgstr "Ovladač Injektor 1"
 
-#: ../../ORTS.Settings/InputSettings.cs:172
+#: ../../ORTS.Settings/InputSettings.cs:175
 msgid "Control Injector2 Increase"
-msgstr "Ovladač Zvýšit Injektor 2"
+msgstr "Ovladač Zvýšit injektor 2"
 
-#: ../../ORTS.Settings/InputSettings.cs:173
+#: ../../ORTS.Settings/InputSettings.cs:176
 msgid "Control Injector2 Decrease"
-msgstr "Ovladač Snížit Injektor 2"
+msgstr "Ovladač Snížit injektor 2"
 
-#: ../../ORTS.Settings/InputSettings.cs:174
+#: ../../ORTS.Settings/InputSettings.cs:177
 msgid "Control Injector2"
 msgstr "Ovladač Injektor 2"
 
-#: ../../ORTS.Settings/InputSettings.cs:175
+#: ../../ORTS.Settings/InputSettings.cs:178
 msgid "Control Blower Increase"
 msgstr "Ovladač Zvýšit průtok"
 
-#: ../../ORTS.Settings/InputSettings.cs:176
+#: ../../ORTS.Settings/InputSettings.cs:179
 msgid "Control Blower Decrease"
 msgstr "Ovladač Snížit průtok"
 
-#: ../../ORTS.Settings/InputSettings.cs:177
+#: ../../ORTS.Settings/InputSettings.cs:180
 msgid "Control Damper Increase"
 msgstr "Ovladač Zvýšit klapku"
 
-#: ../../ORTS.Settings/InputSettings.cs:178
+#: ../../ORTS.Settings/InputSettings.cs:181
 msgid "Control Damper Decrease"
 msgstr "Ovladač Snížit klapku"
 
-#: ../../ORTS.Settings/InputSettings.cs:179
+#: ../../ORTS.Settings/InputSettings.cs:182
 msgid "Control Firebox Open"
 msgstr "Ovladač Otevřít ohniště"
 
-#: ../../ORTS.Settings/InputSettings.cs:180
+#: ../../ORTS.Settings/InputSettings.cs:183
 msgid "Control Firebox Close"
 msgstr "Ovladač Zavřít ohniště"
 
-#: ../../ORTS.Settings/InputSettings.cs:181
+#: ../../ORTS.Settings/InputSettings.cs:184
 msgid "Control Firing Rate Increase"
 msgstr "Ovladač Zvýšit dávku paliva"
 
-#: ../../ORTS.Settings/InputSettings.cs:182
+#: ../../ORTS.Settings/InputSettings.cs:185
 msgid "Control Firing Rate Decrease"
 msgstr "Ovladač Snížit dávku palivy"
 
-#: ../../ORTS.Settings/InputSettings.cs:183
+#: ../../ORTS.Settings/InputSettings.cs:186
 msgid "Control Fire Shovel Full"
 msgstr "Ovladač Max. paliva"
 
-#: ../../ORTS.Settings/InputSettings.cs:184
+#: ../../ORTS.Settings/InputSettings.cs:187
 msgid "Control Cylinder Cocks"
 msgstr "Ovladač Kohout válce"
 
-#: ../../ORTS.Settings/InputSettings.cs:185
+#: ../../ORTS.Settings/InputSettings.cs:188
 msgid "Control Firing"
 msgstr "Ovladač Spalování"
 
-#: ../../ORTS.Settings/InputSettings.cs:186
+#: ../../ORTS.Settings/InputSettings.cs:189
 msgid "Control Refill"
 msgstr "Ovladač Doplnit"
 
-#: ../../ORTS.Settings/InputSettings.cs:631
+#: ../../ORTS.Settings/InputSettings.cs:637
 #, csharp-format
 msgid "{0} requires and is modified by Shift"
 msgstr "{0} vyžaduje stisknutí Shift"
 
-#: ../../ORTS.Settings/InputSettings.cs:633
+#: ../../ORTS.Settings/InputSettings.cs:639
 #, csharp-format
 msgid "{0} requires and is modified by Control"
 msgstr "{0} vyžaduje stisknutí Control"
 
-#: ../../ORTS.Settings/InputSettings.cs:635
+#: ../../ORTS.Settings/InputSettings.cs:641
 #, csharp-format
 msgid "{0} requires and is modified by Alt"
 msgstr "{0} vyžaduje stisknutí Alt"
 
-#: ../../ORTS.Settings/InputSettings.cs:666
+#: ../../ORTS.Settings/InputSettings.cs:672
 #, csharp-format
 msgid "{0} and {1} both match {2}"
 msgstr "{0} a {1} jsou totožné s {2}"
+
+#~ msgid "Control Emergency"
+#~ msgstr "Ovladač Záchranná brzda"
