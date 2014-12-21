@@ -82,6 +82,13 @@ namespace ORTS
         public Color ExhaustDecelColor = Color.WhiteSmoke;
         public Color ExhaustSteadyColor = Color.Gray;
 
+        public float DieselOilPressurePSI = 0f;
+        public float DieselMinOilPressurePSI = 40f;
+        public float DieselMaxOilPressurePSI = 120f;
+        public float DieselTemperatureDeg = 40f;
+        public float DieselMaxTemperatureDeg = 100.0f;
+        public DieselEngine.Cooling DieselEngineCooling = DieselEngine.Cooling.Proportional;
+
         public DieselEngines DieselEngines = new DieselEngines();
 
         public GearBox GearBox = new GearBox();
@@ -114,7 +121,11 @@ namespace ORTS
                 case "engine(ortsdieselengines": DieselEngines = new DieselEngines(this, stf); break;
                 case "engine(maxdiesellevel": MaxDieselLevelL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
                 case "engine(dieselusedperhouratmaxpower": DieselUsedPerHourAtMaxPowerL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
-                case "engine(dieselusedperhouratidle": DieselUsedPerHourAtIdleL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;				
+                case "engine(dieselusedperhouratidle": DieselUsedPerHourAtIdleL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
+                case "engine(maxoilpressure": DieselMaxOilPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, 120f); break;
+                case "engine(ortsminoilpressure": DieselMinOilPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, 40f); break;
+                case "engine(maxtemperature": DieselMaxTemperatureDeg = stf.ReadFloatBlock(STFReader.UNITS.TemperatureDifference, 100f); break;
+                case "engine(ortsdieselcooling": DieselEngineCooling = (DieselEngine.Cooling)stf.ReadInt((int)DieselEngine.Cooling.Proportional); break;
                 default:
                     GearBox.Parse(lowercasetoken, stf);
                     base.Parse(lowercasetoken, stf); break;
@@ -392,8 +403,10 @@ namespace ORTS
                 if (Direction == Direction.Reverse)
                     PrevMotiveForceN *= -1f;
 
-                if ((de.RealRPM > de.StartingRPM)&&(ThrottlePercent>0))
-                    de.OutputPowerW = PrevMotiveForceN > 0 ? PrevMotiveForceN * currentSpeedMpS : 0;
+                if ((de.EngineStatus == DieselEngine.Status.Running) && (ThrottlePercent > 0))
+                {
+                    de.OutputPowerW = (PrevMotiveForceN > 0 ? PrevMotiveForceN * currentSpeedMpS : 0) / DieselEngines.NumOfActiveEngines;
+                }
                 else
                     de.OutputPowerW = 0.0f;
                 de.Update(elapsedClockSeconds);
@@ -795,13 +808,14 @@ namespace ORTS
         {
             var result = new StringBuilder();
 
-            result.AppendFormat("Diesel engine = {0}\n", DieselEngines[0].EngineStatus.ToString());
+            //result.AppendFormat("Diesel engine = {0}\n", DieselEngines[0].EngineStatus.ToString());
+            result.AppendFormat("Diesel engine = {0}\n", DieselEngines.GetStatus());
             if(DieselEngines.HasGearBox)
-                result.AppendFormat("Diesel RPM = {0:F0} - Gear: {1}\n", DieselEngines[0].RealRPM, DieselEngines[0].GearBox.CurrentGearIndex < 0 ? "N" : (DieselEngines[0].GearBox.CurrentGearIndex + 1).ToString(), DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Automatic ? "Automatic gear" : "");
-            else
-                result.AppendFormat("Diesel RPM = {0:F0}\n", DieselEngines[0].RealRPM);
+                result.AppendFormat("Gear = {1}\n", DieselEngines[0].RealRPM, DieselEngines[0].GearBox.CurrentGearIndex < 0 ? "N" : (DieselEngines[0].GearBox.CurrentGearIndex + 1).ToString(), DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Automatic ? "Automatic gear" : "");
             result.AppendFormat("Diesel level = {0:F0} L ({1:F0} gal)\n", DieselLevelL, DieselLevelL / 3.785f);
-            result.AppendFormat("Diesel flow = {0:F1} L/h ({1:F1} gal/h)", DieselFlowLps * 3600.0f, DieselFlowLps * 3600.0f / 3.785f);
+            result.AppendFormat("Diesel flow = {0:F1} L/h ({1:F1} gal/h\n", DieselFlowLps * 3600.0f, DieselFlowLps * 3600.0f / 3.785f);
+            //result.AppendFormat("Diesel temp = {0:F1} °C - Cooling active: {1:F0} \n", DieselEngines[0].DieselTemperatureDeg, DieselEngines[0].DieselTempCoolingRunning);
+            //result.AppendFormat("Oil pressure = {0:F1} PSI ", DieselEngines[0].DieselOilPressurePSI);
             return result.ToString();
         }
 
@@ -899,3 +913,4 @@ namespace ORTS
         }
     } // class DieselLocomotive
 }
+

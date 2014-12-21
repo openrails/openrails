@@ -308,7 +308,7 @@ namespace ORTS
                         //        motiveForceN = DieselEngine.MaxOutputPowerW / CurrentSpeedMpS;
                         //}
 
-                        float motiveForceN = DieselEngine.DieselTorqueTab[DieselEngine.RealRPM] * DieselEngine.DemandedThrottlePercent / 100f * CurrentGear.MaxTractiveForceN;
+                        float motiveForceN = DieselEngine.DieselTorqueTab[DieselEngine.RealRPM] * DieselEngine.DemandedThrottlePercent / DieselEngine.DieselTorqueTab.MaxY() * 0.01f * CurrentGear.MaxTractiveForceN;
                         if (CurrentSpeedMpS > 0)
                         {
                             if (motiveForceN > (DieselEngine.MaxOutputPowerW/ CurrentSpeedMpS))

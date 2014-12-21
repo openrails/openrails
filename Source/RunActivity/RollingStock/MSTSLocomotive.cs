@@ -2233,6 +2233,20 @@ namespace ORTS
                             data = mstsDieselLocomotive.DieselEngines[0].RealRPM;
                         break;
                     }
+                case CABViewControlTypes.ORTS_DIESEL_TEMPERATURE:
+                    {
+                        var mstsDieselLocomotive = this as MSTSDieselLocomotive;
+                        if (mstsDieselLocomotive.DieselEngines[0] != null)
+                            data = mstsDieselLocomotive.DieselEngines[0].DieselTemperatureDeg;
+                        break;
+                    }
+                case CABViewControlTypes.ORTS_OIL_PRESSURE:
+                    {
+                        var mstsDieselLocomotive = this as MSTSDieselLocomotive;
+                        if (mstsDieselLocomotive.DieselEngines[0] != null)
+                            data = ConvertFromPSI(cvc, mstsDieselLocomotive.DieselEngines[0].DieselOilPressurePSI);
+                        break;
+                    }
                 case CABViewControlTypes.THROTTLE:
                 case CABViewControlTypes.THROTTLE_DISPLAY:
                 case CABViewControlTypes.CPH_DISPLAY:

@@ -144,6 +144,8 @@ namespace MSTS.Formats
         PANTOGRAPHS_4C,
         PANTOGRAPHS_5,
         EXTERNALWIPERS
+        ORTS_OIL_PRESSURE,
+        ORTS_DIESEL_TEMPERATURE,
     }
 
     public enum CABViewControlStyles

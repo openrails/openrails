@@ -102,9 +102,10 @@ namespace ORTS
 
                     DEList[i].Parse(stf, loco);
                 }
-                if (!DEList[i].IsInitialized)
+                
+                if ((!DEList[i].IsInitialized))
                 {
-                    STFException.TraceWarning(stf, "Diesel engine model not found - loading MSTS format");
+                    STFException.TraceWarning(stf, "Diesel engine model has some errors - loading MSTS format");
                     DEList[i].InitFromMSTS((MSTSDieselLocomotive)Locomotive);                    
                 }
             }
@@ -275,6 +276,62 @@ namespace ORTS
         {
             return new DieselEnum(DEList.ToArray());
         }
+
+        public string GetStatus()
+        {
+            var result = new StringBuilder();
+
+            foreach (DieselEngine eng in DEList)
+                result.AppendFormat("{0}  ", eng.EngineStatus.ToString());
+            result.AppendFormat("\n");
+
+            result.AppendFormat("Diesel Power = {0:F1} W ( ", MaxOutputPowerW * 0.001f);
+            foreach (DieselEngine eng in DEList)
+                result.AppendFormat("{0:F0} W ", eng.MaxOutputPowerW * 0.001f);
+            result.AppendFormat(")\n");
+
+            result.AppendFormat("Diesel Load = ");
+            foreach (DieselEngine eng in DEList)
+                result.AppendFormat("{0:F1}% ", eng.LoadPercent);
+            result.AppendFormat("\n");
+
+            result.AppendFormat("Diesel RPM = ");
+            foreach(DieselEngine eng in DEList)
+                result.AppendFormat("{0:F0} RPM ", eng.RealRPM);
+            result.AppendFormat("\n");
+
+            result.AppendFormat("Diesel Flow = ");
+            foreach (DieselEngine eng in DEList)
+                result.AppendFormat("{0:F1} L/h ", eng.DieselFlowLps * 3600.0f);
+            result.AppendFormat("\n");
+
+            result.AppendFormat("Diesel Temp = ");
+            foreach (DieselEngine eng in DEList)
+                result.AppendFormat("{0:F1} °C ", eng.DieselTemperatureDeg);
+            result.AppendFormat("\n");
+
+            result.AppendFormat("Diesel Oil pressure = ");
+            foreach (DieselEngine eng in DEList)
+                result.AppendFormat("{0:F1} PSI ", eng.DieselOilPressurePSI);
+            result.AppendFormat("\n");
+
+            return result.ToString();
+        }
+
+        public int NumOfActiveEngines
+        {
+            get
+            {
+                int num = 0;
+                foreach(DieselEngine eng in DEList)
+                {
+                    if (eng.EngineStatus == DieselEngine.Status.Running)
+                        num++;
+                }
+                return num;
+            }
+        }
+
     }
 
     public class DieselEnum : IEnumerator
@@ -335,6 +392,43 @@ namespace ORTS
             Stopping = 3
         }
 
+        public enum Cooling
+        {
+            NoCooling = 0,
+            Mechanical = 1,
+            Hysteresis = 2,
+            Proportional = 3
+        }
+
+        public enum SettingsFlags
+        {
+            IdleRPM              = 0x0001,
+            MaxRPM               = 0x0002,
+            StartingRPM          = 0x0004,
+            StartingConfirmRPM   = 0x0008,
+            ChangeUpRPMpS        = 0x0010,
+            ChangeDownRPMpS      = 0x0020,
+            RateOfChangeUpRPMpSS = 0x0040,
+            RateOfChangeDownRPMpSS = 0x0080,
+            MaximalPowerW        = 0x0100,
+            IdleExhaust          = 0x0200,
+            MaxExhaust           = 0x0400,
+            ExhaustDynamics      = 0x0800,
+            ExhaustColor         = 0x1000,
+            ExhaustTransientColor = 0x2000,
+            DieselPowerTab       = 0x4000,
+            DieselConsumptionTab = 0x8000,
+            ThrottleRPMTab       = 0x10000,
+            DieselTorqueTab      = 0x20000,
+            MinOilPressure       = 0x40000,
+            MaxOilPressure       = 0x80000,
+            MaxTemperature       = 0x100000,
+            Cooling              = 0x200000,
+            TempTimeConstant     = 0x400000,
+            OptTemperature       = 0x800000,
+            IdleTemperature      = 0x1000000
+        }
+
         public DieselEngine()
         {
         }
@@ -366,6 +460,9 @@ namespace ORTS
             ExhaustSteadyColor = copy.ExhaustSteadyColor;
             ExhaustTransientColor = copy.ExhaustTransientColor;
             ExhaustDecelColor = copy.ExhaustDecelColor;
+            DieselMaxOilPressurePSI = copy.DieselMaxOilPressurePSI;
+            DieselMinOilPressurePSI = copy.DieselMinOilPressurePSI;
+            DieselMaxTemperatureDeg = copy.DieselMaxTemperatureDeg;
 
             if (copy.GearBox != null)
             {
@@ -374,54 +471,168 @@ namespace ORTS
             locomotive = loco;
         }
 
+        #region Parameters and variables
         float dRPM;
+        /// <summary>
+        /// Actual change rate of the engine's RPM - useful for exhaust effects
+        /// </summary>
         public float EngineRPMchangeRPMpS { get { return dRPM; } }
-
+        /// <summary>
+        /// Actual RPM of the engine
+        /// </summary>
         public float RealRPM;
 
+        /// <summary>
+        /// RPM treshold when the engine starts to combust fuel
+        /// </summary>
         public float StartingRPM;
 
+        /// <summary>
+        /// RPM treshold when the engine is considered as succesfully started
+        /// </summary>
         public float StartingConfirmationRPM;
 
+        /// <summary>
+        /// GearBox unit
+        /// </summary>
         public GearBox GearBox;
 
+        /// <summary>
+        /// Parent locomotive
+        /// </summary>
         public MSTSLocomotive locomotive;
 
-        int initLevel;
-        public bool IsInitialized { get { return initLevel >= 17; } }
+        SettingsFlags initLevel;          //level of initialization
+        /// <summary>
+        /// Initialization flag - is true when sufficient number of parameters is read succesfully
+        /// </summary>
+        public bool IsInitialized
+        {
+            get
+            {
+                if (initLevel == (SettingsFlags.IdleRPM | SettingsFlags.MaxRPM | SettingsFlags.StartingRPM | SettingsFlags.StartingConfirmRPM | SettingsFlags.ChangeUpRPMpS | SettingsFlags.ChangeDownRPMpS
+                    | SettingsFlags.RateOfChangeUpRPMpSS | SettingsFlags.RateOfChangeDownRPMpSS | SettingsFlags.MaximalPowerW | SettingsFlags.IdleExhaust | SettingsFlags.MaxExhaust
+                    | SettingsFlags.ExhaustDynamics | SettingsFlags.ExhaustTransientColor | SettingsFlags.DieselPowerTab | SettingsFlags.DieselConsumptionTab | SettingsFlags.ThrottleRPMTab
+                    | SettingsFlags.DieselTorqueTab | SettingsFlags.MinOilPressure | SettingsFlags.MaxOilPressure | SettingsFlags.MaxTemperature | SettingsFlags.Cooling
+                    | SettingsFlags.TempTimeConstant | SettingsFlags.OptTemperature | SettingsFlags.IdleTemperature))
 
+                    return true;
+                else
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// Engine status
+        /// </summary>
         public Status EngineStatus = Status.Stopped;
+        /// <summary>
+        /// Type of engine cooling
+        /// </summary>
+        public Cooling EngineCooling = Cooling.Proportional;
 
-        public float DemandedRPM;
+        /// <summary>
+        /// The RPM controller tries to reach this value
+        /// </summary>
+        public float DemandedRPM;           
         float demandedThrottlePercent;
+        /// <summary>
+        /// Demanded throttle percent, usually token from parent locomotive
+        /// </summary>
         public float DemandedThrottlePercent { set { demandedThrottlePercent = value > 100f ? 100f : (value < 0 ? 0 : value); } get { return demandedThrottlePercent; } }
+        /// <summary>
+        /// Idle RPM
+        /// </summary>
         public float IdleRPM;
+        /// <summary>
+        /// Maximal RPM
+        /// </summary>
         public float MaxRPM;
+        /// <summary>
+        /// RPM change rate from ENG file
+        /// </summary>
         public float RPMRange;
-
+        /// <summary>
+        /// Change rate when accelerating the engine
+        /// </summary>
         public float ChangeUpRPMpS;
+        /// <summary>
+        /// Change rate when decelerating the engine
+        /// </summary>
         public float ChangeDownRPMpS;
+        /// <summary>
+        /// "Jerk" of the RPM when accelerating the engine
+        /// </summary>
         public float RateOfChangeUpRPMpSS;
+        /// <summary>
+        /// "Jerk" of the RPM when decelerating the engine
+        /// </summary>
         public float RateOfChangeDownRPMpSS;
 
+        /// <summary>
+        /// Power limit of the engine from ENG file
+        /// </summary>
         public float MaximalPowerW;
+        /// <summary>
+        /// Actual power limit depending on the actual RPM
+        /// </summary>
         public float MaxOutputPowerW;
+        /// <summary>
+        /// Real power output of the engine
+        /// </summary>
         public float OutputPowerW;
+        /// <summary>
+        /// Relative output power to the MaximalPowerW
+        /// </summary>
         public float ThrottlePercent { get { return OutputPowerW / MaximalPowerW * 100f; } }
-
+        /// <summary>
+        /// Fuel consumed at max power
+        /// </summary>
         public float DieselUsedPerHourAtMaxPowerL = 1.0f;
+        /// <summary>
+        /// Fuel consumed at idle
+        /// </summary>
         public float DieselUsedPerHourAtIdleL = 1.0f;
+        /// <summary>
+        /// Current fuel flow
+        /// </summary>
         public float DieselFlowLps;
-
+        /// <summary>
+        /// Engine load table - Max output power vs. RPM
+        /// </summary>
         public Interpolator DieselPowerTab;
+        /// <summary>
+        /// Engine consumption table - Consumption vs. RPM
+        /// </summary>
         public Interpolator DieselConsumptionTab;
+        /// <summary>
+        /// Engine throttle settings table - RPM vs. throttle settings
+        /// </summary>
         public Interpolator ThrottleRPMTab;
+        /// <summary>
+        /// Engine output torque table - Torque vs. RPM
+        /// </summary>
         public Interpolator DieselTorqueTab;
 
+        /// <summary>
+        /// Current exhaust number of particles
+        /// </summary>
         public float ExhaustParticles = 10.0f;
+        /// <summary>
+        /// Current exhaust color
+        /// </summary>
         public Color ExhaustColor;
+        /// <summary>
+        /// Exhaust color at steady state (no RPM change)
+        /// </summary>
         public Color ExhaustSteadyColor = Color.Gray;
+        /// <summary>
+        /// Exhaust color when accelerating the engine
+        /// </summary>
         public Color ExhaustTransientColor = Color.Black;
+        /// <summary>
+        /// Exhaust color when decelerating the engine
+        /// </summary>
         public Color ExhaustDecelColor = Color.WhiteSmoke;
 
         public float InitialMagnitude = 1.5f;        
@@ -438,6 +649,65 @@ namespace ORTS
         public float ExhaustDecelReduction = 0.75f; //Represents the percentage that exhaust will be reduced while engine is decreasing RPMs.
         public float ExhaustAccelIncrease = 2.0f; //Represents the percentage that exhaust will be increased while engine is increasing RPMs.
 
+        /// <summary>
+        /// Current Engine oil pressure in PSI
+        /// </summary>
+        public float DieselOilPressurePSI
+        {
+            get
+            {
+                float k = (DieselMaxOilPressurePSI - DieselMinOilPressurePSI)/(MaxRPM - IdleRPM);
+                float q = DieselMaxOilPressurePSI - k * MaxRPM;
+                float res = k * RealRPM + q - dieseloilfailurePSI;
+                if (res < 0f)
+                    res = 0f;
+                return res;
+            }
+        }
+        /// <summary>
+        /// Minimal oil pressure at IdleRPM
+        /// </summary>
+        public float DieselMinOilPressurePSI = 40f;
+        /// <summary>
+        /// Maximal oil pressure at MaxRPM
+        /// </summary>
+        public float DieselMaxOilPressurePSI = 120f;
+        /// <summary>
+        /// Oil failure/leakage is substracted from the DieselOilPressurePSI
+        /// </summary>
+        public float dieseloilfailurePSI = 0f;              //Intended to be implemented later
+        /// <summary>
+        /// Actual Engine temperature
+        /// </summary>
+        public float DieselTemperatureDeg = 40f;
+        /// <summary>
+        /// Maximal engine temperature
+        /// </summary>
+        public float DieselMaxTemperatureDeg = 100.0f;
+        /// <summary>
+        /// Time constant to heat up from zero to 63% of MaxTemperature
+        /// </summary>
+        public float DieselTempTimeConstantSec = 720f;
+        /// <summary>
+        /// Optimal temperature of the diesel at rated power
+        /// </summary>
+        public float DieselOptimalTemperatureDegC = 95f;
+        /// <summary>
+        /// Steady temperature when idling
+        /// </summary>
+        public float DieselIdleTemperatureDegC = 75f;
+        /// <summary>
+        /// Hysteresis of the cooling regulator
+        /// </summary>
+        public float DieselTempCoolingHyst = 20f;
+        /// <summary>
+        /// Cooling system indicator
+        /// </summary>
+        public bool DieselTempCoolingRunning = false;
+
+        /// <summary>
+        /// Load of the engine
+        /// </summary>
         public float LoadPercent
         {
             get
@@ -445,8 +715,11 @@ namespace ORTS
                 return (MaxOutputPowerW <= 0f ? 0f : (OutputPowerW * 100f / MaxOutputPowerW)) ;
             }
         }
-
+        /// <summary>
+        /// The engine is connected to the gearbox
+        /// </summary>
         public bool HasGearBox { get { return GearBox != null; } }
+        #endregion
 
         public void Parse(string lowercasetoken, STFReader stf)
         {
@@ -460,7 +733,7 @@ namespace ORTS
                 case "engine(orts(diesel(changedownrpmps": ChangeDownRPMpS = stf.ReadFloatBlock(STFReader.UNITS.None, 100); initLevel++; break;
                 case "engine(orts(diesel(rateofchangeuprpmpss": RateOfChangeUpRPMpSS = stf.ReadFloatBlock(STFReader.UNITS.None, 100); initLevel++; break;
                 case "engine(orts(diesel(rateofchangedownrpmpss": RateOfChangeDownRPMpSS = stf.ReadFloatBlock(STFReader.UNITS.None, 100); initLevel++; break;
-                case "engine(orts(diesel(maximalpowerw": MaximalPowerW = stf.ReadFloatBlock(STFReader.UNITS.Power, 1); initLevel++; break;
+                case "engine(orts(diesel(maximalpower": MaximalPowerW = stf.ReadFloatBlock(STFReader.UNITS.Power, 1); initLevel++; break;
                 case "engine(orts(diesel(dieselpowertab": DieselPowerTab = new Interpolator(stf); initLevel++; break;
                 case "engine(orts(diesel(dieselconsumptiontab": DieselConsumptionTab = new Interpolator(stf); initLevel++; break;
                 case "engine(orts(diesel(throttlerpmtab": ThrottleRPMTab = new Interpolator(stf); initLevel++; break;
@@ -471,6 +744,13 @@ namespace ORTS
                 case "engine(orts(diesel(exhausttransientcolor": ExhaustTransientColor.PackedValue = stf.ReadHexBlock(Color.Black.PackedValue); initLevel++; break;
                 case "engine(orts(diesel(exhaustdecelreductionpercent": ExhaustDecelReduction = stf.ReadFloatBlock(STFReader.UNITS.None, 50); initLevel++; break;
                 case "engine(orts(diesel(exhaustaccelincreasepercent": ExhaustAccelIncrease = stf.ReadFloatBlock(STFReader.UNITS.None, 200); initLevel++; break;
+                case "engine(orts(diesel(minoilpressure": DieselMinOilPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, 40f); break;
+                case "engine(orts(diesel(maxoilpressure": DieselMaxOilPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, 120f); break;
+                case "engine(orts(diesel(maxtemperature": DieselMaxTemperatureDeg = stf.ReadFloatBlock(STFReader.UNITS.TemperatureDifference, 100f); break;
+                case "engine(orts(diesel(opttemperature": DieselOptimalTemperatureDegC = stf.ReadFloatBlock(STFReader.UNITS.TemperatureDifference, 95f); break;
+                case "engine(orts(diesel(idletemperature": DieselIdleTemperatureDegC = stf.ReadFloatBlock(STFReader.UNITS.TemperatureDifference, 75f); break;
+                case "engine(orts(diesel(cooling": EngineCooling = (Cooling)stf.ReadInt((int)Cooling.Proportional); break;
+                case "engine(orts(diesel(temptimeconstant": DieselTempTimeConstantSec = stf.ReadFloatBlock(STFReader.UNITS.Time, 720f); break;
                 default: break;
             }
         }
@@ -479,6 +759,7 @@ namespace ORTS
         /// Parses parameters from the stf reader
         /// </summary>
         /// <param name="stf">Reference to the stf reader</param>
+        /// <param name="loco">Reference to the locomotive</param>
         public virtual void Parse(STFReader stf, MSTSLocomotive loco)
         {
             locomotive = loco;
@@ -489,24 +770,31 @@ namespace ORTS
                 string lowercasetoken = stf.ReadItem().ToLower();
                 switch (lowercasetoken)
                 {
-                    case "idlerpm":         IdleRPM = stf.ReadFloatBlock(STFReader.UNITS.Power, 0); initLevel++; break;
-                    case "maxrpm":          MaxRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0);initLevel++; break;
-                    case "startingrpm":     StartingRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0);initLevel++; break;
-                    case "startingconfirmrpm": StartingConfirmationRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel++; break;
-                    case "changeuprpmps":   ChangeUpRPMpS = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel++; break;
-                    case "changedownrpmps": ChangeDownRPMpS = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel++; break;
-                    case "rateofchangeuprpmpss": RateOfChangeUpRPMpSS = stf.ReadFloatBlock(STFReader.UNITS.None, 0);initLevel++; break;
-                    case "rateofchangedownrpmpss": RateOfChangeDownRPMpSS = stf.ReadFloatBlock(STFReader.UNITS.None, 0);initLevel++; break;
-                    case "maximalpowerw":   MaximalPowerW = stf.ReadFloatBlock(STFReader.UNITS.None, 0);initLevel++; break;
-                    case "idleexhaust":     InitialExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel++; break;
-                    case "maxexhaust":      MaxExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, 0);initLevel++; break;
-                    case "exhaustdynamics": ExhaustDynamics = stf.ReadFloatBlock(STFReader.UNITS.None, 0);initLevel++; break;
-                    case "exhaustcolor":    ExhaustSteadyColor.PackedValue = stf.ReadHexBlock(Color.Gray.PackedValue);initLevel++; break;
-                    case "exhausttransientcolor": ExhaustTransientColor.PackedValue = stf.ReadHexBlock(Color.Black.PackedValue);initLevel++; break;
-                    case "dieselpowertab": DieselPowerTab = new Interpolator(stf);initLevel++; break;
-                    case "dieselconsumptiontab": DieselConsumptionTab = new Interpolator(stf);initLevel++; break;
-                    case "throttlerpmtab": ThrottleRPMTab = new Interpolator(stf); initLevel++; break;
-                    case "dieseltorquetab": DieselTorqueTab = new Interpolator(stf); initLevel++; break;
+                    case "idlerpm":         IdleRPM = stf.ReadFloatBlock(STFReader.UNITS.Power, 0); initLevel |= SettingsFlags.IdleRPM; break;
+                    case "maxrpm":          MaxRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0);initLevel |= SettingsFlags.MaxRPM; break;
+                    case "startingrpm": StartingRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.StartingRPM; break;
+                    case "startingconfirmrpm": StartingConfirmationRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.StartingConfirmRPM; break;
+                    case "changeuprpmps": ChangeUpRPMpS = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.ChangeUpRPMpS; break;
+                    case "changedownrpmps": ChangeDownRPMpS = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.ChangeDownRPMpS; break;
+                    case "rateofchangeuprpmpss": RateOfChangeUpRPMpSS = stf.ReadFloatBlock(STFReader.UNITS.None, 0);initLevel |= SettingsFlags.RateOfChangeUpRPMpSS; break;
+                    case "rateofchangedownrpmpss": RateOfChangeDownRPMpSS = stf.ReadFloatBlock(STFReader.UNITS.None, 0);initLevel |= SettingsFlags.RateOfChangeDownRPMpSS; break;
+                    case "maximalpower":   MaximalPowerW = stf.ReadFloatBlock(STFReader.UNITS.Power, 0);initLevel |= SettingsFlags.MaximalPowerW; break;
+                    case "idleexhaust":     InitialExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.IdleExhaust; break;
+                    case "maxexhaust":      MaxExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, 0);initLevel |= SettingsFlags.MaxExhaust; break;
+                    case "exhaustdynamics": ExhaustDynamics = stf.ReadFloatBlock(STFReader.UNITS.None, 0);initLevel |= SettingsFlags.ExhaustDynamics; break;
+                    case "exhaustcolor":    ExhaustSteadyColor.PackedValue = stf.ReadHexBlock(Color.Gray.PackedValue);initLevel |= SettingsFlags.ExhaustColor; break;
+                    case "exhausttransientcolor": ExhaustTransientColor.PackedValue = stf.ReadHexBlock(Color.Black.PackedValue);initLevel |= SettingsFlags.ExhaustTransientColor; break;
+                    case "dieselpowertab": DieselPowerTab = new Interpolator(stf);initLevel |= SettingsFlags.DieselPowerTab; break;
+                    case "dieselconsumptiontab": DieselConsumptionTab = new Interpolator(stf);initLevel |= SettingsFlags.DieselConsumptionTab; break;
+                    case "throttlerpmtab": ThrottleRPMTab = new Interpolator(stf); initLevel |= SettingsFlags.ThrottleRPMTab; break;
+                    case "dieseltorquetab": DieselTorqueTab = new Interpolator(stf); initLevel |= SettingsFlags.DieselTorqueTab; break;
+                    case "minoilpressure": DieselMinOilPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, 40f); initLevel |= SettingsFlags.MinOilPressure; break;
+                    case "maxoilpressure": DieselMaxOilPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, 120f); initLevel |= SettingsFlags.MaxOilPressure; break;
+                    case "maxtemperature": DieselMaxTemperatureDeg = stf.ReadFloatBlock(STFReader.UNITS.TemperatureDifference, 100f); initLevel |= SettingsFlags.MaxTemperature; break;
+                    case "cooling": EngineCooling = (Cooling)stf.ReadInt((int)Cooling.Proportional); initLevel |= SettingsFlags.Cooling; break ;
+                    case "temptimeconstant": DieselTempTimeConstantSec = stf.ReadFloatBlock(STFReader.UNITS.Time, 720f); initLevel |= SettingsFlags.TempTimeConstant; break;
+                    case "opttemperature": DieselOptimalTemperatureDegC = stf.ReadFloatBlock(STFReader.UNITS.TemperatureDifference, 95f); initLevel |= SettingsFlags.OptTemperature; break;
+                    case "idletemperature": DieselIdleTemperatureDegC = stf.ReadFloatBlock(STFReader.UNITS.TemperatureDifference, 75f); initLevel |= SettingsFlags.IdleTemperature; break;
                     default:
                         end = true;
                         break;
@@ -523,7 +811,6 @@ namespace ORTS
                 RPMRange = MaxRPM - IdleRPM;
                 MagnitudeRange = MaxMagnitude - InitialMagnitude;
                 ExhaustRange = MaxExhaust - InitialExhaust;
-
             }
 
             ExhaustSteadyColor.A = 10;
@@ -631,7 +918,7 @@ namespace ORTS
                             DieselFlowLps = DieselUsedPerHourAtIdleL / 3600.0f;
                     }
                     else
-                        DieselFlowLps = DieselConsumptionTab[RealRPM] / 3600.0f;
+                        DieselFlowLps = DieselConsumptionTab[RealRPM] * (MaxOutputPowerW) * 0.000001f / 3600.0f ;
                 }
                 else
                 {
@@ -644,6 +931,55 @@ namespace ORTS
 
             if (ExhaustParticles > 100f)
                 ExhaustParticles = 100f;
+
+            //Cooling and temperature
+            float finalTemperature = 0f;
+            float currentTemperature = 0f;
+
+            //if(EngineCooling)
+            //    finalTemperature = 
+
+            DieselTemperatureDeg += elapsedClockSeconds * (DieselMaxTemperatureDeg - DieselTemperatureDeg) / DieselTempTimeConstantSec;
+            switch(EngineCooling)
+            {
+                case Cooling.NoCooling:
+                    DieselTemperatureDeg += elapsedClockSeconds * (LoadPercent * 0.01f * (95f - 60f) + 60f - DieselTemperatureDeg) / DieselTempTimeConstantSec;
+                    DieselTempCoolingRunning = false;
+                    break;
+                case Cooling.Mechanical:
+                    DieselTemperatureDeg += elapsedClockSeconds * ((RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * 95f + 60f - DieselTemperatureDeg) / DieselTempTimeConstantSec;
+                    DieselTempCoolingRunning = true;
+                    break;
+                case Cooling.Hysteresis:
+                    if(DieselTemperatureDeg > DieselMaxTemperatureDeg)
+                        DieselTempCoolingRunning = true;
+                    if(DieselTemperatureDeg < (DieselMaxTemperatureDeg - DieselTempCoolingHyst))
+                        DieselTempCoolingRunning = false;
+
+                    if(DieselTempCoolingRunning)
+                        DieselTemperatureDeg += elapsedClockSeconds * (DieselMaxTemperatureDeg - DieselTemperatureDeg) / DieselTempTimeConstantSec;
+                    else
+                        DieselTemperatureDeg -= elapsedClockSeconds * (DieselMaxTemperatureDeg - 2f * DieselTempCoolingHyst - DieselTemperatureDeg) / DieselTempTimeConstantSec;
+                    break;
+                default:
+                case Cooling.Proportional:
+                    float cooling = (95f - DieselTemperatureDeg) * 0.01f;
+                    cooling = cooling < 0f ? 0 : cooling;
+                    if (DieselTemperatureDeg >= (80f))
+                        DieselTempCoolingRunning = true;
+                    if(DieselTemperatureDeg < (80f - DieselTempCoolingHyst))
+                        DieselTempCoolingRunning = false;
+
+                    if (!DieselTempCoolingRunning)
+                        cooling = 0f;
+
+                    DieselTemperatureDeg += elapsedClockSeconds * (LoadPercent * 0.01f * 95f - DieselTemperatureDeg) / DieselTempTimeConstantSec;
+                    if (DieselTemperatureDeg > DieselMaxTemperatureDeg - DieselTempCoolingHyst)
+                        DieselTemperatureDeg = DieselMaxTemperatureDeg - DieselTempCoolingHyst;
+                    break;
+            }
+            if(DieselTemperatureDeg < 40f)
+                DieselTemperatureDeg = 40f;
 
             return;
         }
@@ -684,6 +1020,8 @@ namespace ORTS
             result.AppendFormat("Diesel flow = {0:F1} L/h ({1:F1} gal/h)\n", DieselFlowLps * 3600.0f, DieselFlowLps * 3600.0f / 3.785f);
             result.AppendFormat("Diesel power = {0:F0} / {1:F0} kW\n", OutputPowerW / 1000f, MaxOutputPowerW / 1000f);
             result.AppendFormat("Diesel load = {0:F1} %\n", LoadPercent);
+            result.AppendFormat("Diesel oil pressure = {0:F1} PSI\n", DieselOilPressurePSI);
+            result.AppendFormat("Diesel temperature = {0:F1} °C\n", DieselTemperatureDeg);
             if (GearBox != null)
             {
                 result.AppendFormat("Current gear = {0} {1}\n", GearBox.CurrentGearIndex < 0 ? "N" : (GearBox.CurrentGearIndex + 1).ToString(), GearBox.GearBoxOperation == GearBoxOperation.Automatic ? "Automatic gear" : "");
@@ -708,6 +1046,7 @@ namespace ORTS
             EngineStatus = (Status)inf.ReadInt32();
             RealRPM = inf.ReadSingle();
             OutputPowerW = inf.ReadSingle();
+            DieselTemperatureDeg = inf.ReadSingle();
 
             Boolean gearSaved    = inf.ReadBoolean();  // read boolean which indicates gear data was saved
             Boolean gearRestored = false;
@@ -737,6 +1076,7 @@ namespace ORTS
             outf.Write((int)EngineStatus);
             outf.Write(RealRPM);
             outf.Write(OutputPowerW);
+            outf.Write(DieselTemperatureDeg);
             if (GearBox != null)
             {
                 outf.Write(true);
@@ -755,47 +1095,80 @@ namespace ORTS
 
         public void InitFromMSTS(MSTSDieselLocomotive loco)
         {
-            IdleRPM = loco.IdleRPM;
-            MaxRPM = loco.MaxRPM;
+            if((initLevel & SettingsFlags.IdleRPM) == 0) IdleRPM = loco.IdleRPM;
+            if ((initLevel & SettingsFlags.MaxRPM) == 0) MaxRPM = loco.MaxRPM;
             InitialMagnitude = loco.InitialMagnitude;
             MaxMagnitude = loco.MaxMagnitude;
-            MaxExhaust = loco.MaxExhaust;
-            ExhaustSteadyColor = loco.ExhaustSteadyColor;
+            if ((initLevel & SettingsFlags.MaxExhaust) == 0) MaxExhaust = loco.MaxExhaust;
+            if ((initLevel & SettingsFlags.ExhaustColor) == 0) ExhaustSteadyColor = loco.ExhaustSteadyColor;
             ExhaustColor = loco.ExhaustColor;
             ExhaustDecelColor = loco.ExhaustDecelColor;
-            ExhaustTransientColor = loco.ExhaustTransientColor;
+            if ((initLevel & SettingsFlags.ExhaustTransientColor) == 0) ExhaustTransientColor = loco.ExhaustTransientColor;
             InitialExhaust = loco.InitialMagnitude;
-            StartingRPM = loco.IdleRPM * 2.0f / 3.0f;
-            StartingConfirmationRPM = loco.IdleRPM * 1.1f;
-            ChangeUpRPMpS = loco.MaxRPMChangeRate;
-            ChangeDownRPMpS = loco.MaxRPMChangeRate;
-            RateOfChangeUpRPMpSS = ChangeUpRPMpS;
-            RateOfChangeDownRPMpSS = ChangeDownRPMpS;
-            MaximalPowerW = loco.MaxPowerW;
+            if ((initLevel & SettingsFlags.StartingRPM) == 0) StartingRPM = loco.IdleRPM * 2.0f / 3.0f;
+            if ((initLevel & SettingsFlags.StartingConfirmRPM) == 0) StartingConfirmationRPM = loco.IdleRPM * 1.1f;
+            if ((initLevel & SettingsFlags.ChangeUpRPMpS) == 0) ChangeUpRPMpS = loco.MaxRPMChangeRate;
+            if ((initLevel & SettingsFlags.ChangeDownRPMpS) == 0) ChangeDownRPMpS = loco.MaxRPMChangeRate;
+            if ((initLevel & SettingsFlags.RateOfChangeUpRPMpSS) == 0) RateOfChangeUpRPMpSS = ChangeUpRPMpS;
+            if ((initLevel & SettingsFlags.RateOfChangeDownRPMpSS) == 0) RateOfChangeDownRPMpSS = ChangeDownRPMpS;
+            if ((initLevel & SettingsFlags.MaximalPowerW) == 0) MaximalPowerW = loco.MaxPowerW;
+            if ((initLevel & SettingsFlags.MaxOilPressure) == 0) DieselMaxOilPressurePSI = loco.DieselMaxOilPressurePSI;
+            if ((initLevel & SettingsFlags.MinOilPressure) == 0) DieselMinOilPressurePSI = loco.DieselMinOilPressurePSI;
+            if ((initLevel & SettingsFlags.MaxTemperature) == 0) DieselMaxTemperatureDeg = loco.DieselMaxTemperatureDeg;
+            if ((initLevel & SettingsFlags.Cooling) == 0) EngineCooling = loco.DieselEngineCooling;
+            if ((initLevel & SettingsFlags.TempTimeConstant) == 0) DieselTempTimeConstantSec = 720f;
             //DieselPowerTab = new Interpolator(new float[] { diesel.IdleRPM, diesel.IdleRPM * 1.01f, diesel.MaxRPM * 0.5f, diesel.MaxRPM }, new float[] { diesel.MaxPowerW * 0.05f, diesel.MaxRPM * 0.1f, diesel.MaxRPM * 0.5f, diesel.MaxPowerW });
             //DieselPowerTab = new Interpolator(new float[] { diesel.IdleRPM, diesel.MaxRPM }, new float[] { diesel.MaxPowerW * 0.05f, diesel.MaxPowerW });
-            DieselConsumptionTab = new Interpolator(new float[] { loco.IdleRPM, loco.MaxRPM }, new float[] { loco.DieselUsedPerHourAtIdleL, loco.DieselUsedPerHourAtMaxPowerL });
-            ThrottleRPMTab = new Interpolator(new float[] { 0, 100 }, new float[] { loco.IdleRPM, loco.MaxRPM });
-            
-            int count = 11;
-            float[] rpm = new float[count + 1];
-            float[] power = new float[] {0.02034f,  0.09302f,   0.36628f,   0.60756f,   0.69767f,   0.81395f,   0.93023f,   0.9686f,    0.99418f,   0.99418f,  1f,     0.5f };
-            float[] torque = new float[] {0.05f,    0.2f,       0.7f,       0.95f,      1f,         1f,         0.98f,      0.95f,      0.9f,       0.86f,      0.81f,  0.3f};
+            if ((initLevel & SettingsFlags.DieselConsumptionTab) == 0) 
+                DieselConsumptionTab = new Interpolator(new float[] { loco.IdleRPM, loco.MaxRPM }, new float[] { loco.DieselUsedPerHourAtIdleL, loco.DieselUsedPerHourAtMaxPowerL });
+            if ((initLevel & SettingsFlags.ThrottleRPMTab) == 0) 
+                ThrottleRPMTab = new Interpolator(new float[] { 0, 100 }, new float[] { loco.IdleRPM, loco.MaxRPM });
 
-            for (int i = 0; i < count; i++)
+            if (((initLevel & SettingsFlags.DieselTorqueTab) == 0) && ((initLevel & SettingsFlags.DieselPowerTab) == 0))
             {
-                if (i == 0)
-                    rpm[i] = loco.IdleRPM;
-                else
-                    rpm[i] = rpm[i - 1] + (loco.MaxRPM - loco.IdleRPM) / (count - 1);
-                power[i] *= MaximalPowerW;
-            }
-            rpm[count] = loco.MaxRPM * 1.5f;
-            DieselPowerTab = new Interpolator(rpm, power);
-            //DieselPowerTab.test("PowerTab", count);
-            DieselTorqueTab = new Interpolator(rpm, torque);
-            //DieselTorqueTab.test("TorqueTab", count);
+                int count = 11;
+                float[] rpm = new float[count + 1];
+                float[] power = new float[] { 0.02034f, 0.09302f, 0.36628f, 0.60756f, 0.69767f, 0.81395f, 0.93023f, 0.9686f, 0.99418f, 0.99418f, 1f, 0.5f };
+                float[] torque = new float[] { 0.05f, 0.2f, 0.7f, 0.95f, 1f, 1f, 0.98f, 0.95f, 0.9f, 0.86f, 0.81f, 0.3f };
 
+                for (int i = 0; i < count; i++)
+                {
+                    if (i == 0)
+                        rpm[i] = loco.IdleRPM;
+                    else
+                        rpm[i] = rpm[i - 1] + (loco.MaxRPM - loco.IdleRPM) / (count - 1);
+                    power[i] *= MaximalPowerW;
+                    torque[i] *= MaximalPowerW / (MaxRPM * 2f * 3.1415f / 60f) / 0.81f;
+                }
+                rpm[count] = loco.MaxRPM * 1.5f;
+                DieselPowerTab = new Interpolator(rpm, power);
+                //DieselPowerTab.test("PowerTab", count);
+                DieselTorqueTab = new Interpolator(rpm, torque);
+                //DieselTorqueTab.test("TorqueTab", count);
+            }
+
+            if (((initLevel & SettingsFlags.DieselTorqueTab) == 0) && ((initLevel & SettingsFlags.DieselPowerTab) == SettingsFlags.DieselPowerTab))
+            {
+                float[] rpm = new float[DieselPowerTab.GetSize()];
+                float[] torque = new float[DieselPowerTab.GetSize()];
+                for (int i = 0; i < DieselPowerTab.GetSize(); i++)
+                {
+                    rpm[i] = IdleRPM + (float)i * (MaxRPM - IdleRPM) / (float)DieselPowerTab.GetSize();
+                    torque[i] = DieselPowerTab[rpm[i]] / (rpm[i] * 2f * 3.1415f / 60f);
+                }
+            }
+
+            if (((initLevel & SettingsFlags.DieselTorqueTab) == SettingsFlags.DieselTorqueTab) && ((initLevel & SettingsFlags.DieselPowerTab) == 0))
+            {
+                float[] rpm = new float[DieselPowerTab.GetSize()];
+                float[] power = new float[DieselPowerTab.GetSize()];
+                for (int i = 0; i < DieselPowerTab.GetSize(); i++)
+                {
+                    rpm[i] = IdleRPM + (float)i * (MaxRPM - IdleRPM) / (float)DieselPowerTab.GetSize();
+                    power[i] = DieselPowerTab[rpm[i]] * rpm[i] * 2f * 3.1415f / 60f;
+                }
+            }
+            
             InitialExhaust = loco.InitialExhaust;
             MaxExhaust = loco.MaxExhaust;
             locomotive = loco;
