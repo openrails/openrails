@@ -24,8 +24,8 @@ namespace ORTS
 {
     static class SteamTable
     {
-        // gauge pressures that match other tables (pounds per square inch)
-        static float[] PressureTablePSI = new float[]
+        // gauge pressures that match other tables (pounds per square inch - Gauge pressure)
+        static float[] PressureTableGaugePSI = new float[]
         {
             0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
             110, 120, 130, 140, 150, 160, 170, 180, 190, 200,
@@ -347,72 +347,72 @@ namespace ORTS
         // Flowrate table vs Boiler Pressure for 9mm Injector
         public static Interpolator Injector09FlowrateInterpolatorPSItoUKGpM()
         {
-            return new Interpolator(PressureTablePSI, Injector09FlowTableUKGpM);
+            return new Interpolator(PressureTableGaugePSI, Injector09FlowTableUKGpM);
         }
 
         // Flowrate table vs Boiler Pressure for 10mm Injector
         public static Interpolator Injector10FlowrateInterpolatorPSItoUKGpM()
         {
-            return new Interpolator(PressureTablePSI, Injector10FlowTableUKGpM);
+            return new Interpolator(PressureTableGaugePSI, Injector10FlowTableUKGpM);
         }
 
         // Flowrate table vs Boiler Pressure for 11mm Injector
         public static Interpolator Injector11FlowrateInterpolatorPSItoUKGpM()
         {
-            return new Interpolator(PressureTablePSI, Injector11FlowTableUKGpM);
+            return new Interpolator(PressureTableGaugePSI, Injector11FlowTableUKGpM);
         } 
  
         // Flowrate table vs Boiler Pressure for 13mm Injector
         public static Interpolator Injector13FlowrateInterpolatorPSItoUKGpM()
         {
-            return new Interpolator(PressureTablePSI, Injector13FlowTableUKGpM);
+            return new Interpolator(PressureTableGaugePSI, Injector13FlowTableUKGpM);
         } 
         
         // Flowrate table vs Boiler Pressure for 14mm Injector
         public static Interpolator Injector14FlowrateInterpolatorPSItoUKGpM()
         {
-            return new Interpolator(PressureTablePSI, Injector14FlowTableUKGpM);
+            return new Interpolator(PressureTableGaugePSI, Injector14FlowTableUKGpM);
         } 
         
         // Flowrate table vs Boiler Pressure for 15mm Injector
         public static Interpolator Injector15FlowrateInterpolatorPSItoUKGpM()
         {
-            return new Interpolator(PressureTablePSI, Injector15FlowTableUKGpM);
+            return new Interpolator(PressureTableGaugePSI, Injector15FlowTableUKGpM);
         }       
 
         public static Interpolator WaterHeatInterpolatorPSItoBTUpLB()
         {
-            return new Interpolator(PressureTablePSI, WaterHeatTableBTUpLB);
+            return new Interpolator(PressureTableGaugePSI, WaterHeatTableBTUpLB);
         }
 
         public static Interpolator WaterDensityInterpolatorPSItoLBpFT3()
         {
-            return new Interpolator(PressureTablePSI, WaterDensityTableLBpFT3);
+            return new Interpolator(PressureTableGaugePSI, WaterDensityTableLBpFT3);
         }
 
         public static Interpolator SteamHeatInterpolatorPSItoBTUpLB()
         {
-            return new Interpolator(PressureTablePSI, SteamHeatTableBTUpLB);
+            return new Interpolator(PressureTableGaugePSI, SteamHeatTableBTUpLB);
         }
 
         public static Interpolator SteamDensityInterpolatorPSItoLBpFT3()
         {
-            return new Interpolator(PressureTablePSI, SteamDensityTableLBpFT3);
+            return new Interpolator(PressureTableGaugePSI, SteamDensityTableLBpFT3);
         }
 
         public static Interpolator WaterHeatToPressureInterpolatorBTUpLBtoPSI()
         {
-            return new Interpolator(WaterHeatTableBTUpLB, PressureTablePSI);
+            return new Interpolator(WaterHeatTableBTUpLB, PressureTableGaugePSI);
         }
 
         public static Interpolator TemperatureToPressureInterpolatorFtoPSI()
         {
-            return new Interpolator(TemperatureTableF, PressureTablePSI);
+            return new Interpolator(TemperatureTableF, PressureTableGaugePSI);
         }
 
         public static Interpolator PressureToTemperatureInterpolatorPSItoF()
         {
-            return new Interpolator(PressureTablePSI, TemperatureTableF);
+            return new Interpolator(PressureTableGaugePSI, TemperatureTableF);
         }
 
          // ++++++++++++++++++++++++++++++++
