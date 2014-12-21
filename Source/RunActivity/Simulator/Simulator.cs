@@ -440,9 +440,12 @@ namespace ORTS
             if (PlayerLocomotive != null)
             {
                 movingTrains.Add(PlayerLocomotive.Train);
-                if ((PlayerLocomotive.Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING) && String.Compare(PlayerLocomotive.Train.LeadLocomotive.CarID, PlayerLocomotive.CarID) != 0)
+                if (PlayerLocomotive.Train.LeadLocomotive != null
+                    && PlayerLocomotive.Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING 
+                    && String.Compare(PlayerLocomotive.Train.LeadLocomotive.CarID, PlayerLocomotive.CarID) != 0
+                    && !MPManager.IsMultiPlayer())
                 {
-                    if (!MPManager.IsMultiPlayer()) PlayerLocomotive = PlayerLocomotive.Train.LeadLocomotive; //in MP, will not change player locomotive, By JTang
+                    PlayerLocomotive = PlayerLocomotive.Train.LeadLocomotive;
                 }
             }
 

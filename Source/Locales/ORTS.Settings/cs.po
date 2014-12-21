@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
 "POT-Creation-Date: 2014-12-12 18:48:59+0000\n"
-"PO-Revision-Date: 2014-12-17 20:24+0100\n"
+"PO-Revision-Date: 2014-12-19 03:49+0100\n"
 "Last-Translator: Altmann <altmann@bk.ru>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: cs\n"
@@ -70,11 +70,11 @@ msgstr "Hra Požadavek na volnou cestu"
 
 #: ../../ORTS.Settings/InputSettings.cs:56
 msgid "Game Multi Player Dispatcher"
-msgstr "Hra Multi Player Dispečer"
+msgstr "Hra po síti Dispečer"
 
 #: ../../ORTS.Settings/InputSettings.cs:57
 msgid "Game Multi Player Texting"
-msgstr "Hra Multi Player Zprávy"
+msgstr "Hra po síti Poslat zprávu"
 
 #: ../../ORTS.Settings/InputSettings.cs:58
 msgid "Game Switch Manual Mode"

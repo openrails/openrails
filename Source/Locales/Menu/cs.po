@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
 "POT-Creation-Date: 2014-12-12 18:48:47+0000\n"
-"PO-Revision-Date: 2014-12-18 07:17+0100\n"
+"PO-Revision-Date: 2014-12-19 03:43+0100\n"
 "Last-Translator: Altmann <altmann@bk.ru>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: cs\n"
@@ -342,7 +342,7 @@ msgstr "IP adresa/port:"
 
 #: ../../Menu/MainForm.Designer.cs:283
 msgid "User name:"
-msgstr "Uživatel. jméno:"
+msgstr "Uživ. jméno:"
 
 #: ../../Menu/MainForm.Designer.cs:293
 msgid "Client"
@@ -414,7 +414,7 @@ msgstr "Obtížnost:"
 
 #: ../../Menu/MainForm.Designer.cs:691 ../../Menu/MainForm.Designer.cs:811
 msgid "Season:"
-msgstr "Roční období:"
+msgstr "Roční doba:"
 
 #: ../../Menu/MainForm.Designer.cs:723
 msgid "Train:"
@@ -898,7 +898,7 @@ msgstr "Cílová obnovovací frekvence (FPS)"
 
 #: ../../Menu/Options.Designer.cs:1445
 msgid "Automatically tune settings to keep performance level"
-msgstr "Automaticky upravit nastavení pro udržení zadaného výkonu hry"
+msgstr "Autom. upravit nastavení pro udržení zadaného FPS hry"
 
 #: ../../Menu/Options.Designer.cs:1455
 msgid "Double overhead wires"

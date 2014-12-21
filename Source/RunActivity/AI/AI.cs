@@ -579,7 +579,10 @@ namespace ORTS
                     thisTrain.MovementState = AITrain.AI_MOVEMENT_STATE.BRAKING;
                 }
                 else if (thisTrain.InitialSpeed == 0)
+                {
                     thisTrain.InitializeBrakes();
+                    thisTrain.AdjustControlsBrakeFull();
+                }
 
                 if (MPManager.IsServer())
                 {

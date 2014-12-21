@@ -1950,13 +1950,13 @@ namespace ORTS
 
         public void DynamicBrakeChangeActiveState(bool toState)
         {
-            if (toState && !DynamicBrake)
+            if (toState && !DynamicBrake && DynamicBrakePercent < 0)
             {
                 DynamicBrakePercent = 0;
                 DynamicBrakeController.CommandStartTime = Simulator.ClockTime;
                 StopDynamicBrakeIncrease();
             }
-            else if (!toState && DynamicBrake && DynamicBrakeIntervention < 0)
+            else if (!toState && DynamicBrake && DynamicBrakePercent > -1 && DynamicBrakeIntervention < 0)
             {
                 SignalEvent(Event.DynamicBrakeOff);
                 DynamicBrakePercent = -1;
