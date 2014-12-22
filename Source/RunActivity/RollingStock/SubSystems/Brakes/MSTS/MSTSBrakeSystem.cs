@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -23,14 +23,18 @@ namespace ORTS
     {
         public static BrakeSystem Create(string type, TrainCar car)
         {
-            if (type != null && type.StartsWith("vacuum"))
-                return new VacuumSinglePipe(car);
-            else if (type != null && type == "ep")
-                return new EPBrakeSystem(car);
-            else if (type != null && type == "air_twin_pipe")
-                return new AirTwinPipe(car);
-            else
-                return new AirSinglePipe(car);
+            switch (type)
+            {
+                case "vacuum_twin_pipe":
+                case "vacuum_single_pipe": return new VacuumSinglePipe(car);
+                case "air_twin_pipe": return new AirTwinPipe(car);
+                case "air_single_pipe": return new AirSinglePipe(car);
+                case "ecp":
+                case "ep": return new EPBrakeSystem(car);
+                case "air_piped":
+                case "vacuum_piped": return new SingleTransferPipe(car);
+                default: return new AirSinglePipe(car);
+            }
         }
 
         public abstract void Parse(string lowercasetoken, STFReader stf);

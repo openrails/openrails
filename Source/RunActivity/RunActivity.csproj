@@ -161,6 +161,7 @@
     <Compile Include="RollingStock\SubSystems\Brakes\MSTS\AirTwinPipe.cs" />
     <Compile Include="RollingStock\SubSystems\Brakes\MSTS\EPBrakeSystem.cs" />
     <Compile Include="RollingStock\SubSystems\Brakes\MSTS\MSTSBrakeSystem.cs" />
+    <Compile Include="RollingStock\SubSystems\Brakes\MSTS\SingleTransferPipe.cs" />
     <Compile Include="RollingStock\SubSystems\Brakes\MSTS\VacuumSinglePipe.cs" />
     <Compile Include="RollingStock\SubSystems\Controllers\BrakeController.cs" />
     <Compile Include="RollingStock\SubSystems\Controllers\ControllerFactory.cs" />

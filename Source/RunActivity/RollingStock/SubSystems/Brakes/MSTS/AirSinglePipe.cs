@@ -44,6 +44,7 @@ namespace ORTS
         protected float EmergResChargingRatePSIpS = 1.684f;
         protected float EmergAuxVolumeRatio = 1.4f;
         protected string DebugType = string.Empty;
+        protected string RetainerDebugState = string.Empty;
         public enum ValveState { Lap, Apply, Release, Emergency };
         protected ValveState TripleValveState = ValveState.Lap;
 
@@ -100,14 +101,15 @@ namespace ORTS
         {
             return new string[] {
                 DebugType,
-                string.Format("BC {0}", FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, unit, false)),
+                this is SingleTransferPipe ? string.Empty : string.Format("BC {0}", FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, unit, false)),
                 string.Format("BP {0}", FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, unit, false)),
-                string.Format("AR {0}", FormatStrings.FormatPressure(AuxResPressurePSI, PressureUnit.PSI, unit, false)),
+                this is SingleTransferPipe ? string.Empty : string.Format("AR {0}", FormatStrings.FormatPressure(AuxResPressurePSI, PressureUnit.PSI, unit, false)),
                 (Car as MSTSWagon).EmergencyReservoirPresent ? string.Format("ER {0}", FormatStrings.FormatPressure(EmergResPressurePSI, PressureUnit.PSI, unit, false)) : string.Empty,
                 TwoPipes ? string.Format("MRP {0}", FormatStrings.FormatPressure(BrakeLine2PressurePSI, PressureUnit.PSI, unit, false)) : string.Empty,
-                string.Format("State {0}", TripleValveState),
+                (Car as MSTSWagon).RetainerPositions == 0 ? string.Empty : string.Format("RV {0}", RetainerDebugState),
+                this is SingleTransferPipe ? string.Empty : string.Format("State {0}", TripleValveState),
                 string.Empty, // Spacer because the state above needs 2 columns.
-                HandbrakePercent > 0 ? string.Format("Handbrake {0:F0}%", HandbrakePercent) : string.Empty,
+                (Car as MSTSWagon).HandBrakePresent ? string.Format("Handbrake {0:F0}%", HandbrakePercent) : string.Empty,
                 string.Empty, // Spacer because the state above needs 2 columns.
                 FrontBrakeHoseConnected ? "I" : "T",
                 string.Format("AC A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-"),
@@ -192,6 +194,7 @@ namespace ORTS
             AutoCylPressurePSI = immediateRelease ? 0 : Math.Min((maxPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio, MaxCylPressurePSI);
             TripleValveState = ValveState.Lap;
             HandbrakePercent = handbrakeOn & (Car as MSTSWagon).HandBrakePresent ? 100 : 0;
+            SetRetainer(RetainerSetting.Exhaust);
         }
 
         public override void InitializeMoving () // used when initial speed > 0
@@ -203,11 +206,11 @@ namespace ORTS
             AutoCylPressurePSI = 0;
             TripleValveState = ValveState.Lap;
             HandbrakePercent = 0;
+            SetRetainer(RetainerSetting.Exhaust);
         }
 
         public override void LocoInitializeMoving() // starting conditions when starting speed > 0
         {
-            AISetPercent(0);
         }
 
         public virtual void UpdateTripleValveState(float controlPressurePSI)
@@ -354,7 +357,6 @@ namespace ORTS
             if (f < MaxHandbrakeForceN * HandbrakePercent / 100)
                 f = MaxHandbrakeForceN * HandbrakePercent / 100;
             Car.BrakeForceN = f;
-            //Car.FrictionForceN += f;
         }
 
         public override void PropagateBrakePressure(float elapsedClockSeconds)
@@ -537,18 +539,34 @@ namespace ORTS
                 case RetainerSetting.Exhaust:
                     RetainerPressureThresholdPSI = 0;
                     ReleaseRatePSIpS = MaxReleaseRatePSIpS;
+                    RetainerDebugState = "EX";
                     break;
                 case RetainerSetting.HighPressure:
-                    RetainerPressureThresholdPSI = (Car as MSTSWagon).RetainerPositions > 0 ? 20 : 0;
-                    ReleaseRatePSIpS = (50 - 20) / 90f;
+                    if ((Car as MSTSWagon).RetainerPositions > 0)
+                    {
+                        RetainerPressureThresholdPSI = 20;
+                        ReleaseRatePSIpS = (50 - 20) / 90f;
+                        RetainerDebugState = "HP";
+                    }
                     break;
                 case RetainerSetting.LowPressure:
-                    RetainerPressureThresholdPSI = (Car as MSTSWagon).RetainerPositions > 3 ? 10 : 20;
-                    ReleaseRatePSIpS = (Car as MSTSWagon).RetainerPositions > 3 ? (50 - 10) / 60f : (50 - 20) / 90f;
+                    if ((Car as MSTSWagon).RetainerPositions > 3)
+                    {
+                        RetainerPressureThresholdPSI = 10;
+                        ReleaseRatePSIpS = (50 - 10) / 60f;
+                        RetainerDebugState = "LP";
+                    }
+                    else if ((Car as MSTSWagon).RetainerPositions > 0)
+                    {
+                        RetainerPressureThresholdPSI = 20;
+                        ReleaseRatePSIpS = (50 - 20) / 90f;
+                        RetainerDebugState = "HP";
+                    }
                     break;
                 case RetainerSetting.SlowDirect:
                     RetainerPressureThresholdPSI = 0;
                     ReleaseRatePSIpS = (50 - 10) / 86f;
+                    RetainerDebugState = "SD";
                     break;
             }
         }
