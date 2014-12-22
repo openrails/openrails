@@ -65,13 +65,31 @@ namespace ORTS.Viewer3D
                     visibleMatrixNames[SharedShape.MatrixNames.IndexOf(mstsSignalShape.SignalSubObjs[i].MatrixName)] = true;
 
             // All sub-objects except the one pointing to the first matrix (99.00% times it is the first one, but not always, see Protrain) are hidden by default.
-            //For each other sub-object, look up its name in the hierarchy and use the visibility of that matrix. Note: parent matricies in the
-            // hierarchy are not considered.
+            //For each other sub-object, look up its name in the hierarchy and use the visibility of that matrix. 
             SubObjVisible = new bool[SharedShape.LodControls[0].DistanceLevels[0].SubObjects.Length];
-            for (var i = 0; i < SharedShape.LodControls[0].DistanceLevels[0].SubObjects.Length; i++)
+            SubObjVisible[0] = true;
+            for (var i = 1; i < SharedShape.LodControls[0].DistanceLevels[0].SubObjects.Length; i++)
             {
-                SubObjVisible[i] = (i==SharedShape.RootSubObjectIndex)?
-                    true : visibleMatrixNames[SharedShape.LodControls[0].DistanceLevels[0].SubObjects[i].ShapePrimitives[0].HierarchyIndex];
+                if (i == SharedShape.RootSubObjectIndex) SubObjVisible[i] = true;
+                else
+                {
+                    var subObj =SharedShape.LodControls[0].DistanceLevels[0].SubObjects[i];
+                    int minHiLevIndex = 0;
+                    if (subObj.ShapePrimitives[0].Hierarchy[subObj.ShapePrimitives[0].HierarchyIndex] > 0)
+                        // Search for ShapePrimitive with lowest Hierarchy Value and check visibility with it
+                    {
+                        var minHiLev = 999;
+                        for (var j = 0; j < subObj.ShapePrimitives.Length; j++)
+                        {
+                            if (subObj.ShapePrimitives[0].Hierarchy[subObj.ShapePrimitives[j].HierarchyIndex] < minHiLev)
+                            {
+                                minHiLevIndex = j;
+                                minHiLev = subObj.ShapePrimitives[0].Hierarchy[subObj.ShapePrimitives[j].HierarchyIndex];
+                            }
+                        }
+                    }
+                    SubObjVisible[i] = visibleMatrixNames[SharedShape.LodControls[0].DistanceLevels[0].SubObjects[i].ShapePrimitives[minHiLevIndex].HierarchyIndex];
+                }
             }
 
 #if DEBUG_SIGNAL_SHAPES
