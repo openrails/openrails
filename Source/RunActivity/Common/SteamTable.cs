@@ -255,9 +255,42 @@ namespace ORTS
         {
               1.0f, 1.0f, 0.976f, 0.954f, 0.932f, 0.908f, 0.886f, 0.863f, 0.840f, 0.817f, 0.795f, 0.772f, 0.750f, 0.727f, 0.704f, 0.682f, 0.664f, 0.643f, 0.624f,
              0.605f, 0.588f, 0.572f, 0.558f, 0.542f, 0.515f, 0.490f, 0.467f, 0.445f, 0.405f, 0.371f, 0.342f, 0.318f, 0.297f, 0.278f, 0.1f, 0.05f
-        };        
-        
-        
+        };
+
+// Indicated HorsePower - 
+        static float[] IndicatedHorsepowerIHP = new float[]
+        {
+              0.0f, 200.0f, 400.0f, 600.0f, 800.0f, 1000.0f, 1200.0f, 1400.0f, 1600.0f,
+              1800.0f, 2000.0f, 2200.0f, 2400.0f, 2600.0f, 2800.0f, 3000.0f
+        };
+
+// BackPressure - Saturated locomotive -  Ref Principles of Locomotive Operation - Assume atmospheric - extrapolated beyond 1800IHP
+        static float[] BackPressureSatPSI = new float[]
+        {
+              0.0f, 1.0f, 2.0f, 2.33f, 3.0f, 5.3f, 5.6f, 8.0f, 11.2f,
+              14.25f, 16.0f, 20.0f, 24.0f, 26.0f, 28.0f, 30.0f
+        };
+
+// BackPressure - Superheated locomotive -  Ref Principles of Locomotive Operation - Assume atmospheric - extrapolated beyond 1800IHP
+        static float[] BackPressureSuperPSI = new float[]
+        {
+              0.0f, 0.25f, 0.5f, 0.75f, 1.25f, 1.75f, 2.5f, 3.5f, 4.8f,
+              7.2f, 11.25f, 16.0f, 20.0f, 22.0f, 24.0f, 26.0f
+        };
+
+// Saturated Backpressure - Ref Principles of Locomotive Operation
+        public static Interpolator BackpressureSatIHPtoPSI()
+        {
+            return new Interpolator(IndicatedHorsepowerIHP, BackPressureSatPSI);
+        }
+
+// Superheated Backpressure - Ref Principles of Locomotive Operation
+        public static Interpolator BackpressureSuperIHPtoPSI()
+        {
+            return new Interpolator(IndicatedHorsepowerIHP, BackPressureSuperPSI);
+        }  
+
+
 // Saturated Speed factor - ie drop in TE as speed increases due to piston impacts - Ref American locomotive Company
         public static Interpolator SaturatedSpeedFactorSpeedDropFtpMintoX()
         {
@@ -671,25 +704,6 @@ namespace ORTS
         {
             return new Interpolator2D(WheelRevolutionsRpM, Initial_pressure_lower);
         }
-
-//
-// Temp restoration of Cutoff Pressure
-//
-        // Allowance for pressure drop in Cut-off pressure compared to Initial Pressure - NB only curve for 50% cutoff done - Ref LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON
-        static float[] CutoffPressureDropRatio = new float[]
-        {
-         //     1.0f, 0.90f,   0.85f,   0.8125f, 0.78f,  0.76f,   0.73f, 0.72f    //   - 0.5
-            1.0f, 0.88f,   0.825f,   0.785f, 0.755f,  0.735f,   0.715f, 0.685f    //   - 0.4
-     //         1.0f, 0.8775f, 0.8125f, 0.7725f, 0.7425f, 0.725f,  0.70f,   0.6775f   //    - 0.35
-    //        1.0f, 0.865f,   0.80f,   0.76f,  0.73f,   0.715f,   0.685f, 0.67f  // - 0.3
-        };
-
-        // Allowance for pressure drop in Cut-off pressure compared to Initial Pressure - NB only curve for 50% cutoff done - Ref LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON
-        public static Interpolator CutoffPressureDropRatioInterpolatorRpMtoX()
-        {
-            return new Interpolator(WheelRotationRpM, CutoffPressureDropRatio);
-        }    
-
 
     }
 }
