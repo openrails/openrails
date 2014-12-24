@@ -80,7 +80,9 @@ namespace ORTS.Viewer3D.Popups
             : base(owner, TextOffset, TextOffset, "HUD")
         {
             Viewer = owner.Viewer;
-            Visible = true;
+            //CJ
+            //Visible = true;
+            Visible = false;
 
             ProcessHandle = OpenProcess(0x410 /* PROCESS_QUERY_INFORMATION | PROCESS_VM_READ */, false, Process.GetCurrentProcess().Id);
             ProcessMemoryCounters = new PROCESS_MEMORY_COUNTERS() { Size = 40 };
