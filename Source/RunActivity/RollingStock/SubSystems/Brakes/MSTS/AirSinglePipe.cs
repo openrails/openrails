@@ -361,13 +361,12 @@ namespace ORTS
 
         public override void PropagateBrakePressure(float elapsedClockSeconds)
         {
-            PropagateBrakeLinePressures(elapsedClockSeconds, Car, TwoPipes);
+            PropagateBrakeLinePressures(elapsedClockSeconds, Car.Train, TwoPipes);
         }
 
-        protected static void PropagateBrakeLinePressures(float elapsedClockSeconds, TrainCar trainCar, bool twoPipes)
+        protected static void PropagateBrakeLinePressures(float elapsedClockSeconds, Train train, bool twoPipes)
         {
-            var train = trainCar.Train;
-            var lead = trainCar as MSTSLocomotive;
+            var lead = train.LeadLocomotiveIndex >= 0 ? (MSTSLocomotive)train.Cars[train.LeadLocomotiveIndex] : null;
             var brakePipeTimeFactorS = lead == null ? 0.003f : lead.BrakePipeTimeFactorS;
             int nSteps = (int)(elapsedClockSeconds * 2 / brakePipeTimeFactorS + 1);
             float dt = elapsedClockSeconds / nSteps;
