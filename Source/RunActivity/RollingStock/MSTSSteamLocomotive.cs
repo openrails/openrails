@@ -168,7 +168,6 @@ namespace ORTS
         float CylinderSweptVolumeFT3pFT;     // Volume of steam Cylinder
         float BlowerSteamUsageFactor;
         float InjectorFlowRateLBpS;
-        Interpolator ForceFactor2Npcutoff;  // positive pressure part of tractive force given cutoff
         Interpolator BackPressureIHPtoAtmPSI;             // back pressure in cylinders given usage
         Interpolator CylinderSteamDensityPSItoLBpFT3;   // steam density in cylinders given pressure (could be super heated)
         Interpolator SteamDensityPSItoLBpFT3;   // saturated steam density given pressure
@@ -316,7 +315,7 @@ namespace ORTS
         float CutoffPressureAtmPSI;
 
         float CylinderAdmissionWorkInLbs; // Work done during steam admission into cylinder
-        float CylinderExhaustOpenFactor = 0.9f; // Point on cylinder stroke when exhaust valve opens.
+        float CylinderExhaustOpenFactor; // Point on cylinder stroke when exhaust valve opens.
         float CylinderCompressionCloseFactor; // Point on cylinder stroke when compression valve closes - assumed reciporical of exhaust opens.
         float CylinderPreAdmissionOpenFactor = 0.05f; // Point on cylinder stroke when pre-admission valve opens
         float CylinderExhaustPressureAtmPSI;       // Pressure when exhaust valve opens
@@ -445,6 +444,7 @@ namespace ORTS
 	            case "engine(numcylinders": NumCylinders = stf.ReadIntBlock(null); break;
                 case "engine(cylinderstroke": CylinderStrokeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(cylinderdiameter": CylinderDiameterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "engine(ortscylinderexhaustopen": CylinderExhaustOpenFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortscylinderportopening": CylinderPortOpeningFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(boilervolume": BoilerVolumeFT3 = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null); break;
                 case "engine(maxboilerpressure": MaxBoilerPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
@@ -476,7 +476,6 @@ namespace ORTS
                 case "engine(ortsburnratemultiplier": BurnRateMultiplier = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortsboilerevaporationrate": BoilerEvapRateLbspFt2 = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortscylinderefficiencyrate": CylinderEfficiencyRate = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                case "engine(ortsforcefactor2": ForceFactor2Npcutoff = new Interpolator(stf); break;
                 case "engine(ortscylinderinitialpressuredrop": InitialPressureDropRatioRpMtoX = new Interpolator(stf); break;
                 case "engine(ortscylinderbackpressure": BackPressureIHPtoAtmPSI = new Interpolator(stf); break;
                 case "engine(ortsburnrate": BurnRateLBpStoKGpS = new Interpolator(stf); break;
@@ -513,6 +512,7 @@ namespace ORTS
             NumCylinders = locoCopy.NumCylinders;
             CylinderStrokeM = locoCopy.CylinderStrokeM;
             CylinderDiameterM = locoCopy.CylinderDiameterM;
+            CylinderExhaustOpenFactor = locoCopy.CylinderExhaustOpenFactor;
             CylinderPortOpeningFactor = locoCopy.CylinderPortOpeningFactor;
             BoilerVolumeFT3 = locoCopy.BoilerVolumeFT3;
             MaxBoilerPressurePSI = locoCopy.MaxBoilerPressurePSI; 
@@ -543,7 +543,6 @@ namespace ORTS
             BurnRateMultiplier = locoCopy.BurnRateMultiplier;
             BoilerEvapRateLbspFt2 = locoCopy.BoilerEvapRateLbspFt2;
             CylinderEfficiencyRate = locoCopy.CylinderEfficiencyRate;
-            ForceFactor2Npcutoff = new Interpolator(locoCopy.ForceFactor2Npcutoff);
             InitialPressureDropRatioRpMtoX = new Interpolator(locoCopy.InitialPressureDropRatioRpMtoX);
             BackPressureIHPtoAtmPSI = new Interpolator(locoCopy.BackPressureIHPtoAtmPSI);
             BurnRateLBpStoKGpS = new Interpolator(locoCopy.BurnRateLBpStoKGpS);
@@ -733,14 +732,7 @@ namespace ORTS
 
             MaxBoilerKW = Kg.FromLb(TheoreticalMaxSteamOutputLBpS) * W.ToKW(W.FromBTUpS(SteamHeatPSItoBTUpLB[MaxBoilerPressurePSI]));
             MaxFlueTempK = (MaxBoilerKW / (W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2 * HeatMaterialThicknessFactor)) + baseTempK;
-            
-            // Determine if Cylinder Port Opening  Factor has been set
-            if(CylinderPortOpeningFactor == 0)
-            {
-                CylinderPortOpeningFactor = 0.085f; // Set as default if not specified
-            }
-            CylinderPortOpeningFactor = MathHelper.Clamp(CylinderPortOpeningFactor, 0.05f, 0.12f); // Clamp Cylinder Port Opening Factor to between 0.05 & 0.12 so that tables are not exceeded   
-         
+                    
             // Determine if Superheater in use
             if (SuperheatAreaM2 == 0) // If super heating area not specified
             {
@@ -788,6 +780,34 @@ namespace ORTS
                     BackPressureIHPtoAtmPSI = SteamTable.BackpressureSatIHPtoPSI();
                     Trace.TraceInformation("BackPressureIHPtoAtmPSI (Saturated) - default information read from SteamTables");
                 }
+            }
+
+            // Determine if Cylinder Port Opening  Factor has been set
+            if (CylinderPortOpeningFactor == 0)
+            {
+                CylinderPortOpeningFactor = 0.085f; // Set as default if not specified
+            }
+            CylinderPortOpeningFactor = MathHelper.Clamp(CylinderPortOpeningFactor, 0.05f, 0.12f); // Clamp Cylinder Port Opening Factor to between 0.05 & 0.12 so that tables are not exceeded   
+            
+            // Initialise exhaust opening point on cylinder stroke, and its reciprocal compression close factor
+            if (CylinderExhaustOpenFactor == 0)
+            {
+                CylinderExhaustOpenFactor = 0.9f; // If no value in ENG file set to default
+                CylinderCompressionCloseFactor = 1.0f - CylinderExhaustOpenFactor; // Point on cylinder stroke when compression valve closes - assumed reciporical of exhaust opens.
+                if (CutoffController.MaximumValue > CylinderExhaustOpenFactor )
+                {
+                    Trace.TraceWarning("Maximum Cutoff {0} value is greater then CylinderExhaustOpenFactor {1}", CutoffController.MaximumValue, CylinderExhaustOpenFactor); // provide warning if exhaust port is likely to open before maximum allowed cutoff value is reached.
+                }
+            }
+            else
+            {
+                if (CutoffController.MaximumValue > CylinderExhaustOpenFactor)
+                {
+                    CylinderExhaustOpenFactor = CutoffController.MaximumValue + 0.05f; // Ensure exhaust valve opening is always higher then specificed maximum cutoff value
+                    Trace.TraceWarning("Maximum Cutoff {0} value is greater then CylinderExhaustOpenFactor {1}, automatically adjusted", CutoffController.MaximumValue, CylinderExhaustOpenFactor); // provide warning if exhaust port is likely to open before maximum allowed cutoff value is reached.
+                }
+                CylinderExhaustOpenFactor = MathHelper.Clamp(CylinderExhaustOpenFactor, 0.1f, 0.95f); // Clamp Cylinder Exhaust Port Opening Factor to between 0.1 & 0.95 so that tables are not exceeded   
+                CylinderCompressionCloseFactor = 1.0f - CylinderExhaustOpenFactor; // Point on cylinder stroke when compression valve closes - assumed reciporical of exhaust opens.
             }
 
             // Determine whether to start locomotive in Hot or Cold State
@@ -917,26 +937,6 @@ namespace ORTS
 
             // Cylinder Steam Usage	= SweptVolumeToTravelRatioFT3pFT x cutoff x {(speed x (SteamDensity (CylPress) - SteamDensity (CylBackPress)) 
             // lbs/s                = ft3/ft                                  x   ft/s  x  lbs/ft3
-
-            // The next two tables are the average over a full wheel rotation calculated using numeric integration
-            
-            if (ForceFactor2Npcutoff == null)
-            {
-                ForceFactor2Npcutoff = new Interpolator(11);
-                ForceFactor2Npcutoff[.200f] = .371714f;
-                ForceFactor2Npcutoff[.265f] = .429217f;
-                ForceFactor2Npcutoff[.330f] = .476195f;
-                ForceFactor2Npcutoff[.395f] = .512149f;
-                ForceFactor2Npcutoff[.460f] = .536852f;
-                ForceFactor2Npcutoff[.525f] = .554344f;
-                ForceFactor2Npcutoff[.590f] = .565618f;
-                ForceFactor2Npcutoff[.655f] = .573383f;
-                ForceFactor2Npcutoff[.720f] = .579257f;
-                ForceFactor2Npcutoff[.785f] = .584714f;
-                ForceFactor2Npcutoff[.850f] = .591967f;
-                ForceFactor2Npcutoff.ScaleY(4.4482f * (float)Math.PI / 4 * 39.372f * 39.372f * NumCylinders * CylinderDiameterM * CylinderDiameterM * CylinderStrokeM / (2 * DriverWheelRadiusM)); // original Formula
-            }
-            
 
             // This is to model falling boiler efficiency as the combustion increases, based on a "crude" model, to be REDONE?
             if (BoilerEfficiency == null)
@@ -1087,13 +1087,13 @@ namespace ORTS
 #endif 
             throttle = ThrottlePercent / 100;
             cutoff = Math.Abs(Train.MUReverserPercent / 100);
-            if (cutoff > ForceFactor2Npcutoff.MaxX())
-                cutoff = ForceFactor2Npcutoff.MaxX();
+            if (cutoff > CutoffController.MaximumValue) // Maximum value set in cutoff controller in ENG file
+                cutoff = CutoffController.MaximumValue;   // limit to maximum value set in ENG file for locomotive
             float absSpeedMpS = Math.Abs(Train.SpeedMpS);
             if (absSpeedMpS > 2 && (Train.MUReverserPercent == 100 || Train.MUReverserPercent == -100))
             {   // AI cutoff adjustment logic, also used for steam MU'd with non-steam
-                cutoff = throttle * ForceFactor2Npcutoff.MaxX() * 2 / absSpeedMpS;
-                float min = ForceFactor2Npcutoff.MinX();
+                cutoff = throttle * CutoffController.MaximumValue * 2 / absSpeedMpS;
+                float min = 0.2f;  // Figure originally set with ForceFactor2 table - not sure the significance at this time.
                 if (cutoff < min)
                 {
                     throttle = cutoff / min;
@@ -1919,8 +1919,7 @@ namespace ORTS
                 InitialPressureAtmPSI = 0.0f;  // for sake of display zero pressure values if throttle is closed.
                 BackPressureAtmPSI = 0.0f;
             }
-
-            CylinderCompressionCloseFactor = 1.0f - CylinderExhaustOpenFactor; // Point on cylinder stroke when compression valve closes - assumed reciporical of exhaust opens.
+                        
             // In driving the wheels steam does work in the cylinders. The amount of work can be calculated by a typical steam indicator diagram
             // Mean Effective Pressure (work) = average positive pressures - average negative pressures
             // Average Positive pressures = admission + expansion + release
