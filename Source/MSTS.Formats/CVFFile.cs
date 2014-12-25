@@ -232,6 +232,7 @@ namespace MSTS.Formats
         public double PositionY;
         public double Width;
         public double Height;
+        public bool MouseControl;
 
         public double MinValue;
         public double MaxValue;
@@ -886,6 +887,7 @@ namespace MSTS.Formats
                 new STFReader.TokenProcessor("scalerange", ()=>{ ParseScaleRange(stf); }),
                 new STFReader.TokenProcessor("graphic", ()=>{ ParseGraphic(stf, basepath); }),
                 new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
+                new STFReader.TokenProcessor("mousecontrol", ()=>{ MouseControl = stf.ReadBoolBlock(false); }),
 
                 new STFReader.TokenProcessor("states", ()=>{
                     stf.MustMatch("(");

@@ -62,6 +62,13 @@ namespace ORTS
 
         public abstract void PropagateBrakePressure(float elapsedClockSeconds);
 
+        /// <summary>
+        /// Convert real pressure to a system specific internal pressure.
+        /// For pressured brakes it is a straight 1:1 noop conversion,
+        /// but for vacuum brakes it is a conversion to an internally used equivalent pressure.
+        /// </summary>
+        public abstract float InternalPressure(float realPressure);
+
         public abstract void Initialize(bool handbrakeOn, float maxPressurePSI, float fullServPressurePSI, bool immediateRelease);
         public abstract void SetHandbrakePercent(float percent);
         public abstract bool GetHandbrakeStatus();

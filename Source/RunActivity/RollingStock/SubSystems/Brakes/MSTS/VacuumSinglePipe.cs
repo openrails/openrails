@@ -290,6 +290,11 @@ namespace ORTS
             }
         }
 
+        public override float InternalPressure(float realPressure)
+        {
+            return V2P(realPressure);
+        }
+
         public override void SetHandbrakePercent(float percent)
         {
             if (!(Car as MSTSWagon).HandBrakePresent)

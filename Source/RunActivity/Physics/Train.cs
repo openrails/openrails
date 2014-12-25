@@ -2934,6 +2934,8 @@ namespace ORTS
             else
             {
                 BrakeLine1PressurePSIorInHg = BrakeLine2PressurePSI = BrakeLine3PressurePSI = 0;
+                // Initialize static consists airless for allowing proper shunting operations,
+                // but set AI trains pumped up with air.
                 if (TrainType == TRAINTYPE.STATIC)
                     maxPressurePSI = 0;
                 BrakeLine4 = -1;
@@ -3090,9 +3092,30 @@ namespace ORTS
                     lead.EngineBrakeController.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, elapsedClockSeconds);
                 lead.BrakeSystem.PropagateBrakePressure(elapsedClockSeconds);
             }
+            else if (TrainType == TRAINTYPE.STATIC)
+            {
+                // Propagate brake pressure of locomotiveless static consists in the advanced way,
+                // to allow proper shunting operations.
+                Cars[0].BrakeSystem.PropagateBrakePressure(elapsedClockSeconds);
+            }
             else
             {
-                Cars[0].BrakeSystem.PropagateBrakePressure(elapsedClockSeconds);
+                // Propagate brake pressure of AI trains simplified
+                AISetUniformBrakePressures();
+            }
+        }
+
+        /// <summary>
+        /// AI trains simplyfied brake control is done by setting their Train.BrakeLine1PressurePSIorInHg,
+        /// that is propagated promptly to each car directly.
+        /// </summary>
+        private void AISetUniformBrakePressures()
+        {
+            foreach (TrainCar car in Cars)
+            {
+                car.BrakeSystem.BrakeLine1PressurePSI = car.BrakeSystem.InternalPressure(BrakeLine1PressurePSIorInHg);
+                car.BrakeSystem.BrakeLine2PressurePSI = BrakeLine2PressurePSI;
+                car.BrakeSystem.BrakeLine3PressurePSI = 0;
             }
         }
 
