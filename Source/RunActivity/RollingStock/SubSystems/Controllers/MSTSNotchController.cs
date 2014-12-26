@@ -223,7 +223,7 @@ namespace ORTS
 
         public void SetValue(float v)
         {
-            CurrentValue = MathHelper.Clamp(v, MinimumValue, MaximumValue);
+            CurrentValue = IntermediateValue = MathHelper.Clamp(v, MinimumValue, MaximumValue);
 
             for (CurrentNotch = Notches.Count - 1; CurrentNotch > 0; CurrentNotch--)
             {
@@ -233,16 +233,13 @@ namespace ORTS
 
             if (CurrentNotch >= 0 && !Notches[CurrentNotch].Smooth)
                 CurrentValue = Notches[CurrentNotch].Value;
-
-            IntermediateValue = CurrentValue;
         }
 
         public float SetPercent(float percent)
         {
             float v = (MinimumValue < 0 && percent < 0 ? -MinimumValue : MaximumValue) * percent / 100;
-            if (v < MinimumValue)
-                v = MinimumValue;
-            CurrentValue = v;
+            CurrentValue = MathHelper.Clamp(v, MinimumValue, MaximumValue);
+
             if (CurrentNotch >= 0)
             {
                 if (Notches[Notches.Count - 1].Type == ControllerState.Emergency)

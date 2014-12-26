@@ -232,7 +232,6 @@ namespace MSTS.Formats
         public double PositionY;
         public double Width;
         public double Height;
-        public bool MouseControl;
 
         public double MinValue;
         public double MaxValue;
@@ -644,6 +643,9 @@ namespace MSTS.Formats
         public int FramesCount { get; set; }
         public int FramesX { get; set; }
         public int FramesY { get; set; }
+        public bool MouseControl;
+        public int Orientation;
+        public int Direction;
 
         public List<double> Values 
         {
@@ -672,6 +674,9 @@ namespace MSTS.Formats
                     new STFReader.TokenProcessor("graphic", ()=>{ ParseGraphic(stf, basepath); }),
                     new STFReader.TokenProcessor("style", ()=>{ ParseStyle(stf); }),
                     new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
+                    new STFReader.TokenProcessor("mousecontrol", ()=>{ MouseControl = stf.ReadBoolBlock(false); }),
+                    new STFReader.TokenProcessor("orientation", ()=>{ Orientation = stf.ReadIntBlock(null); }),
+                    new STFReader.TokenProcessor("dirincrease", ()=>{ Direction = stf.ReadIntBlock(null); }),
 
                     new STFReader.TokenProcessor("numframes", ()=>{
                         stf.MustMatch("(");
@@ -887,7 +892,6 @@ namespace MSTS.Formats
                 new STFReader.TokenProcessor("scalerange", ()=>{ ParseScaleRange(stf); }),
                 new STFReader.TokenProcessor("graphic", ()=>{ ParseGraphic(stf, basepath); }),
                 new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
-                new STFReader.TokenProcessor("mousecontrol", ()=>{ MouseControl = stf.ReadBoolBlock(false); }),
 
                 new STFReader.TokenProcessor("states", ()=>{
                     stf.MustMatch("(");

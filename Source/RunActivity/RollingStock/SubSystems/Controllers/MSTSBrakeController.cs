@@ -30,7 +30,7 @@ namespace ORTS
      */ 
     public class MSTSBrakeController: BrakeController
     {
-        MSTSNotchController NotchController;
+        public MSTSNotchController NotchController;
 
         /// <summary>
         /// Setting to workaround MSTS bug of not abling to set this function correctly in .eng file

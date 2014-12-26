@@ -1633,7 +1633,60 @@ namespace ORTS
             ThrottleController.SetPercent(percent);
         }
 
-         public virtual void ChangeGearUp()
+        /// <summary>
+        /// Determines which sub-control of combined handle is to be set when receiving a combined value.
+        /// Combined value is in 0-1 range, where arrangement is [[1--throttle--0]split[0--dynamic|airbrake--1]].
+        /// </summary>
+        public void SetCombinedHandleValue(float value)
+        {
+            if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrake)
+            {
+                if (DynamicBrakeController.CurrentValue == 0 && value < CombinedControlSplitPosition)
+                {
+                    // Request dynamic brake deactivation
+                    DynamicBrakeController.CommandStartTime = Simulator.ClockTime;
+                    DynamicBrakePercent = -1;
+                }
+                else if (DynamicBrakePercent > -1)
+                    DynamicBrakeController.SetValue((MathHelper.Clamp(value, CombinedControlSplitPosition, 1) - CombinedControlSplitPosition) / (1 - CombinedControlSplitPosition));
+            }
+            else if (CombinedControlType == CombinedControl.ThrottleAir && TrainBrakeController.CurrentValue > 0)
+            {
+                TrainBrakeController.SetValue((MathHelper.Clamp(value, CombinedControlSplitPosition, 1) - CombinedControlSplitPosition) / (1 - CombinedControlSplitPosition));
+            }
+            else
+            {
+                if (CombinedControlType == CombinedControl.ThrottleDynamic && ThrottleController.CurrentValue == 0 && value > CombinedControlSplitPosition)
+                {
+                    // Request dynamic brake activation
+                    DynamicBrakePercent = 0;
+                    DynamicBrakeController.CommandStartTime = Simulator.ClockTime;
+                }
+                else if (DynamicBrakePercent < 0)
+                {
+                    ThrottleController.SetValue(1 - MathHelper.Clamp(value, 0, CombinedControlSplitPosition) / CombinedControlSplitPosition);
+                    DynamicBrakePercent = -1;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Determines which sub-control of combined handle is active (based on its type), 
+        /// and returns the overall position considering the split position. 
+        /// </summary>
+        /// <param name="intermediateValue">Whather asking for intermediate (for mouse operation) or notched (for displaying) value.</param>
+        /// <returns>Combined position into 0-1 range, where arrangement is [[1--throttle--0]split[0--dynamic|airbrake--1]]</returns>
+        public float GetCombinedHandleValue(bool intermediateValue)
+        {
+            if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrake)
+                return CombinedControlSplitPosition + (1 - CombinedControlSplitPosition) * (intermediateValue ? DynamicBrakeController.IntermediateValue : DynamicBrakeController.CurrentValue);
+            else if (CombinedControlType == CombinedControl.ThrottleAir && TrainBrakeController.CurrentValue > 0)
+                return CombinedControlSplitPosition + (1 - CombinedControlSplitPosition) * (intermediateValue ? TrainBrakeController.IntermediateValue : TrainBrakeController.CurrentValue);
+            else
+                return CombinedControlSplitPosition * (1 - (intermediateValue ? ThrottleController.IntermediateValue : ThrottleController.CurrentValue));
+        }
+
+        public virtual void ChangeGearUp()
         {
         }
 

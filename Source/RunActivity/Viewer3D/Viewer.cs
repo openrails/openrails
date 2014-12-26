@@ -124,10 +124,9 @@ namespace ORTS.Viewer3D
                 Camera.Activate();
         }
 
-        // Mouse visibility by timer - GeorgeS
-        bool isMouseShouldVisible;
-        bool isMouseTimerVisible;
-        double MouseShownAtRealTime;
+        bool ForceMouseVisible;
+        double MouseVisibleTillRealTime;
+        CabViewDiscreteRenderer MouseChangingControl;
 
         public bool SaveScreenshot { get; set; }
         public bool SaveActivityThumbnail { get; private set; }
@@ -884,7 +883,7 @@ namespace ORTS.Viewer3D
 
             if (!Simulator.Paused && UserInput.IsDown(UserCommands.GameSwitchWithMouse))
             {
-                isMouseShouldVisible = true;
+                ForceMouseVisible = true;
                 if (UserInput.IsMouseLeftButtonPressed)
                 {
                     TryThrowSwitchAt();
@@ -893,7 +892,7 @@ namespace ORTS.Viewer3D
             }
             else if (!Simulator.Paused && UserInput.IsDown(UserCommands.GameUncoupleWithMouse))
             {
-                isMouseShouldVisible = true;
+                ForceMouseVisible = true;
                 if (UserInput.IsMouseLeftButtonPressed)
                 {
                     TryUncoupleAt();
@@ -902,30 +901,45 @@ namespace ORTS.Viewer3D
             }
             else
             {
-                isMouseShouldVisible = false;
+                ForceMouseVisible = false;
             }
 
-            RenderProcess.IsMouseVisible = isMouseShouldVisible || isMouseTimerVisible;
+            if (Camera is CabCamera && (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._hasCabRenderer)
+            {
+                if (UserInput.IsMouseLeftButtonPressed)
+                {
+                    foreach (var controlRenderer in (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._CabRenderer.ControlMap.Values)
+                    {
+                        CabViewDiscreteRenderer discreteRenderer = controlRenderer as CabViewDiscreteRenderer;
+                        if (discreteRenderer != null && discreteRenderer.IsMouseWithin())
+                        {
+                            MouseChangingControl = discreteRenderer;
+                            break;
+                        }
+                    }
+                }
+
+                if (MouseChangingControl != null)
+                {
+                    MouseChangingControl.HandleUserInput();
+                    if (UserInput.IsMouseLeftButtonReleased)
+                    {
+                        MouseChangingControl = null;
+                        UserInput.Handled();
+                    }
+                }
+            }
 
             if (UserInput.RDState != null)
                 UserInput.RDState.Handled();
 
             MouseState currentMouseState = Mouse.GetState();
 
-            // Handling mouse movement and timing - GeorgeS
             if (currentMouseState.X != originalMouseState.X ||
                 currentMouseState.Y != originalMouseState.Y)
-            {
-                isMouseTimerVisible = true;
-                MouseShownAtRealTime = RealTime;
-                RenderProcess.IsMouseVisible = isMouseShouldVisible || isMouseTimerVisible;
-            }
-            else if (isMouseTimerVisible && MouseShownAtRealTime + .5 < RealTime)
-            {
-                isMouseTimerVisible = false;
-                RenderProcess.IsMouseVisible = isMouseShouldVisible || isMouseTimerVisible;
-            }
+                MouseVisibleTillRealTime = RealTime + 0.5;
 
+            RenderProcess.IsMouseVisible = ForceMouseVisible || RealTime < MouseVisibleTillRealTime;
             originalMouseState = currentMouseState;
         }
 

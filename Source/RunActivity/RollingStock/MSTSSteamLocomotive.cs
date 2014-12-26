@@ -60,8 +60,8 @@ namespace ORTS
         public MSTSNotchController FuelController = new MSTSNotchController(0, 1, 0.01f); // Could be coal, wood, oil or even peat !
         public MSTSNotchController WaterController = new MSTSNotchController(0, 1, 0.01f);
 
-        bool Injector1IsOn;
-        bool Injector2IsOn;
+        public bool Injector1IsOn;
+        public bool Injector2IsOn;
         public bool CylinderCocksAreOpen;
         bool FiringIsManual;
         bool BlowerIsOn = false;

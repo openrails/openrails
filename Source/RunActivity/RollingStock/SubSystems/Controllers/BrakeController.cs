@@ -109,6 +109,18 @@ namespace ORTS
         public float FullServReductionPSI { get; private set; }
         public float MinReductionPSI { get; private set; }
 
+        /// <summary>
+        /// Needed for proper mouse operation in the cabview
+        /// </summary>
+        public float IntermediateValue {
+            get
+            {
+                if (Script is MSTSBrakeController)
+                    return (Script as MSTSBrakeController).NotchController.IntermediateValue;
+                else
+                    return CurrentValue;
+            }
+        }
         public float CurrentValue { get; set; }
         public float MinimumValue { get; set; }
         public float MaximumValue { get; set; }
