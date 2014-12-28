@@ -703,39 +703,29 @@ namespace ORTS.Viewer3D.RollingStock
             if (string.IsNullOrEmpty(FileName) || !PDayTextures.Keys.Contains(FileName))
                 return SharedMaterialManager.MissingTexture;
 
-            if (isDark)
+            if (isLight)
             {
-                if (isLight)
-                {
-                    //tmp = PLightTextures[FileName];
-                    tmp = PDayTextures[FileName];
-                    if (tmp != null)
-                    {
-                        retval = SafeGetAt(tmp, indx, FileName);
-                        isNightTexture = false;
-                    }
-                }
-
-                if (retval == SharedMaterialManager.MissingTexture)
-                {
-                    tmp = PNightTextures[FileName];
-                    if (tmp != null)
-                    {
-                        retval = SafeGetAt(tmp, indx, FileName);
-                        isNightTexture = true;
-                    }
-                }
+                // Light on: use light texture when dark, if available.
+                if (isDark)
+                    tmp = PLightTextures[FileName];
+                // Both light and day textures should be used as-is in this situation.
+                isNightTexture = true;
+            }
+            else if (isDark)
+            {
+                // Darkness: use night texture, if available.
+                tmp = PNightTextures[FileName];
+                // Only use night texture as-is in this situation.
+                isNightTexture = tmp != null;
             }
 
-            if (retval == SharedMaterialManager.MissingTexture)
-            {
+            // No light or dark texture selected/available? Use day texture instead.
+            if (tmp == null)
                 tmp = PDayTextures[FileName];
-                if (tmp != null)
-                {
-                    retval = SafeGetAt(tmp, indx, FileName);
-                    isNightTexture = false;
-                }
-            }
+
+            if (tmp != null)
+                retval = SafeGetAt(tmp, indx, FileName);
+
             return retval;
         }
 
@@ -755,27 +745,25 @@ namespace ORTS.Viewer3D.RollingStock
             if (string.IsNullOrEmpty(FileName) || !DayTextures.Keys.Contains(FileName))
                 return retval;
 
-            if (isDark)
+            if (isLight)
             {
-                if (isLight)
-                {
-                    //retval = LightTextures[FileName];
-                    retval = DayTextures[FileName];
-                    isNightTexture = false;
-                }
-
-                if (retval == SharedMaterialManager.MissingTexture)
-                {
-                    retval = NightTextures[FileName];
-                    isNightTexture = true;
-                }
+                // Light on: use light texture when dark, if available.
+                if (isDark)
+                    retval = LightTextures[FileName];
+                // Both light and day textures should be used as-is in this situation.
+                isNightTexture = true;
+            }
+            else if (isDark)
+            {
+                // Darkness: use night texture, if available.
+                retval = NightTextures[FileName];
+                // Only use night texture as-is in this situation.
+                isNightTexture = retval != SharedMaterialManager.MissingTexture;
             }
 
+            // No light or dark texture selected/available? Use day texture instead.
             if (retval == SharedMaterialManager.MissingTexture)
-            {
                 retval = DayTextures[FileName];
-                isNightTexture = false;
-            }
 
             return retval;
         }
@@ -1007,12 +995,11 @@ namespace ORTS.Viewer3D.RollingStock
 
             if (_Location == 0 && _Shader != null)
             {
+                // TODO: Readd ability to control night time lighting.
                 if (_Viewer.Settings.UseMSTSEnv == false)
-                    _Shader.SetData(_Viewer.MaterialManager.sunDirection,
-                        _isNightTexture, _Locomotive.CabLightOn, _Viewer.World.WeatherControl.overcastFactor);
+                    _Shader.SetData(_Viewer.MaterialManager.sunDirection, _isNightTexture, false, _Viewer.World.WeatherControl.overcastFactor);
                 else
-                    _Shader.SetData(_Viewer.MaterialManager.sunDirection,
-                _isNightTexture, _Locomotive.CabLightOn, _Viewer.World.MSTSSky.mstsskyovercastFactor);
+                    _Shader.SetData(_Viewer.MaterialManager.sunDirection, _isNightTexture, false, _Viewer.World.MSTSSky.mstsskyovercastFactor);
 
                 _Shader.SetTextureData(stretchedCab.Left, stretchedCab.Top, stretchedCab.Width, stretchedCab.Height);
                 _Shader.Begin();
