@@ -865,6 +865,16 @@ namespace MSTS.Formats
                     // Don't need the MaxValue added before, remove it
                     Values.RemoveAt(FramesCount);
                 }
+
+                // MSTS ignores/overrides various settings by the following exceptional cases:
+                if (ControlType == CABViewControlTypes.CP_HANDLE)
+                    ControlStyle = CABViewControlStyles.NOT_SPRUNG;
+                if (ControlType == CABViewControlTypes.PANTOGRAPH)
+                    ControlStyle = CABViewControlStyles.ONOFF;
+                if (ControlType == CABViewControlTypes.HORN || ControlType == CABViewControlTypes.SANDERS)
+                    ControlStyle = CABViewControlStyles.WHILE_PRESSED;
+                if (ControlType == CABViewControlTypes.DIRECTION && Orientation == 0)
+                    Direction = 1 - Direction;
             }
 //            catch (Exception error)
 //            {

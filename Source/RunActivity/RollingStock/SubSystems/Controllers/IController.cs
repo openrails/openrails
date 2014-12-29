@@ -42,8 +42,9 @@ namespace ORTS
 
         float UpdateValue { get; set; }
         float CurrentValue { get; set; }
+        int CurrentNotch { get; set; }
         double CommandStartTime { get; set; }
-        void SetValue(float v);
+        int SetValue(float value);
 
         //Loads the controller from a stream
         void Parse(STFReader stf);

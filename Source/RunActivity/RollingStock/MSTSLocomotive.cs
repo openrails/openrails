@@ -1430,9 +1430,9 @@ namespace ORTS
             return Sander;
         }
 
+        #region Reverser
         public void SetDirection(Direction direction)
         {
-            // Direction Control
             if (Direction != direction && ThrottlePercent < 1)
             {
                 Direction = direction;
@@ -1505,7 +1505,9 @@ namespace ORTS
                 }
             }
         }
+        #endregion
 
+        #region ThrottleController
         public void StartThrottleIncrease(float? target)
         {
             if (ThrottleController.CurrentValue >= ThrottleController.MaximumValue)
@@ -1588,8 +1590,6 @@ namespace ORTS
         /// <summary>
         /// Used by commands to start a continuous adjustment.
         /// </summary>
-        /// <param name="increase"></param>
-        /// <param name="target"></param>
         public void ThrottleChangeTo(bool increase, float? target)
         {
             if (increase)
@@ -1611,8 +1611,6 @@ namespace ORTS
         /// <summary>
         /// Used by commands to make a single adjustment.
         /// </summary>
-        /// <param name="increase"></param>
-        /// <param name="target"></param>
         public void AdjustNotchedThrottle(bool increase)
         {
             if (increase)
@@ -1628,11 +1626,31 @@ namespace ORTS
             Simulator.Confirmer.ConfirmWithPerCent(CabControl.Throttle, ThrottleController.CurrentValue * 100);
         }
 
+        public void SetThrottleValue(float value)
+        {
+            var controller = ThrottleController;
+            var oldValue = controller.IntermediateValue;
+            var change = controller.SetValue(value);
+            if (change != 0)
+            {
+                new ContinuousThrottleCommand(Simulator.Confirmer.Viewer.Log, change > 0, controller.CurrentValue, Simulator.ClockTime);
+                SignalEvent(Event.ThrottleChange);
+                AlerterReset(TCSEvent.ThrottleChanged);
+            }
+            if (oldValue != controller.IntermediateValue)
+                Simulator.Confirmer.UpdateWithPerCent(
+                    this is MSTSSteamLocomotive ? CabControl.Regulator : CabControl.Throttle,
+                    oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease,
+                    controller.CurrentValue * 100);
+        }
+
         public void SetThrottlePercent(float percent)
         {
             ThrottleController.SetPercent(percent);
         }
+        #endregion
 
+        #region CombinedHandle
         /// <summary>
         /// Determines which sub-control of combined handle is to be set when receiving a combined value.
         /// Combined value is in 0-1 range, where arrangement is [[1--throttle--0]split[0--dynamic|airbrake--1]].
@@ -1642,31 +1660,20 @@ namespace ORTS
             if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrake)
             {
                 if (DynamicBrakeController.CurrentValue == 0 && value < CombinedControlSplitPosition)
-                {
-                    // Request dynamic brake deactivation
-                    DynamicBrakeController.CommandStartTime = Simulator.ClockTime;
-                    DynamicBrakePercent = -1;
-                }
+                    DynamicBrakeChangeActiveState(false);
                 else if (DynamicBrakePercent > -1)
-                    DynamicBrakeController.SetValue((MathHelper.Clamp(value, CombinedControlSplitPosition, 1) - CombinedControlSplitPosition) / (1 - CombinedControlSplitPosition));
+                    SetDynamicBrakeValue((MathHelper.Clamp(value, CombinedControlSplitPosition, 1) - CombinedControlSplitPosition) / (1 - CombinedControlSplitPosition));
             }
             else if (CombinedControlType == CombinedControl.ThrottleAir && TrainBrakeController.CurrentValue > 0)
             {
-                TrainBrakeController.SetValue((MathHelper.Clamp(value, CombinedControlSplitPosition, 1) - CombinedControlSplitPosition) / (1 - CombinedControlSplitPosition));
+                SetTrainBrakeValue((MathHelper.Clamp(value, CombinedControlSplitPosition, 1) - CombinedControlSplitPosition) / (1 - CombinedControlSplitPosition));
             }
             else
             {
                 if (CombinedControlType == CombinedControl.ThrottleDynamic && ThrottleController.CurrentValue == 0 && value > CombinedControlSplitPosition)
-                {
-                    // Request dynamic brake activation
-                    DynamicBrakePercent = 0;
-                    DynamicBrakeController.CommandStartTime = Simulator.ClockTime;
-                }
+                    DynamicBrakeChangeActiveState(true);
                 else if (DynamicBrakePercent < 0)
-                {
-                    ThrottleController.SetValue(1 - MathHelper.Clamp(value, 0, CombinedControlSplitPosition) / CombinedControlSplitPosition);
-                    DynamicBrakePercent = -1;
-                }
+                    SetThrottleValue(1 - MathHelper.Clamp(value, 0, CombinedControlSplitPosition) / CombinedControlSplitPosition);
             }
         }
 
@@ -1685,7 +1692,9 @@ namespace ORTS
             else
                 return CombinedControlSplitPosition * (1 - (intermediateValue ? ThrottleController.IntermediateValue : ThrottleController.CurrentValue));
         }
+        #endregion
 
+        #region GearBoxController
         public virtual void ChangeGearUp()
         {
         }
@@ -1734,6 +1743,23 @@ namespace ORTS
             }
         }
 
+        public void SetGearBoxValue(float value)
+        {
+            var controller = GearBoxController;
+            var oldValue = controller.CurrentValue;
+            var change = controller.SetValue(value);
+            if (change != 0)
+            {
+                //new GarBoxCommand(Simulator.Confirmer.Viewer.Log, change > 0, controller.CurrentValue, Simulator.ClockTime);
+                SignalEvent(change > 0 ? Event.GearUp : Event.GearDown);
+                AlerterReset(TCSEvent.GearBoxChanged);
+            }
+            if (oldValue != controller.CurrentValue)
+                Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
+        }
+        #endregion
+
+        #region TrainBrakeController
         public void StartTrainBrakeIncrease(float? target)
         {
             if (CombinedControlType == CombinedControl.ThrottleAir)
@@ -1792,57 +1818,6 @@ namespace ORTS
             }
         }
 
-        public void EngineBrakeChangeTo(bool increase, float? target)
-        {  // Need a better way to express brake as a single number.
-            if (increase)
-            {
-                if (target > EngineBrakeController.CurrentValue)
-                {
-                    StartEngineBrakeIncrease(target);
-                }
-            }
-            else
-            {
-                if (target < EngineBrakeController.CurrentValue)
-                {
-                    StartEngineBrakeDecrease(target);
-                }
-            }
-        }
-
-        public void DynamicBrakeChangeTo(bool increase, float? target)
-        {  // Need a better way to express brake as a single number.
-            if (increase)
-            {
-                if (target > DynamicBrakeController.CurrentValue)
-                {
-                    StartDynamicBrakeIncrease(target);
-                }
-            }
-            else
-            {
-                if (target < DynamicBrakeController.CurrentValue)
-                {
-                    StartDynamicBrakeDecrease(target);
-                }
-            }
-        }
-
-        public void SetTrainBrakePercent(float percent)
-        {
-            // Insure we have TrainBrakeController ; some vehicles do not
-            // such as Hy-rail truck
-            // if (HasTrainBrake)
-            if (TrainBrakeController.IsValid())
-                TrainBrakeController.SetPercent(percent);
-        }
-
-        public void SetEmergency(bool emergency)
-        {
-            if (this.Train != null && this.Train.TrainType == Train.TRAINTYPE.REMOTE) return; //not apply emergency for remote trains.
-            TrainControlSystem.SetEmergency(emergency);
-        }
-
         public override string GetTrainBrakeStatus(PressureUnit unit)
         {
             string s = TrainBrakeController.GetStatus();
@@ -1853,6 +1828,32 @@ namespace ORTS
             return s;
         }
 
+        public void SetTrainBrakeValue(float value)
+        {
+            var controller = TrainBrakeController;
+            var oldValue = controller.IntermediateValue;
+            var change = controller.SetValue(value);
+            if (change != 0)
+            {
+                new TrainBrakeCommand(Simulator.Confirmer.Viewer.Log, change > 0, controller.CurrentValue, Simulator.ClockTime);
+                SignalEvent(Event.TrainBrakeChange);
+                AlerterReset(TCSEvent.TrainBrakeChanged);
+            }
+            if (oldValue != controller.IntermediateValue)
+                Simulator.Confirmer.Update(CabControl.TrainBrake, oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, GetTrainBrakeStatus(PressureUnit));
+        }
+
+        public void SetTrainBrakePercent(float percent)
+        {
+            // Insure we have TrainBrakeController ; some vehicles do not
+            // such as Hy-rail truck
+            // if (HasTrainBrake)
+            if (TrainBrakeController.IsValid())
+                TrainBrakeController.SetPercent(percent);
+        }
+        #endregion
+
+        #region EngineBrakeController
         public void StartEngineBrakeIncrease(float? target)
         {
             AlerterReset(TCSEvent.EngineBrakeChanged);
@@ -1867,7 +1868,6 @@ namespace ORTS
         /// <summary>
         /// Ends change of brake value.
         /// </summary>
-        /// <returns>true if action is completed</returns>
         public void StopEngineBrakeIncrease()
         {
             if (EngineBrakeController == null)
@@ -1903,6 +1903,39 @@ namespace ORTS
             new EngineBrakeCommand(Simulator.Confirmer.Viewer.Log, false, EngineBrakeController.CurrentValue, EngineBrakeController.CommandStartTime);
         }
 
+        public void EngineBrakeChangeTo(bool increase, float? target)
+        {  // Need a better way to express brake as a single number.
+            if (increase)
+            {
+                if (target > EngineBrakeController.CurrentValue)
+                {
+                    StartEngineBrakeIncrease(target);
+                }
+            }
+            else
+            {
+                if (target < EngineBrakeController.CurrentValue)
+                {
+                    StartEngineBrakeDecrease(target);
+                }
+            }
+        }
+
+        public void SetEngineBrakeValue(float value)
+        {
+            var controller = EngineBrakeController;
+            var oldValue = controller.IntermediateValue;
+            var change = controller.SetValue(value);
+            if (change != 0)
+            {
+                new EngineBrakeCommand(Simulator.Confirmer.Viewer.Log, change > 0, controller.CurrentValue, Simulator.ClockTime);
+                SignalEvent(Event.EngineBrakeChange);
+                AlerterReset(TCSEvent.EngineBrakeChanged);
+            }
+            if (oldValue != controller.IntermediateValue)
+                Simulator.Confirmer.Update(CabControl.EngineBrake, oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, GetEngineBrakeStatus(PressureUnit));
+        }
+
         public void SetEngineBrakePercent(float percent)
         {
             if (EngineBrakeController == null)
@@ -1916,19 +1949,9 @@ namespace ORTS
                 return null;
             return string.Format("{0}{1}", EngineBrakeController.GetStatus(), BailOff ? " BailOff" : "");
         }
+        #endregion
 
-        public void SetBailOff(bool bailOff)
-        {
-            BailOff = bailOff;
-            Simulator.Confirmer.Confirm(CabControl.BailOff, bailOff ? CabSetting.On : CabSetting.Off);
-        }
-
-        private bool CanUseDynamicBrake()
-        {
-            return (DynamicBrakeController != null
-                && ThrottlePercent == 0);
-        }
-
+        #region DynamicBrakeController
         public void StartDynamicBrakeIncrease(float? target)
         {
             AlerterReset(TCSEvent.DynamicBrakeChanged);
@@ -1993,6 +2016,49 @@ namespace ORTS
             }
         }
 
+        public void DynamicBrakeChangeTo(bool increase, float? target)
+        {  // Need a better way to express brake as a single number.
+            if (increase)
+            {
+                if (target > DynamicBrakeController.CurrentValue)
+                {
+                    StartDynamicBrakeIncrease(target);
+                }
+            }
+            else
+            {
+                if (target < DynamicBrakeController.CurrentValue)
+                {
+                    StartDynamicBrakeDecrease(target);
+                }
+            }
+        }
+
+        public void SetDynamicBrakeValue(float value)
+        {
+            if (!DynamicBrake && ThrottleController.CurrentValue == 0 && value > 0.05f)
+                DynamicBrakeChangeActiveState(true);
+            if (DynamicBrake && DynamicBrakeController.CurrentValue == 0 && value < -0.05f)
+            {
+                DynamicBrakeChangeActiveState(false);
+                return;
+            }
+            if (!DynamicBrake)
+                return;
+
+            var controller = DynamicBrakeController;
+            var oldValue = controller.IntermediateValue;
+            var change = controller.SetValue(value);
+            if (change != 0)
+            {
+                new DynamicBrakeCommand(Simulator.Confirmer.Viewer.Log, change > 0, controller.CurrentValue, Simulator.ClockTime);
+                SignalEvent(Event.DynamicBrakeChange);
+                AlerterReset(TCSEvent.DynamicBrakeChanged);
+            }
+            if (oldValue != controller.IntermediateValue)
+                Simulator.Confirmer.UpdateWithPerCent(CabControl.DynamicBrake, oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, DynamicBrakeController.CurrentValue * 100);
+        }
+
         public void SetDynamicBrakePercent(float percent)
         {
             if (!CanUseDynamicBrake())
@@ -2018,6 +2084,12 @@ namespace ORTS
             }
         }
 
+        private bool CanUseDynamicBrake()
+        {
+            return (DynamicBrakeController != null
+                && ThrottlePercent == 0);
+        }
+
         public override string GetDynamicBrakeStatus()
         {
             if (DynamicBrakeController == null)
@@ -2026,6 +2098,7 @@ namespace ORTS
                 return string.Empty;
             return string.Format("{0}", DynamicBrakeController.GetStatus());
         }
+        #endregion
 
         public virtual void SetPower(bool ToState)
         {
@@ -2086,6 +2159,12 @@ namespace ORTS
             SignalEvent(Wiper ? Event.WiperOff : Event.WiperOn);
         }
 
+        public void SetBailOff(bool bailOff)
+        {
+            BailOff = bailOff;
+            Simulator.Confirmer.Confirm(CabControl.BailOff, bailOff ? CabSetting.On : CabSetting.Off);
+        }
+
         public virtual void Refuel()
         {
             // Electric locos do nothing. Diesel and steam override this.
@@ -2096,6 +2175,12 @@ namespace ORTS
             return UsingRearCab;
         }
 #endif
+
+        public void SetEmergency(bool emergency)
+        {
+            if (this.Train != null && this.Train.TrainType == Train.TRAINTYPE.REMOTE) return; //not apply emergency for remote trains.
+            TrainControlSystem.SetEmergency(emergency);
+        }
 
         public void AlerterReset()
         {

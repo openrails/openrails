@@ -1403,8 +1403,6 @@ namespace ORTS.Viewer3D.RollingStock
             SourceRectangle = new Rectangle(0, 0, Texture.Width, Texture.Height);
             Scale = (float)(Math.Min(Control.Height, Texture.Height) / Texture.Height); // Allow only downscaling of the texture, and not upscaling
 
-            if (ControlDiscrete.ControlType == CABViewControlTypes.CP_HANDLE && ControlDiscrete.ControlStyle == CABViewControlStyles.NONE)
-                ControlDiscrete.ControlStyle = CABViewControlStyles.NOT_SPRUNG;
             switch (ControlDiscrete.ControlStyle)
             {
                 case CABViewControlStyles.ONOFF: ChangedValue = (value) => UserInput.IsMouseLeftButtonPressed ? 1 - value : value; break;
@@ -1598,10 +1596,11 @@ namespace ORTS.Viewer3D.RollingStock
             switch (Control.ControlType)
             {
                 case CABViewControlTypes.REGULATOR:
-                case CABViewControlTypes.THROTTLE: Locomotive.ThrottleController.SetValue(ChangedValue(Locomotive.ThrottleController.IntermediateValue)); break;
-                case CABViewControlTypes.ENGINE_BRAKE: Locomotive.EngineBrakeController.SetValue(ChangedValue(Locomotive.EngineBrakeController.IntermediateValue)); break;
-                case CABViewControlTypes.TRAIN_BRAKE: Locomotive.TrainBrakeController.SetValue(ChangedValue(Locomotive.TrainBrakeController.IntermediateValue)); break;
-                case CABViewControlTypes.DYNAMIC_BRAKE: Locomotive.DynamicBrakeController.SetValue(ChangedValue(Locomotive.DynamicBrakeController.IntermediateValue)); break;
+                case CABViewControlTypes.THROTTLE: Locomotive.SetThrottleValue(ChangedValue(Locomotive.ThrottleController.IntermediateValue)); break;
+                case CABViewControlTypes.ENGINE_BRAKE: Locomotive.SetEngineBrakeValue(ChangedValue(Locomotive.EngineBrakeController.IntermediateValue)); break;
+                case CABViewControlTypes.TRAIN_BRAKE: Locomotive.SetTrainBrakeValue(ChangedValue(Locomotive.TrainBrakeController.IntermediateValue)); break;
+                case CABViewControlTypes.DYNAMIC_BRAKE: Locomotive.SetDynamicBrakeValue(ChangedValue(Locomotive.DynamicBrakeController.IntermediateValue)); break;
+                case CABViewControlTypes.GEARS: Locomotive.SetGearBoxValue(ChangedValue(Locomotive.GearBoxController.IntermediateValue)); break;
                 case CABViewControlTypes.DIRECTION: var dir = ChangedValue(0); if (dir != 0) new ReverserCommand(Viewer.Log, dir > 0); break;
                 case CABViewControlTypes.FRONT_HLIGHT: var hl = ChangedValue(0); if (hl != 0) new HeadlightCommand(Viewer.Log, hl > 0); break;
                 case CABViewControlTypes.WHISTLE:
@@ -1614,14 +1613,13 @@ namespace ORTS.Viewer3D.RollingStock
                 case CABViewControlTypes.EMERGENCY_BRAKE: if ((Locomotive.EmergencyButtonPressed ? 1 : 0) != ChangedValue(Locomotive.EmergencyButtonPressed ? 1 : 0)) new EmergencyPushButtonCommand(Viewer.Log); break;
                 case CABViewControlTypes.RESET: new AlerterCommand(Viewer.Log, ChangedValue(Locomotive.TrainControlSystem.AlerterButtonPressed ? 1 : 0) > 0); break;
                 case CABViewControlTypes.CP_HANDLE: Locomotive.SetCombinedHandleValue(ChangedValue(Locomotive.GetCombinedHandleValue(true))); break;
-                case CABViewControlTypes.GEARS: Locomotive.GearBoxController.SetValue(ChangedValue(Locomotive.GearBoxController.IntermediateValue)); break;
                 // Steam locomotives only:
-                case CABViewControlTypes.CUTOFF: (Locomotive as MSTSSteamLocomotive).CutoffController.SetValue(ChangedValue((Locomotive as MSTSSteamLocomotive).CutoffController.IntermediateValue)); break;
-                case CABViewControlTypes.BLOWER: (Locomotive as MSTSSteamLocomotive).BlowerController.SetValue(ChangedValue((Locomotive as MSTSSteamLocomotive).BlowerController.IntermediateValue)); break;
-                case CABViewControlTypes.DAMPERS_FRONT: (Locomotive as MSTSSteamLocomotive).DamperController.SetValue(ChangedValue((Locomotive as MSTSSteamLocomotive).DamperController.IntermediateValue)); break;
-                case CABViewControlTypes.FIREHOLE: (Locomotive as MSTSSteamLocomotive).FireboxDoorController.SetValue(ChangedValue((Locomotive as MSTSSteamLocomotive).FireboxDoorController.IntermediateValue)); break;
-                case CABViewControlTypes.WATER_INJECTOR1: (Locomotive as MSTSSteamLocomotive).Injector1Controller.SetValue(ChangedValue((Locomotive as MSTSSteamLocomotive).Injector1Controller.IntermediateValue)); break;
-                case CABViewControlTypes.WATER_INJECTOR2: (Locomotive as MSTSSteamLocomotive).Injector2Controller.SetValue(ChangedValue((Locomotive as MSTSSteamLocomotive).Injector2Controller.IntermediateValue)); break;
+                case CABViewControlTypes.CUTOFF: (Locomotive as MSTSSteamLocomotive).SetCutoffValue(ChangedValue((Locomotive as MSTSSteamLocomotive).CutoffController.IntermediateValue)); break;
+                case CABViewControlTypes.BLOWER: (Locomotive as MSTSSteamLocomotive).SetBlowerValue(ChangedValue((Locomotive as MSTSSteamLocomotive).BlowerController.IntermediateValue)); break;
+                case CABViewControlTypes.DAMPERS_FRONT: (Locomotive as MSTSSteamLocomotive).SetDamperValue(ChangedValue((Locomotive as MSTSSteamLocomotive).DamperController.IntermediateValue)); break;
+                case CABViewControlTypes.FIREHOLE: (Locomotive as MSTSSteamLocomotive).SetFireboxDoorValue(ChangedValue((Locomotive as MSTSSteamLocomotive).FireboxDoorController.IntermediateValue)); break;
+                case CABViewControlTypes.WATER_INJECTOR1: (Locomotive as MSTSSteamLocomotive).SetInjector1Value(ChangedValue((Locomotive as MSTSSteamLocomotive).Injector1Controller.IntermediateValue)); break;
+                case CABViewControlTypes.WATER_INJECTOR2: (Locomotive as MSTSSteamLocomotive).SetInjector2Value(ChangedValue((Locomotive as MSTSSteamLocomotive).Injector2Controller.IntermediateValue)); break;
                 case CABViewControlTypes.CYL_COCKS: if (((Locomotive as MSTSSteamLocomotive).CylinderCocksAreOpen ? 1 : 0) != ChangedValue((Locomotive as MSTSSteamLocomotive).CylinderCocksAreOpen ? 1 : 0)) new ToggleCylinderCocksCommand(Viewer.Log); break;
                 case CABViewControlTypes.STEAM_INJ1: if (((Locomotive as MSTSSteamLocomotive).Injector1IsOn ? 1 : 0) != ChangedValue((Locomotive as MSTSSteamLocomotive).Injector1IsOn ? 1 : 0)) new ToggleInjectorCommand(Viewer.Log, 1); break;
                 case CABViewControlTypes.STEAM_INJ2: if (((Locomotive as MSTSSteamLocomotive).Injector2IsOn ? 1 : 0) != ChangedValue((Locomotive as MSTSSteamLocomotive).Injector2IsOn ? 1 : 0)) new ToggleInjectorCommand(Viewer.Log, 2); break;

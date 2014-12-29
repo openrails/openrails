@@ -3080,6 +3080,20 @@ namespace ORTS
             }
         }
 
+        public void SetCutoffValue(float value)
+        {
+            var controller = CutoffController;
+            var oldValue = controller.IntermediateValue;
+            var change = controller.SetValue(value);
+            if (change != 0)
+            {
+                new ContinuousReverserCommand(Simulator.Confirmer.Viewer.Log, change > 0, controller.CurrentValue, Simulator.GameTime);
+                SignalEvent(Event.ReverserChange);
+            }
+            if (oldValue != controller.IntermediateValue)
+                Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamLocomotiveReverser, oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, controller.CurrentValue * 100);
+        }
+
         public void SetCutoffPercent(float percent)
         {
             Train.MUReverserPercent = CutoffController.SetPercent(percent);
@@ -3110,17 +3124,39 @@ namespace ORTS
             new ContinuousInjectorCommand(Simulator.Confirmer.Viewer.Log, 1, false, Injector1Controller.CurrentValue, Injector1Controller.CommandStartTime);
         }
         
-        public void ToggleInjector1()
+        public void Injector1ChangeTo(bool increase, float? target)
         {
-            if (!FiringIsManual)
-                return;
-            Injector1IsOn = !Injector1IsOn;
-            SignalEvent(Injector1IsOn ? Event.SteamEjector1On : Event.SteamEjector1Off); // hook for sound trigger
-            if (IsPlayerTrain) 
-                Simulator.Confirmer.Confirm(CabControl.Injector1, Injector1IsOn ? CabSetting.On : CabSetting.Off);
+            if (increase)
+            {
+                if (target > Injector1Controller.CurrentValue)
+                {
+                    StartInjector1Increase(target);
+                }
+            }
+            else
+            {
+                if (target < Injector1Controller.CurrentValue)
+                {
+                    StartInjector1Decrease(target);
+                }
+            }
         }
 
-        public void StartInjector2Increase( float? target ) {
+        public void SetInjector1Value(float value)
+        {
+            var controller = Injector1Controller;
+            var oldValue = controller.IntermediateValue;
+            var change = controller.SetValue(value);
+            if (change != 0)
+            {
+                new ContinuousInjectorCommand(Simulator.Confirmer.Viewer.Log, 1, change > 0, controller.CurrentValue, Simulator.GameTime);
+            }
+            if (oldValue != controller.IntermediateValue)
+                Simulator.Confirmer.UpdateWithPerCent(CabControl.Injector1, oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, controller.CurrentValue * 100);
+        }
+
+        public void StartInjector2Increase(float? target)
+        {
             Injector2Controller.CommandStartTime = Simulator.ClockTime;
             if (IsPlayerTrain) 
                 Simulator.Confirmer.ConfirmWithPerCent(CabControl.Injector2, CabSetting.Increase, Injector2Controller.CurrentValue * 100);
@@ -3144,28 +3180,6 @@ namespace ORTS
             new ContinuousInjectorCommand(Simulator.Confirmer.Viewer.Log, 2, false, Injector2Controller.CurrentValue, Injector2Controller.CommandStartTime);
         }
 
-        public void ToggleInjector2()
-        {
-            if (!FiringIsManual)
-                return;
-            Injector2IsOn = !Injector2IsOn;
-            SignalEvent(Injector2IsOn ? Event.SteamEjector2On : Event.SteamEjector2Off); // hook for sound trigger
-            if (IsPlayerTrain) 
-                Simulator.Confirmer.Confirm(CabControl.Injector2, Injector2IsOn ? CabSetting.On : CabSetting.Off);
-        }
-
-        public void Injector1ChangeTo( bool increase, float? target ) {
-            if( increase ) {
-                if( target > Injector1Controller.CurrentValue ) {
-                    StartInjector1Increase( target );
-                }
-            } else {
-                if( target < Injector1Controller.CurrentValue ) {
-                    StartInjector1Decrease( target );
-                }
-            }
-        }
-
         public void Injector2ChangeTo( bool increase, float? target ) {
             if( increase ) {
                 if( target > Injector2Controller.CurrentValue ) {
@@ -3178,7 +3192,21 @@ namespace ORTS
             }
         }
 
-        public void StartBlowerIncrease( float? target ) {
+        public void SetInjector2Value(float value)
+        {
+            var controller = Injector2Controller;
+            var oldValue = controller.IntermediateValue;
+            var change = controller.SetValue(value);
+            if (change != 0)
+            {
+                new ContinuousInjectorCommand(Simulator.Confirmer.Viewer.Log, 2, change > 0, controller.CurrentValue, Simulator.GameTime);
+            }
+            if (oldValue != controller.IntermediateValue)
+                Simulator.Confirmer.UpdateWithPerCent(CabControl.Injector2, oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, controller.CurrentValue * 100);
+        }
+
+        public void StartBlowerIncrease(float? target)
+        {
             BlowerController.CommandStartTime = Simulator.ClockTime;
             if (IsPlayerTrain)
                 Simulator.Confirmer.ConfirmWithPerCent( CabControl.Blower, CabSetting.Increase, BlowerController.CurrentValue * 100 );
@@ -3215,7 +3243,22 @@ namespace ORTS
             }
         }
 
-        public void StartDamperIncrease( float? target ) {
+        public void SetBlowerValue(float value)
+        {
+            var controller = BlowerController;
+            var oldValue = controller.IntermediateValue;
+            var change = controller.SetValue(value);
+            if (change != 0)
+            {
+                new ContinuousBlowerCommand(Simulator.Confirmer.Viewer.Log, change > 0, controller.CurrentValue, Simulator.GameTime);
+                SignalEvent(Event.BlowerChange);
+            }
+            if (oldValue != controller.IntermediateValue)
+                Simulator.Confirmer.UpdateWithPerCent(CabControl.Blower, oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, controller.CurrentValue * 100);
+        }
+
+        public void StartDamperIncrease(float? target)
+        {
             DamperController.CommandStartTime = Simulator.ClockTime;
             if (IsPlayerTrain)
                 Simulator.Confirmer.ConfirmWithPerCent( CabControl.Damper, CabSetting.Increase, DamperController.CurrentValue * 100 );
@@ -3250,6 +3293,20 @@ namespace ORTS
                     StartDamperDecrease( target );
                 }
             }
+        }
+
+        public void SetDamperValue(float value)
+        {
+            var controller = DamperController;
+            var oldValue = controller.IntermediateValue;
+            var change = controller.SetValue(value);
+            if (change != 0)
+            {
+                new ContinuousDamperCommand(Simulator.Confirmer.Viewer.Log, change > 0, controller.CurrentValue, Simulator.GameTime);
+                SignalEvent(Event.DamperChange);
+            }
+            if (oldValue != controller.IntermediateValue)
+                Simulator.Confirmer.UpdateWithPerCent(CabControl.Damper, oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, controller.CurrentValue * 100);
         }
 
         public void StartFireboxDoorIncrease(float? target)
@@ -3299,7 +3356,22 @@ namespace ORTS
             }
         }
 
-        public void StartFiringRateIncrease( float? target ) {
+        public void SetFireboxDoorValue(float value)
+        {
+            var controller = FireboxDoorController;
+            var oldValue = controller.IntermediateValue;
+            var change = controller.SetValue(value);
+            if (change != 0)
+            {
+                new ContinuousFireboxDoorCommand(Simulator.Confirmer.Viewer.Log, change > 0, controller.CurrentValue, Simulator.GameTime);
+                SignalEvent(Event.FireboxDoorChange);
+            }
+            if (oldValue != controller.IntermediateValue)
+                Simulator.Confirmer.UpdateWithPerCent(CabControl.FireboxDoor, oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, controller.CurrentValue * 100);
+        }
+
+        public void StartFiringRateIncrease(float? target)
+        {
             FiringRateController.CommandStartTime = Simulator.ClockTime;
             if (IsPlayerTrain) 
                 Simulator.Confirmer.ConfirmWithPerCent(CabControl.FiringRate, FiringRateController.CurrentValue * 100);
@@ -3349,6 +3421,26 @@ namespace ORTS
             SignalEvent(Event.CylinderCocksToggle);
             if (IsPlayerTrain) 
                 Simulator.Confirmer.Confirm(CabControl.CylinderCocks, CylinderCocksAreOpen ? CabSetting.On : CabSetting.Off);
+        }
+
+        public void ToggleInjector1()
+        {
+            if (!FiringIsManual)
+                return;
+            Injector1IsOn = !Injector1IsOn;
+            SignalEvent(Injector1IsOn ? Event.SteamEjector1On : Event.SteamEjector1Off); // hook for sound trigger
+            if (IsPlayerTrain)
+                Simulator.Confirmer.Confirm(CabControl.Injector1, Injector1IsOn ? CabSetting.On : CabSetting.Off);
+        }
+
+        public void ToggleInjector2()
+        {
+            if (!FiringIsManual)
+                return;
+            Injector2IsOn = !Injector2IsOn;
+            SignalEvent(Injector2IsOn ? Event.SteamEjector2On : Event.SteamEjector2Off); // hook for sound trigger
+            if (IsPlayerTrain)
+                Simulator.Confirmer.Confirm(CabControl.Injector2, Injector2IsOn ? CabSetting.On : CabSetting.Off);
         }
 
         public void ToggleManualFiring()

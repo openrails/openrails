@@ -1,15 +1,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
-"POT-Creation-Date: 2014-10-01 19:59:13+0200\n"
-"PO-Revision-Date: 2014-10-01 20:12+0100\n"
+"POT-Creation-Date: 2014-12-29 15:19:28+0100\n"
+"PO-Revision-Date: 2014-12-29 15:20+0100\n"
 "Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: hu\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.6.7\n"
+"X-Generator: Poedit 1.7.1\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ../../ORTS.Settings/InputSettings.cs:42
@@ -96,511 +96,514 @@ msgstr "Játék Vágányút törlése elöl"
 msgid "Game Reset Signal Backward"
 msgstr "Játék Vágányút törlése hátul"
 
-#: ../../ORTS.Settings/InputSettings.cs:64
+#: ../../ORTS.Settings/InputSettings.cs:63
+msgid "Game Autopilot Mode"
+msgstr "Játék Robotpilóta üzemmód"
+
+#: ../../ORTS.Settings/InputSettings.cs:65
 msgid "Display Next Window Tab"
 msgstr "Megjelenítés Következő ablakfül"
 
-#: ../../ORTS.Settings/InputSettings.cs:65
+#: ../../ORTS.Settings/InputSettings.cs:66
 msgid "Display Help Window"
 msgstr "Megjelenítés Súgóablak"
 
-#: ../../ORTS.Settings/InputSettings.cs:66
+#: ../../ORTS.Settings/InputSettings.cs:67
 msgid "Display Track Monitor Window"
 msgstr "Megjelenítés Pályafigyelő ablak"
 
-#: ../../ORTS.Settings/InputSettings.cs:67
+#: ../../ORTS.Settings/InputSettings.cs:68
 msgid "Display HUD"
 msgstr "Megjelenítés HUD"
 
-#: ../../ORTS.Settings/InputSettings.cs:68
+#: ../../ORTS.Settings/InputSettings.cs:69
 msgid "Display Car Labels"
 msgstr "Megjelenítés Kocsik címkéi"
 
-#: ../../ORTS.Settings/InputSettings.cs:69
+#: ../../ORTS.Settings/InputSettings.cs:70
 msgid "Display Station Labels"
 msgstr "Megjelenítés Állomások címkéi"
 
-#: ../../ORTS.Settings/InputSettings.cs:70
+#: ../../ORTS.Settings/InputSettings.cs:71
 msgid "Display Switch Window"
 msgstr "Megjelenítés Váltóállító ablak"
 
-#: ../../ORTS.Settings/InputSettings.cs:71
+#: ../../ORTS.Settings/InputSettings.cs:72
 msgid "Display Train Operations Window"
 msgstr "Megjelenítés Vonatvizsgáló ablak"
 
-#: ../../ORTS.Settings/InputSettings.cs:72
+#: ../../ORTS.Settings/InputSettings.cs:73
 msgid "Display Next Station Window"
 msgstr "Megjelenítés Következő állomások ablaka"
 
-#: ../../ORTS.Settings/InputSettings.cs:73
+#: ../../ORTS.Settings/InputSettings.cs:74
 msgid "Display Compass Window"
 msgstr "Megjelenítés Iránytű ablak"
 
-#: ../../ORTS.Settings/InputSettings.cs:75
+#: ../../ORTS.Settings/InputSettings.cs:76
 msgid "Debug Speed Up"
 msgstr "Hibakeresés Idő gyorsítása"
 
-#: ../../ORTS.Settings/InputSettings.cs:76
+#: ../../ORTS.Settings/InputSettings.cs:77
 msgid "Debug Speed Down"
 msgstr "Hibakeresés Idő lassítása"
 
-#: ../../ORTS.Settings/InputSettings.cs:77
+#: ../../ORTS.Settings/InputSettings.cs:78
 msgid "Debug Speed Reset"
 msgstr "Hibakeresés Időgyorsítás alaphelyzetbe"
 
-#: ../../ORTS.Settings/InputSettings.cs:78
+#: ../../ORTS.Settings/InputSettings.cs:79
 msgid "Debug Overcast Increase"
 msgstr "Hibakeresés Borússág növelése"
 
-#: ../../ORTS.Settings/InputSettings.cs:79
+#: ../../ORTS.Settings/InputSettings.cs:80
 msgid "Debug Overcast Decrease"
 msgstr "Hibakeresés Borússág csökkentése"
 
-#: ../../ORTS.Settings/InputSettings.cs:80
+#: ../../ORTS.Settings/InputSettings.cs:81
 msgid "Debug Fog Increase"
 msgstr "Hibakeresés Köd növelése"
 
-#: ../../ORTS.Settings/InputSettings.cs:81
+#: ../../ORTS.Settings/InputSettings.cs:82
 msgid "Debug Fog Decrease"
 msgstr "Hibakeresés Köd csökkentése"
 
-#: ../../ORTS.Settings/InputSettings.cs:82
+#: ../../ORTS.Settings/InputSettings.cs:83
 msgid "Debug Weather Change"
 msgstr "Hibakeresés Időjárás megváltoztatása"
 
-#: ../../ORTS.Settings/InputSettings.cs:83
+#: ../../ORTS.Settings/InputSettings.cs:84
 msgid "Debug Clock Forwards"
 msgstr "Hibakeresés Óra előre"
 
-#: ../../ORTS.Settings/InputSettings.cs:84
+#: ../../ORTS.Settings/InputSettings.cs:85
 msgid "Debug Clock Backwards"
 msgstr "Hibakeresés Óra hátra"
 
-#: ../../ORTS.Settings/InputSettings.cs:85
+#: ../../ORTS.Settings/InputSettings.cs:86
 msgid "Debug Logger"
 msgstr "Hibakeresés Adatrögzítő"
 
-#: ../../ORTS.Settings/InputSettings.cs:86
+#: ../../ORTS.Settings/InputSettings.cs:87
 msgid "Debug Lock Shadows"
 msgstr "Hibakeresés Árnyékok rögzítése"
 
-#: ../../ORTS.Settings/InputSettings.cs:87
+#: ../../ORTS.Settings/InputSettings.cs:88
 msgid "Debug Dump Keymap"
 msgstr "Hibakeresés Billentyűzetkép"
 
-#: ../../ORTS.Settings/InputSettings.cs:88
+#: ../../ORTS.Settings/InputSettings.cs:89
 msgid "Debug Log Render Frame"
 msgstr "Hibakeresés Render frame naplózása"
 
-#: ../../ORTS.Settings/InputSettings.cs:89
+#: ../../ORTS.Settings/InputSettings.cs:90
 msgid "Debug Tracks"
 msgstr "Hibakeresés Vágányok"
 
-#: ../../ORTS.Settings/InputSettings.cs:90
+#: ../../ORTS.Settings/InputSettings.cs:91
 msgid "Debug Signalling"
 msgstr "Hibakeresés Jelzők"
 
-#: ../../ORTS.Settings/InputSettings.cs:91
+#: ../../ORTS.Settings/InputSettings.cs:92
 msgid "Debug Reset Wheel Slip"
 msgstr "Hibakeresés Kerékcsúszás leállítása"
 
-#: ../../ORTS.Settings/InputSettings.cs:92
+#: ../../ORTS.Settings/InputSettings.cs:93
 msgid "Debug Toggle Advanced Adhesion"
 msgstr "Hibakeresés Fejlett súrlódás be/ki"
 
-#: ../../ORTS.Settings/InputSettings.cs:93
+#: ../../ORTS.Settings/InputSettings.cs:94
 msgid "Debug Sound Form"
 msgstr "Hibakeresés Hang"
 
-#: ../../ORTS.Settings/InputSettings.cs:94
+#: ../../ORTS.Settings/InputSettings.cs:95
 msgid "Debug Physics Form"
 msgstr "Hibakeresés Fizika"
 
-#: ../../ORTS.Settings/InputSettings.cs:95
+#: ../../ORTS.Settings/InputSettings.cs:96
 msgid "Debug Precipitation Increase"
 msgstr "Hibakeresés Csapadék növelése"
 
-#: ../../ORTS.Settings/InputSettings.cs:96
+#: ../../ORTS.Settings/InputSettings.cs:97
 msgid "Debug Precipitation Decrease"
 msgstr "Hibakeresés Csapadék csökkentése"
 
-#: ../../ORTS.Settings/InputSettings.cs:98
+#: ../../ORTS.Settings/InputSettings.cs:99
 msgid "Camera Cab"
 msgstr "Kamera Vezérállás"
 
-#: ../../ORTS.Settings/InputSettings.cs:99
+#: ../../ORTS.Settings/InputSettings.cs:100
 msgid "Camera 3D Cab"
 msgstr "Kamera 3D vezérállás"
 
-#: ../../ORTS.Settings/InputSettings.cs:100
+#: ../../ORTS.Settings/InputSettings.cs:101
 msgid "Camera Outside Front"
 msgstr "Kamera Kívül elöl"
 
-#: ../../ORTS.Settings/InputSettings.cs:101
+#: ../../ORTS.Settings/InputSettings.cs:102
 msgid "Camera Outside Rear"
 msgstr "Kamera Kívül hátul"
 
-#: ../../ORTS.Settings/InputSettings.cs:102
+#: ../../ORTS.Settings/InputSettings.cs:103
 msgid "Camera Trackside"
 msgstr "Kamera Pálya mellett"
 
-#: ../../ORTS.Settings/InputSettings.cs:103
+#: ../../ORTS.Settings/InputSettings.cs:104
 msgid "Camera Passenger"
 msgstr "Kamera Utaskamera"
 
-#: ../../ORTS.Settings/InputSettings.cs:104
+#: ../../ORTS.Settings/InputSettings.cs:105
 msgid "Camera Brakeman"
 msgstr "Kamera Fékállás"
 
-#: ../../ORTS.Settings/InputSettings.cs:105
+#: ../../ORTS.Settings/InputSettings.cs:106
 msgid "Camera Free"
 msgstr "Kamera Szabad"
 
-#: ../../ORTS.Settings/InputSettings.cs:106
+#: ../../ORTS.Settings/InputSettings.cs:107
 msgid "Camera Previous Free"
 msgstr "Kamera Előző szabad"
 
-#: ../../ORTS.Settings/InputSettings.cs:107
+#: ../../ORTS.Settings/InputSettings.cs:108
 msgid "Camera HeadOut Forward"
 msgstr "Kamera Ablakon kinézés előre"
 
-#: ../../ORTS.Settings/InputSettings.cs:108
+#: ../../ORTS.Settings/InputSettings.cs:109
 msgid "Camera HeadOut Backward"
 msgstr "Kamera Ablakon kinézés hátra"
 
-#: ../../ORTS.Settings/InputSettings.cs:109
+#: ../../ORTS.Settings/InputSettings.cs:110
 msgid "Camera Toggle Show Cab"
 msgstr "Kamera Vezérálláskép ki/be"
 
-#: ../../ORTS.Settings/InputSettings.cs:110
+#: ../../ORTS.Settings/InputSettings.cs:111
 msgid "Camera Reset"
 msgstr "Kamera Alaphelyzet"
 
-#: ../../ORTS.Settings/InputSettings.cs:111
+#: ../../ORTS.Settings/InputSettings.cs:112
 msgid "Camera Move Fast"
 msgstr "Kamera Gyors mozgás"
 
-#: ../../ORTS.Settings/InputSettings.cs:112
+#: ../../ORTS.Settings/InputSettings.cs:113
 msgid "Camera Move Slow"
 msgstr "Kamera Lassú mozgás"
 
-#: ../../ORTS.Settings/InputSettings.cs:113
+#: ../../ORTS.Settings/InputSettings.cs:114
 msgid "Camera Pan Left"
 msgstr "Kamera Pásztázás balra"
 
-#: ../../ORTS.Settings/InputSettings.cs:114
+#: ../../ORTS.Settings/InputSettings.cs:115
 msgid "Camera Pan Right"
 msgstr "Kamera Pásztázás jobbra"
 
-#: ../../ORTS.Settings/InputSettings.cs:115
+#: ../../ORTS.Settings/InputSettings.cs:116
 msgid "Camera Pan Up"
 msgstr "Kamera Pásztázás fel"
 
-#: ../../ORTS.Settings/InputSettings.cs:116
+#: ../../ORTS.Settings/InputSettings.cs:117
 msgid "Camera Pan Down"
 msgstr "Kamera Pásztázás le"
 
-#: ../../ORTS.Settings/InputSettings.cs:117
+#: ../../ORTS.Settings/InputSettings.cs:118
 msgid "Camera Zoom In"
 msgstr "Kamera Nagyítás"
 
-#: ../../ORTS.Settings/InputSettings.cs:118
+#: ../../ORTS.Settings/InputSettings.cs:119
 msgid "Camera Zoom Out"
 msgstr "Kamera Kicsinyítés"
 
-#: ../../ORTS.Settings/InputSettings.cs:119
+#: ../../ORTS.Settings/InputSettings.cs:120
 msgid "Camera Rotate Left"
 msgstr "Kamera Forgatás balra"
 
-#: ../../ORTS.Settings/InputSettings.cs:120
+#: ../../ORTS.Settings/InputSettings.cs:121
 msgid "Camera Rotate Right"
 msgstr "Kamera Forgatás jobbra"
 
-#: ../../ORTS.Settings/InputSettings.cs:121
+#: ../../ORTS.Settings/InputSettings.cs:122
 msgid "Camera Rotate Up"
 msgstr "Kamera Forgatás felfelé"
 
-#: ../../ORTS.Settings/InputSettings.cs:122
+#: ../../ORTS.Settings/InputSettings.cs:123
 msgid "Camera Rotate Down"
 msgstr "Kamera Forgatás lefelé"
 
-#: ../../ORTS.Settings/InputSettings.cs:123
+#: ../../ORTS.Settings/InputSettings.cs:124
 msgid "Camera Car Next"
 msgstr "Kamera Következő kocsi"
 
-#: ../../ORTS.Settings/InputSettings.cs:124
+#: ../../ORTS.Settings/InputSettings.cs:125
 msgid "Camera Car Previous"
 msgstr "Kamera Előző kocsi"
 
-#: ../../ORTS.Settings/InputSettings.cs:125
+#: ../../ORTS.Settings/InputSettings.cs:126
 msgid "Camera Car First"
 msgstr "Kamera Első kocsi"
 
-#: ../../ORTS.Settings/InputSettings.cs:126
+#: ../../ORTS.Settings/InputSettings.cs:127
 msgid "Camera Car Last"
 msgstr "Kamera Utolsó kocsi"
 
-#: ../../ORTS.Settings/InputSettings.cs:127
+#: ../../ORTS.Settings/InputSettings.cs:128
 msgid "Camera Jumping Trains"
 msgstr "Kamera Másik vonat"
 
-#: ../../ORTS.Settings/InputSettings.cs:128
+#: ../../ORTS.Settings/InputSettings.cs:129
 msgid "Camera Jump Back Player"
 msgstr "Kamera Játékos vonata"
 
-#: ../../ORTS.Settings/InputSettings.cs:129
+#: ../../ORTS.Settings/InputSettings.cs:130
 msgid "Camera Jump See Switch"
 msgstr "Kamera Ugrás a váltóhoz"
 
-#: ../../ORTS.Settings/InputSettings.cs:130
+#: ../../ORTS.Settings/InputSettings.cs:131
 msgid "Camera Vibrate"
 msgstr "Kamera Rázkódás"
 
-#: ../../ORTS.Settings/InputSettings.cs:131
+#: ../../ORTS.Settings/InputSettings.cs:132
 msgid "Camera Cab Rotate"
 msgstr "Kamera Vezérállás elforgatása"
 
-#: ../../ORTS.Settings/InputSettings.cs:133
+#: ../../ORTS.Settings/InputSettings.cs:134
 msgid "Control Forwards"
 msgstr "Irányítás Előre"
 
-#: ../../ORTS.Settings/InputSettings.cs:134
+#: ../../ORTS.Settings/InputSettings.cs:135
 msgid "Control Backwards"
 msgstr "Irányítás Hátra"
 
-#: ../../ORTS.Settings/InputSettings.cs:135
+#: ../../ORTS.Settings/InputSettings.cs:136
 msgid "Control Throttle Increase"
 msgstr "Irányítás Menetszabályzó növelése"
 
-#: ../../ORTS.Settings/InputSettings.cs:136
+#: ../../ORTS.Settings/InputSettings.cs:137
 msgid "Control Throttle Decrease"
 msgstr "Irányítás Menetszabályzó csökkentése"
 
-#: ../../ORTS.Settings/InputSettings.cs:137
+#: ../../ORTS.Settings/InputSettings.cs:138
 msgid "Control Gear Up"
 msgstr "Irányítás Sebességfokozat fel"
 
-#: ../../ORTS.Settings/InputSettings.cs:138
+#: ../../ORTS.Settings/InputSettings.cs:139
 msgid "Control Gear Down"
 msgstr "Irányítás Sebességfokozat le"
 
-#: ../../ORTS.Settings/InputSettings.cs:139
+#: ../../ORTS.Settings/InputSettings.cs:140
 msgid "Control Train Brake Increase"
 msgstr "Irányítás Vonatfék növelése"
 
-#: ../../ORTS.Settings/InputSettings.cs:140
+#: ../../ORTS.Settings/InputSettings.cs:141
 msgid "Control Train Brake Decrease"
 msgstr "Irányítás Vonatfék csökkentése"
 
-#: ../../ORTS.Settings/InputSettings.cs:141
+#: ../../ORTS.Settings/InputSettings.cs:142
 msgid "Control Engine Brake Increase"
 msgstr "Irányítás Mozdonyfék növelése"
 
-#: ../../ORTS.Settings/InputSettings.cs:142
+#: ../../ORTS.Settings/InputSettings.cs:143
 msgid "Control Engine Brake Decrease"
 msgstr "Irányítás Mozdonyfék csökkentése"
 
-#: ../../ORTS.Settings/InputSettings.cs:143
+#: ../../ORTS.Settings/InputSettings.cs:144
 msgid "Control Dynamic Brake Increase"
 msgstr "Irányítás Dinamikus fék növelése"
 
-#: ../../ORTS.Settings/InputSettings.cs:144
+#: ../../ORTS.Settings/InputSettings.cs:145
 msgid "Control Dynamic Brake Decrease"
 msgstr "Irányítás Dinamikus fék csökkentése"
 
-#: ../../ORTS.Settings/InputSettings.cs:145
+#: ../../ORTS.Settings/InputSettings.cs:146
 msgid "Control Bail Off"
 msgstr "Irányítás Fék kiengedése"
 
-#: ../../ORTS.Settings/InputSettings.cs:146
+#: ../../ORTS.Settings/InputSettings.cs:147
 msgid "Control Initialize Brakes"
 msgstr "Irányítás Fékek üzembe helyezése"
 
-#: ../../ORTS.Settings/InputSettings.cs:147
+#: ../../ORTS.Settings/InputSettings.cs:148
 msgid "Control Handbrake Full"
 msgstr "Irányítás Kézifék be"
 
-#: ../../ORTS.Settings/InputSettings.cs:148
+#: ../../ORTS.Settings/InputSettings.cs:149
 msgid "Control Handbrake None"
 msgstr "Irányítás Kézifék ki"
 
-#: ../../ORTS.Settings/InputSettings.cs:149
+#: ../../ORTS.Settings/InputSettings.cs:150
 msgid "Control Retainers On"
 msgstr "Irányítás Vonatrögzítőfék be"
 
-#: ../../ORTS.Settings/InputSettings.cs:150
+#: ../../ORTS.Settings/InputSettings.cs:151
 msgid "Control Retainers Off"
 msgstr "Irányítás Vonatrögzítőfék ki"
 
-#: ../../ORTS.Settings/InputSettings.cs:151
+#: ../../ORTS.Settings/InputSettings.cs:152
 msgid "Control Brake Hose Connect"
 msgstr "Irányítás Fékvezeték csatlakoztatása"
 
-#: ../../ORTS.Settings/InputSettings.cs:152
+#: ../../ORTS.Settings/InputSettings.cs:153
 msgid "Control Brake Hose Disconnect"
 msgstr "Irányítás Fékvezeték szétbontása"
 
-#: ../../ORTS.Settings/InputSettings.cs:153
+#: ../../ORTS.Settings/InputSettings.cs:154
 msgid "Control Alerter"
 msgstr "Irányítás Éberségjelző"
 
-#: ../../ORTS.Settings/InputSettings.cs:154
+#: ../../ORTS.Settings/InputSettings.cs:155
 msgid "Control Emergency Push Button"
 msgstr "Irányítás Vészfék ütőgomb"
 
-#: ../../ORTS.Settings/InputSettings.cs:155
+#: ../../ORTS.Settings/InputSettings.cs:156
 msgid "Control Sander"
 msgstr "Irányítás Homokoló"
 
-#: ../../ORTS.Settings/InputSettings.cs:156
+#: ../../ORTS.Settings/InputSettings.cs:157
 msgid "Control Sander Toggle"
 msgstr "Irányítás Homokoló ki/be"
 
-#: ../../ORTS.Settings/InputSettings.cs:157
+#: ../../ORTS.Settings/InputSettings.cs:158
 msgid "Control Wiper"
 msgstr "Irányítás Ablaktörlő"
 
-#: ../../ORTS.Settings/InputSettings.cs:158
+#: ../../ORTS.Settings/InputSettings.cs:159
 msgid "Control Horn"
 msgstr "Irányítás Kürt"
 
-#: ../../ORTS.Settings/InputSettings.cs:159
+#: ../../ORTS.Settings/InputSettings.cs:160
 msgid "Control Bell"
 msgstr "Irányítás Harang"
 
-#: ../../ORTS.Settings/InputSettings.cs:160
+#: ../../ORTS.Settings/InputSettings.cs:161
 msgid "Control Bell Toggle"
 msgstr "Irányítás Harang ki/be"
 
-#: ../../ORTS.Settings/InputSettings.cs:161
+#: ../../ORTS.Settings/InputSettings.cs:162
 msgid "Control Door Left"
 msgstr "Irányítás Baloldali ajtók"
 
-#: ../../ORTS.Settings/InputSettings.cs:162
+#: ../../ORTS.Settings/InputSettings.cs:163
 msgid "Control Door Right"
 msgstr "Irányítás Jobboldali ajtók"
 
-#: ../../ORTS.Settings/InputSettings.cs:163
+#: ../../ORTS.Settings/InputSettings.cs:164
 msgid "Control Mirror"
 msgstr "Irányítás Tükrök"
 
-#: ../../ORTS.Settings/InputSettings.cs:164
+#: ../../ORTS.Settings/InputSettings.cs:165
 msgid "Control Light"
 msgstr "Irányítás Fények"
 
-#: ../../ORTS.Settings/InputSettings.cs:165
+#: ../../ORTS.Settings/InputSettings.cs:166
 msgid "Control Pantograph1"
 msgstr "Irányítás 1-es áramszedő"
 
-#: ../../ORTS.Settings/InputSettings.cs:166
+#: ../../ORTS.Settings/InputSettings.cs:167
 msgid "Control Pantograph2"
 msgstr "Irányítás 2-es áramszedő"
 
-#: ../../ORTS.Settings/InputSettings.cs:167
+#: ../../ORTS.Settings/InputSettings.cs:168
 msgid "Control Diesel Player"
 msgstr "Irányítás Irányított gép"
 
-#: ../../ORTS.Settings/InputSettings.cs:168
+#: ../../ORTS.Settings/InputSettings.cs:169
 msgid "Control Diesel Helper"
 msgstr "Irányítás Segédgép"
 
-#: ../../ORTS.Settings/InputSettings.cs:169
+#: ../../ORTS.Settings/InputSettings.cs:170
 msgid "Control Headlight Increase"
 msgstr "Irányítás Homlokfény fel"
 
-#: ../../ORTS.Settings/InputSettings.cs:170
+#: ../../ORTS.Settings/InputSettings.cs:171
 msgid "Control Headlight Decrease"
 msgstr "Irányítás Homlokfény le"
 
-#: ../../ORTS.Settings/InputSettings.cs:171
+#: ../../ORTS.Settings/InputSettings.cs:172
 msgid "Control Injector1 Increase"
 msgstr "Irányítás Bal gőzsugárszivattyú növelése"
 
-#: ../../ORTS.Settings/InputSettings.cs:172
+#: ../../ORTS.Settings/InputSettings.cs:173
 msgid "Control Injector1 Decrease"
 msgstr "Irányítás Bal gőzsugárszivattyú csökkentése"
 
-#: ../../ORTS.Settings/InputSettings.cs:173
+#: ../../ORTS.Settings/InputSettings.cs:174
 msgid "Control Injector1"
 msgstr "Irányítás Bal gőzsugárszivattyú"
 
-#: ../../ORTS.Settings/InputSettings.cs:174
+#: ../../ORTS.Settings/InputSettings.cs:175
 msgid "Control Injector2 Increase"
 msgstr "Irányítás Jobb gőzsugárszivattyú növelése"
 
-#: ../../ORTS.Settings/InputSettings.cs:175
+#: ../../ORTS.Settings/InputSettings.cs:176
 msgid "Control Injector2 Decrease"
 msgstr "Irányítás Jobb gőzsugárszivattyú csökkentése"
 
-#: ../../ORTS.Settings/InputSettings.cs:176
+#: ../../ORTS.Settings/InputSettings.cs:177
 msgid "Control Injector2"
 msgstr "Irányítás Jobb gőzsugárszivattyú"
 
-#: ../../ORTS.Settings/InputSettings.cs:177
+#: ../../ORTS.Settings/InputSettings.cs:178
 msgid "Control Blower Increase"
 msgstr "Irányítás Gőzsugár-fúvóka nyitása"
 
-#: ../../ORTS.Settings/InputSettings.cs:178
+#: ../../ORTS.Settings/InputSettings.cs:179
 msgid "Control Blower Decrease"
 msgstr "Irányítás Gőzsugár-szivattyú zárása"
 
-#: ../../ORTS.Settings/InputSettings.cs:179
+#: ../../ORTS.Settings/InputSettings.cs:180
 msgid "Control Damper Increase"
 msgstr "Irányítás Légbefúvó növelése"
 
-#: ../../ORTS.Settings/InputSettings.cs:180
+#: ../../ORTS.Settings/InputSettings.cs:181
 msgid "Control Damper Decrease"
 msgstr "Irányítás Légbefúvó csökkentése"
 
-#: ../../ORTS.Settings/InputSettings.cs:181
+#: ../../ORTS.Settings/InputSettings.cs:182
 msgid "Control Firebox Open"
 msgstr "Irányítás Tűzszekrény nyitása"
 
-#: ../../ORTS.Settings/InputSettings.cs:182
+#: ../../ORTS.Settings/InputSettings.cs:183
 msgid "Control Firebox Close"
 msgstr "Irányítás Tűzszekrény zárása"
 
-#: ../../ORTS.Settings/InputSettings.cs:183
+#: ../../ORTS.Settings/InputSettings.cs:184
 msgid "Control Firing Rate Increase"
 msgstr "Irányítás Tüzelőadagolás növelése"
 
-#: ../../ORTS.Settings/InputSettings.cs:184
+#: ../../ORTS.Settings/InputSettings.cs:185
 msgid "Control Firing Rate Decrease"
 msgstr "Irányítás Tüzelőadagolás csökkentése"
 
-#: ../../ORTS.Settings/InputSettings.cs:185
+#: ../../ORTS.Settings/InputSettings.cs:186
 msgid "Control Fire Shovel Full"
 msgstr "Irányítás Egy lapát szén rádobása"
 
-#: ../../ORTS.Settings/InputSettings.cs:186
+#: ../../ORTS.Settings/InputSettings.cs:187
 msgid "Control Cylinder Cocks"
 msgstr "Irányítás Hengercsapok"
 
-#: ../../ORTS.Settings/InputSettings.cs:187
+#: ../../ORTS.Settings/InputSettings.cs:188
 msgid "Control Firing"
 msgstr "Irányítás Tüzelés"
 
-#: ../../ORTS.Settings/InputSettings.cs:188
+#: ../../ORTS.Settings/InputSettings.cs:189
 msgid "Control Refill"
 msgstr "Irányítás Üzemanyag-újratöltés"
 
-#: ../../ORTS.Settings/InputSettings.cs:635
+#: ../../ORTS.Settings/InputSettings.cs:637
 #, csharp-format
 msgid "{0} requires and is modified by Shift"
 msgstr "A {0} parancs eleve használja a Shift-et, nem lehet módosítani is vele"
 
-#: ../../ORTS.Settings/InputSettings.cs:637
+#: ../../ORTS.Settings/InputSettings.cs:639
 #, csharp-format
 msgid "{0} requires and is modified by Control"
-msgstr ""
-"A {0} parancs eleve használja a Control-t, nem lehet módosítani is vele"
+msgstr "A {0} parancs eleve használja a Control-t, nem lehet módosítani is vele"
 
-#: ../../ORTS.Settings/InputSettings.cs:639
+#: ../../ORTS.Settings/InputSettings.cs:641
 #, csharp-format
 msgid "{0} requires and is modified by Alt"
 msgstr "A {0} parancs eleve használja az Alt-ot, nem lehet módosítani is vele"
 
-#: ../../ORTS.Settings/InputSettings.cs:670
+#: ../../ORTS.Settings/InputSettings.cs:672
 #, csharp-format
 msgid "{0} and {1} both match {2}"
 msgstr "{0} és {1} is ehhez rendelve: {2}"

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Contrib\n"
 "POT-Creation-Date: 2014-12-12 18:48:39+0000\n"
-"PO-Revision-Date: 2014-12-18 11:37+0100\n"
+"PO-Revision-Date: 2014-12-22 07:12+0100\n"
 "Last-Translator: Altmann <altmann@bk.ru>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -911,67 +911,67 @@ msgstr "Pro změnu jazyka prosím restartujte TrackViewer."
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:352
 msgid "<Select path>"
-msgstr "<Vybrat cestu>"
+msgstr "<vybrat cestu>"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:366
 msgid "<Select station>"
-msgstr "<Vybrat stanici>"
+msgstr "<vybrat stanici>"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:379
 msgid "<Select platform>"
-msgstr "<Vybrat nástupiště>"
+msgstr "<vybrat nástupiště>"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:392
 msgid "<Select siding>"
-msgstr "<Vybrat vedlejší kolej>"
+msgstr "<vybrat vedlejší kolej>"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:486
 msgid "left  arrow:  Shift left\n"
-msgstr "šipka doleva:  Posunout vlevo\n"
+msgstr "šipka doleva:  posunout vlevo\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:487
 msgid "down  arrow:  Shift down\n"
-msgstr "šipka dolů:  Posunout dolů\n"
+msgstr "šipka dolů:  posunout dolů\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:488
 msgid "right arrow:  Shift right\n"
-msgstr "šipka doprava:  Posunout vpravo\n"
+msgstr "šipka doprava:  posunout vpravo\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:489
 msgid "up    arrow:  Shift up\n"
-msgstr "šipka nahoru:  Posunout nahoru\n"
+msgstr "šipka nahoru:  posunout nahoru\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:490
 msgid "C:  Shift to center of current path node\n"
-msgstr "C:  Posun do středu aktuálního uzlu cesty\n"
+msgstr "C:  posun do středu aktuálního uzlu cesty\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:491
 msgid "shift-C:  Shift to center of current mouse location\n"
-msgstr "shift-C:  Posun do středu aktuálního umístění myši\n"
+msgstr "shift-C:  posun do středu aktuálního umístění myši\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:492
 msgid "PgUp:  Show more of the path\n"
-msgstr "PgUp:  Zobrazit více cesty\n"
+msgstr "PgUp:  zobrazit více cesty\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:493
 msgid "PgDn:  Show less of the path\n"
-msgstr "PgDn:  Zobrazit méně cesty\n"
+msgstr "PgDn:  zobrazit méně cesty\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:494
 msgid "shift-PgUp:  Show the full path\n"
-msgstr "shift-PgUp:  Zobrazit celou cestu\n"
+msgstr "shift-PgUp:  zobrazit celou cestu\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:495
 msgid "shift-PgDn:  Show only start point of path\n"
-msgstr "shift-PgDn:  Zobrazit pouze výchozí bod cesty\n"
+msgstr "shift-PgDn:  zobrazit pouze výchozí bod cesty\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:496
 msgid "ctrl-Z: Undo in path editor\n"
-msgstr "ctrl-Z: Krok zpět v editoru cesty\n"
+msgstr "ctrl-Z: krok zpět v editoru cesty\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:497
 msgid "ctrl-Y: Redo in path editor\n"
-msgstr "ctrl-Y: Znovu v editoru cesty\n"
+msgstr "ctrl-Y: znovu v editoru cesty\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:504
 msgid "This is ORTS TrackViewer, version "
@@ -996,7 +996,7 @@ msgstr "Dokumentace je dostupná"
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:774
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:129
 msgid "Known limitations"
-msgstr "Známá omezení"
+msgstr "Známá omezení:"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:776
 msgid "* The saved-paths have not been tested with MSTS or ORTS."
@@ -1077,7 +1077,7 @@ msgstr "minut"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:8
 msgid "(Re)load route"
-msgstr "(Znovu) nahrát trať"
+msgstr "Nahrát trať"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:10
 msgid "Select install folder"
@@ -1245,11 +1245,11 @@ msgstr "Vedlejší koleje"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:70
 msgid "Show siding markers (F9)"
-msgstr "Show značky vedlejších kolejí (F9)"
+msgstr "Zobrazit značky vedlejších kolejí (F9)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:71
 msgid "Show siding names (shift-F9)"
-msgstr "Show názvy vedlejších kolejí (shift-F9)"
+msgstr "Zobrazit názvy vedlejších kolejí (shift-F9)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:73
 msgid "Platforms"
@@ -1357,7 +1357,7 @@ msgstr "Editor cest"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:113
 msgid "==Supporting MSTS paths only=="
-msgstr "==Podpora pouze cest z MSTS=="
+msgstr "==Podpora cest pouze z MSTS=="
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:114
 msgid "Load path"
@@ -1397,7 +1397,7 @@ msgstr "Zkratky"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:133
 msgid "About"
-msgstr "O"
+msgstr "O programu"
 
 #: ../../Contrib/TrackViewer/UserInterface/OtherPathsWindow.xaml:8
 msgid "Paths to draw"

@@ -120,7 +120,9 @@ namespace ORTS
         public float MaximumValue = 1;
         public float StepSize;
         private List<MSTSNotch> Notches = new List<MSTSNotch>();
-        public int CurrentNotch;
+        public int CurrentNotch { get; set; }
+
+        private float OldValue;
 
         //Does not need to persist
         //this indicates if the controller is increasing or decreasing, 0 no changes
@@ -221,9 +223,17 @@ namespace ORTS
             return 5;
         }
 
-        public void SetValue(float v)
+        /// <summary>
+        /// Sets the actual value of the controller, and adjusts the actual notch to match.
+        /// </summary>
+        /// <param name="value">Normalized value the controller to be set to. Normally is within range [-1..1]</param>
+        /// <returns>1 or -1 if there was a significant change in controller position, otherwise 0.
+        /// Needed for hinting whether a serializable command is to be issued for repeatability.
+        /// Sign is indicating the direction of change, being displayed by confirmer text.</returns>
+        public int SetValue(float value)
         {
-            CurrentValue = IntermediateValue = MathHelper.Clamp(v, MinimumValue, MaximumValue);
+            CurrentValue = IntermediateValue = MathHelper.Clamp(value, MinimumValue, MaximumValue);
+            var oldNotch = CurrentNotch;
 
             for (CurrentNotch = Notches.Count - 1; CurrentNotch > 0; CurrentNotch--)
             {
@@ -233,6 +243,13 @@ namespace ORTS
 
             if (CurrentNotch >= 0 && !Notches[CurrentNotch].Smooth)
                 CurrentValue = Notches[CurrentNotch].Value;
+
+            var change = CurrentNotch > oldNotch || CurrentValue > OldValue + 0.1f || CurrentValue == 1 && OldValue < 1 
+                ? 1 : CurrentNotch < oldNotch || CurrentValue < OldValue - 0.1f || CurrentValue == 0 && OldValue > 0 ? -1 : 0;
+            if (change != 0)
+                OldValue = CurrentValue;
+
+            return change;
         }
 
         public float SetPercent(float percent)

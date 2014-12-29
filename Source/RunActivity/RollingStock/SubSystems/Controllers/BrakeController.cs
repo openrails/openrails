@@ -112,15 +112,15 @@ namespace ORTS
         /// <summary>
         /// Needed for proper mouse operation in the cabview
         /// </summary>
-        public float IntermediateValue {
-            get
-            {
-                if (Script is MSTSBrakeController)
-                    return (Script as MSTSBrakeController).NotchController.IntermediateValue;
-                else
-                    return CurrentValue;
-            }
-        }
+        public float IntermediateValue { get { return Script is MSTSBrakeController ? (Script as MSTSBrakeController).NotchController.IntermediateValue : CurrentValue; } }
+
+        /// <summary>
+        /// Knowing actual notch and its change is needed for proper repeatability of mouse and RailDriver operation
+        /// </summary>
+        public int CurrentNotch { get { return Script is MSTSBrakeController ? (Script as MSTSBrakeController).NotchController.CurrentNotch : 0; } set { } }
+        
+        float OldValue;
+
         public float CurrentValue { get; set; }
         public float MinimumValue { get; set; }
         public float MaximumValue { get; set; }
@@ -338,13 +338,13 @@ namespace ORTS
             }
         }
 
-        public void SendEvent(BrakeControllerEvent evt)
+        public void SignalEvent(BrakeControllerEvent evt)
         {
             if (Script != null)
                 Script.HandleEvent(evt);
         }
 
-        public void SendEvent(BrakeControllerEvent evt, float? value)
+        public void SignalEvent(BrakeControllerEvent evt, float? value)
         {
             if (Script != null)
                 Script.HandleEvent(evt, value);
@@ -360,43 +360,50 @@ namespace ORTS
 
         public void StartIncrease()
         {
-            SendEvent(BrakeControllerEvent.StartIncrease);
+            SignalEvent(BrakeControllerEvent.StartIncrease);
         }
 
         public void StopIncrease()
         {
-            SendEvent(BrakeControllerEvent.StopIncrease);
+            SignalEvent(BrakeControllerEvent.StopIncrease);
         }
 
         public void StartDecrease()
         {
-            SendEvent(BrakeControllerEvent.StartDecrease);
+            SignalEvent(BrakeControllerEvent.StartDecrease);
         }
 
         public void StopDecrease()
         {
-            SendEvent(BrakeControllerEvent.StopDecrease);
+            SignalEvent(BrakeControllerEvent.StopDecrease);
         }
 
         public void StartIncrease(float? target)
         {
-            SendEvent(BrakeControllerEvent.StartIncrease, target);
+            SignalEvent(BrakeControllerEvent.StartIncrease, target);
         }
 
         public void StartDecrease(float? target)
         {
-            SendEvent(BrakeControllerEvent.StartDecrease, target);
+            SignalEvent(BrakeControllerEvent.StartDecrease, target);
         }
 
         public float SetPercent(float percent)
         {
-            SendEvent(BrakeControllerEvent.SetCurrentPercent, percent);
+            SignalEvent(BrakeControllerEvent.SetCurrentPercent, percent);
             return CurrentValue;
         }
 
-        public void SetValue(float v)
+        public int SetValue(float value)
         {
-            SendEvent(BrakeControllerEvent.SetCurrentValue, v);
+            var oldNotch = CurrentNotch;
+            SignalEvent(BrakeControllerEvent.SetCurrentValue, value);
+
+            var change = CurrentNotch > oldNotch || CurrentValue > OldValue + 0.1f || CurrentValue == 1 && OldValue < 1
+                ? 1 : CurrentNotch < oldNotch || CurrentValue < OldValue - 0.1f || CurrentValue == 0 && OldValue > 0 ? -1 : 0;
+            if (change != 0)
+                OldValue = CurrentValue;
+            return change;
         }
 
         public bool IsValid()
@@ -457,7 +464,7 @@ namespace ORTS
 
         public void Restore(BinaryReader inf)
         {
-            SendEvent(BrakeControllerEvent.SetCurrentValue, inf.ReadSingle());
+            SignalEvent(BrakeControllerEvent.SetCurrentValue, inf.ReadSingle());
 
             EmergencyBrakingPushButton = inf.ReadBoolean();
             TCSEmergencyBraking = inf.ReadBoolean();
