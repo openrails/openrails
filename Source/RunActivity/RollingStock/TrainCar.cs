@@ -404,9 +404,7 @@ namespace ORTS
                                             Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("You are travelling too fast for this curve. Slow down, your passengers are feeling uncomfortable and your train may derail."));
                                         }
                                 }
-                          else{
-                                Trace.TraceWarning("At speed {0}mph, train {1} is exceeding the safe speed {2}mph on this curve.", MpS.ToMpH(s), Train.Name, MpS.ToMpH(MaxSafeCurveSpeedMps));
-                               }  
+                          
                         }
                         else
                         {
