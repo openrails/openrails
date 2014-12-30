@@ -261,11 +261,11 @@ msgid "Camera Previous Free"
 msgstr "Kamera Frit Forrige"
 
 #: ../../ORTS.Settings/InputSettings.cs:107
-msgid "Camera HeadOut Forward"
+msgid "Camera Head Out Forward"
 msgstr "Kamera Hovedet Ud Fremad"
 
 #: ../../ORTS.Settings/InputSettings.cs:108
-msgid "Camera HeadOut Backward"
+msgid "Camera Head Out Backward"
 msgstr "Kamera Hovedet Ud Bagud"
 
 #: ../../ORTS.Settings/InputSettings.cs:109
@@ -485,11 +485,11 @@ msgid "Control Light"
 msgstr "Styring Lys"
 
 #: ../../ORTS.Settings/InputSettings.cs:164
-msgid "Control Pantograph1"
+msgid "Control Pantograph 1"
 msgstr "Styring Strømaftager1"
 
 #: ../../ORTS.Settings/InputSettings.cs:165
-msgid "Control Pantograph2"
+msgid "Control Pantograph 2"
 msgstr "Styring Strømaftager2"
 
 #: ../../ORTS.Settings/InputSettings.cs:166
@@ -509,27 +509,27 @@ msgid "Control Headlight Decrease"
 msgstr "Styring Sænk Lyset"
 
 #: ../../ORTS.Settings/InputSettings.cs:170
-msgid "Control Injector1 Increase"
+msgid "Control Injector 1 Increase"
 msgstr "Styring Øg Indsprøjtning1"
 
 #: ../../ORTS.Settings/InputSettings.cs:171
-msgid "Control Injector1 Decrease"
+msgid "Control Injector 1 Decrease"
 msgstr "Styring Reducer Indsprøjtning1"
 
 #: ../../ORTS.Settings/InputSettings.cs:172
-msgid "Control Injector1"
+msgid "Control Injector 1"
 msgstr "Styring Indsprøjtning1"
 
 #: ../../ORTS.Settings/InputSettings.cs:173
-msgid "Control Injector2 Increase"
+msgid "Control Injector 2 Increase"
 msgstr "Styring Øg Indsprøjtning2"
 
 #: ../../ORTS.Settings/InputSettings.cs:174
-msgid "Control Injector2 Decrease"
+msgid "Control Injector 2 Decrease"
 msgstr "Styring Reducer Indsprøjtning2"
 
 #: ../../ORTS.Settings/InputSettings.cs:175
-msgid "Control Injector2"
+msgid "Control Injector 2"
 msgstr "Styring Indsprøjtning2"
 
 #: ../../ORTS.Settings/InputSettings.cs:176

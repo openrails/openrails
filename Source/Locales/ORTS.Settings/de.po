@@ -261,11 +261,11 @@ msgid "Camera Previous Free"
 msgstr "Kamera: Vorherige frei Bewegliche"
 
 #: ../../ORTS.Settings/InputSettings.cs:107
-msgid "Camera HeadOut Forward"
+msgid "Camera Head Out Forward"
 msgstr "Kamera: Hinauslehnen vorwärts"
 
 #: ../../ORTS.Settings/InputSettings.cs:108
-msgid "Camera HeadOut Backward"
+msgid "Camera Head Out Backward"
 msgstr "Kamera: Hinauslehnen rückwärts"
 
 #: ../../ORTS.Settings/InputSettings.cs:109
@@ -489,11 +489,11 @@ msgid "Control Light"
 msgstr "Steuerung: Führerstandbeleuchtung"
 
 #: ../../ORTS.Settings/InputSettings.cs:165
-msgid "Control Pantograph1"
+msgid "Control Pantograph 1"
 msgstr "Steuerung: Pantograph 1"
 
 #: ../../ORTS.Settings/InputSettings.cs:166
-msgid "Control Pantograph2"
+msgid "Control Pantograph 2"
 msgstr "Steuerung: Pantograph 2"
 
 #: ../../ORTS.Settings/InputSettings.cs:167
@@ -513,27 +513,27 @@ msgid "Control Headlight Decrease"
 msgstr "Steuerung: Spitzenlicht abblenden"
 
 #: ../../ORTS.Settings/InputSettings.cs:171
-msgid "Control Injector1 Increase"
+msgid "Control Injector 1 Increase"
 msgstr "Steuerung: Injektor 1 stärker"
 
 #: ../../ORTS.Settings/InputSettings.cs:172
-msgid "Control Injector1 Decrease"
+msgid "Control Injector 1 Decrease"
 msgstr "Steuerung: Injektor 1 schwächer"
 
 #: ../../ORTS.Settings/InputSettings.cs:173
-msgid "Control Injector1"
+msgid "Control Injector 1"
 msgstr "Steuerung: Injektor 1"
 
 #: ../../ORTS.Settings/InputSettings.cs:174
-msgid "Control Injector2 Increase"
+msgid "Control Injector 2 Increase"
 msgstr "Steuerung: Injektor 2 stärker"
 
 #: ../../ORTS.Settings/InputSettings.cs:175
-msgid "Control Injector2 Decrease"
+msgid "Control Injector 2 Decrease"
 msgstr "Steuerung: Injektor 2 schwächer"
 
 #: ../../ORTS.Settings/InputSettings.cs:176
-msgid "Control Injector2"
+msgid "Control Injector 2"
 msgstr "Steuerung: Injektor 2"
 
 #: ../../ORTS.Settings/InputSettings.cs:177

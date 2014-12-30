@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
-"POT-Creation-Date: 2014-12-29 15:19:28+0100\n"
-"PO-Revision-Date: 2014-12-29 15:20+0100\n"
+"POT-Creation-Date: 2014-12-29 16:39:02+0100\n"
+"PO-Revision-Date: 2014-12-29 16:47+0100\n"
 "Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: hu\n"
@@ -169,64 +169,64 @@ msgid "Debug Fog Decrease"
 msgstr "Hibakeresés Köd csökkentése"
 
 #: ../../ORTS.Settings/InputSettings.cs:83
-msgid "Debug Weather Change"
-msgstr "Hibakeresés Időjárás megváltoztatása"
-
-#: ../../ORTS.Settings/InputSettings.cs:84
-msgid "Debug Clock Forwards"
-msgstr "Hibakeresés Óra előre"
-
-#: ../../ORTS.Settings/InputSettings.cs:85
-msgid "Debug Clock Backwards"
-msgstr "Hibakeresés Óra hátra"
-
-#: ../../ORTS.Settings/InputSettings.cs:86
-msgid "Debug Logger"
-msgstr "Hibakeresés Adatrögzítő"
-
-#: ../../ORTS.Settings/InputSettings.cs:87
-msgid "Debug Lock Shadows"
-msgstr "Hibakeresés Árnyékok rögzítése"
-
-#: ../../ORTS.Settings/InputSettings.cs:88
-msgid "Debug Dump Keymap"
-msgstr "Hibakeresés Billentyűzetkép"
-
-#: ../../ORTS.Settings/InputSettings.cs:89
-msgid "Debug Log Render Frame"
-msgstr "Hibakeresés Render frame naplózása"
-
-#: ../../ORTS.Settings/InputSettings.cs:90
-msgid "Debug Tracks"
-msgstr "Hibakeresés Vágányok"
-
-#: ../../ORTS.Settings/InputSettings.cs:91
-msgid "Debug Signalling"
-msgstr "Hibakeresés Jelzők"
-
-#: ../../ORTS.Settings/InputSettings.cs:92
-msgid "Debug Reset Wheel Slip"
-msgstr "Hibakeresés Kerékcsúszás leállítása"
-
-#: ../../ORTS.Settings/InputSettings.cs:93
-msgid "Debug Toggle Advanced Adhesion"
-msgstr "Hibakeresés Fejlett súrlódás be/ki"
-
-#: ../../ORTS.Settings/InputSettings.cs:94
-msgid "Debug Sound Form"
-msgstr "Hibakeresés Hang"
-
-#: ../../ORTS.Settings/InputSettings.cs:95
-msgid "Debug Physics Form"
-msgstr "Hibakeresés Fizika"
-
-#: ../../ORTS.Settings/InputSettings.cs:96
 msgid "Debug Precipitation Increase"
 msgstr "Hibakeresés Csapadék növelése"
 
-#: ../../ORTS.Settings/InputSettings.cs:97
+#: ../../ORTS.Settings/InputSettings.cs:84
 msgid "Debug Precipitation Decrease"
 msgstr "Hibakeresés Csapadék csökkentése"
+
+#: ../../ORTS.Settings/InputSettings.cs:85
+msgid "Debug Weather Change"
+msgstr "Hibakeresés Időjárás megváltoztatása"
+
+#: ../../ORTS.Settings/InputSettings.cs:86
+msgid "Debug Clock Forwards"
+msgstr "Hibakeresés Óra előre"
+
+#: ../../ORTS.Settings/InputSettings.cs:87
+msgid "Debug Clock Backwards"
+msgstr "Hibakeresés Óra hátra"
+
+#: ../../ORTS.Settings/InputSettings.cs:88
+msgid "Debug Logger"
+msgstr "Hibakeresés Adatrögzítő"
+
+#: ../../ORTS.Settings/InputSettings.cs:89
+msgid "Debug Lock Shadows"
+msgstr "Hibakeresés Árnyékok rögzítése"
+
+#: ../../ORTS.Settings/InputSettings.cs:90
+msgid "Debug Dump Keymap"
+msgstr "Hibakeresés Billentyűzetkép"
+
+#: ../../ORTS.Settings/InputSettings.cs:91
+msgid "Debug Log Render Frame"
+msgstr "Hibakeresés Render frame naplózása"
+
+#: ../../ORTS.Settings/InputSettings.cs:92
+msgid "Debug Tracks"
+msgstr "Hibakeresés Vágányok"
+
+#: ../../ORTS.Settings/InputSettings.cs:93
+msgid "Debug Signalling"
+msgstr "Hibakeresés Jelzők"
+
+#: ../../ORTS.Settings/InputSettings.cs:94
+msgid "Debug Reset Wheel Slip"
+msgstr "Hibakeresés Kerékcsúszás leállítása"
+
+#: ../../ORTS.Settings/InputSettings.cs:95
+msgid "Debug Toggle Advanced Adhesion"
+msgstr "Hibakeresés Fejlett súrlódás be/ki"
+
+#: ../../ORTS.Settings/InputSettings.cs:96
+msgid "Debug Sound Form"
+msgstr "Hibakeresés Hang"
+
+#: ../../ORTS.Settings/InputSettings.cs:97
+msgid "Debug Physics Form"
+msgstr "Hibakeresés Fizika"
 
 #: ../../ORTS.Settings/InputSettings.cs:99
 msgid "Camera Cab"
@@ -237,44 +237,44 @@ msgid "Camera 3D Cab"
 msgstr "Kamera 3D vezérállás"
 
 #: ../../ORTS.Settings/InputSettings.cs:101
+msgid "Camera Toggle Show Cab"
+msgstr "Kamera Vezérálláskép ki/be"
+
+#: ../../ORTS.Settings/InputSettings.cs:102
+msgid "Camera Head Out Forward"
+msgstr "Kamera Kihajolás előrenézve"
+
+#: ../../ORTS.Settings/InputSettings.cs:103
+msgid "Camera Head Out Backward"
+msgstr "Kamera Kihajolás hátranézve"
+
+#: ../../ORTS.Settings/InputSettings.cs:104
 msgid "Camera Outside Front"
 msgstr "Kamera Kívül elöl"
 
-#: ../../ORTS.Settings/InputSettings.cs:102
+#: ../../ORTS.Settings/InputSettings.cs:105
 msgid "Camera Outside Rear"
 msgstr "Kamera Kívül hátul"
 
-#: ../../ORTS.Settings/InputSettings.cs:103
+#: ../../ORTS.Settings/InputSettings.cs:106
 msgid "Camera Trackside"
 msgstr "Kamera Pálya mellett"
 
-#: ../../ORTS.Settings/InputSettings.cs:104
+#: ../../ORTS.Settings/InputSettings.cs:107
 msgid "Camera Passenger"
 msgstr "Kamera Utaskamera"
 
-#: ../../ORTS.Settings/InputSettings.cs:105
+#: ../../ORTS.Settings/InputSettings.cs:108
 msgid "Camera Brakeman"
 msgstr "Kamera Fékállás"
 
-#: ../../ORTS.Settings/InputSettings.cs:106
+#: ../../ORTS.Settings/InputSettings.cs:109
 msgid "Camera Free"
 msgstr "Kamera Szabad"
 
-#: ../../ORTS.Settings/InputSettings.cs:107
+#: ../../ORTS.Settings/InputSettings.cs:110
 msgid "Camera Previous Free"
 msgstr "Kamera Előző szabad"
-
-#: ../../ORTS.Settings/InputSettings.cs:108
-msgid "Camera HeadOut Forward"
-msgstr "Kamera Ablakon kinézés előre"
-
-#: ../../ORTS.Settings/InputSettings.cs:109
-msgid "Camera HeadOut Backward"
-msgstr "Kamera Ablakon kinézés hátra"
-
-#: ../../ORTS.Settings/InputSettings.cs:110
-msgid "Camera Toggle Show Cab"
-msgstr "Kamera Vezérálláskép ki/be"
 
 #: ../../ORTS.Settings/InputSettings.cs:111
 msgid "Camera Reset"
@@ -493,11 +493,11 @@ msgid "Control Light"
 msgstr "Irányítás Fények"
 
 #: ../../ORTS.Settings/InputSettings.cs:166
-msgid "Control Pantograph1"
+msgid "Control Pantograph 1"
 msgstr "Irányítás 1-es áramszedő"
 
 #: ../../ORTS.Settings/InputSettings.cs:167
-msgid "Control Pantograph2"
+msgid "Control Pantograph 2"
 msgstr "Irányítás 2-es áramszedő"
 
 #: ../../ORTS.Settings/InputSettings.cs:168
@@ -517,27 +517,27 @@ msgid "Control Headlight Decrease"
 msgstr "Irányítás Homlokfény le"
 
 #: ../../ORTS.Settings/InputSettings.cs:172
-msgid "Control Injector1 Increase"
+msgid "Control Injector 1 Increase"
 msgstr "Irányítás Bal gőzsugárszivattyú növelése"
 
 #: ../../ORTS.Settings/InputSettings.cs:173
-msgid "Control Injector1 Decrease"
+msgid "Control Injector 1 Decrease"
 msgstr "Irányítás Bal gőzsugárszivattyú csökkentése"
 
 #: ../../ORTS.Settings/InputSettings.cs:174
-msgid "Control Injector1"
+msgid "Control Injector 1"
 msgstr "Irányítás Bal gőzsugárszivattyú"
 
 #: ../../ORTS.Settings/InputSettings.cs:175
-msgid "Control Injector2 Increase"
+msgid "Control Injector 2 Increase"
 msgstr "Irányítás Jobb gőzsugárszivattyú növelése"
 
 #: ../../ORTS.Settings/InputSettings.cs:176
-msgid "Control Injector2 Decrease"
+msgid "Control Injector 2 Decrease"
 msgstr "Irányítás Jobb gőzsugárszivattyú csökkentése"
 
 #: ../../ORTS.Settings/InputSettings.cs:177
-msgid "Control Injector2"
+msgid "Control Injector 2"
 msgstr "Irányítás Jobb gőzsugárszivattyú"
 
 #: ../../ORTS.Settings/InputSettings.cs:178
@@ -607,3 +607,33 @@ msgstr "A {0} parancs eleve használja az Alt-ot, nem lehet módosítani is vele
 #, csharp-format
 msgid "{0} and {1} both match {2}"
 msgstr "{0} és {1} is ehhez rendelve: {2}"
+
+#~ msgid "Camera HeadOut Forward"
+#~ msgstr "Kamera Ablakon kinézés előre"
+
+#~ msgid "Camera HeadOut Backward"
+#~ msgstr "Kamera Ablakon kinézés hátra"
+
+#~ msgid "Control Pantograph1"
+#~ msgstr "Irányítás 1-es áramszedő"
+
+#~ msgid "Control Pantograph2"
+#~ msgstr "Irányítás 2-es áramszedő"
+
+#~ msgid "Control Injector1 Increase"
+#~ msgstr "Irányítás Bal gőzsugárszivattyú növelése"
+
+#~ msgid "Control Injector1 Decrease"
+#~ msgstr "Irányítás Bal gőzsugárszivattyú csökkentése"
+
+#~ msgid "Control Injector1"
+#~ msgstr "Irányítás Bal gőzsugárszivattyú"
+
+#~ msgid "Control Injector2 Increase"
+#~ msgstr "Irányítás Jobb gőzsugárszivattyú növelése"
+
+#~ msgid "Control Injector2 Decrease"
+#~ msgstr "Irányítás Jobb gőzsugárszivattyú csökkentése"
+
+#~ msgid "Control Injector2"
+#~ msgstr "Irányítás Jobb gőzsugárszivattyú"

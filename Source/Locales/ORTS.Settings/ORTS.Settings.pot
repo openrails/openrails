@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-12-05 20:45:42+0100\n"
-"PO-Revision-Date: 2014-12-05 20:45:43+0100\n"
+"POT-Creation-Date: 2014-12-29 16:39:02+0100\n"
+"PO-Revision-Date: 2014-12-29 16:39:02+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -168,63 +168,63 @@ msgid "Debug Fog Decrease"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:83
-msgid "Debug Weather Change"
-msgstr ""
-
-#: ../../ORTS.Settings/InputSettings.cs:84
-msgid "Debug Clock Forwards"
-msgstr ""
-
-#: ../../ORTS.Settings/InputSettings.cs:85
-msgid "Debug Clock Backwards"
-msgstr ""
-
-#: ../../ORTS.Settings/InputSettings.cs:86
-msgid "Debug Logger"
-msgstr ""
-
-#: ../../ORTS.Settings/InputSettings.cs:87
-msgid "Debug Lock Shadows"
-msgstr ""
-
-#: ../../ORTS.Settings/InputSettings.cs:88
-msgid "Debug Dump Keymap"
-msgstr ""
-
-#: ../../ORTS.Settings/InputSettings.cs:89
-msgid "Debug Log Render Frame"
-msgstr ""
-
-#: ../../ORTS.Settings/InputSettings.cs:90
-msgid "Debug Tracks"
-msgstr ""
-
-#: ../../ORTS.Settings/InputSettings.cs:91
-msgid "Debug Signalling"
-msgstr ""
-
-#: ../../ORTS.Settings/InputSettings.cs:92
-msgid "Debug Reset Wheel Slip"
-msgstr ""
-
-#: ../../ORTS.Settings/InputSettings.cs:93
-msgid "Debug Toggle Advanced Adhesion"
-msgstr ""
-
-#: ../../ORTS.Settings/InputSettings.cs:94
-msgid "Debug Sound Form"
-msgstr ""
-
-#: ../../ORTS.Settings/InputSettings.cs:95
-msgid "Debug Physics Form"
-msgstr ""
-
-#: ../../ORTS.Settings/InputSettings.cs:96
 msgid "Debug Precipitation Increase"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:97
+#: ../../ORTS.Settings/InputSettings.cs:84
 msgid "Debug Precipitation Decrease"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:85
+msgid "Debug Weather Change"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:86
+msgid "Debug Clock Forwards"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:87
+msgid "Debug Clock Backwards"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:88
+msgid "Debug Logger"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:89
+msgid "Debug Lock Shadows"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:90
+msgid "Debug Dump Keymap"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:91
+msgid "Debug Log Render Frame"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:92
+msgid "Debug Tracks"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:93
+msgid "Debug Signalling"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:94
+msgid "Debug Reset Wheel Slip"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:95
+msgid "Debug Toggle Advanced Adhesion"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:96
+msgid "Debug Sound Form"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:97
+msgid "Debug Physics Form"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:99
@@ -236,43 +236,43 @@ msgid "Camera 3D Cab"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:101
-msgid "Camera Outside Front"
+msgid "Camera Toggle Show Cab"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:102
-msgid "Camera Outside Rear"
+msgid "Camera Head Out Forward"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:103
-msgid "Camera Trackside"
+msgid "Camera Head Out Backward"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:104
-msgid "Camera Passenger"
+msgid "Camera Outside Front"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:105
-msgid "Camera Brakeman"
+msgid "Camera Outside Rear"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:106
-msgid "Camera Free"
+msgid "Camera Trackside"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:107
-msgid "Camera Previous Free"
+msgid "Camera Passenger"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:108
-msgid "Camera HeadOut Forward"
+msgid "Camera Brakeman"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:109
-msgid "Camera HeadOut Backward"
+msgid "Camera Free"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:110
-msgid "Camera Toggle Show Cab"
+msgid "Camera Previous Free"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:111
@@ -492,11 +492,11 @@ msgid "Control Light"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:166
-msgid "Control Pantograph1"
+msgid "Control Pantograph 1"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:167
-msgid "Control Pantograph2"
+msgid "Control Pantograph 2"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:168
@@ -516,27 +516,27 @@ msgid "Control Headlight Decrease"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:172
-msgid "Control Injector1 Increase"
+msgid "Control Injector 1 Increase"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:173
-msgid "Control Injector1 Decrease"
+msgid "Control Injector 1 Decrease"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:174
-msgid "Control Injector1"
+msgid "Control Injector 1"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:175
-msgid "Control Injector2 Increase"
+msgid "Control Injector 2 Increase"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:176
-msgid "Control Injector2 Decrease"
+msgid "Control Injector 2 Decrease"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:177
-msgid "Control Injector2"
+msgid "Control Injector 2"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:178

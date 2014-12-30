@@ -265,11 +265,11 @@ msgid "Camera Previous Free"
 msgstr "Caméra Vue libre précédente"
 
 #: ../../ORTS.Settings/InputSettings.cs:108
-msgid "Camera HeadOut Forward"
+msgid "Camera Head Out Forward"
 msgstr "Caméra Vue tête à l'extérieur avant"
 
 #: ../../ORTS.Settings/InputSettings.cs:109
-msgid "Camera HeadOut Backward"
+msgid "Camera Head Out Backward"
 msgstr "Caméra Vue tête à l'extérieur arrière"
 
 #: ../../ORTS.Settings/InputSettings.cs:110
@@ -493,11 +493,11 @@ msgid "Control Light"
 msgstr "Contrôle Eclairage de cabine"
 
 #: ../../ORTS.Settings/InputSettings.cs:166
-msgid "Control Pantograph1"
+msgid "Control Pantograph 1"
 msgstr "Contrôle Pantographe 1"
 
 #: ../../ORTS.Settings/InputSettings.cs:167
-msgid "Control Pantograph2"
+msgid "Control Pantograph 2"
 msgstr "Contrôle Pantographe 2"
 
 #: ../../ORTS.Settings/InputSettings.cs:168
@@ -517,27 +517,27 @@ msgid "Control Headlight Decrease"
 msgstr "Contrôle Diminution de l'éclairage de tête"
 
 #: ../../ORTS.Settings/InputSettings.cs:172
-msgid "Control Injector1 Increase"
+msgid "Control Injector 1 Increase"
 msgstr "Contrôle Augmentation de l'injecteur 1"
 
 #: ../../ORTS.Settings/InputSettings.cs:173
-msgid "Control Injector1 Decrease"
+msgid "Control Injector 1 Decrease"
 msgstr "Contrôle Diminution de l'injecteur 1"
 
 #: ../../ORTS.Settings/InputSettings.cs:174
-msgid "Control Injector1"
+msgid "Control Injector 1"
 msgstr "Contrôle Activation/désactivation de l'injecteur 1"
 
 #: ../../ORTS.Settings/InputSettings.cs:175
-msgid "Control Injector2 Increase"
+msgid "Control Injector 2 Increase"
 msgstr "Contrôle Augmentation de l'injecteur 2"
 
 #: ../../ORTS.Settings/InputSettings.cs:176
-msgid "Control Injector2 Decrease"
+msgid "Control Injector 2 Decrease"
 msgstr "Contrôle Diminution de l'injecteur 2"
 
 #: ../../ORTS.Settings/InputSettings.cs:177
-msgid "Control Injector2"
+msgid "Control Injector 2"
 msgstr "Contrôle Activation/désactivation de l'injecteur 2"
 
 #: ../../ORTS.Settings/InputSettings.cs:178

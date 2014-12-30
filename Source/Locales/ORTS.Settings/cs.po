@@ -265,11 +265,11 @@ msgid "Camera Previous Free"
 msgstr "Pohled Volný předcházející"
 
 #: ../../ORTS.Settings/InputSettings.cs:108
-msgid "Camera HeadOut Forward"
+msgid "Camera Head Out Forward"
 msgstr "Pohled Boční vpřed"
 
 #: ../../ORTS.Settings/InputSettings.cs:109
-msgid "Camera HeadOut Backward"
+msgid "Camera Head Out Backward"
 msgstr "Pohled Boční vzad"
 
 #: ../../ORTS.Settings/InputSettings.cs:110
@@ -493,11 +493,11 @@ msgid "Control Light"
 msgstr "Ovladač Světlo"
 
 #: ../../ORTS.Settings/InputSettings.cs:166
-msgid "Control Pantograph1"
+msgid "Control Pantograph 1"
 msgstr "Ovladač Sběrač 1"
 
 #: ../../ORTS.Settings/InputSettings.cs:167
-msgid "Control Pantograph2"
+msgid "Control Pantograph 2"
 msgstr "Ovladač Sběrač 2"
 
 #: ../../ORTS.Settings/InputSettings.cs:168
@@ -521,23 +521,23 @@ msgid "Control Injector1 Increase"
 msgstr "Ovladač Zvýšit injektor 1"
 
 #: ../../ORTS.Settings/InputSettings.cs:173
-msgid "Control Injector1 Decrease"
+msgid "Control Injector 1 Decrease"
 msgstr "Ovladač Snížit injektor 1"
 
 #: ../../ORTS.Settings/InputSettings.cs:174
-msgid "Control Injector1"
+msgid "Control Injector 1"
 msgstr "Ovladač Injektor 1"
 
 #: ../../ORTS.Settings/InputSettings.cs:175
-msgid "Control Injector2 Increase"
+msgid "Control Injector 2 Increase"
 msgstr "Ovladač Zvýšit injektor 2"
 
 #: ../../ORTS.Settings/InputSettings.cs:176
-msgid "Control Injector2 Decrease"
+msgid "Control Injector 2 Decrease"
 msgstr "Ovladač Snížit injektor 2"
 
 #: ../../ORTS.Settings/InputSettings.cs:177
-msgid "Control Injector2"
+msgid "Control Injector 2"
 msgstr "Ovladač Injektor 2"
 
 #: ../../ORTS.Settings/InputSettings.cs:178
