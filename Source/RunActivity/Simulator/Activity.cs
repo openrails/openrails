@@ -606,7 +606,7 @@ namespace ORTS
         public PlatformItem PlatformEnd1;
         public PlatformItem PlatformEnd2;
 
-        private double BoardingS;   // MSTS calls this the Load/Unload time. Cargo gets loaded, but passengers board the train.
+        public double BoardingS;   // MSTS calls this the Load/Unload time. Cargo gets loaded, but passengers board the train.
         public double BoardingEndS;
         int TimerChk;
         bool arrived;

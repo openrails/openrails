@@ -5856,7 +5856,8 @@ namespace ORTS
             }
             ResetActions(true);
             if (SpeedMpS != 0) MovementState = AI_MOVEMENT_STATE.BRAKING;
-            else if (Simulator.ActivityRun.Current is ActivityTaskPassengerStopAt && ((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).IsAtStation())
+            else if (Simulator.ActivityRun.Current is ActivityTaskPassengerStopAt && ((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).IsAtStation() &&
+                ((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).BoardingS > 0)
             {
                 StationStops[0].ActualDepart = (int)((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).BoardingEndS;
                 StationStops[0].ActualArrival = -(int)(new DateTime().Add(TimeSpan.FromSeconds(0.0)) - ((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).ActArrive).Value.TotalSeconds;
