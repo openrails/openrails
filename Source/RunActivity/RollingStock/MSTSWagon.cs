@@ -1221,6 +1221,10 @@ namespace ORTS
                 && PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers[0].Count > 0)
             {
                 FrameCount = Math.Max(FrameCount, PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers[0].ToArray().Cast<KeyPosition>().Last().Frame);
+                // Sometimes there are more frames in the second controller than in the first
+                if ( PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers.Count > 1
+                && PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers[1].Count > 0)
+                    FrameCount = Math.Max(FrameCount, PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers[1].ToArray().Cast<KeyPosition>().Last().Frame);
             }
             for (var i = 0; i < PoseableShape.Hierarchy.Length; i++)
                 if (PoseableShape.Hierarchy[i] == matrix)
