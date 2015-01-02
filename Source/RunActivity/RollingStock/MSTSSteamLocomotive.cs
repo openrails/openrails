@@ -215,14 +215,14 @@ namespace ORTS
         float FuelDensityKGpM3 = 864.5f;    // Anthracite Coal : 50 - 58 (lb/ft3), 800 - 929 (kg/m3)
         float DamperFactorManual = 1.0f;    // factor to control draft through fire when locomotive is running in Manual mode
         const float WaterLBpUKG = 10.0f;    // lbs of water in 1 gal (uk)
-        float MaxTenderCoalMassKG;          // Maximum read from Eng File
-        float MaxTenderWaterMassKG;         // Maximum read from Eng file
-        float TenderCoalMassKG              // Decreased by firing and increased by refilling
+        public float MaxTenderCoalMassKG;          // Maximum read from Eng File
+        public float MaxTenderWaterMassKG;         // Maximum read from Eng file
+        public float TenderCoalMassKG              // Decreased by firing and increased by refilling
         {
             get { return FuelController.CurrentValue * MaxTenderCoalMassKG; }
             set { FuelController.CurrentValue = value / MaxTenderCoalMassKG; }
         }
-        float TenderWaterVolumeUKG          // Decreased by running injectors and increased by refilling
+        public float TenderWaterVolumeUKG          // Decreased by running injectors and increased by refilling
         {
             get { return WaterController.CurrentValue * Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG; }
             set { WaterController.CurrentValue = value / (Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG); }

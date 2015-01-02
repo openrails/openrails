@@ -787,6 +787,13 @@ namespace ORTS
                     var mstsDieselLocomotive = car as MSTSDieselLocomotive;
                     if (Activity != null && mstsDieselLocomotive != null)
                         mstsDieselLocomotive.DieselLevelL = mstsDieselLocomotive.MaxDieselLevelL * Activity.Tr_Activity.Tr_Activity_Header.FuelDiesel / 100.0f;
+
+                    var mstsSteamLocomotive = car as MSTSSteamLocomotive;
+                    if (Activity != null && mstsSteamLocomotive != null)
+                    {
+                        mstsSteamLocomotive.TenderWaterVolumeUKG = (Kg.ToLb(mstsSteamLocomotive.MaxTenderWaterMassKG) / 10.0f) * Activity.Tr_Activity.Tr_Activity_Header.FuelWater / 100.0f;
+                        mstsSteamLocomotive.TenderCoalMassKG = mstsSteamLocomotive.MaxTenderCoalMassKG * Activity.Tr_Activity.Tr_Activity_Header.FuelCoal / 100.0f;
+                    }
                 }
                 catch (Exception error)
                 {
