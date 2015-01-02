@@ -2959,74 +2959,59 @@ namespace ORTS
             else
             {
                 // check if train is in sections ahead
-                bool trainFound = false;
-                bool lastSection = false;
                 Dictionary<Train, float> trainInfo = null;
-                int sectionIndex = -1;
-                float accDistance = 0;
 
-                for (int iSection = PresentPosition[0].RouteListIndex; iSection < ValidRoute[0].Count && !lastSection && !trainFound; iSection++)
+                // find other train
+                int sectionIndex = ValidRoute[0][PresentPosition[0].RouteListIndex].TCSectionIndex;
+                int startIndex = PresentPosition[0].RouteListIndex;
+                int endIndex = LastReservedSection[0];
+
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[sectionIndex];
+
+                trainInfo = thisSection.TestTrainAhead(this, PresentPosition[0].TCOffset, PresentPosition[0].TCDirection);
+                float addOffset = 0;
+                if (trainInfo.Count <= 0)
                 {
-                    sectionIndex = ValidRoute[0][iSection].TCSectionIndex;
-                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[sectionIndex];
+                    addOffset = thisSection.Length - PresentPosition[0].TCOffset;
+                }
+                else
+                {
+                    // ensure train in section is aware of this train in same section if this is required
+                    UpdateTrainOnEnteringSection(thisSection, trainInfo);
+                }
 
-                    if (sectionIndex == PresentPosition[0].TCSectionIndex)
-                    {
-                        trainInfo = thisSection.TestTrainAhead(this,
-                             PresentPosition[0].TCOffset, PresentPosition[0].TCDirection);
-                        if (trainInfo.Count > 0)  // train found
-                        {
-                            // ensure train in section is aware of this train in same section if this is required
-                            UpdateTrainOnEnteringSection(thisSection, trainInfo);
-                        }
-                        else
-                        {
-                            accDistance -= PresentPosition[0].TCOffset;  // compensate for offset
-                        }
-                    }
-                    else
-                    {
-                        trainInfo = thisSection.TestTrainAhead(this,
-                            0, ValidRoute[0][iSection].Direction);
-                    }
+                if (CheckTrain)
+                {
+                    File.AppendAllText(@"C:\temp\checktrain.txt",
+                                        "Train count in section " + sectionIndex.ToString() + " = " + trainInfo.Count.ToString() + "\n");
+                }
 
-                    trainFound = (trainInfo.Count > 0);
-                    lastSection = (sectionIndex == LastReservedSection[0]);
+                // train not in this section, try reserved sections ahead
+                for (int iIndex = startIndex + 1; iIndex <= endIndex && trainInfo.Count <= 0; iIndex++)
+                {
+                    TrackCircuitSection nextSection = signalRef.TrackCircuitList[ValidRoute[0][iIndex].TCSectionIndex];
+                    trainInfo = nextSection.TestTrainAhead(this, 0, ValidRoute[0][iIndex].Direction);
+                }
 
-                    if (!trainFound)
+                // if train not ahead, try first section beyond last reserved
+                if (trainInfo.Count <= 0 && endIndex < ValidRoute[0].Count - 1)
+                {
+                    TrackCircuitSection nextSection = signalRef.TrackCircuitList[ValidRoute[0][endIndex + 1].TCSectionIndex];
+                    trainInfo = nextSection.TestTrainAhead(this, 0, ValidRoute[0][endIndex + 1].Direction);
+                    if (trainInfo.Count <= 0)
                     {
-                        accDistance += thisSection.Length;
-                    }
-
-                    if (CheckTrain)
-                    {
-                        File.AppendAllText(@"C:\temp\checktrain.txt",
-                                            "Train count in section " + sectionIndex.ToString() + " = " + trainInfo.Count.ToString() + "\n");
+                        addOffset += nextSection.Length;
                     }
                 }
 
-                if (trainInfo == null || trainInfo.Count == 0) // try next section after last reserved
-                {
-                    if (sectionIndex == LastReservedSection[0])
-                    {
-                        int routeIndex = ValidRoute[0].GetRouteIndex(sectionIndex, PresentPosition[0].RouteListIndex);
-                        if (routeIndex >= 0 && routeIndex <= (ValidRoute[0].Count - 1))
-                        {
-                            sectionIndex = ValidRoute[0][routeIndex + 1].TCSectionIndex;
-                            TrackCircuitSection thisSection = signalRef.TrackCircuitList[sectionIndex];
-
-                            trainInfo = thisSection.TestTrainAhead(this,
-                                0, ValidRoute[0][routeIndex + 1].Direction);
-                        }
-                    }
-                }
-
-                if (trainInfo != null && trainInfo.Count > 0)  // found train
+                // train is found
+                if (trainInfo.Count > 0)  // found train
                 {
                     foreach (KeyValuePair<Train, float> trainAhead in trainInfo) // always just one
                     {
                         Train OtherTrain = trainAhead.Key;
-                        float distanceToTrain = trainAhead.Value + accDistance;
+
+                        float distanceToTrain = trainAhead.Value + addOffset;
 
                         if (CheckTrain)
                         {
@@ -3043,6 +3028,7 @@ namespace ORTS
 
                         float keepDistanceTrainM = 0f;
                         bool attachToTrain = AttachTo == OtherTrain.Number;
+
                         // <CScomment> Make check when this train in same section of OtherTrain; if other train is static or this train is in last section, pass to passive coupling
                         if (!Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility && OtherTrain.SpeedMpS == 0.0f)
                         {
@@ -3073,9 +3059,6 @@ namespace ORTS
                         }
                         else if (nextActionInfo != null)
                         {
-                            //float deltaDistance = nextActionInfo.ActivateDistanceM - DistanceTravelledM;
-                            //if (deltaDistance < distanceToTrain) MovementState = AI_MOVEMENT_STATE.BRAKING; // switch to normal braking to handle action
-                            //NextStopDistanceM = Math.Min(deltaDistance, (distanceToTrain - keepDistanceTrainM));
                             float deltaDistance = nextActionInfo.ActivateDistanceM - DistanceTravelledM;
                             if (nextActionInfo.RequiredSpeedMpS > 0.0f)
                             {
@@ -3088,8 +3071,7 @@ namespace ORTS
 
                             if (deltaDistance < distanceToTrain) // perform to normal braking to handle action
                             {
-                                if (!Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility)
-                                    MovementState = AI_MOVEMENT_STATE.BRAKING;  
+                                MovementState = AI_MOVEMENT_STATE.BRAKING;  // not following the train
                                 UpdateBrakingState(elapsedClockSeconds, presentTime);
                                 return;
                             }
@@ -3140,7 +3122,7 @@ namespace ORTS
                             }
                             else
                             {
-                                float reqMinSpeedMpS = attachToTrain ? 0.5f * creepSpeedMpS : 0;
+                                float reqMinSpeedMpS = attachToTrain ? 0.25f * creepSpeedMpS : 0;
                                 bool thisTrainFront;
                                 bool otherTrainFront;
 

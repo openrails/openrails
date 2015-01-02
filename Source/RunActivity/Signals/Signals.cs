@@ -6248,14 +6248,14 @@ namespace ORTS
             // search for trains in section
             foreach (Train.TrainRouted nextTrain in trainsInSection)
             {
-                int routeIndex = nextTrain.Train.ValidRoute[nextTrain.TrainRouteDirectionIndex].GetRouteIndex(Index, 0);
-                if (routeIndex >= 0)
+                int nextTrainRouteIndex = nextTrain.Train.ValidRoute[nextTrain.TrainRouteDirectionIndex].GetRouteIndex(Index, 0);
+                if (nextTrainRouteIndex >= 0)
                 {
                     Train.TCPosition nextFront = nextTrain.Train.PresentPosition[nextTrain.TrainRouteDirectionIndex];
                     int reverseDirection = nextTrain.TrainRouteDirectionIndex == 0 ? 1 : 0;
                     Train.TCPosition nextRear = nextTrain.Train.PresentPosition[reverseDirection];
 
-                    Train.TCRouteElement thisElement = nextTrain.Train.ValidRoute[nextTrain.TrainRouteDirectionIndex][routeIndex];
+                    Train.TCRouteElement thisElement = nextTrain.Train.ValidRoute[nextTrain.TrainRouteDirectionIndex][nextTrainRouteIndex];
                     if (thisElement.Direction == direction) // same direction, so if the train is in front we're looking at the rear of the train
                     {
                         if (nextRear.TCSectionIndex == Index) // rear of train is in same section
@@ -6269,7 +6269,7 @@ namespace ORTS
                             }
                             else if (nextRear.TCOffset < offset && nextRear.TCOffset + nextTrain.Train.Length > offset) // our end is in the middle of the train
                             {
-                                distanceTrainAheadM = offset; // set distance to 0
+                                distanceTrainAheadM = offset; // set distance to 0 (offset is deducted later)
                                 trainFound = nextTrain.Train;
                             }
                         }
@@ -6278,18 +6278,32 @@ namespace ORTS
                             int nextRouteFrontIndex = nextTrain.Train.ValidRoute[nextTrain.TrainRouteDirectionIndex].GetRouteIndex(nextFront.TCSectionIndex, 0);
                             int nextRouteRearIndex = nextTrain.Train.ValidRoute[nextTrain.TrainRouteDirectionIndex].GetRouteIndex(nextRear.TCSectionIndex, 0);
 
-                            if (nextRouteRearIndex < routeIndex)
+                            if (nextRouteRearIndex < nextTrainRouteIndex)
                             {
-                                if (nextRouteFrontIndex > routeIndex) // train spans section, so position of train in section is 0 //
+                                if (nextRouteFrontIndex > nextTrainRouteIndex) // train spans section, so we're in the middle of it - return 0
                                 {
-                                    distanceTrainAheadM = 0.0f;
+                                    distanceTrainAheadM = offset; // set distance to 0 (offset is deducted later)
                                     trainFound = nextTrain.Train;
                                 } // otherwise train is not in front, so don't use it
                             }
-                            else  // if index is greater, train has moved on - return section length minus offset
+                            else  // if index is greater, train has moved on
                             {
-                                distanceTrainAheadM = Length - offset;
-                                trainFound = nextTrain.Train;
+                                // check if still ahead of us
+
+                                if (thisTrain != null && thisTrain.ValidRoute != null)
+                                {
+                                    int lastSectionIndex = thisTrain.ValidRoute[0].GetRouteIndex(nextRear.TCSectionIndex, thisTrain.PresentPosition[0].RouteListIndex);
+                                    if (lastSectionIndex >= thisTrain.PresentPosition[0].RouteListIndex)
+                                    {
+                                        distanceTrainAheadM = Length;  // offset is deducted later
+                                        for (int isection = nextTrainRouteIndex + 1; isection <= nextRear.RouteListIndex - 1; isection++)
+                                        {
+                                            distanceTrainAheadM += signalRef.TrackCircuitList[nextTrain.Train.ValidRoute[nextTrain.TrainRouteDirectionIndex][isection].TCSectionIndex].Length;
+                                        }
+                                        distanceTrainAheadM += nextTrain.Train.PresentPosition[1].TCOffset;
+                                        trainFound = nextTrain.Train;
+                                    }
+                                }
                             }
                         }
                     }
@@ -6305,9 +6319,11 @@ namespace ORTS
                                 distanceTrainAheadM = thisTrainDistanceM;
                                 trainFound = nextTrain.Train;
                             }
-                            else if (thisTrainOffset < offset && thisTrainOffset + nextTrain.Train.Length > offset) // our front is in the middle of the train
+                            // extra test : if front is beyond other train but rear is not, train is considered to be still in front (at distance = offset)
+                            // this can happen in pre-run mode due to large interval
+                            if (thisTrain != null && thisTrainDistanceM < distanceTrainAheadM && thisTrainOffset < offset && thisTrainOffset >= (offset - thisTrain.Length))
                             {
-                                distanceTrainAheadM = offset; // set distance to 0
+                                distanceTrainAheadM = offset;
                                 trainFound = nextTrain.Train;
                             }
                         }
@@ -6316,27 +6332,31 @@ namespace ORTS
                             int nextRouteFrontIndex = nextTrain.Train.ValidRoute[nextTrain.TrainRouteDirectionIndex].GetRouteIndex(nextFront.TCSectionIndex, 0);
                             int nextRouteRearIndex = nextTrain.Train.ValidRoute[nextTrain.TrainRouteDirectionIndex].GetRouteIndex(nextRear.TCSectionIndex, 0);
 
-                            if (nextRouteFrontIndex < routeIndex)
+                            if (nextRouteFrontIndex < nextTrainRouteIndex)
                             {
-                                if (nextRouteRearIndex > routeIndex)  // train spans section so offset in section is 0//
+                                if (nextRouteRearIndex > nextTrainRouteIndex)  // train spans section so we're in the middle of it
                                 {
-                                    distanceTrainAheadM = 0;
+                                    distanceTrainAheadM = offset; // set distance to 0 (offset is deducted later)
                                     trainFound = nextTrain.Train;
                                 } // else train is not in front of us
                             }
                             else  // if index is greater, train has moved on - return section length minus offset
                             {
-                                if (nextRouteRearIndex < routeIndex)  // train spans section so offset in section is 0//
+                                // check if still ahead of us
+                                if (thisTrain != null && thisTrain.ValidRoute != null)
                                 {
-                                    distanceTrainAheadM = 0;
-                                    trainFound = nextTrain.Train;
+                                    int lastSectionIndex = thisTrain.ValidRoute[0].GetRouteIndex(nextRear.TCSectionIndex, thisTrain.PresentPosition[0].RouteListIndex);
+                                    if (lastSectionIndex > thisTrain.PresentPosition[0].RouteListIndex)
+                                    {
+                                        distanceTrainAheadM = Length;  // offset is deducted later
+                                        for (int isection = nextTrainRouteIndex + 1; isection <= nextRear.RouteListIndex - 1; isection++)
+                                        {
+                                            distanceTrainAheadM += signalRef.TrackCircuitList[nextTrain.Train.ValidRoute[nextTrain.TrainRouteDirectionIndex][isection].TCSectionIndex].Length;
+                                        }
+                                        distanceTrainAheadM += nextTrain.Train.PresentPosition[1].TCOffset;
+                                        trainFound = nextTrain.Train;
+                                    }
                                 }
-                                     // check if there is space between the two rears
-                                else if (thisTrain == null || (nextRouteRearIndex == routeIndex && offset - thisTrain.Length < Length - nextRear.TCOffset))
-                                {
-                                    distanceTrainAheadM = Length - offset;
-                                    trainFound = nextTrain.Train;
-                                } // else trains are separate, running in opposite directions and back to back
                             }
                         }
 
@@ -6344,14 +6364,17 @@ namespace ORTS
                 }
                 else
                 {
-                    distanceTrainAheadM = 0; // train is off its route - assume full section occupied //
+                    distanceTrainAheadM = offset; // train is off its route - assume full section occupied, offset is deducted later //
                     trainFound = nextTrain.Train;
                 }
             }
 
             Dictionary<Train, float> result = new Dictionary<Train, float>();
             if (trainFound != null)
-                result.Add(trainFound, (distanceTrainAheadM - offset));
+                if (distanceTrainAheadM >= offset) // train is indeed ahead
+                {
+                    result.Add(trainFound, (distanceTrainAheadM - offset));
+                }
             return (result);
         }
 
