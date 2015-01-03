@@ -413,8 +413,16 @@ namespace ORTS.Updater
                 File.Move(file, Path.Combine(PathUpdateDirty, Path.GetFileName(file)));
 
             // Copy (almost) all directories from current version to dirty.
-            foreach (var directory in basePathDirectories)
-                Directory.Move(directory, Path.Combine(PathUpdateDirty, Path.GetFileName(directory)));
+            // In localized installations there could be used dlls into the dirs
+            foreach (var directory in basePathDirectories) 
+            {
+                var destDir = Path.Combine(PathUpdateDirty, Path.GetFileName(directory));
+                Directory.CreateDirectory(destDir);
+                var subdirFiles = Directory.GetFiles(directory);
+                foreach (var file in subdirFiles)
+                    File.Move(file, Path.Combine(destDir, Path.GetFileName(file)));
+                Directory.Delete(directory);
+            }
 
             // Copy all files from new version to base path.
             foreach (var file in updateStageFiles)

@@ -25,6 +25,10 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
+using GNU.Gettext;
+using GNU.Gettext.WinForms;
+using System.Globalization;
+using ORTS.Settings;
 
 namespace Updater
 {
@@ -33,6 +37,9 @@ namespace Updater
         string BasePath;
         string LauncherPath;
         bool RelaunchApplication;
+        // User setups.
+        public UserSettings Settings { get; private set; }
+        public static GettextResourceManager Catalog { get; private set; } // Localization dictionary
 
         public UpdaterProgress()
         {
@@ -43,8 +50,30 @@ namespace Updater
             // Message Box font to allow for user-customizations, though.
             Font = SystemFonts.MessageBoxFont;
 
+            // Localization init
+            var options = new string[1];
+            options[0] = "";
+            Settings = new UserSettings(options);
+            Catalog = new GettextResourceManager("Updater");
+            LoadLanguage();
+            this.Text = Catalog.GetString("Open Rails Updater");
+
             BasePath = Path.GetDirectoryName(Application.ExecutablePath);
             LauncherPath = UpdateManager.GetMainExecutable(BasePath, Application.ProductName);
+        }
+
+        void LoadLanguage()
+        {
+            if (Settings.Language.Length > 0)
+            {
+                try
+                {
+                    Thread.CurrentThread.CurrentUICulture = new CultureInfo(Settings.Language);
+                }
+                catch { }
+            }
+
+            Localizer.Localize(this, Catalog);
         }
 
         void UpdaterProgress_Load(object sender, EventArgs e)
