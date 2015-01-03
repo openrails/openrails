@@ -35,6 +35,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.IO;
+using GNU.Gettext;
 
 namespace ORTS.Formats
 {
