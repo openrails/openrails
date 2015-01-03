@@ -234,6 +234,8 @@ namespace ORTS.Viewer3D
             WorldPosition = worldPosition;
             LastWorldPosition = new WorldPosition(worldPosition);
 
+            TimeParticlesLastEmitted = (float)viewer.Simulator.GameTime;
+
             PerlinStart = new float[] {
                 (float)Program.Random.NextDouble() * 30000f,
                 (float)Program.Random.NextDouble() * 30000f,
