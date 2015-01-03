@@ -44,7 +44,18 @@ namespace ORTS
         //   assignment of a new instance (possibly cloned and then modified).
         Dictionary<object, List<SoundSourceBase>> SoundSources = new Dictionary<object, List<SoundSourceBase>>();
 
+#if DEBUG_SOURCE_SOURCES
+        private float SoundSrcCount = 0;
+        private float SoundSrcBaseCount = 0;
+        private float NullSoundSrcBaseCount = 0;
+        private float SoundTime = 0;
+
+        private double ConsoleWriteTime = 0;
+#endif
         private int UpdateCounter = -1;
+        private int SleepTime = 50;
+        private double StartUpdateTime = 0;
+        private int ASyncUpdatePending = 0;
         private const int FULLUPDATECYCLE = 4; // Number of frequent updates needed till a full update
 
         public SoundProcess(Game game)
@@ -81,7 +92,7 @@ namespace ORTS
 
             while (true)
             {
-                Thread.Sleep(50);
+                Thread.Sleep(SleepTime);
                 if (State.Terminated)
                     break;
                 if (!DoSound())
@@ -135,50 +146,104 @@ namespace ORTS
                 }
 
                 // Update all sound in our list
-                UpdateCounter++;
-                UpdateCounter %= FULLUPDATECYCLE;
-
-                var soundSources = SoundSources;
-                List<KeyValuePair<object, SoundSourceBase>> removals = null;
-                foreach (var sources in soundSources)
+                //float UpdateInterrupts = 0;
+                StartUpdateTime = viewer.RealTime;
+                int RetryUpdate = 0;
+                int restartIndex = -1;
+                
+                while (RetryUpdate >= 0)
                 {
-                    foreach (var source in sources.Value)
+                    bool updateInterrupted = false;
+                    lock (SoundSources)
                     {
-                        if (!source.NeedsFrequentUpdate && UpdateCounter > 0)
-                            continue;
-
-                        if (!source.Update())
-                        {
-                            if (removals == null)
-                                removals = new List<KeyValuePair<object, SoundSourceBase>>();
-                            removals.Add(new KeyValuePair<object, SoundSourceBase>(sources.Key, source));
-                        }
-                    }
-                }
-                if (removals != null)
-                {
+                        UpdateCounter++;
+                        UpdateCounter %= FULLUPDATECYCLE;
+                        var removals = new List<KeyValuePair<object, SoundSourceBase>>();
 #if DEBUG_SOURCE_SOURCES
-                    Trace.TraceInformation("SoundProcess: sound source self-removal on " + Thread.CurrentThread.Name);
+                        SoundSrcBaseCount += SoundSources.Count;
 #endif
-                    // We use an interlocked compare-exchange to thread-safely update the list. Note that on each
-                    // failure, we must recompute the modifications from SoundSources.
-                    Dictionary<object, List<SoundSourceBase>> newSoundSources;
-                    do
-                    {
-                        soundSources = SoundSources;
-                        newSoundSources = new Dictionary<object, List<SoundSourceBase>>(soundSources);
+                        foreach (var sources in SoundSources)
+                        {
+                            restartIndex++;
+#if DEBUG_SOURCE_SOURCES
+                            SoundSrcCount += sources.Value.Count;
+                            if (sources.Value.Count < 1)
+                            {
+                                NullSoundSrcBaseCount++;
+                                //Trace.TraceInformation("Null SoundSourceBase {0}", sources.Key.ToString());
+                            }
+#endif
+                            if (restartIndex >= RetryUpdate)
+                            {
+                                for (int i = 0; i < sources.Value.Count; i++)
+                                {
+                                    if (!sources.Value[i].NeedsFrequentUpdate && UpdateCounter > 0)
+                                        continue;
+
+                                    if (!sources.Value[i].Update())
+                                    {
+                                        Trace.TraceInformation("Sound Update return False");
+                                        // This doesn't seem to be needed - cleanup when a train is removed seems to do it anyway.
+                                        //removals.Add(new KeyValuePair<object, SoundSourceBase>(sources.Key, sources.Value[i]));
+                                    }
+                                }
+                            }
+                            // Check if Add or Remove Sound Sources is waiting to get in - allow it if so.
+                            // Update can be a (relatively) long process.
+                            if (ASyncUpdatePending > 0)
+                            {
+                                updateInterrupted = true;
+                                RetryUpdate = restartIndex;
+                                //Trace.TraceInformation("Sound Source Updates Interrupted: {0}, Restart Index:{1}", UpdateInterrupts, restartIndex);
+                                break;
+                            }
+
+                        }
+                        if (!updateInterrupted)
+                            RetryUpdate = -1;
+#if DEBUG_SOURCE_SOURCES
+                        Trace.TraceInformation("SoundProcess: sound source self-removal on " + Thread.CurrentThread.Name);
+#endif
+                        // Remove Sound Sources for train no longer active.  This doesn't seem to be necessary -
+                        // cleanup when a train is removed seems to do it anyway with hardly any delay.
                         foreach (var removal in removals)
                         {
                             // If either of the key or value no longer exist, we can't remove them - so skip over them.
-                            if (newSoundSources.ContainsKey(removal.Key) && newSoundSources[removal.Key].Contains(removal.Value))
+                            if (SoundSources.ContainsKey(removal.Key) && SoundSources[removal.Key].Contains(removal.Value))
                             {
-                                removal.Value.Dispose();
-                                newSoundSources[removal.Key] = new List<SoundSourceBase>(newSoundSources[removal.Key]);
-                                newSoundSources[removal.Key].Remove(removal.Value);
+                                removal.Value.Uninitialize();
+                                SoundSources[removal.Key].Remove(removal.Value);
+                                if (SoundSources[removal.Key].Count == 0)
+                                {
+                                    SoundSources.Remove(removal.Key);
+                                }
                             }
                         }
-                    } while (soundSources != Interlocked.CompareExchange(ref SoundSources, newSoundSources, soundSources));
+                    }
                 }
+                //if (UpdateInterrupts > 1)
+                //    Trace.TraceInformation("Sound Source Update Interrupted more than once: {0}", UpdateInterrupts);
+
+                // <CSComment> the block below could provide better sound response but is more demanding in terms of CPU time, especially for slow CPUs
+/*              int resptime = (int)((viewer.RealTime - StartUpdateTime) * 1000);
+                SleepTime = 50 - resptime;
+                if (SleepTime < 5)
+                    SleepTime = 5;*/
+#if DEBUG_SOURCE_SOURCES
+                SoundTime += (int)((viewer.RealTime - StartUpdateTime) * 1000);
+                if (viewer.RealTime - ConsoleWriteTime >= 15f)
+                {
+                    Console.WriteLine("SoundSourceBases (Null): {0} ({1}), SoundSources: {2}, Time: {3}ms",
+                        (int)(SoundSrcBaseCount/UpdateCounter), (int)(NullSoundSrcBaseCount/UpdateCounter), (int)(SoundSrcCount/UpdateCounter), (int)(SoundTime/UpdateCounter));
+                    ConsoleWriteTime = viewer.RealTime;
+                    SoundTime = 0;
+                    UpdateCounter = 0;
+                    SoundSrcCount = 0;
+                    SoundSrcBaseCount = 0;
+                    NullSoundSrcBaseCount = 0;
+                }
+#endif
+
             }
             finally
             {
@@ -201,16 +266,15 @@ namespace ORTS
 #if DEBUG_SOURCE_SOURCES
             Trace.TraceInformation("SoundProcess: AddSoundSources on " + Thread.CurrentThread.Name + " by " + owner);
 #endif
-            // We use an interlocked compare-exchange to thread-safely update the list. Note that on each
-            // failure, we must recompute the modifications from SoundSources.
-            Dictionary<object, List<SoundSourceBase>> soundSources;
-            Dictionary<object, List<SoundSourceBase>> newSoundSources;
-            do
-            {
-                soundSources = SoundSources;
-                newSoundSources = new Dictionary<object, List<SoundSourceBase>>(soundSources);
-                newSoundSources.Add(owner, sources);
-            } while (soundSources != Interlocked.CompareExchange(ref SoundSources, newSoundSources, soundSources));
+            // We use lock to thread-safely update the list.  Interlocked compare-exchange
+            // is used to interrupt the update.
+            int j;
+            while (ASyncUpdatePending < 1)
+                j = Interlocked.CompareExchange(ref ASyncUpdatePending, 1, 0);
+            lock (SoundSources)
+                SoundSources.Add(owner, sources);
+            while (ASyncUpdatePending > 0)
+                j = Interlocked.CompareExchange(ref ASyncUpdatePending, 0, 1);
         }
 
         /// <summary>
@@ -223,18 +287,19 @@ namespace ORTS
 #if DEBUG_SOURCE_SOURCES
             Trace.TraceInformation("SoundProcess: AddSoundSource on " + Thread.CurrentThread.Name + " by " + owner);
 #endif
-            // We use an interlocked compare-exchange to thread-safely update the list. Note that on each
-            // failure, we must recompute the modifications from SoundSources.
-            Dictionary<object, List<SoundSourceBase>> soundSources;
-            Dictionary<object, List<SoundSourceBase>> newSoundSources;
-            do
+            // We use lock to thread-safely update the list.  Interlocked compare-exchange
+            // is used to interrupt the update.
+            int j;
+            while (ASyncUpdatePending < 1)
+                j = Interlocked.CompareExchange(ref ASyncUpdatePending, 1, 0);
+            lock (SoundSources)
             {
-                soundSources = SoundSources;
-                newSoundSources = new Dictionary<object, List<SoundSourceBase>>(soundSources);
-                if (!newSoundSources.ContainsKey(owner))
-                    newSoundSources.Add(owner, new List<SoundSourceBase>());
-                newSoundSources[owner].Add(source);
-            } while (soundSources != Interlocked.CompareExchange(ref SoundSources, newSoundSources, soundSources));
+                if (!SoundSources.ContainsKey(owner))
+                    SoundSources.Add(owner, new List<SoundSourceBase>());
+                SoundSources[owner].Add(source);
+            }
+            while (ASyncUpdatePending > 0)
+                j = Interlocked.CompareExchange(ref ASyncUpdatePending, 0, 1);
         }
 
         /// <summary>
@@ -258,21 +323,22 @@ namespace ORTS
 #if DEBUG_SOURCE_SOURCES
             Trace.TraceInformation("SoundProcess: RemoveSoundSources on " + Thread.CurrentThread.Name + " by " + owner);
 #endif
-            // We use an interlocked compare-exchange to thread-safely update the list. Note that on each
-            // failure, we must recompute the modifications from SoundSources.
-            Dictionary<object, List<SoundSourceBase>> soundSources;
-            Dictionary<object, List<SoundSourceBase>> newSoundSources;
-            do
+            // We use lock to thread-safely update the list.  Interlocked compare-exchange
+            // is used to interrupt the update.
+            int j;
+            while (ASyncUpdatePending < 1)
+                j = Interlocked.CompareExchange(ref ASyncUpdatePending, 1, 0);
+            lock (SoundSources)
             {
-                soundSources = SoundSources;
-                newSoundSources = new Dictionary<object, List<SoundSourceBase>>(soundSources);
-                if (newSoundSources.ContainsKey(owner))
+                if (SoundSources.ContainsKey(owner))
                 {
-                    foreach (var source in newSoundSources[owner])
+                    foreach (var source in SoundSources[owner])
                         source.Uninitialize();
-                    newSoundSources.Remove(owner);
+                    SoundSources.Remove(owner);
                 }
-            } while (soundSources != Interlocked.CompareExchange(ref SoundSources, newSoundSources, soundSources));
+            }
+            while (ASyncUpdatePending > 0)
+                j = Interlocked.CompareExchange(ref ASyncUpdatePending, 0, 1);
         }
     }
 }
