@@ -255,7 +255,17 @@ namespace ORTS
         float CurveResistanceZeroSpeedFactor = 0.5f; // Based upon research (Russian experiments - 1960) the older formula might be about 2x actual value
         float CoefficientFriction = 0.5f; // Initialise coefficient of Friction - 0.5 for dry rails, 0.1 - 0.3 for wet rails
         float RigidWheelBaseM;   // Vehicle rigid wheelbase, read from MSTS Wagon file
-        
+
+        // used by tunnel processing
+        public struct CarTunnelInfoData
+        {
+            public float? FrontPositionBeyondStartOfTunnel;          // position of front of wagon wrt start of tunnel
+            public float? LengthMOfTunnelAheadFront;                 // Length of tunnel remaining ahead of front of wagon (negative if front of wagon out of tunnel)
+            public float? LengthMOfTunnelBehindRear;                 // Length of tunnel behind rear of wagon (negative if rear of wagon has not yet entered tunnel)
+        }
+
+        public CarTunnelInfoData CarTunnelData;
+
         public virtual void Initialize()
         {
             CurveResistanceSpeedDependent = Simulator.Settings.CurveResistanceSpeedDependent;

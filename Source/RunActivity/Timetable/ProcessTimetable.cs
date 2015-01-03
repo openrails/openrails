@@ -614,6 +614,18 @@ namespace ORTS
             playerTrain.Number = 0;
             playerTrain.ControlMode = Train.TRAIN_CONTROL.AUTO_NODE;
 
+            // get cars
+            playerTrain.Length = 0;
+
+            foreach (var car in reqTrain.AITrain.Cars)
+            {
+                playerTrain.Cars.Add(car);
+                car.Train = playerTrain;
+                car.CarID = playerTrain.Name.Split(':')[0];
+                car.SignalEvent(Event.Pantograph1Up);
+                playerTrain.Length += car.LengthM;
+            }
+
             // create traveller
             AIPath usedPath = Paths[TrainRouteXRef[reqTrain.Index]];
             playerTrain.RearTDBTraveller = new Traveller(simulator.TSectionDat, simulator.TDB.TrackDB.TrackNodes, usedPath);
@@ -785,6 +797,13 @@ namespace ORTS
 
             public readonly TimetableInfo parentInfo;
 
+            public struct consistInfo
+            {
+                public string consistFile;
+                public bool reversed;
+            }
+
+
             /// <summary>
             /// Constructor
             /// </summary>
@@ -829,7 +848,11 @@ namespace ORTS
 
                 string trainsDirectory = Path.Combine(ttInfo.simulator.BasePath, "Trains");
                 string consistDirectory = Path.Combine(trainsDirectory, "Consists");
-                string consistFilefull = Path.Combine(consistDirectory, fileStrings[consistRow][columnIndex]);
+
+                string consistdef = fileStrings[consistRow][columnIndex];
+                consistInfo[] consistdetails = null;
+
+                consistdetails = ProcessConsistInfo(consistdef, consistDirectory);
 
                 string trainsetDirectory = Path.Combine(trainsDirectory, "trainset");
 
@@ -845,7 +868,11 @@ namespace ORTS
                 }
 
                 // build consist
-                BuildConsist(consistFilefull, trainsetDirectory, ttInfo.simulator);
+                bool returnValue = BuildConsist(consistdetails, trainsetDirectory, ttInfo.simulator);
+                if (!returnValue)
+                {
+                    Trace.TraceInformation("Train {0} : Cannot load consist : {1}", AITrain.Name, consistdef);
+                }
 
                 // derive starttime
                 string startString = fileStrings[startRow][columnIndex];
@@ -936,32 +963,178 @@ namespace ORTS
             }
 
             /// <summary>
-            /// Build train consist
+            /// ProcessConsistInfo : Process consist info string, derrive required consist files and usage
             /// </summary>
-            /// <param name="consistFile"></param>
-            /// <param name="trainsetDirectory"></param>
-            /// <param name="simulator"></param>
-            public void BuildConsist(string consistFile, string trainsetDirectory, Simulator simulator)
+            /// <param name="consistDef"></param>
+            /// <param name="consistDir"></param>
+            /// <returns></returns>
+            
+            public consistInfo[] ProcessConsistInfo(string consistDef, string consistDir)
             {
-                string pathExtension = Path.GetExtension(consistFile);
-                if (String.IsNullOrEmpty(pathExtension))
-                    consistFile = Path.ChangeExtension(consistFile, "con");
+                consistInfo[] consistDetails;
+                string[] consistCommands = new string[1];
 
-                if (consistFile.Contains("tilted"))
+                if (consistDef.Contains('+'))
                 {
-                    AITrain.tilted = true;
-                    Train.tilted = true;
+                    consistCommands = consistDef.Split('+');
+                }
+                else
+                {
+                    consistCommands[0] = consistDef;
                 }
 
-                CONFile conFile = new CONFile(consistFile);
+                consistDetails = new consistInfo[consistCommands.Length];
+                for (int index = 0; index < consistCommands.Length; index++)
+                {
+                    string consistCommandString = consistCommands[index].Trim();
+                    string[] consistParts = new string[2];
+                    if (consistCommandString.Contains('$'))
+                    {
+                        consistParts = consistCommandString.Split('$');
+                        consistDetails[index].consistFile = Path.Combine(consistDir, consistParts[0].Trim());
+                        consistDetails[index].reversed = String.Equals(consistParts[1].Trim(), "reverse");
+                    }
+                    else
+                    {
+                        consistDetails[index].consistFile = Path.Combine(consistDir, consistCommandString);
+                        consistDetails[index].reversed = String.Equals(consistParts[1], "reverse");
+                    }
+                }
+
+                return (consistDetails);
+            }
+
+            /// <summary>
+            /// Build train consist
+            /// </summary>
+            /// <param name="consistSets"></param>
+            /// <param name="trainsetDirectory"></param>
+            /// <param name="simulator"></param>
+            public bool BuildConsist(consistInfo[] consistSets, string trainsetDirectory, Simulator simulator)
+            {
+                AITrain.tilted = true;
+
+                float? confMaxSpeed = null;
+
+                foreach (consistInfo consistDetails in consistSets)
+                {
+                    bool consistReverse = consistDetails.reversed;
+                    string consistFile = consistDetails.consistFile;
+
+                    string pathExtension = Path.GetExtension(consistFile);
+                    if (String.IsNullOrEmpty(pathExtension))
+                        consistFile = Path.ChangeExtension(consistFile, "con");
+
+                    if (!consistFile.Contains("tilted"))
+                    {
+                        AITrain.tilted = false;
+                    }
+
+                    CONFile conFile = null;
+
+                    // try to load config file, exit if failed
+                    try
+                    {
+                        conFile = new CONFile(consistFile);
+                    }
+                    catch (Exception e)
+                    {
+                        Trace.TraceInformation("Reading " + consistFile.ToString() + " : " + e.ToString());
+                        return (false);
+                    }
+
+                    // add wagons
+                    List<TrainCar> cars = AddWagons(conFile, trainsetDirectory, simulator, consistReverse);
+
+                    // add wagons
+                    AITrain.Length = 0.0f;
+
+                    foreach (TrainCar car in cars)
+                    {
+                        AITrain.Cars.Add(car);
+                        car.Train = AITrain;
+                        car.CarID = AITrain.Name.Split(':')[0];
+                        car.SignalEvent(Event.Pantograph1Up);
+                        AITrain.Length += car.LengthM;
+                    }
+
+                    // derive speed
+
+                    if (conFile.Train.TrainCfg.MaxVelocity != null && conFile.Train.TrainCfg.MaxVelocity.A > 0)
+                    {
+                        if (confMaxSpeed.HasValue)
+                        {
+                            confMaxSpeed = Math.Min(confMaxSpeed.Value, conFile.Train.TrainCfg.MaxVelocity.A);
+                        }
+                        else
+                        {
+                            confMaxSpeed = Math.Min((float)simulator.TRK.Tr_RouteFile.SpeedLimit, conFile.Train.TrainCfg.MaxVelocity.A);
+                        }
+                    }
+                }
+
+                if (AITrain.Cars.Count <= 0)
+                {
+                    Trace.TraceInformation("Empty consists for AI train - train removed");
+                    validTrain = false;
+                }
+
+                // set train details
+                AITrain.CheckFreight();
+
+                if (!confMaxSpeed.HasValue || confMaxSpeed.Value <= 0f)
+                {
+                    AITrain.TrainMaxSpeedMpS = (float)simulator.TRK.Tr_RouteFile.SpeedLimit;
+
+                    float tempMaxSpeedMpS = AITrain.TrainMaxSpeedMpS;
+
+                    foreach (TrainCar car in AITrain.Cars)
+                    {
+                        float engineMaxSpeedMpS = 0;
+                        if (car is MSTSLocomotive)
+                            engineMaxSpeedMpS = (car as MSTSLocomotive).MaxSpeedMpS;
+                        if (car is MSTSElectricLocomotive)
+                            engineMaxSpeedMpS = (car as MSTSElectricLocomotive).MaxSpeedMpS;
+                        if (car is MSTSDieselLocomotive)
+                            engineMaxSpeedMpS = (car as MSTSDieselLocomotive).MaxSpeedMpS;
+                        if (car is MSTSSteamLocomotive)
+                            engineMaxSpeedMpS = (car as MSTSSteamLocomotive).MaxSpeedMpS;
+
+                        if (engineMaxSpeedMpS > 0)
+                        {
+                            tempMaxSpeedMpS = Math.Min(tempMaxSpeedMpS, engineMaxSpeedMpS);
+                        }
+                    }
+
+                    AITrain.TrainMaxSpeedMpS = tempMaxSpeedMpS;
+                }
+                else
+                {
+                    AITrain.TrainMaxSpeedMpS = confMaxSpeed.Value;
+                }
+
+                return (true);
+            }
+
+
+            /// <summary>
+            /// Add wagons from consist file to traincar list
+            /// </summary>
+            /// <param name="consistFile">Processed consist File</param>
+            /// <param name="trainsetDirectory">Consist Directory</param>
+            /// <param name="simulator">Simulator</param>
+            /// <returns>Generated TrainCar list</returns>
+
+            public List<TrainCar> AddWagons(MSTS.Formats.CONFile consistFile, string trainsDirectory, Simulator simulator, bool consistReverse)
+            {
+                List<TrainCar> cars = new List<TrainCar>();
 
                 // add wagons
                 AITrain.Length = 0.0f;
-                Train.Length = 0.0f;
 
-                foreach (Wagon wagon in conFile.Train.TrainCfg.WagonList)
+                foreach (Wagon wagon in consistFile.Train.TrainCfg.WagonList)
                 {
-                    string wagonFolder = Path.Combine(trainsetDirectory, wagon.Folder);
+                    string wagonFolder = Path.Combine(trainsDirectory, wagon.Folder);
                     string wagonFilePath = Path.Combine(wagonFolder, wagon.Name + ".wag");
 
                     TrainCar car = null;
@@ -979,13 +1152,16 @@ namespace ORTS
                     {
                         car = RollingStock.Load(simulator, wagonFilePath);
                         car.Flipped = wagon.Flip;
-                        AITrain.Cars.Add(car);
-                        Train.Cars.Add(car);
-                        car.Train = AITrain;
-                        car.CarID = AITrain.Name.Split(':')[0];
-                        car.SignalEvent(Event.Pantograph1Up);
-                        AITrain.Length += car.LengthM;
-                        Train.Length += car.LengthM;
+
+                        if (consistReverse)
+                        {
+                            car.Flipped = !car.Flipped;
+                            cars.Insert(0, car);
+                        }
+                        else
+                        {
+                            cars.Add(car);
+                        }
                     }
                     catch (Exception error)
                     {
@@ -994,26 +1170,7 @@ namespace ORTS
 
                 }// for each rail car
 
-                if (AITrain.Cars.Count <= 0)
-                {
-                    Trace.TraceInformation("Empty consists for AI train - train removed");
-                    validTrain = false;
-                }
-
-                // set train details
-                AITrain.CheckFreight();
-                Train.CheckFreight();
-
-                if (conFile.Train.TrainCfg.MaxVelocity == null || conFile.Train.TrainCfg.MaxVelocity.A <= 0f)
-                {
-                    AITrain.TrainMaxSpeedMpS = (float)simulator.TRK.Tr_RouteFile.SpeedLimit;
-                    Train.TrainMaxSpeedMpS = (float)simulator.TRK.Tr_RouteFile.SpeedLimit;
-                }
-                else
-                {
-                    AITrain.TrainMaxSpeedMpS = Math.Min((float)simulator.TRK.Tr_RouteFile.SpeedLimit, conFile.Train.TrainCfg.MaxVelocity.A);
-                    Train.TrainMaxSpeedMpS = Math.Min((float)simulator.TRK.Tr_RouteFile.SpeedLimit, conFile.Train.TrainCfg.MaxVelocity.A);
-                }
+                return (cars);
             }
 
             /// <summary>
@@ -1168,6 +1325,7 @@ namespace ORTS
 
                             AITrain.Forms = otherTrain.Number;
                             AITrain.SetStop = DisposeDetails.SetStop;
+                            AITrain.FormsAtStation = DisposeDetails.FormsAtStation;
                             otherTrain.FormedOf = AITrain.Number;
                             otherTrain.FormedOfType = DisposeDetails.FormType;
                             trainFound = true;
@@ -1187,6 +1345,7 @@ namespace ORTS
                         else
                         {
                             AITrain.SetStop = DisposeDetails.SetStop;
+                            AITrain.FormsAtStation = DisposeDetails.FormsAtStation;
                             playerTrain.Train.FormedOf = AITrain.Number;
                             playerTrain.Train.FormedOfType = DisposeDetails.FormType;
                             trainFound = true;
@@ -1711,6 +1870,7 @@ namespace ORTS
             public bool FormTrain;
             public bool FormStatic;
             public bool SetStop;
+            public bool FormsAtStation;
 
             public bool Stable;
             public string Stable_outpath;
@@ -1747,6 +1907,7 @@ namespace ORTS
                 Stable = false;
                 RunRound = false;
                 SetStop = false;
+                FormsAtStation = false;
 
                 if (formedTrainCommands.CommandQualifiers != null && formType == Train.FormCommand.TerminationFormed)
                 {
@@ -1769,6 +1930,11 @@ namespace ORTS
                         if (String.Compare(formedTrainQualifiers.QualifierName, "setstop") == 0)
                         {
                             SetStop = true;
+                        }
+
+                        if (String.Compare(formedTrainQualifiers.QualifierName, "atstation") == 0)
+                        {
+                            FormsAtStation = true;
                         }
                     }
                 }

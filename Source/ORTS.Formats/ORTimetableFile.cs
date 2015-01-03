@@ -35,7 +35,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.IO;
-using GNU.Gettext;
 
 namespace ORTS.Formats
 {
@@ -68,8 +67,9 @@ namespace ORTS.Formats
                     scrStream.Close();
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Trace.TraceInformation("Load error for timetable {0} : {1}",System.IO.Path.GetFileNameWithoutExtension(filePath), ex.ToString());
                 Description = "<" + "load error:" + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
             }
         }
@@ -104,7 +104,7 @@ namespace ORTS.Formats
                 {
                     if (firstCommentColumn < 0) firstCommentColumn = columnIndex;
                 }
-                else if (!String.IsNullOrEmpty(headerString))
+                else if (!String.IsNullOrEmpty(headerString) && !headerString.ToLower().Contains("$static"))
                 {
                     Trains.Add(new TTTrainPreInfo(columnIndex, headerString));
                 }
@@ -156,6 +156,7 @@ namespace ORTS.Formats
                         foreach (TTTrainPreInfo train in Trains)
                         {
                             train.Consist = String.Copy(Parts[train.Column]);
+                            train.LeadingConsist = ExtractConsist(train.Consist, out train.ReverseConsist);
                         }
                     }
                 }
@@ -176,11 +177,37 @@ namespace ORTS.Formats
             }
         }
 
+
+        private string ExtractConsist(string consistString, out bool reverse)
+        {
+            bool isReverse = false;
+
+            string reqString = String.Copy(consistString);
+            if (consistString.Contains("+"))
+            {
+                reqString = consistString.Split('+')[0];
+            }
+
+            if (reqString.Contains("$"))
+            {
+                if (String.Equals(reqString.Split('$')[1].Trim().ToLower(),"reverse"))
+                {
+                    isReverse = true;
+                }
+                reqString = reqString.Split('$')[0];
+            }
+
+            reverse=isReverse;
+            return(reqString.Trim());
+        }
+
         public class TTTrainPreInfo : IComparable<TTTrainPreInfo>
         {
             public int Column;                // column index
             public string Train;              // train definition
-            public string Consist;            // consist definition (consist or pool)
+            public string Consist;            // consist definition (full string)
+            public string LeadingConsist;     // consist definition (extracted leading consist)
+            public bool ReverseConsist = false;       // use consist in reverse
             public string Path;               // path definition
             public string StartTime;          // starttime definition
 
@@ -191,6 +218,7 @@ namespace ORTS.Formats
                 Column = column;
                 Train = string.Copy(train);
                 Consist = string.Empty;
+                LeadingConsist = string.Empty;
                 Path = string.Empty;
             }
 

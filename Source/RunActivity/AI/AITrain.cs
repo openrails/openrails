@@ -370,6 +370,25 @@ namespace ORTS
                 }
             }
 
+            // if set to form next train forced at station, curtail route to required location
+
+            if (Forms >= 0 && FormsAtStation && StationStops != null && StationStops.Count > 0)  // curtail route to last station stop
+            {
+                StationStop lastStop = StationStops[StationStops.Count - 1];
+                TCSubpathRoute reqSubroute = TCRoute.TCRouteSubpaths[lastStop.SubrouteIndex];
+
+                for (int iRouteIndex = reqSubroute.Count - 1; iRouteIndex > lastStop.RouteIndex; iRouteIndex--)
+                {
+                    reqSubroute.RemoveAt(iRouteIndex);
+                }
+
+                // if subroute is present route, create new ValidRoute
+                if (lastStop.SubrouteIndex == TCRoute.activeSubpath)
+                {
+                    ValidRoute[0] = new TCSubpathRoute(TCRoute.TCRouteSubpaths[TCRoute.activeSubpath]);
+                }
+            }
+
             // check deadlocks
 
             CheckDeadlock(ValidRoute[0], Number);

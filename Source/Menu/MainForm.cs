@@ -889,7 +889,7 @@ namespace ORTS
                     ShowDetail(catalog.GetString("Player Train"), SelectedTimetableTrain.ToInfo());
                     if (SelectedTimetableConsist != null)
                     {
-                        ShowDetail(catalog.GetString("Consist : "), new string[1] { SelectedTimetableConsist.ToString() });
+                        ShowDetail(catalog.GetString("Consist : "), new string[1] { SelectedTimetableTrain.Consist.ToString() });
                         if (SelectedTimetableConsist.Locomotive != null && SelectedTimetableConsist.Locomotive.Description != null)
                         {
                             ShowDetail(catalog.GetStringFmt("Locomotive: {0}", SelectedTimetableConsist.Locomotive.Name), SelectedTimetableConsist.Locomotive.Description.Split('\n'));
@@ -1158,7 +1158,7 @@ namespace ORTS
         private void comboBoxPlayerTrain_SelectedIndexChanged(object sender, EventArgs e)
         {
             TTPreInfo.TTTrainPreInfo selectedTrain = comboBoxPlayerTrain.SelectedItem as TTPreInfo.TTTrainPreInfo;
-            SelectedTimetableConsist = Consist.GetConsist(SelectedFolder, selectedTrain.Consist);
+            SelectedTimetableConsist = Consist.GetConsist(SelectedFolder, selectedTrain.LeadingConsist, selectedTrain.ReverseConsist);
             SelectedTimetablePath = Path.GetPath(SelectedRoute, selectedTrain.Path, false);
             ShowDetails();
         }

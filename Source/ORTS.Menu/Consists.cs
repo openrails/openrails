@@ -56,6 +56,30 @@ namespace ORTS.Menu
             FilePath = filePath;
         }
 
+        internal Consist(string filePath, Folder folder, bool reverseConsist)
+        {
+            if (File.Exists(filePath))
+            {
+                try
+                {
+                    var conFile = new CONFile(filePath);
+                    Name = conFile.Name.Trim();
+                    Locomotive = reverseConsist ? GetLocomotiveReverse(conFile, folder) : GetLocomotive(conFile, folder);
+                }
+                catch
+                {
+                    Name = "<" + catalog.GetString("load error:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                }
+                if (Locomotive == null) throw new InvalidDataException("Consist '" + filePath + "' is excluded.");
+                if (string.IsNullOrEmpty(Name)) Name = "<" + catalog.GetString("unnamed:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+            }
+            else
+            {
+                Name = "<" + catalog.GetString("missing:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+            }
+            FilePath = filePath;
+        }
+
         public override string ToString()
         {
             return Name;
@@ -94,6 +118,21 @@ namespace ORTS.Menu
             return consist;
         }
 
+        public static Consist GetConsist(Folder folder, string name, bool reverseConsist)
+        {
+            Consist consist = null;
+            var directory = System.IO.Path.Combine(System.IO.Path.Combine(folder.Path, "TRAINS"), "CONSISTS");
+            var file = System.IO.Path.Combine(directory, System.IO.Path.ChangeExtension(name, "con"));
+
+            try
+            {
+                consist = new Consist(file, folder, reverseConsist);
+            }
+            catch { }
+
+            return consist;
+        }
+
         static Locomotive GetLocomotive(CONFile conFile, Folder folder)
         {
             foreach (var wagon in conFile.Train.TrainCfg.WagonList.Where(w => w.IsEngine))
@@ -107,6 +146,23 @@ namespace ORTS.Menu
             }
             return null;
         }
+
+        static Locomotive GetLocomotiveReverse(CONFile conFile, Folder folder)
+        {
+            Locomotive newLocomotive = null;
+
+            foreach (var wagon in conFile.Train.TrainCfg.WagonList.Where(w => w.IsEngine))
+            {
+                var filePath = System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(folder.Path, "TRAINS"), "TRAINSET"), wagon.Folder), wagon.Name + ".eng");
+                try
+                {
+                    newLocomotive = new Locomotive(filePath);
+                }
+                catch { }
+            }
+            return (newLocomotive);
+        }
+
     }
 
     public class Locomotive

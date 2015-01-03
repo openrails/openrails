@@ -299,6 +299,7 @@ namespace ORTS
         public int FormedOf = -1;                                         //indicates out of which train this train is formed
         public FormCommand FormedOfType = FormCommand.None;               //indicates type of formed-of command
         public bool SetStop = false;                                      //indicates train must copy station stop from formed train
+        public bool FormsAtStation = false;                               //indicates train must form into next service at last station, route must be curtailed to that stop
 
         public List<DetachInfo> DetachDetails = new List<DetachInfo>();   // detach information
         public int AttachTo = -1;                                         // attach information : train to which to attach at end of run
@@ -693,6 +694,7 @@ namespace ORTS
             FormedOf = inf.ReadInt32();
             FormedOfType = (FormCommand)inf.ReadInt32();
             SetStop = inf.ReadBoolean();
+            FormsAtStation = inf.ReadBoolean();
 
             int totalDetach = inf.ReadInt32();
             DetachDetails = new List<DetachInfo>();
@@ -798,7 +800,6 @@ namespace ORTS
                 LeadLocomotive = Cars[LeadLocomotiveIndex];
                 Program.Simulator.PlayerLocomotive = LeadLocomotive;
             }
-
 
             // restore logfile
             if (DatalogTrainSpeed)
@@ -1041,6 +1042,7 @@ namespace ORTS
             outf.Write(FormedOf);
             outf.Write((int)FormedOfType);
             outf.Write(SetStop);
+            outf.Write(FormsAtStation);
 
             outf.Write(DetachDetails.Count);
             foreach (DetachInfo thisDetach in DetachDetails)
@@ -1505,6 +1507,10 @@ namespace ORTS
                     UpdateSignalState(movedBackward);                                               // update signal state     //
             }
 
+            // check position of train wrt tunnels
+
+            ProcessTunnels();
+
             if (DatalogTrainSpeed)
             {
                 LogTrainSpeed(Simulator.ClockTime);
@@ -1638,6 +1644,125 @@ namespace ORTS
             ProjectedSpeedMpS = SpeedMpS + 60 * AccelerationMpSpS.SmoothedValue;
             ProjectedSpeedMpS = SpeedMpS > float.Epsilon ?
                 Math.Max(0, ProjectedSpeedMpS) : SpeedMpS < -float.Epsilon ? Math.Min(0, ProjectedSpeedMpS) : 0;
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// ProcessTunnels : check position of each car in train wrt tunnel
+        /// <\summary>
+
+        public void ProcessTunnels()
+        {
+            // start at front of train
+            int thisSectionIndex = PresentPosition[0].TCSectionIndex;
+            float thisSectionOffset = PresentPosition[0].TCOffset;
+            int thisSectionDirection = PresentPosition[0].TCDirection;
+
+            for (int icar = 0; icar <= Cars.Count - 1; icar++)
+            {
+                var car = Cars[icar];
+
+                float usedCarLength = car.LengthM;
+                float processedCarLength = 0;
+                bool validSections = true;
+
+                float? FrontCarPositionInTunnel = null;
+                float? FrontCarLengthOfTunnelAhead = null;
+                float? RearCarLengthOfTunnelBehind = null;
+
+                while (validSections)
+                {
+                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisSectionIndex];
+                    bool inTunnel = false;
+
+                    // car spans sections
+                    if ((car.LengthM - processedCarLength) > thisSectionOffset)
+                    {
+                        usedCarLength = thisSectionOffset - processedCarLength;
+                    }
+
+                    // section has tunnels
+                    if (thisSection.TunnelInfo != null)
+                    {
+                        foreach (TrackCircuitSection.tunnelInfoData[] thisTunnel in thisSection.TunnelInfo)
+                        {
+                            float tunnelStartOffset = thisTunnel[thisSectionDirection].TunnelStart;
+                            float tunnelEndOffset = thisTunnel[thisSectionDirection].TunnelEnd;
+
+                            if (tunnelStartOffset > 0 && tunnelStartOffset > thisSectionOffset)      // start of tunnel is in section beyond present position - cannot be in this tunnel nor any following
+                            {
+                                break;
+                            }
+
+                            if (tunnelEndOffset > 0 && tunnelEndOffset < (thisSectionOffset - usedCarLength)) // beyond end of tunnel, test next
+                            {
+                                continue;
+                            }
+
+                            if (tunnelStartOffset <= 0 || tunnelStartOffset < (thisSectionOffset - usedCarLength)) // start of tunnel is behind
+                            {
+                                if (tunnelEndOffset < 0) // end of tunnel is out of this section
+                                {
+                                    if (processedCarLength != 0)
+                                    {
+                                        Trace.TraceInformation("Train : " + Number + " ; found tunnel in section " + thisSectionIndex + " with End < 0 while processed length : " + processedCarLength + "\n");
+                                    }
+                                }
+
+                                inTunnel = true;
+
+                                // get position in tunnel
+                                if (tunnelStartOffset < 0)
+                                {
+                                    FrontCarPositionInTunnel = thisSectionOffset + thisTunnel[thisSectionDirection].TCSStartOffset;
+                                    FrontCarLengthOfTunnelAhead = thisTunnel[thisSectionDirection].TotalLength - FrontCarPositionInTunnel;
+                                    RearCarLengthOfTunnelBehind = thisTunnel[thisSectionDirection].TotalLength - (FrontCarLengthOfTunnelAhead + car.LengthM);
+                                }
+                                else
+                                {
+                                    FrontCarPositionInTunnel = thisSectionOffset - tunnelStartOffset;
+                                    FrontCarLengthOfTunnelAhead = thisTunnel[thisSectionDirection].TotalLength - FrontCarPositionInTunnel - processedCarLength;
+                                    RearCarLengthOfTunnelBehind = thisTunnel[thisSectionDirection].TotalLength - (FrontCarLengthOfTunnelAhead + car.LengthM);
+                                }
+
+                                break;  // only test one tunnel
+                            }
+                        }
+                    }
+                    // tested this section, any need to go beyond?
+
+                    processedCarLength += usedCarLength;
+                    if (inTunnel || processedCarLength >= car.LengthM)
+                    {
+                        validSections = false;  // end of while loop through sections
+                        thisSectionOffset = thisSectionOffset - usedCarLength;   // position of next car in this section
+
+                        car.CarTunnelData.FrontPositionBeyondStartOfTunnel = FrontCarPositionInTunnel.HasValue ? FrontCarPositionInTunnel : null;
+                        car.CarTunnelData.LengthMOfTunnelAheadFront = FrontCarLengthOfTunnelAhead.HasValue ? FrontCarLengthOfTunnelAhead : null;
+                        car.CarTunnelData.LengthMOfTunnelBehindRear = RearCarLengthOfTunnelBehind.HasValue ? RearCarLengthOfTunnelBehind : null;
+                    }
+                    else
+                    {
+                        // go back one section
+                        int thisSectionRouteIndex = ValidRoute[0].GetRouteIndexBackward(thisSectionIndex, PresentPosition[0].RouteListIndex);
+                        if (thisSectionRouteIndex >= 0)
+                        {
+                            thisSectionIndex = thisSectionRouteIndex;
+                            thisSection = signalRef.TrackCircuitList[thisSectionIndex];
+                            thisSectionOffset = thisSection.Length;  // always at end of next section
+                            thisSectionDirection = ValidRoute[0][thisSectionRouteIndex].Direction;
+                        }
+                        else // ran out of train
+                        {
+                            validSections = false;
+
+                            car.CarTunnelData.FrontPositionBeyondStartOfTunnel = FrontCarPositionInTunnel.HasValue ? FrontCarPositionInTunnel : null;
+                            car.CarTunnelData.LengthMOfTunnelAheadFront = FrontCarLengthOfTunnelAhead.HasValue ? FrontCarLengthOfTunnelAhead : null;
+                            car.CarTunnelData.LengthMOfTunnelBehindRear = RearCarLengthOfTunnelBehind.HasValue ? RearCarLengthOfTunnelBehind : null;
+                        }
+                    }
+                }
+            }
         }
 
         //================================================================================================//
@@ -1927,6 +2052,24 @@ namespace ORTS
                 if (TCRoute != null) TCRoute.SetReversalOffset(Length);
 
                 AuxActionsContain.SetAuxAction(this);
+            }
+
+	    // if set to form next train forced at station, curtail route to required location
+
+            if (Forms >= 0 && FormsAtStation && StationStops != null && StationStops.Count > 0)  // curtail route to last station stop
+            {
+                StationStop lastStop = StationStops[StationStops.Count - 1];
+                TCSubpathRoute reqSubroute = TCRoute.TCRouteSubpaths[lastStop.SubrouteIndex];
+                for (int iRouteIndex = reqSubroute.Count - 1; iRouteIndex > lastStop.RouteIndex ; iRouteIndex --)
+                {
+                    reqSubroute.RemoveAt(iRouteIndex);
+                }
+                
+                // if subroute is present route, create new ValidRoute
+                if (lastStop.SubrouteIndex == TCRoute.activeSubpath)
+                {
+                    ValidRoute[0] = new TCSubpathRoute(TCRoute.TCRouteSubpaths[TCRoute.activeSubpath]); 
+                }
             }
 
             // set train speed logging flag (valid per activity, so will be restored after save)
@@ -4301,10 +4444,16 @@ namespace ORTS
         public void UpdateSectionState(int backward)
         {
 
-            List<int> sectionList = new List<int>();
+            List<int[]> sectionList = new List<int[]>();
 
             int lastIndex = PreviousPosition[0].RouteListIndex;
             int presentIndex = PresentPosition[0].RouteListIndex;
+
+            int lastDTM = Convert.ToInt32(PreviousPosition[0].DistanceTravelledM);
+            TrackCircuitSection lastSection = signalRef.TrackCircuitList[PreviousPosition[0].TCSectionIndex];
+            int lastDTatEndLastSectionM = lastDTM + Convert.ToInt32(lastSection.Length - PreviousPosition[0].TCOffset);
+
+            int presentDTM = Convert.ToInt32(DistanceTravelledM);
 
             // don't bother with update if train out of control - all will be reset when train is stopped
 
@@ -4333,13 +4482,13 @@ namespace ORTS
                     for (int iIndex = lastIndex; iIndex > presentIndex; iIndex--)
                     {
                         sectionIndex = ValidRoute[0][iIndex].TCSectionIndex;
-                        sectionList.Add(iIndex);
+                        sectionList.Add(new int[2] { iIndex, presentDTM });
                         thisSection = signalRef.TrackCircuitList[sectionIndex];
                     }
 
                     sectionIndex = ValidRoute[0][presentIndex].TCSectionIndex;
                     thisSection = signalRef.TrackCircuitList[sectionIndex];
-                    sectionList.Add(presentIndex);
+                    sectionList.Add(new int[2] { presentIndex, presentDTM });
                 }
             }
 
@@ -4354,28 +4503,30 @@ namespace ORTS
 
                     sectionIndex = ValidRoute[0][lastIndex].TCSectionIndex;
                     thisSection = signalRef.TrackCircuitList[sectionIndex];
+                    int lastValidDTM = lastDTatEndLastSectionM;
 
                     for (int iIndex = lastIndex + 1; iIndex < presentIndex; iIndex++)
                     {
                         sectionIndex = ValidRoute[0][iIndex].TCSectionIndex;
-                        sectionList.Add(iIndex);
+                        sectionList.Add(new int[2] { iIndex, lastValidDTM });
                         thisSection = signalRef.TrackCircuitList[sectionIndex];
+                        lastValidDTM += Convert.ToInt32(thisSection.Length);
                     }
 
                     sectionIndex = ValidRoute[0][presentIndex].TCSectionIndex;
-                    sectionList.Add(presentIndex);
+                    sectionList.Add(new int[2] { presentIndex, presentDTM });
                 }
             }
 
             // set section states, for AUTOMODE use direction 0 only
 
-            foreach (int routeListIndex in sectionList)
+            foreach (int[] routeListIndex in sectionList)
             {
-                int sectionIndex = ValidRoute[0][routeListIndex].TCSectionIndex;
+                int sectionIndex = ValidRoute[0][routeListIndex[0]].TCSectionIndex;
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[sectionIndex];
                 if (!thisSection.CircuitState.ThisTrainOccupying(routedForward))
                 {
-                    thisSection.SetOccupied(routedForward);
+                    thisSection.SetOccupied(routedForward, routeListIndex[1]);
 
                     // clear any entries in WaitAnyList as these are now redundant
                     if (WaitAnyList != null && WaitAnyList.ContainsKey(sectionIndex))
