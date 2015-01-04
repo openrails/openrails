@@ -1152,7 +1152,7 @@ namespace ORTS.Viewer3D.RollingStock
             var rangeFraction = GetRangeFraction();
             var direction = ControlDial.Direction == 0 ? 1 : -1;
             var rangeDegrees = direction * (ControlDial.ToDegree - ControlDial.FromDegree);
-            while (rangeDegrees < 0)
+            while (rangeDegrees <= 0)
                 rangeDegrees += 360;
             Rotation = MathHelper.WrapAngle(MathHelper.ToRadians(ControlDial.FromDegree + direction * rangeDegrees * rangeFraction));
             if (Viewer.Simulator.UseSuperElevation > 0 || Viewer.Simulator.CarVibrating > 0 || Locomotive.Train.tilted)
