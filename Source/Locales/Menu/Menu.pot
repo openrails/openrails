@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-12-05 20:45:39+0100\n"
-"PO-Revision-Date: 2014-12-05 20:45:41+0100\n"
+"POT-Creation-Date: 2015-01-04 21:15:00+0100\n"
+"PO-Revision-Date: 2015-01-04 21:15:00+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -177,32 +177,32 @@ msgstr ""
 msgid "Sunday"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:259
+#: ../../Menu/MainForm.cs:260
 msgid "Update check failed"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:306
+#: ../../Menu/MainForm.cs:307
 msgid "Select a the installation profile (MSTS folder) to add:"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:344
+#: ../../Menu/MainForm.cs:345
 msgid "Path: "
 msgstr ""
 
-#: ../../Menu/MainForm.cs:344
+#: ../../Menu/MainForm.cs:345
 msgid ""
 "\n"
 "Name: "
 msgstr ""
 
-#: ../../Menu/MainForm.cs:344
+#: ../../Menu/MainForm.cs:345
 msgid ""
 "\n"
 "\n"
 "Remove this installation profile from Open Rails?"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:441
+#: ../../Menu/MainForm.cs:442
 msgid ""
 "User name must be 4-10 characters long, cannot contain space, ', \" or - and "
 "must not start with a digit."
@@ -244,12 +244,12 @@ msgstr ""
 msgid "Path : "
 msgstr ""
 
-#: ../../Menu/MainForm.cs:261
+#: ../../Menu/MainForm.cs:262
 #, csharp-format
 msgid "Update to {0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:454
+#: ../../Menu/MainForm.cs:455
 #, csharp-format
 msgid ""
 "The update check failed due to an error:\n"
@@ -257,7 +257,7 @@ msgid ""
 "{0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:462
+#: ../../Menu/MainForm.cs:463
 #, csharp-format
 msgid ""
 "The update failed due to an error:\n"
@@ -561,10 +561,6 @@ msgstr ""
 msgid "No errors found."
 msgstr ""
 
-#: ../../Menu/Options.cs:455
-msgid "Please restart Open Rails in order to load the new language."
-msgstr ""
-
 #: ../../Menu/Options.cs:472
 msgid "Very easy"
 msgstr ""
@@ -592,6 +588,11 @@ msgid ""
 "{0:F0}° vertical FOV is the same as:\n"
 "{1:F0}° horizontal FOV on 4:3\n"
 "{2:F0}° horizontal FOV on 16:9"
+msgstr ""
+
+#: ../../Menu/Options.cs:455
+#, csharp-format
+msgid "Please restart {0} in order to load the new language."
 msgstr ""
 
 #: ../../Menu/Options.Designer.cs:214

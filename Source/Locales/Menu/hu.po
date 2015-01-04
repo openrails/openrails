@@ -1,8 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
-"POT-Creation-Date: 2014-12-05 20:45:39+0100\n"
-"PO-Revision-Date: 2014-12-26 17:45+0100\n"
+"POT-Creation-Date: 2015-01-04 21:15:00+0100\n"
 "Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: hu\n"
@@ -11,6 +10,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 1.7.1\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"PO-Revision-Date: \n"
 
 #: ../../Menu/FolderForm.Designer.cs:56 ../../Menu/Options.Designer.cs:180
 msgid "OK"
@@ -174,19 +174,19 @@ msgstr "Szombat"
 msgid "Sunday"
 msgstr "Vasárnap"
 
-#: ../../Menu/MainForm.cs:259
+#: ../../Menu/MainForm.cs:260
 msgid "Update check failed"
 msgstr "A frissítések ellenőrzése nem sikerült"
 
-#: ../../Menu/MainForm.cs:306
+#: ../../Menu/MainForm.cs:307
 msgid "Select a the installation profile (MSTS folder) to add:"
 msgstr "Telepítési profil (MSTS könyvtár) kiválasztása:"
 
-#: ../../Menu/MainForm.cs:344
+#: ../../Menu/MainForm.cs:345
 msgid "Path: "
 msgstr "Útvonal:"
 
-#: ../../Menu/MainForm.cs:344
+#: ../../Menu/MainForm.cs:345
 msgid ""
 "\n"
 "Name: "
@@ -194,7 +194,7 @@ msgstr ""
 "\n"
 "Név: "
 
-#: ../../Menu/MainForm.cs:344
+#: ../../Menu/MainForm.cs:345
 msgid ""
 "\n"
 "\n"
@@ -204,7 +204,7 @@ msgstr ""
 "\n"
 "Töröljük ezt a telepítési profilt az Open Railsből?"
 
-#: ../../Menu/MainForm.cs:441
+#: ../../Menu/MainForm.cs:442
 msgid ""
 "User name must be 4-10 characters long, cannot contain space, ', \" or - and "
 "must not start with a digit."
@@ -251,12 +251,12 @@ msgstr "Szerelvény:"
 msgid "Path : "
 msgstr "Útvonal:"
 
-#: ../../Menu/MainForm.cs:261
+#: ../../Menu/MainForm.cs:262
 #, csharp-format
 msgid "Update to {0}"
 msgstr "Frissítés: {0}"
 
-#: ../../Menu/MainForm.cs:454
+#: ../../Menu/MainForm.cs:455
 #, csharp-format
 msgid ""
 "The update check failed due to an error:\n"
@@ -267,7 +267,7 @@ msgstr ""
 "\n"
 "{0}"
 
-#: ../../Menu/MainForm.cs:462
+#: ../../Menu/MainForm.cs:463
 #, csharp-format
 msgid ""
 "The update failed due to an error:\n"
@@ -572,10 +572,6 @@ msgstr ""
 msgid "No errors found."
 msgstr "Nincsenek hibák."
 
-#: ../../Menu/Options.cs:455
-msgid "Please restart Open Rails in order to load the new language."
-msgstr "Az OpenRails-t újra kell indítani az új nyelv betöltéséhez."
-
 #: ../../Menu/Options.cs:472
 msgid "Very easy"
 msgstr "Nagyon könnyű"
@@ -606,6 +602,11 @@ msgstr ""
 "{0:F0}° függőleges képszög megfelel:\n"
 "{1:F0}° vízszintes képszögnek 4:3-ban\n"
 "{2:F0}° vízszintes képszögnek 16:9-ben"
+
+#: ../../Menu/Options.cs:455
+#, csharp-format
+msgid "Please restart {0} in order to load the new language."
+msgstr "Az {0}-t újra kell indítani az új nyelv betöltéséhez."
 
 #: ../../Menu/Options.Designer.cs:214
 msgid "Brake pipe charging rate (PSI/s)"
@@ -1185,52 +1186,3 @@ msgstr "Terhelés"
 #: ../../Menu/TestingForm.Designer.cs:228
 msgid "FPS"
 msgstr "FPS"
-
-#~ msgid "Updating to {0}..."
-#~ msgstr "Frissítés a {0}. verzióra..."
-
-#~ msgid "Restart to apply update"
-#~ msgstr "A frissítés  befejezéséhez újraindítás szükséges"
-
-#~ msgid "Enable auxiliary actions"
-#~ msgstr "Vonat"
-
-#~ msgid ""
-#~ "Please do not report any problems that may result.\n"
-#~ "\n"
-#~ "Continue at your own risk?"
-#~ msgstr ""
-#~ "Ne jelentsd majd az esetlegesen itt felmerülő problémát.\n"
-#~ "\n"
-#~ "Folytatod saját felelősségre?"
-
-#~ msgid ""
-#~ "This save was made by an older version {0} of Open Rails and\n"
-#~ "may be incompatible with the current version {1}.\n"
-#~ msgstr ""
-#~ "Ez a mentés egy régebbi {0} verziójú OpenRails-zel készült,\n"
-#~ "és már inkompatibilis lehet a jelenlegi {1} verzióval.\n"
-
-#~ msgid "Computer trains"
-#~ msgstr "Számítógép irányította vonatok"
-
-#~ msgid "Relative time before player start time"
-#~ msgstr "A játékos vonatának indulásához képesti idő"
-
-#~ msgid "Absolute time"
-#~ msgstr "Abszolút idő"
-
-#~ msgid "Include in direction of player train"
-#~ msgstr "Beillesztés a játékos vonatának útirányába"
-
-#~ msgid "Start at:"
-#~ msgstr "Szolgálatfelvételi hely:"
-
-#~ msgid "Curve resistance speed dependent"
-#~ msgstr "Sebességfüggő ívellenállás"
-
-#~ msgid "Optimal curve speed factor"
-#~ msgstr "Optimális ívsebességi tényező"
-
-#~ msgid "Curve resistance multiplier at zero speed"
-#~ msgstr "Ívellenállási szorzó nulla sebességnél"

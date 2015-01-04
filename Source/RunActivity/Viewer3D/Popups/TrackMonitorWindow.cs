@@ -29,7 +29,7 @@ namespace ORTS.Viewer3D.Popups
     public class TrackMonitorWindow : Window
     {
         public const int MaximumDistance = 5000;
-        public const int TrackMonitorLabelHeight = 95; // Height of labels above the main display.
+        public const int TrackMonitorLabelHeight = 130; // Height of labels above the main display.
         public const int TrackMonitorOffsetY = 25/*Window.DecorationOffset.Y*/ + TrackMonitorLabelHeight;
         public const int TrackMonitorWidth = 150;
         public const int TrackMonitorHeight = 250;
@@ -37,6 +37,8 @@ namespace ORTS.Viewer3D.Popups
         Label SpeedCurrent;
         Label SpeedProjected;
         Label SpeedAllowed;
+        Label OdoMeterHead;
+        Label OdoMeterTail;
         Label ControlMode;
         TrackMonitor Monitor;
 
@@ -109,11 +111,27 @@ namespace ORTS.Viewer3D.Popups
                     hbox_t2.Add(SpeedProjected = new Label(hbox_t2.RemainingWidth, hbox_t2.RemainingHeight, "", LabelAlignment.Right));
                 }
 
-                // third text bos - max allowed speed - items added in horizontal order
+                // third text box - max allowed speed - items added in horizontal order
                 var hbox_t3 = vbox.AddLayoutHorizontal(16);
                 {
                     hbox_t3.Add(new Label(hbox_t3.RemainingWidth / 2, hbox_t3.RemainingHeight, Viewer.Catalog.GetString("Limit:")));
                     hbox_t3.Add(SpeedAllowed = new Label(hbox_t3.RemainingWidth, hbox_t3.RemainingHeight, "", LabelAlignment.Right));
+                }
+
+                vbox.AddHorizontalSeparator();
+
+                // fourth text box - odometer label
+                var hbox_t4 = vbox.AddLayoutHorizontal(16);
+                {
+                    hbox_t4.Add(new Label(hbox_t4.RemainingWidth / 2, hbox_t4.RemainingHeight, Viewer.Catalog.GetString("Odometer")));
+                    hbox_t4.Add(new Label(hbox_t4.RemainingWidth, hbox_t4.RemainingHeight, Viewer.Catalog.GetString("End"), LabelAlignment.Right));
+                }
+
+                // fifth text box - odometer head - odometer tail
+                var hbox_t5 = vbox.AddLayoutHorizontal(16);
+                {
+                    hbox_t5.Add(OdoMeterHead = new Label(hbox_t5.RemainingWidth / 2, hbox_t5.RemainingHeight, ""));
+                    hbox_t5.Add(OdoMeterTail = new Label(hbox_t5.RemainingWidth, hbox_t5.RemainingHeight, "", LabelAlignment.Right));
                 }
 
                 // add separator between speed and authority areas
@@ -159,6 +177,8 @@ namespace ORTS.Viewer3D.Popups
                 SpeedCurrent.Text = FormatStrings.FormatSpeedDisplay(Math.Abs(thisInfo.speedMpS), Owner.Viewer.MilepostUnitsMetric);
                 SpeedProjected.Text = FormatStrings.FormatSpeedDisplay(Math.Abs(thisInfo.projectedSpeedMpS), Owner.Viewer.MilepostUnitsMetric);
                 SpeedAllowed.Text = FormatStrings.FormatSpeedLimit(thisInfo.allowedSpeedMpS, Owner.Viewer.MilepostUnitsMetric);
+                OdoMeterHead.Text = FormatStrings.FormatShortDistanceDisplay((Owner.Viewer.PlayerLocomotive as MSTSLocomotive).OdoMeterM, Owner.Viewer.MilepostUnitsMetric);
+                OdoMeterTail.Text = FormatStrings.FormatShortDistanceDisplay((Owner.Viewer.PlayerLocomotive as MSTSLocomotive).OdoMeterM - Owner.Viewer.PlayerTrain.Length, Owner.Viewer.MilepostUnitsMetric);
 
                 // control mode
                 string ControlText = ControlModeLabels[thisInfo.ControlMode];

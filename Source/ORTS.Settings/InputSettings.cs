@@ -147,6 +147,7 @@ namespace ORTS.Settings
         [GetString("Control Initialize Brakes")] ControlInitializeBrakes,
         [GetString("Control Handbrake Full")] ControlHandbrakeFull,
         [GetString("Control Handbrake None")] ControlHandbrakeNone,
+        [GetString("Control Odometer Reset")] ControlOdoMeterReset,
         [GetString("Control Retainers On")] ControlRetainersOn,
         [GetString("Control Retainers Off")] ControlRetainersOff,
         [GetString("Control Brake Hose Connect")] ControlBrakeHoseConnect,
@@ -544,6 +545,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommands.ControlMirror] = new UserCommandKeyInput(0x2F, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlPantograph1] = new UserCommandKeyInput(0x19);
             Commands[(int)UserCommands.ControlPantograph2] = new UserCommandKeyInput(0x19, KeyModifiers.Shift);
+            Commands[(int)UserCommands.ControlOdoMeterReset] = new UserCommandKeyInput(0x2C, KeyModifiers.Control);
             Commands[(int)UserCommands.ControlRefill] = new UserCommandKeyInput(0x14);
             Commands[(int)UserCommands.ControlRetainersOff] = new UserCommandKeyInput(0x1A, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlRetainersOn] = new UserCommandKeyInput(0x1B, KeyModifiers.Shift);

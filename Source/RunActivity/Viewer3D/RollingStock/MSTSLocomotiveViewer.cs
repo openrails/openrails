@@ -154,6 +154,7 @@ namespace ORTS.Viewer3D.RollingStock
             UserInputCommands.Add(UserCommands.ControlHeadlightDecrease, new Action[] { Noop, () => new HeadlightCommand(Viewer.Log, false) });
             UserInputCommands.Add(UserCommands.ControlLight, new Action[] { Noop, () => new ToggleCabLightCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommands.ControlRefill, new Action[] { () => StopRefilling(Viewer.Log), () => AttemptToRefill() });
+            UserInputCommands.Add(UserCommands.ControlOdoMeterReset, new Action[] { Noop, () => Locomotive.ResetOdoMeter() });
             base.InitializeUserInputCommands();
         }
 

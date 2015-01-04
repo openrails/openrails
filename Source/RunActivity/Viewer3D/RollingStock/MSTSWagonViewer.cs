@@ -60,9 +60,10 @@ namespace ORTS.Viewer3D.RollingStock
             : base(viewer, car)
         {
             var wagonFolderSlash = Path.GetDirectoryName(car.WagFilePath) + @"\";
-            var shapePath = wagonFolderSlash + car.MainShapeFileName;
 
-            TrainCarShape = new PoseableShape(viewer, shapePath + '\0' + wagonFolderSlash, car.WorldPosition, ShapeFlags.ShadowCaster);
+            TrainCarShape = car.MainShapeFileName != string.Empty
+                ? new PoseableShape(viewer, wagonFolderSlash + car.MainShapeFileName + '\0' + wagonFolderSlash, car.WorldPosition, ShapeFlags.ShadowCaster)
+                : new PoseableShape(viewer, null, car.WorldPosition);
 
             if (car.FreightShapeFileName != null)
             {

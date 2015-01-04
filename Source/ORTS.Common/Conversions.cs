@@ -492,6 +492,7 @@ namespace ORTS.Common
         static string m = Catalog.GetString("m");
         static string km = Catalog.GetString("km");
         static string mi = Catalog.GetString("mi");
+        static string ft = Catalog.GetString("ft");
         static string yd = Catalog.GetString("yd");
         static string kmph = Catalog.GetString("km/h");
         static string mph = Catalog.GetString("mph");
@@ -572,6 +573,13 @@ namespace ORTS.Common
                 return String.Format(CultureInfo.CurrentCulture, "{0:N0} {1}", Me.ToYd(distance), yd);
             }
             return String.Format(CultureInfo.CurrentCulture, "{0:F1} {1}", Me.ToMi(distance), mi);
+        }
+
+        public static string FormatShortDistanceDisplay(float distanceM, bool isMetric)
+        {
+            if (isMetric)
+                return String.Format(CultureInfo.CurrentCulture, "{0:N0} {1}", distanceM, m);
+            return String.Format(CultureInfo.CurrentCulture, "{0:N0} {1}", Me.ToFt(distanceM), ft);
         }
 
         /// <summary>

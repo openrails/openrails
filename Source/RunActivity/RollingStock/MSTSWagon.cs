@@ -197,7 +197,24 @@ namespace ORTS
                     Parse(stf.Tree.ToLower(), stf);
                 }
             }
-            
+
+            var wagonFolderSlash = Path.GetDirectoryName(wagFilePath) + @"\";
+            if (MainShapeFileName != null && !File.Exists(wagonFolderSlash + MainShapeFileName))
+            {
+                Trace.TraceWarning("{0} references non-existent shape {1}", wagFilePath, wagonFolderSlash + MainShapeFileName);
+                MainShapeFileName = string.Empty;
+            }
+            if (FreightShapeFileName != null && !File.Exists(wagonFolderSlash + FreightShapeFileName))
+            {
+                Trace.TraceWarning("{0} references non-existent shape {1}", wagFilePath, wagonFolderSlash + FreightShapeFileName);
+                FreightShapeFileName = null;
+            }
+            if (InteriorShapeFileName != null && !File.Exists(wagonFolderSlash + InteriorShapeFileName))
+            {
+                Trace.TraceWarning("{0} references non-existent shape {1}", wagFilePath, wagonFolderSlash + InteriorShapeFileName);
+                InteriorShapeFileName = null;
+            }
+
             if (BrakeSystem == null)
                 BrakeSystem = new AirSinglePipe(this);
         }

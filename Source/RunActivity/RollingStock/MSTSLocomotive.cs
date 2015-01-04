@@ -117,6 +117,31 @@ namespace ORTS
         public bool MilepostUnitsMetric;
         public PressureUnit PressureUnit = PressureUnit.None;
 
+        private float OdoMeterResetPositionM;
+        private Direction OdoMeterDirection = Direction.N;
+        /// <summary>
+        /// Travelled distance to be displayed to locomotive driver. The odometer may be reset to zero.
+        /// Reverse movement is subtracted, but positive direction is set to the actual direction at reset time.
+        /// </summary>
+        public float OdoMeterM
+        {
+            get
+            {
+                if (Train == null)
+                    return 0;
+
+                var odoMeterM = Train.DistanceTravelledM - OdoMeterResetPositionM;
+
+                if (OdoMeterDirection == Direction.N && odoMeterM != 0)
+                    OdoMeterDirection = Direction;
+
+                if (OdoMeterDirection == Common.Direction.Reverse)
+                    odoMeterM = -odoMeterM;
+
+                return odoMeterM;
+            }
+        }
+
         bool DoesHornTriggerBell;
 
         // wag file data
@@ -146,7 +171,6 @@ namespace ORTS
         public CombinedControl CombinedControlType;
         public float CombinedControlSplitPosition;
         public bool HasSmoothStruc;
-        public int ComboCtrlCrossOver = 5;
 
         public float MaxContinuousForceN;
         public float ContinuousForceTimeFactor = 1800;
@@ -300,7 +324,6 @@ namespace ORTS
             {
                 if (DynamicBrakeController.NotchCount() <= 3)
                 {
-                    // Trace.TraceInformation("Smooth Dynamic Brake may have inaccurate display");
                     HasSmoothStruc = true;
                 }
             }
@@ -2169,6 +2192,17 @@ namespace ORTS
         {
             // Electric locos do nothing. Diesel and steam override this.
         }
+
+        /// <summary>
+        /// Set odometer reference distance to actual travelled distance,
+        /// and set measuring direction to the actual direction
+        /// </summary>
+        public void ResetOdoMeter()
+        {
+            OdoMeterResetPositionM = Train != null ? Train.DistanceTravelledM : 0;
+            OdoMeterDirection = Direction;
+        }
+
 #if NEW_SIGNALLING
         public override bool GetCabFlipped()
         {
