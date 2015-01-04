@@ -155,8 +155,12 @@ namespace ORTS.Updater
                     return;
                 }
 
-                // Clean up any remaining bits from the just-applied update.
-                CleanDirectories();
+                // Clean up any remaining bits from the just-applied update, but don't mind if this fails.
+                try
+                {
+                    CleanDirectories();
+                }
+                catch (Exception) { }
 
                 // Fetch the update URL (adding ?force=true if forced) and cache the update/error.
                 var client = new WebClient()
@@ -183,7 +187,7 @@ namespace ORTS.Updater
             }
         }
 
-        public void Update(IntPtr parentWindowHandle)
+        public void Update()
         {
             if (LastUpdate == null) throw new InvalidOperationException("Cannot get update when no LatestUpdate exists.");
             try
@@ -413,16 +417,8 @@ namespace ORTS.Updater
                 File.Move(file, Path.Combine(PathUpdateDirty, Path.GetFileName(file)));
 
             // Copy (almost) all directories from current version to dirty.
-            // In localized installations there could be used dlls into the dirs
-            foreach (var directory in basePathDirectories) 
-            {
-                var destDir = Path.Combine(PathUpdateDirty, Path.GetFileName(directory));
-                Directory.CreateDirectory(destDir);
-                var subdirFiles = Directory.GetFiles(directory);
-                foreach (var file in subdirFiles)
-                    File.Move(file, Path.Combine(destDir, Path.GetFileName(file)));
-                Directory.Delete(directory);
-            }
+            foreach (var directory in basePathDirectories)
+                Directory.Move(directory, Path.Combine(PathUpdateDirty, Path.GetFileName(directory)));
 
             // Copy all files from new version to base path.
             foreach (var file in updateStageFiles)

@@ -15,31 +15,31 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using GNU.Gettext;
+using GNU.Gettext.WinForms;
 using ORTS.Common;
+using ORTS.Settings;
 using ORTS.Updater;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
-using GNU.Gettext;
-using GNU.Gettext.WinForms;
-using System.Globalization;
-using ORTS.Settings;
 
 namespace Updater
 {
     public partial class UpdaterProgress : Form
     {
+        readonly UserSettings Settings;
+        readonly GettextResourceManager catalog = new GettextResourceManager("Updater");
+
         string BasePath;
         string LauncherPath;
         bool RelaunchApplication;
-        // User setups.
-        public UserSettings Settings { get; private set; }
-        public static GettextResourceManager Catalog { get; private set; } // Localization dictionary
 
         public UpdaterProgress()
         {
@@ -50,13 +50,8 @@ namespace Updater
             // Message Box font to allow for user-customizations, though.
             Font = SystemFonts.MessageBoxFont;
 
-            // Localization init
-            var options = new string[1];
-            options[0] = "";
-            Settings = new UserSettings(options);
-            Catalog = new GettextResourceManager("Updater");
+            Settings = new UserSettings(new string[0]);
             LoadLanguage();
-            this.Text = Catalog.GetString("Open Rails Updater");
 
             BasePath = Path.GetDirectoryName(Application.ExecutablePath);
             LauncherPath = UpdateManager.GetMainExecutable(BasePath, Application.ProductName);
@@ -73,7 +68,7 @@ namespace Updater
                 catch { }
             }
 
-            Localizer.Localize(this, Catalog);
+            Localizer.Localize(this, catalog);
         }
 
         void UpdaterProgress_Load(object sender, EventArgs e)
@@ -91,7 +86,7 @@ namespace Updater
         void ElevationThread()
         {
             // Remove both the /RELAUNCH= and /ELEVATE= command-line flags from the child process - it should not do either.
-            var processInfo = new ProcessStartInfo(Application.ExecutablePath, String.Join(" ", Environment.GetCommandLineArgs().Skip(1).Where(a => !a.StartsWith(UpdateManager.RelaunchCommandLine)).Where(a => !a.StartsWith(UpdateManager.ElevationCommandLine)).ToArray()));
+            var processInfo = new ProcessStartInfo(Application.ExecutablePath, String.Join(" ", Environment.GetCommandLineArgs().Skip(1).Where(a => !a.StartsWith(UpdateManager.RelaunchCommandLine) && !a.StartsWith(UpdateManager.ElevationCommandLine)).ToArray()));
             processInfo.Verb = "runas";
 
             var process = Process.Start(processInfo);

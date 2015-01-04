@@ -171,6 +171,7 @@ namespace ORTS
                     "Menu.exe",
                     "RunActivity.exe",
                     "RunActivityLAA.exe",
+                    "Updater.exe",
                 };
                 var tools = new List<ToolStripItem>();
                 foreach (var executable in Directory.GetFiles(System.IO.Path.GetDirectoryName(Application.ExecutablePath), "*.exe"))
@@ -455,7 +456,7 @@ namespace ORTS
                 return;
             }
 
-            UpdateManager.Update(this.Handle);
+            UpdateManager.Update();
 
             if (UpdateManager.LastUpdateError != null)
             {
@@ -471,7 +472,6 @@ namespace ORTS
 
         void buttonTools_Click(object sender, EventArgs e)
         {
-
             contextMenuStripTools.Show(buttonTools, new Point(0, buttonTools.ClientSize.Height), ToolStripDropDownDirection.Default);
         }
 

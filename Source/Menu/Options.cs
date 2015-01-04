@@ -452,7 +452,7 @@ namespace ORTS
         private void comboBoxLanguage_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (Initialized)
-                MessageBox.Show(catalog.GetString("Please restart Open Rails in order to load the new language."));
+                MessageBox.Show(catalog.GetStringFmt("Please restart {0} in order to load the new language.", Application.ProductName), Application.ProductName);
         }
 
         private void AdhesionFactorTrackBar1_ValueChanged(object sender, EventArgs e)
