@@ -789,7 +789,7 @@ namespace MSTS.Parsers
             RotationalInertia = 1 << 25,
 
               /// <summary>
-            /// Valid Units: N/m/s^2, lbf/mph^2
+            /// Valid Units: Nm/s^2, lbf/mph^2
             /// <para>Scaled to N/m/s^2.</para>
             /// </summary>            
             ResistanceDavisC = 1 << 26,
@@ -1093,7 +1093,7 @@ namespace MSTS.Parsers
                 switch (suffix)
                 {
                     case "": return 1.0;        
-                    case "N/m/s^2": return 1;
+                    case "Nm/s^2": return 1;
                     case "lbf/mph^2": return 22.42849;  // 1 lbf = 4.4822162, 1 mph = 0.44704 mps +> 4.4822162 / (0.44704 * 0.44704) = 22.42849
                 }            
 
@@ -2983,7 +2983,7 @@ namespace MSTS.Parsers
             RotationalInertia = 1 << 25,
 
             /// <summary>
-            /// Valid Units: N/m/s^2, lbf/mph^2
+            /// Valid Units: Nm/s^2, lbf/mph^2
             /// <para>Scaled to N/m/s^2.</para>
             /// </summary>            
             ResistanceDavisC = 1 << 26,
@@ -3285,7 +3285,7 @@ namespace MSTS.Parsers
                 switch (suffix)
                 {
                     case "": return 1.0f;
-                    case "N/m/s^2": return 1;
+                    case "Nm/s^2": return 1;
                     case "lbf/mph^2": return 22.42849f;  // 1 lbf = 4.4822162, 1 mph = 0.44704 mps +> 4.4822162 / (0.44704 * 0.44704) = 22.42849
                 }
 
