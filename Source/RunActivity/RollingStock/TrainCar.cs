@@ -618,8 +618,9 @@ namespace ORTS
         public virtual void SignalEvent(PowerSupplyEvent evt) { }
         public virtual void SignalEvent(PowerSupplyEvent evt, int id) { }
 
-        public virtual string GetStatus() { return null; }
-        public virtual string GetDebugStatus() { return null; }
+        public virtual string GetStatus(bool isMetric = true) { return null; }
+        public virtual string GetDebugStatus(bool isMetric = true) { return null; }
+        public virtual string GetDetailDebugStatus(bool isMetric = true) { return null; }
         public virtual string GetTrainBrakeStatus(PressureUnit unit) { return null; }
         public virtual string GetEngineBrakeStatus(PressureUnit unit) { return null; }
         public virtual string GetDynamicBrakeStatus() { return null; }

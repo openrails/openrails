@@ -483,6 +483,16 @@ namespace ORTS
 
         }
 
+
+        public string GetStatus()
+        {
+            var status = new StringBuilder();
+            if(currentGearIndex >= 0)
+                status.AppendFormat("{0}", currentGearIndex + 1);
+            else
+                status.AppendFormat("{0}", "N");
+            return status.ToString();
+        }
     }
 
     public enum GearBoxOperation

@@ -804,29 +804,37 @@ namespace ORTS
             return data;
         }
 
-        public override string GetStatus()
+        public override string GetStatus(bool isMetric = true)
         {
             var result = new StringBuilder();
 
             //result.AppendFormat("Diesel engine = {0}\n", DieselEngines[0].EngineStatus.ToString());
-            result.AppendFormat("Diesel engine = {0}\n", DieselEngines.GetStatus());
+            result.AppendFormat("Diesel engine = {0}\n", DieselEngines.GetStatus(isMetric));
             if(DieselEngines.HasGearBox)
-                result.AppendFormat("Gear = {1}\n", DieselEngines[0].RealRPM, DieselEngines[0].GearBox.CurrentGearIndex < 0 ? "N" : (DieselEngines[0].GearBox.CurrentGearIndex + 1).ToString(), DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Automatic ? "Automatic gear" : "");
+                result.AppendFormat("Gear{1} = {0}\n", DieselEngines[0].GearBox.GetStatus(), DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Automatic ? " (Automatic) " : " (Manual) ");
             result.AppendFormat("Diesel level = {0:F0} L ({1:F0} gal)\n", DieselLevelL, DieselLevelL / 3.785f);
             result.AppendFormat("Diesel flow = {0:F1} L/h ({1:F1} gal/h\n", DieselFlowLps * 3600.0f, DieselFlowLps * 3600.0f / 3.785f);
-            //result.AppendFormat("Diesel temp = {0:F1} °C - Cooling active: {1:F0} \n", DieselEngines[0].DieselTemperatureDeg, DieselEngines[0].DieselTempCoolingRunning);
-            //result.AppendFormat("Oil pressure = {0:F1} PSI ", DieselEngines[0].DieselOilPressurePSI);
+            
             return result.ToString();
         }
 
-        public override string GetDebugStatus()
+        public override string GetDebugStatus(bool isMetric = true)
         {
             var status = new StringBuilder();
             status.AppendFormat("Car {0}\t{2} {1}\t{3}\t{4:F0}%\t{5:F0}m/s\t{6:F0}kW\t{7:F0}kN\t{8}\t{9}\t", UiD, Flipped ? "(flip)" : "", Direction == Direction.Forward ? "Fwd" : Direction == Direction.Reverse ? "Rev" : "N", AcceptMUSignals ? "MU'd" : "Single", ThrottlePercent, SpeedMpS, MotiveForceN * SpeedMpS / 1000, MotiveForceN / 1000, WheelSlip ? "Slipping" : "", CouplerOverloaded ? "Coupler overloaded" : "");
             if(DieselEngines.HasGearBox)
-                status.AppendFormat("Diesel:\t{0}\t{1:F0}RPM\tGear {2}\t Fuel \t{3:F0}L\t{4:F0}L/h", DieselEngines[0].EngineStatus, DieselEngines[0].RealRPM, DieselEngines.HasGearBox ? DieselEngines[0].GearBox.CurrentGearIndex : 0, DieselLevelL, DieselFlowLps * 3600.0f);
+                status.AppendFormat("Diesel:\t{0}\t{1:F0}RPM\tGear {2}\t Fuel \t{3:F0}L\t{4:F0}L/h", DieselEngines[0].EngineStatus, DieselEngines[0].RealRPM, DieselEngines[0].GearBox.GetStatus(), DieselLevelL, DieselFlowLps * 3600.0f);
             else
                 status.AppendFormat("Diesel:\t{0}\t{1:F0}RPM\t Fuel \t{2:F0}L\t{3:F0}L/h", DieselEngines[0].EngineStatus, DieselEngines[0].RealRPM, DieselLevelL, DieselFlowLps * 3600.0f);
+            return status.ToString();
+        }
+
+        public override string GetDetailDebugStatus(bool isMetric = true)
+        {
+            var status = new StringBuilder();
+            status.AppendFormat("Diesel level = {0:F0} L ({1:F0} gal)\n", DieselLevelL, DieselLevelL / 3.785f);
+            status.Append(DieselEngines.GetDetailDebugStatus(isMetric));
+            status.Append("\n");
             return status.ToString();
         }
 

@@ -508,6 +508,8 @@ namespace ORTS.Viewer3D.Popups
             var locomotive = Viewer.PlayerLocomotive;
             var train = locomotive.Train;
 
+            TableAddLines(table, locomotive.GetDetailDebugStatus(Viewer.MilepostUnitsMetric));
+
             TableAddLines(table, String.Format("Direction\t{0}\tReverser\t{1:F0}%\tThrottle\t{2:F0}%\tD-brake\t{3:F0}%", train.MUDirection, train.MUReverserPercent, train.MUThrottlePercent, train.MUDynamicBrakePercent));
             TableAddLine(table);
             foreach (var car in train.Cars)
