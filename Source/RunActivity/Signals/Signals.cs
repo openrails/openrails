@@ -4383,13 +4383,12 @@ namespace ORTS
                     TrVectorNode thisVNode = thisNode.TrVectorNode;
                     foreach (TrVectorSection thisSection in thisVNode.TrVectorSections)
                     {
-                        float thisLength = 0f;
                         if (!tsectiondat.TrackSections.ContainsKey(thisSection.SectionIndex))
                         {
-                            //TODO : how to sort out the overall length in this situation?
-                            continue;  // section ID is missing
+                            continue;  // missing track section
                         }
 
+                        float thisLength = 0f;
                         MSTS.Formats.TrackSection TS = tsectiondat.TrackSections[thisSection.SectionIndex];
 
                         // determine length
@@ -4453,9 +4452,8 @@ namespace ORTS
                         for (int iXRef = thisNode.TCCrossReference.Count - 1; iXRef >= 0; iXRef--)
                         {
                             TrackCircuitSectionXref TCSXRef = thisNode.TCCrossReference[iXRef];
-
                             // forward direction
-                            float TCSStartOffset = TCSXRef.OffsetLength[0];
+                            float TCSStartOffset = TCSXRef.OffsetLength[1];
                             float TCSLength = TCSXRef.Length;
                             TrackCircuitSection thisTCS = TrackCircuitList[TCSXRef.Index];
 
@@ -4468,24 +4466,24 @@ namespace ORTS
                                 // if in tunnel, set start in tunnel and check end
                                 if (TCSInTunnel)
                                 {
-                                    TCSTunnelData[0].TunnelStart = -1;
-                                    TCSTunnelData[0].TCSStartOffset = processedLength;
+                                    TCSTunnelData[1].TunnelStart = -1;
+                                    TCSTunnelData[1].TCSStartOffset = processedLength;
                                 }
                                 else
                                 // else start new tunnel
                                 {
-                                    TCSTunnelData[0].TunnelStart = tunnelData[0] - TCSStartOffset;
-                                    tunnelStart = TCSTunnelData[0].TunnelStart;
-                                    TCSTunnelData[0].TCSStartOffset = -1;
+                                    TCSTunnelData[1].TunnelStart = tunnelData[0] - TCSStartOffset;
+                                    tunnelStart = TCSTunnelData[1].TunnelStart;
+                                    TCSTunnelData[1].TCSStartOffset = -1;
                                 }
 
                                 if ((TCSStartOffset + TCSLength) >= (tunnelData[0] + tunnelData[1]))  // tunnel end is in this section
                                 {
                                     TCSInTunnel = false;
-                                    TCSTunnelData[0].TunnelEnd = tunnelStart + tunnelData[1] - processedLength;
+                                    TCSTunnelData[1].TunnelEnd = tunnelStart + tunnelData[1] - processedLength;
 
-                                    TCSTunnelData[0].LengthInTCS = TCSTunnelData[0].TunnelEnd - tunnelStart;
-                                    TCSTunnelData[0].TotalLength = tunnelData[1];
+                                    TCSTunnelData[1].LengthInTCS = TCSTunnelData[1].TunnelEnd - tunnelStart;
+                                    TCSTunnelData[1].TotalLength = tunnelData[1];
 
                                     processedLength = 0;
 
@@ -4507,9 +4505,9 @@ namespace ORTS
                                 {
                                     TCSInTunnel = true;
 
-                                    TCSTunnelData[0].TunnelEnd = -1;
-                                    TCSTunnelData[0].LengthInTCS = TCSLength - tunnelStart;
-                                    TCSTunnelData[0].TotalLength = tunnelData[1];
+                                    TCSTunnelData[1].TunnelEnd = -1;
+                                    TCSTunnelData[1].LengthInTCS = TCSLength - tunnelStart;
+                                    TCSTunnelData[1].TotalLength = tunnelData[1];
 
                                     processedLength += (TCSLength - tunnelStart);
 
@@ -4523,22 +4521,22 @@ namespace ORTS
                             {
                                 foreach (TrackCircuitSection.tunnelInfoData[] thisTunnelInfo in thisTCS.TunnelInfo)
                                 {
-                                    thisTunnelInfo[1].TunnelStart = thisTunnelInfo[0].TunnelEnd < 0 ? -1 : thisTCS.Length - thisTunnelInfo[0].TunnelEnd;
-                                    thisTunnelInfo[1].TunnelEnd = thisTunnelInfo[0].TunnelStart < 0 ? -1 : thisTCS.Length - thisTunnelInfo[0].TunnelStart;
-                                    thisTunnelInfo[1].LengthInTCS = thisTunnelInfo[0].LengthInTCS;
-                                    thisTunnelInfo[1].TotalLength = thisTunnelInfo[0].TotalLength;
+                                    thisTunnelInfo[0].TunnelStart = thisTunnelInfo[1].TunnelEnd < 0 ? -1 : thisTCS.Length - thisTunnelInfo[1].TunnelEnd;
+                                    thisTunnelInfo[0].TunnelEnd = thisTunnelInfo[1].TunnelStart < 0 ? -1 : thisTCS.Length - thisTunnelInfo[1].TunnelStart;
+                                    thisTunnelInfo[0].LengthInTCS = thisTunnelInfo[1].LengthInTCS;
+                                    thisTunnelInfo[0].TotalLength = thisTunnelInfo[1].TotalLength;
 
-                                    if (thisTunnelInfo[1].TunnelStart >= 0)
+                                    if (thisTunnelInfo[0].TunnelStart >= 0)
                                     {
-                                        thisTunnelInfo[1].TCSStartOffset = -1;
+                                        thisTunnelInfo[0].TCSStartOffset = -1;
                                     }
-                                    else if (thisTunnelInfo[0].TCSStartOffset < 0)
+                                    else if (thisTunnelInfo[1].TCSStartOffset < 0)
                                     {
-                                        thisTunnelInfo[1].TCSStartOffset = thisTunnelInfo[1].TotalLength - thisTunnelInfo[1].LengthInTCS;
+                                        thisTunnelInfo[0].TCSStartOffset = thisTunnelInfo[0].TotalLength - thisTunnelInfo[0].LengthInTCS;
                                     }
                                     else
                                     {
-                                        thisTunnelInfo[1].TCSStartOffset = thisTunnelInfo[1].TotalLength - thisTunnelInfo[0].TCSStartOffset - thisTCS.Length;
+                                        thisTunnelInfo[0].TCSStartOffset = thisTunnelInfo[0].TotalLength - thisTunnelInfo[1].TCSStartOffset - thisTCS.Length;
                                     }
                                 }
                             }
