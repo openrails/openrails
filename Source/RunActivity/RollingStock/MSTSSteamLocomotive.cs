@@ -134,8 +134,6 @@ namespace ORTS
         float CylinderStrokeM;
         float CylinderDiameterM;
         float MaxBoilerOutputLBpH;  // maximum boiler steam generation rate
-        float ExhaustLimitLBpH;     // steam usage rate that causes increased back pressure
-        public float BasicSteamUsageLBpS;  // steam used for auxiliary stuff - ie loco at rest
         float IdealFireMassKG;      // Target fire mass
         float MaxFireMassKG;        // Max possible fire mass
         float MaxFiringRateKGpS;              // Max rate at which fireman or stoker can can feed coal into fire
@@ -448,12 +446,6 @@ namespace ORTS
                 case "engine(ortscylinderportopening": CylinderPortOpeningFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(boilervolume": BoilerVolumeFT3 = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null); break;
                 case "engine(maxboilerpressure": MaxBoilerPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
-                case "engine(maxboileroutput": MaxBoilerOutputLBpH = stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null); break;
-                case "engine(exhaustlimit": ExhaustLimitLBpH = stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null); break;
-                case "engine(basicsteamusage": BasicSteamUsageLBpS = stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null) / 3600; break;
-                case "engine(safetyvalvessteamusage": SafetyValveUsageLBpS = stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null) / 3600; break;
-                case "engine(safetyvalvepressuredifference": SafetyValveDropPSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
-                case "engine(idealfiremass": IdealFireMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(shovelcoalmass": ShovelMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(maxtendercoalmass": MaxTenderCoalMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(maxtenderwatermass": MaxTenderWaterMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
@@ -516,18 +508,12 @@ namespace ORTS
             CylinderPortOpeningFactor = locoCopy.CylinderPortOpeningFactor;
             BoilerVolumeFT3 = locoCopy.BoilerVolumeFT3;
             MaxBoilerPressurePSI = locoCopy.MaxBoilerPressurePSI; 
-            MaxBoilerOutputLBpH = locoCopy.MaxBoilerOutputLBpH;
-            ExhaustLimitLBpH = locoCopy.ExhaustLimitLBpH;
-            BasicSteamUsageLBpS = locoCopy.BasicSteamUsageLBpS;
-            SafetyValveUsageLBpS = locoCopy.SafetyValveUsageLBpS;
-            SafetyValveDropPSI = locoCopy.SafetyValveDropPSI;
-            IdealFireMassKG = locoCopy.IdealFireMassKG;
             ShovelMassKG = locoCopy.ShovelMassKG;
             MaxTenderCoalMassKG = locoCopy.MaxTenderCoalMassKG;
             MaxTenderWaterMassKG = locoCopy.MaxTenderWaterMassKG;
-            ORTSMaxFiringRateKGpS = locoCopy.ORTSMaxFiringRateKGpS;
-            Stoker = locoCopy.Stoker;
             MaxFiringRateKGpS = locoCopy.MaxFiringRateKGpS;
+            Stoker = locoCopy.Stoker;
+            ORTSMaxFiringRateKGpS = locoCopy.ORTSMaxFiringRateKGpS;
             CutoffController = (MSTSNotchController)locoCopy.CutoffController.Clone();
             Injector1Controller = (MSTSNotchController)locoCopy.Injector1Controller.Clone();
             Injector2Controller = (MSTSNotchController)locoCopy.Injector2Controller.Clone();
@@ -625,10 +611,6 @@ namespace ORTS
                 DriverWheelRadiusM = 1;
             if (ZeroError(MaxBoilerPressurePSI, "MaxBoilerPressure"))
                 MaxBoilerPressurePSI = 1;
-     //       if (ZeroError(MaxBoilerOutputLBpH, "MaxBoilerOutput"))
-     //           MaxBoilerOutputLBpH = 1;
-    //        if (ZeroError(ExhaustLimitLBpH, "ExhaustLimit"))
-    //            ExhaustLimitLBpH = MaxBoilerOutputLBpH;
             if (ZeroError(BoilerVolumeFT3, "BoilerVolume"))
                 BoilerVolumeFT3 = 1;
 
@@ -680,7 +662,7 @@ namespace ORTS
                 Trace.TraceInformation("InitialPressureDropRatioRpMtoX - default information read from SteamTables");
             }
 
-             RefillTenderWithCoal();
+            RefillTenderWithCoal();
             RefillTenderWithWater();
 
             // Computed Values
@@ -1128,7 +1110,7 @@ namespace ORTS
             StackSteamVelocityMpS.Update(elapsedClockSeconds, (float)Math.Sqrt(KPa.FromPSI(CylinderExhaustPressureAtmPSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3));
             CylindersSteamVelocityMpS = (float)Math.Sqrt(KPa.FromPSI(CylinderPressureAtmPSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3);
 
-            StackSteamVolumeM3pS = Kg.FromLb(CylinderSteamUsageLBpS + BlowerSteamUsageLBpS + BasicSteamUsageLBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG;
+            StackSteamVolumeM3pS = Kg.FromLb(CylinderSteamUsageLBpS + BlowerSteamUsageLBpS + RadiationSteamLossLBpS + CompSteamUsageLBpS + GeneratorSteamUsageLBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG;
             CylindersSteamVolumeM3pS = (CylinderCocksAreOpen ? Kg.FromLb(CylCockSteamUsageLBpS) / NumCylinders * SteamVaporSpecVolumeAt100DegC1BarM3pKG : 0);
             SafetyValvesSteamVolumeM3pS = SafetyIsOn ? Kg.FromLb(SafetyValveUsageLBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG : 0;
 
@@ -2199,6 +2181,7 @@ namespace ORTS
      // To convert the force at the crank to the force at wheel tread = Crank Force * Cylinder Stroke / Diameter of Drive Wheel (inches) - internal friction should be deducted from this as well.
 
     TangentialWheelTreadForceLbf = (TangentialCrankWheelForceLbf * Me.ToIn(CylinderStrokeM) / (Me.ToIn(DriverWheelRadiusM) * 2.0f)) - InternalResistance;
+    TangentialWheelTreadForceLbf = MathHelper.Clamp(TangentialWheelTreadForceLbf, 0, TangentialWheelTreadForceLbf);
 
     // Vertical thrust of the connecting rod will reduce or increase the effect of the adhesive weight of the locomotive
     // Vert Thrust = Piston Force * 3/4 * r/l * sin(crank angle)
