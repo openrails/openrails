@@ -203,8 +203,6 @@ namespace ORTS.Common
         public static float FromLbf(float lbf)  { return lbf    * (1.0f / 0.224808943871f); }
         /// <summary>Convert from Newtons to Pound-force</summary>
         public static float ToLbf(float newton) { return newton * 0.224808943871f; }
-        /// <summary>Convert from Newtons to Kilo Newtons</summary>
-        public static float TokN(float newton) { return newton * 0.001f; }
     }
 
     /// <summary>
@@ -503,10 +501,6 @@ namespace ORTS.Common
         static string psi = Catalog.GetString("psi");
         static string inhg = Catalog.GetString("inHg");
         static string kgfpcm2 = Catalog.GetString("kgf/cm^2");
-        static string kn = Catalog.GetString("kN");
-        static string lbf = Catalog.GetString("lbf");
-        static string kW = Catalog.GetString("kW");
-        static string hp = Catalog.GetString("hp");
 
         /// <summary>
         /// Formatted unlocalized speed string, used in reports and logs.
@@ -662,27 +656,6 @@ namespace ORTS.Common
 
             return String.Format(CultureInfo.CurrentCulture, format, pressureOut);
         }
-        /// <summary>
-        /// Formatted localized force string, used in reports and logs.
-        /// </summary>
-        /// <param name="force">Force in Newtons</param>
-        /// <param name="isMetric">Metric system flag</param>
-        public static string FormatForce(float force, bool isMetric)
-        {
-            return String.Format(CultureInfo.CurrentCulture,
-                "{0:F0} {1}", isMetric ? N.TokN(force) : N.ToLbf(force), isMetric ? kn : lbf);
-        }
-        /// <summary>
-        /// Formatted localized power string, used in reports and logs.
-        /// </summary>
-        /// <param name="force">Power in Watts</param>
-        /// <param name="isMetric">Metric system flag</param>
-        public static string FormatPower(float watts, bool isMetric)
-        {
-            return String.Format(CultureInfo.CurrentCulture,
-                "{0:F0} {1}", isMetric ? W.ToKW(watts) : W.ToHp(watts), isMetric ? kW : hp);
-        }
-
     }
 
 }

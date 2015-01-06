@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS.Parsers;
-using ORTS.Common;
 
 namespace ORTS
 {
@@ -278,7 +277,7 @@ namespace ORTS
             return new DieselEnum(DEList.ToArray());
         }
 
-        public string GetStatus(bool isMetric = true)
+        public string GetStatus()
         {
             var result = new StringBuilder();
 
@@ -286,14 +285,14 @@ namespace ORTS
                 result.AppendFormat("{0}  ", eng.EngineStatus.ToString());
             result.AppendFormat("\n");
 
-            result.AppendFormat("Diesel Power = {0:F1} ", FormatStrings.FormatPower(MaxOutputPowerW, isMetric));
-            if (DEList.Count > 1)
-            {
-                result.AppendFormat(" [");
-                foreach (DieselEngine eng in DEList)
-                    result.AppendFormat("{0:F0} ", FormatStrings.FormatPower(MaxOutputPowerW, isMetric));
-                result.AppendFormat("]");
-            }
+            result.AppendFormat("Diesel Power = {0:F1} W ( ", MaxOutputPowerW * 0.001f);
+            foreach (DieselEngine eng in DEList)
+                result.AppendFormat("{0:F0} W ", eng.MaxOutputPowerW * 0.001f);
+            result.AppendFormat(")\n");
+
+            result.AppendFormat("Diesel Load = ");
+            foreach (DieselEngine eng in DEList)
+                result.AppendFormat("{0:F1}% ", eng.LoadPercent);
             result.AppendFormat("\n");
 
             result.AppendFormat("Diesel RPM = ");
@@ -301,33 +300,20 @@ namespace ORTS
                 result.AppendFormat("{0:F0} RPM ", eng.RealRPM);
             result.AppendFormat("\n");
 
-            return result.ToString();
-        }
-
-        public string GetDetailDebugStatus(bool isMetric = true)
-        {
-            var result = new StringBuilder();
-
-            result.AppendFormat("Engine\tStatus\tRPM\tPower\tLoad\tFuel Flow\tTemp\tOil");
-            if (HasGearBox)
-                result.AppendFormat("\tGearBox");
-            result.AppendFormat("\n");
-            int EngineNumber = 0;
+            result.AppendFormat("Diesel Flow = ");
             foreach (DieselEngine eng in DEList)
-            {
-                result.AppendFormat("{0}\t", EngineNumber++);
-                result.AppendFormat("{0}\t", eng.EngineStatus.ToString());
-                result.AppendFormat("{0:F0}\t", eng.RealRPM);
-                result.AppendFormat("{0}\t", FormatStrings.FormatPower(eng.MaxOutputPowerW, isMetric));
-                result.AppendFormat("{0:F1}%\t", eng.LoadPercent);
-                result.AppendFormat("{0:F1} L/h\t", eng.DieselFlowLps * 3600.0f);
-                result.AppendFormat("{0:F1} °C\t", eng.DieselTemperatureDeg);
-                result.AppendFormat("{0:F1} PSI", eng.DieselOilPressurePSI);
-                if (eng.HasGearBox)
-                    result.AppendFormat("\t{0}", eng.GearBox.GetStatus());
-                result.AppendFormat("\n");
-            }
-            
+                result.AppendFormat("{0:F1} L/h ", eng.DieselFlowLps * 3600.0f);
+            result.AppendFormat("\n");
+
+            result.AppendFormat("Diesel Temp = ");
+            foreach (DieselEngine eng in DEList)
+                result.AppendFormat("{0:F1} °C ", eng.DieselTemperatureDeg);
+            result.AppendFormat("\n");
+
+            result.AppendFormat("Diesel Oil pressure = ");
+            foreach (DieselEngine eng in DEList)
+                result.AppendFormat("{0:F1} PSI ", eng.DieselOilPressurePSI);
+            result.AppendFormat("\n");
 
             return result.ToString();
         }
