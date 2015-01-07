@@ -662,8 +662,8 @@ namespace ORTS.Viewer3D
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
                 ShaderPassesSky.Current.End();
-                MSTSSkyShader.End();
             }
+            MSTSSkyShader.End();
             MSTSSkyShader.CurrentTechnique = MSTSSkyShader.Techniques["Moon"];
             Viewer.World.MSTSSky.MSTSSkyMesh.drawIndex = 2;
 

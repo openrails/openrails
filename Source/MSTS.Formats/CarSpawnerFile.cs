@@ -42,7 +42,13 @@ namespace MSTS.Formats
                         if (--count < 0)
                             STFException.TraceWarning(stf, "Skipped extra CarSpawnerItem");
                         else
-                            spawnerDataItems.Add(new CarSpawnerItemData(stf, shapePath));
+                        {
+                            var dataItem = new CarSpawnerItemData(stf, shapePath);
+                            if (File.Exists(dataItem.name))
+                                spawnerDataItems.Add(dataItem);
+                            else
+                                STFException.TraceWarning(stf, String.Format("Non-existent shape file {0} referenced", dataItem.name));
+                        }
                     }),
                 });
 				if (count > 0)
