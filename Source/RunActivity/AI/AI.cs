@@ -507,7 +507,7 @@ namespace ORTS
                     train.Cars.Add(car);
                     car.Train = train;
                     car.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
-                    train.Length += car.LengthM;
+                    train.Length += car.CarLengthM;
                     if (isInitialPlayerTrain) car.CarID = "0 - " + wagon.UiD;
                     else car.CarID = "AI" + train.Number.ToString() + " - " + (train.Cars.Count - 1).ToString();
                 }

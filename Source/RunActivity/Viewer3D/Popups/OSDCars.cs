@@ -72,7 +72,7 @@ namespace ORTS.Viewer3D.Popups
                         if (labels.ContainsKey(car))
                             newLabels[car] = labels[car];
                         else
-                            newLabels[car] = new LabelPrimitive(Owner.Label3DMaterial, Color.Blue, Color.White, car.HeightM) { Position = car.WorldPosition };
+                            newLabels[car] = new LabelPrimitive(Owner.Label3DMaterial, Color.Blue, Color.White, car.CarHeightM) { Position = car.WorldPosition };
                         newLabels[car].Text = car.CarID;
                     }
                     else if (State == DisplayState.Trains && (car.Train == null || car.Train.FirstCar == car))
@@ -80,7 +80,7 @@ namespace ORTS.Viewer3D.Popups
                         if (labels.ContainsKey(car))
                             newLabels[car] = labels[car];
                         else
-                            newLabels[car] = new LabelPrimitive(Owner.Label3DMaterial, Color.Blue, Color.White, car.HeightM) { Position = car.WorldPosition };
+                            newLabels[car] = new LabelPrimitive(Owner.Label3DMaterial, Color.Blue, Color.White, car.CarHeightM) { Position = car.WorldPosition };
                         newLabels[car].Text = car.Train == null ? car.CarID : car.Train.Name;
                     }
                 }

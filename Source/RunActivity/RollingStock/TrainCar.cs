@@ -80,8 +80,9 @@ namespace ORTS
         public List<int> SoundSourceIDs = new List<int>();
 
         // some properties of this car
-        public float LengthM = 40;       // derived classes must overwrite these defaults
-        public float HeightM = 4;        // derived classes must overwrite these defaults
+        public float CarWidthM = 2.5f;
+        public float CarLengthM = 40;       // derived classes must overwrite these defaults
+        public float CarHeightM = 4;        // derived classes must overwrite these defaults
         public float MassKG = 10000;
         public bool IsDriveable;
         public bool IsFreight;           // indication freight wagon or passenger car
@@ -206,7 +207,8 @@ namespace ORTS
         public SmoothedData MotiveForceSmoothedN = new SmoothedData(0.5f);
         public float PrevMotiveForceN;
         public float GravityForceN;  // Newtons  - signed relative to direction of car - 
-        public float CurveForceN;   // in Newtons
+        public float CurveForceN;   // Resistive force due to curve, in Newtons
+        public float TunnelForceN;  // Resistive force due to tunnel, in Newtons
         public float FrictionForceN; // in Newtons ( kg.m/s^2 ) unsigned, includes effects of curvature
         public float BrakeForceN;    // brake force in Newtons
         public float TotalForceN; // sum of all the forces active on car relative train direction
@@ -215,6 +217,7 @@ namespace ORTS
 
         public bool CurveResistanceSpeedDependent;
         public bool CurveSpeedDependent;
+        public bool TunnelResistanceDependent;
 
         // temporary values used to compute coupler forces
         public float CouplerForceA; // left hand side value below diagonal
@@ -255,7 +258,7 @@ namespace ORTS
         float CurveResistanceZeroSpeedFactor = 0.5f; // Based upon research (Russian experiments - 1960) the older formula might be about 2x actual value
         float CoefficientFriction = 0.5f; // Initialise coefficient of Friction - 0.5 for dry rails, 0.1 - 0.3 for wet rails
         float RigidWheelBaseM;   // Vehicle rigid wheelbase, read from MSTS Wagon file
-
+        float TrainCrossSectionAreaM2; // Cross sectional area of the train
         // used by tunnel processing
         public struct CarTunnelInfoData
         {
@@ -270,6 +273,7 @@ namespace ORTS
         {
             CurveResistanceSpeedDependent = Simulator.Settings.CurveResistanceSpeedDependent;
             CurveSpeedDependent = Simulator.Settings.CurveSpeedDependent;
+            TunnelResistanceDependent = Simulator.Settings.TunnelResistanceDependent;
         }
 
         // called when it's time to update the MotiveForce and FrictionForce
@@ -290,6 +294,7 @@ namespace ORTS
  
             UpdateCurveSpeedLimit(); // call this first as it will provide inputs for the curve force.
             UpdateCurveForce();
+            UpdateTunnelForce();
             
             // acceleration
             if (elapsedClockSeconds > 0.0f)
@@ -303,6 +308,105 @@ namespace ORTS
             }
             UpdateSoundPosition();
         }
+
+
+        #region Calculate resistance due to tunnels
+        /// <summary>
+        /// Tunnel force (resistance calculations based upon formula presented in papaer titled "Reasonable compensation coefficient of maximum gradient in long railway tunnels"
+        /// </summary>
+        public virtual void UpdateTunnelForce()
+        {
+          if (Train.IsPlayerDriven)   // Only calculate tunnel resistance when it is the player train.
+          {
+              if (TunnelResistanceDependent)
+              {
+                  if (CarTunnelData.FrontPositionBeyondStartOfTunnel.HasValue)
+                  {
+
+                      float? TunnelStart;
+                      float? TunnelAhead;
+                      float? TunnelBehind;
+
+                      TunnelStart = CarTunnelData.FrontPositionBeyondStartOfTunnel;      // position of front of wagon wrt start of tunnel
+                      TunnelAhead = CarTunnelData.LengthMOfTunnelAheadFront;            // Length of tunnel remaining ahead of front of wagon (negative if front of wagon out of tunnel)
+                      TunnelBehind = CarTunnelData.LengthMOfTunnelBehindRear;           // Length of tunnel behind rear of wagon (negative if rear of wagon has not yet entered tunnel)
+
+                      // Calculate tunnel default effective cross-section area, and tunnel perimeter - based upon the designed speed limit of the railway (TRK File)
+
+                      float TunnelLengthM = CarTunnelData.LengthMOfTunnelAheadFront.Value + CarTunnelData.LengthMOfTunnelBehindRear.Value;
+                      float TunnelCrossSectionAreaM2 = 0.0f;
+                      float TunnelPerimeterM = 0.0f;
+                      float TrainLengthTunnelM = Train.Length;
+                      float TrainMassTunnelKg = Train.MassKg;
+                      float PrevTrainCrossSectionAreaM2 = TrainCrossSectionAreaM2;
+                      TrainCrossSectionAreaM2 = CarWidthM * CarHeightM;
+                      if (TrainCrossSectionAreaM2 < PrevTrainCrossSectionAreaM2)
+                      {
+                          TrainCrossSectionAreaM2 = PrevTrainCrossSectionAreaM2;  // Assume locomotive cross-sectional area is the largest, if not use new one.
+                      }
+                      const float DensityAirKgpM3 = 1.2f;
+
+                      // Double track values yet to be added
+
+                      if (RouteSpeedMpS >= 97.22) // if route speed greater then 350km/h
+                      {
+                          TunnelCrossSectionAreaM2 = 70.0f;
+                          TunnelPerimeterM = 32.0f;
+                      }
+                      else if (RouteSpeedMpS >= 69.4 && RouteSpeedMpS < 97.22) // Route speed greater then 250km/h and less then 350km/h
+                      {
+                          TunnelCrossSectionAreaM2 = 70.0f;
+                          TunnelPerimeterM = 32.0f;
+                      }
+                      else if (RouteSpeedMpS >= 55.5 && RouteSpeedMpS < 69.4) // Route speed greater then 200km/h and less then 250km/h
+                      {
+                          TunnelCrossSectionAreaM2 = 58.0f;
+                          TunnelPerimeterM = 28.0f;
+                      }
+                      else if (RouteSpeedMpS >= 44.4 && RouteSpeedMpS < 55.5) // Route speed greater then 160km/h and less then 200km/h
+                      {
+                          TunnelCrossSectionAreaM2 = 50.0f;
+                          TunnelPerimeterM = 25.5f;
+                      }
+                      else if (RouteSpeedMpS >= 33.3 && RouteSpeedMpS < 44.4) // Route speed greater then 120km/h and less then 160km/h
+                      {
+                          TunnelCrossSectionAreaM2 = 42.0f;
+                          TunnelPerimeterM = 22.5f;
+                      }
+                      else       // Route speed less then 120km/h
+                      {
+                          TunnelCrossSectionAreaM2 = 25.0f;  // Typically older slower speed designed tunnels
+                          TunnelPerimeterM = 21.0f;
+                      }
+
+                      // 
+                      // Calculate first tunnel factor
+
+                      float TunnelAComponent = (0.00003318f * DensityAirKgpM3 * TunnelCrossSectionAreaM2) / ((1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2)) * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2)));
+                      float TunnelBComponent = 174.419f * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2)) * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2));
+                      float TunnelCComponent = (2.907f * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2)) * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2))) / (4.0f * (TunnelCrossSectionAreaM2 / TunnelPerimeterM));
+
+                      float TempTunnel1 = (float)Math.Sqrt(TunnelBComponent + (TunnelCComponent * (TunnelLengthM - TrainLengthTunnelM) / TrainLengthTunnelM));
+                      float TempTunnel2 = (1.0f - (1.0f / (1.0f + TempTunnel1))) * (1.0f - (1.0f / (1.0f + TempTunnel1)));
+
+                      float UnitAerodynamicDrag = ((TunnelAComponent * TrainLengthTunnelM) / Kg.ToTonne(TrainMassTunnelKg)) * TempTunnel2;
+
+                      TunnelForceN = UnitAerodynamicDrag * Kg.ToTonne(MassKG) * Math.Abs(SpeedMpS) * Math.Abs(SpeedMpS);
+
+                      //        Trace.TraceInformation("Tunnel X-Sect {0} Tunnel Per {1} Tunnel Length {2} Train Length {3} Train Mass {4} speed {5}", TunnelCrossSectionAreaM2, TunnelPerimeterM, TunnelLengthM, TrainLengthTunnelM, TrainMassTunnelKg, Math.Abs(SpeedMpS));
+                      //       Trace.TraceInformation("A {0} B {1} C {2} T1 {3} T2 {4} Wt {5}", TunnelAComponent, TunnelBComponent, TunnelCComponent, TempTunnel1, TempTunnel2, UnitAerodynamicDrag);
+                  }
+                  else
+                  {
+                      TunnelForceN = 0.0f; // Reset tunnel force to zero when train is no longer in the tunnel
+                  }
+              }
+          }
+        }
+
+
+
+        #endregion
 
 
         #region Calculate permissible speeds around curves
@@ -1004,10 +1108,10 @@ namespace ORTS
             if (articulatedFront || articulatedRear)
             {
                 if (articulatedFront && WheelAxles.Count <= 3)
-                    WheelAxles.Add(new WheelAxle(-LengthM / 2, 0, 0) { Part = Parts[0] });
+                    WheelAxles.Add(new WheelAxle(-CarLengthM / 2, 0, 0) { Part = Parts[0] });
 
                 if (articulatedRear && WheelAxles.Count <= 3)
-                    WheelAxles.Add(new WheelAxle(LengthM / 2, 0, 0) { Part = Parts[0] });
+                    WheelAxles.Add(new WheelAxle(CarLengthM / 2, 0, 0) { Part = Parts[0] });
 
                 WheelAxles.Sort(WheelAxles[0]);
             }
@@ -1032,7 +1136,7 @@ namespace ORTS
             int tileZ = traveler.TileZ;
             if (Flipped == backToFront)
             {
-                float o = -LengthM / 2;
+                float o = -CarLengthM / 2;
                 for (int k = 0; k < WheelAxles.Count; k++)
                 {
                     float d = WheelAxles[k].OffsetM - o;
@@ -1043,12 +1147,12 @@ namespace ORTS
                     float z = traveler.Z + 2048 * (traveler.TileZ - tileZ);
                     WheelAxles[k].Part.AddWheelSetLocation(1, o, x, y, z, 0, traveler);
                 }
-                o = LengthM / 2 - o;
+                o = CarLengthM / 2 - o;
                 traveler.Move(o);
             }
             else
             {
-                float o = LengthM / 2;
+                float o = CarLengthM / 2;
                 for (int k = WheelAxles.Count - 1; k>=0 ; k--)
                 {
                     float d = o - WheelAxles[k].OffsetM;
@@ -1059,7 +1163,7 @@ namespace ORTS
                     float z = traveler.Z + 2048 * (traveler.TileZ - tileZ);
                     WheelAxles[k].Part.AddWheelSetLocation(1, o, x, y, z, 0, traveler);
                 }
-                o = LengthM / 2 + o;
+                o = CarLengthM / 2 + o;
                 traveler.Move(o);
             }
             TrainCarPart p0= Parts[0];

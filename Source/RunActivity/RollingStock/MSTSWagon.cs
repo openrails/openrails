@@ -253,9 +253,9 @@ namespace ORTS
                     break;
                 case "wagon(size":
                     stf.MustMatch("(");
-                    stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    HeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    LengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    CarWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    CarHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    CarLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
                 case "wagon(ortstrackgauge":
@@ -415,8 +415,9 @@ namespace ORTS
             FreightShapeFileName = copy.FreightShapeFileName;
             FreightAnimMaxLevelM = copy.FreightAnimMaxLevelM;
             FreightAnimMinLevelM = copy.FreightAnimMinLevelM;
-            HeightM = copy.HeightM;
-            LengthM = copy.LengthM;
+            CarWidthM = copy.CarWidthM;
+            CarHeightM = copy.CarHeightM;
+            CarLengthM = copy.CarLengthM;
             Gauge1M = copy.Gauge1M;
             Gauge2M = copy.Gauge2M;
             XCoGM = copy.XCoGM;

@@ -758,7 +758,7 @@ namespace ORTS.MultiPlayer
 				if (wagonFilePath.ToLower().Contains(".eng")) type = 'e';
 				string newWagonFilePath = SubMissingCar(length, type);
                 car = RollingStock.Load(Program.Simulator, newWagonFilePath);
-				car.LengthM = length;
+				car.CarLengthM = length;
 				car.RealWagFilePath = wagonFilePath;
 				if (Program.Simulator.Confirmer != null)
                     Program.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Missing car, have substituted with other one."));

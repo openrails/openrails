@@ -385,7 +385,7 @@ namespace ORTS.Viewer3D.RollingStock
                             }
                         }
                     }
-                    distanceFromFrontOfTrainM += wagon.LengthM;
+                    distanceFromFrontOfTrainM += wagon.CarLengthM;
                 }
             }
             return nearestPickup;

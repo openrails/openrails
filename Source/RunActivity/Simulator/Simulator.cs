@@ -782,7 +782,7 @@ namespace ORTS
                     else car.CarID = "0 - " + car.UiD; //player's train is always named train 0.
                     train.Cars.Add(car);
                     car.Train = train;
-                    train.Length += car.LengthM;
+                    train.Length += car.CarLengthM;
 
                     var mstsDieselLocomotive = car as MSTSDieselLocomotive;
                     if (Activity != null && mstsDieselLocomotive != null)
@@ -986,7 +986,7 @@ namespace ORTS
                     // our TDB traveller is always at the back of the last car so it needs to be repositioned
                     TrainCar lastCar = train.LastCar;
                     train.RearTDBTraveller.ReverseDirection();
-                    train.RearTDBTraveller.Move(lastCar.LengthM / 2f);
+                    train.RearTDBTraveller.Move(lastCar.CarLengthM / 2f);
                     train.RearTDBTraveller.ReverseDirection();
 
                     train.CalculatePositionOfCars(0);
@@ -1308,11 +1308,11 @@ namespace ORTS
                 {
                     var car = train.Cars[0]; // each car is removed so always detach first car!!!
                     train.Cars.Remove(car);
-                    train.Length = -car.LengthM;
+                    train.Length = -car.CarLengthM;
                     newTrain.Cars.Add(car); // place in rear
                     car.Train = newTrain;
                     car.CarID = String.Copy(newTrain.Name);
-                    newTrain.Length += car.LengthM;
+                    newTrain.Length += car.CarLengthM;
                 }
             }
             else
@@ -1324,11 +1324,11 @@ namespace ORTS
                 {
                     var car = train.Cars[totalCars - 1 - iCar]; // total cars is original length which keeps value despite cars are removed
                     train.Cars.Remove(car);
-                    train.Length -= car.LengthM;
+                    train.Length -= car.CarLengthM;
                     newTrain.Cars.Insert(0, car); // place in front
                     car.Train = newTrain;
                     car.CarID = String.Copy(newTrain.Name);
-                    newTrain.Length += car.LengthM;
+                    newTrain.Length += car.CarLengthM;
                 }
             }
 

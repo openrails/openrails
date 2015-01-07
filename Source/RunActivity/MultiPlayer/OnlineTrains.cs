@@ -181,7 +181,7 @@ namespace ORTS.MultiPlayer
 				try
 				{
                     car = RollingStock.Load(Program.Simulator, wagonFilePath);
-					car.LengthM = player.lengths[i];
+					car.CarLengthM = player.lengths[i];
 				}
 				catch (Exception error)
 				{

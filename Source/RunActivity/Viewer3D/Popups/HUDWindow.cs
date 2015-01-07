@@ -474,7 +474,7 @@ namespace ORTS.Viewer3D.Popups
             TableAddLine(table);
             foreach (var car in train.Cars.Take(20))
             {
-                TableSetCells(table, 0, car.UiD.ToString(), car.Flipped.ToString(), train.IsFreight ? "Freight" : "Pass", FormatStrings.FormatDistance(car.LengthM, true), FormatStrings.FormatMass(car.MassKG, true), (car.IsDriveable ? "D" : "") + (car.HasFrontCab ? "F" : "") + (car.HasRearCab ? "R" : ""), GetCarWhyteLikeNotation(car));
+                TableSetCells(table, 0, car.UiD.ToString(), car.Flipped.ToString(), train.IsFreight ? "Freight" : "Pass", FormatStrings.FormatDistance(car.CarLengthM, true), FormatStrings.FormatMass(car.MassKG, true), (car.IsDriveable ? "D" : "") + (car.HasFrontCab ? "F" : "") + (car.HasRearCab ? "R" : ""), GetCarWhyteLikeNotation(car));
                 TableAddLine(table);
             }
         }
@@ -563,7 +563,7 @@ namespace ORTS.Viewer3D.Popups
 
             //TableAddLine(table,"Coupler breaks: {0:F0}", train.NumOfCouplerBreaks);
 
-            TableSetCells(table, 0, "Car", "Total", "Motive", "Brake", "Friction", "Gravity", "Curve", "Coupler", "Mass", "Elev", "Notes");
+            TableSetCells(table, 0, "Car", "Total", "Motive", "Brake", "Friction", "Gravity", "Curve", "Tunnel", "Coupler", "Mass", "Elev", "Notes");
             TableAddLine(table);
 
             var n = Math.Min(10, train.Cars.Count);
@@ -578,11 +578,12 @@ namespace ORTS.Viewer3D.Popups
                 TableSetCell(table, 4, "{0:F0}", car.FrictionForceN);
                 TableSetCell(table, 5, "{0:F0}", car.GravityForceN);
                 TableSetCell(table, 6, "{0:F2}", car.CurveForceN);
-                TableSetCell(table, 7, "{0:F0}", car.CouplerForceU);
-                TableSetCell(table, 8, "{0:F0}", car.MassKG);
-                TableSetCell(table, 9, "{0:F2}", -car.CurrentElevationPercent);
-                TableSetCell(table, 10, car.Flipped ? "Flipped" : "");
-                TableSetCell(table, 11, car.CouplerOverloaded ? "Coupler overloaded" : "");
+                TableSetCell(table, 7, "{0:F2}", car.TunnelForceN);
+                TableSetCell(table, 8, "{0:F0}", car.CouplerForceU);
+                TableSetCell(table, 9, "{0:F0}", car.MassKG);
+                TableSetCell(table, 10, "{0:F2}", -car.CurrentElevationPercent);
+                TableSetCell(table, 11, car.Flipped ? "Flipped" : "");
+                TableSetCell(table, 12, car.CouplerOverloaded ? "Coupler overloaded" : "");
                 TableAddLine(table);
             }
         }

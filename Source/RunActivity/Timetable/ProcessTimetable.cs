@@ -623,7 +623,7 @@ namespace ORTS
                 car.Train = playerTrain;
                 car.CarID = playerTrain.Name.Split(':')[0];
                 car.SignalEvent(Event.Pantograph1Up);
-                playerTrain.Length += car.LengthM;
+                playerTrain.Length += car.CarLengthM;
             }
 
             // create traveller
@@ -1055,7 +1055,7 @@ namespace ORTS
                         car.Train = AITrain;
                         car.CarID = AITrain.Name.Split(':')[0];
                         car.SignalEvent(Event.Pantograph1Up);
-                        AITrain.Length += car.LengthM;
+                        AITrain.Length += car.CarLengthM;
                     }
 
                     // derive speed

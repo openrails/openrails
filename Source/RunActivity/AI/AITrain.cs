@@ -4424,8 +4424,8 @@ namespace ORTS
                             attachTrain.Cars.Add(car);
                             car.Train = attachTrain;
                         }
-                        attachTrain.Length += car.LengthM;
-                        Length -= car.LengthM;
+                        attachTrain.Length += car.CarLengthM;
+                        Length -= car.CarLengthM;
                         Cars.Remove(car);
                     }
                 }
@@ -4453,8 +4453,8 @@ namespace ORTS
                             attachTrain.Cars.Insert(0, car);
                             car.Train = attachTrain;
                         }
-                        attachTrain.Length += car.LengthM;
-                        Length -= car.LengthM;
+                        attachTrain.Length += car.CarLengthM;
+                        Length -= car.CarLengthM;
                         Cars.Remove(car);
                     }
                 }
@@ -4494,8 +4494,8 @@ namespace ORTS
                             Cars.Add(car);
                             car.Train = this;
                         }
-                        Length += car.LengthM;
-                        attachTrain.Length -= car.LengthM;
+                        Length += car.CarLengthM;
+                        attachTrain.Length -= car.CarLengthM;
                         attachTrain.Cars.Remove(car);
                     }
                 }
@@ -4524,8 +4524,8 @@ namespace ORTS
                             Cars.Insert(0, car);
                             car.Train = this;
                         }
-                        Length += car.LengthM;
-                        attachTrain.Length -= car.LengthM;
+                        Length += car.CarLengthM;
+                        attachTrain.Length -= car.CarLengthM;
                         attachTrain.Cars.Remove(car);
                     }
                 }

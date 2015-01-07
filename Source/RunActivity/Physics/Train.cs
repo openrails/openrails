@@ -1662,7 +1662,7 @@ namespace ORTS
             {
                 var car = Cars[icar];
 
-                float usedCarLength = car.LengthM;
+                float usedCarLength = car.CarLengthM;
                 float processedCarLength = 0;
                 bool validSections = true;
 
@@ -1676,7 +1676,7 @@ namespace ORTS
                     bool inTunnel = false;
 
                     // car spans sections
-                    if ((car.LengthM - processedCarLength) > thisSectionOffset)
+                    if ((car.CarLengthM - processedCarLength) > thisSectionOffset)
                     {
                         usedCarLength = thisSectionOffset - processedCarLength;
                     }
@@ -1716,13 +1716,13 @@ namespace ORTS
                                 {
                                     FrontCarPositionInTunnel = thisSectionOffset + thisTunnel[thisSectionDirection].TCSStartOffset;
                                     FrontCarLengthOfTunnelAhead = thisTunnel[thisSectionDirection].TotalLength - FrontCarPositionInTunnel;
-                                    RearCarLengthOfTunnelBehind = thisTunnel[thisSectionDirection].TotalLength - (FrontCarLengthOfTunnelAhead + car.LengthM);
+                                    RearCarLengthOfTunnelBehind = thisTunnel[thisSectionDirection].TotalLength - (FrontCarLengthOfTunnelAhead + car.CarLengthM);
                                 }
                                 else
                                 {
                                     FrontCarPositionInTunnel = thisSectionOffset - tunnelStartOffset;
                                     FrontCarLengthOfTunnelAhead = thisTunnel[thisSectionDirection].TotalLength - FrontCarPositionInTunnel - processedCarLength;
-                                    RearCarLengthOfTunnelBehind = thisTunnel[thisSectionDirection].TotalLength - (FrontCarLengthOfTunnelAhead + car.LengthM);
+                                    RearCarLengthOfTunnelBehind = thisTunnel[thisSectionDirection].TotalLength - (FrontCarLengthOfTunnelAhead + car.CarLengthM);
                                 }
 
                                 break;  // only test one tunnel
@@ -1732,7 +1732,7 @@ namespace ORTS
                     // tested this section, any need to go beyond?
 
                     processedCarLength += usedCarLength;
-                    if (inTunnel || processedCarLength >= car.LengthM)
+                    if (inTunnel || processedCarLength >= car.CarLengthM)
                     {
                         validSections = false;  // end of while loop through sections
                         thisSectionOffset = thisSectionOffset - usedCarLength;   // position of next car in this section
@@ -3283,11 +3283,11 @@ namespace ORTS
                 }
                 else
                 {
-                    var bogieSpacing = car.LengthM * 0.65f;  // we'll use this approximation since the wagfile doesn't contain info on bogie position
+                    var bogieSpacing = car.CarLengthM * 0.65f;  // we'll use this approximation since the wagfile doesn't contain info on bogie position
 
                     // traveller is positioned at the front of the car
                     // advance to the first bogie 
-                    traveller.Move((car.LengthM - bogieSpacing) / 2.0f);
+                    traveller.Move((car.CarLengthM - bogieSpacing) / 2.0f);
                     var tileX = traveller.TileX;
                     var tileZ = traveller.TileZ;
                     var x = traveller.X;
@@ -3329,14 +3329,14 @@ namespace ORTS
                     car.WorldPosition.TileX = traveller.TileX;
                     car.WorldPosition.TileZ = traveller.TileZ;
 
-                    traveller.Move((car.LengthM - bogieSpacing) / 2.0f);
+                    traveller.Move((car.CarLengthM - bogieSpacing) / 2.0f);
                 }
                 if (i < Cars.Count - 1)
                 {
                     traveller.Move(car.CouplerSlackM + car.GetCouplerZeroLengthM());
                     length += car.CouplerSlackM + car.GetCouplerZeroLengthM();
                 }
-                length += car.LengthM;
+                length += car.CarLengthM;
             }
 
             traveller.ReverseDirection();
@@ -3396,11 +3396,11 @@ namespace ORTS
                 }
                 else
                 {
-                    var bogieSpacing = car.LengthM * 0.65f;  // we'll use this approximation since the wagfile doesn't contain info on bogie position
+                    var bogieSpacing = car.CarLengthM * 0.65f;  // we'll use this approximation since the wagfile doesn't contain info on bogie position
 
                     // traveller is positioned at the back of the car
                     // advance to the first bogie 
-                    traveller.Move((car.LengthM - bogieSpacing) / 2.0f);
+                    traveller.Move((car.CarLengthM - bogieSpacing) / 2.0f);
                     var tileX = traveller.TileX;
                     var tileZ = traveller.TileZ;
                     var x = traveller.X;
@@ -3450,9 +3450,9 @@ namespace ORTS
                         car.SuperElevation(SpeedMpS, Program.Simulator.UseSuperElevation, traveller);
                     }
 
-                    traveller.Move((car.LengthM - bogieSpacing) / 2.0f);  // Move to the front of the car 
+                    traveller.Move((car.CarLengthM - bogieSpacing) / 2.0f);  // Move to the front of the car 
                 }
-                length += car.LengthM;
+                length += car.CarLengthM;
             }
 
             FrontTDBTraveller = traveller;
@@ -3853,7 +3853,7 @@ namespace ORTS
                 {
                     trainLength += car.CouplerSlackM + car.GetCouplerZeroLengthM();
                 }
-                trainLength += car.LengthM;
+                trainLength += car.CarLengthM;
             }
 
             // get starting position and route
@@ -17284,11 +17284,11 @@ namespace ORTS
                             int trainCarIndex = 0;
                             while (walkingDistance <= trainPartOutsidePlatformForward && passengerCarsWithinPlatform > 0 && trainCarIndex < stopTrain.Cars.Count - 1)
                             {
-                                var walkingDistanceBehind = walkingDistance + stopTrain.Cars[trainCarIndex].LengthM;
+                                var walkingDistanceBehind = walkingDistance + stopTrain.Cars[trainCarIndex].CarLengthM;
                                 if ((!stopTrain.Cars[trainCarIndex].IsFreight && !stopTrain.Cars[trainCarIndex].IsTender && !stopTrain.Cars[trainCarIndex].IsDriveable) ||
                                    (stopTrain.Cars[trainCarIndex].IsDriveable && stopTrain.Cars[trainCarIndex].HasPassengerCapacity))
                                 {
-                                    if ((trainPartOutsidePlatformForward - walkingDistance) > 0.67 * stopTrain.Cars[trainCarIndex].LengthM) passengerCarsWithinPlatform--;
+                                    if ((trainPartOutsidePlatformForward - walkingDistance) > 0.67 * stopTrain.Cars[trainCarIndex].CarLengthM) passengerCarsWithinPlatform--;
                                 }
                                 walkingDistance = walkingDistanceBehind;
                                 trainCarIndex++;
@@ -17300,11 +17300,11 @@ namespace ORTS
                             int trainCarIndex = stopTrain.Cars.Count - 1;
                             while (walkingDistance <= trainPartOutsidePlatformBackward && passengerCarsWithinPlatform > 0 && trainCarIndex >= 0)
                         {
-                            var walkingDistanceBehind = walkingDistance + stopTrain.Cars[trainCarIndex].LengthM;
+                            var walkingDistanceBehind = walkingDistance + stopTrain.Cars[trainCarIndex].CarLengthM;
                             if ((!stopTrain.Cars[trainCarIndex].IsFreight && !stopTrain.Cars[trainCarIndex].IsTender && !stopTrain.Cars[trainCarIndex].IsDriveable) ||
                                (stopTrain.Cars[trainCarIndex].IsDriveable && stopTrain.Cars[trainCarIndex].HasPassengerCapacity))
                             { 
-                                if ((trainPartOutsidePlatformBackward - walkingDistance)> 0.67 * stopTrain.Cars[trainCarIndex].LengthM) passengerCarsWithinPlatform--;
+                                if ((trainPartOutsidePlatformBackward - walkingDistance)> 0.67 * stopTrain.Cars[trainCarIndex].CarLengthM) passengerCarsWithinPlatform--;
                             }
                             walkingDistance = walkingDistanceBehind;
                             trainCarIndex--;                           
@@ -17954,7 +17954,7 @@ namespace ORTS
             var staticLength = 0f;
             foreach (var car in Cars)
             {
-                staticLength += car.LengthM;
+                staticLength += car.CarLengthM;
             }
             staticLength = (expectedLength - staticLength) / (Cars.Count - 1);
             foreach (var car in Cars)//update slack for each car

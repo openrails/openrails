@@ -51,7 +51,7 @@ namespace ORTS
         public AirSinglePipe(TrainCar car)
         {
             Car = car;
-            BrakePipeVolumeFT3 = .028f * (1 + car.LengthM);
+            BrakePipeVolumeFT3 = .028f * (1 + car.CarLengthM);
             DebugType = "1P";
 
             // Force graduated releasable brakes. Workaround for MSTS with bugs preventing to set eng/wag files correctly for this.
