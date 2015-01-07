@@ -366,6 +366,7 @@ namespace ORTS
         {
             panelModeActivity.Visible = radioButtonModeActivity.Checked;
             panelModeTimetable.Visible = radioButtonModeTimetable.Checked;
+            SelectedAction = radioButtonModeTimetable.Checked ? UserAction.SinglePlayerTimetableGame : UserAction.SingleplayerNewGame;
             ShowDetails();
         }
         #endregion
@@ -496,9 +497,12 @@ namespace ORTS
         {
             SaveOptions();
 
-            if (SelectedAction == UserAction.SinglePlayerTimetableGame && SelectedTimetable != null)
+            if (SelectedAction == UserAction.SinglePlayerTimetableGame)
             {
-                DialogResult = CheckAndBuildTimetableInfo();
+                if (SelectedTimetable != null)
+                {
+                    DialogResult = CheckAndBuildTimetableInfo();
+                }
             }
             else
             {
@@ -512,6 +516,12 @@ namespace ORTS
 
         void buttonResume_Click(object sender, EventArgs e)
         {
+            // if timetable mode but no timetable selected - no action
+            if (SelectedAction == UserAction.SinglePlayerTimetableGame && SelectedTimetable == null)
+            {
+                return;
+            }
+
             using (var form = new ResumeForm(Settings, SelectedRoute, SelectedAction, SelectedActivity, SelectedTimetable, this))
             {
                 if (form.ShowDialog(this) == DialogResult.OK)
