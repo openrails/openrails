@@ -47,11 +47,16 @@ namespace ORTS.Viewer3D
 
         public Texture2D Get(string path)
         {
+            return (Get(path, SharedMaterialManager.MissingTexture));
+        }
+
+        public Texture2D Get(string path, Texture2D defaultTexture)
+        {
             if (Thread.CurrentThread.Name != "Loader Process")
                 Trace.TraceError("SharedTextureManager.Get incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
 
             if (path == null || path == "")
-                return SharedMaterialManager.MissingTexture;
+                return defaultTexture;
 
             path = path.ToLowerInvariant();
             if (!Textures.ContainsKey(path))
@@ -76,10 +81,10 @@ namespace ORTS.Viewer3D
                             texture = MSTS.Formats.ACEFile.Texture2DFromFile(GraphicsDevice, path);
                         }
                         else
-                            return SharedMaterialManager.MissingTexture;
+                            return defaultTexture;
                     }
                     else
-                        return SharedMaterialManager.MissingTexture;
+                        return defaultTexture;
 
                     Textures.Add(path, texture);
                     return texture;
@@ -87,7 +92,7 @@ namespace ORTS.Viewer3D
                 catch (InvalidDataException error)
                 {
                     Trace.TraceWarning("Skipped texture with error: {1} in {0}", path, error.Message);
-                    return SharedMaterialManager.MissingTexture;
+                    return defaultTexture;
                 }
                 catch (Exception error)
                 {
@@ -95,7 +100,7 @@ namespace ORTS.Viewer3D
                         Trace.WriteLine(new FileLoadException(path, error));
                     else
                         Trace.TraceWarning("Ignored missing texture file {0}", path);
-                    return SharedMaterialManager.MissingTexture;
+                    return defaultTexture;
                 }
             }
             else
@@ -179,6 +184,8 @@ namespace ORTS.Viewer3D
         public readonly DebugShader DebugShader;
 
         public static Texture2D MissingTexture;
+        public static Texture2D DefaultSnowTexture;
+        public static Texture2D DefaultDMSnowTexture;
 
         [CallOnThread("Render")]
         public SharedMaterialManager(Viewer viewer)
@@ -213,6 +220,13 @@ namespace ORTS.Viewer3D
 
             // TODO: This should happen on the loader thread.
             MissingTexture = SharedTextureManager.Get(viewer.RenderProcess.GraphicsDevice, Path.Combine(viewer.ContentPath, "blank.bmp"));
+
+            // Managing default snow textures
+            var defaultSnowTexturePath = viewer.Simulator.RoutePath + @"\TERRTEX\SNOW\ORTSDefaultSnow.ace";
+            DefaultSnowTexture = Viewer.TextureManager.Get(defaultSnowTexturePath);
+            var defaultDMSnowTexturePath = viewer.Simulator.RoutePath + @"\TERRTEX\SNOW\ORTSDefaultDMSnow.ace";
+            DefaultDMSnowTexture = Viewer.TextureManager.Get(defaultDMSnowTexturePath);
+
         }
 
         public Material Load(string materialName)
@@ -290,7 +304,7 @@ namespace ORTS.Viewer3D
                         Materials[materialKey] = new SpriteBatchMaterial(Viewer);
                         break;
                     case "Terrain":
-                        Materials[materialKey] = new TerrainMaterial(Viewer, textureName);
+                        Materials[materialKey] = new TerrainMaterial(Viewer, textureName, SharedMaterialManager.MissingTexture);
                         break;
                     case "TerrainShared":
                         Materials[materialKey] = new TerrainSharedMaterial(Viewer, textureName);
