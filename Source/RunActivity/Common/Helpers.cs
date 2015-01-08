@@ -98,7 +98,7 @@ namespace ORTS
             return texturePath + @"\" + textureName;
         }
 
-        public static bool IsSnow(Simulator simulator)
+        static bool IsSnow(Simulator simulator)
         {
             // MSTS shows snow textures:
             //   - In winter, no matter what the weather is.
