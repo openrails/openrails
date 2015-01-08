@@ -93,6 +93,8 @@ namespace ORTS.Settings
         public bool ViewDispatcher { get; set; }
         [Default(false)]
         public bool GraduatedRelease { get; set; }
+        [Default(false)]
+        public bool RetainersOnAllCars { get; set; }
         [Default(true)]
         public bool UseLargeAddressAware { get; set; }
         [Default(false)]

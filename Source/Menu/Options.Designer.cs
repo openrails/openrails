@@ -108,6 +108,7 @@
             this.tabPageUpdater = new System.Windows.Forms.TabPage();
             this.labelUpdateChannel = new System.Windows.Forms.Label();
             this.tabPageExperimental = new System.Windows.Forms.TabPage();
+            this.checkBoxAutopilot = new System.Windows.Forms.CheckBox();
             this.checkBoxExtendedAIShunting = new System.Windows.Forms.CheckBox();
             this.checkBoxConditionalLoadOfNightTextures = new System.Windows.Forms.CheckBox();
             this.checkBoxNoForcedRedAtStationStops = new System.Windows.Forms.CheckBox();
@@ -141,7 +142,7 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.checkBoxAutopilot = new System.Windows.Forms.CheckBox();
+            this.checkRetainers = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -184,7 +185,7 @@
             // 
             // numericBrakePipeChargingRate
             // 
-            this.numericBrakePipeChargingRate.Location = new System.Drawing.Point(6, 144);
+            this.numericBrakePipeChargingRate.Location = new System.Drawing.Point(6, 171);
             this.numericBrakePipeChargingRate.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -207,7 +208,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(66, 146);
+            this.label4.Location = new System.Drawing.Point(66, 173);
             this.label4.Margin = new System.Windows.Forms.Padding(3);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(159, 13);
@@ -217,7 +218,7 @@
             // checkGraduatedRelease
             // 
             this.checkGraduatedRelease.AutoSize = true;
-            this.checkGraduatedRelease.Location = new System.Drawing.Point(6, 75);
+            this.checkGraduatedRelease.Location = new System.Drawing.Point(6, 144);
             this.checkGraduatedRelease.Name = "checkGraduatedRelease";
             this.checkGraduatedRelease.Size = new System.Drawing.Size(162, 17);
             this.checkGraduatedRelease.TabIndex = 1;
@@ -248,7 +249,7 @@
             // checkSuppressConfirmations
             // 
             this.checkSuppressConfirmations.AutoSize = true;
-            this.checkSuppressConfirmations.Location = new System.Drawing.Point(6, 121);
+            this.checkSuppressConfirmations.Location = new System.Drawing.Point(6, 98);
             this.checkSuppressConfirmations.Name = "checkSuppressConfirmations";
             this.checkSuppressConfirmations.Size = new System.Drawing.Size(170, 17);
             this.checkSuppressConfirmations.TabIndex = 4;
@@ -297,6 +298,7 @@
             this.tabPageGeneral.Controls.Add(this.checkAlerterDisableExternal);
             this.tabPageGeneral.Controls.Add(this.checkAlerter);
             this.tabPageGeneral.Controls.Add(this.numericBrakePipeChargingRate);
+            this.tabPageGeneral.Controls.Add(this.checkRetainers);
             this.tabPageGeneral.Controls.Add(this.checkGraduatedRelease);
             this.tabPageGeneral.Controls.Add(this.label4);
             this.tabPageGeneral.Location = new System.Drawing.Point(4, 22);
@@ -310,7 +312,7 @@
             // labelPressureUnit
             // 
             this.labelPressureUnit.AutoSize = true;
-            this.labelPressureUnit.Location = new System.Drawing.Point(133, 200);
+            this.labelPressureUnit.Location = new System.Drawing.Point(133, 227);
             this.labelPressureUnit.Margin = new System.Windows.Forms.Padding(3);
             this.labelPressureUnit.Name = "labelPressureUnit";
             this.labelPressureUnit.Size = new System.Drawing.Size(68, 13);
@@ -320,7 +322,7 @@
             // checkUseLargeAddressAware
             // 
             this.checkUseLargeAddressAware.AutoSize = true;
-            this.checkUseLargeAddressAware.Location = new System.Drawing.Point(6, 98);
+            this.checkUseLargeAddressAware.Location = new System.Drawing.Point(6, 75);
             this.checkUseLargeAddressAware.Name = "checkUseLargeAddressAware";
             this.checkUseLargeAddressAware.Size = new System.Drawing.Size(342, 17);
             this.checkUseLargeAddressAware.TabIndex = 33;
@@ -337,7 +339,7 @@
             "PSI",
             "inHg",
             "kgf/cm^2"});
-            this.comboBoxPressureUnit.Location = new System.Drawing.Point(6, 197);
+            this.comboBoxPressureUnit.Location = new System.Drawing.Point(6, 224);
             this.comboBoxPressureUnit.Name = "comboBoxPressureUnit";
             this.comboBoxPressureUnit.Size = new System.Drawing.Size(121, 21);
             this.comboBoxPressureUnit.TabIndex = 8;
@@ -345,7 +347,7 @@
             // labelLanguage
             // 
             this.labelLanguage.AutoSize = true;
-            this.labelLanguage.Location = new System.Drawing.Point(133, 173);
+            this.labelLanguage.Location = new System.Drawing.Point(133, 200);
             this.labelLanguage.Margin = new System.Windows.Forms.Padding(3);
             this.labelLanguage.Name = "labelLanguage";
             this.labelLanguage.Size = new System.Drawing.Size(55, 13);
@@ -356,7 +358,7 @@
             // 
             this.comboBoxLanguage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxLanguage.FormattingEnabled = true;
-            this.comboBoxLanguage.Location = new System.Drawing.Point(6, 170);
+            this.comboBoxLanguage.Location = new System.Drawing.Point(6, 197);
             this.comboBoxLanguage.Name = "comboBoxLanguage";
             this.comboBoxLanguage.Size = new System.Drawing.Size(121, 21);
             this.comboBoxLanguage.TabIndex = 6;
@@ -833,7 +835,7 @@
             this.checkTunnelResistanceDependent.AutoSize = true;
             this.checkTunnelResistanceDependent.Location = new System.Drawing.Point(6, 122);
             this.checkTunnelResistanceDependent.Name = "checkTunnelResistanceDependent";
-            this.checkTunnelResistanceDependent.Size = new System.Drawing.Size(159, 17);
+            this.checkTunnelResistanceDependent.Size = new System.Drawing.Size(164, 17);
             this.checkTunnelResistanceDependent.TabIndex = 7;
             this.checkTunnelResistanceDependent.Text = "Tunnel dependent resistance";
             this.checkTunnelResistanceDependent.UseVisualStyleBackColor = true;
@@ -1216,6 +1218,17 @@
             this.tabPageExperimental.TabIndex = 3;
             this.tabPageExperimental.Text = "Experimental";
             this.tabPageExperimental.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxAutopilot
+            // 
+            this.checkBoxAutopilot.AutoSize = true;
+            this.checkBoxAutopilot.ForeColor = System.Drawing.Color.Black;
+            this.checkBoxAutopilot.Location = new System.Drawing.Point(6, 286);
+            this.checkBoxAutopilot.Name = "checkBoxAutopilot";
+            this.checkBoxAutopilot.Size = new System.Drawing.Size(67, 17);
+            this.checkBoxAutopilot.TabIndex = 46;
+            this.checkBoxAutopilot.Text = "Autopilot";
+            this.checkBoxAutopilot.UseVisualStyleBackColor = true;
             // 
             // checkBoxExtendedAIShunting
             // 
@@ -1609,16 +1622,15 @@
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
             // 
-            // checkBoxAutopilot
+            // checkRetainers
             // 
-            this.checkBoxAutopilot.AutoSize = true;
-            this.checkBoxAutopilot.ForeColor = System.Drawing.Color.Black;
-            this.checkBoxAutopilot.Location = new System.Drawing.Point(6, 286);
-            this.checkBoxAutopilot.Name = "checkBoxAutopilot";
-            this.checkBoxAutopilot.Size = new System.Drawing.Size(67, 17);
-            this.checkBoxAutopilot.TabIndex = 46;
-            this.checkBoxAutopilot.Text = "Autopilot";
-            this.checkBoxAutopilot.UseVisualStyleBackColor = true;
+            this.checkRetainers.AutoSize = true;
+            this.checkRetainers.Location = new System.Drawing.Point(6, 121);
+            this.checkRetainers.Name = "checkRetainers";
+            this.checkRetainers.Size = new System.Drawing.Size(146, 17);
+            this.checkRetainers.TabIndex = 1;
+            this.checkRetainers.Text = "Retainer valve on all cars";
+            this.checkRetainers.UseVisualStyleBackColor = true;
             // 
             // OptionsForm
             // 
@@ -1790,5 +1802,6 @@
         private System.Windows.Forms.CheckBox checkBoxConditionalLoadOfNightTextures;
         private System.Windows.Forms.CheckBox checkBoxExtendedAIShunting;
         private System.Windows.Forms.CheckBox checkBoxAutopilot;
+        private System.Windows.Forms.CheckBox checkRetainers;
     }
 }

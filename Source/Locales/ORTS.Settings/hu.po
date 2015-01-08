@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
 "POT-Creation-Date: 2015-01-04 20:55:28+0100\n"
-"PO-Revision-Date: 2015-01-04 21:03+0100\n"
+"PO-Revision-Date: 2015-01-08 18:40+0100\n"
 "Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: hu\n"
@@ -434,11 +434,11 @@ msgstr "Irányítás Útmérő nullázása"
 
 #: ../../ORTS.Settings/InputSettings.cs:151
 msgid "Control Retainers On"
-msgstr "Irányítás Vonatrögzítőfék be"
+msgstr "Irányítás Légfékvisszatartó szelepek be"
 
 #: ../../ORTS.Settings/InputSettings.cs:152
 msgid "Control Retainers Off"
-msgstr "Irányítás Vonatrögzítőfék ki"
+msgstr "Irányítás Légfékvisszatartó szelepek ki"
 
 #: ../../ORTS.Settings/InputSettings.cs:153
 msgid "Control Brake Hose Connect"

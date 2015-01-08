@@ -846,23 +846,23 @@ msgstr "teljes üzem"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:172
 msgid "Retainers"
-msgstr "Vonatrögzítő fékek"
+msgstr "Légfékvisszatartó szelepek"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:172
 msgid "Exhaust"
-msgstr "kiengedés"
+msgstr "Kiiktatva"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:172
 msgid "High Pressure"
-msgstr "Nagynyomás"
+msgstr "Magas nyomáson tartás"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:172
 msgid "Low Pressure"
-msgstr "Kisnyomás"
+msgstr "Alacsony nyomáson tartás"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:172
 msgid "Slow Direct"
-msgstr "Lassú, közvetlen"
+msgstr "Elnyújtott kiömlés"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:173
 msgid "Brake Hose"
@@ -1065,7 +1065,7 @@ msgstr "{0} {1:0}%-ra"
 #: ../../RunActivity/Simulator/Confirmation.cs:225
 #, csharp-format
 msgid "{0} {1:0}% {2}"
-msgstr "{0} {1:0}%-ra {2}"
+msgstr "{0} {1:0}% {2}"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:230
 #, csharp-format

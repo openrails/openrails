@@ -82,6 +82,7 @@ namespace ORTS
             checkAlerter.Checked = Settings.Alerter;
             checkAlerterDisableExternal.Checked = Settings.AlerterDisableExternal;
             checkGraduatedRelease.Checked = Settings.GraduatedRelease;
+            checkRetainers.Checked = Settings.RetainersOnAllCars;
             numericBrakePipeChargingRate.Value = Settings.BrakePipeChargingRate;
             comboBoxPressureUnit.Text = Settings.PressureUnit;
             checkSuppressConfirmations.Checked = Settings.SuppressConfirmations;
@@ -318,6 +319,7 @@ namespace ORTS
             Settings.Alerter = checkAlerter.Checked;
             Settings.AlerterDisableExternal = checkAlerterDisableExternal.Checked;
             Settings.GraduatedRelease = checkGraduatedRelease.Checked;
+            Settings.RetainersOnAllCars = checkRetainers.Checked;
             Settings.BrakePipeChargingRate = (int)numericBrakePipeChargingRate.Value;
             Settings.PressureUnit = comboBoxPressureUnit.Text;
             Settings.SuppressConfirmations = checkSuppressConfirmations.Checked;
