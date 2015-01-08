@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30723.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RunActivity", "RunActivity\RunActivity.csproj", "{9BE44F64-417D-4AA6-AF4D-2A6A0CBC814D}"
 EndProject
@@ -143,10 +143,10 @@ Global
 		{22CC0DE5-5E0C-4CA4-9CC0-FF1FE6C6B2BA}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{22CC0DE5-5E0C-4CA4-9CC0-FF1FE6C6B2BA}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{22CC0DE5-5E0C-4CA4-9CC0-FF1FE6C6B2BA}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{9C6D17E1-DC48-4B96-B9DA-A9B41F685327}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{9C6D17E1-DC48-4B96-B9DA-A9B41F685327}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{9C6D17E1-DC48-4B96-B9DA-A9B41F685327}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{9C6D17E1-DC48-4B96-B9DA-A9B41F685327}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{9C6D17E1-DC48-4B96-B9DA-A9B41F685327}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{9C6D17E1-DC48-4B96-B9DA-A9B41F685327}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{9C6D17E1-DC48-4B96-B9DA-A9B41F685327}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{9C6D17E1-DC48-4B96-B9DA-A9B41F685327}.Release|Mixed Platforms.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
