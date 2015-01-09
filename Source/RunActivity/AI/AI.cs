@@ -378,8 +378,8 @@ namespace ORTS
                 foreach (AITrain thisTrain in newTrains)
                 {
                     Simulator.StartReference.Remove(thisTrain.Number);
-                    AddToWorld(thisTrain);
-                    if (thisTrain.InitialSpeed > 0)
+                    var validPosition = AddToWorld(thisTrain);
+                    if (thisTrain.InitialSpeed > 0 && validPosition)
                         // Add extra run to allow setting signals
                     {
                        thisTrain.AIPreUpdate(0);
@@ -546,7 +546,7 @@ namespace ORTS
         /// initialize signals and movement
         /// </summary>
 
-        private void AddToWorld(AITrain thisTrain)
+        private bool AddToWorld(AITrain thisTrain)
         {
             // clear track and align switches - check state
 
@@ -604,6 +604,7 @@ namespace ORTS
                     Simulator.StartReference.Add(thisTrain.Number);
                 }
             }
+            return validPosition;
 #if DEBUG_DEADLOCK
             File.AppendAllText(@"C:\Temp\deadlock.txt", "Added Train : " + thisTrain.Number.ToString() + " , accepted : " + validPosition.ToString()+"\n");
 
