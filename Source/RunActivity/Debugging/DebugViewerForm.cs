@@ -1655,8 +1655,10 @@ namespace ORTS.Debugging
 			  worldPos = firstCar.WorldPosition;
 			  tX = (worldPos.TileX * 2048 -subX + worldPos.Location.X) * xScale; 
 			  tY = pictureBox1.Height - (worldPos.TileZ * 2048 -subY + worldPos.Location.Z) * yScale;
+              float xSpeedCorr = Math.Abs(t.SpeedMpS) * xScale * 1.5f;
+              float ySpeedCorr = Math.Abs(t.SpeedMpS) * yScale * 1.5f;
 
-			  if (tX < x - range || tX > x + range || tY < y - range || tY > y + range) continue;
+			  if (tX < x - range-xSpeedCorr || tX > x + range+xSpeedCorr || tY < y - range-ySpeedCorr || tY > y + range+ySpeedCorr) continue;
 			  if (PickedTrain == null) PickedTrain = t;
 		  }
 		   //if a train is picked, will clear the avatar list selection
