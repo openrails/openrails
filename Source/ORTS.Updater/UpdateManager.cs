@@ -403,33 +403,50 @@ namespace ORTS.Updater
 
         void ApplyUpdate()
         {
-            var basePathFiles = Directory.GetFiles(BasePath).Where(file => !file.Equals(FileSettings, StringComparison.OrdinalIgnoreCase)).ToArray();
-            var basePathDirectories = Directory.GetDirectories(BasePath);
-            var updateStageFiles = Directory.GetFiles(PathUpdateStage);
-            var updateStageDirectories = Directory.GetDirectories(PathUpdateStage);
+            var basePathFiles = Directory.GetFiles(BasePath, "*", SearchOption.AllDirectories).Where(file => !file.Equals(FileSettings, StringComparison.OrdinalIgnoreCase)).ToArray();
+            var updateStageFiles = Directory.GetFiles(PathUpdateStage, "*", SearchOption.AllDirectories);
 
-            // Create dirty directory for old version.
-            if (!Directory.Exists(PathUpdateDirty))
-                Directory.CreateDirectory(PathUpdateDirty);
+            // Move (almost) all the files from the base path to the dirty path - this removes all the old program files.
+            MoveDirectoryFiles(BasePath, PathUpdateDirty, basePathFiles);
 
-            // Copy (almost) all files from current version to dirty.
-            foreach (var file in basePathFiles)
-                File.Move(file, Path.Combine(PathUpdateDirty, Path.GetFileName(file)));
-
-            // Copy (almost) all directories from current version to dirty.
-            foreach (var directory in basePathDirectories)
-                Directory.Move(directory, Path.Combine(PathUpdateDirty, Path.GetFileName(directory)));
-
-            // Copy all files from new version to base path.
-            foreach (var file in updateStageFiles)
-                File.Move(file, Path.Combine(BasePath, Path.GetFileName(file)));
-
-            // Copy all directories from new version to base path.
-            foreach (var directory in updateStageDirectories)
-                Directory.Move(directory, Path.Combine(BasePath, Path.GetFileName(directory)));
+            // Move all the files from the stage path to the base path - this adds all the new program files.
+            MoveDirectoryFiles(PathUpdateStage, BasePath, updateStageFiles);
 
             // Forcing a save of the state adds back this information to the new "Updater.ini" file, without overwriting the new updater settings.
             State.Save();
+        }
+
+        void MoveDirectoryFiles(string source, string destination, string[] files)
+        {
+            CreateDirectoryLayout(source, destination);
+
+            foreach (var file in files)
+                File.Move(file, Path.Combine(destination, GetRelativePath(file, source)));
+
+            foreach (var directory in Directory.GetDirectories(source))
+                Directory.Delete(directory);
+        }
+
+        void CreateDirectoryLayout(string source, string destination)
+        {
+            Debug.Assert(Directory.Exists(source));
+            var directories = Directory.GetDirectories(source, "*", SearchOption.AllDirectories);
+            // Make each directory to its relative form and create them as needed.
+            if (!Directory.Exists(destination))
+                Directory.CreateDirectory(destination);
+            foreach (var directory in from directory in directories select Path.Combine(destination, GetRelativePath(directory, source)))
+                if (!Directory.Exists(directory))
+                    Directory.CreateDirectory(directory);
+        }
+
+        string GetRelativePath(string directory, string basePath)
+        {
+            Debug.Assert(Path.IsPathRooted(directory));
+            Debug.Assert(Path.IsPathRooted(basePath));
+            Debug.Assert(Path.GetPathRoot(directory) == Path.GetPathRoot(basePath));
+            Debug.Assert(directory.Length > basePath.Length);
+            Debug.Assert(directory[basePath.Length] == Path.DirectorySeparatorChar);
+            return directory.Substring(basePath.Length + 1);
         }
     }
 
