@@ -3324,9 +3324,9 @@ namespace ORTS
                 thisSection = TrackCircuitList[sectionIndex];
 
                 if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Normal &&
-                           thisSection.CircuitState.HasTrainsOccupying())
+                           thisSection.CircuitState.HasOtherTrainsOccupying(thisTrain))
                 {
-                    if (thisSection.CircuitState.HasTrainsOccupying(revDirection, false))
+                    if (thisSection.CircuitState.HasOtherTrainsOccupying(revDirection, false, thisTrain))
                     {
                         endAuthority = Train.END_AUTHORITY.TRAIN_AHEAD;
                         furthestRouteCleared = true;
@@ -5789,6 +5789,12 @@ namespace ORTS
             {
                 CircuitState.TrainOccupy.RemoveTrain(thisTrain);
                 thisTrain.Train.OccupiedTrack.Remove(this);
+
+                if (thisTrain.Train.CheckTrain)
+                {
+                    File.AppendAllText(@"C:\temp\checktrain.txt",
+                        "Reset Occupy for section : " + Index + "\n");
+                }
             }
 
         }
@@ -6745,7 +6751,7 @@ namespace ORTS
                     break;
                 thisSection.UnreserveTrain(trainRouted, true);
             }
-            //                signalRef.BreakDownRouteList(trainRouted.Train.ValidRoute[trainRouted.TrainRouteDirectionIndex], startindex-1, trainRouted);
+            // signalRef.BreakDownRouteList(trainRouted.Train.ValidRoute[trainRouted.TrainRouteDirectionIndex], startindex-1, trainRouted);
             // Reset signal behind new train
             for (int iindex = startindex - 2; iindex >= trainRouted.Train.PresentPosition[0].RouteListIndex; iindex--)
             {
@@ -7265,6 +7271,27 @@ namespace ORTS
             }
 
             return (true);
+        }
+
+        public bool HasOtherTrainsOccupying(int reqDirection, bool stationary, Train.TrainRouted thisTrain)
+        {
+            foreach (KeyValuePair<Train.TrainRouted, int> thisTCT in TrainOccupy)
+            {
+                Train.TrainRouted otherTrain = thisTCT.Key;
+                if (otherTrain != thisTrain)
+                {
+                    if (thisTCT.Value == reqDirection)
+                    {
+                        if (Math.Abs(thisTCT.Key.Train.SpeedMpS) > 0.5f)
+                            return (true);   // exclude (almost) stationary trains
+                    }
+
+                    if ((Math.Abs(thisTCT.Key.Train.SpeedMpS) <= 0.5f) && stationary)
+                        return (true);   // (almost) stationay trains
+                }
+            }
+
+            return (false);
         }
 
         //================================================================================================//
@@ -7903,6 +7930,72 @@ namespace ORTS
 
         //================================================================================================//
         //
+        // next_nsig_lr : returns least restrictive state of next signal of required type of the nth signal ahead
+        //
+        //
+
+        public MstsSignalAspect next_nsig_lr(MstsSignalFunction fn_type, int nsignal, string dumpfile)
+        {
+            int foundsignal = 0;
+            MstsSignalAspect foundAspect = MstsSignalAspect.CLEAR_2;
+            SignalObject nextSignalObject = this;
+
+            while (foundsignal < nsignal && foundAspect != MstsSignalAspect.STOP)
+            {
+                // use sigfound
+                int nextSignal = nextSignalObject.sigfound[(int)fn_type];
+
+                // sigfound not set, try direct search
+                if (nextSignal < 0)
+                {
+                    nextSignal = SONextSignal(fn_type);
+                    sigfound[(int)fn_type] = nextSignal;
+                }
+
+                // signal found : get state
+                if (nextSignal >= 0)
+                {
+                    foundsignal++;
+
+                    nextSignalObject = signalObjects[nextSignal];
+                    foundAspect = nextSignalObject.this_sig_lr(fn_type);
+
+                    if (!String.IsNullOrEmpty(dumpfile))
+                    {
+                        File.AppendAllText(dumpfile, "\nNEXT_NSIG_LR : Found signal " + foundsignal + " : " + nextSignalObject.thisRef + " ; state = " + foundAspect + "\n");
+                    }
+
+                    // reached required signal or state is stop : return
+                    if (foundsignal >= nsignal || foundAspect == MstsSignalAspect.STOP)
+                    {
+                        if (!String.IsNullOrEmpty(dumpfile))
+                        {
+                            File.AppendAllText(dumpfile, "NEXT_NSIG_LR : returned : " + foundAspect + "\n");
+                        }
+                        return (foundAspect);
+                    }
+                }
+
+                // signal not found : return stop
+                else
+                {
+                    if (!String.IsNullOrEmpty(dumpfile))
+                    {
+                        File.AppendAllText(dumpfile, "NEXT_NSIG_LR : returned : " + foundAspect + " ; last found index : " + foundsignal + "\n");
+                    }
+                    return MstsSignalAspect.STOP;
+                }
+            }
+
+            if (!String.IsNullOrEmpty(dumpfile))
+            {
+                File.AppendAllText(dumpfile, "NEXT_NSIG_LR : while loop exited ; last found index : " + foundsignal + "\n");
+            }
+            return (MstsSignalAspect.STOP); // emergency exit - loop should normally have exited on return
+        }
+
+        //================================================================================================//
+        //
         // opp_sig_mr
         //
 
@@ -8129,7 +8222,7 @@ namespace ORTS
 
                     for (int iElement = 0; iElement < RoutePart.Count && !routeset; iElement++)
                     {
-                        routeset = (sectionIndex == RoutePart[iElement].TCSectionIndex);
+                        routeset = (sectionIndex == RoutePart[iElement].TCSectionIndex && signalRef.TrackCircuitList[sectionIndex].CircuitType == TrackCircuitSection.TrackCircuitType.Normal);
                     }
                 }
 
@@ -9148,6 +9241,21 @@ namespace ORTS
                 {
                     getPartBlockState(thisRoute);
                 }
+
+                // test clearance for sections in route if signal is second signal ahead of train, first signal route is clear but first signal is still showing STOP
+                // case for double-hold signals
+
+                else if (enabledTrain != null && isPropagated)
+                {
+                    SignalObject firstSignal = enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex];
+                    if (firstSignal != null &&
+                        firstSignal.sigfound[(int) MstsSignalFunction.NORMAL] == thisRef && 
+                        firstSignal.internalBlockState <= InternalBlockstate.Reservable && 
+                        firstSignal.this_sig_lr(MstsSignalFunction.NORMAL) == MstsSignalAspect.STOP)
+                    {
+                        getPartBlockState(thisRoute);
+                    }
+                }
             }
 
             // else consider route blocked
@@ -9274,7 +9382,8 @@ namespace ORTS
 
             // if claim allowed - reserve free sections and claim all other if first signal ahead of train
 
-                else if (enabledTrain.Train.ClaimState && internalBlockState != InternalBlockstate.Reserved && !isPropagated)
+                else if (enabledTrain.Train.ClaimState && internalBlockState != InternalBlockstate.Reserved &&
+                         enabledTrain.Train.NextSignalObject[0] != null && enabledTrain.Train.NextSignalObject[0].thisRef == thisRef)
                 {
                     foreach (Train.TCRouteElement thisElement in thisRoute)
                     {
@@ -9283,15 +9392,6 @@ namespace ORTS
                         {
                             break;
                         }
-
-                        //                        if (thisSection.IsAvailable(enabledTrain) && thisSection.CircuitState.TrainReserved == null)
-                        //                        {
-                        //                            thisSection.Reserve(enabledTrain, thisRoute);
-                        //                        }
-                        //                        else if (thisSection.CircuitState.TrainReserved == null || thisSection.CircuitState.TrainReserved.Train != enabledTrain.Train)
-                        //                        {
-                        //                            thisSection.Claim(enabledTrain);
-                        //                        }
 
                         if (thisSection.CircuitState.TrainReserved == null || (thisSection.CircuitState.TrainReserved.Train != enabledTrain.Train))
                         {
@@ -9685,9 +9785,10 @@ namespace ORTS
                 int direction = thisElement.Direction;
 
                 blockstate = thisSection.getSectionState(enabledTrain, direction, blockstate, thisRoute, thisRef);
-                if (blockstate > InternalBlockstate.Reservable)
+                if (blockstate > InternalBlockstate.OccupiedSameDirection)
                     break;     // exit on first none-available section
 
+                // RR : retain this section until Train.cs is updated
                 // check if section is trigger section for waitany instruction
                 if (thisTrain != null && Program.Simulator.TimetableMode && thisTrain.Train.WaitAnyList != null && thisTrain.Train.WaitAnyList.ContainsKey(thisSection.Index))
                 {
@@ -9695,8 +9796,19 @@ namespace ORTS
                     {
                         bool pathClear = thisTrain.Train.CheckForRouteWait(reqWait);
                         if (!pathClear) blockstate = SignalObject.InternalBlockstate.Blocked;
+
                     }
                 }
+
+		// RR : section below is to replace retained section above when Train.cs is updated
+		// check if section is trigger section for waitany instruction
+                // if (thisTrain != null)
+                // {
+                //     if (thisTrain.Train.CheckAnyWaitCondition(thisSection.Index))
+                //     {
+                //         blockstate = InternalBlockstate.Blocked;
+                //     }
+                // }
 
                 // check if this section is start of passing path area
                 // if so, select which path must be used - but only if cleared by train in AUTO mode
@@ -10183,6 +10295,7 @@ namespace ORTS
         // Test if train has call-on set
         //
 
+        // RR: this version of this method is to be retained until Train.cs has been updated
         public bool TrainHasCallOn(bool callOnNonePlatform, string dumpfile)
         {
             // no train approaching
@@ -10305,6 +10418,241 @@ namespace ORTS
             return (false);
         }
 
+        // RR :This version of this method is to replace the version above when Train.cs has been updated
+        //public bool TrainHasCallOn(bool allowOnNonePlatform, string dumpfile)
+        //{
+        //    // no train approaching
+        //    if (enabledTrain == null)
+        //    {
+        //        if (!String.IsNullOrEmpty(dumpfile))
+        //        {
+        //            File.AppendAllText(dumpfile, "CALL ON : no train approaching \n");
+        //        }
+
+        //        return (false);
+        //    }
+
+        //    // signal is not first signal for train
+        //    if (enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex] != null &&
+        //        enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex].thisRef != thisRef)
+        //    {
+        //        if (!String.IsNullOrEmpty(dumpfile))
+        //        {
+        //            var sob = new StringBuilder();
+        //            sob.AppendFormat("CALL ON : Train {0} : First signal is not this signal but {1} \n",
+        //                enabledTrain.Train.Name, enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex].thisRef);
+        //            File.AppendAllText(dumpfile, sob.ToString());
+        //        }
+
+        //        return (false);
+        //    }
+
+        //    if (enabledTrain.Train != null && signalRoute != null)
+        //    {
+        //        // process in timetable mode
+        //        if (Program.Simulator.TimetableMode)
+        //        {
+        //            TTTrain enabledTTTrain = enabledTrain.Train as TTTrain;
+
+        //            // always allow if set for stable working
+        //            if (enabledTTTrain.Stable_CallOn)
+        //            {
+        //                if (!String.IsNullOrEmpty(dumpfile))
+        //                {
+        //                    var sob = new StringBuilder();
+        //                    sob.AppendFormat("CALL ON : Train {0} : valid - train has Stable_CallOn set \n", enabledTrain.Train.Name);
+        //                    File.AppendAllText(dumpfile, sob.ToString());
+        //                }
+        //                return (true);
+        //            }
+
+        //            // loop through sections in signal route
+        //            bool allclear = true;
+        //            bool intoPlatform = false;
+
+        //            foreach (Train.TCRouteElement routeElement in signalRoute)
+        //            {
+        //                TrackCircuitSection routeSection = signalRef.TrackCircuitList[routeElement.TCSectionIndex];
+
+        //                // if train is to attach to train in section, allow callon if train is stopped
+
+        //                foreach (KeyValuePair<Train.TrainRouted, int> occTrainInfo in routeSection.CircuitState.TrainOccupy)
+        //                {
+        //                    Train.TrainRouted occTrain = occTrainInfo.Key;
+        //                    TTTrain occTTTrain = occTrain.Train as TTTrain;
+        //                    AITrain.AI_MOVEMENT_STATE movState = occTTTrain.MovementState;
+
+        //                    if (occTrain.Train.Number == enabledTrain.Train.AttachTo)
+        //                    {
+        //                        if (movState == AITrain.AI_MOVEMENT_STATE.STOPPED || movState == AITrain.AI_MOVEMENT_STATE.STATION_STOP || movState == AITrain.AI_MOVEMENT_STATE.AI_STATIC)
+        //                        {
+        //                            if (!String.IsNullOrEmpty(dumpfile))
+        //                            {
+        //                                var sob = new StringBuilder();
+        //                                sob.AppendFormat("CALL ON : Train {0} : valid - train is to attach to {1} \n",
+        //                                    enabledTrain.Train.Name, occTrain.Train.Name);
+        //                                File.AppendAllText(dumpfile, sob.ToString());
+        //                            }
+        //                            return (true);
+        //                        }
+        //                        else
+        //                        {
+        //                            if (!String.IsNullOrEmpty(dumpfile))
+        //                            {
+        //                                var sob = new StringBuilder();
+        //                                sob.AppendFormat("CALL ON : Train {0} : invalid - train is to attach to {1} but train is moving \n",
+        //                                    enabledTrain.Train.Name, occTTTrain.Name);
+        //                                File.AppendAllText(dumpfile, sob.ToString());
+        //                            }
+        //                            return (false);
+        //                        }
+        //                    }
+        //                }
+
+        //                // check if route leads into platform
+
+        //                if (routeSection.PlatformIndex.Count > 0)
+        //                {
+        //                    PlatformDetails thisPlatform = signalRef.PlatformDetailsList[routeSection.PlatformIndex[0]];
+        //                    if (enabledTrain.Train.StationStops.Count > 0) // train has stops
+        //                    {
+        //                        if (String.Compare(enabledTrain.Train.StationStops[0].PlatformItem.Name, thisPlatform.Name) == 0 && enabledTrain.Train.StationStops[0].CallOnAllowed) // stop is next station stop and callon is set
+        //                        {
+        //                            intoPlatform = true;
+
+        //                            // only allow if train ahead is stopped
+        //                            foreach (KeyValuePair<Train.TrainRouted, int> occTrainInfo in routeSection.CircuitState.TrainOccupy)
+        //                            {
+        //                                Train.TrainRouted occTrain = occTrainInfo.Key;
+        //                                TTTrain occTTTrain = occTrain.Train as TTTrain;
+        //                                AITrain.AI_MOVEMENT_STATE movState = occTTTrain.MovementState;
+
+        //                                if (movState == AITrain.AI_MOVEMENT_STATE.STOPPED || movState == AITrain.AI_MOVEMENT_STATE.STATION_STOP || movState == AITrain.AI_MOVEMENT_STATE.AI_STATIC)
+        //                                {
+        //                                    if (!String.IsNullOrEmpty(dumpfile))
+        //                                    {
+        //                                        var sob = new StringBuilder();
+        //                                        sob.AppendFormat("CALL ON : Train {0} : access to platform {1}, train {2} is stopped \n",
+        //                                            enabledTrain.Train.Name, thisPlatform.Name, occTTTrain.Name);
+        //                                        File.AppendAllText(dumpfile, sob.ToString());
+        //                                    }
+        //                                }
+        //                                else
+        //                                {
+        //                                    if (!String.IsNullOrEmpty(dumpfile))
+        //                                    {
+        //                                        var sob = new StringBuilder();
+        //                                        sob.AppendFormat("CALL ON : Train {0} : invalid - access to platform {1}, but train {2} is moving \n",
+        //                                            enabledTrain.Train.Name, thisPlatform.Name, occTTTrain.Name);
+        //                                        File.AppendAllText(dumpfile, sob.ToString());
+        //                                    }
+        //                                    allclear = false;
+        //                                    break; // no need to check for other trains
+        //                                }
+        //                            }
+        //                        }
+        //                        else
+        //                        {
+        //                            // not first station or train has call-on not set, no need to check any further
+        //                            if (!String.IsNullOrEmpty(dumpfile))
+        //                            {
+        //                                var sob = new StringBuilder();
+        //                                sob.AppendFormat("CALL ON : Train {0} : invalid - access to platform {1}, train does not call or has no call-on set \n",
+        //                                    enabledTrain.Train.Name, thisPlatform.Name);
+        //                                File.AppendAllText(dumpfile, sob.ToString());
+        //                            }
+        //                            allclear = false;
+        //                        }
+        //                    }
+        //                    else
+        //                    {
+        //                        // train has no stops - no need to check further
+        //                        if (!String.IsNullOrEmpty(dumpfile))
+        //                        {
+        //                            var sob = new StringBuilder();
+        //                            sob.AppendFormat("CALL ON : Train {0} : invalid - access to platform {1}, but train has no stops \n",
+        //                                enabledTrain.Train.Name, thisPlatform.Name);
+        //                            File.AppendAllText(dumpfile, sob.ToString());
+        //                        }
+        //                        allclear = false;
+        //                    }
+
+        //                    if (!allclear) // invalid situation found - no need to check any further
+        //                    {
+        //                        break;
+        //                    }
+        //                }
+        //            }
+
+        //            if (intoPlatform)
+        //            {
+        //                // path leads into platform - return state as derived
+        //                return (allclear);
+        //            }
+        //            else
+        //            {
+        //                // path does not lead into platform - return state as defined in call
+        //                if (!String.IsNullOrEmpty(dumpfile))
+        //                {
+        //                    var sob = new StringBuilder();
+        //                    sob.AppendFormat("CALL ON : Train {0} : {1} - route does not lead into platform \n", enabledTrain.Train.Name, allowOnNonePlatform);
+        //                    File.AppendAllText(dumpfile, sob.ToString());
+        //                }
+        //                return (allowOnNonePlatform);
+        //            }
+        //        }
+
+        //        // process in activity  mode
+        //        else
+        //        {
+        //            bool intoPlatform = false;
+
+        //            foreach (Train.TCRouteElement routeElement in signalRoute)
+        //            {
+        //                TrackCircuitSection routeSection = signalRef.TrackCircuitList[routeElement.TCSectionIndex];
+
+        //                // check if route leads into platform
+
+        //                if (routeSection.PlatformIndex.Count > 0)
+        //                {
+        //                    intoPlatform = true;
+        //                }
+        //            }
+
+        //            if (!intoPlatform)
+        //            {
+        //                //if track does not lead into platform, return state as defined in call
+        //                if (!String.IsNullOrEmpty(dumpfile))
+        //                {
+        //                    var sob = new StringBuilder();
+        //                    sob.AppendFormat("CALL ON : Train {0} : {1} - route does not lead into platform \n", enabledTrain.Train.Name, allowOnNonePlatform);
+        //                    File.AppendAllText(dumpfile, sob.ToString());
+        //                }
+        //                return (allowOnNonePlatform);
+        //            }
+        //            else
+        //            {
+        //                // never allow if track leads into platform
+        //                if (!String.IsNullOrEmpty(dumpfile))
+        //                {
+        //                    var sob = new StringBuilder();
+        //                    sob.AppendFormat("CALL ON : Train {0} : invalid - route leads into platform \n", enabledTrain.Train.Name);
+        //                    File.AppendAllText(dumpfile, sob.ToString());
+        //                }
+        //                return (false);
+        //            }
+        //        }
+        //    }
+
+        //    if (!String.IsNullOrEmpty(dumpfile))
+        //    {
+        //        var sob = new StringBuilder();
+        //        sob.AppendFormat("CALL ON : Train {0} : not valid \n", enabledTrain.Train.Name);
+        //        File.AppendAllText(dumpfile, sob.ToString());
+        //    }
+        //    return (false);
+        //}
+
         //================================================================================================//
         /// <summary>
         /// LockForTrain
@@ -10336,6 +10684,18 @@ namespace ORTS
             if (info > 0)
                 return true;
             return false;
+        }
+
+        //================================================================================================//
+        //
+        // HasHead
+        //
+        // Returns 1 if signal has optional head set, 0 if not
+        //
+
+        public int HasHead(int requiredHeadIndex)
+        {
+            return ( (requiredHeadIndex < WorldObject.HeadsSet.Length) ? (WorldObject.HeadsSet[requiredHeadIndex] ? 1 : 0 ) : 0);
         }
 
         //================================================================================================//
@@ -10628,6 +10988,11 @@ namespace ORTS
         public MstsSignalAspect opp_sig_lr(MstsSignalFunction sigFN, ref SignalObject signalFound) // for debug purposes
         {
             return mainSignal.opp_sig_lr(sigFN, ref signalFound);
+        }
+
+        public MstsSignalAspect next_nsig_lr(MstsSignalFunction sigFN, int nsignals, string dumpfile)
+        {
+            return mainSignal.next_nsig_lr(sigFN, nsignals, dumpfile);
         }
 
         //================================================================================================//

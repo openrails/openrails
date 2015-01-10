@@ -74,6 +74,7 @@ namespace ORTS
             THIS_SIG_MR,
             OPP_SIG_LR,
             OPP_SIG_MR,
+            NEXT_NSIG_LR,
             DIST_MULTI_SIG_MR,
             SIG_FEATURE,
             DEF_DRAW_STATE,
@@ -81,6 +82,7 @@ namespace ORTS
             APPROACH_CONTROL_SPEED,
             TRAINHASCALLON,
             TRAINHASCALLON_RESTRICTED,
+            HASHEAD,
             DEBUG_HEADER,
             DEBUG_OUT,
             RETURN,
@@ -206,7 +208,7 @@ namespace ORTS
 
 
 #if DEBUG_PRINT_PROCESS
-            TDB_debug_ref = new int[1] { 4247 };   /* signal tdb ref.no selected for print-out */
+            TDB_debug_ref = new int[5] { 7305, 7307, 7308, 7309, 7310 };   /* signal tdb ref.no selected for print-out */
 #endif
 
 #if DEBUG_PRINT_IN
@@ -243,9 +245,9 @@ namespace ORTS
                         scrStream.Close();
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    Trace.TraceWarning("File missing for signal scripts - {0}", fullName);
+                    Trace.TraceWarning("Cannot open file for signal scripts - {0} : {1}", fullName, ex.ToString());
                 }
 #else
                 // for test purposes : without exception catch
@@ -1563,7 +1565,7 @@ namespace ORTS
                 catch (Exception ex)
                 {
                     valid_func = false;
-                    Trace.TraceWarning("sigscr-file line {1} : Unknown function call : {0}\nDetails : {2}", 
+                    Trace.TraceWarning("sigscr-file line {1} : Unknown function call : {0}\nDetails : {2}",
                         FunctionStatement, linenumber.ToString(), ex.ToString());
 #if DEBUG_PRINT_IN
                     File.AppendAllText(din_fileLoc + @"sigscr.txt", "Unknown function call : " + FunctionStatement + "\n");
@@ -1714,7 +1716,7 @@ namespace ORTS
                         }
                         catch (Exception Ex)
                         {
-                            Trace.TraceWarning("sigscr-file line {1} : Unknown Aspect : {0}\nDetails : {2}", 
+                            Trace.TraceWarning("sigscr-file line {1} : Unknown Aspect : {0}\nDetails : {2}",
                                 partString, linenumber.ToString(), Ex.ToString());
 #if DEBUG_PRINT_IN
                             File.AppendAllText(din_fileLoc + @"sigscr.txt", "Unknown Aspect : " + partString + "\n");
@@ -1739,7 +1741,7 @@ namespace ORTS
                         }
                         catch (Exception Ex)
                         {
-                            Trace.TraceWarning("sigscr-file line {1} : Unknown Type : {0}]nDetails {2}", 
+                            Trace.TraceWarning("sigscr-file line {1} : Unknown Type : {0}]nDetails {2}",
                                 partString, linenumber.ToString(), Ex.ToString());
 #if DEBUG_PRINT_IN
                             File.AppendAllText(din_fileLoc + @"sigscr.txt", "Unknown Type : " + partString + "\n");
@@ -1763,7 +1765,7 @@ namespace ORTS
                         }
                         catch (Exception Ex)
                         {
-                            Trace.TraceWarning("sigscr-file line {1} : Unknown SubType : {0}\nDetails {2}", 
+                            Trace.TraceWarning("sigscr-file line {1} : Unknown SubType : {0}\nDetails {2}",
                                 partString, linenumber.ToString(), Ex.ToString());
 #if DEBUG_PRINT_IN
                             File.AppendAllText(din_fileLoc + @"sigscr.txt", "Unknown SubType : " + partString + "\n");
@@ -3241,6 +3243,7 @@ namespace ORTS
         //                        DIST_MULTI_SIG_MR
         //                        SIG_FEATURE
         //                        DEF_DRAW_STATE
+        //                        HASHEAD
         //                        DEBUG_HEADER   (does not return a value)
         //                        DEBUG_OUT      (does not return a value)
         //
@@ -3276,6 +3279,7 @@ namespace ORTS
             // switch on function
 
             SCRExternalFunctions thisFunction = thisTerm.Function;
+            String dumpfile = String.Empty;
 
             switch (thisFunction)
             {
@@ -3353,7 +3357,7 @@ namespace ORTS
                     break;
 
                 // this_sig_lr
-                    
+
                 case (SCRExternalFunctions.THIS_SIG_LR):
                     bool sigfound_lr = false;
                     MstsSignalAspect returnState_lr = thisHead.this_sig_lr((MstsSignalFunction)parameter1_value, ref sigfound_lr);
@@ -3400,11 +3404,32 @@ namespace ORTS
                     return_value = (int)thisHead.opp_sig_mr((MstsSignalFunction)parameter1_value);
                     break;
 
+                // next_nsig_lr
+
+                case (SCRExternalFunctions.NEXT_NSIG_LR):
+                    dumpfile = String.Empty;
+
+#if DEBUG_PRINT_ENABLED
+                    if (thisHead.mainSignal.enabledTrain != null)
+                    {
+                        dumpfile = String.Concat(dpe_fileLoc, "printproc.txt");
+                    }
+#endif
+
+#if DEBUG_PRINT_PROCESS
+                    if (TDB_debug_ref.Contains(thisHead.TDBIndex))
+                    {
+                        dumpfile = String.Concat(dpr_fileLoc,"printproc.txt");
+                    }
+#endif
+                    return_value = (int)thisHead.next_nsig_lr((MstsSignalFunction)parameter1_value, parameter2_value, dumpfile);
+                    break;
+
                 // dist_multi_sig_mr
 
                 case (SCRExternalFunctions.DIST_MULTI_SIG_MR):
 
-                    String dumpfile = String.Empty;
+                    dumpfile = String.Empty;
 
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
@@ -3521,6 +3546,24 @@ namespace ORTS
 #endif
                     temp_value = thisHead.mainSignal.TrainHasCallOn(false, dumpfile);
                     return_value = Convert.ToInt32(temp_value);
+                    break;
+
+                case (SCRExternalFunctions.HASHEAD):
+                    return_value = thisHead.mainSignal.HasHead(parameter1_value);
+#if DEBUG_PRINT_ENABLED
+                    if (thisHead.mainSignal.enabledTrain != null)
+                    {
+                        File.AppendAllText(dpe_fileLoc + @"printproc.txt",
+                                " HASHEAD : required head : " + parameter1_value + " ; state :  " + return_value  + "\n");
+                    }
+#endif
+#if DEBUG_PRINT_PROCESS
+                    if (TDB_debug_ref.Contains(thisHead.TDBIndex))
+                    {
+                        File.AppendAllText(dpe_fileLoc + @"printproc.txt",
+                                " HASHEAD : required head : " + parameter1_value + " ; state :  " + return_value  + "\n");
+                    }
+#endif
                     break;
 
                 // def_draw_state
