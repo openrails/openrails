@@ -701,7 +701,7 @@ namespace ORTS.Viewer3D
                 if (Opening)
                     AnimationKey = 0;
                 else
-                    AnimationKey -= elapsedTime.ClockSeconds / CrossingObj.levelCrTiming.animTiming;
+                    AnimationKey -= elapsedTime.ClockSeconds *AnimationFrames / (CrossingObj.levelCrTiming.animTiming*60);
                 if (AnimationKey > AnimationFrames) AnimationKey -= AnimationFrames;
             }
             else if (CrossingObj.levelCrTiming.animTiming > 0)
