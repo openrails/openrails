@@ -376,6 +376,7 @@ namespace ORTS
         {
             comboBoxTimetable.SelectedItem = null;
             ShowLocomotiveList();
+            ShowConsistList();
             ShowStartAtList();
             ShowEnvironment();
             ShowDetails();
