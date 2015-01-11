@@ -259,6 +259,13 @@ namespace ORTS
         float CoefficientFriction = 0.5f; // Initialise coefficient of Friction - 0.5 for dry rails, 0.1 - 0.3 for wet rails
         float RigidWheelBaseM;   // Vehicle rigid wheelbase, read from MSTS Wagon file
         float TrainCrossSectionAreaM2; // Cross sectional area of the train
+        float DoubleTunnelCrossSectAreaM2;
+        float SingleTunnelCrossSectAreaM2;
+        float DoubleTunnelPerimeterM;
+        float SingleTunnelPerimeterAreaM;
+        float TunnelCrossSectionAreaM2 = 0.0f;
+        float TunnelPerimeterM = 0.0f;
+        
         // used by tunnel processing
         public struct CarTunnelInfoData
         {
@@ -274,6 +281,63 @@ namespace ORTS
             CurveResistanceSpeedDependent = Simulator.Settings.CurveResistanceSpeedDependent;
             CurveSpeedDependent = Simulator.Settings.CurveSpeedDependent;
             TunnelResistanceDependent = Simulator.Settings.TunnelResistanceDependent;
+            
+            // Initialize tunnel resistance values
+
+            DoubleTunnelCrossSectAreaM2 = (float)Simulator.TRK.Tr_RouteFile.DoubleTunnelAreaM2;
+            SingleTunnelCrossSectAreaM2 = (float)Simulator.TRK.Tr_RouteFile.SingleTunnelAreaM2;
+            DoubleTunnelPerimeterM = (float)Simulator.TRK.Tr_RouteFile.DoubleTunnelPerimeterM;
+            SingleTunnelPerimeterAreaM = (float)Simulator.TRK.Tr_RouteFile.SingleTunnelPerimeterM;
+
+            // get route speed limit
+            RouteSpeedMpS = (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;
+
+            // if no values are in TRK file, calculate default values.
+            // Double track values yet to be added
+
+            if (SingleTunnelCrossSectAreaM2 == 0)
+            {
+
+                if (RouteSpeedMpS >= 97.22) // if route speed greater then 350km/h
+                {
+                    TunnelCrossSectionAreaM2 = 70.0f;
+                    TunnelPerimeterM = 32.0f;
+                }
+                else if (RouteSpeedMpS >= 69.4 && RouteSpeedMpS < 97.22) // Route speed greater then 250km/h and less then 350km/h
+                {
+                    TunnelCrossSectionAreaM2 = 70.0f;
+                    TunnelPerimeterM = 32.0f;
+                }
+                else if (RouteSpeedMpS >= 55.5 && RouteSpeedMpS < 69.4) // Route speed greater then 200km/h and less then 250km/h
+                {
+                    TunnelCrossSectionAreaM2 = 58.0f;
+                    TunnelPerimeterM = 28.0f;
+                }
+                else if (RouteSpeedMpS >= 44.4 && RouteSpeedMpS < 55.5) // Route speed greater then 160km/h and less then 200km/h
+                {
+                    TunnelCrossSectionAreaM2 = 50.0f;
+                    TunnelPerimeterM = 25.5f;
+                }
+                else if (RouteSpeedMpS >= 33.3 && RouteSpeedMpS < 44.4) // Route speed greater then 120km/h and less then 160km/h
+                {
+                    TunnelCrossSectionAreaM2 = 42.0f;
+                    TunnelPerimeterM = 22.5f;
+                }
+                else       // Route speed less then 120km/h
+                {
+                    TunnelCrossSectionAreaM2 = 25.0f;  // Typically older slower speed designed tunnels
+                    SingleTunnelPerimeterAreaM = 21.0f;
+                }
+            }
+            else
+            {
+                TunnelCrossSectionAreaM2 = SingleTunnelCrossSectAreaM2;  // use values from TRK file
+                TunnelPerimeterM = 21.0f;
+            }
+         
+            
+     //       Trace.TraceInformation("Double Area {0} Double Perimeter {1} Single Area {2} Single Perimeter {3}", DoubleTunnelCrossSectAreaM2, DoubleTunnelPerimeterM, SingleTunnelCrossSectAreaM2, SingleTunnelPerimeterAreaM);
+            
         }
 
         // called when it's time to update the MotiveForce and FrictionForce
@@ -282,6 +346,13 @@ namespace ORTS
             // gravity force, M32 is up component of forward vector
             GravityForceN = MassKG * GravitationalAccelerationMpS2 * WorldPosition.XNAMatrix.M32;
             CurrentElevationPercent = 100f * WorldPosition.XNAMatrix.M32;
+
+            // Flipped cars appear to invert the elevation and Gravity force so this next "if" block aligns flipped cars with the rest of the train for GravityForce and Elevation
+            if (Flipped)
+            {
+                GravityForceN = -GravityForceN;
+                CurrentElevationPercent = -CurrentElevationPercent;
+            }
 
             //TODO: next if block has been inserted to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
             // To achieve the same result with other means, without flipping trainset physics, the block should be deleted
@@ -334,8 +405,6 @@ namespace ORTS
                       // Calculate tunnel default effective cross-section area, and tunnel perimeter - based upon the designed speed limit of the railway (TRK File)
 
                       float TunnelLengthM = CarTunnelData.LengthMOfTunnelAheadFront.Value + CarTunnelData.LengthMOfTunnelBehindRear.Value;
-                      float TunnelCrossSectionAreaM2 = 0.0f;
-                      float TunnelPerimeterM = 0.0f;
                       float TrainLengthTunnelM = Train.Length;
                       float TrainMassTunnelKg = Train.MassKg;
                       float PrevTrainCrossSectionAreaM2 = TrainCrossSectionAreaM2;
@@ -345,39 +414,6 @@ namespace ORTS
                           TrainCrossSectionAreaM2 = PrevTrainCrossSectionAreaM2;  // Assume locomotive cross-sectional area is the largest, if not use new one.
                       }
                       const float DensityAirKgpM3 = 1.2f;
-
-                      // Double track values yet to be added
-
-                      if (RouteSpeedMpS >= 97.22) // if route speed greater then 350km/h
-                      {
-                          TunnelCrossSectionAreaM2 = 70.0f;
-                          TunnelPerimeterM = 32.0f;
-                      }
-                      else if (RouteSpeedMpS >= 69.4 && RouteSpeedMpS < 97.22) // Route speed greater then 250km/h and less then 350km/h
-                      {
-                          TunnelCrossSectionAreaM2 = 70.0f;
-                          TunnelPerimeterM = 32.0f;
-                      }
-                      else if (RouteSpeedMpS >= 55.5 && RouteSpeedMpS < 69.4) // Route speed greater then 200km/h and less then 250km/h
-                      {
-                          TunnelCrossSectionAreaM2 = 58.0f;
-                          TunnelPerimeterM = 28.0f;
-                      }
-                      else if (RouteSpeedMpS >= 44.4 && RouteSpeedMpS < 55.5) // Route speed greater then 160km/h and less then 200km/h
-                      {
-                          TunnelCrossSectionAreaM2 = 50.0f;
-                          TunnelPerimeterM = 25.5f;
-                      }
-                      else if (RouteSpeedMpS >= 33.3 && RouteSpeedMpS < 44.4) // Route speed greater then 120km/h and less then 160km/h
-                      {
-                          TunnelCrossSectionAreaM2 = 42.0f;
-                          TunnelPerimeterM = 22.5f;
-                      }
-                      else       // Route speed less then 120km/h
-                      {
-                          TunnelCrossSectionAreaM2 = 25.0f;  // Typically older slower speed designed tunnels
-                          TunnelPerimeterM = 21.0f;
-                      }
 
                       // 
                       // Calculate first tunnel factor
@@ -392,9 +428,6 @@ namespace ORTS
                       float UnitAerodynamicDrag = ((TunnelAComponent * TrainLengthTunnelM) / Kg.ToTonne(TrainMassTunnelKg)) * TempTunnel2;
 
                       TunnelForceN = UnitAerodynamicDrag * Kg.ToTonne(MassKG) * Math.Abs(SpeedMpS) * Math.Abs(SpeedMpS);
-
-                      //        Trace.TraceInformation("Tunnel X-Sect {0} Tunnel Per {1} Tunnel Length {2} Train Length {3} Train Mass {4} speed {5}", TunnelCrossSectionAreaM2, TunnelPerimeterM, TunnelLengthM, TrainLengthTunnelM, TrainMassTunnelKg, Math.Abs(SpeedMpS));
-                      //       Trace.TraceInformation("A {0} B {1} C {2} T1 {3} T2 {4} Wt {5}", TunnelAComponent, TunnelBComponent, TunnelCComponent, TempTunnel1, TempTunnel2, UnitAerodynamicDrag);
                   }
                   else
                   {
@@ -420,14 +453,10 @@ namespace ORTS
             CentreOfGravityM = GetCentreofGravityM();
             TrackGaugeM = GetTrackGaugeM();
             UnbalancedSuperElevationM = GetUnbalancedSuperElevationM();
-          
-       
-
-            // get curve radius
-
-            RouteSpeedMpS = (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;
-             
-            if (CurveSpeedDependent || CurveResistanceSpeedDependent)  // Function enabled by menu selection for either curve resistance or curve speed limit
+         
+		// get curve radius
+ 
+           if (CurveSpeedDependent || CurveResistanceSpeedDependent)  // Function enabled by menu selection for either curve resistance or curve speed limit
             {
 
 

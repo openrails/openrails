@@ -1558,7 +1558,7 @@ namespace ORTS
             {
                 car.MotiveForceN = 0;
                 car.Update(elapsedClockSeconds);
-                car.TotalForceN = car.MotiveForceN + car.GravityForceN - car.CurveForceN;
+                car.TotalForceN = car.MotiveForceN + car.GravityForceN - car.CurveForceN - car.TunnelForceN;
                 massKg += car.MassKG;
                 //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
                 // To achieve the same result with other means, without flipping trainset physics, the line should be changed as follows:
