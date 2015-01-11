@@ -45,6 +45,7 @@
     <Reference Include="System.Data.DataSetExtensions">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Management" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -64,6 +65,7 @@
     <Compile Include="SettingsBase.cs" />
     <Compile Include="SettingsStore.cs" />
     <Compile Include="SmoothedData.cs" />
+    <Compile Include="SystemInfo.cs" />
     <Compile Include="TrackMonitorSignalAspect.cs" />
     <Compile Include="VersionInfo.cs" />
   </ItemGroup>

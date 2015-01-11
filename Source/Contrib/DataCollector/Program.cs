@@ -16,12 +16,11 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using MSTS.Formats;
+using ORTS.Common;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace DataCollector
 {
@@ -29,7 +28,9 @@ namespace DataCollector
     {
         static void Main(string[] args)
         {
-            if (args.Contains("/tile-terrtex", StringComparer.OrdinalIgnoreCase))
+            if (args.Contains("/system", StringComparer.OrdinalIgnoreCase))
+                SystemInfo.WriteSystemDetails(Console.Out);
+            else if (args.Contains("/tile-terrtex", StringComparer.OrdinalIgnoreCase))
                 CollectTileTerrtex(args);
             else
                 ShowHelp();
@@ -39,9 +40,10 @@ namespace DataCollector
         {
             Console.WriteLine("Open Rails Data Collector utility");
             Console.WriteLine();
-            Console.WriteLine("{0} [/tile-terrtex PATH [...]]", Path.GetFileNameWithoutExtension(AppDomain.CurrentDomain.FriendlyName));
+            Console.WriteLine("{0} [/system | /tile-terrtex PATH [...]]", Path.GetFileNameWithoutExtension(AppDomain.CurrentDomain.FriendlyName));
             Console.WriteLine();
             //                "1234567890123456789012345678901234567890123456789012345678901234567890123456789"
+            Console.WriteLine("    /system       Collects and reports on various system information.");
             Console.WriteLine("    /tile-terrtex Scans the provided PATHs for MSTS tile files (.t) and");
             Console.WriteLine("                  produces a statistical summary of the terrtex used.");
         }

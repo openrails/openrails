@@ -648,13 +648,14 @@ namespace ORTS.Processes
             // Trace.Listeners and Debug.Listeners are the same list.
             Trace.Listeners.Add(ORTraceListener);
 
-            Console.WriteLine("Log file for {0}", Application.ProductName);
+            Console.WriteLine("This is a log file for {0}. Please include this file in bug reports.", Application.ProductName);
+            LogSeparator();
+            SystemInfo.WriteSystemDetails(Console.Out);
             LogSeparator();
             Console.WriteLine("Version    = {0}", VersionInfo.Version.Length > 0 ? VersionInfo.Version : "<none>");
             Console.WriteLine("Build      = {0}", VersionInfo.Build);
             if (logFileName.Length > 0)
                 Console.WriteLine("Logfile    = {0}", logFileName);
-            Console.WriteLine("Date/time  = {0} ({1:u})", DateTime.Now, DateTime.UtcNow);
             Console.WriteLine("Executable = {0}", Path.GetFileName(Application.ExecutablePath));
             foreach (var arg in args)
                 Console.WriteLine("Argument   = {0}", arg);
