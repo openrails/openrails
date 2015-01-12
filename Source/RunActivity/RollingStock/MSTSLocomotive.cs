@@ -833,12 +833,12 @@ namespace ORTS
             TrainBrakeController.Update(elapsedClockSeconds);
             if (TrainBrakeController.UpdateValue > 0.0)
             {
-                Simulator.Confirmer.Update(CabControl.TrainBrake, CabSetting.Increase, GetTrainBrakeStatus(PressureUnit));
+                Simulator.Confirmer.Update(CabControl.TrainBrake, CabSetting.Increase, GetTrainBrakeStatus());
             }
 
             if (TrainBrakeController.UpdateValue < 0.0)
             {
-                Simulator.Confirmer.Update(CabControl.TrainBrake, CabSetting.Decrease, GetTrainBrakeStatus(PressureUnit));
+                Simulator.Confirmer.Update(CabControl.TrainBrake, CabSetting.Decrease, GetTrainBrakeStatus());
             }
 
             if (EngineBrakeController != null)
@@ -846,11 +846,11 @@ namespace ORTS
                 EngineBrakeController.Update(elapsedClockSeconds);
                 if (EngineBrakeController.UpdateValue > 0.0)
                 {
-                    Simulator.Confirmer.Update(CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus(PressureUnit));
+                    Simulator.Confirmer.Update(CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus());
                 }
                 if (EngineBrakeController.UpdateValue < 0.0)
                 {
-                    Simulator.Confirmer.Update(CabControl.EngineBrake, CabSetting.Decrease, GetEngineBrakeStatus(PressureUnit));
+                    Simulator.Confirmer.Update(CabControl.EngineBrake, CabSetting.Decrease, GetEngineBrakeStatus());
                 }
             }
 
@@ -1791,7 +1791,7 @@ namespace ORTS
             AlerterReset(TCSEvent.TrainBrakeChanged);
             TrainBrakeController.StartIncrease(target);
             TrainBrakeController.CommandStartTime = Simulator.ClockTime;
-            Simulator.Confirmer.Confirm(CabControl.TrainBrake, CabSetting.Increase, GetTrainBrakeStatus(PressureUnit));
+            Simulator.Confirmer.Confirm(CabControl.TrainBrake, CabSetting.Increase, GetTrainBrakeStatus());
             SignalEvent(Event.TrainBrakeChange);
         }
 
@@ -1807,7 +1807,7 @@ namespace ORTS
             AlerterReset(TCSEvent.TrainBrakeChanged);
             TrainBrakeController.StartDecrease(target);
             TrainBrakeController.CommandStartTime = Simulator.ClockTime;
-            Simulator.Confirmer.Confirm(CabControl.TrainBrake, CabSetting.Decrease, GetTrainBrakeStatus(PressureUnit));
+            Simulator.Confirmer.Confirm(CabControl.TrainBrake, CabSetting.Decrease, GetTrainBrakeStatus());
             SignalEvent(Event.TrainBrakeChange);
         }
 
@@ -1841,13 +1841,13 @@ namespace ORTS
             }
         }
 
-        public override string GetTrainBrakeStatus(PressureUnit unit)
+        public override string GetTrainBrakeStatus()
         {
             string s = TrainBrakeController.GetStatus();
             TrainCar lastCar = Train.Cars[Train.Cars.Count - 1];
             if (lastCar == this)
                 lastCar = Train.Cars[0];
-            s += BrakeSystem.GetFullStatus(lastCar.BrakeSystem, unit);
+            s += BrakeSystem.GetFullStatus(lastCar.BrakeSystem, PressureUnit);
             return s;
         }
 
@@ -1863,7 +1863,7 @@ namespace ORTS
                 AlerterReset(TCSEvent.TrainBrakeChanged);
             }
             if (oldValue != controller.IntermediateValue)
-                Simulator.Confirmer.Update(CabControl.TrainBrake, oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, GetTrainBrakeStatus(PressureUnit));
+                Simulator.Confirmer.Update(CabControl.TrainBrake, oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, GetTrainBrakeStatus());
         }
 
         public void SetTrainBrakePercent(float percent)
@@ -1884,7 +1884,7 @@ namespace ORTS
                 return;
 
             EngineBrakeController.StartIncrease(target);
-            Simulator.Confirmer.Confirm(CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus(PressureUnit));
+            Simulator.Confirmer.Confirm(CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus());
             SignalEvent(Event.EngineBrakeChange);
         }
 
@@ -1909,7 +1909,7 @@ namespace ORTS
             AlerterReset(TCSEvent.EngineBrakeChanged);
             EngineBrakeController.StartDecrease(target);
             EngineBrakeController.CommandStartTime = Simulator.ClockTime; // Remember when the command was issued
-            Simulator.Confirmer.Confirm(CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus(PressureUnit));
+            Simulator.Confirmer.Confirm(CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus());
             SignalEvent(Event.EngineBrakeChange);
         }
 
@@ -1956,7 +1956,7 @@ namespace ORTS
                 AlerterReset(TCSEvent.EngineBrakeChanged);
             }
             if (oldValue != controller.IntermediateValue)
-                Simulator.Confirmer.Update(CabControl.EngineBrake, oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, GetEngineBrakeStatus(PressureUnit));
+                Simulator.Confirmer.Update(CabControl.EngineBrake, oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, GetEngineBrakeStatus());
         }
 
         public void SetEngineBrakePercent(float percent)
@@ -1966,7 +1966,7 @@ namespace ORTS
             EngineBrakeController.SetPercent(percent);
         }
 
-        public override string GetEngineBrakeStatus(PressureUnit unit)
+        public override string GetEngineBrakeStatus()
         {
             if (EngineBrakeController == null)
                 return null;

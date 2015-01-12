@@ -281,39 +281,31 @@ namespace ORTS
         {
             var result = new StringBuilder();
 
-            foreach (DieselEngine eng in DEList)
-                result.AppendFormat("{0}  ", eng.EngineStatus.ToString());
-            result.AppendFormat("\n");
+            result.AppendFormat("Status");
+            foreach (var eng in DEList)
+                result.AppendFormat("\t{0}", eng.EngineStatus.ToString());
 
-            result.AppendFormat("Diesel Power = {0:F1} W ( ", MaxOutputPowerW * 0.001f);
-            foreach (DieselEngine eng in DEList)
-                result.AppendFormat("{0:F0} W ", eng.MaxOutputPowerW * 0.001f);
-            result.AppendFormat(")\n");
+            result.AppendFormat("\tPower\t{0:F1} W", MaxOutputPowerW * 0.001f);
+            foreach (var eng in DEList)
+                result.AppendFormat("\t{0:F0} W", eng.MaxOutputPowerW * 0.001f);
 
-            result.AppendFormat("Diesel Load = ");
-            foreach (DieselEngine eng in DEList)
-                result.AppendFormat("{0:F1}% ", eng.LoadPercent);
-            result.AppendFormat("\n");
+            result.AppendFormat("\tLoad");
+            foreach (var eng in DEList)
+                result.AppendFormat("\t{0:F1}%", eng.LoadPercent);
 
-            result.AppendFormat("Diesel RPM = ");
-            foreach(DieselEngine eng in DEList)
-                result.AppendFormat("{0:F0} RPM ", eng.RealRPM);
-            result.AppendFormat("\n");
+            foreach (var eng in DEList)
+                result.AppendFormat("\t{0:F0} RPM", eng.RealRPM);
 
-            result.AppendFormat("Diesel Flow = ");
-            foreach (DieselEngine eng in DEList)
-                result.AppendFormat("{0:F1} L/h ", eng.DieselFlowLps * 3600.0f);
-            result.AppendFormat("\n");
+            result.AppendFormat("\tFlow");
+            foreach (var eng in DEList)
+                result.AppendFormat("\t{0:F1} L/h", eng.DieselFlowLps * 3600.0f);
 
-            result.AppendFormat("Diesel Temp = ");
-            foreach (DieselEngine eng in DEList)
-                result.AppendFormat("{0:F1} °C ", eng.DieselTemperatureDeg);
-            result.AppendFormat("\n");
+            foreach (var eng in DEList)
+                result.AppendFormat("\t{0:F1} °C", eng.DieselTemperatureDeg);
 
-            result.AppendFormat("Diesel Oil pressure = ");
-            foreach (DieselEngine eng in DEList)
-                result.AppendFormat("{0:F1} PSI ", eng.DieselOilPressurePSI);
-            result.AppendFormat("\n");
+            result.AppendFormat("\tOil");
+            foreach (var eng in DEList)
+                result.AppendFormat("\t{0:F1} PSI", eng.DieselOilPressurePSI);
 
             return result.ToString();
         }
@@ -1009,36 +1001,6 @@ namespace ORTS
                     EngineStatus = Status.Stopped;
             }
             return EngineStatus;
-        }
-
-        // TODO: This is not called by anything.
-        public string GetStatus()
-        {
-            var result = new StringBuilder();
-            result.AppendFormat("Diesel engine = {0}\n", EngineStatus.ToString());
-            result.AppendFormat("Diesel RPM r/d = {0:F0} / {1:F0}\n", RealRPM, DemandedRPM);
-            result.AppendFormat("Diesel flow = {0:F1} L/h ({1:F1} gal/h)\n", DieselFlowLps * 3600.0f, DieselFlowLps * 3600.0f / 3.785f);
-            result.AppendFormat("Diesel power = {0:F0} / {1:F0} kW\n", OutputPowerW / 1000f, MaxOutputPowerW / 1000f);
-            result.AppendFormat("Diesel load = {0:F1} %\n", LoadPercent);
-            result.AppendFormat("Diesel oil pressure = {0:F1} PSI\n", DieselOilPressurePSI);
-            result.AppendFormat("Diesel temperature = {0:F1} °C\n", DieselTemperatureDeg);
-            if (GearBox != null)
-            {
-                result.AppendFormat("Current gear = {0} {1}\n", GearBox.CurrentGearIndex < 0 ? "N" : (GearBox.CurrentGearIndex + 1).ToString(), GearBox.GearBoxOperation == GearBoxOperation.Automatic ? "Automatic gear" : "");
-                //if (GearBox.GearBoxOperation == GearBoxOperation.Manual)
-                result.AppendFormat("Next gear = {0}, Clutch: {1:F0}%\n", GearBox.NextGearIndex < 0 ? "N" : (GearBox.NextGearIndex + 1).ToString(), GearBox.ClutchPercent);
-                if(GearBox.CurrentGear != null)
-                    result.AppendFormat("RealRPM = {0:F0} - min: {1:F0}, max: {2:F0}\n", RealRPM, MaxRPM * GearBox.CurrentGear.DownGearProportion, MaxRPM * GearBox.CurrentGear.UpGearProportion);
-                result.AppendFormat("ShaftRPM = {0:F0} - {1}\n", GearBox.ShaftRPM, GearBox.GearedUp ? "UP" : (GearBox.GearedDown ? "DOWN" : "At gear"));
-
-                if (GearBox.IsOverspeedError)
-                    result.AppendLine("Gearbox Overspeed ERROR!!!");
-                else
-                    if (GearBox.IsOverspeedWarning)
-                        result.AppendLine("Gearbox Overspeed Warning!");
-                
-            }
-            return result.ToString();
         }
 
         public void Restore(BinaryReader inf)

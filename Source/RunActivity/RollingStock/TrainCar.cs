@@ -753,9 +753,12 @@ namespace ORTS
         public virtual void SignalEvent(PowerSupplyEvent evt, int id) { }
 
         public virtual string GetStatus() { return null; }
-        public virtual string GetDebugStatus() { return null; }
-        public virtual string GetTrainBrakeStatus(PressureUnit unit) { return null; }
-        public virtual string GetEngineBrakeStatus(PressureUnit unit) { return null; }
+        public virtual string GetDebugStatus()
+        {
+            return String.Format("Car {0}\t{2} {1}\t{3}\t{4:F0}%\t{5:F0}m/s\t{6:F0}kW\t{7:F0}kN\t{8}\t{9}", UiD, Flipped ? "(flip)" : "", Direction == Direction.Forward ? "Fwd" : Direction == Direction.Reverse ? "Rev" : "N", AcceptMUSignals ? "MU'd" : "Single", ThrottlePercent, SpeedMpS, MotiveForceN * SpeedMpS / 1000, MotiveForceN / 1000, WheelSlip ? "Slipping" : "", CouplerOverloaded ? "Coupler overloaded" : "");
+        }
+        public virtual string GetTrainBrakeStatus() { return null; }
+        public virtual string GetEngineBrakeStatus() { return null; }
         public virtual string GetDynamicBrakeStatus() { return null; }
         public virtual bool GetSanderOn() { return false; }
         bool WheelHasBeenSet = false; //indicating that the car shape has been loaded, thus no need to reset the wheels

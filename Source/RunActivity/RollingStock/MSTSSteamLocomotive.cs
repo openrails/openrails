@@ -251,6 +251,10 @@ namespace ORTS
         // Water model - locomotive boilers require water level to be maintained above the firebox crown sheet
         // This model is a crude representation of a water gauge based on a generic boiler and 8" water gauge
         // Based on a scaled drawing following water fraction levels have been used - crown sheet = 0.7, min water level = 0.73, max water level = 0.89
+        float WaterMinLevel = 0.7f;         // min level before we blow the fusible plug
+        float WaterMinLevelSafe = 0.75f;    // min level which you would normally want for safety
+        float WaterMaxLevel = 0.91f;        // max level above which we start priming
+        float WaterMaxLevelSafe = 0.90f;    // max level below which we stop priming
         float WaterGlassMaxLevel = 0.89f;   // max height of water gauge as a fraction of boiler level
         float WaterGlassMinLevel = 0.73f;   // min height of water gauge as a fraction of boiler level
         float WaterGlassLengthIN = 8.0f;    // nominal length of water gauge
@@ -2367,20 +2371,20 @@ namespace ORTS
             WaterGlassLevelIN = ((WaterFraction - WaterGlassMinLevel) / (WaterGlassMaxLevel - WaterGlassMinLevel)) * WaterGlassLengthIN;
             WaterGlassLevelIN = MathHelper.Clamp(WaterGlassLevelIN, 0, WaterGlassLengthIN);
 
-            if (WaterFraction < 0.7f)
+            if (WaterFraction < WaterMinLevel)
             {
                 if (!FusiblePlugIsBlown)
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("Water level dropped too far. Plug has fused and loco has failed."));
                 FusiblePlugIsBlown = true; // if water level has dropped, then fusible plug will blow , see "water model"
             }
             // Check for priming            
-            if (WaterFraction >= 0.91f)
+            if (WaterFraction >= WaterMaxLevel)
             {
                 if (!BoilerIsPriming)
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("Boiler overfull and priming."));
                 BoilerIsPriming = true;
             }
-            else if (WaterFraction < 0.90f)
+            else if (WaterFraction < WaterMaxLevelSafe)
             {
                 if (BoilerIsPriming)
                     Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer3D.Viewer.Catalog.GetString("Boiler no longer priming."));
@@ -2720,55 +2724,43 @@ namespace ORTS
 
         public override string GetStatus()
         {
-            var evap = pS.TopH(EvaporationLBpS);
-            var usage = pS.TopH(PreviousTotalSteamUsageLBpS);
-            
-			var result = new StringBuilder();
-            result.AppendFormat("Boiler pressure = {0:F1} PSI\nSteam = +{1:F0} lb/h -{2:F0} lb/h ({3:F0} %)\nWater Gauge = {4:F1} in", BoilerPressurePSI, evap, usage, SmokeColor.SmoothedValue * 100, WaterGlassLevelIN);
+            var boilerPressurePercent = BoilerPressurePSI / MaxBoilerPressurePSI;
+            var boilerPressureSafety = boilerPressurePercent <= 0.25 ? "!!!" : boilerPressurePercent <= 0.5 ? "???" : "";
+            var waterGlassPercent = (WaterFraction - WaterMinLevel) / (WaterMaxLevel - WaterMinLevel);
+            var boilerWaterSafety = WaterFraction < WaterMinLevel || WaterFraction > WaterMaxLevel ? "!!!" : WaterFraction < WaterMinLevelSafe || WaterFraction > WaterMaxLevelSafe ? "???" : "";
+            var coalPercent = TenderCoalMassKG / MaxTenderCoalMassKG;
+            var waterPercent = TenderWaterVolumeUKG / (Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG);
+            var fuelSafety = CoalIsExhausted || WaterIsExhausted ? "!!!" : coalPercent <= 0.105 || waterPercent <= 0.105 ? "???" : "";
+            var status = new StringBuilder();
 
-                // Display Gear info on top HUD if Geared Locomotive
             if (IsFixGeared)
-            {
-                result.AppendFormat("\nGear = {0:F2}  Fixed Gear", SteamGearRatio);
-            }
+                status.AppendFormat("Fixed gear = 1 ({0:F2})\n", SteamGearRatio);
             else if (IsSelectGeared)
-            {
-                result.AppendFormat("\nGear = {0:F2}  Selectable Gear - {1} Posn.", SteamGearRatio, SteamGearPosition);
-            }
-            else
-            {
-                // Don't print anything on the screen'
-            }
+                status.AppendFormat("Gear = {1} ({0:F2})\n", SteamGearRatio, SteamGearPosition == 0 ? "N" : SteamGearPosition.ToString());
+
+            status.AppendFormat("Steam usage = {0:N0} lb/h\n", pS.TopH(PreviousTotalSteamUsageLBpS));
+            status.AppendFormat("Boiler pressure{1} = {0:F1} PSI{1}\n", BoilerPressurePSI, boilerPressureSafety);
+            status.AppendFormat("Boiler water level{1} = {0:F0}%{2}{1}\n", 100 * waterGlassPercent, boilerWaterSafety, FiringIsManual ? " (safe range)" : "");
 
             if (FiringIsManual)
             {
-                result.AppendFormat("\nWater level = {0:F0} %", WaterFraction * 100);
+                status.AppendFormat("Boiler water level{1} = {0:F0}% (absolute){1}\n", WaterFraction * 100, boilerWaterSafety);
                 if (IdealFireMassKG > 0)
-                    result.AppendFormat("\nFire mass = {0:F0} %", FireMassKG / IdealFireMassKG * 100);
+                    status.AppendFormat("Fire mass = {0:F0}%\n", FireMassKG / IdealFireMassKG * 100);
                 else
-                    result.AppendFormat("\nFire ratio = {0:F0} %", FireRatio * 100);
-                    result.Append("\nInjectors =");
-                if (Injector1IsOn)
-                    result.AppendFormat(" {0:F0} %", Injector1Controller.CurrentValue*100);
-                else
-                    result.Append(" Off");
-                if (Injector2IsOn)
-                    result.AppendFormat(" {0:F0} %", Injector2Controller.CurrentValue * 100);
-                else
-                    result.Append(" Off");
-                result.AppendFormat("\nBlower = {0:F0} %", BlowerController.CurrentValue * 100);
-                result.AppendFormat("\nDamper = {0:F0} %", DamperController.CurrentValue * 100);
-                result.AppendFormat("\nFiring rate = {0:F0} %", FiringRateController.CurrentValue * 100);
+                    status.AppendFormat("Fire ratio = {0:F0}%\n", FireRatio * 100);
             }
-            return result.ToString();
+
+            status.AppendFormat("Fuel levels{2} = {0:F0}% coal, {1:F0}% water{2}\n", 100 * coalPercent, 100 * waterPercent, fuelSafety);
+
+            return status.ToString();
         }
 
         public override string GetDebugStatus()
         {
-            var status = new StringBuilder();
-            status.AppendFormat("Car {0}\t{2} {1}\t{3:F0}%\t{4:F0}m/s\t{5:F0}kW\t{6:F0}kN\t{7}\t{8}\n", UiD, Flipped ? "(flip)" : "", Direction == Direction.Forward ? "Fwd" : Direction == Direction.Reverse ? "Rev" : "N", ThrottlePercent, SpeedMpS, MotiveForceN * SpeedMpS / 1000, MotiveForceN / 1000, WheelSlip ? "Slipping" : "", CouplerOverloaded ? "Coupler overloaded" : "");
+            var status = new StringBuilder(base.GetDebugStatus());
 
-            status.AppendFormat("\n\t\t === Key Inputs === \t\t{0:N0} lb/h\n",
+            status.AppendFormat("\n\n\t\t === Key Inputs === \t\t{0:N0} lb/h\n",
             pS.TopH(EvaporationLBpS));
 
             status.AppendFormat("Input:\tEvap\t{0:N0} ft^2\tGrate\t{1:N0} ft^2\tBoil.\t{2:N0} ft^3\tSup\t{3:N0} ft^2\tFuel Cal.\t{4:N0} btu/lb\n",
@@ -2860,7 +2852,7 @@ namespace ORTS
                 Injector2Fraction * pS.TopH(InjectorFlowRateLBpS) / WaterLBpUKG,
                 Injector2WaterDelTempF);
 
-            status.AppendFormat("Tender:\tCoal\t{0:N0} lb\t{1:N0} %\tWater\t{2:N0} gal(uk)\t\t{3:F0} %\n",
+            status.AppendFormat("Tender:\tCoal\t{0:N0} lb\t{1:N0}%\tWater\t{2:N0} gal(uk)\t\t{3:F0}%\n",
                 Kg.ToLb(TenderCoalMassKG),
                 (TenderCoalMassKG / MaxTenderCoalMassKG) * 100,
                 TenderWaterVolumeUKG,

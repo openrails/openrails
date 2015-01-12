@@ -35,9 +35,6 @@ namespace ORTS.Viewer3D.Popups
 {
     public class HUDWindow : LayeredWindow
     {
-        // Set this to the maximum number of columns that'll be used.
-        const int ColumnCount = 8;
-
         // Set this to the width of each column.
         const int ColumnWidth = 60;
 
@@ -80,9 +77,6 @@ namespace ORTS.Viewer3D.Popups
             : base(owner, TextOffset, TextOffset, "HUD")
         {
             Viewer = owner.Viewer;
-            //CJ
-            //Visible = true;
-            Visible = false;
 
             ProcessHandle = OpenProcess(0x410 /* PROCESS_QUERY_INFORMATION | PROCESS_VM_READ */, false, Process.GetCurrentProcess().Id);
             ProcessMemoryCounters = new PROCESS_MEMORY_COUNTERS() { Size = 40 };
@@ -109,15 +103,17 @@ namespace ORTS.Viewer3D.Popups
 
             Debug.Assert(GC.MaxGeneration == 2, "Runtime is expected to have a MaxGeneration of 2.");
 
-            TextPages = new Action<TableData>[] {
-                TextPageCommon,
-                TextPageConsistInfo,
-                TextPageLocomotiveInfo,
-                TextPageBrakeInfo,
-				TextPageForceInfo,
-                TextPageDispatcherInfo,
-				TextPageDebugInfo,
-            };
+            var textPages = new List<Action<TableData>>();
+            textPages.Add(TextPageCommon);
+            if (MultiPlayer.MPManager.IsMultiPlayer())
+                textPages.Add(TextPageMultiPlayerInfo);
+            textPages.Add(TextPageConsistInfo);
+            textPages.Add(TextPageLocomotiveInfo);
+            textPages.Add(TextPageBrakeInfo);
+            textPages.Add(TextPageForceInfo);
+            textPages.Add(TextPageDispatcherInfo);
+            textPages.Add(TextPageDebugInfo);
+            TextPages = textPages.ToArray();
 
             TextFont = owner.TextFontDefaultOutlined;
 
@@ -255,9 +251,23 @@ namespace ORTS.Viewer3D.Popups
         {
             // Completely customise the rendering of the HUD - don't call base.Draw(spriteBatch).
             for (var row = 0; row < TextTable.Cells.GetLength(0); row++)
+            {
                 for (var column = 0; column < TextTable.Cells.GetLength(1); column++)
+                {
                     if (TextTable.Cells[row, column] != null)
-                        TextFont.Draw(spriteBatch, new Rectangle(TextOffset + column * ColumnWidth, TextOffset + row * TextFont.Height, ColumnWidth, TextFont.Height), Point.Zero, TextTable.Cells[row, column], TextTable.Cells[row, column].StartsWith(" ") ? LabelAlignment.Right : LabelAlignment.Left, Color.White);
+                    {
+                        var text = TextTable.Cells[row, column];
+                        var align = text.StartsWith(" ") ? LabelAlignment.Right : LabelAlignment.Left;
+                        var color = Color.White;
+                        if (text.EndsWith("!!!") || text.EndsWith("???"))
+                        {
+                            color = text.EndsWith("!!!") ? Color.OrangeRed : Color.Yellow;
+                            text = text.Substring(0, text.Length - 3);
+                        }
+                        TextFont.Draw(spriteBatch, new Rectangle(TextOffset + column * ColumnWidth, TextOffset + row * TextFont.Height, ColumnWidth, TextFont.Height), Point.Zero, text, align, color);
+                    }
+                }
+            }
 
 #if SHOW_PHYSICS_GRAPHS
             if (Visible && TextPages[TextPage] == TextPageForceInfo)
@@ -347,7 +357,7 @@ namespace ORTS.Viewer3D.Popups
             var playerTrain = Viewer.PlayerLocomotive.Train;
             var showMUReverser = Math.Abs(playerTrain.MUReverserPercent) != 100;
             var showRetainers = playerTrain.RetainerSetting != RetainerSetting.Exhaust;
-            var engineBrakeStatus = Viewer.PlayerLocomotive.GetEngineBrakeStatus((Viewer.PlayerLocomotive as MSTSLocomotive).PressureUnit);
+            var engineBrakeStatus = Viewer.PlayerLocomotive.GetEngineBrakeStatus();
             var dynamicBrakeStatus = Viewer.PlayerLocomotive.GetDynamicBrakeStatus();
             var locomotiveStatus = Viewer.PlayerLocomotive.GetStatus();
             var stretched = playerTrain.Cars.Count > 1 && playerTrain.NPull == playerTrain.Cars.Count - 1;
@@ -356,64 +366,26 @@ namespace ORTS.Viewer3D.Popups
             TableSetLabelValueColumns(table, 0, 2);
             TableAddLabelValue(table, "Version", VersionInfo.VersionOrBuild);
 
-            if (MultiPlayer.MPManager.IsClient()) //client and server may have time difference
+            // Client and server may have a time difference.
+            if (MultiPlayer.MPManager.IsClient())
                 TableAddLabelValue(table, "Time", InfoDisplay.FormattedTime(Viewer.Simulator.ClockTime + MultiPlayer.MPManager.Instance().serverTimeDifference));
-            else TableAddLabelValue(table, "Time", InfoDisplay.FormattedTime(Viewer.Simulator.ClockTime));
+            else
+                TableAddLabelValue(table, "Time", InfoDisplay.FormattedTime(Viewer.Simulator.ClockTime));
 
             if (Viewer.IsReplaying)
-            {
                 TableAddLabelValue(table, "Replay", InfoDisplay.FormattedTime(Viewer.Log.ReplayEndsAt - Viewer.Simulator.ClockTime));
-            }
 
-            TableAddLabelValue(table, "Speed", FormatStrings.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
+            TableAddLabelValue(table, "Speed", FormatStrings.FormatSpeedDisplay(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
             TableAddLabelValue(table, "Direction", showMUReverser ? "{1:F0} {0}" : "{0}", Viewer.PlayerLocomotive.Direction, Math.Abs(playerTrain.MUReverserPercent));
             TableAddLabelValue(table, "Throttle", "{0:F0}%", Viewer.PlayerLocomotive.ThrottlePercent);
-            TableAddLabelValue(table, "Train brake", "{0}", Viewer.PlayerLocomotive.GetTrainBrakeStatus((Viewer.PlayerLocomotive as MSTSLocomotive).PressureUnit));
+            TableAddLabelValue(table, "Train brake", "{0}", Viewer.PlayerLocomotive.GetTrainBrakeStatus());
             if (showRetainers)
-            {
                 TableAddLabelValue(table, "Retainers", "{0}% {1}", playerTrain.RetainerPercent, playerTrain.RetainerSetting);
-            }
             if (engineBrakeStatus != null)
-            {
                 TableAddLabelValue(table, "Engine brake", "{0}", engineBrakeStatus);
-            }
             if (dynamicBrakeStatus != null)
-            {
                 TableAddLabelValue(table, "Dynamic brake", "{0}", dynamicBrakeStatus);
-            }
-            if (Viewer.PlayerLocomotive is MSTSElectricLocomotive)
-            {
-                MSTSElectricLocomotive loco = Viewer.PlayerLocomotive as MSTSElectricLocomotive;
-
-                StringBuilder pantographStatus = new StringBuilder();
-                foreach (Pantograph pantograph in loco.Pantographs.List)
-                {
-                    pantographStatus.AppendFormat("{0} {1}", pantograph.Id, pantograph.State.ToString());
-                    if (pantograph != loco.Pantographs.List.Last())
-                    {
-                        pantographStatus.Append(" ");
-                    }
-                }
-
-                StringBuilder cbAuthorization = new StringBuilder();
-                cbAuthorization.Append("TCS ");
-                if (loco.TrainControlSystem.PowerAuthorization)
-                    cbAuthorization.Append("OK");
-                else
-                    cbAuthorization.Append("NOTOK");
-                cbAuthorization.Append(", driver ");
-                if (loco.PowerSupply.CircuitBreaker.DriverCloseAuthorization)
-                    cbAuthorization.Append("OK");
-                else
-                    cbAuthorization.Append("NOTOK");
-
-                TableAddLabelValue(table, "Pantographs", pantographStatus.ToString());
-                TableAddLabelValue(table, "CB authorization", cbAuthorization.ToString());
-                TableAddLabelValue(table, "Circuit breaker", loco.PowerSupply.CircuitBreaker.State.ToString());
-                TableAddLabelValue(table, "Electric power", loco.PowerSupply.State.ToString());
-                TableAddLabelValue(table, "Auxiliary power", loco.PowerSupply.AuxiliaryState.ToString());
-            }
-            else if (locomotiveStatus != null)
+            if (locomotiveStatus != null)
             {
                 var lines = locomotiveStatus.Split('\n');
                 foreach (var line in lines)
@@ -425,36 +397,38 @@ namespace ORTS.Viewer3D.Popups
                     }
                 }
             }
-            TableAddLabelValue(table, "Coupler slack", "{0:F2} m ({1} pulling, {2} pushing) {3}", playerTrain.TotalCouplerSlackM, playerTrain.NPull, playerTrain.NPush, stretched ? "Stretched" : bunched ? "Bunched" : "");
-            TableAddLabelValue(table, "Coupler force", "{0:F0} N ({1:F0} kW)", playerTrain.MaximumCouplerForceN, playerTrain.MaximumCouplerForceN * playerTrain.SpeedMpS / 1000.0f);
-            if (Viewer.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING) TableAddLine(table, "Autopilot");
             TableAddLine(table);
             TableAddLabelValue(table, "FPS", "{0:F0}", Viewer.RenderProcess.FrameRate.SmoothedValue);
             TableAddLine(table);
 
+            if (Viewer.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
+                TableAddLine(table, "Autopilot???");
+
             if (Viewer.PlayerTrain.IsWheelSlip)
-                TableAddLine(table, "Wheel slip");
+                TableAddLine(table, "Wheel slip!!!");
             else if (Viewer.PlayerTrain.IsWheelSlipWarninq)
-                TableAddLine(table, "Wheel slip warning");
+                TableAddLine(table, "Wheel slip warning???");
+
             if (Viewer.PlayerLocomotive.GetSanderOn())
             {
-                if (Math.Abs(playerTrain.SpeedMpS) < ((MSTSLocomotive)Viewer.PlayerLocomotive).SanderSpeedOfMpS)
-                    TableAddLine(table, "Sander on");
+                var sanderBlocked = Viewer.PlayerLocomotive is MSTSLocomotive && Math.Abs(playerTrain.SpeedMpS) > ((MSTSLocomotive)Viewer.PlayerLocomotive).SanderSpeedOfMpS;
+                if (sanderBlocked)
+                    TableAddLine(table, "Sander blocked!!!");
                 else
-                    TableAddLine(table, "Sander blocked");
+                    TableAddLine(table, "Sander on???");
             }
+        }
 
-            if (MultiPlayer.MPManager.IsMultiPlayer())
-            {
-                var status = "MultiPlayerStatus: ";
-                if (MultiPlayer.MPManager.IsServer()) status += "dispatcher";
-                else if (MultiPlayer.MPManager.Instance().AmAider) status += "helper";
-                else if (MultiPlayer.MPManager.IsClient()) status += "client";
-                TableAddLine(table, status);
-                var text = MultiPlayer.MPManager.Instance().GetOnlineUsersInfo();
-                var temp = text.Split('\t');
-                foreach (var t in temp) TableAddLabelValue(table, "", "{0}", t);
-            }
+        void TextPageMultiPlayerInfo(TableData table)
+        {
+            TextPageHeading(table, "MULTI-PLAYER INFORMATION");
+
+            var text = MultiPlayer.MPManager.Instance().GetOnlineUsersInfo();
+
+            TableAddLabelValue(table, "Mode", "{0}", MultiPlayer.MPManager.IsServer() ? "Dispatcher" : MultiPlayer.MPManager.Instance().AmAider ? "Helper" : MultiPlayer.MPManager.IsClient() ? "Client" : "");
+            TableAddLine(table);
+            foreach (var t in text.Split('\t'))
+                TableAddLine(table, "{0}", t);
         }
 
         void TextPageConsistInfo(TableData table)

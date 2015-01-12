@@ -321,25 +321,24 @@ namespace ORTS
             return data;
         }
 
-        public override string GetDebugStatus()
+        public override string GetStatus()
         {
             var status = new StringBuilder();
-            status.AppendFormat(
-                "Car {0}\t{2} {1}\t{3}\t{4:F0}%\t{5:F0}m/s\t{6:F0}kW\t{7:F0}kN\t{8}\t{9}\tElectric:\t{10}\t{11}\t{12}",
-                UiD,
-                Flipped ? "(flip)" : "",
-                Direction == Direction.Forward ? "Fwd" : Direction == Direction.Reverse ? "Rev" : "N",
-                AcceptMUSignals ? "MU'd" : "Single",
-                ThrottlePercent,
-                SpeedMpS,
-                MotiveForceN * SpeedMpS / 1000,
-                MotiveForceN / 1000,
-                WheelSlip ? "Slipping" : "",
-                CouplerOverloaded ? "Coupler overloaded" : "",
-                Pantographs.State == PantographState.Raising || Pantographs.State == PantographState.Lowering ? "Switching" : PowerOn ? "Power on" : "Power off",
-                Pantographs[1].CommandUp ? "1st up" : "",
-                Pantographs[2].CommandUp ? "2nd up" : ""
-            );
+            status.Append("Pantographs = ");
+            foreach (var pantograph in Pantographs.List)
+                status.AppendFormat("{0} ", pantograph.State);
+            status.AppendLine();
+            status.AppendFormat("Power{1} = {0}{1}\n", PowerSupply.State == PowerSupplyState.PowerOff ? "Off" : "On", PowerSupply.State == PowerSupplyState.PowerOff ? "!!!" : "");
+            return status.ToString();
+        }
+
+        public override string GetDebugStatus()
+        {
+            var status = new StringBuilder(base.GetDebugStatus());
+            status.AppendFormat("\tCircuit breaker\t\t{0}", PowerSupply.CircuitBreaker.State);
+            status.AppendFormat("\tTCS\t{0}", TrainControlSystem.PowerAuthorization ? "OK" : "NOT OK");
+            status.AppendFormat("\tDriver\t{0}", PowerSupply.CircuitBreaker.DriverCloseAuthorization ? "OK" : "NOT OK");
+            status.AppendFormat("\tAuxiliary power\t\t{0}", PowerSupply.AuxiliaryState);
             return status.ToString();
         }
 
