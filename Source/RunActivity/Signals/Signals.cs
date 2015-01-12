@@ -4376,8 +4376,10 @@ namespace ORTS
                 {
                     bool inTunnel = false;
                     List<float[]> tunnelInfo = new List<float[]>();
+                    List<int> tunnelPaths = new List<int>();
                     float[] lastTunnel = null;
                     float totalLength = 0f;
+                    int numPaths = -1;
 
                     // loop through all sections in node
                     TrVectorNode thisVNode = thisNode.TrVectorNode;
@@ -4406,15 +4408,18 @@ namespace ORTS
                         // check tunnel shape
 
                         bool tunnelShape = false;
+                        int shapePaths = 0;
 
                         if (tsectiondat.TrackShapes.ContainsKey(thisSection.ShapeIndex))
                         {
                             TrackShape thisShape = tsectiondat.TrackShapes[thisSection.ShapeIndex];
                             tunnelShape = thisShape.TunnelShape;
+                            shapePaths = Convert.ToInt32(thisShape.NumPaths);
                         }
 
                         if (tunnelShape)
                         {
+                            numPaths = numPaths < 0 ? shapePaths : Math.Min(numPaths, shapePaths);
                             if (inTunnel)
                             {
                                 lastTunnel[1] += thisLength;
@@ -4430,7 +4435,9 @@ namespace ORTS
                         else if (inTunnel)
                         {
                             tunnelInfo.Add(lastTunnel);
+                            tunnelPaths.Add(numPaths);
                             inTunnel = false;
+                            numPaths = -1;
                         }
                         totalLength += thisLength;
                     }
@@ -4439,6 +4446,7 @@ namespace ORTS
                     if (inTunnel)
                     {
                         tunnelInfo.Add(lastTunnel);
+                        tunnelPaths.Add(numPaths);
                     }
 
                     // add tunnel info to TrackCircuitSections
@@ -4462,6 +4470,8 @@ namespace ORTS
                             {
                                 TrackCircuitSection.tunnelInfoData[] TCSTunnelData = new TrackCircuitSection.tunnelInfoData[2];
                                 float tunnelStart = 0;
+                                TCSTunnelData[0].numTunnelPaths = tunnelPaths[0];
+                                TCSTunnelData[1].numTunnelPaths = tunnelPaths[0];
 
                                 // if in tunnel, set start in tunnel and check end
                                 if (TCSInTunnel)
@@ -4494,6 +4504,7 @@ namespace ORTS
                                     {
                                         tunnelInfo.RemoveAt(0);
                                         tunnelData = tunnelInfo[0];
+                                        tunnelPaths.RemoveAt(0);
                                     }
                                     else
                                     {
@@ -4736,6 +4747,7 @@ namespace ORTS
             public float LengthInTCS;                             // length of tunnel within this TCS
             public float TotalLength;                             // total length of tunnel
             public float TCSStartOffset;                          // offset in tunnel of start of this TCS : -1 if tunnel start in this TCS
+            public int numTunnelPaths;                            // number of paths through tunnel
         }
 
         public List<tunnelInfoData[]> TunnelInfo = null;          // full tunnel info data

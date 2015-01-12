@@ -1669,6 +1669,7 @@ namespace ORTS
                 float? FrontCarPositionInTunnel = null;
                 float? FrontCarLengthOfTunnelAhead = null;
                 float? RearCarLengthOfTunnelBehind = null;
+                int numTunnelPaths = 0;
 
                 while (validSections)
                 {
@@ -1711,6 +1712,8 @@ namespace ORTS
 
                                 inTunnel = true;
 
+                                numTunnelPaths = thisTunnel[thisSectionDirection].numTunnelPaths;
+
                                 // get position in tunnel
                                 if (tunnelStartOffset < 0)
                                 {
@@ -1740,6 +1743,7 @@ namespace ORTS
                         car.CarTunnelData.FrontPositionBeyondStartOfTunnel = FrontCarPositionInTunnel.HasValue ? FrontCarPositionInTunnel : null;
                         car.CarTunnelData.LengthMOfTunnelAheadFront = FrontCarLengthOfTunnelAhead.HasValue ? FrontCarLengthOfTunnelAhead : null;
                         car.CarTunnelData.LengthMOfTunnelBehindRear = RearCarLengthOfTunnelBehind.HasValue ? RearCarLengthOfTunnelBehind : null;
+                        car.CarTunnelData.numTunnelPaths = numTunnelPaths;
                     }
                     else
                     {
@@ -1759,6 +1763,7 @@ namespace ORTS
                             car.CarTunnelData.FrontPositionBeyondStartOfTunnel = FrontCarPositionInTunnel.HasValue ? FrontCarPositionInTunnel : null;
                             car.CarTunnelData.LengthMOfTunnelAheadFront = FrontCarLengthOfTunnelAhead.HasValue ? FrontCarLengthOfTunnelAhead : null;
                             car.CarTunnelData.LengthMOfTunnelBehindRear = RearCarLengthOfTunnelBehind.HasValue ? RearCarLengthOfTunnelBehind : null;
+                            car.CarTunnelData.numTunnelPaths = numTunnelPaths;
                         }
                     }
                 }

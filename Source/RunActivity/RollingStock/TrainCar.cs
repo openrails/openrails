@@ -272,6 +272,7 @@ namespace ORTS
             public float? FrontPositionBeyondStartOfTunnel;          // position of front of wagon wrt start of tunnel
             public float? LengthMOfTunnelAheadFront;                 // Length of tunnel remaining ahead of front of wagon (negative if front of wagon out of tunnel)
             public float? LengthMOfTunnelBehindRear;                 // Length of tunnel behind rear of wagon (negative if rear of wagon has not yet entered tunnel)
+            public int numTunnelPaths;                               // Number of paths through tunnel
         }
 
         public CarTunnelInfoData CarTunnelData;
