@@ -294,52 +294,80 @@ namespace ORTS
             RouteSpeedMpS = (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;
 
             // if no values are in TRK file, calculate default values.
-            // Double track values yet to be added
-
-            if (SingleTunnelCrossSectAreaM2 == 0)
-            {
-
-                if (RouteSpeedMpS >= 97.22) // if route speed greater then 350km/h
-                {
-                    TunnelCrossSectionAreaM2 = 70.0f;
-                    TunnelPerimeterM = 32.0f;
-                }
-                else if (RouteSpeedMpS >= 69.4 && RouteSpeedMpS < 97.22) // Route speed greater then 250km/h and less then 350km/h
-                {
-                    TunnelCrossSectionAreaM2 = 70.0f;
-                    TunnelPerimeterM = 32.0f;
-                }
-                else if (RouteSpeedMpS >= 55.5 && RouteSpeedMpS < 69.4) // Route speed greater then 200km/h and less then 250km/h
-                {
-                    TunnelCrossSectionAreaM2 = 58.0f;
-                    TunnelPerimeterM = 28.0f;
-                }
-                else if (RouteSpeedMpS >= 44.4 && RouteSpeedMpS < 55.5) // Route speed greater then 160km/h and less then 200km/h
-                {
-                    TunnelCrossSectionAreaM2 = 50.0f;
-                    TunnelPerimeterM = 25.5f;
-                }
-                else if (RouteSpeedMpS >= 33.3 && RouteSpeedMpS < 44.4) // Route speed greater then 120km/h and less then 160km/h
-                {
-                    TunnelCrossSectionAreaM2 = 42.0f;
-                    TunnelPerimeterM = 22.5f;
-                }
-                else       // Route speed less then 120km/h
-                {
-                    TunnelCrossSectionAreaM2 = 25.0f;  // Typically older slower speed designed tunnels
-                    SingleTunnelPerimeterAreaM = 21.0f;
-                }
-            }
-            else
-            {
-                TunnelCrossSectionAreaM2 = SingleTunnelCrossSectAreaM2;  // use values from TRK file
-                TunnelPerimeterM = 21.0f;
-            }
-         
+            // Single track Tunnels
             
-     //       Trace.TraceInformation("Double Area {0} Double Perimeter {1} Single Area {2} Single Perimeter {3}", DoubleTunnelCrossSectAreaM2, DoubleTunnelPerimeterM, SingleTunnelCrossSectAreaM2, SingleTunnelPerimeterAreaM);
+                if (SingleTunnelCrossSectAreaM2 == 0)
+                {
+
+                    if (RouteSpeedMpS >= 97.22) // if route speed greater then 350km/h
+                    {
+                        SingleTunnelCrossSectAreaM2 = 70.0f;
+                        SingleTunnelPerimeterAreaM = 32.0f;
+                    }
+                    else if (RouteSpeedMpS >= 69.4 && RouteSpeedMpS < 97.22) // Route speed greater then 250km/h and less then 350km/h
+                    {
+                        SingleTunnelCrossSectAreaM2 = 70.0f;
+                        SingleTunnelPerimeterAreaM = 32.0f;
+                    }
+                    else if (RouteSpeedMpS >= 55.5 && RouteSpeedMpS < 69.4) // Route speed greater then 200km/h and less then 250km/h
+                    {
+                        SingleTunnelCrossSectAreaM2 = 58.0f;
+                        SingleTunnelPerimeterAreaM = 28.0f;
+                    }
+                    else if (RouteSpeedMpS >= 44.4 && RouteSpeedMpS < 55.5) // Route speed greater then 160km/h and less then 200km/h
+                    {
+                        SingleTunnelCrossSectAreaM2 = 50.0f;
+                        SingleTunnelPerimeterAreaM = 25.5f;
+                    }
+                    else if (RouteSpeedMpS >= 33.3 && RouteSpeedMpS < 44.4) // Route speed greater then 120km/h and less then 160km/h
+                    {
+                        SingleTunnelCrossSectAreaM2 = 42.0f;
+                        SingleTunnelPerimeterAreaM = 22.5f;
+                    }
+                    else       // Route speed less then 120km/h
+                    {
+                        SingleTunnelCrossSectAreaM2 = 21.0f;  // Typically older slower speed designed tunnels
+                        SingleTunnelPerimeterAreaM = 17.8f;
+                    }
+                }
+                
+            // Double track Tunnels
             
-        }
+                if (DoubleTunnelCrossSectAreaM2 == 0)
+                {
+
+                    if (RouteSpeedMpS >= 97.22) // if route speed greater then 350km/h
+                    {
+                        DoubleTunnelCrossSectAreaM2 = 100.0f;
+                        DoubleTunnelPerimeterM = 37.5f;
+                    }
+                    else if (RouteSpeedMpS >= 69.4 && RouteSpeedMpS < 97.22) // Route speed greater then 250km/h and less then 350km/h
+                    {
+                        DoubleTunnelCrossSectAreaM2 = 100.0f;
+                        DoubleTunnelPerimeterM = 37.5f;
+                    }
+                    else if (RouteSpeedMpS >= 55.5 && RouteSpeedMpS < 69.4) // Route speed greater then 200km/h and less then 250km/h
+                    {
+                        DoubleTunnelCrossSectAreaM2 = 90.0f;
+                        DoubleTunnelPerimeterM = 35.0f;
+                    }
+                    else if (RouteSpeedMpS >= 44.4 && RouteSpeedMpS < 55.5) // Route speed greater then 160km/h and less then 200km/h
+                    {
+                        DoubleTunnelCrossSectAreaM2 = 80.0f;
+                        DoubleTunnelPerimeterM = 34.5f;
+                    }
+                    else if (RouteSpeedMpS >= 33.3 && RouteSpeedMpS < 44.4) // Route speed greater then 120km/h and less then 160km/h
+                    {
+                        DoubleTunnelCrossSectAreaM2 = 76.0f;
+                        DoubleTunnelPerimeterM = 31.0f;
+                    }
+                    else       // Route speed less then 120km/h
+                    {
+                        DoubleTunnelCrossSectAreaM2 = 41.8f;  // Typically older slower speed designed tunnels
+                        DoubleTunnelPerimeterM = 25.01f;
+                    }
+                }               
+         }
 
         // called when it's time to update the MotiveForce and FrictionForce
         public virtual void Update(float elapsedClockSeconds)
@@ -415,7 +443,19 @@ namespace ORTS
                           TrainCrossSectionAreaM2 = PrevTrainCrossSectionAreaM2;  // Assume locomotive cross-sectional area is the largest, if not use new one.
                       }
                       const float DensityAirKgpM3 = 1.2f;
-
+                      
+                      // Determine tunnel X-sect area and perimeter based upon number of tracks
+                      if (CarTunnelData.numTunnelPaths >= 2)
+                      {
+                      TunnelCrossSectionAreaM2 = DoubleTunnelCrossSectAreaM2; // Set values for double track tunnels and above
+                      TunnelPerimeterM = DoubleTunnelPerimeterM;
+                      }
+                      else
+                      {
+                      TunnelCrossSectionAreaM2 = SingleTunnelCrossSectAreaM2; // Set values for single track tunnels
+                      TunnelPerimeterM = SingleTunnelPerimeterAreaM;
+                      }
+                       
                       // 
                       // Calculate first tunnel factor
 

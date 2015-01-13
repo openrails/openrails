@@ -277,6 +277,26 @@ namespace ORTS
               0.0f, 0.25f, 0.5f, 0.75f, 1.25f, 1.75f, 2.5f, 3.5f, 4.8f,
               7.2f, 11.25f, 16.0f, 20.0f, 22.0f, 24.0f, 26.0f
         };
+        
+// Burnrate - based upon test results from a Consolidation locomotive
+        static float[] CoalFiredLbspH = new float[]
+        {
+              10.0f, 1000.0f, 2000.0f, 3000.0f, 4000.0f, 5000.0f, 6000.0f, 7000.0f, 8000.0f,
+              9000.0f, 10000.0f, 11000.0f
+        };        
+
+// Burnrate - based upon test results from a Consolidation locomotive
+        static float[] SteamEvaporationLbspH = new float[]
+        {
+              0.0f, 9000.0f, 14500.0f, 21000.0f, 26400.0f, 30800.0f, 34400.0f, 37500.0f, 40200.0f,
+              42800.0f, 45200.0f, 47800.0f
+        };                
+        
+// Burnrate - based upon test results from a Consolidation locomotive
+        public static Interpolator NewBurnRateSteamToCoalLbspH()
+        {
+            return new Interpolator(SteamEvaporationLbspH, CoalFiredLbspH);
+        }
 
 // Saturated Backpressure - Ref Principles of Locomotive Operation
         public static Interpolator BackpressureSatIHPtoPSI()
