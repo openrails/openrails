@@ -22,6 +22,7 @@ using System.IO;
 using System.Management;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Windows.Forms;
 
 namespace ORTS.Common
 {
@@ -71,7 +72,18 @@ namespace ORTS.Common
             {
                 foreach (ManagementObject display in new ManagementClass("Win32_VideoController").GetInstances())
                 {
-                    output.WriteLine("Display    = {0} ({1:F1} GB RAM, {2} x {3}, {4}-bit, {5} Hz){6}", (string)display["Description"], (float)(uint)display["AdapterRAM"] / 1024 / 1024 / 1024, (uint)display["CurrentHorizontalResolution"], (uint)display["CurrentVerticalResolution"], (uint)display["CurrentBitsPerPixel"], (uint)display["CurrentRefreshRate"], GetPnPDeviceDrivers(display));
+                    output.WriteLine("Video      = {0} ({1:F1} GB RAM){2}", (string)display["Description"], (float)(uint)display["AdapterRAM"] / 1024 / 1024 / 1024, GetPnPDeviceDrivers(display));
+                }
+            }
+            catch (Exception error)
+            {
+                Trace.WriteLine(error);
+            }
+            try
+            {
+                foreach (var screen in Screen.AllScreens)
+                {
+                    output.WriteLine("Display    = {0} ({3} x {4}, {5}-bit{6}, {1} x {2})", screen.DeviceName, screen.Bounds.X, screen.Bounds.Y, screen.Bounds.Width, screen.Bounds.Height, screen.BitsPerPixel, screen.Primary ? ", primary" : "");
                 }
             }
             catch (Exception error)
