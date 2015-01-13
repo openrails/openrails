@@ -4998,7 +4998,9 @@ namespace ORTS
                 else if (thisAction is AuxActionItem)
                 {
                     int presentTime = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
-                    ((AuxActionItem)thisAction).ProcessAction(this, presentTime);
+                    var actionState = ((AuxActionItem)thisAction).ProcessAction(this, presentTime);
+                    if (actionState != AI_MOVEMENT_STATE.INIT_ACTION && actionState != AI_MOVEMENT_STATE.HANDLE_ACTION && actionState != AI_MOVEMENT_STATE.END_ACTION)
+                        MovementState = actionState;
                 }
             }
         }
@@ -6159,8 +6161,9 @@ namespace ORTS
             return movementState;
         }
 
-        public virtual void ProcessAction(Train thisTrain, int presentTime)
+        public virtual AITrain.AI_MOVEMENT_STATE ProcessAction(Train thisTrain, int presentTime)
         {
+            return AITrain.AI_MOVEMENT_STATE.AI_STATIC;
         }
 
         public virtual string AsString(AITrain thisTrain)

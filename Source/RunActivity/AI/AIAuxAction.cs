@@ -1530,7 +1530,7 @@ namespace ORTS
             return movementState;
         }
 
-        public override void ProcessAction(Train thisTrain, int presentTime)
+        public override AITrain.AI_MOVEMENT_STATE ProcessAction(Train thisTrain, int presentTime)
         {
             int correctedTime = presentTime;
             switch (currentMvmtState)
@@ -1548,7 +1548,7 @@ namespace ORTS
                 default:
                     break;
             }
-            return;
+            return currentMvmtState;
         }
 
 
