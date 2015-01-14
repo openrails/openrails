@@ -4995,7 +4995,7 @@ namespace ORTS
                        ((AuxActionItem)thisAction).ProcessAction(this, presentTime);
                    }
                 }
-                else if (thisAction is AuxActionItem)
+                else if (thisAction is AuxActionItem && !PreUpdate)
                 {
                     int presentTime = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
                     var actionState = ((AuxActionItem)thisAction).ProcessAction(this, presentTime);
