@@ -52,6 +52,8 @@ namespace ORTS.Viewer3D.Popups
 		readonly HUDGraphMaterial HUDGraphMaterial;
 
         int TextPage;
+        int LocomotivePage = 2;
+        int LastTextPage;
         TableData TextTable = new TableData() { Cells = new string[0, 0] };
 
         HUDGraphSet ForceGraphs;
@@ -77,6 +79,7 @@ namespace ORTS.Viewer3D.Popups
             : base(owner, TextOffset, TextOffset, "HUD")
         {
             Viewer = owner.Viewer;
+            LastTextPage = LocomotivePage;
 
             ProcessHandle = OpenProcess(0x410 /* PROCESS_QUERY_INFORMATION | PROCESS_VM_READ */, false, Process.GetCurrentProcess().Id);
             ProcessMemoryCounters = new PROCESS_MEMORY_COUNTERS() { Size = 40 };
@@ -146,6 +149,7 @@ namespace ORTS.Viewer3D.Popups
         {
             base.Save(outf);
             outf.Write(TextPage);
+            outf.Write(LastTextPage);
         }
 
         protected internal override void Restore(BinaryReader inf)
@@ -154,6 +158,10 @@ namespace ORTS.Viewer3D.Popups
             var page = inf.ReadInt32();
             if (page >= 0 && page <= TextPages.Length)
                 TextPage = page;
+            page = inf.ReadInt32();
+            if (page > 0 && page <= TextPages.Length)
+                LastTextPage = page;
+            else LastTextPage = LocomotivePage;
         }
 
 		public override void Mark()
@@ -173,6 +181,12 @@ namespace ORTS.Viewer3D.Popups
         public override void TabAction()
         {
             TextPage = (TextPage + 1) % TextPages.Length;
+            if (TextPage != 0) LastTextPage = TextPage;
+        }
+
+        public  void ToggleBasicHUD()
+        {
+            TextPage = TextPage == 0? LastTextPage : 0;
         }
 
         int[] lastGCCounts = new int[3];

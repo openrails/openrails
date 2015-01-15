@@ -72,6 +72,7 @@ namespace ORTS.Settings
         [GetString("Display Train Operations Window")] DisplayTrainOperationsWindow,
         [GetString("Display Next Station Window")] DisplayNextStationWindow,
         [GetString("Display Compass Window")] DisplayCompassWindow,
+        [GetString("Display Basic HUD Toggle")] DisplayBasicHUDToggle,
 
         [GetString("Debug Speed Up")] DebugSpeedUp,
         [GetString("Debug Speed Down")] DebugSpeedDown,
@@ -580,6 +581,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommands.DebugTracks] = new UserCommandKeyInput(0x40, KeyModifiers.Control | KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugWeatherChange] = new UserCommandKeyInput(0x19, KeyModifiers.Alt);
 
+            Commands[(int)UserCommands.DisplayBasicHUDToggle] = new UserCommandKeyInput(0x3F, KeyModifiers.Alt);
             Commands[(int)UserCommands.DisplayCarLabels] = new UserCommandModifiableKeyInput(0x41, Commands[(int)UserCommands.DisplayNextWindowTab]);
             Commands[(int)UserCommands.DisplayCompassWindow] = new UserCommandKeyInput(0x0B);
             Commands[(int)UserCommands.DisplayHelpWindow] = new UserCommandModifiableKeyInput(0x3B, Commands[(int)UserCommands.DisplayNextWindowTab]);
