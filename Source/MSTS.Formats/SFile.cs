@@ -18,6 +18,8 @@
 using MSTS.Parsers;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Diagnostics;
 
 // TODO - UV_OPS
 
@@ -27,11 +29,119 @@ namespace MSTS.Formats
     {
         public shape shape;
 
+        private Boolean ValidShape(string filename)
+        {
+            Boolean bValid = true;
+            for (var iDistLvl     = 0; iDistLvl < shape.lod_controls[0].distance_levels.Count; iDistLvl++)
+            {
+                if (shape.lod_controls[0].distance_levels[iDistLvl].distance_level_header.hierarchy.Length != shape.matrices.Count)
+                {
+                    bValid = false;
+                    Trace.TraceWarning("Shape file {0}, distance level {1} has an invalid number of hierarchy elements.", filename, iDistLvl);
+                }
+                var iMatrix = 0;
+                var objHierarchy = shape.lod_controls[0].distance_levels[iDistLvl].distance_level_header.hierarchy;
+                for (var iHierarchy = 0; iHierarchy < shape.lod_controls[0].distance_levels[iDistLvl].distance_level_header.hierarchy.Length; iHierarchy++)
+                {
+                    iMatrix = objHierarchy[iHierarchy];
+                    if (iMatrix == -1 || (iMatrix >= 0 && iMatrix < shape.matrices.Count))
+                    {
+                        // valid
+                    }
+                    else
+                    {
+                        // invalid
+                        bValid = false;
+                        Trace.TraceWarning("Shape file {0}, distance level {1}, hierarchy {2} out of range.", filename, iDistLvl, iHierarchy);
+                    }
+                }
+                for (var iSubObj = 0; iSubObj < shape.lod_controls[0].distance_levels[iDistLvl].sub_objects.Count; iSubObj++)
+                {
+                    if (shape.lod_controls[0].distance_levels[iDistLvl].sub_objects[iSubObj].sub_object_header.geometry_info.geometry_node_map.Length != shape.matrices.Count)
+                    {
+                        bValid = false;
+                        Trace.TraceWarning("Shape file {0}, distance level {1}, sub-object {2} has invalid number of geometry node map elements.", filename, iDistLvl, iSubObj);
+                    }
+                    var iGeometryNode = 0;
+                    var lastGeometryNode = shape.lod_controls[0].distance_levels[iDistLvl].sub_objects[iSubObj].sub_object_header.geometry_info.geometry_nodes.Count;
+                    var objGeometryNodeMap = shape.lod_controls[0].distance_levels[iDistLvl].sub_objects[iSubObj].sub_object_header.geometry_info.geometry_node_map;
+                    for (var iGeometryNodeMap = 0; iGeometryNodeMap < shape.lod_controls[0].distance_levels[iDistLvl].sub_objects[iSubObj].sub_object_header.geometry_info.geometry_node_map.Length; iGeometryNodeMap++)
+                    {
+                        iGeometryNode = objGeometryNodeMap[iGeometryNodeMap];
+                        if (iGeometryNode == -1 || (iGeometryNode >= 0 && iGeometryNode < lastGeometryNode))
+                        {
+                            // valid
+                        }
+                        else {
+                            //invalid
+                            bValid = false;
+                            Trace.TraceWarning("Shape file {0}, distance level {1}, sub-object {2} has a geometry node map element out of range.", filename, iDistLvl, iSubObj);
+                        }
+                    }
+                    var objVertex = shape.lod_controls[0].distance_levels[iDistLvl].sub_objects[iSubObj].vertices;
+                    for (var iVertex = 0; iVertex < shape.lod_controls[0].distance_levels[iDistLvl].sub_objects[iSubObj].vertices.Count; iVertex++)
+                    {
+                        if (objVertex[iVertex].ipoint >= 0 && objVertex[iVertex].ipoint < shape.points.Count)
+                        {
+                            // valid
+                        }
+                        else
+                        {
+                            // invalid
+                            bValid = false;
+                            Trace.TraceWarning("Shape file {0}, distance level {1}, sub-object {2}, vertex {3} has a point out of range.", filename, iDistLvl, iSubObj, iVertex);
+                        }
+                        if (objVertex[iVertex].inormal >= 0 && objVertex[iVertex].inormal < shape.normals.Count)
+                        {
+                            // valid
+                        }
+                        else
+                        {
+                            // invalid
+                            bValid = false;
+                            Trace.TraceWarning("Shape file {0}, distance level {1}, sub-object {2}, vertex {3} has a normal out of range.", filename, iDistLvl, iSubObj, iVertex);
+                        }
+                        if (objVertex[iVertex].vertex_uvs[0] >= 0 && objVertex[iVertex].vertex_uvs[0] < shape.uv_points.Count) {
+                            // valid
+                        }
+                        else {
+                            // invalid
+                            bValid = false;
+                            Trace.TraceWarning("Shape file {0}, distance level {1}, sub_object {2}, vertex {3} has a uv point out of range", filename, iDistLvl, iSubObj, iVertex);
+                        }
+                    }
+                    var lastVertex = shape.lod_controls[0].distance_levels[iDistLvl].sub_objects[iSubObj].vertices.Count;
+                    for (var iPrimitive = 0; iPrimitive < shape.lod_controls[0].distance_levels[iDistLvl].sub_objects[iSubObj].primitives.Count; iPrimitive++)
+                    {
+                        var objTriList = shape.lod_controls[0].distance_levels[iDistLvl].sub_objects[iSubObj].primitives[iPrimitive].indexed_trilist;
+                        for (var iTriList = 0; iTriList < objTriList.vertex_idxs.Count; iTriList++)
+                        {
+                            if (objTriList.vertex_idxs[iTriList].a >= 0 && objTriList.vertex_idxs[iTriList].a < lastVertex)
+                            {
+                                // valid
+                            }
+                            else
+                            {
+                                // invalid
+                                bValid = false;
+                                Trace.TraceWarning("Shape file {0}, distance level {1}, sub-object {2}, primitve {3} has a vertex out of range.", filename, iDistLvl, iSubObj, iPrimitive);
+                            }
+                        }
+                    }
+                }
+
+            }
+            return bValid;
+
+        }
         public SFile(string filename)
         {
             var file = SBR.Open(filename);
             shape = new shape(file.ReadSubBlock());
             file.VerifyEndOfBlock();
+            if (!ValidShape(filename)) {
+                throw new InvalidDataException("Invalid shape file");
+            }
         }
     }
 
