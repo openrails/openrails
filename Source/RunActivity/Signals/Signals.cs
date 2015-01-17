@@ -9847,35 +9847,43 @@ namespace ORTS
                 }
             }
 
-            // if deadlock area : check alternative path if not yet selected
+            // if deadlock area : check alternative path if not yet selected - but only if opening junction is reservable
             // if free alternative path is found, set path available otherwise set path blocked
 
             if (deadlockArea && lastElement.UsedAlternativePath < 0)
             {
+                if (blockstate <= InternalBlockstate.Reservable)
+                {
+
 #if DEBUG_DEADLOCK
                 File.AppendAllText(@"C:\Temp\deadlock.txt",
                     "\n **** Get block state for section " + lastElement.TCSectionIndex.ToString() + " for train : " + thisTrain.Train.Number.ToString() + "\n");
 #endif
-                TrackCircuitSection lastSection = signalRef.TrackCircuitList[lastElement.TCSectionIndex];
-                DeadlockInfo sectionDeadlockInfo = signalRef.DeadlockInfoList[lastSection.DeadlockReference];
-                List<int> availableRoutes = sectionDeadlockInfo.CheckDeadlockPathAvailability(lastSection, thisTrain.Train);
+                    TrackCircuitSection lastSection = signalRef.TrackCircuitList[lastElement.TCSectionIndex];
+                    DeadlockInfo sectionDeadlockInfo = signalRef.DeadlockInfoList[lastSection.DeadlockReference];
+                    List<int> availableRoutes = sectionDeadlockInfo.CheckDeadlockPathAvailability(lastSection, thisTrain.Train);
 
 #if DEBUG_DEADLOCK
                 File.AppendAllText(@"C:\Temp\deadlock.txt", "\nReturned no. of available paths : " + availableRoutes.Count.ToString() + "\n");
                 File.AppendAllText(@"C:\Temp\deadlock.txt", "****\n\n");
 #endif
 
-                if (availableRoutes.Count >= 1)
-                {
-                    int endSectionIndex = -1;
-                    int usedRoute = sectionDeadlockInfo.SelectPath(availableRoutes, thisTrain.Train, ref endSectionIndex);
-                    lastElement.UsedAlternativePath = usedRoute;
-                    SectionsWithAltPathSet.Add(lastElement.TCSectionIndex);
-                    altRouteAssigned = true;
+                    if (availableRoutes.Count >= 1)
+                    {
+                        int endSectionIndex = -1;
+                        int usedRoute = sectionDeadlockInfo.SelectPath(availableRoutes, thisTrain.Train, ref endSectionIndex);
+                        lastElement.UsedAlternativePath = usedRoute;
+                        SectionsWithAltPathSet.Add(lastElement.TCSectionIndex);
+                        altRouteAssigned = true;
 
-                    thisTrain.Train.SetAlternativeRoute_locationBased(lastSection.Index, sectionDeadlockInfo, usedRoute, this);
-                    returnvalue = true;
-                    blockstate = InternalBlockstate.Reservable;
+                        thisTrain.Train.SetAlternativeRoute_locationBased(lastSection.Index, sectionDeadlockInfo, usedRoute, this);
+                        returnvalue = true;
+                        blockstate = InternalBlockstate.Reservable;
+                    }
+                    else
+                    {
+                        blockstate = InternalBlockstate.Blocked;
+                    }
                 }
                 else
                 {
