@@ -488,19 +488,23 @@ namespace ORTS.Common
     /// </summary>
     public static class FormatStrings
     {
-        static GettextResourceManager Catalog = new GettextResourceManager("ORTS.Common");
-        static string m = Catalog.GetString("m");
-        static string km = Catalog.GetString("km");
-        static string mi = Catalog.GetString("mi");
-        static string ft = Catalog.GetString("ft");
-        static string yd = Catalog.GetString("yd");
-        static string kmph = Catalog.GetString("km/h");
-        static string mph = Catalog.GetString("mph");
-        static string kpa = Catalog.GetString("kPa");
-        static string bar = Catalog.GetString("bar");
-        static string psi = Catalog.GetString("psi");
-        static string inhg = Catalog.GetString("inHg");
-        static string kgfpcm2 = Catalog.GetString("kgf/cm^2");
+        public static GettextResourceManager Catalog = new GettextResourceManager("ORTS.Common");
+        public static string m = Catalog.GetString("m");
+        public static string km = Catalog.GetString("km");
+        public static string mi = Catalog.GetString("mi");
+        public static string ft = Catalog.GetString("ft");
+        public static string yd = Catalog.GetString("yd");
+        public static string kmph = Catalog.GetString("km/h");
+        public static string mph = Catalog.GetString("mph");
+        public static string kpa = Catalog.GetString("kPa");
+        public static string bar = Catalog.GetString("bar");
+        public static string psi = Catalog.GetString("psi");
+        public static string inhg = Catalog.GetString("inHg");
+        public static string kgfpcm2 = Catalog.GetString("kgf/cm^2");
+        public static string kg = Catalog.GetString("kg");
+        public static string t = Catalog.GetString("t");
+        public static string lb = Catalog.GetString("lb");
+        public static string h = Catalog.GetString("h");
 
         /// <summary>
         /// Formatted unlocalized speed string, used in reports and logs.
@@ -585,26 +589,26 @@ namespace ORTS.Common
         /// <summary>
         /// format localized mass string, as displayed in in-game windows.
         /// </summary>
-        /// <param name="mass">mass in kg or in Lb</param>
+        /// <param name="massKg">mass in kg or in Lb</param>
         /// <param name="isMetric">use kg if true, Lb if false</param>
-        public static string FormatMass(float mass, bool isMetric)
+        public static string FormatMass(float massKg, bool isMetric)
         {
             if (isMetric)
             {
                 // < 1 tons, show kilograms.
-                float massInTonne = Kg.ToTonne(mass);
+                float massInTonne = Kg.ToTonne(massKg);
                 if (Math.Abs(massInTonne) > 1)
                 {
-                    return String.Format(CultureInfo.CurrentCulture, "{0:N0}t", massInTonne);
+                    return String.Format(CultureInfo.CurrentCulture, "{0:F1} {1}", massInTonne, t);
                 }
                 else
                 {
-                    return String.Format(CultureInfo.CurrentCulture, "{0:F1}kg", mass);
+                    return String.Format(CultureInfo.CurrentCulture, "{0:F1} {1}", massKg, kg);
                 }
             }
             else
             {
-                return String.Format(CultureInfo.CurrentCulture,"{0:F1}Lb", Kg.ToLb(mass));
+                return String.Format(CultureInfo.CurrentCulture,"{0:F1} {1}", Kg.ToLb(massKg), lb);
             }
         }
 

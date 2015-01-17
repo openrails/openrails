@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using ORTS.Settings;
+using ORTS.Common;
 using ORTS.Viewer3D;
 using System;
 using System.Diagnostics;
@@ -313,7 +313,7 @@ namespace ORTS {
 			var duration = DefaultDurationS;
 			if (level >= ConfirmLevel.Warning) duration *= 2;
 			if (level >= ConfirmLevel.MSG) duration *= 5;
-            Viewer.MessagesWindow.AddMessage(String.Format("{0}/{1}", control, level), String.Format(format, ConfirmText[(int)control][0], Viewer.Catalog.GetString(InputSettings.GetPrettyName(level)), message), duration);
+            Viewer.MessagesWindow.AddMessage(String.Format("{0}/{1}", control, level), String.Format(format, ConfirmText[(int)control][0], Viewer.Catalog.GetString(GetStringAttribute.GetPrettyName(level)), message), duration);
         }
     }
 }

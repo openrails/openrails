@@ -204,16 +204,6 @@ namespace ORTS.Settings
     }
 
     /// <summary>
-    /// Localization attribute for decorating enums.
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Field)]
-    public class GetStringAttribute : Attribute
-    {
-        public string Name { get; private set; }
-        public GetStringAttribute(string name) { Name = name; }
-    }
-
-    /// <summary>
     /// Loads, stores and manages keyboard input settings for all available <see cref="UserCommands"/>.
     /// </summary>
     /// <remarks>
@@ -682,18 +672,7 @@ namespace ORTS.Settings
 
         public static string GetPrettyLocalizedName(Enum value)
         {
-            return catalog.GetString(GetPrettyName(value));
-        }
-
-        public static string GetPrettyName(Enum value)
-        {
-            var type = value.GetType();
-            var name = type.GetField(Enum.GetName(type, value))
-                .GetCustomAttributes(false)
-                .OfType<GetStringAttribute>()
-                .SingleOrDefault()
-                .Name;
-            return name;
+            return catalog.GetString(GetStringAttribute.GetPrettyName(value));
         }
 
         public static string GetPrettyCommandName(UserCommands command)

@@ -324,11 +324,14 @@ namespace ORTS
         public override string GetStatus()
         {
             var status = new StringBuilder();
-            status.Append("Pantographs = ");
+            status.AppendFormat("{0} = ", Viewer.Catalog.GetString("Pantographs"));
             foreach (var pantograph in Pantographs.List)
-                status.AppendFormat("{0} ", pantograph.State);
+                status.AppendFormat("{0} ", Viewer.Catalog.GetParticularString("Pantograph", GetStringAttribute.GetPrettyName(pantograph.State)));
             status.AppendLine();
-            status.AppendFormat("Power{1} = {0}{1}\n", PowerSupply.State == PowerSupplyState.PowerOff ? "Off" : "On", PowerSupply.State == PowerSupplyState.PowerOff ? "!!!" : "");
+            status.AppendFormat("{0}{2} = {1}{2}\n",
+                Viewer.Catalog.GetString("Power"),
+                Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(PowerSupply.State)),
+                PowerSupply.State == PowerSupplyState.PowerOff ? "!!!" : "");
             return status.ToString();
         }
 

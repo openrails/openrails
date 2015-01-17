@@ -79,9 +79,9 @@ namespace ORTS
 
     public enum RetainerSetting
     {
-        Exhaust,
-        HighPressure,
-        LowPressure,
-        SlowDirect
+        [GetString("Exhaust")] Exhaust,
+        [GetString("High Pressure")] HighPressure,
+        [GetString("Low Pressure")] LowPressure,
+        [GetString("Slow Direct")] SlowDirect
     };
 }

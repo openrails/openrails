@@ -37,7 +37,7 @@ using Microsoft.Xna.Framework.Graphics;
 using MSTS.Formats;
 using MSTS.Parsers;
 using ORTS.Common;
-// needed for Debug
+using ORTS.Settings;
 
 namespace ORTS
 {
@@ -807,14 +807,14 @@ namespace ORTS
         public override string GetStatus()
         {
             var status = new StringBuilder();
-            status.AppendFormat("Engine = {0}\n", DieselEngines[0].EngineStatus);
+            status.AppendFormat("{0} = {1}\n", Viewer3D.Viewer.Catalog.GetString("Engine"),
+                Viewer3D.Viewer.Catalog.GetParticularString("Engine", GetStringAttribute.GetPrettyName(DieselEngines[0].EngineStatus)));
+
             if (DieselEngines.HasGearBox)
-            {
-                if (DieselEngines[0].GearBox.CurrentGearIndex < 0)
-                    status.Append("Gear = N\n");
-                else
-                    status.AppendFormat("Gear = {0}\n", DieselEngines[0].GearBox.CurrentGearIndex + 1);
-            }
+                status.AppendFormat("{0} = {1}\n", Viewer3D.Viewer.Catalog.GetString("Gear"), DieselEngines[0].GearBox.CurrentGearIndex < 0
+                    ? Viewer3D.Viewer.Catalog.GetParticularString("Gear", "N")
+                    : (DieselEngines[0].GearBox.CurrentGearIndex + 1).ToString());
+
             return status.ToString();
         }
 

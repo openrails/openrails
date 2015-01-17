@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-01-04 20:55:28+0100\n"
-"PO-Revision-Date: 2015-01-04 20:55:28+0100\n"
+"POT-Creation-Date: 2015-01-17 23:32:24+0100\n"
+"PO-Revision-Date: 2015-01-17 23:32:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -139,474 +139,478 @@ msgstr ""
 msgid "Display Compass Window"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:76
-msgid "Debug Speed Up"
+#: ../../ORTS.Settings/InputSettings.cs:75
+msgid "Display Basic HUD Toggle"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:77
-msgid "Debug Speed Down"
+msgid "Debug Speed Up"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:78
-msgid "Debug Speed Reset"
+msgid "Debug Speed Down"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:79
-msgid "Debug Overcast Increase"
+msgid "Debug Speed Reset"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:80
-msgid "Debug Overcast Decrease"
+msgid "Debug Overcast Increase"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:81
-msgid "Debug Fog Increase"
+msgid "Debug Overcast Decrease"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:82
-msgid "Debug Fog Decrease"
+msgid "Debug Fog Increase"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:83
-msgid "Debug Precipitation Increase"
+msgid "Debug Fog Decrease"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:84
-msgid "Debug Precipitation Decrease"
+msgid "Debug Precipitation Increase"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:85
-msgid "Debug Weather Change"
+msgid "Debug Precipitation Decrease"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:86
-msgid "Debug Clock Forwards"
+msgid "Debug Weather Change"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:87
-msgid "Debug Clock Backwards"
+msgid "Debug Clock Forwards"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:88
-msgid "Debug Logger"
+msgid "Debug Clock Backwards"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:89
-msgid "Debug Lock Shadows"
+msgid "Debug Logger"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:90
-msgid "Debug Dump Keymap"
+msgid "Debug Lock Shadows"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:91
-msgid "Debug Log Render Frame"
+msgid "Debug Dump Keymap"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:92
-msgid "Debug Tracks"
+msgid "Debug Log Render Frame"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:93
-msgid "Debug Signalling"
+msgid "Debug Tracks"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:94
-msgid "Debug Reset Wheel Slip"
+msgid "Debug Signalling"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:95
-msgid "Debug Toggle Advanced Adhesion"
+msgid "Debug Reset Wheel Slip"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:96
-msgid "Debug Sound Form"
+msgid "Debug Toggle Advanced Adhesion"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:97
+msgid "Debug Sound Form"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:98
 msgid "Debug Physics Form"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:99
+#: ../../ORTS.Settings/InputSettings.cs:100
 msgid "Camera Cab"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:100
+#: ../../ORTS.Settings/InputSettings.cs:101
 msgid "Camera 3D Cab"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:101
+#: ../../ORTS.Settings/InputSettings.cs:102
 msgid "Camera Toggle Show Cab"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:102
+#: ../../ORTS.Settings/InputSettings.cs:103
 msgid "Camera Head Out Forward"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:103
+#: ../../ORTS.Settings/InputSettings.cs:104
 msgid "Camera Head Out Backward"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:104
+#: ../../ORTS.Settings/InputSettings.cs:105
 msgid "Camera Outside Front"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:105
+#: ../../ORTS.Settings/InputSettings.cs:106
 msgid "Camera Outside Rear"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:106
+#: ../../ORTS.Settings/InputSettings.cs:107
 msgid "Camera Trackside"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:107
+#: ../../ORTS.Settings/InputSettings.cs:108
 msgid "Camera Passenger"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:108
+#: ../../ORTS.Settings/InputSettings.cs:109
 msgid "Camera Brakeman"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:109
+#: ../../ORTS.Settings/InputSettings.cs:110
 msgid "Camera Free"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:110
+#: ../../ORTS.Settings/InputSettings.cs:111
 msgid "Camera Previous Free"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:111
+#: ../../ORTS.Settings/InputSettings.cs:112
 msgid "Camera Reset"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:112
+#: ../../ORTS.Settings/InputSettings.cs:113
 msgid "Camera Move Fast"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:113
+#: ../../ORTS.Settings/InputSettings.cs:114
 msgid "Camera Move Slow"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:114
+#: ../../ORTS.Settings/InputSettings.cs:115
 msgid "Camera Pan Left"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:115
+#: ../../ORTS.Settings/InputSettings.cs:116
 msgid "Camera Pan Right"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:116
+#: ../../ORTS.Settings/InputSettings.cs:117
 msgid "Camera Pan Up"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:117
+#: ../../ORTS.Settings/InputSettings.cs:118
 msgid "Camera Pan Down"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:118
+#: ../../ORTS.Settings/InputSettings.cs:119
 msgid "Camera Zoom In"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:119
+#: ../../ORTS.Settings/InputSettings.cs:120
 msgid "Camera Zoom Out"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:120
+#: ../../ORTS.Settings/InputSettings.cs:121
 msgid "Camera Rotate Left"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:121
+#: ../../ORTS.Settings/InputSettings.cs:122
 msgid "Camera Rotate Right"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:122
+#: ../../ORTS.Settings/InputSettings.cs:123
 msgid "Camera Rotate Up"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:123
+#: ../../ORTS.Settings/InputSettings.cs:124
 msgid "Camera Rotate Down"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:124
+#: ../../ORTS.Settings/InputSettings.cs:125
 msgid "Camera Car Next"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:125
+#: ../../ORTS.Settings/InputSettings.cs:126
 msgid "Camera Car Previous"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:126
+#: ../../ORTS.Settings/InputSettings.cs:127
 msgid "Camera Car First"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:127
+#: ../../ORTS.Settings/InputSettings.cs:128
 msgid "Camera Car Last"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:128
+#: ../../ORTS.Settings/InputSettings.cs:129
 msgid "Camera Jumping Trains"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:129
+#: ../../ORTS.Settings/InputSettings.cs:130
 msgid "Camera Jump Back Player"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:130
+#: ../../ORTS.Settings/InputSettings.cs:131
 msgid "Camera Jump See Switch"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:131
+#: ../../ORTS.Settings/InputSettings.cs:132
 msgid "Camera Vibrate"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:132
+#: ../../ORTS.Settings/InputSettings.cs:133
 msgid "Camera Cab Rotate"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:134
+#: ../../ORTS.Settings/InputSettings.cs:135
 msgid "Control Forwards"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:135
+#: ../../ORTS.Settings/InputSettings.cs:136
 msgid "Control Backwards"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:136
+#: ../../ORTS.Settings/InputSettings.cs:137
 msgid "Control Throttle Increase"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:137
+#: ../../ORTS.Settings/InputSettings.cs:138
 msgid "Control Throttle Decrease"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:138
+#: ../../ORTS.Settings/InputSettings.cs:139
 msgid "Control Gear Up"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:139
+#: ../../ORTS.Settings/InputSettings.cs:140
 msgid "Control Gear Down"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:140
+#: ../../ORTS.Settings/InputSettings.cs:141
 msgid "Control Train Brake Increase"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:141
+#: ../../ORTS.Settings/InputSettings.cs:142
 msgid "Control Train Brake Decrease"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:142
+#: ../../ORTS.Settings/InputSettings.cs:143
 msgid "Control Engine Brake Increase"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:143
+#: ../../ORTS.Settings/InputSettings.cs:144
 msgid "Control Engine Brake Decrease"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:144
+#: ../../ORTS.Settings/InputSettings.cs:145
 msgid "Control Dynamic Brake Increase"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:145
+#: ../../ORTS.Settings/InputSettings.cs:146
 msgid "Control Dynamic Brake Decrease"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:146
+#: ../../ORTS.Settings/InputSettings.cs:147
 msgid "Control Bail Off"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:147
+#: ../../ORTS.Settings/InputSettings.cs:148
 msgid "Control Initialize Brakes"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:148
+#: ../../ORTS.Settings/InputSettings.cs:149
 msgid "Control Handbrake Full"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:149
+#: ../../ORTS.Settings/InputSettings.cs:150
 msgid "Control Handbrake None"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:150
+#: ../../ORTS.Settings/InputSettings.cs:151
 msgid "Control Odometer Reset"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:151
+#: ../../ORTS.Settings/InputSettings.cs:152
 msgid "Control Retainers On"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:152
+#: ../../ORTS.Settings/InputSettings.cs:153
 msgid "Control Retainers Off"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:153
+#: ../../ORTS.Settings/InputSettings.cs:154
 msgid "Control Brake Hose Connect"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:154
+#: ../../ORTS.Settings/InputSettings.cs:155
 msgid "Control Brake Hose Disconnect"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:155
+#: ../../ORTS.Settings/InputSettings.cs:156
 msgid "Control Alerter"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:156
+#: ../../ORTS.Settings/InputSettings.cs:157
 msgid "Control Emergency Push Button"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:157
+#: ../../ORTS.Settings/InputSettings.cs:158
 msgid "Control Sander"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:158
+#: ../../ORTS.Settings/InputSettings.cs:159
 msgid "Control Sander Toggle"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:159
+#: ../../ORTS.Settings/InputSettings.cs:160
 msgid "Control Wiper"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:160
+#: ../../ORTS.Settings/InputSettings.cs:161
 msgid "Control Horn"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:161
+#: ../../ORTS.Settings/InputSettings.cs:162
 msgid "Control Bell"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:162
+#: ../../ORTS.Settings/InputSettings.cs:163
 msgid "Control Bell Toggle"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:163
+#: ../../ORTS.Settings/InputSettings.cs:164
 msgid "Control Door Left"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:164
+#: ../../ORTS.Settings/InputSettings.cs:165
 msgid "Control Door Right"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:165
+#: ../../ORTS.Settings/InputSettings.cs:166
 msgid "Control Mirror"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:166
+#: ../../ORTS.Settings/InputSettings.cs:167
 msgid "Control Light"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:167
+#: ../../ORTS.Settings/InputSettings.cs:168
 msgid "Control Pantograph 1"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:168
+#: ../../ORTS.Settings/InputSettings.cs:169
 msgid "Control Pantograph 2"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:169
+#: ../../ORTS.Settings/InputSettings.cs:170
 msgid "Control Diesel Player"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:170
+#: ../../ORTS.Settings/InputSettings.cs:171
 msgid "Control Diesel Helper"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:171
+#: ../../ORTS.Settings/InputSettings.cs:172
 msgid "Control Headlight Increase"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:172
+#: ../../ORTS.Settings/InputSettings.cs:173
 msgid "Control Headlight Decrease"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:173
+#: ../../ORTS.Settings/InputSettings.cs:174
 msgid "Control Injector 1 Increase"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:174
+#: ../../ORTS.Settings/InputSettings.cs:175
 msgid "Control Injector 1 Decrease"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:175
+#: ../../ORTS.Settings/InputSettings.cs:176
 msgid "Control Injector 1"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:176
+#: ../../ORTS.Settings/InputSettings.cs:177
 msgid "Control Injector 2 Increase"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:177
+#: ../../ORTS.Settings/InputSettings.cs:178
 msgid "Control Injector 2 Decrease"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:178
+#: ../../ORTS.Settings/InputSettings.cs:179
 msgid "Control Injector 2"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:179
+#: ../../ORTS.Settings/InputSettings.cs:180
 msgid "Control Blower Increase"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:180
+#: ../../ORTS.Settings/InputSettings.cs:181
 msgid "Control Blower Decrease"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:181
+#: ../../ORTS.Settings/InputSettings.cs:182
 msgid "Control Damper Increase"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:182
+#: ../../ORTS.Settings/InputSettings.cs:183
 msgid "Control Damper Decrease"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:183
+#: ../../ORTS.Settings/InputSettings.cs:184
 msgid "Control Firebox Open"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:184
+#: ../../ORTS.Settings/InputSettings.cs:185
 msgid "Control Firebox Close"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:185
+#: ../../ORTS.Settings/InputSettings.cs:186
 msgid "Control Firing Rate Increase"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:186
+#: ../../ORTS.Settings/InputSettings.cs:187
 msgid "Control Firing Rate Decrease"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:187
+#: ../../ORTS.Settings/InputSettings.cs:188
 msgid "Control Fire Shovel Full"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:188
+#: ../../ORTS.Settings/InputSettings.cs:189
 msgid "Control Cylinder Cocks"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:189
+#: ../../ORTS.Settings/InputSettings.cs:190
 msgid "Control Firing"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:190
+#: ../../ORTS.Settings/InputSettings.cs:191
 msgid "Control Refill"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:639
+#: ../../ORTS.Settings/InputSettings.cs:631
 #, csharp-format
 msgid "{0} requires and is modified by Shift"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:641
+#: ../../ORTS.Settings/InputSettings.cs:633
 #, csharp-format
 msgid "{0} requires and is modified by Control"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:643
+#: ../../ORTS.Settings/InputSettings.cs:635
 #, csharp-format
 msgid "{0} requires and is modified by Alt"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:674
+#: ../../ORTS.Settings/InputSettings.cs:666
 #, csharp-format
 msgid "{0} and {1} both match {2}"
 msgstr ""

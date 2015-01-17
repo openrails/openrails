@@ -378,27 +378,28 @@ namespace ORTS.Viewer3D.Popups
             var bunched = !stretched && playerTrain.Cars.Count > 1 && playerTrain.NPush == playerTrain.Cars.Count - 1;
 
             TableSetLabelValueColumns(table, 0, 2);
-            TableAddLabelValue(table, "Version", VersionInfo.VersionOrBuild);
+            TableAddLabelValue(table, Viewer.Catalog.GetString("Version"), VersionInfo.VersionOrBuild);
 
             // Client and server may have a time difference.
             if (MultiPlayer.MPManager.IsClient())
-                TableAddLabelValue(table, "Time", InfoDisplay.FormattedTime(Viewer.Simulator.ClockTime + MultiPlayer.MPManager.Instance().serverTimeDifference));
+                TableAddLabelValue(table, Viewer.Catalog.GetString("Time"), InfoDisplay.FormattedTime(Viewer.Simulator.ClockTime + MultiPlayer.MPManager.Instance().serverTimeDifference));
             else
-                TableAddLabelValue(table, "Time", InfoDisplay.FormattedTime(Viewer.Simulator.ClockTime));
+                TableAddLabelValue(table, Viewer.Catalog.GetString("Time"), InfoDisplay.FormattedTime(Viewer.Simulator.ClockTime));
 
             if (Viewer.IsReplaying)
-                TableAddLabelValue(table, "Replay", InfoDisplay.FormattedTime(Viewer.Log.ReplayEndsAt - Viewer.Simulator.ClockTime));
+                TableAddLabelValue(table, Viewer.Catalog.GetString("Replay"), InfoDisplay.FormattedTime(Viewer.Log.ReplayEndsAt - Viewer.Simulator.ClockTime));
 
-            TableAddLabelValue(table, "Speed", FormatStrings.FormatSpeedDisplay(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
-            TableAddLabelValue(table, "Direction", showMUReverser ? "{1:F0} {0}" : "{0}", Viewer.PlayerLocomotive.Direction, Math.Abs(playerTrain.MUReverserPercent));
-            TableAddLabelValue(table, "Throttle", "{0:F0}%", Viewer.PlayerLocomotive.ThrottlePercent);
-            TableAddLabelValue(table, "Train brake", "{0}", Viewer.PlayerLocomotive.GetTrainBrakeStatus());
+            TableAddLabelValue(table, Viewer.Catalog.GetString("Speed"), FormatStrings.FormatSpeedDisplay(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
+            TableAddLabelValue(table, Viewer.Catalog.GetString("Gradient"), "{0:F1}%", -Viewer.PlayerLocomotive.CurrentElevationPercent);
+            TableAddLabelValue(table, Viewer.Catalog.GetString("Direction"), showMUReverser ? "{1:F0} {0}" : "{0}", FormatStrings.Catalog.GetString(GetStringAttribute.GetPrettyName(Viewer.PlayerLocomotive.Direction)), Math.Abs(playerTrain.MUReverserPercent));
+            TableAddLabelValue(table, Viewer.Catalog.GetString("Throttle"), "{0:F0}%", Viewer.PlayerLocomotive.ThrottlePercent);
+            TableAddLabelValue(table, Viewer.Catalog.GetString("Train brake"), "{0}", Viewer.PlayerLocomotive.GetTrainBrakeStatus());
             if (showRetainers)
-                TableAddLabelValue(table, "Retainers", "{0}% {1}", playerTrain.RetainerPercent, playerTrain.RetainerSetting);
+                TableAddLabelValue(table, Viewer.Catalog.GetString("Retainers"), "{0}% {1}", playerTrain.RetainerPercent, Viewer.Catalog.GetString(GetStringAttribute.GetPrettyName(playerTrain.RetainerSetting)));
             if (engineBrakeStatus != null)
-                TableAddLabelValue(table, "Engine brake", "{0}", engineBrakeStatus);
+                TableAddLabelValue(table, Viewer.Catalog.GetString("Engine brake"), "{0}", engineBrakeStatus);
             if (dynamicBrakeStatus != null)
-                TableAddLabelValue(table, "Dynamic brake", "{0}", dynamicBrakeStatus);
+                TableAddLabelValue(table, Viewer.Catalog.GetString("Dynamic brake"), "{0}", dynamicBrakeStatus);
             if (locomotiveStatus != null)
             {
                 var lines = locomotiveStatus.Split('\n');
@@ -412,24 +413,24 @@ namespace ORTS.Viewer3D.Popups
                 }
             }
             TableAddLine(table);
-            TableAddLabelValue(table, "FPS", "{0:F0}", Viewer.RenderProcess.FrameRate.SmoothedValue);
+            TableAddLabelValue(table, Viewer.Catalog.GetString("FPS"), "{0:F0}", Viewer.RenderProcess.FrameRate.SmoothedValue);
             TableAddLine(table);
 
             if (Viewer.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
-                TableAddLine(table, "Autopilot???");
+                TableAddLine(table, Viewer.Catalog.GetString("Autopilot") + "???");
 
             if (Viewer.PlayerTrain.IsWheelSlip)
-                TableAddLine(table, "Wheel slip!!!");
+                TableAddLine(table, Viewer.Catalog.GetString("Wheel slip") + "!!!");
             else if (Viewer.PlayerTrain.IsWheelSlipWarninq)
-                TableAddLine(table, "Wheel slip warning???");
+                TableAddLine(table, Viewer.Catalog.GetString("Wheel slip warning") + "???");
 
             if (Viewer.PlayerLocomotive.GetSanderOn())
             {
                 var sanderBlocked = Viewer.PlayerLocomotive is MSTSLocomotive && Math.Abs(playerTrain.SpeedMpS) > ((MSTSLocomotive)Viewer.PlayerLocomotive).SanderSpeedOfMpS;
                 if (sanderBlocked)
-                    TableAddLine(table, "Sander blocked!!!");
+                    TableAddLine(table, Viewer.Catalog.GetString("Sander blocked") + "!!!");
                 else
-                    TableAddLine(table, "Sander on???");
+                    TableAddLine(table, Viewer.Catalog.GetString("Sander on") + "???");
             }
         }
 

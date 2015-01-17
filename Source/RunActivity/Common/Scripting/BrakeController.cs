@@ -216,7 +216,7 @@ namespace ORTS.Scripting.Api
             {ControllerState.Dummy, ""},
             {ControllerState.Release, Catalog.GetString("Release")},
             {ControllerState.FullQuickRelease, Catalog.GetString("Quick Release")},
-            {ControllerState.Running, Catalog.GetString("Running")},
+            {ControllerState.Running, Catalog.GetParticularString("Brake Controller", "Running")},
             {ControllerState.Neutral, Catalog.GetString("Neutral")},
             {ControllerState.Apply, Catalog.GetString("Apply")},
             {ControllerState.EPApply, Catalog.GetString("EPApply")},

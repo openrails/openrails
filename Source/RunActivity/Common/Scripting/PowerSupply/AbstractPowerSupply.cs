@@ -16,6 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using ORTS.Common;
 
 namespace ORTS.Scripting.Api
 {
@@ -75,16 +76,16 @@ namespace ORTS.Scripting.Api
 
     public enum PowerSupplyState
     {
-        PowerOff,
-        PowerOnOngoing,
-        PowerOn
+        [GetParticularString("PowerSupply", "Off")] PowerOff,
+        [GetParticularString("PowerSupply", "On ongoing")] PowerOnOngoing,
+        [GetParticularString("PowerSupply", "On")] PowerOn
     }
 
     public enum PantographState
     {
-        Down,
-        Lowering,
-        Raising,
-        Up
+        [GetParticularString("Pantograph", "Down")] Down,
+        [GetParticularString("Pantograph", "Lowering")] Lowering,
+        [GetParticularString("Pantograph", "Raising")] Raising,
+        [GetParticularString("Pantograph", "Up")] Up
     }
 }

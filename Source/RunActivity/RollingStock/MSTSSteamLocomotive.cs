@@ -2795,24 +2795,25 @@ namespace ORTS
             var status = new StringBuilder();
 
             if (IsFixGeared)
-                status.AppendFormat("Fixed gear = 1 ({0:F2})\n", SteamGearRatio);
+                status.AppendFormat("{0} = 1 ({1:F2})\n", Viewer.Catalog.GetString("Fixed gear"), SteamGearRatio);
             else if (IsSelectGeared)
-                status.AppendFormat("Gear = {1} ({0:F2})\n", SteamGearRatio, SteamGearPosition == 0 ? "N" : SteamGearPosition.ToString());
+                status.AppendFormat("{0} = {2} ({1:F2})\n", Viewer.Catalog.GetString("Gear"),
+                    SteamGearRatio, SteamGearPosition == 0 ? Viewer.Catalog.GetParticularString("Gear", "N") : SteamGearPosition.ToString());
 
-            status.AppendFormat("Steam usage = {0:N0} lb/h\n", pS.TopH(PreviousTotalSteamUsageLBpS));
-            status.AppendFormat("Boiler pressure{1} = {0:F1} PSI{1}\n", BoilerPressurePSI, boilerPressureSafety);
-            status.AppendFormat("Boiler water level{1} = {0:F0}%{2}{1}\n", 100 * waterGlassPercent, boilerWaterSafety, FiringIsManual ? " (safe range)" : "");
+            status.AppendFormat("{0} = {1}/{2}\n", Viewer.Catalog.GetString("Steam usage"), FormatStrings.FormatMass(pS.TopH(Kg.FromLb(PreviousTotalSteamUsageLBpS)), PressureUnit != PressureUnit.PSI), FormatStrings.h);
+            status.AppendFormat("{0}{2} = {1}{2}\n", Viewer.Catalog.GetString("Boiler pressure"), FormatStrings.FormatPressure(BoilerPressurePSI, PressureUnit.PSI, PressureUnit, true), boilerPressureSafety);
+            status.AppendFormat("{0}{2} = {1:F0}% {3}{2}\n", Viewer.Catalog.GetString("Boiler water level"), 100 * waterGlassPercent, boilerWaterSafety, FiringIsManual ? Viewer.Catalog.GetString("(safe range)") : "");
 
             if (FiringIsManual)
             {
-                status.AppendFormat("Boiler water level{1} = {0:F0}% (absolute){1}\n", WaterFraction * 100, boilerWaterSafety);
+                status.AppendFormat("{0}{3} = {2:F0}% {1}{3}\n", Viewer.Catalog.GetString("Boiler water level"), Viewer.Catalog.GetString("(absolute)"), WaterFraction * 100, boilerWaterSafety);
                 if (IdealFireMassKG > 0)
-                    status.AppendFormat("Fire mass = {0:F0}%\n", FireMassKG / IdealFireMassKG * 100);
+                    status.AppendFormat("{0} = {1:F0}%\n", Viewer.Catalog.GetString("Fire mass"), FireMassKG / IdealFireMassKG * 100);
                 else
-                    status.AppendFormat("Fire ratio = {0:F0}%\n", FireRatio * 100);
+                    status.AppendFormat("{0} = {1:F0}%\n", Viewer.Catalog.GetString("Fire ratio"), FireRatio * 100);
             }
 
-            status.AppendFormat("Fuel levels{2} = {0:F0}% coal, {1:F0}% water{2}\n", 100 * coalPercent, 100 * waterPercent, fuelSafety);
+            status.AppendFormat("{0}{5} = {3:F0}% {1}, {4:F0}% {2}{5}\n", Viewer.Catalog.GetString("Fuel levels"), Viewer.Catalog.GetString("coal"), Viewer.Catalog.GetString("water"), 100 * coalPercent, 100 * waterPercent, fuelSafety);
 
             return status.ToString();
         }

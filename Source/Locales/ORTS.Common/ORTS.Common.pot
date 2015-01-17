@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-01-04 20:55:21+0100\n"
-"PO-Revision-Date: 2015-01-04 20:55:21+0100\n"
+"POT-Creation-Date: 2015-01-17 23:32:14+0100\n"
+"PO-Revision-Date: 2015-01-17 23:32:14+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -57,5 +57,39 @@ msgstr ""
 
 #: ../../ORTS.Common/Conversions.cs:503
 msgid "kgf/cm^2"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:504
+msgid "kg"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:505
+msgid "t"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:506
+msgid "lb"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:507
+msgid "h"
+msgstr ""
+
+#. Context: Reverser
+#: ../../ORTS.Common/enums.cs:27
+msgctxt "Reverser"
+msgid "Forward"
+msgstr ""
+
+#. Context: Reverser
+#: ../../ORTS.Common/enums.cs:28
+msgctxt "Reverser"
+msgid "Reverse"
+msgstr ""
+
+#. Context: Reverser
+#: ../../ORTS.Common/enums.cs:29
+msgctxt "Reverser"
+msgid "N"
 msgstr ""
 

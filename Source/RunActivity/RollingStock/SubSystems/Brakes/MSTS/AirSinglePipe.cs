@@ -138,7 +138,9 @@ namespace ORTS
                 case "wagon(maxbrakeforce": MaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(brakecylinderpressureformaxbrakebrakeforce": MaxCylPressurePSI = AutoCylPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "wagon(triplevalveratio": AuxCylVolumeRatio = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "wagon(brakedistributorreleaserate":
                 case "wagon(maxreleaserate": MaxReleaseRatePSIpS = ReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
+                case "wagon(brakedistributorapplicationrate":
                 case "wagon(maxapplicationrate": MaxApplicationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "wagon(maxauxilarychargingrate": MaxAuxilaryChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "wagon(emergencyreschargingrate": EmergResChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
@@ -190,7 +192,7 @@ namespace ORTS
             BrakeLine1PressurePSI = Car.Train.BrakeLine1PressurePSIorInHg;
             BrakeLine2PressurePSI = Car.Train.BrakeLine2PressurePSI;
             BrakeLine3PressurePSI = 0;
-            AuxResPressurePSI = BrakeLine1PressurePSI;
+            AuxResPressurePSI = maxPressurePSI > BrakeLine1PressurePSI ? maxPressurePSI : BrakeLine1PressurePSI;
             if ((Car as MSTSWagon).EmergencyReservoirPresent || maxPressurePSI != 0)
                 EmergResPressurePSI = maxPressurePSI;
             FullServPressurePSI = fullServPressurePSI;
@@ -198,6 +200,8 @@ namespace ORTS
             TripleValveState = ValveState.Lap;
             HandbrakePercent = handbrakeOn & (Car as MSTSWagon).HandBrakePresent ? 100 : 0;
             SetRetainer(RetainerSetting.Exhaust);
+            if (Car is MSTSLocomotive)
+                (Car as MSTSLocomotive).MainResPressurePSI = (Car as MSTSLocomotive).MaxMainResPressurePSI;
         }
 
         public override void InitializeMoving () // used when initial speed > 0
@@ -328,7 +332,7 @@ namespace ORTS
                     BrakeLine1PressurePSI -= dp * AuxBrakeLineVolumeRatio;
                 }
             }
-            if (AuxResPressurePSI < BrakeLine2PressurePSI && TwoPipes && (BrakeLine2PressurePSI > BrakeLine1PressurePSI || TripleValveState != ValveState.Release))
+            if (TwoPipes && AuxResPressurePSI < BrakeLine2PressurePSI && AuxResPressurePSI < EmergResPressurePSI && (BrakeLine2PressurePSI > BrakeLine1PressurePSI || TripleValveState != ValveState.Release))
             {
                 float dp = elapsedClockSeconds * MaxAuxilaryChargingRatePSIpS;
                 if (AuxResPressurePSI + dp > BrakeLine2PressurePSI - dp * AuxBrakeLineVolumeRatio)

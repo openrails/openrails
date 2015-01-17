@@ -1,4 +1,21 @@
-﻿using System;
+﻿// COPYRIGHT 2013, 2014 by the Open Rails project.
+// 
+// This file is part of Open Rails.
+// 
+// Open Rails is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// Open Rails is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -6,6 +23,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS.Parsers;
+using ORTS.Common;
 
 namespace ORTS
 {
@@ -378,10 +396,10 @@ namespace ORTS
     {
         public enum Status
         {
-            Stopped = 0,
-            Starting = 1,
-            Running = 2,
-            Stopping = 3
+            [GetParticularString("Engine", "Stopped")] Stopped = 0,
+            [GetParticularString("Engine", "Starting")] Starting = 1,
+            [GetParticularString("Engine", "Running")] Running = 2,
+            [GetParticularString("Engine", "Stopping")] Stopping = 3
         }
 
         public enum Cooling

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.7.1\n"
+"X-Generator: Poedit 1.7.3\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ../../Menu/FolderForm.Designer.cs:56 ../../Menu/Options.Designer.cs:182
@@ -495,7 +495,7 @@ msgstr "Megtett távolság"
 
 #: ../../Menu/Options.cs:153
 msgid "Throttle %"
-msgstr "Menetsz. %"
+msgstr "Menetszabályzó %"
 
 #: ../../Menu/Options.cs:154
 msgid "Brake Cyl Press"
@@ -503,7 +503,7 @@ msgstr "Fékhengernyomás"
 
 #: ../../Menu/Options.cs:155
 msgid "Dyn Brake %"
-msgstr "Din. fék %"
+msgstr "Dinamikus fék %"
 
 #: ../../Menu/Options.cs:156
 msgid "Gear Setting"
@@ -868,7 +868,7 @@ msgstr "Szint:"
 
 #: ../../Menu/Options.Designer.cs:1310
 msgid "Adhesion factor random change:"
-msgstr "Tapadási együttható véletlenszerű változtatása:"
+msgstr "Tapadás véletlenszerű változtatása:"
 
 #: ../../Menu/Options.Designer.cs:1334
 msgid "Adhesion factor correction:"
@@ -934,8 +934,7 @@ msgstr "Szint"
 msgid ""
 "Experimental features that may slow down the game, use at your own risk."
 msgstr ""
-"Kísérleti lehetőségek, amik lelassíthatják a játékot. Csak saját "
-"felelősségre."
+"Kísérleti lehetőségek, amik lassíthatják a játékot. Csak saját felelősségre."
 
 #: ../../Menu/Options.Designer.cs:1613
 msgid "Super-elevation"
