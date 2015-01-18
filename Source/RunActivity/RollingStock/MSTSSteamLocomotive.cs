@@ -158,9 +158,9 @@ namespace ORTS
         float HeatRatio = 0.001f;        // Ratio to control burn rate - based on ratio of heat in vs heat out
         float PressureRatio = 0.01f;    // Ratio to control burn rate - based upon boiler pressure
         float BurnRateRawKGpS;           // Raw combustion (burn) rate
-        SmoothedData FuelRateStoker = new SmoothedData(30); // Stoker is more responsive and only takes x seconds to fully react to changing needs.
-        SmoothedData FuelRate = new SmoothedData(90); // Automatic fireman takes x seconds to fully react to changing needs.
-        SmoothedData BurnRateSmoothKGpS = new SmoothedData(300); // Changes in BurnRate take x seconds to fully react to changing needs.
+        SmoothedData FuelRateStoker = new SmoothedData(15); // Stoker is more responsive and only takes x seconds to fully react to changing needs.
+        SmoothedData FuelRate = new SmoothedData(45); // Automatic fireman takes x seconds to fully react to changing needs.
+        SmoothedData BurnRateSmoothKGpS = new SmoothedData(120); // Changes in BurnRate take x seconds to fully react to changing needs.
         float FuelRateSmooth = 0.0f;     // Smoothed Fuel Rate
         
         // precomputed values
@@ -1383,9 +1383,9 @@ namespace ORTS
                 BurnRateRawKGpS *= FireRatio;
             else
                 BurnRateRawKGpS *= 2 - FireRatio;
-            // <CJComment> Correct version commented out. Needs fixing. </CJComment>
-            //BurnRateSmoothKGpS.Update(elapsedClockSeconds, BurnRateRawKGpS);
-            BurnRateSmoothKGpS.Update(0.1f, BurnRateRawKGpS); // Smooth the burn rate
+            // <CJComment> Incorrect version commented out. Needs fixing. </CJComment>
+            BurnRateSmoothKGpS.Update(elapsedClockSeconds, BurnRateRawKGpS);
+           // BurnRateSmoothKGpS.Update(0.1f, BurnRateRawKGpS); // Smooth the burn rate
             FuelBurnRateKGpS = BurnRateSmoothKGpS.SmoothedValue;
             FuelBurnRateKGpS = MathHelper.Clamp(FuelBurnRateKGpS, 0, MaxFireMassKG); // clamp burnrate to maintain it within limits
 #endregion
@@ -1846,9 +1846,9 @@ namespace ORTS
             // Based on formula - BoilerCapacity (btu/h) = (SteamEnthalpy (btu/lb) - EnthalpyCondensate (btu/lb) ) x SteamEvaporated (lb/h) ?????
             // EnthalpyWater (btu/lb) = BoilerCapacity (btu/h) / SteamEvaporated (lb/h) + Enthalpysteam (btu/lb)  ?????
 
-            //<CJComment> Correct statement commented out. Needs sorting. </CJComment>
-            //BoilerHeatSmoothBTU.Update(elapsedClockSeconds, BoilerHeatBTU);
-            BoilerHeatSmoothBTU.Update(0.1f, BoilerHeatBTU);
+            //<CJComment> Incorrect statement commented out. Needs sorting. </CJComment>
+            BoilerHeatSmoothBTU.Update(elapsedClockSeconds, BoilerHeatBTU);
+        //    BoilerHeatSmoothBTU.Update(0.1f, BoilerHeatBTU);
 
             WaterHeatBTUpFT3 = (BoilerHeatSmoothBTU.Value / BoilerVolumeFT3 - (1 - WaterFraction) * BoilerSteamDensityLBpFT3 * BoilerSteamHeatBTUpLB) / (WaterFraction * BoilerWaterDensityLBpFT3);
 
