@@ -30,23 +30,23 @@ namespace MSTS.Formats
     {
         public shape shape;
 
-        void Validate()
+        void Validate(string filename)
         {
             if (shape.lod_controls.Count < 1)
-                throw new InvalidDataException(String.Format("Missing at least one LOD Control element"));
+                Trace.TraceWarning("Missing at least one LOD Control element in shape {0}", filename);
 
             for (var distanceLevelIndex = 0; distanceLevelIndex < shape.lod_controls[0].distance_levels.Count; distanceLevelIndex++)
             {
                 var distanceLevel = shape.lod_controls[0].distance_levels[distanceLevelIndex];
 
                 if (distanceLevel.distance_level_header.hierarchy.Length != shape.matrices.Count)
-                    throw new InvalidDataException(String.Format("Expected {1} hierarchy elements; got {2} in distance level {0}", distanceLevelIndex, shape.matrices.Count, distanceLevel.distance_level_header.hierarchy.Length));
+                    Trace.TraceWarning("Expected {2} hierarchy elements; got {3} in distance level {1} in shape {0}", filename, distanceLevelIndex, shape.matrices.Count, distanceLevel.distance_level_header.hierarchy.Length);
 
                 for (var hierarchyIndex = 0; hierarchyIndex < distanceLevel.distance_level_header.hierarchy.Length; hierarchyIndex++)
                 {
                     var matrixIndex = distanceLevel.distance_level_header.hierarchy[hierarchyIndex];
                     if (matrixIndex < -1 || matrixIndex >= shape.matrices.Count)
-                        throw new InvalidDataException(String.Format("Hierarchy element {1} out of range (expected {2} to {3}; got {4}) in distance level {0}", distanceLevelIndex, hierarchyIndex, -1, shape.matrices.Count - 1, matrixIndex));
+                        Trace.TraceWarning("Hierarchy element {2} out of range (expected {3} to {4}; got {5}) in distance level {1} in shape {0}", filename, distanceLevelIndex, hierarchyIndex, -1, shape.matrices.Count - 1, matrixIndex);
                 }
 
                 for (var subObjectIndex = 0; subObjectIndex < distanceLevel.sub_objects.Count; subObjectIndex++)
@@ -54,14 +54,14 @@ namespace MSTS.Formats
                     var subObject = distanceLevel.sub_objects[subObjectIndex];
 
                     if (subObject.sub_object_header.geometry_info.geometry_node_map.Length != shape.matrices.Count)
-                        throw new InvalidDataException(String.Format("Expected {2} geometry node map elements; got {3} in sub-object {1} in distance level {0}", distanceLevelIndex, subObjectIndex, shape.matrices.Count, subObject.sub_object_header.geometry_info.geometry_node_map.Length));
+                        Trace.TraceWarning("Expected {3} geometry node map elements; got {4} in sub-object {2} in distance level {1} in shape {0}", filename, distanceLevelIndex, subObjectIndex, shape.matrices.Count, subObject.sub_object_header.geometry_info.geometry_node_map.Length);
 
                     var geometryNodeMap = subObject.sub_object_header.geometry_info.geometry_node_map;
                     for (var geometryNodeMapIndex = 0; geometryNodeMapIndex < geometryNodeMap.Length; geometryNodeMapIndex++)
                     {
                         var geometryNode = geometryNodeMap[geometryNodeMapIndex];
                         if (geometryNode < -1 || geometryNode >= subObject.sub_object_header.geometry_info.geometry_nodes.Count)
-                            throw new InvalidDataException(String.Format("Geometry node map element {2} out of range (expected {3} to {4}; got {5}) in sub-object {1} in distance level {0}", distanceLevelIndex, subObjectIndex, geometryNodeMapIndex, -1, subObject.sub_object_header.geometry_info.geometry_nodes.Count - 1, geometryNode));
+                            Trace.TraceWarning("Geometry node map element {3} out of range (expected {4} to {5}; got {6}) in sub-object {2} in distance level {1} in shape {0}", filename, distanceLevelIndex, subObjectIndex, geometryNodeMapIndex, -1, subObject.sub_object_header.geometry_info.geometry_nodes.Count - 1, geometryNode);
                     }
 
                     var vertices = subObject.vertices;
@@ -70,16 +70,15 @@ namespace MSTS.Formats
                         var vertex = vertices[vertexIndex];
 
                         if (vertex.ipoint < 0 || vertex.ipoint >= shape.points.Count)
-                            throw new InvalidDataException(String.Format("Point index out of range (expected {3} to {4}; got {5}) in vertex {2} in sub-object {1} in distance level {0}", distanceLevelIndex, subObjectIndex, vertexIndex, 0, shape.points.Count - 1, vertex.ipoint));
+                            Trace.TraceWarning("Point index out of range (expected {4} to {5}; got {6}) in vertex {3} in sub-object {2} in distance level {1} in shape {0}", filename, distanceLevelIndex, subObjectIndex, vertexIndex, 0, shape.points.Count - 1, vertex.ipoint);
 
                         if (vertex.inormal < 0 || vertex.inormal >= shape.normals.Count)
-                            throw new InvalidDataException(String.Format("Normal index out of range (expected {3} to {4}; got {5}) in vertex {2} in sub-object {1} in distance level {0}", distanceLevelIndex, subObjectIndex, vertexIndex, 0, shape.normals.Count - 1, vertex.inormal));
+                            Trace.TraceWarning("Normal index out of range (expected {4} to {5}; got {6}) in vertex {3} in sub-object {2} in distance level {1} in shape {0}", filename, distanceLevelIndex, subObjectIndex, vertexIndex, 0, shape.normals.Count - 1, vertex.inormal);
 
                         if (vertex.vertex_uvs.Length < 1)
-                            throw new InvalidDataException(String.Format("Missing UV index in vertex {2} in sub-object {1} in distance level {1}", distanceLevelIndex, subObjectIndex, vertexIndex));
-
-                        if (vertex.vertex_uvs[0] < 0 || vertex.vertex_uvs[0] >= shape.uv_points.Count)
-                            throw new InvalidDataException(String.Format("UV index out of range (expected {3} to {4}; got {5}) in vertex {2} in sub-object {1} in distance level {0}", distanceLevelIndex, subObjectIndex, vertexIndex, 0, shape.uv_points.Count - 1, vertex.vertex_uvs[0]));
+                            Trace.TraceWarning("Missing UV index in vertex {3} in sub-object {2} in distance level {1} in shape {0}", filename, distanceLevelIndex, subObjectIndex, vertexIndex);
+                        else if (vertex.vertex_uvs[0] < 0 || vertex.vertex_uvs[0] >= shape.uv_points.Count)
+                            Trace.TraceWarning("UV index out of range (expected {4} to {5}; got {6}) in vertex {3} in sub-object {2} in distance level {1} in shape {0}", filename, distanceLevelIndex, subObjectIndex, vertexIndex, 0, shape.uv_points.Count - 1, vertex.vertex_uvs[0]);
                     }
 
                     for (var primitiveIndex = 0; primitiveIndex < subObject.primitives.Count; primitiveIndex++)
@@ -88,7 +87,7 @@ namespace MSTS.Formats
                         for (var triangleListIndex = 0; triangleListIndex < triangleList.vertex_idxs.Count; triangleListIndex++)
                         {
                             if (triangleList.vertex_idxs[triangleListIndex].a < 0 || triangleList.vertex_idxs[triangleListIndex].a >= vertices.Count)
-                                throw new InvalidDataException(String.Format("Vertex out of range (expected {3} to {4}; got {5}) in primitive {2} in sub-object {1} in distance level {0}", distanceLevelIndex, subObjectIndex, primitiveIndex, 0, vertices.Count - 1, triangleList.vertex_idxs[triangleListIndex].a));
+                                Trace.TraceWarning("Vertex out of range (expected {4} to {5}; got {6}) in primitive {3} in sub-object {2} in distance level {1} in shape {0}", filename, distanceLevelIndex, subObjectIndex, primitiveIndex, 0, vertices.Count - 1, triangleList.vertex_idxs[triangleListIndex].a);
                         }
                     }
                 }
@@ -100,7 +99,7 @@ namespace MSTS.Formats
             var file = SBR.Open(filename);
             shape = new shape(file.ReadSubBlock());
             file.VerifyEndOfBlock();
-            Validate();
+            Validate(filename);
         }
     }
 
