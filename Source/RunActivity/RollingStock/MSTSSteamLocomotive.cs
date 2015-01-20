@@ -413,6 +413,8 @@ namespace ORTS
         public MSTSSteamLocomotive(Simulator simulator, string wagFile)
             : base(simulator, wagFile)
         {
+            RefillTenderWithCoal();
+            RefillTenderWithWater();
         }
 
         /// <summary>
@@ -429,6 +431,22 @@ namespace ORTS
         public void RefillTenderWithWater()
         {
             WaterController.CurrentValue = 1.0f;
+        }
+
+        /// <summary>
+        /// Adjusts the fuel controller to initial coal mass.
+        /// </summary>
+        public void InitializeTenderWithCoal()
+        {
+            FuelController.CurrentValue = TenderCoalMassKG / MaxTenderCoalMassKG;
+        }
+
+        /// <summary>
+        /// Adjusts the water controller to initial water volume.
+        /// </summary>  
+        public void InitializeTenderWithWater()
+        {
+            WaterController.CurrentValue = TenderWaterVolumeUKG / (Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG);
         } 
        
         private bool ZeroError(float v, string name)
@@ -565,6 +583,7 @@ namespace ORTS
             outf.Write(FireMassKG);
             outf.Write(FlueTempK);
             outf.Write(SteamGearPosition);
+            outf.Write(WaterFraction);
             ControllerFactory.Save(CutoffController, outf);
             ControllerFactory.Save(Injector1Controller, outf);
             ControllerFactory.Save(Injector2Controller, outf);
@@ -594,6 +613,7 @@ namespace ORTS
             FireMassKG = inf.ReadSingle();
             FlueTempK = inf.ReadSingle();
             SteamGearPosition = inf.ReadSingle();
+            WaterFraction = inf.ReadSingle();
             ControllerFactory.Restore(CutoffController, inf);
             ControllerFactory.Restore(Injector1Controller, inf);
             ControllerFactory.Restore(Injector2Controller, inf);
@@ -676,8 +696,8 @@ namespace ORTS
                 Trace.TraceInformation("BurnRateSteamToCoalLbspH - default information read from SteamTables");
             }
 
-            RefillTenderWithCoal();
-            RefillTenderWithWater();
+            InitializeTenderWithCoal();
+            InitializeTenderWithWater();
 
             // Computed Values
             // Read alternative OR Value for calculation of Ideal Fire Mass
