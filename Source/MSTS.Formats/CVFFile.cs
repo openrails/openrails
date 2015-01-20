@@ -871,7 +871,8 @@ namespace MSTS.Formats
                     ControlStyle = CABViewControlStyles.NOT_SPRUNG;
                 if (ControlType == CABViewControlTypes.PANTOGRAPH)
                     ControlStyle = CABViewControlStyles.ONOFF;
-                if (ControlType == CABViewControlTypes.HORN || ControlType == CABViewControlTypes.SANDERS || ControlType == CABViewControlTypes.BELL)
+                if (ControlType == CABViewControlTypes.HORN || ControlType == CABViewControlTypes.SANDERS || ControlType == CABViewControlTypes.BELL 
+                    || ControlType == CABViewControlTypes.RESET)
                     ControlStyle = CABViewControlStyles.WHILE_PRESSED;
                 if (ControlType == CABViewControlTypes.DIRECTION && Orientation == 0)
                     Direction = 1 - Direction;
