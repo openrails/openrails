@@ -12767,6 +12767,13 @@ namespace ORTS
                 TrainOwnPath.Add(trainSubpathIndex, pathReference[0]);
             }
 
+            // matchingPath[0] == 3 : path runs through area but no reverse paths available - remove train index as train has no alternative paths at this location
+            else if (matchingPath[0] == 3)
+            {
+                RemoveTrainAndSubpathIndex(trainNumber, subpathRef);
+                return (matchingPath[1]);
+            }
+
             // otherwise matchingPath [1] is matching path - add track details if not yet set
 
             else
@@ -12836,6 +12843,7 @@ namespace ORTS
         // return : [0] = 0 : matching path, [1] = matching path index
         //          [0] = 1 : no matching path and route does not contain any of the end sections (route ends within area)
         //          [0] = 2 : no matching path but route does run through area, [1] contains end section index
+        //          [0] = 3 : no matching path in required direction but route does run through area, [1] contains end section index
         //
 
         public int[] SearchMatchingFullPath(Train.TCSubpathRoute fullPath, int startSectionIndex, int startSectionRouteIndex)
@@ -12844,6 +12852,7 @@ namespace ORTS
             int foundMatchingEndRouteIndex = -1;
             int matchingPath = -1;
 
+            // paths available from start section
             if (PathReferences.ContainsKey(startSectionIndex))
             {
                 List<int> availablePaths = PathReferences[startSectionIndex];
@@ -12875,6 +12884,16 @@ namespace ORTS
                             foundMatchingEndRouteIndex = endSectionRouteIndex;
                         }
                     }
+                }
+            }
+            // no paths available from start section, check if end section of paths matches start section
+            else
+            {
+                if (startSectionIndex == AvailablePathList[0].EndSectionIndex)
+                {
+                    matchingValue[0] = 3;
+                    matchingValue[1] = fullPath.GetRouteIndex(AvailablePathList[0].Path[0].TCSectionIndex, startSectionRouteIndex);
+                    return (matchingValue);
                 }
             }
 

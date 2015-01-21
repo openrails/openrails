@@ -14843,7 +14843,7 @@ namespace ORTS
                         // only allow as public path if not in timetable mode
                         if (Program.Simulator.TimetableMode)
                         {
-                            thisDeadlockPathInfo.AllowedTrains.Add(trainNumber);
+                            thisDeadlockPathInfo.AllowedTrains.Add(thisDeadlock.GetTrainAndSubpathIndex(trainNumber, sublistRef));
                         }
                         else
                         {
@@ -15603,7 +15603,7 @@ namespace ORTS
             {
                 int lstartIndex = startIndex >= 0 ? startIndex : 0;
                 int lendIndex = otherSubpathRoute.Count - 1;
-                lendIndex = endIndex > 0 ? Math.Min(lendIndex, endIndex) : lendIndex;
+                lendIndex = endIndex >= 0 ? Math.Min(lendIndex, endIndex) : lendIndex;
 
                 if (otherSubpathRoute != null)
                 {
@@ -16093,7 +16093,7 @@ namespace ORTS
 
                 TCPosition tempPosition = new TCPosition();
                 tempPosition.SetTCPosition(tn.TCCrossReference, offset, direction);
-                
+
                 TCSectionIndex = inf.ReadInt32();
                 TCDirection = inf.ReadInt32();
                 TCOffset = inf.ReadSingle();
@@ -16105,7 +16105,7 @@ namespace ORTS
                 if (TCSectionIndex != tempPosition.TCSectionIndex ||
                         (TCSectionIndex == tempPosition.TCSectionIndex && offsetDif > 5.0f))
                 {
-                    Trace.TraceWarning("Train {0} restored at different present position : was {1}-{3}, is {2}-{4}",
+                    Trace.TraceWarning("Train {0} restored at different present position : was {1} - {3}, is {2} - {4}",
                             train.Number, TCSectionIndex, tempPosition.TCSectionIndex,
                             TCOffset, tempPosition.TCOffset);
                 }
@@ -16120,7 +16120,7 @@ namespace ORTS
 
                 TCPosition tempPosition = new TCPosition();
                 tempPosition.SetTCPosition(tn.TCCrossReference, offset, direction);
-                
+
                 TCSectionIndex = inf.ReadInt32();
                 TCDirection = inf.ReadInt32();
                 TCOffset = inf.ReadSingle();
@@ -16710,12 +16710,19 @@ namespace ORTS
 
                 while (!itemsCollected && nextNode != null)
                 {
-                    if (nextNode.Value.RequiredDistance <= distance && nextNode.Value.GetType() == reqType)
+                    if (nextNode.Value.RequiredDistance <= distance)
                     {
-                        itemList.Add(nextNode.Value);
-                        prevNode = nextNode;
-                        nextNode = prevNode.Next;
-                        this.Remove(prevNode);
+                        if (nextNode.Value.GetType() == reqType)
+                        {
+                            itemList.Add(nextNode.Value);
+                            prevNode = nextNode;
+                            nextNode = prevNode.Next;
+                            this.Remove(prevNode);
+                        }
+                        else
+                        {
+                            nextNode = nextNode.Next;
+                        }
                     }
                     else
                     {

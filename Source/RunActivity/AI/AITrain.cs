@@ -2983,7 +2983,8 @@ namespace ORTS
                 // find other train
                 int sectionIndex = ValidRoute[0][PresentPosition[0].RouteListIndex].TCSectionIndex;
                 int startIndex = PresentPosition[0].RouteListIndex;
-                int endIndex = LastReservedSection[0];
+                int endSectionIndex = LastReservedSection[0];
+                int endIndex = ValidRoute[0].GetRouteIndex(endSectionIndex, sectionIndex);
 
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[sectionIndex];
 
