@@ -9320,16 +9320,21 @@ namespace ORTS
             {
                 if (internalBlockState == InternalBlockstate.Reservable)
                 {
+                    internalBlockState = InternalBlockstate.Reserved; // preset all sections are reserved
+
                     foreach (Train.TCRouteElement thisElement in thisRoute)
                     {
                         TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
-                        if (thisSection.CircuitState.TrainReserved == null)
-                            thisSection.Reserve(enabledTrain, thisRoute);
+                        if (thisSection.CircuitState.TrainReserved != null || thisSection.CircuitState.TrainOccupy.Count > 0)
+                        {
+                            internalBlockState = InternalBlockstate.Reservable; // not all sections are reserved // 
+                            break;
+                        }
+                        thisSection.Reserve(enabledTrain, thisRoute);
                         enabledTrain.Train.LastReservedSection[enabledTrain.TrainRouteDirectionIndex] = thisElement.TCSectionIndex;
                         lengthReserved += thisSection.Length;
                     }
 
-                    internalBlockState = InternalBlockstate.Reserved;
                     enabledTrain.Train.ClaimState = false;
                 }
 
@@ -12572,9 +12577,9 @@ namespace ORTS
                 {
                     if (trainFitsInSection) // if train fits
                     {
+                        selectedPathFit = pathIndex;
                         if (checkedMain || checkedOwn)
                         {
-                            selectedPathFit = pathIndex;
                             break;  // main and own allready checked so no need to look further
                         }
                     }
@@ -12884,8 +12889,25 @@ namespace ORTS
                             foundMatchingEndRouteIndex = endSectionRouteIndex;
                         }
                     }
+
+                    // no matching end index - check train direction
+                    else
+                    {
+                        // check direction - if wrong direction, train exits area at this location
+                        int areadirection = AvailablePathList[availablePaths[0]].Path[0].Direction;
+                        int traindirection = fullPath[startSectionRouteIndex].Direction;
+
+                        // train has wrong direction
+                        if (areadirection != traindirection)
+                        {
+                            matchingValue[0] = 3;
+                            matchingValue[1] = startSectionRouteIndex + 1;
+                            return (matchingValue);
+                        }
+                    }
                 }
             }
+
             // no paths available from start section, check if end section of paths matches start section
             else
             {
