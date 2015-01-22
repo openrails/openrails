@@ -290,7 +290,20 @@ namespace ORTS
         {
               0.0f, 9000.0f, 14500.0f, 21000.0f, 26400.0f, 30800.0f, 34400.0f, 37500.0f, 40200.0f,
               42800.0f, 45200.0f, 47800.0f
-        };                
+        };      
+        
+// Cylinder Condensation - Ref Principles of Locomotive Operation
+        static float[] CylinderCondensationSimpleFactor = new float[]
+        {
+              0.335f, 0.27f, 0.21f, 0.17f, 0.15f, 0.16f, 0.19f, 0.23f
+        };          
+                  
+// Cylinder condensation Vs Speed (Wheel Revolutions) - Simple locomotive - based upon Ref LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON
+        public static Interpolator CylinderCondensationSimpleSpeedAdjRpMtoX()
+        {
+            return new Interpolator(WheelRotationRpM, CylinderCondensationSimpleFactor);
+        }
+
         
 // Burnrate - based upon test results from a Consolidation locomotive
         public static Interpolator NewBurnRateSteamToCoalLbspH()
