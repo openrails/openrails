@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -39,7 +39,7 @@ namespace Updater
 
         string BasePath;
         string LauncherPath;
-        bool RelaunchApplication;
+        bool ShouldRelaunchApplication;
 
         public UpdaterProgress()
         {
@@ -74,7 +74,7 @@ namespace Updater
         void UpdaterProgress_Load(object sender, EventArgs e)
         {
             // If /RELAUNCH=1 is set, we're expected to re-launch the main application when we're done.
-            RelaunchApplication = Environment.GetCommandLineArgs().Any(a => a == UpdateManager.RelaunchCommandLine + "1");
+            ShouldRelaunchApplication = Environment.GetCommandLineArgs().Any(a => a == UpdateManager.RelaunchCommandLine + "1");
 
             // If /ELEVATE=1 is set, we're an elevation wrapper used to preserve the integrity level of the caller.
             var needsElevation = Environment.GetCommandLineArgs().Any(a => a == UpdateManager.ElevationCommandLine + "1");
@@ -90,13 +90,12 @@ namespace Updater
             processInfo.Verb = "runas";
 
             var process = Process.Start(processInfo);
-            process.WaitForInputIdle();
+            // We would like to use WaitForInputIdle() here but it is unreliable across elevation.
             if (!IsDisposed)
                 Invoke((Action)Hide);
             process.WaitForExit();
 
-            if (RelaunchApplication)
-                LaunchApplication();
+            RelaunchApplication();
 
             Environment.Exit(0);
         }
@@ -159,22 +158,23 @@ namespace Updater
                 return;
             }
 
-            if (RelaunchApplication)
-                LaunchApplication();
+            RelaunchApplication();
 
             Environment.Exit(0);
         }
 
         void UpdaterProgress_FormClosed(object sender, FormClosedEventArgs e)
         {
-            if (RelaunchApplication)
-                LaunchApplication();
+            RelaunchApplication();
         }
 
-        void LaunchApplication()
+        void RelaunchApplication()
         {
-            var process = Process.Start(LauncherPath);
-            process.WaitForExit();
+            if (ShouldRelaunchApplication)
+            {
+                var process = Process.Start(LauncherPath);
+                process.WaitForExit();
+            }
         }
     }
 }
