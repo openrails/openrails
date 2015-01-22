@@ -2984,7 +2984,7 @@ namespace ORTS
                 int sectionIndex = ValidRoute[0][PresentPosition[0].RouteListIndex].TCSectionIndex;
                 int startIndex = PresentPosition[0].RouteListIndex;
                 int endSectionIndex = LastReservedSection[0];
-                int endIndex = ValidRoute[0].GetRouteIndex(endSectionIndex, sectionIndex);
+                int endIndex = ValidRoute[0].GetRouteIndex(endSectionIndex, startIndex);
 
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[sectionIndex];
 
