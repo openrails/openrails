@@ -204,6 +204,7 @@ namespace MSTS.Formats
     public class PickupObj : BaseObj
     {
         public readonly uint PickupType;
+        public readonly PickupAnimDataItem PickupAnimData;
         public readonly SpeedRangeItem SpeedRange;
         public readonly PickupCapacityItem PickupCapacity;
         public readonly List<TrItemId> TrItemIDList = new List<TrItemId>();
@@ -231,7 +232,7 @@ namespace MSTS.Formats
                         case TokenID.PickupType: PickupType = subBlock.ReadUInt();
                             subBlock.Skip(); // Discard the 2nd value (0 or 1 but significance is not known)
                             break;
-                        //case TokenID.PickupAnimData: PickupAnimData = subBlock.ReadUInt(); break; // Need more background. Is always 2 integers?
+                        case TokenID.PickupAnimData: PickupAnimData = new PickupAnimDataItem(subBlock); break;
                         case TokenID.PickupCapacity: PickupCapacity = new PickupCapacityItem(subBlock); break;
                         case TokenID.TrItemId: TrItemIDList.Add(new TrItemId(subBlock)); break;
                         case TokenID.CollideFlags: CollideFlags = subBlock.ReadUInt(); break;
@@ -260,6 +261,25 @@ namespace MSTS.Formats
                 block.VerifyID(TokenID.SpeedRange);
                 MinMpS = block.ReadFloat();
                 MaxMpS = block.ReadFloat();
+                block.VerifyEndOfBlock();
+            }
+        }
+
+        /// <summary>
+        /// PickupAnimDataItem specifies 2 values.  The first represents different pickup animation options.
+        /// The second represents the animation speed which will be used.
+        /// For the moment PickupOptions may not be used.
+        /// </summary>
+        public class PickupAnimDataItem
+        {
+            public readonly float PickupOptions;
+            public readonly float AnimationSpeed;
+
+            internal PickupAnimDataItem(SBR block)
+            {
+                block.VerifyID(TokenID.PickupAnimData);
+                PickupOptions = block.ReadFloat();
+                AnimationSpeed = block.ReadFloat();
                 block.VerifyEndOfBlock();
             }
         }
