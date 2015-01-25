@@ -25,6 +25,9 @@
         private void InitializeComponent() {
             this.components = new System.ComponentModel.Container();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ResumeForm));
             this.gridSaves = new System.Windows.Forms.DataGridView();
             this.fileDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -45,23 +48,23 @@
             this.buttonImportExportSaves = new System.Windows.Forms.Button();
             this.groupBoxInvalid = new System.Windows.Forms.GroupBox();
             this.tableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
-            this.pictureBoxScreenshot = new System.Windows.Forms.PictureBox();
             this.buttonReplayFromPreviousSave = new System.Windows.Forms.Button();
             this.buttonReplayFromStart = new System.Windows.Forms.Button();
             this.checkBoxReplayPauseBeforeEnd = new System.Windows.Forms.CheckBox();
             this.label1 = new System.Windows.Forms.Label();
             this.numericReplayPauseBeforeEnd = new System.Windows.Forms.NumericUpDown();
-            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.panelSaves = new System.Windows.Forms.Panel();
             this.panelScreenshot = new System.Windows.Forms.Panel();
+            this.pictureBoxScreenshot = new System.Windows.Forms.PictureBox();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             ((System.ComponentModel.ISupportInitialize)(this.gridSaves)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.saveBindingSource)).BeginInit();
             this.groupBoxInvalid.SuspendLayout();
             this.tableLayoutPanel.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxScreenshot)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericReplayPauseBeforeEnd)).BeginInit();
             this.panelSaves.SuspendLayout();
             this.panelScreenshot.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxScreenshot)).BeginInit();
             this.SuspendLayout();
             // 
             // gridSaves
@@ -75,6 +78,14 @@
             this.gridSaves.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.gridSaves.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
             this.gridSaves.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.gridSaves.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.gridSaves.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.gridSaves.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.fileDataGridViewTextBoxColumn,
@@ -86,10 +97,26 @@
             this.validDataGridViewCheckBoxColumn,
             this.Blank});
             this.gridSaves.DataSource = this.saveBindingSource;
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.gridSaves.DefaultCellStyle = dataGridViewCellStyle3;
             this.gridSaves.Dock = System.Windows.Forms.DockStyle.Fill;
             this.gridSaves.Location = new System.Drawing.Point(0, 0);
             this.gridSaves.Name = "gridSaves";
             this.gridSaves.ReadOnly = true;
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.gridSaves.RowHeadersDefaultCellStyle = dataGridViewCellStyle4;
             this.gridSaves.RowHeadersVisible = false;
             this.gridSaves.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             this.gridSaves.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
@@ -113,7 +140,7 @@
             this.realTimeDataGridViewTextBoxColumn.HeaderText = "Saved At";
             this.realTimeDataGridViewTextBoxColumn.Name = "realTimeDataGridViewTextBoxColumn";
             this.realTimeDataGridViewTextBoxColumn.ReadOnly = true;
-            this.realTimeDataGridViewTextBoxColumn.Width = 76;
+            this.realTimeDataGridViewTextBoxColumn.Width = 74;
             // 
             // pathNameDataGridViewTextBoxColumn
             // 
@@ -121,7 +148,7 @@
             this.pathNameDataGridViewTextBoxColumn.HeaderText = "Path";
             this.pathNameDataGridViewTextBoxColumn.Name = "pathNameDataGridViewTextBoxColumn";
             this.pathNameDataGridViewTextBoxColumn.ReadOnly = true;
-            this.pathNameDataGridViewTextBoxColumn.Width = 54;
+            this.pathNameDataGridViewTextBoxColumn.Width = 52;
             // 
             // gameTimeDataGridViewTextBoxColumn
             // 
@@ -129,17 +156,17 @@
             this.gameTimeDataGridViewTextBoxColumn.HeaderText = "Time";
             this.gameTimeDataGridViewTextBoxColumn.Name = "gameTimeDataGridViewTextBoxColumn";
             this.gameTimeDataGridViewTextBoxColumn.ReadOnly = true;
-            this.gameTimeDataGridViewTextBoxColumn.Width = 55;
+            this.gameTimeDataGridViewTextBoxColumn.Width = 53;
             // 
             // distanceDataGridViewTextBoxColumn
             // 
             this.distanceDataGridViewTextBoxColumn.DataPropertyName = "Distance";
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopRight;
-            this.distanceDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopRight;
+            this.distanceDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle2;
             this.distanceDataGridViewTextBoxColumn.HeaderText = "Distance";
             this.distanceDataGridViewTextBoxColumn.Name = "distanceDataGridViewTextBoxColumn";
             this.distanceDataGridViewTextBoxColumn.ReadOnly = true;
-            this.distanceDataGridViewTextBoxColumn.Width = 74;
+            this.distanceDataGridViewTextBoxColumn.Width = 72;
             // 
             // currentTileDataGridViewTextBoxColumn
             // 
@@ -147,7 +174,7 @@
             this.currentTileDataGridViewTextBoxColumn.HeaderText = "Tile";
             this.currentTileDataGridViewTextBoxColumn.Name = "currentTileDataGridViewTextBoxColumn";
             this.currentTileDataGridViewTextBoxColumn.ReadOnly = true;
-            this.currentTileDataGridViewTextBoxColumn.Width = 49;
+            this.currentTileDataGridViewTextBoxColumn.Width = 47;
             // 
             // validDataGridViewCheckBoxColumn
             // 
@@ -156,7 +183,7 @@
             this.validDataGridViewCheckBoxColumn.Name = "validDataGridViewCheckBoxColumn";
             this.validDataGridViewCheckBoxColumn.ReadOnly = true;
             this.validDataGridViewCheckBoxColumn.ThreeState = true;
-            this.validDataGridViewCheckBoxColumn.Width = 36;
+            this.validDataGridViewCheckBoxColumn.Width = 34;
             // 
             // Blank
             // 
@@ -287,18 +314,6 @@
             this.tableLayoutPanel.Size = new System.Drawing.Size(806, 458);
             this.tableLayoutPanel.TabIndex = 0;
             // 
-            // pictureBoxScreenshot
-            // 
-            this.pictureBoxScreenshot.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pictureBoxScreenshot.Location = new System.Drawing.Point(0, 0);
-            this.pictureBoxScreenshot.Margin = new System.Windows.Forms.Padding(0);
-            this.pictureBoxScreenshot.Name = "pictureBoxScreenshot";
-            this.pictureBoxScreenshot.Size = new System.Drawing.Size(385, 337);
-            this.pictureBoxScreenshot.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBoxScreenshot.TabIndex = 5;
-            this.pictureBoxScreenshot.TabStop = false;
-            this.pictureBoxScreenshot.Click += new System.EventHandler(this.pictureBoxScreenshot_Click);
-            // 
             // buttonReplayFromPreviousSave
             // 
             this.buttonReplayFromPreviousSave.Location = new System.Drawing.Point(416, 432);
@@ -363,10 +378,6 @@
             this.numericReplayPauseBeforeEnd.TabIndex = 5;
             this.numericReplayPauseBeforeEnd.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
-            // openFileDialog1
-            // 
-            this.openFileDialog1.FileName = "openFileDialog1";
-            // 
             // panelSaves
             // 
             this.panelSaves.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -389,6 +400,22 @@
             this.panelScreenshot.Size = new System.Drawing.Size(387, 339);
             this.panelScreenshot.TabIndex = 12;
             // 
+            // pictureBoxScreenshot
+            // 
+            this.pictureBoxScreenshot.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pictureBoxScreenshot.Location = new System.Drawing.Point(0, 0);
+            this.pictureBoxScreenshot.Margin = new System.Windows.Forms.Padding(0);
+            this.pictureBoxScreenshot.Name = "pictureBoxScreenshot";
+            this.pictureBoxScreenshot.Size = new System.Drawing.Size(385, 337);
+            this.pictureBoxScreenshot.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBoxScreenshot.TabIndex = 5;
+            this.pictureBoxScreenshot.TabStop = false;
+            this.pictureBoxScreenshot.Click += new System.EventHandler(this.pictureBoxScreenshot_Click);
+            // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.FileName = "openFileDialog1";
+            // 
             // ResumeForm
             // 
             this.AcceptButton = this.buttonResume;
@@ -407,10 +434,10 @@
             this.groupBoxInvalid.ResumeLayout(false);
             this.tableLayoutPanel.ResumeLayout(false);
             this.tableLayoutPanel.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxScreenshot)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericReplayPauseBeforeEnd)).EndInit();
             this.panelSaves.ResumeLayout(false);
             this.panelScreenshot.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxScreenshot)).EndInit();
             this.ResumeLayout(false);
 
         }

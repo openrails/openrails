@@ -358,6 +358,7 @@ namespace ORTS
             this.panelDetails.AutoScroll = true;
             this.panelDetails.BackColor = System.Drawing.SystemColors.Window;
             this.panelDetails.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelDetails.ForeColor = System.Drawing.SystemColors.WindowText;
             this.panelDetails.Location = new System.Drawing.Point(299, 58);
             this.panelDetails.Name = "panelDetails";
             this.panelDetails.Size = new System.Drawing.Size(543, 372);

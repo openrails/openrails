@@ -66,7 +66,9 @@
             // 
             // textBoxSavePacks
             // 
-            this.textBoxSavePacks.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.textBoxSavePacks.BackColor = System.Drawing.SystemColors.Window;
+            this.textBoxSavePacks.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBoxSavePacks.ForeColor = System.Drawing.SystemColors.WindowText;
             this.textBoxSavePacks.Location = new System.Drawing.Point(12, 41);
             this.textBoxSavePacks.Multiline = true;
             this.textBoxSavePacks.Name = "textBoxSavePacks";

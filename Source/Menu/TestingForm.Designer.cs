@@ -25,6 +25,7 @@
         private void InitializeComponent() {
             this.components = new System.ComponentModel.Container();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TestingForm));
@@ -48,8 +49,10 @@
             this.buttonDetails = new System.Windows.Forms.Button();
             this.checkBoxOverride = new System.Windows.Forms.CheckBox();
             this.buttonNoSort = new System.Windows.Forms.Button();
+            this.panelTests = new System.Windows.Forms.Panel();
             ((System.ComponentModel.ISupportInitialize)(this.gridTestActivities)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.testBindingSource)).BeginInit();
+            this.panelTests.SuspendLayout();
             this.SuspendLayout();
             // 
             // buttonTestAll
@@ -100,19 +103,17 @@
             // 
             this.gridTestActivities.AllowUserToAddRows = false;
             this.gridTestActivities.AllowUserToDeleteRows = false;
-            this.gridTestActivities.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
             this.gridTestActivities.AutoGenerateColumns = false;
             this.gridTestActivities.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCells;
             this.gridTestActivities.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
             this.gridTestActivities.BackgroundColor = System.Drawing.SystemColors.Window;
+            this.gridTestActivities.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.gridTestActivities.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
             this.gridTestActivities.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
             dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
             dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
             dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
@@ -131,13 +132,22 @@
             this.fpsDataGridViewTextBoxColumn,
             this.blankDataGridViewTextBoxColumn});
             this.gridTestActivities.DataSource = this.testBindingSource;
-            this.gridTestActivities.Location = new System.Drawing.Point(12, 12);
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.gridTestActivities.DefaultCellStyle = dataGridViewCellStyle4;
+            this.gridTestActivities.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.gridTestActivities.Location = new System.Drawing.Point(0, 0);
             this.gridTestActivities.Name = "gridTestActivities";
             this.gridTestActivities.ReadOnly = true;
             this.gridTestActivities.RowHeadersVisible = false;
             this.gridTestActivities.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             this.gridTestActivities.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.gridTestActivities.Size = new System.Drawing.Size(800, 423);
+            this.gridTestActivities.Size = new System.Drawing.Size(798, 421);
             this.gridTestActivities.TabIndex = 0;
             // 
             // toTestDataGridViewCheckBoxColumn
@@ -174,7 +184,7 @@
             this.routeDataGridViewTextBoxColumn.HeaderText = "Route";
             this.routeDataGridViewTextBoxColumn.Name = "routeDataGridViewTextBoxColumn";
             this.routeDataGridViewTextBoxColumn.ReadOnly = true;
-            this.routeDataGridViewTextBoxColumn.Width = 61;
+            this.routeDataGridViewTextBoxColumn.Width = 59;
             // 
             // activityDataGridViewTextBoxColumn
             // 
@@ -182,7 +192,7 @@
             this.activityDataGridViewTextBoxColumn.HeaderText = "Activity";
             this.activityDataGridViewTextBoxColumn.Name = "activityDataGridViewTextBoxColumn";
             this.activityDataGridViewTextBoxColumn.ReadOnly = true;
-            this.activityDataGridViewTextBoxColumn.Width = 66;
+            this.activityDataGridViewTextBoxColumn.Width = 64;
             // 
             // testedDataGridViewCheckBoxColumn
             // 
@@ -191,7 +201,7 @@
             this.testedDataGridViewCheckBoxColumn.Name = "testedDataGridViewCheckBoxColumn";
             this.testedDataGridViewCheckBoxColumn.ReadOnly = true;
             this.testedDataGridViewCheckBoxColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            this.testedDataGridViewCheckBoxColumn.Width = 65;
+            this.testedDataGridViewCheckBoxColumn.Width = 63;
             // 
             // passedDataGridViewCheckBoxColumn
             // 
@@ -200,7 +210,7 @@
             this.passedDataGridViewCheckBoxColumn.Name = "passedDataGridViewCheckBoxColumn";
             this.passedDataGridViewCheckBoxColumn.ReadOnly = true;
             this.passedDataGridViewCheckBoxColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            this.passedDataGridViewCheckBoxColumn.Width = 67;
+            this.passedDataGridViewCheckBoxColumn.Width = 65;
             // 
             // errorsDataGridViewTextBoxColumn
             // 
@@ -208,7 +218,7 @@
             this.errorsDataGridViewTextBoxColumn.HeaderText = "Errors";
             this.errorsDataGridViewTextBoxColumn.Name = "errorsDataGridViewTextBoxColumn";
             this.errorsDataGridViewTextBoxColumn.ReadOnly = true;
-            this.errorsDataGridViewTextBoxColumn.Width = 59;
+            this.errorsDataGridViewTextBoxColumn.Width = 57;
             // 
             // loadDataGridViewTextBoxColumn
             // 
@@ -218,7 +228,7 @@
             this.loadDataGridViewTextBoxColumn.HeaderText = "Load";
             this.loadDataGridViewTextBoxColumn.Name = "loadDataGridViewTextBoxColumn";
             this.loadDataGridViewTextBoxColumn.ReadOnly = true;
-            this.loadDataGridViewTextBoxColumn.Width = 56;
+            this.loadDataGridViewTextBoxColumn.Width = 54;
             // 
             // fpsDataGridViewTextBoxColumn
             // 
@@ -228,7 +238,7 @@
             this.fpsDataGridViewTextBoxColumn.HeaderText = "FPS";
             this.fpsDataGridViewTextBoxColumn.Name = "fpsDataGridViewTextBoxColumn";
             this.fpsDataGridViewTextBoxColumn.ReadOnly = true;
-            this.fpsDataGridViewTextBoxColumn.Width = 52;
+            this.fpsDataGridViewTextBoxColumn.Width = 50;
             // 
             // blankDataGridViewTextBoxColumn
             // 
@@ -255,8 +265,8 @@
             // 
             // checkBoxOverride
             // 
-            this.checkBoxOverride.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.checkBoxOverride.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.checkBoxOverride.Location = new System.Drawing.Point(255, 441);
             this.checkBoxOverride.Name = "checkBoxOverride";
             this.checkBoxOverride.Size = new System.Drawing.Size(314, 23);
@@ -275,16 +285,25 @@
             this.buttonNoSort.UseVisualStyleBackColor = true;
             this.buttonNoSort.Click += new System.EventHandler(this.buttonNoSort_Click);
             // 
+            // panelTests
+            // 
+            this.panelTests.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelTests.Controls.Add(this.gridTestActivities);
+            this.panelTests.Location = new System.Drawing.Point(12, 12);
+            this.panelTests.Name = "panelTests";
+            this.panelTests.Size = new System.Drawing.Size(800, 423);
+            this.panelTests.TabIndex = 13;
+            // 
             // TestingForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(824, 476);
+            this.Controls.Add(this.panelTests);
             this.Controls.Add(this.buttonNoSort);
             this.Controls.Add(this.buttonDetails);
             this.Controls.Add(this.buttonSummary);
             this.Controls.Add(this.checkBoxOverride);
-            this.Controls.Add(this.gridTestActivities);
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.buttonTest);
             this.Controls.Add(this.buttonTestAll);
@@ -296,6 +315,7 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.TestingForm_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.gridTestActivities)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.testBindingSource)).EndInit();
+            this.panelTests.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -322,5 +342,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn loadDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn fpsDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn blankDataGridViewTextBoxColumn;
+        private System.Windows.Forms.Panel panelTests;
     }
 }
