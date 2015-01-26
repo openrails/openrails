@@ -12120,6 +12120,10 @@ namespace ORTS
             {
                 newRoute.Add(thisRoute[iElement]);
             }
+            // Reindexes ReversalInfo items
+            var countDifference = newRoute.Count - ValidRoute[0].Count;
+            TCRoute.ReversalInfo[TCRoute.activeSubpath].LastDivergeIndex = TCRoute.ReversalInfo[TCRoute.activeSubpath].LastDivergeIndex + countDifference;
+            TCRoute.ReversalInfo[TCRoute.activeSubpath].LastSignalIndex = TCRoute.ReversalInfo[TCRoute.activeSubpath].LastSignalIndex + countDifference;
 
             // set new route
 
@@ -12275,6 +12279,11 @@ namespace ORTS
             {
                 newRoute.Add(thisRoute[iElement]);
             }
+
+            // Reindexes ReversalInfo items
+            var countDifference = newRoute.Count - ValidRoute[0].Count;
+            TCRoute.ReversalInfo[TCRoute.activeSubpath].LastDivergeIndex = TCRoute.ReversalInfo[TCRoute.activeSubpath].LastDivergeIndex + countDifference;
+            TCRoute.ReversalInfo[TCRoute.activeSubpath].LastSignalIndex = TCRoute.ReversalInfo[TCRoute.activeSubpath].LastSignalIndex + countDifference;
 
             // set new route
 
