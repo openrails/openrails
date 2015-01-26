@@ -3869,12 +3869,12 @@ namespace ORTS
                 int direction = thisRoute[routeIndex].Direction;
                 if (!IsActualPlayerTrain)
                 {
-                    AIActionWPRef action = new AIActionWPRef(this, waitingPoint[5], 0f, waitingPoint[0], thisRoute[lastIndex].TCSectionIndex, lastIndex, direction);
+                    AIActionWPRef action = new AIActionWPRef(this, waitingPoint[5], 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction);
                     action.SetDelay(waitingPoint[2]);
                     AuxActionsContain.Add(action);
                     if (insertSigDelegate && signalIndex[iWait] > -1)
                     {
-                        AIActSigDelegateRef delegateAction = new AIActSigDelegateRef(this, waitingPoint[5], 0f, waitingPoint[0], thisRoute[lastIndex].TCSectionIndex, lastIndex, direction);
+                        AIActSigDelegateRef delegateAction = new AIActSigDelegateRef(this, waitingPoint[5], 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction);
                         signalRef.SignalObjects[signalIndex[iWait]].LockForTrain(this.Number, waitingPoint[0]);
                         delegateAction.SetEndSignalIndex(signalIndex[iWait]);
                         delegateAction.Delay = 1;   //   waitingPoint[2] <= 5 ? 5 : waitingPoint[2];
@@ -3885,10 +3885,10 @@ namespace ORTS
                 }
                 else if (insertSigDelegate && signalIndex[iWait] > -1)
                 {
-                    AIActionWPRef action = new AIActionWPRef(this, waitingPoint[5], 0f, waitingPoint[0], thisRoute[lastIndex].TCSectionIndex, lastIndex, direction);
+                    AIActionWPRef action = new AIActionWPRef(this, waitingPoint[5], 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction);
                     action.SetDelay(0);
                     AuxActionsContain.Add(action); 
-                    AIActSigDelegateRef delegateAction = new AIActSigDelegateRef(this, waitingPoint[5], 0f, waitingPoint[0], thisRoute[lastIndex].TCSectionIndex, lastIndex, direction);
+                    AIActSigDelegateRef delegateAction = new AIActSigDelegateRef(this, waitingPoint[5], 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction);
                     signalRef.SignalObjects[signalIndex[iWait]].LockForTrain(this.Number, waitingPoint[0]);
                     delegateAction.SetEndSignalIndex(signalIndex[iWait]);
                     delegateAction.Delay = waitingPoint[2] <= 5 ? 5 : waitingPoint[2];

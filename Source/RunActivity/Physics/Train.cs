@@ -10791,7 +10791,7 @@ namespace ORTS
 
                 if (endSignalIndex > -1)
                 {
-                    AIActSigDelegateRef action = new AIActSigDelegateRef(this, waitingPoint[5], 0f, waitingPoint[0], thisRoute[lastIndex].TCSectionIndex, lastIndex, direction);
+                    AIActSigDelegateRef action = new AIActSigDelegateRef(this, waitingPoint[5], 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction);
                     signalRef.SignalObjects[endSignalIndex].LockForTrain(this.Number, waitingPoint[0]);
                     action.SetEndSignalIndex(endSignalIndex);
                     action.SetSignalObject(signalRef.SignalObjects[endSignalIndex]);
