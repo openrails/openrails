@@ -181,7 +181,6 @@
     <Compile Include="Signals\SIGSCRfile.cs" />
     <Compile Include="Simulator\Activity.cs" />
     <Compile Include="Simulator\Confirmation.cs" />
-    <Compile Include="Simulator\FuelPickup.cs" />
     <Compile Include="Simulator\Hazzard.cs" />
     <Compile Include="Simulator\LevelCrossing.cs" />
     <Compile Include="Simulator\RailDriverHandler.cs" />
