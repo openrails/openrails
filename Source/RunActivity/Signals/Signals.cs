@@ -12766,13 +12766,14 @@ namespace ORTS
                 KeyValuePair<int, float> pathEndAndLengthValue = pathEndAndLengthInfo.ElementAt(0);
                 thisPathInfo.UsefullLength = pathEndAndLengthValue.Value;
                 thisPathInfo.LastUsefullSectionIndex = pathEndAndLengthValue.Key;
+                thisPathInfo.EndSectionIndex = subpath[matchingPath[1]].TCSectionIndex;
                 thisPathInfo.Name = String.Empty;  // path has no name
 
                 thisPathInfo.AllowedTrains.Add(trainSubpathIndex);
                 TrainOwnPath.Add(trainSubpathIndex, pathReference[0]);
             }
 
-            // matchingPath[0] == 3 : path runs through area but no reverse paths available - remove train index as train has no alternative paths at this location
+            // matchingPath[0] == 3 : path runs through area but no valid path available or possible - remove train index as train has no alternative paths at this location
             else if (matchingPath[0] == 3)
             {
                 RemoveTrainAndSubpathIndex(trainNumber, subpathRef);
@@ -12893,12 +12894,22 @@ namespace ORTS
                     // no matching end index - check train direction
                     else
                     {
-                        // check direction - if wrong direction, train exits area at this location
+                        // check direction
                         int areadirection = AvailablePathList[availablePaths[0]].Path[0].Direction;
                         int traindirection = fullPath[startSectionRouteIndex].Direction;
 
-                        // train has wrong direction
-                        if (areadirection != traindirection)
+                        // train has same direction - check if end of path is really within the path
+                        if (areadirection == traindirection)
+                        {
+                            int pathEndSection = fullPath[fullPath.Count - 1].TCSectionIndex;
+                            if (testPath.GetRouteIndex(pathEndSection, 0) >= 0) // end point is within section
+                            {
+                                matchingValue[0] = 1;
+                                matchingValue[1] = 0;
+                                return (matchingValue);
+                            }
+                        }
+                        else  //if wrong direction, train exits area at this location//
                         {
                             matchingValue[0] = 3;
                             matchingValue[1] = startSectionRouteIndex + 1;
@@ -12913,8 +12924,17 @@ namespace ORTS
             {
                 if (startSectionIndex == AvailablePathList[0].EndSectionIndex)
                 {
-                    matchingValue[0] = 3;
-                    matchingValue[1] = fullPath.GetRouteIndex(AvailablePathList[0].Path[0].TCSectionIndex, startSectionRouteIndex);
+                    int matchingEndIndex = fullPath.GetRouteIndex(AvailablePathList[0].Path[0].TCSectionIndex, startSectionRouteIndex);
+                    if (matchingEndIndex > 0)
+                    {
+                        matchingValue[0] = 2;
+                        matchingValue[1] = matchingEndIndex;
+                    }
+                    else
+                    {
+                        matchingValue[0] = 3;
+                        matchingValue[1] = startSectionRouteIndex + 1;
+                    }
                     return (matchingValue);
                 }
             }
@@ -12931,8 +12951,8 @@ namespace ORTS
             }
             else
             {
-                matchingValue[0] = 1;
-                matchingValue[1] = 0;
+                matchingValue[0] = 3;
+                matchingValue[1] = startSectionRouteIndex + 1;
             }
 
             return (matchingValue);

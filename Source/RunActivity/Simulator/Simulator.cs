@@ -256,6 +256,9 @@ namespace ORTS
             Trains = new TrainList(this);
             Train playerTrain;
 
+            // define style of passing path and process player passing paths as required
+            Signals.UseLocationPassingPaths = Settings.UseLocationPassingPaths;
+
             switch (IsAutopilotMode)
             {
                 case true:
@@ -263,7 +266,7 @@ namespace ORTS
                     break;
                 default:
                     playerTrain = InitializeTrains(loader);
-                    break;                 
+                    break;
             }
             MPManager.Instance().RememberOriginalSwitchState();
 
@@ -379,7 +382,7 @@ namespace ORTS
             if (playerTrain != null)
             {
                 playerTrain.PostInit();  // place player train after pre-running of AI trains
-                 if (playerTrain.InitialSpeed > 0 && playerTrain.MovementState != AITrain.AI_MOVEMENT_STATE.STATION_STOP)
+                if (playerTrain.InitialSpeed > 0 && playerTrain.MovementState != AITrain.AI_MOVEMENT_STATE.STATION_STOP)
                 {
                     playerTrain.InitializeMoving();
                     playerTrain.MovementState = AITrain.AI_MOVEMENT_STATE.BRAKING;
@@ -441,7 +444,7 @@ namespace ORTS
             {
                 movingTrains.Add(PlayerLocomotive.Train);
                 if (PlayerLocomotive.Train.LeadLocomotive != null
-                    && PlayerLocomotive.Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING 
+                    && PlayerLocomotive.Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING
                     && String.Compare(PlayerLocomotive.Train.LeadLocomotive.CarID, PlayerLocomotive.CarID) != 0
                     && !MPManager.IsMultiPlayer())
                 {
@@ -711,7 +714,7 @@ namespace ORTS
             // first extract the player service definition from the activity file
             // this gives the consist and path
 
-            Train train  = new Train(this);
+            Train train = new Train(this);
             train.TrainType = Train.TRAINTYPE.PLAYER;
             train.Number = 0;
             train.Name = "PLAYER";
@@ -809,15 +812,10 @@ namespace ORTS
             if (Activity != null && !MPManager.IsMultiPlayer()) // activity is defined
             {
                 // define style of passing path and process player passing paths as required
-                if (Settings.UseLocationPassingPaths)
+                if (Signals.UseLocationPassingPaths)
                 {
-                    Signals.UseLocationPassingPaths = true;
                     int orgDirection = (train.RearTDBTraveller != null) ? (int)train.RearTDBTraveller.Direction : -2;
                     Train.TCRoutePath dummyRoute = new Train.TCRoutePath(aiPath, orgDirection, 0, Signals, -1, Settings);   // SPA: Add settings to get enhanced mode
-                }
-                else
-                {
-                    Signals.UseLocationPassingPaths = false;
                 }
 
                 // create train path
@@ -845,12 +843,12 @@ namespace ORTS
 
             train.CalculatePositionOfCars(0);
             Trains.Add(train);
- 
+
             // Note the initial position to be stored by a Save and used in Menu.exe to calculate DistanceFromStartM 
             InitialTileX = Trains[0].FrontTDBTraveller.TileX + (Trains[0].FrontTDBTraveller.X / 2048);
             InitialTileZ = Trains[0].FrontTDBTraveller.TileZ + (Trains[0].FrontTDBTraveller.Z / 2048);
 
-            PlayerLocomotive = InitialPlayerLocomotive ();
+            PlayerLocomotive = InitialPlayerLocomotive();
             if ((conFile.Train.TrainCfg.MaxVelocity == null) ||
                 ((conFile.Train.TrainCfg.MaxVelocity != null) && ((conFile.Train.TrainCfg.MaxVelocity.A <= 0f) || (conFile.Train.TrainCfg.MaxVelocity.A == 40f))))
                 train.TrainMaxSpeedMpS = Math.Min((float)TRK.Tr_RouteFile.SpeedLimit, ((MSTSLocomotive)PlayerLocomotive).MaxSpeedMpS);
@@ -863,8 +861,8 @@ namespace ORTS
             {
                 if ((PlayerLocomotive.BrakeSystem is AirSinglePipe) || (PlayerLocomotive.BrakeSystem is VacuumSinglePipe))
                     train.InitializeMoving();
-             }
-            
+            }
+
 
             return (train);
         }
@@ -901,8 +899,6 @@ namespace ORTS
             InitialTileZ = Trains[0].FrontTDBTraveller.TileZ + (Trains[0].FrontTDBTraveller.Z / 2048);
 
             PlayerLocomotive = InitialPlayerLocomotive();
-/*            train.LeadLocomotive = null;
-            train.LeadLocomotiveIndex = -1; */
             if (train.MaxVelocityA <= 0f || train.MaxVelocityA == 40f)
                 train.TrainMaxSpeedMpS = Math.Min((float)TRK.Tr_RouteFile.SpeedLimit, ((MSTSLocomotive)PlayerLocomotive).MaxSpeedMpS);
             else
@@ -914,6 +910,14 @@ namespace ORTS
             }
             else if (train.InitialSpeed == 0)
                 train.InitializeBrakes();
+
+            // process player passing paths as required
+            if (Signals.UseLocationPassingPaths)
+            {
+                int orgDirection = (train.RearTDBTraveller != null) ? (int)train.RearTDBTraveller.Direction : -2;
+                Train.TCRoutePath dummyRoute = new Train.TCRoutePath(train.Path, orgDirection, 0, Signals, -1, Settings);   // SPA: Add settings to get enhanced mode
+            }
+
             return train;
         }
 
@@ -1163,27 +1167,27 @@ namespace ORTS
             // Player locomotive is in first or in second part of train?
             int j = 0;
             while (train.Cars[j] != PlayerLocomotive && j < i) j++;
-          
+
             // This is necessary, because else we had to create an AI train and not a train in following case
             if ((train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING) && j >= i)
             {
                 // Player locomotive in second part of train, move first part of cars to the new train
-                    for (int k = 0; k < i; ++k)
-                    {
-                        TrainCar newcar = train.Cars[k];
-                        train2.Cars.Add(newcar);
-                        newcar.Train = train2;
-                    }
+                for (int k = 0; k < i; ++k)
+                {
+                    TrainCar newcar = train.Cars[k];
+                    train2.Cars.Add(newcar);
+                    newcar.Train = train2;
+                }
 
-                    // and drop them from the old train
-                    for (int k = i-1; k >=0; --k)
-                    {
-                        train.Cars.RemoveAt(k);
-                    }
+                // and drop them from the old train
+                for (int k = i - 1; k >= 0; --k)
+                {
+                    train.Cars.RemoveAt(k);
+                }
 
-                    train.FirstCar.CouplerSlackM = 0;
-                    if (train.LeadLocomotiveIndex >= 0) train.LeadLocomotiveIndex -= i;
-             }
+                train.FirstCar.CouplerSlackM = 0;
+                if (train.LeadLocomotiveIndex >= 0) train.LeadLocomotiveIndex -= i;
+            }
             else
             {
                 // move rest of cars to the new train
@@ -1212,7 +1216,7 @@ namespace ORTS
                 }
             }
 
-                // and fix up the travellers
+            // and fix up the travellers
             if ((train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING) && j >= i)
             {
                 train2.FrontTDBTraveller = new Traveller(train.FrontTDBTraveller);

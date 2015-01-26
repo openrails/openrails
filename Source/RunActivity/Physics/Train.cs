@@ -12145,7 +12145,49 @@ namespace ORTS
                 newSignalRoute.Add(thisElement);
             }
 
+            nextSignal.ResetSignal(true);
             nextSignal.signalRoute = newSignalRoute;
+
+            if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL)
+            {
+                // keep any items allready passed
+                List<ObjectItemInfo> keeplist = new List<ObjectItemInfo>();
+                foreach (ObjectItemInfo checkItem in SignalObjectItems)
+                {
+                    float actualDistance = GetObjectDistanceToTrain(checkItem);
+                    if (actualDistance < 0)
+                    {
+                        keeplist.Add(checkItem);
+                    }
+                }
+
+                // create new list
+                InitializeSignals(true);
+
+                // add any passed items (in reverse order at start of list)
+                if (keeplist.Count > 0)
+                {
+                    for (int iObject = keeplist.Count - 1; iObject >= 0; iObject--)
+                    {
+                        SignalObjectItems.Insert(0, keeplist[iObject]);
+                    }
+                }
+
+                // find new next signal
+                NextSignalObject[0] = null;
+                for (int iObject = 0; iObject <= SignalObjectItems.Count - 1 && NextSignalObject[0] == null; iObject++)
+                {
+                    if (SignalObjectItems[iObject].ObjectType == ObjectItemInfo.ObjectItemType.Signal)
+                    {
+                        NextSignalObject[0] = SignalObjectItems[iObject].ObjectDetails;
+                    }
+                }
+
+                if (NextSignalObject[0] != null)
+                {
+                    NextSignalObject[0].requestClearSignal(ValidRoute[0], routedForward, 0, false, null);
+                }
+            }
         }
 
         //================================================================================================//
