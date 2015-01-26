@@ -1601,7 +1601,7 @@ namespace ORTS
 
         public override bool CanActivate(Train thisTrain, float SpeedMpS, bool reschedule)
         {
-            if (ActionRef == null)
+            if (ActionRef == null || thisTrain.PresentPosition[0].RouteListIndex == -1)
                 return false;
             float[] distancesM = ((AIAuxActionsRef)ActionRef).CalculateDistancesToNextAction(thisTrain, SpeedMpS, reschedule);
             if (thisTrain.TrainType != Train.TRAINTYPE.AI_PLAYERDRIVEN)
