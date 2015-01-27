@@ -8296,6 +8296,14 @@ namespace ORTS
 
             ValidRoute[0] = newRoute;
 
+            // Reindexes ReversalInfo items
+            if (TCRoute.ReversalInfo[TCRoute.activeSubpath].LastDivergeIndex >= 0)
+                TCRoute.ReversalInfo[TCRoute.activeSubpath].LastDivergeIndex = ValidRoute[0].GetRouteIndex(TCRoute.ReversalInfo[TCRoute.activeSubpath].DivergeSectorIndex, 0);
+            if (TCRoute.ReversalInfo[TCRoute.activeSubpath].LastSignalIndex >= 0)
+                TCRoute.ReversalInfo[TCRoute.activeSubpath].LastSignalIndex = ValidRoute[0].GetRouteIndex(TCRoute.ReversalInfo[TCRoute.activeSubpath].SignalSectorIndex, 0);
+
+
+ 
             // get index of first section in route
 
             rearIndex = ValidRoute[0].GetRouteIndex(PresentPosition[1].TCSectionIndex, 0);
@@ -12122,8 +12130,10 @@ namespace ORTS
             }
             // Reindexes ReversalInfo items
             var countDifference = newRoute.Count - ValidRoute[0].Count;
-            TCRoute.ReversalInfo[TCRoute.activeSubpath].LastDivergeIndex = TCRoute.ReversalInfo[TCRoute.activeSubpath].LastDivergeIndex + countDifference;
-            TCRoute.ReversalInfo[TCRoute.activeSubpath].LastSignalIndex = TCRoute.ReversalInfo[TCRoute.activeSubpath].LastSignalIndex + countDifference;
+            if ( TCRoute.ReversalInfo[TCRoute.activeSubpath].LastDivergeIndex >=0 )
+                TCRoute.ReversalInfo[TCRoute.activeSubpath].LastDivergeIndex = TCRoute.ReversalInfo[TCRoute.activeSubpath].LastDivergeIndex + countDifference;
+            if (TCRoute.ReversalInfo[TCRoute.activeSubpath].LastSignalIndex >= 0 )
+                TCRoute.ReversalInfo[TCRoute.activeSubpath].LastSignalIndex = TCRoute.ReversalInfo[TCRoute.activeSubpath].LastSignalIndex + countDifference;
 
             // set new route
 
@@ -12282,8 +12292,10 @@ namespace ORTS
 
             // Reindexes ReversalInfo items
             var countDifference = newRoute.Count - ValidRoute[0].Count;
-            TCRoute.ReversalInfo[TCRoute.activeSubpath].LastDivergeIndex = TCRoute.ReversalInfo[TCRoute.activeSubpath].LastDivergeIndex + countDifference;
-            TCRoute.ReversalInfo[TCRoute.activeSubpath].LastSignalIndex = TCRoute.ReversalInfo[TCRoute.activeSubpath].LastSignalIndex + countDifference;
+            if (TCRoute.ReversalInfo[TCRoute.activeSubpath].LastDivergeIndex >= 0)
+                TCRoute.ReversalInfo[TCRoute.activeSubpath].LastDivergeIndex = TCRoute.ReversalInfo[TCRoute.activeSubpath].LastDivergeIndex + countDifference;
+            if (TCRoute.ReversalInfo[TCRoute.activeSubpath].LastSignalIndex >= 0)
+                TCRoute.ReversalInfo[TCRoute.activeSubpath].LastSignalIndex = TCRoute.ReversalInfo[TCRoute.activeSubpath].LastSignalIndex + countDifference;
 
             // set new route
 
