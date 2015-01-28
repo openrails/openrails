@@ -9741,7 +9741,7 @@ namespace ORTS
 
                         if (thisTrainAllocatedPaths.Count == 1 && otherTrainAllocatedPaths.Count == 1)
                         {
-                            if (thisDeadlockInfo.InverseInfo[thisTrainAllocatedPaths[0]] == otherTrainAllocatedPaths[0])
+                            if (thisDeadlockInfo.InverseInfo.ContainsKey(thisTrainAllocatedPaths[0]) && thisDeadlockInfo.InverseInfo[thisTrainAllocatedPaths[0]] == otherTrainAllocatedPaths[0])
                             {
                                 validPassLocation = false;
                             }
