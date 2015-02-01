@@ -56,10 +56,10 @@ namespace ORTS
         FireboxDoorChange,
         FireboxDoorOpen,
         FireboxDoorClose,
-        FuelTowerDown, // NOTE: Currently not used in Open Rails.
-        FuelTowerTransferEnd, // NOTE: Currently not used in Open Rails.
-        FuelTowerTransferStart, // NOTE: Currently not used in Open Rails.
-        FuelTowerUp, // NOTE: Currently not used in Open Rails.
+        FuelTowerDown,
+        FuelTowerTransferEnd,
+        FuelTowerTransferStart,
+        FuelTowerUp,
         GearDown,
         GearUp,
         HornOff,

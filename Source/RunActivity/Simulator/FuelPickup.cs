@@ -33,7 +33,6 @@ namespace ORTS
     public class FuelManager
     {
         readonly Simulator Simulator;
-        public static bool startFueling = false;
         public readonly Dictionary<int, FuelPickupItem> FuelPickupItems;
 
         public FuelManager(Simulator simulator)
@@ -52,55 +51,39 @@ namespace ORTS
                     .ToDictionary(_ => _.Key, _ => _.Value);
         }
 
-        public FuelPickup CreateFuelStation(WorldPosition position, IEnumerable<int> trackIDs)
+        public FuelPickupItem CreateFuelStation(WorldPosition position, IEnumerable<int> trackIDs)
         {
             var trackItems = trackIDs.Select(id => FuelPickupItems[id]).ToArray();
-            return new FuelPickup(trackItems);
+            return new FuelPickupItem(trackItems);
         }
+
 
     } // end Class FuelManager
 
     public class FuelPickupItem
     {
         internal WorldLocation Location;
-        internal List<Train> Trains = new List<Train>();
-        internal FuelPickup FuelPickupGroup;
         readonly TrackNode TrackNode;
-                
-        public uint TrackIndex { get { return TrackNode.Index; } }
-
-        public FuelPickup FuelObject { get { return FuelPickupGroup; } }
 
         public FuelPickupItem(TrackNode trackNode, TrItem trItem)
         {
             TrackNode = trackNode;
             Location = new WorldLocation(trItem.TileX, trItem.TileZ, trItem.X, trItem.Y, trItem.Z);
         }
-    } // end Class FuelPickupItem
 
-    public class FuelPickup
-    {
-        internal readonly List<FuelPickupItem> Items;
-        
-        public FuelPickup(IEnumerable<FuelPickupItem> items)
+        public FuelPickupItem(IEnumerable<FuelPickupItem> items) { }
+
+        public bool ReFill()
         {
-            Items = new List<FuelPickupItem>(items);
-            foreach (var item in items)
-                item.FuelPickupGroup = this;
+            while (MSTSLocomotiveViewer.RefillProcess.OkToRefill)
+            {
+                return true;
+            }
+            if (!MSTSLocomotiveViewer.RefillProcess.OkToRefill)
+                return false;
+            return false;
         }
 
-        //public bool ReFill()
-        //{
-        //    while (MSTSLocomotiveViewer.RefillProcess.OkToRefill)
-        //    {
-        //        return true;
-        //    }
-        //    if (!MSTSLocomotiveViewer.RefillProcess.OkToRefill)
-        //        return false;
-        //    return false;
-        //}
-        
+    } // end Class FuelPickupItem
 
-    }
-
-}
+} // end Class FuelManager

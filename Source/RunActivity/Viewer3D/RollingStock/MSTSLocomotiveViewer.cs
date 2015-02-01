@@ -297,10 +297,13 @@ namespace ORTS.Viewer3D.RollingStock
         /// 2. allowing for the rate at with the pickup can supply.
         /// 3. refilling any but the first loco in the player's train.
         /// 4. refilling AI trains.
-        /// 5. animation, e.g. of water columns.
+        /// 5. animation is in place, but the animated object should be able to swing into place first, then the refueling process begins.
         /// 6. currently ignores locos and tenders without intake points.
+        /// The note below may not be accurate since I released a fix that allows the setting of both coal and water level for the tender to be set at start of activity(EK).
         /// Note that the activity class currently parses the initial level of diesel oil, coal and water
         /// but does not use it yet.
+        /// Note: With the introduction of the  animated object, I implemented the RefillProcess class as a starter to allow outside classes to use, but
+        /// to solve #5 above, its probably best that the processes below be combined in a common class so that both Shapes.cs and FuelPickup.cs can properly keep up with events(EK).
         /// </summary>
         #region Refill loco or tender from pickup points
 
@@ -325,6 +328,12 @@ namespace ORTS.Viewer3D.RollingStock
             public PickupObj Pickup;
             public MSTSWagon Wagon;
             public IntakePoint IntakePoint;
+        }
+
+        public class RefillProcess
+        {
+            public static bool OkToRefill { get; set; }
+            public static uint ActivePickupObjectUID { get; set; }
         }
 
         /// <summary>
@@ -436,6 +445,8 @@ namespace ORTS.Viewer3D.RollingStock
                     PickupTypeDictionary[(uint)match.Pickup.PickupType], Viewer.Catalog.GetPluralStringFmt("{0} meter", "{0} meters", (long)distanceToPickupM)));
                 return;
             }
+            if (distanceToPickupM <= match.IntakePoint.WidthM / 2)
+                RefillProcess.ActivePickupObjectUID = match.Pickup.UID;
             if (loco.SpeedMpS != 0 && match.Pickup.SpeedRange.MinMpS == 0f)
             {
                 Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: Loco must be stationary to refill {0}.",
@@ -462,9 +473,9 @@ namespace ORTS.Viewer3D.RollingStock
                     PickupTypeDictionary[(uint)match.Pickup.PickupType]));
                 return;
             }
-            // Without the else, the fueling process was never taking place.
             else
             {
+                RefillProcess.OkToRefill = true;
                 StartRefilling((uint)match.Pickup.PickupType);
                 MatchedWagonAndPickup = match;  // Save away for HandleUserInput() to use when key is released.
             }
@@ -501,7 +512,8 @@ namespace ORTS.Viewer3D.RollingStock
         {
             if (MatchedWagonAndPickup == null)
                 return;
-
+            RefillProcess.OkToRefill = false;
+            RefillProcess.ActivePickupObjectUID = 0;
             var controller = Locomotive.GetRefillController((uint)MatchedWagonAndPickup.Pickup.PickupType);
             new RefillCommand(log, controller.CurrentValue, controller.CommandStartTime);  // for Replay to use
             controller.StopIncrease();

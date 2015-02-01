@@ -124,6 +124,7 @@ namespace ORTS
         public float InitialTileX;
         public float InitialTileZ;
         public HazzardManager HazzardManager;
+        public FuelManager FuelManager;
         public bool InControl = true;//For multiplayer, a player may not control his/her own train (as helper)
         /// <summary>
         /// Reference to the InterlockingSystem object, responsible for
@@ -215,6 +216,7 @@ namespace ORTS
             }
 
             HazzardManager = new HazzardManager(this);
+            FuelManager = new FuelManager(this);
             ScriptManager = new ScriptManager(this);
 
         }
@@ -253,6 +255,7 @@ namespace ORTS
         {
             Signals = new Signals(this, SIGCFG, loader);
             LevelCrossings = new LevelCrossings(this);
+            FuelManager = new FuelManager(this);
             Trains = new TrainList(this);
             Train playerTrain;
 
@@ -286,6 +289,7 @@ namespace ORTS
             TimetableMode = true;
             Signals = new Signals(this, SIGCFG, loader);
             LevelCrossings = new LevelCrossings(this);
+            FuelManager = new FuelManager(this);
             Trains = new TrainList(this);
             PathName = String.Copy(arguments[1]);
 
