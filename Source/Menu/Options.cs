@@ -61,16 +61,16 @@ namespace ORTS
 
             // Turn the list of codes in to a list of code + name pairs for
             // displaying in the dropdown list.
-            comboBoxLanguage.DataSource = 
+            comboLanguage.DataSource = 
                 new[] { new Language { Code = "", Name = "System" } }
                 .Union(languageCodes
                     .Select(lc => new Language { Code = lc, Name = CultureInfo.GetCultureInfo(lc).NativeName })
                     .OrderBy(l => l.Name)
                 )
                 .ToList();
-            comboBoxLanguage.DisplayMember = "Name";
-            comboBoxLanguage.ValueMember = "Code";
-            comboBoxLanguage.SelectedValue = Settings.Language;
+            comboLanguage.DisplayMember = "Name";
+            comboLanguage.ValueMember = "Code";
+            comboLanguage.SelectedValue = Settings.Language;
 
             // Windows 2000 and XP should use 8.25pt Tahoma, while Windows
             // Vista and later should use 9pt "Segoe UI". We'll use the
@@ -78,53 +78,63 @@ namespace ORTS
             Font = SystemFonts.MessageBoxFont;
             AdhesionLevelValue.Font = new Font(Font, FontStyle.Bold);
 
+            // Fix up the TrackBars on TabPanels to match the current theme.
+            if (!Application.RenderWithVisualStyles)
+            {
+                trackAdhesionFactor.BackColor = BackColor;
+                trackAdhesionFactorChange.BackColor = BackColor;
+                trackDayAmbientLight.BackColor = BackColor;
+                trackLODBias.BackColor = BackColor;
+            }
+
             // General tab
             checkAlerter.Checked = Settings.Alerter;
             checkAlerterDisableExternal.Checked = Settings.AlerterDisableExternal;
-            checkGraduatedRelease.Checked = Settings.GraduatedRelease;
-            checkRetainers.Checked = Settings.RetainersOnAllCars;
-            numericBrakePipeChargingRate.Value = Settings.BrakePipeChargingRate;
-            comboBoxPressureUnit.Text = Settings.PressureUnit;
-            checkSuppressConfirmations.Checked = Settings.SuppressConfirmations;
             checkViewDispatcher.Checked = Settings.ViewDispatcher;
-            comboBoxLanguage.Text = Settings.Language;
+            checkUseLargeAddressAware.Checked = Settings.UseLargeAddressAware;
+            checkSuppressConfirmations.Checked = Settings.SuppressConfirmations;
+            checkRetainers.Checked = Settings.RetainersOnAllCars;
+            checkGraduatedRelease.Checked = Settings.GraduatedRelease;
+            numericBrakePipeChargingRate.Value = Settings.BrakePipeChargingRate;
+            comboLanguage.Text = Settings.Language;
+            comboPressureUnit.Text = Settings.PressureUnit;
 
             // Audio tab
-            numericSoundDetailLevel.Value = Settings.SoundDetailLevel;
             checkMSTSBINSound.Checked = Settings.MSTSBINSound;
             numericSoundVolumePercent.Value = Settings.SoundVolumePercent;
+            numericSoundDetailLevel.Value = Settings.SoundDetailLevel;
 
             // Video tab
+            checkDynamicShadows.Checked = Settings.DynamicShadows;
+            checkFastFullScreenAltTab.Checked = Settings.FastFullScreenAltTab;
+            checkWindowGlass.Checked = Settings.WindowGlass;
+            checkModelInstancing.Checked = Settings.ModelInstancing;
+            checkWire.Checked = Settings.Wire;
+            checkVerticalSync.Checked = Settings.VerticalSync;
+            numericCab2DStretch.Value = Settings.Cab2DStretch;
+            numericViewingDistance.Value = Settings.ViewingDistance;
+            checkDistantMountains.Checked = Settings.DistantMountains;
+            numericDistantMountainsViewingDistance.Value = Settings.DistantMountainsViewingDistance / 1000;
+            numericViewingFOV.Value = Settings.ViewingFOV;
             numericWorldObjectDensity.Value = Settings.WorldObjectDensity;
             comboWindowSize.Text = Settings.WindowSize;
-            checkBoxVerticalSync.Checked = Settings.VerticalSync;
-            checkWire.Checked = Settings.Wire;
-            checkDynamicShadows.Checked = Settings.DynamicShadows;
-            checkWindowGlass.Checked = Settings.WindowGlass;
-            numericViewingFOV.Value = Settings.ViewingFOV;
-            numericCab2DStretch.Value = Settings.Cab2DStretch;
-            numericViewingDistance.Value = settings.ViewingDistance;
+            trackDayAmbientLight.Value = Settings.DayAmbientLight;
 
             // Simulation tab
             checkUseAdvancedAdhesion.Checked = Settings.UseAdvancedAdhesion;
-            numericAdhesionMovingAverageFilterSize.Value = settings.AdhesionMovingAverageFilterSize;
-            AdhesionFactorTrackBar1.Value = settings.AdhesionFactor;
-            AdhesionFactorChangeTrackBar1.Value = settings.AdhesionFactorChange;
-            AdhesionPropToWeatherCheckBox.Checked = settings.AdhesionProportionalToWeather;
-            SetAdhesionLevelValue();
-
+            numericAdhesionMovingAverageFilterSize.Value = Settings.AdhesionMovingAverageFilterSize;
             checkBreakCouplers.Checked = Settings.BreakCouplers;
+            checkCurveResistanceSpeedDependent.Checked = Settings.CurveResistanceSpeedDependent;
+            checkCurveSpeedDependent.Checked = Settings.CurveSpeedDependent;
+            checkTunnelResistanceDependent.Checked = Settings.TunnelResistanceDependent;
             checkOverrideNonElectrifiedRoutes.Checked = Settings.OverrideNonElectrifiedRoutes;
-            checkCurveResistanceSpeedDependent.Checked = settings.CurveResistanceSpeedDependent;
-            checkCurveSpeedDependent.Checked = settings.CurveSpeedDependent;
-            checkTunnelResistanceDependent.Checked = settings.TunnelResistanceDependent;
-            checkHotStart.Checked = settings.HotStart;
+            checkHotStart.Checked = Settings.HotStart;
 
             // Keyboard tab
             InitializeKeyboardSettings();
 
             // DataLogger tab
-            Dictionary<string, string> dictionaryDataLoggerSeparator = new Dictionary<string, string>();
+            var dictionaryDataLoggerSeparator = new Dictionary<string, string>();
             dictionaryDataLoggerSeparator.Add("comma",catalog.GetString("comma"));
             dictionaryDataLoggerSeparator.Add("semicolon", catalog.GetString("semicolon"));
             dictionaryDataLoggerSeparator.Add("tab", catalog.GetString("tab"));
@@ -132,16 +142,17 @@ namespace ORTS
             comboDataLoggerSeparator.DataSource = new BindingSource(dictionaryDataLoggerSeparator, null);
             comboDataLoggerSeparator.DisplayMember = "Value";
             comboDataLoggerSeparator.ValueMember = "Key";
-            comboDataLoggerSeparator.Text = catalog.GetString(settings.DataLoggerSeparator);
-
-            comboDataLogSpeedUnits.Text = settings.DataLogSpeedUnits;
+            comboDataLoggerSeparator.Text = catalog.GetString(Settings.DataLoggerSeparator);
+            comboDataLogSpeedUnits.Text = Settings.DataLogSpeedUnits;
             checkDataLogger.Checked = Settings.DataLogger;
-            checkDataLogPerformance.Checked = settings.DataLogPerformance;
-            checkDataLogPhysics.Checked = settings.DataLogPhysics;
-            checkDataLogMisc.Checked = settings.DataLogMisc;
+            checkDataLogPerformance.Checked = Settings.DataLogPerformance;
+            checkDataLogPhysics.Checked = Settings.DataLogPhysics;
+            checkDataLogMisc.Checked = Settings.DataLogMisc;
 
             // Evaluation tab
-            this.checkedListBoxDataLogTSContents.Items.AddRange(new object[] {
+            checkDataLogTrainSpeed.Checked = Settings.DataLogTrainSpeed;
+            numericDataLogTSInterval.Value = Settings.DataLogTSInterval;
+            checkListDataLogTSContents.Items.AddRange(new object[] {
                 catalog.GetString("Time"),
                 catalog.GetString("Train Speed"),
                 catalog.GetString("Max. Speed"),
@@ -155,10 +166,8 @@ namespace ORTS
                 catalog.GetString("Dyn Brake %"),
                 catalog.GetString("Gear Setting")
             });
-            checkDataLogTrainSpeed.Checked = Settings.DataLogTrainSpeed;
-            numericDataLogTSInterval.Value = Settings.DataLogTSInterval;
-            for (var i = 0; i < checkedListBoxDataLogTSContents.Items.Count; i++)
-                checkedListBoxDataLogTSContents.SetItemChecked(i, Settings.DataLogTSContents[i] == 1);
+            for (var i = 0; i < checkListDataLogTSContents.Items.Count; i++)
+                checkListDataLogTSContents.SetItemChecked(i, Settings.DataLogTSContents[i] == 1);
             checkDataLogStationStops.Checked = Settings.DataLogStationStops;
 
             // Updater tab
@@ -206,27 +215,26 @@ namespace ORTS
             numericUseSuperElevation.Value = Settings.UseSuperElevation;
             numericSuperElevationMinLen.Value = Settings.SuperElevationMinLen;
             numericSuperElevationGauge.Value = Settings.SuperElevationGauge;
-            checkDistantMountains.Checked = settings.DistantMountains;
-            numericDistantMountainsViewingDistance.Value = settings.DistantMountainsViewingDistance / 1000;
-            checkLODAlwaysMaximum.Checked = settings.LODAlwaysMaximum;
-            checkLODViewingExtention.Checked = settings.LODViewingExtention;
-            checkBoxModelInstancing.Checked = settings.ModelInstancing;
-            checkPerformanceTuner.Checked = settings.PerformanceTuner;
-            numericPerformanceTunerTarget.Value = settings.PerformanceTunerTarget;
-            checkDoubleWire.Checked = settings.DoubleWire;
-            trackDayAmbientLight.Value = settings.DayAmbientLight;
-            checkUseMSTSEnv.Checked = settings.UseMSTSEnv;
-            checkUseLocationPassingPaths.Checked = settings.UseLocationPassingPaths;
+            checkPerformanceTuner.Checked = Settings.PerformanceTuner;
+            numericPerformanceTunerTarget.Value = Settings.PerformanceTunerTarget;
+            checkDoubleWire.Checked = Settings.DoubleWire;
+            checkEnhancedActCompatibility.Checked = Settings.EnhancedActCompatibility;
+            checkNoForcedRedAtStationStops.Checked = Settings.NoForcedRedAtStationStops;
+            trackLODBias.Value = Settings.LODBias;
+            trackLODBias_ValueChanged(null, null);
+            checkConditionalLoadOfNightTextures.Checked = Settings.ConditionalLoadOfNightTextures;
+            checkSignalLightGlow.Checked = Settings.SignalLightGlow;
+            checkExtendedAIShunting.Checked = Settings.ExtendedAIShunting;
+            checkAutopilot.Checked = Settings.Autopilot;
+            checkCircularSpeedGauge.Checked = Settings.CircularSpeedGauge;
+            checkLODViewingExtention.Checked = Settings.LODViewingExtention;
             checkPreferDDSTexture.Checked = Settings.PreferDDSTexture;
-            checkFastFullScreenAltTab.Checked = Settings.FastFullScreenAltTab;
-            checkUseLargeAddressAware.Checked = Settings.UseLargeAddressAware;
-            checkBoxCircularSpeedGauge.Checked = Settings.CircularSpeedGauge;
-            checkBoxSignalLightGlow.Checked = Settings.SignalLightGlow;
-            checkBoxEnhancedActCompatibility.Checked = Settings.EnhancedActCompatibility;
-            checkBoxNoForcedRedAtStationStops.Checked = Settings.NoForcedRedAtStationStops;
-            checkBoxConditionalLoadOfNightTextures.Checked = Settings.ConditionalLoadOfNightTextures;
-            checkBoxExtendedAIShunting.Checked = Settings.ExtendedAIShunting;
-            checkBoxAutopilot.Checked = Settings.Autopilot;
+            checkUseLocationPassingPaths.Checked = Settings.UseLocationPassingPaths;
+            checkUseMSTSEnv.Checked = Settings.UseMSTSEnv;
+            trackAdhesionFactor.Value = Settings.AdhesionFactor;
+            checkAdhesionPropToWeather.Checked = Settings.AdhesionProportionalToWeather;
+            trackAdhesionFactorChange.Value = Settings.AdhesionFactorChange;
+            SetAdhesionLevelValue();
 
             Initialized = true;
         }
@@ -318,41 +326,44 @@ namespace ORTS
             // General tab
             Settings.Alerter = checkAlerter.Checked;
             Settings.AlerterDisableExternal = checkAlerterDisableExternal.Checked;
-            Settings.GraduatedRelease = checkGraduatedRelease.Checked;
-            Settings.RetainersOnAllCars = checkRetainers.Checked;
-            Settings.BrakePipeChargingRate = (int)numericBrakePipeChargingRate.Value;
-            Settings.PressureUnit = comboBoxPressureUnit.Text;
-            Settings.SuppressConfirmations = checkSuppressConfirmations.Checked;
             Settings.ViewDispatcher = checkViewDispatcher.Checked;
-            Settings.Language = comboBoxLanguage.SelectedValue.ToString();
+            Settings.UseLargeAddressAware = checkUseLargeAddressAware.Checked;
+            Settings.SuppressConfirmations = checkSuppressConfirmations.Checked;
+            Settings.RetainersOnAllCars = checkRetainers.Checked;
+            Settings.GraduatedRelease = checkGraduatedRelease.Checked;
+            Settings.BrakePipeChargingRate = (int)numericBrakePipeChargingRate.Value;
+            Settings.Language = comboLanguage.SelectedValue.ToString();
+            Settings.PressureUnit = comboPressureUnit.Text;
             
             // Audio tab
-            Settings.SoundDetailLevel = (int)numericSoundDetailLevel.Value;
             Settings.MSTSBINSound = checkMSTSBINSound.Checked;
-			Settings.SoundVolumePercent = (int)numericSoundVolumePercent.Value;
+            Settings.SoundVolumePercent = (int)numericSoundVolumePercent.Value;
+            Settings.SoundDetailLevel = (int)numericSoundDetailLevel.Value;
             
             // Video tab
-            Settings.WorldObjectDensity = (int)numericWorldObjectDensity.Value;
-            Settings.WindowSize = comboWindowSize.Text;
-            Settings.VerticalSync = checkBoxVerticalSync.Checked;
-            Settings.Wire = checkWire.Checked;
             Settings.DynamicShadows = checkDynamicShadows.Checked;
+            Settings.FastFullScreenAltTab = checkFastFullScreenAltTab.Checked;
             Settings.WindowGlass = checkWindowGlass.Checked;
-            Settings.ViewingFOV = (int)numericViewingFOV.Value;
+            Settings.ModelInstancing = checkModelInstancing.Checked;
+            Settings.Wire = checkWire.Checked;
+            Settings.VerticalSync = checkVerticalSync.Checked;
             Settings.Cab2DStretch = (int)numericCab2DStretch.Value;
             Settings.ViewingDistance = (int)numericViewingDistance.Value;
+            Settings.DistantMountains = checkDistantMountains.Checked;
+            Settings.DistantMountainsViewingDistance = (int)numericDistantMountainsViewingDistance.Value * 1000;
+            Settings.ViewingFOV = (int)numericViewingFOV.Value;
+            Settings.WorldObjectDensity = (int)numericWorldObjectDensity.Value;
+            Settings.WindowSize = comboWindowSize.Text;
+            Settings.DayAmbientLight = (int)trackDayAmbientLight.Value;
             
             // Simulation tab
             Settings.UseAdvancedAdhesion = checkUseAdvancedAdhesion.Checked;
             Settings.AdhesionMovingAverageFilterSize = (int)numericAdhesionMovingAverageFilterSize.Value;
-            Settings.AdhesionFactor = (int)AdhesionFactorTrackBar1.Value;
-            Settings.AdhesionFactorChange = (int)AdhesionFactorChangeTrackBar1.Value;
-            Settings.AdhesionProportionalToWeather = AdhesionPropToWeatherCheckBox.Checked;
             Settings.BreakCouplers = checkBreakCouplers.Checked;
-            Settings.OverrideNonElectrifiedRoutes = checkOverrideNonElectrifiedRoutes.Checked;
             Settings.CurveResistanceSpeedDependent = checkCurveResistanceSpeedDependent.Checked;
             Settings.CurveSpeedDependent = checkCurveSpeedDependent.Checked;
             Settings.TunnelResistanceDependent = checkTunnelResistanceDependent.Checked;
+            Settings.OverrideNonElectrifiedRoutes = checkOverrideNonElectrifiedRoutes.Checked;
             Settings.HotStart = checkHotStart.Checked;
             
             // Keyboard tab
@@ -369,8 +380,8 @@ namespace ORTS
             // Evaluation tab
             Settings.DataLogTrainSpeed = checkDataLogTrainSpeed.Checked;
             Settings.DataLogTSInterval = (int)numericDataLogTSInterval.Value;
-            for (var i = 0; i < checkedListBoxDataLogTSContents.Items.Count; i++)
-                Settings.DataLogTSContents[i] = checkedListBoxDataLogTSContents.GetItemChecked(i) ? 1 : 0;
+            for (var i = 0; i < checkListDataLogTSContents.Items.Count; i++)
+                Settings.DataLogTSContents[i] = checkListDataLogTSContents.GetItemChecked(i) ? 1 : 0;
             Settings.DataLogStationStops = checkDataLogStationStops.Checked;
             
             // Updater tab
@@ -382,27 +393,24 @@ namespace ORTS
             Settings.UseSuperElevation = (int)numericUseSuperElevation.Value;
             Settings.SuperElevationMinLen = (int)numericSuperElevationMinLen.Value;
             Settings.SuperElevationGauge = (int)numericSuperElevationGauge.Value;
-            Settings.DistantMountains = checkDistantMountains.Checked;
-            Settings.DistantMountainsViewingDistance = (int)numericDistantMountainsViewingDistance.Value * 1000;
-            Settings.LODAlwaysMaximum = checkLODAlwaysMaximum.Checked;
-            Settings.LODViewingExtention = checkLODViewingExtention.Checked;
-            Settings.ModelInstancing = checkBoxModelInstancing.Checked;
             Settings.PerformanceTuner = checkPerformanceTuner.Checked;
             Settings.PerformanceTunerTarget = (int)numericPerformanceTunerTarget.Value;
             Settings.DoubleWire = checkDoubleWire.Checked;
-            Settings.DayAmbientLight = (int)trackDayAmbientLight.Value;
-            Settings.UseMSTSEnv = checkUseMSTSEnv.Checked;
-            Settings.UseLocationPassingPaths = checkUseLocationPassingPaths.Checked;
+            Settings.EnhancedActCompatibility = checkEnhancedActCompatibility.Checked;
+            Settings.NoForcedRedAtStationStops =  checkNoForcedRedAtStationStops.Checked;
+            Settings.LODBias = trackLODBias.Value;
+            Settings.ConditionalLoadOfNightTextures = checkConditionalLoadOfNightTextures.Checked;
+            Settings.SignalLightGlow = checkSignalLightGlow.Checked;
+            Settings.ExtendedAIShunting = checkExtendedAIShunting.Checked;
+            Settings.Autopilot = checkAutopilot.Checked;
+            Settings.CircularSpeedGauge = checkCircularSpeedGauge.Checked;
+            Settings.LODViewingExtention = checkLODViewingExtention.Checked;
             Settings.PreferDDSTexture = checkPreferDDSTexture.Checked;
-            Settings.FastFullScreenAltTab = checkFastFullScreenAltTab.Checked;
-            Settings.UseLargeAddressAware = checkUseLargeAddressAware.Checked;
-            Settings.CircularSpeedGauge = checkBoxCircularSpeedGauge.Checked;
-            Settings.SignalLightGlow = checkBoxSignalLightGlow.Checked;
-            Settings.EnhancedActCompatibility = checkBoxEnhancedActCompatibility.Checked;
-            Settings.NoForcedRedAtStationStops =  checkBoxNoForcedRedAtStationStops.Checked;
-            Settings.ConditionalLoadOfNightTextures = checkBoxConditionalLoadOfNightTextures.Checked;
-            Settings.ExtendedAIShunting = checkBoxExtendedAIShunting.Checked;
-            Settings.Autopilot = checkBoxAutopilot.Checked;
+            Settings.UseLocationPassingPaths = checkUseLocationPassingPaths.Checked;
+            Settings.UseMSTSEnv = checkUseMSTSEnv.Checked;
+            Settings.AdhesionFactor = (int)trackAdhesionFactor.Value;
+            Settings.AdhesionProportionalToWeather = checkAdhesionPropToWeather.Checked;
+            Settings.AdhesionFactorChange = (int)trackAdhesionFactorChange.Value;
 
             Settings.Save();
 
@@ -462,14 +470,14 @@ namespace ORTS
         private void AdhesionFactorTrackBar1_ValueChanged(object sender, EventArgs e)
         {
             SetAdhesionLevelValue();
-            AdhesionFactorValueLabel.Text = AdhesionFactorTrackBar1.Value.ToString() + "%";
-            AdhesionFactorChangeValueLabel.Text = AdhesionFactorChangeTrackBar1.Value.ToString() + "%";
+            AdhesionFactorValueLabel.Text = trackAdhesionFactor.Value.ToString() + "%";
+            AdhesionFactorChangeValueLabel.Text = trackAdhesionFactorChange.Value.ToString() + "%";
         }
 
         private void SetAdhesionLevelValue()
         {
-            int level = AdhesionFactorTrackBar1.Value - AdhesionFactorChangeTrackBar1.Value;
-            if (AdhesionPropToWeatherCheckBox.Checked)
+            int level = trackAdhesionFactor.Value - trackAdhesionFactorChange.Value;
+            if (checkAdhesionPropToWeather.Checked)
                 level -= 40;
 
             if (level > 159)
@@ -491,6 +499,20 @@ namespace ORTS
         private void AdhesionPropToWeatherCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             SetAdhesionLevelValue();
+        }
+
+        private void trackLODBias_ValueChanged(object sender, EventArgs e)
+        {
+            if (trackLODBias.Value == -100)
+                labelLODBias.Text = catalog.GetStringFmt("No detail (-{0}%)", -trackLODBias.Value);
+            else if (trackLODBias.Value < 0)
+                labelLODBias.Text = catalog.GetStringFmt("Less detail (-{0}%)", -trackLODBias.Value);
+            else if (trackLODBias.Value == 0)
+                labelLODBias.Text = catalog.GetStringFmt("Default detail (+{0}%)", trackLODBias.Value);
+            else if (trackLODBias.Value < 100)
+                labelLODBias.Text = catalog.GetStringFmt("More detail (+{0}%)", trackLODBias.Value);
+            else
+                labelLODBias.Text = catalog.GetStringFmt("All detail (+{0}%)", trackLODBias.Value);
         }
     }
 }

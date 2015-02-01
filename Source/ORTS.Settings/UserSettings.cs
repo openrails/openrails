@@ -196,8 +196,8 @@ namespace ORTS.Settings
 		public int SuperElevationMinLen { get; set; }
 		[Default(1435)]
 		public int SuperElevationGauge { get; set; }
-        [Default(false)]
-        public bool LODAlwaysMaximum { get; set; }
+        [Default(0)]
+        public int LODBias { get; set; }
         [Default(false)]
         public bool PerformanceTuner { get; set; }
         [Default(60)]

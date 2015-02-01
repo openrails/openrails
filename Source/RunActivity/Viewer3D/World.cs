@@ -37,6 +37,9 @@ namespace ORTS.Viewer3D
         public readonly SoundSource GameSounds;
         public readonly WorldSounds Sounds;
 
+        readonly int PerformanceInitialViewingDistance;
+        readonly int PerformanceInitialLODBias;
+
         int TileX;
         int TileZ;
         int VisibleTileX;
@@ -47,6 +50,8 @@ namespace ORTS.Viewer3D
         public World(Viewer viewer)
         {
             Viewer = viewer;
+            PerformanceInitialViewingDistance = Viewer.Settings.ViewingDistance;
+            PerformanceInitialLODBias = Viewer.Settings.LODBias;
             // Control stuff first.
             WeatherControl = new WeatherControl(viewer);
             // Then drawers.
@@ -143,6 +148,7 @@ namespace ORTS.Viewer3D
                 else if (fpsChange > 0 && cpuChange > 0)
                     Viewer.Settings.ViewingDistance += (int)(-fpsTarget - 1.5);
                 Viewer.Settings.ViewingDistance = (int)MathHelper.Clamp(Viewer.Settings.ViewingDistance, 500, 10000);
+                Viewer.Settings.LODBias = (int)MathHelper.Clamp(PerformanceInitialLODBias + 100 * ((float)Viewer.Settings.ViewingDistance / PerformanceInitialViewingDistance - 1), -100, 100);
 
                 // If we've changed the viewing distance, we need to update the camera matricies.
                 if (oldViewingDistance != Viewer.Settings.ViewingDistance)

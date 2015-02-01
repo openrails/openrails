@@ -1492,6 +1492,8 @@ namespace ORTS.Viewer3D
 
         public void PrepareFrame(RenderFrame frame, WorldPosition location, Matrix[] animatedXNAMatrices, bool[] subObjVisible, ShapeFlags flags)
         {
+            var lodBias = ((float)Viewer.Settings.LODBias / 100 + 1);
+
             // Locate relative to the camera
             var dTileX = location.TileX - Viewer.Camera.TileX;
             var dTileZ = location.TileZ - Viewer.Camera.TileZ;
@@ -1511,24 +1513,19 @@ namespace ORTS.Viewer3D
                 if (!Viewer.Camera.InFov(mstsLocation, lodControl.DistanceLevels[chosenDistanceLevelIndex].ViewSphereRadius))
                     continue;
 
-                if (Viewer.Settings.LODAlwaysMaximum)
-                {
-                    // If set, always use the most detailed (first) LOD.
+                if (Viewer.Settings.LODBias == 100)
+                    // Maximum detail!
                     chosenDistanceLevelIndex = 0;
-                }
-                else
-                {
-                    // Otherwise, find the most-detailed LOD that is in-range.
-                    while ((chosenDistanceLevelIndex > 0) && Viewer.Camera.InRange(mstsLocation, lodControl.DistanceLevels[chosenDistanceLevelIndex - 1].ViewSphereRadius, lodControl.DistanceLevels[chosenDistanceLevelIndex - 1].ViewingDistance))
+                else if (Viewer.Settings.LODBias > -100)
+                    // Not minimum detail, so find the correct level (with scaling by LODBias)
+                    while ((chosenDistanceLevelIndex > 0) && Viewer.Camera.InRange(mstsLocation, lodControl.DistanceLevels[chosenDistanceLevelIndex - 1].ViewSphereRadius, lodControl.DistanceLevels[chosenDistanceLevelIndex - 1].ViewingDistance * lodBias))
                         chosenDistanceLevelIndex--;
-                }
+
                 var chosenDistanceLevel = lodControl.DistanceLevels[chosenDistanceLevelIndex];
 
-                // If set, extend the outer LOD to the max. viewing distance.
-                if ((Viewer.Settings.LODAlwaysMaximum && Viewer.Settings.LODViewingExtention) || (Viewer.Settings.LODViewingExtention && chosenDistanceLevelIndex == lodControl.DistanceLevels.Length - 1))
+                // If set, extend the lowest LOD to the maximum viewing distance.
+                if (Viewer.Settings.LODViewingExtention && chosenDistanceLevelIndex == lodControl.DistanceLevels.Length - 1)
                     chosenDistanceLevel.ViewingDistance = float.MaxValue;
-                else if (Viewer.Settings.LODAlwaysMaximum)
-                    chosenDistanceLevel.ViewingDistance = lodControl.DistanceLevels[lodControl.DistanceLevels.Length - 1].ViewingDistance;
 
                 for (var i = 0; i < chosenDistanceLevel.SubObjects.Length; i++)
 				{
@@ -1552,7 +1549,7 @@ namespace ORTS.Viewer3D
                         // TODO make shadows depend on shape overrides
 
                         var interior = (flags & ShapeFlags.Interior) != 0;
-                        frame.AddAutoPrimitive(mstsLocation, chosenDistanceLevel.ViewSphereRadius, chosenDistanceLevel.ViewingDistance, shapePrimitive.Material, shapePrimitive, interior ? RenderPrimitiveGroup.Interior : RenderPrimitiveGroup.World, ref xnaMatrix, flags);
+                        frame.AddAutoPrimitive(mstsLocation, chosenDistanceLevel.ViewSphereRadius, chosenDistanceLevel.ViewingDistance * lodBias, shapePrimitive.Material, shapePrimitive, interior ? RenderPrimitiveGroup.Interior : RenderPrimitiveGroup.World, ref xnaMatrix, flags);
                     }
                 }
             }
