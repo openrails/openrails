@@ -291,33 +291,22 @@ namespace ORTS
 
             TimetableInfo TTinfo = new TimetableInfo(this);
 
-            Train playerTrain = null;
-            List<AITrain> allTrains = TTinfo.ProcessTimetable(arguments, ref playerTrain, loader);
-            Trains[0] = playerTrain;
+            TTTrain playerTTTrain = null;
+            List<TTTrain> allTrains = TTinfo.ProcessTimetable(arguments, loader);
+            playerTTTrain = allTrains[0];
 
-            AI = new AI(this, allTrains, ClockTime, playerTrain.FormedOf, playerTrain, loader);
+            AI = new AI(this, allTrains, ClockTime, playerTTTrain.FormedOf, playerTTTrain.FormedOfType, playerTTTrain, loader);
 
             Season = (SeasonType)int.Parse(arguments[3]);
             Weather = (WeatherType)int.Parse(arguments[4]);
 
-            if (playerTrain != null)
-            {
-                playerTrain.PostInit();  // place player train after pre-running of AI trains
-                playerTrain.SetupStationStopHandling(); // player train must now perform own station stop handling (no activity function available)
-                TrainDictionary.Add(playerTrain.Number, playerTrain);
-                NameDictionary.Add(playerTrain.Name, playerTrain);
-            }
 
-            //          MPManager.Instance().RememberOriginalSwitchState();
-
-            // start activity logging if required
-            if (Settings.DataLogStationStops && ActivityRun != null)
+            if (playerTTTrain != null) 
             {
-                string stationLogFile = DeriveLogFile("Stops");
-                if (!String.IsNullOrEmpty(stationLogFile))
-                {
-                    ActivityRun.StartStationLogging(stationLogFile);
-                }
+                playerTTTrain.CalculatePositionOfCars(0); // calculate position of player train cars
+                playerTTTrain.PostInit();               // place player train after pre-running of AI trains
+                if (!TrainDictionary.ContainsKey(playerTTTrain.Number)) TrainDictionary.Add(playerTTTrain.Number, playerTTTrain);
+                if (!NameDictionary.ContainsKey(playerTTTrain.Name.ToLower())) NameDictionary.Add(playerTTTrain.Name.ToLower(), playerTTTrain);
             }
         }
 
@@ -455,7 +444,7 @@ namespace ORTS
             foreach (Train train in Trains)
             {
                 if (train.SpeedMpS != 0 &&
-                    train.GetType() != typeof(AITrain) &&
+                    train.GetType() != typeof(AITrain) && train.GetType() != typeof(TTTrain) &&
                     (PlayerLocomotive == null || train != PlayerLocomotive.Train))
                 {
                     movingTrains.Add(train);
@@ -505,7 +494,14 @@ namespace ORTS
 
             if (AI != null)
             {
-                AI.Update(elapsedClockSeconds);
+                if (TimetableMode)
+                {
+                    AI.TimetableUpdate(elapsedClockSeconds);
+                }
+                else
+                {
+                    AI.ActivityUpdate(elapsedClockSeconds);
+                }
             }
 
             LevelCrossings.Update(elapsedClockSeconds);
@@ -1023,10 +1019,11 @@ namespace ORTS
             }
 
             // do not save AI trains (done by AITrain)
+            // do not save Timetable Trains (done by TTTrain through AITrain)
 
             foreach (Train train in Trains)
             {
-                if (train.TrainType != Train.TRAINTYPE.AI && train.TrainType != Train.TRAINTYPE.AI_PLAYERDRIVEN && train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
+                if (train.TrainType != Train.TRAINTYPE.AI && train.TrainType != Train.TRAINTYPE.AI_PLAYERDRIVEN && train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING && train.GetType() != typeof(TTTrain))
                 {
                     outf.Write(0);
                     train.Save(outf);
@@ -1094,13 +1091,13 @@ namespace ORTS
         /// <param name="reqNumber"></param>
         /// <returns></returns>
 
-        public AITrain GetAutoGenTrainByNumber(int reqNumber)
+        public TTTrain GetAutoGenTTTrainByNumber(int reqNumber)
         {
-            AITrain returnTrain = null;
+            TTTrain returnTrain = null;
             if (AutoGenDictionary.ContainsKey(reqNumber))
             {
                 AITrain tempTrain = AutoGenDictionary[reqNumber];
-                returnTrain = tempTrain.AICopyTrain();
+                returnTrain = tempTrain.AICopyTrain() as TTTrain;
                 returnTrain.AI.AutoGenTrains.Remove(tempTrain);
                 AutoGenDictionary.Remove(reqNumber);
                 returnTrain.routedBackward = new Train.TrainRouted(returnTrain, 1);

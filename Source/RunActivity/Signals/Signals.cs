@@ -9807,25 +9807,25 @@ namespace ORTS
 
                 // RR : retain this section until Train.cs is updated
                 // check if section is trigger section for waitany instruction
-                if (thisTrain != null && Program.Simulator.TimetableMode && thisTrain.Train.WaitAnyList != null && thisTrain.Train.WaitAnyList.ContainsKey(thisSection.Index))
-                {
-                    foreach (Train.WaitInfo reqWait in thisTrain.Train.WaitAnyList[thisSection.Index])
-                    {
-                        bool pathClear = thisTrain.Train.CheckForRouteWait(reqWait);
-                        if (!pathClear) blockstate = SignalObject.InternalBlockstate.Blocked;
+                //if (thisTrain != null && Program.Simulator.TimetableMode && thisTrain.Train.WaitAnyList != null && thisTrain.Train.WaitAnyList.ContainsKey(thisSection.Index))
+                //{
+                //    foreach (Train.WaitInfo reqWait in thisTrain.Train.WaitAnyList[thisSection.Index])
+                //    {
+                //        bool pathClear = thisTrain.Train.CheckForRouteWait(reqWait);
+                //        if (!pathClear) blockstate = SignalObject.InternalBlockstate.Blocked;
 
-                    }
-                }
+                //    }
+                //}
 
 		// RR : section below is to replace retained section above when Train.cs is updated
 		// check if section is trigger section for waitany instruction
-                // if (thisTrain != null)
-                // {
-                //     if (thisTrain.Train.CheckAnyWaitCondition(thisSection.Index))
-                //     {
-                //         blockstate = InternalBlockstate.Blocked;
-                //     }
-                // }
+                if (thisTrain != null)
+                {
+                    if (thisTrain.Train.CheckAnyWaitCondition(thisSection.Index))
+                    {
+                        blockstate = InternalBlockstate.Blocked;
+                    }
+                }
 
                 // check if this section is start of passing path area
                 // if so, select which path must be used - but only if cleared by train in AUTO mode
@@ -10321,130 +10321,7 @@ namespace ORTS
         //
 
         // RR: this version of this method is to be retained until Train.cs has been updated
-        public bool TrainHasCallOn(bool callOnNonePlatform, string dumpfile)
-        {
-            // no train approaching
-            if (enabledTrain == null)
-            {
-                if (!String.IsNullOrEmpty(dumpfile))
-                {
-                    File.AppendAllText(dumpfile, "CALL ON : no train approaching \n");
-                }
-
-                return (false);
-            }
-
-            // signal is not first signal for train
-            if (enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex] != null &&
-                enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex].thisRef != thisRef)
-            {
-                if (!String.IsNullOrEmpty(dumpfile))
-                {
-                    var sob = new StringBuilder();
-                    sob.AppendFormat("CALL ON : Train {0} : First signal is not this signal but {1} \n",
-                        enabledTrain.Train.Name, enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex].thisRef);
-                    File.AppendAllText(dumpfile, sob.ToString());
-                }
-
-                return (false);
-            }
-
-            if (enabledTrain.Train != null && signalRoute != null)
-            {
-                bool intoPlatform = false;
-
-                // always allow if set for stable working
-                if (Program.Simulator.TimetableMode && enabledTrain.Train.Stable_CallOn)
-                {
-                    if (!String.IsNullOrEmpty(dumpfile))
-                    {
-                        var sob = new StringBuilder();
-                        sob.AppendFormat("CALL ON : Train {0} : valid - train has Stable_CallOn set \n", enabledTrain.Train.Name);
-                        File.AppendAllText(dumpfile, sob.ToString());
-                    }
-                    return (true);
-                }
-
-                // loop through sections in signal route
-                foreach (Train.TCRouteElement routeElement in signalRoute)
-                {
-                    // if train is to attach to train in section, allow callon
-
-                    TrackCircuitSection routeSection = signalRef.TrackCircuitList[routeElement.TCSectionIndex];
-
-                    foreach (KeyValuePair<Train.TrainRouted, int> occTrainInfo in routeSection.CircuitState.TrainOccupy)
-                    {
-                        Train.TrainRouted occTrain = occTrainInfo.Key;
-                        if (Program.Simulator.TimetableMode && occTrain.Train.Number == enabledTrain.Train.AttachTo)
-                        {
-                            if (!String.IsNullOrEmpty(dumpfile))
-                            {
-                                var sob = new StringBuilder();
-                                sob.AppendFormat("CALL ON : Train {0} : valid - train is to attach to {1} \n",
-                                    enabledTrain.Train.Name, occTrain.Train.Name);
-                                File.AppendAllText(dumpfile, sob.ToString());
-                            }
-                            return (true);
-                        }
-                    }
-
-                    // check if route leads into platform
-
-                    if (routeSection.PlatformIndex.Count > 0)
-                    {
-                        intoPlatform = true;
-
-                        PlatformDetails thisPlatform = signalRef.PlatformDetailsList[routeSection.PlatformIndex[0]];
-                        if (Program.Simulator.TimetableMode && enabledTrain.Train.StationStops.Count > 0) // train has stops
-                        {
-                            if (String.Compare(enabledTrain.Train.StationStops[0].PlatformItem.Name, thisPlatform.Name) == 0 && enabledTrain.Train.StationStops[0].CallOnAllowed) // stop is next station stop and callon is set
-                            {
-                                if (!String.IsNullOrEmpty(dumpfile))
-                                {
-                                    var sob = new StringBuilder();
-                                    sob.AppendFormat("CALL ON : Train {0} : valid - access to platform {1} \n",
-                                        enabledTrain.Train.Name, thisPlatform.Name);
-                                    File.AppendAllText(dumpfile, sob.ToString());
-                                }
-                                return (true);
-                            }
-                        }
-
-                        if (!String.IsNullOrEmpty(dumpfile))
-                        {
-                            var sob = new StringBuilder();
-                            sob.AppendFormat("CALL ON : Train {0} : route is into platform {1} \n",
-                                enabledTrain.Train.Name, thisPlatform.Name);
-                            File.AppendAllText(dumpfile, sob.ToString());
-                        }
-                        break;  // no need to check for other platforms
-                    }
-                }
-
-                // always allow if track does not lead into platform
-                if (!intoPlatform)
-                {
-                    if (!String.IsNullOrEmpty(dumpfile))
-                    {
-                        var sob = new StringBuilder();
-                        sob.AppendFormat("CALL ON : Train {0} : {1} - route does not lead into platform \n", enabledTrain.Train.Name, callOnNonePlatform);
-                        File.AppendAllText(dumpfile, sob.ToString());
-                    }
-                    return (callOnNonePlatform);
-                }
-            }
-
-            if (!String.IsNullOrEmpty(dumpfile))
-            {
-                var sob = new StringBuilder();
-                sob.AppendFormat("CALL ON : Train {0} : not valid \n", enabledTrain.Train.Name);
-                File.AppendAllText(dumpfile, sob.ToString());
-            }
-            return (false);
-        }
-
-        // RR :This version of this method is to replace the version above when Train.cs has been updated
-        //public bool TrainHasCallOn(bool allowOnNonePlatform, string dumpfile)
+        //public bool TrainHasCallOn(bool callOnNonePlatform, string dumpfile)
         //{
         //    // no train approaching
         //    if (enabledTrain == null)
@@ -10474,198 +10351,86 @@ namespace ORTS
 
         //    if (enabledTrain.Train != null && signalRoute != null)
         //    {
-        //        // process in timetable mode
-        //        if (Program.Simulator.TimetableMode)
-        //        {
-        //            TTTrain enabledTTTrain = enabledTrain.Train as TTTrain;
+        //        bool intoPlatform = false;
 
-        //            // always allow if set for stable working
-        //            if (enabledTTTrain.Stable_CallOn)
+        //        // always allow if set for stable working
+        //        if (Program.Simulator.TimetableMode && enabledTrain.Train.Stable_CallOn)
+        //        {
+        //            if (!String.IsNullOrEmpty(dumpfile))
         //            {
-        //                if (!String.IsNullOrEmpty(dumpfile))
+        //                var sob = new StringBuilder();
+        //                sob.AppendFormat("CALL ON : Train {0} : valid - train has Stable_CallOn set \n", enabledTrain.Train.Name);
+        //                File.AppendAllText(dumpfile, sob.ToString());
+        //            }
+        //            return (true);
+        //        }
+
+        //        // loop through sections in signal route
+        //        foreach (Train.TCRouteElement routeElement in signalRoute)
+        //        {
+        //            // if train is to attach to train in section, allow callon
+
+        //            TrackCircuitSection routeSection = signalRef.TrackCircuitList[routeElement.TCSectionIndex];
+
+        //            foreach (KeyValuePair<Train.TrainRouted, int> occTrainInfo in routeSection.CircuitState.TrainOccupy)
+        //            {
+        //                Train.TrainRouted occTrain = occTrainInfo.Key;
+        //                if (Program.Simulator.TimetableMode && occTrain.Train.Number == enabledTrain.Train.AttachTo)
         //                {
-        //                    var sob = new StringBuilder();
-        //                    sob.AppendFormat("CALL ON : Train {0} : valid - train has Stable_CallOn set \n", enabledTrain.Train.Name);
-        //                    File.AppendAllText(dumpfile, sob.ToString());
+        //                    if (!String.IsNullOrEmpty(dumpfile))
+        //                    {
+        //                        var sob = new StringBuilder();
+        //                        sob.AppendFormat("CALL ON : Train {0} : valid - train is to attach to {1} \n",
+        //                            enabledTrain.Train.Name, occTrain.Train.Name);
+        //                        File.AppendAllText(dumpfile, sob.ToString());
+        //                    }
+        //                    return (true);
         //                }
-        //                return (true);
         //            }
 
-        //            // loop through sections in signal route
-        //            bool allclear = true;
-        //            bool intoPlatform = false;
+        //            // check if route leads into platform
 
-        //            foreach (Train.TCRouteElement routeElement in signalRoute)
+        //            if (routeSection.PlatformIndex.Count > 0)
         //            {
-        //                TrackCircuitSection routeSection = signalRef.TrackCircuitList[routeElement.TCSectionIndex];
+        //                intoPlatform = true;
 
-        //                // if train is to attach to train in section, allow callon if train is stopped
-
-        //                foreach (KeyValuePair<Train.TrainRouted, int> occTrainInfo in routeSection.CircuitState.TrainOccupy)
+        //                PlatformDetails thisPlatform = signalRef.PlatformDetailsList[routeSection.PlatformIndex[0]];
+        //                if (Program.Simulator.TimetableMode && enabledTrain.Train.StationStops.Count > 0) // train has stops
         //                {
-        //                    Train.TrainRouted occTrain = occTrainInfo.Key;
-        //                    TTTrain occTTTrain = occTrain.Train as TTTrain;
-        //                    AITrain.AI_MOVEMENT_STATE movState = occTTTrain.MovementState;
-
-        //                    if (occTrain.Train.Number == enabledTrain.Train.AttachTo)
+        //                    if (String.Compare(enabledTrain.Train.StationStops[0].PlatformItem.Name, thisPlatform.Name) == 0 && enabledTrain.Train.StationStops[0].CallOnAllowed) // stop is next station stop and callon is set
         //                    {
-        //                        if (movState == AITrain.AI_MOVEMENT_STATE.STOPPED || movState == AITrain.AI_MOVEMENT_STATE.STATION_STOP || movState == AITrain.AI_MOVEMENT_STATE.AI_STATIC)
-        //                        {
-        //                            if (!String.IsNullOrEmpty(dumpfile))
-        //                            {
-        //                                var sob = new StringBuilder();
-        //                                sob.AppendFormat("CALL ON : Train {0} : valid - train is to attach to {1} \n",
-        //                                    enabledTrain.Train.Name, occTrain.Train.Name);
-        //                                File.AppendAllText(dumpfile, sob.ToString());
-        //                            }
-        //                            return (true);
-        //                        }
-        //                        else
-        //                        {
-        //                            if (!String.IsNullOrEmpty(dumpfile))
-        //                            {
-        //                                var sob = new StringBuilder();
-        //                                sob.AppendFormat("CALL ON : Train {0} : invalid - train is to attach to {1} but train is moving \n",
-        //                                    enabledTrain.Train.Name, occTTTrain.Name);
-        //                                File.AppendAllText(dumpfile, sob.ToString());
-        //                            }
-        //                            return (false);
-        //                        }
-        //                    }
-        //                }
-
-        //                // check if route leads into platform
-
-        //                if (routeSection.PlatformIndex.Count > 0)
-        //                {
-        //                    PlatformDetails thisPlatform = signalRef.PlatformDetailsList[routeSection.PlatformIndex[0]];
-        //                    if (enabledTrain.Train.StationStops.Count > 0) // train has stops
-        //                    {
-        //                        if (String.Compare(enabledTrain.Train.StationStops[0].PlatformItem.Name, thisPlatform.Name) == 0 && enabledTrain.Train.StationStops[0].CallOnAllowed) // stop is next station stop and callon is set
-        //                        {
-        //                            intoPlatform = true;
-
-        //                            // only allow if train ahead is stopped
-        //                            foreach (KeyValuePair<Train.TrainRouted, int> occTrainInfo in routeSection.CircuitState.TrainOccupy)
-        //                            {
-        //                                Train.TrainRouted occTrain = occTrainInfo.Key;
-        //                                TTTrain occTTTrain = occTrain.Train as TTTrain;
-        //                                AITrain.AI_MOVEMENT_STATE movState = occTTTrain.MovementState;
-
-        //                                if (movState == AITrain.AI_MOVEMENT_STATE.STOPPED || movState == AITrain.AI_MOVEMENT_STATE.STATION_STOP || movState == AITrain.AI_MOVEMENT_STATE.AI_STATIC)
-        //                                {
-        //                                    if (!String.IsNullOrEmpty(dumpfile))
-        //                                    {
-        //                                        var sob = new StringBuilder();
-        //                                        sob.AppendFormat("CALL ON : Train {0} : access to platform {1}, train {2} is stopped \n",
-        //                                            enabledTrain.Train.Name, thisPlatform.Name, occTTTrain.Name);
-        //                                        File.AppendAllText(dumpfile, sob.ToString());
-        //                                    }
-        //                                }
-        //                                else
-        //                                {
-        //                                    if (!String.IsNullOrEmpty(dumpfile))
-        //                                    {
-        //                                        var sob = new StringBuilder();
-        //                                        sob.AppendFormat("CALL ON : Train {0} : invalid - access to platform {1}, but train {2} is moving \n",
-        //                                            enabledTrain.Train.Name, thisPlatform.Name, occTTTrain.Name);
-        //                                        File.AppendAllText(dumpfile, sob.ToString());
-        //                                    }
-        //                                    allclear = false;
-        //                                    break; // no need to check for other trains
-        //                                }
-        //                            }
-        //                        }
-        //                        else
-        //                        {
-        //                            // not first station or train has call-on not set, no need to check any further
-        //                            if (!String.IsNullOrEmpty(dumpfile))
-        //                            {
-        //                                var sob = new StringBuilder();
-        //                                sob.AppendFormat("CALL ON : Train {0} : invalid - access to platform {1}, train does not call or has no call-on set \n",
-        //                                    enabledTrain.Train.Name, thisPlatform.Name);
-        //                                File.AppendAllText(dumpfile, sob.ToString());
-        //                            }
-        //                            allclear = false;
-        //                        }
-        //                    }
-        //                    else
-        //                    {
-        //                        // train has no stops - no need to check further
         //                        if (!String.IsNullOrEmpty(dumpfile))
         //                        {
         //                            var sob = new StringBuilder();
-        //                            sob.AppendFormat("CALL ON : Train {0} : invalid - access to platform {1}, but train has no stops \n",
+        //                            sob.AppendFormat("CALL ON : Train {0} : valid - access to platform {1} \n",
         //                                enabledTrain.Train.Name, thisPlatform.Name);
         //                            File.AppendAllText(dumpfile, sob.ToString());
         //                        }
-        //                        allclear = false;
-        //                    }
-
-        //                    if (!allclear) // invalid situation found - no need to check any further
-        //                    {
-        //                        break;
+        //                        return (true);
         //                    }
         //                }
-        //            }
 
-        //            if (intoPlatform)
-        //            {
-        //                // path leads into platform - return state as derived
-        //                return (allclear);
-        //            }
-        //            else
-        //            {
-        //                // path does not lead into platform - return state as defined in call
         //                if (!String.IsNullOrEmpty(dumpfile))
         //                {
         //                    var sob = new StringBuilder();
-        //                    sob.AppendFormat("CALL ON : Train {0} : {1} - route does not lead into platform \n", enabledTrain.Train.Name, allowOnNonePlatform);
+        //                    sob.AppendFormat("CALL ON : Train {0} : route is into platform {1} \n",
+        //                        enabledTrain.Train.Name, thisPlatform.Name);
         //                    File.AppendAllText(dumpfile, sob.ToString());
         //                }
-        //                return (allowOnNonePlatform);
+        //                break;  // no need to check for other platforms
         //            }
         //        }
 
-        //        // process in activity  mode
-        //        else
+        //        // always allow if track does not lead into platform
+        //        if (!intoPlatform)
         //        {
-        //            bool intoPlatform = false;
-
-        //            foreach (Train.TCRouteElement routeElement in signalRoute)
+        //            if (!String.IsNullOrEmpty(dumpfile))
         //            {
-        //                TrackCircuitSection routeSection = signalRef.TrackCircuitList[routeElement.TCSectionIndex];
-
-        //                // check if route leads into platform
-
-        //                if (routeSection.PlatformIndex.Count > 0)
-        //                {
-        //                    intoPlatform = true;
-        //                }
+        //                var sob = new StringBuilder();
+        //                sob.AppendFormat("CALL ON : Train {0} : {1} - route does not lead into platform \n", enabledTrain.Train.Name, callOnNonePlatform);
+        //                File.AppendAllText(dumpfile, sob.ToString());
         //            }
-
-        //            if (!intoPlatform)
-        //            {
-        //                //if track does not lead into platform, return state as defined in call
-        //                if (!String.IsNullOrEmpty(dumpfile))
-        //                {
-        //                    var sob = new StringBuilder();
-        //                    sob.AppendFormat("CALL ON : Train {0} : {1} - route does not lead into platform \n", enabledTrain.Train.Name, allowOnNonePlatform);
-        //                    File.AppendAllText(dumpfile, sob.ToString());
-        //                }
-        //                return (allowOnNonePlatform);
-        //            }
-        //            else
-        //            {
-        //                // never allow if track leads into platform
-        //                if (!String.IsNullOrEmpty(dumpfile))
-        //                {
-        //                    var sob = new StringBuilder();
-        //                    sob.AppendFormat("CALL ON : Train {0} : invalid - route leads into platform \n", enabledTrain.Train.Name);
-        //                    File.AppendAllText(dumpfile, sob.ToString());
-        //                }
-        //                return (false);
-        //            }
+        //            return (callOnNonePlatform);
         //        }
         //    }
 
@@ -10677,6 +10442,241 @@ namespace ORTS
         //    }
         //    return (false);
         //}
+
+        // RR :This version of this method is to replace the version above when Train.cs has been updated
+        public bool TrainHasCallOn(bool allowOnNonePlatform, string dumpfile)
+        {
+            // no train approaching
+            if (enabledTrain == null)
+            {
+                if (!String.IsNullOrEmpty(dumpfile))
+                {
+                    File.AppendAllText(dumpfile, "CALL ON : no train approaching \n");
+                }
+
+                return (false);
+            }
+
+            // signal is not first signal for train
+            if (enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex] != null &&
+                enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex].thisRef != thisRef)
+            {
+                if (!String.IsNullOrEmpty(dumpfile))
+                {
+                    var sob = new StringBuilder();
+                    sob.AppendFormat("CALL ON : Train {0} : First signal is not this signal but {1} \n",
+                        enabledTrain.Train.Name, enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex].thisRef);
+                    File.AppendAllText(dumpfile, sob.ToString());
+                }
+
+                return (false);
+            }
+
+            if (enabledTrain.Train != null && signalRoute != null)
+            {
+                // process in timetable mode
+                if (Program.Simulator.TimetableMode)
+                {
+                    TTTrain enabledTTTrain = enabledTrain.Train as TTTrain;
+
+                    // always allow if set for stable working
+                    if (enabledTTTrain.Stable_CallOn)
+                    {
+                        if (!String.IsNullOrEmpty(dumpfile))
+                        {
+                            var sob = new StringBuilder();
+                            sob.AppendFormat("CALL ON : Train {0} : valid - train has Stable_CallOn set \n", enabledTrain.Train.Name);
+                            File.AppendAllText(dumpfile, sob.ToString());
+                        }
+                        return (true);
+                    }
+
+                    // loop through sections in signal route
+                    bool allclear = true;
+                    bool intoPlatform = false;
+
+                    foreach (Train.TCRouteElement routeElement in signalRoute)
+                    {
+                        TrackCircuitSection routeSection = signalRef.TrackCircuitList[routeElement.TCSectionIndex];
+
+                        // if train is to attach to train in section, allow callon if train is stopped
+
+                        foreach (KeyValuePair<Train.TrainRouted, int> occTrainInfo in routeSection.CircuitState.TrainOccupy)
+                        {
+                            Train.TrainRouted occTrain = occTrainInfo.Key;
+                            TTTrain occTTTrain = occTrain.Train as TTTrain;
+                            AITrain.AI_MOVEMENT_STATE movState = occTTTrain.MovementState;
+
+                            if (occTrain.Train.Number == enabledTrain.Train.AttachTo)
+                            {
+                                if (movState == AITrain.AI_MOVEMENT_STATE.STOPPED || movState == AITrain.AI_MOVEMENT_STATE.STATION_STOP || movState == AITrain.AI_MOVEMENT_STATE.AI_STATIC)
+                                {
+                                    if (!String.IsNullOrEmpty(dumpfile))
+                                    {
+                                        var sob = new StringBuilder();
+                                        sob.AppendFormat("CALL ON : Train {0} : valid - train is to attach to {1} \n",
+                                            enabledTrain.Train.Name, occTrain.Train.Name);
+                                        File.AppendAllText(dumpfile, sob.ToString());
+                                    }
+                                    return (true);
+                                }
+                                else
+                                {
+                                    if (!String.IsNullOrEmpty(dumpfile))
+                                    {
+                                        var sob = new StringBuilder();
+                                        sob.AppendFormat("CALL ON : Train {0} : invalid - train is to attach to {1} but train is moving \n",
+                                            enabledTrain.Train.Name, occTTTrain.Name);
+                                        File.AppendAllText(dumpfile, sob.ToString());
+                                    }
+                                    return (false);
+                                }
+                            }
+                        }
+
+                        // check if route leads into platform
+
+                        if (routeSection.PlatformIndex.Count > 0)
+                        {
+                            PlatformDetails thisPlatform = signalRef.PlatformDetailsList[routeSection.PlatformIndex[0]];
+                            if (enabledTrain.Train.StationStops.Count > 0) // train has stops
+                            {
+                                if (String.Compare(enabledTrain.Train.StationStops[0].PlatformItem.Name, thisPlatform.Name) == 0 && enabledTrain.Train.StationStops[0].CallOnAllowed) // stop is next station stop and callon is set
+                                {
+                                    intoPlatform = true;
+
+                                    // only allow if train ahead is stopped
+                                    foreach (KeyValuePair<Train.TrainRouted, int> occTrainInfo in routeSection.CircuitState.TrainOccupy)
+                                    {
+                                        Train.TrainRouted occTrain = occTrainInfo.Key;
+                                        TTTrain occTTTrain = occTrain.Train as TTTrain;
+                                        AITrain.AI_MOVEMENT_STATE movState = occTTTrain.MovementState;
+
+                                        if (movState == AITrain.AI_MOVEMENT_STATE.STOPPED || movState == AITrain.AI_MOVEMENT_STATE.STATION_STOP || movState == AITrain.AI_MOVEMENT_STATE.AI_STATIC)
+                                        {
+                                            if (!String.IsNullOrEmpty(dumpfile))
+                                            {
+                                                var sob = new StringBuilder();
+                                                sob.AppendFormat("CALL ON : Train {0} : access to platform {1}, train {2} is stopped \n",
+                                                    enabledTrain.Train.Name, thisPlatform.Name, occTTTrain.Name);
+                                                File.AppendAllText(dumpfile, sob.ToString());
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (!String.IsNullOrEmpty(dumpfile))
+                                            {
+                                                var sob = new StringBuilder();
+                                                sob.AppendFormat("CALL ON : Train {0} : invalid - access to platform {1}, but train {2} is moving \n",
+                                                    enabledTrain.Train.Name, thisPlatform.Name, occTTTrain.Name);
+                                                File.AppendAllText(dumpfile, sob.ToString());
+                                            }
+                                            allclear = false;
+                                            break; // no need to check for other trains
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    // not first station or train has call-on not set, no need to check any further
+                                    if (!String.IsNullOrEmpty(dumpfile))
+                                    {
+                                        var sob = new StringBuilder();
+                                        sob.AppendFormat("CALL ON : Train {0} : invalid - access to platform {1}, train does not call or has no call-on set \n",
+                                            enabledTrain.Train.Name, thisPlatform.Name);
+                                        File.AppendAllText(dumpfile, sob.ToString());
+                                    }
+                                    allclear = false;
+                                }
+                            }
+                            else
+                            {
+                                // train has no stops - no need to check further
+                                if (!String.IsNullOrEmpty(dumpfile))
+                                {
+                                    var sob = new StringBuilder();
+                                    sob.AppendFormat("CALL ON : Train {0} : invalid - access to platform {1}, but train has no stops \n",
+                                        enabledTrain.Train.Name, thisPlatform.Name);
+                                    File.AppendAllText(dumpfile, sob.ToString());
+                                }
+                                allclear = false;
+                            }
+
+                            if (!allclear) // invalid situation found - no need to check any further
+                            {
+                                break;
+                            }
+                        }
+                    }
+
+                    if (intoPlatform)
+                    {
+                        // path leads into platform - return state as derived
+                        return (allclear);
+                    }
+                    else
+                    {
+                        // path does not lead into platform - return state as defined in call
+                        if (!String.IsNullOrEmpty(dumpfile))
+                        {
+                            var sob = new StringBuilder();
+                            sob.AppendFormat("CALL ON : Train {0} : {1} - route does not lead into platform \n", enabledTrain.Train.Name, allowOnNonePlatform);
+                            File.AppendAllText(dumpfile, sob.ToString());
+                        }
+                        return (allowOnNonePlatform);
+                    }
+                }
+
+                // process in activity  mode
+                else
+                {
+                    bool intoPlatform = false;
+
+                    foreach (Train.TCRouteElement routeElement in signalRoute)
+                    {
+                        TrackCircuitSection routeSection = signalRef.TrackCircuitList[routeElement.TCSectionIndex];
+
+                        // check if route leads into platform
+
+                        if (routeSection.PlatformIndex.Count > 0)
+                        {
+                            intoPlatform = true;
+                        }
+                    }
+
+                    if (!intoPlatform)
+                    {
+                        //if track does not lead into platform, return state as defined in call
+                        if (!String.IsNullOrEmpty(dumpfile))
+                        {
+                            var sob = new StringBuilder();
+                            sob.AppendFormat("CALL ON : Train {0} : {1} - route does not lead into platform \n", enabledTrain.Train.Name, allowOnNonePlatform);
+                            File.AppendAllText(dumpfile, sob.ToString());
+                        }
+                        return (allowOnNonePlatform);
+                    }
+                    else
+                    {
+                        // never allow if track leads into platform
+                        if (!String.IsNullOrEmpty(dumpfile))
+                        {
+                            var sob = new StringBuilder();
+                            sob.AppendFormat("CALL ON : Train {0} : invalid - route leads into platform \n", enabledTrain.Train.Name);
+                            File.AppendAllText(dumpfile, sob.ToString());
+                        }
+                        return (false);
+                    }
+                }
+            }
+
+            if (!String.IsNullOrEmpty(dumpfile))
+            {
+                var sob = new StringBuilder();
+                sob.AppendFormat("CALL ON : Train {0} : not valid \n", enabledTrain.Train.Name);
+                File.AppendAllText(dumpfile, sob.ToString());
+            }
+            return (false);
+        }
 
         //================================================================================================//
         /// <summary>

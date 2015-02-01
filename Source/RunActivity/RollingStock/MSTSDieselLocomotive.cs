@@ -666,6 +666,7 @@ namespace ORTS
                     WheelSpeedMpS = Flipped ? -currentSpeedMpS : currentSpeedMpS;            //make the wheels go round
                     break;
                 case Train.TRAINTYPE.STATIC:
+                case Train.TRAINTYPE.INTENDED_PLAYER:
                     break;
                 case Train.TRAINTYPE.PLAYER:
                 case Train.TRAINTYPE.AI_PLAYERDRIVEN:

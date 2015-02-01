@@ -47,7 +47,7 @@ namespace ORTS
 
         public StartTrains StartList = new StartTrains(); // trains yet to be started
         public List<AITrain> AutoGenTrains = new List<AITrain>(); // auto-generated trains
-        private double clockTime; // clock time : local time before activity start, common time from simulator after start
+        public double clockTime; // clock time : local time before activity start, common time from simulator after start
         private bool localTime;  // if true : clockTime is local time
         public bool PreUpdate; // if true : running in pre-update phase
         public List<AITrain> TrainsToRemove = new List<AITrain>();
@@ -82,7 +82,7 @@ namespace ORTS
             }
 
             // prerun trains
-            PrerunAI(-1, null, loader);
+            PrerunAI(loader);
 
             clockTime = Simulator.ClockTime;
             localTime = false;
@@ -90,13 +90,24 @@ namespace ORTS
 
         // constructor for Timetable trains
         // trains allready have a number - must not be changed!
-        public AI(Simulator simulator, List<AITrain> allTrains, double ClockTime, int playerTrainOriginalTrain, Train playerTrain, LoaderProcess loader)
+        public AI(Simulator simulator, List<TTTrain> allTrains, double ClockTime, int playerTrainOriginalTrain, TTTrain.FormCommand playerTrainFormedOfType, TTTrain playerTrain, LoaderProcess loader)
         {
             Simulator = simulator;
 
-            foreach (AITrain train in allTrains)
+            foreach (var train in allTrains)
             {
-                if (train.TrainType == Train.TRAINTYPE.AI_AUTOGENERATE)
+                if (train.TrainType == Train.TRAINTYPE.PLAYER)
+                {
+                    train.AI = this;
+                    AITrains.Add(train);
+                }
+                else if (train.TrainType == Train.TRAINTYPE.INTENDED_PLAYER)
+                {
+                    train.AI = this;
+                    StartList.InsertTrain(train);
+                    Simulator.StartReference.Add(train.Number);
+                }
+                else if (train.TrainType == Train.TRAINTYPE.AI_AUTOGENERATE)
                 {
                     train.AI = this;
                     train.BrakeLine3PressurePSI = 0;
@@ -114,7 +125,7 @@ namespace ORTS
                     train.BrakeLine3PressurePSI = 0;
 
                     // insert in start list
- //                   if (train.InitialSpeed > 0) train.InitializeMoving();
+
                     StartList.InsertTrain(train);
                     Simulator.StartReference.Add(train.Number);
                 }
@@ -125,7 +136,7 @@ namespace ORTS
             Simulator.NameDictionary.Clear();
 
             // prerun trains
-            PrerunAI(playerTrainOriginalTrain, playerTrain, loader);
+            PrerunAI(playerTrainOriginalTrain, playerTrainFormedOfType, playerTrain, loader);
 
             clockTime = Simulator.ClockTime;
             localTime = false;
@@ -141,34 +152,71 @@ namespace ORTS
 
             for (int iTrain = 0; iTrain < totalAITrains; iTrain++)
             {
-                AITrain aiTrain = new AITrain(Simulator, inf);
-                aiTrain.AI = this;
-                AITrains.Add(aiTrain);
-                Simulator.Trains.Add(aiTrain);
-                simulator.TrainDictionary.Add(aiTrain.Number, aiTrain);
-                if (!Simulator.NameDictionary.ContainsKey(aiTrain.Name.ToLower()))
-                    Simulator.NameDictionary.Add(aiTrain.Name.ToLower(), aiTrain);
+                string trainType = inf.ReadString();
+                if (String.Equals(trainType, "AI"))
+                {
+                    AITrain aiTrain = new AITrain(Simulator, inf);
+                    aiTrain.AI = this;
+                    AITrains.Add(aiTrain);
+                    Simulator.Trains.Add(aiTrain);
+                    simulator.TrainDictionary.Add(aiTrain.Number, aiTrain);
+                    if (!Simulator.NameDictionary.ContainsKey(aiTrain.Name.ToLower()))
+                        Simulator.NameDictionary.Add(aiTrain.Name.ToLower(), aiTrain);
+                }
+                else
+                {
+                    TTTrain aiTrain = new TTTrain(Simulator, inf);
+                    aiTrain.AI = this;
+                    AITrains.Add(aiTrain);
+                    Simulator.Trains.Add(aiTrain);
+                    simulator.TrainDictionary.Add(aiTrain.Number, aiTrain);
+                    if (!Simulator.NameDictionary.ContainsKey(aiTrain.Name.ToLower()))
+                        Simulator.NameDictionary.Add(aiTrain.Name.ToLower(), aiTrain);
+                }
             }
 
             int totalStarting = inf.ReadInt32();
 
             for (int iStarting = 0; iStarting < totalStarting; iStarting++)
             {
-                AITrain aiTrain = new AITrain(Simulator, inf);
-                aiTrain.AI = this;
-                StartList.InsertTrain(aiTrain);
-                Simulator.StartReference.Add(aiTrain.Number);
+                string trainType = inf.ReadString();
+                if (String.Equals(trainType, "AI"))
+                {
+                    AITrain aiTrain = new AITrain(Simulator, inf);
+                    aiTrain.AI = this;
+                    StartList.InsertTrain(aiTrain);
+                    Simulator.StartReference.Add(aiTrain.Number);
+                }
+                else
+                {
+                    TTTrain aiTrain = new TTTrain(Simulator, inf);
+                    aiTrain.AI = this;
+                    StartList.InsertTrain(aiTrain);
+                    Simulator.StartReference.Add(aiTrain.Number);
+                }
             }
 
             int totalAutoGen = inf.ReadInt32();
 
             for (int iAutoGen = 0; iAutoGen < totalAutoGen; iAutoGen++)
             {
-                AITrain aiTrain = new AITrain(Simulator, inf);
-                aiTrain.AI = this;
-                AutoGenTrains.Add(aiTrain);
-                Simulator.AutoGenDictionary.Add(aiTrain.Number, aiTrain);
+                string trainType = inf.ReadString();
+                if (String.Equals(trainType, "AI"))
+                {
+                    AITrain aiTrain = new AITrain(Simulator, inf);
+                    aiTrain.AI = this;
+                    AutoGenTrains.Add(aiTrain);
+                    Simulator.AutoGenDictionary.Add(aiTrain.Number, aiTrain);
+                }
+                else
+                {
+                    TTTrain aiTrain = new TTTrain(Simulator, inf);
+                    aiTrain.AI = this;
+                    AutoGenTrains.Add(aiTrain);
+                    Simulator.AutoGenDictionary.Add(aiTrain.Number, aiTrain);
+                }
             }
+
             if (Simulator.PlayerLocomotive.Train is AITrain) ((AITrain)Simulator.PlayerLocomotive.Train).AI = this;
         }
 
@@ -195,6 +243,7 @@ namespace ORTS
 
             RemoveTrains();   // remove trains waiting to be removed
             AddTrains();      // add trains waiting to be added
+
             outf.Write(AITrains.Count);
             foreach (AITrain train in AITrains)
             {
@@ -232,7 +281,8 @@ namespace ORTS
             else outf.Write (-1);
         }
 
-        private void PrerunAI(int playerTrainOriginalTrain, Train playerTrain, LoaderProcess loader)
+	// prerun for activity mode
+        private void PrerunAI(LoaderProcess loader)
         {
             float firstAITime = StartList.GetNextTime();
             if (firstAITime > 0 && firstAITime < Simulator.ClockTime)
@@ -255,13 +305,67 @@ namespace ORTS
                     clockTime = runTime;
                     if (loader.Terminated) return; // ping watchdog process
                 }
+            }
+        }
+
+
+        // prerun for timetable mode
+        private void PrerunAI(int playerTrainOriginalTrain, TTTrain.FormCommand playerTrainFormedOfType, Train playerTrain, LoaderProcess loader)
+        {
+            float firstAITime = StartList.GetNextTime();
+            if (firstAITime > 0 && firstAITime < Simulator.ClockTime)
+            {
+                Trace.Write("\n Run AI : " + StartList.Count.ToString() + " ");
+
+                // perform update for AI trains upto actual start time
+
+                clockTime = firstAITime - 1.0f;
+                localTime = true;
+                PreUpdate = true;
+                bool activeTrains = false;
+                for (double runTime = firstAITime; runTime < Simulator.ClockTime; runTime += 5.0) // update with 5 secs interval
+                {
+                    int fullsec = Convert.ToInt32(runTime);
+                    if (fullsec % 3600 < 5) Trace.Write(" " + (fullsec / 3600).ToString("00") + ":00 ");
+
+                    AITTUpdate((float)(runTime - clockTime), PreUpdate, ref activeTrains);
+
+                    if (activeTrains)
+                    {
+                        Simulator.Signals.Update(true);
+                    }
+
+                    clockTime = runTime;
+                    if (loader.Terminated) return; // ping watchdog process
+                }
 
                 // prerun finished - check if train from which player train originates has run and is finished
                 bool delayedrun = false;
                 bool OrgTrainNotStarted = false;
                 AITrain OrgTrain = null;
 
-                if (playerTrainOriginalTrain > 0)
+                // player train is pre-created - check if it exists already
+                if (playerTrainFormedOfType == TTTrain.FormCommand.Created)
+                {
+                    OrgTrain = Simulator.Trains.GetAITrainByNumber(0);
+                    // train exists - set as player train
+                    if (OrgTrain != null)
+                    {
+                        OrgTrain.TrainType = Train.TRAINTYPE.PLAYER;
+                        OrgTrain.MovementState = AITrain.AI_MOVEMENT_STATE.INIT;
+                    }
+                    else
+                    {
+                        Trace.TraceInformation("Player train start delayed as track is not clear");
+                        delayedrun = true;
+
+                        // reset formed state as train can now be started directly
+                        playerTrainOriginalTrain = -1;
+                    }
+                }
+           
+                // player train is formed out of other train
+                else if (playerTrainOriginalTrain > 0)
                 {
                     OrgTrainNotStarted = Simulator.Trains.CheckTrainNotStartedByNumber(playerTrainOriginalTrain);
                     OrgTrain = Simulator.Trains.GetAITrainByNumber(playerTrainOriginalTrain);
@@ -275,27 +379,35 @@ namespace ORTS
                         Trace.TraceInformation("Player train start delayed as incoming train {0} has not yet arrived", OrgTrain.Name);
                         if (OrgTrain.Delay.HasValue)
                         {
-                            Trace.TraceInformation("Estimated delay : {0}", OrgTrain.Delay.Value.ToString());
+                            Trace.TraceInformation("Last Reported delay : {0}", OrgTrain.Delay.Value.ToString());
                         }
                         delayedrun = true;
                     }
                 }
-                else if (playerTrain != null && !playerTrain.InitialTrainPlacement()) // if player train exists but cannot be placed
+                else if (playerTrain != null) // if player train exists but cannot be placed
                 {
-                    delayedrun = true;
-                    Trace.TraceInformation("Player train start delayed as track is not clear");
+                    bool playerHasValidPosition = false;
+                    playerTrain.CalculateInitialTrainPosition(ref playerHasValidPosition);
+
+                    if (!playerHasValidPosition)
+                    {
+                        delayedrun = true;
+                        Trace.TraceInformation("Player train start delayed as track is not clear");
+                    }
                 }
 
                 // continue prerun until player train can be started
                 if (delayedrun)
                 {
+                    bool dummy = true;  // dummy boolead for ActiveTrains
+
                     float deltaTime = 5.0f; // update with 1 sec. interval
                     double runTime = Simulator.ClockTime - (double)deltaTime;
                     bool playerTrainStarted = false;
 
                     while (!playerTrainStarted)
                     {
-                        AIUpdate((float)(runTime - clockTime), PreUpdate);
+                        AITTUpdate((float)(runTime - clockTime), PreUpdate, ref dummy);
                         Simulator.Signals.Update(true);
                         clockTime = runTime;
                         runTime += deltaTime;
@@ -330,7 +442,7 @@ namespace ORTS
                         }
                         else
                         {
-                            playerTrainStarted = playerTrain.InitialTrainPlacement();
+                            playerTrain.CalculateInitialTrainPosition(ref playerTrainStarted);
                         }
                     }
 
@@ -350,12 +462,12 @@ namespace ORTS
         }
 
         /// <summary>
-        /// Updates AI train information.
+        /// Updates AI train information - activity mode
         /// Creates any AI trains that are scheduled to appear.
         /// Moves all active AI trains by calling their Update method.
         /// And finally, removes any AI trains that have reached the end of their path.
         /// </summary>
-        public void Update(float elapsedClockSeconds)
+        public void ActivityUpdate(float elapsedClockSeconds)
         {
             AIUpdate(elapsedClockSeconds, false);
         }
@@ -398,7 +510,106 @@ namespace ORTS
             AddTrains();
         }
 
-        /// <summary>
+        // used in timetable mode
+        public void TimetableUpdate(float elapsedClockSeconds)
+        {
+            bool dummy = true; // dummy for activeTrains boolean
+            AITTUpdate(elapsedClockSeconds, false, ref dummy);
+        }
+
+        public void AITTUpdate(float elapsedClockSeconds, bool preUpdate, ref bool activeTrains)
+        {
+            // update clock
+
+            if (!localTime)
+            {
+                clockTime = Simulator.ClockTime;
+            }
+
+            // check to see if any train to be added
+
+            float nextTrainTime = StartList.GetNextTime();
+            if (nextTrainTime > 0 && nextTrainTime < clockTime)
+            {
+                List<TTTrain> newTrains = StartList.GetTTTrains((float)clockTime);
+
+                foreach (TTTrain thisTrain in newTrains)
+                {
+                    Simulator.StartReference.Remove(thisTrain.Number);
+                    if (thisTrain.TrainType == Train.TRAINTYPE.AI_NOTSTARTED) thisTrain.TrainType = Train.TRAINTYPE.AI;
+                    AddToWorldTT(thisTrain, newTrains);
+                }
+            }
+
+            // check if any active trains
+
+            if (!activeTrains)
+            {
+                foreach (AITrain acttrain in AITrains)
+                {
+                    TTTrain actTTTrain = acttrain as TTTrain;
+                    if (acttrain.MovementState != AITrain.AI_MOVEMENT_STATE.AI_STATIC && acttrain.TrainType != Train.TRAINTYPE.PLAYER)
+                    {
+                        activeTrains = true;
+                        break;
+                    }
+                    else if (acttrain.MovementState == AITrain.AI_MOVEMENT_STATE.AI_STATIC && actTTTrain.ActivateTime < clockTime)
+                    {
+                        activeTrains = true;
+                        break;
+                    }
+                }
+            }
+
+            if (activeTrains)
+            {
+                if (preUpdate)
+                {
+                    float intervalTime = 0.5f;
+
+                    for (float trainUpdateTime = 0; trainUpdateTime < elapsedClockSeconds; trainUpdateTime += intervalTime)
+                    {
+                        clockTime += intervalTime;
+                        foreach (var train in AITrains)
+                        {
+                            if (train.TrainType != Train.TRAINTYPE.PLAYER)
+                            {
+                                if (train.Cars.Count == 0 || train.Cars[0].Train != train)
+                                {
+                                    TrainsToRemove.Add(train);
+                                }
+                                else
+                                {
+                                    train.AIUpdate(intervalTime, clockTime, preUpdate);
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var train in AITrains)
+                    {
+                        if (train.TrainType != Train.TRAINTYPE.PLAYER)
+                        {
+                            if (train.Cars.Count == 0 || train.Cars[0].Train != train)
+                            {
+                                TrainsToRemove.Add(train);
+                            }
+                            else
+                            {
+                                train.AIUpdate(elapsedClockSeconds, clockTime, preUpdate);
+                            }
+                        }
+                    }
+                }
+            }
+
+            RemoveTrains();
+            AddTrains();
+        }
+
+	/// <summary>
         /// Creates an AI train
         /// </summary>
         private AITrain CreateAITrain(Service_Definition sd, Traffic_Traffic_Definition trd)
@@ -477,11 +688,11 @@ namespace ORTS
 
             if (maxVelocityA > 0 && srvFile.Efficiency > 0)
             {
-                if (!Program.Simulator.Settings.EnhancedActCompatibility || Program.Simulator.TimetableMode) 
+                if (!Program.Simulator.Settings.EnhancedActCompatibility)
                     train.TrainMaxSpeedMpS = Math.Min(train.TrainMaxSpeedMpS, maxVelocityA);
-                    // <CScomment> this is overridden if there are station stops
+                // <CScomment> this is overridden if there are station stops
                 else train.TrainMaxSpeedMpS = Math.Min(train.TrainMaxSpeedMpS, maxVelocityA * srvFile.Efficiency);
-                }
+            }
 
             // add wagons
             train.Length = 0.0f;
@@ -605,6 +816,76 @@ namespace ORTS
                 }
             }
             return validPosition;
+#if DEBUG_DEADLOCK
+            File.AppendAllText(@"C:\Temp\deadlock.txt", "Added Train : " + thisTrain.Number.ToString() + " , accepted : " + validPosition.ToString()+"\n");
+
+            foreach (TrackCircuitSection thisSection in Simulator.Signals.TrackCircuitList)
+            {
+                if (thisSection.DeadlockTraps.Count > 0)
+                {
+                    File.AppendAllText(@"C:\Temp\deadlock.txt", "Section : " + thisSection.Index.ToString() + "\n");
+                    foreach (KeyValuePair<int, List<int>> thisDeadlock in thisSection.DeadlockTraps)
+                    {
+                        File.AppendAllText(@"C:\Temp\deadlock.txt", "    Train : " + thisDeadlock.Key.ToString() + "\n");
+                        File.AppendAllText(@"C:\Temp\deadlock.txt", "       With : " + "\n");
+                        foreach (int otherTrain in thisDeadlock.Value)
+                        {
+                            File.AppendAllText(@"C:\Temp\deadlock.txt", "          " + otherTrain.ToString() + "\n");
+                        }
+                    }
+                }
+            }
+#endif
+        }
+
+        private void AddToWorldTT(TTTrain thisTrain, List<TTTrain> nextTrains)
+        {
+            // clear track and align switches - check state
+
+            bool validPosition = true;
+            Train.TCSubpathRoute tempRoute = thisTrain.CalculateInitialTTTrainPosition(ref validPosition, nextTrains);
+
+            if (validPosition)
+            {
+                thisTrain.SetInitialTrainRoute(tempRoute);
+                thisTrain.CalculatePositionOfCars(0);
+                for (int i = 0; i < thisTrain.Cars.Count; i++)
+                    thisTrain.Cars[i].WorldPosition.XNAMatrix.M42 -= 1000;
+                thisTrain.ResetInitialTrainRoute(tempRoute);
+
+                validPosition = thisTrain.PostInit(false); // post init train but do not activate
+            }
+
+            if (validPosition)
+            {
+                thisTrain.actualWaitTimeS = 0; // reset wait counter //
+                AITrains.Add(thisTrain);
+                if (thisTrain.TrainType != Train.TRAINTYPE.INTENDED_PLAYER) Simulator.Trains.Add(thisTrain);
+                if (Simulator.TrainDictionary.ContainsKey(thisTrain.Number)) Simulator.TrainDictionary.Remove(thisTrain.Number); // clear existing entry
+                Simulator.TrainDictionary.Add(thisTrain.Number, thisTrain);
+                if (Simulator.NameDictionary.ContainsKey(thisTrain.Name.ToLower())) Simulator.NameDictionary.Remove(thisTrain.Name.ToLower());
+                Simulator.NameDictionary.Add(thisTrain.Name.ToLower(), thisTrain);
+
+                if (MPManager.IsServer())
+                {
+                    MPManager.BroadCast((new MSGTrain(thisTrain, thisTrain.Number)).ToString());
+                }
+            }
+            else
+            {
+                thisTrain.StartTime += 30;    // try again in half a minute
+                thisTrain.actualWaitTimeS += 30;
+                if (thisTrain.actualWaitTimeS > 900)   // tried for 15 mins
+                {
+                    TimeSpan timeStart = new TimeSpan((long)(Math.Pow(10, 7) * thisTrain.StartTime.Value));
+                    Trace.TraceWarning("Cannot place AI train {0} at time {1}", thisTrain.Name, timeStart.ToString());
+                }
+                else
+                {
+                    StartList.InsertTrain(thisTrain);
+                    Simulator.StartReference.Add(thisTrain.Number);
+                }
+            }
 #if DEBUG_DEADLOCK
             File.AppendAllText(@"C:\Temp\deadlock.txt", "Added Train : " + thisTrain.Number.ToString() + " , accepted : " + validPosition.ToString()+"\n");
 
@@ -755,9 +1036,35 @@ namespace ORTS
             {
                 if (nextNode.Value.StartTime.Value <= reqTime)
                 {
-                    if (nextNode.Value.FormedOf < 0)
+                    itemList.Add(nextNode.Value);
+                    prevNode = nextNode;
+                    nextNode = prevNode.Next;
+                    this.Remove(prevNode);
+                }
+                else
+                {
+                    itemsCollected = true;
+                }
+            }
+            return (itemList);
+        }
+
+        public List<TTTrain> GetTTTrains(float reqTime)
+        {
+            List<TTTrain> itemList = new List<TTTrain>();
+
+            bool itemsCollected = false;
+            LinkedListNode<AITrain> nextNode = this.First;
+            LinkedListNode<AITrain> prevNode;
+
+            while (!itemsCollected && nextNode != null)
+            {
+                if (nextNode.Value.StartTime.Value <= reqTime)
+                {
+                    TTTrain nextTrain = nextNode.Value as TTTrain;
+                    if (nextTrain.FormedOf < 0)
                     {
-                        itemList.Add(nextNode.Value);
+                        itemList.Add(nextTrain);
                         prevNode = nextNode;
                         nextNode = prevNode.Next;
                         this.Remove(prevNode);
@@ -781,14 +1088,14 @@ namespace ORTS
         // Get unstarted train by number and remove it from startlist if required
         //
 
-        public AITrain GetNotStartedTrainByNumber(int reqNumber, bool remove)
+        public TTTrain GetNotStartedTTTrainByNumber(int reqNumber, bool remove)
         {
             LinkedListNode<AITrain> AITrainNode = First;
             while (AITrainNode != null)
             {
                 if (AITrainNode.Value.Number == reqNumber)
                 {
-                    AITrain reqTrain = AITrainNode.Value;
+                    TTTrain reqTrain = AITrainNode.Value as TTTrain;
                     if (remove) Remove(AITrainNode);
                     return (reqTrain);
                 }
@@ -799,5 +1106,30 @@ namespace ORTS
             }
             return (null);
         }
+
+        //================================================================================================//
+        //
+        // Get unstarted train by number and remove it from startlist if required
+        //
+
+        public TTTrain GetNotStartedTTTrainByName(string reqName, bool remove)
+        {
+            LinkedListNode<AITrain> AITrainNode = First;
+            while (AITrainNode != null)
+            {
+                if (String.Equals(AITrainNode.Value.Name.ToLower(), reqName))
+                {
+                    TTTrain reqTrain = AITrainNode.Value as TTTrain;
+                    if (remove) Remove(AITrainNode);
+                    return (reqTrain);
+                }
+                else
+                {
+                    AITrainNode = AITrainNode.Next;
+                }
+            }
+            return (null);
+        }
+
     }
 }

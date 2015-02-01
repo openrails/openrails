@@ -192,10 +192,13 @@ namespace ORTS
             //    kvp.Value.IsLastSwitchUse = true;
         }
 
-        /* Not used. But not removed from file in case it is needed later. Note pathName is currently not saved!
         // restore game state
-        public AIPath(BinaryReader inf)
+        public AIPath(TDBFile TDB, TSectionDatFile tsectiondat, BinaryReader inf)
         {
+            pathName = inf.ReadString();
+            TrackDB = TDB.TrackDB;
+            TSectionDat = tsectiondat;
+
             int n = inf.ReadInt32();
             for (int i = 0; i < n; i++)
                 Nodes.Add(new AIPathNode(inf));
@@ -219,6 +222,7 @@ namespace ORTS
         // save game state
         public void Save(BinaryWriter outf)
         {
+            outf.Write(pathName);
             outf.Write(Nodes.Count);
             for (int i = 0; i < Nodes.Count; i++)
                 Nodes[i].Save(outf);
@@ -236,7 +240,6 @@ namespace ORTS
             else
                 outf.Write(node.Index);
         }
-        */
 
         /// <summary>
         /// returns true if the specified vector node is at the facing point end of
@@ -251,62 +254,6 @@ namespace ORTS
                 return false;
             return true;
         }
-
-#if !NEW_SIGNALLING
-        /// <summary>
-        /// finds the first path node after start that refers to the specified track node.
-        /// </summary>
-        public static AIPathNode FindTrackNode(AIPathNode start, int trackNodeIndex)
-        {
-            for (AIPathNode node = start; node != null; node = node.NextMainNode)
-            {
-                if (node.NextMainTVNIndex == trackNodeIndex || node.NextSidingTVNIndex == trackNodeIndex)
-                    return node;
-                for (AIPathNode node1 = node.NextSidingNode; node1 != null; node1 = node1.NextSidingNode)
-                    if (node1.NextMainTVNIndex == trackNodeIndex || node1.NextSidingTVNIndex == trackNodeIndex)
-                        return node1;
-            }
-            return null;
-        }
-#endif
-
-        /* not used.
-        // TODO. This routine is also present in Sound.cs. That routine should perhaps be replaced by this one
-        public AIPathNode PrevNode(AIPathNode node)
-        {
-            AIPathNode previousNode = null;
-            AIPathNode currentNode = FirstNode;
-            while (currentNode != null && currentNode != node)
-            {
-                previousNode = currentNode;
-                currentNode = currentNode.NextSidingNode == null ? currentNode.NextMainNode : currentNode.NextSidingNode;
-            }
-            if (currentNode == node)
-                return previousNode;
-            else
-                return null;
-        }
-        */
-
-        /* not used
-        public void SetVisitedNode(AIPathNode node, int curNodeIndex)
-        {
-            if (LastVisitedNode == node)
-                LastVisitedNode.IsVisited = true;
-
-            LastVisitedNode = FindTrackNode(LastVisitedNode, curNodeIndex);
-            
-            if (LastVisitedNode != null)
-            {
-                if (LastVisitedNode.NextMainNode != null &&
-                    LastVisitedNode.NextMainTVNIndex == LastVisitedNode.NextMainNode.NextMainTVNIndex)
-                    LastVisitedNode = LastVisitedNode.NextMainNode;
-                else if (LastVisitedNode.NextSidingNode != null &&
-                    LastVisitedNode.NextSidingTVNIndex == LastVisitedNode.NextSidingNode.NextSidingTVNIndex)
-                    LastVisitedNode = LastVisitedNode.NextSidingNode;
-            }
-        }
-        */
     }
 
     public class AIPathNode
@@ -435,7 +382,6 @@ namespace ORTS
         }
 
 
-        /* not used, but not removed in case it is needed later
         // restore game state
         public AIPathNode(BinaryReader inf)
         {
@@ -449,7 +395,6 @@ namespace ORTS
             NextSidingTVNIndex = inf.ReadInt32();
             JunctionIndex = inf.ReadInt32();
             IsFacingPoint = inf.ReadBoolean();
-            //IsLastSwitchUse = inf.ReadBoolean();
             Location = new WorldLocation();
             Location.TileX = inf.ReadInt32();
             Location.TileZ = inf.ReadInt32();
@@ -471,14 +416,12 @@ namespace ORTS
             outf.Write(NextSidingTVNIndex);
             outf.Write(JunctionIndex);
             outf.Write(IsFacingPoint);
-            //outf.Write(IsLastSwitchUse);
             outf.Write(Location.TileX);
             outf.Write(Location.TileZ);
             outf.Write(Location.Location.X);
             outf.Write(Location.Location.Y);
             outf.Write(Location.Location.Z);
         }
-        */
 
         /// <summary>
         /// Returns the index of the vector node connection this path node to the (given) nextNode.

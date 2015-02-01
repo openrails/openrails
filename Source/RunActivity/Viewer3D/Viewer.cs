@@ -997,6 +997,15 @@ namespace ORTS.Viewer3D
             Simulator.Confirmer.Confirm(CabControl.ChangeCab, CabSetting.On);
         }
 
+        // change reference to player train when switching train in Timetable mode
+        public void ChangeTrain(Train oldTrain, Train newTrain)
+        {
+            if (SelectedTrain == oldTrain)
+            {
+                SelectedTrain = newTrain;
+            }
+        }
+
         [CallOnThread("Loader")]
         public void Mark()
         {

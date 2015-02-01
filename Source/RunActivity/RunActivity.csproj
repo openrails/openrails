@@ -188,6 +188,7 @@
     <Compile Include="Simulator\Simulator.cs" />
     <Compile Include="Simulator\Traveller.cs" />
     <Compile Include="Timetable\ProcessTimetable.cs" />
+    <Compile Include="Timetable\TTTrain.cs" />
     <Compile Include="Viewer3D\ALSoundHelper.cs" />
     <Compile Include="Viewer3D\Cameras.cs" />
     <Compile Include="Viewer3D\CommandLog.cs" />

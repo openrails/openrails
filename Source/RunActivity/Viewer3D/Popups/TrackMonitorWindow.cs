@@ -81,6 +81,7 @@ namespace ORTS.Viewer3D.Popups
 			    { Train.TRAIN_CONTROL.MANUAL, Viewer.Catalog.GetString("Manual") },
                 { Train.TRAIN_CONTROL.EXPLORER, Viewer.Catalog.GetString("Explorer") },
 			    { Train.TRAIN_CONTROL.OUT_OF_CONTROL, Viewer.Catalog.GetString("OutOfControl : ") },
+                { Train.TRAIN_CONTROL.INACTIVE, Viewer.Catalog.GetString("Inactive") },
 			    { Train.TRAIN_CONTROL.UNDEFINED, Viewer.Catalog.GetString("Unknown") },
 		    };
         }
