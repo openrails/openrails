@@ -990,6 +990,25 @@ namespace ORTS.Viewer3D
         }
     }
 
+    // Compound Valve command
+
+    public class ToggleCylinderCompoundCommand : Command {
+        public static MSTSSteamLocomotive Receiver { get; set; }
+
+        public ToggleCylinderCompoundCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver == null) return;
+            Receiver.ToggleCylinderCompound();
+            // Report();
+        }
+    }
+
     // Other
     [Serializable()]
     public class ChangeCabCommand : Command {

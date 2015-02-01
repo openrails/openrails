@@ -412,6 +412,7 @@ namespace ORTS.Viewer3D
                 ContinuousFiringRateCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
                 ToggleManualFiringCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
                 ToggleCylinderCocksCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ToggleCylinderCompoundCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
                 FireShovelfullCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
             }
             if (PlayerLocomotive is MSTSElectricLocomotive)

@@ -1561,6 +1561,7 @@ namespace ORTS.Viewer3D.RollingStock
                 case CABViewControlTypes.EMERGENCY_BRAKE:
                 case CABViewControlTypes.DOORS_DISPLAY:
                 case CABViewControlTypes.CYL_COCKS:
+                case CABViewControlTypes.ORTS_CYL_COMP:
                 case CABViewControlTypes.STEAM_INJ1:
                 case CABViewControlTypes.STEAM_INJ2:
                 case CABViewControlTypes.SMALL_EJECTOR:
@@ -1622,6 +1623,7 @@ namespace ORTS.Viewer3D.RollingStock
                 case CABViewControlTypes.WATER_INJECTOR1: (Locomotive as MSTSSteamLocomotive).SetInjector1Value(ChangedValue((Locomotive as MSTSSteamLocomotive).Injector1Controller.IntermediateValue)); break;
                 case CABViewControlTypes.WATER_INJECTOR2: (Locomotive as MSTSSteamLocomotive).SetInjector2Value(ChangedValue((Locomotive as MSTSSteamLocomotive).Injector2Controller.IntermediateValue)); break;
                 case CABViewControlTypes.CYL_COCKS: if (((Locomotive as MSTSSteamLocomotive).CylinderCocksAreOpen ? 1 : 0) != ChangedValue((Locomotive as MSTSSteamLocomotive).CylinderCocksAreOpen ? 1 : 0)) new ToggleCylinderCocksCommand(Viewer.Log); break;
+                case CABViewControlTypes.ORTS_CYL_COMP: if (((Locomotive as MSTSSteamLocomotive).CylinderCompoundOn ? 1 : 0) != ChangedValue((Locomotive as MSTSSteamLocomotive).CylinderCompoundOn ? 1 : 0)) new ToggleCylinderCompoundCommand(Viewer.Log); break;
                 case CABViewControlTypes.STEAM_INJ1: if (((Locomotive as MSTSSteamLocomotive).Injector1IsOn ? 1 : 0) != ChangedValue((Locomotive as MSTSSteamLocomotive).Injector1IsOn ? 1 : 0)) new ToggleInjectorCommand(Viewer.Log, 1); break;
                 case CABViewControlTypes.STEAM_INJ2: if (((Locomotive as MSTSSteamLocomotive).Injector2IsOn ? 1 : 0) != ChangedValue((Locomotive as MSTSSteamLocomotive).Injector2IsOn ? 1 : 0)) new ToggleInjectorCommand(Viewer.Log, 2); break;
                 case CABViewControlTypes.SMALL_EJECTOR: break; // TODO: Unimplemented

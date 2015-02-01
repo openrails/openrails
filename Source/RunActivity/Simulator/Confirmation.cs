@@ -57,6 +57,7 @@ namespace ORTS {
       , FiringIsManual
       , FireShovelfull
       , CylinderCocks
+      , CylinderCompound
       , TenderCoal
       , TenderWater
       // Braking
@@ -159,6 +160,7 @@ namespace ORTS {
                 , new string [] { GetString("Manual Firing"), GetString("off"), null, GetString("on") } 
                 , new string [] { GetString("Fire"), null, null, GetString("add shovel-full") } 
                 , new string [] { GetString("Cylinder Cocks"), GetString("close"), null, GetString("open") } 
+                , new string [] { GetString("Cylinder Compound"), GetString("close"), null, GetString("open") } 
                 , new string [] { GetString("Tender"), null, null, GetString("Coal re-filled"), null, GetString("Coal level") } 
                 , new string [] { GetString("Tender"), null, null, GetString("Water re-filled"), null, GetString("Water level") } 
                 // Braking

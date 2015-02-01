@@ -276,6 +276,7 @@ namespace ORTS.Viewer3D
                             Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).BlowerSteamUsageLBpS.ToString("F0"));
                             Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).BoilerPressurePSI.ToString("F0"));
                             Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).CylinderCocksAreOpen.ToString());
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).CylinderCompoundOn.ToString());
                             Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).EvaporationLBpS.ToString("F0"));
                             Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).FireMassKG.ToString("F0"));
                             Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).CylinderSteamUsageLBpS.ToString("F0"));

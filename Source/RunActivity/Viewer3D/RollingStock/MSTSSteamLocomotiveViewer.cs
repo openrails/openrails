@@ -124,6 +124,7 @@ namespace ORTS.Viewer3D.RollingStock
             UserInputCommands.Add(UserCommands.ControlFiringRateDecrease, new Action[] { () => SteamLocomotive.StopFiringRateDecrease(), () => SteamLocomotive.StartFiringRateDecrease(null) });
             UserInputCommands.Add(UserCommands.ControlFireShovelFull, new Action[] { Noop, () => new FireShovelfullCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommands.ControlCylinderCocks, new Action[] { Noop, () => new ToggleCylinderCocksCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommands.ControlCylinderCompound, new Action[] { Noop, () => new ToggleCylinderCompoundCommand(Viewer.Log) });
             base.InitializeUserInputCommands();
         }
 

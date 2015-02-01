@@ -187,6 +187,7 @@ namespace ORTS.Settings
         [GetString("Control Firing Rate Decrease")] ControlFiringRateDecrease,
         [GetString("Control Fire Shovel Full")] ControlFireShovelFull,
         [GetString("Control Cylinder Cocks")] ControlCylinderCocks,
+        [GetString("Control Cylinder Compound")] ControlCylinderCompound,
         [GetString("Control Firing")] ControlFiring,
         [GetString("Control Refill")] ControlRefill,
     }
@@ -500,6 +501,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommands.ControlBrakeHoseConnect] = new UserCommandKeyInput(0x2B);
             Commands[(int)UserCommands.ControlBrakeHoseDisconnect] = new UserCommandKeyInput(0x2B, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlCylinderCocks] = new UserCommandKeyInput(0x2E);
+            Commands[(int)UserCommands.ControlCylinderCompound] = new UserCommandKeyInput(0x24);
             Commands[(int)UserCommands.ControlDamperDecrease] = new UserCommandKeyInput(0x32, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlDamperIncrease] = new UserCommandKeyInput(0x32);
             Commands[(int)UserCommands.ControlDieselHelper] = new UserCommandKeyInput(0x15, KeyModifiers.Shift);

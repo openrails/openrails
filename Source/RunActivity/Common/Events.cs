@@ -38,6 +38,7 @@ namespace ORTS
         CrossingClosing,
         CrossingOpening,
         CylinderCocksToggle,
+        CylinderCompoundToggle,
         DamperChange,
         Derail1, // NOTE: Currently not used in Open Rails.
         Derail2, // NOTE: Currently not used in Open Rails.
@@ -256,6 +257,7 @@ namespace ORTS
                         case 116: return Event.TrainControlSystemWarning2;
                         case 117: return Event.TrainControlSystemAlert1;
                         case 118: return Event.TrainControlSystemAlert2;
+                        case 119: return Event.CylinderCompoundToggle; // Locomotive switched to compound
                         
                         case 121: return Event.SteamPulse1;
                         case 122: return Event.SteamPulse2;

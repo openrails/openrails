@@ -63,6 +63,7 @@ namespace ORTS
         public bool Injector1IsOn;
         public bool Injector2IsOn;
         public bool CylinderCocksAreOpen;
+        public bool CylinderCompoundOn;
         bool FiringIsManual;
         bool BlowerIsOn = false;
         bool BoilerIsPriming = false;
@@ -1992,8 +1993,9 @@ namespace ORTS
  //           MeanPressureStrokePSI = InitialPressurePSI * (cutoff + ((cutoff + CylinderClearancePC) * (float)Math.Log(RatioOfExpansion)));//
             // mean pressure during stroke = ((absolute mean pressure + (clearance + cylstroke)) - (initial pressure + clearance)) / cylstroke
            // Mean effective pressure = cylpressure - backpressure
-        
-            
+
+        //    Trace.TraceInformation("Cyl Compound {0}", CylinderCompoundOn);
+
             // Cylinder pressure also reduced by steam vented through cylinder cocks.
             CylCockPressReduceFactor = 1.0f;
 
@@ -2707,6 +2709,9 @@ namespace ORTS
                 case CABViewControlTypes.CYL_COCKS:
                     data = CylinderCocksAreOpen ? 1 : 0;
                     break;
+                case CABViewControlTypes.ORTS_CYL_COMP:
+                    data = CylinderCompoundOn ? 1 : 0;
+                    break;
                 case CABViewControlTypes.BLOWER:
                     data = BlowerController.CurrentValue;
                     break;
@@ -3414,6 +3419,14 @@ namespace ORTS
             SignalEvent(Event.CylinderCocksToggle);
             if (IsPlayerTrain) 
                 Simulator.Confirmer.Confirm(CabControl.CylinderCocks, CylinderCocksAreOpen ? CabSetting.On : CabSetting.Off);
+        }
+
+        public void ToggleCylinderCompound()
+        {
+            CylinderCompoundOn = !CylinderCompoundOn;
+            SignalEvent(Event.CylinderCompoundToggle);
+            if (IsPlayerTrain)
+                Simulator.Confirmer.Confirm(CabControl.CylinderCompound, CylinderCompoundOn ? CabSetting.On : CabSetting.Off);
         }
 
         public void ToggleInjector1()
