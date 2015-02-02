@@ -501,7 +501,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommands.ControlBrakeHoseConnect] = new UserCommandKeyInput(0x2B);
             Commands[(int)UserCommands.ControlBrakeHoseDisconnect] = new UserCommandKeyInput(0x2B, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlCylinderCocks] = new UserCommandKeyInput(0x2E);
-            Commands[(int)UserCommands.ControlCylinderCompound] = new UserCommandKeyInput(0x24);
+            Commands[(int)UserCommands.ControlCylinderCompound] = new UserCommandKeyInput(0x19);
             Commands[(int)UserCommands.ControlDamperDecrease] = new UserCommandKeyInput(0x32, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlDamperIncrease] = new UserCommandKeyInput(0x32);
             Commands[(int)UserCommands.ControlDieselHelper] = new UserCommandKeyInput(0x15, KeyModifiers.Shift);

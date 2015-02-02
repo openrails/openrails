@@ -75,15 +75,20 @@ namespace ORTS
         bool StokerIsMechanical = false;
         bool HotStart; // Determine whether locomotive is started in hot or cold state - selectable option in Options TAB
         bool BoilerHeat = false;
-        bool HasSuperheater = false;
+        bool HasSuperheater = false;  // Flag to indicate whether locomotive is superheated steam type
+        bool IsSaturated = false;     // Flag to indicate locomotive is saturated steam type
         bool safety2IsOn = false; // Safety valve #2 is on and opertaing
         bool safety3IsOn = false; // Safety valve #3 is on and opertaing
         bool safety4IsOn = false; // Safety valve #4 is on and opertaing
         bool IsGearedSteamLoco = false; // Indicates that it is a geared locomotive
+        bool IsSimpleLoco = false;      // Indicates that it is a simple locomotive
+        bool IsCompoundLoco = false;    // Indicates that it is a compound locomotive
         bool IsFixGeared = false;
         bool IsSelectGeared = false; 
         bool IsLocoSlip = false; 	// locomotive is slipping
-
+        
+        string SteamLocoType = "Not defined (assume simple)";     // Type of steam locomotive type
+        
         float PulseTracker;
         int NextPulse = 1;
 
@@ -132,8 +137,10 @@ namespace ORTS
         float MaxBoilerPressurePSI = 180f;  // maximum boiler pressure, safety valve setting
         float BoilerVolumeFT3;      // total space in boiler that can hold water and steam
         int NumCylinders = 2;
-        float CylinderStrokeM;
-        float CylinderDiameterM;
+        float CylinderStrokeM;      // High pressure cylinders
+        float CylinderDiameterM;    // High pressure cylinders
+        float LPCylinderStrokeM;      // Low pressure cylinders
+        float LPCylinderDiameterM;    // Low pressure cylinders
         float MaxBoilerOutputLBpH;  // maximum boiler steam generation rate
         float IdealFireMassKG;      // Target fire mass
         float MaxFireMassKG;        // Max possible fire mass
@@ -391,7 +398,7 @@ namespace ORTS
         float MotiveForceGearRatio; // mulitplication factor to be used in calculating motive force etc, when a geared locomotive.
         float SteamGearPosition = 0.0f; // Position of Gears if set
         
-
+        float CalculatedFactorofAdhesion; // Calculated factor of adhesion
        float TangentialCrankWheelForceLbf; 		// Tangential force on wheel
        float StaticWheelFrictionForceLbf; 		// Static force on wheel due to adhesion	
        float PistonForceLbf;    // Max force exerted by piston.
@@ -468,6 +475,8 @@ namespace ORTS
 	            case "engine(numcylinders": NumCylinders = stf.ReadIntBlock(null); break;
                 case "engine(cylinderstroke": CylinderStrokeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(cylinderdiameter": CylinderDiameterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "engine(lpcylinderstroke": LPCylinderStrokeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "engine(lpcylinderdiameter": LPCylinderDiameterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(ortscylinderexhaustopen": CylinderExhaustOpenFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortscylinderportopening": CylinderPortOpeningFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(boilervolume": BoilerVolumeFT3 = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null); break;
@@ -505,11 +514,24 @@ namespace ORTS
                     stf.SkipRestOfBlock();
                     break;
                 case "engine(ortssteammaxgearpistonrate": MaxSteamGearPistonRateFtpM = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                case "engine(ortssteamgeartype":
+                case "engine(ortssteamlocomotivetype":
                     stf.MustMatch("(");
                     string typeString = stf.ReadString();
-                    IsFixGeared = String.Compare(typeString, "Fixed") == 0;
-                    IsSelectGeared = String.Compare(typeString, "Select") == 0;
+                    IsSimpleLoco = String.Compare(typeString, "Simple") == 0;
+                    IsGearedSteamLoco = String.Compare(typeString, "Geared") == 0;
+                    IsCompoundLoco = String.Compare(typeString, "Compound") == 0;
+                    break;
+                case "engine(ortssteamboilertype":
+                    stf.MustMatch("(");
+                    string typeString1 = stf.ReadString();
+                    IsSaturated = String.Compare(typeString1, "Saturated") == 0;
+                    HasSuperheater = String.Compare(typeString1, "Superheated") == 0;
+                    break;    
+                case "engine(ortssteamgeartype":
+                    stf.MustMatch("(");
+                    string typeString2 = stf.ReadString();
+                    IsFixGeared = String.Compare(typeString2, "Fixed") == 0;
+                    IsSelectGeared = String.Compare(typeString2, "Select") == 0;
                     break;
                 default: base.Parse(lowercasetoken, stf); break;
             }
@@ -529,6 +551,8 @@ namespace ORTS
             NumCylinders = locoCopy.NumCylinders;
             CylinderStrokeM = locoCopy.CylinderStrokeM;
             CylinderDiameterM = locoCopy.CylinderDiameterM;
+            LPCylinderStrokeM = locoCopy.LPCylinderStrokeM;
+            LPCylinderDiameterM = locoCopy.LPCylinderDiameterM;
             CylinderExhaustOpenFactor = locoCopy.CylinderExhaustOpenFactor;
             CylinderPortOpeningFactor = locoCopy.CylinderPortOpeningFactor;
             BoilerVolumeFT3 = locoCopy.BoilerVolumeFT3;
@@ -561,6 +585,13 @@ namespace ORTS
             SteamGearRatioLow = locoCopy.SteamGearRatioLow;
             SteamGearRatioHigh = locoCopy.SteamGearRatioHigh;
             MaxSteamGearPistonRateFtpM = locoCopy.MaxSteamGearPistonRateFtpM;
+            IsSimpleLoco = locoCopy.IsSimpleLoco;
+            IsGearedSteamLoco = locoCopy.IsGearedSteamLoco;
+            IsCompoundLoco = locoCopy.IsCompoundLoco;
+            IsSaturated = locoCopy.IsSaturated;
+            HasSuperheater = locoCopy.HasSuperheater;
+            IsFixGeared = locoCopy.IsFixGeared;
+            IsSelectGeared = locoCopy.IsSelectGeared;
         }
 
         /// <summary>
@@ -578,7 +609,6 @@ namespace ORTS
             outf.Write(BoilerMassLB);
             outf.Write(BoilerPressurePSI);
             outf.Write(WaterTempNewK);
-            outf.Write(WaterFraction);
             outf.Write(EvaporationLBpS);
             outf.Write(FireMassKG);
             outf.Write(FlueTempK);
@@ -614,7 +644,6 @@ namespace ORTS
             FireMassKG = inf.ReadSingle();
             FlueTempK = inf.ReadSingle();
             SteamGearPosition = inf.ReadSingle();
-            WaterFraction = inf.ReadSingle();
             ControllerFactory.Restore(CutoffController, inf);
             ControllerFactory.Restore(Injector1Controller, inf);
             ControllerFactory.Restore(Injector2Controller, inf);
@@ -641,8 +670,8 @@ namespace ORTS
                 MaxBoilerPressurePSI = 1;
             if (ZeroError(BoilerVolumeFT3, "BoilerVolume"))
                 BoilerVolumeFT3 = 1;
-
-            #region Initialise additional steam properties
+            
+        #region Initialise additional steam properties
 
             SteamDensityPSItoLBpFT3 = SteamTable.SteamDensityInterpolatorPSItoLBpFT3();
             WaterDensityPSItoLBpFT3 = SteamTable.WaterDensityInterpolatorPSItoLBpFT3();
@@ -696,6 +725,49 @@ namespace ORTS
             {
                 NewBurnRateSteamToCoalLbspH = SteamTable.NewBurnRateSteamToCoalLbspH();
                 Trace.TraceInformation("BurnRateSteamToCoalLbspH - default information read from SteamTables");
+            }
+
+           // Confirm locomotive and boiler type
+            
+            if (IsCompoundLoco)
+            {
+            SteamLocoType ="Compound locomotive";
+            }
+            else if (IsGearedSteamLoco)
+            {
+            if (IsFixGeared)
+              {
+              SteamLocoType ="Fixed Geared locomotive";
+              }
+            else if (IsSelectGeared)
+                  {
+                  SteamLocoType ="Selectable Geared locomotive";
+                  }
+            else
+                {
+                    SteamLocoType = "Unknown Geared locomotive";
+                }
+            }
+            else if (IsSimpleLoco)
+            {
+            SteamLocoType ="Simple locomotive";   // Assume simple type of locomotive if no type defined.
+            }
+   //         else if (!IsCompoundLoco && !IsGearedSteamLoco && !IsSimpleLoco)
+   //         {
+   //         SteamLocoType ="Not defined, assumed Simple locomotive";
+    //        }
+            
+            if (HasSuperheater)
+            {
+            SteamLocoType +=" + Superheater";
+            }
+            else if (IsSaturated)
+            {
+            SteamLocoType +=" + Saturated";
+            }
+            else
+            {
+            SteamLocoType +=" + Not defined (assumed saturated)";
             }
 
             InitializeTenderWithCoal();
@@ -937,6 +1009,10 @@ namespace ORTS
                 DrvWheelWeightKg = Kg.FromLb(FactorofAdhesion * MaxTractiveEffortLbf); // calculate Drive wheel weight if not in ENG file
             }
 
+            // Calculate factor of adhesion for display purposes
+            
+            CalculatedFactorofAdhesion = Kg.ToLb(DrvWheelWeightKg) / MaxTractiveEffortLbf;
+            
             // Calculate "critical" speed of locomotive to determine limit of max IHP
             CriticalSpeedTractiveEffortLbf = (MaxTractiveEffortLbf * CylinderEfficiencyRate) * SpeedFactor;
 
@@ -2785,6 +2861,9 @@ namespace ORTS
             status.AppendFormat("\n\n\t\t === Key Inputs === \t\t{0:N0} lb/h\n",
             pS.TopH(EvaporationLBpS));
 
+            status.AppendFormat("Locomotive Type:\t\t{0}\n",
+                SteamLocoType); 
+
             status.AppendFormat("Input:\tEvap\t{0:N0} ft^2\tGrate\t{1:N0} ft^2\tBoil.\t{2:N0} ft^3\tSup\t{3:N0} ft^2\tFuel Cal.\t{4:N0} btu/lb\n",
                 Me2.ToFt2(EvaporationAreaM2),
                 Me2.ToFt2(GrateAreaM2),
@@ -2796,7 +2875,7 @@ namespace ORTS
                 CylinderEfficiencyRate,
                 CylinderExhaustOpenFactor,
                 CylinderPortOpeningFactor);
-
+            
             status.AppendFormat("\n\t\t === Steam Production === \t\t{0:N0} lb/h\n",
             pS.TopH(EvaporationLBpS));
 
@@ -2806,19 +2885,15 @@ namespace ORTS
                 MaxBoilerOutputLBpH,
                 BoilerEfficiencyGrateAreaLBpFT2toX[(pS.TopH(Kg.ToLb(FuelBurnRateKGpS)) / Me2.ToFt2(GrateAreaM2))]);
 
-            status.AppendFormat("Heat:\tIn\t{0:N0} btu\tOut\t{1:N0} btu\tSteam\t{2:N0} btu/lb\t\tWater\t{3:N0} btu/lb\tand\t{4:N0} btu/ft^3\t\tHeat\t{5:N0} btu\t\tMax\t{6:N0} btu\n",
+            status.AppendFormat("Heat:\tIn\t{0:N0} btu\tOut\t{1:N0} btu\t\tHeat\t{2:N0} btu\t\tMax\t{3:N0} btu\n",
                 BoilerHeatInBTUpS,
                 PreviousBoilerHeatOutBTUpS,
-                BoilerSteamHeatBTUpLB,
-                BoilerWaterHeatBTUpLB,
-                WaterHeatBTUpFT3,
                 BoilerHeatSmoothBTU.Value,
                 MaxBoilerHeatBTU);
 
-            status.AppendFormat("Temp.:\tFlue\t{0:N0} F\tWater\t{1:N0} F\tS Ratio\t{2:N2}\t\tMaxSuper\t{3:N0} F\t\tCurSuper\t{4:N0} F\tSup Fact\t{5:N2}\n",
+            status.AppendFormat("Temp.:\tFlue\t{0:N0} F\tWater\t{1:N0} F\t\tMaxSuper\t{2:N0} F\t\tCurSuper\t{3:N0} F\tSup Fact\t{4:N2}\n",
                 C.ToF(C.FromK(FlueTempK)),
                 C.ToF(C.FromK(BoilerWaterTempK)),
-                SuperheatVolumeRatio,
                 SuperheatRefTempF,
                 CurrentSuperheatTeampF,
                 SuperheaterSteamUsageFactor);
@@ -2826,7 +2901,7 @@ namespace ORTS
             status.AppendFormat("\n\t\t === Steam Usage === \t\t{0:N0} lb/h\n",
                 pS.TopH(PreviousTotalSteamUsageLBpS));
 
-            status.AppendFormat("Usage.:\tCyl.\t{0:N0} lb/h\tBlower\t{1:N0} lb/h\tRad.\t{2:N0} lb/h\tComp.\t{3:N0} lb/h\tSafety\t{4:N0} lb/h\tCock\t{5:N0} lb/h\tGen.\t{6:N0} lb/h\tStoke\t{7:N0} lb/h\n",
+            status.AppendFormat("Usage.:\tCyl.\t{0:N0} lb/h\tBlower\t{1:N0} lb/h\tRad.\t{2:N0} lb/h\tComp.\t{3:N0} lb/h\tSafety\t{4:N0} lb/h\tCock\t{5:N0} lb/h\tGen.\t{6:N0} lb/h\tStoke\t{7:N0} lb/h\tMax Safe\t{8:N0} lb/h ({9} x {10:N1})\n",
             pS.TopH(CylinderSteamUsageLBpS),
             pS.TopH(BlowerSteamUsageLBpS),
             pS.TopH(RadiationSteamLossLBpS),
@@ -2834,9 +2909,12 @@ namespace ORTS
             pS.TopH(SafetyValveUsageLBpS),
             pS.TopH(CylCockSteamUsageLBpS),
             pS.TopH(GeneratorSteamUsageLBpS),
-            pS.TopH(StokerSteamUsageLBpS));
+            pS.TopH(StokerSteamUsageLBpS),
+            pS.TopH(MaxSafetyValveDischargeLbspS),
+            NumSafetyValves,
+            SafetyValveSizeIn);
 
-            status.AppendFormat("Press.:\tChest\t{0:N0} psi\tInit\t{1:N0} apsi\tCutoff\t{2:N0} apsi\tExhaust\t{3:N0} apsi\tBack\t{4:N0} apsi\tPreComp\t{5:N0} apsi\tPreAdm\t{6:N0} apsi\tMEP\t{7:N0} apsi\tMax Safe\t{8:N0} lb/h ({9} x {10:N1})\n",
+            status.AppendFormat("Press.:\tChest\t{0:N0} psi\tInit\t{1:N0} apsi\tCutoff\t{2:N0} apsi\tExhaust\t{3:N0} apsi\tBack\t{4:N0} apsi\tPreComp\t{5:N0} apsi\tPreAdm\t{6:N0} apsi\tMEP\t{7:N0} apsi\n",
             SteamChestPressurePSI,
             InitialPressureAtmPSI,
             CutoffPressureAtmPSI,
@@ -2844,18 +2922,13 @@ namespace ORTS
             BackPressureAtmPSI,
             CylinderPreCompressionPressureAtmPSI,
             CylinderPreAdmissionPressureAtmPSI,
-            MeanEffectivePressurePSI,
-            pS.TopH(MaxSafetyValveDischargeLbspS),
-            NumSafetyValves,
-            SafetyValveSizeIn);
+            MeanEffectivePressurePSI);
 
-           status.AppendFormat("Status.:\tSafety\t{0}\tPlug\t{1}\tPrime\t{2}\tBoil. Heat\t{3}\tSuper\t{4}\tGear\t{5}\n",
+           status.AppendFormat("Status.:\tSafety\t{0}\tPlug\t{1}\tPrime\t{2}\tBoil. Heat\t{3}\n",
                 SafetyIsOn,
                 FusiblePlugIsBlown,
                 BoilerIsPriming,
-                BoilerHeat,
-                HasSuperheater,
-                IsGearedSteamLoco);
+                BoilerHeat);
 
             status.AppendFormat("\n\t\t === Fireman === \n");
             status.AppendFormat("Fire:\tIdeal\t{0:N0} lb\t\tFire\t{1:N0} lb\t\tMax Fire\t{2:N0} lb/h\t\tFuel\t{3:N0} lb/h\t\tBurn\t{4:N0} lb/h\t\tComb\t{5:N1} lbs/ft2\n",
@@ -2894,7 +2967,7 @@ namespace ORTS
                 IndicatedHorsePowerHP,
                 DrawbarHorsePowerHP);
 
-            status.AppendFormat("Force:\tTheo. TE\t{0:N0}\tStart TE\t{1:N0} lbf\tTE\t{2:N0} lbf\tDraw\t{3:N0} lbf\tCritic\t{4:N0} lbf\tCrit Speed {5:N1} mph\n",
+            status.AppendFormat("Force:\tTheo. TE\t{0:N0} lbf\tStart TE\t{1:N0} lbf\tTE\t{2:N0} lbf\tDraw\t{3:N0} lbf\tCritic\t{4:N0} lbf\tCrit Speed {5:N1} mph\n",
                 MaxTractiveEffortLbf,
                 N.ToLbf(StartTractiveEffortN),
                 DisplayTractiveEffortLbsF,
@@ -2909,14 +2982,15 @@ namespace ORTS
                 MotiveForceGearRatio);
 
  	status.AppendFormat("\n\t\t\t === Experimental - Slip Monitor === \n");
-    status.AppendFormat("Slip:\tPiston\t{0:N0}\tTang(c)\t{1:N0}lbf\tTang(t)\t{2:N0}lbf\tStatic\t{3:N0}lbf\tCoeff\t{4:N2}\tSlip\t{5}\tWhWght \t{6:N0} lbs\n",
+    status.AppendFormat("Slip:\tPiston\t{0:N0} lbf\tTang(c)\t{1:N0}lbf\tTang(t)\t{2:N0}lbf\tStatic\t{3:N0}lbf\tCoeff\t{4:N2}\tSlip\t{5}\tWhWght \t{6:N0} lbs\t\tFoA {7:N1}\n",
                 PistonForceLbf,
                 TangentialCrankWheelForceLbf,
                 TangentialWheelTreadForceLbf,
                 StaticWheelFrictionForceLbf,
                 FrictionCoeff,
                 IsLocoSlip,
-               WheelWeightLbs);
+               WheelWeightLbs,
+               CalculatedFactorofAdhesion);
 
             return status.ToString();
         }
