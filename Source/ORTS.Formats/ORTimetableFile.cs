@@ -139,7 +139,7 @@ namespace ORTS.Formats
 
                 if (!pathFound)
                 {
-                    if (String.Compare(Parts[0], "#path", true) == 0)
+                    if (String.Compare(Parts[0].Trim().Substring(0,5), "#path", true) == 0)
                     {
                         pathFound = true;
                         foreach (TTTrainPreInfo train in Trains)
@@ -179,27 +179,72 @@ namespace ORTS.Formats
         }
 
 
-        private string ExtractConsist(string consistString, out bool reverse)
+        private string ExtractConsist(string consistDef, out bool reverse)
         {
             bool isReverse = false;
 
-            string reqString = String.Copy(consistString);
-            if (consistString.Contains("+"))
+            string reqString = String.Copy(consistDef);
+            string consistProc = String.Copy(consistDef).Trim();
+
+            if (consistProc.Substring(0, 1).Equals("<"))
             {
-                reqString = consistString.Split('+')[0];
+                int endIndex = consistProc.IndexOf('>');
+                if (endIndex < 0)
+                {
+                    reqString = consistProc.Substring(1);
+                    consistProc = String.Empty;
+                }
+                else
+                {
+                    reqString = consistProc.Substring(1, endIndex - 1);
+                    consistProc = consistProc.Substring(endIndex + 1).Trim();
+                }
+            }
+            else
+            {
+                int plusIndex = consistProc.IndexOf('+');
+                if (plusIndex > 0)
+                {
+                    reqString = consistProc.Substring(0, plusIndex - 1);
+
+                    int sepIndex = consistDef.IndexOf('$');
+                    if (sepIndex > 0)
+                    {
+                        consistProc = consistDef.Substring(sepIndex).Trim();
+                    }
+                    else
+                    {
+                        consistProc = String.Empty;
+                    }
+                }
+                else
+                {
+                    reqString = String.Copy(consistDef);
+
+                    int sepIndex = consistDef.IndexOf('$');
+                    if (sepIndex > 0)
+                    {
+                        consistProc = consistDef.Substring(sepIndex).Trim();
+                    }
+                    else
+                    {
+                        consistProc = String.Empty;
+                    }
+                }
             }
 
-            if (reqString.Contains("$"))
+
+            if (!String.IsNullOrEmpty(consistProc) && consistProc.Substring(0, 1).Equals("$"))
             {
-                if (String.Equals(reqString.Split('$')[1].Trim().ToLower(),"reverse"))
+                if (consistProc.Substring(1, 7).Equals("reverse"))
                 {
                     isReverse = true;
                 }
-                reqString = reqString.Split('$')[0];
             }
 
-            reverse=isReverse;
-            return(reqString.Trim());
+
+            reverse = isReverse;
+            return (reqString.Trim());
         }
 
         public class TTTrainPreInfo : IComparable<TTTrainPreInfo>

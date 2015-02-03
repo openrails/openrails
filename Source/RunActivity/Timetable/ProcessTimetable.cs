@@ -953,9 +953,7 @@ namespace ORTS
                 string consistDirectory = Path.Combine(trainsDirectory, "Consists");
 
                 string consistdef = fileStrings[consistRow][columnIndex];
-                consistInfo[] consistdetails = null;
-                bool fixedconsist = true;
-                consistdetails = ProcessConsistInfo(consistdef, consistDirectory);
+                List<consistInfo> consistdetails = ProcessConsistInfo(consistdef);
 
                 string trainsetDirectory = Path.Combine(trainsDirectory, "trainset");
 
@@ -973,10 +971,7 @@ namespace ORTS
                 bool returnValue = true;
 
                 // build consist
-                if (fixedconsist)
-                {
-                    returnValue = BuildConsist(consistdetails, trainsetDirectory, ttInfo.simulator);
-                }
+                returnValue = BuildConsist(consistdetails, trainsetDirectory, consistDirectory, ttInfo.simulator);
 
                 // return if consist could not be loaded
                 if (!returnValue) return (returnValue);
@@ -1192,35 +1187,99 @@ namespace ORTS
                 return (true);
             }
 
-            public consistInfo[] ProcessConsistInfo(string consistDef, string consistDir)
+            public List<consistInfo> ProcessConsistInfo(string consistDef)
             {
-                consistInfo[] consistDetails;
-                string[] consistCommands = new string[1];
+                List<consistInfo> consistDetails = new List<consistInfo>();
+                string consistProc = String.Copy(consistDef).Trim();
 
-                if (consistDef.Contains('+'))
+                while (!String.IsNullOrEmpty(consistProc))
                 {
-                    consistCommands = consistDef.Split('+');
-                }
-                else
-                {
-                    consistCommands[0] = consistDef;
-                }
-
-                consistDetails = new consistInfo[consistCommands.Length];
-                for (int index = 0; index < consistCommands.Length; index++)
-                {
-                    string consistCommandString = consistCommands[index].Trim();
-                    string[] consistParts = new string[2];
-                    if (consistCommandString.Contains('$'))
+                    if (consistProc.Substring(0, 1).Equals("<"))
                     {
-                        consistParts = consistCommandString.Split('$');
-                        consistDetails[index].consistFile = Path.Combine(consistDir, consistParts[0].Trim());
-                        consistDetails[index].reversed = String.Equals(consistParts[1].Trim(), "reverse");
+                        int endIndex = consistProc.IndexOf('>');
+                        if (endIndex < 0)
+                        {
+                            Trace.TraceWarning("Incomplete consist definition : \">\" character missing : {0}", consistProc);
+                            consistInfo thisConsist = new consistInfo();
+                            thisConsist.consistFile = String.Copy(consistProc.Substring(1));
+                            thisConsist.reversed = false;
+                            consistDetails.Add(thisConsist);
+                            consistProc = String.Empty;
+                        }
+                        else
+                        {
+                            consistInfo thisConsist = new consistInfo();
+                            thisConsist.consistFile = String.Copy(consistProc.Substring(1, endIndex - 1));
+                            thisConsist.reversed = false;
+                            consistDetails.Add(thisConsist);
+                            consistProc = consistProc.Substring(endIndex + 1).Trim();
+                        }
+                    }
+                    else if (consistProc.Substring(0,1).Equals("$"))
+                    {
+                        if (consistProc.Substring(1, 7).Equals("reverse"))
+                        {
+                            if (consistDetails.Count > 0)
+                            {
+                                consistInfo thisConsist = consistDetails[consistDetails.Count - 1];
+                                consistDetails.RemoveAt(consistDetails.Count - 1);
+                                thisConsist.reversed = true;
+                                consistDetails.Add(thisConsist);
+                            }
+                            else
+                            {
+                                Trace.TraceInformation("Invalid conmand at start of consist string {0}, command ingored", consistProc);
+                            }
+                            consistProc = consistProc.Substring(8).Trim();
+                        }
+                        else
+                        {
+                            Trace.TraceWarning("Invalid command in consist string : {0}", consistProc);
+                        }
                     }
                     else
                     {
-                        consistDetails[index].consistFile = Path.Combine(consistDir, consistCommandString);
-                        consistDetails[index].reversed = String.Equals(consistParts[1], "reverse");
+                        int plusIndex = consistProc.IndexOf('+');
+                        if (plusIndex == 0)
+                        {
+                            consistProc = consistProc.Substring(1);
+                        }
+                        else if (plusIndex > 0)
+                        {
+                            consistInfo thisConsist = new consistInfo();
+                            thisConsist.consistFile = String.Copy(consistProc.Substring(0, plusIndex - 1));
+
+                            int sepIndex = consistDef.IndexOf('$');
+                            if (sepIndex > 0)
+                            {
+                                thisConsist.consistFile = consistDef.Substring(0, sepIndex - 1).Trim();
+                                consistProc = consistDef.Substring(sepIndex).Trim();
+                            }
+                            else
+                            {
+                                consistProc = consistProc.Substring(plusIndex + 1);
+                            }
+                            thisConsist.reversed = false;
+                            consistDetails.Add(thisConsist);
+                        }
+                        else
+                        {
+                            consistInfo thisConsist = new consistInfo();
+                            thisConsist.consistFile = String.Copy(consistDef);
+
+                            int sepIndex = consistDef.IndexOf('$');
+                            if (sepIndex > 0)
+                            {
+                                thisConsist.consistFile = consistDef.Substring(0, sepIndex - 1).Trim();
+                                consistProc = consistDef.Substring(sepIndex).Trim();
+                            }
+                            else
+                            {
+                                consistProc = String.Empty;
+                            }
+                            thisConsist.reversed = false;
+                            consistDetails.Add(thisConsist);
+                        }
                     }
                 }
 
@@ -1234,7 +1293,7 @@ namespace ORTS
             /// <param name="trainsetDirectory">Consist directory</param>
             /// <param name="simulator">Simulator</param>
 
-            public bool BuildConsist(consistInfo[] consistSets, string trainsetDirectory, Simulator simulator)
+            public bool BuildConsist(List<consistInfo> consistSets, string trainsetDirectory, string consistDirectory, Simulator simulator)
             {
                 AITrain.tilted = true;
 
@@ -1243,7 +1302,7 @@ namespace ORTS
                 foreach (consistInfo consistDetails in consistSets)
                 {
                     bool consistReverse = consistDetails.reversed;
-                    string consistFile = consistDetails.consistFile;
+                    string consistFile = Path.Combine(consistDirectory,consistDetails.consistFile);
 
                     string pathExtension = Path.GetExtension(consistFile);
                     if (String.IsNullOrEmpty(pathExtension))
