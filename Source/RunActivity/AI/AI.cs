@@ -226,6 +226,7 @@ namespace ORTS
         {
             Debug.Assert(simulator.Trains != null, "Cannot restore AI without Simulator.Trains.");
             Simulator = simulator;
+            string trainType = inf.ReadString(); // may be ignored, can be AI only
             AITrain aiTrain = new AITrain(Simulator, inf);
             int PlayerLocomotiveIndex = inf.ReadInt32();
             if (PlayerLocomotiveIndex >=0) Simulator.PlayerLocomotive = aiTrain.Cars[PlayerLocomotiveIndex];
