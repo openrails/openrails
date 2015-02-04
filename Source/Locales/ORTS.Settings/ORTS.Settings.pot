@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-01-17 23:32:24+0100\n"
-"PO-Revision-Date: 2015-01-17 23:32:24+0100\n"
+"POT-Creation-Date: 2015-02-03 20:14:52+0100\n"
+"PO-Revision-Date: 2015-02-03 20:14:52+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -588,29 +588,33 @@ msgid "Control Cylinder Cocks"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:190
-msgid "Control Firing"
+msgid "Control Cylinder Compound"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:191
-msgid "Control Refill"
+msgid "Control Firing"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:631
-#, csharp-format
-msgid "{0} requires and is modified by Shift"
+#: ../../ORTS.Settings/InputSettings.cs:192
+msgid "Control Refill"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:633
 #, csharp-format
-msgid "{0} requires and is modified by Control"
+msgid "{0} requires and is modified by Shift"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:635
 #, csharp-format
+msgid "{0} requires and is modified by Control"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:637
+#, csharp-format
 msgid "{0} requires and is modified by Alt"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:666
+#: ../../ORTS.Settings/InputSettings.cs:668
 #, csharp-format
 msgid "{0} and {1} both match {2}"
 msgstr ""

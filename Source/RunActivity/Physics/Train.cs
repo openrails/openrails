@@ -10627,13 +10627,13 @@ namespace ORTS
             iColumn++;
 
             //  1, "Travelled"
-            statusString[iColumn] = FormatStrings.FormatDistance(DistanceTravelledM, metric);
+            statusString[iColumn] = FormatStrings.FormatDistanceDisplay(DistanceTravelledM, metric);
             iColumn++;
             //  2, "Speed"
             statusString[iColumn] = FormatStrings.FormatSpeed(SpeedMpS, metric);
             iColumn++;
             //  3, "Max"
-            statusString[iColumn] = FormatStrings.FormatSpeed(AllowedMaxSpeedMpS, metric);
+            statusString[iColumn] = FormatStrings.FormatSpeedLimit(AllowedMaxSpeedMpS, metric);
             iColumn++;
 
             //  4, "AI mode"

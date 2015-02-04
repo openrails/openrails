@@ -229,6 +229,10 @@ namespace ORTS.Common
         public static float FromHp(float horsePowers) { return horsePowers * 745.699872f; }
         /// <summary>Convert from Watts to HorsePower</summary>
         public static float ToHp(float watts)         { return watts       * (1.0f / 745.699872f); }
+        /// <summary>Convert from BoilerHorsePower to Watts</summary>
+        public static float FromBhp(float horsePowers) { return horsePowers * 9809.5f; }
+        /// <summary>Convert from Watts to BoilerHorsePower</summary>
+        public static float ToBhp(float watts) { return watts * (1.0f / 9809.5f); }
         /// <summary>Convert from British Thermal Unit (BTU) per second to watts</summary>
         public static float FromBTUpS(float btuPerSecond) { return btuPerSecond * 1055.05585f; }
         /// <summary>Convert from Watts to British Thermal Unit (BTU) per second</summary>
@@ -366,6 +370,17 @@ namespace ORTS.Common
     }
 
     /// <summary>
+    /// Energy density conversions from and to kJ/m^3
+    /// </summary>
+    public static class KJpM3
+    {
+        /// <summary>Convert from Britisch Thermal Units per ft^3 to kiloJoule per m^3</summary>
+        public static float FromBTUpFt3(float btuPerFt3) { return btuPerFt3 * (1f / 37.3f); }
+        /// <summary>Convert from kiloJoule per m^3 to Britisch Thermal Units per ft^3</summary>
+        public static float ToBTUpFt3(float kJPerM3) { return kJPerM3 * 37.3f; }
+    }
+
+    /// <summary>
     /// Liquid volume conversions from and to Litres
     /// </summary>
     public static class L 
@@ -426,6 +441,10 @@ namespace ORTS.Common
         public static float FromF(float fahrenheit) { return (fahrenheit - 32f) * (100f / 180f); }
         /// <summary>Convert from degrees Celcius to degrees Fahrenheit</summary>
         public static float ToF(float celcius) { return celcius * (180f / 100f) + 32f; }
+        /// <summary>Convert temperature difference from degrees Fahrenheit to degrees Celcius</summary>
+        public static float FromDeltaF(float fahrenheit) { return fahrenheit * (100f / 180f); }
+        /// <summary>Convert temperature difference from degrees Celcius to degrees Fahrenheit</summary>
+        public static float ToDeltaF(float celcius) { return celcius * (180f / 100f); }
         /// <summary>Convert from Kelving to degrees Celcius</summary>
         public static float FromK(float kelvin) { return kelvin - 273.15f; }
         /// <summary>Convert from degress Celcius to Kelvin</summary>
@@ -491,20 +510,45 @@ namespace ORTS.Common
         public static GettextResourceManager Catalog = new GettextResourceManager("ORTS.Common");
         public static string m = Catalog.GetString("m");
         public static string km = Catalog.GetString("km");
+        public static string mm = Catalog.GetString("mm");
         public static string mi = Catalog.GetString("mi");
         public static string ft = Catalog.GetString("ft");
         public static string yd = Catalog.GetString("yd");
+        public static string m2 = Catalog.GetString("m²");
+        public static string ft2 = Catalog.GetString("ft²");
+        public static string m3 = Catalog.GetString("m³");
+        public static string ft3 = Catalog.GetString("ft³");
         public static string kmph = Catalog.GetString("km/h");
         public static string mph = Catalog.GetString("mph");
         public static string kpa = Catalog.GetString("kPa");
         public static string bar = Catalog.GetString("bar");
         public static string psi = Catalog.GetString("psi");
         public static string inhg = Catalog.GetString("inHg");
-        public static string kgfpcm2 = Catalog.GetString("kgf/cm^2");
+        public static string kgfpcm2 = Catalog.GetString("kgf/cm²");
         public static string kg = Catalog.GetString("kg");
         public static string t = Catalog.GetString("t");
+        public static string tonUK = Catalog.GetString("ltn");
+        public static string tonUS = Catalog.GetString("stn");
         public static string lb = Catalog.GetString("lb");
+        public static string s = Catalog.GetString("s");
+        public static string min = Catalog.GetString("min");
         public static string h = Catalog.GetString("h");
+        public static string l = Catalog.GetString("L");
+        public static string galUK = Catalog.GetString("Imp.gal");
+        public static string galUS = Catalog.GetString("U.S.gal");
+        public static string rpm = Catalog.GetString("rpm");
+        public static string kW = Catalog.GetString("kW");
+        public static string hp = Catalog.GetString("hp"); // mechanical (or brake) horsepower
+        public static string bhp = Catalog.GetString("bhp"); // boiler horsepower
+        public static string kJ = Catalog.GetString("kJ");
+        public static string MJ = Catalog.GetString("MJ");
+        public static string btu = Catalog.GetString("BTU");
+        public static string c = Catalog.GetString("°C");
+        public static string f = Catalog.GetString("°F");
+        public static string n = Catalog.GetString("N");
+        public static string kN = Catalog.GetString("kN");
+        public static string lbf = Catalog.GetString("lbf");
+        public static string klbf = Catalog.GetString("klbf");
 
         /// <summary>
         /// Formatted unlocalized speed string, used in reports and logs.
@@ -603,13 +647,82 @@ namespace ORTS.Common
                 }
                 else
                 {
-                    return String.Format(CultureInfo.CurrentCulture, "{0:F1} {1}", massKg, kg);
+                    return String.Format(CultureInfo.CurrentCulture, "{0:F0} {1}", massKg, kg);
                 }
             }
             else
             {
-                return String.Format(CultureInfo.CurrentCulture,"{0:F1} {1}", Kg.ToLb(massKg), lb);
+                return String.Format(CultureInfo.CurrentCulture,"{0:F0} {1}", Kg.ToLb(massKg), lb);
             }
+        }
+
+        public static string FormatLargeMass(float massKg, bool isMetric, bool isUK)
+        {
+            if (isMetric)
+                return FormatMass(massKg, isMetric);
+
+            var massT = isUK ? Kg.ToTUK(massKg) : Kg.ToTUS(massKg);
+            if (massT > 1)
+                return String.Format(CultureInfo.CurrentCulture, "{0:F1} {1}", massT, isUK ? tonUK : tonUS);
+            else
+                return FormatMass(massKg, isMetric);
+        }
+
+        public static string FormatArea(float areaM2, bool isMetric)
+        {
+            var area = isMetric ? areaM2 : Me2.ToFt2(areaM2);
+            return String.Format(CultureInfo.CurrentCulture, "{0:F0} {1}", area, isMetric ? m2 : ft2);
+        }
+
+        public static string FormatVolume(float volumeM3, bool isMetric)
+        {
+            var volume = isMetric ? volumeM3 : Me3.ToFt3(volumeM3);
+            return String.Format(CultureInfo.CurrentCulture, "{0:F0} {1}", volume, isMetric ? m3 : ft3);
+        }
+
+        public static string FormatFuelVolume(float volumeL, bool isMetric, bool isUK)
+        {
+            var volume = isMetric ? volumeL : isUK ? L.ToGUK(volumeL) : L.ToGUS(volumeL);
+            return String.Format(CultureInfo.CurrentCulture, "{0:F1} {1}", volume, isMetric ? l : isUK ? galUK : galUS);
+        }
+
+        public static string FormatPower(float powerW, bool isMetric, bool isImperialBHP, bool isImperialBTUpS)
+        {
+            var power = isMetric ? W.ToKW(powerW) : isImperialBHP ? W.ToBhp(powerW) : isImperialBTUpS ? W.ToBTUpS(powerW) : W.ToHp(powerW);
+            return String.Format(CultureInfo.CurrentCulture, "{0:F0} {1}", power, isMetric ? kW : isImperialBHP ? bhp : isImperialBTUpS ? String.Format("{0}/{1}", btu, s) : hp);
+        }
+
+        public static string FormatForce(float forceN, bool isMetric)
+        {
+            var kilo = false;
+            var force = isMetric ? forceN : N.ToLbf(forceN);
+            if (kilo = Math.Abs(force) > 1e4f) force *= 1e-3f;
+            var unit = isMetric ? kilo ? kN : n : kilo ? klbf : lbf;
+            return String.Format(CultureInfo.CurrentCulture, kilo ? "{0:F1} {1}" : "{0:F0} {1}", force, unit);
+        }
+
+        public static string FormatTemperature(float temperatureC, bool isMetric, bool isDelta)
+        {
+            var temperature = isMetric ? temperatureC : isDelta ? C.ToDeltaF(temperatureC) : C.ToF(temperatureC);
+            return String.Format(CultureInfo.CurrentCulture, "{0:F0}{1}", temperature, isMetric ? c : f);
+        }
+
+        public static string FormatEnergyDensityByMass(float edKJpKg, bool isMetric)
+        {
+            var calorie = isMetric ? edKJpKg : KJpKg.ToBTUpLb(edKJpKg);
+            return String.Format(CultureInfo.CurrentCulture, "{0:F0} {1}/{2}", calorie, isMetric ? kJ : btu, isMetric ? kg : lb);
+        }
+
+        public static string FormatEnergyDensityByVolume(float edKJpM3, bool isMetric)
+        {
+            var calorie = isMetric ? edKJpM3 : KJpM3.ToBTUpFt3(edKJpM3);
+            return String.Format(CultureInfo.CurrentCulture, "{0:F0} {1}/{2}", calorie, isMetric ? kJ : btu, String.Format("{0}³", isMetric ? m : ft));
+        }
+
+        public static string FormatEnergy(float energyJ, bool isMetric)
+        {
+            var energy = isMetric ? energyJ * 1e-6f : W.ToBTUpS(energyJ);
+            return String.Format(CultureInfo.CurrentCulture, "{0:F0} {1}", energy, isMetric ? MJ : btu);
         }
 
         /// <summary>

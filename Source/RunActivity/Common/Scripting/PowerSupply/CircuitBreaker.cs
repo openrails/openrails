@@ -16,6 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using ORTS.Common;
 
 namespace ORTS.Scripting.Api
 {
@@ -75,8 +76,8 @@ namespace ORTS.Scripting.Api
 
     public enum CircuitBreakerState
     {
-        Open,
-        Closing,
-        Closed
+        [GetParticularString("CircuitBraker", "Open")] Open,
+        [GetParticularString("CircuitBraker", "Closing")] Closing,
+        [GetParticularString("CircuitBraker", "Closed")] Closed
     }
 }

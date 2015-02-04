@@ -146,6 +146,8 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.comboBoxOtherUnits = new System.Windows.Forms.ComboBox();
+            this.labelOtherUnits = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -292,7 +294,9 @@
             // 
             // tabPageGeneral
             // 
+            this.tabPageGeneral.Controls.Add(this.labelOtherUnits);
             this.tabPageGeneral.Controls.Add(this.labelPressureUnit);
+            this.tabPageGeneral.Controls.Add(this.comboBoxOtherUnits);
             this.tabPageGeneral.Controls.Add(this.checkUseLargeAddressAware);
             this.tabPageGeneral.Controls.Add(this.comboPressureUnit);
             this.tabPageGeneral.Controls.Add(this.labelLanguage);
@@ -337,12 +341,6 @@
             // 
             this.comboPressureUnit.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboPressureUnit.FormattingEnabled = true;
-            this.comboPressureUnit.Items.AddRange(new object[] {
-            "Automatic",
-            "bar",
-            "PSI",
-            "inHg",
-            "kgf/cm^2"});
             this.comboPressureUnit.Location = new System.Drawing.Point(6, 224);
             this.comboPressureUnit.Name = "comboPressureUnit";
             this.comboPressureUnit.Size = new System.Drawing.Size(121, 21);
@@ -1668,6 +1666,25 @@
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
             // 
+            // comboBoxOtherUnits
+            // 
+            this.comboBoxOtherUnits.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxOtherUnits.FormattingEnabled = true;
+            this.comboBoxOtherUnits.Location = new System.Drawing.Point(6, 252);
+            this.comboBoxOtherUnits.Name = "comboBoxOtherUnits";
+            this.comboBoxOtherUnits.Size = new System.Drawing.Size(121, 21);
+            this.comboBoxOtherUnits.TabIndex = 8;
+            // 
+            // labelOtherUnits
+            // 
+            this.labelOtherUnits.AutoSize = true;
+            this.labelOtherUnits.Location = new System.Drawing.Point(133, 255);
+            this.labelOtherUnits.Margin = new System.Windows.Forms.Padding(3);
+            this.labelOtherUnits.Name = "labelOtherUnits";
+            this.labelOtherUnits.Size = new System.Drawing.Size(58, 13);
+            this.labelOtherUnits.TabIndex = 9;
+            this.labelOtherUnits.Text = "Other units";
+            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -1843,5 +1860,7 @@
         private System.Windows.Forms.Label label21;
         private System.Windows.Forms.TrackBar trackLODBias;
         private System.Windows.Forms.CheckBox checkSuppressShapeWarnings;
+        private System.Windows.Forms.Label labelOtherUnits;
+        private System.Windows.Forms.ComboBox comboBoxOtherUnits;
     }
 }

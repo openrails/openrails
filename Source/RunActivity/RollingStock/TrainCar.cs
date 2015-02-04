@@ -118,6 +118,8 @@ namespace ORTS
         private IIRFilter AccelerationFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, 1.0f, 0.1f);
 
         public bool AcceptMUSignals = true; //indicates if the car accepts multiple unit signals
+        public bool IsMetric;
+        public bool IsUK;
 
         public float SpeedMpS
         {
@@ -795,7 +797,15 @@ namespace ORTS
         public virtual string GetStatus() { return null; }
         public virtual string GetDebugStatus()
         {
-            return String.Format("Car {0}\t{2} {1}\t{3}\t{4:F0}%\t{5:F0}m/s\t{6:F0}kW\t{7:F0}kN\t{8}\t{9}", UiD, Flipped ? "(flip)" : "", Direction == Direction.Forward ? "Fwd" : Direction == Direction.Reverse ? "Rev" : "N", AcceptMUSignals ? "MU'd" : "Single", ThrottlePercent, SpeedMpS, MotiveForceN * SpeedMpS / 1000, MotiveForceN / 1000, WheelSlip ? "Slipping" : "", CouplerOverloaded ? "Coupler overloaded" : "");
+            return String.Format("Car {0}\t{2} {1}\t{3}\t{4:F0}%\t{5}\t\t{6}\t{7}",
+                UiD,
+                Flipped ? Viewer.Catalog.GetString("(flipped)") : "",
+                FormatStrings.Catalog.GetParticularString("Reverser", GetStringAttribute.GetPrettyName(Direction)),
+                AcceptMUSignals ? Viewer.Catalog.GetString("MU'd") : Viewer.Catalog.GetString("Single"),
+                ThrottlePercent,
+                String.Format("{0}{1}", FormatStrings.FormatSpeedDisplay(SpeedMpS, IsMetric), WheelSlip ? "!!!" : ""),
+                FormatStrings.FormatPower(MotiveForceN * SpeedMpS, IsMetric, false, false),
+                String.Format("{0}{1}", FormatStrings.FormatForce(MotiveForceN, IsMetric), CouplerOverloaded ? "???" : ""));
         }
         public virtual string GetTrainBrakeStatus() { return null; }
         public virtual string GetEngineBrakeStatus() { return null; }

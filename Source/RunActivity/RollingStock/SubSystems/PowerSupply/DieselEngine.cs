@@ -45,14 +45,6 @@ namespace ORTS
         public readonly MSTSDieselLocomotive Locomotive;
 
         /// <summary>
-        /// not applicable, but still can be used
-        /// </summary>
-        public DieselEngines()
-        {
-
-        }
-
-        /// <summary>
         /// Creates a set of auxiliaries connected to the locomotive
         /// </summary>
         /// <param name="loco">Host locomotive</param>
@@ -299,31 +291,32 @@ namespace ORTS
         {
             var result = new StringBuilder();
 
-            result.AppendFormat("Status");
+            result.AppendFormat(Viewer3D.Viewer.Catalog.GetString("Status"));
             foreach (var eng in DEList)
-                result.AppendFormat("\t{0}", eng.EngineStatus.ToString());
+                result.AppendFormat("\t{0}", Viewer3D.Viewer.Catalog.GetString(GetStringAttribute.GetPrettyName(eng.EngineStatus)));
 
-            result.AppendFormat("\tPower\t{0:F1} W", MaxOutputPowerW * 0.001f);
+            result.AppendFormat("\t{0}\t{1}", Viewer3D.Viewer.Catalog.GetParticularString("HUD", "Power"), FormatStrings.FormatPower(MaxOutputPowerW, Locomotive.IsMetric, false, false));
             foreach (var eng in DEList)
-                result.AppendFormat("\t{0:F0} W", eng.MaxOutputPowerW * 0.001f);
+                result.AppendFormat("\t{0}", FormatStrings.FormatPower(eng.MaxOutputPowerW, Locomotive.IsMetric, false, false));
 
-            result.AppendFormat("\tLoad");
+            result.AppendFormat("\t{0}", Viewer3D.Viewer.Catalog.GetString("Load"));
             foreach (var eng in DEList)
                 result.AppendFormat("\t{0:F1}%", eng.LoadPercent);
 
             foreach (var eng in DEList)
-                result.AppendFormat("\t{0:F0} RPM", eng.RealRPM);
+                result.AppendFormat("\t{0:F0} {1}", eng.RealRPM, FormatStrings.rpm);
 
-            result.AppendFormat("\tFlow");
+            result.AppendFormat("\t{0}", Viewer3D.Viewer.Catalog.GetString("Flow"));
             foreach (var eng in DEList)
-                result.AppendFormat("\t{0:F1} L/h", eng.DieselFlowLps * 3600.0f);
+                result.AppendFormat("\t{0}/{1}", FormatStrings.FormatFuelVolume(pS.TopH(eng.DieselFlowLps), Locomotive.IsMetric, Locomotive.IsUK), FormatStrings.h);
 
+            result.Append("\t");
             foreach (var eng in DEList)
-                result.AppendFormat("\t{0:F1} °C", eng.DieselTemperatureDeg);
+                result.AppendFormat("\t{0}", FormatStrings.FormatTemperature(eng.DieselTemperatureDeg, Locomotive.IsMetric, false));
 
-            result.AppendFormat("\tOil");
+            result.AppendFormat("\t{0}", Viewer3D.Viewer.Catalog.GetString("Oil"));
             foreach (var eng in DEList)
-                result.AppendFormat("\t{0:F1} PSI", eng.DieselOilPressurePSI);
+                result.AppendFormat("\t{0}", FormatStrings.FormatPressure(eng.DieselOilPressurePSI, PressureUnit.PSI, Locomotive.PressureUnit, true));
 
             return result.ToString();
         }

@@ -89,7 +89,7 @@ namespace ORTS
         public float DieselMaxTemperatureDeg = 100.0f;
         public DieselEngine.Cooling DieselEngineCooling = DieselEngine.Cooling.Proportional;
 
-        public DieselEngines DieselEngines = new DieselEngines();
+        public DieselEngines DieselEngines;
 
         public GearBox GearBox = new GearBox();
 
@@ -186,6 +186,9 @@ namespace ORTS
 
         public override void Initialize()
         {
+            if (DieselEngines == null)
+                DieselEngines = new DieselEngines(this);
+
             if (DieselEngines.Count == 0)
             {
                 DieselEngines.Add(new DieselEngine());
@@ -822,9 +825,10 @@ namespace ORTS
         public override string GetDebugStatus()
         {
             var status = new StringBuilder(base.GetDebugStatus());
+
             if (DieselEngines.HasGearBox)
-                status.AppendFormat("\tGear\t{0}", DieselEngines[0].GearBox.CurrentGearIndex);
-            status.AppendFormat("\tFuel\t{0:F0} L\t{1}", DieselLevelL, DieselEngines.GetStatus());
+                status.AppendFormat("\t{0} {1}", Viewer3D.Viewer.Catalog.GetString("Gear"), DieselEngines[0].GearBox.CurrentGearIndex);
+            status.AppendFormat("\t{0} {1}\t\t\t{2}", Viewer3D.Viewer.Catalog.GetString("Fuel"), FormatStrings.FormatFuelVolume(DieselLevelL, IsMetric, IsUK), DieselEngines.GetStatus());
             return status.ToString();
         }
 

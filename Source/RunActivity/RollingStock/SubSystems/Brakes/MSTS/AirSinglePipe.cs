@@ -45,7 +45,13 @@ namespace ORTS
         protected float EmergAuxVolumeRatio = 1.4f;
         protected string DebugType = string.Empty;
         protected string RetainerDebugState = string.Empty;
-        public enum ValveState { Lap, Apply, Release, Emergency };
+        public enum ValveState
+        {
+            [GetString("Lap")] Lap,
+            [GetString("Apply")] Apply,
+            [GetString("Release")] Release,
+            [GetString("Emergency")] Emergency
+        };
         protected ValveState TripleValveState = ValveState.Lap;
 
         public AirSinglePipe(TrainCar car)
@@ -104,19 +110,18 @@ namespace ORTS
         {
             return new string[] {
                 DebugType,
-                this is SingleTransferPipe ? string.Empty : string.Format("BC {0}", FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, unit, false)),
-                string.Format("BP {0}", FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, unit, false)),
-                this is SingleTransferPipe ? string.Empty : string.Format("AR {0}", FormatStrings.FormatPressure(AuxResPressurePSI, PressureUnit.PSI, unit, false)),
-                (Car as MSTSWagon).EmergencyReservoirPresent ? string.Format("ER {0}", FormatStrings.FormatPressure(EmergResPressurePSI, PressureUnit.PSI, unit, false)) : string.Empty,
-                TwoPipes ? string.Format("MRP {0}", FormatStrings.FormatPressure(BrakeLine2PressurePSI, PressureUnit.PSI, unit, false)) : string.Empty,
-                (Car as MSTSWagon).RetainerPositions == 0 ? string.Empty : string.Format("RV {0}", RetainerDebugState),
-                this is SingleTransferPipe ? string.Empty : string.Format("State {0}", TripleValveState),
+                this is SingleTransferPipe ? string.Empty : FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, unit, true),
+                FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, unit, true),
+                this is SingleTransferPipe ? string.Empty : FormatStrings.FormatPressure(AuxResPressurePSI, PressureUnit.PSI, unit, true),
+                (Car as MSTSWagon).EmergencyReservoirPresent ? FormatStrings.FormatPressure(EmergResPressurePSI, PressureUnit.PSI, unit, true) : string.Empty,
+                TwoPipes ? FormatStrings.FormatPressure(BrakeLine2PressurePSI, PressureUnit.PSI, unit, true) : string.Empty,
+                (Car as MSTSWagon).RetainerPositions == 0 ? string.Empty : RetainerDebugState,
+                this is SingleTransferPipe ? string.Empty : Viewer3D.Viewer.Catalog.GetString(GetStringAttribute.GetPrettyName(TripleValveState)),
                 string.Empty, // Spacer because the state above needs 2 columns.
-                (Car as MSTSWagon).HandBrakePresent ? string.Format("Handbrake {0:F0}%", HandbrakePercent) : string.Empty,
-                string.Empty, // Spacer because the state above needs 2 columns.
+                (Car as MSTSWagon).HandBrakePresent ? string.Format("{0:F0}%", HandbrakePercent) : string.Empty,
                 FrontBrakeHoseConnected ? "I" : "T",
-                string.Format("AC A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-"),
-                BleedOffValveOpen ? "BleedOff" : string.Empty,
+                string.Format("A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-"),
+                BleedOffValveOpen ? Viewer3D.Viewer.Catalog.GetString("Open") : string.Empty,
             };
         }
 

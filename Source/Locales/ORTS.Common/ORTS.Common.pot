@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-01-17 23:32:14+0100\n"
-"PO-Revision-Date: 2015-01-17 23:32:14+0100\n"
+"POT-Creation-Date: 2015-02-03 20:14:41+0100\n"
+"PO-Revision-Date: 2015-02-03 20:14:41+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -11,68 +11,168 @@ msgstr ""
 "X-Generator: MonoDevelop Gettext addin\n"
 
 
-#: ../../ORTS.Common/Conversions.cs:492
+#: ../../ORTS.Common/Conversions.cs:511
 msgid "m"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:493
+#: ../../ORTS.Common/Conversions.cs:512
 msgid "km"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:494
+#: ../../ORTS.Common/Conversions.cs:513
+msgid "mm"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:514
 msgid "mi"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:495
+#: ../../ORTS.Common/Conversions.cs:515
 msgid "ft"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:496
+#: ../../ORTS.Common/Conversions.cs:516
 msgid "yd"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:497
+#: ../../ORTS.Common/Conversions.cs:517
+msgid "m²"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:518
+msgid "ft²"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:519
+msgid "m³"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:520
+msgid "ft³"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:521
 msgid "km/h"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:498
+#: ../../ORTS.Common/Conversions.cs:522
 msgid "mph"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:499
+#: ../../ORTS.Common/Conversions.cs:523
 msgid "kPa"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:500
+#: ../../ORTS.Common/Conversions.cs:524
 msgid "bar"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:501
+#: ../../ORTS.Common/Conversions.cs:525
 msgid "psi"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:502
+#: ../../ORTS.Common/Conversions.cs:526
 msgid "inHg"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:503
-msgid "kgf/cm^2"
+#: ../../ORTS.Common/Conversions.cs:527
+msgid "kgf/cm²"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:504
+#: ../../ORTS.Common/Conversions.cs:528
 msgid "kg"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:505
+#: ../../ORTS.Common/Conversions.cs:529
 msgid "t"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:506
+#: ../../ORTS.Common/Conversions.cs:530
+msgid "ltn"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:531
+msgid "stn"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:532
 msgid "lb"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:507
+#: ../../ORTS.Common/Conversions.cs:533
+msgid "s"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:534
+msgid "min"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:535
 msgid "h"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:536
+msgid "L"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:537
+msgid "Imp.gal"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:538
+msgid "U.S.gal"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:539
+msgid "rpm"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:540
+msgid "kW"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:541
+msgid "hp"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:542
+msgid "bhp"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:543
+msgid "kJ"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:544
+msgid "MJ"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:545
+msgid "BTU"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:546
+msgid "°C"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:547
+msgid "°F"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:548
+msgid "N"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:549
+msgid "kN"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:550
+msgid "lbf"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:551
+msgid "klbf"
 msgstr ""
 
 #. Context: Reverser

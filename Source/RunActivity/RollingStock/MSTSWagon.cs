@@ -175,6 +175,8 @@ namespace ORTS
                 LoadFromWagFile(WagFilePath);
                 CarManager.LoadedCars.Add(WagFilePath, this);
             }
+
+            GetMeasurementUnits();
         }
 
         /// <summary>
@@ -217,6 +219,12 @@ namespace ORTS
 
             if (BrakeSystem == null)
                 BrakeSystem = new AirSinglePipe(this);
+        }
+
+        public void GetMeasurementUnits()
+        {
+            IsMetric = Simulator.Settings.Units == "Metric" || Simulator.Settings.Units == "Automatic" && System.Globalization.RegionInfo.CurrentRegion.IsMetric;
+            IsUK = Simulator.Settings.Units == "UK";
         }
 
         public override void Initialize()

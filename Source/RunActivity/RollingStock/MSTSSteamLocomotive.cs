@@ -87,7 +87,7 @@ namespace ORTS
         bool IsSelectGeared = false; 
         bool IsLocoSlip = false; 	// locomotive is slipping
         
-        string SteamLocoType = "Not defined (assume simple)";     // Type of steam locomotive type
+        string SteamLocoType;     // Type of steam locomotive type
         
         float PulseTracker;
         int NextPulse = 1;
@@ -287,8 +287,8 @@ namespace ORTS
         // Values from previous iteration to use in UpdateFiring() and show in HUD
         float PreviousBoilerHeatOutBTUpS = 0.0f;
         public float PreviousTotalSteamUsageLBpS;
-        float Injector1WaterDelTempF;   // Injector 1 water delivery temperature - F
-        float Injector2WaterDelTempF;   // Injector 1 water delivery temperature - F
+        float Injector1WaterDelTempF = 65f;   // Injector 1 water delivery temperature - F
+        float Injector2WaterDelTempF = 65f;   // Injector 1 water delivery temperature - F
         float Injector1TempFraction;    // Find the fraction above the min temp of water delivery
         float Injector2TempFraction;    // Find the fraction above the min temp of water delivery
         float Injector1WaterTempPressurePSI;  // Pressure equivalent of water delivery temp
@@ -312,7 +312,6 @@ namespace ORTS
         float StokerMaxUsage = 0.01f;       // Max steam usage of stoker - 1% of max boiler output
         float StokerMinUsage = 0.005f;      // Min Steam usage - just to keep motor ticking over - 0.5% of max boiler output
         float StokerSteamUsageLBpS;         // Current steam usage of stoker
-        const float BoilerKWtoBHP = 0.101942f;  // Convert Boiler kW to Boiler HP, note different to HP.
         float MaxTheoreticalFiringRateKgpS;     // Max firing rate that fireman can sustain for short periods
         float FuelBoostOnTimerS = 0.01f;    // Timer to allow fuel boosting for a short while
         float FuelBoostResetTimerS = 0.01f; // Timer to rest fuel boosting for a while
@@ -359,7 +358,7 @@ namespace ORTS
         float CylCockPressReduceFactor;     // Factor to reduce cylinder pressure by if cocks open
         
         float DrvWheelRevRpS;       // number of revolutions of the drive wheel per minute based upon speed.
-        float PistonSpeedFtpM;      // Piston speed of locomotive
+        float PistonSpeedFtpMin;      // Piston speed of locomotive
         float IndicatedHorsePowerHP;   // Indicated Horse Power (IHP), theoretical power of the locomotive, it doesn't take into account the losses due to friction, etc. Typically output HP will be 70 - 90% of the IHP
         float DrawbarHorsePowerHP;  // Drawbar Horse Power  (DHP), maximum power available at the wheels.
         float DrawBarPullLbsF;      // Drawbar pull in lbf
@@ -725,49 +724,6 @@ namespace ORTS
             {
                 NewBurnRateSteamToCoalLbspH = SteamTable.NewBurnRateSteamToCoalLbspH();
                 Trace.TraceInformation("BurnRateSteamToCoalLbspH - default information read from SteamTables");
-            }
-
-           // Confirm locomotive and boiler type
-            
-            if (IsCompoundLoco)
-            {
-            SteamLocoType ="Compound locomotive";
-            }
-            else if (IsGearedSteamLoco)
-            {
-            if (IsFixGeared)
-              {
-              SteamLocoType ="Fixed Geared locomotive";
-              }
-            else if (IsSelectGeared)
-                  {
-                  SteamLocoType ="Selectable Geared locomotive";
-                  }
-            else
-                {
-                    SteamLocoType = "Unknown Geared locomotive";
-                }
-            }
-            else if (IsSimpleLoco)
-            {
-            SteamLocoType ="Simple locomotive";   // Assume simple type of locomotive if no type defined.
-            }
-   //         else if (!IsCompoundLoco && !IsGearedSteamLoco && !IsSimpleLoco)
-   //         {
-   //         SteamLocoType ="Not defined, assumed Simple locomotive";
-    //        }
-            
-            if (HasSuperheater)
-            {
-            SteamLocoType +=" + Superheater";
-            }
-            else if (IsSaturated)
-            {
-            SteamLocoType +=" + Saturated";
-            }
-            else
-            {
-            SteamLocoType +=" + Not defined (assumed saturated)";
             }
 
             InitializeTenderWithCoal();
@@ -2133,7 +2089,7 @@ namespace ORTS
 
            // Caculate the current piston speed - purely for display purposes at the moment 
            // Piston Speed (Ft p Min) = (Stroke length x 2) x (Ft in Mile x Train Speed (mph) / ( Circum of Drv Wheel x 60))
-            PistonSpeedFtpM = Me.ToFt(pS.TopM(CylinderStrokeM * 2.0f * DrvWheelRevRpS)) * SteamGearRatio;
+            PistonSpeedFtpMin = Me.ToFt(pS.TopM(CylinderStrokeM * 2.0f * DrvWheelRevRpS)) * SteamGearRatio;
              
             TractiveEffortLbsF = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MeanEffectivePressurePSI * CylinderEfficiencyRate * MotiveForceGearRatio;
             TractiveEffortLbsF = MathHelper.Clamp(TractiveEffortLbsF, 0, TractiveEffortLbsF);
@@ -2194,7 +2150,7 @@ namespace ORTS
             }
                        
             // Based upon max IHP, limit motive force.
-            if (PistonSpeedFtpM > MaxPistonSpeedFtpM || IndicatedHorsePowerHP > MaxIndicatedHorsePowerHP)
+            if (PistonSpeedFtpMin > MaxPistonSpeedFtpM || IndicatedHorsePowerHP > MaxIndicatedHorsePowerHP)
             {
 
                 if (IndicatedHorsePowerHP >= MaxIndicatedHorsePowerHP)
@@ -2204,15 +2160,15 @@ namespace ORTS
                 // Calculate the speed factor for the locomotive, based upon piston speed    
                 if ( HasSuperheater)
 	        {
-                SpeedFactor = SuperheatedSpeedFactorSpeedDropFtpMintoX[PistonSpeedFtpM];
+                SpeedFactor = SuperheatedSpeedFactorSpeedDropFtpMintoX[PistonSpeedFtpMin];
 	        }
 	        else if (IsGearedSteamLoco)
 	        {
-                SpeedFactor = SaturatedSpeedFactorSpeedDropFtpMintoX[PistonSpeedFtpM];   // Assume the same as saturated locomotive for time being.
+                SpeedFactor = SaturatedSpeedFactorSpeedDropFtpMintoX[PistonSpeedFtpMin];   // Assume the same as saturated locomotive for time being.
 	        }
 	        else
 	        {
-                SpeedFactor = SaturatedSpeedFactorSpeedDropFtpMintoX[PistonSpeedFtpM];	        
+                SpeedFactor = SaturatedSpeedFactorSpeedDropFtpMintoX[PistonSpeedFtpMin];	        
 	        }
                 
                 if((TractiveEffortLbsF * CylinderEfficiencyRate) > CriticalSpeedTractiveEffortLbf)
@@ -2858,139 +2814,294 @@ namespace ORTS
         {
             var status = new StringBuilder(base.GetDebugStatus());
 
-            status.AppendFormat("\n\n\t\t === Key Inputs === \t\t{0:N0} lb/h\n",
-            pS.TopH(EvaporationLBpS));
+            // Confirm locomotive and boiler type
+            if (SteamLocoType == null)
+            {
+                if (IsCompoundLoco)
+                {
+                    SteamLocoType = Viewer.Catalog.GetString("Compound locomotive");
+                }
+                else if (IsGearedSteamLoco)
+                {
+                    if (IsFixGeared)
+                    {
+                        SteamLocoType = Viewer.Catalog.GetString("Fixed Geared locomotive");
+                    }
+                    else if (IsSelectGeared)
+                    {
+                        SteamLocoType = Viewer.Catalog.GetString("Selectable Geared locomotive");
+                    }
+                    else
+                    {
+                        SteamLocoType = Viewer.Catalog.GetString("Unknown Geared locomotive");
+                    }
+                }
+                else if (IsSimpleLoco)
+                {
+                    SteamLocoType = Viewer.Catalog.GetString("Simple locomotive");   // Assume simple type of locomotive if no type defined.
+                }
+                else
+                {
+                    SteamLocoType = Viewer.Catalog.GetString("Not defined (assumed simple)");
+                }
 
-            status.AppendFormat("Locomotive Type:\t\t{0}\n",
+                if (HasSuperheater)
+                {
+                    SteamLocoType += " + " + Viewer.Catalog.GetString("Superheater");
+                }
+                else if (IsSaturated)
+                {
+                    SteamLocoType += " + " + Viewer.Catalog.GetString("Saturated");
+                }
+                else
+                {
+                    SteamLocoType += " + " + Viewer.Catalog.GetString("Not defined (assumed saturated)");
+                }
+            }
+
+            status.AppendFormat("\n\n\t\t === {0} === \t\t\n", Viewer.Catalog.GetString("Key Inputs"));
+
+            status.AppendFormat("{0}\t\t{1}\n", Viewer.Catalog.GetString("Locomotive Type:"),
                 SteamLocoType); 
 
-            status.AppendFormat("Input:\tEvap\t{0:N0} ft^2\tGrate\t{1:N0} ft^2\tBoil.\t{2:N0} ft^3\tSup\t{3:N0} ft^2\tFuel Cal.\t{4:N0} btu/lb\n",
-                Me2.ToFt2(EvaporationAreaM2),
-                Me2.ToFt2(GrateAreaM2),
-                BoilerVolumeFT3,
-                Me2.ToFt2(SuperheatAreaM2),
-                KJpKg.ToBTUpLb(FuelCalorificKJpKG));
+            status.AppendFormat("{0}\t{1}\t{6}\t{2}\t{7}\t{3}\t{8}\t{4}\t{9}\t{5}\t{10}\n",
+                Viewer.Catalog.GetString("Input:"),
+                Viewer.Catalog.GetString("Evap"),
+                Viewer.Catalog.GetString("Grate"),
+                Viewer.Catalog.GetString("Boiler"),
+                Viewer.Catalog.GetString("SuperHr"),
+                Viewer.Catalog.GetString("FuelCal"),
+                FormatStrings.FormatArea(EvaporationAreaM2, IsMetric),
+                FormatStrings.FormatArea(GrateAreaM2, IsMetric),
+                FormatStrings.FormatVolume(Me3.FromFt3(BoilerVolumeFT3), IsMetric),
+                FormatStrings.FormatArea(SuperheatAreaM2, IsMetric),
+                FormatStrings.FormatEnergyDensityByMass(FuelCalorificKJpKG, IsMetric));
 
-            status.AppendFormat("Adj:\tCyl Eff\t{0:N1}\tCyl Exh\t{1:N2}\tPort Open\t{2:N2}\n",
+            status.AppendFormat("{0}\t{1}\t{4:N1}\t{2}\t{5:N2}\t{3}\t{6:N2}\n",
+                Viewer.Catalog.GetString("Adj:"),
+                Viewer.Catalog.GetString("CylEff"),
+                Viewer.Catalog.GetString("CylExh"),
+                Viewer.Catalog.GetString("PortOpen"),
                 CylinderEfficiencyRate,
                 CylinderExhaustOpenFactor,
                 CylinderPortOpeningFactor);
             
-            status.AppendFormat("\n\t\t === Steam Production === \t\t{0:N0} lb/h\n",
-            pS.TopH(EvaporationLBpS));
+            status.AppendFormat("\n\t\t === {0} === \t\t{1}/{2}\n",
+                Viewer.Catalog.GetString("Steam Production"),
+                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(EvaporationLBpS)), IsMetric),
+                FormatStrings.h);
 
-            status.AppendFormat("Boiler:\tPower\t{0:N0} bhp\tMass\t{1:N0} lb\tOut.\t{2:N0} lb/h\t\tBoiler Eff\t{3:N2}\n",
-                BoilerKW * BoilerKWtoBHP,
-                BoilerMassLB,
-                MaxBoilerOutputLBpH,
+            status.AppendFormat("{0}\t{1}\t{5}\t{2}\t{6}\t{3}\t{7}/{8}\t\t{4}\t{9:N2}\n",
+                Viewer.Catalog.GetString("Boiler:"),
+                Viewer.Catalog.GetParticularString("HUD", "Power"),
+                Viewer.Catalog.GetString("Mass"),
+                Viewer.Catalog.GetString("MaxOutp"),
+                Viewer.Catalog.GetString("BoilerEff"),
+                FormatStrings.FormatPower(W.FromKW(BoilerKW), IsMetric, true, false),
+                FormatStrings.FormatMass(Kg.FromLb(BoilerMassLB), IsMetric),
+                FormatStrings.FormatMass(Kg.FromLb(MaxBoilerOutputLBpH), IsMetric),
+                FormatStrings.h,
                 BoilerEfficiencyGrateAreaLBpFT2toX[(pS.TopH(Kg.ToLb(FuelBurnRateKGpS)) / Me2.ToFt2(GrateAreaM2))]);
 
-            status.AppendFormat("Heat:\tIn\t{0:N0} btu\tOut\t{1:N0} btu\t\tHeat\t{2:N0} btu\t\tMax\t{3:N0} btu\n",
-                BoilerHeatInBTUpS,
-                PreviousBoilerHeatOutBTUpS,
-                BoilerHeatSmoothBTU.Value,
-                MaxBoilerHeatBTU);
+            status.AppendFormat("{0}\t{1}\t{5}\t{2}\t{6}\t{3}\t{7}\t\t{4}\t{8}\n",
+                Viewer.Catalog.GetString("Heat:"),
+                Viewer.Catalog.GetString("In"),
+                Viewer.Catalog.GetString("Out"),
+                Viewer.Catalog.GetString("Stored"),
+                Viewer.Catalog.GetString("Max"),
+                FormatStrings.FormatPower(W.FromBTUpS(BoilerHeatInBTUpS), IsMetric, false, true),
+                FormatStrings.FormatPower(W.FromBTUpS(PreviousBoilerHeatOutBTUpS), IsMetric, false, true),
+                FormatStrings.FormatEnergy(W.FromBTUpS(BoilerHeatSmoothBTU.Value), IsMetric),
+                FormatStrings.FormatEnergy(W.FromBTUpS(MaxBoilerHeatBTU), IsMetric));
 
-            status.AppendFormat("Temp.:\tFlue\t{0:N0} F\tWater\t{1:N0} F\t\tMaxSuper\t{2:N0} F\t\tCurSuper\t{3:N0} F\tSup Fact\t{4:N2}\n",
-                C.ToF(C.FromK(FlueTempK)),
-                C.ToF(C.FromK(BoilerWaterTempK)),
-                SuperheatRefTempF,
-                CurrentSuperheatTeampF,
+            status.AppendFormat("{0}\t{1}\t{6}\t{2}\t{7}\t{3}\t{8}\t{4}\t{9}\t\t{5}\t{10:N2}\n",
+                Viewer.Catalog.GetString("Temp:"),
+                Viewer.Catalog.GetString("Flue"),
+                Viewer.Catalog.GetString("Water"),
+                Viewer.Catalog.GetString("MaxSupH"),
+                Viewer.Catalog.GetString("CurSupH"),
+                Viewer.Catalog.GetString("SupFact"),
+                FormatStrings.FormatTemperature(C.FromK(FlueTempK), IsMetric, false),
+                FormatStrings.FormatTemperature(C.FromK(BoilerWaterTempK), IsMetric, false),
+                FormatStrings.FormatTemperature(C.FromF(SuperheatRefTempF), IsMetric, false),
+                FormatStrings.FormatTemperature(C.FromF(CurrentSuperheatTeampF), IsMetric, false),
                 SuperheaterSteamUsageFactor);
 
-            status.AppendFormat("\n\t\t === Steam Usage === \t\t{0:N0} lb/h\n",
-                pS.TopH(PreviousTotalSteamUsageLBpS));
+            status.AppendFormat("\n\t\t === {0} === \t\t{1}/{2}\n",
+                Viewer.Catalog.GetString("Steam Usage"),
+                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(PreviousTotalSteamUsageLBpS)), IsMetric),
+                FormatStrings.h);
 
-            status.AppendFormat("Usage.:\tCyl.\t{0:N0} lb/h\tBlower\t{1:N0} lb/h\tRad.\t{2:N0} lb/h\tComp.\t{3:N0} lb/h\tSafety\t{4:N0} lb/h\tCock\t{5:N0} lb/h\tGen.\t{6:N0} lb/h\tStoke\t{7:N0} lb/h\tMax Safe\t{8:N0} lb/h ({9} x {10:N1})\n",
-            pS.TopH(CylinderSteamUsageLBpS),
-            pS.TopH(BlowerSteamUsageLBpS),
-            pS.TopH(RadiationSteamLossLBpS),
-            pS.TopH(CompSteamUsageLBpS),
-            pS.TopH(SafetyValveUsageLBpS),
-            pS.TopH(CylCockSteamUsageLBpS),
-            pS.TopH(GeneratorSteamUsageLBpS),
-            pS.TopH(StokerSteamUsageLBpS),
-            pS.TopH(MaxSafetyValveDischargeLbspS),
-            NumSafetyValves,
-            SafetyValveSizeIn);
+            status.AppendFormat("{0}\t{1}\t{10}/{21}\t{2}\t{11}/{21}\t{3}\t{12}/{21}\t{4}\t{13}/{21}\t{5}\t{14}/{21}\t{6}\t{15}/{21}\t{7}\t{16}/{21}\t{8}\t{17}/{21}\t{9}\t{18}/{21} ({19}x{20:N1}\")\n",
+                Viewer.Catalog.GetString("Usage:"),
+                Viewer.Catalog.GetString("Cyl"),
+                Viewer.Catalog.GetString("Blower"),
+                Viewer.Catalog.GetString("Radiation"),
+                Viewer.Catalog.GetString("Comprsr"),
+                Viewer.Catalog.GetString("SafetyV"),
+                Viewer.Catalog.GetString("CylCock"),
+                Viewer.Catalog.GetString("Genertr"),
+                Viewer.Catalog.GetString("Stoker"),
+                Viewer.Catalog.GetString("MaxSafe"),
+                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylinderSteamUsageLBpS)), IsMetric),
+                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(BlowerSteamUsageLBpS)), IsMetric),
+                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(RadiationSteamLossLBpS)), IsMetric),
+                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CompSteamUsageLBpS)), IsMetric),
+                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(SafetyValveUsageLBpS)), IsMetric),
+                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylCockSteamUsageLBpS)), IsMetric),
+                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(GeneratorSteamUsageLBpS)), IsMetric),
+                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(StokerSteamUsageLBpS)), IsMetric),
+                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(MaxSafetyValveDischargeLbspS)), IsMetric),
+                NumSafetyValves,
+                SafetyValveSizeIn,
+                FormatStrings.h);
 
-            status.AppendFormat("Press.:\tChest\t{0:N0} psi\tInit\t{1:N0} apsi\tCutoff\t{2:N0} apsi\tExhaust\t{3:N0} apsi\tBack\t{4:N0} apsi\tPreComp\t{5:N0} apsi\tPreAdm\t{6:N0} apsi\tMEP\t{7:N0} apsi\n",
-            SteamChestPressurePSI,
-            InitialPressureAtmPSI,
-            CutoffPressureAtmPSI,
-            CylinderExhaustPressureAtmPSI,
-            BackPressureAtmPSI,
-            CylinderPreCompressionPressureAtmPSI,
-            CylinderPreAdmissionPressureAtmPSI,
-            MeanEffectivePressurePSI);
+            status.AppendFormat("{0}\t{1}\t{9}\t{2}\t{10}\t{3}\t{11}\t{4}\t{12}\t{5}\t{13}\t{6}\t{14}\t{7}\t{15}\t{8}\t{16}\n",
+                Viewer.Catalog.GetString("Press:"),
+                Viewer.Catalog.GetString("Chest"),
+                Viewer.Catalog.GetString("Initial"),
+                Viewer.Catalog.GetString("Cutoff"),
+                Viewer.Catalog.GetString("Exhaust"),
+                Viewer.Catalog.GetString("Back"),
+                Viewer.Catalog.GetString("PreComp"),
+                Viewer.Catalog.GetString("PreAdm"),
+                Viewer.Catalog.GetString("MEP"),
+                FormatStrings.FormatPressure(SteamChestPressurePSI, PressureUnit.PSI, PressureUnit, true),
+                FormatStrings.FormatPressure(InitialPressureAtmPSI, PressureUnit.PSI, PressureUnit, true),
+                FormatStrings.FormatPressure(CutoffPressureAtmPSI, PressureUnit.PSI, PressureUnit, true),
+                FormatStrings.FormatPressure(CylinderExhaustPressureAtmPSI, PressureUnit.PSI, PressureUnit, true),
+                FormatStrings.FormatPressure(BackPressureAtmPSI, PressureUnit.PSI, PressureUnit, true),
+                FormatStrings.FormatPressure(CylinderPreCompressionPressureAtmPSI, PressureUnit.PSI, PressureUnit, true),
+                FormatStrings.FormatPressure(CylinderPreAdmissionPressureAtmPSI, PressureUnit.PSI, PressureUnit, true),
+                FormatStrings.FormatPressure(MeanEffectivePressurePSI, PressureUnit.PSI, PressureUnit, true));
 
-           status.AppendFormat("Status.:\tSafety\t{0}\tPlug\t{1}\tPrime\t{2}\tBoil. Heat\t{3}\n",
-                SafetyIsOn,
-                FusiblePlugIsBlown,
-                BoilerIsPriming,
-                BoilerHeat);
+            status.AppendFormat("{0}\t{1}\t{5}\t{2}\t{6}\t{3}\t{7}\t{4}\t{8}\n",
+                Viewer.Catalog.GetString("Status:"),
+                Viewer.Catalog.GetString("Safety"),
+                Viewer.Catalog.GetString("Plug"),
+                Viewer.Catalog.GetString("Prime"),
+                Viewer.Catalog.GetString("BoilHeat"),
+                SafetyIsOn ? Viewer.Catalog.GetString("Open") : Viewer.Catalog.GetString("Closed"),
+                FusiblePlugIsBlown ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
+                BoilerIsPriming ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
+                BoilerHeat ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"));
 
-            status.AppendFormat("\n\t\t === Fireman === \n");
-            status.AppendFormat("Fire:\tIdeal\t{0:N0} lb\t\tFire\t{1:N0} lb\t\tMax Fire\t{2:N0} lb/h\t\tFuel\t{3:N0} lb/h\t\tBurn\t{4:N0} lb/h\t\tComb\t{5:N1} lbs/ft2\n",
-                Kg.ToLb(IdealFireMassKG),
-                Kg.ToLb(FireMassKG),
-                pS.TopH(Kg.ToLb(DisplayMaxFiringRateKGpS)),
-                pS.TopH(Kg.ToLb(FuelFeedRateKGpS)),
-                pS.TopH(Kg.ToLb(FuelBurnRateKGpS)),
-                (pS.TopH(GrateCombustionRateLBpFt2)));
+            status.AppendFormat("\n\t\t === {0} === \n", Viewer.Catalog.GetString("Fireman"));
+            status.AppendFormat("{0}\t{1}\t{7}\t\t{2}\t{8}\t\t{3}\t{9}/{13}\t\t{4}\t{10}/{13}\t\t{5}\t{11}/{13}\t\t{6}\t{12}/{14}{13}\n",
+                Viewer.Catalog.GetString("Fire:"),
+                Viewer.Catalog.GetString("Ideal"),
+                Viewer.Catalog.GetString("Actual"),
+                Viewer.Catalog.GetString("MaxFireR"),
+                Viewer.Catalog.GetString("FeedRate"),
+                Viewer.Catalog.GetString("BurnRate"),
+                Viewer.Catalog.GetString("Combust"),
+                FormatStrings.FormatMass(IdealFireMassKG, IsMetric),
+                FormatStrings.FormatMass(FireMassKG, IsMetric),
+                FormatStrings.FormatMass(pS.TopH(DisplayMaxFiringRateKGpS), IsMetric),
+                FormatStrings.FormatMass(pS.TopH(FuelFeedRateKGpS), IsMetric),
+                FormatStrings.FormatMass(pS.TopH(FuelBurnRateKGpS), IsMetric),
+                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(IsMetric ? Me2.ToFt2(GrateCombustionRateLBpFt2) : GrateCombustionRateLBpFt2)), IsMetric),
+                FormatStrings.h,
+                IsMetric ? FormatStrings.m2 : FormatStrings.ft2);
 
-            status.AppendFormat("Injector:\tMax\t{0:N0} gal(uk)/h\t\t({1:N0}mm)\tInj. 1\t{2:N0} gal(uk)/h\t\ttemp\t{3:N0} F\t\tInj. 2\t{4:N0} gal(uk)/h\t\ttemp 2\t{5:N0} F\n",
-                pS.TopH(InjectorFlowRateLBpS) / WaterLBpUKG,
+            status.AppendFormat("{0}\t{1}\t{6}/{12}\t\t({7:N0} {13})\t{2}\t{8}/{12}\t\t{3}\t{9}\t\t{4}\t{10}/{12}\t\t{5}\t{11}\n",
+                Viewer.Catalog.GetString("Injector:"),
+                Viewer.Catalog.GetString("Max"),
+                Viewer.Catalog.GetString("Inj1"),
+                Viewer.Catalog.GetString("Temp1"),
+                Viewer.Catalog.GetString("Inj2"),
+                Viewer.Catalog.GetString("Temp2"),
+                FormatStrings.FormatFuelVolume(pS.TopH(L.FromGUK(InjectorFlowRateLBpS / WaterLBpUKG)), IsMetric, IsUK),
                 InjectorSize,
-                Injector1Fraction * pS.TopH(InjectorFlowRateLBpS) / WaterLBpUKG,
-                Injector1WaterDelTempF,
-                Injector2Fraction * pS.TopH(InjectorFlowRateLBpS) / WaterLBpUKG,
-                Injector2WaterDelTempF);
+                FormatStrings.FormatFuelVolume(Injector1Fraction * pS.TopH(L.FromGUK(InjectorFlowRateLBpS / WaterLBpUKG)), IsMetric, IsUK),
+                FormatStrings.FormatTemperature(C.FromF(Injector1WaterDelTempF), IsMetric, false),
+                FormatStrings.FormatFuelVolume(Injector2Fraction * pS.TopH(L.FromGUK(InjectorFlowRateLBpS / WaterLBpUKG)), IsMetric, IsUK),
+                FormatStrings.FormatTemperature(C.FromF(Injector2WaterDelTempF), IsMetric, false),
+                FormatStrings.h,
+                FormatStrings.mm);
 
-            status.AppendFormat("Tender:\tCoal\t{0:N0} lb\t{1:N0}%\tWater\t{2:N0} gal(uk)\t\t{3:F0}%\n",
-                Kg.ToLb(TenderCoalMassKG),
-                (TenderCoalMassKG / MaxTenderCoalMassKG) * 100,
-                TenderWaterVolumeUKG,
-                (TenderWaterVolumeUKG / (Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG)) * 100);
+            status.AppendFormat("{0}\t{1}\t{3}\t{4:N0}%\t{2}\t{5}\t\t{6:F0}%\n",
+                Viewer.Catalog.GetString("Tender:"),
+                Viewer.Catalog.GetString("Coal"),
+                Viewer.Catalog.GetString("Water"),
+                FormatStrings.FormatMass(TenderCoalMassKG, IsMetric),
+                TenderCoalMassKG / MaxTenderCoalMassKG * 100,
+                FormatStrings.FormatFuelVolume(L.FromGUK(TenderWaterVolumeUKG), IsMetric, IsUK),
+                TenderWaterVolumeUKG / (Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG) * 100);
 
-            status.AppendFormat("Status.:\tCoalOut\t{0}\t\tWaterOut\t{1}\tFireOut\t{2}\tStoker\t{3}\tBoost\t{4}\tB Reset\t{5}\n",
-                CoalIsExhausted,
-                WaterIsExhausted,
-                FireIsExhausted,
-                StokerIsMechanical,
-                FuelBoost,
-                FuelBoostReset);
+            status.AppendFormat("{0}\t{1}\t{7}\t\t{2}\t{8}\t{3}\t{9}\t{4}\t{10}\t{5}\t{11}\t{6}\t{12}\n",
+                Viewer.Catalog.GetString("Status:"),
+                Viewer.Catalog.GetString("CoalOut"),
+                Viewer.Catalog.GetString("WaterOut"),
+                Viewer.Catalog.GetString("FireOut"),
+                Viewer.Catalog.GetString("Stoker"),
+                Viewer.Catalog.GetString("Boost"),
+                Viewer.Catalog.GetString("BstReset"),
+                CoalIsExhausted ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
+                WaterIsExhausted ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
+                FireIsExhausted ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
+                StokerIsMechanical ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
+                FuelBoost ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
+                FuelBoostReset ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"));
 
-            status.AppendFormat("\n\t\t === Performance === \n");
-            status.AppendFormat("Power:\tMaxIHP\t{0:N0} hp\tIHP\t{1:N0} hp\tDHP\t{2:N0} hp\n",
-                MaxIndicatedHorsePowerHP,
-                IndicatedHorsePowerHP,
-                DrawbarHorsePowerHP);
+            status.AppendFormat("\n\t\t === {0} === \n", Viewer.Catalog.GetString("Performance"));
+            status.AppendFormat("{0}\t{1}\t{4}\t{2}\t{5}\t{3}\t{6}\n",
+                Viewer.Catalog.GetString("Power:"),
+                Viewer.Catalog.GetString("MaxInd"),
+                Viewer.Catalog.GetString("Ind"),
+                Viewer.Catalog.GetString("Drawbar"),
+                FormatStrings.FormatPower(W.FromHp(MaxIndicatedHorsePowerHP), IsMetric, false, false),
+                FormatStrings.FormatPower(W.FromHp(IndicatedHorsePowerHP), IsMetric, false, false),
+                FormatStrings.FormatPower(W.FromHp(DrawbarHorsePowerHP), IsMetric, false, false));
 
-            status.AppendFormat("Force:\tTheo. TE\t{0:N0} lbf\tStart TE\t{1:N0} lbf\tTE\t{2:N0} lbf\tDraw\t{3:N0} lbf\tCritic\t{4:N0} lbf\tCrit Speed {5:N1} mph\n",
-                MaxTractiveEffortLbf,
-                N.ToLbf(StartTractiveEffortN),
-                DisplayTractiveEffortLbsF,
-                DrawBarPullLbsF,
-                CriticalSpeedTractiveEffortLbf,
-                MaxLocoSpeedMpH);
+            status.AppendFormat("{0}\t{1}\t{7}\t{2}\t{8}\t{3}\t{9}\t{4}\t{10}\t{5}\t{11}\t{6} {12}\n",
+                Viewer.Catalog.GetString("Force:"),
+                Viewer.Catalog.GetString("TheorTE"),
+                Viewer.Catalog.GetString("StartTE"),
+                Viewer.Catalog.GetString("TE"),
+                Viewer.Catalog.GetString("Draw"),
+                Viewer.Catalog.GetString("CritSpTE"),
+                Viewer.Catalog.GetString("CritSpeed"),
+                FormatStrings.FormatForce(N.FromLbf(MaxTractiveEffortLbf), IsMetric),
+                FormatStrings.FormatForce(StartTractiveEffortN, IsMetric),
+                FormatStrings.FormatForce(N.FromLbf(DisplayTractiveEffortLbsF), IsMetric),
+                FormatStrings.FormatForce(N.FromLbf(DrawBarPullLbsF), IsMetric),
+                FormatStrings.FormatForce(N.FromLbf(CriticalSpeedTractiveEffortLbf), IsMetric),
+                FormatStrings.FormatSpeedDisplay(MpS.FromMpH(MaxLocoSpeedMpH), IsMetric));
 
-            status.AppendFormat("Move:\tPiston\t{0:N0}ft/m\tSp. Fact.\t{1:N3}\tDrv\t{2:N0} rpm\tMF- Gear {3:N2}\n",
-                PistonSpeedFtpM,
+            status.AppendFormat("{0}\t{1}\t{5:N0} {9}/{10}\t\t{2}\t{6:N3}\t{3}\t{7:N0} {11}\t{4} {8:N2}\n",
+                Viewer.Catalog.GetString("Move:"),
+                Viewer.Catalog.GetString("Piston"),
+                Viewer.Catalog.GetString("SpdFact"),
+                Viewer.Catalog.GetString("DrvWhl"),
+                Viewer.Catalog.GetString("MF-Gear"),
+                IsMetric ? Me.FromFt(PistonSpeedFtpMin) : PistonSpeedFtpMin,
                 SpeedFactor,
                 pS.TopM(DrvWheelRevRpS),
-                MotiveForceGearRatio);
+                MotiveForceGearRatio,
+                IsMetric ? FormatStrings.m : FormatStrings.ft,
+                FormatStrings.min,
+                FormatStrings.rpm);
 
- 	status.AppendFormat("\n\t\t\t === Experimental - Slip Monitor === \n");
-    status.AppendFormat("Slip:\tPiston\t{0:N0} lbf\tTang(c)\t{1:N0}lbf\tTang(t)\t{2:N0}lbf\tStatic\t{3:N0}lbf\tCoeff\t{4:N2}\tSlip\t{5}\tWhWght \t{6:N0} lbs\t\tFoA {7:N1}\n",
-                PistonForceLbf,
-                TangentialCrankWheelForceLbf,
-                TangentialWheelTreadForceLbf,
-                StaticWheelFrictionForceLbf,
+ 	        status.AppendFormat("\n\t\t\t === {0} - {1} === \n", Viewer.Catalog.GetString("Experimental"), Viewer.Catalog.GetString("Slip Monitor"));
+            status.AppendFormat("{0}\t{1}\t{9}\t{2}\t{10}\t{3}\t{11}\t{4}\t{12}\t{5}\t{13:N2}\t{6}\t{14}\t{7}\t{15}\t{8} {16:N1}\n",
+                Viewer.Catalog.GetString("Slip:"),
+                Viewer.Catalog.GetString("Piston"),
+                Viewer.Catalog.GetString("Tang(c)"),
+                Viewer.Catalog.GetString("Tang(t)"),
+                Viewer.Catalog.GetString("Static"),
+                Viewer.Catalog.GetString("Coeff"),
+                Viewer.Catalog.GetString("Slip"),
+                Viewer.Catalog.GetString("WheelM"),
+                Viewer.Catalog.GetString("FoA"),
+                FormatStrings.FormatForce(N.FromLbf(PistonForceLbf), IsMetric),
+                FormatStrings.FormatForce(N.FromLbf(TangentialCrankWheelForceLbf), IsMetric),
+                FormatStrings.FormatForce(N.FromLbf(TangentialWheelTreadForceLbf), IsMetric),
+                FormatStrings.FormatForce(N.FromLbf(StaticWheelFrictionForceLbf), IsMetric),
                 FrictionCoeff,
-                IsLocoSlip,
-               WheelWeightLbs,
-               CalculatedFactorofAdhesion);
+                IsLocoSlip ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
+                FormatStrings.FormatMass(Kg.FromLb(WheelWeightLbs), IsMetric),
+                CalculatedFactorofAdhesion);
 
             return status.ToString();
         }

@@ -105,6 +105,8 @@ namespace ORTS.Settings
         public String Language { get; set; }
         [Default("Automatic")]
         public String PressureUnit { get; set; }
+        [Default("Automatic")]
+        public String Units { get; set; }
 
 		// Audio settings:
         [Default(true)]

@@ -37,7 +37,7 @@ namespace ORTS
         private GettextResourceManager catalog = new GettextResourceManager("Menu");
         private Boolean Initialized = false;
 
-        public class Language
+        public class ComboBoxMember
         {
             public string Code { get; set; }
             public string Name { get; set; }
@@ -62,15 +62,36 @@ namespace ORTS
             // Turn the list of codes in to a list of code + name pairs for
             // displaying in the dropdown list.
             comboLanguage.DataSource = 
-                new[] { new Language { Code = "", Name = "System" } }
+                new[] { new ComboBoxMember { Code = "", Name = "System" } }
                 .Union(languageCodes
-                    .Select(lc => new Language { Code = lc, Name = CultureInfo.GetCultureInfo(lc).NativeName })
+                    .Select(lc => new ComboBoxMember { Code = lc, Name = CultureInfo.GetCultureInfo(lc).NativeName })
                     .OrderBy(l => l.Name)
                 )
                 .ToList();
             comboLanguage.DisplayMember = "Name";
             comboLanguage.ValueMember = "Code";
             comboLanguage.SelectedValue = Settings.Language;
+
+            comboBoxOtherUnits.DataSource = new[] {
+                new ComboBoxMember { Code = "Automatic", Name = catalog.GetString("System") },
+                new ComboBoxMember { Code = "Metric", Name = catalog.GetString("Metric") },
+                new ComboBoxMember { Code = "US", Name = catalog.GetString("Imperial US") },
+                new ComboBoxMember { Code = "UK", Name = catalog.GetString("Imperial UK") },
+            }.ToList();
+            comboBoxOtherUnits.DisplayMember = "Name";
+            comboBoxOtherUnits.ValueMember = "Code";
+            comboBoxOtherUnits.SelectedValue = Settings.Units;
+
+            comboPressureUnit.DataSource = new[] {
+                new ComboBoxMember { Code = "Automatic", Name = catalog.GetString("Automatic") },
+                new ComboBoxMember { Code = "bar", Name = catalog.GetString("bar") },
+                new ComboBoxMember { Code = "PSI", Name = catalog.GetString("psi") },
+                new ComboBoxMember { Code = "inHg", Name = catalog.GetString("inHg") },
+                new ComboBoxMember { Code = "kgf/cm^2", Name = catalog.GetString("kgf/cm²") },
+            }.ToList();
+            comboPressureUnit.DisplayMember = "Name";
+            comboPressureUnit.ValueMember = "Code";
+            comboPressureUnit.SelectedValue = Settings.PressureUnit;
 
             // Windows 2000 and XP should use 8.25pt Tahoma, while Windows
             // Vista and later should use 9pt "Segoe UI". We'll use the
@@ -98,6 +119,8 @@ namespace ORTS
             numericBrakePipeChargingRate.Value = Settings.BrakePipeChargingRate;
             comboLanguage.Text = Settings.Language;
             comboPressureUnit.Text = Settings.PressureUnit;
+            comboBoxOtherUnits.Text = settings.Units;
+
 
             // Audio tab
             checkMSTSBINSound.Checked = Settings.MSTSBINSound;
@@ -334,7 +357,9 @@ namespace ORTS
             Settings.GraduatedRelease = checkGraduatedRelease.Checked;
             Settings.BrakePipeChargingRate = (int)numericBrakePipeChargingRate.Value;
             Settings.Language = comboLanguage.SelectedValue.ToString();
-            Settings.PressureUnit = comboPressureUnit.Text;
+            Settings.PressureUnit = comboPressureUnit.SelectedValue.ToString();
+            Settings.Units = comboBoxOtherUnits.SelectedValue.ToString();
+
             
             // Audio tab
             Settings.MSTSBINSound = checkMSTSBINSound.Checked;

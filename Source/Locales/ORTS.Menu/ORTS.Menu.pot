@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-10-24 21:13:35+0200\n"
-"PO-Revision-Date: 2014-10-24 21:13:35+0200\n"
+"POT-Creation-Date: 2015-02-03 20:14:48+0100\n"
+"PO-Revision-Date: 2015-02-03 20:14:48+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -17,7 +17,8 @@ msgstr ""
 
 #: ../../ORTS.Menu/Activities.cs:75
 #: ../../ORTS.Menu/Consists.cs:47
-#: ../../ORTS.Menu/Consists.cs:143
+#: ../../ORTS.Menu/Consists.cs:71
+#: ../../ORTS.Menu/Consists.cs:199
 #: ../../ORTS.Menu/ORTimetables.cs:55
 #: ../../ORTS.Menu/ORTimetables.cs:77
 #: ../../ORTS.Menu/Paths.cs:63
@@ -27,7 +28,8 @@ msgstr ""
 
 #: ../../ORTS.Menu/Activities.cs:78
 #: ../../ORTS.Menu/Consists.cs:50
-#: ../../ORTS.Menu/Consists.cs:146
+#: ../../ORTS.Menu/Consists.cs:74
+#: ../../ORTS.Menu/Consists.cs:202
 #: ../../ORTS.Menu/Paths.cs:65
 #: ../../ORTS.Menu/Paths.cs:66
 #: ../../ORTS.Menu/Paths.cs:67
@@ -37,7 +39,8 @@ msgstr ""
 
 #: ../../ORTS.Menu/Activities.cs:84
 #: ../../ORTS.Menu/Consists.cs:54
-#: ../../ORTS.Menu/Consists.cs:151
+#: ../../ORTS.Menu/Consists.cs:78
+#: ../../ORTS.Menu/Consists.cs:207
 #: ../../ORTS.Menu/ORTimetables.cs:60
 #: ../../ORTS.Menu/ORTimetables.cs:82
 #: ../../ORTS.Menu/Paths.cs:71
@@ -50,11 +53,11 @@ msgstr ""
 msgid "Activity '{0}' is excluded."
 msgstr ""
 
-#: ../../ORTS.Menu/Consists.cs:129
+#: ../../ORTS.Menu/Consists.cs:185
 msgid "- Any Locomotive -"
 msgstr ""
 
-#: ../../ORTS.Menu/Consists.cs:145
+#: ../../ORTS.Menu/Consists.cs:201
 #, csharp-format
 msgid "Locomotive '{0}' is excluded."
 msgstr ""

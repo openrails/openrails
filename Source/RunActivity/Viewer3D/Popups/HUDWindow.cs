@@ -123,23 +123,23 @@ namespace ORTS.Viewer3D.Popups
 			HUDGraphMaterial = (HUDGraphMaterial)Viewer.MaterialManager.Load("Debug");
 
 			LocomotiveGraphs = new HUDGraphSet(Viewer, HUDGraphMaterial);
-            LocomotiveGraphsThrottle = LocomotiveGraphs.Add("Throttle", "0", "100%", Color.Blue, 50);
-            LocomotiveGraphsInputPower = LocomotiveGraphs.Add("Power In/Out", "0", "100%", Color.Yellow, 50);
+            LocomotiveGraphsThrottle = LocomotiveGraphs.Add(Viewer.Catalog.GetString("Throttle"), "0", "100%", Color.Blue, 50);
+            LocomotiveGraphsInputPower = LocomotiveGraphs.Add(Viewer.Catalog.GetString("Power In/Out"), "0", "100%", Color.Yellow, 50);
             LocomotiveGraphsOutputPower = LocomotiveGraphs.AddOverlapped(Color.Green, 50);
 
 			ForceGraphs = new HUDGraphSet(Viewer, HUDGraphMaterial);
-            ForceGraphMotiveForce = ForceGraphs.Add("Motive force", "0%", "100%", Color.Green, 75);
+            ForceGraphMotiveForce = ForceGraphs.Add(Viewer.Catalog.GetString("Motive force"), "0%", "100%", Color.Green, 75);
             ForceGraphDynamicForce = ForceGraphs.AddOverlapped(Color.Red, 75);
-            ForceGraphNumOfSubsteps = ForceGraphs.Add("Num of substeps", "0", "300", Color.Blue, 25);
+            ForceGraphNumOfSubsteps = ForceGraphs.Add(Viewer.Catalog.GetString("Num of substeps"), "0", "300", Color.Blue, 25);
 
 			DebugGraphs = new HUDGraphSet(Viewer, HUDGraphMaterial);
-            DebugGraphMemory = DebugGraphs.Add("Memory", "0GB", String.Format("{0:F0}GB", (float)ProcessVirtualAddressLimit / 1024 / 1024 / 1024), Color.Orange, 50);
-            DebugGraphGCs = DebugGraphs.Add("GCs", "0", "2", Color.Magenta, 20); // Multiple of 4
-            DebugGraphFrameTime = DebugGraphs.Add("Frame time", "0.0s", "0.1s", Color.LightGreen, 50);
-            DebugGraphProcessRender = DebugGraphs.Add("Render process", "0%", "100%", Color.Red, 20);
-            DebugGraphProcessUpdater = DebugGraphs.Add("Updater process", "0%", "100%", Color.Yellow, 20);
-            DebugGraphProcessLoader = DebugGraphs.Add("Loader process", "0%", "100%", Color.Magenta, 20);
-            DebugGraphProcessSound = DebugGraphs.Add("Sound process", "0%", "100%", Color.Cyan, 20);
+            DebugGraphMemory = DebugGraphs.Add(Viewer.Catalog.GetString("Memory"), "0GB", String.Format("{0:F0}GB", (float)ProcessVirtualAddressLimit / 1024 / 1024 / 1024), Color.Orange, 50);
+            DebugGraphGCs = DebugGraphs.Add(Viewer.Catalog.GetString("GCs"), "0", "2", Color.Magenta, 20); // Multiple of 4
+            DebugGraphFrameTime = DebugGraphs.Add(Viewer.Catalog.GetString("Frame time"), "0.0s", "0.1s", Color.LightGreen, 50);
+            DebugGraphProcessRender = DebugGraphs.Add(Viewer.Catalog.GetString("Render process"), "0%", "100%", Color.Red, 20);
+            DebugGraphProcessUpdater = DebugGraphs.Add(Viewer.Catalog.GetString("Updater process"), "0%", "100%", Color.Yellow, 20);
+            DebugGraphProcessLoader = DebugGraphs.Add(Viewer.Catalog.GetString("Loader process"), "0%", "100%", Color.Magenta, 20);
+            DebugGraphProcessSound = DebugGraphs.Add(Viewer.Catalog.GetString("Sound process"), "0%", "100%", Color.Cyan, 20);
 #if WITH_PATH_DEBUG
             TextPage = 5;
 #endif
@@ -389,10 +389,10 @@ namespace ORTS.Viewer3D.Popups
             if (Viewer.IsReplaying)
                 TableAddLabelValue(table, Viewer.Catalog.GetString("Replay"), InfoDisplay.FormattedTime(Viewer.Log.ReplayEndsAt - Viewer.Simulator.ClockTime));
 
-            TableAddLabelValue(table, Viewer.Catalog.GetString("Speed"), FormatStrings.FormatSpeedDisplay(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
+            TableAddLabelValue(table, Viewer.Catalog.GetString("Speed"), FormatStrings.FormatSpeedDisplay(Viewer.PlayerLocomotive.SpeedMpS, Viewer.PlayerLocomotive.IsMetric));
             TableAddLabelValue(table, Viewer.Catalog.GetString("Gradient"), "{0:F1}%", -Viewer.PlayerLocomotive.CurrentElevationPercent);
-            TableAddLabelValue(table, Viewer.Catalog.GetString("Direction"), showMUReverser ? "{1:F0} {0}" : "{0}", FormatStrings.Catalog.GetString(GetStringAttribute.GetPrettyName(Viewer.PlayerLocomotive.Direction)), Math.Abs(playerTrain.MUReverserPercent));
-            TableAddLabelValue(table, Viewer.Catalog.GetString("Throttle"), "{0:F0}%", Viewer.PlayerLocomotive.ThrottlePercent);
+            TableAddLabelValue(table, Viewer.Catalog.GetString("Direction"), showMUReverser ? "{1:F0} {0}" : "{0}", FormatStrings.Catalog.GetParticularString("Reverser", GetStringAttribute.GetPrettyName(Viewer.PlayerLocomotive.Direction)), Math.Abs(playerTrain.MUReverserPercent));
+            TableAddLabelValue(table, Viewer.PlayerLocomotive is MSTSSteamLocomotive ? Viewer.Catalog.GetString("Regulator") : Viewer.Catalog.GetString("Throttle"), "{0:F0}%", Viewer.PlayerLocomotive.ThrottlePercent);
             TableAddLabelValue(table, Viewer.Catalog.GetString("Train brake"), "{0}", Viewer.PlayerLocomotive.GetTrainBrakeStatus());
             if (showRetainers)
                 TableAddLabelValue(table, Viewer.Catalog.GetString("Retainers"), "{0}% {1}", playerTrain.RetainerPercent, Viewer.Catalog.GetString(GetStringAttribute.GetPrettyName(playerTrain.RetainerSetting)));
@@ -436,11 +436,14 @@ namespace ORTS.Viewer3D.Popups
 
         void TextPageMultiPlayerInfo(TableData table)
         {
-            TextPageHeading(table, "MULTI-PLAYER INFORMATION");
+            TextPageHeading(table, Viewer.Catalog.GetString("MULTI-PLAYER INFORMATION"));
 
             var text = MultiPlayer.MPManager.Instance().GetOnlineUsersInfo();
 
-            TableAddLabelValue(table, "Mode", "{0}", MultiPlayer.MPManager.IsServer() ? "Dispatcher" : MultiPlayer.MPManager.Instance().AmAider ? "Helper" : MultiPlayer.MPManager.IsClient() ? "Client" : "");
+            TableAddLabelValue(table, Viewer.Catalog.GetString("Mode"), "{0}", MultiPlayer.MPManager.IsServer()
+                ? Viewer.Catalog.GetString("Dispatcher") : MultiPlayer.MPManager.Instance().AmAider
+                ? Viewer.Catalog.GetString("Helper") : MultiPlayer.MPManager.IsClient()
+                ? Viewer.Catalog.GetString("Client") : "");
             TableAddLine(table);
             foreach (var t in text.Split('\t'))
                 TableAddLine(table, "{0}", t);
@@ -448,22 +451,50 @@ namespace ORTS.Viewer3D.Popups
 
         void TextPageConsistInfo(TableData table)
         {
-            TextPageHeading(table, "CONSIST INFORMATION");
+            TextPageHeading(table, Viewer.Catalog.GetString("CONSIST INFORMATION"));
 
             var locomotive = Viewer.PlayerLocomotive;
             var mstsLocomotive = locomotive as MSTSLocomotive;
             var train = locomotive.Train;
 
-            TableSetCells(table, 0, "Player", "Tilted", "Type", "Length", "Weight", "Control Mode", "", "Out of Control", "", "Cab Aspect");
+            TableSetCells(table, 0,
+                Viewer.Catalog.GetString("Player"),
+                Viewer.Catalog.GetString("Tilted"),
+                Viewer.Catalog.GetString("Type"),
+                Viewer.Catalog.GetString("Length"),
+                Viewer.Catalog.GetString("Weight"), "",
+                Viewer.Catalog.GetString("Control Mode"), "",
+                Viewer.Catalog.GetString("Out of Control"), "",
+                Viewer.Catalog.GetString("Cab Aspect"));
             TableAddLine(table);
-            TableSetCells(table, 0, locomotive.UiD + " " + (mstsLocomotive == null ? "" : mstsLocomotive.UsingRearCab ? "R" : "F"), train.tilted.ToString(), train.IsFreight ? "Freight" : "Pass", FormatStrings.FormatDistance(train.Length, true), FormatStrings.FormatMass(train.MassKg, true) , train.ControlMode.ToString(), "", train.OutOfControlReason.ToString(), "", mstsLocomotive.TrainControlSystem.CabSignalAspect.ToString());
+            TableSetCells(table, 0, locomotive.UiD + " " + (mstsLocomotive == null ? "" : mstsLocomotive.UsingRearCab ? Viewer.Catalog.GetString("R") : Viewer.Catalog.GetString("F")),
+                train.tilted ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
+                train.IsFreight ? Viewer.Catalog.GetString("Freight") : Viewer.Catalog.GetString("Pass"),
+                FormatStrings.FormatShortDistanceDisplay(train.Length, locomotive.IsMetric),
+                FormatStrings.FormatLargeMass(train.MassKg, locomotive.IsMetric, locomotive.IsUK), "",
+                train.ControlMode.ToString(), "",
+                train.OutOfControlReason.ToString(), "",
+                mstsLocomotive.TrainControlSystem.CabSignalAspect.ToString());
             TableAddLine(table);
             TableAddLine(table);
-            TableSetCells(table, 0, "Car", "Flipped", "Type", "Length", "Weight", "Drv/Cabs", "Wheels");
+            TableSetCells(table, 0,
+                Viewer.Catalog.GetString("Car"),
+                Viewer.Catalog.GetString("Flipped"),
+                Viewer.Catalog.GetString("Type"),
+                Viewer.Catalog.GetString("Length"),
+                Viewer.Catalog.GetString("Weight"),
+                Viewer.Catalog.GetString("Drv/Cabs"),
+                Viewer.Catalog.GetString("Wheels"));
             TableAddLine(table);
             foreach (var car in train.Cars.Take(20))
             {
-                TableSetCells(table, 0, car.UiD.ToString(), car.Flipped.ToString(), train.IsFreight ? "Freight" : "Pass", FormatStrings.FormatDistance(car.CarLengthM, true), FormatStrings.FormatMass(car.MassKG, true), (car.IsDriveable ? "D" : "") + (car.HasFrontCab ? "F" : "") + (car.HasRearCab ? "R" : ""), GetCarWhyteLikeNotation(car));
+                TableSetCells(table, 0, car.UiD.ToString(),
+                    car.Flipped ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
+                    train.IsFreight ? Viewer.Catalog.GetString("Freight") : Viewer.Catalog.GetString("Pass"),
+                    FormatStrings.FormatShortDistanceDisplay(car.CarLengthM, locomotive.IsMetric),
+                    FormatStrings.FormatLargeMass(car.MassKG, locomotive.IsMetric, locomotive.IsUK),
+                    (car.IsDriveable ? "D" : "") + (car.HasFrontCab ? "F" : "") + (car.HasRearCab ? "R" : ""),
+                    GetCarWhyteLikeNotation(car));
                 TableAddLine(table);
             }
         }
@@ -492,12 +523,20 @@ namespace ORTS.Viewer3D.Popups
 
         void TextPageLocomotiveInfo(TableData table)
         {
-            TextPageHeading(table, "LOCOMOTIVE INFORMATION");
+            TextPageHeading(table, Viewer.Catalog.GetString("LOCOMOTIVE INFORMATION"));
 
             var locomotive = Viewer.PlayerLocomotive;
             var train = locomotive.Train;
 
-            TableAddLines(table, String.Format("Direction\t{0}\tReverser\t{1:F0}%\tThrottle\t{2:F0}%\tD-brake\t{3:F0}%", train.MUDirection, train.MUReverserPercent, train.MUThrottlePercent, train.MUDynamicBrakePercent));
+            TableAddLines(table, String.Format("{0}\t{4}\t{1}\t{5:F0}%\t{2}\t\t{6:F0}%\t{3}\t\t{7}",
+                Viewer.Catalog.GetString("Direction"),
+                Viewer.PlayerLocomotive is MSTSSteamLocomotive ? Viewer.Catalog.GetParticularString("Steam", "Reverser") : Viewer.Catalog.GetParticularString("NonSteam", "Reverser"),
+                Viewer.PlayerLocomotive is MSTSSteamLocomotive ? Viewer.Catalog.GetString("Regulator") : Viewer.Catalog.GetString("Throttle"),
+                Viewer.Catalog.GetString("Dynamic brake"),
+                FormatStrings.Catalog.GetParticularString("Reverser", GetStringAttribute.GetPrettyName(train.MUDirection)),
+                train.MUReverserPercent,
+                train.MUThrottlePercent,
+                train.MUDynamicBrakePercent >= 0 ? string.Format("{0:F0}%", train.MUDynamicBrakePercent) : Viewer.Catalog.GetString("off")));
             TableAddLine(table);
             foreach (var car in train.Cars)
                 if (car is MSTSLocomotive)
@@ -506,10 +545,27 @@ namespace ORTS.Viewer3D.Popups
 
         void TextPageBrakeInfo(TableData table)
         {
-            TextPageHeading(table, "BRAKE INFORMATION");
+            TextPageHeading(table, Viewer.Catalog.GetString("BRAKE INFORMATION"));
 
             var train = Viewer.PlayerLocomotive.Train;
-            TableAddLabelValue(table, "Main reservoir", "{0}", FormatStrings.FormatPressure(train.BrakeLine2PressurePSI, PressureUnit.PSI, (Viewer.PlayerLocomotive as MSTSLocomotive).PressureUnit, true));
+            TableAddLabelValue(table, Viewer.Catalog.GetString("Main reservoir"), "{0}", FormatStrings.FormatPressure(train.BrakeLine2PressurePSI, PressureUnit.PSI, (Viewer.PlayerLocomotive as MSTSLocomotive).PressureUnit, true));
+
+            TableSetCells(table, 0,
+                Viewer.Catalog.GetString("Car"),
+                Viewer.Catalog.GetString("Type"),
+                Viewer.Catalog.GetString("BrkCyl"),
+                Viewer.Catalog.GetString("BrkPipe"),
+                Viewer.Catalog.GetString("AuxRes"),
+                Viewer.Catalog.GetString("ErgRes"),
+                Viewer.Catalog.GetString("MRPipe"),
+                Viewer.Catalog.GetString("RetValve"),
+                Viewer.Catalog.GetString("TripleValve"),
+                Viewer.Catalog.GetString(""),
+                Viewer.Catalog.GetString("Handbrk"),
+                Viewer.Catalog.GetString("Conn"),
+                Viewer.Catalog.GetString("AnglCock"),
+                Viewer.Catalog.GetString("BleedOff"));
+            TableAddLine(table);
 
             var n = train.Cars.Count; // Number of lines to show
             for (var i = 0; i < n; i++)
@@ -524,35 +580,49 @@ namespace ORTS.Viewer3D.Popups
 
         void TextPageForceInfo(TableData table)
         {
-            TextPageHeading(table, "FORCE INFORMATION");
+            TextPageHeading(table, Viewer.Catalog.GetString("FORCE INFORMATION"));
 
             var train = Viewer.PlayerLocomotive.Train;
             var mstsLocomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
+            
             if (mstsLocomotive != null)
             {
                 if ((mstsLocomotive.Simulator.UseAdvancedAdhesion) && (!mstsLocomotive.AntiSlip))
                 {
-                    TableAddLabelValue(table, "Wheel slip", "{0:F0}% ({1:F0}%/s)", mstsLocomotive.LocomotiveAxle.SlipSpeedPercent, mstsLocomotive.LocomotiveAxle.SlipDerivationPercentpS);
-                    TableAddLabelValue(table, "Conditions", "{0:F0}%", mstsLocomotive.LocomotiveAxle.AdhesionConditions * 10f);
-                    TableAddLabelValue(table, "Axle drive force", "{0:F0} N", mstsLocomotive.LocomotiveAxle.DriveForceN);
-                    TableAddLabelValue(table, "Axle brake force", "{0:F0} N", mstsLocomotive.LocomotiveAxle.BrakeForceN);
-                    TableAddLabelValue(table, "Num of substeps", "{0:F0} (filtered by {1:F0})", mstsLocomotive.LocomotiveAxle.AxleRevolutionsInt.NumOfSubstepsPS,
-                                                                                               mstsLocomotive.LocomotiveAxle.FilterMovingAverage.Size);
-                    TableAddLabelValue(table, "Solver", "{0}", mstsLocomotive.LocomotiveAxle.AxleRevolutionsInt.Method.ToString());
-                    TableAddLabelValue(table, "Stability correction", "{0:F0}", mstsLocomotive.LocomotiveAxle.AdhesionK);
-                    TableAddLabelValue(table, "Axle out force", "{0:F0} N ({1:F0} kW)", mstsLocomotive.LocomotiveAxle.AxleForceN, mstsLocomotive.LocomotiveAxle.AxleForceN * mstsLocomotive.WheelSpeedMpS / 1000.0f);
+                    TableAddLabelValue(table, Viewer.Catalog.GetString("Wheel slip"), "{0:F0}% ({1:F0}%/{2})", mstsLocomotive.LocomotiveAxle.SlipSpeedPercent, mstsLocomotive.LocomotiveAxle.SlipDerivationPercentpS, FormatStrings.s);
+                    TableAddLabelValue(table, Viewer.Catalog.GetString("Conditions"), "{0:F0}%", mstsLocomotive.LocomotiveAxle.AdhesionConditions * 10f);
+                    TableAddLabelValue(table, Viewer.Catalog.GetString("Axle drive force"), "{0}", FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.DriveForceN, mstsLocomotive.IsMetric));
+                    TableAddLabelValue(table, Viewer.Catalog.GetString("Axle brake force"), "{0}", FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.BrakeForceN, mstsLocomotive.IsMetric));
+                    TableAddLabelValue(table, Viewer.Catalog.GetString("Number of substeps"), "{0:F0} ({1})", mstsLocomotive.LocomotiveAxle.AxleRevolutionsInt.NumOfSubstepsPS,
+                                                                                                Viewer.Catalog.GetStringFmt("filtered by {0:F0}", mstsLocomotive.LocomotiveAxle.FilterMovingAverage.Size));
+                    TableAddLabelValue(table, Viewer.Catalog.GetString("Solver"), "{0}", mstsLocomotive.LocomotiveAxle.AxleRevolutionsInt.Method.ToString());
+                    TableAddLabelValue(table, Viewer.Catalog.GetString("Stability correction"), "{0:F0}", mstsLocomotive.LocomotiveAxle.AdhesionK);
+                    TableAddLabelValue(table, Viewer.Catalog.GetString("Axle out force"), "{0} ({1})",
+                        FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.AxleForceN, mstsLocomotive.IsMetric),
+                        FormatStrings.FormatPower(mstsLocomotive.LocomotiveAxle.AxleForceN * mstsLocomotive.WheelSpeedMpS, mstsLocomotive.IsMetric, false, false));
                 }
                 else
                 {
-                    TableAddLine(table, "(Advanced adhesion model disabled)");
-                    TableAddLabelValue(table, "Axle out force", "{0:F0} N ({1:F0} kW)", mstsLocomotive.MotiveForceN, mstsLocomotive.MotiveForceN * mstsLocomotive.SpeedMpS / 1000.0f);
+                    TableAddLine(table, Viewer.Catalog.GetString("(Advanced adhesion model disabled)"));
+                    TableAddLabelValue(table, Viewer.Catalog.GetString("Axle out force"), "{0:F0} N ({1:F0} kW)", mstsLocomotive.MotiveForceN, mstsLocomotive.MotiveForceN * mstsLocomotive.SpeedMpS / 1000.0f);
                 }
                 TableAddLine(table);
             }
 
             //TableAddLine(table,"Coupler breaks: {0:F0}", train.NumOfCouplerBreaks);
 
-            TableSetCells(table, 0, "Car", "Total", "Motive", "Brake", "Friction", "Gravity", "Curve", "Tunnel", "Coupler", "Mass", "Elev", "Notes");
+            TableSetCells(table, 0,
+                Viewer.Catalog.GetString("Car"),
+                Viewer.Catalog.GetString("Total"),
+                Viewer.Catalog.GetString("Motive"),
+                Viewer.Catalog.GetString("Brake"),
+                Viewer.Catalog.GetString("Friction"),
+                Viewer.Catalog.GetString("Gravity"),
+                Viewer.Catalog.GetString("Curve"),
+                Viewer.Catalog.GetString("Tunnel"),
+                Viewer.Catalog.GetString("Coupler"),
+                Viewer.Catalog.GetString("Mass"),
+                Viewer.Catalog.GetString("Gradient"));
             TableAddLine(table);
 
             var n = Math.Min(10, train.Cars.Count);
@@ -561,26 +631,38 @@ namespace ORTS.Viewer3D.Popups
                 var j = i == 0 ? 0 : i * (train.Cars.Count - 1) / (n - 1);
                 var car = train.Cars[j];
                 TableSetCell(table, 0, "{0}", j + 1);
-                TableSetCell(table, 1, "{0:F0}", car.TotalForceN);
-                TableSetCell(table, 2, "{0:F0}", car.MotiveForceN);
-                TableSetCell(table, 3, "{0:F0}", car.BrakeForceN);
-                TableSetCell(table, 4, "{0:F0}", car.FrictionForceN);
-                TableSetCell(table, 5, "{0:F0}", car.GravityForceN);
-                TableSetCell(table, 6, "{0:F2}", car.CurveForceN);
-                TableSetCell(table, 7, "{0:F2}", car.TunnelForceN);
-                TableSetCell(table, 8, "{0:F0}", car.CouplerForceU);
-                TableSetCell(table, 9, "{0:F0}", car.MassKG);
-                TableSetCell(table, 10, "{0:F2}", -car.CurrentElevationPercent);
-                TableSetCell(table, 11, car.Flipped ? "Flipped" : "");
-                TableSetCell(table, 12, car.CouplerOverloaded ? "Coupler overloaded" : "");
+                TableSetCell(table, 1, "{0}", FormatStrings.FormatForce(car.TotalForceN, car.IsMetric));
+                TableSetCell(table, 2, "{0}", FormatStrings.FormatForce(car.MotiveForceN, car.IsMetric));
+                TableSetCell(table, 3, "{0}", FormatStrings.FormatForce(car.BrakeForceN, car.IsMetric));
+                TableSetCell(table, 4, "{0}", FormatStrings.FormatForce(car.FrictionForceN, car.IsMetric));
+                TableSetCell(table, 5, "{0}", FormatStrings.FormatForce(car.GravityForceN, car.IsMetric));
+                TableSetCell(table, 6, "{0}", FormatStrings.FormatForce(car.CurveForceN, car.IsMetric));
+                TableSetCell(table, 7, "{0}", FormatStrings.FormatForce(car.TunnelForceN, car.IsMetric));
+                TableSetCell(table, 8, "{0}{1}", FormatStrings.FormatForce(car.CouplerForceU, car.IsMetric), car.CouplerOverloaded ? "???" : "");
+                TableSetCell(table, 9, "{0}", FormatStrings.FormatLargeMass(car.MassKG, car.IsMetric, car.IsUK));
+                TableSetCell(table, 10, "{0:F2}%", -car.CurrentElevationPercent);
+                TableSetCell(table, 11, car.Flipped ? Viewer.Catalog.GetString("Flipped") : "");
                 TableAddLine(table);
             }
         }
 
         void TextPageDispatcherInfo(TableData table)
         {
-            TextPageHeading(table, "DISPATCHER INFORMATION");
-            TableSetCells(table, 0, "Train", "Travelled", "Speed", "Max", "AI mode", "AI data", "Mode", "Auth", "Distance", "Signal", "Distance", "Consist", "Path");
+            TextPageHeading(table, Viewer.Catalog.GetString("DISPATCHER INFORMATION"));
+            TableSetCells(table, 0,
+                Viewer.Catalog.GetString("Train"),
+                Viewer.Catalog.GetString("Travelled"),
+                Viewer.Catalog.GetString("Speed"),
+                Viewer.Catalog.GetString("Max"),
+                Viewer.Catalog.GetString("AI mode"),
+                Viewer.Catalog.GetString("AI data"),
+                Viewer.Catalog.GetString("Mode"),
+                Viewer.Catalog.GetString("Auth"),
+                Viewer.Catalog.GetString("Distance"),
+                Viewer.Catalog.GetString("Signal"),
+                Viewer.Catalog.GetString("Distance"),
+                Viewer.Catalog.GetString("Consist"),
+                Viewer.Catalog.GetString("Path"));
             TableAddLine(table);
 
             // first is player train
@@ -680,35 +762,35 @@ namespace ORTS.Viewer3D.Popups
 
         void TextPageDebugInfo(TableData table)
         {
-            TextPageHeading(table, "DEBUG INFORMATION");
+            TextPageHeading(table, Viewer.Catalog.GetString("DEBUG INFORMATION"));
 
             var allocatedBytesPerSecond = AllocatedBytesPerSecLastValue;
             if (AllocatedBytesPerSecCounter != null && AllocatedBytesPerSecCounter.NextValue() != null) allocatedBytesPerSecond = AllocatedBytesPerSecCounter.NextValue();
             if (allocatedBytesPerSecond >= 1 && AllocatedBytesPerSecLastValue != allocatedBytesPerSecond)
                 AllocatedBytesPerSecLastValue = allocatedBytesPerSecond;
 
-            TableAddLabelValue(table, "Logging enabled", "{0}", Viewer.Settings.DataLogger);
-            TableAddLabelValue(table, "Build", "{0}", VersionInfo.Build);
-            TableAddLabelValue(table, "Memory", "{0:F0} MB ({5}, {6}, {7}, {8}, {1:F0} MB managed, {9:F0} kB/frame allocated, {2:F0}/{3:F0}/{4:F0} GCs)", GetWorkingSetSize() / 1024 / 1024, GC.GetTotalMemory(false) / 1024 / 1024, GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2), Viewer.TextureManager.GetStatus(), Viewer.MaterialManager.GetStatus(), Viewer.ShapeManager.GetStatus(), Viewer.World.Terrain.GetStatus(), AllocatedBytesPerSecLastValue / Viewer.RenderProcess.FrameRate.SmoothedValue / 1024);
-            TableAddLabelValue(table, "CPU", "{0:F0}% ({1} logical processors)", (Viewer.RenderProcess.Profiler.CPU.SmoothedValue + Viewer.UpdaterProcess.Profiler.CPU.SmoothedValue + Viewer.LoaderProcess.Profiler.CPU.SmoothedValue + Viewer.SoundProcess.Profiler.CPU.SmoothedValue) / ProcessorCount, ProcessorCount);
+            TableAddLabelValue(table, Viewer.Catalog.GetString("Logging enabled"), "{0}", Viewer.Settings.DataLogger ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"));
+            TableAddLabelValue(table, Viewer.Catalog.GetString("Build"), "{0}", VersionInfo.Build);
+            TableAddLabelValue(table, Viewer.Catalog.GetString("Memory"), "{0:F0} MB ({5}, {6}, {7}, {8}, {1:F0} MB managed, {9:F0} kB/frame allocated, {2:F0}/{3:F0}/{4:F0} GCs)", GetWorkingSetSize() / 1024 / 1024, GC.GetTotalMemory(false) / 1024 / 1024, GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2), Viewer.TextureManager.GetStatus(), Viewer.MaterialManager.GetStatus(), Viewer.ShapeManager.GetStatus(), Viewer.World.Terrain.GetStatus(), AllocatedBytesPerSecLastValue / Viewer.RenderProcess.FrameRate.SmoothedValue / 1024);
+            TableAddLabelValue(table, "CPU", "{0:F0}% ({1})", (Viewer.RenderProcess.Profiler.CPU.SmoothedValue + Viewer.UpdaterProcess.Profiler.CPU.SmoothedValue + Viewer.LoaderProcess.Profiler.CPU.SmoothedValue + Viewer.SoundProcess.Profiler.CPU.SmoothedValue) / ProcessorCount, Viewer.Catalog.GetPluralStringFmt("{0} logical processor", "{0} logical processors", ProcessorCount));
             TableAddLabelValue(table, "GPU", "{0:F0} FPS (50th/95th/99th percentiles {1:F1} / {2:F1} / {3:F1} ms, shader model {4})", Viewer.RenderProcess.FrameRate.SmoothedValue, Viewer.RenderProcess.FrameTime.SmoothedP50 * 1000, Viewer.RenderProcess.FrameTime.SmoothedP95 * 1000, Viewer.RenderProcess.FrameTime.SmoothedP99 * 1000, Viewer.Settings.ShaderModel);
-            TableAddLabelValue(table, "Adapter", "{0} ({1:F0} MB)", Viewer.AdapterDescription, Viewer.AdapterMemory / 1024 / 1024);
+            TableAddLabelValue(table, Viewer.Catalog.GetString("Adapter"), "{0} ({1:F0} MB)", Viewer.AdapterDescription, Viewer.AdapterMemory / 1024 / 1024);
             if (Viewer.Settings.DynamicShadows)
             {
                 TableSetCells(table, 3, Enumerable.Range(0, RenderProcess.ShadowMapCount).Select(i => String.Format("{0}/{1}", RenderProcess.ShadowMapDistance[i], RenderProcess.ShadowMapDiameter[i])).ToArray());
                 TableSetCell(table, 3 + RenderProcess.ShadowMapCount, "({0}x{0})", Viewer.Settings.ShadowMapResolution);
-                TableAddLine(table, "Shadow maps");
+                TableAddLine(table, Viewer.Catalog.GetString("Shadow maps"));
                 TableSetCells(table, 3, Viewer.RenderProcess.ShadowPrimitivePerFrame.Select(p => p.ToString("F0")).ToArray());
-                TableAddLabelValue(table, "Shadow primitives", "{0:F0}", Viewer.RenderProcess.ShadowPrimitivePerFrame.Sum());
+                TableAddLabelValue(table, Viewer.Catalog.GetString("Shadow primitives"), "{0:F0}", Viewer.RenderProcess.ShadowPrimitivePerFrame.Sum());
             }
             TableSetCells(table, 3, Viewer.RenderProcess.PrimitivePerFrame.Select(p => p.ToString("F0")).ToArray());
-            TableAddLabelValue(table, "Render primitives", "{0:F0}", Viewer.RenderProcess.PrimitivePerFrame.Sum());
-            TableAddLabelValue(table, "Render process", "{0:F0}% ({1:F0}% wait)", Viewer.RenderProcess.Profiler.Wall.SmoothedValue, Viewer.RenderProcess.Profiler.Wait.SmoothedValue);
-            TableAddLabelValue(table, "Updater process", "{0:F0}% ({1:F0}% wait)", Viewer.UpdaterProcess.Profiler.Wall.SmoothedValue, Viewer.UpdaterProcess.Profiler.Wait.SmoothedValue);
-            TableAddLabelValue(table, "Loader process", "{0:F0}% ({1:F0}% wait)", Viewer.LoaderProcess.Profiler.Wall.SmoothedValue, Viewer.LoaderProcess.Profiler.Wait.SmoothedValue);
-            TableAddLabelValue(table, "Sound process", "{0:F0}% ({1:F0}% wait)", Viewer.SoundProcess.Profiler.Wall.SmoothedValue, Viewer.SoundProcess.Profiler.Wait.SmoothedValue);
-            TableAddLabelValue(table, "Total process", "{0:F0}% ({1:F0}% wait)", Viewer.RenderProcess.Profiler.Wall.SmoothedValue + Viewer.UpdaterProcess.Profiler.Wall.SmoothedValue + Viewer.LoaderProcess.Profiler.Wall.SmoothedValue + Viewer.SoundProcess.Profiler.Wall.SmoothedValue, Viewer.RenderProcess.Profiler.Wait.SmoothedValue + Viewer.UpdaterProcess.Profiler.Wait.SmoothedValue + Viewer.LoaderProcess.Profiler.Wait.SmoothedValue + Viewer.SoundProcess.Profiler.Wait.SmoothedValue);
-            TableSetCells(table, 0, "Camera", "", Viewer.Camera.TileX.ToString("F0"), Viewer.Camera.TileZ.ToString("F0"), Viewer.Camera.Location.X.ToString("F2"), Viewer.Camera.Location.Y.ToString("F2"), Viewer.Camera.Location.Z.ToString("F2"), Viewer.Tiles.GetElevation(Viewer.Camera.CameraWorldLocation).ToString("F1") + " m", Viewer.Settings.LODBias + "%", Viewer.Settings.ViewingDistance + " m", Viewer.Settings.DistantMountains ? ((float)Viewer.Settings.DistantMountainsViewingDistance / 1000).ToString("F0") + " km" : "");
+            TableAddLabelValue(table, Viewer.Catalog.GetString("Render primitives"), "{0:F0}", Viewer.RenderProcess.PrimitivePerFrame.Sum());
+            TableAddLabelValue(table, Viewer.Catalog.GetString("Render process"), "{0:F0}% ({1:F0}% {2})", Viewer.RenderProcess.Profiler.Wall.SmoothedValue, Viewer.RenderProcess.Profiler.Wait.SmoothedValue, Viewer.Catalog.GetString("wait"));
+            TableAddLabelValue(table, Viewer.Catalog.GetString("Updater process"), "{0:F0}% ({1:F0}% {2})", Viewer.UpdaterProcess.Profiler.Wall.SmoothedValue, Viewer.UpdaterProcess.Profiler.Wait.SmoothedValue, Viewer.Catalog.GetString("wait"));
+            TableAddLabelValue(table, Viewer.Catalog.GetString("Loader process"), "{0:F0}% ({1:F0}% {2})", Viewer.LoaderProcess.Profiler.Wall.SmoothedValue, Viewer.LoaderProcess.Profiler.Wait.SmoothedValue, Viewer.Catalog.GetString("wait"));
+            TableAddLabelValue(table, Viewer.Catalog.GetString("Sound process"), "{0:F0}% ({1:F0}% {2})", Viewer.SoundProcess.Profiler.Wall.SmoothedValue, Viewer.SoundProcess.Profiler.Wait.SmoothedValue, Viewer.Catalog.GetString("wait"));
+            TableAddLabelValue(table, Viewer.Catalog.GetString("Total process"), "{0:F0}% ({1:F0}% {2})", Viewer.RenderProcess.Profiler.Wall.SmoothedValue + Viewer.UpdaterProcess.Profiler.Wall.SmoothedValue + Viewer.LoaderProcess.Profiler.Wall.SmoothedValue + Viewer.SoundProcess.Profiler.Wall.SmoothedValue, Viewer.RenderProcess.Profiler.Wait.SmoothedValue + Viewer.UpdaterProcess.Profiler.Wait.SmoothedValue + Viewer.LoaderProcess.Profiler.Wait.SmoothedValue + Viewer.SoundProcess.Profiler.Wait.SmoothedValue, Viewer.Catalog.GetString("wait"));
+            TableSetCells(table, 0, Viewer.Catalog.GetString("Camera"), "", Viewer.Camera.TileX.ToString("F0"), Viewer.Camera.TileZ.ToString("F0"), Viewer.Camera.Location.X.ToString("F2"), Viewer.Camera.Location.Y.ToString("F2"), Viewer.Camera.Location.Z.ToString("F2"), String.Format("{0:F1} {1}", Viewer.Tiles.GetElevation(Viewer.Camera.CameraWorldLocation), FormatStrings.m), Viewer.Settings.LODBias + "%", String.Format("{0} {1}", Viewer.Settings.ViewingDistance, FormatStrings.m), Viewer.Settings.DistantMountains ? String.Format("{0:F0} {1}", (float)Viewer.Settings.DistantMountainsViewingDistance * 1e-3f, FormatStrings.km) : "");
             TableAddLine(table);
         }
 

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
-"POT-Creation-Date: 2015-01-15 22:23:12+0100\n"
-"PO-Revision-Date: 2015-01-15 22:27+0100\n"
+"POT-Creation-Date: 2015-02-03 19:44:26+0100\n"
+"PO-Revision-Date: 2015-02-03 19:49+0100\n"
 "Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: hu\n"
@@ -589,29 +589,33 @@ msgid "Control Cylinder Cocks"
 msgstr "Irányítás Hengercsapok"
 
 #: ../../ORTS.Settings/InputSettings.cs:190
+msgid "Control Cylinder Compound"
+msgstr "Irányítás Kompaund Hengerek"
+
+#: ../../ORTS.Settings/InputSettings.cs:191
 msgid "Control Firing"
 msgstr "Irányítás Tüzelés"
 
-#: ../../ORTS.Settings/InputSettings.cs:191
+#: ../../ORTS.Settings/InputSettings.cs:192
 msgid "Control Refill"
 msgstr "Irányítás Üzemanyag-újratöltés"
 
-#: ../../ORTS.Settings/InputSettings.cs:648
+#: ../../ORTS.Settings/InputSettings.cs:633
 #, csharp-format
 msgid "{0} requires and is modified by Shift"
 msgstr "A {0} parancs eleve használja a Shift-et, nem lehet módosítani is vele"
 
-#: ../../ORTS.Settings/InputSettings.cs:650
+#: ../../ORTS.Settings/InputSettings.cs:635
 #, csharp-format
 msgid "{0} requires and is modified by Control"
 msgstr "A {0} parancs eleve használja a Control-t, nem lehet módosítani is vele"
 
-#: ../../ORTS.Settings/InputSettings.cs:652
+#: ../../ORTS.Settings/InputSettings.cs:637
 #, csharp-format
 msgid "{0} requires and is modified by Alt"
 msgstr "A {0} parancs eleve használja az Alt-ot, nem lehet módosítani is vele"
 
-#: ../../ORTS.Settings/InputSettings.cs:683
+#: ../../ORTS.Settings/InputSettings.cs:668
 #, csharp-format
 msgid "{0} and {1} both match {2}"
 msgstr "{0} és {1} is ehhez rendelve: {2}"

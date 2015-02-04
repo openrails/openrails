@@ -329,7 +329,7 @@ namespace ORTS
                 status.AppendFormat("{0} ", Viewer.Catalog.GetParticularString("Pantograph", GetStringAttribute.GetPrettyName(pantograph.State)));
             status.AppendLine();
             status.AppendFormat("{0}{2} = {1}{2}\n",
-                Viewer.Catalog.GetString("Power"),
+                Viewer.Catalog.GetParticularString("PowerSupply", "Power"),
                 Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(PowerSupply.State)),
                 PowerSupply.State == PowerSupplyState.PowerOff ? "!!!" : "");
             return status.ToString();
@@ -338,10 +338,10 @@ namespace ORTS
         public override string GetDebugStatus()
         {
             var status = new StringBuilder(base.GetDebugStatus());
-            status.AppendFormat("\tCircuit breaker\t\t{0}", PowerSupply.CircuitBreaker.State);
-            status.AppendFormat("\tTCS\t{0}", TrainControlSystem.PowerAuthorization ? "OK" : "NOT OK");
-            status.AppendFormat("\tDriver\t{0}", PowerSupply.CircuitBreaker.DriverCloseAuthorization ? "OK" : "NOT OK");
-            status.AppendFormat("\tAuxiliary power\t\t{0}", PowerSupply.AuxiliaryState);
+            status.AppendFormat("\t{0}\t\t{1}", Viewer.Catalog.GetString("Circuit breaker"), Viewer.Catalog.GetParticularString("CircuitBraker", GetStringAttribute.GetPrettyName(PowerSupply.CircuitBreaker.State)));
+            status.AppendFormat("\t{0}\t{1}", Viewer.Catalog.GetString("TCS"), TrainControlSystem.PowerAuthorization ? Viewer.Catalog.GetString("OK") : Viewer.Catalog.GetString("NOT OK"));
+            status.AppendFormat("\t{0}\t{1}", Viewer.Catalog.GetString("Driver"), PowerSupply.CircuitBreaker.DriverCloseAuthorization ? Viewer.Catalog.GetString("OK") : Viewer.Catalog.GetString("NOT OK"));
+            status.AppendFormat("\t{0}\t\t{1}", Viewer.Catalog.GetString("Auxiliary power"), Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(PowerSupply.AuxiliaryState)));
             return status.ToString();
         }
 
