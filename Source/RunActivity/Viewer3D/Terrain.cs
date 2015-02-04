@@ -495,11 +495,11 @@ namespace ORTS.Viewer3D
         readonly Texture2D PatchTextureOverlay;
         IEnumerator<EffectPass> ShaderPasses;
 
-        public TerrainMaterial(Viewer viewer, string terrainTexture)
+        public TerrainMaterial(Viewer viewer, string terrainTexture, Texture2D defaultTexture)
             : base(viewer, terrainTexture)
         {
             var textures = terrainTexture.Split('\0');
-            PatchTexture = Viewer.TextureManager.Get(textures[0]);
+            PatchTexture = Viewer.TextureManager.Get(textures[0], defaultTexture);
             PatchTextureOverlay = textures.Length > 1 ? Viewer.TextureManager.Get(textures[1]) : null;
         }
 
@@ -564,7 +564,7 @@ namespace ORTS.Viewer3D
     public class TerrainSharedMaterial : TerrainMaterial
     {
         public TerrainSharedMaterial(Viewer viewer, string terrainTexture)
-            : base(viewer, terrainTexture)
+            : base(viewer, terrainTexture, Helpers.IsSnow(viewer.Simulator) ? SharedMaterialManager.DefaultSnowTexture : SharedMaterialManager.MissingTexture)
         {
         }
 
@@ -575,16 +575,17 @@ namespace ORTS.Viewer3D
         }
     }
 
-    public class TerrainSharedDistantMountain : TerrainSharedMaterial
+    public class TerrainSharedDistantMountain : TerrainMaterial
     {
         public TerrainSharedDistantMountain(Viewer viewer, string terrainTexture)
-            : base(viewer, terrainTexture)
+            : base(viewer, terrainTexture, Helpers.IsSnow(viewer.Simulator) ? SharedMaterialManager.DefaultDMSnowTexture : SharedMaterialManager.MissingTexture)
         {
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             base.SetState(graphicsDevice, previousMaterial);
+            graphicsDevice.Indices = TerrainPrimitive.SharedPatchIndexBuffer;
 
             var rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = false; // Override the normal terrain blending!
