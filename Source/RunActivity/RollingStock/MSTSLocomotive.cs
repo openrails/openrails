@@ -106,6 +106,7 @@ namespace ORTS
         public bool DynamicBrake;
         public float MaxPowerW;
         public float MaxForceN;
+        public float MaxCurrentA = 0;
         public float MaxSpeedMpS = 1e3f;
         public float MainResPressurePSI = 130;
         public bool CompressorIsOn;
@@ -528,6 +529,7 @@ namespace ORTS
                 case "engine(cabview": CVFFileName = stf.ReadStringBlock(null); break;
                 case "engine(maxpower": MaxPowerW = stf.ReadFloatBlock(STFReader.UNITS.Power, null); break;
                 case "engine(maxforce": MaxForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "engine(maxcurrent": MaxCurrentA = stf.ReadFloatBlock(STFReader.UNITS.Current, null); break;
                 case "engine(maxcontinuousforce": MaxContinuousForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "engine(maxvelocity": MaxSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
 
@@ -634,6 +636,7 @@ namespace ORTS
 
             MaxPowerW = locoCopy.MaxPowerW;
             MaxForceN = locoCopy.MaxForceN;
+            MaxCurrentA = locoCopy.MaxCurrentA;
             MaxSpeedMpS = locoCopy.MaxSpeedMpS;
             IsSteam = locoCopy.IsSteam;
             TractiveForceCurves = locoCopy.TractiveForceCurves;
@@ -2325,13 +2328,49 @@ namespace ORTS
                     }
                 case CABViewControlTypes.AMMETER: // Current not modelled yet to ammeter shows tractive effort until then.
                 case CABViewControlTypes.AMMETER_ABS:
+                    {
+                        var direction = 0; // Forwards
+                        if (cvc is CVCGauge && ((CVCGauge)cvc).Orientation == 0)
+                            direction = ((CVCGauge)cvc).Direction;
+                        if (MaxCurrentA == 0)
+                            MaxCurrentA = (float)cvc.MaxValue;
+                        if (LocomotiveAxle != null)
+                        {
+                            data = 0.0f;
+                            if (ThrottlePercent > 0)
+                            {
+                                //float rangeFactor = direction == 0 ? (float)cvc.MaxValue : (float)cvc.MinValue;
+                                float rangeFactor = direction == 0 ? MaxCurrentA : (float)cvc.MinValue;
+                                if (FilteredMotiveForceN != 0)
+                                    data = this.FilteredMotiveForceN / MaxForceN * rangeFactor;
+                                else
+                                    data = this.LocomotiveAxle.AxleForceN / MaxForceN * rangeFactor;
+                                data = Math.Abs(data);
+                            }
+                            if (DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
+                            {
+                                    float rangeFactor = direction == 0 ? (float)cvc.MinValue : (float)cvc.MaxValue;
+                                    if (FilteredMotiveForceN != 0)
+                                        data = this.FilteredMotiveForceN / MaxDynamicBrakeForceN * rangeFactor;
+                                    else
+                                        data = this.LocomotiveAxle.AxleForceN / MaxDynamicBrakeForceN * rangeFactor;
+                                    data = -Math.Abs(data);
+                            }
+                            if (direction == 1)
+                                data = -data;
+                            break;
+                        }
+                        data = this.MotiveForceN / MaxForceN * MaxCurrentA;
+                        break;
+                    }
                 case CABViewControlTypes.LOAD_METER:
                 case CABViewControlTypes.TRACTION_BRAKING:
                     {
                         var direction = 0; // Forwards
                         if (cvc is CVCGauge && ((CVCGauge)cvc).Orientation == 0)
                             direction = ((CVCGauge)cvc).Direction;
-
+                        if (MaxCurrentA == 0)
+                            MaxCurrentA = (float)cvc.MaxValue;
                         if (LocomotiveAxle != null)
                         {
                             data = 0.0f;
