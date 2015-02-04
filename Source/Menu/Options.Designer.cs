@@ -109,6 +109,7 @@
             this.tabPageUpdater = new System.Windows.Forms.TabPage();
             this.labelUpdateChannel = new System.Windows.Forms.Label();
             this.tabPageExperimental = new System.Windows.Forms.TabPage();
+            this.checkSuppressShapeWarnings = new System.Windows.Forms.CheckBox();
             this.labelLODBias = new System.Windows.Forms.Label();
             this.label21 = new System.Windows.Forms.Label();
             this.trackLODBias = new System.Windows.Forms.TrackBar();
@@ -1191,6 +1192,7 @@
             // 
             // tabPageExperimental
             // 
+            this.tabPageExperimental.Controls.Add(this.checkSuppressShapeWarnings);
             this.tabPageExperimental.Controls.Add(this.labelLODBias);
             this.tabPageExperimental.Controls.Add(this.label21);
             this.tabPageExperimental.Controls.Add(this.trackLODBias);
@@ -1234,6 +1236,16 @@
             this.tabPageExperimental.Text = "Experimental";
             this.tabPageExperimental.UseVisualStyleBackColor = true;
             // 
+            // checkSuppressShapeWarnings
+            // 
+            this.checkSuppressShapeWarnings.AutoSize = true;
+            this.checkSuppressShapeWarnings.Location = new System.Drawing.Point(6, 307);
+            this.checkSuppressShapeWarnings.Name = "checkSuppressShapeWarnings";
+            this.checkSuppressShapeWarnings.Size = new System.Drawing.Size(171, 17);
+            this.checkSuppressShapeWarnings.TabIndex = 35;
+            this.checkSuppressShapeWarnings.Text = "Suppress shape error warnings";
+            this.checkSuppressShapeWarnings.UseVisualStyleBackColor = true;
+            // 
             // labelLODBias
             // 
             this.labelLODBias.Location = new System.Drawing.Point(171, 237);
@@ -1257,7 +1269,7 @@
             this.trackLODBias.AutoSize = false;
             this.trackLODBias.BackColor = System.Drawing.SystemColors.Window;
             this.trackLODBias.LargeChange = 10;
-            this.trackLODBias.Location = new System.Drawing.Point(6, 256);
+            this.trackLODBias.Location = new System.Drawing.Point(3, 256);
             this.trackLODBias.Maximum = 100;
             this.trackLODBias.Minimum = -100;
             this.trackLODBias.Name = "trackLODBias";
@@ -1830,5 +1842,6 @@
         private System.Windows.Forms.Label labelLODBias;
         private System.Windows.Forms.Label label21;
         private System.Windows.Forms.TrackBar trackLODBias;
+        private System.Windows.Forms.CheckBox checkSuppressShapeWarnings;
     }
 }

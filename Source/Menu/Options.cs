@@ -216,6 +216,7 @@ namespace ORTS
             numericSuperElevationMinLen.Value = Settings.SuperElevationMinLen;
             numericSuperElevationGauge.Value = Settings.SuperElevationGauge;
             checkPerformanceTuner.Checked = Settings.PerformanceTuner;
+            checkSuppressShapeWarnings.Checked = Settings.SuppressShapeWarnings;
             numericPerformanceTunerTarget.Value = Settings.PerformanceTunerTarget;
             checkDoubleWire.Checked = Settings.DoubleWire;
             checkEnhancedActCompatibility.Checked = Settings.EnhancedActCompatibility;
@@ -394,6 +395,7 @@ namespace ORTS
             Settings.SuperElevationMinLen = (int)numericSuperElevationMinLen.Value;
             Settings.SuperElevationGauge = (int)numericSuperElevationGauge.Value;
             Settings.PerformanceTuner = checkPerformanceTuner.Checked;
+            Settings.SuppressShapeWarnings = checkSuppressShapeWarnings.Checked;
             Settings.PerformanceTunerTarget = (int)numericPerformanceTunerTarget.Value;
             Settings.DoubleWire = checkDoubleWire.Checked;
             Settings.EnhancedActCompatibility = checkEnhancedActCompatibility.Checked;

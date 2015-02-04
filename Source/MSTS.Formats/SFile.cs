@@ -94,12 +94,12 @@ namespace MSTS.Formats
             }
         }
 
-        public SFile(string filename)
+        public SFile(string filename, bool suppressShapeWarnings)
         {
             var file = SBR.Open(filename);
             shape = new shape(file.ReadSubBlock());
             file.VerifyEndOfBlock();
-            Validate(filename);
+            if (!suppressShapeWarnings) Validate(filename);
         }
     }
 

@@ -1135,7 +1135,7 @@ namespace ORTS.Viewer3D
         void LoadContent()
         {
             Trace.Write("S");
-            var sFile = new SFile(FilePath);
+            var sFile = new SFile(FilePath, Viewer.Settings.SuppressShapeWarnings);
 
             var textureFlags = Helpers.TextureFlags.None;
             if (File.Exists(FilePath + "d"))
