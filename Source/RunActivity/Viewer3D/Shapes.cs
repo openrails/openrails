@@ -821,9 +821,18 @@ namespace ORTS.Viewer3D
                     Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
                     viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                 }
-                catch (Exception error)
+                catch
                 {
-                    Trace.WriteLine(new FileLoadException(soundPath, error));
+                    soundPath = viewer.Simulator.BasePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultDieselTowerSMS;
+                    try
+                    {
+                        Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
+                        viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
+                    }
+                    catch (Exception error)
+                    {
+                        Trace.WriteLine(new FileLoadException(soundPath, error));
+                    }
                 }
             }
             if (viewer.Simulator.TRK.Tr_RouteFile.DefaultWaterTowerSMS != null && FuelPickupItemObj.PickupType == 5) // Testing for Water PickupType
@@ -834,9 +843,18 @@ namespace ORTS.Viewer3D
                     Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
                     viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                 }
-                catch (Exception error)
+                catch
                 {
-                    Trace.WriteLine(new FileLoadException(soundPath, error));
+                    soundPath = viewer.Simulator.BasePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultWaterTowerSMS;
+                    try
+                    {
+                        Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
+                        viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
+                    }
+                    catch (Exception error)
+                    {
+                        Trace.WriteLine(new FileLoadException(soundPath, error));
+                    }
                 }
             }
             // Current wave files for coal transfer not cutting out.
