@@ -268,7 +268,7 @@ namespace ORTS
         {
 
 #if DEBUG_CHECKTRAIN
-            if (Number == 1212)
+            if (Number == 116)
             {
                 CheckTrain = true;
             }
@@ -3756,18 +3756,15 @@ namespace ORTS
 
             TrackCircuitSection thisSection = signalRef.TrackCircuitList[PresentPosition[0].TCSectionIndex];
             float lengthToGoM = thisSection.Length - PresentPosition[0].TCOffset;
-            if (TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1)
-            {
                 // go through all further sections
 
-                for (int iElement = PresentPosition[0].RouteListIndex + 1; iElement < ValidRoute[0].Count; iElement++)
-                {
-                    TCRouteElement thisElement = ValidRoute[0][iElement];
-                    thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
-                    lengthToGoM += thisSection.Length;
-                }
+            for (int iElement = PresentPosition[0].RouteListIndex + 1; iElement < ValidRoute[0].Count; iElement++)
+            {
+                TCRouteElement thisElement = ValidRoute[0][iElement];
+                thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                lengthToGoM += thisSection.Length;
             }
-            else lengthToGoM = ComputeDistanceToReversalPoint();
+        
             lengthToGoM -= 5.0f; // keep save distance from end
 
             // if last section does not end at signal or next section is switch, set back overlap to keep clear of switch
@@ -5047,6 +5044,8 @@ namespace ORTS
                                     }
                                 }
                             }
+
+                            formedTrain.InitializeBrakes();
 
                             if (AI.Simulator.PlayerLocomotive == null)
                                 throw new InvalidDataException("Can't find player locomotive in " + formedTrain.Name);
