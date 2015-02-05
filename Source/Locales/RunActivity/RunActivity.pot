@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-02-04 21:31:08+0100\n"
-"PO-Revision-Date: 2015-02-04 21:31:10+0100\n"
+"POT-Creation-Date: 2015-02-05 21:23:07+0100\n"
+"PO-Revision-Date: 2015-02-05 21:23:09+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -486,22 +486,22 @@ msgstr ""
 msgid "Activity Save file '*.save' not found in folder {0}"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSDieselLocomotive.cs:800
+#: ../../RunActivity/RollingStock/MSTSDieselLocomotive.cs:819
 msgid "Engine"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSDieselLocomotive.cs:804
-#: ../../RunActivity/RollingStock/MSTSDieselLocomotive.cs:816
+#: ../../RunActivity/RollingStock/MSTSDieselLocomotive.cs:823
+#: ../../RunActivity/RollingStock/MSTSDieselLocomotive.cs:835
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:2781
 msgid "Gear"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSDieselLocomotive.cs:817
+#: ../../RunActivity/RollingStock/MSTSDieselLocomotive.cs:836
 msgid "Fuel"
 msgstr ""
 
 #. Context: Gear
-#: ../../RunActivity/RollingStock/MSTSDieselLocomotive.cs:805
+#: ../../RunActivity/RollingStock/MSTSDieselLocomotive.cs:824
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:2782
 msgctxt "Gear"
 msgid "N"
@@ -623,12 +623,12 @@ msgid "Fuel levels"
 msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:2797
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:318
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:333
 msgid "coal"
 msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:2797
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:317
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:332
 msgid "water"
 msgstr ""
 
@@ -1130,7 +1130,7 @@ msgstr ""
 
 #. Context: HUD
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:2885
-#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:306
+#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:314
 msgctxt "HUD"
 msgid "Power"
 msgstr ""
@@ -1178,59 +1178,59 @@ msgstr ""
 msgid "Slow Direct"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:302
+#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:310
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:123
 msgid "Status"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:310
+#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:318
 msgid "Load"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:317
+#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:325
 msgid "Flow"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:325
+#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:333
 msgid "Oil"
 msgstr ""
 
 #. Context: Engine
-#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:400
+#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:408
 msgctxt "Engine"
 msgid "Stopped"
 msgstr ""
 
 #. Context: Engine
-#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:401
+#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:409
 msgctxt "Engine"
 msgid "Starting"
 msgstr ""
 
 #. Context: Engine
-#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:402
+#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:410
 msgctxt "Engine"
 msgid "Running"
 msgstr ""
 
 #. Context: Engine
-#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:403
+#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:411
 msgctxt "Engine"
 msgid "Stopping"
 msgstr ""
 
 #: ../../RunActivity/Simulator/Activity.cs:881
-#: ../../RunActivity/Timetable/TTTrain.cs:5489
+#: ../../RunActivity/Timetable/TTTrain.cs:5488
 msgid "Passenger boarding completed. Waiting for signal ahead to clear."
 msgstr ""
 
 #: ../../RunActivity/Simulator/Activity.cs:886
-#: ../../RunActivity/Timetable/TTTrain.cs:5494
+#: ../../RunActivity/Timetable/TTTrain.cs:5493
 msgid "Passenger boarding completed. You may depart now."
 msgstr ""
 
 #: ../../RunActivity/Simulator/Activity.cs:870
-#: ../../RunActivity/Timetable/TTTrain.cs:5501
+#: ../../RunActivity/Timetable/TTTrain.cs:5500
 #, csharp-format
 msgid "Passenger boarding completes in {0:D2}:{1:D2}"
 msgstr ""
@@ -1818,7 +1818,7 @@ msgctxt "Switch"
 msgid "change"
 msgstr ""
 
-#: ../../RunActivity/Timetable/TTTrain.cs:5431
+#: ../../RunActivity/Timetable/TTTrain.cs:5430
 msgid "Held for connecting train : "
 msgstr ""
 
@@ -2686,44 +2686,44 @@ msgstr ""
 msgid "Train Operations"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:319
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:334
 msgid "diesel oil"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:320
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:335
 msgid "wood"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:436
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:451
 msgid "Refill: No suitable pick-up point anywhere, so refilling immediately."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:444
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:459
 #, csharp-format
 msgid "Refill: Distance to {0} supply is {1}."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:452
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:467
 #, csharp-format
 msgid "Refill: Loco must be stationary to refill {0}."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:458
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:473
 #, csharp-format
 msgid "Refill: Loco speed must exceed {0}."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:465
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:480
 #, csharp-format
 msgid "Refill: Loco speed must not exceed {0}."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:472
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:487
 #, csharp-format
 msgid "Refill: {0} supply now replenished."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:445
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:460
 #, csharp-format
 msgid "{0} meter"
 msgid_plural "{0} meters"
