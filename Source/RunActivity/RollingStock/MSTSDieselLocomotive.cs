@@ -240,9 +240,12 @@ namespace ORTS
             base.Restore(inf);
             DieselLevelL = inf.ReadSingle();
             ControllerFactory.Restore(GearBoxController, inf);
+
+            if (DieselEngines == null)
+                DieselEngines = new DieselEngines(this);
+
             if (DieselEngines.Count == 0)
             {
-                DieselEngines = new DieselEngines(this);
                 DieselEngines.Add(new DieselEngine());
                 DieselEngines[0].InitFromMSTS(this);
             }
