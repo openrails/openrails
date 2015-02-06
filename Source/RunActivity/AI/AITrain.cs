@@ -659,7 +659,9 @@ namespace ORTS
                 {
                     CheckRequiredAction();
                 }
+
                 // check if reversal point reached and not yet activated - but station stop has preference over reversal point
+                SetReversalAction();
 
                 // check if out of control - if so, remove
 
