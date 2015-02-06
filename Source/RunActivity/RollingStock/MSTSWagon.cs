@@ -586,6 +586,9 @@ namespace ORTS
             }
             Pantographs.Restore(inf);
             base.Restore(inf);
+
+            // always set aux power on due to error in PowerSupplyClass
+            AuxPowerOn = true;
         }
 
         public override void Update(float elapsedClockSeconds)
