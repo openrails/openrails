@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
 "POT-Creation-Date: 2015-01-04 21:15:14+0100\n"
-"PO-Revision-Date: 2015-01-25 12:58+0100\n"
+"PO-Revision-Date: 2015-02-06 19:28+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -62,28 +62,18 @@ msgstr "Dauerservice"
 msgid "Full Service"
 msgstr "Vollservice"
 
+#: ../../RunActivity/Common/Scripting/BrakeController.cs:231
+#, fuzzy
+msgid "Overcharge"
+msgstr "Überlastung"
+
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:232
 msgid "Emergency Braking Push Button"
 msgstr "Druckknopf für Notbremsung"
 
-#: ../../RunActivity/Common/Scripting/BrakeController.cs:233
-#, fuzzy
-msgid "TCS Emergency Braking"
-msgstr "Zugkontrollscript Notbremsung"
-
-#: ../../RunActivity/Common/Scripting/BrakeController.cs:234
-#, fuzzy
-msgid "TCS Full Service Braking"
-msgstr "Zugkontrollscript Vollbremsung"
-
 #: ../../RunActivity/Debugging/DebugViewerForm.cs:2039
 msgid "Switching Request Sent to the Server"
 msgstr "Weichenstellanfrage an Server gesendet"
-
-#: ../../RunActivity/Debugging/DebugViewerForm.cs:177
-#, fuzzy
-msgid "View Self"
-msgstr "Selbst ansehen"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.cs:549
 msgid "MSG to Server"
@@ -163,11 +153,6 @@ msgstr "Folgen"
 msgid "Penalty"
 msgstr "Strafe"
 
-#: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:433
-#, fuzzy
-msgid "Prefer Green"
-msgstr "Grün vorziehen"
-
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:447
 msgid "See in Game"
 msgstr "Im Spiel anschauen"
@@ -244,6 +229,11 @@ msgstr "Entfernung"
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:359
 msgid "Volume"
 msgstr "Lautstärke"
+
+#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:370
+#, fuzzy
+msgid "Sound Debug"
+msgstr "SoundDebugFormular"
 
 #: ../../RunActivity/MultiPlayer/ClientComm.cs:116
 #: ../../RunActivity/MultiPlayer/ClientComm.cs:128
@@ -372,7 +362,6 @@ msgid "Passenger boarding completed. You may depart now."
 msgstr "Passagiere zugestiegen. Sie können die Fahrt fortsetzen."
 
 #: ../../RunActivity/Physics/Train.cs:5938
-#, fuzzy
 msgid "Stopped due to errors in route setting"
 msgstr "Wegen Fehlern in den Routeneinstellungen angehalten"
 
@@ -487,11 +476,11 @@ msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:2386
 msgid "Boiler overfull and priming."
-msgstr "Kessel übervoll, Zylinder mit Wasser beschickt."
+msgstr "Kessel übervoll, Wasser fließt in Zylinder."
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:2392
 msgid "Boiler no longer priming."
-msgstr "Wasserzufuhr zum Kessel unterbrochen."
+msgstr "Kein Wasser fließt mehr in Zylinder."
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:2965
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3012
@@ -539,6 +528,7 @@ msgid "MSG"
 msgstr "Nachricht"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:137
+#, fuzzy
 msgid "<none>"
 msgstr "<keine>"
 
@@ -1002,7 +992,7 @@ msgstr "Abspielen"
 #: ../../RunActivity/Simulator/Confirmation.cs:195
 msgid "Overriding camera replay. Press Escape to resume camera replay."
 msgstr ""
-"Kamera abspielen ignorieren. Escape drücken,  um Kamera abspielen zu "
+"Kamera abspielen ignorieren. Escape drücken, um Kamera abspielen zu "
 "reaktivieren."
 
 #: ../../RunActivity/Simulator/Confirmation.cs:196
@@ -1079,38 +1069,38 @@ msgstr "{0} {1:0}%"
 #: ../../RunActivity/Simulator/Confirmation.cs:139
 msgctxt "NonSteam"
 msgid "Reverser"
-msgstr "Richtungswender  [ Diesel- / E-Lok ]"
+msgstr "Richtungswender  ( Diesel- / E-Lok )"
 
 #. Context: Steam
 #: ../../RunActivity/Simulator/Confirmation.cs:151
 msgctxt "Steam"
 msgid "Reverser"
-msgstr "Steuerung  [ Dampflok ]"
+msgstr "Steuerung  ( Dampflok )"
 
 #. Context: Alerter
 #: ../../RunActivity/Simulator/Confirmation.cs:176
 msgctxt "Alerter"
 msgid "sound"
-msgstr "Ton  [ SIFA ]"
+msgstr "Ton  ( SIFA )"
 
 #. Context: Horn
 #: ../../RunActivity/Simulator/Confirmation.cs:177
 msgctxt "Horn"
 msgid "sound"
-msgstr "Signal  [ Horn ]"
+msgstr "Signal  ( Horn )"
 
 #. Context: Cab
 #: ../../RunActivity/Simulator/Confirmation.cs:183
 msgctxt "Cab"
 msgid "change"
-msgstr "wechseln  [Führerstand ]"
+msgstr "wechseln  ( Führerstand )"
 
 #. Context: Switch
 #: ../../RunActivity/Simulator/Confirmation.cs:189
 #: ../../RunActivity/Simulator/Confirmation.cs:190
 msgctxt "Switch"
 msgid "change"
-msgstr "stellen  [ Weiche ]"
+msgstr "stellen  ( Weiche )"
 
 #: ../../RunActivity/Viewer3D/Cameras.cs:595
 msgid "Free"
@@ -1171,7 +1161,7 @@ msgstr "Wechsel zum Autopiloten im manuellen Modus nicht möglich."
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:857
 msgid "Switched to autopilot"
-msgstr "Autopiloten aktiviert"
+msgstr "Autopilot aktiviert"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:1186
 msgid "Game saved"
@@ -1266,6 +1256,10 @@ msgstr "Motor an/aus"
 msgid "Toggle MU Connection"
 msgstr "Mehrfachsteuerung an/aus"
 
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:73
+msgid "Toggle Brake Hose Connection"
+msgstr "Bremschläuche verbinden / trennen"
+
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:77
 msgid "Open/Close Front Angle Cock"
 msgstr "Vorderes Bremsleitungsventil öffnen / schließen"
@@ -1273,6 +1267,10 @@ msgstr "Vorderes Bremsleitungsventil öffnen / schließen"
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:81
 msgid "Open/Close Rear Angle Cock"
 msgstr "Hinteres Bremsleitungsventil öffnen / schließen"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:85
+msgid "Open/Close Bleed Off Valve"
+msgstr "Druckablassventil öffnen / schließen"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:96
 msgid "Close window"
@@ -1333,6 +1331,14 @@ msgstr "Hinteres Bremsleitungsventil geöffnet"
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:199
 msgid "Rear angle cock closed"
 msgstr "Hinteres Bremsleitungsventil geschlossen"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:209
+msgid "Bleed off valve opened"
+msgstr "Druckablassventil geöffnet"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:211
+msgid "Bleed off valve closed"
+msgstr "Druckablassventil geschlossen"
 
 #: ../../RunActivity/Viewer3D/Popups/CompassWindow.cs:34
 msgid "Compass"
@@ -1534,7 +1540,7 @@ msgstr "Begrenzung:"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:126
 msgid "Odometer"
-msgstr "Entfernungsmesser"
+msgstr "Kilometerzähler"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:127
 msgid "End"

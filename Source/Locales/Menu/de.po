@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
 "POT-Creation-Date: 2015-01-08 18:58:54+0100\n"
-"PO-Revision-Date: 2015-01-25 12:33+0100\n"
+"PO-Revision-Date: 2015-02-06 19:01+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -211,7 +211,7 @@ msgid ""
 "must not start with a digit."
 msgstr ""
 "Der Benutzername muss 4-10 Zeichen lang sein, darf nicht mit einer Zahl "
-"beginnen und folgende Zeichen nicht nthalten: Leerzeichen (Space), ', \", -."
+"beginnen und folgende Zeichen nicht enthalten: Leerzeichen (Space), ', \", -."
 
 #: ../../Menu/MainForm.cs:617
 msgid ""
@@ -492,7 +492,7 @@ msgstr "Fahrtkontrollmodus"
 
 #: ../../Menu/Options.cs:152
 msgid "Distance Travelled"
-msgstr "Zurückgelegte Strecke"
+msgstr "Zurückgelegte Entfernung"
 
 #: ../../Menu/Options.cs:153
 msgid "Throttle %"
@@ -666,7 +666,7 @@ msgstr "Sounddetaillevel"
 
 #: ../../Menu/Options.Designer.cs:455
 msgid "MSTS Bin compatible sound"
-msgstr "MSTS-Bin-kompatibler Sound"
+msgstr "MSTSBin-kompatibler Sound"
 
 #: ../../Menu/Options.Designer.cs:487
 msgid "Video"
@@ -910,7 +910,7 @@ msgstr "Ziel-Framerate"
 
 #: ../../Menu/Options.Designer.cs:1470
 msgid "Automatically tune settings to keep performance level"
-msgstr "Framerate & Leistung automatisch regulieren"
+msgstr "Framerate & Performance automatisch regulieren"
 
 #: ../../Menu/Options.Designer.cs:1480
 msgid "Double overhead wires"
@@ -948,8 +948,9 @@ msgid "Load DDS textures in preference to ACE"
 msgstr "DDS-Texturen dem ACE-Format vorziehen"
 
 #: ../../Menu/Options.Designer.cs:1632
+#, fuzzy
 msgid "Retainer valve on all cars"
-msgstr "Bremsdruckhalteventil auf allen Waggons"
+msgstr "Bremsdruckhalteventil für alle Waggons"
 
 #: ../../Menu/Options.Designer.cs:1027
 msgid ""
@@ -1201,7 +1202,7 @@ msgid "FPS"
 msgstr "Framerate"
 
 #~ msgid "Updating to {0}..."
-#~ msgstr "Update auf {0} ..."
+#~ msgstr "Auf {0} updaten..."
 
 #~ msgid "Restart to apply update"
 #~ msgstr "Programm-Neustart durchführen, um Update zu übernehmen."

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Common\n"
 "POT-Creation-Date: 2015-01-04 20:55:21+0100\n"
-"PO-Revision-Date: 2015-01-25 12:35+0100\n"
+"PO-Revision-Date: 2015-02-06 19:13+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -46,11 +46,11 @@ msgstr "kPa"
 
 #: ../../ORTS.Common/Conversions.cs:500
 msgid "bar"
-msgstr "Bar"
+msgstr "bar"
 
 #: ../../ORTS.Common/Conversions.cs:501
 msgid "psi"
-msgstr "Psi"
+msgstr "psi"
 
 #: ../../ORTS.Common/Conversions.cs:502
 msgid "inHg"
