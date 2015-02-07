@@ -791,7 +791,7 @@ namespace ORTS
         public virtual string GetStatus() { return null; }
         public virtual string GetDebugStatus()
         {
-            return String.Format("Car {0}\t{2} {1}\t{3}\t{4:F0}%\t{5}\t\t{6}\t{7}",
+            return String.Format("Car {0}\t{2} {1}\t\t{3}\t{4:F0}%\t{5}\t\t{6}\t{7}",
                 UiD,
                 Flipped ? Viewer.Catalog.GetString("(flipped)") : "",
                 FormatStrings.Catalog.GetParticularString("Reverser", GetStringAttribute.GetPrettyName(Direction)),

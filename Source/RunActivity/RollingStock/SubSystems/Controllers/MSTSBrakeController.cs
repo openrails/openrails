@@ -152,8 +152,17 @@ namespace ORTS
                 float x = NotchController.GetNotchFraction();
                 switch (notch.Type)
                 {
+                    case ControllerState.Neutral:
+                        break;
+                    case ControllerState.FullQuickRelease:
+                        pressureBar -= x * QuickReleaseRateBarpS() * elapsedClockSeconds;
+                        break;
                     case ControllerState.Release:
                         pressureBar -= x * ReleaseRateBarpS() * elapsedClockSeconds;
+                        break;
+                    case ControllerState.Apply:
+                    case ControllerState.FullServ:
+                        IncreasePressure(ref pressureBar, x * (MaxPressureBar() - FullServReductionBar()), ApplyRateBarpS(), elapsedClockSeconds);
                         break;
                     case ControllerState.Emergency:
                         pressureBar += EmergencyRateBarpS() * elapsedClockSeconds;
