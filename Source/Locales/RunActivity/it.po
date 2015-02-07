@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
 "POT-Creation-Date: 2015-02-05 21:23:07+0100\n"
-"PO-Revision-Date: 2015-02-07 11:36+0100\n"
+"PO-Revision-Date: 2015-02-07 20:47+0100\n"
 "Last-Translator: Roberto Ceccarelli (The Strawberry Field) <strawberry."
 "field@libero.it>\n"
 "Language-Team: Open Rails Dev Team\n"
@@ -107,7 +107,7 @@ msgstr "Accesa"
 #: ../../RunActivity/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:86
 msgctxt "Pantograph"
 msgid "Down"
-msgstr "Alzato"
+msgstr "Abbassato"
 
 #. Context: Pantograph
 #: ../../RunActivity/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:87
