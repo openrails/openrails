@@ -870,7 +870,7 @@ namespace MSTS.Formats
                 // MSTS ignores/overrides various settings by the following exceptional cases:
                 if (ControlType == CABViewControlTypes.CP_HANDLE)
                     ControlStyle = CABViewControlStyles.NOT_SPRUNG;
-                if (ControlType == CABViewControlTypes.PANTOGRAPH)
+                if (ControlType == CABViewControlTypes.PANTOGRAPH || ControlType == CABViewControlTypes.PANTOGRAPH2)
                     ControlStyle = CABViewControlStyles.ONOFF;
                 if (ControlType == CABViewControlTypes.HORN || ControlType == CABViewControlTypes.SANDERS || ControlType == CABViewControlTypes.BELL 
                     || ControlType == CABViewControlTypes.RESET)
