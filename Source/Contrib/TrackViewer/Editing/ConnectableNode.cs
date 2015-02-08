@@ -19,7 +19,8 @@ namespace ORTS.TrackViewer.Editing
 
         /// <summary>The index of the junction used for connecting</summary>
         public int ConnectingJunctionIndex { get; private set; }
-        /// <summary>Is the junction used for connecting a facing junction</summary>
+        /// <summary>Is the junction used for connecting a facing junction. 
+        /// Note for searching backward along the path facing is defined for moving backward!</summary>
         public bool IsConnectingJunctionFacing { get; private set; }
         /// <summary>In a reconnect path, is this the junction from which to connect, or the junction to which to connect</summary>
         private bool IsFrom { get; set; }

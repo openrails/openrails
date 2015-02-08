@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -744,7 +744,7 @@ namespace ORTS.TrackViewer.Drawing
             WorldLocation thisLocation = DrawTrackDB.TvsLocation(tvs);
             if (closeToMouseTrack != null)
             {
-                closeToMouseTrack.CheckMouseDistance(thisLocation, drawArea.MouseLocation, tn, tvs, tvsi);
+                closeToMouseTrack.CheckMouseDistance(thisLocation, drawArea.MouseLocation, tn, tvs, tvsi, drawArea.Scale);
             }
 
             if (trackSection.SectionCurve != null)

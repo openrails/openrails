@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014 by the Open Rails project.
+﻿// COPYRIGHT 2014,2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -59,7 +59,7 @@ namespace ORTS.TrackViewer.Drawing
         // Actually we get rid of this when we split offsetX into offsetTileX and offsetX.
         // but this complicates some math
         /// <summary>scale  (from world size to pixels, so in pixels/meter)</summary>
-        protected double Scale { get; set; }
+        public double Scale { get; set; }
         /// <summary>scale at maximum window.</summary>
         private double fullScale { get; set; }
         /// <summary>world-location X corresponding to left side of drawing area</summary>

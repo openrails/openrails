@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2105 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -235,13 +235,6 @@ namespace ORTS.TrackViewer.Drawing
 
         private bool realDistancesAreCalculated;
 
-        // The next one is a bit tricky. The problem is that the first culling is done based on the trackvector section location
-        // Which is only at one side of the section. So the other end might be quiet far away.
-        // Unfortunately, this means that we need to keep track of many candidates to make sure we can calculate the closest one
-        // Which is costing performance.
-        // The biggest issue is for a long track close to a region with lots junctions and hence small track segments
-        private const int maxNumberOfCandidates = 50;
-
         /// <summary>Tracknode that is closest</summary>
         public TrackNode TrackNode { get { calcRealDistances(); return sortedTrackCandidates.First().Value.trackNode; } }
         /// <summary>Vectorsection within the tracnode</summary>
@@ -294,7 +287,9 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="trackNode">The trackNode that will be stored when indeed it is the closest to the mouse location</param>
         /// <param name="vectorSection">the vectorSection that will be stored when indeed it is closest to the mouse location</param>
         /// <param name="tvsi">Current index of the trackvectorsection</param>
-        public void CheckMouseDistance(WorldLocation location, WorldLocation mouseLocation, TrackNode trackNode, TrVectorSection vectorSection, int tvsi)
+        /// <param name="pixelsPerMeter"></param>
+        public void CheckMouseDistance(WorldLocation location, WorldLocation mouseLocation, 
+            TrackNode trackNode, TrVectorSection vectorSection, int tvsi, double pixelsPerMeter)
         {
             storedMouseLocation = mouseLocation;
             float distanceSquared = CloseToMouse.GetGroundDistanceSquared(location, mouseLocation);
@@ -305,7 +300,16 @@ namespace ORTS.TrackViewer.Drawing
                 if (!sortedTrackCandidates.ContainsKey(distanceSquaredIndexed))
                 {
                     sortedTrackCandidates.Add(distanceSquaredIndexed, new TrackCandidate(trackNode, vectorSection, tvsi, 0));
-                    if (sortedTrackCandidates.Count > maxNumberOfCandidates)
+
+                    // The next one is a bit tricky. The problem is that the first culling is done based on the trackvector section location
+                    // Which is only at one side of the section. So the other end might be quiet far away.
+                    // Unfortunately, this means that we need to keep track of many candidates to make sure we can calculate the closest one
+                    // Which is costing performance.
+                    // The biggest issue is for a long track close to a region with lots junctions and hence small track segments
+                    // By making this number zoom dependent, we get good results for big zooms, and not a large
+                    // performance penalty for wide views
+                    int maxNumberOfCandidates = 50 + (int)(100 * pixelsPerMeter);
+                    while (sortedTrackCandidates.Count > maxNumberOfCandidates)
                     {
                         sortedTrackCandidates.RemoveAt(maxNumberOfCandidates);
                     }
