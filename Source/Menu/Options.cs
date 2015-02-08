@@ -110,10 +110,10 @@ namespace ORTS
 
             // General tab
             checkAlerter.Checked = Settings.Alerter;
-            checkAlerterDisableExternal.Checked = Settings.AlerterDisableExternal;
+            checkAlerterExternal.Checked = !Settings.AlerterDisableExternal;
+            checkConfirmations.Checked = !Settings.SuppressConfirmations;
             checkViewDispatcher.Checked = Settings.ViewDispatcher;
             checkUseLargeAddressAware.Checked = Settings.UseLargeAddressAware;
-            checkSuppressConfirmations.Checked = Settings.SuppressConfirmations;
             checkRetainers.Checked = Settings.RetainersOnAllCars;
             checkGraduatedRelease.Checked = Settings.GraduatedRelease;
             numericBrakePipeChargingRate.Value = Settings.BrakePipeChargingRate;
@@ -239,11 +239,10 @@ namespace ORTS
             numericSuperElevationMinLen.Value = Settings.SuperElevationMinLen;
             numericSuperElevationGauge.Value = Settings.SuperElevationGauge;
             checkPerformanceTuner.Checked = Settings.PerformanceTuner;
-            checkSuppressShapeWarnings.Checked = Settings.SuppressShapeWarnings;
             numericPerformanceTunerTarget.Value = Settings.PerformanceTunerTarget;
             checkDoubleWire.Checked = Settings.DoubleWire;
             checkEnhancedActCompatibility.Checked = Settings.EnhancedActCompatibility;
-            checkNoForcedRedAtStationStops.Checked = Settings.NoForcedRedAtStationStops;
+            checkForcedRedAtStationStops.Checked = !Settings.NoForcedRedAtStationStops;
             trackLODBias.Value = Settings.LODBias;
             trackLODBias_ValueChanged(null, null);
             checkConditionalLoadOfNightTextures.Checked = Settings.ConditionalLoadOfNightTextures;
@@ -259,6 +258,7 @@ namespace ORTS
             checkAdhesionPropToWeather.Checked = Settings.AdhesionProportionalToWeather;
             trackAdhesionFactorChange.Value = Settings.AdhesionFactorChange;
             SetAdhesionLevelValue();
+            checkShapeWarnings.Checked = !Settings.SuppressShapeWarnings;
 
             Initialized = true;
         }
@@ -349,17 +349,16 @@ namespace ORTS
 
             // General tab
             Settings.Alerter = checkAlerter.Checked;
-            Settings.AlerterDisableExternal = checkAlerterDisableExternal.Checked;
+            Settings.AlerterDisableExternal = !checkAlerterExternal.Checked;
+            Settings.SuppressConfirmations = !checkConfirmations.Checked;
             Settings.ViewDispatcher = checkViewDispatcher.Checked;
             Settings.UseLargeAddressAware = checkUseLargeAddressAware.Checked;
-            Settings.SuppressConfirmations = checkSuppressConfirmations.Checked;
             Settings.RetainersOnAllCars = checkRetainers.Checked;
             Settings.GraduatedRelease = checkGraduatedRelease.Checked;
             Settings.BrakePipeChargingRate = (int)numericBrakePipeChargingRate.Value;
             Settings.Language = comboLanguage.SelectedValue.ToString();
             Settings.PressureUnit = comboPressureUnit.SelectedValue.ToString();
             Settings.Units = comboBoxOtherUnits.SelectedValue.ToString();
-
             
             // Audio tab
             Settings.MSTSBINSound = checkMSTSBINSound.Checked;
@@ -420,11 +419,10 @@ namespace ORTS
             Settings.SuperElevationMinLen = (int)numericSuperElevationMinLen.Value;
             Settings.SuperElevationGauge = (int)numericSuperElevationGauge.Value;
             Settings.PerformanceTuner = checkPerformanceTuner.Checked;
-            Settings.SuppressShapeWarnings = checkSuppressShapeWarnings.Checked;
             Settings.PerformanceTunerTarget = (int)numericPerformanceTunerTarget.Value;
             Settings.DoubleWire = checkDoubleWire.Checked;
             Settings.EnhancedActCompatibility = checkEnhancedActCompatibility.Checked;
-            Settings.NoForcedRedAtStationStops =  checkNoForcedRedAtStationStops.Checked;
+            Settings.NoForcedRedAtStationStops = !checkForcedRedAtStationStops.Checked;
             Settings.LODBias = trackLODBias.Value;
             Settings.ConditionalLoadOfNightTextures = checkConditionalLoadOfNightTextures.Checked;
             Settings.SignalLightGlow = checkSignalLightGlow.Checked;
@@ -438,6 +436,7 @@ namespace ORTS
             Settings.AdhesionFactor = (int)trackAdhesionFactor.Value;
             Settings.AdhesionProportionalToWeather = checkAdhesionPropToWeather.Checked;
             Settings.AdhesionFactorChange = (int)trackAdhesionFactorChange.Value;
+            Settings.SuppressShapeWarnings = !checkShapeWarnings.Checked;
 
             Settings.Save();
 

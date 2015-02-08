@@ -35,16 +35,18 @@
             this.checkGraduatedRelease = new System.Windows.Forms.CheckBox();
             this.buttonCancel = new System.Windows.Forms.Button();
             this.checkAlerter = new System.Windows.Forms.CheckBox();
-            this.checkSuppressConfirmations = new System.Windows.Forms.CheckBox();
+            this.checkConfirmations = new System.Windows.Forms.CheckBox();
             this.checkViewDispatcher = new System.Windows.Forms.CheckBox();
             this.tabOptions = new System.Windows.Forms.TabControl();
             this.tabPageGeneral = new System.Windows.Forms.TabPage();
+            this.labelOtherUnits = new System.Windows.Forms.Label();
             this.labelPressureUnit = new System.Windows.Forms.Label();
+            this.comboBoxOtherUnits = new System.Windows.Forms.ComboBox();
             this.checkUseLargeAddressAware = new System.Windows.Forms.CheckBox();
             this.comboPressureUnit = new System.Windows.Forms.ComboBox();
             this.labelLanguage = new System.Windows.Forms.Label();
             this.comboLanguage = new System.Windows.Forms.ComboBox();
-            this.checkAlerterDisableExternal = new System.Windows.Forms.CheckBox();
+            this.checkAlerterExternal = new System.Windows.Forms.CheckBox();
             this.checkRetainers = new System.Windows.Forms.CheckBox();
             this.tabPageAudio = new System.Windows.Forms.TabPage();
             this.numericSoundVolumePercent = new System.Windows.Forms.NumericUpDown();
@@ -109,14 +111,14 @@
             this.tabPageUpdater = new System.Windows.Forms.TabPage();
             this.labelUpdateChannel = new System.Windows.Forms.Label();
             this.tabPageExperimental = new System.Windows.Forms.TabPage();
-            this.checkSuppressShapeWarnings = new System.Windows.Forms.CheckBox();
+            this.checkShapeWarnings = new System.Windows.Forms.CheckBox();
             this.labelLODBias = new System.Windows.Forms.Label();
             this.label21 = new System.Windows.Forms.Label();
             this.trackLODBias = new System.Windows.Forms.TrackBar();
             this.checkAutopilot = new System.Windows.Forms.CheckBox();
             this.checkExtendedAIShunting = new System.Windows.Forms.CheckBox();
             this.checkConditionalLoadOfNightTextures = new System.Windows.Forms.CheckBox();
-            this.checkNoForcedRedAtStationStops = new System.Windows.Forms.CheckBox();
+            this.checkForcedRedAtStationStops = new System.Windows.Forms.CheckBox();
             this.AdhesionFactorChangeValueLabel = new System.Windows.Forms.Label();
             this.AdhesionFactorValueLabel = new System.Windows.Forms.Label();
             this.AdhesionLevelValue = new System.Windows.Forms.Label();
@@ -146,8 +148,6 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.comboBoxOtherUnits = new System.Windows.Forms.ComboBox();
-            this.labelOtherUnits = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -247,25 +247,25 @@
             this.checkAlerter.AutoSize = true;
             this.checkAlerter.Location = new System.Drawing.Point(6, 6);
             this.checkAlerter.Name = "checkAlerter";
-            this.checkAlerter.Size = new System.Drawing.Size(56, 17);
+            this.checkAlerter.Size = new System.Drawing.Size(88, 17);
             this.checkAlerter.TabIndex = 0;
-            this.checkAlerter.Text = "Alerter";
+            this.checkAlerter.Text = "Alerter in cab";
             this.checkAlerter.UseVisualStyleBackColor = true;
             // 
-            // checkSuppressConfirmations
+            // checkConfirmations
             // 
-            this.checkSuppressConfirmations.AutoSize = true;
-            this.checkSuppressConfirmations.Location = new System.Drawing.Point(6, 98);
-            this.checkSuppressConfirmations.Name = "checkSuppressConfirmations";
-            this.checkSuppressConfirmations.Size = new System.Drawing.Size(170, 17);
-            this.checkSuppressConfirmations.TabIndex = 4;
-            this.checkSuppressConfirmations.Text = "Suppress control confirmations";
-            this.checkSuppressConfirmations.UseVisualStyleBackColor = true;
+            this.checkConfirmations.AutoSize = true;
+            this.checkConfirmations.Location = new System.Drawing.Point(6, 52);
+            this.checkConfirmations.Name = "checkConfirmations";
+            this.checkConfirmations.Size = new System.Drawing.Size(124, 17);
+            this.checkConfirmations.TabIndex = 4;
+            this.checkConfirmations.Text = "Control confirmations";
+            this.checkConfirmations.UseVisualStyleBackColor = true;
             // 
             // checkViewDispatcher
             // 
             this.checkViewDispatcher.AutoSize = true;
-            this.checkViewDispatcher.Location = new System.Drawing.Point(6, 52);
+            this.checkViewDispatcher.Location = new System.Drawing.Point(6, 75);
             this.checkViewDispatcher.Name = "checkViewDispatcher";
             this.checkViewDispatcher.Size = new System.Drawing.Size(116, 17);
             this.checkViewDispatcher.TabIndex = 2;
@@ -302,8 +302,8 @@
             this.tabPageGeneral.Controls.Add(this.labelLanguage);
             this.tabPageGeneral.Controls.Add(this.comboLanguage);
             this.tabPageGeneral.Controls.Add(this.checkViewDispatcher);
-            this.tabPageGeneral.Controls.Add(this.checkSuppressConfirmations);
-            this.tabPageGeneral.Controls.Add(this.checkAlerterDisableExternal);
+            this.tabPageGeneral.Controls.Add(this.checkConfirmations);
+            this.tabPageGeneral.Controls.Add(this.checkAlerterExternal);
             this.tabPageGeneral.Controls.Add(this.checkAlerter);
             this.tabPageGeneral.Controls.Add(this.numericBrakePipeChargingRate);
             this.tabPageGeneral.Controls.Add(this.checkRetainers);
@@ -317,6 +317,16 @@
             this.tabPageGeneral.Text = "General";
             this.tabPageGeneral.UseVisualStyleBackColor = true;
             // 
+            // labelOtherUnits
+            // 
+            this.labelOtherUnits.AutoSize = true;
+            this.labelOtherUnits.Location = new System.Drawing.Point(133, 254);
+            this.labelOtherUnits.Margin = new System.Windows.Forms.Padding(3);
+            this.labelOtherUnits.Name = "labelOtherUnits";
+            this.labelOtherUnits.Size = new System.Drawing.Size(58, 13);
+            this.labelOtherUnits.TabIndex = 9;
+            this.labelOtherUnits.Text = "Other units";
+            // 
             // labelPressureUnit
             // 
             this.labelPressureUnit.AutoSize = true;
@@ -327,10 +337,19 @@
             this.labelPressureUnit.TabIndex = 12;
             this.labelPressureUnit.Text = "Pressure unit";
             // 
+            // comboBoxOtherUnits
+            // 
+            this.comboBoxOtherUnits.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxOtherUnits.FormattingEnabled = true;
+            this.comboBoxOtherUnits.Location = new System.Drawing.Point(6, 251);
+            this.comboBoxOtherUnits.Name = "comboBoxOtherUnits";
+            this.comboBoxOtherUnits.Size = new System.Drawing.Size(121, 21);
+            this.comboBoxOtherUnits.TabIndex = 8;
+            // 
             // checkUseLargeAddressAware
             // 
             this.checkUseLargeAddressAware.AutoSize = true;
-            this.checkUseLargeAddressAware.Location = new System.Drawing.Point(6, 75);
+            this.checkUseLargeAddressAware.Location = new System.Drawing.Point(6, 98);
             this.checkUseLargeAddressAware.Name = "checkUseLargeAddressAware";
             this.checkUseLargeAddressAware.Size = new System.Drawing.Size(342, 17);
             this.checkUseLargeAddressAware.TabIndex = 3;
@@ -366,16 +385,16 @@
             this.comboLanguage.TabIndex = 9;
             this.comboLanguage.SelectedIndexChanged += new System.EventHandler(this.comboBoxLanguage_SelectedIndexChanged);
             // 
-            // checkAlerterDisableExternal
+            // checkAlerterExternal
             // 
-            this.checkAlerterDisableExternal.AutoSize = true;
-            this.checkAlerterDisableExternal.Location = new System.Drawing.Point(26, 29);
-            this.checkAlerterDisableExternal.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
-            this.checkAlerterDisableExternal.Name = "checkAlerterDisableExternal";
-            this.checkAlerterDisableExternal.Size = new System.Drawing.Size(174, 17);
-            this.checkAlerterDisableExternal.TabIndex = 1;
-            this.checkAlerterDisableExternal.Text = "Disable alerter in external views";
-            this.checkAlerterDisableExternal.UseVisualStyleBackColor = true;
+            this.checkAlerterExternal.AutoSize = true;
+            this.checkAlerterExternal.Location = new System.Drawing.Point(26, 29);
+            this.checkAlerterExternal.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
+            this.checkAlerterExternal.Name = "checkAlerterExternal";
+            this.checkAlerterExternal.Size = new System.Drawing.Size(127, 17);
+            this.checkAlerterExternal.TabIndex = 1;
+            this.checkAlerterExternal.Text = "Also in external views";
+            this.checkAlerterExternal.UseVisualStyleBackColor = true;
             // 
             // checkRetainers
             // 
@@ -1190,14 +1209,14 @@
             // 
             // tabPageExperimental
             // 
-            this.tabPageExperimental.Controls.Add(this.checkSuppressShapeWarnings);
+            this.tabPageExperimental.Controls.Add(this.checkShapeWarnings);
             this.tabPageExperimental.Controls.Add(this.labelLODBias);
             this.tabPageExperimental.Controls.Add(this.label21);
             this.tabPageExperimental.Controls.Add(this.trackLODBias);
             this.tabPageExperimental.Controls.Add(this.checkAutopilot);
             this.tabPageExperimental.Controls.Add(this.checkExtendedAIShunting);
             this.tabPageExperimental.Controls.Add(this.checkConditionalLoadOfNightTextures);
-            this.tabPageExperimental.Controls.Add(this.checkNoForcedRedAtStationStops);
+            this.tabPageExperimental.Controls.Add(this.checkForcedRedAtStationStops);
             this.tabPageExperimental.Controls.Add(this.AdhesionFactorChangeValueLabel);
             this.tabPageExperimental.Controls.Add(this.AdhesionFactorValueLabel);
             this.tabPageExperimental.Controls.Add(this.AdhesionLevelValue);
@@ -1234,15 +1253,15 @@
             this.tabPageExperimental.Text = "Experimental";
             this.tabPageExperimental.UseVisualStyleBackColor = true;
             // 
-            // checkSuppressShapeWarnings
+            // checkShapeWarnings
             // 
-            this.checkSuppressShapeWarnings.AutoSize = true;
-            this.checkSuppressShapeWarnings.Location = new System.Drawing.Point(6, 307);
-            this.checkSuppressShapeWarnings.Name = "checkSuppressShapeWarnings";
-            this.checkSuppressShapeWarnings.Size = new System.Drawing.Size(171, 17);
-            this.checkSuppressShapeWarnings.TabIndex = 35;
-            this.checkSuppressShapeWarnings.Text = "Suppress shape error warnings";
-            this.checkSuppressShapeWarnings.UseVisualStyleBackColor = true;
+            this.checkShapeWarnings.AutoSize = true;
+            this.checkShapeWarnings.Location = new System.Drawing.Point(6, 307);
+            this.checkShapeWarnings.Name = "checkShapeWarnings";
+            this.checkShapeWarnings.Size = new System.Drawing.Size(130, 17);
+            this.checkShapeWarnings.TabIndex = 35;
+            this.checkShapeWarnings.Text = "Show shape warnings";
+            this.checkShapeWarnings.UseVisualStyleBackColor = true;
             // 
             // labelLODBias
             // 
@@ -1307,15 +1326,15 @@
             this.checkConditionalLoadOfNightTextures.Text = "Load night textures only when needed";
             this.checkConditionalLoadOfNightTextures.UseVisualStyleBackColor = true;
             // 
-            // checkNoForcedRedAtStationStops
+            // checkForcedRedAtStationStops
             // 
-            this.checkNoForcedRedAtStationStops.AutoSize = true;
-            this.checkNoForcedRedAtStationStops.Location = new System.Drawing.Point(6, 214);
-            this.checkNoForcedRedAtStationStops.Name = "checkNoForcedRedAtStationStops";
-            this.checkNoForcedRedAtStationStops.Size = new System.Drawing.Size(165, 17);
-            this.checkNoForcedRedAtStationStops.TabIndex = 13;
-            this.checkNoForcedRedAtStationStops.Text = "No forced red at station stops";
-            this.checkNoForcedRedAtStationStops.UseVisualStyleBackColor = true;
+            this.checkForcedRedAtStationStops.AutoSize = true;
+            this.checkForcedRedAtStationStops.Location = new System.Drawing.Point(6, 214);
+            this.checkForcedRedAtStationStops.Name = "checkForcedRedAtStationStops";
+            this.checkForcedRedAtStationStops.Size = new System.Drawing.Size(151, 17);
+            this.checkForcedRedAtStationStops.TabIndex = 13;
+            this.checkForcedRedAtStationStops.Text = "Forced red at station stops";
+            this.checkForcedRedAtStationStops.UseVisualStyleBackColor = true;
             // 
             // AdhesionFactorChangeValueLabel
             // 
@@ -1666,25 +1685,6 @@
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
             // 
-            // comboBoxOtherUnits
-            // 
-            this.comboBoxOtherUnits.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBoxOtherUnits.FormattingEnabled = true;
-            this.comboBoxOtherUnits.Location = new System.Drawing.Point(6, 252);
-            this.comboBoxOtherUnits.Name = "comboBoxOtherUnits";
-            this.comboBoxOtherUnits.Size = new System.Drawing.Size(121, 21);
-            this.comboBoxOtherUnits.TabIndex = 8;
-            // 
-            // labelOtherUnits
-            // 
-            this.labelOtherUnits.AutoSize = true;
-            this.labelOtherUnits.Location = new System.Drawing.Point(133, 255);
-            this.labelOtherUnits.Margin = new System.Windows.Forms.Padding(3);
-            this.labelOtherUnits.Name = "labelOtherUnits";
-            this.labelOtherUnits.Size = new System.Drawing.Size(58, 13);
-            this.labelOtherUnits.TabIndex = 9;
-            this.labelOtherUnits.Text = "Other units";
-            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -1749,7 +1749,7 @@
         private System.Windows.Forms.CheckBox checkGraduatedRelease;
         private System.Windows.Forms.Button buttonCancel;
         private System.Windows.Forms.CheckBox checkAlerter;
-        private System.Windows.Forms.CheckBox checkSuppressConfirmations;
+        private System.Windows.Forms.CheckBox checkConfirmations;
 		private System.Windows.Forms.CheckBox checkViewDispatcher;
         private System.Windows.Forms.TabControl tabOptions;
         private System.Windows.Forms.TabPage tabPageGeneral;
@@ -1826,7 +1826,7 @@
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.NumericUpDown numericDistantMountainsViewingDistance;
         private System.Windows.Forms.CheckBox checkDistantMountains;
-        private System.Windows.Forms.CheckBox checkAlerterDisableExternal;
+        private System.Windows.Forms.CheckBox checkAlerterExternal;
         private System.Windows.Forms.CheckBox checkCurveSpeedDependent;
         private System.Windows.Forms.CheckBox checkHotStart;
         private System.Windows.Forms.CheckBox checkFastFullScreenAltTab;
@@ -1851,7 +1851,7 @@
         private System.Windows.Forms.CheckBox checkUseLargeAddressAware;
         private System.Windows.Forms.TrackBar trackDayAmbientLight;
         private System.Windows.Forms.Label label15;
-        private System.Windows.Forms.CheckBox checkNoForcedRedAtStationStops;
+        private System.Windows.Forms.CheckBox checkForcedRedAtStationStops;
         private System.Windows.Forms.CheckBox checkConditionalLoadOfNightTextures;
         private System.Windows.Forms.CheckBox checkExtendedAIShunting;
         private System.Windows.Forms.CheckBox checkAutopilot;
@@ -1859,7 +1859,7 @@
         private System.Windows.Forms.Label labelLODBias;
         private System.Windows.Forms.Label label21;
         private System.Windows.Forms.TrackBar trackLODBias;
-        private System.Windows.Forms.CheckBox checkSuppressShapeWarnings;
+        private System.Windows.Forms.CheckBox checkShapeWarnings;
         private System.Windows.Forms.Label labelOtherUnits;
         private System.Windows.Forms.ComboBox comboBoxOtherUnits;
     }
