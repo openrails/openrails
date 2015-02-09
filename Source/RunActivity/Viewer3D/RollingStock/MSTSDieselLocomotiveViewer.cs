@@ -179,11 +179,6 @@ namespace ORTS.Viewer3D.RollingStock
                 }
                 base.PrepareFrame(frame, elapsedTime);
             }
-            //foreach (var drawer in Exhaust)
-            //{
-            //    drawer.SetOutput(car.ExhaustParticles, car.MaxMagnitude, new Color(car.ExhaustColor.R, car.ExhaustColor.G, car.ExhaustColor.B));
-            //}
-            //base.PrepareFrame(frame, elapsedTime);
         }
     }
 }
