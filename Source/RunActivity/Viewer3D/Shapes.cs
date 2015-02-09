@@ -660,9 +660,18 @@ namespace ORTS.Viewer3D
                         Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSCrossing, soundPath);
                         viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                     }
-                    catch (Exception error)
+                    catch
                     {
-                        Trace.WriteLine(new FileLoadException(soundPath, error));
+                        soundPath = viewer.Simulator.BasePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultCrossingSMS;
+                        try
+                        {
+                            Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSCrossing, soundPath);
+                            viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
+                        }
+                        catch (Exception error)
+                        {
+                            Trace.WriteLine(new FileLoadException(soundPath, error));
+                        }
                     }
                 }
             }
@@ -857,7 +866,7 @@ namespace ORTS.Viewer3D
                     }
                 }
             }
-            // Current wave files for coal transfer not cutting out.
+             //Current wave files for coal transfer not cutting out.
             //if (viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS != null && FuelPickupItemObj.PickupType == 6)
             //{
             //    var soundPath = viewer.Simulator.RoutePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS;
@@ -866,9 +875,18 @@ namespace ORTS.Viewer3D
             //        Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
             //        viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
             //    }
-            //    catch (Exception error)
+            //    catch
             //    {
-            //        Trace.WriteLine(new FileLoadException(soundPath, error));
+            //        soundPath = viewer.Simulator.BasePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS;
+            //        try
+            //        {
+            //            Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
+            //            viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
+            //        }
+            //        catch (Exception error)
+            //        {
+            //            Trace.WriteLine(new FileLoadException(soundPath, error));
+            //        }
             //    }
             //}
             FuelPickupItem = viewer.Simulator.FuelManager.CreateFuelStation(position, from tid in FuelPickupItemObj.TrItemIDList where tid.db == 0 select tid.dbID);
