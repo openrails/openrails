@@ -162,11 +162,28 @@ namespace ORTS.Viewer3D.RollingStock
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             var car = this.Car as MSTSDieselLocomotive;
-            foreach (var drawer in Exhaust)
+            if (car.Train.TrainType == Train.TRAINTYPE.STATIC)
             {
-                drawer.SetOutput(car.ExhaustParticles, car.MaxMagnitude, new Color(car.ExhaustColor.R, car.ExhaustColor.G, car.ExhaustColor.B));
+                car.ExhaustParticles = 0;
+                foreach (var drawer in Exhaust)
+                {
+                    drawer.SetOutput(car.ExhaustParticles, car.MaxMagnitude, new Color(car.ExhaustColor.R, car.ExhaustColor.G, car.ExhaustColor.B));
+                }
+                base.PrepareFrame(frame, elapsedTime);
             }
-            base.PrepareFrame(frame, elapsedTime);
+            else
+            {
+                foreach (var drawer in Exhaust)
+                {
+                    drawer.SetOutput(car.ExhaustParticles, car.MaxMagnitude, new Color(car.ExhaustColor.R, car.ExhaustColor.G, car.ExhaustColor.B));
+                }
+                base.PrepareFrame(frame, elapsedTime);
+            }
+            //foreach (var drawer in Exhaust)
+            //{
+            //    drawer.SetOutput(car.ExhaustParticles, car.MaxMagnitude, new Color(car.ExhaustColor.R, car.ExhaustColor.G, car.ExhaustColor.B));
+            //}
+            //base.PrepareFrame(frame, elapsedTime);
         }
     }
 }
