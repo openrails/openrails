@@ -162,7 +162,7 @@ namespace ORTS.Viewer3D.RollingStock
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             var car = this.Car as MSTSDieselLocomotive;
-            if (car.Train.TrainType == Train.TRAINTYPE.STATIC)
+            if (car.Train != null && car.Train.TrainType == Train.TRAINTYPE.STATIC)
             {
                 car.ExhaustParticles = 0;
                 foreach (var drawer in Exhaust)
