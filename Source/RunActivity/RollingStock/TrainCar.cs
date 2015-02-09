@@ -1454,11 +1454,29 @@ namespace ORTS
                 SoundLocation.Location.Y,
                 SoundLocation.Location.Z};
 
-            var soundSourceIDs = SoundSourceIDs.ToArray();
+            // make a copy of SoundSourceIDs, but check that it didn't change during the copy; if it changed, try again up to 5 times.
+            var sSIDsFinalCount = -1;
+            var sSIDsInitCount = -2;
+            int[] soundSourceIDs = {0} ;
+            int trialCount = 0;
+            while (sSIDsInitCount != sSIDsFinalCount && trialCount < 5)
+            {
+                sSIDsInitCount = SoundSourceIDs.Count;
+                soundSourceIDs = SoundSourceIDs.ToArray();
+                sSIDsFinalCount = SoundSourceIDs.Count;
+                trialCount++;
+            }
+            if (trialCount >= 5)
+                return;
             foreach (var soundSourceID in soundSourceIDs)
             {
-                OpenAL.alSourcefv(soundSourceID, OpenAL.AL_POSITION, position);
-                OpenAL.alSourcefv(soundSourceID, OpenAL.AL_VELOCITY, Velocity);
+                Simulator.updaterWorking = true;
+                if (OpenAL.alIsSource(soundSourceID))
+                {
+                    OpenAL.alSourcefv(soundSourceID, OpenAL.AL_POSITION, position);
+                    OpenAL.alSourcefv(soundSourceID, OpenAL.AL_VELOCITY, Velocity);
+                }
+                Simulator.updaterWorking = false;
             }
         }
 

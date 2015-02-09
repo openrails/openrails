@@ -162,6 +162,8 @@ namespace ORTS.Viewer3D
         public static extern void alBufferData(int buffer, int format, [In] byte[] data, int size, int frequency);
         [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alBufferiv(int buffer, int attribute, [In] int[] values);
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern bool alIsSource(int source);
 
         public static int alSourceUnqueueBuffer(int SoundSourceID)
         {

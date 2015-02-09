@@ -440,10 +440,13 @@ namespace ORTS.Viewer3D
             {
                 if (!WasOutOfDistance)
                 {
-                    foreach (SoundStream stream in SoundStreams)
-                        stream.HardDeactivate();
+                    if (!Viewer.Simulator.updaterWorking)
+                    {
+                        foreach (SoundStream stream in SoundStreams)
+                            stream.HardDeactivate();
+                        WasOutOfDistance = true;
+                    }
                 }
-                WasOutOfDistance = true;
                 NeedsFrequentUpdate = false;
             }
             else

@@ -144,6 +144,9 @@ namespace ORTS
 #endif
         public bool IsAutopilotMode = false;
 
+        public bool soundProcessWorking = false;
+        public bool updaterWorking = false;
+
         public Simulator(UserSettings settings, string activityPath, bool useOpenRailsDirectory)
         {
             TimetableMode = false;
