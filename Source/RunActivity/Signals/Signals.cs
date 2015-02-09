@@ -81,6 +81,7 @@ namespace ORTS
         private Dictionary<int, CrossOverItem> CrossoverList = new Dictionary<int, CrossOverItem>();
         public List<PlatformDetails> PlatformDetailsList = new List<PlatformDetails>();
         public Dictionary<int, int> PlatformXRefList = new Dictionary<int, int>();
+        public Dictionary<string, List<int>> StationXRefList = new Dictionary<string, List<int>>();
 
         public bool UseLocationPassingPaths;                    // Use location-based style processing of passing paths (set by Simulator)
         public Dictionary<int, DeadlockInfo> DeadlockInfoList;  // each deadlock info has unique reference
@@ -3898,6 +3899,19 @@ namespace ORTS
                     thisPlatformDetailsIndex = PlatformDetailsList.Count - 1;
                     PlatformXRefList.Add(thisIndex, thisPlatformDetailsIndex);
                     refIndex = 0;
+                }
+
+                // set station reference
+                if (StationXRefList.ContainsKey(thisPlatform.Station))
+                {
+                    List<int> XRefList = StationXRefList[thisPlatform.Station];
+                    XRefList.Add(thisPlatformDetailsIndex);
+                }
+                else
+                {
+                    List<int> XRefList = new List<int>();
+                    XRefList.Add(thisPlatformDetailsIndex);
+                    StationXRefList.Add(thisPlatform.Station, XRefList);
                 }
 
                 // get tracksection

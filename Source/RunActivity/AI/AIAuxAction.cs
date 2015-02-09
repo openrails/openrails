@@ -466,7 +466,7 @@ namespace ORTS
                             if (!found)
                             {
                                 thisTrain.requiredActions.InsertAction(newAction);
-                                ((AITrain)thisTrain).nextActionInfo = newAction;
+//                              ((AITrain)thisTrain).nextActionInfo = newAction; // action must be restored through required actions only
                             }
                         }
                         else specRequiredActions.InsertAction(newAction);

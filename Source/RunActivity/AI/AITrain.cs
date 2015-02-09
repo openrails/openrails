@@ -5108,7 +5108,7 @@ namespace ORTS
                 {
                     bool earlier = false;
 
-                    if (thisItem.ActivateDistanceM <= nextActionInfo.ActivateDistanceM)
+                    if (thisItem.ActivateDistanceM < nextActionInfo.ActivateDistanceM)
                     {
                         if (thisItem.RequiredSpeedMpS <= nextActionInfo.RequiredSpeedMpS)
                         {
@@ -5527,6 +5527,9 @@ namespace ORTS
                         break;
                     case AIActionItem.AI_ACTION_TYPE.NONE:
                         actString = "NONE";
+                        break;
+                    default:
+                        actString = "AUX";
                         break;
                 }
 

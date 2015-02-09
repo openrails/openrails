@@ -489,9 +489,12 @@ namespace ORTS
                 }
             }
 
-            foreach (Train train in movingTrains)
+            if (!TimetableMode)
             {
-                CheckForCoupling(train, elapsedClockSeconds);
+                foreach (Train train in movingTrains)
+                {
+                    CheckForCoupling(train, elapsedClockSeconds);
+                }
             }
 
             if (Signals != null)

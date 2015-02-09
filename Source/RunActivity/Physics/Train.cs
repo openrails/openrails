@@ -10195,7 +10195,7 @@ namespace ORTS
                     }
                 }
 
-                if (!Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility && Simulator.Settings.NoForcedRedAtStationStops)
+                if (Simulator.Settings.EnhancedActCompatibility && Simulator.Settings.NoForcedRedAtStationStops)
                 {
                     // We don't want reds at exit signal in this case
                     HoldSignal = false;
@@ -11821,6 +11821,7 @@ namespace ORTS
             TCSubpathRoute newRoute = new TCSubpathRoute();
 
             TCSubpathRoute altRoute = sectionDeadlockInfo.AvailablePathList[usedPath].Path;
+            int actSubpath = TCRoute.activeSubpath;
 
             // part upto split
 
@@ -11871,6 +11872,39 @@ namespace ORTS
 #if DEBUG_DEADLOCK
             File.AppendAllText(@"C:\temp\deadlock.txt", "\n");
 #endif
+            // check for any stations in abandoned path
+            Dictionary<int, StationStop> abdStations = new Dictionary<int, StationStop>();
+            int nextStationIndex = 0;
+
+
+            if (StationStops != null && StationStops.Count > 0)
+            {
+                int stationRouteIndex = StationStops[nextStationIndex].RouteIndex;
+                int stationSubpath = StationStops[nextStationIndex].SubrouteIndex;
+
+                while (stationRouteIndex < lastAlternativeSectionIndex)
+                {
+                    if (stationSubpath == actSubpath && stationRouteIndex > startElementIndex)
+                    {
+                        abdStations.Add(nextStationIndex, StationStops[nextStationIndex]);
+                    }
+
+                    nextStationIndex++;
+                    if (nextStationIndex > StationStops.Count - 1)
+                    {
+                        stationRouteIndex = lastAlternativeSectionIndex + 1;  // no more stations - set index beyond end
+                    }
+                    else
+                    {
+                        stationRouteIndex = StationStops[nextStationIndex].RouteIndex;
+                        stationSubpath = StationStops[nextStationIndex].SubrouteIndex;
+                        if (stationSubpath > actSubpath)
+                        {
+                            stationRouteIndex = lastAlternativeSectionIndex + 1; // no more stations in this subpath
+                        }
+                    }
+                }
+            }
 
             // continued path
 
@@ -11890,6 +11924,37 @@ namespace ORTS
 
             ValidRoute[0] = newRoute;
             TCRoute.TCRouteSubpaths[TCRoute.activeSubpath] = newRoute;
+
+            // check for abandoned stations - try to find alternative on passing path
+            if (StationStops != null)
+            {
+                List<StationStop> newStops = new List<StationStop>();
+                int firstIndex = -1;
+
+                foreach (KeyValuePair<int, StationStop> abdStop in abdStations)
+                {
+                    if (firstIndex < 0) firstIndex = abdStop.Key;
+                    StationStop newStop = SetAlternativeStationStop(abdStop.Value, altRoute);
+                    StationStops.RemoveAt(abdStop.Key);
+                    if (newStop != null)
+                    {
+                        newStops.Add(newStop);
+                    }
+                }
+
+                for (int iStop = newStops.Count - 1; iStop == 0; iStop--)
+                {
+                    StationStops.Insert(firstIndex, newStops[iStop]);
+                }
+
+                // recalculate indices of all stops
+                int prevIndex = 0;
+                foreach (StationStop statStop in StationStops)
+                {
+                    statStop.RouteIndex = newRoute.GetRouteIndex(statStop.TCSectionIndex, prevIndex);
+                    prevIndex = statStop.RouteIndex;
+                }
+            }
 
             // set signal route
             // part upto split
@@ -11960,6 +12025,17 @@ namespace ORTS
                     }
                 }
             }
+        }
+
+        //================================================================================================//
+        //
+        // Find station on alternative route
+        // Dummy routine to provide virtual method for instance of child class
+        //
+
+        public virtual StationStop SetAlternativeStationStop(StationStop orgStop, TCSubpathRoute newRoute)
+        {
+            return (null);
         }
 
         //================================================================================================//

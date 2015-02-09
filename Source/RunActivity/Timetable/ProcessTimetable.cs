@@ -718,6 +718,7 @@ namespace ORTS
                     if (car.IsDriveable)  // first loco is the one the player drives
                     {
                         simulator.PlayerLocomotive = playerTrain.LeadLocomotive = car;
+                        playerTrain.leadLocoAntiSlip = ((MSTSLocomotive)car).AntiSlip;
                         break;
                     }
                 }
@@ -1518,6 +1519,17 @@ namespace ORTS
                     newStop.Commands.Add(new TTTrainCommands("forcehold"));
                 }
 
+                // process terminal through station commands
+                if (stationDetails.IsTerminal)
+                {
+                    if (newStop.Commands == null)
+                    {
+                        newStop.Commands = new List<TTTrainCommands>();
+                    }
+
+                    newStop.Commands.Add(new TTTrainCommands("terminal"));
+                }
+
                 return (newStop);
             }
 
@@ -2019,8 +2031,22 @@ namespace ORTS
                 // valid stop
                 if (arrdepvalid)
                 {
+                    // check if terminal flag is set
+                    bool terminal = false;
+
+                    if (Commands != null)
+                    {
+                        foreach (TTTrainCommands thisCommand in Commands)
+                        {
+                            if (thisCommand.CommandToken.Equals("terminal"))
+                            {
+                                terminal = true;
+                            }
+                        }
+                    }
+
                     // create station stop info
-                    validStop = actTrain.CreateStationStop(actPlatformID, arrivalTime, departureTime, arrivalDT, departureDT, 15.0f);
+                    validStop = actTrain.CreateStationStop(actPlatformID, arrivalTime, departureTime, arrivalDT, departureDT, 15.0f, terminal);
 
                     // override holdstate using stop info - but only if exit signal is defined
 
@@ -2135,6 +2161,7 @@ namespace ORTS
             public HoldInfo HoldState;       // Hold State
             public bool NoWaitSignal;        // Train will run up to signal and not wait in platform
             public int? MinDwellTimeMins;    // Min Dwell time for Conditional Holdstate
+            public bool IsTerminal;            // Station is terminal
 
             /// <summary>
             /// Constructor from String
@@ -2146,6 +2173,7 @@ namespace ORTS
                 HoldState = HoldInfo.NoHold;
                 NoWaitSignal = false;
                 MinDwellTimeMins = null;
+                IsTerminal = false;
 
                 // if string contains commands : split name and commands
                 if (stationString.Contains("$"))
@@ -2189,6 +2217,10 @@ namespace ORTS
 
                         case "nowaitsignal":
                             NoWaitSignal = true;
+                            break;
+
+                        case "terminal":
+                            IsTerminal = true;
                             break;
 
                         // other commands not yet implemented
