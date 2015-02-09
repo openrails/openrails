@@ -432,6 +432,19 @@ namespace ORTS.Viewer3D.Popups
                 else
                     TableAddLine(table, Viewer.Catalog.GetString("Sander on") + "???");
             }
+
+            if ((Viewer.PlayerLocomotive as MSTSWagon).DoorLeftOpen || (Viewer.PlayerLocomotive as MSTSWagon).DoorRightOpen)
+            {
+                var color = Math.Abs(Viewer.PlayerLocomotive.SpeedMpS) > 0.1f ? "!!!" : "???";
+                var status = "";
+                if ((Viewer.PlayerLocomotive as MSTSWagon).DoorLeftOpen)
+                    status += Viewer.Catalog.GetString("Left");
+                if ((Viewer.PlayerLocomotive as MSTSWagon).DoorRightOpen)
+                    status += string.Format(status == "" ? "{0}" : " {0}", Viewer.Catalog.GetString("Right"));
+                status += color;
+
+                TableAddLabelValue(table, Viewer.Catalog.GetString("Doors open") + color, status);
+            }
         }
 
         void TextPageMultiPlayerInfo(TableData table)

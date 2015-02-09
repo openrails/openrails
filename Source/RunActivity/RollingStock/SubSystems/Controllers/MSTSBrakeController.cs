@@ -153,6 +153,7 @@ namespace ORTS
                 switch (notch.Type)
                 {
                     case ControllerState.Neutral:
+                    case ControllerState.Running:
                         break;
                     case ControllerState.FullQuickRelease:
                         pressureBar -= x * QuickReleaseRateBarpS() * elapsedClockSeconds;
