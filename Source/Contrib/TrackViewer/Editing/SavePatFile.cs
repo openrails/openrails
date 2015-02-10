@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -49,7 +49,7 @@ namespace ORTS.TrackViewer.Editing
             if (trainpath.IsBroken)
             {
                 InformUserPathIsBroken();
-                return;
+                //return;
             }
 
             if (trainpath.FirstNode == null)
@@ -95,7 +95,10 @@ namespace ORTS.TrackViewer.Editing
 
         static void InformUserPathIsBroken()
         {
-            MessageBox.Show(TrackViewer.catalog.GetString("Saving broken paths is not supported"));
+            MessageBox.Show(TrackViewer.catalog.GetString(
+                "Saving broken paths might not always work correctly.\n" +
+                "The MSTS format for defining broken paths is not understood very well.\n" +
+                "Reopening it in TrackViewer, however, is likely to work."));
         }
 
         /// <summary>

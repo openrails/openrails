@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -435,22 +435,14 @@ namespace ORTS.TrackViewer.Editing
         /// <param name="nodeToEdit">(Wait) node for which you want to edit the metadata.</param>
         protected void EditWaitMetaData(TrainpathVectorNode nodeToEdit)
         {
-            if (nodeToEdit.WaitTimeS == 0 && nodeToEdit.WaitUntil == 0)
+            if (nodeToEdit.WaitTimeS == 0 )
             {
-                nodeToEdit.WaitTimeS = 600; // some initial value: 10 minutes
+                nodeToEdit.WaitTimeS = 602; // some initial value: 10 minutes, 2 seconds
             }
-            WaitPointDialog waitDialog = new WaitPointDialog(MouseX, MouseY, nodeToEdit.WaitTimeS//, nodeToEdit.WaitUntil
-                );
+            WaitPointDialog waitDialog = new WaitPointDialog(MouseX, MouseY, nodeToEdit.WaitTimeS);
             if (waitDialog.ShowDialog() == true)
             {
-                //if (waitDialog.UntilSelected())
-                //{
-                //    nodeToEdit.WaitUntil = waitDialog.GetWaitTime;
-                //}
-                //else
-                //{
-                    nodeToEdit.WaitTimeS = waitDialog.GetWaitTime;
-                //}
+                nodeToEdit.WaitTimeS = waitDialog.GetWaitTime();
             }
         }
     }

@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -646,10 +646,9 @@ namespace ORTS.TrackViewer.Editing
         public int TrackVectorSectionIndex { get; set; }
         /// <summary>the offset into the track vector section.</summary>
         public float TrackSectionOffset { get; set; }
-        /// <summary>number of seconds to wait after stopping at this node</summary>
+        /// <summary>number of seconds to wait after stopping at this node.
+        /// For openrails advanced shunting it can mean something else (3HHMM, 4NNSS, 5???? formats)</summary>
         public int WaitTimeS { get; set; } 
-        /// <summary>clock time to wait until if not zero</summary>
-        public int WaitUntil { get; set; }
 
         private bool _forwardOriented = true;
         /// <summary>is the path oriented forward  or not (with respect of orientation of track itself</summary>
@@ -904,15 +903,6 @@ namespace ORTS.TrackViewer.Editing
             }
 
             WaitTimeS = (int)((tpn.pathFlags >> 16) & 0xffff); // get the AAAA part.
-            if (WaitTimeS >= 30000 && WaitTimeS < 40000)
-            {
-                // real wait time. 
-                // waitTimeS (in decimal notation) = 3HHMM  (hours and minutes)
-                int hour = (WaitTimeS / 100) % 100;
-                int minute = WaitTimeS % 100;
-                WaitUntil = 60 * (minute + 60 * hour);
-                WaitTimeS = 0;
-            }
         }
 
         /// <summary>
@@ -935,17 +925,7 @@ namespace ORTS.TrackViewer.Editing
                     break;
                 case TrainpathNodeType.Stop:
                     BBBB = 2;
-                    if (WaitUntil == 0)
-                    {
-                        AAAA = WaitTimeS;
-                    }
-                    else
-                    {
-                        int totalMinutes = WaitUntil / 60;
-                        int hours = totalMinutes / 60;
-                        int minutes = totalMinutes - 60 * hours;
-                        AAAA = 30000 + 100 * hours + minutes;
-                    }
+                    AAAA = WaitTimeS;
                     break;
                 default:
                     BBBB = 4; //intermediate point;
