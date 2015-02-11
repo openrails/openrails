@@ -12030,12 +12030,398 @@ namespace ORTS
         //================================================================================================//
         //
         // Find station on alternative route
-        // Dummy routine to provide virtual method for instance of child class
+        //
         //
 
         public virtual StationStop SetAlternativeStationStop(StationStop orgStop, TCSubpathRoute newRoute)
         {
+            int altPlatformIndex = -1;
+
+            // get station platform list
+            if (signalRef.StationXRefList.ContainsKey(orgStop.PlatformItem.Name))
+            {
+                List<int> XRefKeys = signalRef.StationXRefList[orgStop.PlatformItem.Name];
+
+                // search through all available platforms
+                for (int platformIndex = 0; platformIndex <= XRefKeys.Count - 1 && altPlatformIndex < 0; platformIndex++)
+                {
+                    int platformXRefIndex = XRefKeys[platformIndex];
+                    PlatformDetails altPlatform = signalRef.PlatformDetailsList[platformXRefIndex];
+
+                    // check if section is in new route
+                    for (int iSectionIndex = 0; iSectionIndex <= altPlatform.TCSectionIndex.Count - 1 && altPlatformIndex < 0; iSectionIndex++)
+                    {
+                        if (newRoute.GetRouteIndex(altPlatform.TCSectionIndex[iSectionIndex], 0) > 0)
+                        {
+                            altPlatformIndex = platformXRefIndex;
+                        }
+                    }
+                }
+
+                // section found in new route - set new station details using old details
+                if (altPlatformIndex > 0)
+                {
+                    StationStop newStop = CalculateStationStop(signalRef.PlatformDetailsList[altPlatformIndex].PlatformReference[0],
+                        orgStop.ArrivalTime, orgStop.DepartTime, orgStop.arrivalDT, orgStop.departureDT, 15.0f);
+
+#if DEBUG_REPORTS
+                    if (newStop != null)
+                    {
+                        File.AppendAllText(@"C:\temp\printproc.txt", "Train " + Number.ToString() +
+                        " : alternative stop required for " + orgStop.PlatformItem.Name +
+                        " ; found : " + newStop.PlatformReference + "\n");
+                    }
+                    else
+                    {
+                        File.AppendAllText(@"C:\temp\printproc.txt", "Train " + Number.ToString() +
+                        " : alternative stop required for " + orgStop.PlatformItem.Name +
+                        " ; not found \n");
+                    }
+#endif
+
+                    if (CheckTrain)
+                    {
+                        if (newStop != null)
+                        {
+                            File.AppendAllText(@"C:\temp\checktrain.txt", "Train " + Number.ToString() +
+                            " : alternative stop required for " + orgStop.PlatformItem.Name +
+                            " ; found : " + newStop.PlatformReference + "\n");
+                        }
+                        else
+                        {
+                            File.AppendAllText(@"C:\temp\checktrain.txt", "Train " + Number.ToString() +
+                            " : alternative stop required for " + orgStop.PlatformItem.Name +
+                            " ; not found \n");
+                        }
+                    }
+
+                     return (newStop);
+                }
+            }
+
             return (null);
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Create station stop
+        /// <\summary>
+
+        public StationStop CalculateStationStop(int platformStartID, int arrivalTime, int departTime, DateTime arrivalDT, DateTime departureDT, float clearingDistanceM)
+        {
+            int platformIndex;
+            int lastRouteIndex = 0;
+            int activeSubroute = 0;
+
+            TCSubpathRoute thisRoute = TCRoute.TCRouteSubpaths[activeSubroute];
+
+            // get platform details
+
+            if (!signalRef.PlatformXRefList.TryGetValue(platformStartID, out platformIndex))
+            {
+                return (null); // station not found
+            }
+            else
+            {
+                PlatformDetails thisPlatform = signalRef.PlatformDetailsList[platformIndex];
+                int sectionIndex = thisPlatform.TCSectionIndex[0];
+                int routeIndex = thisRoute.GetRouteIndex(sectionIndex, 0);
+
+                // if first section not found in route, try last
+
+                if (routeIndex < 0)
+                {
+                    sectionIndex = thisPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1];
+                    routeIndex = thisRoute.GetRouteIndex(sectionIndex, 0);
+                }
+
+                // if neither section found - try next subroute - keep trying till found or out of subroutes
+
+                while (routeIndex < 0 && activeSubroute < (TCRoute.TCRouteSubpaths.Count - 1))
+                {
+                    activeSubroute++;
+                    thisRoute = TCRoute.TCRouteSubpaths[activeSubroute];
+                    routeIndex = thisRoute.GetRouteIndex(sectionIndex, 0);
+
+                    // if first section not found in route, try last
+
+                    if (routeIndex < 0)
+                    {
+                        sectionIndex = thisPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1];
+                        routeIndex = thisRoute.GetRouteIndex(sectionIndex, 0);
+                    }
+                }
+
+                // if neither section found - platform is not on route - skip
+
+                if (routeIndex < 0)
+                {
+                    Trace.TraceWarning("Train {0} : platform {1} is not on route",
+                            Number.ToString(), platformStartID.ToString());
+                    return (null);
+                }
+
+                // determine end stop position depending on direction
+
+                TCRouteElement thisElement = thisRoute[routeIndex];
+
+                int endSectionIndex = thisElement.Direction == 0 ?
+                    thisPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1] :
+                    thisPlatform.TCSectionIndex[0];
+                int beginSectionIndex = thisElement.Direction == 0 ?
+                    thisPlatform.TCSectionIndex[0] :
+                    thisPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1];
+
+                float endOffset = thisPlatform.TCOffset[1, thisElement.Direction];
+                float beginOffset = thisPlatform.TCOffset[0, thisElement.Direction];
+
+                float deltaLength = thisPlatform.Length - Length; // platform length - train length
+
+                TrackCircuitSection endSection = signalRef.TrackCircuitList[endSectionIndex];
+
+
+                int firstRouteIndex = thisRoute.GetRouteIndex(beginSectionIndex, 0);
+                if (firstRouteIndex < 0)
+                    firstRouteIndex = routeIndex;
+                lastRouteIndex = thisRoute.GetRouteIndex(endSectionIndex, 0);
+                if (lastRouteIndex < 0)
+                    lastRouteIndex = routeIndex;
+
+                float stopOffset = 0;
+                float fullLength = thisPlatform.Length;
+
+
+                // if train too long : search back for platform with same name
+                    if (deltaLength < 0)
+                    {
+                        float actualBegin = beginOffset;
+
+                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[beginSectionIndex];
+
+                        // Other platforms in same section
+
+                        if (thisSection.PlatformIndex.Count > 1)
+                        {
+                            foreach (int nextIndex in thisSection.PlatformIndex)
+                            {
+                                if (nextIndex != platformIndex)
+                                {
+                                    PlatformDetails otherPlatform = signalRef.PlatformDetailsList[nextIndex];
+                                    if (String.Compare(otherPlatform.Name, thisPlatform.Name) == 0)
+                                    {
+                                        int otherSectionIndex = thisElement.Direction == 0 ?
+                                            otherPlatform.TCSectionIndex[0] :
+                                            otherPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1];
+                                        if (otherSectionIndex == beginSectionIndex)
+                                        {
+                                            if (otherPlatform.TCOffset[0, thisElement.Direction] < actualBegin)
+                                            {
+                                                actualBegin = otherPlatform.TCOffset[0, thisElement.Direction];
+                                                fullLength = endOffset - actualBegin;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            int addRouteIndex = thisRoute.GetRouteIndex(otherSectionIndex, 0);
+                                            float addOffset = otherPlatform.TCOffset[1, thisElement.Direction == 0 ? 1 : 0];
+                                            // offset of begin in other direction is length of available track
+
+                                            if (lastRouteIndex > 0)
+                                            {
+                                                float thisLength =
+                                                    thisRoute.GetDistanceAlongRoute(addRouteIndex, addOffset,
+                                                            lastRouteIndex, endOffset, true, signalRef);
+                                                if (thisLength > fullLength)
+                                                    fullLength = thisLength;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        deltaLength = fullLength - Length;
+                    }
+
+                    // search back along route
+
+                    if (deltaLength < 0)
+                    {
+                        float distance = fullLength + beginOffset;
+                        bool platformFound = false;
+
+                        for (int iIndex = firstRouteIndex - 1;
+                                    iIndex >= 0 && distance < 500f && platformFound;
+                                    iIndex--)
+                        {
+                            int nextSectionIndex = thisRoute[iIndex].TCSectionIndex;
+                            TrackCircuitSection nextSection = signalRef.TrackCircuitList[nextSectionIndex];
+
+                            foreach (int otherPlatformIndex in nextSection.PlatformIndex)
+                            {
+                                PlatformDetails otherPlatform = signalRef.PlatformDetailsList[otherPlatformIndex];
+                                if (String.Compare(otherPlatform.Name, thisPlatform.Name) == 0)
+                                {
+                                    fullLength = otherPlatform.Length + distance;
+                                    // we miss a little bit (offset) - that's because we don't know direction of other platform
+                                    platformFound = true; // only check for one more
+                                }
+                            }
+                            distance += nextSection.Length;
+                        }
+
+                        deltaLength = fullLength - Length;
+                    }
+
+
+                    // determine stop position
+
+                    stopOffset = endOffset - (0.5f * deltaLength);
+
+                    // beyond section : check for route validity (may not exceed route)
+
+                    if (stopOffset > endSection.Length)
+                    {
+                        float addOffset = stopOffset - endSection.Length;
+                        float overlap = 0f;
+
+                        for (int iIndex = lastRouteIndex; iIndex < thisRoute.Count && overlap < addOffset; iIndex++)
+                        {
+                            TrackCircuitSection nextSection = signalRef.TrackCircuitList[thisRoute[iIndex].TCSectionIndex];
+                            overlap += nextSection.Length;
+                        }
+
+                        if (overlap < stopOffset)
+                            stopOffset = overlap;
+                    }
+
+                // check if stop offset beyond end signal - do not hold at signal
+
+                int EndSignal = -1;
+                bool HoldSignal = false;
+                bool NoWaitSignal = false;
+                bool NoClaimAllowed = false;
+
+                // check if train is to reverse in platform
+                // if so, set signal at other end as hold signal
+
+                int useDirection = thisElement.Direction;
+                bool inDirection = true;
+
+                if (TCRoute.ReversalInfo[activeSubroute].Valid)
+                {
+                    TCReversalInfo thisReversal = TCRoute.ReversalInfo[activeSubroute];
+                    int reversalIndex = thisReversal.SignalUsed ? thisReversal.LastSignalIndex : thisReversal.LastDivergeIndex;
+                    if (reversalIndex >= 0 && reversalIndex <= lastRouteIndex) // reversal point is this section or earlier
+                    {
+                        useDirection = useDirection == 0 ? 1 : 0;
+                        inDirection = false;
+                    }
+                }
+
+                // check for end signal
+
+                if (thisPlatform.EndSignals[useDirection] >= 0)
+                {
+                    EndSignal = thisPlatform.EndSignals[useDirection];
+
+                    // stop location is in front of signal
+                    if (inDirection)
+                    {
+                        if (thisPlatform.DistanceToSignals[useDirection] > (stopOffset - endOffset))
+                        {
+                            HoldSignal = true;
+
+                            if ((thisPlatform.DistanceToSignals[useDirection] + (endOffset - stopOffset)) < clearingDistanceM)
+                            {
+                                stopOffset = endOffset + thisPlatform.DistanceToSignals[useDirection] - clearingDistanceM - 1.0f;
+                            }
+                        }
+                        // if most of train fits in platform then stop at signal
+                        else if ((thisPlatform.DistanceToSignals[useDirection] - clearingDistanceM + thisPlatform.Length) >
+                                      (0.6 * Length))
+                        {
+                            HoldSignal = true;
+                            stopOffset = endOffset + thisPlatform.DistanceToSignals[useDirection] - clearingDistanceM - 1.0f;
+                            // set 1m earlier to give priority to station stop over signal
+                        }
+                        // train does not fit in platform - reset exit signal
+                        else
+                        {
+                            EndSignal = -1;
+                        }
+                    }
+                    else
+                    // end of train is beyond signal
+                    {
+                        if ((beginOffset - thisPlatform.DistanceToSignals[useDirection]) < (stopOffset - Length))
+                        {
+                            HoldSignal = true;
+
+                            if ((stopOffset - Length - beginOffset + thisPlatform.DistanceToSignals[useDirection]) < clearingDistanceM)
+                            {
+                                stopOffset = beginOffset - thisPlatform.DistanceToSignals[useDirection] + Length + clearingDistanceM + 1.0f;
+                            }
+                        }
+                        // if most of train fits in platform then stop at signal
+                        else if ((thisPlatform.DistanceToSignals[useDirection] - clearingDistanceM + thisPlatform.Length) >
+                                      (0.6 * Length))
+                        {
+                            // set 1m earlier to give priority to station stop over signal
+                            stopOffset = beginOffset - thisPlatform.DistanceToSignals[useDirection] + Length + clearingDistanceM + 1.0f;
+
+                            // check if stop is clear of end signal (if any)
+                            if (thisPlatform.EndSignals[thisElement.Direction] != -1)
+                            {
+                                if (stopOffset < (endOffset + thisPlatform.DistanceToSignals[thisElement.Direction]))
+                                {
+                                    HoldSignal = true; // if train fits between signals
+                                }
+                                else
+                                {
+                                    stopOffset = endOffset + thisPlatform.DistanceToSignals[thisElement.Direction] - 1.0f; // stop at end signal
+                                }
+                            }
+                        }
+                        // train does not fit in platform - reset exit signal
+                        else
+                        {
+                            EndSignal = -1;
+                        }
+                    }
+                }
+
+                if (Simulator.Settings.EnhancedActCompatibility && Simulator.Settings.NoForcedRedAtStationStops)
+                {
+                    // We don't want reds at exit signal in this case
+                    HoldSignal = false;
+                }
+
+                // build and add station stop
+
+                TCRouteElement lastElement = thisRoute[lastRouteIndex];
+
+                StationStop thisStation = new StationStop(
+                        platformStartID,
+                        thisPlatform,
+                        activeSubroute,
+                        lastRouteIndex,
+                        lastElement.TCSectionIndex,
+                        thisElement.Direction,
+                        EndSignal,
+                        HoldSignal,
+                        NoWaitSignal,
+                        NoClaimAllowed,
+                        stopOffset,
+                        arrivalTime,
+                        departTime,
+                        StationStop.STOPTYPE.STATION_STOP);
+
+                thisStation.arrivalDT = arrivalDT;
+                thisStation.departureDT = departureDT;
+
+                return (thisStation);
+            }
         }
 
         //================================================================================================//

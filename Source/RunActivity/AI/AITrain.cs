@@ -5348,6 +5348,27 @@ namespace ORTS
             ResetActions(true);
         }
 
+               //================================================================================================//
+        //
+        // Find station on alternative route
+        //
+        //
+
+        public override StationStop SetAlternativeStationStop(StationStop orgStop, TCSubpathRoute newRoute)
+        {
+            var newStop = base.SetAlternativeStationStop(orgStop, newRoute);
+            if (newStop != null)
+            {
+                // Modify PlatformStartID in ServiceList
+                var actualServiceItem = ServiceDefinition.ServiceList.Find(si => si.PlatformStartID == orgStop.PlatformReference);
+                if (actualServiceItem != null)
+                {
+                    actualServiceItem.PlatformStartID = newStop.PlatformReference;
+                }
+            }
+            return newStop;
+        }
+
         //================================================================================================//
         /// <summary>
         /// Add movement status to train status string
