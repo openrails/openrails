@@ -130,6 +130,10 @@ namespace Updater
                 }));
             };
 
+            var channelName = Enumerable.FirstOrDefault(Environment.GetCommandLineArgs(), a => a.StartsWith(UpdateManager.ChannelCommandLine));
+            if (channelName != null && channelName.Length > UpdateManager.ChannelCommandLine.Length)
+                updateManager.SetChannel(channelName.Substring(UpdateManager.ChannelCommandLine.Length));
+
             updateManager.Check();
             if (updateManager.LastCheckError != null)
             {

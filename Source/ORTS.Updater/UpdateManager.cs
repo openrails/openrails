@@ -37,6 +37,7 @@ namespace ORTS.Updater
         // The date on this is fairly arbitrary - it's only used in a calculation to round the DateTime up to the next TimeSpan period.
         readonly DateTime BaseDateTimeMidnightLocal = new DateTime(2010, 1, 1, 0, 0, 0, DateTimeKind.Local);
 
+        public const string ChannelCommandLine = "/CHANNEL=";
         public const string WaitProcessIdCommandLine = "/WAITPID=";
         public const string RelaunchCommandLine = "/RELAUNCH=";
         public const string ElevationCommandLine = "/ELEVATE=";
@@ -192,7 +193,7 @@ namespace ORTS.Updater
             if (LastUpdate == null) throw new InvalidOperationException("Cannot get update when no LatestUpdate exists.");
             try
             {
-                var process = Process.Start(FileUpdater, String.Format("{0}{1} {2}{3} {4}{5}", WaitProcessIdCommandLine, Process.GetCurrentProcess().Id, RelaunchCommandLine, 1, ElevationCommandLine, UpdaterNeedsElevation ? 1 : 0));
+                var process = Process.Start(FileUpdater, String.Format("{0}{1} {2}{3} {4}{5} {6}{7}", ChannelCommandLine, ChannelName, WaitProcessIdCommandLine, Process.GetCurrentProcess().Id, RelaunchCommandLine, 1, ElevationCommandLine, UpdaterNeedsElevation ? 1 : 0));
                 process.WaitForInputIdle();
                 Environment.Exit(0);
             }
