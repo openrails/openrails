@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Contrib\n"
-"POT-Creation-Date: 2014-10-10 21:02:30+0200\n"
-"PO-Revision-Date: 2014-10-12 18:58+0100\n"
+"POT-Creation-Date: 2015-02-03 20:14:32+0100\n"
+"PO-Revision-Date: 2015-02-12 21:21+0100\n"
 "Last-Translator: Roberto Ceccarelli (The Strawberry Field) <strawberry."
 "field@libero.it>\n"
 "Language-Team: Open Rails Dev Team\n"
@@ -51,15 +51,52 @@ msgstr ""
 msgid "AboutActEdit"
 msgstr ""
 
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:47
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStoppedProperties.Designer.cs:41
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/HornProperties.Designer.cs:44
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:162
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:390
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:56
-#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:515
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:519
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:110
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:48
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.Designer.cs:42
 msgid "OK"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:74
+#, fuzzy
+msgid "ActionDuration"
+msgstr "Punto di attività"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:85
+msgid "Pre-delay :"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:100
+msgid "ControlStartProperties"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:75
+msgid ""
+"ActionDuration:\r\n"
+"How long does the action takes.  With a minimum of 10sec and a maximum of "
+"25sec.\r\n"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:86
+msgid ""
+"Pre-Delay:\r\n"
+"Define the advance period for this action before the end of caller.\r\n"
+"Minimum 1sec, maximu 20sec, and not over the ActionDuration\r\n"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStoppedProperties.Designer.cs:52
+msgid "No Parameter to set"
+msgstr ""
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStoppedProperties.Designer.cs:62
+msgid "ControlStoppedProperties"
 msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/HornProperties.Designer.cs:55
@@ -218,7 +255,7 @@ msgid "Tools"
 msgstr "Strumenti"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:214
-#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:528
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:532
 msgid "Options"
 msgstr "Opzioni"
 
@@ -434,8 +471,9 @@ msgid "Show Tiles"
 msgstr "Mostra tiles"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:451
-msgid "tabPage2"
-msgstr ""
+#, fuzzy
+msgid "Actions Configuration"
+msgstr "Punto di attività"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:468
 msgid "< remove"
@@ -445,7 +483,7 @@ msgstr "< Rimuovi"
 msgid "Add >"
 msgstr "Aggiungi >"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:507
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:511
 msgid "Configuration for Generic Auxiliary Actions"
 msgstr ""
 
@@ -590,23 +628,23 @@ msgid "Train Name (Opt.)"
 msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:191
-#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:194
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:191
 msgid "< &Back"
 msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:200
-#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:203
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:200
 msgid "&Next >"
 msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:210
-#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:213
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:210
 #: ../../Contrib/TrackViewer/UserInterface/SearchControl.xaml:12
 msgid "Cancel"
 msgstr "Annulla"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:219
-#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:222
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:219
 msgid "&Finish"
 msgstr ""
 
@@ -867,7 +905,7 @@ msgstr "Sconosciuto"
 
 #: ../../Contrib/TrackViewer/UserInterface/Languages.cs:65
 msgid "Please restart TrackViewer in order to load the new language."
-msgstr ""
+msgstr "Riavvia TrackViewer per utilizzare la nuova lingua"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:352
 msgid "<Select path>"
@@ -887,68 +925,69 @@ msgstr "<Scegli la banchina>"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:486
 msgid "left  arrow:  Shift left\n"
-msgstr ""
+msgstr "freccia a sinistra:  Shift left\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:487
 msgid "down  arrow:  Shift down\n"
-msgstr ""
+msgstr "freccia in basso:  Shift down\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:488
 msgid "right arrow:  Shift right\n"
-msgstr ""
+msgstr "freccia a destra:  Shift right\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:489
 msgid "up    arrow:  Shift up\n"
-msgstr ""
+msgstr "freccia in su:  Shift up\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:490
 msgid "C:  Shift to center of current path node\n"
-msgstr ""
+msgstr "C:  Centra sul nodo corrente\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:491
 msgid "shift-C:  Shift to center of current mouse location\n"
-msgstr ""
+msgstr "shift-C:  Centra alla posizione del mouse\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:492
 msgid "PgUp:  Show more of the path\n"
-msgstr ""
+msgstr "PgUp:  Mostra una sezione in più del path\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:493
 msgid "PgDn:  Show less of the path\n"
-msgstr ""
+msgstr "PgDn:  Mostra una sezione in meno del path\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:494
 msgid "shift-PgUp:  Show the full path\n"
-msgstr ""
+msgstr "shift-PgUp: Mostra tutto il path\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:495
 msgid "shift-PgDn:  Show only start point of path\n"
-msgstr ""
+msgstr "shift-PgDn:  Mostra solo il punto di partenza del path\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:496
 msgid "ctrl-Z: Undo in path editor\n"
-msgstr ""
+msgstr "ctrl-Z: Annulla comando\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:497
 msgid "ctrl-Y: Redo in path editor\n"
-msgstr ""
+msgstr "ctrl-Y: Ripristina\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:504
 msgid "This is ORTS TrackViewer, version "
-msgstr ""
+msgstr "Questo è ORTS TrackViewer, versione"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:507
 msgid "It is a 'Contribution' to ORTS, and as such\n"
-msgstr ""
+msgstr "Questa è una 'Contribuzione' a ORTS e come tale\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:508
 msgid "not an integral part of ORTS."
-msgstr ""
+msgstr "non è parte integrante di ORTS."
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:770
 msgid ""
 "Currently all intended and planned editor features have been implemented."
 msgstr ""
+"Al momento tutte le funzioni previste dell'editor sono state implementate."
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:772
 msgid "Documentation is available"
@@ -961,7 +1000,7 @@ msgstr "Limitazioni note"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:776
 msgid "* The saved-paths have not been tested with MSTS or ORTS."
-msgstr ""
+msgstr "* I path salvati non sono stati testati con MSTS o ORTS"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:778
 msgid ""
@@ -1336,7 +1375,7 @@ msgstr "Salva il path"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:121
 msgid "Save visited stations"
-msgstr ""
+msgstr "Salva le stazioni visitate"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:123
 msgid "Enable editing"
