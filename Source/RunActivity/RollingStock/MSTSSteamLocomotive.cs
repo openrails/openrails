@@ -141,6 +141,7 @@ namespace ORTS
         float CylinderDiameterM;    // High pressure cylinders
         float LPCylinderStrokeM;      // Low pressure cylinders
         float LPCylinderDiameterM;    // Low pressure cylinders
+        float CompoundCylinderRatio;    // Compound locomotive - ratio of low pressure to high pressure cylinder
         float MaxBoilerOutputLBpH;  // maximum boiler steam generation rate
         float IdealFireMassKG;      // Target fire mass
         float MaxFireMassKG;        // Max possible fire mass
@@ -350,6 +351,7 @@ namespace ORTS
         float CylinderPistonAreaFt2;    // Area of the piston in the cylinder
         float SteamChestPressurePSI;    // Pressure in steam chest - input to cylinder
         float InitialPressureAtmPSI;
+        float CalculatedCylinderSteamUsageLBpS; // Steam usage calculated from steam indicator diagram
         
         const int CylStrokesPerCycle = 2;  // each cylinder does 2 strokes for every wheel rotation, within each stroke
         float CylinderEfficiencyRate = 1.0f; // Factor to vary the output power of the cylinder without changing steam usage - used as a player customisation factor.
@@ -365,7 +367,7 @@ namespace ORTS
         float BoilerEvapRateLbspFt2;  // Sets the evaporation rate for the boiler is used to multiple boiler evaporation area by - used as a player customisation factor.
 
         float SpeedFactor;      // Speed factor - factor to reduce TE due to speed increase - American locomotive company
-        
+
         public float MaxTractiveEffortLbf;     // Maximum theoritical tractive effort for locomotive
         float DisplayTractiveEffortLbsF; // Value of Tractive eefort to display in HUD
         float CriticalSpeedTractiveEffortLbf;  // Speed at which the piston speed reaches it maximum recommended value
@@ -726,6 +728,65 @@ namespace ORTS
                 Trace.TraceInformation("BurnRateSteamToCoalLbspH - default information read from SteamTables");
             }
 
+            // Check Cylinder efficiency rate to see if set - allows user to improve cylinder performance and reduce losses
+
+            if (CylinderEfficiencyRate == 0)
+            {
+                CylinderEfficiencyRate = 1.0f; // If no cylinder efficiency rate in the ENG file set to mormal (1.0)
+            }
+
+            // Confirm locomotive and boiler type
+
+            if (IsCompoundLoco)
+            {
+              //  Initialise Compound locomotive
+                // Model current based upon a four cylinder, balanced compound, type Vauclain, as built by Baldwin, with no receiver between the HP and LP cylinder
+                // Set to simple operation intially
+                CompoundCylinderRatio = (LPCylinderDiameterM * LPCylinderDiameterM) / (CylinderDiameterM * CylinderDiameterM);
+                MaxTractiveEffortLbf = CylinderEfficiencyRate * (1.6f * MaxBoilerPressurePSI * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM)) / (Me.ToIn(DriverWheelRadiusM * 2.0f));
+                MotiveForceGearRatio = 1.0f;  // set gear ratio to default, as not a geared locomotive
+
+            }
+            else if (IsGearedSteamLoco)
+            {
+                if (IsFixGeared)
+                {
+                  //  SteamLocoType = "Fixed Geared locomotive";
+                }
+                else if (IsSelectGeared)
+                {
+                   // SteamLocoType = "Selectable Geared locomotive";
+                }
+                else
+                {
+                   // SteamLocoType = "Unknown Geared locomotive";
+                }
+            }
+            else if (IsSimpleLoco)
+            {
+               // Simple locomotive
+                MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio * CylinderEfficiencyRate;
+            }
+            else // Default to Simple Locomotive
+            {
+                MotiveForceGearRatio = 1.0f;  // set gear ratio to default, as not a geared locomotive
+                MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio * CylinderEfficiencyRate;
+                
+            }
+
+            if (HasSuperheater)
+            {
+                //SteamLocoType += " + Superheater";
+            }
+            else if (IsSaturated)
+            {
+               // SteamLocoType += " + Saturated";
+            }
+            else
+            {
+                //SteamLocoType += " + Not defined (assumed saturated)";
+            }
+
             InitializeTenderWithCoal();
             InitializeTenderWithWater();
 
@@ -945,19 +1006,7 @@ namespace ORTS
             MaxLocoSpeedMpH = MpS.ToMpH(Me.FromFt(pS.FrompM(MaxPistonSpeedFtpM / SteamGearRatio))) * 2.0f * MathHelper.Pi * DriverWheelRadiusM / (2.0f * CylinderStrokeM);
           }
 
-          // Check Cylinder efficiency rate to see if set - allows user to improve cylinder performance and reduce losses
-
-          if (CylinderEfficiencyRate == 0)
-          {
-              CylinderEfficiencyRate = 1.0f; // If no cylinder efficiency rate in the ENG file set to mormal (1.0)
-          }
-
-          MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio * CylinderEfficiencyRate;
-
-            // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
-            MaxIndicatedHorsePowerHP = SpeedFactor * (MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;
-
-           // If DrvWheelWeight is not in ENG file, then calculate from Factor of Adhesion(FoA) = DrvWheelWeight / Start (Max) Tractive Effort, assume FoA = 4.2
+          // If DrvWheelWeight is not in ENG file, then calculate from Factor of Adhesion(FoA) = DrvWheelWeight / Start (Max) Tractive Effort, assume FoA = 4.2
 
             if (DrvWheelWeightKg == 0) // if DrvWheelWeightKg not in ENG file.
             {
@@ -2062,7 +2111,18 @@ namespace ORTS
           float CylinderClearanceSteamVolumeFt3 = CylinderSweptVolumeFT3pFT * (CylinderPreAdmissionOpenFactor + CylinderClearancePC); // volume of the clearance area + area of steam at pre-admission
           float CylinderClearanceSteamWeightLbs = CylinderClearanceSteamVolumeFt3 * CylinderSteamDensityPSItoLBpFT3[CylinderPreAdmissionPressureAtmPSI]; // Weight of total steam remaining in the cylinder
           
-          float CalculatedCylinderSteamUsageLBpS = NumCylinders * DrvWheelRevRpS * CylStrokesPerCycle * (CylinderReleaseSteamWeightLbs - CylinderClearanceSteamWeightLbs) * SuperheaterSteamUsageFactor;
+          if (IsCompoundLoco && CylinderCompoundOn)
+          {
+              // For time being assume that compound locomotive doesn't experience cylinder condensation.
+              CalculatedCylinderSteamUsageLBpS = NumCylinders * DrvWheelRevRpS * CylStrokesPerCycle * (CylinderReleaseSteamWeightLbs - CylinderClearanceSteamWeightLbs);
+              Trace.TraceInformation("compound");
+          }
+          else // Calculate steam usage for simple and geared locomotives.
+          {
+              CalculatedCylinderSteamUsageLBpS = NumCylinders * DrvWheelRevRpS * CylStrokesPerCycle * (CylinderReleaseSteamWeightLbs - CylinderClearanceSteamWeightLbs) * SuperheaterSteamUsageFactor;
+              Trace.TraceInformation("simple");
+          }
+           
           
           #endregion
           
@@ -2087,11 +2147,31 @@ namespace ORTS
            
            // This section updates the force calculations and maintains them at the current values.
 
+            // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
+            MaxIndicatedHorsePowerHP = SpeedFactor * (MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;
+
            // Caculate the current piston speed - purely for display purposes at the moment 
            // Piston Speed (Ft p Min) = (Stroke length x 2) x (Ft in Mile x Train Speed (mph) / ( Circum of Drv Wheel x 60))
             PistonSpeedFtpMin = Me.ToFt(pS.TopM(CylinderStrokeM * 2.0f * DrvWheelRevRpS)) * SteamGearRatio;
-             
-            TractiveEffortLbsF = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MeanEffectivePressurePSI * CylinderEfficiencyRate * MotiveForceGearRatio;
+            
+            if (IsCompoundLoco)
+            {
+                if (CylinderCompoundOn)
+                {
+                    // Calculate maximum tractive effort if set to simple operation
+                    TractiveEffortLbsF = CylinderEfficiencyRate * (1.6f * MeanEffectivePressurePSI * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM)) / (Me.ToIn(DriverWheelRadiusM * 2.0f));
+                }
+                else
+                {
+                    // Calculate tractive effort if set for compounding
+                    TractiveEffortLbsF = CylinderEfficiencyRate * (1.6f * MeanEffectivePressurePSI * Me.ToIn(LPCylinderDiameterM) * Me.ToIn(LPCylinderDiameterM) * Me.ToIn(LPCylinderStrokeM)) / ((CompoundCylinderRatio + 1.0f) * (Me.ToIn(DriverWheelRadiusM * 2.0f)));
+                }
+            }
+            else // if simple or geared locomotive set tractive effort
+            {
+                TractiveEffortLbsF = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MeanEffectivePressurePSI * CylinderEfficiencyRate * MotiveForceGearRatio;
+            }
+
             TractiveEffortLbsF = MathHelper.Clamp(TractiveEffortLbsF, 0, TractiveEffortLbsF);
             DisplayTractiveEffortLbsF = TractiveEffortLbsF;
                       
@@ -2975,16 +3055,20 @@ namespace ORTS
                 FormatStrings.FormatPressure(CylinderPreAdmissionPressureAtmPSI, PressureUnit.PSI, PressureUnit, true),
                 FormatStrings.FormatPressure(MeanEffectivePressurePSI, PressureUnit.PSI, PressureUnit, true));
 
-            status.AppendFormat("{0}\t{1}\t{5}\t{2}\t{6}\t{3}\t{7}\t{4}\t{8}\n",
+            status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\n",
                 Viewer.Catalog.GetString("Status:"),
                 Viewer.Catalog.GetString("Safety"),
-                Viewer.Catalog.GetString("Plug"),
-                Viewer.Catalog.GetString("Prime"),
-                Viewer.Catalog.GetString("BoilHeat"),
                 SafetyIsOn ? Viewer.Catalog.GetString("Open") : Viewer.Catalog.GetString("Closed"),
+                Viewer.Catalog.GetString("Plug"),
                 FusiblePlugIsBlown ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
+                Viewer.Catalog.GetString("Prime"),
                 BoilerIsPriming ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
-                BoilerHeat ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"));
+                Viewer.Catalog.GetString("BoilHeat"),
+                BoilerHeat ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
+                Viewer.Catalog.GetString("Comp"),
+                CylinderCompoundOn ? Viewer.Catalog.GetString("On") : Viewer.Catalog.GetString("Off")                
+                );
+                                
 
             status.AppendFormat("\n\t\t === {0} === \n", Viewer.Catalog.GetString("Fireman"));
             status.AppendFormat("{0}\t{1}\t{7}\t\t{2}\t{8}\t\t{3}\t{9}/{13}\t\t{4}\t{10}/{13}\t\t{5}\t{11}/{13}\t\t{6}\t{12}/{14}{13}\n",
@@ -3054,21 +3138,21 @@ namespace ORTS
                 FormatStrings.FormatPower(W.FromHp(IndicatedHorsePowerHP), IsMetric, false, false),
                 FormatStrings.FormatPower(W.FromHp(DrawbarHorsePowerHP), IsMetric, false, false));
 
-            status.AppendFormat("{0}\t{1}\t{7}\t{2}\t{8}\t{3}\t{9}\t{4}\t{10}\t{5}\t{11}\t{6} {12}\n",
-                Viewer.Catalog.GetString("Force:"),
-                Viewer.Catalog.GetString("TheorTE"),
-                Viewer.Catalog.GetString("StartTE"),
-                Viewer.Catalog.GetString("TE"),
-                Viewer.Catalog.GetString("Draw"),
-                Viewer.Catalog.GetString("CritSpTE"),
-                Viewer.Catalog.GetString("CritSpeed"),
-                FormatStrings.FormatForce(N.FromLbf(MaxTractiveEffortLbf), IsMetric),
-                FormatStrings.FormatForce(StartTractiveEffortN, IsMetric),
-                FormatStrings.FormatForce(N.FromLbf(DisplayTractiveEffortLbsF), IsMetric),
-                FormatStrings.FormatForce(N.FromLbf(DrawBarPullLbsF), IsMetric),
-                FormatStrings.FormatForce(N.FromLbf(CriticalSpeedTractiveEffortLbf), IsMetric),
-                FormatStrings.FormatSpeedDisplay(MpS.FromMpH(MaxLocoSpeedMpH), IsMetric));
-
+           status.AppendFormat("{0}\t{1}\t{7}\t{2}\t{8}\t{3}\t{9}\t{4}\t{10}\t{5}\t{11}\t{6} {12}\n",
+                    Viewer.Catalog.GetString("Force:"),
+                    Viewer.Catalog.GetString("TheorTE"),
+                    Viewer.Catalog.GetString("StartTE"),
+                    Viewer.Catalog.GetString("TE"),
+                    Viewer.Catalog.GetString("Draw"),
+                    Viewer.Catalog.GetString("CritSpTE"),
+                    Viewer.Catalog.GetString("CritSpeed"),
+                    FormatStrings.FormatForce(N.FromLbf(MaxTractiveEffortLbf), IsMetric),
+                    FormatStrings.FormatForce(StartTractiveEffortN, IsMetric),
+                    FormatStrings.FormatForce(N.FromLbf(DisplayTractiveEffortLbsF), IsMetric),
+                    FormatStrings.FormatForce(N.FromLbf(DrawBarPullLbsF), IsMetric),
+                    FormatStrings.FormatForce(N.FromLbf(CriticalSpeedTractiveEffortLbf), IsMetric),
+                    FormatStrings.FormatSpeedDisplay(MpS.FromMpH(MaxLocoSpeedMpH), IsMetric));
+ 
             status.AppendFormat("{0}\t{1}\t{5:N0} {9}/{10}\t\t{2}\t{6:N3}\t{3}\t{7:N0} {11}\t{4} {8:N2}\n",
                 Viewer.Catalog.GetString("Move:"),
                 Viewer.Catalog.GetString("Piston"),
@@ -3608,10 +3692,26 @@ namespace ORTS
 
         public void ToggleCylinderCompound()
         {
+
+            if (IsCompoundLoco)  // only use this control if a compound locomotive
+            {
             CylinderCompoundOn = !CylinderCompoundOn;
             SignalEvent(Event.CylinderCompoundToggle);
             if (IsPlayerTrain)
+            {
                 Simulator.Confirmer.Confirm(CabControl.CylinderCompound, CylinderCompoundOn ? CabSetting.On : CabSetting.Off);
+            }
+                if (CylinderCompoundOn)
+                {
+                    // Calculate maximum tractive effort if set for compounding
+                    MaxTractiveEffortLbf = CylinderEfficiencyRate * (1.6f * MaxBoilerPressurePSI * Me.ToIn(LPCylinderDiameterM) * Me.ToIn(LPCylinderDiameterM) * Me.ToIn(LPCylinderStrokeM)) / ((CompoundCylinderRatio + 1.0f) * (Me.ToIn(DriverWheelRadiusM * 2.0f)));
+                }
+                else
+                {
+                   // Calculate maximum tractive effort if set to simple operation
+                    MaxTractiveEffortLbf = CylinderEfficiencyRate * (1.6f * MaxBoilerPressurePSI * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM)) / (Me.ToIn(DriverWheelRadiusM * 2.0f));
+                }
+            }
         }
 
         public void ToggleInjector1()
