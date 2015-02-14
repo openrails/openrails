@@ -332,11 +332,11 @@ namespace ORTS.TrackViewer.Editing
             }
 
             // make the connection
-            // todo not sure if all if this works if we are on a siding path and the firstNodeSecondPath is the siding end.
-            firstNodeSecondPath.PrevNode = lastNodeFirstPath;
             if (isMainPath)
             {
                 lastNodeFirstPath.NextMainNode = firstNodeSecondPath;
+                // For the moment, if it is a siding path, we always reconnect to the main path. And then prevnode does not need to be relinked
+                firstNodeSecondPath.PrevNode = lastNodeFirstPath;
             }
             else
             {
