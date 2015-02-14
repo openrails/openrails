@@ -2053,9 +2053,7 @@ namespace ORTS
             float CylinderLengthCompressionIn = Me.ToIn(CylinderStrokeM) * ((CylinderCompressionCloseFactor + CylinderClearancePC) - (CylinderPreAdmissionOpenFactor + CylinderClearancePC));
             float AverageCompressionPressureAtmPSI = CylinderPreCompressionPressureAtmPSI * RatioOfCompression * ((float)Math.Log(RatioOfCompression) / (RatioOfCompression - 1.0f));
             CylinderCompressionWorkInLbs = AverageCompressionPressureAtmPSI * CylinderLengthCompressionIn;
-
-       //     Trace.TraceInformation("Av Press {0} Length {1}", AverageCompressionPressureAtmPSI, CylinderLengthCompressionIn);
-           
+                            
     // Calculate Av Pre-admission work (inch pounds)
             // PreAdmission pressure = PreCompression Pressure x Ratio of Compression x log (Ratio of Compression) / (Ratio of Compression - 1.0)
             // Av Pre-admission work = Av pressure during pre-admission * length of Cylinder during pre-admission stroke
@@ -2071,13 +2069,11 @@ namespace ORTS
             #endregion
 
             //  MeanPressureStrokePSI = InitialPressurePSI * (cutoff + ((cutoff + CylinderClearancePC) * (float)Math.Log(RatioOfExpansion))) * CutoffPressureDropRatio;
- //           MeanPressureStrokePSI = InitialPressurePSI * (cutoff + ((cutoff + CylinderClearancePC) * (float)Math.Log(RatioOfExpansion)));//
+            //  MeanPressureStrokePSI = InitialPressurePSI * (cutoff + ((cutoff + CylinderClearancePC) * (float)Math.Log(RatioOfExpansion)));//
             // mean pressure during stroke = ((absolute mean pressure + (clearance + cylstroke)) - (initial pressure + clearance)) / cylstroke
            // Mean effective pressure = cylpressure - backpressure
 
-        //    Trace.TraceInformation("Cyl Compound {0}", CylinderCompoundOn);
-
-            // Cylinder pressure also reduced by steam vented through cylinder cocks.
+          // Cylinder pressure also reduced by steam vented through cylinder cocks.
             CylCockPressReduceFactor = 1.0f;
 
             if (CylinderCocksAreOpen) // Don't apply steam cocks derate until Cylinder steam usage starts to work
@@ -2115,12 +2111,12 @@ namespace ORTS
           {
               // For time being assume that compound locomotive doesn't experience cylinder condensation.
               CalculatedCylinderSteamUsageLBpS = NumCylinders * DrvWheelRevRpS * CylStrokesPerCycle * (CylinderReleaseSteamWeightLbs - CylinderClearanceSteamWeightLbs);
-              Trace.TraceInformation("compound");
+             
           }
           else // Calculate steam usage for simple and geared locomotives.
           {
               CalculatedCylinderSteamUsageLBpS = NumCylinders * DrvWheelRevRpS * CylStrokesPerCycle * (CylinderReleaseSteamWeightLbs - CylinderClearanceSteamWeightLbs) * SuperheaterSteamUsageFactor;
-              Trace.TraceInformation("simple");
+             
           }
            
           
