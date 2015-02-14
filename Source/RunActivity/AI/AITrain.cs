@@ -5585,6 +5585,7 @@ namespace ORTS
                     loco.LocomotiveAxle.Reset(SpeedMpS);
                     loco.LocomotiveAxle.AxleSpeedMpS = SpeedMpS;
                     loco.LocomotiveAxle.FilterMovingAverage.Initialize(loco.AverageForceN);
+                    loco.AntiSlip = false; // <CSComment> TODO Temporary patch until AntiSlip is re-implemented
                 }
                 if (car == Simulator.PlayerLocomotive) { leadLocomotiveIndex = j;}
                 j++;
