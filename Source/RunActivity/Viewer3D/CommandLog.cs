@@ -148,9 +148,12 @@ namespace ORTS.Viewer3D
                 // Do nothing but warn, ignoring errors.
                 Trace.TraceWarning( "SaveLog error writing command log " + filePath );
             } finally {
-                if( stream != null ) { stream.Close(); }
+                if( stream != null )
+                {
+                    stream.Close();
+                    Trace.WriteLine("\nList of commands to replay saved");
+                }
             }
-            SaveReplayCommands( CommandList );
         }
 
         /// <summary>
@@ -168,22 +171,6 @@ namespace ORTS.Viewer3D
                 Trace.TraceWarning( "LoadLog error reading command log " + filePath );
             } finally {
                 if( stream != null ) { stream.Close(); }
-            }
-        }
-
-        public void SaveReplayCommands( List<ICommand> list ) {
-            Trace.WriteLine( "\nList of commands to replay:" );
-            int commandCount = 500;
-            foreach( var c in list )
-            {
-                c.Report();
-                commandCount--;
-                if (commandCount <=0)
-                {
-                    commandCount = 500;
-                    Viewer.UpdaterProcess.WatchdogToken.Ping();
-                    Trace.WriteLine("\nNext block of commands to replay:");
-                }
             }
         }
 

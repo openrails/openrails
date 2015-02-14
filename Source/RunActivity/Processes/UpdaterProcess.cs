@@ -31,7 +31,7 @@ namespace ORTS.Processes
         readonly ProcessState State = new ProcessState("Updater");
         readonly Game Game;
         readonly Thread Thread;
-        public readonly WatchdogToken WatchdogToken;
+        readonly WatchdogToken WatchdogToken;
 
         public UpdaterProcess(Game game)
         {
