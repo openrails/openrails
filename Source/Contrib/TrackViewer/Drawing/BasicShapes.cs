@@ -570,7 +570,7 @@ namespace ORTS.TrackViewer.Drawing
         {
             if (!fonts.ContainsKey(fontSize))
             {
-                fonts[fontSize] = textManager.Get("Segoe UI", fontSize, System.Drawing.FontStyle.Regular, 0);
+                fonts[fontSize] = textManager.GetScaled("Segoe UI", fontSize, System.Drawing.FontStyle.Regular, 0);
             }
             return fonts[fontSize];
         }
