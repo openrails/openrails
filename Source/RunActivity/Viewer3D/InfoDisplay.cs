@@ -51,7 +51,7 @@ namespace ORTS.Viewer3D
     public class InfoDisplay
     {
         readonly Viewer Viewer;
-        readonly DataLogger Logger = new DataLogger();
+        readonly DataLogger Logger;
         readonly int ProcessorCount = System.Environment.ProcessorCount;
 
         int FrameNumber;
@@ -88,6 +88,7 @@ namespace ORTS.Viewer3D
         public InfoDisplay(Viewer viewer)
         {
             Viewer = viewer;
+            Logger = new DataLogger(Path.Combine(Viewer.Settings.LoggingPath, "OpenRailsDump.csv"));
 
             ProcessHandle = OpenProcess(0x410 /* PROCESS_QUERY_INFORMATION | PROCESS_VM_READ */, false, Process.GetCurrentProcess().Id);
             ProcessMemoryCounters = new PROCESS_MEMORY_COUNTERS() { cb = 40 };

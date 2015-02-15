@@ -26,6 +26,7 @@ namespace ORTS.Common
     public class DataLogger
     {
         const int CacheSize = 2048 * 1024;  // 2 Megs
+        readonly string FilePath;
         readonly StringBuilder Cache = new StringBuilder(CacheSize);
         bool FirstItem = true;
 
@@ -39,8 +40,9 @@ namespace ORTS.Common
 
         public Separators Separator = Separators.comma;
 
-        public DataLogger()
+        public DataLogger(string filePath)
         {
+            FilePath = filePath;
         }
 
         public void Data(string data)
@@ -62,7 +64,7 @@ namespace ORTS.Common
         public void Flush()
         {
             //TODO: this whole function should be in a thread maybe
-            using (StreamWriter file = File.AppendText("dump.csv"))
+            using (StreamWriter file = File.AppendText(FilePath))
             {
                 file.Write(Cache);
                 file.Close();
