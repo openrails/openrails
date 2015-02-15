@@ -777,8 +777,7 @@ namespace ORTS.Viewer3D.Popups
         {
             TextPageHeading(table, Viewer.Catalog.GetString("DEBUG INFORMATION"));
 
-            var allocatedBytesPerSecond = AllocatedBytesPerSecLastValue;
-            if (AllocatedBytesPerSecCounter != null && AllocatedBytesPerSecCounter.NextValue() != null) allocatedBytesPerSecond = AllocatedBytesPerSecCounter.NextValue();
+            var allocatedBytesPerSecond = AllocatedBytesPerSecCounter == null ? 0 : AllocatedBytesPerSecCounter.NextValue();
             if (allocatedBytesPerSecond >= 1 && AllocatedBytesPerSecLastValue != allocatedBytesPerSecond)
                 AllocatedBytesPerSecLastValue = allocatedBytesPerSecond;
 
