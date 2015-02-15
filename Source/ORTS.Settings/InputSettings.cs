@@ -88,7 +88,7 @@ namespace ORTS.Settings
         [GetString("Debug Clock Backwards")] DebugClockBackwards,
         [GetString("Debug Logger")] DebugLogger,
         [GetString("Debug Lock Shadows")] DebugLockShadows,
-        [GetString("Debug Dump Keymap")] DebugDumpKeymap,
+        [GetString("Debug Dump Keyboard Map")] DebugDumpKeymap,
         [GetString("Debug Log Render Frame")] DebugLogRenderFrame,
         [GetString("Debug Tracks")] DebugTracks,
         [GetString("Debug Signalling")] DebugSignalling,

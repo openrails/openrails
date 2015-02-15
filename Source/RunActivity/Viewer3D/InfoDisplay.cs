@@ -394,7 +394,7 @@ namespace ORTS.Viewer3D
 
         static void DataLoggerStart(UserSettings settings)
         {
-            using (StreamWriter file = File.AppendText("dump.csv"))
+            using (StreamWriter file = File.AppendText(Path.Combine(settings.LoggingPath, "OpenRailsDump.csv")))
             {
                 DataLogger.Separators separator = (DataLogger.Separators)Enum.Parse(typeof(DataLogger.Separators), settings.DataLoggerSeparator);
                 string headerLine = "";

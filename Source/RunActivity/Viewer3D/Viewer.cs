@@ -864,10 +864,13 @@ namespace ORTS.Viewer3D
 
             if (UserInput.IsPressed(UserCommands.DebugDumpKeymap))
             {
-                Settings.Input.DumpToText("Keyboard.txt");
-                MessagesWindow.AddMessage("Keyboard command list saved to 'keyboard.txt'.", 10);
-                Settings.Input.DumpToGraphic("Keyboard.png");
-                MessagesWindow.AddMessage("Keyboard map saved to 'keyboard.png'.", 10);
+                var textPath = Path.Combine(Settings.LoggingPath, "OpenRailsKeyboard.txt");
+                Settings.Input.DumpToText(textPath);
+                MessagesWindow.AddMessage(Catalog.GetStringFmt("Keyboard map list saved to '{0}'.", textPath), 10);
+
+                var graphicPath = Path.Combine(Settings.LoggingPath, "OpenRailsKeyboard.png");
+                Settings.Input.DumpToGraphic(graphicPath);
+                MessagesWindow.AddMessage(Catalog.GetStringFmt("Keyboard map image saved to '{0}'.", graphicPath), 10);
             }
 
             //in the dispatcher window, when one clicks a train and "See in Game", will jump to see that train
