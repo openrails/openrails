@@ -158,7 +158,7 @@ namespace ORTS
 
             // DataLogger tab
             var dictionaryDataLoggerSeparator = new Dictionary<string, string>();
-            dictionaryDataLoggerSeparator.Add("comma",catalog.GetString("comma"));
+            dictionaryDataLoggerSeparator.Add("comma", catalog.GetString("comma"));
             dictionaryDataLoggerSeparator.Add("semicolon", catalog.GetString("semicolon"));
             dictionaryDataLoggerSeparator.Add("tab", catalog.GetString("tab"));
             dictionaryDataLoggerSeparator.Add("space", catalog.GetString("space"));
@@ -166,7 +166,15 @@ namespace ORTS
             comboDataLoggerSeparator.DisplayMember = "Value";
             comboDataLoggerSeparator.ValueMember = "Key";
             comboDataLoggerSeparator.Text = catalog.GetString(Settings.DataLoggerSeparator);
-            comboDataLogSpeedUnits.Text = Settings.DataLogSpeedUnits;
+            var dictionaryDataLogSpeedUnits = new Dictionary<string, string>();
+            dictionaryDataLogSpeedUnits.Add("route", catalog.GetString("route"));
+            dictionaryDataLogSpeedUnits.Add("mps", catalog.GetString("m/s"));
+            dictionaryDataLogSpeedUnits.Add("kmph", catalog.GetString("km/h"));
+            dictionaryDataLogSpeedUnits.Add("mph", catalog.GetString("mph"));
+            comboDataLogSpeedUnits.DataSource = new BindingSource(dictionaryDataLogSpeedUnits, null);
+            comboDataLogSpeedUnits.DisplayMember = "Value";
+            comboDataLogSpeedUnits.ValueMember = "Key";
+            comboDataLogSpeedUnits.Text = catalog.GetString(Settings.DataLogSpeedUnits);
             checkDataLogger.Checked = Settings.DataLogger;
             checkDataLogPerformance.Checked = Settings.DataLogPerformance;
             checkDataLogPhysics.Checked = Settings.DataLogPhysics;
@@ -395,8 +403,8 @@ namespace ORTS
             // These are edited live.
             
             // DataLogger tab
-            Settings.DataLoggerSeparator = ((KeyValuePair<string, string>)comboDataLoggerSeparator.SelectedItem).Key;
-            Settings.DataLogSpeedUnits = comboDataLogSpeedUnits.Text;
+            Settings.DataLoggerSeparator = comboDataLoggerSeparator.SelectedValue.ToString();
+            Settings.DataLogSpeedUnits = comboDataLogSpeedUnits.SelectedValue.ToString();
             Settings.DataLogger = checkDataLogger.Checked;
             Settings.DataLogPerformance = checkDataLogPerformance.Checked;
             Settings.DataLogPhysics = checkDataLogPhysics.Checked;

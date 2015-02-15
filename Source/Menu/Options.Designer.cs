@@ -1016,11 +1016,6 @@
             // 
             this.comboDataLogSpeedUnits.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboDataLogSpeedUnits.FormattingEnabled = true;
-            this.comboDataLogSpeedUnits.Items.AddRange(new object[] {
-            "route",
-            "m/s",
-            "mph",
-            "kph"});
             this.comboDataLogSpeedUnits.Location = new System.Drawing.Point(5, 62);
             this.comboDataLogSpeedUnits.Margin = new System.Windows.Forms.Padding(2);
             this.comboDataLogSpeedUnits.Name = "comboDataLogSpeedUnits";

@@ -315,7 +315,7 @@ namespace ORTS
                 }
             }
 
-            if ((DynamicBrakeController != null) && (DynamicBrakePercent >= 0))
+            if (DynamicBrakeController != null && (DynamicBrakePercent >= 0 || IsLeadLocomotive() && DynamicBrakeIntervention >= 0))
             {
                 if (!DynamicBrake)
                 {
@@ -329,31 +329,39 @@ namespace ORTS
                         Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.On); // Keeping status string on screen so user knows what's happening
                 }
                 else if (this.IsLeadLocomotive())
-                    DynamicBrakePercent = DynamicBrakeController.Update(elapsedClockSeconds) * 100.0f;
+                {
+                    DynamicBrakeController.Update(elapsedClockSeconds);
+                    DynamicBrakePercent = (DynamicBrakeIntervention < 0 ? DynamicBrakeController.CurrentValue : DynamicBrakeIntervention) * 100.0f;
+
+                    if (DynamicBrakeIntervention < 0 && PreviousDynamicBrakeIntervention >= 0 && DynamicBrakePercent == 0)
+                        DynamicBrakePercent = -1;
+                    PreviousDynamicBrakeIntervention = DynamicBrakeIntervention;
+                }
                 else
                     DynamicBrakeController.Update(elapsedClockSeconds);
             }
-            else if ((DynamicBrakeController != null) && (DynamicBrakePercent < 0) && (DynamicBrake))
+            else if (DynamicBrakeController != null && DynamicBrakePercent < 0 && (DynamicBrakeIntervention < 0 || !IsLeadLocomotive()) && DynamicBrake)
             {
-    // <CScomment> accordingly to shown documentation dynamic brake delay is required only when engaging
-    //            if (DynamicBrakeController.CommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)
-    //             {
-                    DynamicBrake = false; // Disengage
-                    if (IsLeadLocomotive())
-                        Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.Off);
-     //           }
-     //           else if (IsLeadLocomotive())
-     //               Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.On); // Keeping status string on screen so user knows what's happening
+                // <CScomment> accordingly to shown documentation dynamic brake delay is required only when engaging
+                //            if (DynamicBrakeController.CommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)
+                //             {
+                DynamicBrake = false; // Disengage
+                if (IsLeadLocomotive())
+                    Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.Off);
+                //           }
+                //           else if (IsLeadLocomotive())
+                //               Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.On); // Keeping status string on screen so user knows what's happening
             }
 
-            
+
 
 
             //Currently the ThrottlePercent is global to the entire train
             //So only the lead locomotive updates it, the others only updates the controller (actually useless)
             if (this.IsLeadLocomotive() || (!AcceptMUSignals))
             {
-                ThrottlePercent = ThrottleController.Update(elapsedClockSeconds) * 100.0f;
+                ThrottleController.Update(elapsedClockSeconds);
+                ThrottlePercent = (ThrottleIntervention < 0 ? ThrottleController.CurrentValue : ThrottleIntervention) * 100.0f;
 
                 if (GearBoxController != null)
                 {
