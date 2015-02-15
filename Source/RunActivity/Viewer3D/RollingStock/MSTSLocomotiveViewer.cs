@@ -1829,7 +1829,7 @@ namespace ORTS.Viewer3D.RollingStock
 				Format = Format2;
 			else
 				Format = Format1;
-            DrawFont = Viewer.WindowManager.TextManager.Get(digital.FontFamily, Viewer.CabHeightPixels * digital.FontSize / 480, digital.FontStyle == 0 ? System.Drawing.FontStyle.Regular : System.Drawing.FontStyle.Bold);
+            DrawFont = Viewer.WindowManager.TextManager.GetExact(digital.FontFamily, Viewer.CabHeightPixels * digital.FontSize / 480, digital.FontStyle == 0 ? System.Drawing.FontStyle.Regular : System.Drawing.FontStyle.Bold);
 			DrawPosition.X = (int)(Position.X * Viewer.DisplaySize.X / 640);
 			DrawPosition.Y = (int)((Position.Y + Control.Height / 2) * Viewer.CabHeightPixels / 480) - DrawFont.Height / 2 + Viewer.CabYOffsetPixels;
 			DrawPosition.Width = (int)(Control.Width * Viewer.DisplaySize.X / 640);
@@ -2065,13 +2065,11 @@ namespace ORTS.Viewer3D.RollingStock
         protected MSTSLocomotive MSTSLocomotive { get { return (MSTSLocomotive)Car; } }
 		MSTSLocomotiveViewer LocoViewer;
 		private SpriteBatchMaterial _Sprite2DCabView;
-		WindowTextFont _Font;
         public ThreeDimentionCabViewer(Viewer viewer, MSTSLocomotive car, MSTSLocomotiveViewer locoViewer)
             : base(viewer, car)
         {
             Locomotive = car;
             _Sprite2DCabView = (SpriteBatchMaterial)viewer.MaterialManager.Load("SpriteBatch");
-            _Font = viewer.WindowManager.TextManager.Get("Arial", 14, System.Drawing.FontStyle.Regular);
             LocoViewer = locoViewer;
             string wagonFolderSlash = Path.GetDirectoryName(car.WagFilePath) + @"\CABVIEW3D\";
             string shapePath = wagonFolderSlash + car.Cab3DShapeFileName;
@@ -2777,7 +2775,7 @@ namespace ORTS.Viewer3D.RollingStock
 			height = h;
 			CVFR = (CabViewDigitalRenderer)c;
 			_Sprite2DCabView = (SpriteBatchMaterial)viewer.MaterialManager.Load("SpriteBatch");
-			_Font = viewer.WindowManager.TextManager.Get("Arial", height, System.Drawing.FontStyle.Regular);
+			_Font = viewer.WindowManager.TextManager.GetExact("Arial", height, System.Drawing.FontStyle.Regular);
 			X = Y = -1000;//indicating the digit is not in range
 		}
 

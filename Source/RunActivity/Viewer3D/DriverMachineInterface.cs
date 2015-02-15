@@ -175,9 +175,9 @@ namespace ORTS.Viewer3D
         /// </summary>
         public void SetFont()
         {
-            FontDialSpeeds = Viewer.WindowManager.TextManager.Get("Arial", FontHeightDial * Scale, System.Drawing.FontStyle.Bold);
-            FontReleaseSpeed = Viewer.WindowManager.TextManager.Get("Arial", FontHeightReleaseSpeed * Scale, System.Drawing.FontStyle.Regular);
-            FontCurrentSpeed = Viewer.WindowManager.TextManager.Get("Arial", FontHeightCurrentSpeed * Scale, System.Drawing.FontStyle.Bold);
+            FontDialSpeeds = Viewer.WindowManager.TextManager.GetExact("Arial", FontHeightDial * Scale, System.Drawing.FontStyle.Bold);
+            FontReleaseSpeed = Viewer.WindowManager.TextManager.GetExact("Arial", FontHeightReleaseSpeed * Scale, System.Drawing.FontStyle.Regular);
+            FontCurrentSpeed = Viewer.WindowManager.TextManager.GetExact("Arial", FontHeightCurrentSpeed * Scale, System.Drawing.FontStyle.Bold);
 
             foreach (var text in DialSpeeds)
                 text.Font = FontDialSpeeds;

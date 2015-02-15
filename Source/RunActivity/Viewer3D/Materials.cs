@@ -1161,7 +1161,7 @@ namespace ORTS.Viewer3D
         {
             Texture = new Texture2D(SpriteBatch.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
             Texture.SetData(new[] { Color.White });
-            Font = Viewer.WindowManager.TextManager.Get("Arial", 12, System.Drawing.FontStyle.Bold, 1);
+            Font = Viewer.WindowManager.TextManager.GetScaled("Arial", 12, System.Drawing.FontStyle.Bold, 1);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)

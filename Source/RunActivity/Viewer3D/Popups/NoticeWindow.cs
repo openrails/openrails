@@ -64,7 +64,7 @@ namespace ORTS.Viewer3D.Popups
             SizeTo(Owner.ScreenSize.X, Owner.ScreenSize.Y);
             MoveTo(0, 0);
 
-            Font = Owner.TextManager.Get("Arial", (int)(Owner.ScreenSize.Y * NoticeTextSize), System.Drawing.FontStyle.Regular);
+            Font = Owner.TextManager.GetExact("Arial", (int)(Owner.ScreenSize.Y * NoticeTextSize), System.Drawing.FontStyle.Regular);
 
             base.ScreenChanged();
         }

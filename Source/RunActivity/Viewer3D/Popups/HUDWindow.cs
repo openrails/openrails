@@ -35,8 +35,8 @@ namespace ORTS.Viewer3D.Popups
 {
     public class HUDWindow : LayeredWindow
     {
-        // Set this to the width of each column.
-        const int ColumnWidth = 60;
+        // Set this to the width of each column in font-height units.
+        readonly int ColumnWidth = 4;
 
         // Set to distance from top-left corner to place text.
         const int TextOffset = 10;
@@ -119,6 +119,7 @@ namespace ORTS.Viewer3D.Popups
             TextPages = textPages.ToArray();
 
             TextFont = owner.TextFontDefaultOutlined;
+            ColumnWidth *= TextFont.Height;
 
 			HUDGraphMaterial = (HUDGraphMaterial)Viewer.MaterialManager.Load("Debug");
 

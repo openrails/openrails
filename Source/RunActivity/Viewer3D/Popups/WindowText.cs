@@ -43,35 +43,74 @@ namespace ORTS.Viewer3D.Popups
 
         /// <summary>
         /// Provides a <see cref="WindowTextFont"/> for the specified <paramref name="fontFamily"/>,
-        /// <paramref name="sizeInPt"/> and <paramref name="style"/>.
+        /// <paramref name="sizeInPt"/> and <paramref name="style"/>, scaled from points to pixels by
+        /// the system-wide DPI scale.
         /// </summary>
         /// <remarks>
         /// All <see cref="WindowTextFont"/> instances are cached by the <see cref="WindowTextManager"/>.
         /// </remarks>
         /// <param name="fontFamily">Font family name (e.g. "Arial")</param>
-        /// <param name="sizeInPt">Size of the font, in points (e.g. 9)</param>
+        /// <param name="sizeInPt">Size of the font, in DPI-aware points (e.g. 9)</param>
         /// <param name="style">Style of the font (e.g. <c>FontStyle.Normal</c>)</param>
         /// <returns>A <see cref="WindowTextFont"/> that can be used to draw text of the given font family,
         /// size and style.</returns>
-        public WindowTextFont Get(string fontFamily, float sizeInPt, FontStyle style)
+        public WindowTextFont GetScaled(string fontFamily, float sizeInPt, FontStyle style)
         {
-            return Get(fontFamily, sizeInPt, style, 0);
+            return GetExact(fontFamily, sizeInPt * System.Drawing.Graphics.FromHwnd(IntPtr.Zero).DpiY / 96, style);
         }
 
         /// <summary>
         /// Provides a <see cref="WindowTextFont"/> for the specified <paramref name="fontFamily"/>,
-        /// <paramref name="sizeInPt"/> and <paramref name="style"/> with the specified <paramref name="outlineSize"/>.
+        /// <paramref name="sizeInPt"/> and <paramref name="style"/>, as if the system was using
+        /// 96 DPI (even when it isn't).
         /// </summary>
         /// <remarks>
         /// All <see cref="WindowTextFont"/> instances are cached by the <see cref="WindowTextManager"/>.
         /// </remarks>
         /// <param name="fontFamily">Font family name (e.g. "Arial")</param>
-        /// <param name="sizeInPt">Size of the font, in points (e.g. 9)</param>
+        /// <param name="sizeInPt">Size of the font, in 96 DPI points (e.g. 9)</param>
+        /// <param name="style">Style of the font (e.g. <c>FontStyle.Normal</c>)</param>
+        /// <returns>A <see cref="WindowTextFont"/> that can be used to draw text of the given font family,
+        /// size and style.</returns>
+        public WindowTextFont GetExact(string fontFamily, float sizeInPt, FontStyle style)
+        {
+            return GetExact(fontFamily, sizeInPt, style, 0);
+        }
+
+        /// <summary>
+        /// Provides a <see cref="WindowTextFont"/> for the specified <paramref name="fontFamily"/>,
+        /// <paramref name="sizeInPt"/> and <paramref name="style"/> with the specified <paramref name="outlineSize"/>,
+        /// scaled from points to pixels by the system-wide DPI scale.
+        /// </summary>
+        /// <remarks>
+        /// All <see cref="WindowTextFont"/> instances are cached by the <see cref="WindowTextManager"/>.
+        /// </remarks>
+        /// <param name="fontFamily">Font family name (e.g. "Arial")</param>
+        /// <param name="sizeInPt">Size of the font, in DPI-aware points (e.g. 9)</param>
         /// <param name="style">Style of the font (e.g. <c>FontStyle.Normal</c>)</param>
         /// <param name="outlineSize">Size of the outline, in pixels (e.g. 2)</param>
         /// <returns>A <see cref="WindowTextFont"/> that can be used to draw text of the given font family,
         /// size and style with the given outline size.</returns>
-        public WindowTextFont Get(string fontFamily, float sizeInPt, FontStyle style, int outlineSize)
+        public WindowTextFont GetScaled(string fontFamily, float sizeInPt, FontStyle style, int outlineSize)
+        {
+            return GetExact(fontFamily, sizeInPt * System.Drawing.Graphics.FromHwnd(IntPtr.Zero).DpiY / 96, style, outlineSize);
+        }
+
+        /// <summary>
+        /// Provides a <see cref="WindowTextFont"/> for the specified <paramref name="fontFamily"/>,
+        /// <paramref name="sizeInPt"/> and <paramref name="style"/> with the specified <paramref name="outlineSize"/>,
+        /// as if the system was using 96 DPI (even when it isn't).
+        /// </summary>
+        /// <remarks>
+        /// All <see cref="WindowTextFont"/> instances are cached by the <see cref="WindowTextManager"/>.
+        /// </remarks>
+        /// <param name="fontFamily">Font family name (e.g. "Arial")</param>
+        /// <param name="sizeInPt">Size of the font, in 96 DPI points (e.g. 9)</param>
+        /// <param name="style">Style of the font (e.g. <c>FontStyle.Normal</c>)</param>
+        /// <param name="outlineSize">Size of the outline, in pixels (e.g. 2)</param>
+        /// <returns>A <see cref="WindowTextFont"/> that can be used to draw text of the given font family,
+        /// size and style with the given outline size.</returns>
+        public WindowTextFont GetExact(string fontFamily, float sizeInPt, FontStyle style, int outlineSize)
         {
             var fonts = Fonts;
             var key = String.Format("{0}:{1:F}:{2}:{3}", fontFamily, sizeInPt, style, outlineSize);

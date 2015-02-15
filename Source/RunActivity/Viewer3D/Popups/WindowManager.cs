@@ -77,10 +77,10 @@ namespace ORTS.Viewer3D.Popups
             WindowManagerMaterial = new BasicBlendedMaterial(viewer, "WindowManager");
             PopupWindowMaterial = (PopupWindowMaterial)Viewer.MaterialManager.Load("PopupWindow");
             TextManager = new WindowTextManager();
-            TextFontDefault = TextManager.Get("Arial", 10, System.Drawing.FontStyle.Regular);
-            TextFontDefaultOutlined = TextManager.Get("Arial", 10, System.Drawing.FontStyle.Regular, 1);
-            TextFontSmall = TextManager.Get("Arial", 8, System.Drawing.FontStyle.Regular);
-            TextFontSmallOutlined = TextManager.Get("Arial", 8, System.Drawing.FontStyle.Regular, 1);
+            TextFontDefault = TextManager.GetScaled("Arial", 10, System.Drawing.FontStyle.Regular);
+            TextFontDefaultOutlined = TextManager.GetScaled("Arial", 10, System.Drawing.FontStyle.Regular, 1);
+            TextFontSmall = TextManager.GetScaled("Arial", 8, System.Drawing.FontStyle.Regular);
+            TextFontSmallOutlined = TextManager.GetScaled("Arial", 8, System.Drawing.FontStyle.Regular, 1);
 
             SpriteBatch = new SpriteBatch(Viewer.GraphicsDevice);
 
