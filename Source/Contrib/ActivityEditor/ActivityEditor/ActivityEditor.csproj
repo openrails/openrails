@@ -372,13 +372,13 @@
     <Content Include="Resources\metasegment.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\MSTS.Formats\MSTS.Formats.csproj">
+    <ProjectReference Include="..\..\..\Orts.Formats.Msts\Orts.Formats.Msts.csproj">
       <Project>{570709fa-0c8a-4b1d-ba2d-d9455afd9b5c}</Project>
-      <Name>MSTS.Formats</Name>
+      <Name>Orts.Formats.Msts</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\MSTS.Parsers\MSTS.Parsers.csproj">
+    <ProjectReference Include="..\..\..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj">
       <Project>{8a84696c-3559-49b8-b27f-bb6932d8a1c6}</Project>
-      <Name>MSTS.Parsers</Name>
+      <Name>Orts.Parsers.Msts</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\ORTS.Common\ORTS.Common.csproj">
       <Project>{da94d876-7d35-46c3-aece-aface72c686c}</Project>

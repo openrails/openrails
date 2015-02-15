@@ -5,8 +5,8 @@ using System.Text;
 using LibAE;
 using Microsoft.Xna.Framework;
 using MSTS;
-using MSTS.Formats;
-using MSTS.Parsers;
+using Orts.Formats.Msts;
+using Orts.Parsers.Msts;
 using ORTS.Common;
 
 namespace LibAE.Formats

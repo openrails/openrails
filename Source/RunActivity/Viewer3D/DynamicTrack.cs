@@ -26,8 +26,8 @@ using System.Xml;
 using System.Xml.Schema;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MSTS.Formats;
-using MSTS.Parsers;
+using Orts.Formats.Msts;
+using Orts.Parsers.Msts;
 using ORTS.Common;
 using ORTS.Processes;
 

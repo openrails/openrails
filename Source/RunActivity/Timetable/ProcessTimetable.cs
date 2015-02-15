@@ -32,8 +32,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
-using MSTS.Formats;
-using MSTS.Parsers;
+using Orts.Formats.Msts;
+using Orts.Parsers.Msts;
 using ORTS.Common;
 using ORTS.MultiPlayer;
 using ORTS.Viewer3D;
@@ -1408,7 +1408,7 @@ namespace ORTS
             /// <param name="simulator">Simulator</param>
             /// <returns>Generated TrainCar list</returns>
 
-            public List<TrainCar> AddWagons(MSTS.Formats.CONFile consistFile, string trainsDirectory, Simulator simulator, bool consistReverse)
+            public List<TrainCar> AddWagons(Orts.Formats.Msts.CONFile consistFile, string trainsDirectory, Simulator simulator, bool consistReverse)
             {
                 List<TrainCar> cars = new List<TrainCar>();
 

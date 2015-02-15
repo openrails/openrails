@@ -218,9 +218,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\MSTS.Formats\MSTS.Formats.csproj">
+    <ProjectReference Include="..\..\Orts.Formats.Msts\Orts.Formats.Msts.csproj">
       <Project>{570709FA-0C8A-4B1D-BA2D-D9455AFD9B5C}</Project>
-      <Name>MSTS.Formats</Name>
+      <Name>Orts.Formats.Msts</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\ORTS.Common\ORTS.Common.csproj">
       <Project>{DA94D876-7D35-46C3-AECE-AFACE72C686C}</Project>

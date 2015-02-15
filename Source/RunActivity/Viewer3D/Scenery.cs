@@ -43,7 +43,7 @@
  */
 
 using Microsoft.Xna.Framework;
-using MSTS.Formats;
+using Orts.Formats.Msts;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
@@ -299,7 +299,7 @@ namespace ORTS.Viewer3D
 
                 try
                 {
-                    if (worldObject.GetType() == typeof(MSTS.Formats.TrackObj))
+                    if (worldObject.GetType() == typeof(TrackObj))
                     {
                         var trackObj = (TrackObj)worldObject;
                         // Switch tracks need a link to the simulator engine so they can animate the points.
@@ -333,7 +333,7 @@ namespace ORTS.Viewer3D
                             if (success == 0 && trackObj.FileName.Contains("Dyna")) Wire.DecomposeConvertedDynamicWire(viewer, dTrackList, trackObj, worldMatrix);
                         }
                     }
-                    else if (worldObject.GetType() == typeof(MSTS.Formats.DyntrackObj))
+                    else if (worldObject.GetType() == typeof(DyntrackObj))
                     {
                         if (viewer.Simulator.Settings.Wire == true && viewer.Simulator.TRK.Tr_RouteFile.Electrified == true)
                             Wire.DecomposeDynamicWire(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
@@ -343,52 +343,52 @@ namespace ORTS.Viewer3D
                         else DynamicTrack.Decompose(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
 
                     } // end else if DyntrackObj
-                    else if (worldObject.GetType() == typeof(MSTS.Formats.ForestObj))
+                    else if (worldObject.GetType() == typeof(ForestObj))
                     {
-                        if (!(worldObject as MSTS.Formats.ForestObj).IsYard)
+                        if (!(worldObject as ForestObj).IsYard)
                             forestList.Add(new ForestViewer(viewer, (ForestObj)worldObject, worldMatrix));
                     }
-                    else if (worldObject.GetType() == typeof(MSTS.Formats.SignalObj))
+                    else if (worldObject.GetType() == typeof(SignalObj))
                     {
                         sceneryObjects.Add(new SignalShape(viewer, (SignalObj)worldObject, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
                     }
-                    else if (worldObject.GetType() == typeof(MSTS.Formats.TransferObj))
+                    else if (worldObject.GetType() == typeof(TransferObj))
                     {
                         sceneryObjects.Add(new TransferShape(viewer, (TransferObj)worldObject, worldMatrix));
                     }
-                    else if (worldObject.GetType() == typeof(MSTS.Formats.LevelCrossingObj))
+                    else if (worldObject.GetType() == typeof(LevelCrossingObj))
                     {
                         sceneryObjects.Add(new LevelCrossingShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (LevelCrossingObj)worldObject));
                     }
-                    else if (worldObject.GetType() == typeof(MSTS.Formats.HazardObj))
+                    else if (worldObject.GetType() == typeof(HazardObj))
 					{
 						var h = HazzardShape.CreateHazzard(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (HazardObj)worldObject);
 						if (h != null) sceneryObjects.Add(h);
 					}
-                    else if (worldObject.GetType() == typeof(MSTS.Formats.SpeedPostObj))
+                    else if (worldObject.GetType() == typeof(SpeedPostObj))
                     {
                         sceneryObjects.Add(new SpeedPostShape(viewer, shapeFilePath, worldMatrix, (SpeedPostObj)worldObject));
                     }
-                    else if (worldObject.GetType() == typeof(MSTS.Formats.CarSpawnerObj))
+                    else if (worldObject.GetType() == typeof(CarSpawnerObj))
                     {
                         carSpawners.Add(new RoadCarSpawner(viewer, worldMatrix, (CarSpawnerObj)worldObject));
                     }
-                    else if (worldObject.GetType() == typeof(MSTS.Formats.SidingObj))
+                    else if (worldObject.GetType() == typeof(SidingObj))
                     {
                         sidings.Add(new TrItemLabel(viewer, worldMatrix, (SidingObj)worldObject));
                     }
-                    else if (worldObject.GetType() == typeof(MSTS.Formats.PlatformObj))
+                    else if (worldObject.GetType() == typeof(PlatformObj))
                     {
                         platforms.Add(new TrItemLabel(viewer, worldMatrix, (PlatformObj)worldObject));
                     }
-                    else if (worldObject.GetType() == typeof(MSTS.Formats.StaticObj))
+                    else if (worldObject.GetType() == typeof(StaticObj))
                     {
                         if (animated)
                             sceneryObjects.Add(new AnimatedShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
                         else
                             sceneryObjects.Add(new StaticShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
                     }
-                    else if (worldObject.GetType() == typeof(MSTS.Formats.PickupObj))
+                    else if (worldObject.GetType() == typeof(PickupObj))
                     {
                         if (animated)
                             sceneryObjects.Add(new FuelPickupItemShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (PickupObj)worldObject));

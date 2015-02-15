@@ -19,7 +19,7 @@
 //#define DEBUG_WHEELS
 
 using Microsoft.Xna.Framework;
-using MSTS.Formats;
+using Orts.Formats.Msts;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using ORTS.Viewer3D;

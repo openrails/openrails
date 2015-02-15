@@ -20,7 +20,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using ORTS.Common;
-using MSTS.Formats;
+using Orts.Formats.Msts;
 
 namespace ORTS.TrackViewer.Drawing
 {

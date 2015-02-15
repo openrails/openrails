@@ -129,7 +129,7 @@ namespace ORTS.Viewer3D.Popups
                     {
                         foreach (var @event in owner.Viewer.Simulator.ActivityRun.EventList)
                         {
-                            var eventAction = @event.ParsedObject as MSTS.Formats.EventCategoryAction;
+                            var eventAction = @event.ParsedObject as Orts.Formats.Msts.EventCategoryAction;
                             if (eventAction != null)
                             {
                                 if (separatorShown)
@@ -138,20 +138,20 @@ namespace ORTS.Viewer3D.Popups
                                 // Task column
                                 switch (eventAction.Type)
                                 {
-                                    case MSTS.Formats.EventType.AssembleTrain:
-                                    case MSTS.Formats.EventType.AssembleTrainAtLocation:
+                                    case Orts.Formats.Msts.EventType.AssembleTrain:
+                                    case Orts.Formats.Msts.EventType.AssembleTrainAtLocation:
                                         line.Add(new Label(colWidth * 4, line.RemainingHeight, Viewer.Catalog.GetString("Assemble Train")));
-                                        if (eventAction.Type == MSTS.Formats.EventType.AssembleTrainAtLocation)
+                                        if (eventAction.Type == Orts.Formats.Msts.EventType.AssembleTrainAtLocation)
                                         {
                                             line = scrollbox.AddLayoutHorizontal(TextHeight);
                                             line.Add(new Label(colWidth * 4, line.RemainingHeight, Viewer.Catalog.GetString("At Location")));
                                         }
                                         break;
-                                    case MSTS.Formats.EventType.DropOffWagonsAtLocation:
+                                    case Orts.Formats.Msts.EventType.DropOffWagonsAtLocation:
                                         line.Add(new Label(colWidth * 4, line.RemainingHeight, Viewer.Catalog.GetString("Drop Off")));
                                         break;
-                                    case MSTS.Formats.EventType.PickUpPassengers:
-                                    case MSTS.Formats.EventType.PickUpWagons:
+                                    case Orts.Formats.Msts.EventType.PickUpPassengers:
+                                    case Orts.Formats.Msts.EventType.PickUpWagons:
                                         line.Add(new Label(colWidth * 4, line.RemainingHeight, Viewer.Catalog.GetString("Pick Up")));
                                         break;
                                 }
@@ -160,7 +160,7 @@ namespace ORTS.Viewer3D.Popups
                                     var locationShown = false;
 									var wagonIdx = 0;
                                     var locationFirst = "";
-                                    foreach (MSTS.Formats.WorkOrderWagon wagonItem in eventAction.WagonList.WorkOrderWagonList)
+                                    foreach (Orts.Formats.Msts.WorkOrderWagon wagonItem in eventAction.WagonList.WorkOrderWagonList)
                                     {
                                         if (locationShown) {
                                             line = scrollbox.AddLayoutHorizontal(TextHeight);
@@ -176,11 +176,11 @@ namespace ORTS.Viewer3D.Popups
                                         var wagonFound = false;
                                         if (owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_File.ActivityObjects != null)
                                         {
-                                            foreach (MSTS.Formats.ActivityObject activityObject in owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_File.ActivityObjects.ActivityObjectList)
+                                            foreach (Orts.Formats.Msts.ActivityObject activityObject in owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_File.ActivityObjects.ActivityObjectList)
                                             {
                                                 if (activityObject.ID == trainIndex)
                                                 {
-                                                    foreach (MSTS.Formats.Wagon trainWagon in activityObject.Train_Config.TrainCfg.WagonList)
+                                                    foreach (Orts.Formats.Msts.Wagon trainWagon in activityObject.Train_Config.TrainCfg.WagonList)
                                                     {
                                                         if (trainWagon.UiD == wagonIndex)
                                                         {
@@ -211,17 +211,17 @@ namespace ORTS.Viewer3D.Popups
 
                                         // Location column
                                         if (locationShown &&
-                                            !((eventAction.Type == MSTS.Formats.EventType.PickUpPassengers)||(eventAction.Type == MSTS.Formats.EventType.PickUpWagons)))
+                                            !((eventAction.Type == Orts.Formats.Msts.EventType.PickUpPassengers)||(eventAction.Type == Orts.Formats.Msts.EventType.PickUpWagons)))
                                         {
                                             line.AddSpace(colWidth * 7, 0);
                                         }
                                         else
                                         {
-                                            var sidingId = eventAction.Type == MSTS.Formats.EventType.AssembleTrainAtLocation
-                                                || eventAction.Type == MSTS.Formats.EventType.DropOffWagonsAtLocation
+                                            var sidingId = eventAction.Type == Orts.Formats.Msts.EventType.AssembleTrainAtLocation
+                                                || eventAction.Type == Orts.Formats.Msts.EventType.DropOffWagonsAtLocation
                                                 ? (uint)eventAction.SidingId : wagonItem.SidingId;
                                             foreach (var item in owner.Viewer.Simulator.TDB.TrackDB.TrItemTable) {
-                                                var siding = item as MSTS.Formats.SidingItem;
+                                                var siding = item as Orts.Formats.Msts.SidingItem;
                                                 if (siding != null && siding.TrItemId == sidingId) {
                                                     location = siding.ItemName;
                                                     break;
@@ -229,7 +229,7 @@ namespace ORTS.Viewer3D.Popups
                                             }
                                             if ( locationFirst != location )
                                             line.Add(new Label(colWidth * 7, line.RemainingHeight, location));
-                                            else if ((eventAction.Type == MSTS.Formats.EventType.PickUpPassengers) || (eventAction.Type == MSTS.Formats.EventType.PickUpWagons))
+                                            else if ((eventAction.Type == Orts.Formats.Msts.EventType.PickUpPassengers) || (eventAction.Type == Orts.Formats.Msts.EventType.PickUpWagons))
                                                 line.AddSpace(colWidth * 7, 0);
                                             locationFirst = location;
                                             locationShown = true;

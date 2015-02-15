@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using System.Diagnostics;   // needed for Debug
 using System.IO;
 using Microsoft.Xna.Framework;
-using MSTS.Parsers;
+using Orts.Parsers.Msts;
 using ORTS.Scripting.Api;
 using ORTS.Viewer3D.Popups;  // needed for Confirmations
 

@@ -33,7 +33,7 @@
 /// </summary>
 
 using Microsoft.Xna.Framework;
-using MSTS.Formats;
+using Orts.Formats.Msts;
 using ORTS.Common;
 using ORTS.Formats;
 using ORTS.MultiPlayer;

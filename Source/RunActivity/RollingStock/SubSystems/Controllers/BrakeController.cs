@@ -18,8 +18,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using MSTS.Formats;
-using MSTS.Parsers;
+using Orts.Formats.Msts;
+using Orts.Parsers.Msts;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 

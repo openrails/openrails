@@ -26,8 +26,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using ORTS;
-using MSTS.Formats;
-using MSTS.Parsers;
+using Orts.Formats.Msts;
+using Orts.Parsers.Msts;
 using ORTS.Common;
 using LibAE.Formats;
 

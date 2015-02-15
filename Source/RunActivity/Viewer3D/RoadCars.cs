@@ -22,7 +22,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using MSTS.Formats;
+using Orts.Formats.Msts;
 using ORTS.Common;
 
 namespace ORTS.Viewer3D

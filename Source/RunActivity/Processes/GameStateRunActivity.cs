@@ -970,7 +970,7 @@ namespace ORTS.Processes
             {
                 if (Path.GetExtension(path).Equals(".act", StringComparison.OrdinalIgnoreCase) || Path.GetExtension(path).Equals(".pat", StringComparison.OrdinalIgnoreCase))
                 {
-                    var trk = new MSTS.Formats.TRKFile(MSTS.MSTSPath.GetTRKFileName(Path.GetDirectoryName(Path.GetDirectoryName(path))));
+                    var trk = new Orts.Formats.Msts.TRKFile(MSTS.MSTSPath.GetTRKFileName(Path.GetDirectoryName(Path.GetDirectoryName(path))));
                     return trk.Tr_RouteFile.Name;
                 }
             }
@@ -984,7 +984,7 @@ namespace ORTS.Processes
             {
                 if (Path.GetExtension(path).Equals(".act", StringComparison.OrdinalIgnoreCase))
                 {
-                    var act = new MSTS.Formats.ACTFile(path);
+                    var act = new Orts.Formats.Msts.ACTFile(path);
                     return act.Tr_Activity.Tr_Activity_Header.Name;
                 }
             }
@@ -998,7 +998,7 @@ namespace ORTS.Processes
             {
                 if (Path.GetExtension(path).Equals(".pat", StringComparison.OrdinalIgnoreCase))
                 {
-                    var pat = new MSTS.Formats.PATFile(path);
+                    var pat = new Orts.Formats.Msts.PATFile(path);
                     return pat.Name;
                 }
             }
@@ -1012,7 +1012,7 @@ namespace ORTS.Processes
             {
                 if (Path.GetExtension(path).Equals(".con", StringComparison.OrdinalIgnoreCase))
                 {
-                    var con = new MSTS.Formats.CONFile(path);
+                    var con = new Orts.Formats.Msts.CONFile(path);
                     return con.Name;
                 }
             }
@@ -1035,7 +1035,7 @@ namespace ORTS.Processes
         {
             try
             {
-                return Enum.Parse(typeof(MSTS.Formats.SeasonType), season).ToString();
+                return Enum.Parse(typeof(Orts.Formats.Msts.SeasonType), season).ToString();
             }
             catch { }
             return null;
@@ -1045,7 +1045,7 @@ namespace ORTS.Processes
         {
             try
             {
-                return Enum.Parse(typeof(MSTS.Formats.WeatherType), weather).ToString();
+                return Enum.Parse(typeof(Orts.Formats.Msts.WeatherType), weather).ToString();
             }
             catch { }
             return null;
@@ -1276,7 +1276,7 @@ namespace ORTS.Processes
             {
                 var path = Path.Combine(Simulator.RoutePath, "load.ace");
                 if (File.Exists(path))
-                    return MSTS.Formats.ACEFile.Texture2DFromFile(game.RenderProcess.GraphicsDevice, path);
+                    return Orts.Formats.Msts.ACEFile.Texture2DFromFile(game.RenderProcess.GraphicsDevice, path);
                 return null;
             }
         }

@@ -70,7 +70,7 @@ namespace ORTS.Viewer3D
 
         public void Reset()
         {
-            Wind.X = Viewer.Simulator.Weather == MSTS.Formats.WeatherType.Snow ? 2 : 20;
+            Wind.X = Viewer.Simulator.Weather == Orts.Formats.Msts.WeatherType.Snow ? 2 : 20;
 
             var gameTime = (float)Viewer.Simulator.GameTime;
             Pricipitation.Initialize(Viewer.Simulator.Weather, Wind);
@@ -225,9 +225,9 @@ namespace ORTS.Viewer3D
             return (MaxParticles - nextFree) + FirstRetiredParticle;
         }
 
-        public void Initialize(MSTS.Formats.WeatherType weather, Vector3 wind)
+        public void Initialize(Orts.Formats.Msts.WeatherType weather, Vector3 wind)
         {
-            ParticleDuration = ParticleBoxHeightM / (weather == MSTS.Formats.WeatherType.Snow ? SnowVelocityMpS : RainVelocityMpS) / ParticleVelocityFactor;
+            ParticleDuration = ParticleBoxHeightM / (weather == Orts.Formats.Msts.WeatherType.Snow ? SnowVelocityMpS : RainVelocityMpS) / ParticleVelocityFactor;
             ParticleDirection = wind;
             FirstActiveParticle = FirstNewParticle = FirstFreeParticle = FirstRetiredParticle = 0;
             ParticlesToEmit = TimeParticlesLastEmitted = 0;
@@ -424,7 +424,7 @@ namespace ORTS.Viewer3D
 
             shader.LightVector.SetValue(Viewer.Settings.UseMSTSEnv ? Viewer.World.MSTSSky.mstsskysolarDirection : Viewer.World.Sky.solarDirection);
             shader.particleSize.SetValue(1);
-            shader.precipitation_Tex.SetValue(Viewer.Simulator.Weather == MSTS.Formats.WeatherType.Snow ? SnowTexture : RainTexture);
+            shader.precipitation_Tex.SetValue(Viewer.Simulator.Weather == Orts.Formats.Msts.WeatherType.Snow ? SnowTexture : RainTexture);
 
             var rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = true;

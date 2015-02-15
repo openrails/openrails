@@ -29,7 +29,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using LibAE.Formats;
 using MSTS;
-using MSTS.Formats;
+using Orts.Formats.Msts;
 using Microsoft.Xna.Framework;
 
 namespace LibAE

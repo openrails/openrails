@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using MSTS.Formats;
+using Orts.Formats.Msts;
 using ORTS.ContentManager.Models;
 using System;
 using System.Collections.Generic;

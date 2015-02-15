@@ -11,9 +11,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Launcher", "Launcher\Launch
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{2B0A170A-878A-4114-BB28-7306C713E185}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MSTS.Formats", "MSTS.Formats\MSTS.Formats.csproj", "{570709FA-0C8A-4B1D-BA2D-D9455AFD9B5C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orts.Formats.Msts", "Orts.Formats.Msts\Orts.Formats.Msts.csproj", "{570709FA-0C8A-4B1D-BA2D-D9455AFD9B5C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MSTS.Parsers", "MSTS.Parsers\MSTS.Parsers.csproj", "{8A84696C-3559-49B8-B27F-BB6932D8A1C6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orts.Parsers.Msts", "Orts.Parsers.Msts\Orts.Parsers.Msts.csproj", "{8A84696C-3559-49B8-B27F-BB6932D8A1C6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORTS.Common", "ORTS.Common\ORTS.Common.csproj", "{DA94D876-7D35-46C3-AECE-AFACE72C686C}"
 EndProject

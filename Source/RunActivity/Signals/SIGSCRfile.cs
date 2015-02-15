@@ -48,8 +48,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using MSTS.Formats;
-using MSTS.Parsers;
+using Orts.Formats.Msts;
+using Orts.Parsers.Msts;
 
 namespace ORTS
 {
@@ -176,7 +176,7 @@ namespace ORTS
         /// Constructor
         ///
 
-        public SIGSCRfile(string RoutePath, IList<string> ScriptFiles, IDictionary<string, MSTS.Formats.SignalType> SignalTypes)
+        public SIGSCRfile(string RoutePath, IList<string> ScriptFiles, IDictionary<string, Orts.Formats.Msts.SignalType> SignalTypes)
         {
 
             // Create required translators
@@ -1760,7 +1760,7 @@ namespace ORTS
                         string partString = TermString.Substring(8);
                         try
                         {
-                            int sfIndex = MSTS.Formats.SignalShape.SignalSubObj.SignalSubTypes.IndexOf(partString);
+                            int sfIndex = Orts.Formats.Msts.SignalShape.SignalSubObj.SignalSubTypes.IndexOf(partString);
                             TermParts = new SCRParameterType(SCRTermType.Sigfeat, sfIndex);
                         }
                         catch (Exception Ex)

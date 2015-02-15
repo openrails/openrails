@@ -31,9 +31,8 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using LibAE;
 using LibAE.Formats;
-using MSTS;
-using MSTS.Formats;
-using MSTS.Parsers;
+using Orts.Formats.Msts;
+using Orts.Parsers.Msts;
 using ORTS;
 
 namespace ActivityEditor.Engine

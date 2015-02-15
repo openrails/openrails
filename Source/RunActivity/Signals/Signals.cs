@@ -34,8 +34,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
-using MSTS.Formats;
-using MSTS.Parsers;
+using Orts.Formats.Msts;
+using Orts.Parsers.Msts;
 using ORTS.Common;
 using ORTS.Viewer3D.Popups;
 using ORTS.Processes;
@@ -474,9 +474,9 @@ namespace ORTS
 
                 foreach (var worldObject in WFile.Tr_Worldfile)
                 {
-                    if (worldObject.GetType() == typeof(MSTS.Formats.SignalObj))
+                    if (worldObject.GetType() == typeof(SignalObj))
                     {
-                        var thisWorldObject = worldObject as MSTS.Formats.SignalObj;
+                        var thisWorldObject = worldObject as SignalObj;
                         var SignalWorldSignal = new SignalWorldObject(thisWorldObject, sigcfg);
                         SignalWorldList.Add(SignalWorldSignal);
                         foreach (var thisref in SignalWorldSignal.HeadReference)
@@ -4405,7 +4405,7 @@ namespace ORTS
                         }
 
                         float thisLength = 0f;
-                        MSTS.Formats.TrackSection TS = tsectiondat.TrackSections[thisSection.SectionIndex];
+                        Orts.Formats.Msts.TrackSection TS = tsectiondat.TrackSections[thisSection.SectionIndex];
 
                         // determine length
                         if (TS.SectionCurve != null)
@@ -4852,7 +4852,7 @@ namespace ORTS
 
                     if (tsectiondat.TrackSections.ContainsKey(thisSection.SectionIndex))
                     {
-                        MSTS.Formats.TrackSection TS = tsectiondat.TrackSections[thisSection.SectionIndex];
+                        Orts.Formats.Msts.TrackSection TS = tsectiondat.TrackSections[thisSection.SectionIndex];
 
                         if (TS.SectionCurve != null)
                         {
@@ -11302,16 +11302,16 @@ namespace ORTS
         // Constructor
         //
 
-        public SignalWorldObject(MSTS.Formats.SignalObj SignalWorldItem, SIGCFGFile sigcfg)
+        public SignalWorldObject(Orts.Formats.Msts.SignalObj SignalWorldItem, SIGCFGFile sigcfg)
         {
-            MSTS.Formats.SignalShape thisCFGShape;
+            Orts.Formats.Msts.SignalShape thisCFGShape;
 
             HeadReference = new Dictionary<uint, uint>();
 
             // set flags with length to number of possible SubObjects type
 
-            FlagsSet = new bool[MSTS.Formats.SignalShape.SignalSubObj.SignalSubTypes.Count];
-            FlagsSetBackfacing = new bool[MSTS.Formats.SignalShape.SignalSubObj.SignalSubTypes.Count];
+            FlagsSet = new bool[Orts.Formats.Msts.SignalShape.SignalSubObj.SignalSubTypes.Count];
+            FlagsSetBackfacing = new bool[Orts.Formats.Msts.SignalShape.SignalSubObj.SignalSubTypes.Count];
             for (uint iFlag = 0; iFlag < FlagsSet.Length; iFlag++)
             {
                 FlagsSet[iFlag] = false;
@@ -11337,7 +11337,7 @@ namespace ORTS
                 {
                     HeadsSet[iHead] = false;
                     uint headSet = SignalWorldItem.SignalSubObj & iMask;
-                    MSTS.Formats.SignalShape.SignalSubObj thisSubObjs = thisCFGShape.SignalSubObjs[iHead];
+                    Orts.Formats.Msts.SignalShape.SignalSubObj thisSubObjs = thisCFGShape.SignalSubObjs[iHead];
                     if (headSet != 0)
                     {
 
@@ -11363,7 +11363,7 @@ namespace ORTS
 
                 // get TDB and head reference from World file
 
-                foreach (MSTS.Formats.SignalUnit signalUnitInfo in SignalWorldItem.SignalUnits.Units)
+                foreach (Orts.Formats.Msts.SignalUnit signalUnitInfo in SignalWorldItem.SignalUnits.Units)
                 {
                     uint TrItemRef = signalUnitInfo.TrItem;
                     uint HeadRef = Convert.ToUInt32(signalUnitInfo.SubObj);

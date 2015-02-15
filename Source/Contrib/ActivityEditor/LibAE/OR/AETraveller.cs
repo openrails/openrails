@@ -30,7 +30,7 @@ using System.Linq;
 using System.Drawing;
 using Microsoft.Xna.Framework;
 using MSTS;
-using MSTS.Formats;
+using Orts.Formats.Msts;
 using MSTSMath;
 using ORTS.Common;
 //using ActivityEditor;

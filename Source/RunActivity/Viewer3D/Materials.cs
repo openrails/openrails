@@ -78,7 +78,7 @@ namespace ORTS.Viewer3D
                         }
                         else if (File.Exists(path))
                         {
-                            texture = MSTS.Formats.ACEFile.Texture2DFromFile(GraphicsDevice, path);
+                            texture = Orts.Formats.Msts.ACEFile.Texture2DFromFile(GraphicsDevice, path);
                         }
                         else
                             return defaultTexture;
@@ -118,7 +118,7 @@ namespace ORTS.Viewer3D
             var ext = Path.GetExtension(path);
 
             if (ext == ".ace")
-                return MSTS.Formats.ACEFile.Texture2DFromFile(graphicsDevice, path);
+                return Orts.Formats.Msts.ACEFile.Texture2DFromFile(graphicsDevice, path);
 
             using (var stream = File.OpenRead(path))
             {
@@ -203,7 +203,7 @@ namespace ORTS.Viewer3D
             {
                 try
                 {
-                    SceneryShader.OverlayTexture = MSTS.Formats.ACEFile.Texture2DFromFile(viewer.GraphicsDevice, microtexPath);
+                    SceneryShader.OverlayTexture = Orts.Formats.Msts.ACEFile.Texture2DFromFile(viewer.GraphicsDevice, microtexPath);
                 }
                 catch (InvalidDataException error)
                 {
@@ -650,8 +650,8 @@ namespace ORTS.Viewer3D
             }
 
             // Record the number of bits in the alpha channel of the original ace file
-            if (Texture != null && Texture.Tag != null && Texture.Tag.GetType() == typeof(MSTS.Formats.AceInfo))
-                AceAlphaBits = ((MSTS.Formats.AceInfo)Texture.Tag).AlphaBits;
+            if (Texture != null && Texture.Tag != null && Texture.Tag.GetType() == typeof(Orts.Formats.Msts.AceInfo))
+                AceAlphaBits = ((Orts.Formats.Msts.AceInfo)Texture.Tag).AlphaBits;
             else
                 AceAlphaBits = 0;
 

@@ -25,7 +25,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
-using MSTS.Formats;
+using Orts.Formats.Msts;
 using ORTS.Common;
 
 namespace ORTS.TrackViewer.Editing
@@ -146,7 +146,7 @@ namespace ORTS.TrackViewer.Editing
 
         #region private members
 
-        MSTS.Formats.TrackDB trackDB;
+        Orts.Formats.Msts.TrackDB trackDB;
         TSectionDatFile tsectionDat;
 
 

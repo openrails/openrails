@@ -29,7 +29,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Forms.Integration;
 
-using MSTS.Formats;
+using Orts.Formats.Msts;
 using ORTS.Common;
 using ORTS.TrackViewer.Properties;
 using ORTS.TrackViewer.Editing;

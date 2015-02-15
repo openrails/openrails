@@ -30,8 +30,8 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using MSTS;
-using MSTS.Parsers;
-using MSTS.Formats;
+using Orts.Parsers.Msts;
+using Orts.Formats.Msts;
 using ORTS.Common;
 using ORTS.Formats;
 
@@ -310,9 +310,9 @@ namespace LibAE.Formats
 
                 foreach (var worldObject in WFile.Tr_Worldfile)
                 {
-                    if (worldObject.GetType() == typeof(MSTS.Formats.SignalObj))
+                    if (worldObject.GetType() == typeof(Orts.Formats.Msts.SignalObj))
                     {
-                        var thisWorldObject = worldObject as MSTS.Formats.SignalObj;
+                        var thisWorldObject = worldObject as Orts.Formats.Msts.SignalObj;
                         var SignalWorldSignal = new AESignalWorldObject(thisWorldObject, sigcfg);
                         SignalWorldList.Add(SignalWorldSignal);
                         foreach (var thisref in SignalWorldSignal.HeadReference)

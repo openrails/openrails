@@ -47,9 +47,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\MSTS.Formats\MSTS.Formats.csproj">
+    <ProjectReference Include="..\..\Orts.Formats.Msts\Orts.Formats.Msts.csproj">
       <Project>{570709fa-0c8a-4b1d-ba2d-d9455afd9b5c}</Project>
-      <Name>MSTS.Formats</Name>
+      <Name>Orts.Formats.Msts</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\ORTS.Common\ORTS.Common.csproj">
       <Project>{da94d876-7d35-46c3-aece-aface72c686c}</Project>

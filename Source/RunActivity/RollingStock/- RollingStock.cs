@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using MSTS.Parsers;
+using Orts.Parsers.Msts;
 
 namespace ORTS
 {

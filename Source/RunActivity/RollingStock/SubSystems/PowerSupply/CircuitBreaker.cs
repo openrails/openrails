@@ -17,7 +17,7 @@
 
 using System;
 using System.IO;
-using MSTS.Parsers;
+using Orts.Parsers.Msts;
 using ORTS.Scripting.Api;
 
 namespace ORTS

@@ -16,7 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using Microsoft.Xna.Framework;
-using MSTS.Parsers;
+using Orts.Parsers.Msts;
 using System;
 using System.IO;
 using System.Text;

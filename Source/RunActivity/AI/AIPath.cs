@@ -27,7 +27,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using MSTS.Formats;
+using Orts.Formats.Msts;
 using ORTS.Common;
 #if ACTIVITY_EDITOR
 using LibAE.Formats;

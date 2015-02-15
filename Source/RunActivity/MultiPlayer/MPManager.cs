@@ -31,7 +31,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
-using MSTS.Parsers;
+using Orts.Parsers.Msts;
 using ORTS.Common;
 using ORTS.Debugging;
 using ORTS.Settings;

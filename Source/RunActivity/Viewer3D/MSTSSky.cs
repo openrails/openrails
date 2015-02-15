@@ -566,7 +566,7 @@ namespace ORTS.Viewer3D
                 for (int i = 0; i < Viewer.ENVFile.SkyLayers.Count; i++)
                 {
                     mstsSkyTexture[i] = Viewer.Simulator.RoutePath + @"\envfiles\textures\" + mstsskytexture[i].TextureName.ToString();
-                    MSTSSkyTexture.Add(MSTS.Formats.ACEFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkyTexture[i]));
+                    MSTSSkyTexture.Add(Orts.Formats.Msts.ACEFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkyTexture[i]));
                     if( i == 0 )
                     {
                         MSTSDayTexture = MSTSSkyTexture[i];
@@ -577,7 +577,7 @@ namespace ORTS.Viewer3D
                     }
                     else
                     {
-                        MSTSSkyCloudTexture.Add(MSTS.Formats.ACEFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkyTexture[i]));
+                        MSTSSkyCloudTexture.Add(Orts.Formats.Msts.ACEFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkyTexture[i]));
                     }
                 }
                 
@@ -594,9 +594,9 @@ namespace ORTS.Viewer3D
 
                 string mstsSkySunTexture = Viewer.Simulator.RoutePath + @"\envfiles\textures\" + mstsskysatellitetexture[0].TextureName.ToString();
                 string mstsSkyMoonTexture = Viewer.Simulator.RoutePath + @"\envfiles\textures\" + mstsskysatellitetexture[1].TextureName.ToString();
-                    
-                MSTSSkySunTexture = MSTS.Formats.ACEFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkySunTexture);
-                MSTSSkyMoonTexture = MSTS.Formats.ACEFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkyMoonTexture);
+
+                MSTSSkySunTexture = Orts.Formats.Msts.ACEFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkySunTexture);
+                MSTSSkyMoonTexture = Orts.Formats.Msts.ACEFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkyMoonTexture);
             }
             else
                 MSTSSkyMoonTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "MoonMap.png"));

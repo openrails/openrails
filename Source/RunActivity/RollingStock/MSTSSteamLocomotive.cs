@@ -32,8 +32,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using Microsoft.Xna.Framework;
-using MSTS.Formats;
-using MSTS.Parsers;
+using Orts.Formats.Msts;
+using Orts.Parsers.Msts;
 using ORTS.Common;
 using ORTS.Viewer3D;
 

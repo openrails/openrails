@@ -28,7 +28,7 @@ using GNU.Gettext;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using MSTS.Formats;
+using Orts.Formats.Msts;
 using ORTS.Common;
 using ORTS.MultiPlayer;
 using ORTS.Processes;

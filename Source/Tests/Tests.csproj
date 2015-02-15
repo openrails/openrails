@@ -60,9 +60,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MSTS.Parsers\MSTS.Parsers.csproj">
+    <ProjectReference Include="..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj">
       <Project>{8A84696C-3559-49B8-B27F-BB6932D8A1C6}</Project>
-      <Name>MSTS.Parsers</Name>
+      <Name>Orts.Parsers.Msts</Name>
     </ProjectReference>
     <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj">
       <Project>{DA94D876-7D35-46C3-AECE-AFACE72C686C}</Project>

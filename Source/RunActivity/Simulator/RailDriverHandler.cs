@@ -22,7 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.Win32;
-using MSTS.Parsers;
+using Orts.Parsers.Msts;
 using ORTS.Common;
 using ORTS.Settings;
 using ORTS.Viewer3D;

@@ -1,0 +1,109 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{570709FA-0C8A-4B1D-BA2D-D9455AFD9B5C}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Orts.Formats.Msts</RootNamespace>
+    <AssemblyName>Orts.Formats.Msts</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\Program\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;NEW_SIGNALLING</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\..\Program\</OutputPath>
+    <DefineConstants>TRACE;NEW_SIGNALLING</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>..\..\Program\Orts.Formats.Msts.xml</DocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Xna.Framework, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86" />
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\MSTS\_math.cs">
+      <Link>_math.cs</Link>
+    </Compile>
+    <Compile Include="ACEFile.cs" />
+    <Compile Include="ACTFile.cs" />
+    <Compile Include="CAMCFGFile.cs" />
+    <Compile Include="CarSpawnerFile.cs" />
+    <Compile Include="CONFile.cs" />
+    <Compile Include="CVFFile.cs" />
+    <Compile Include="ENGFile.cs" />
+    <Compile Include="ENVFile.cs" />
+    <Compile Include="FFile.cs" />
+    <Compile Include="HAZFile.cs" />
+    <Compile Include="Lights.cs" />
+    <Compile Include="PATFile.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RDBFile.cs" />
+    <Compile Include="SDFile.cs" />
+    <Compile Include="SFile.cs" />
+    <Compile Include="SIGCFGFile.cs" />
+    <Compile Include="SignalEnums.cs" />
+    <Compile Include="SMSFile.cs" />
+    <Compile Include="SRVFile.cs" />
+    <Compile Include="TDBFile.cs" />
+    <Compile Include="TFile.cs" />
+    <Compile Include="TRFFile.cs" />
+    <Compile Include="TRKFile.cs" />
+    <Compile Include="TSectionDat.cs" />
+    <Compile Include="TTypeDatFile.cs" />
+    <Compile Include="WFile.cs" />
+    <Compile Include="WSFile.cs" />
+    <Compile Include="YFile.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj">
+      <Project>{8A84696C-3559-49B8-B27F-BB6932D8A1C6}</Project>
+      <Name>Orts.Parsers.Msts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj">
+      <Project>{DA94D876-7D35-46C3-AECE-AFACE72C686C}</Project>
+      <Name>ORTS.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ORTS.IO\ORTS.IO.csproj">
+      <Project>{6AB8B673-5775-4536-A58A-BA0A15899583}</Project>
+      <Name>ORTS.IO</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+</Project>

@@ -33,7 +33,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using MSTS.Formats;
+using Orts.Formats.Msts;
 using ORTS.MultiPlayer;
 using ORTS.Scripting.Api;
 using ORTS.Processes;

@@ -22,7 +22,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-using MSTS.Formats;
+using Orts.Formats.Msts;
 using ORTS.Common;
 using ORTS.TrackViewer.Drawing;
 

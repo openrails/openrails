@@ -21,7 +21,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using Microsoft.Xna.Framework;
-using MSTS.Parsers;
+using Orts.Parsers.Msts;
 
 namespace ORTS
 {

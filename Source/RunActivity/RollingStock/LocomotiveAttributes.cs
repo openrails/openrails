@@ -23,7 +23,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MSTS.Parsers;
+using Orts.Parsers.Msts;
 
 namespace ORTS
 {
@@ -79,7 +79,7 @@ namespace ORTS
                         if (hasFile && opfa.FileID == attr.FileID)
                         {
                             AttributeProcessor ap = new AttributeProcessor(initWhat, fi, stf, attr.DefaultValue);
-                            tp = new MSTS.Parsers.STFReader.TokenProcessor(attr.Token, ap.P);
+                            tp = new STFReader.TokenProcessor(attr.Token, ap.P);
 
                             result.Add(tp);
                         }

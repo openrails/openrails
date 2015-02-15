@@ -22,7 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework.Graphics;
-using MSTS.Parsers;
+using Orts.Parsers.Msts;
 using ORTS.Common;
 
 namespace ORTS

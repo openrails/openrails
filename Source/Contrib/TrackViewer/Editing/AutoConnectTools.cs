@@ -359,7 +359,7 @@ namespace ORTS.TrackViewer.Editing
             }
 
             // Search further along the next Tvns that we can try.
-            MSTS.Formats.TrackNode tn = TrackExtensions.TrackNode(currentJunctionIndex);
+            Orts.Formats.Msts.TrackNode tn = TrackExtensions.TrackNode(currentJunctionIndex);
             if (tn.TrEndNode)
             {
                 return false;

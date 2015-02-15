@@ -22,7 +22,7 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MSTS.Formats;
+using Orts.Formats.Msts;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
@@ -124,7 +124,7 @@ namespace ORTS.Viewer3D
                     Trace.TraceWarning("Skipped {0} signal {1} unit {2} with invalid SubObj {3}", Location.ToString(), mstsSignal.UID, i, mstsSignal.SignalUnits.Units[i].SubObj);
                     continue;
                 }
-                var mstsSignalItem = (MSTS.Formats.SignalItem)(viewer.Simulator.TDB.TrackDB.TrItemTable[mstsSignal.SignalUnits.Units[i].TrItem]);
+                var mstsSignalItem = (SignalItem)(viewer.Simulator.TDB.TrackDB.TrItemTable[mstsSignal.SignalUnits.Units[i].TrItem]);
                 try
                 {
                     // Go create the shape head.
@@ -189,7 +189,7 @@ namespace ORTS.Viewer3D
             int DisplayState = -1;
 
             public SignalShapeHead(Viewer viewer, SignalShape signalShape, int index, SignalHead signalHead,
-                        MSTS.Formats.SignalItem mstsSignalItem, MSTS.Formats.SignalShape.SignalSubObj mstsSignalSubObj)
+                        Orts.Formats.Msts.SignalItem mstsSignalItem, Orts.Formats.Msts.SignalShape.SignalSubObj mstsSignalSubObj)
             {
                 Viewer = viewer;
                 SignalShape = signalShape;
@@ -360,7 +360,7 @@ namespace ORTS.Viewer3D
             public readonly bool Semaphore;
             public readonly float SemaphoreAnimationTime;
 
-            public SignalTypeData(Viewer viewer, MSTS.Formats.SignalType mstsSignalType)
+            public SignalTypeData(Viewer viewer, Orts.Formats.Msts.SignalType mstsSignalType)
             {
                 if (!viewer.SIGCFG.LightTextures.ContainsKey(mstsSignalType.LightTextureName))
                 {
@@ -406,7 +406,7 @@ namespace ORTS.Viewer3D
                         }
                     }
 
-                    foreach (KeyValuePair<string, MSTS.Formats.SignalDrawState> sdrawstate in mstsSignalType.DrawStates)
+                    foreach (KeyValuePair<string, Orts.Formats.Msts.SignalDrawState> sdrawstate in mstsSignalType.DrawStates)
                         DrawAspects.Add(sdrawstate.Value.Index, new SignalAspectData(mstsSignalType, sdrawstate.Value));
                     FlashTimeOn = mstsSignalType.FlashTimeOn;
                     FlashTimeTotal = mstsSignalType.FlashTimeOn + mstsSignalType.FlashTimeOff;
@@ -431,7 +431,7 @@ namespace ORTS.Viewer3D
             public readonly bool[] FlashLights;
             public readonly float SemaphorePos;
 
-            public SignalAspectData(MSTS.Formats.SignalType mstsSignalType, MSTS.Formats.SignalDrawState drawStateData)
+            public SignalAspectData(Orts.Formats.Msts.SignalType mstsSignalType, Orts.Formats.Msts.SignalDrawState drawStateData)
             {
                 if (mstsSignalType.Lights != null)
                 {

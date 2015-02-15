@@ -18,7 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using MSTS.Formats;
+using Orts.Formats.Msts;
 using ORTS.Formats;
 using GNU.Gettext;
 

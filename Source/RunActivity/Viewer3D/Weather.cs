@@ -102,9 +102,9 @@ namespace ORTS.Viewer3D
             // These values are defaults only; subsequent changes to the weather via debugging only change the components (weather, overcastFactor and fogDistance) individually.
             switch (Viewer.Simulator.Weather)
             {
-                case MSTS.Formats.WeatherType.Clear: overcastFactor = 0.05f; fogDistance = 20000; break;
-                case MSTS.Formats.WeatherType.Rain: overcastFactor = 0.7f; fogDistance = 1000; break;
-                case MSTS.Formats.WeatherType.Snow: overcastFactor = 0.6f; fogDistance = 500; break;
+                case Orts.Formats.Msts.WeatherType.Clear: overcastFactor = 0.05f; fogDistance = 20000; break;
+                case Orts.Formats.Msts.WeatherType.Rain: overcastFactor = 0.7f; fogDistance = 1000; break;
+                case Orts.Formats.Msts.WeatherType.Snow: overcastFactor = 0.6f; fogDistance = 500; break;
             }
         }
 
@@ -113,9 +113,9 @@ namespace ORTS.Viewer3D
             Viewer.SoundProcess.RemoveSoundSources(this);
             switch (Viewer.Simulator.Weather)
             {
-                case MSTS.Formats.WeatherType.Clear: pricipitationIntensityPPSPM2 = 0; Viewer.SoundProcess.AddSoundSources(this, ClearSound); break;
-                case MSTS.Formats.WeatherType.Rain: pricipitationIntensityPPSPM2 = 0.010f; Viewer.SoundProcess.AddSoundSources(this, RainSound); break;
-                case MSTS.Formats.WeatherType.Snow: pricipitationIntensityPPSPM2 = 0.010f; Viewer.SoundProcess.AddSoundSources(this, SnowSound); break;
+                case Orts.Formats.Msts.WeatherType.Clear: pricipitationIntensityPPSPM2 = 0; Viewer.SoundProcess.AddSoundSources(this, ClearSound); break;
+                case Orts.Formats.Msts.WeatherType.Rain: pricipitationIntensityPPSPM2 = 0.010f; Viewer.SoundProcess.AddSoundSources(this, RainSound); break;
+                case Orts.Formats.Msts.WeatherType.Snow: pricipitationIntensityPPSPM2 = 0.010f; Viewer.SoundProcess.AddSoundSources(this, SnowSound); break;
             }
 
             // WeatherControl is created during World consturction so this needs to be skipped.
@@ -159,7 +159,7 @@ namespace ORTS.Viewer3D
             if (MPManager.IsClient() && MPManager.Instance().weatherChanged)
             {
                 // Multiplayer weather has changed so we need to update our state to match weather, overcastFactor, pricipitationIntensity and fogDistance.
-                if (MPManager.Instance().weather >= 0 && MPManager.Instance().weather != (int)Viewer.Simulator.Weather) { Viewer.Simulator.Weather = (MSTS.Formats.WeatherType)MPManager.Instance().weather; UpdateWeatherParameters(); }
+                if (MPManager.Instance().weather >= 0 && MPManager.Instance().weather != (int)Viewer.Simulator.Weather) { Viewer.Simulator.Weather = (Orts.Formats.Msts.WeatherType)MPManager.Instance().weather; UpdateWeatherParameters(); }
                 if (MPManager.Instance().overcastFactor >= 0) overcastFactor = MPManager.Instance().overcastFactor;
                 if (MPManager.Instance().pricipitationIntensity >= 0) { pricipitationIntensityPPSPM2 = MPManager.Instance().pricipitationIntensity; UpdateVolume(); }
                 if (MPManager.Instance().fogDistance >= 0) fogDistance = MPManager.Instance().fogDistance;
@@ -186,14 +186,14 @@ namespace ORTS.Viewer3D
                 {
                     switch (Viewer.Simulator.Weather)
                     {
-                        case MSTS.Formats.WeatherType.Clear:
-                            Viewer.Simulator.Weather = MSTS.Formats.WeatherType.Rain;
+                        case Orts.Formats.Msts.WeatherType.Clear:
+                            Viewer.Simulator.Weather = Orts.Formats.Msts.WeatherType.Rain;
                             break;
-                        case MSTS.Formats.WeatherType.Rain:
-                            Viewer.Simulator.Weather = MSTS.Formats.WeatherType.Snow;
+                        case Orts.Formats.Msts.WeatherType.Rain:
+                            Viewer.Simulator.Weather = Orts.Formats.Msts.WeatherType.Snow;
                             break;
-                        case MSTS.Formats.WeatherType.Snow:
-                            Viewer.Simulator.Weather = MSTS.Formats.WeatherType.Clear;
+                        case Orts.Formats.Msts.WeatherType.Snow:
+                            Viewer.Simulator.Weather = Orts.Formats.Msts.WeatherType.Clear;
                             break;
                     }
                     UpdateWeatherParameters();

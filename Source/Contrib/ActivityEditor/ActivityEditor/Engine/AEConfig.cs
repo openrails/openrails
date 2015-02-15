@@ -33,9 +33,8 @@ using ActivityEditor.Route_Metadata;
 using LibAE;
 using LibAE.Formats;
 using LibAE.Common;
-using MSTS;
-using MSTS.Formats;
-using MSTS.Parsers;
+using Orts.Formats.Msts;
+using Orts.Parsers.Msts;
 using ORTS;
 
 namespace ActivityEditor.Engine

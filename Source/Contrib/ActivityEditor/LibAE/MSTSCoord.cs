@@ -29,7 +29,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 //using Microsoft.Xna.Framework;
 using MSTS;
-using MSTS.Formats;
+using Orts.Formats.Msts;
 using ORTS.Common;
 using LibAE;
 using LibAE.Formats;

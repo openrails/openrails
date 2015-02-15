@@ -65,9 +65,9 @@
       <Project>{B79691A7-BF8C-40B4-ADE0-5F30F2730414}</Project>
       <Name>LibAE</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MSTS.Formats\MSTS.Formats.csproj">
+    <ProjectReference Include="..\Orts.Formats.Msts\Orts.Formats.Msts.csproj">
       <Project>{570709FA-0C8A-4B1D-BA2D-D9455AFD9B5C}</Project>
-      <Name>MSTS.Formats</Name>
+      <Name>Orts.Formats.Msts</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
