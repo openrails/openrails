@@ -1652,29 +1652,46 @@ namespace ORTS.Viewer3D
             foreach (var lodControl in LodControls)
             {
                 // Start with the furthest away distance, then look for a nearer one in range of the camera.
-                var chosenDistanceLevelIndex = lodControl.DistanceLevels.Length - 1;
+                var displayDetailLevel = lodControl.DistanceLevels.Length - 1;
 
                 // If this LOD group is not in the FOV, skip the whole LOD group.
-                if (!Viewer.Camera.InFov(mstsLocation, lodControl.DistanceLevels[chosenDistanceLevelIndex].ViewSphereRadius))
+                if (!Viewer.Camera.InFov(mstsLocation, lodControl.DistanceLevels[displayDetailLevel].ViewSphereRadius))
                     continue;
+
+                // We choose the distance level (LOD) to display first:
+                //   - LODBias = 100 means we always use the highest detail.
+                //   - LODBias < 100 means we operate as normal (using the highest detail in-range of the camera) but
+                //     scaling it by LODBias.
+                //
+                // However, for the viewing distance (and view sphere), we use a slightly different calculation:
+                //   - LODBias = 100 means we always use the *lowest* detail viewing distance.
+                //   - LODBias < 100 means we operate as normal (see above).
+                //
+                // The reason for this disparity is that LODBias = 100 is special, because it means "always use
+                // highest detail", but this by itself is not useful unless we keep using the normal (LODBias-scaled)
+                // viewing distance - right down to the lowest detail viewing distance. Otherwise, we'll scale the
+                // highest detail viewing distance up by 100% and then the object will just disappear!
 
                 if (Viewer.Settings.LODBias == 100)
                     // Maximum detail!
-                    chosenDistanceLevelIndex = 0;
+                    displayDetailLevel = 0;
                 else if (Viewer.Settings.LODBias > -100)
                     // Not minimum detail, so find the correct level (with scaling by LODBias)
-                    while ((chosenDistanceLevelIndex > 0) && Viewer.Camera.InRange(mstsLocation, lodControl.DistanceLevels[chosenDistanceLevelIndex - 1].ViewSphereRadius, lodControl.DistanceLevels[chosenDistanceLevelIndex - 1].ViewingDistance * lodBias))
-                        chosenDistanceLevelIndex--;
+                    while ((displayDetailLevel > 0) && Viewer.Camera.InRange(mstsLocation, lodControl.DistanceLevels[displayDetailLevel - 1].ViewSphereRadius, lodControl.DistanceLevels[displayDetailLevel - 1].ViewingDistance * lodBias))
+                        displayDetailLevel--;
 
-                var chosenDistanceLevel = lodControl.DistanceLevels[chosenDistanceLevelIndex];
+                var displayDetail = lodControl.DistanceLevels[displayDetailLevel];
+                var distanceDetail = Viewer.Settings.LODBias == 100
+                    ? lodControl.DistanceLevels[lodControl.DistanceLevels.Length - 1]
+                    : displayDetail;
 
                 // If set, extend the lowest LOD to the maximum viewing distance.
-                if (Viewer.Settings.LODViewingExtention && chosenDistanceLevelIndex == lodControl.DistanceLevels.Length - 1)
-                    chosenDistanceLevel.ViewingDistance = float.MaxValue;
+                if (Viewer.Settings.LODViewingExtention && displayDetailLevel == lodControl.DistanceLevels.Length - 1)
+                    distanceDetail.ViewingDistance = float.MaxValue;
 
-                for (var i = 0; i < chosenDistanceLevel.SubObjects.Length; i++)
+                for (var i = 0; i < displayDetail.SubObjects.Length; i++)
 				{
-                    var subObject = chosenDistanceLevel.SubObjects[i];
+                    var subObject = displayDetail.SubObjects[i];
                    
                     // The 1st subobject (note that index 0 is the main object itself) is hidden during the day if HasNightSubObj is true.
 					if ((subObjVisible != null && !subObjVisible[i]) || (i == 1 && HasNightSubObj && Viewer.MaterialManager.sunDirection.Y >= 0))
@@ -1694,7 +1711,7 @@ namespace ORTS.Viewer3D
                         // TODO make shadows depend on shape overrides
 
                         var interior = (flags & ShapeFlags.Interior) != 0;
-                        frame.AddAutoPrimitive(mstsLocation, chosenDistanceLevel.ViewSphereRadius, chosenDistanceLevel.ViewingDistance * lodBias, shapePrimitive.Material, shapePrimitive, interior ? RenderPrimitiveGroup.Interior : RenderPrimitiveGroup.World, ref xnaMatrix, flags);
+                        frame.AddAutoPrimitive(mstsLocation, distanceDetail.ViewSphereRadius, distanceDetail.ViewingDistance * lodBias, shapePrimitive.Material, shapePrimitive, interior ? RenderPrimitiveGroup.Interior : RenderPrimitiveGroup.World, ref xnaMatrix, flags);
                     }
                 }
             }
