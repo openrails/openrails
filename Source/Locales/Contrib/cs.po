@@ -1,16 +1,16 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Contrib\n"
-"POT-Creation-Date: 2014-12-12 18:48:39+0000\n"
-"PO-Revision-Date: 2014-12-22 07:12+0100\n"
+"POT-Creation-Date: 2015-02-13 18:43:41+0000\n"
+"PO-Revision-Date: 2015-02-14 20:37+0100\n"
 "Last-Translator: Altmann <altmann@bk.ru>\n"
 "Language-Team: \n"
+"Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.7.1\n"
+"X-Generator: Poedit 1.7.4\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"Language: cs\n"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:17
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:89
@@ -34,7 +34,8 @@ msgstr "OR"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:21
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:125
-msgid "Tool intended for the creation of activities for the Open simulator Rail."
+msgid ""
+"Tool intended for the creation of activities for the Open simulator Rail."
 msgstr "Nástroj určený pro vytváření aktivit pro Open Rails."
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:111
@@ -77,7 +78,8 @@ msgstr "Kontrola počátečních vlastností"
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:75
 msgid ""
 "ActionDuration:\r\n"
-"How long does the action takes.  With a minimum of 10sec and a maximum of 25sec.\r\n"
+"How long does the action takes.  With a minimum of 10sec and a maximum of "
+"25sec.\r\n"
 msgstr ""
 "Délka akce:\r\n"
 "Jak dlouho akce trvá. Nejméně 10 s a maximálně 25 s.\r\n"
@@ -658,11 +660,11 @@ msgstr "Příklad názvu záhlaví"
 
 #: ../../Contrib/ActivityEditor/AEWizard/InteriorWizardPage.cs:114
 msgid ""
-"Sample header subtitle will help a user complete a certain task in the Sample wizard by clarifying "
-"the task in some way."
+"Sample header subtitle will help a user complete a certain task in the "
+"Sample wizard by clarifying the task in some way."
 msgstr ""
-"Příklad názvu záhlaví pomůže uživateli dokončit daný úkol v Průvodci příkladů nastavení vysvětlením "
-"úkolu konkrétním způsobem."
+"Příklad názvu záhlaví pomůže uživateli dokončit daný úkol v Průvodci "
+"příkladů nastavení vysvětlením úkolu konkrétním způsobem."
 
 #: ../../Contrib/ContentManager/ContentManagerGUI.cs:61
 msgid "Loading..."
@@ -808,64 +810,64 @@ msgstr "Umístit bod obrácení"
 msgid "Remove reversal point"
 msgstr "Odstranit bod obrácení"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:466
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:458
 msgid "Place wait point"
 msgstr "Umístit bod čekání"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:493
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:485
 msgid "Edit wait point"
 msgstr "Editovat bod čekání"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:517
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:509
 msgid "Remove wait point"
 msgstr "Odstranit bod čekání"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:720
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1290
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:712
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1282
 msgid "Take other exit"
 msgstr "Použít jiný výjezd"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:767
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:759
 msgid "Add passing path"
 msgstr "Přidat alternativní trasu"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:807
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:799
 msgid "Start passing path"
 msgstr "Začátek alternativní trasy"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:872
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:864
 msgid "Remove passing path"
 msgstr "Odstranit alternativní trasu"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:912
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:904
 msgid "Fix invalid node"
 msgstr "Opravit neplatný uzel"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:936
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:928
 msgid "Delete rest of path"
 msgstr "Smazat zbytek cesty"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:965
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:957
 msgid "Cut path here and store its tail"
 msgstr "Rozříznout cestu zde a ponechat její konec"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1019
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1011
 msgid "Auto-fix broken nodes"
 msgstr "Atomaticky opravit vadné uzly"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1127
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1119
 msgid "Reconnect to tail"
 msgstr "Připojit na konec"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1188
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1180
 msgid "Reconnect passing path"
 msgstr "Připojit alternativní trasu hlavního tahu"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1960
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1952
 msgid "Draw path until here"
 msgstr "Nakreslit cestu až sem"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1991
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1983
 msgid "Draw path until next broken point"
 msgstr "Nakreslit cestu do dalšího vadného bodu"
 
@@ -882,8 +884,8 @@ msgid "Reversing a path without end node is not supported"
 msgstr "Obrácení cesty bez koncového uzlu není podporováno."
 
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:98
-msgid "Saving broken paths is not supported"
-msgstr "Uložení vadných cest není podporováno"
+msgid "Saving broken paths might not always work correctly.\n"
+msgstr "Uložení vadných cest nemusí vždy fungovat správně.\n"
 
 #: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:269
 msgid "Set as invalid in .pat file"
@@ -904,6 +906,15 @@ msgstr "Pendlující uzel vedlejší koleje"
 #: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:277
 msgid "Unknown"
 msgstr "Neznámé"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:52
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:53
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:54
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:55
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:56
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:57
+msgid "1"
+msgstr "1"
 
 #: ../../Contrib/TrackViewer/UserInterface/Languages.cs:65
 msgid "Please restart TrackViewer in order to load the new language."
@@ -986,8 +997,10 @@ msgid "not an integral part of ORTS."
 msgstr "není součástí ORTS."
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:770
-msgid "Currently all intended and planned editor features have been implemented."
-msgstr "Aktuálně jsou všechny zamýšlené a plánované funkce editoru implementovány."
+msgid ""
+"Currently all intended and planned editor features have been implemented."
+msgstr ""
+"Aktuálně jsou všechny zamýšlené a plánované funkce editoru implementovány."
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:772
 msgid "Documentation is available"
@@ -1003,8 +1016,12 @@ msgid "* The saved-paths have not been tested with MSTS or ORTS."
 msgstr "* Uložené cesty nebyly v MSTS nebo ORTS testovány."
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:778
-msgid "* Possibly non-standard junctions (> 1 incoming or > 2 outgoing tracks) might not work."
-msgstr "* Pravděpodobně nestandardní uzly (> 1 příchozí nebo > 2 odchozí tratě) nemusí fungovat."
+msgid ""
+"* Possibly non-standard junctions (> 1 incoming or > 2 outgoing tracks) "
+"might not work."
+msgstr ""
+"* Pravděpodobně nestandardní uzly (> 1 příchozí nebo > 2 odchozí tratě) "
+"nemusí fungovat."
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:780
 msgid "Feedback is appreciated."
@@ -1032,13 +1049,13 @@ msgstr "Konec cesty"
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:24
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:15
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:25
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:37
 msgid " OK "
 msgstr " OK "
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:25
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:16
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:26
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:38
 msgid " Cancel "
 msgstr " Storno "
 
@@ -1059,7 +1076,7 @@ msgid "cars, wait for "
 msgstr "vozidla, čekající na "
 
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:12
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:22
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:12
 msgid "seconds"
 msgstr "sekund"
 
@@ -1067,13 +1084,45 @@ msgstr "sekund"
 msgid "Wait Point"
 msgstr "Bod čekání"
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:18
-msgid "Wait time = "
-msgstr "Doba čekání = "
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:8
+msgid "Wait time: "
+msgstr "Doba čekání:"
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:20
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:10
 msgid "minutes"
 msgstr "minut"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:15
+msgid "Openrails advanced shunting options:"
+msgstr "Pokročilé možnosti posunování v Openrails:"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:19
+msgid "Wait until:  "
+msgstr "Čekat dokud:"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:21
+msgid ":"
+msgstr ":"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:23
+msgid "HH:MM"
+msgstr "HH:MM"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:27
+msgid "Uncouple: keep "
+msgstr "Rozpojit: zachovat "
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:29
+msgid " cars, and wait"
+msgstr " vozů a čekat"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:31
+msgid "seconds. "
+msgstr "sekund. "
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:34
+msgid "Keep rear"
+msgstr "Zachovat zadní"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:8
 msgid "(Re)load route"
@@ -1414,7 +1463,8 @@ msgstr "Hledat"
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:33
 msgid "Shows tileX and tileZ of the world location at the mouse pointer"
-msgstr "Zobrazit X dlaždice a Z dlaždice polohy v daném světě na ukazateli myši"
+msgstr ""
+"Zobrazit X dlaždice a Z dlaždice polohy v daném světě na ukazateli myši"
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:41
 msgid "Shows X-coordinate (without tileX) at the mouse pointer"
@@ -1440,3 +1490,9 @@ msgstr "Položka"
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:99
 msgid "Any other relevant information. Make your choice via Statusbar menu"
 msgstr "Další důležitá informace. Zvolte možnost z menu ze stavové lišty"
+
+#~ msgid "Saving broken paths is not supported"
+#~ msgstr "Uložení vadných cest není podporováno"
+
+#~ msgid "Wait time = "
+#~ msgstr "Doba čekání = "
