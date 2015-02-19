@@ -373,8 +373,11 @@ namespace ORTS.Viewer3D
 
             lod = new LODWire(800.0f); // Create LOD for railsides with specified CutoffRadius
             lodItem = new LODItemWire("Wire");
+            var normalvalue = 0.707f;
             if (File.Exists(viewer.Simulator.RoutePath + "\\Textures\\overheadwire.ace"))
+            {
                 lodItem.TexName = "overheadwire.ace";
+            }
             else
             {
                 Trace.TraceInformation("Ignored missing overheadwire.ace, using default. You can copy the overheadwire.ace from OR\'s AddOns folder to {0}\\Textures", viewer.Simulator.RoutePath);
@@ -394,11 +397,11 @@ namespace ORTS.Viewer3D
             pl = new Polyline(this, "TopWire", 5);
             pl.DeltaTexCoord = new Vector2(0.00f, 0.00f);
 
-            pl.Vertices.Add(new Vertex(-0.01f, topHeight + 0.02f, 0.0f, -1f, 0f, 0f, u1, v1));
-            pl.Vertices.Add(new Vertex(0.01f, topHeight + 0.02f, 0.0f, 0f, 1f, 0f, u1, v1));
-            pl.Vertices.Add(new Vertex(0.01f, topHeight, 0.0f, 1f, 0f, 0f, u1, v1));
-            pl.Vertices.Add(new Vertex(-0.01f, topHeight, 0.0f, 0f, -1f, 0f, u1, v1));
-            pl.Vertices.Add(new Vertex(-0.01f, topHeight + 0.02f, 0.0f, -1f, 0f, 0f, u1, v1));
+            pl.Vertices.Add(new Vertex(-0.01f, topHeight + 0.02f, 0.0f, -normalvalue, normalvalue, 0f, u1, v1));
+            pl.Vertices.Add(new Vertex(0.01f, topHeight + 0.02f, 0.0f, normalvalue, normalvalue, 0f, u1, v1));
+            pl.Vertices.Add(new Vertex(0.01f, topHeight, 0.0f, normalvalue, -normalvalue, 0f, u1, v1));
+            pl.Vertices.Add(new Vertex(-0.01f, topHeight, 0.0f, -normalvalue, -normalvalue, 0f, u1, v1));
+            pl.Vertices.Add(new Vertex(-0.01f, topHeight + 0.02f, 0.0f, -normalvalue, normalvalue, 0f, u1, v1));
             lodItem.Polylines.Add(pl);
             lodItem.Accum(pl.Vertices.Count);
 
@@ -408,22 +411,22 @@ namespace ORTS.Viewer3D
                 pl.DeltaTexCoord = new Vector2(0.00f, 0.00f);
                 topHeight += 1.0f;
 
-                pl.Vertices.Add(new Vertex(-0.01f, topHeight + 0.02f, 0.0f, -1f, 0f, 0f, u1, v1));
-                pl.Vertices.Add(new Vertex(0.01f, topHeight + 0.02f, 0.0f, 0f, 1f, 0f, u1, v1));
-                pl.Vertices.Add(new Vertex(0.01f, topHeight, 0.0f, 1f, 0f, 0f, u1, v1));
-                pl.Vertices.Add(new Vertex(-0.01f, topHeight, 0.0f, 0f, -1f, 0f, u1, v1));
-                pl.Vertices.Add(new Vertex(-0.01f, topHeight + 0.04f, 0.0f, -1f, 0f, 0f, u1, v1));
+                pl.Vertices.Add(new Vertex(-0.01f, topHeight + 0.02f, 0.0f, -normalvalue, normalvalue, 0f, u1, v1));
+                pl.Vertices.Add(new Vertex(0.01f, topHeight + 0.02f, 0.0f, normalvalue, normalvalue, 0f, u1, v1));
+                pl.Vertices.Add(new Vertex(0.01f, topHeight, 0.0f, normalvalue, -normalvalue, 0f, u1, v1));
+                pl.Vertices.Add(new Vertex(-0.01f, topHeight, 0.0f, -normalvalue, -normalvalue, 0f, u1, v1));
+                pl.Vertices.Add(new Vertex(-0.01f, topHeight + 0.02f, 0.0f, -normalvalue, normalvalue, 0f, u1, v1));
                 lodItem.Polylines.Add(pl);
                 lodItem.Accum(pl.Vertices.Count);
 
                 vertical = new Polyline(this, "TopWireVertical", 5);
                 vertical.DeltaTexCoord = new Vector2(0.00f, 0.00f);
 
-                vertical.Vertices.Add(new Vertex(-0.008f, topHeight, 0.008f, 0f, 0f, 1f, u1, v1));
-                vertical.Vertices.Add(new Vertex(-.008f, topHeight, -.008f, -1f, 0f, 0f, u1, v1));
-                vertical.Vertices.Add(new Vertex(.008f, topHeight, -.008f, 0f, 0f, -1f, u1, v1));
-                vertical.Vertices.Add(new Vertex(.008f, topHeight, .008f, 1f, 0f, 0f, u1, v1));
-                vertical.Vertices.Add(new Vertex(-.008f, topHeight, .008f, 1f, 0f, 0f, u1, v1));
+                vertical.Vertices.Add(new Vertex(-0.008f, topHeight, 0.008f, -normalvalue, 0f, normalvalue, u1, v1));
+                vertical.Vertices.Add(new Vertex(-.008f, topHeight, -.008f, normalvalue, 0f, normalvalue, u1, v1));
+                vertical.Vertices.Add(new Vertex(.008f, topHeight, -.008f, normalvalue, 0f, -normalvalue, u1, v1));
+                vertical.Vertices.Add(new Vertex(.008f, topHeight, .008f, -normalvalue, 0f, -normalvalue, u1, v1));
+                vertical.Vertices.Add(new Vertex(-.008f, topHeight, .008f, -normalvalue, 0f, normalvalue, u1, v1));
                 lodItem.VerticalPolylines = new ArrayList();
                 lodItem.VerticalPolylines.Add(vertical);
                 lodItem.VerticalAccumulate(vertical.Vertices.Count);

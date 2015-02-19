@@ -1149,6 +1149,64 @@ namespace ORTS.Viewer3D
         }
     }
 
+    public class SolidColorMaterial : Material
+    {
+        static BasicEffect basicEffect;
+
+        public SolidColorMaterial(Viewer viewer, float a, float r, float g, float b)
+            : base(viewer, null)
+        {
+            if (basicEffect == null)
+            {
+                basicEffect = new BasicEffect(Viewer.RenderProcess.GraphicsDevice, null);
+                basicEffect.Alpha = a;
+                basicEffect.DiffuseColor = new Vector3(r , g , b );
+                basicEffect.SpecularColor = new Vector3(0.25f, 0.25f, 0.25f);
+                basicEffect.SpecularPower = 5.0f;
+                basicEffect.AmbientLightColor = new Vector3(0.2f, 0.2f, 0.2f);
+
+                basicEffect.DirectionalLight0.Enabled = true;
+                basicEffect.DirectionalLight0.DiffuseColor = Vector3.One * 0.8f;
+                basicEffect.DirectionalLight0.Direction = Vector3.Normalize(new Vector3(1.0f, -1.0f, -1.0f));
+                basicEffect.DirectionalLight0.SpecularColor = Vector3.One;
+
+                basicEffect.DirectionalLight1.Enabled = true;
+                basicEffect.DirectionalLight1.DiffuseColor = new Vector3(0.5f, 0.5f, 0.5f);
+                basicEffect.DirectionalLight1.Direction = Vector3.Normalize(new Vector3(-1.0f, -1.0f, 1.0f));
+                basicEffect.DirectionalLight1.SpecularColor = new Vector3(0.5f, 0.5f, 0.5f);
+
+                basicEffect.LightingEnabled = true;
+            }
+        }
+
+        public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+        {
+            graphicsDevice.VertexDeclaration = WaterPrimitive.PatchVertexDeclaration;
+        }
+
+        public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        {
+
+            basicEffect.View = XNAViewMatrix;
+            basicEffect.Projection = XNAProjectionMatrix;
+
+            basicEffect.Begin();
+            foreach (EffectPass pass in basicEffect.CurrentTechnique.Passes)
+            {
+                pass.Begin();
+
+                foreach (var item in renderItems)
+                {
+                    basicEffect.World = item.XNAMatrix;
+                    basicEffect.CommitChanges();
+                    item.RenderPrimitive.Draw(graphicsDevice);
+                }
+                pass.End();
+            }
+            basicEffect.End();
+        }
+    }
+
     public class Label3DMaterial : SpriteBatchMaterial
     {
         public readonly Texture2D Texture;

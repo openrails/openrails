@@ -1350,6 +1350,13 @@ namespace ORTS.Viewer3D.RollingStock
             IsFire = true;
         }
 
+        public color GetColor(out bool positive) {
+            if (Locomotive.GetDataOf(Control) < 0) { positive = false; return Gauge.NegativeColor; }
+            else { positive = true; return Gauge.PositiveColor; }
+        }
+
+        public CVCGauge GetGauge() { return Gauge; }
+
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             if (!(Gauge is CVCFirebox))
@@ -2057,7 +2064,7 @@ namespace ORTS.Viewer3D.RollingStock
 
 		protected PoseableShape TrainCarShape = null;
 		Dictionary<int, AnimatedPartMultiState> AnimateParts = null;
-        Dictionary<int, ThreeDimCabGauge> Gauges = null;
+        Dictionary<int, ThreeDimCabGaugeNative> Gauges = null;
         Dictionary<int, AnimatedPart> OnDemandAnimateParts = null; //like external wipers, and other parts that will be switched on by mouse in the future
         //Dictionary<int, DigitalDisplay> DigitParts = null;
         Dictionary<int, ThreeDimCabDigit> DigitParts3D = null;
@@ -2091,7 +2098,7 @@ namespace ORTS.Viewer3D.RollingStock
             AnimateParts = new Dictionary<int, AnimatedPartMultiState>();
             //DigitParts = new Dictionary<int, DigitalDisplay>();
             DigitParts3D = new Dictionary<int, ThreeDimCabDigit>();
-            Gauges = new Dictionary<int, ThreeDimCabGauge>();
+            Gauges = new Dictionary<int, ThreeDimCabGaugeNative>();
             OnDemandAnimateParts = new Dictionary<int, AnimatedPart>();
             CABViewControlTypes type;
             // Find the animated parts
@@ -2140,7 +2147,7 @@ namespace ORTS.Viewer3D.RollingStock
                     }
                     else if (style != null && style is CabViewGaugeRenderer)
                     {
-                        Gauges.Add(key, new ThreeDimCabGauge(viewer, iMatrix, parameter, this.TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
+                        Gauges.Add(key, new ThreeDimCabGaugeNative(viewer, iMatrix, parameter, this.TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
                     }
                     else if (type == CABViewControlTypes.EXTERNALWIPERS)
                     {
@@ -2204,7 +2211,7 @@ namespace ORTS.Viewer3D.RollingStock
             }
             foreach (var p in Gauges)
             {
-                p.Value.Update(this.LocoViewer, elapsedTime);
+                p.Value.PrepareFrame(frame, elapsedTime);
             }
 
             if (ExternalWipers != null) ExternalWipers.UpdateLoop(Locomotive.Wiper, elapsedTime);
@@ -2477,80 +2484,55 @@ namespace ORTS.Viewer3D.RollingStock
         Matrix XNAMatrix;
         Viewer Viewer;
         ShapePrimitive shapePrimitive;
-        CabViewDigitalRenderer CVFR;
-        Material Material;
-        Material AlertMaterial;
-        float Size;
+        CabViewGaugeRenderer  CVFR;
+        Material PositiveMaterial;
+        Material NegativeMaterial;
+        
         public ThreeDimCabGaugeNative(Viewer viewer, int iMatrix, int textSize, PoseableShape trainCarShape, CabViewControlRenderer c)
         {
-            CVFR = (CabViewDigitalRenderer)c;
+            CVFR = (CabViewGaugeRenderer)c;
             Viewer = viewer;
             TrainCarShape = trainCarShape;
             XNAMatrix = TrainCarShape.SharedShape.Matrices[iMatrix];
-            var maxVertex = 32;// every face has max 5 digits, each has 2 triangles
+            CVCGauge gauge = CVFR.GetGauge();
+            var maxVertex = 4;// a rectangle
             //Material = viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(viewer.Simulator, Helpers.TextureFlags.None, texture), (int)(SceneryMaterialOptions.None | SceneryMaterialOptions.AlphaBlendingBlend), 0);
-            Material = FindMaterial(false);//determine normal material
+
             // Create and populate a new ShapePrimitive
             NumVertices = NumIndices = 0;
-            Size = textSize * 0.001f;
+            var Size = (float)gauge.Width;
 
             VertexList = new VertexPositionNormalTexture[maxVertex];
             TriangleListIndices = new short[maxVertex / 2 * 3]; // as is NumIndices
 
-            //start position is the center of the text
-            var start = new Vector3(0, 0, 0);
-            var rotation = 0;
+            var tX = 1f; var tY = 1f;
+            
+            //the left-bottom vertex
+            Vertex v1 = new Vertex(0f, 0f, 0.002f, 0, 0, -1, tX, tY);
 
-            //find the left-most of text
-            Vector3 offset;
+            //the right-bottom vertex
+            Vertex v2 = new Vertex(0f, Size, 0.002f, 0, 0, -1, tX, tY);
 
-            offset.X = 0;
+            Vertex v3 = new Vertex(Size, 0, 0.002f, 0, 0, -1, tX, tY);
 
-            offset.Y = -Size;
+            Vertex v4 = new Vertex(Size, Size, 0.002f, 0, 0, -1, tX, tY);
 
-            string speed = "000000";
-            for (var j = 0; j < speed.Length; j++)
-            {
-                var tX = GetTextureCoordX(speed[j]); var tY = GetTextureCoordY(speed[j]);
-                var rot = Matrix.CreateRotationY(-rotation);
+            //create first triangle
+            TriangleListIndices[NumIndices++] = (short)NumVertices;
+            TriangleListIndices[NumIndices++] = (short)(NumVertices + 1);
+            TriangleListIndices[NumIndices++] = (short)(NumVertices + 2);
+            // Second triangle:
+            TriangleListIndices[NumIndices++] = (short)NumVertices;
+            TriangleListIndices[NumIndices++] = (short)(NumVertices + 2);
+            TriangleListIndices[NumIndices++] = (short)(NumVertices + 3);
 
-                //the left-bottom vertex
-                Vector3 v = new Vector3(offset.X, offset.Y, 0.01f);
-                v = Vector3.Transform(v, rot);
-                v += start; Vertex v1 = new Vertex(v.X, v.Y, v.Z, 0, 0, -1, tX, tY);
+            //create vertex
+            VertexList[NumVertices].Position = v1.Position; VertexList[NumVertices].Normal = v1.Normal; VertexList[NumVertices].TextureCoordinate = v1.TexCoord;
+            VertexList[NumVertices + 1].Position = v2.Position; VertexList[NumVertices + 1].Normal = v2.Normal; VertexList[NumVertices + 1].TextureCoordinate = v2.TexCoord;
+            VertexList[NumVertices + 2].Position = v3.Position; VertexList[NumVertices + 2].Normal = v3.Normal; VertexList[NumVertices + 2].TextureCoordinate = v3.TexCoord;
+            VertexList[NumVertices + 3].Position = v4.Position; VertexList[NumVertices + 3].Normal = v4.Normal; VertexList[NumVertices + 3].TextureCoordinate = v4.TexCoord;
+            NumVertices += 4;
 
-                //the right-bottom vertex
-                v.X = offset.X + Size; v.Y = offset.Y; v.Z = 0.01f;
-                v = Vector3.Transform(v, rot);
-                v += start; Vertex v2 = new Vertex(v.X, v.Y, v.Z, 0, 0, -1, tX + 0.25f, tY);
-
-                //the right-top vertex
-                v.X = offset.X + Size; v.Y = offset.Y + Size; v.Z = 0.01f;
-                v = Vector3.Transform(v, rot);
-                v += start; Vertex v3 = new Vertex(v.X, v.Y, v.Z, 0, 0, -1, tX + 0.25f, tY - 0.25f);
-
-                //the left-top vertex
-                v.X = offset.X; v.Y = offset.Y + Size; v.Z = 0.01f;
-                v = Vector3.Transform(v, rot);
-                v += start; Vertex v4 = new Vertex(v.X, v.Y, v.Z, 0, 0, -1, tX, tY - 0.25f);
-
-                //create first triangle
-                TriangleListIndices[NumIndices++] = (short)NumVertices;
-                TriangleListIndices[NumIndices++] = (short)(NumVertices + 2);
-                TriangleListIndices[NumIndices++] = (short)(NumVertices + 1);
-                // Second triangle:
-                TriangleListIndices[NumIndices++] = (short)NumVertices;
-                TriangleListIndices[NumIndices++] = (short)(NumVertices + 3);
-                TriangleListIndices[NumIndices++] = (short)(NumVertices + 2);
-
-                //create vertex
-                VertexList[NumVertices].Position = v1.Position; VertexList[NumVertices].Normal = v1.Normal; VertexList[NumVertices].TextureCoordinate = v1.TexCoord;
-                VertexList[NumVertices + 1].Position = v2.Position; VertexList[NumVertices + 1].Normal = v2.Normal; VertexList[NumVertices + 1].TextureCoordinate = v2.TexCoord;
-                VertexList[NumVertices + 2].Position = v3.Position; VertexList[NumVertices + 2].Normal = v3.Normal; VertexList[NumVertices + 2].TextureCoordinate = v3.TexCoord;
-                VertexList[NumVertices + 3].Position = v4.Position; VertexList[NumVertices + 3].Normal = v4.Normal; VertexList[NumVertices + 3].TextureCoordinate = v4.TexCoord;
-                NumVertices += 4;
-                offset.X += Size * 0.8f; offset.Y += 0; //move to next digit
-            }
 
             var i = 0;
             //create the shape primitive
@@ -2561,95 +2543,72 @@ namespace ORTS.Viewer3D.RollingStock
             IndexBuffer IndexBuffer = new IndexBuffer(viewer.GraphicsDevice, typeof(short),
                                                             NumIndices, BufferUsage.WriteOnly);
             IndexBuffer.SetData(newTList);
-            shapePrimitive = new ShapePrimitive(Material, new SharedShape.VertexBufferSet(newVList, viewer.GraphicsDevice), IndexBuffer, 0, NumVertices, NumIndices / 3, new[] { -1 }, 0);
+            shapePrimitive = new ShapePrimitive(FindMaterial(), new SharedShape.VertexBufferSet(newVList, viewer.GraphicsDevice), IndexBuffer, 0, NumVertices, NumIndices / 3, new[] { -1 }, 0);
 
         }
 
-        Material FindMaterial(bool Alert)
+        Material FindMaterial()
         {
-            string imageName = "";
-            string globalText = Viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\";
-            CABViewControlTypes controltype = CVFR.GetType();
-            Material material = null;
-
-            if (Alert) { imageName = "alert.ace"; }
-            else
+            bool Positive;
+            color c = this.CVFR.GetColor(out Positive);
+            if (Positive)
             {
-                switch (controltype)
+                if (PositiveMaterial == null)
                 {
-                    case CABViewControlTypes.CLOCK:
-                        imageName = "clock.ace";
-                        break;
-                    case CABViewControlTypes.SPEEDLIMIT:
-                    case CABViewControlTypes.SPEEDLIM_DISPLAY:
-                        imageName = "speedlim.ace";
-                        break;
-                    case CABViewControlTypes.SPEED_PROJECTED:
-                    case CABViewControlTypes.SPEEDOMETER:
-                    default:
-                        imageName = "speed.ace";
-                        break;
+                    PositiveMaterial = new SolidColorMaterial(this.Viewer, 0f, c.R, c.G, c.B);
                 }
-            }
-            if (String.IsNullOrEmpty(TrainCarShape.SharedShape.ReferencePath))
-            {
-                if (!File.Exists(globalText + imageName))
-                {
-                    Trace.TraceInformation("Ignored missing " + imageName + " using default. You can copy the " + imageName + " from OR\'s AddOns folder to " + globalText +
-                        ", or place it under " + TrainCarShape.SharedShape.ReferencePath);
-                }
-                material = Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(Viewer.Simulator, Helpers.TextureFlags.None, globalText, imageName), (int)(SceneryMaterialOptions.None | SceneryMaterialOptions.AlphaBlendingBlend), 0);
+                return PositiveMaterial;
             }
             else
             {
-                if (!File.Exists(TrainCarShape.SharedShape.ReferencePath + imageName))
-                {
-                    Trace.TraceInformation("Ignored missing " + imageName + " using default. You can copy the " + imageName + " from OR\'s AddOns folder to " + globalText +
-                        ", or place it under " + TrainCarShape.SharedShape.ReferencePath);
-                    material = Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(Viewer.Simulator, Helpers.TextureFlags.None, globalText, imageName), (int)(SceneryMaterialOptions.None | SceneryMaterialOptions.AlphaBlendingBlend), 0);
-                }
-                else material = Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(Viewer.Simulator, Helpers.TextureFlags.None, TrainCarShape.SharedShape.ReferencePath, imageName), (int)(SceneryMaterialOptions.None | SceneryMaterialOptions.AlphaBlendingBlend), 0);
+                if (NegativeMaterial == null) NegativeMaterial = new SolidColorMaterial(this.Viewer, c.A, c.R, c.G, c.B);
+                return NegativeMaterial;
             }
-
-            return material;
-            //Material = Viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(Viewer.Simulator, Helpers.TextureFlags.None, "Speed"), (int)(SceneryMaterialOptions.None | SceneryMaterialOptions.AlphaBlendingBlend), 0);
         }
 
         //update the digits with current speed or time
         public void UpdateDigit()
         {
-            NumVertices = NumIndices = 0;
+            NumVertices = 0;
 
-            Material UsedMaterial = Material; //use default material
+            Material UsedMaterial = FindMaterial();
 
-            //update text string
-            bool Alert;
-            string speed = CVFR.Get3DDigits(out Alert);
+            float length = CVFR.GetRangeFraction();
 
-            if (Alert)//alert use alert meterial
-            {
-                if (AlertMaterial == null) AlertMaterial = FindMaterial(true);
-                UsedMaterial = AlertMaterial;
-            }
-            //update vertex texture coordinate
-            for (var j = 0; j < speed.Length; j++)
-            {
-                var tX = GetTextureCoordX(speed[j]); var tY = GetTextureCoordY(speed[j]);
-                //create first triangle
-                TriangleListIndices[NumIndices++] = (short)NumVertices;
-                TriangleListIndices[NumIndices++] = (short)(NumVertices + 2);
-                TriangleListIndices[NumIndices++] = (short)(NumVertices + 1);
-                // Second triangle:
-                TriangleListIndices[NumIndices++] = (short)NumVertices;
-                TriangleListIndices[NumIndices++] = (short)(NumVertices + 3);
-                TriangleListIndices[NumIndices++] = (short)(NumVertices + 2);
+            CVCGauge gauge = CVFR.GetGauge();
 
-                VertexList[NumVertices].TextureCoordinate.X = tX; VertexList[NumVertices].TextureCoordinate.Y = tY;
-                VertexList[NumVertices + 1].TextureCoordinate.X = tX + 0.25f; VertexList[NumVertices + 1].TextureCoordinate.Y = tY;
-                VertexList[NumVertices + 2].TextureCoordinate.X = tX + 0.25f; VertexList[NumVertices + 2].TextureCoordinate.Y = tY - 0.25f;
-                VertexList[NumVertices + 3].TextureCoordinate.X = tX; VertexList[NumVertices + 3].TextureCoordinate.Y = tY - 0.25f;
-                NumVertices += 4;
-            }
+            var xSize = (float)gauge.Height*length;
+            var ySize = (float)gauge.Width;
+            
+            var tX = 1f; var tY = 1f;
+            
+            //the left-bottom vertex
+            Vertex v1 = new Vertex(0f, 0f, 0.002f, 0, 0, -1, tX, tY);
+
+            //the right-bottom vertex
+            Vertex v2 = new Vertex(0f, ySize, 0.002f, 0, 0, -1, tX, tY);
+
+            Vertex v3 = new Vertex(xSize, ySize, 0.002f, 0, 0, -1, tX, tY);
+
+            Vertex v4 = new Vertex(xSize, 0f, 0.002f, 0, 0, -1, tX, tY);
+            /*
+            //the left-bottom vertex
+            Vertex v1 = new Vertex(0f, 0f, 0.002f, 0, 0, -1, tX, tY);
+
+            //the right-bottom vertex
+            Vertex v2 = new Vertex(0f, ySize, 0.002f, 0, 0, -1, tX, tY);
+
+            Vertex v3 = new Vertex(xSize, 0, 0.002f, 0, 0, -1, tX, tY);
+
+            Vertex v4 = new Vertex(xSize, ySize, 0.002f, 0, 0, -1, tX, tY);
+            */
+
+            //create vertex
+            VertexList[NumVertices].Position = v1.Position; VertexList[NumVertices].Normal = v1.Normal; VertexList[NumVertices].TextureCoordinate = v1.TexCoord;
+            VertexList[NumVertices + 1].Position = v2.Position; VertexList[NumVertices + 1].Normal = v2.Normal; VertexList[NumVertices + 1].TextureCoordinate = v2.TexCoord;
+            VertexList[NumVertices + 2].Position = v3.Position; VertexList[NumVertices + 2].Normal = v3.Normal; VertexList[NumVertices + 2].TextureCoordinate = v3.TexCoord;
+            VertexList[NumVertices + 3].Position = v4.Position; VertexList[NumVertices + 3].Normal = v4.Normal; VertexList[NumVertices + 3].TextureCoordinate = v4.TexCoord;
+            NumVertices += 4;
 
             var i = 0;
             //create the new shape primitive
