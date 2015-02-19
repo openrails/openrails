@@ -696,7 +696,8 @@ namespace ORTS.Viewer3D.Popups
             // next is active AI trains
             foreach (var thisTrain in Viewer.Simulator.AI.AITrains)
             {
-                if (thisTrain.MovementState != AITrain.AI_MOVEMENT_STATE.AI_STATIC && thisTrain.TrainType != Train.TRAINTYPE.PLAYER)
+                if (thisTrain.MovementState != AITrain.AI_MOVEMENT_STATE.AI_STATIC && thisTrain.TrainType != Train.TRAINTYPE.PLAYER
+                    && thisTrain.TrainType != Train.TRAINTYPE.AI_INCORPORATED)
                 {
                     var status = thisTrain.GetStatus(Viewer.MilepostUnitsMetric);
                     status = thisTrain.AddMovementState(status, Viewer.MilepostUnitsMetric);

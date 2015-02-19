@@ -501,7 +501,7 @@ namespace ORTS
             }
             foreach (AITrain train in AITrains)
             {
-                if (train.Cars.Count == 0 || train.Cars[0].Train != train)
+                if (train.TrainType != Train.TRAINTYPE.AI_INCORPORATED && (train.Cars.Count == 0 && train.TrainType != Train.TRAINTYPE.AI_INCORPORATED || train.Cars[0].Train != train))
                     TrainsToRemove.Add(train);
                 else
                     train.AIUpdate(elapsedClockSeconds, clockTime, preUpdate);

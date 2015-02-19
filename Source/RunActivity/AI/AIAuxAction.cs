@@ -475,6 +475,26 @@ namespace ORTS
             }
         }
 
+               //================================================================================================//
+        //  
+        /// <summary>
+        /// Move next Aux Action, if in same section, under train in case of decoupling
+        /// <\summary>
+        public void MoveAuxAction(Train thisTrain)
+        {
+            if (SpecAuxActions.Count <= 0)
+                return;
+            AIAuxActionsRef thisAction;
+            thisAction = (AIAuxActionsRef)SpecAuxActions[0];
+            if (thisAction is AIActionWPRef && thisAction.SubrouteIndex == thisTrain.TCRoute.activeSubpath+1 && thisAction.TCSectionIndex == thisTrain.PresentPosition[1].TCSectionIndex)
+                // Reversal point is just in the same section where the train is; move it under the train
+            {
+                int thisSectionIndex = thisTrain.PresentPosition[1].TCSectionIndex;
+                TrackCircuitSection thisSection = thisTrain.signalRef.TrackCircuitList[thisSectionIndex];
+                thisAction.RequiredDistance = thisSection.Length - thisTrain.PresentPosition[1].TCOffset - 5;
+            }
+        }
+
         public AuxActionRef GetGenericAuxAction(AuxActionRef.AUX_ACTION typeReq)
         {
             return GenAuxActions.GetGenericAuxAction(typeReq);
@@ -1660,6 +1680,8 @@ namespace ORTS
                 aiTrain.TestUncouple( ref Delay);
                 // If delay between 30000 and 40000 it is considered an absolute delay in the form 3HHMM, where HH and MM are hour and minute where the delay ends
                 thisTrain.TestAbsDelay(ref Delay, correctedTime);
+                // If delay equal to 60001 it is considered as a command to unconditionally attach to the nearby train;
+                aiTrain.TestUncondAttach(ref Delay);
                 ActualDepart = correctedTime + Delay;
                 aiTrain.AuxActionsContain.CheckGenActions(this.GetType(), aiTrain.RearTDBTraveller.WorldLocation, Delay);
 

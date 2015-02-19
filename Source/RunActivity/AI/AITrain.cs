@@ -66,6 +66,7 @@ namespace ORTS
         public bool PowerState = true;                   // actual power state : true if power in on
         public float MaxVelocityA = 30.0f;               // max velocity as set in .con file
         public Service_Definition ServiceDefinition = null; // train's service definition in .act file
+        bool UncondAttach = false;                       // if false it states that train will unconditionally attach to a train on its path
 
 
         public enum AI_MOVEMENT_STATE
@@ -220,6 +221,7 @@ namespace ORTS
 
             Efficiency = inf.ReadSingle();
             MaxVelocityA = inf.ReadSingle();
+            UncondAttach = inf.ReadBoolean();
             int serviceListCount = inf.ReadInt32();
             if (serviceListCount > 0) RestoreServiceDefinition(inf, serviceListCount);
 
@@ -281,11 +283,12 @@ namespace ORTS
             outf.Write((int)MovementState);
             outf.Write(Efficiency);
             outf.Write(MaxVelocityA);
+            outf.Write(UncondAttach);
             if (ServiceDefinition != null ) ServiceDefinition.Save(outf);
             else outf.Write(-1);
         }
 
-        // call base save methid only
+        // call base save method only
         public void SaveBase(BinaryWriter outf)
         {
             base.Save(outf);
@@ -615,7 +618,7 @@ namespace ORTS
             }
 #endif
 
-
+            if (TrainType == TRAINTYPE.AI_INCORPORATED) return;
             // Check if at stop point and stopped
             //          if ((NextStopDistanceM < actClearance) || (SpeedMpS <= 0 && MovementState == AI_MOVEMENT_STATE.STOPPED))
             if (MovementState == AI_MOVEMENT_STATE.STOPPED || MovementState == AI_MOVEMENT_STATE.STATION_STOP || MovementState == AI_MOVEMENT_STATE.AI_STATIC)
@@ -2875,7 +2878,8 @@ namespace ORTS
                                 PresentPosition[rearOrFront].TCSectionIndex == OtherTrain.PresentPosition[1].TCSectionIndex)
                             {
                                 if (OtherTrain.TrainType == TRAINTYPE.STATIC || PresentPosition[0].TCSectionIndex ==
-                                    TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1].TCSectionIndex)
+                                    TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1].TCSectionIndex
+                                    ||  UncondAttach )
                                 { 
                                 attachToTrain = true;
                                 AttachTo = OtherTrain.Number;
@@ -3943,7 +3947,7 @@ namespace ORTS
                     CoupleAIToStatic (attachTrain, thisTrainFront, attachTrainFront);
                     return;
                 }
-                else if (attachTrain.TrainType != Train.TRAINTYPE.STATIC && TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1)
+                else if (attachTrain.TrainType != Train.TRAINTYPE.STATIC && TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1 && !UncondAttach)
                 {
                     if ((thisTrainFront && Cars[0] is MSTSLocomotive) || (!thisTrainFront && Cars[Cars.Count - 1] is MSTSLocomotive))
                     {
@@ -4053,7 +4057,12 @@ namespace ORTS
                 attachTrain.physicsUpdate(0);   // stop the wheels from moving etc
 
                 // remove original train
-                RemoveTrain();
+                if (!UncondAttach) RemoveTrain();
+                else
+                {
+                    SuspendTrain();
+                    attachTrain.IncorporatedTrainNo = this.Number;
+                }
             }
         }
 
@@ -4429,6 +4438,24 @@ namespace ORTS
 
        }
 
+               //================================================================================================//
+        /// <summary>
+        /// TestUncondAttach
+        /// Tests if Waiting point delay =60001; under certain conditions this means that the train has to attach the nearby train
+
+        /// </summary>
+        /// 
+        public void TestUncondAttach(ref int delay)
+        {
+            if (!Program.Simulator.Settings.EnhancedActCompatibility || !Program.Simulator.Settings.ExtendedAIShunting) return;
+            if (delay != 60001) return;
+            else
+            {
+                delay = 0;
+                UncondAttach = true;
+            }
+        }
+
         //================================================================================================//
         /// <summary>
         /// Remove train
@@ -4462,6 +4489,21 @@ namespace ORTS
             // remove train
 
             AI.TrainsToRemove.Add(this);
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Suspend train because incorporated in other train
+        /// <\summary>
+
+        public virtual void SuspendTrain()
+        {
+            RemoveFromTrack();
+            ClearDeadlocks();
+            NextSignalObject[0] = null;
+            NextSignalObject[1] = null;
+            TrainType = TRAINTYPE.AI_INCORPORATED;
+            UncondAttach = false;
         }
 
         //================================================================================================//

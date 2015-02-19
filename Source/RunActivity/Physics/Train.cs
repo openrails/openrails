@@ -134,7 +134,8 @@ namespace ORTS
             AI_AUTOGENERATE,
             REMOTE,
             AI_PLAYERDRIVEN,   //Player is on board and is durrently driving train
-            AI_PLAYERHOSTING   //Player is on board, but train is currently autopiloted
+            AI_PLAYERHOSTING,   //Player is on board, but train is currently autopiloted
+            AI_INCORPORATED    // AI train is incorporated in other train
         }
 
         public TRAINTYPE TrainType = TRAINTYPE.PLAYER;
@@ -184,6 +185,7 @@ namespace ORTS
         public TimeSpan? Delay = null;                                    // present delay of the train (if any)
 
         public int AttachTo = -1;                              // attach information : train to which to attach at end of run
+        public int IncorporatedTrainNo = -1;                        // number of train incorporated in actual train
 
         public Traffic_Service_Definition TrafficService;
         public int[,] MisalignedSwitch = new int[2, 2] { { -1, -1 }, { -1, -1 } };  // misaligned switch indication per direction:
@@ -505,6 +507,7 @@ namespace ORTS
             allowedMaxSpeedLimitMpS = inf.ReadSingle();
             allowedAbsoluteMaxSpeedSignalMpS = inf.ReadSingle();
             allowedAbsoluteMaxSpeedLimitMpS = inf.ReadSingle();
+            IncorporatedTrainNo = inf.ReadInt32();
 
             SignalObjectItems = new List<ObjectItemInfo>();
             signalRef = simulator.Signals;
@@ -712,8 +715,11 @@ namespace ORTS
         private void RestoreCars(Simulator simulator, BinaryReader inf)
         {
             int count = inf.ReadInt32();
-            for (int i = 0; i < count; ++i)
-                Cars.Add(RollingStock.Restore(simulator, inf, this));
+            if (count > 0)
+            {
+                for (int i = 0; i < count; ++i)
+                    Cars.Add(RollingStock.Restore(simulator, inf, this));
+            }
         }
 
         static Traffic_Service_Definition RestoreTrafficSDefinition(BinaryReader inf)
@@ -806,6 +812,7 @@ namespace ORTS
             outf.Write(allowedMaxSpeedLimitMpS);
             outf.Write(allowedAbsoluteMaxSpeedSignalMpS);
             outf.Write(allowedAbsoluteMaxSpeedLimitMpS);
+            outf.Write(IncorporatedTrainNo);
 
             outf.Write((int)TrainType);
             outf.Write(tilted);
@@ -8657,8 +8664,9 @@ namespace ORTS
         // Update track details after uncoupling
         //
 
-        public void UpdateTrackActionsUncoupling(bool originalTrain)
+        public bool UpdateTrackActionsUncoupling(bool originalTrain)
         {
+            bool inPath = true;
 
 #if DEBUG_REPORTS
             File.AppendAllText(@"C:\temp\printproc.txt",
@@ -8798,6 +8806,18 @@ namespace ORTS
                 LastReservedSection[0] = PresentPosition[0].TCSectionIndex;
                 LastReservedSection[1] = PresentPosition[1].TCSectionIndex;
 
+                //<CSComment> InitializeSignals needs this info sometimes, so I repeat lines below here
+                if (Simulator.Settings.ExtendedAIShunting && (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL || ControlMode == TRAIN_CONTROL.AUTO_NODE))
+                {
+                    PresentPosition[0].RouteListIndex = ValidRoute[0].GetRouteIndex(PresentPosition[0].TCSectionIndex, 0);
+                    PresentPosition[1].RouteListIndex = ValidRoute[0].GetRouteIndex(PresentPosition[1].TCSectionIndex, 0);
+                    if (PresentPosition[0].RouteListIndex < 0 || PresentPosition[1].RouteListIndex < 0)
+                    {
+                        inPath = false;
+                        return inPath;
+                    }
+                }
+
                 InitializeSignals(true);
 
                 if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL || ControlMode == TRAIN_CONTROL.AUTO_NODE)
@@ -8855,6 +8875,7 @@ namespace ORTS
                                 "Train " + Number.ToString() +
                                 " uncouple procedure completed \n");
             }
+            return inPath;
         }
 
         //================================================================================================//

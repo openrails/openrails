@@ -547,9 +547,12 @@ namespace ORTS
         private void FinishCoupling(Train drivenTrain, Train train, bool couple_to_front)
         {
             train.RemoveFromTrack();
-            Trains.Remove(train);
-            TrainDictionary.Remove(train.Number);
-            NameDictionary.Remove(train.Name.ToLower());
+            if (train.TrainType != Train.TRAINTYPE.AI_INCORPORATED)
+            {
+                Trains.Remove(train);
+                TrainDictionary.Remove(train.Number);
+                NameDictionary.Remove(train.Name.ToLower());
+            }
 
             if (train.UncoupledFrom != null)
                 train.UncoupledFrom.UncoupledFrom = null;
@@ -1033,10 +1036,13 @@ namespace ORTS
 
             foreach (Train train in Trains)
             {
-                if (train.TrainType != Train.TRAINTYPE.AI && train.TrainType != Train.TRAINTYPE.AI_PLAYERDRIVEN && train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING && train.GetType() != typeof(TTTrain))
+                if (train.TrainType != Train.TRAINTYPE.AI && train.TrainType != Train.TRAINTYPE.AI_PLAYERDRIVEN && train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING &&
+                    train.TrainType != Train.TRAINTYPE.AI_INCORPORATED && train.GetType() != typeof(TTTrain))
                 {
                     outf.Write(0);
-                    train.Save(outf);
+                    if (train is AITrain && train.TrainType == Train.TRAINTYPE.STATIC)
+                        ((AITrain)train).SaveBase(outf);
+                    else train.Save(outf);
                 }
                 else if (train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
                 {
@@ -1169,14 +1175,24 @@ namespace ORTS
             ++i;
 
             TrainCar lead = train.LeadLocomotive;
-            Train train2 = new Train(this, train);
+            Train train2;
+            if (train.IncorporatedTrainNo == -1)
+            {
+                train2 = new Train(this, train);
+                Trains.Add(train2);
+            }
+            else
+            {
+                train2 = TrainDictionary [train.IncorporatedTrainNo];
+            }
+
             if (MPManager.IsMultiPlayer()) train2.ControlMode = Train.TRAIN_CONTROL.EXPLORER;
             // Player locomotive is in first or in second part of train?
             int j = 0;
             while (train.Cars[j] != PlayerLocomotive && j < i) j++;
 
-            // This is necessary, because else we had to create an AI train and not a train in following case
-            if ((train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING) && j >= i)
+            // This is necessary, because else we had to create an AI train and not a train when in autopilot mode
+            if (train.IsActualPlayerTrain && j >= i)
             {
                 // Player locomotive in second part of train, move first part of cars to the new train
                 for (int k = 0; k < i; ++k)
@@ -1214,17 +1230,10 @@ namespace ORTS
 
                 train.LastCar.CouplerSlackM = 0;
 
-                // ensure player train keeps the original number (in single mode, it is always no. 0)
-                if ((PlayerLocomotive != null && PlayerLocomotive.Train == train2) || !keepFront)
-                {
-                    var temp = train.Number;
-                    train.Number = train2.Number;    // train gets new number
-                    train2.Number = temp;               // player or AI train keeps the original number
-                }
             }
 
             // and fix up the travellers
-            if ((train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING) && j >= i)
+            if (train.IsActualPlayerTrain && j >= i)
             {
                 train2.FrontTDBTraveller = new Traveller(train.FrontTDBTraveller);
                 train.CalculatePositionOfCars(0);
@@ -1239,7 +1248,6 @@ namespace ORTS
                 train.RepositionRearTraveller();    // fix the rear traveller
             }
 
-            Trains.Add(train2);
 
             train.UncoupledFrom = train2;
             train2.UncoupledFrom = train;
@@ -1251,36 +1259,43 @@ namespace ORTS
             if (PlayerLocomotive == null)
                 train2.AITrainBrakePercent = train.AITrainBrakePercent;
 
-            if ((PlayerLocomotive != null && PlayerLocomotive.Train == train2 || !keepFront))
+            if (train.IncorporatedTrainNo != -1)
             {
-                train2.AITrainThrottlePercent = train.AITrainThrottlePercent;
-                train.AITrainThrottlePercent = 0;
-                train2.TrainType = train.TrainType;
-                train.TrainType = Train.TRAINTYPE.STATIC;
-                train2.LeadLocomotive = lead;
-                train.LeadLocomotive = null;
-                train.Cars[0].BrakeSystem.PropagateBrakePressure(5);
-                foreach (MSTSWagon wagon in train.Cars)
-                    wagon.MSTSBrakeSystem.Update(5);
+                train2.TrainType = Train.TRAINTYPE.AI;
+                train.IncorporatedTrainNo = -1;
             }
-            else
-            {
-                train2.TrainType = Train.TRAINTYPE.STATIC;
-                train2.LeadLocomotive = null;
-                train2.Cars[0].BrakeSystem.PropagateBrakePressure(5);
-                foreach (MSTSWagon wagon in train2.Cars)
-                    wagon.MSTSBrakeSystem.Update(5);
-            }
+            else train2.TrainType = Train.TRAINTYPE.STATIC;
+            train2.LeadLocomotive = null;
+            train2.Cars[0].BrakeSystem.PropagateBrakePressure(5);
+            foreach (MSTSWagon wagon in train2.Cars)
+                wagon.MSTSBrakeSystem.Update(5);
 
             train.UpdateTrackActionsUncoupling(true);
-            train2.UpdateTrackActionsUncoupling(false);
+            var inPath = train2.UpdateTrackActionsUncoupling(false);
+            if (!inPath && train2.TrainType == Train.TRAINTYPE.AI)
+                // Out of path, degrade to static
+            {
+                train2.TrainType = Train.TRAINTYPE.STATIC;
+               ((AITrain)train2).AI.AITrains.Remove((AITrain)train2);
+            }
+            if (train2.TrainType == Train.TRAINTYPE.AI)
+            {
+                // Move reversal point under train if there is one in the section where the train is
+                if (train2.PresentPosition[0].TCSectionIndex ==
+                                    train2.TCRoute.TCRouteSubpaths[train2.TCRoute.activeSubpath][train2.TCRoute.TCRouteSubpaths[train2.TCRoute.activeSubpath].Count - 1].TCSectionIndex &&
+                    train2.TCRoute.activeSubpath < train2.TCRoute.TCRouteSubpaths.Count - 1)
+                {
+                    train2.TCRoute.ReversalInfo[train2.TCRoute.activeSubpath].ReverseReversalOffset = train2.PresentPosition[0].TCOffset - 10f;
+                    train2.AuxActionsContain.MoveAuxAction(train2);
+                }
+                ((AITrain)train2).ResetActions(true);
+            }
             if (MPManager.IsMultiPlayer()) { train.ControlMode = train2.ControlMode = Train.TRAIN_CONTROL.EXPLORER; }
 
             if (MPManager.IsMultiPlayer() && !MPManager.IsServer())
             {
                 //add the new train to a list of uncoupled trains, handled specially
-                if (PlayerLocomotive != null && PlayerLocomotive.Train == train2) MPManager.Instance().AddUncoupledTrains(train);
-                else if (PlayerLocomotive != null && PlayerLocomotive.Train == train) MPManager.Instance().AddUncoupledTrains(train2);
+                if (PlayerLocomotive != null && PlayerLocomotive.Train == train) MPManager.Instance().AddUncoupledTrains(train2);
             }
 
 
