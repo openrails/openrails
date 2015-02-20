@@ -1,18 +1,19 @@
 <project SchemaVersion="1.3">
     <assemblies>
         <assembly location="..\Program\Menu.exe" documentation="..\Program\Menu.xml" />
-        <assembly location="..\Program\MSTS.Formats.dll" documentation="..\Program\MSTS.Formats.xml" />
-        <assembly location="..\Program\MSTS.Parsers.dll" documentation="..\Program\MSTS.Parsers.xml" />
         <assembly location="..\Program\OpenRails.exe" documentation="..\Program\OpenRails.xml" />
         <assembly location="..\Program\ORTS.Common.dll" documentation="..\Program\ORTS.Common.xml" />
         <assembly location="..\Program\ORTS.Content.dll" documentation="..\Program\ORTS.Content.xml" />
         <assembly location="..\Program\ORTS.Formats.dll" documentation="..\Program\ORTS.Formats.xml" />
+        <assembly location="..\Program\Orts.Formats.Msts.dll" documentation="..\Program\Orts.Formats.Msts.xml" />
         <assembly location="..\Program\ORTS.IO.dll" documentation="..\Program\ORTS.IO.xml" />
         <assembly location="..\Program\ORTS.Menu.dll" documentation="..\Program\ORTS.Menu.xml" />
         <assembly location="..\Program\ORTS.Parsers.dll" documentation="..\Program\ORTS.Parsers.xml" />
+        <assembly location="..\Program\Orts.Parsers.Msts.dll" documentation="..\Program\Orts.Parsers.Msts.xml" />
         <assembly location="..\Program\ORTS.Settings.dll" documentation="..\Program\ORTS.Settings.xml" />
         <assembly location="..\Program\ORTS.Updater.dll" documentation="..\Program\ORTS.Updater.xml" />
         <assembly location="..\Program\RunActivity.exe" documentation="..\Program\RunActivity.xml" />
+        <assembly location="..\Program\Updater.exe" documentation="..\Program\Updater.xml" />
     </assemblies>
     <documenters>
         <documenter name="MSDN">
