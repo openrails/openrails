@@ -475,19 +475,44 @@ namespace ORTS
             }
         }
 
-               //================================================================================================//
+        //================================================================================================//
         //  
         /// <summary>
         /// Move next Aux Action, if in same section, under train in case of decoupling
         /// <\summary>
         public void MoveAuxAction(Train thisTrain)
         {
+            AITrain thisAITrain = (AITrain)thisTrain;
+            if (SpecAuxActions.Count <= 0)
+                return;
+            AIAuxActionsRef thisAction;
+            thisAction = (AIAuxActionsRef)SpecAuxActions[0];
+            if (thisAction is AIActionWPRef && thisAction.SubrouteIndex == thisTrain.TCRoute.activeSubpath && thisAction.TCSectionIndex == thisTrain.PresentPosition[0].TCSectionIndex)
+            // Waiting point is just in the same section where the train is; move it under the train
+            {
+                AuxActionWPItem thisWPItem;
+                if (thisAITrain.nextActionInfo != null && thisAITrain.nextActionInfo is AuxActionWPItem)
+                {
+                    thisWPItem = (AuxActionWPItem)thisAITrain.nextActionInfo;
+                    if (thisWPItem.ActionRef == thisAction) thisWPItem.ActivateDistanceM = thisTrain.PresentPosition[0].DistanceTravelledM - 5;
+                 }
+                thisAction.RequiredDistance = thisTrain.PresentPosition[0].TCOffset - 5;
+            }
+        }
+
+        //================================================================================================//
+        //  
+        /// <summary>
+        /// Move next Aux Action, if in same section and in next subpath (reversal in between), under train in case of decoupling
+        /// <\summary>
+        public void MoveAuxActionAfterReversal(Train thisTrain)
+        {
             if (SpecAuxActions.Count <= 0)
                 return;
             AIAuxActionsRef thisAction;
             thisAction = (AIAuxActionsRef)SpecAuxActions[0];
             if (thisAction is AIActionWPRef && thisAction.SubrouteIndex == thisTrain.TCRoute.activeSubpath+1 && thisAction.TCSectionIndex == thisTrain.PresentPosition[1].TCSectionIndex)
-                // Reversal point is just in the same section where the train is; move it under the train
+                // Waiting point is just in the same section where the train is; move it under the train
             {
                 int thisSectionIndex = thisTrain.PresentPosition[1].TCSectionIndex;
                 TrackCircuitSection thisSection = thisTrain.signalRef.TrackCircuitList[thisSectionIndex];

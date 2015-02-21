@@ -231,6 +231,7 @@ namespace ORTS
 
             if (TrainType == TRAINTYPE.AI_NOTSTARTED) activeTrain = false;
             if (TrainType == TRAINTYPE.AI_AUTOGENERATE) activeTrain = false;
+            if (TrainType == TRAINTYPE.AI_INCORPORATED) activeTrain = false;
 
             if (activeTrain)
             {
@@ -618,7 +619,7 @@ namespace ORTS
             }
 #endif
 
-            if (TrainType == TRAINTYPE.AI_INCORPORATED) return;
+            if (TrainType == TRAINTYPE.AI_INCORPORATED || TrainType == TRAINTYPE.STATIC) return;
             // Check if at stop point and stopped
             //          if ((NextStopDistanceM < actClearance) || (SpeedMpS <= 0 && MovementState == AI_MOVEMENT_STATE.STOPPED))
             if (MovementState == AI_MOVEMENT_STATE.STOPPED || MovementState == AI_MOVEMENT_STATE.STATION_STOP || MovementState == AI_MOVEMENT_STATE.AI_STATIC)
@@ -3789,6 +3790,8 @@ namespace ORTS
                 if (positionNow == PresentPosition[0].TCSectionIndex && directionNow != PresentPosition[0].TCDirection)
                 {
                     ReverseFormation(false);
+                    // active subpath must be incremented in parallel in incorporated train if present
+                    if (IncorporatedTrainNo >= 0) IncrementSubpath(Simulator.TrainDictionary[IncorporatedTrainNo]);
 
 #if DEBUG_REPORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
@@ -3798,6 +3801,8 @@ namespace ORTS
                 else if (positionNow == PresentPosition[1].TCSectionIndex && directionNow != PresentPosition[1].TCDirection)
                 {
                     ReverseFormation(false);
+                    // active subpath must be incremented in parallel in incorporated train if present
+                    if (IncorporatedTrainNo >= 0) IncrementSubpath(Simulator.TrainDictionary[IncorporatedTrainNo]);
 
 #if DEBUG_REPORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
@@ -4060,7 +4065,12 @@ namespace ORTS
                 if (!UncondAttach) RemoveTrain();
                 else
                 {
+                    // if there is just here a reversal point, increment subpath in order to be in accordance with attachTrain
+
+                    var ppTCSectionIndex = PresentPosition[0].TCSectionIndex;
                     SuspendTrain();
+                    if (ppTCSectionIndex == TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1].TCSectionIndex)
+                        IncrementSubpath(this);
                     attachTrain.IncorporatedTrainNo = this.Number;
                 }
             }
@@ -4367,6 +4377,8 @@ namespace ORTS
             attachTrain.CheckFreight();
             // anticipate reversal point and remove active action
             TCRoute.ReversalInfo[TCRoute.activeSubpath].ReverseReversalOffset = PresentPosition[0].TCOffset - 10f;
+            // move WP, if any, just under the loco;
+            AuxActionsContain.MoveAuxActionAfterReversal(this);
             ResetActions(true);
 
             physicsUpdate(0);   // stop the wheels from moving etc
@@ -4432,7 +4444,7 @@ namespace ORTS
                 Trace.TraceWarning("Train {0} Service {1} Uncoupling not executed, no loco in remaining part of train", Number, Name);
                 return;
             }
-            int uncouplePoint = keepFront? carsToKeep-1 : Cars.Count-carsToKeep;
+            int uncouplePoint = keepFront? carsToKeep-1 : Cars.Count-carsToKeep-1;
             Simulator.UncoupleBehind( Cars[uncouplePoint], keepFront);
 
 
@@ -4503,6 +4515,7 @@ namespace ORTS
             NextSignalObject[0] = null;
             NextSignalObject[1] = null;
             TrainType = TRAINTYPE.AI_INCORPORATED;
+            requiredActions.RemovePendingAIActionItems(true);
             UncondAttach = false;
         }
 

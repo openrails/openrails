@@ -1192,7 +1192,7 @@ namespace ORTS
             while (train.Cars[j] != PlayerLocomotive && j < i) j++;
 
             // This is necessary, because else we had to create an AI train and not a train when in autopilot mode
-            if (train.IsActualPlayerTrain && j >= i)
+            if ((train.IsActualPlayerTrain && j >= i )|| !keepFront)
             {
                 // Player locomotive in second part of train, move first part of cars to the new train
                 for (int k = 0; k < i; ++k)
@@ -1233,7 +1233,7 @@ namespace ORTS
             }
 
             // and fix up the travellers
-            if (train.IsActualPlayerTrain && j >= i)
+            if (train.IsActualPlayerTrain && j >= i || !keepFront)
             {
                 train2.FrontTDBTraveller = new Traveller(train.FrontTDBTraveller);
                 train.CalculatePositionOfCars(0);
@@ -1263,20 +1263,32 @@ namespace ORTS
             {
                 train2.TrainType = Train.TRAINTYPE.AI;
                 train.IncorporatedTrainNo = -1;
+                train2.MUDirection = Direction.Forward;
             }
             else train2.TrainType = Train.TRAINTYPE.STATIC;
             train2.LeadLocomotive = null;
             train2.Cars[0].BrakeSystem.PropagateBrakePressure(5);
             foreach (MSTSWagon wagon in train2.Cars)
                 wagon.MSTSBrakeSystem.Update(5);
+            bool inPath;
 
-            train.UpdateTrackActionsUncoupling(true);
-            var inPath = train2.UpdateTrackActionsUncoupling(false);
+            if ((train.IsActualPlayerTrain && j >= i) || !keepFront)
+            {
+                train.TemporarilyRemoveFromTrack();
+
+                inPath = train2.UpdateTrackActionsUncoupling(false);
+                train.UpdateTrackActionsUncoupling(false);
+            }
+            else
+            {
+                train.UpdateTrackActionsUncoupling(true);
+                inPath = train2.UpdateTrackActionsUncoupling(false);
+            }
             if (!inPath && train2.TrainType == Train.TRAINTYPE.AI)
                 // Out of path, degrade to static
             {
                 train2.TrainType = Train.TRAINTYPE.STATIC;
-               ((AITrain)train2).AI.AITrains.Remove((AITrain)train2);
+                ((AITrain)train2).AI.TrainsToRemoveFromAI.Add((AITrain)train2);
             }
             if (train2.TrainType == Train.TRAINTYPE.AI)
             {
@@ -1286,6 +1298,10 @@ namespace ORTS
                     train2.TCRoute.activeSubpath < train2.TCRoute.TCRouteSubpaths.Count - 1)
                 {
                     train2.TCRoute.ReversalInfo[train2.TCRoute.activeSubpath].ReverseReversalOffset = train2.PresentPosition[0].TCOffset - 10f;
+                    train2.AuxActionsContain.MoveAuxActionAfterReversal(train2);
+                }
+                else if((train.IsActualPlayerTrain && j >= i ) || !keepFront)
+                {
                     train2.AuxActionsContain.MoveAuxAction(train2);
                 }
                 ((AITrain)train2).ResetActions(true);

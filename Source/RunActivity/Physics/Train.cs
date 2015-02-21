@@ -4642,10 +4642,14 @@ namespace ORTS
                 if (positionNow == PresentPosition[0].TCSectionIndex && directionNow != PresentPosition[0].TCDirection)
                 {
                     ReverseFormation(IsActualPlayerTrain);
+                    // active subpath must be incremented in parallel in incorporated train if present
+                    if (IncorporatedTrainNo >= 0) IncrementSubpath(Simulator.TrainDictionary[IncorporatedTrainNo]);
                 }
                 else if (positionNow == PresentPosition[1].TCSectionIndex && directionNow != PresentPosition[1].TCDirection)
                 {
                     ReverseFormation(IsActualPlayerTrain);
+                    // active subpath must be incremented in parallel in incorporated train if present
+                    if (IncorporatedTrainNo >= 0) IncrementSubpath(Simulator.TrainDictionary[IncorporatedTrainNo]);
                 }
             }
 
@@ -5207,6 +5211,8 @@ namespace ORTS
                 // set new route
                 TCRoute.activeSubpath++;
                 ValidRoute[0] = TCRoute.TCRouteSubpaths[TCRoute.activeSubpath];
+
+ 
                 TCRoute.SetReversalOffset(Length);
 
                 // clear existing list of occupied track, and build new list
@@ -7850,6 +7856,8 @@ namespace ORTS
             if (reversal)
             {
                 ReverseFormation(true);
+                // active subpath must be incremented in parallel in incorporated train if present
+                if (IncorporatedTrainNo >= 0) IncrementSubpath(Simulator.TrainDictionary[IncorporatedTrainNo]);
             }
 
             // reset distance travelled
@@ -8769,6 +8777,31 @@ namespace ORTS
             else
             {
 
+                //<CSComment> InitializeSignals needs this info sometimes, so I repeat lines below here
+                if (Simulator.Settings.ExtendedAIShunting && !IsActualPlayerTrain && (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL || ControlMode == TRAIN_CONTROL.AUTO_NODE))
+                {
+                    while (TCRoute.activeSubpath <= TCRoute.TCRouteSubpaths.Count - 1)
+                    {
+                        PresentPosition[0].RouteListIndex = ValidRoute[0].GetRouteIndex(PresentPosition[0].TCSectionIndex, 0);
+                        PresentPosition[1].RouteListIndex = ValidRoute[0].GetRouteIndex(PresentPosition[1].TCSectionIndex, 0);
+                        if (PresentPosition[0].RouteListIndex < 0 || PresentPosition[1].RouteListIndex < 0)
+                        {
+                            // Try first to change valid route, if there are other subpaths.
+                            if (TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1)
+                            {
+                                ValidRoute[0] = null;
+                                TCRoute.activeSubpath++;
+                                ValidRoute[0] = TCRoute.TCRouteSubpaths[TCRoute.activeSubpath];
+                            }
+                            else
+                            {
+                                inPath = false;
+                                return inPath;
+                            }
+                        }
+                        else break;
+                    }
+                }
                 // rebuild list of station stops
 
                 if (StationStops.Count > 0)
@@ -8806,17 +8839,6 @@ namespace ORTS
                 LastReservedSection[0] = PresentPosition[0].TCSectionIndex;
                 LastReservedSection[1] = PresentPosition[1].TCSectionIndex;
 
-                //<CSComment> InitializeSignals needs this info sometimes, so I repeat lines below here
-                if (Simulator.Settings.ExtendedAIShunting && (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL || ControlMode == TRAIN_CONTROL.AUTO_NODE))
-                {
-                    PresentPosition[0].RouteListIndex = ValidRoute[0].GetRouteIndex(PresentPosition[0].TCSectionIndex, 0);
-                    PresentPosition[1].RouteListIndex = ValidRoute[0].GetRouteIndex(PresentPosition[1].TCSectionIndex, 0);
-                    if (PresentPosition[0].RouteListIndex < 0 || PresentPosition[1].RouteListIndex < 0)
-                    {
-                        inPath = false;
-                        return inPath;
-                    }
-                }
 
                 InitializeSignals(true);
 
@@ -8877,6 +8899,34 @@ namespace ORTS
             }
             return inPath;
         }
+
+               //================================================================================================//
+        //
+        // Temporarily remove from track to allow decoupled train to set occupied sections
+        //
+
+        public void TemporarilyRemoveFromTrack ()
+        {
+                RemoveFromTrack();
+                ClearDeadlocks();
+                ClearSectionItem dummyItem = new ClearSectionItem(0.0f, 0);
+                List<DistanceTravelledItem> activeActions = requiredActions.GetActions(99999999f, dummyItem.GetType());
+                activeActions.Clear();
+        }
+
+        //================================================================================================//
+        //
+        // Goes to next active subpath
+        //
+        public void IncrementSubpath(Train thisTrain)
+        {
+            if (thisTrain.TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1)
+            {
+                TCRoute.activeSubpath++;
+                ValidRoute[0] = TCRoute.TCRouteSubpaths[TCRoute.activeSubpath];
+            }
+        }
+
 
         //================================================================================================//
         //

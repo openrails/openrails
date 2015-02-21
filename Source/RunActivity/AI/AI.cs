@@ -52,6 +52,7 @@ namespace ORTS
         public bool PreUpdate; // if true : running in pre-update phase
         public List<AITrain> TrainsToRemove = new List<AITrain>();
         public List<AITrain> TrainsToAdd = new List<AITrain>();
+        public List<AITrain> TrainsToRemoveFromAI = new List<AITrain>();
 
         /// <summary>
         /// Loads AI train information from activity file.
@@ -942,6 +943,21 @@ namespace ORTS
             }
 
             TrainsToRemove.Clear();
+        }
+
+        /// <summary>
+        /// Removes an AI train only from the AI train list, but leaves it in the train lists
+
+        /// </summary>
+        private void RemoveFromAITrains()
+        {
+
+            foreach (AITrain train in TrainsToRemoveFromAI)
+            {
+                AITrains.Remove(train);
+            }
+
+            TrainsToRemoveFromAI.Clear();
         }
 
         private void AddTrains()
