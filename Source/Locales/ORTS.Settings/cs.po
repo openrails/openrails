@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
-"POT-Creation-Date: 2015-02-13 18:43:51+0000\n"
-"PO-Revision-Date: 2015-02-14 19:27+0100\n"
+"POT-Creation-Date: 2015-02-20 18:43:09+0000\n"
+"PO-Revision-Date: 2015-02-21 05:19+0100\n"
 "Last-Translator: Altmann <altmann@bk.ru>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: cs\n"
@@ -201,8 +201,8 @@ msgid "Debug Lock Shadows"
 msgstr "Ladit Uzamknout stíny"
 
 #: ../../ORTS.Settings/InputSettings.cs:91
-msgid "Debug Dump Keymap"
-msgstr "Ladit Zapsat namapování kláves do souboru"
+msgid "Debug Dump Keyboard Map"
+msgstr "Ladit Výpis mapy klávesnice"
 
 #: ../../ORTS.Settings/InputSettings.cs:92
 msgid "Debug Log Render Frame"
@@ -619,6 +619,9 @@ msgstr "{0} vyžaduje stisknutí Alt"
 #, csharp-format
 msgid "{0} and {1} both match {2}"
 msgstr "{0} a {1} jsou totožné s {2}"
+
+#~ msgid "Debug Dump Keymap"
+#~ msgstr "Ladit Zapsat namapování kláves do souboru"
 
 #~ msgid "Control Injector1 Increase"
 #~ msgstr "Ovladač Zvýšit injektor 1"

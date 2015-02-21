@@ -76,8 +76,11 @@ namespace ORTS
         float InitialMassKg = 100000.0f;
 
         public float EngineRPM;
-        public float ExhaustParticles = 2.0f;
-        public Color ExhaustColor = Color.Gray;
+        public SmoothedData ExhaustParticles = new SmoothedData(1);
+        public SmoothedData ExhaustMagnitude = new SmoothedData(1);
+        public SmoothedData ExhaustColorR = new SmoothedData(1);
+        public SmoothedData ExhaustColorG = new SmoothedData(1);
+        public SmoothedData ExhaustColorB = new SmoothedData(1);
         public Color ExhaustTransientColor = Color.Black;
         public Color ExhaustDecelColor = Color.WhiteSmoke;
         public Color ExhaustSteadyColor = Color.Gray;
@@ -116,8 +119,6 @@ namespace ORTS
                 case "engine(dieselsmokeeffectinitialmagnitude": InitialMagnitude = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(dieselsmokeeffectmaxsmokerate": MaxExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(dieselsmokeeffectmaxmagnitude": MaxMagnitude = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                case "engine(ortsdiesel(exhaustcolor": ExhaustSteadyColor.PackedValue = stf.ReadHexBlock(Color.Gray.PackedValue); break;  //Moved to DieselEngine.cs
-                case "engine(ortsdiesel(exhausttransientcolor": ExhaustTransientColor.PackedValue = stf.ReadHexBlock(Color.Black.PackedValue); break;  //Moved to DieselEngine.cs
                 case "engine(ortsdieselengines": DieselEngines = new DieselEngines(this, stf); break;
                 case "engine(maxdiesellevel": MaxDieselLevelL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
                 case "engine(dieselusedperhouratmaxpower": DieselUsedPerHourAtMaxPowerL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
@@ -457,9 +458,11 @@ namespace ORTS
             //Initial smoke, when locomotive is started:
             
 
-            ExhaustParticles = DieselEngines[0].ExhaustParticles;
-            MaxMagnitude = DieselEngines[0].MaxMagnitude;
-            ExhaustColor = DieselEngines[0].ExhaustColor;
+            ExhaustParticles.Update(elapsedClockSeconds, DieselEngines[0].ExhaustParticles);
+            ExhaustMagnitude.Update(elapsedClockSeconds, DieselEngines[0].ExhaustMagnitude);
+            ExhaustColorR.Update(elapsedClockSeconds, DieselEngines[0].ExhaustColor.R);
+            ExhaustColorG.Update(elapsedClockSeconds, DieselEngines[0].ExhaustColor.G);
+            ExhaustColorB.Update(elapsedClockSeconds, DieselEngines[0].ExhaustColor.B);
 
             PowerOn = DieselEngines.PowerOn;
             AuxPowerOn = DieselEngines.PowerOn;

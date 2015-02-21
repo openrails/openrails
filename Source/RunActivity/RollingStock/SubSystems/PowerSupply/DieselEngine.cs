@@ -642,13 +642,11 @@ namespace ORTS
         public float MaxMagnitude = 1.5f;
         public float MagnitudeRange;
         public float ExhaustMagnitude = 1.5f;   
-        public float ExhaustDynamics = 1.5f;
 
         public float InitialExhaust = 0.7f;
         public float MaxExhaust = 2.8f;
         public float ExhaustRange;
 
-        //ToDo:  These two variables should eventually be pulled from the OR engine files.
         public float ExhaustDecelReduction = 0.75f; //Represents the percentage that exhaust will be reduced while engine is decreasing RPMs.
         public float ExhaustAccelIncrease = 2.0f; //Represents the percentage that exhaust will be increased while engine is increasing RPMs.
 
@@ -724,40 +722,6 @@ namespace ORTS
         public bool HasGearBox { get { return GearBox != null; } }
         #endregion
 
-        public void Parse(string lowercasetoken, STFReader stf)
-        {
-            switch (lowercasetoken)
-            {
-                case "engine(orts(diesel(idlerpm": IdleRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 600); initLevel++; break;
-                case "engine(orts(diesel(maxrpm": MaxRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 1800); initLevel++; break;
-                case "engine(orts(diesel(startingrpm": StartingRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 400); initLevel++; break;
-                case "engine(orts(diesel(startingconfirmrpm": StartingConfirmationRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 650); initLevel++; break;
-                case "engine(orts(diesel(changeuprpmps": ChangeUpRPMpS = stf.ReadFloatBlock(STFReader.UNITS.None, 100); initLevel++; break;
-                case "engine(orts(diesel(changedownrpmps": ChangeDownRPMpS = stf.ReadFloatBlock(STFReader.UNITS.None, 100); initLevel++; break;
-                case "engine(orts(diesel(rateofchangeuprpmpss": RateOfChangeUpRPMpSS = stf.ReadFloatBlock(STFReader.UNITS.None, 100); initLevel++; break;
-                case "engine(orts(diesel(rateofchangedownrpmpss": RateOfChangeDownRPMpSS = stf.ReadFloatBlock(STFReader.UNITS.None, 100); initLevel++; break;
-                case "engine(orts(diesel(maximalpower": MaximalPowerW = stf.ReadFloatBlock(STFReader.UNITS.Power, 1); initLevel++; break;
-                case "engine(orts(diesel(dieselpowertab": DieselPowerTab = new Interpolator(stf); initLevel++; break;
-                case "engine(orts(diesel(dieselconsumptiontab": DieselConsumptionTab = new Interpolator(stf); initLevel++; break;
-                case "engine(orts(diesel(throttlerpmtab": ThrottleRPMTab = new Interpolator(stf); initLevel++; break;
-                case "engine(orts(diesel(idleexhaust": InitialExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, 5); initLevel++; break;
-                case "engine(orts(diesel(maxexhaust": MaxExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, 50); initLevel++; break;
-                case "engine(orts(diesel(exhaustdynamics": ExhaustDynamics = stf.ReadFloatBlock(STFReader.UNITS.None, 1); initLevel++; break;
-                case "engine(orts(diesel(exhaustcolor": ExhaustSteadyColor.PackedValue = stf.ReadHexBlock(Color.Gray.PackedValue); initLevel++; break;
-                case "engine(orts(diesel(exhausttransientcolor": ExhaustTransientColor.PackedValue = stf.ReadHexBlock(Color.Black.PackedValue); initLevel++; break;
-                case "engine(orts(diesel(exhaustdecelreductionpercent": ExhaustDecelReduction = stf.ReadFloatBlock(STFReader.UNITS.None, 50); initLevel++; break;
-                case "engine(orts(diesel(exhaustaccelincreasepercent": ExhaustAccelIncrease = stf.ReadFloatBlock(STFReader.UNITS.None, 200); initLevel++; break;
-                case "engine(orts(diesel(minoilpressure": DieselMinOilPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, 40f); break;
-                case "engine(orts(diesel(maxoilpressure": DieselMaxOilPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, 120f); break;
-                case "engine(orts(diesel(maxtemperature": DieselMaxTemperatureDeg = stf.ReadFloatBlock(STFReader.UNITS.TemperatureDifference, 100f); break;
-                case "engine(orts(diesel(opttemperature": DieselOptimalTemperatureDegC = stf.ReadFloatBlock(STFReader.UNITS.TemperatureDifference, 95f); break;
-                case "engine(orts(diesel(idletemperature": DieselIdleTemperatureDegC = stf.ReadFloatBlock(STFReader.UNITS.TemperatureDifference, 75f); break;
-                case "engine(orts(diesel(cooling": EngineCooling = (Cooling)stf.ReadInt((int)Cooling.Proportional); break;
-                case "engine(orts(diesel(temptimeconstant": DieselTempTimeConstantSec = stf.ReadFloatBlock(STFReader.UNITS.Time, 720f); break;
-                default: break;
-            }
-        }
-
         /// <summary>
         /// Parses parameters from the stf reader
         /// </summary>
@@ -784,8 +748,9 @@ namespace ORTS
                     case "maximalpower":   MaximalPowerW = stf.ReadFloatBlock(STFReader.UNITS.Power, 0);initLevel |= SettingsFlags.MaximalPowerW; break;
                     case "idleexhaust":     InitialExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.IdleExhaust; break;
                     case "maxexhaust":      MaxExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, 0);initLevel |= SettingsFlags.MaxExhaust; break;
-                    case "exhaustdynamics": ExhaustDynamics = stf.ReadFloatBlock(STFReader.UNITS.None, 0);initLevel |= SettingsFlags.ExhaustDynamics; break;
-                    case "exhaustcolor":    ExhaustSteadyColor.PackedValue = stf.ReadHexBlock(Color.Gray.PackedValue);initLevel |= SettingsFlags.ExhaustColor; break;
+                    case "exhaustdynamics": ExhaustAccelIncrease = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.ExhaustDynamics; break;
+                    case "exhaustdynamicsdown": ExhaustDecelReduction = stf.ReadFloatBlock(STFReader.UNITS.None, null); initLevel |= SettingsFlags.ExhaustDynamics; break;
+                    case "exhaustcolor":    ExhaustSteadyColor.PackedValue = stf.ReadHexBlock(Color.Gray.PackedValue); initLevel |= SettingsFlags.ExhaustColor; break;
                     case "exhausttransientcolor": ExhaustTransientColor.PackedValue = stf.ReadHexBlock(Color.Black.PackedValue);initLevel |= SettingsFlags.ExhaustTransientColor; break;
                     case "dieselpowertab": DieselPowerTab = new Interpolator(stf);initLevel |= SettingsFlags.DieselPowerTab; break;
                     case "dieselconsumptiontab": DieselConsumptionTab = new Interpolator(stf);initLevel |= SettingsFlags.DieselConsumptionTab; break;
@@ -1074,10 +1039,9 @@ namespace ORTS
             MaxMagnitude = loco.MaxMagnitude;
             if ((initLevel & SettingsFlags.MaxExhaust) == 0) MaxExhaust = loco.MaxExhaust;
             if ((initLevel & SettingsFlags.ExhaustColor) == 0) ExhaustSteadyColor = loco.ExhaustSteadyColor;
-            ExhaustColor = loco.ExhaustColor;
             ExhaustDecelColor = loco.ExhaustDecelColor;
             if ((initLevel & SettingsFlags.ExhaustTransientColor) == 0) ExhaustTransientColor = loco.ExhaustTransientColor;
-            InitialExhaust = loco.InitialMagnitude;
+            InitialExhaust = loco.InitialExhaust;
             if ((initLevel & SettingsFlags.StartingRPM) == 0) StartingRPM = loco.IdleRPM * 2.0f / 3.0f;
             if ((initLevel & SettingsFlags.StartingConfirmRPM) == 0) StartingConfirmationRPM = loco.IdleRPM * 1.1f;
             if ((initLevel & SettingsFlags.ChangeUpRPMpS) == 0) ChangeUpRPMpS = loco.MaxRPMChangeRate;
