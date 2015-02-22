@@ -1493,11 +1493,11 @@ namespace ORTS.Viewer3D
     }
 
 	[Serializable()]
-	public class ThreeDimCabCameraMoveXYZCommand : MoveCameraCommand
+	public class CameraMoveXYZCommand : MoveCameraCommand
 	{
 		float X, Y, Z;
 
-		public ThreeDimCabCameraMoveXYZCommand(CommandLog log, double startTime, double endTime, float xr, float yr, float zr)
+        public CameraMoveXYZCommand(CommandLog log, double startTime, double endTime, float xr, float yr, float zr)
 			: base(log, startTime, endTime)
 		{
 			X = xr; Y = yr; Z = zr;

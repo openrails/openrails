@@ -1277,11 +1277,125 @@ namespace ORTS.Viewer3D
 
     }
 
-    public class PassengerCamera : NonTrackingCamera
+    public class InsideThreeDimCamera : NonTrackingCamera
+    {
+        public override float NearPlane { get { return 0.1f; } }
+
+        public InsideThreeDimCamera(Viewer viewer)
+            : base(viewer)
+        {
+        }
+
+        /// <summary>
+        /// A camera can use this method to handle any preparation when being activated.
+        /// </summary>
+        protected override void OnActivate(bool sameCamera)
+        {
+            var trainCars = GetCameraCars();
+            if (trainCars.Count == 0) return;//should not happen
+            if (sameCamera)
+            {
+                if (!trainCars.Contains(attachedCar)) { attachedCar = trainCars.First(); }
+                else if (trainCars.IndexOf(attachedCar) < trainCars.Count - 1)
+                {
+                    attachedCar = trainCars[trainCars.IndexOf(attachedCar) + 1];
+                }
+                else attachedCar = trainCars.First();
+            }
+            else
+            {
+                if (!trainCars.Contains(attachedCar)) attachedCar = trainCars.First();
+            }
+            SetCameraCar(attachedCar);
+        }
+
+        public override void HandleUserInput(ElapsedTime elapsedTime)
+        {
+            MoveCar();
+
+            RotateByMouse();
+
+            var speed = GetSpeed(elapsedTime) * SpeedAdjustmentForRotation;
+
+            // Rotate camera
+            if (UserInput.IsDown(UserCommands.CameraRotateUp)) RotateDown(-speed);
+            if (UserInput.IsDown(UserCommands.CameraRotateDown)) RotateDown(speed);
+            if (UserInput.IsDown(UserCommands.CameraRotateLeft)) RotateRight(-speed);
+            if (UserInput.IsDown(UserCommands.CameraRotateRight)) RotateRight(speed);
+            float x = 0.0f, y = 0.0f, z = 0.0f;
+
+            // Move camera
+            if (UserInput.IsDown(UserCommands.CameraZoomIn))
+            {
+                z = speed * 5;
+                MoveCameraXYZ(0, 0, z);
+
+            }
+            if (UserInput.IsDown(UserCommands.CameraZoomOut))
+            {
+                z = speed * -5;
+                MoveCameraXYZ(0, 0, z);
+            }
+            // Move camera
+            if (UserInput.IsDown(UserCommands.CameraPanUp))
+            {
+                y = speed / 2;
+                MoveCameraXYZ(0, y, 0);
+
+            }
+            if (UserInput.IsDown(UserCommands.CameraPanDown))
+            {
+                y = -speed / 2;
+                MoveCameraXYZ(0, y, 0);
+            }
+            if (UserInput.IsDown(UserCommands.CameraPanLeft))
+            {
+                x = speed * -2;
+                MoveCameraXYZ(x, 0, 0);
+            }
+            if (UserInput.IsDown(UserCommands.CameraPanRight))
+            {
+                x = speed * 2;
+                MoveCameraXYZ(x, 0, 0);
+            }
+            // Zoom
+            ZoomByMouseWheel(speed);
+
+            // Support for replaying camera rotation movements
+            if (UserInput.IsPressed(UserCommands.CameraRotateUp) || UserInput.IsPressed(UserCommands.CameraRotateDown))
+                CommandStartTime = Viewer.Simulator.ClockTime;
+            if (UserInput.IsReleased(UserCommands.CameraRotateUp) || UserInput.IsReleased(UserCommands.CameraRotateDown))
+                new CameraRotateUpDownCommand(Viewer.Log, CommandStartTime, Viewer.Simulator.ClockTime, RotationXRadians);
+
+            if (UserInput.IsPressed(UserCommands.CameraRotateLeft) || UserInput.IsPressed(UserCommands.CameraRotateRight))
+                CommandStartTime = Viewer.Simulator.ClockTime;
+            if (UserInput.IsReleased(UserCommands.CameraRotateLeft) || UserInput.IsReleased(UserCommands.CameraRotateRight))
+                new CameraRotateLeftRightCommand(Viewer.Log, CommandStartTime, Viewer.Simulator.ClockTime, RotationYRadians);
+
+            if (UserInput.IsPressed(UserCommands.CameraPanUp) || UserInput.IsPressed(UserCommands.CameraPanDown)
+                || UserInput.IsPressed(UserCommands.CameraPanDown) || UserInput.IsPressed(UserCommands.CameraPanDown)
+                || UserInput.IsPressed(UserCommands.CameraPanDown) || UserInput.IsPressed(UserCommands.CameraPanDown))
+                CommandStartTime = Viewer.Simulator.ClockTime;
+            if (UserInput.IsPressed(UserCommands.CameraPanUp) || UserInput.IsPressed(UserCommands.CameraPanDown)
+                || UserInput.IsPressed(UserCommands.CameraPanDown) || UserInput.IsPressed(UserCommands.CameraPanDown)
+                || UserInput.IsPressed(UserCommands.CameraPanDown) || UserInput.IsPressed(UserCommands.CameraPanDown))
+                new CameraMoveXYZCommand(Viewer.Log, CommandStartTime, Viewer.Simulator.ClockTime, x, y, z);
+
+        }
+        public void MoveCameraXYZ(float x, float y, float z)
+        {
+            attachedLocation.X += x;
+            attachedLocation.Y += y;
+            attachedLocation.Z += z;
+            UpdateLocation();
+        }
+
+    }
+
+    public class PassengerCamera : InsideThreeDimCamera
     {
         public override Styles Style { get { return Styles.Passenger; } }
         public override bool IsAvailable { get { return Viewer.SelectedTrain != null && Viewer.SelectedTrain.Cars.Any(c => c.PassengerViewpoints.Count > 0); } }
-        public override float NearPlane { get { return 0.1f; } }
         public override string Name { get { return Viewer.Catalog.GetString("Passenger"); } }
 
         public PassengerCamera(Viewer viewer)
@@ -1303,29 +1417,6 @@ namespace ORTS.Viewer3D
             RotationXRadians = viewPoint.RotationXRadians;
             RotationYRadians = viewPoint.RotationYRadians;
         }
-
-		/// <summary>
-		/// A camera can use this method to handle any preparation when being activated.
-		/// </summary>
-		protected override void OnActivate(bool sameCamera)
-		{
-			var trainCars = GetCameraCars();
-			if (trainCars.Count == 0) return;//should not happen
-			if (sameCamera)
-			{
-				if (!trainCars.Contains(attachedCar)) { attachedCar = trainCars.First();}
-				else if (trainCars.IndexOf(attachedCar) < trainCars.Count - 1)
-				{
-					attachedCar = trainCars[trainCars.IndexOf(attachedCar) + 1];
-				}
-				else attachedCar = trainCars.First();
-			}
-			else
-			{
-				if (!trainCars.Contains(attachedCar)) attachedCar = trainCars.First();
-			}
-			SetCameraCar(attachedCar);
-		}
 
         /// <summary>
         /// Remembers angle of camera to apply when user returns to this type of car.
@@ -1746,12 +1837,11 @@ namespace ORTS.Viewer3D
         }
     }
 
-	public class ThreeDimCabCamera : NonTrackingCamera
+	public class ThreeDimCabCamera : InsideThreeDimCamera
 	{
 		public override Styles Style { get { return Styles.ThreeDimCab; } }
         public override bool IsAvailable { get { return Viewer.SelectedTrain != null && Viewer.SelectedTrain.IsActualPlayerTrain && 
             Viewer.PlayerLocomotive != null && Viewer.PlayerLocomotive.CabViewpoints != null; } }
-		public override float NearPlane { get { return 0.1f; } }
 		public override string Name { get { return Viewer.Catalog.GetString("3D Cab"); } }
 		bool StartDirectionSet = false;
 		protected int CurrentViewpointIndex;
@@ -1801,89 +1891,5 @@ namespace ORTS.Viewer3D
 			PrevCabWasRear = mstsLocomotive.UsingRearCab;
 			SetCameraCar(newCar);
 		}
-
-		public override void HandleUserInput(ElapsedTime elapsedTime)
-		{
-
-			MoveCar();
-
-			RotateByMouse();
-
-			var speed = GetSpeed(elapsedTime) * SpeedAdjustmentForRotation;
-
-			float x = 0.0f, y = 0.0f, z = 0.0f;
-			// Rotate camera
-			if (UserInput.IsDown(UserCommands.CameraRotateUp)) RotateDown(-speed);
-			if (UserInput.IsDown(UserCommands.CameraRotateDown)) RotateDown(speed);
-			if (UserInput.IsDown(UserCommands.CameraRotateLeft)) RotateRight(-speed);
-			if (UserInput.IsDown(UserCommands.CameraRotateRight)) RotateRight(speed);
-
-			// Move camera
-			if (UserInput.IsDown(UserCommands.CameraZoomIn))
-			{
-				z = speed * 5;
-				MoveCameraXYZ(0, 0, z);
-
-			}
-			if (UserInput.IsDown(UserCommands.CameraZoomOut))
-			{
-				z = speed * -5;
-				MoveCameraXYZ(0, 0, z);
-			}
-			// Move camera
-			if (UserInput.IsDown(UserCommands.CameraPanUp))
-			{
-				y = speed / 2;
-				MoveCameraXYZ(0, y, 0);
-
-			}
-			if (UserInput.IsDown(UserCommands.CameraPanDown))
-			{
-				y = -speed / 2;
-				MoveCameraXYZ(0, y, 0);
-			}
-			if (UserInput.IsDown(UserCommands.CameraPanLeft))
-			{
-				x = speed * -2;
-				MoveCameraXYZ(x, 0, 0);
-			}
-			if (UserInput.IsDown(UserCommands.CameraPanRight))
-			{
-				x = speed * 2;
-				MoveCameraXYZ(x, 0, 0);
-			}
-
-			// Zoom
-			ZoomByMouseWheel(speed);
-
-			// Support for replaying camera rotation movements
-			if (UserInput.IsPressed(UserCommands.CameraRotateUp) || UserInput.IsPressed(UserCommands.CameraRotateDown))
-				CommandStartTime = Viewer.Simulator.ClockTime;
-			if (UserInput.IsReleased(UserCommands.CameraRotateUp) || UserInput.IsReleased(UserCommands.CameraRotateDown))
-				new CameraRotateUpDownCommand(Viewer.Log, CommandStartTime, Viewer.Simulator.ClockTime, RotationXRadians);
-
-			if (UserInput.IsPressed(UserCommands.CameraRotateLeft) || UserInput.IsPressed(UserCommands.CameraRotateRight))
-				CommandStartTime = Viewer.Simulator.ClockTime;
-			if (UserInput.IsReleased(UserCommands.CameraRotateLeft) || UserInput.IsReleased(UserCommands.CameraRotateRight))
-				new CameraRotateLeftRightCommand(Viewer.Log, CommandStartTime, Viewer.Simulator.ClockTime, RotationYRadians);
-
-			// Support for replaying camera up/down/left/right/forward/backward movements
-			if (UserInput.IsPressed(UserCommands.CameraPanDown) || UserInput.IsPressed(UserCommands.CameraPanUp)
-			|| UserInput.IsPressed(UserCommands.CameraPanLeft) || UserInput.IsPressed(UserCommands.CameraPanRight))
-				CommandStartTime = Viewer.Simulator.ClockTime;
-			if (UserInput.IsPressed(UserCommands.CameraPanDown) || UserInput.IsPressed(UserCommands.CameraPanUp)
-			|| UserInput.IsPressed(UserCommands.CameraPanLeft) || UserInput.IsPressed(UserCommands.CameraPanRight))
-				new ThreeDimCabCameraMoveXYZCommand(Viewer.Log, CommandStartTime, Viewer.Simulator.ClockTime, x, y, z);
-		}
-
-		public void MoveCameraXYZ(float x, float y, float z)
-		{
-			attachedLocation.X += x;
-			attachedLocation.Y += y;
-			attachedLocation.Z += z;
-			UpdateLocation();
-
-		}
-
 	}
 }

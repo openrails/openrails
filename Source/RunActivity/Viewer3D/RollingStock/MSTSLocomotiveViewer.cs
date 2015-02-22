@@ -2116,14 +2116,16 @@ namespace ORTS.Viewer3D.RollingStock
                     typeName = matrixName.Split('-')[0]; //a part may have several sub-parts, like ASPECT_SIGNAL:0:0-1, ASPECT_SIGNAL:0:0-2
                     type = CABViewControlTypes.NONE;
                     tmpPart = null;
-                    int order, parameter, key;
+                    int order, key;
+                    string parameter1="0", parameter2="";
                     CabViewControlRenderer style = null;
                     //ASPECT_SIGNAL:0:0
                     var tmp = typeName.Split(':');
                     try
                     {
-                        order = int.Parse(tmp[1]);
-                        parameter = int.Parse(tmp[2].Trim());
+                        order = int.Parse(tmp[1].Trim());
+                        parameter1 = tmp[2].Trim();
+                        if (tmp.Length == 4) parameter2 = tmp[3].Trim();//we can get max two parameters per part
                     }
                     catch { continue; }
                     try
@@ -2143,11 +2145,11 @@ namespace ORTS.Viewer3D.RollingStock
                     if (style != null && style is CabViewDigitalRenderer)//digits?
                     {
                         //DigitParts.Add(key, new DigitalDisplay(viewer, TrainCarShape, iMatrix, parameter, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
-                        DigitParts3D.Add(key, new ThreeDimCabDigit(viewer, iMatrix, parameter, this.TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
+                        DigitParts3D.Add(key, new ThreeDimCabDigit(viewer, iMatrix, parameter1, parameter2, this.TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
                     }
                     else if (style != null && style is CabViewGaugeRenderer)
                     {
-                        Gauges.Add(key, new ThreeDimCabGaugeNative(viewer, iMatrix, parameter, this.TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
+                        Gauges.Add(key, new ThreeDimCabGaugeNative(viewer, iMatrix, parameter1, parameter2, this.TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
                     }
                     else if (type == CABViewControlTypes.EXTERNALWIPERS)
                     {
@@ -2244,8 +2246,18 @@ namespace ORTS.Viewer3D.RollingStock
         Material Material;
         Material AlertMaterial;
         float Size;
-        public ThreeDimCabDigit(Viewer viewer, int iMatrix, int textSize, PoseableShape trainCarShape, CabViewControlRenderer c)
+        string AceFile;
+        public ThreeDimCabDigit(Viewer viewer, int iMatrix, string size, string aceFile, PoseableShape trainCarShape, CabViewControlRenderer c)
         {
+
+            Size = int.Parse(size)*0.001f;//input size is in mm
+            if (aceFile != "")
+            {
+                AceFile = aceFile.ToUpper();
+                if (!AceFile.EndsWith(".ACE")) AceFile = AceFile + ".ACE"; //need to add ace into it
+            }
+            else { AceFile = ""; }
+
             CVFR = (CabViewDigitalRenderer)c;
             Viewer = viewer;
             TrainCarShape = trainCarShape;
@@ -2255,7 +2267,6 @@ namespace ORTS.Viewer3D.RollingStock
             Material = FindMaterial(false);//determine normal material
             // Create and populate a new ShapePrimitive
             NumVertices = NumIndices = 0;
-            Size = textSize * 0.001f;
 
             VertexList = new VertexPositionNormalTexture[maxVertex];
             TriangleListIndices = new short[maxVertex / 2 * 3]; // as is NumIndices
@@ -2335,7 +2346,11 @@ namespace ORTS.Viewer3D.RollingStock
             CABViewControlTypes controltype = CVFR.GetType();
             Material material = null;
 
-            if (Alert) { imageName = "alert.ace"; }
+            if (AceFile != "")
+            {
+                imageName = AceFile;
+            }
+            else if (Alert) { imageName = "alert.ace"; }
             else
             {
                 switch (controltype)
@@ -2487,10 +2502,17 @@ namespace ORTS.Viewer3D.RollingStock
         CabViewGaugeRenderer  CVFR;
         Material PositiveMaterial;
         Material NegativeMaterial;
-        
-        public ThreeDimCabGaugeNative(Viewer viewer, int iMatrix, int textSize, PoseableShape trainCarShape, CabViewControlRenderer c)
+        float width, maxLen; //width of the gauge, and the max length of the gauge
+        int Direction, Orientation; 
+        public ThreeDimCabGaugeNative(Viewer viewer, int iMatrix, string size, string len, PoseableShape trainCarShape, CabViewControlRenderer c)
         {
+            width = float.Parse(size)/1000f; //in mm
+            maxLen = float.Parse(len)/1000f; //in mm
+
             CVFR = (CabViewGaugeRenderer)c;
+            Direction = CVFR.GetGauge().Direction;
+            Orientation = CVFR.GetGauge().Orientation;
+
             Viewer = viewer;
             TrainCarShape = trainCarShape;
             XNAMatrix = TrainCarShape.SharedShape.Matrices[iMatrix];
@@ -2576,34 +2598,47 @@ namespace ORTS.Viewer3D.RollingStock
             float length = CVFR.GetRangeFraction();
 
             CVCGauge gauge = CVFR.GetGauge();
-
-            var xSize = (float)gauge.Height*length;
-            var ySize = (float)gauge.Width;
             
-            var tX = 1f; var tY = 1f;
+            var len = maxLen*length;
+            Vertex v1, v2, v3, v4;
             
-            //the left-bottom vertex
-            Vertex v1 = new Vertex(0f, 0f, 0.002f, 0, 0, -1, tX, tY);
+            //the left-bottom vertex if ori=0;dir=0, right-bottom if ori=0,dir=1; left-top if ori=1,dir=0; left-bottom if ori=1,dir=1;
+            v1 = new Vertex(0f, 0f, 0.002f, 0, 0, -1, 0f, 0f);
 
-            //the right-bottom vertex
-            Vertex v2 = new Vertex(0f, ySize, 0.002f, 0, 0, -1, tX, tY);
+            if (Orientation == 0)
+            {
+                if (Direction == 0)//moving right
+                {
+                    //other vertices
+                    v2 = new Vertex(0f, width, 0.002f, 0, 0, 1, 0f, 0f);
+                    v3 = new Vertex(len, width, 0.002f, 0, 0, 1, 0f, 0f);
+                    v4 = new Vertex(len, 0f, 0.002f, 0, 0, 1, 0f, 0f);
+                }
+                else //moving left
+                {
+                    v4 = new Vertex(0f, width, 0.002f, 0, 0, 1, 0f, 0f);
+                    v3 = new Vertex(-len, width, 0.002f, 0, 0, 1, 0f, 0f);
+                    v2 = new Vertex(-len, 0f, 0.002f, 0, 0, 1, 0f, 0f);
+                }
+            }
+            else
+            {
+                if (Direction == 1)//up
+                {
+                    //other vertices
+                    v2 = new Vertex(0f, len, 0.002f, 0, 0, 1, 0f, 0f);
+                    v3 = new Vertex(width, len, 0.002f, 0, 0, 1, 0f, 0f);
+                    v4 = new Vertex(width, 0f, 0.002f, 0, 0, 1, 0f, 0f);
+                }
+                else //moving down
+                {
+                    v4 = new Vertex(0f, -len, 0.002f, 0, 0, 1, 0f, 0f);
+                    v3 = new Vertex(width, -len, 0.002f, 0, 0, 1, 0f, 0f);
+                    v2 = new Vertex(width, 0, 0.002f, 0, 0, 1, 0f, 0f);
+                }
+            }
 
-            Vertex v3 = new Vertex(xSize, ySize, 0.002f, 0, 0, -1, tX, tY);
-
-            Vertex v4 = new Vertex(xSize, 0f, 0.002f, 0, 0, -1, tX, tY);
-            /*
-            //the left-bottom vertex
-            Vertex v1 = new Vertex(0f, 0f, 0.002f, 0, 0, -1, tX, tY);
-
-            //the right-bottom vertex
-            Vertex v2 = new Vertex(0f, ySize, 0.002f, 0, 0, -1, tX, tY);
-
-            Vertex v3 = new Vertex(xSize, 0, 0.002f, 0, 0, -1, tX, tY);
-
-            Vertex v4 = new Vertex(xSize, ySize, 0.002f, 0, 0, -1, tX, tY);
-            */
-
-            //create vertex
+            //create vertex list
             VertexList[NumVertices].Position = v1.Position; VertexList[NumVertices].Normal = v1.Normal; VertexList[NumVertices].TextureCoordinate = v1.TexCoord;
             VertexList[NumVertices + 1].Position = v2.Position; VertexList[NumVertices + 1].Normal = v2.Normal; VertexList[NumVertices + 1].TextureCoordinate = v2.TexCoord;
             VertexList[NumVertices + 2].Position = v3.Position; VertexList[NumVertices + 2].Normal = v3.Normal; VertexList[NumVertices + 2].TextureCoordinate = v3.TexCoord;
