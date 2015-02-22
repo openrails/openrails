@@ -36,9 +36,7 @@ namespace ORTS
             this.buttonStart = new System.Windows.Forms.Button();
             this.labelLogo1 = new System.Windows.Forms.Label();
             this.labelLogo2 = new System.Windows.Forms.Label();
-            this.buttonFolderAdd = new System.Windows.Forms.Button();
             this.folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
-            this.buttonFolderRemove = new System.Windows.Forms.Button();
             this.checkBoxWarnings = new System.Windows.Forms.CheckBox();
             this.buttonOptions = new System.Windows.Forms.Button();
             this.buttonResume = new System.Windows.Forms.Button();
@@ -57,7 +55,6 @@ namespace ORTS
             this.label1 = new System.Windows.Forms.Label();
             this.panelDetails = new System.Windows.Forms.Panel();
             this.pictureBoxLogo = new System.Windows.Forms.PictureBox();
-            this.buttonFolderEdit = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
             this.label25 = new System.Windows.Forms.Label();
             this.radioButtonModeActivity = new System.Windows.Forms.RadioButton();
@@ -114,7 +111,7 @@ namespace ORTS
             this.checkBoxWindowed.AutoSize = true;
             this.checkBoxWindowed.Checked = true;
             this.checkBoxWindowed.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxWindowed.Location = new System.Drawing.Point(3, 71);
+            this.checkBoxWindowed.Location = new System.Drawing.Point(84, 71);
             this.checkBoxWindowed.Name = "checkBoxWindowed";
             this.checkBoxWindowed.Size = new System.Drawing.Size(77, 17);
             this.checkBoxWindowed.TabIndex = 2;
@@ -155,35 +152,17 @@ namespace ORTS
             this.labelLogo2.TabIndex = 12;
             this.labelLogo2.Text = "rails";
             // 
-            // buttonFolderAdd
-            // 
-            this.buttonFolderAdd.Location = new System.Drawing.Point(299, 29);
-            this.buttonFolderAdd.Name = "buttonFolderAdd";
-            this.buttonFolderAdd.Size = new System.Drawing.Size(75, 23);
-            this.buttonFolderAdd.TabIndex = 16;
-            this.buttonFolderAdd.Text = "Add...";
-            this.buttonFolderAdd.Click += new System.EventHandler(this.buttonFolderAdd_Click);
-            // 
             // folderBrowserDialog
             // 
             this.folderBrowserDialog.Description = "Navigate to your alternate MSTS installation folder.";
             this.folderBrowserDialog.ShowNewFolderButton = false;
-            // 
-            // buttonFolderRemove
-            // 
-            this.buttonFolderRemove.Location = new System.Drawing.Point(461, 29);
-            this.buttonFolderRemove.Name = "buttonFolderRemove";
-            this.buttonFolderRemove.Size = new System.Drawing.Size(75, 23);
-            this.buttonFolderRemove.TabIndex = 18;
-            this.buttonFolderRemove.Text = "Remove";
-            this.buttonFolderRemove.Click += new System.EventHandler(this.buttonFolderRemove_Click);
             // 
             // checkBoxWarnings
             // 
             this.checkBoxWarnings.AutoSize = true;
             this.checkBoxWarnings.Checked = true;
             this.checkBoxWarnings.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxWarnings.Location = new System.Drawing.Point(3, 48);
+            this.checkBoxWarnings.Location = new System.Drawing.Point(84, 48);
             this.checkBoxWarnings.Name = "checkBoxWarnings";
             this.checkBoxWarnings.Size = new System.Drawing.Size(64, 17);
             this.checkBoxWarnings.TabIndex = 1;
@@ -192,7 +171,7 @@ namespace ORTS
             // 
             // buttonOptions
             // 
-            this.buttonOptions.Location = new System.Drawing.Point(3, 19);
+            this.buttonOptions.Location = new System.Drawing.Point(84, 19);
             this.buttonOptions.Name = "buttonOptions";
             this.buttonOptions.Size = new System.Drawing.Size(75, 23);
             this.buttonOptions.TabIndex = 0;
@@ -211,7 +190,7 @@ namespace ORTS
             // 
             // buttonTools
             // 
-            this.buttonTools.Location = new System.Drawing.Point(542, 29);
+            this.buttonTools.Location = new System.Drawing.Point(3, 19);
             this.buttonTools.Name = "buttonTools";
             this.buttonTools.Size = new System.Drawing.Size(75, 23);
             this.buttonTools.TabIndex = 19;
@@ -359,9 +338,9 @@ namespace ORTS
             this.panelDetails.BackColor = System.Drawing.SystemColors.Window;
             this.panelDetails.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panelDetails.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.panelDetails.Location = new System.Drawing.Point(299, 58);
+            this.panelDetails.Location = new System.Drawing.Point(299, 31);
             this.panelDetails.Name = "panelDetails";
-            this.panelDetails.Size = new System.Drawing.Size(543, 372);
+            this.panelDetails.Size = new System.Drawing.Size(543, 399);
             this.panelDetails.TabIndex = 20;
             // 
             // pictureBoxLogo
@@ -374,24 +353,16 @@ namespace ORTS
             this.pictureBoxLogo.TabIndex = 5;
             this.pictureBoxLogo.TabStop = false;
             // 
-            // buttonFolderEdit
-            // 
-            this.buttonFolderEdit.Location = new System.Drawing.Point(380, 29);
-            this.buttonFolderEdit.Name = "buttonFolderEdit";
-            this.buttonFolderEdit.Size = new System.Drawing.Size(75, 23);
-            this.buttonFolderEdit.TabIndex = 17;
-            this.buttonFolderEdit.Text = "Edit";
-            this.buttonFolderEdit.Click += new System.EventHandler(this.buttonFolderEdit_Click);
-            // 
             // panel1
             // 
             this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.panel1.Controls.Add(this.buttonOptions);
             this.panel1.Controls.Add(this.checkBoxWarnings);
             this.panel1.Controls.Add(this.checkBoxWindowed);
-            this.panel1.Location = new System.Drawing.Point(411, 436);
+            this.panel1.Controls.Add(this.buttonTools);
+            this.panel1.Location = new System.Drawing.Point(336, 436);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(87, 100);
+            this.panel1.Size = new System.Drawing.Size(162, 100);
             this.panel1.TabIndex = 13;
             // 
             // label25
@@ -847,9 +818,9 @@ namespace ORTS
             // 
             this.linkLabelUpdate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.linkLabelUpdate.ImageAlign = System.Drawing.ContentAlignment.TopLeft;
-            this.linkLabelUpdate.Location = new System.Drawing.Point(623, 9);
+            this.linkLabelUpdate.Location = new System.Drawing.Point(577, 9);
             this.linkLabelUpdate.Name = "linkLabelUpdate";
-            this.linkLabelUpdate.Size = new System.Drawing.Size(219, 16);
+            this.linkLabelUpdate.Size = new System.Drawing.Size(265, 16);
             this.linkLabelUpdate.TabIndex = 37;
             this.linkLabelUpdate.TextAlign = System.Drawing.ContentAlignment.TopRight;
             this.linkLabelUpdate.UseMnemonic = false;
@@ -872,14 +843,12 @@ namespace ORTS
             // 
             // linkLabelChangeLog
             // 
-            this.linkLabelChangeLog.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.linkLabelChangeLog.Location = new System.Drawing.Point(623, 25);
+            this.linkLabelChangeLog.Location = new System.Drawing.Point(299, 9);
             this.linkLabelChangeLog.Name = "linkLabelChangeLog";
-            this.linkLabelChangeLog.Size = new System.Drawing.Size(219, 16);
+            this.linkLabelChangeLog.Size = new System.Drawing.Size(272, 16);
             this.linkLabelChangeLog.TabIndex = 39;
             this.linkLabelChangeLog.TabStop = true;
             this.linkLabelChangeLog.Text = "What\'s new?";
-            this.linkLabelChangeLog.TextAlign = System.Drawing.ContentAlignment.TopRight;
             this.linkLabelChangeLog.UseMnemonic = false;
             this.linkLabelChangeLog.Visible = false;
             this.linkLabelChangeLog.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelChangeLog_LinkClicked);
@@ -897,19 +866,15 @@ namespace ORTS
             this.Controls.Add(this.label25);
             this.Controls.Add(this.linkLabelUpdate);
             this.Controls.Add(this.panel1);
-            this.Controls.Add(this.buttonFolderEdit);
             this.Controls.Add(this.panelDetails);
             this.Controls.Add(this.comboBoxFolder);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.groupBox3);
-            this.Controls.Add(this.buttonFolderAdd);
-            this.Controls.Add(this.buttonFolderRemove);
             this.Controls.Add(this.comboBoxRoute);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.pictureBoxLogo);
             this.Controls.Add(this.labelLogo2);
             this.Controls.Add(this.labelLogo1);
-            this.Controls.Add(this.buttonTools);
             this.Controls.Add(this.label2);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -942,9 +907,7 @@ namespace ORTS
         private System.Windows.Forms.Label labelLogo1;
         private System.Windows.Forms.PictureBox pictureBoxLogo;
         private System.Windows.Forms.Label labelLogo2;
-        private System.Windows.Forms.Button buttonFolderAdd;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog;
-		private System.Windows.Forms.Button buttonFolderRemove;
         private System.Windows.Forms.CheckBox checkBoxWarnings;
         private System.Windows.Forms.Button buttonOptions;
         private System.Windows.Forms.Button buttonResume;
@@ -962,7 +925,6 @@ namespace ORTS
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Panel panelDetails;
-        private System.Windows.Forms.Button buttonFolderEdit;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Label label25;
         private System.Windows.Forms.RadioButton radioButtonModeActivity;

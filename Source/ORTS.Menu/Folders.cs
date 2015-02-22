@@ -15,11 +15,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using ORTS.Settings;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using MSTS;
-using ORTS.Settings;
 
 namespace ORTS.Menu
 {
@@ -70,15 +68,6 @@ namespace ORTS.Menu
             {
                 foreach (var folder in settings.Folders.Folders)
                     folders.Add(new Folder(folder.Key, folder.Value));
-            }
-
-            if (folders.Count == 0)
-            {
-                try
-                {
-                    folders.Add(new Folder("Train Simulator", MSTSPath.Base()));
-                }
-                catch { }
             }
 
             return folders;

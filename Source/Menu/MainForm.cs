@@ -216,8 +216,8 @@ namespace ORTS
 
             if (!Initialized)
             {
-                Initialized = true;
                 LoadFolderList();
+                Initialized = true;
             }
         }
 
@@ -270,9 +270,9 @@ namespace ORTS
                 else
                     linkLabelUpdate.Image = null;
                 linkLabelUpdate.AutoSize = true;
-                linkLabelUpdate.Left = linkLabelChangeLog.Right - linkLabelUpdate.Width - ElevationIcon.Width;
+                linkLabelUpdate.Left = panelDetails.Right - linkLabelUpdate.Width - ElevationIcon.Width;
                 linkLabelUpdate.AutoSize = false;
-                linkLabelUpdate.Width = linkLabelChangeLog.Right - linkLabelUpdate.Left;
+                linkLabelUpdate.Width = panelDetails.Right - linkLabelUpdate.Left;
             });
         }
 
@@ -297,57 +297,6 @@ namespace ORTS
             LoadRouteList();
             LoadLocomotiveList();
             ShowDetails();
-        }
-
-        void buttonFolderAdd_Click(object sender, EventArgs e)
-        {
-            using (var folderBrowser = new FolderBrowserDialog())
-            {
-                folderBrowser.SelectedPath = SelectedFolder != null ? SelectedFolder.Path : "";
-                folderBrowser.Description = catalog.GetString("Select a the installation profile (MSTS folder) to add:");
-                folderBrowser.ShowNewFolderButton = false;
-                if (folderBrowser.ShowDialog(this) == DialogResult.OK)
-                {
-                    using (var form = new FolderForm())
-                    {
-                        form.Folder = new Folder(System.IO.Path.GetFileName(folderBrowser.SelectedPath), folderBrowser.SelectedPath);
-                        if (form.ShowDialog() == DialogResult.OK)
-                        {
-                            Folders.Add(form.Folder);
-                            Settings.Menu_Selection = new[] { form.Folder.Path, null, null };
-                            SaveFolderList();
-                            LoadFolderList();
-                        }
-                    }
-                }
-            }
-        }
-
-        void buttonFolderEdit_Click(object sender, EventArgs e)
-        {
-            using (var form = new FolderForm())
-            {
-                form.Folder = SelectedFolder;
-                if (form.ShowDialog() == DialogResult.OK)
-                {
-                    SaveOptions();
-                    Folders.Remove(SelectedFolder);
-                    Folders.Add(form.Folder);
-                    SaveFolderList();
-                    LoadFolderList();
-                }
-            }
-        }
-
-        void buttonFolderRemove_Click(object sender, EventArgs e)
-        {
-            var folder = SelectedFolder;
-            if (MessageBox.Show(catalog.GetString("Path: ") + folder.Path + catalog.GetString("\nName: ") + folder.Name + catalog.GetString("\n\nRemove this installation profile from Open Rails?"), Application.ProductName, MessageBoxButtons.YesNo) == DialogResult.Yes)
-            {
-                Folders.Remove(folder);
-                SaveFolderList();
-                LoadFolderList();
-            }
         }
         #endregion
 
@@ -487,10 +436,13 @@ namespace ORTS
 
         void buttonOptions_Click(object sender, EventArgs e)
         {
-            using (var form = new OptionsForm(Settings, UpdateManager))
+            using (var form = new OptionsForm(Settings, UpdateManager, false))
             {
                 if (form.ShowDialog(this) == System.Windows.Forms.DialogResult.OK)
+                {
+                    LoadFolderList();
                     CheckForUpdate();
+                }
             }
         }
 
@@ -590,7 +542,7 @@ namespace ORTS
         #region Enabled state
         void UpdateEnabled()
         {
-            comboBoxFolder.Enabled = buttonFolderRemove.Enabled = comboBoxFolder.Items.Count > 0;
+            comboBoxFolder.Enabled = comboBoxFolder.Items.Count > 0;
             comboBoxRoute.Enabled = comboBoxRoute.Items.Count > 0;
             comboBoxActivity.Enabled = comboBoxActivity.Items.Count > 0;
             comboBoxLocomotive.Enabled = comboBoxLocomotive.Items.Count > 0 && SelectedActivity is ExploreActivity;
@@ -608,18 +560,27 @@ namespace ORTS
         #region Folder list
         void LoadFolderList()
         {
+            var initialized = Initialized;
             Folders.Clear();
             ShowFolderList();
 
             FolderLoader = new Task<List<Folder>>(this, () => Folder.GetFolders(Settings).OrderBy(f => f.Name).ToList(), (folders) =>
             {
                 Folders = folders;
-                if (Folders.Count == 0)
-                    MessageBox.Show(catalog.GetString("Microsoft Train Simulator doesn't appear to be installed but is optional.\n")
-                        + catalog.GetString("Click on 'Add...' to point Open Rails at a folder containing folders ROUTES, TRAINS etc.."), Application.ProductName);
                 ShowFolderList();
                 if (Folders.Count > 0)
                     comboBoxFolder.Focus();
+
+                if (!initialized && Folders.Count == 0)
+                {
+                    using (var form = new OptionsForm(Settings, UpdateManager, true))
+                    {
+                        if (form.ShowDialog(this) == System.Windows.Forms.DialogResult.OK)
+                        {
+                            LoadFolderList();
+                        }
+                    }
+                }
             });
         }
 
@@ -634,11 +595,6 @@ namespace ORTS
                 comboBoxFolder.SelectedIndex = Math.Max(0, selectionIndex);
             }
             UpdateEnabled();
-        }
-
-        void SaveFolderList()
-        {
-            Folder.SetFolders(Settings, Folders);
         }
         #endregion
 

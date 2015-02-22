@@ -162,6 +162,7 @@
     <None Include="Expander-closed.png" />
     <None Include="Expander-closed-disabled.png" />
     <None Include="Expander-open.png" />
+    <None Include="Properties\DataSources\OptionsForm.ContentFolder.datasource" />
     <None Include="Properties\DataSources\ResumeForm.Save.datasource" />
     <None Include="Updater.ini">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

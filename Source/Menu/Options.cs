@@ -17,6 +17,7 @@
 
 using GNU.Gettext;
 using GNU.Gettext.WinForms;
+using MSTS;
 using ORTS.Settings;
 using ORTS.Updater;
 using System;
@@ -43,7 +44,13 @@ namespace ORTS
             public string Name { get; set; }
         }
 
-        public OptionsForm(UserSettings settings, UpdateManager updateManager)
+        public class ContentFolder
+        {
+            public string Name { get; set; }
+            public string Path { get; set; }
+        }
+
+        public OptionsForm(UserSettings settings, UpdateManager updateManager, bool initialContentSetup)
         {
             InitializeComponent();
 
@@ -201,6 +208,18 @@ namespace ORTS
                 checkListDataLogTSContents.SetItemChecked(i, Settings.DataLogTSContents[i] == 1);
             checkDataLogStationStops.Checked = Settings.DataLogStationStops;
 
+            // Content tab
+            if (initialContentSetup)
+            {
+                tabOptions.SelectedTab = tabPageContent;
+                try
+                {
+                    Settings.Folders.Folders.Add("Train Simulator", MSTSPath.Base());
+                }
+                catch { }
+            }
+            UpdateContentDataBinding();
+
             // Updater tab
             var updateChannelNames = new Dictionary<string, string> {
                 { "release", catalog.GetString("Release channel (Recommended for users)") },
@@ -269,6 +288,13 @@ namespace ORTS
             checkShapeWarnings.Checked = !Settings.SuppressShapeWarnings;
 
             Initialized = true;
+        }
+
+        private void UpdateContentDataBinding()
+        {
+            bindingSourceContent.DataSource = from folder in Settings.Folders.Folders
+                                              orderby folder.Key
+                                              select new ContentFolder() { Name = folder.Key, Path = folder.Value };
         }
 
         static string ParseCategoryFrom(string name)
@@ -547,6 +573,71 @@ namespace ORTS
                 labelLODBias.Text = catalog.GetStringFmt("More detail (+{0}%)", trackLODBias.Value);
             else
                 labelLODBias.Text = catalog.GetStringFmt("All detail (+{0}%)", trackLODBias.Value);
+        }
+
+        private void dataGridViewContent_SelectionChanged(object sender, EventArgs e)
+        {
+            textBoxContentName.Enabled = buttonContentBrowse.Enabled = buttonContentSave.Enabled = bindingSourceContent.Current != null;
+            if (bindingSourceContent.Current == null)
+            {
+                textBoxContentName.Text = textBoxContentPath.Text = "";
+            }
+            else
+            {
+                textBoxContentName.Text = (bindingSourceContent.Current as ContentFolder).Name;
+                textBoxContentPath.Text = (bindingSourceContent.Current as ContentFolder).Path;
+            }
+        }
+
+        private void buttonContentAdd_Click(object sender, EventArgs e)
+        {
+            if (!Settings.Folders.Folders.ContainsKey(""))
+            {
+                Settings.Folders.Folders.Add("", "");
+                UpdateContentDataBinding();
+            }
+            bindingSourceContent.MoveFirst();
+            buttonContentBrowse_Click(sender, e);
+        }
+
+        private void buttonContentDelete_Click(object sender, EventArgs e)
+        {
+            var name = (bindingSourceContent.Current as ContentFolder).Name;
+            if (Settings.Folders.Folders.ContainsKey(name))
+                Settings.Folders.Folders.Remove(name);
+            UpdateContentDataBinding();
+        }
+
+        private void buttonContentBrowse_Click(object sender, EventArgs e)
+        {
+            using (var folderBrowser = new FolderBrowserDialog())
+            {
+                folderBrowser.SelectedPath = textBoxContentPath.Text;
+                folderBrowser.Description = catalog.GetString("Select a the installation profile (MSTS folder) to add:");
+                folderBrowser.ShowNewFolderButton = false;
+                if (folderBrowser.ShowDialog(this) == DialogResult.OK)
+                {
+                    textBoxContentPath.Text = folderBrowser.SelectedPath;
+                    if (textBoxContentName.Text == "")
+                    {
+                        textBoxContentName.Text = Path.GetFileName(textBoxContentPath.Text);
+                        buttonContentSave_Click(sender, e);
+                    }
+                }
+            }
+        }
+
+        private void buttonContentSave_Click(object sender, EventArgs e)
+        {
+            var name = (bindingSourceContent.Current as ContentFolder).Name;
+            if (Settings.Folders.Folders.ContainsKey(name))
+            {
+                Settings.Folders.Folders.Remove(name);
+                Settings.Folders.Folders.Add(textBoxContentName.Text, textBoxContentPath.Text);
+                name = textBoxContentName.Text;
+                UpdateContentDataBinding();
+                bindingSourceContent.Position = bindingSourceContent.List.OfType<ContentFolder>().TakeWhile(cf => cf.Name != name).Count();
+            }
         }
     }
 }
