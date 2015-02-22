@@ -57,7 +57,7 @@ namespace ORTS
         public AirSinglePipe(TrainCar car)
         {
             Car = car;
-            BrakePipeVolumeFT3 = .028f * (1 + car.CarLengthM);
+            BrakePipeVolumeM3 = (0.032f * 0.032f * (float)Math.PI / 4f) * (1 + car.CarLengthM); // Using DN32 (1-1/4") pipe
             DebugType = "1P";
 
             // Force graduated releasable brakes. Workaround for MSTS with bugs preventing to set eng/wag files correctly for this.
@@ -150,7 +150,7 @@ namespace ORTS
                 case "wagon(maxauxilarychargingrate": MaxAuxilaryChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "wagon(emergencyreschargingrate": EmergResChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "wagon(emergencyresvolumemultiplier": EmergAuxVolumeRatio = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                case "wagon(brakepipevolume": BrakePipeVolumeFT3 = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null); break;
+                case "wagon(brakepipevolume": BrakePipeVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
             }
         }
 
@@ -384,6 +384,7 @@ namespace ORTS
             int nSteps = (int)(elapsedClockSeconds * 2 / brakePipeTimeFactorS + 1);
             float dt = elapsedClockSeconds / nSteps;
 
+            // Propagate brake line (1) data
             if (lead != null && lead.BrakePipeChargingRatePSIpS > 1000)
             {   // pressure gradiant disabled
                 foreach (TrainCar car in train.Cars)
@@ -407,7 +408,7 @@ namespace ORTS
                             if (dp < 0)
                                 dp = 0;
                             lead.BrakeSystem.BrakeLine1PressurePSI += dp;
-                            lead.MainResPressurePSI -= dp * lead.BrakeSystem.BrakePipeVolumeFT3 / lead.MainResVolumeFT3;
+                            lead.MainResPressurePSI -= dp * lead.BrakeSystem.BrakePipeVolumeM3 / lead.MainResVolumeM3;
                         }
                         else if (lead.BrakeSystem.BrakeLine1PressurePSI > train.BrakeLine1PressurePSIorInHg)
                             lead.BrakeSystem.BrakeLine1PressurePSI *= (1 - dt / serviceTimeFactor);
@@ -439,6 +440,8 @@ namespace ORTS
                     }
                 }
             }
+
+            // Propagate main reservoir pipe (2) and engine brake pipe (3) data
             int first = -1;
             int last = -1;
             train.FindLeadLocomotives(ref first, ref last);
@@ -464,14 +467,24 @@ namespace ORTS
                         continuousToExclusive = i;
                     continue;
                 }
+
+                // Collect main reservoir pipe (2) data
+                if (first <= i && i <= last || twoPipes && continuousFromInclusive <= i && i < continuousToExclusive)
+                {
+                    sumv += brakeSystem.BrakePipeVolumeM3;
+                    sumpv += brakeSystem.BrakePipeVolumeM3 * brakeSystem.BrakeLine2PressurePSI;
+                    var eng = train.Cars[i] as MSTSLocomotive;
+                    if (eng != null)
+                    {
+                        sumv += eng.MainResVolumeM3;
+                        sumpv += eng.MainResVolumeM3 * eng.MainResPressurePSI;
+                    }
+                }
+
+                // Collect and propagate engine brake pipe (3) data
                 if (i < first || i > last)
                 {
                     brakeSystem.BrakeLine3PressurePSI = 0;
-                    if (twoPipes && continuousFromInclusive <= i && i < continuousToExclusive)
-                    {
-                        sumv += brakeSystem.BrakePipeVolumeFT3;
-                        sumpv += brakeSystem.BrakePipeVolumeFT3 * brakeSystem.BrakeLine2PressurePSI;
-                    }
                 }
                 else
                 {
@@ -480,14 +493,14 @@ namespace ORTS
                         float p = brakeSystem.BrakeLine3PressurePSI;
                         if (p > 1000)
                             p -= 1000;
-                        AirSinglePipe.ValveState prevState = lead.EngineBrakeState;
+                        var prevState = lead.EngineBrakeState;
                         if (p < train.BrakeLine3PressurePSI)
                         {
                             float dp = elapsedClockSeconds * lead.EngineBrakeApplyRatePSIpS / (last - first + 1);
                             if (p + dp > train.BrakeLine3PressurePSI)
                                 dp = train.BrakeLine3PressurePSI - p;
                             p += dp;
-                            lead.EngineBrakeState = AirSinglePipe.ValveState.Apply;
+                            lead.EngineBrakeState = ValveState.Apply;
                         }
                         else if (p > train.BrakeLine3PressurePSI)
                         {
@@ -495,27 +508,19 @@ namespace ORTS
                             if (p - dp < train.BrakeLine3PressurePSI)
                                 dp = p - train.BrakeLine3PressurePSI;
                             p -= dp;
-                            lead.EngineBrakeState = AirSinglePipe.ValveState.Release;
+                            lead.EngineBrakeState = ValveState.Release;
                         }
                         else
-                            lead.EngineBrakeState = AirSinglePipe.ValveState.Lap;
+                            lead.EngineBrakeState = ValveState.Lap;
                         if (lead.EngineBrakeState != prevState)
                             switch (lead.EngineBrakeState)
                             {
-                                case AirSinglePipe.ValveState.Release: lead.SignalEvent(Event.EngineBrakePressureIncrease); break;
-                                case AirSinglePipe.ValveState.Apply: lead.SignalEvent(Event.EngineBrakePressureDecrease); break;
+                                case ValveState.Release: lead.SignalEvent(Event.EngineBrakePressureIncrease); break;
+                                case ValveState.Apply: lead.SignalEvent(Event.EngineBrakePressureDecrease); break;
                             }
                         if (lead.BailOff || (lead.DynamicBrakeAutoBailOff && train.MUDynamicBrakePercent > 0))
                             p += 1000;
                         brakeSystem.BrakeLine3PressurePSI = p;
-                    }
-                    sumv += brakeSystem.BrakePipeVolumeFT3;
-                    sumpv += brakeSystem.BrakePipeVolumeFT3 * brakeSystem.BrakeLine2PressurePSI;
-                    MSTSLocomotive eng = (MSTSLocomotive)train.Cars[i];
-                    if (eng != null)
-                    {
-                        sumv += eng.MainResVolumeFT3;
-                        sumpv += eng.MainResVolumeFT3 * eng.MainResPressurePSI;
                     }
                 }
             }
@@ -526,21 +531,18 @@ namespace ORTS
                 || (continuousToExclusive == train.Cars.Count || !train.Cars[continuousToExclusive].BrakeSystem.FrontBrakeHoseConnected) && train.Cars[continuousToExclusive - 1].BrakeSystem.AngleCockBOpen)
                 sumpv = 0;
 
+            // Propagate main reservoir pipe (2) data
             train.BrakeLine2PressurePSI = sumpv;
             for (int i = 0; i < train.Cars.Count; i++)
             {
-                TrainCar car = train.Cars[i];
-                if (i < first || i > last)
+                if (first <= i && i <= last || twoPipes && continuousFromInclusive <= i && i < continuousToExclusive)
                 {
-                    car.BrakeSystem.BrakeLine2PressurePSI = twoPipes && continuousFromInclusive <= i && i < continuousToExclusive ? sumpv : 0;
+                    train.Cars[i].BrakeSystem.BrakeLine2PressurePSI = sumpv;
+                    if (sumpv != 0 && train.Cars[i] is MSTSLocomotive)
+                        (train.Cars[i] as MSTSLocomotive).MainResPressurePSI = sumpv;
                 }
                 else
-                {
-                    car.BrakeSystem.BrakeLine2PressurePSI = sumpv;
-                    MSTSLocomotive eng = (MSTSLocomotive)car;
-                    if (eng != null && sumpv != 0)
-                        eng.MainResPressurePSI = sumpv;
-                }
+                    train.Cars[i].BrakeSystem.BrakeLine2PressurePSI = train.Cars[i] is MSTSLocomotive ? (train.Cars[i] as MSTSLocomotive).MainResPressurePSI : 0;
             }
         }
 

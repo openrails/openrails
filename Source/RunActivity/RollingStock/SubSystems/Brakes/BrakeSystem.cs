@@ -25,7 +25,7 @@ namespace ORTS
         public float BrakeLine1PressurePSI = 90;    // main trainline pressure at this car
         public float BrakeLine2PressurePSI;         // main reservoir equalization pipe pressure
         public float BrakeLine3PressurePSI;         // engine brake cylinder equalization pipe pressure
-        public float BrakePipeVolumeFT3 = .5f;      // volume of a single brake line
+        public float BrakePipeVolumeM3 = 1.4e-2f;      // volume of a single brake line
 
         /// <summary>
         /// Front brake hoses connection status

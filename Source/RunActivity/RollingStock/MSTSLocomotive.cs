@@ -149,7 +149,7 @@ namespace ORTS
         public string CabSoundFileName;
         public string CVFFileName;
         public float MaxMainResPressurePSI = 130;
-        public float MainResVolumeFT3 = 10;
+        public float MainResVolumeM3 = 0.3f;
         public float CompressorRestartPressurePSI = 110;
         public float MainResChargingRatePSIpS = .4f;
         public float EngineBrakeReleaseRatePSIpS = 12.5f;
@@ -577,7 +577,7 @@ namespace ORTS
                 case "engine(awsmonitor":
                 case "engine(overspeedmonitor": VigilanceMonitor = true; TrainControlSystem.Parse(lowercasetoken, stf); break;
                 case "engine(enginecontrollers(combined_control": ParseCombData(lowercasetoken, stf); break;
-                case "engine(airbrakesmainresvolume": MainResVolumeFT3 = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null); break;
+                case "engine(airbrakesmainresvolume": MainResVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
                 case "engine(airbrakesmainmaxairpressure": MainResPressurePSI = MaxMainResPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(airbrakescompressorrestartpressure": CompressorRestartPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(ortsmainreschargingrate": MainResChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
