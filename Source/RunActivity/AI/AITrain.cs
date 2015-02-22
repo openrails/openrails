@@ -1526,7 +1526,7 @@ namespace ORTS
                     {
                         Train OtherTrain = trainAhead.Key;
                         if (Math.Abs(OtherTrain.SpeedMpS) < 0.001f &&
-                                    DistanceToEndNodeAuthorityM[0] > followDistanceStatTrainM)
+                                    (DistanceToEndNodeAuthorityM[0] > followDistanceStatTrainM || UncondAttach))
                         {
                             // allow creeping closer
                             CreateTrainAction(creepSpeedMpS, 0.0f,
@@ -3791,7 +3791,8 @@ namespace ORTS
                 {
                     ReverseFormation(false);
                     // active subpath must be incremented in parallel in incorporated train if present
-                    if (IncorporatedTrainNo >= 0) IncrementSubpath(Simulator.TrainDictionary[IncorporatedTrainNo]);
+                    if (IncorporatedTrainNo >= 0) 
+                        IncrementSubpath(Simulator.TrainDictionary[IncorporatedTrainNo]);
 
 #if DEBUG_REPORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "Train " +

@@ -8920,10 +8920,10 @@ namespace ORTS
         //
         public void IncrementSubpath(Train thisTrain)
         {
-            if (thisTrain.TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1)
+            if (thisTrain.TCRoute.activeSubpath < thisTrain.TCRoute.TCRouteSubpaths.Count - 1)
             {
-                TCRoute.activeSubpath++;
-                ValidRoute[0] = TCRoute.TCRouteSubpaths[TCRoute.activeSubpath];
+                thisTrain.TCRoute.activeSubpath++;
+                thisTrain.ValidRoute[0] = thisTrain.TCRoute.TCRouteSubpaths[thisTrain.TCRoute.activeSubpath];
             }
         }
 
