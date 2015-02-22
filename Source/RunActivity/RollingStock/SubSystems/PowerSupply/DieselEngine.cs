@@ -834,7 +834,7 @@ namespace ORTS
                 {
                     dRPM = (float)Math.Max(-Math.Sqrt(2 * RateOfChangeDownRPMpSS * (RealRPM - DemandedRPM)), -ChangeDownRPMpS);
                     ExhaustParticles = (InitialExhaust + ((ExhaustRange * (RealRPM - IdleRPM) / RPMRange))) * ExhaustDecelReduction;
-                    ExhaustMagnitude = (InitialMagnitude + ((MagnitudeRange * RealRPM - IdleRPM / RPMRange))) * ExhaustDecelReduction;
+                    ExhaustMagnitude = (InitialMagnitude + ((MagnitudeRange * (RealRPM - IdleRPM) / RPMRange))) * ExhaustDecelReduction;
                     ExhaustColor = ExhaustDecelColor;
 
                 }
@@ -1041,7 +1041,6 @@ namespace ORTS
             if ((initLevel & SettingsFlags.ExhaustColor) == 0) ExhaustSteadyColor = loco.ExhaustSteadyColor;
             ExhaustDecelColor = loco.ExhaustDecelColor;
             if ((initLevel & SettingsFlags.ExhaustTransientColor) == 0) ExhaustTransientColor = loco.ExhaustTransientColor;
-            InitialExhaust = loco.InitialExhaust;
             if ((initLevel & SettingsFlags.StartingRPM) == 0) StartingRPM = loco.IdleRPM * 2.0f / 3.0f;
             if ((initLevel & SettingsFlags.StartingConfirmRPM) == 0) StartingConfirmationRPM = loco.IdleRPM * 1.1f;
             if ((initLevel & SettingsFlags.ChangeUpRPMpS) == 0) ChangeUpRPMpS = loco.MaxRPMChangeRate;
