@@ -118,7 +118,7 @@ namespace ORTS.Viewer3D.Popups
                     {
                         var line = cl.AddLayoutHorizontal(TextHeight);
                         line.Add(new Label(colWidth * 4, line.RemainingHeight, Viewer.Catalog.GetString("Task")));
-                        line.Add(new Label(colWidth * 8, line.RemainingHeight, Viewer.Catalog.GetString("Car(s)")));
+                        line.Add(new Label(colWidth * 6, line.RemainingHeight, Viewer.Catalog.GetString("Car(s)")));
 						line.Add(new Label(colWidth * 7, line.RemainingHeight, Viewer.Catalog.GetString("Location")));
 						line.Add(new Label(colWidth * 6, line.RemainingHeight, Viewer.Catalog.GetString("Status")));
                     }
@@ -206,8 +206,10 @@ namespace ORTS.Viewer3D.Popups
                                                 }
                                             }
                                         }
-                                        line.Add(new Label(colWidth * 3, line.RemainingHeight, wagonName));
-                                        line.Add(new Label(colWidth * 5, line.RemainingHeight, wagonType));
+                                        line.Add(new Label(colWidth * 6, line.RemainingHeight, wagonName));
+                                        // Because of its potential size, wagonType information would overlap with the location information.
+                                        // Until a better formatting process can be established, line.add for wagonType is commented out.
+                                        //line.Add(new Label(colWidth * 7, line.RemainingHeight, wagonType));
 
                                         // Location column
                                         if (locationShown &&
