@@ -284,6 +284,8 @@ namespace ORTS
                     dp = (AuxResPressurePSI - AutoCylPressurePSI) * AuxCylVolumeRatio / (1 + AuxCylVolumeRatio);
                 if (TwoPipes && dp > threshold - AutoCylPressurePSI)
                     dp = threshold - AutoCylPressurePSI;
+                if (AutoCylPressurePSI + dp > MaxCylPressurePSI)
+                    dp = MaxCylPressurePSI - AutoCylPressurePSI;
                 if (BrakeLine1PressurePSI > AuxResPressurePSI - dp / AuxCylVolumeRatio && !BleedOffValveOpen)
                     dp = (AuxResPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio;
 

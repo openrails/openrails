@@ -281,8 +281,9 @@ namespace ORTS.Viewer3D.RollingStock
                         ThreeDimentionCabViewer = tmp3DViewer; //if not catching an error, we will assign it
                         _has3DCabRenderer = true;
                     }
-                    catch
+                    catch (Exception error)
                     {
+                        Trace.WriteLine(new Exception("Could not load 3D cab.", error)); 
                     }
                 }
             }
@@ -2506,8 +2507,8 @@ namespace ORTS.Viewer3D.RollingStock
         int Direction, Orientation; 
         public ThreeDimCabGaugeNative(Viewer viewer, int iMatrix, string size, string len, PoseableShape trainCarShape, CabViewControlRenderer c)
         {
-            width = float.Parse(size)/1000f; //in mm
-            maxLen = float.Parse(len)/1000f; //in mm
+            if (size != string.Empty) width = float.Parse(size) / 1000f; //in mm
+            if (len != string.Empty) maxLen = float.Parse(len) / 1000f; //in mm
 
             CVFR = (CabViewGaugeRenderer)c;
             Direction = CVFR.GetGauge().Direction;

@@ -1,15 +1,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
-"POT-Creation-Date: 2015-02-03 19:44:26+0100\n"
-"PO-Revision-Date: 2015-02-03 19:49+0100\n"
+"POT-Creation-Date: 2015-02-23 20:09:09+0100\n"
+"PO-Revision-Date: 2015-02-23 20:21+0100\n"
 "Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: hu\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.7.3\n"
+"X-Generator: Poedit 1.7.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ../../ORTS.Settings/InputSettings.cs:42
@@ -201,8 +201,8 @@ msgid "Debug Lock Shadows"
 msgstr "Hibakeresés Árnyékok rögzítése"
 
 #: ../../ORTS.Settings/InputSettings.cs:91
-msgid "Debug Dump Keymap"
-msgstr "Hibakeresés Billentyűzetkép"
+msgid "Debug Dump Keyboard Map"
+msgstr "Hibakeresés Billentyűzetkiosztás mentése"
 
 #: ../../ORTS.Settings/InputSettings.cs:92
 msgid "Debug Log Render Frame"
@@ -619,6 +619,9 @@ msgstr "A {0} parancs eleve használja az Alt-ot, nem lehet módosítani is vele
 #, csharp-format
 msgid "{0} and {1} both match {2}"
 msgstr "{0} és {1} is ehhez rendelve: {2}"
+
+#~ msgid "Debug Dump Keymap"
+#~ msgstr "Hibakeresés Billentyűzetkép"
 
 #~ msgid "Camera HeadOut Forward"
 #~ msgstr "Kamera Ablakon kinézés előre"
