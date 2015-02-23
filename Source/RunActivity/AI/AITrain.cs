@@ -66,7 +66,7 @@ namespace ORTS
         public bool PowerState = true;                   // actual power state : true if power in on
         public float MaxVelocityA = 30.0f;               // max velocity as set in .con file
         public Service_Definition ServiceDefinition = null; // train's service definition in .act file
-        bool UncondAttach = false;                       // if false it states that train will unconditionally attach to a train on its path
+        public bool UncondAttach = false;                       // if false it states that train will unconditionally attach to a train on its path
 
 
         public enum AI_MOVEMENT_STATE
