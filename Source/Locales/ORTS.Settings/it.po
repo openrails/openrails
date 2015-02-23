@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
-"POT-Creation-Date: 2015-02-03 20:14:52+0100\n"
-"PO-Revision-Date: 2015-02-07 11:12+0100\n"
+"POT-Creation-Date: 2015-02-23 19:11:47+0100\n"
+"PO-Revision-Date: 2015-02-23 20:43+0100\n"
 "Last-Translator: Roberto Ceccarelli (The Strawberry Field) <strawberry."
 "field@libero.it>\n"
 "Language-Team: Open Rails Dev Team\n"
@@ -202,8 +202,8 @@ msgid "Debug Lock Shadows"
 msgstr "Debug blocca ombre"
 
 #: ../../ORTS.Settings/InputSettings.cs:91
-msgid "Debug Dump Keymap"
-msgstr "Debug scrive elenco comandi su file"
+msgid "Debug Dump Keyboard Map"
+msgstr "Debug scrive mappa tastiera"
 
 #: ../../ORTS.Settings/InputSettings.cs:92
 msgid "Debug Log Render Frame"
