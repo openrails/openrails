@@ -650,19 +650,22 @@ namespace ORTS.Processes
 
             Console.WriteLine("This is a log file for {0}. Please include this file in bug reports.", Application.ProductName);
             LogSeparator();
-            SystemInfo.WriteSystemDetails(Console.Out);
-            LogSeparator();
-            Console.WriteLine("Version    = {0}", VersionInfo.Version.Length > 0 ? VersionInfo.Version : "<none>");
-            Console.WriteLine("Build      = {0}", VersionInfo.Build);
-            if (logFileName.Length > 0)
-                Console.WriteLine("Logfile    = {0}", logFileName);
-            Console.WriteLine("Executable = {0}", Path.GetFileName(Application.ExecutablePath));
-            foreach (var arg in args)
-                Console.WriteLine("Argument   = {0}", arg);
-            LogSeparator();
-            settings.Log();
-            LogSeparator();
-            if (!settings.Logging)
+            if (settings.Logging)
+            {
+                SystemInfo.WriteSystemDetails(Console.Out);
+                LogSeparator();
+                Console.WriteLine("Version    = {0}", VersionInfo.Version.Length > 0 ? VersionInfo.Version : "<none>");
+                Console.WriteLine("Build      = {0}", VersionInfo.Build);
+                if (logFileName.Length > 0)
+                    Console.WriteLine("Logfile    = {0}", logFileName);
+                Console.WriteLine("Executable = {0}", Path.GetFileName(Application.ExecutablePath));
+                foreach (var arg in args)
+                    Console.WriteLine("Argument   = {0}", arg);
+                LogSeparator();
+                settings.Log();
+                LogSeparator();
+            }
+            else
             {
                 Console.WriteLine("Logging is disabled, only fatal errors will appear here.");
                 LogSeparator();
