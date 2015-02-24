@@ -1318,10 +1318,10 @@ namespace ORTS.Viewer3D
             var speed = GetSpeed(elapsedTime) * SpeedAdjustmentForRotation;
 
             // Rotate camera
-            if (UserInput.IsDown(UserCommands.CameraRotateUp)) RotateDown(-speed);
-            if (UserInput.IsDown(UserCommands.CameraRotateDown)) RotateDown(speed);
-            if (UserInput.IsDown(UserCommands.CameraRotateLeft)) RotateRight(-speed);
-            if (UserInput.IsDown(UserCommands.CameraRotateRight)) RotateRight(speed);
+            if (UserInput.IsDown(UserCommands.CameraPanUp)) RotateDown(-speed);
+            if (UserInput.IsDown(UserCommands.CameraPanDown)) RotateDown(speed);
+            if (UserInput.IsDown(UserCommands.CameraPanLeft)) RotateRight(-speed);
+            if (UserInput.IsDown(UserCommands.CameraPanRight)) RotateRight(speed);
             float x = 0.0f, y = 0.0f, z = 0.0f;
 
             // Move camera
@@ -1337,23 +1337,23 @@ namespace ORTS.Viewer3D
                 MoveCameraXYZ(0, 0, z);
             }
             // Move camera
-            if (UserInput.IsDown(UserCommands.CameraPanUp))
+            if (UserInput.IsDown(UserCommands.CameraRotateUp))
             {
                 y = speed / 2;
                 MoveCameraXYZ(0, y, 0);
 
             }
-            if (UserInput.IsDown(UserCommands.CameraPanDown))
+            if (UserInput.IsDown(UserCommands.CameraRotateDown))
             {
                 y = -speed / 2;
                 MoveCameraXYZ(0, y, 0);
             }
-            if (UserInput.IsDown(UserCommands.CameraPanLeft))
+            if (UserInput.IsDown(UserCommands.CameraRotateLeft))
             {
                 x = speed * -2;
                 MoveCameraXYZ(x, 0, 0);
             }
-            if (UserInput.IsDown(UserCommands.CameraPanRight))
+            if (UserInput.IsDown(UserCommands.CameraRotateRight))
             {
                 x = speed * 2;
                 MoveCameraXYZ(x, 0, 0);
@@ -1362,23 +1362,21 @@ namespace ORTS.Viewer3D
             ZoomByMouseWheel(speed);
 
             // Support for replaying camera rotation movements
-            if (UserInput.IsPressed(UserCommands.CameraRotateUp) || UserInput.IsPressed(UserCommands.CameraRotateDown))
+            if (UserInput.IsPressed(UserCommands.CameraPanUp) || UserInput.IsPressed(UserCommands.CameraPanDown))
                 CommandStartTime = Viewer.Simulator.ClockTime;
-            if (UserInput.IsReleased(UserCommands.CameraRotateUp) || UserInput.IsReleased(UserCommands.CameraRotateDown))
+            if (UserInput.IsReleased(UserCommands.CameraPanUp) || UserInput.IsReleased(UserCommands.CameraPanDown))
                 new CameraRotateUpDownCommand(Viewer.Log, CommandStartTime, Viewer.Simulator.ClockTime, RotationXRadians);
 
-            if (UserInput.IsPressed(UserCommands.CameraRotateLeft) || UserInput.IsPressed(UserCommands.CameraRotateRight))
+            if (UserInput.IsPressed(UserCommands.CameraPanLeft) || UserInput.IsPressed(UserCommands.CameraPanRight))
                 CommandStartTime = Viewer.Simulator.ClockTime;
-            if (UserInput.IsReleased(UserCommands.CameraRotateLeft) || UserInput.IsReleased(UserCommands.CameraRotateRight))
+            if (UserInput.IsReleased(UserCommands.CameraPanLeft) || UserInput.IsReleased(UserCommands.CameraPanRight))
                 new CameraRotateLeftRightCommand(Viewer.Log, CommandStartTime, Viewer.Simulator.ClockTime, RotationYRadians);
 
-            if (UserInput.IsPressed(UserCommands.CameraPanUp) || UserInput.IsPressed(UserCommands.CameraPanDown)
-                || UserInput.IsPressed(UserCommands.CameraPanDown) || UserInput.IsPressed(UserCommands.CameraPanDown)
-                || UserInput.IsPressed(UserCommands.CameraPanDown) || UserInput.IsPressed(UserCommands.CameraPanDown))
+            if (UserInput.IsPressed(UserCommands.CameraRotateUp) || UserInput.IsPressed(UserCommands.CameraRotateDown)
+                || UserInput.IsPressed(UserCommands.CameraRotateLeft) || UserInput.IsPressed(UserCommands.CameraRotateRight))
                 CommandStartTime = Viewer.Simulator.ClockTime;
-            if (UserInput.IsPressed(UserCommands.CameraPanUp) || UserInput.IsPressed(UserCommands.CameraPanDown)
-                || UserInput.IsPressed(UserCommands.CameraPanDown) || UserInput.IsPressed(UserCommands.CameraPanDown)
-                || UserInput.IsPressed(UserCommands.CameraPanDown) || UserInput.IsPressed(UserCommands.CameraPanDown))
+            if (UserInput.IsPressed(UserCommands.CameraRotateUp) || UserInput.IsPressed(UserCommands.CameraRotateDown)
+                || UserInput.IsPressed(UserCommands.CameraRotateLeft) || UserInput.IsPressed(UserCommands.CameraRotateRight))
                 new CameraMoveXYZCommand(Viewer.Log, CommandStartTime, Viewer.Simulator.ClockTime, x, y, z);
 
         }
