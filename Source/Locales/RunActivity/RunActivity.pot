@@ -1,13 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-<<<<<<< .mine
-"POT-Creation-Date: 2015-02-23 19:11:47+0100\n"
-"PO-Revision-Date: 2015-02-23 19:11:54+0100\n"
-=======
-"POT-Creation-Date: 2015-02-23 20:09:12+0100\n"
-"PO-Revision-Date: 2015-02-23 20:09:14+0100\n"
->>>>>>> .r2894
+"POT-Creation-Date: 2015-02-24 11:41:36+0100\n"
+"PO-Revision-Date: 2015-02-24 11:41:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -486,7 +481,7 @@ msgstr ""
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr ""
 
-#: ../../RunActivity/Processes/GameStateRunActivity.cs:1077
+#: ../../RunActivity/Processes/GameStateRunActivity.cs:1080
 #, csharp-format
 msgid "Activity Save file '*.save' not found in folder {0}"
 msgstr ""
@@ -627,23 +622,13 @@ msgstr ""
 msgid "Fuel levels"
 msgstr ""
 
-<<<<<<< .mine
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3018
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:327
-=======
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3018
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:328
->>>>>>> .r2894
 msgid "coal"
 msgstr ""
 
-<<<<<<< .mine
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3018
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:326
-=======
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3018
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:327
->>>>>>> .r2894
 msgid "water"
 msgstr ""
 
@@ -1688,7 +1673,7 @@ msgid "Wipers"
 msgstr ""
 
 #: ../../RunActivity/Simulator/Confirmation.cs:185
-#: ../../RunActivity/Viewer3D/Cameras.cs:1513
+#: ../../RunActivity/Viewer3D/Cameras.cs:1511
 msgid "Cab"
 msgstr ""
 
@@ -1897,19 +1882,19 @@ msgstr ""
 msgid "Brakeman"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1399
+#: ../../RunActivity/Viewer3D/Cameras.cs:1397
 msgid "Passenger"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1469
+#: ../../RunActivity/Viewer3D/Cameras.cs:1467
 msgid "Head out"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1693
+#: ../../RunActivity/Viewer3D/Cameras.cs:1691
 msgid "Trackside"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1845
+#: ../../RunActivity/Viewer3D/Cameras.cs:1843
 msgid "3D Cab"
 msgstr ""
 
@@ -2214,11 +2199,11 @@ msgstr ""
 msgid "Pick Up"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:238
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:240
 msgid "Done"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:251
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:253
 msgid "Procedures"
 msgstr ""
 
@@ -2767,80 +2752,44 @@ msgstr ""
 msgid "Train Operations"
 msgstr ""
 
-<<<<<<< .mine
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:328
-=======
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:329
->>>>>>> .r2894
 msgid "diesel oil"
 msgstr ""
 
-<<<<<<< .mine
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:329
-=======
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:330
->>>>>>> .r2894
 msgid "wood"
 msgstr ""
 
-<<<<<<< .mine
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:445
-=======
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:446
->>>>>>> .r2894
 msgid "Refill: No suitable pick-up point anywhere, so refilling immediately."
 msgstr ""
 
-<<<<<<< .mine
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:453
-=======
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:454
->>>>>>> .r2894
 #, csharp-format
 msgid "Refill: Distance to {0} supply is {1}."
 msgstr ""
 
-<<<<<<< .mine
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:461
-=======
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:462
->>>>>>> .r2894
 #, csharp-format
 msgid "Refill: Loco must be stationary to refill {0}."
 msgstr ""
 
-<<<<<<< .mine
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:467
-=======
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:468
->>>>>>> .r2894
 #, csharp-format
 msgid "Refill: Loco speed must exceed {0}."
 msgstr ""
 
-<<<<<<< .mine
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:474
-=======
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:475
->>>>>>> .r2894
 #, csharp-format
 msgid "Refill: Loco speed must not exceed {0}."
 msgstr ""
 
-<<<<<<< .mine
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:481
-=======
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:482
->>>>>>> .r2894
 #, csharp-format
 msgid "Refill: {0} supply now replenished."
 msgstr ""
 
-<<<<<<< .mine
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:454
-=======
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:455
->>>>>>> .r2894
 #, csharp-format
 msgid "{0} meter"
 msgid_plural "{0} meters"

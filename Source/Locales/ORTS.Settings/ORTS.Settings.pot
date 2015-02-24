@@ -1,13 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-<<<<<<< .mine
-"POT-Creation-Date: 2015-02-23 19:11:47+0100\n"
-"PO-Revision-Date: 2015-02-23 19:11:47+0100\n"
-=======
-"POT-Creation-Date: 2015-02-23 20:09:09+0100\n"
-"PO-Revision-Date: 2015-02-23 20:09:09+0100\n"
->>>>>>> .r2894
+"POT-Creation-Date: 2015-02-24 11:41:32+0100\n"
+"PO-Revision-Date: 2015-02-24 11:41:32+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -297,43 +292,43 @@ msgid "Camera Move Slow"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:115
-msgid "Camera Pan Left"
+msgid "Camera Pan (Rotate) Left"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:116
-msgid "Camera Pan Right"
+msgid "Camera Pan (Rotate) Right"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:117
-msgid "Camera Pan Up"
+msgid "Camera Pan (Rotate) Up"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:118
-msgid "Camera Pan Down"
+msgid "Camera Pan (Rotate) Down"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:119
-msgid "Camera Zoom In"
+msgid "Camera Zoom In (Move Z)"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:120
-msgid "Camera Zoom Out"
+msgid "Camera Zoom Out (Move Z)"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:121
-msgid "Camera Rotate Left"
+msgid "Camera Rotate (Pan) Left"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:122
-msgid "Camera Rotate Right"
+msgid "Camera Rotate (Pan) Right"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:123
-msgid "Camera Rotate Up"
+msgid "Camera Rotate (Pan) Up"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:124
-msgid "Camera Rotate Down"
+msgid "Camera Rotate (Pan) Down"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:125
