@@ -35,7 +35,8 @@ namespace ORTS
         protected float FullServPressurePSI = 50;
         protected float MaxCylPressurePSI = 64;
         protected float AuxCylVolumeRatio = 2.5f;
-        protected float AuxBrakeLineVolumeRatio = 3.1f;
+        protected float AuxBrakeLineVolumeRatio;
+        protected float EmergResVolumeM3 = 0.07f;
         protected float RetainerPressureThresholdPSI;
         protected float ReleaseRatePSIpS = 1.86f;
         protected float MaxReleaseRatePSIpS = 1.86f;
@@ -45,6 +46,8 @@ namespace ORTS
         protected float EmergAuxVolumeRatio = 1.4f;
         protected string DebugType = string.Empty;
         protected string RetainerDebugState = string.Empty;
+        protected bool NoMRPAuxResCharging;
+
         public enum ValveState
         {
             [GetString("Lap")] Lap,
@@ -80,6 +83,7 @@ namespace ORTS
             MaxCylPressurePSI = thiscopy.MaxCylPressurePSI;
             AuxCylVolumeRatio = thiscopy.AuxCylVolumeRatio;
             AuxBrakeLineVolumeRatio = thiscopy.AuxBrakeLineVolumeRatio;
+            EmergResVolumeM3 = thiscopy.EmergResVolumeM3;
             RetainerPressureThresholdPSI = thiscopy.RetainerPressureThresholdPSI;
             ReleaseRatePSIpS = thiscopy.ReleaseRatePSIpS;
             MaxReleaseRatePSIpS = thiscopy.MaxReleaseRatePSIpS;
@@ -88,6 +92,7 @@ namespace ORTS
             EmergResChargingRatePSIpS = thiscopy.EmergResChargingRatePSIpS;
             EmergAuxVolumeRatio = thiscopy.EmergAuxVolumeRatio;
             TwoPipes = thiscopy.TwoPipes;
+            NoMRPAuxResCharging = thiscopy.NoMRPAuxResCharging;
         }
 
         public override string GetStatus(PressureUnit unit)
@@ -150,6 +155,9 @@ namespace ORTS
                 case "wagon(maxauxilarychargingrate": MaxAuxilaryChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "wagon(emergencyreschargingrate": EmergResChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "wagon(emergencyresvolumemultiplier": EmergAuxVolumeRatio = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "wagon(emergencyrescapacity": EmergResVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
+                
+                // OpenRails specific parameters
                 case "wagon(brakepipevolume": BrakePipeVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
             }
         }
@@ -207,18 +215,16 @@ namespace ORTS
             SetRetainer(RetainerSetting.Exhaust);
             if (Car is MSTSLocomotive)
                 (Car as MSTSLocomotive).MainResPressurePSI = (Car as MSTSLocomotive).MaxMainResPressurePSI;
+
+            if (EmergResVolumeM3 > 0 && EmergAuxVolumeRatio > 0 && BrakePipeVolumeM3 > 0)
+                AuxBrakeLineVolumeRatio = EmergResVolumeM3 / EmergAuxVolumeRatio / BrakePipeVolumeM3;
+            else
+                AuxBrakeLineVolumeRatio = 3.1f;
         }
 
         public override void InitializeMoving () // used when initial speed > 0
         {
-            BrakeLine1PressurePSI = Car.Train.BrakeLine1PressurePSIorInHg;
-            BrakeLine2PressurePSI = Car.Train.BrakeLine2PressurePSI;
-            BrakeLine3PressurePSI = 0;
-            AuxResPressurePSI = BrakeLine1PressurePSI;
-            AutoCylPressurePSI = 0;
-            TripleValveState = ValveState.Lap;
-            HandbrakePercent = 0;
-            SetRetainer(RetainerSetting.Exhaust);
+            Initialize(false, 0, FullServPressurePSI, true);
         }
 
         public override void LocoInitializeMoving() // starting conditions when starting speed > 0
@@ -330,7 +336,7 @@ namespace ORTS
 						AuxResPressurePSI -= dp * EmergAuxVolumeRatio;
 					}
 				}
-                if (AuxResPressurePSI < BrakeLine1PressurePSI && (!TwoPipes || BrakeLine2PressurePSI < BrakeLine1PressurePSI))
+                if (AuxResPressurePSI < BrakeLine1PressurePSI && (!TwoPipes || NoMRPAuxResCharging || BrakeLine2PressurePSI < BrakeLine1PressurePSI))
                 {
                     float dp = elapsedClockSeconds * MaxAuxilaryChargingRatePSIpS;
                     if (AuxResPressurePSI + dp > BrakeLine1PressurePSI - dp * AuxBrakeLineVolumeRatio)
@@ -339,7 +345,11 @@ namespace ORTS
                     BrakeLine1PressurePSI -= dp * AuxBrakeLineVolumeRatio;
                 }
             }
-            if (TwoPipes && AuxResPressurePSI < BrakeLine2PressurePSI && AuxResPressurePSI < EmergResPressurePSI && (BrakeLine2PressurePSI > BrakeLine1PressurePSI || TripleValveState != ValveState.Release))
+            if (TwoPipes
+                && !NoMRPAuxResCharging
+                && AuxResPressurePSI < BrakeLine2PressurePSI
+                && AuxResPressurePSI < EmergResPressurePSI
+                && (BrakeLine2PressurePSI > BrakeLine1PressurePSI || TripleValveState != ValveState.Release))
             {
                 float dp = elapsedClockSeconds * MaxAuxilaryChargingRatePSIpS;
                 if (AuxResPressurePSI + dp > BrakeLine2PressurePSI - dp * AuxBrakeLineVolumeRatio)

@@ -2478,7 +2478,7 @@ msgstr "Fővez"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:572
 msgid "AuxRes"
-msgstr "SegLégT"
+msgstr "KészlLT"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:573
 msgid "ErgRes"
