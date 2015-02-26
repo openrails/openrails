@@ -6374,10 +6374,14 @@ namespace ORTS
                             }
                             // extra test : if front is beyond other train but rear is not, train is considered to be still in front (at distance = offset)
                             // this can happen in pre-run mode due to large interval
-                            if (thisTrain != null && thisTrainDistanceM < distanceTrainAheadM && thisTrainOffset < offset && thisTrainOffset >= (offset - thisTrain.Length))
+                            if (thisTrain != null && thisTrainDistanceM < distanceTrainAheadM && thisTrainOffset < offset)
                             {
-                                distanceTrainAheadM = offset;
-                                trainFound = nextTrain.Train;
+                                if ((!Program.Simulator.TimetableMode && thisTrainOffset >= (offset - nextTrain.Train.Length)) ||
+                                    (Program.Simulator.TimetableMode && thisTrainOffset >= (offset - thisTrain.Length)))
+                                {
+                                    distanceTrainAheadM = offset;
+                                    trainFound = nextTrain.Train;
+                                }
                             }
                         }
                         else
