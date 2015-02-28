@@ -111,11 +111,15 @@
             this.numericDataLogTSInterval = new System.Windows.Forms.NumericUpDown();
             this.checkDataLogTrainSpeed = new System.Windows.Forms.CheckBox();
             this.tabPageContent = new System.Windows.Forms.TabPage();
+            this.labelContent = new System.Windows.Forms.Label();
+            this.buttonContentDelete = new System.Windows.Forms.Button();
             this.groupBoxContent = new System.Windows.Forms.GroupBox();
+            this.buttonContentBrowse = new System.Windows.Forms.Button();
             this.textBoxContentPath = new System.Windows.Forms.TextBox();
             this.label20 = new System.Windows.Forms.Label();
             this.label22 = new System.Windows.Forms.Label();
             this.textBoxContentName = new System.Windows.Forms.TextBox();
+            this.buttonContentAdd = new System.Windows.Forms.Button();
             this.panelContent = new System.Windows.Forms.Panel();
             this.dataGridViewContent = new System.Windows.Forms.DataGridView();
             this.nameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -161,11 +165,6 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.buttonContentAdd = new System.Windows.Forms.Button();
-            this.buttonContentBrowse = new System.Windows.Forms.Button();
-            this.buttonContentDelete = new System.Windows.Forms.Button();
-            this.buttonContentSave = new System.Windows.Forms.Button();
-            this.labelContent = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -1220,11 +1219,33 @@
             this.tabPageContent.Text = "Content";
             this.tabPageContent.UseVisualStyleBackColor = true;
             // 
+            // labelContent
+            // 
+            this.labelContent.AutoSize = true;
+            this.labelContent.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.labelContent.Location = new System.Drawing.Point(6, 6);
+            this.labelContent.Margin = new System.Windows.Forms.Padding(3);
+            this.labelContent.Name = "labelContent";
+            this.labelContent.Size = new System.Drawing.Size(539, 13);
+            this.labelContent.TabIndex = 3;
+            this.labelContent.Text = "Installation profiles tell Open Rails where to look for game content. Add each fu" +
+    "ll and mini-route MSTS installation.";
+            // 
+            // buttonContentDelete
+            // 
+            this.buttonContentDelete.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonContentDelete.Location = new System.Drawing.Point(6, 364);
+            this.buttonContentDelete.Name = "buttonContentDelete";
+            this.buttonContentDelete.Size = new System.Drawing.Size(75, 23);
+            this.buttonContentDelete.TabIndex = 1;
+            this.buttonContentDelete.Text = "Delete";
+            this.buttonContentDelete.UseVisualStyleBackColor = true;
+            this.buttonContentDelete.Click += new System.EventHandler(this.buttonContentDelete_Click);
+            // 
             // groupBoxContent
             // 
             this.groupBoxContent.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBoxContent.Controls.Add(this.buttonContentSave);
             this.groupBoxContent.Controls.Add(this.buttonContentBrowse);
             this.groupBoxContent.Controls.Add(this.textBoxContentPath);
             this.groupBoxContent.Controls.Add(this.label20);
@@ -1236,6 +1257,17 @@
             this.groupBoxContent.TabIndex = 2;
             this.groupBoxContent.TabStop = false;
             this.groupBoxContent.Text = "Installation profile";
+            // 
+            // buttonContentBrowse
+            // 
+            this.buttonContentBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonContentBrowse.Location = new System.Drawing.Point(428, 19);
+            this.buttonContentBrowse.Name = "buttonContentBrowse";
+            this.buttonContentBrowse.Size = new System.Drawing.Size(75, 23);
+            this.buttonContentBrowse.TabIndex = 2;
+            this.buttonContentBrowse.Text = "Browse...";
+            this.buttonContentBrowse.UseVisualStyleBackColor = true;
+            this.buttonContentBrowse.Click += new System.EventHandler(this.buttonContentBrowse_Click);
             // 
             // textBoxContentPath
             // 
@@ -1271,8 +1303,20 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.textBoxContentName.Location = new System.Drawing.Point(50, 49);
             this.textBoxContentName.Name = "textBoxContentName";
-            this.textBoxContentName.Size = new System.Drawing.Size(372, 20);
+            this.textBoxContentName.Size = new System.Drawing.Size(453, 20);
             this.textBoxContentName.TabIndex = 4;
+            this.textBoxContentName.TextChanged += new System.EventHandler(this.textBoxContentName_TextChanged);
+            // 
+            // buttonContentAdd
+            // 
+            this.buttonContentAdd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonContentAdd.Location = new System.Drawing.Point(6, 336);
+            this.buttonContentAdd.Name = "buttonContentAdd";
+            this.buttonContentAdd.Size = new System.Drawing.Size(75, 23);
+            this.buttonContentAdd.TabIndex = 0;
+            this.buttonContentAdd.Text = "Add";
+            this.buttonContentAdd.UseVisualStyleBackColor = true;
+            this.buttonContentAdd.Click += new System.EventHandler(this.buttonContentAdd_Click);
             // 
             // panelContent
             // 
@@ -1849,62 +1893,6 @@
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
             // 
-            // buttonContentAdd
-            // 
-            this.buttonContentAdd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonContentAdd.Location = new System.Drawing.Point(6, 336);
-            this.buttonContentAdd.Name = "buttonContentAdd";
-            this.buttonContentAdd.Size = new System.Drawing.Size(75, 23);
-            this.buttonContentAdd.TabIndex = 0;
-            this.buttonContentAdd.Text = "Add";
-            this.buttonContentAdd.UseVisualStyleBackColor = true;
-            this.buttonContentAdd.Click += new System.EventHandler(this.buttonContentAdd_Click);
-            // 
-            // buttonContentBrowse
-            // 
-            this.buttonContentBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonContentBrowse.Location = new System.Drawing.Point(428, 19);
-            this.buttonContentBrowse.Name = "buttonContentBrowse";
-            this.buttonContentBrowse.Size = new System.Drawing.Size(75, 23);
-            this.buttonContentBrowse.TabIndex = 2;
-            this.buttonContentBrowse.Text = "Browse...";
-            this.buttonContentBrowse.UseVisualStyleBackColor = true;
-            this.buttonContentBrowse.Click += new System.EventHandler(this.buttonContentBrowse_Click);
-            // 
-            // buttonContentDelete
-            // 
-            this.buttonContentDelete.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonContentDelete.Location = new System.Drawing.Point(6, 364);
-            this.buttonContentDelete.Name = "buttonContentDelete";
-            this.buttonContentDelete.Size = new System.Drawing.Size(75, 23);
-            this.buttonContentDelete.TabIndex = 1;
-            this.buttonContentDelete.Text = "Delete";
-            this.buttonContentDelete.UseVisualStyleBackColor = true;
-            this.buttonContentDelete.Click += new System.EventHandler(this.buttonContentDelete_Click);
-            // 
-            // buttonContentSave
-            // 
-            this.buttonContentSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonContentSave.Location = new System.Drawing.Point(428, 47);
-            this.buttonContentSave.Name = "buttonContentSave";
-            this.buttonContentSave.Size = new System.Drawing.Size(75, 23);
-            this.buttonContentSave.TabIndex = 5;
-            this.buttonContentSave.Text = "Save";
-            this.buttonContentSave.UseVisualStyleBackColor = true;
-            this.buttonContentSave.Click += new System.EventHandler(this.buttonContentSave_Click);
-            // 
-            // labelContent
-            // 
-            this.labelContent.AutoSize = true;
-            this.labelContent.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.labelContent.Location = new System.Drawing.Point(6, 6);
-            this.labelContent.Margin = new System.Windows.Forms.Padding(3);
-            this.labelContent.Name = "labelContent";
-            this.labelContent.Size = new System.Drawing.Size(539, 13);
-            this.labelContent.TabIndex = 3;
-            this.labelContent.Text = "Installation profiles tell Open Rails where to look for game content. Add each fu" +
-    "ll and mini-route MSTS installation.";
-            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -2103,7 +2091,6 @@
         private System.Windows.Forms.Button buttonContentDelete;
         private System.Windows.Forms.Button buttonContentBrowse;
         private System.Windows.Forms.Button buttonContentAdd;
-        private System.Windows.Forms.Button buttonContentSave;
         private System.Windows.Forms.Label labelContent;
     }
 }

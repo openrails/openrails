@@ -209,16 +209,18 @@ namespace ORTS
             checkDataLogStationStops.Checked = Settings.DataLogStationStops;
 
             // Content tab
+            bindingSourceContent.DataSource = (from folder in Settings.Folders.Folders
+                                               orderby folder.Key
+                                               select new ContentFolder() { Name = folder.Key, Path = folder.Value }).ToList();
             if (initialContentSetup)
             {
                 tabOptions.SelectedTab = tabPageContent;
                 try
                 {
-                    Settings.Folders.Folders.Add("Train Simulator", MSTSPath.Base());
+                    bindingSourceContent.Add(new ContentFolder() { Name = "Train Simulator", Path = MSTSPath.Base() });
                 }
                 catch { }
             }
-            UpdateContentDataBinding();
 
             // Updater tab
             var updateChannelNames = new Dictionary<string, string> {
@@ -288,13 +290,6 @@ namespace ORTS
             checkShapeWarnings.Checked = !Settings.SuppressShapeWarnings;
 
             Initialized = true;
-        }
-
-        private void UpdateContentDataBinding()
-        {
-            bindingSourceContent.DataSource = from folder in Settings.Folders.Folders
-                                              orderby folder.Key
-                                              select new ContentFolder() { Name = folder.Key, Path = folder.Value };
         }
 
         static string ParseCategoryFrom(string name)
@@ -442,7 +437,12 @@ namespace ORTS
             for (var i = 0; i < checkListDataLogTSContents.Items.Count; i++)
                 Settings.DataLogTSContents[i] = checkListDataLogTSContents.GetItemChecked(i) ? 1 : 0;
             Settings.DataLogStationStops = checkDataLogStationStops.Checked;
-            
+
+            // Content tab
+            Settings.Folders.Folders.Clear();
+            foreach (var folder in bindingSourceContent.DataSource as List<ContentFolder>)
+                Settings.Folders.Folders.Add(folder.Name, folder.Path);
+
             // Updater tab
             foreach (Control control in tabPageUpdater.Controls)
                 if ((control is RadioButton) && (control as RadioButton).Checked)
@@ -577,35 +577,30 @@ namespace ORTS
 
         private void dataGridViewContent_SelectionChanged(object sender, EventArgs e)
         {
-            textBoxContentName.Enabled = buttonContentBrowse.Enabled = buttonContentSave.Enabled = bindingSourceContent.Current != null;
-            if (bindingSourceContent.Current == null)
+            var current = bindingSourceContent.Current as ContentFolder;
+            textBoxContentName.Enabled = buttonContentBrowse.Enabled = current != null;
+            if (current == null)
             {
                 textBoxContentName.Text = textBoxContentPath.Text = "";
             }
             else
             {
-                textBoxContentName.Text = (bindingSourceContent.Current as ContentFolder).Name;
-                textBoxContentPath.Text = (bindingSourceContent.Current as ContentFolder).Path;
+                textBoxContentName.Text = current.Name;
+                textBoxContentPath.Text = current.Path;
             }
         }
 
         private void buttonContentAdd_Click(object sender, EventArgs e)
         {
-            if (!Settings.Folders.Folders.ContainsKey(""))
-            {
-                Settings.Folders.Folders.Add("", "");
-                UpdateContentDataBinding();
-            }
-            bindingSourceContent.MoveFirst();
+            bindingSourceContent.AddNew();
             buttonContentBrowse_Click(sender, e);
         }
 
         private void buttonContentDelete_Click(object sender, EventArgs e)
         {
-            var name = (bindingSourceContent.Current as ContentFolder).Name;
-            if (Settings.Folders.Folders.ContainsKey(name))
-                Settings.Folders.Folders.Remove(name);
-            UpdateContentDataBinding();
+            bindingSourceContent.RemoveCurrent();
+            // ResetBindings() is to work around a bug in the binding and/or data grid where by deleting the bottom item doesn't show the selection moving to the new bottom item.
+            bindingSourceContent.ResetBindings(false);
         }
 
         private void buttonContentBrowse_Click(object sender, EventArgs e)
@@ -613,30 +608,26 @@ namespace ORTS
             using (var folderBrowser = new FolderBrowserDialog())
             {
                 folderBrowser.SelectedPath = textBoxContentPath.Text;
-                folderBrowser.Description = catalog.GetString("Select a the installation profile (MSTS folder) to add:");
+                folderBrowser.Description = catalog.GetString("Select an installation profile (MSTS folder) to add:");
                 folderBrowser.ShowNewFolderButton = false;
                 if (folderBrowser.ShowDialog(this) == DialogResult.OK)
                 {
-                    textBoxContentPath.Text = folderBrowser.SelectedPath;
-                    if (textBoxContentName.Text == "")
-                    {
-                        textBoxContentName.Text = Path.GetFileName(textBoxContentPath.Text);
-                        buttonContentSave_Click(sender, e);
-                    }
+                    var current = bindingSourceContent.Current as ContentFolder;
+                    textBoxContentPath.Text = current.Path = folderBrowser.SelectedPath;
+                    if (String.IsNullOrEmpty(current.Name))
+                        textBoxContentName.Text = current.Name = Path.GetFileName(textBoxContentPath.Text);
+                    bindingSourceContent.ResetCurrentItem();
                 }
             }
         }
 
-        private void buttonContentSave_Click(object sender, EventArgs e)
+        private void textBoxContentName_TextChanged(object sender, EventArgs e)
         {
-            var name = (bindingSourceContent.Current as ContentFolder).Name;
-            if (Settings.Folders.Folders.ContainsKey(name))
+            var current = bindingSourceContent.Current as ContentFolder;
+            if (current != null && current.Name != textBoxContentName.Text)
             {
-                Settings.Folders.Folders.Remove(name);
-                Settings.Folders.Folders.Add(textBoxContentName.Text, textBoxContentPath.Text);
-                name = textBoxContentName.Text;
-                UpdateContentDataBinding();
-                bindingSourceContent.Position = bindingSourceContent.List.OfType<ContentFolder>().TakeWhile(cf => cf.Name != name).Count();
+                current.Name = textBoxContentName.Text;
+                bindingSourceContent.ResetCurrentItem();
             }
         }
     }
