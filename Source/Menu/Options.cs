@@ -376,6 +376,10 @@ namespace ORTS
             if (result != "" && DialogResult.Yes != MessageBox.Show(catalog.GetString("Continue with conflicting key assignments?\n\n") + result, Application.ProductName, MessageBoxButtons.YesNo))
                 return;
 
+            DialogResult = DialogResult.OK;
+            if (Settings.Language != comboLanguage.SelectedValue.ToString())
+                DialogResult = DialogResult.Retry;
+
             // General tab
             Settings.Alerter = checkAlerter.Checked;
             Settings.AlerterDisableExternal = !checkAlerterExternal.Checked;
@@ -473,8 +477,6 @@ namespace ORTS
             Settings.SuppressShapeWarnings = !checkShapeWarnings.Checked;
 
             Settings.Save();
-
-            DialogResult = DialogResult.OK;
         }
 
         void buttonDefaultKeys_Click(object sender, EventArgs e)
@@ -519,12 +521,6 @@ namespace ORTS
         private void trackBarDayAmbientLight_Scroll(object sender, EventArgs e)
         {
             toolTip1.SetToolTip(trackDayAmbientLight, (trackDayAmbientLight.Value * 5).ToString() + " %");
-        }
-
-        private void comboBoxLanguage_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (Initialized)
-                MessageBox.Show(catalog.GetStringFmt("Please restart {0} in order to load the new language.", Application.ProductName), Application.ProductName);
         }
 
         private void AdhesionFactorTrackBar1_ValueChanged(object sender, EventArgs e)

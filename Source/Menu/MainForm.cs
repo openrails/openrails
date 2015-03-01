@@ -289,6 +289,12 @@ namespace ORTS
 
             Localizer.Localize(this, catalog);
         }
+
+        void RestartMenu()
+        {
+            Process.Start(Application.ExecutablePath);
+            Close();
+        }
         #endregion
 
         #region Folders
@@ -438,10 +444,15 @@ namespace ORTS
         {
             using (var form = new OptionsForm(Settings, UpdateManager, false))
             {
-                if (form.ShowDialog(this) == System.Windows.Forms.DialogResult.OK)
+                switch (form.ShowDialog(this))
                 {
-                    LoadFolderList();
-                    CheckForUpdate();
+                    case DialogResult.OK:
+                        LoadFolderList();
+                        CheckForUpdate();
+                        break;
+                    case DialogResult.Retry:
+                        RestartMenu();
+                        break;
                 }
             }
         }
@@ -575,9 +586,14 @@ namespace ORTS
                 {
                     using (var form = new OptionsForm(Settings, UpdateManager, true))
                     {
-                        if (form.ShowDialog(this) == System.Windows.Forms.DialogResult.OK)
+                        switch (form.ShowDialog(this))
                         {
-                            LoadFolderList();
+                            case DialogResult.OK:
+                                LoadFolderList();
+                                break;
+                            case DialogResult.Retry:
+                                RestartMenu();
+                                break;
                         }
                     }
                 }
