@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
-"POT-Creation-Date: 2015-02-20 18:43:09+0000\n"
-"PO-Revision-Date: 2015-02-21 05:19+0100\n"
+"POT-Creation-Date: 2015-02-27 18:43:02+0000\n"
+"PO-Revision-Date: 2015-02-28 06:09+0100\n"
 "Last-Translator: Altmann <altmann@bk.ru>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: cs\n"
@@ -293,44 +293,44 @@ msgid "Camera Move Slow"
 msgstr "Pohled Pohyb pomalu"
 
 #: ../../ORTS.Settings/InputSettings.cs:115
-msgid "Camera Pan Left"
-msgstr "Pohled Pohyb vlevo"
+msgid "Camera Pan (Rotate) Left"
+msgstr "Pohled Otočit vlevo"
 
 #: ../../ORTS.Settings/InputSettings.cs:116
-msgid "Camera Pan Right"
-msgstr "Pohled Pohyb vpravo"
+msgid "Camera Pan (Rotate) Right"
+msgstr "Pohled Otočit vpravo"
 
 #: ../../ORTS.Settings/InputSettings.cs:117
-msgid "Camera Pan Up"
-msgstr "Pohled Pohyb nahoru"
+msgid "Camera Pan (Rotate) Up"
+msgstr "Pohled Otočit nahoru"
 
 #: ../../ORTS.Settings/InputSettings.cs:118
-msgid "Camera Pan Down"
-msgstr "Pohled Pohyb dolů"
+msgid "Camera Pan (Rotate) Down"
+msgstr "Pohled Otočit dolů"
 
 #: ../../ORTS.Settings/InputSettings.cs:119
-msgid "Camera Zoom In"
+msgid "Camera Zoom In (Move Z)"
 msgstr "Pohled Přiblížit"
 
 #: ../../ORTS.Settings/InputSettings.cs:120
-msgid "Camera Zoom Out"
+msgid "Camera Zoom Out (Move Z)"
 msgstr "Pohled Oddálit"
 
 #: ../../ORTS.Settings/InputSettings.cs:121
-msgid "Camera Rotate Left"
-msgstr "Pohled Otočit vlevo"
+msgid "Camera Rotate (Pan) Left"
+msgstr "Pohled Pohyb vlevo"
 
 #: ../../ORTS.Settings/InputSettings.cs:122
-msgid "Camera Rotate Right"
-msgstr "Pohled Otočit vpravo"
+msgid "Camera Rotate (Pan) Right"
+msgstr "Pohled Pohyb vpravo"
 
 #: ../../ORTS.Settings/InputSettings.cs:123
-msgid "Camera Rotate Up"
-msgstr "Pohled Otočit nahoru"
+msgid "Camera Rotate (Pan) Up"
+msgstr "Pohled Pohyb nahoru"
 
 #: ../../ORTS.Settings/InputSettings.cs:124
-msgid "Camera Rotate Down"
-msgstr "Pohled Otočit dolů"
+msgid "Camera Rotate (Pan) Down"
+msgstr "Pohled Pohyb dolů"
 
 #: ../../ORTS.Settings/InputSettings.cs:125
 msgid "Camera Car Next"
@@ -619,6 +619,36 @@ msgstr "{0} vyžaduje stisknutí Alt"
 #, csharp-format
 msgid "{0} and {1} both match {2}"
 msgstr "{0} a {1} jsou totožné s {2}"
+
+#~ msgid "Camera Pan Left"
+#~ msgstr "Pohled Pohyb vlevo"
+
+#~ msgid "Camera Pan Right"
+#~ msgstr "Pohled Pohyb vpravo"
+
+#~ msgid "Camera Pan Up"
+#~ msgstr "Pohled Pohyb nahoru"
+
+#~ msgid "Camera Pan Down"
+#~ msgstr "Pohled Pohyb dolů"
+
+#~ msgid "Camera Zoom In"
+#~ msgstr "Pohled Přiblížit"
+
+#~ msgid "Camera Zoom Out"
+#~ msgstr "Pohled Oddálit"
+
+#~ msgid "Camera Rotate Left"
+#~ msgstr "Pohled Otočit vlevo"
+
+#~ msgid "Camera Rotate Right"
+#~ msgstr "Pohled Otočit vpravo"
+
+#~ msgid "Camera Rotate Up"
+#~ msgstr "Pohled Otočit nahoru"
+
+#~ msgid "Camera Rotate Down"
+#~ msgstr "Pohled Otočit dolů"
 
 #~ msgid "Debug Dump Keymap"
 #~ msgstr "Ladit Zapsat namapování kláves do souboru"

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
 "POT-Creation-Date: 2015-02-20 18:43:11+0000\n"
-"PO-Revision-Date: 2015-02-21 06:45+0100\n"
+"PO-Revision-Date: 2015-03-01 09:21+0100\n"
 "Last-Translator: Altmann <altmann@bk.ru>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: cs\n"
@@ -1655,11 +1655,11 @@ msgstr "výfuk"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:181
 msgid "Bell"
-msgstr "Zvon"
+msgstr "Píšťala"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:181
 msgid "ring"
-msgstr "zvoní"
+msgstr "píská"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:182
 msgid "Headlight"
@@ -1812,7 +1812,7 @@ msgstr "{0}"
 #: ../../RunActivity/Simulator/Confirmation.cs:222
 #, csharp-format
 msgid "{0} to {1:0}%"
-msgstr "{0} do {1:0}%"
+msgstr "{0} na {1:0}%"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:227
 #, csharp-format
