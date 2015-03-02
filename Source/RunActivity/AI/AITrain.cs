@@ -2963,9 +2963,10 @@ namespace ORTS
                                     AdjustControlsAccelMore(0.5f * MaxAccelMpSS, elapsedClockSeconds, 10);
                                 }
                             }
-                            else
+//                            if (distanceToTrain < keepDistanceStatTrainM_P - 4.0f || (distanceToTrain - brakingDistance) <= keepDistanceTrainM) // Other possibility
+                            if ((distanceToTrain - brakingDistance) <= keepDistanceTrainM)
                             {
-                                float reqMinSpeedMpS = attachToTrain ? 0.25f * creepSpeedMpS : 0;
+                                float reqMinSpeedMpS = attachToTrain ? couplingSpeedMpS : 0;
                                 bool thisTrainFront;
                                 bool otherTrainFront;
 
