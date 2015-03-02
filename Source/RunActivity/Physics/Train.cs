@@ -4991,33 +4991,7 @@ namespace ORTS
                 return (returnState);
             }
 
-            // if end of route and waiting point, check or set waiting time (PLAYER only, AI uses station stop)
-
-            if (endOfRoute && TrainType == TRAINTYPE.PLAYER)
-            {
-                if (waitingPointWaitTimeS > 0)
-                {
-                    waitingPointWaitTimeS -= elapsedClockSeconds;
-                    endOfRoute = false;
-                }
-                else if (waitingPointWaitTimeS < 0)
-                {
-                    for (int iWP = 0; iWP <= TCRoute.WaitingPoints.Count - 1; iWP++)
-                    {
-                        if (TCRoute.WaitingPoints[iWP][0] == TCRoute.activeSubpath)
-                        {
-                            waitingPointWaitTimeS = TCRoute.WaitingPoints[iWP][2];   // TODO : if absolute time set, use that
-                            endOfRoute = false;
-                            TCRoute.WaitingPoints[iWP][0] = -1; // invalidate waiting point
-
-                            if (TCRoute.WaitingPoints[iWP][4] > 0) // clear holding signal
-                            {
-                                if (HoldingSignals.Contains(TCRoute.WaitingPoints[iWP][4])) HoldingSignals.Remove(TCRoute.WaitingPoints[iWP][4]);
-                            }
-                        }
-                    }
-                }
-            }
+            // <CSComment> TODO: check if holding signals correctly released in case of reversal point between WP and signal
 
             // if next subpath available : check if it can be activated
 
