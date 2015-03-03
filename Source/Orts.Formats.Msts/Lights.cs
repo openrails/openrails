@@ -80,12 +80,18 @@ namespace Orts.Formats.Msts
     }
 
     #region Light enums
+    /// <summary>
+    /// Specifies whether a wagon light is glow (simple light texture) or cone (projected light cone).
+    /// </summary>
     public enum LightType
     {
         Glow,
         Cone,
     }
 
+    /// <summary>
+    /// Specifies in which headlight positions (off, dim, bright) the wagon light is illuminated.
+    /// </summary>
     public enum LightHeadlightCondition
     {
         Ignore,
@@ -93,11 +99,14 @@ namespace Orts.Formats.Msts
         Dim,
         Bright,
         DimBright, // MSTSBin
-        OffDim, // MSTSBin
         OffBright, // MSTSBin
+        OffDim, // MSTSBin
         // TODO: DimBright?, // MSTSBin labels this the same as DimBright. Not sure what it means.
     }
 
+    /// <summary>
+    /// Specifies on which units of a consist (first, middle, last) the wagon light is illuminated.
+    /// </summary>
     public enum LightUnitCondition
     {
         Ignore,
@@ -108,6 +117,9 @@ namespace Orts.Formats.Msts
         FirstRev, // MSTSBin
     }
 
+    /// <summary>
+    /// Specifies in which penalty states (no, yes) the wagon light is illuminated.
+    /// </summary>
     public enum LightPenaltyCondition
     {
         Ignore,
@@ -115,6 +127,9 @@ namespace Orts.Formats.Msts
         Yes,
     }
 
+    /// <summary>
+    /// Specifies on which types of trains (AI, player) the wagon light is illuminated.
+    /// </summary>
     public enum LightControlCondition
     {
         Ignore,
@@ -122,6 +137,9 @@ namespace Orts.Formats.Msts
         Player,
     }
 
+    /// <summary>
+    /// Specifies in which in-service states (no, yes) the wagon light is illuminated.
+    /// </summary>
     public enum LightServiceCondition
     {
         Ignore,
@@ -129,6 +147,9 @@ namespace Orts.Formats.Msts
         Yes,
     }
 
+    /// <summary>
+    /// Specifies during which times of day (day, night) the wagon light is illuminated.
+    /// </summary>
     public enum LightTimeOfDayCondition
     {
         Ignore,
@@ -136,6 +157,9 @@ namespace Orts.Formats.Msts
         Night,
     }
 
+    /// <summary>
+    /// Specifies in which weather conditions (clear, rain, snow) the wagon light is illuminated.
+    /// </summary>
     public enum LightWeatherCondition
     {
         Ignore,
@@ -144,6 +168,9 @@ namespace Orts.Formats.Msts
         Snow,
     }
 
+    /// <summary>
+    /// Specifies on which units of a consist by coupling (front, rear, both) the wagon light is illuminated.
+    /// </summary>
     public enum LightCouplingCondition
     {
         Ignore,
