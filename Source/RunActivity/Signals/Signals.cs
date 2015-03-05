@@ -1938,7 +1938,7 @@ namespace ORTS
 
             if (thisItem.ItemType == TrItem.trItemType.trSIGNAL)
             {
-                if (!Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility)
+                if (!Program.Simulator.TimetableMode)
                 {
                     try
                     {
@@ -1955,7 +1955,7 @@ namespace ORTS
                 if (sigItem.SigObj >= 0)
                 {
                     SignalObject thisSignal = SignalObjects[sigItem.SigObj];
-                    if (!Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility && thisSignal == null)
+                    if (!Program.Simulator.TimetableMode && thisSignal == null)
                     {
                         Trace.TraceWarning("Signal item with TrItemID = {0} not consistent with signal database", sigItem.TrItemId);
                         return newLastDistance;
@@ -3207,7 +3207,7 @@ namespace ORTS
 
                         if (thisSection.EndSignals[thisElement.Direction] != null)
                         {
-                            if (Program.Simulator.TimetableMode || !Program.Simulator.Settings.EnhancedActCompatibility || routeIndex < routePart.Count)
+                            if (Program.Simulator.TimetableMode || routeIndex < routePart.Count)
                             {
                                 thisTrain.Train.SwitchToSignalControl(thisSection.EndSignals[thisElement.Direction]);
                             }
@@ -5205,14 +5205,14 @@ namespace ORTS
                 return (true);
             }
 
-            if (!Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility && thisTrain.Train.TrainType == Train.TRAINTYPE.AI_NOTSTARTED)
+            if (!Program.Simulator.TimetableMode && thisTrain.Train.TrainType == Train.TRAINTYPE.AI_NOTSTARTED)
             {
                 if (CircuitState.TrainReserved != null && CircuitState.TrainReserved.Train != thisTrain.Train)
                 {
                     ClearSectionsOfTrainBehind(CircuitState.TrainReserved, this);
                 }
             }
-            else if (!Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility &&
+            else if (!Program.Simulator.TimetableMode &&
                 thisTrain.Train.IsPlayerDriven && thisTrain.Train.ControlMode != Train.TRAIN_CONTROL.MANUAL && thisTrain.Train.DistanceTravelledM == 0.0 &&
                 thisTrain.Train.TCRoute != null && thisTrain.Train.ValidRoute[0] != null && thisTrain.Train.TCRoute.activeSubpath == 0) // We are at initial placement
             // Check if section is under train, and therefore can be unreserved from other trains

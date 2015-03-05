@@ -128,7 +128,6 @@
             this.tabPageUpdater = new System.Windows.Forms.TabPage();
             this.labelUpdateChannel = new System.Windows.Forms.Label();
             this.tabPageExperimental = new System.Windows.Forms.TabPage();
-            this.checkShapeWarnings = new System.Windows.Forms.CheckBox();
             this.labelLODBias = new System.Windows.Forms.Label();
             this.label21 = new System.Windows.Forms.Label();
             this.trackLODBias = new System.Windows.Forms.TrackBar();
@@ -145,7 +144,6 @@
             this.label9 = new System.Windows.Forms.Label();
             this.trackAdhesionFactor = new System.Windows.Forms.TrackBar();
             this.checkAdhesionPropToWeather = new System.Windows.Forms.CheckBox();
-            this.checkEnhancedActCompatibility = new System.Windows.Forms.CheckBox();
             this.checkCircularSpeedGauge = new System.Windows.Forms.CheckBox();
             this.checkSignalLightGlow = new System.Windows.Forms.CheckBox();
             this.checkUseMSTSEnv = new System.Windows.Forms.CheckBox();
@@ -165,6 +163,7 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.checkShapeWarnings = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -1433,7 +1432,6 @@
             this.tabPageExperimental.Controls.Add(this.label9);
             this.tabPageExperimental.Controls.Add(this.trackAdhesionFactor);
             this.tabPageExperimental.Controls.Add(this.checkAdhesionPropToWeather);
-            this.tabPageExperimental.Controls.Add(this.checkEnhancedActCompatibility);
             this.tabPageExperimental.Controls.Add(this.checkCircularSpeedGauge);
             this.tabPageExperimental.Controls.Add(this.checkSignalLightGlow);
             this.tabPageExperimental.Controls.Add(this.checkUseMSTSEnv);
@@ -1459,16 +1457,6 @@
             this.tabPageExperimental.TabIndex = 3;
             this.tabPageExperimental.Text = "Experimental";
             this.tabPageExperimental.UseVisualStyleBackColor = true;
-            // 
-            // checkShapeWarnings
-            // 
-            this.checkShapeWarnings.AutoSize = true;
-            this.checkShapeWarnings.Location = new System.Drawing.Point(6, 307);
-            this.checkShapeWarnings.Name = "checkShapeWarnings";
-            this.checkShapeWarnings.Size = new System.Drawing.Size(130, 17);
-            this.checkShapeWarnings.TabIndex = 35;
-            this.checkShapeWarnings.Text = "Show shape warnings";
-            this.checkShapeWarnings.UseVisualStyleBackColor = true;
             // 
             // labelLODBias
             // 
@@ -1640,16 +1628,6 @@
             this.checkAdhesionPropToWeather.Text = "Adhesion proportional to rain/snow/fog";
             this.checkAdhesionPropToWeather.UseVisualStyleBackColor = true;
             this.checkAdhesionPropToWeather.CheckedChanged += new System.EventHandler(this.AdhesionPropToWeatherCheckBox_CheckedChanged);
-            // 
-            // checkEnhancedActCompatibility
-            // 
-            this.checkEnhancedActCompatibility.AutoSize = true;
-            this.checkEnhancedActCompatibility.Location = new System.Drawing.Point(6, 191);
-            this.checkEnhancedActCompatibility.Name = "checkEnhancedActCompatibility";
-            this.checkEnhancedActCompatibility.Size = new System.Drawing.Size(234, 17);
-            this.checkEnhancedActCompatibility.TabIndex = 12;
-            this.checkEnhancedActCompatibility.Text = "Enhanced compatibility with MSTS activities";
-            this.checkEnhancedActCompatibility.UseVisualStyleBackColor = true;
             // 
             // checkCircularSpeedGauge
             // 
@@ -1892,6 +1870,16 @@
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
             // 
+            // checkShapeWarnings
+            // 
+            this.checkShapeWarnings.AutoSize = true;
+            this.checkShapeWarnings.Location = new System.Drawing.Point(6, 191);
+            this.checkShapeWarnings.Name = "checkShapeWarnings";
+            this.checkShapeWarnings.Size = new System.Drawing.Size(130, 17);
+            this.checkShapeWarnings.TabIndex = 36;
+            this.checkShapeWarnings.Text = "Show shape warnings";
+            this.checkShapeWarnings.UseVisualStyleBackColor = true;
+            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -2051,7 +2039,6 @@
         private System.Windows.Forms.CheckBox checkSignalLightGlow;
         private System.Windows.Forms.TabPage tabPageUpdater;
         private System.Windows.Forms.Label labelUpdateChannel;
-        private System.Windows.Forms.CheckBox checkEnhancedActCompatibility;
         private System.Windows.Forms.Label AdhesionFactorChangeValueLabel;
         private System.Windows.Forms.Label AdhesionFactorValueLabel;
         private System.Windows.Forms.Label AdhesionLevelValue;
@@ -2073,7 +2060,6 @@
         private System.Windows.Forms.Label labelLODBias;
         private System.Windows.Forms.Label label21;
         private System.Windows.Forms.TrackBar trackLODBias;
-        private System.Windows.Forms.CheckBox checkShapeWarnings;
         private System.Windows.Forms.Label labelOtherUnits;
         private System.Windows.Forms.ComboBox comboBoxOtherUnits;
         private System.Windows.Forms.TabPage tabPageContent;
@@ -2091,5 +2077,6 @@
         private System.Windows.Forms.Button buttonContentBrowse;
         private System.Windows.Forms.Button buttonContentAdd;
         private System.Windows.Forms.Label labelContent;
+        private System.Windows.Forms.CheckBox checkShapeWarnings;
     }
 }

@@ -729,7 +729,7 @@ namespace ORTS.Viewer3D.Popups
                 var allowedSpeed = thisItem.AllowedSpeedMpS;
                 if (allowedSpeed > 998)
                 {
-                    if (Program.Simulator.Settings.EnhancedActCompatibility && !Program.Simulator.TimetableMode)
+                    if (!Program.Simulator.TimetableMode)
                     {
                         allowedSpeed = (float)Program.Simulator.TRK.Tr_RouteFile.SpeedLimit;
                     }
@@ -789,7 +789,7 @@ namespace ORTS.Viewer3D.Popups
                 spriteBatch.Draw(TrackMonitorImages, markerPlacement, displayItem, thisItem.Enabled ? Color.LightGreen : Color.White);
 
                 // Only show distance for enhanced MSTS compatibility (this is the only time the position is controlled by the author).
-                if (itemOffset < firstLabelDistance && !firstLabelShown && !Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility)
+                if (itemOffset < firstLabelDistance && !firstLabelShown && !Program.Simulator.TimetableMode)
                 {
                     var labelPoint = new Point(offset.X + distanceTextOffset, offset.Y + newLabelPosition + textOffset[forward ? 0 : 1]);
                     var distanceString = FormatStrings.FormatDistanceDisplay(thisItem.DistanceToTrainM, metric);

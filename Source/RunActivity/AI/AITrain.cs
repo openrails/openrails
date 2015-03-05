@@ -381,7 +381,7 @@ namespace ORTS
                         MaxDecelMpSS = 1.5f * MaxDecelMpSSP;  // higher decel for high speed trains
                     
                     }
-                    else if (Simulator.Settings.EnhancedActCompatibility)
+                    else
                     {
                         var carF = Cars[0];
                         var carL = Cars[Cars.Count - 1];
@@ -401,7 +401,7 @@ namespace ORTS
                 StationStops.Sort();
                 if (!atStation && StationStops.Count > 0 && this !=Simulator.Trains[0])
                 {
-                    if (Program.Simulator.Settings.EnhancedActCompatibility && MaxVelocityA > 0 &&
+                    if (MaxVelocityA > 0 &&
                         ServiceDefinition != null && ServiceDefinition.ServiceList.Count > 0)
                     {
                         // <CScomment> gets efficiency from .act file to override TrainMaxSpeedMpS computed from .srv efficiency
@@ -510,49 +510,26 @@ namespace ORTS
             {
                 stationIndex = ValidRoute[0].GetRouteIndex(thisStation.TCSectionIndex, PresentPosition[1].RouteListIndex);
             }
-            if (!Program.Simulator.Settings.EnhancedActCompatibility)
-            { 
-                // if rear is in platform, station is valid
-                if (PresentPosition[1].RouteListIndex == stationIndex)
-                {
-                    atStation = true;
-                }
 
-                // if front is in platform and most of the train is as well, station is valid
-                else if (PresentPosition[0].RouteListIndex == stationIndex &&
-                        ((thisPlatform.Length - (platformBeginOffset - PresentPosition[0].TCOffset)) > (Length / 2)))
-                {
-                    atStation = true;
-                }
 
-                // if front is beyond platform and rear is not on route or before platform : train spans platform
-                else if (PresentPosition[0].RouteListIndex > stationIndex && PresentPosition[1].RouteListIndex < stationIndex)
-                {
-                    atStation = true;
-                }
-            }
-                // <CSComment> above first and third test don't work well at least in a real case each
-            else
+            // if rear is in platform, station is valid
+            if (PresentPosition[1].RouteListIndex == stationIndex && PresentPosition[1].TCOffset >= platformBeginOffset)
             {
-                // if rear is in platform, station is valid
-                 if (PresentPosition[1].RouteListIndex == stationIndex && PresentPosition[1].TCOffset >= platformBeginOffset)
-                 {
-                     atStation = true;
-                 }
-                 // if front is in platform and most of the train is as well, station is valid
-                 else if (PresentPosition[0].RouteListIndex == stationIndex &&
-                         ((thisPlatform.Length - (platformEndOffset - PresentPosition[0].TCOffset)) > (Length / 2)))
-                 {
-                     atStation = true;
-                 }
-                 // if front is beyond platform and rear is not on route or before platform : train spans platform
-                 else if ((PresentPosition[0].RouteListIndex > stationIndex || (PresentPosition[0].RouteListIndex == stationIndex && PresentPosition[0].TCOffset >= platformEndOffset))
-                     && (PresentPosition[1].RouteListIndex < stationIndex || (PresentPosition[1].RouteListIndex == stationIndex && PresentPosition[1].TCOffset <= platformBeginOffset)))
-                 {
-                     atStation = true;
-                 }
-
+                atStation = true;
             }
+            // if front is in platform and most of the train is as well, station is valid
+            else if (PresentPosition[0].RouteListIndex == stationIndex &&
+                    ((thisPlatform.Length - (platformEndOffset - PresentPosition[0].TCOffset)) > (Length / 2)))
+            {
+                atStation = true;
+            }
+            // if front is beyond platform and rear is not on route or before platform : train spans platform
+            else if ((PresentPosition[0].RouteListIndex > stationIndex || (PresentPosition[0].RouteListIndex == stationIndex && PresentPosition[0].TCOffset >= platformEndOffset))
+                && (PresentPosition[1].RouteListIndex < stationIndex || (PresentPosition[1].RouteListIndex == stationIndex && PresentPosition[1].TCOffset <= platformBeginOffset)))
+            {
+                atStation = true;
+            }
+
 
             // At station : set state, create action item
 
@@ -1027,20 +1004,11 @@ namespace ORTS
                     reqDistance = nextActionInfo != null ? Math.Min(nextActionInfo.RequiredDistance, reqDistance) : reqDistance;
 
 
-                    if (Simulator.Settings.EnhancedActCompatibility)
-                    {
-                        distanceToReversalPoint = ComputeDistanceToReversalPoint();
-                        // <CSComment: if compatibility flag on, the AI train runs up to the reverse point no matter how far it is from the diverging point.
+                    distanceToReversalPoint = ComputeDistanceToReversalPoint();
+                    // <CSComment: the AI train runs up to the reverse point no matter how far it is from the diverging point.
 
-                        CreateTrainAction(TrainMaxSpeedMpS, 0.0f, distanceToReversalPoint, null, AIActionItem.AI_ACTION_TYPE.REVERSAL);
-                        TCRoute.ReversalInfo[TCRoute.activeSubpath].ReversalActionInserted = true;
-                    }
-                    else
-                    {
-                        nextActionInfo = new AIActionItem(null, AIActionItem.AI_ACTION_TYPE.REVERSAL);
-                        nextActionInfo.SetParam(reqDistance, 0.0f, 0.0f, PresentPosition[0].DistanceTravelledM);
-                        MovementState = AI_MOVEMENT_STATE.BRAKING;
-                    }
+                    CreateTrainAction(TrainMaxSpeedMpS, 0.0f, distanceToReversalPoint, null, AIActionItem.AI_ACTION_TYPE.REVERSAL);
+                    TCRoute.ReversalInfo[TCRoute.activeSubpath].ReversalActionInserted = true;
 
                 }
             }
@@ -1058,17 +1026,10 @@ namespace ORTS
             {
                 if (MovementState != AI_MOVEMENT_STATE.STATION_STOP && MovementState != AI_MOVEMENT_STATE.STOPPED)
                 {
-                    if (!Simulator.Settings.EnhancedActCompatibility)
-                    {
-                        MovementState = AI_MOVEMENT_STATE.FOLLOWING;  // start following
-                    }
-                    else
-                    {
-                        if (MovementState != AI_MOVEMENT_STATE.INIT_ACTION && MovementState != AI_MOVEMENT_STATE.HANDLE_ACTION && MovementState != AI_MOVEMENT_STATE.END_ACTION)
+                         if (MovementState != AI_MOVEMENT_STATE.INIT_ACTION && MovementState != AI_MOVEMENT_STATE.HANDLE_ACTION && MovementState != AI_MOVEMENT_STATE.END_ACTION)
                         {
                             MovementState = AI_MOVEMENT_STATE.FOLLOWING;  // start following
                         }
-                    }
                 }
             }
             else if (EndAuthorityType[0] == END_AUTHORITY.RESERVED_SWITCH || EndAuthorityType[0] == END_AUTHORITY.LOOP)
@@ -1083,7 +1044,7 @@ namespace ORTS
                 (nextActionInfo == null || nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.END_OF_ROUTE))
             {
                 ResetActions(false);
-                if (!Simulator.Settings.EnhancedActCompatibility || TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1)
+                if (TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1)
                     NextStopDistanceM = DistanceToEndNodeAuthorityM[0] - clearingDistanceM;
                 else NextStopDistanceM = ComputeDistanceToReversalPoint() - clearingDistanceM;
             }
@@ -1704,7 +1665,7 @@ namespace ORTS
                         MovementState = AI_MOVEMENT_STATE.RUNNING;
                         StartMoving(AI_START_MOVEMENT.SIGNAL_CLEARED);
                     }
-                    else if (Simulator.Settings.EnhancedActCompatibility)
+                    else 
                     {
                         //<CSComment: without this train would not start moving if there is a stop signal in front
                         if (NextSignalObject[0] != null)
@@ -1869,7 +1830,7 @@ namespace ORTS
 
             thisStation.Passed = true;
 
-            if (Program.Simulator.Settings.EnhancedActCompatibility && thisStation.ActualStopType == StationStop.STOPTYPE.STATION_STOP 
+            if (thisStation.ActualStopType == StationStop.STOPTYPE.STATION_STOP 
                 && MaxVelocityA > 0 && ServiceDefinition != null && ServiceDefinition.ServiceList.Count > 0 && this != Simulator.Trains[0])
             // <CScomment> Recalculate TrainMaxSpeedMpS and AllowedMaxSpeedMpS
             {
@@ -1928,7 +1889,7 @@ namespace ORTS
                 if (MovementState == AI_MOVEMENT_STATE.STATION_STOP)
                 {
                     // if state is still station_stop and ready to depart - change to stop to check action
-                    MovementState = (!Simulator.Settings.EnhancedActCompatibility)? AI_MOVEMENT_STATE.STOPPED : AI_MOVEMENT_STATE.STOPPED_EXISTING;   
+                    MovementState = AI_MOVEMENT_STATE.STOPPED_EXISTING;   
                     AtStation = false;
                 }
 
@@ -2423,9 +2384,7 @@ namespace ORTS
 
                 else if (nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.REVERSAL)
                 {
-                    if (Math.Abs(SpeedMpS) < 0.01f && ! Simulator.Settings.EnhancedActCompatibility) 
-                        MovementState = AI_MOVEMENT_STATE.STOPPED;
-                    else if (Math.Abs(SpeedMpS) < 0.01f && nextActionInfo.ActivateDistanceM - DistanceTravelledM < 10.0f && Simulator.Settings.EnhancedActCompatibility) 
+                    if (Math.Abs(SpeedMpS) < 0.01f && nextActionInfo.ActivateDistanceM - DistanceTravelledM < 10.0f) 
                         MovementState = AI_MOVEMENT_STATE.STOPPED;
                 }
 
@@ -2511,9 +2470,7 @@ namespace ORTS
 
             lowestSpeedMpS = Math.Min(lowestSpeedMpS, AllowedMaxSpeedMpS);
             float maxPossSpeedMpS;
-            if (!Simulator.Settings.EnhancedActCompatibility)
-                maxPossSpeedMpS = distanceToGoM > 0 ? (float)Math.Sqrt(0.25f * MaxDecelMpSS * distanceToGoM) : 0.0f;
-            else maxPossSpeedMpS = distanceToGoM > 0 ? (float)Math.Sqrt(0.45f * MaxDecelMpSS * distanceToGoM) : 0.0f;
+            maxPossSpeedMpS = distanceToGoM > 0 ? (float)Math.Sqrt(0.45f * MaxDecelMpSS * distanceToGoM) : 0.0f;
             float idealSpeedMpS = Math.Min(AllowedMaxSpeedMpS, Math.Max(maxPossSpeedMpS, lowestSpeedMpS));
 
             if (requiredSpeedMpS > 0)
@@ -2759,8 +2716,8 @@ namespace ORTS
             // check speed
             if (((SpeedMpS - LastSpeedMpS) / elapsedClockSeconds) < 0.5f * MaxAccelMpSS)
             {
-                int stepSize = (!Simulator.Settings.EnhancedActCompatibility || !PreUpdate) ? 10 : 40;
-                float corrFactor = (!Simulator.Settings.EnhancedActCompatibility || !PreUpdate) ? 0.5f : 1.0f;
+                int stepSize = (!PreUpdate) ? 10 : 40;
+                float corrFactor = (!PreUpdate) ? 0.5f : 1.0f;
                 AdjustControlsAccelMore(Efficiency * corrFactor * MaxAccelMpSS, elapsedClockSeconds, stepSize);
             }
 
@@ -2872,7 +2829,7 @@ namespace ORTS
                         bool attachToTrain = AttachTo == OtherTrain.Number;
 
                         // <CScomment> Make check when this train in same section of OtherTrain; if other train is static or this train is in last section, pass to passive coupling
-                        if (Simulator.Settings.EnhancedActCompatibility && OtherTrain.SpeedMpS == 0.0f)
+                        if (OtherTrain.SpeedMpS == 0.0f)
                         {
                             var rearOrFront = ValidRoute[0][ValidRoute[0].Count - 1].Direction == 1 ? 0 : 1;
                              if   (PresentPosition[rearOrFront].TCSectionIndex == OtherTrain.PresentPosition[0].TCSectionIndex || 
@@ -3144,7 +3101,7 @@ namespace ORTS
             float topBand = AllowedMaxSpeedMpS - ((1.5f - Efficiency) * hysterisMpS);
             float highBand = Math.Max(0.5f, AllowedMaxSpeedMpS - ((3.0f - 2.0f * Efficiency) * hysterisMpS));
             float lowBand = Math.Max(0.4f, AllowedMaxSpeedMpS - ((9.0f - 3.0f * Efficiency) * hysterisMpS));
-            int throttleTop = (!Simulator.Settings.EnhancedActCompatibility) ? 50 : 90;
+            int throttleTop = 90;
 
             // check speed
 
@@ -3303,7 +3260,7 @@ namespace ORTS
             {
                 MovementState = AI_MOVEMENT_STATE.ACCELERATING;
                 Alpha10 = 10;
-                AITrainThrottlePercent = (!Simulator.Settings.EnhancedActCompatibility || !PreUpdate)? 25 : 50;
+                AITrainThrottlePercent = (!PreUpdate)? 25 : 50;
                 AdjustControlsBrakeOff();
             }
 
@@ -3846,9 +3803,7 @@ namespace ORTS
                 // reset to node control, also reset required actions
 
                 SwitchToNodeControl(-1);
-                if (!Simulator.Settings.EnhancedActCompatibility) ResetActions(true);
-
-            }
+             }
             else
             {
                 ProcessEndOfPathReached(ref returnValue, presentTime);
@@ -3989,8 +3944,7 @@ namespace ORTS
                         car.CarID = String.Copy(attachTrain.Name);
                         attachTrain.Cars.Insert(0, car);
                     }
-                    //<CSComment this should be a bug; now corrected only when Enhanced flag on
-                    if (Simulator.Settings.EnhancedActCompatibility && attachTrain.LeadLocomotiveIndex >= 0)
+                    if (attachTrain.LeadLocomotiveIndex >= 0)
                         attachTrain.LeadLocomotiveIndex += Cars.Count;
                 }
                 // attach to rear of waiting train
@@ -4035,30 +3989,15 @@ namespace ORTS
                 direction = (int)attachTrain.RearTDBTraveller.Direction;
 
                 attachTrain.PresentPosition[1].SetTCPosition(tn.TCCrossReference, offset, direction);
-                if (!Simulator.Settings.EnhancedActCompatibility)
-                {
-                    // remove train from track and clear actions
-                    attachTrain.RemoveFromTrack();
-                    attachTrain.ClearActiveSectionItems();
-
-                    // set new track sections occupied
-                    Train.TCSubpathRoute tempRouteTrain = signalRef.BuildTempRoute(attachTrain, attachTrain.PresentPosition[1].TCSectionIndex,
-                        attachTrain.PresentPosition[1].TCOffset, attachTrain.PresentPosition[1].TCDirection, attachTrain.Length, false, true, false);
-
-                    for (int iIndex = 0; iIndex < tempRouteTrain.Count; iIndex++)
-                    {
-                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[tempRouteTrain[iIndex].TCSectionIndex];
-                        thisSection.SetOccupied(attachTrain.routedForward);
-                    }
-                }
                 // set various items
                 attachTrain.CheckFreight();
                 attachCar.SignalEvent(Event.Couple);
 
-                if (MovementState != AI_MOVEMENT_STATE.AI_STATIC)
+                // <CSComment> as of now it seems to run better without this initialization
+                /*if (MovementState != AI_MOVEMENT_STATE.AI_STATIC)
                 {
                     if (!Simulator.Settings.EnhancedActCompatibility) InitializeSignals(true);
-                }
+                }*/
                 //  <CSComment> Why initialize brakes of a disappeared train?    
                 //            InitializeBrakes();
                 attachTrain.physicsUpdate(0);   // stop the wheels from moving etc
@@ -4399,7 +4338,7 @@ namespace ORTS
         /// 
        public void TestUncouple(ref int delay)
         {
-            if (!Program.Simulator.Settings.EnhancedActCompatibility || !Program.Simulator.Settings.ExtendedAIShunting) return;
+            if (!Program.Simulator.Settings.ExtendedAIShunting) return;
             if (delay <= 40000 || delay >= 60000) return;
             bool keepFront = true;
             int carsToKeep;
@@ -4461,7 +4400,7 @@ namespace ORTS
         /// 
         public void TestUncondAttach(ref int delay)
         {
-            if (!Program.Simulator.Settings.EnhancedActCompatibility || !Program.Simulator.Settings.ExtendedAIShunting) return;
+            if (!Program.Simulator.Settings.ExtendedAIShunting) return;
             if (delay != 60001) return;
             else
             {
@@ -4649,7 +4588,7 @@ namespace ORTS
 
             TrackCircuitSection thisSection = signalRef.TrackCircuitList[PresentPosition[0].TCSectionIndex];
             float lengthToGoM = thisSection.Length - PresentPosition[0].TCOffset;
-            if (!Simulator.Settings.EnhancedActCompatibility || TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1)
+            if (TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1)
             {
                 // go through all further sections
 
@@ -4668,24 +4607,7 @@ namespace ORTS
 
             TCRouteElement lastElement = ValidRoute[0][ValidRoute[0].Count - 1];
             TrackCircuitSection lastSection = signalRef.TrackCircuitList[lastElement.TCSectionIndex];
-            if (lastSection.EndSignals[lastElement.Direction] == null && TCRoute.activeSubpath == (TCRoute.TCRouteSubpaths.Count - 1) &&
-                !Simulator.Settings.EnhancedActCompatibility )
-            {
-                int nextIndex = lastSection.Pins[lastElement.Direction, 0].Link;
-                if (nextIndex >= 0)
-                {
-                    if (signalRef.TrackCircuitList[nextIndex].CircuitType == TrackCircuitSection.TrackCircuitType.Junction)
-                    {
-                        float lengthCorrection = Math.Max(Convert.ToSingle(signalRef.TrackCircuitList[nextIndex].Overlap), standardOverlapM);
-                        if (lastSection.Length - 2 * lengthCorrection < Length) // make sure train fits
-                        {
-                            lengthCorrection = Math.Max(0.0f, (lastSection.Length - Length) / 2);
-                        }
-                        lengthToGoM -= lengthCorrection; // correct for stopping position
-                    }
-                }
-            }
-
+ 
             CreateTrainAction(TrainMaxSpeedMpS, 0.0f, lengthToGoM, null,
                     AIActionItem.AI_ACTION_TYPE.END_OF_ROUTE);
             NextStopDistanceM = lengthToGoM;

@@ -270,7 +270,6 @@ namespace ORTS
             checkPerformanceTuner.Checked = Settings.PerformanceTuner;
             numericPerformanceTunerTarget.Value = Settings.PerformanceTunerTarget;
             checkDoubleWire.Checked = Settings.DoubleWire;
-            checkEnhancedActCompatibility.Checked = Settings.EnhancedActCompatibility;
             checkForcedRedAtStationStops.Checked = !Settings.NoForcedRedAtStationStops;
             trackLODBias.Value = Settings.LODBias;
             trackLODBias_ValueChanged(null, null);
@@ -459,7 +458,6 @@ namespace ORTS
             Settings.PerformanceTuner = checkPerformanceTuner.Checked;
             Settings.PerformanceTunerTarget = (int)numericPerformanceTunerTarget.Value;
             Settings.DoubleWire = checkDoubleWire.Checked;
-            Settings.EnhancedActCompatibility = checkEnhancedActCompatibility.Checked;
             Settings.NoForcedRedAtStationStops = !checkForcedRedAtStationStops.Checked;
             Settings.LODBias = trackLODBias.Value;
             Settings.ConditionalLoadOfNightTextures = checkConditionalLoadOfNightTextures.Checked;

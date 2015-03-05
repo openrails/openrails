@@ -167,16 +167,6 @@ namespace ORTS
                     if (Current is ActivityTaskPassengerStopAt)
                     {
                         ActivityTaskPassengerStopAt task = Current as ActivityTaskPassengerStopAt;
-                        if (!Program.Simulator.Settings.EnhancedActCompatibility)
-                        {
-                            // If the simulation starts with a scheduled start in the past, assume the train arrived on time.
-                            if (task.SchArrive < new DateTime().Add(TimeSpan.FromSeconds(Program.Simulator.ClockTime)))
-                            {
-                                task.ActArrive = task.SchArrive;
-                            }
-                            // If the simulation starts with a scheduled start in the future and the player's train already
-                            // stationary in the platform, the events will fire leading to an ActArrive time = Game Start time.
-                        }
                     }
                 }
             }
@@ -738,7 +728,7 @@ namespace ORTS
             {
                 if (IsAtStation())
                 {
-                    if (Program.Simulator.TimetableMode || !Program.Simulator.Settings.EnhancedActCompatibility || MyPlayerTrain.StationStops.Count == 0)
+                    if (Program.Simulator.TimetableMode || MyPlayerTrain.StationStops.Count == 0)
                     {
                         // If yes, we arrived
                         if (ActArrive == null)

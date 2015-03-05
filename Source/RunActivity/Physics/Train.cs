@@ -2273,7 +2273,7 @@ namespace ORTS
                         {
                             AllowedMaxSpeedMpS = firstObject.actual_speed;
                             float tempMaxSpeedMps = AllowedMaxSpeedMpS;
-                            if (!Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility)
+                            if (!Simulator.TimetableMode)
                             {
                                 tempMaxSpeedMps = IsFreight ? firstObject.speed_freight : firstObject.speed_passenger;
                                 if (tempMaxSpeedMps == -1f)
@@ -2299,7 +2299,7 @@ namespace ORTS
                             {
                                 speedLimit = new ActivateSpeedLimit(reqDistance, -1f, firstObject.actual_speed);
                             }
-                            else if (Simulator.TimetableMode || !Simulator.Settings.EnhancedActCompatibility || firstObject.speed_reset == 0)
+                            else if (Simulator.TimetableMode || firstObject.speed_reset == 0)
                             {
                                 speedLimit = new ActivateSpeedLimit(reqDistance, firstObject.actual_speed, -1f);
                             }
@@ -2316,7 +2316,7 @@ namespace ORTS
                             allowedAbsoluteMaxSpeedLimitMpS = firstObject.actual_speed;
                         }
                     }
-                    else if (!Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility)
+                    else if (!Simulator.TimetableMode)
                     {
                         var tempMaxSpeedMps = IsFreight ? firstObject.speed_freight : firstObject.speed_passenger;
                         if (tempMaxSpeedMps >= 0)
@@ -2759,7 +2759,7 @@ namespace ORTS
                         validSpeedMpS = actualSpeedMpS;
                     }
                 }
-                else if (!Program.Simulator.Settings.EnhancedActCompatibility || Program.Simulator.TimetableMode)
+                else if (Program.Simulator.TimetableMode)
                 {
                     {
                         if (actualSpeedMpS > 998f)
@@ -4047,7 +4047,7 @@ namespace ORTS
             float distanceToTrainM = -1;
             int stationIndex;
 
-            if (thisStation.SubrouteIndex > TCRoute.activeSubpath && !Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility)
+            if (thisStation.SubrouteIndex > TCRoute.activeSubpath && !Simulator.TimetableMode)
             // if the station is in a further subpath, distance computation is longer
             {
                 // first compute distance up to end or reverse point of activeSubpath. To be restudied for subpaths with no reversal
@@ -4806,10 +4806,10 @@ namespace ORTS
 
             if (ControlMode == TRAIN_CONTROL.AUTO_NODE &&
                 (EndAuthorityType[0] == END_AUTHORITY.END_OF_TRACK || EndAuthorityType[0] == END_AUTHORITY.END_OF_PATH) ||
-                (!Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility))
+                !Simulator.TimetableMode)
             {
                 // front is in last route section
-                if (PresentPosition[0].RouteListIndex == (ValidRoute[0].Count - 1) && (!Simulator.Settings.EnhancedActCompatibility || Simulator.TimetableMode ||
+                if (PresentPosition[0].RouteListIndex == (ValidRoute[0].Count - 1) && (Simulator.TimetableMode ||
                     (!TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid && TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1)))
                 {
                     endOfRoute = true;
@@ -4821,7 +4821,7 @@ namespace ORTS
                     float lengthToGo = thisSection.Length - PresentPosition[0].TCOffset;
 
                     bool junctionFound = false;
-                    if (Simulator.TimetableMode || !Simulator.Settings.EnhancedActCompatibility || TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1)
+                    if (Simulator.TimetableMode || TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1)
                     {
                         for (int iIndex = PresentPosition[0].RouteListIndex + 1; iIndex < ValidRoute[0].Count && !junctionFound; iIndex++)
                         {
@@ -4833,17 +4833,17 @@ namespace ORTS
                     else lengthToGo = ComputeDistanceToReversalPoint();
                     float compatibilityNegligibleRouteChunk = ((TrainType == TRAINTYPE.AI || TrainType == TRAINTYPE.AI_PLAYERHOSTING)
                         && TCRoute.TCRouteSubpaths.Count - 1 == TCRoute.activeSubpath) ? 40f : 5f;
-                    float negligibleRouteChunk = (!Simulator.Settings.EnhancedActCompatibility || Simulator.TimetableMode) ? 150f : compatibilityNegligibleRouteChunk;
+                    float negligibleRouteChunk = (Simulator.TimetableMode) ? 150f : compatibilityNegligibleRouteChunk;
 
                     if (lengthToGo < negligibleRouteChunk && !junctionFound &&
-                        (!Simulator.Settings.EnhancedActCompatibility || Simulator.TimetableMode || !TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid))
+                        (Simulator.TimetableMode || !TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid))
                     {
                         endOfRoute = true;
                     }
                 }
             }
             //<CSComment: check of vicinity to reverse point; only in subpaths ending with reversal
-            if (!Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility && TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid)
+            if (!Simulator.TimetableMode && TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid)
             {
                 float distanceToReversalPoint = ComputeDistanceToReversalPoint();
                 if (distanceToReversalPoint < 50 && PresentPosition[1].RouteListIndex >= reversalSectionIndex)
@@ -4859,7 +4859,7 @@ namespace ORTS
 
                 // if end of train on last section in route - end of route reached
 
-                if (PresentPosition[1].RouteListIndex == lastValidRouteIndex && (!Simulator.Settings.EnhancedActCompatibility || Simulator.TimetableMode))
+                if (PresentPosition[1].RouteListIndex == lastValidRouteIndex && (Simulator.TimetableMode))
                 {
                     endOfRoute = true;
                 }
@@ -4868,7 +4868,7 @@ namespace ORTS
 
                 if (NextSignalObject[0] != null && PresentPosition[0].TCSectionIndex == NextSignalObject[0].TCReference &&
                      NextSignalObject[0].TCReference == ValidRoute[0][lastValidRouteIndex].TCSectionIndex &&
-                     (!Simulator.Settings.EnhancedActCompatibility || Simulator.TimetableMode))
+                     Simulator.TimetableMode)
                 {
                     endOfRoute = true;
                 }
@@ -4883,7 +4883,7 @@ namespace ORTS
                 // if rear of train is beyond reversal section
 
                 else if (reversalSectionIndex >= 0 && PresentPosition[1].RouteListIndex >= reversalSectionIndex &&
-                    (!Simulator.Settings.EnhancedActCompatibility || Simulator.TimetableMode))
+                    Simulator.TimetableMode)
                 {
                     endOfRoute = true;
                 }
@@ -4973,7 +4973,7 @@ namespace ORTS
 
                     // check overall position
 
-                    if (!intermediateJunction && !intermediateSignal && (!Simulator.Settings.EnhancedActCompatibility || Simulator.TimetableMode))  // no more junctions and no more signal - reverse subpath
+                    if (!intermediateJunction && !intermediateSignal && Simulator.TimetableMode)  // no more junctions and no more signal - reverse subpath
                     {
                         endOfRoute = true;
                     }
@@ -8178,7 +8178,7 @@ namespace ORTS
             if (speedInfo.MaxSpeedMpSLimit > 0)
             {
                 allowedMaxSpeedLimitMpS = speedInfo.MaxSpeedMpSLimit;
-                if (Program.Simulator.TimetableMode || !Program.Simulator.Settings.EnhancedActCompatibility)
+                if (Program.Simulator.TimetableMode)
                     AllowedMaxSpeedMpS = speedInfo.MaxSpeedMpSLimit;
                 else
                     AllowedMaxSpeedMpS = Math.Min(speedInfo.MaxSpeedMpSLimit, allowedMaxSpeedSignalMpS);
@@ -9933,7 +9933,7 @@ namespace ORTS
 
             foreach (Traffic_Traffic_Item thisItem in TrafficService.TrafficDetails)
             {
-                if (Simulator.TimetableMode || !Simulator.Settings.EnhancedActCompatibility)
+                if (Simulator.TimetableMode)
                 {
                     beginActiveSubroute = 0;
                     activeSubrouteNodeIndex = 0;
@@ -10240,7 +10240,7 @@ namespace ORTS
                     }
                 }
 
-                if (Simulator.Settings.EnhancedActCompatibility && Simulator.Settings.NoForcedRedAtStationStops)
+                if (Simulator.Settings.NoForcedRedAtStationStops)
                 {
                     // We don't want reds at exit signal in this case
                     HoldSignal = false;
@@ -10269,12 +10269,11 @@ namespace ORTS
                 thisStation.arrivalDT = arrivalDT;
                 thisStation.departureDT = departureDT;
 
-                if (Simulator.Settings.EnhancedActCompatibility)
-                {
-                    MergeWPAndInsert(activeSubroute, thisStation, thisElement, beginOffset, endOffset);
-                }
-                else
-                {
+                //<CSComment> is this really necessary?
+                MergeWPAndInsert(activeSubroute, thisStation, thisElement, beginOffset, endOffset);
+
+                //<CSComment> should this be reused?
+                /*{
                     StationStops.Add(thisStation);
 
                     // if station has hold signal and this signal is the same as the exit signal for previous station, remove the exit signal from the previous station
@@ -10291,7 +10290,7 @@ namespace ORTS
                             }
                         }
                     }
-                }
+                }*/
 
                 // add signal to list of hold signals
 
@@ -10480,7 +10479,7 @@ namespace ORTS
             for (int iStation = 0; iStation < StationStops.Count && foundStation < 0; iStation++)
             {
                 thisStation = StationStops[iStation];
-                if (Simulator.Settings.EnhancedActCompatibility && thisStation.SubrouteIndex > TCRoute.activeSubpath) break;
+                if (thisStation.SubrouteIndex > TCRoute.activeSubpath) break;
                 if (thisStation.PlatformReference == id1 ||
                     thisStation.PlatformReference == id2)
                 {
@@ -11340,9 +11339,7 @@ namespace ORTS
 
         public virtual void AddTrainReversalInfo(TCReversalInfo thisReversal, ref TrainInfo thisInfo)
         {
-            int reversalSection = (!Program.Simulator.Settings.EnhancedActCompatibility) ?
-                  TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][(TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count) - 1].TCSectionIndex
-                  : reversalSection = thisReversal.ReversalSectionIndex;
+            int reversalSection = thisReversal.ReversalSectionIndex;
             if (thisReversal.LastDivergeIndex >= 0)
             {
                 reversalSection = thisReversal.SignalUsed ? thisReversal.SignalSectorIndex : thisReversal.DivergeSectorIndex;
@@ -11353,17 +11350,14 @@ namespace ORTS
             reversalSection, 0.0f);
 
             bool reversalEnabled = true;
-            if (Simulator.Settings.EnhancedActCompatibility)
+            TrackCircuitSection frontSection = signalRef.TrackCircuitList[PresentPosition[0].TCSectionIndex];
+            reversalDistanceM = Math.Max(reversalDistanceM, frontSection.GetDistanceBetweenObjects
+                (PresentPosition[0].TCSectionIndex, PresentPosition[0].TCOffset, PresentPosition[0].TCDirection,
+                thisReversal.ReversalSectionIndex, thisReversal.ReverseReversalOffset));
+            int reversalIndex = thisReversal.SignalUsed ? thisReversal.LastSignalIndex : thisReversal.LastDivergeIndex;
+            if (reversalDistanceM > 50f || (PresentPosition[1].RouteListIndex < reversalIndex))
             {
-                TrackCircuitSection frontSection = signalRef.TrackCircuitList[PresentPosition[0].TCSectionIndex];
-                reversalDistanceM = Math.Max(reversalDistanceM, frontSection.GetDistanceBetweenObjects
-                    (PresentPosition[0].TCSectionIndex, PresentPosition[0].TCOffset, PresentPosition[0].TCDirection,
-                    thisReversal.ReversalSectionIndex, thisReversal.ReverseReversalOffset));
-                int reversalIndex = thisReversal.SignalUsed ? thisReversal.LastSignalIndex : thisReversal.LastDivergeIndex;
-                if (reversalDistanceM > 50f || (PresentPosition[1].RouteListIndex < reversalIndex))
-                {
-                    reversalEnabled = false;
-                }
+                reversalEnabled = false;
             }
             if (reversalDistanceM > 0)
             {
@@ -12436,7 +12430,7 @@ namespace ORTS
                     }
                 }
 
-                if (Simulator.Settings.EnhancedActCompatibility && Simulator.Settings.NoForcedRedAtStationStops)
+                if (Simulator.Settings.NoForcedRedAtStationStops)
                 {
                     // We don't want reds at exit signal in this case
                     HoldSignal = false;
@@ -13027,7 +13021,7 @@ namespace ORTS
                     thisPathNode = nextPathNode;
                 }
 
-                if (!Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility)
+                if (!Program.Simulator.TimetableMode)
                 {
                     // insert reversals when they are in last section
                     while (reversal > 0)
@@ -15687,7 +15681,7 @@ namespace ORTS
                     firstIndex = firstCommonSection;
 
                     int endLastIndex = (prevReversalIndex > 0 && prevReversalIndex < lastCommonSection &&
-                        (Program.Simulator.TimetableMode || !Program.Simulator.Settings.EnhancedActCompatibility)) ? prevReversalIndex : 0;
+                        Program.Simulator.TimetableMode) ? prevReversalIndex : 0;
 
                     while (lastIndex >= endLastIndex && firstIndex <= (firstRoute.Count - 1) && lastRoute[lastIndex].TCSectionIndex == firstRoute[firstIndex].TCSectionIndex)
                     {
@@ -15701,7 +15695,7 @@ namespace ORTS
 
                     Valid = LastDivergeIndex >= 0; // it is a reversal
                     validDivPoint = true;
-                    if (Program.Simulator.TimetableMode || !Program.Simulator.Settings.EnhancedActCompatibility)
+                    if (Program.Simulator.TimetableMode)
                         validDivPoint = LastDivergeIndex > 0 && FirstDivergeIndex < (firstRoute.Count - 1); // valid reversal point
                     if (lastRoute.Count == 1 && FirstDivergeIndex < (firstRoute.Count - 1)) validDivPoint = true; // valid reversal point in first and only section
                 }
@@ -15721,7 +15715,7 @@ namespace ORTS
 
                     bool signalFound = false;
                     int startSection = 0;
-                    if (!Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility)
+                    if (!Program.Simulator.TimetableMode)
                     // In this case test starts only after reverse point.
                     {
                         for (int iSection = 0; iSection < firstRoute.Count; iSection++)
@@ -16591,7 +16585,7 @@ namespace ORTS
                 }
 
                 // if MSTS compatibility mode uses platform passenger number
-                if (!Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility)
+                if (!Program.Simulator.TimetableMode)
                 {
                     stopTime = ComputeBoardingTime(stoppedTrain);
                 }
