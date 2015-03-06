@@ -2,14 +2,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
 "POT-Creation-Date: 2015-02-24 11:41:15+0100\n"
-"PO-Revision-Date: 2015-02-27 19:27+0100\n"
-"Last-Translator: Daniel Heitepriem <semirben12@googlemail.com>\n"
+"PO-Revision-Date: 2015-03-06 13:01+0100\n"
+"Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.7.3\n"
+"X-Generator: Poedit 1.6.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-Bookmarks: 189,-1,-1,-1,-1,-1,-1,-1,-1,-1\n"
 
@@ -885,8 +885,9 @@ msgid "Experimental"
 msgstr "Experimentell"
 
 #: ../../Menu/Options.Designer.cs:1427
+#, fuzzy
 msgid "Show shape warnings"
-msgstr "Konturenfehler anzeigen"
+msgstr "Shape-Warnnungen im Log inkludieren"
 
 #: ../../Menu/Options.Designer.cs:1446
 msgid "Level of detail bias:"
@@ -907,7 +908,7 @@ msgstr "Nachttexturen nur laden, wenn benötigt"
 #: ../../Menu/Options.Designer.cs:1500
 #, fuzzy
 msgid "Forced red at station stops"
-msgstr "Ausfahrsignale bei Bahnhofshalt rot"
+msgstr "Ausfahrsignale vor Bahnhofshalt auf Stopp halten"
 
 #: ../../Menu/Options.Designer.cs:1510
 msgid "10%"
@@ -1028,7 +1029,7 @@ msgid ""
 "each full and mini-route MSTS installation."
 msgstr ""
 "Installationsprofile zeigen Open Rails die Speicherorte für Spielinhalte. "
-"Alle MSTS-Installationen angeben."
+"Alle MSTS-Installationen (komplett oder mini) können angeben werden."
 
 #: ../../Menu/Options.Designer.cs:1336
 msgid "Name"

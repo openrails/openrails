@@ -2,14 +2,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
 "POT-Creation-Date: 2015-01-31 20:56:56+0100\n"
-"PO-Revision-Date: 2015-02-06 20:02+0100\n"
+"PO-Revision-Date: 2015-03-06 13:04+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.6.10\n"
+"X-Generator: Poedit 1.6.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:217
@@ -67,12 +67,10 @@ msgid "Emergency Braking Push Button"
 msgstr "Druckknopf für Notbremsung"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:233
-#, fuzzy
 msgid "TCS Emergency Braking"
 msgstr "Zugkontrollscript Notbremsung"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:234
-#, fuzzy
 msgid "TCS Full Service Braking"
 msgstr "Zugkontrollscript Vollbremsung"
 
@@ -523,7 +521,6 @@ msgstr "Stromabnehmer"
 
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:322
 #: ../../RunActivity/Simulator/Confirmation.cs:143
-#, fuzzy
 msgid "Power"
 msgstr "Leistung"
 

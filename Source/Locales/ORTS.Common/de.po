@@ -2,14 +2,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Common\n"
 "POT-Creation-Date: 2015-02-27 19:20:02+0100\n"
-"PO-Revision-Date: 2015-02-27 19:29+0100\n"
-"Last-Translator: Daniel Heitepriem <semirben12@googlemail.com>\n"
+"PO-Revision-Date: 2015-03-06 12:57+0100\n"
+"Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.7.3\n"
+"X-Generator: Poedit 1.6.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ../../ORTS.Common/Conversions.cs:511
@@ -117,6 +117,7 @@ msgid "L"
 msgstr "L"
 
 #: ../../ORTS.Common/Conversions.cs:537
+#, fuzzy
 msgid "Imp.gal"
 msgstr "U.S.gal"
 
@@ -126,17 +127,18 @@ msgstr "U.S.gal"
 
 #: ../../ORTS.Common/Conversions.cs:539
 msgid "rpm"
-msgstr "rpm"
+msgstr "U/min"
 
 #: ../../ORTS.Common/Conversions.cs:540
 msgid "kW"
-msgstr "hp"
+msgstr "kW"
 
 #: ../../ORTS.Common/Conversions.cs:541
 msgid "hp"
-msgstr "hp"
+msgstr "PS"
 
 #: ../../ORTS.Common/Conversions.cs:542
+#, fuzzy
 msgid "bhp"
 msgstr "bhp"
 
@@ -149,6 +151,7 @@ msgid "MJ"
 msgstr "MJ"
 
 #: ../../ORTS.Common/Conversions.cs:545
+#, fuzzy
 msgid "BTU"
 msgstr "BTU"
 
@@ -169,10 +172,12 @@ msgid "kN"
 msgstr "kN"
 
 #: ../../ORTS.Common/Conversions.cs:550
+#, fuzzy
 msgid "lbf"
 msgstr "lbf"
 
 #: ../../ORTS.Common/Conversions.cs:551
+#, fuzzy
 msgid "klbf"
 msgstr "klbf"
 
