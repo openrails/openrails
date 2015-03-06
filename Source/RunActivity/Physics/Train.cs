@@ -16600,7 +16600,17 @@ namespace ORTS
 
                 // correct departure time for stop around midnight
                 int correctedTime = ActualArrival + stopTime;
-                ActualDepart = CompareTimes.LatestTime(DepartTime, correctedTime);
+                var validSched = CheckScheduleValidity(stoppedTrain);
+                if (validSched) ActualDepart = CompareTimes.LatestTime(DepartTime, correctedTime);
+                else
+                {
+                    ActualDepart = correctedTime;
+                    if (ActualDepart < 0)
+                    {
+                        ActualDepart += (24 * 3600);
+                        ActualArrival += (24 * 3600);
+                    }
+                }
             }
 
             //================================================================================================//
@@ -16674,6 +16684,19 @@ namespace ORTS
                 if (passengerCarsWithinPlatform > 0) stopTime = Math.Max(NumSecPerPass * PlatformItem.NumPassengersWaiting / passengerCarsWithinPlatform, DefaultFreightStopTime);
                 else stopTime = 0; // no passenger car stopped within platform: sorry, no countdown starts
                 return stopTime;
+            }
+
+            //================================================================================================//
+            /// <summary>
+            /// CheckScheduleValidity
+            /// Quite frequently in MSTS activities AI trains have invalid values (often near midnight), because MSTS does not consider them anyway
+            /// As OR considers them, it is wise to discard the least credible values, to avoid AI trains stopping for hours
+            /// <\summary>
+            private bool CheckScheduleValidity(Train stopTrain)
+            {
+                if (Program.Simulator.TimetableMode || stopTrain.TrainType != Train.TRAINTYPE.AI) return true;
+                if (ArrivalTime == DepartTime && Math.Abs(ArrivalTime - ActualArrival) > 14400) return false;
+                else return true;
             }
         }
 
