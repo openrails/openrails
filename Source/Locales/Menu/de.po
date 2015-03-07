@@ -1,15 +1,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
-"POT-Creation-Date: 2015-02-24 11:41:15+0100\n"
-"PO-Revision-Date: 2015-03-06 13:01+0100\n"
-"Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
+"POT-Creation-Date: 2015-02-28 14:35:40+0100\n"
+"PO-Revision-Date: 2015-03-07 13:46+0100\n"
+"Last-Translator: Daniel Heitepriem <semirben12@googlemail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.6.4\n"
+"X-Generator: Poedit 1.7.3\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-Bookmarks: 189,-1,-1,-1,-1,-1,-1,-1,-1,-1\n"
 
@@ -885,9 +885,8 @@ msgid "Experimental"
 msgstr "Experimentell"
 
 #: ../../Menu/Options.Designer.cs:1427
-#, fuzzy
 msgid "Show shape warnings"
-msgstr "Shape-Warnnungen im Log inkludieren"
+msgstr "Shape-Warnungen im Log inkludieren"
 
 #: ../../Menu/Options.Designer.cs:1446
 msgid "Level of detail bias:"
@@ -906,7 +905,6 @@ msgid "Load night textures only when needed"
 msgstr "Nachttexturen nur laden, wenn benötigt"
 
 #: ../../Menu/Options.Designer.cs:1500
-#, fuzzy
 msgid "Forced red at station stops"
 msgstr "Ausfahrsignale vor Bahnhofshalt auf Stopp halten"
 
@@ -1023,7 +1021,6 @@ msgstr ""
 "Die Ablagedatei wächst mit der Laufzeit der Simulation!"
 
 #: ../../Menu/Options.Designer.cs:1905
-#, fuzzy
 msgid ""
 "Installation profiles tell Open Rails where to look for game content. Add "
 "each full and mini-route MSTS installation."
