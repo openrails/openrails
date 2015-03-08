@@ -109,9 +109,9 @@ namespace ORTS.Viewer3D.Popups
             this.Activity.TriggeredEvent = null;
             Owner.Viewer.Simulator.Paused = false;   // Move to Viewer3D?
             this.Activity.IsActivityResumed = !Owner.Viewer.Simulator.Paused;
-            Activity.IsSuccessful = false;
             Activity.IsComplete = true;
             if( Owner.Viewer.IsReplaying ) Owner.Viewer.Simulator.Confirmer.Confirm( CabControl.Activity, CabSetting.Off );
+            Owner.Viewer.Game.PopState();
         }
 
         public void CloseBox() {
@@ -146,7 +146,7 @@ namespace ORTS.Viewer3D.Popups
                         {
                             Visible = Activity.IsActivityWindowOpen = Owner.Viewer.HelpWindow.ActivityUpdated = Owner.Viewer.Simulator.Paused = true;
                             ComposeMenu(e.ParsedObject.Name, Viewer.Catalog.GetStringFmt("This activity has ended {0}.\nFor a detailed evaluation, see the Help Window (F1).",
-                                Activity.IsSuccessful ? Viewer.Catalog.GetString("successfully") : Viewer.Catalog.GetString("without success")));
+                                Activity.IsSuccessful ? Viewer.Catalog.GetString("") : Viewer.Catalog.GetString("without success")));
                             EndMenu();
                     }
                         else
@@ -222,7 +222,7 @@ namespace ORTS.Viewer3D.Popups
         void EndMenu()
         {
             ResumeLabel.Text = "";
-            CloseLabel.Text = "";
+            CloseLabel.Text = "Resume and close box";
             QuitLabel.Text = Viewer.Catalog.GetString("End Activity");
             StatusLabel.Text = Viewer.Catalog.GetString("Status: Activity paused");
             StatusLabel.Color = Color.LightSalmon;

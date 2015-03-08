@@ -355,7 +355,7 @@ namespace ORTS.Viewer3D.Popups
                         StationNextDistance.Text = "";
                     }
 
-                    if (act != null && act.IsFinished)
+                    if (act != null && act.IsComplete)
                     {
                         Message.Text = Viewer.Catalog.GetString("Activity completed.");
                     }

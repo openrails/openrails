@@ -914,7 +914,7 @@ namespace ORTS
                                 File.AppendAllText(LogStationLogFile, stringBuild.ToString());
                             }
                             
-                            Program.Simulator.Confirmer.Viewer.QuitWindow.Visible = Program.Simulator.Paused = true;
+//                            Program.Simulator.Confirmer.Viewer.QuitWindow.Visible = Program.Simulator.Paused = true;
                         }
                     }
                 }
@@ -1153,6 +1153,7 @@ namespace ORTS
             switch (e.Type)
             {
                 case EventType.AllStops:
+                    triggered = activity.Tasks.Count > 0 && activity.Last.IsCompleted != null;
                     break;
                 case EventType.AssembleTrain:
                     consistTrain = matchesConsist(ChangeWagonIdList);
