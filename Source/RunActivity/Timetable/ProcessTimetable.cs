@@ -695,7 +695,7 @@ namespace ORTS
             foreach (TrainCar car in playerTrain.Cars)
             {
                 car.Train = playerTrain;
-                car.CarID = icar.ToString();
+                car.CarID = String.Concat(playerTrain.Number.ToString("0###"), "_", icar.ToString("0##"));
                 icar++;
             }
 
@@ -1216,7 +1216,7 @@ namespace ORTS
                             consistProc = consistProc.Substring(endIndex + 1).Trim();
                         }
                     }
-                    else if (consistProc.Substring(0,1).Equals("$"))
+                    else if (consistProc.Substring(0, 1).Equals("$"))
                     {
                         if (consistProc.Substring(1, 7).Equals("reverse"))
                         {
@@ -1236,6 +1236,7 @@ namespace ORTS
                         else
                         {
                             Trace.TraceWarning("Invalid command in consist string : {0}", consistProc);
+                            consistProc = String.Empty;
                         }
                     }
                     else
@@ -1243,22 +1244,22 @@ namespace ORTS
                         int plusIndex = consistProc.IndexOf('+');
                         if (plusIndex == 0)
                         {
-                            consistProc = consistProc.Substring(1);
+                            consistProc = consistProc.Substring(1).Trim();
                         }
                         else if (plusIndex > 0)
                         {
                             consistInfo thisConsist = new consistInfo();
-                            thisConsist.consistFile = String.Copy(consistProc.Substring(0, plusIndex - 1));
+                            thisConsist.consistFile = String.Copy(consistProc.Substring(0, plusIndex - 1).Trim());
 
-                            int sepIndex = consistDef.IndexOf('$');
+                            int sepIndex = thisConsist.consistFile.IndexOf('$');
                             if (sepIndex > 0)
                             {
-                                thisConsist.consistFile = consistDef.Substring(0, sepIndex - 1).Trim();
-                                consistProc = consistDef.Substring(sepIndex).Trim();
+                                consistProc = String.Concat(thisConsist.consistFile.Substring(sepIndex).Trim(), consistProc.Substring(plusIndex).Trim());
+                                thisConsist.consistFile = thisConsist.consistFile.Substring(0, sepIndex - 1).Trim();
                             }
                             else
                             {
-                                consistProc = consistProc.Substring(plusIndex + 1);
+                                consistProc = consistProc.Substring(plusIndex + 1).Trim();
                             }
                             thisConsist.reversed = false;
                             consistDetails.Add(thisConsist);
@@ -1266,13 +1267,13 @@ namespace ORTS
                         else
                         {
                             consistInfo thisConsist = new consistInfo();
-                            thisConsist.consistFile = String.Copy(consistDef);
+                            thisConsist.consistFile = String.Copy(consistProc);
 
-                            int sepIndex = consistDef.IndexOf('$');
+                            int sepIndex = consistProc.IndexOf('$');
                             if (sepIndex > 0)
                             {
-                                thisConsist.consistFile = consistDef.Substring(0, sepIndex - 1).Trim();
-                                consistProc = consistDef.Substring(sepIndex).Trim();
+                                thisConsist.consistFile = consistProc.Substring(0, sepIndex - 1).Trim();
+                                consistProc = consistProc.Substring(sepIndex).Trim();
                             }
                             else
                             {
@@ -1303,7 +1304,7 @@ namespace ORTS
                 foreach (consistInfo consistDetails in consistSets)
                 {
                     bool consistReverse = consistDetails.reversed;
-                    string consistFile = Path.Combine(consistDirectory,consistDetails.consistFile);
+                    string consistFile = Path.Combine(consistDirectory, consistDetails.consistFile);
 
                     string pathExtension = Path.GetExtension(consistFile);
                     if (String.IsNullOrEmpty(pathExtension))
@@ -1332,12 +1333,14 @@ namespace ORTS
 
                     // add wagons
                     AITrain.Length = 0.0f;
+                    int carId = 0;
 
                     foreach (TrainCar car in cars)
                     {
                         AITrain.Cars.Add(car);
                         car.Train = AITrain;
-                        car.CarID = AITrain.Name.Split(':')[0];
+                        car.CarID = String.Concat(AITrain.Number.ToString("0###"), "_", carId.ToString("0##"));
+                        carId++;
                         car.SignalEvent(Event.Pantograph1Up);
                         AITrain.Length += car.CarLengthM;
                     }
@@ -1908,19 +1911,23 @@ namespace ORTS
                 // copy consist in same or reverse direction
                 if ((totalreverse % 2) == 0) // even number, so same direction
                 {
+                    int carId = 0;
                     foreach (TrainCar car in cars)
                     {
                         car.Train = stabledTrain;
-                        car.CarID = stabledTrain.Name.Split(':')[0];
+                        car.CarID = String.Concat(stabledTrain.Number.ToString("0###"), "_", carId.ToString("0##"));
+                        carId++;
                         stabledTrain.Cars.Add(car);
                     }
                 }
                 else
                 {
+                    int carId = 0;
                     foreach (TrainCar car in cars)
                     {
                         car.Train = stabledTrain;
-                        car.CarID = stabledTrain.Name.Split(':')[0];
+                        car.CarID = String.Concat(stabledTrain.Number.ToString("0###"), "_", carId.ToString("0##"));
+                        carId++;
                         car.Flipped = !car.Flipped;
                         stabledTrain.Cars.Insert(0, car);
                     }

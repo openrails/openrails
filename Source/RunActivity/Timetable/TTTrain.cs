@@ -74,6 +74,7 @@ namespace ORTS
         public bool FormsStatic = false;                                  //indicate if train is to remain as static
         public int FormedOf = -1;                                         //indicates out of which train this train is formed
         public FormCommand FormedOfType = FormCommand.None;               //indicates type of formed-of command
+        public int OrgAINumber = -1;                                      //original AI number of formed player train
         public bool SetStop = false;                                      //indicates train must copy station stop from formed train
         public bool FormsAtStation = false;                               //indicates train must form into next service at last station, route must be curtailed to that stop
         public bool leadLocoAntiSlip = false;                             //anti slip indication for original leading engine
@@ -100,8 +101,8 @@ namespace ORTS
         /// Restore
         /// <\summary>
 
-        public TTTrain(Simulator simulator, BinaryReader inf)
-            : base(simulator, inf)
+        public TTTrain(Simulator simulator, BinaryReader inf, AI airef)
+            : base(simulator, inf, airef)
         {
             // TTTrains own additional fields
             Created = inf.ReadBoolean();
@@ -152,6 +153,7 @@ namespace ORTS
             FormsStatic = inf.ReadBoolean();
             FormedOf = inf.ReadInt32();
             FormedOfType = (FormCommand)inf.ReadInt32();
+            OrgAINumber = inf.ReadInt32();
             SetStop = inf.ReadBoolean();
             FormsAtStation = inf.ReadBoolean();
 
@@ -233,7 +235,7 @@ namespace ORTS
 
                     if (newStop != null)
                     {
-                        foreach(KeyValuePair<int, WaitInfo> thisConnect in orgStop.ConnectionDetails)
+                        foreach (KeyValuePair<int, WaitInfo> thisConnect in orgStop.ConnectionDetails)
                         {
                             newStop.ConnectionDetails.Add(thisConnect.Key, thisConnect.Value);
                         }
@@ -276,7 +278,6 @@ namespace ORTS
             outf.Write((int)MovementState);
             outf.Write(Efficiency);
             outf.Write(MaxVelocityA);
-            outf.Write(UncondAttach);
 
             // dummy for service list count
             outf.Write(-1);
@@ -333,6 +334,7 @@ namespace ORTS
             outf.Write(FormsStatic);
             outf.Write(FormedOf);
             outf.Write((int)FormedOfType);
+            outf.Write(OrgAINumber);
             outf.Write(SetStop);
             outf.Write(FormsAtStation);
 
@@ -353,7 +355,7 @@ namespace ORTS
         {
 
 #if DEBUG_CHECKTRAIN
-            if (Number == 116)
+            if (Number == 2)
             {
                 CheckTrain = true;
             }
@@ -1116,11 +1118,13 @@ namespace ORTS
             if (FormedOfType == FormCommand.TerminationFormed)
             {
                 Cars.Clear();
+                int carId = 0;
                 foreach (TrainCar car in otherTrain.Cars)
                 {
                     Cars.Add(car);
                     car.Train = this;
-                    car.CarID = this.Name.Split(':')[0];
+                    car.CarID = String.Concat(Number.ToString("0###"), "_", carId.ToString("0##"));
+                    carId++;
                 }
                 IsFreight = otherTrain.IsFreight;
                 Length = otherTrain.Length;
@@ -1312,7 +1316,7 @@ namespace ORTS
         /// Calculate running delay if present time is later than next station arrival
         /// </summary>
 
-        public void UpdateMinimalDelay()
+        public override void UpdateMinimalDelay()
         {
             int presentTime = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
 
@@ -3808,7 +3812,6 @@ namespace ORTS
                 {
                     var car = Cars[iCar];
                     car.Train = attachTrain;
-                    car.CarID = String.Copy(attachTrain.Name);
                     attachTrain.Cars.Insert(0, car);
                 }
             }
@@ -3818,9 +3821,16 @@ namespace ORTS
                 foreach (var car in Cars)
                 {
                     car.Train = attachTrain;
-                    car.CarID = String.Copy(attachTrain.Name);
                     attachTrain.Cars.Add(car);
                 }
+            }
+
+            // renumber cars
+            int carId = 0;
+            foreach (var car in attachTrain.Cars)
+            {
+                car.CarID = String.Concat(attachTrain.Number.ToString("0###"), "_", carId.ToString("0##"));
+                carId++;
             }
 
             // remove cars from this train
@@ -5196,8 +5206,14 @@ namespace ORTS
                             }
                             else
                             {
-                                MSTSLocomotive leadloco = formedTrain.LeadLocomotive as MSTSLocomotive;
-                                leadloco.AntiSlip = formedTrain.leadLocoAntiSlip;
+                                foreach (TrainCar car in formedTrain.Cars)
+                                {
+                                    if (car.GetWagonType().Equals("Engine"))
+                                    {
+                                        MSTSLocomotive loco = car as MSTSLocomotive;
+                                        loco.AntiSlip = formedTrain.leadLocoAntiSlip;
+                                    }
+                                }
                             }
                         }
                         else
@@ -5717,10 +5733,11 @@ namespace ORTS
                                         {
                                             if (String.Compare(StationStops[0].PlatformItem.Name, otherStop.PlatformItem.Name) == 0)
                                             {
-                                                if (otherStop.ConnectionsAwaited.ContainsKey(Number))
+                                                int RefNumber = OrgAINumber > 0 ? OrgAINumber : Number;
+                                                if (otherStop.ConnectionsAwaited.ContainsKey(RefNumber))
                                                 {
-                                                    otherStop.ConnectionsAwaited.Remove(Number);
-                                                    otherStop.ConnectionsAwaited.Add(Number, StationStops[0].ActualArrival);
+                                                    otherStop.ConnectionsAwaited.Remove(RefNumber);
+                                                    otherStop.ConnectionsAwaited.Add(RefNumber, StationStops[0].ActualArrival);
                                                 }
                                             }
                                         }
@@ -5805,6 +5822,98 @@ namespace ORTS
         }
 
         //================================================================================================//
+        /// <summary>
+        /// Process connection at station stop
+        /// </summary>
+        /// <param name="thisStop"></param>
+        /// <param name="deptime"></param>
+        /// <returns></returns>
+        public int ProcessConnections(StationStop thisStop, out int deptime)
+        {
+            int? helddepart = null;
+            int needwait = -1;
+            List<int> removeKeys = new List<int>();
+
+            foreach (KeyValuePair<int, int> connectionInfo in thisStop.ConnectionsAwaited)
+            {
+                // check if train arrival time set
+                int otherTrainNumber = connectionInfo.Key;
+                WaitInfo reqWait = thisStop.ConnectionDetails[otherTrainNumber];
+
+                if (connectionInfo.Value >= 0)
+                {
+                    removeKeys.Add(connectionInfo.Key);
+                    int reqHoldTime = (reqWait.holdTimeS.HasValue) ? reqWait.holdTimeS.Value : 0;
+                    int allowedDepart = (connectionInfo.Value + reqHoldTime) % (24 * 3600);
+                    if (helddepart.HasValue)
+                    {
+                        helddepart = CompareTimes.LatestTime(helddepart.Value, allowedDepart);
+                    }
+                    else
+                    {
+                        helddepart = allowedDepart;
+                    }
+                }
+                else
+                // check if train exists and if so, check its delay
+                {
+                    Train otherTrain = GetOtherTTTrainByNumber(otherTrainNumber);
+                    if (otherTrain != null)
+                    {
+                        // get station index for other train
+                        StationStop reqStop = null;
+
+                        foreach (StationStop nextStop in otherTrain.StationStops)
+                        {
+                            if (nextStop.PlatformItem.Name.Equals(StationStops[0].PlatformItem.Name))
+                            {
+                                reqStop = nextStop;
+                                break;
+                            }
+                        }
+
+                        // check if train is not passed the station
+                        if (reqStop != null)
+                        {
+                            if (otherTrain.Delay.HasValue)
+                            {
+                                if (otherTrain.Delay.Value.TotalSeconds <= reqWait.maxDelayS)
+                                {
+                                    needwait = otherTrainNumber;  // train is within allowed time - wait required
+                                    break;                        // no need to check other trains
+                                }
+                                else if (Delay.HasValue && (thisStop.ActualDepart > reqStop.ArrivalTime + otherTrain.Delay.Value.TotalSeconds))
+                                {
+                                    needwait = otherTrainNumber;  // train expected to arrive before our departure - wait
+                                    break;
+                                }
+                                else
+                                {
+                                    removeKeys.Add(connectionInfo.Key); // train is excessively late - remove connection
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // remove processed keys
+            foreach (int key in removeKeys)
+            {
+                thisStop.ConnectionsAwaited.Remove(key);
+            }
+
+            // set departure time
+            deptime = -1;
+            if (helddepart.HasValue)
+            {
+                deptime = helddepart.Value;
+            }
+
+            return (needwait);
+        }
+
+        //================================================================================================//
         //
         /// <summary>
         // Form new AI train out of player train
@@ -5855,6 +5964,9 @@ namespace ORTS
                 // remove existing train
                 Forms = -1;
 
+                // remove all existing deadlock path references
+                signalRef.RemoveDeadlockPathReferences(0);
+
                 // set details for new train from existing train
                 bool validFormed = formedTrain.StartFromAITrain(this, presentTime);
 
@@ -5903,6 +6015,7 @@ namespace ORTS
                 AI.AITrains.Remove(formedTrain);
 
                 // set proper details for new formed train
+                formedTrain.OrgAINumber = nextTrainNumber;
                 formedTrain.Number = 0;
                 AI.AITrains.Insert(0, formedTrain);
                 Simulator.Trains.Add(formedTrain);
@@ -5923,6 +6036,9 @@ namespace ORTS
                 formedTrain.MUGearboxGearIndex = MUGearboxGearIndex;
                 formedTrain.MUReverserPercent = MUReverserPercent;
                 formedTrain.MUDynamicBrakePercent = MUDynamicBrakePercent;
+
+                // reallocate deadlock path references for new train
+                signalRef.ReallocateDeadlockPathReferences(nextTrainNumber, 0);
 
                 bool foundPlayerLocomotive = false;
                 TrainCar newPlayerLocomotive = null;
@@ -5960,6 +6076,7 @@ namespace ORTS
                 if (!foundPlayerLocomotive)
                 {
                     Simulator.PlayerLocomotive = newPlayerLocomotive;
+                    formedTrain.InitializeBrakes(); // Initialize brakes on new engine
                     if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
                         Simulator.Confirmer.Information("Player switched to new locomotive");
                 }
@@ -5974,7 +6091,19 @@ namespace ORTS
 
         public TTTrain GetOtherTTTrainByNumber(int reqNumber)
         {
-            return (Simulator.Trains.GetTrainByNumber(reqNumber) as TTTrain);
+            TTTrain returnTrain = Simulator.Trains.GetTrainByNumber(reqNumber) as TTTrain;
+
+            // if not found, try if player train has required number as original number
+            if (returnTrain == null)
+            {
+                TTTrain playerTrain = Simulator.Trains.GetTrainByNumber(0) as TTTrain;
+                if (playerTrain.OrgAINumber == reqNumber)
+                {
+                    returnTrain = playerTrain;
+                }
+            }
+
+            return (returnTrain);
         }
 
         //================================================================================================//

@@ -156,8 +156,7 @@ namespace ORTS
                 string trainType = inf.ReadString();
                 if (String.Equals(trainType, "AI"))
                 {
-                    AITrain aiTrain = new AITrain(Simulator, inf);
-                    aiTrain.AI = this;
+                    AITrain aiTrain = new AITrain(Simulator, inf, this);
                     AITrains.Add(aiTrain);
                     Simulator.Trains.Add(aiTrain);
                     simulator.TrainDictionary.Add(aiTrain.Number, aiTrain);
@@ -166,8 +165,7 @@ namespace ORTS
                 }
                 else
                 {
-                    TTTrain aiTrain = new TTTrain(Simulator, inf);
-                    aiTrain.AI = this;
+                    TTTrain aiTrain = new TTTrain(Simulator, inf, this);
                     AITrains.Add(aiTrain);
                     Simulator.Trains.Add(aiTrain);
                     simulator.TrainDictionary.Add(aiTrain.Number, aiTrain);
@@ -183,15 +181,13 @@ namespace ORTS
                 string trainType = inf.ReadString();
                 if (String.Equals(trainType, "AI"))
                 {
-                    AITrain aiTrain = new AITrain(Simulator, inf);
-                    aiTrain.AI = this;
+                    AITrain aiTrain = new AITrain(Simulator, inf, this);
                     StartList.InsertTrain(aiTrain);
                     Simulator.StartReference.Add(aiTrain.Number);
                 }
                 else
                 {
-                    TTTrain aiTrain = new TTTrain(Simulator, inf);
-                    aiTrain.AI = this;
+                    TTTrain aiTrain = new TTTrain(Simulator, inf, this);
                     StartList.InsertTrain(aiTrain);
                     Simulator.StartReference.Add(aiTrain.Number);
                 }
@@ -204,15 +200,13 @@ namespace ORTS
                 string trainType = inf.ReadString();
                 if (String.Equals(trainType, "AI"))
                 {
-                    AITrain aiTrain = new AITrain(Simulator, inf);
-                    aiTrain.AI = this;
+                    AITrain aiTrain = new AITrain(Simulator, inf, this);
                     AutoGenTrains.Add(aiTrain);
                     Simulator.AutoGenDictionary.Add(aiTrain.Number, aiTrain);
                 }
                 else
                 {
-                    TTTrain aiTrain = new TTTrain(Simulator, inf);
-                    aiTrain.AI = this;
+                    TTTrain aiTrain = new TTTrain(Simulator, inf, this);
                     AutoGenTrains.Add(aiTrain);
                     Simulator.AutoGenDictionary.Add(aiTrain.Number, aiTrain);
                 }
@@ -223,14 +217,14 @@ namespace ORTS
 
         // Restore in autopilot mode
 
-        public AI (Simulator simulator, BinaryReader inf, bool autopilot)
+        public AI(Simulator simulator, BinaryReader inf, bool autopilot)
         {
             Debug.Assert(simulator.Trains != null, "Cannot restore AI without Simulator.Trains.");
             Simulator = simulator;
             string trainType = inf.ReadString(); // may be ignored, can be AI only
-            AITrain aiTrain = new AITrain(Simulator, inf);
+            AITrain aiTrain = new AITrain(Simulator, inf, this);
             int PlayerLocomotiveIndex = inf.ReadInt32();
-            if (PlayerLocomotiveIndex >=0) Simulator.PlayerLocomotive = aiTrain.Cars[PlayerLocomotiveIndex];
+            if (PlayerLocomotiveIndex >= 0) Simulator.PlayerLocomotive = aiTrain.Cars[PlayerLocomotiveIndex];
             Simulator.Trains.Add(aiTrain);
         }
 
@@ -280,10 +274,10 @@ namespace ORTS
                 }
                 outf.Write(PlayerLocomotiveIndex);
             }
-            else outf.Write (-1);
+            else outf.Write(-1);
         }
 
-	// prerun for activity mode
+        // prerun for activity mode
         private void PrerunAI(LoaderProcess loader)
         {
             float firstAITime = StartList.GetNextTime();
@@ -365,7 +359,7 @@ namespace ORTS
                         playerTrainOriginalTrain = -1;
                     }
                 }
-           
+
                 // player train is formed out of other train
                 else if (playerTrainOriginalTrain > 0)
                 {
@@ -494,9 +488,9 @@ namespace ORTS
                     Simulator.StartReference.Remove(thisTrain.Number);
                     var validPosition = AddToWorld(thisTrain);
                     if (thisTrain.InitialSpeed > 0 && validPosition)
-                        // Add extra run to allow setting signals
+                    // Add extra run to allow setting signals
                     {
-                       thisTrain.AIPreUpdate(0);
+                        thisTrain.AIPreUpdate(0);
                     }
                 }
             }
@@ -574,7 +568,7 @@ namespace ORTS
                         clockTime += intervalTime;
                         foreach (var train in AITrains)
                         {
-                            if (train.TrainType != Train.TRAINTYPE.PLAYER)
+                            if (train.TrainType != Train.TRAINTYPE.PLAYER && train.TrainType != Train.TRAINTYPE.INTENDED_PLAYER)
                             {
                                 if (train.Cars.Count == 0 || train.Cars[0].Train != train)
                                 {
@@ -611,7 +605,7 @@ namespace ORTS
             AddTrains();
         }
 
-	/// <summary>
+        /// <summary>
         /// Creates an AI train
         /// </summary>
         private AITrain CreateAITrain(Service_Definition sd, Traffic_Traffic_Definition trd)
@@ -632,7 +626,7 @@ namespace ORTS
                     break;
                 }
             }
-            AITrain train = CreateAITrainDetail (sd, trfDef, false);
+            AITrain train = CreateAITrainDetail(sd, trfDef, false);
             if (train != null)
             {
                 // insert in start list
@@ -690,7 +684,7 @@ namespace ORTS
 
             if (maxVelocityA > 0 && srvFile.Efficiency > 0)
             {
-                    // <CScomment> this is overridden if there are station stops
+                // <CScomment> this is overridden if there are station stops
                 train.TrainMaxSpeedMpS = Math.Min(train.TrainMaxSpeedMpS, maxVelocityA * srvFile.Efficiency);
             }
 
