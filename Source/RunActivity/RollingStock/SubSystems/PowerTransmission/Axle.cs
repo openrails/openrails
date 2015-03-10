@@ -617,83 +617,63 @@ namespace ORTS
                     motor.Update(timeSpan);
                     break;
                 case AxleDriveType.ForceDriven:
-                    
-                    //if ((Math.Abs(axleSpeedMpS) < 1.0f) && (brakeForceN > driveForceN))
-                    //{
-                    //    axleForceN = -brakeForceN;
-                    //}
                     //Axle revolutions integration
                     if (TrainSpeedMpS > 0.01f)
                     {
-                        if (((brakeForceN) > (driveForceN)) && (AxleSpeedMpS < 0.1f))
+                        axleSpeedMpS = AxleRevolutionsInt.Integrate(timeSpan,
+                            (
+                                driveForceN * transmissionEfficiency
+                                - brakeForceN
+                                - slipDerivationMpSS * dampingNs
+                                - Math.Abs(SlipSpeedMpS) * frictionN
+                                - AxleForceN
+                            )
+                            / totalInertiaKgm2
+                        );
+
+                        if (brakeForceN > driveForceN && AxleSpeedMpS < 0.1f)
                         {
                             axleSpeedMpS = 0.0f;
-                            axleForceN = - brakeForceN + driveForceN;
+                            axleForceN = -brakeForceN + driveForceN;
                         }
-                        else
+                    }
+                    else if (TrainSpeedMpS < -0.01f)
+                    {
+                        axleSpeedMpS = AxleRevolutionsInt.Integrate(timeSpan,
+                            (
+                                driveForceN * transmissionEfficiency
+                                + brakeForceN
+                                - slipDerivationMpSS * dampingNs
+                                + Math.Abs(SlipSpeedMpS) * frictionN
+                                - AxleForceN
+                            )
+                            / totalInertiaKgm2
+                        );
+
+                        if (brakeForceN > Math.Abs(driveForceN) && AxleSpeedMpS > -0.1f)
                         {
-                            if (timeSpan > 0)
-                            { 
-                                axleSpeedMpS = AxleRevolutionsInt.Integrate(timeSpan,
-                                        (
-                                            (
-                                            driveForceN * transmissionEfficiency
-                                            - brakeForceN
-                                            - slipDerivationMpSS * dampingNs
-                                            - Math.Abs(SlipSpeedMpS) * frictionN
-                                            - AxleForceN
-                                            )
-                                        / totalInertiaKgm2)
-                                        );
-                            }
+                            axleSpeedMpS = 0.0f;
+                            axleForceN = brakeForceN - driveForceN;
                         }
                     }
                     else
                     {
-                        if (TrainSpeedMpS < -0.01f)
+                        if (Math.Abs(driveForceN) < 1f)
                         {
-                            if (((brakeForceN) > (Math.Abs(driveForceN))) && (AxleSpeedMpS > -0.1f))
-                            {
-                                axleSpeedMpS = 0.0f;
-                                axleForceN = brakeForceN - driveForceN;
-                            }
-                            else
-                            {
-                                if (timeSpan > 0)
-                                {
-                                    axleSpeedMpS = AxleRevolutionsInt.Integrate(timeSpan,
-                                            (
-                                                (
-                                                driveForceN * transmissionEfficiency
-                                                + brakeForceN
-                                                - slipDerivationMpSS * dampingNs
-                                                + Math.Abs(SlipSpeedMpS) * frictionN
-                                                - AxleForceN
-                                                )
-                                            / totalInertiaKgm2)
-                                            );
-                                }
-                            }
+                            Reset();
+                            axleSpeedMpS = 0.0f;
+                            //axleForceN = 0.0f;
                         }
                         else
                         {
-                            if (Math.Abs(driveForceN) < 1f)
-                            {
+                            axleForceN = driveForceN - brakeForceN;
+                            if (Math.Abs(axleSpeedMpS) < 0.01f)
                                 Reset();
-                                axleSpeedMpS = 0.0f;
-                                //axleForceN = 0.0f;
-                            }
-                            else
-                            {
-                                axleForceN = driveForceN - brakeForceN;
-                                if (Math.Abs(axleSpeedMpS) < 0.01f)
-                                    Reset();
-                            }
-
-                            //Reset(TrainSpeedMpS);
-                            //axleForceN = driveForceN - brakeForceN;
-                            //axleSpeedMpS = AxleRevolutionsInt.Value;
                         }
+
+                        //Reset(TrainSpeedMpS);
+                        //axleForceN = driveForceN - brakeForceN;
+                        //axleSpeedMpS = AxleRevolutionsInt.Value;
                     }
                     break;
                 default:
