@@ -278,6 +278,7 @@ namespace ORTS
             outf.Write((int)MovementState);
             outf.Write(Efficiency);
             outf.Write(MaxVelocityA);
+            outf.Write(UncondAttach);
 
             // dummy for service list count
             outf.Write(-1);
