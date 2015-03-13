@@ -663,6 +663,12 @@ namespace ORTS
 
             WheelslipCausesThrottleDown = locoCopy.WheelslipCausesThrottleDown;
 
+            CompressorRestartPressurePSI = locoCopy.CompressorRestartPressurePSI;
+            MaxMainResPressurePSI = locoCopy.MaxMainResPressurePSI;
+            MainResPressurePSI = MaxMainResPressurePSI;
+            MainResVolumeM3 = locoCopy.MainResVolumeM3;
+
+
             PressureUnit = locoCopy.PressureUnit;
             IsDriveable = copy.IsDriveable;
             //ThrottleController = MSTSEngineController.Copy(locoCopy.ThrottleController);
