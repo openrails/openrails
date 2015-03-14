@@ -140,6 +140,7 @@ namespace ORTS
             Name = String.Copy(name);
             TrafficService = trafficService;
             MaxVelocityA = maxVelocityA;
+            if (Cars.Count < standardTrainMinCarNo) activityClearingDistanceM = shortClearingDistanceM;
         }
 
         public AITrain(Simulator simulator)
@@ -203,6 +204,8 @@ namespace ORTS
             UiD = inf.ReadInt32();
             MaxDecelMpSS = inf.ReadSingle();
             MaxAccelMpSS = inf.ReadSingle();
+
+            if (Cars.Count < standardTrainMinCarNo) activityClearingDistanceM = shortClearingDistanceM;
 
             int startTimeValue = inf.ReadInt32();
             if (startTimeValue < 0)
@@ -398,8 +401,8 @@ namespace ORTS
 
                 }
 
-                BuildWaitingPointList(clearingDistanceM);
-                BuildStationList(clearingDistanceM);
+                BuildWaitingPointList(activityClearingDistanceM);
+                BuildStationList(activityClearingDistanceM);
 
                 StationStops.Sort();
                 if (!atStation && StationStops.Count > 0 && this != Simulator.Trains[0])
@@ -501,10 +504,6 @@ namespace ORTS
             int beginSectionRouteIndex = ValidRoute[0].GetRouteIndex(beginSectionIndex, 0);
 
             // check position
-
-            float margin = 0.0f;
-            if (AI.PreUpdate)
-                margin = 2.0f * clearingDistanceM;  // allow margin in pre-update due to low update rate
 
             int stationIndex = ValidRoute[0].GetRouteIndex(thisStation.TCSectionIndex, PresentPosition[0].RouteListIndex);
 
@@ -651,7 +650,7 @@ namespace ORTS
 
                 if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL)
                 {
-                    Trace.TraceInformation("Train {0} is removed for out of control, reason : {1}", Number, OutOfControlReason.ToString());
+                    Trace.TraceInformation("Train {0} {1} is removed for out of control, reason : {2}", Number, Name, OutOfControlReason.ToString());
                     RemoveTrain();
                 }
             }
@@ -935,7 +934,7 @@ namespace ORTS
                     "0.0 > " + FormatStrings.FormatDistance(NextStopDistanceM, true) + " at " +
                     FormatStrings.FormatDistance(DistanceTravelledM, true) + "\n");
 #endif
-
+//                Trace.TraceWarning("Forced stop for for train {0} {1} at speed {2}", Number, Name, SpeedMpS);
                 if (CheckTrain)
                 {
                     File.AppendAllText(@"C:\temp\checktrain.txt", "Train " +
@@ -1046,8 +1045,8 @@ namespace ORTS
             {
                 ResetActions(false);
                 if (TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1)
-                    NextStopDistanceM = DistanceToEndNodeAuthorityM[0] - clearingDistanceM;
-                else NextStopDistanceM = ComputeDistanceToReversalPoint() - clearingDistanceM;
+                    NextStopDistanceM = DistanceToEndNodeAuthorityM[0] - activityClearingDistanceM;
+                else NextStopDistanceM = ComputeDistanceToReversalPoint() - activityClearingDistanceM;
             }
         }
 
@@ -1150,12 +1149,14 @@ namespace ORTS
                                     thisInfo.distance_to_train, thisInfo,
                                     AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_STOP);
                             processedList.Add(thisInfo);
-                            if (((thisInfo.distance_to_train - clearingDistanceM) < clearingDistanceM) &&
+                            var validClearingDistanceM = Simulator.TimetableMode ? clearingDistanceM : activityClearingDistanceM;
+                            if (((thisInfo.distance_to_train - validClearingDistanceM) < validClearingDistanceM) &&
                                          (SpeedMpS > 0.0f || MovementState == AI_MOVEMENT_STATE.ACCELERATING))
                             {
                                 AITrainBrakePercent = 100;
                                 AITrainThrottlePercent = 0;
-                                NextStopDistanceM = clearingDistanceM;
+                                NextStopDistanceM = validClearingDistanceM;
+                                if (PreUpdate && !Simulator.TimetableMode) ObtainRequiredActions(movedBackward); // fast track to stop train; else a precious update is lost
                             }
                         }
                         else if (thisInfo.distance_to_train > 2.0f * signalApproachDistanceM) // set restricted only if not close
@@ -1513,7 +1514,7 @@ namespace ORTS
      // Other node mode : check distance ahead (path may have cleared)
 
             else if (ControlMode == TRAIN_CONTROL.AUTO_NODE &&
-                        DistanceToEndNodeAuthorityM[0] > clearingDistanceM)
+                        DistanceToEndNodeAuthorityM[0] > activityClearingDistanceM)
             {
                 NextStopDistanceM = DistanceToEndNodeAuthorityM[0];
                 StartMoving(AI_START_MOVEMENT.SIGNAL_CLEARED);
@@ -1976,7 +1977,7 @@ namespace ORTS
 
             bool clearAction = false;
 
-            float distanceToGoM = clearingDistanceM;
+            float distanceToGoM = activityClearingDistanceM;
             if (nextActionInfo != null && nextActionInfo.RequiredSpeedMpS == 99999f)  //  RequiredSpeed doesn't matter
             {
                 return;
@@ -1994,7 +1995,7 @@ namespace ORTS
                     }
                     else if (EndAuthorityType[0] == END_AUTHORITY.END_OF_PATH)
                     {
-                        distanceToGoM = DistanceToEndNodeAuthorityM[0] - clearingDistanceM;
+                        distanceToGoM = DistanceToEndNodeAuthorityM[0] - activityClearingDistanceM;
                     }
 
                     if (distanceToGoM <= 0)
@@ -2010,7 +2011,7 @@ namespace ORTS
                         }
                     }
 
-                    if (distanceToGoM < clearingDistanceM && SpeedMpS <= 0)
+                    if (distanceToGoM < activityClearingDistanceM && SpeedMpS <= 0)
                     {
                         if (CheckTrain)
                         {
@@ -2275,7 +2276,20 @@ namespace ORTS
 
                 if (nextActionInfo.ActiveItem != null)
                 {
-                    distanceToGoM = nextActionInfo.ActiveItem.distance_to_train - signalApproachDistanceM;
+                    if (Cars != null && Cars.Count < 10)
+                    {
+                        distanceToGoM = nextActionInfo.ActiveItem.distance_to_train - signalApproachDistanceM / 4;
+                        if (PreUpdate) distanceToGoM -= signalApproachDistanceM * 0.25f;
+                        // Be more conservative if braking downhill
+                        /* else if (FirstCar != null)
+                        {
+                            var Elevation = FirstCar.CurrentElevationPercent;
+                            if (FirstCar.Flipped ^ (FirstCar.IsDriveable && FirstCar.Train.IsPlayerDriven && ((MSTSLocomotive)FirstCar).UsingRearCab)) Elevation = -Elevation;
+                            if (FirstCar.CurrentElevationPercent < -2.0) distanceToGoM -= signalApproachDistanceM;
+                        }*/
+                    }
+                    else distanceToGoM = nextActionInfo.ActiveItem.distance_to_train - signalApproachDistanceM;
+//                    distanceToGoM = nextActionInfo.ActiveItem.distance_to_train - signalApproachDistanceM;
                 }
 
                 // check if stopped at station
@@ -2394,7 +2408,7 @@ namespace ORTS
                 else if (nextActionInfo.RequiredSpeedMpS == 0)
                 {
                     NextStopDistanceM = distanceToGoM;
-                    if (distanceToGoM < signalApproachDistanceM)
+                    if (distanceToGoM < signalApproachDistanceM * 0.75f)
                     {
                         AdjustControlsBrakeMore(MaxDecelMpSS, elapsedClockSeconds, 50);
                         AITrainThrottlePercent = 0;
@@ -2414,13 +2428,13 @@ namespace ORTS
                                            "Speed : " + FormatStrings.FormatSpeed(SpeedMpS, true) + "\n");
                         }
 
-                        // if approaching signal and at 0.25 of approach distance and still moving, force stop
-                        if (distanceToGoM < (0.25 * signalApproachDistanceM) && SpeedMpS > 0 &&
+                        // if approaching signal and at approach distance and still moving, force stop
+                        if (distanceToGoM < 0 && SpeedMpS > 0 &&
                             nextActionInfo != null && nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_STOP)
                         {
 
 #if DEBUG_EXTRAINFO
-                            Trace.TraceWarning("Forced stop for signal at danger for train {0} at speed {1}", Number, SpeedMpS);
+                            Trace.TraceWarning("Forced stop for signal at danger for train {0} {1} at speed {2}", Number, Name, SpeedMpS);
 #endif
                             if (CheckTrain)
                             {
@@ -3992,6 +4006,7 @@ namespace ORTS
                 attachTrain.PresentPosition[1].SetTCPosition(tn.TCCrossReference, offset, direction);
                 // set various items
                 attachTrain.CheckFreight();
+                attachTrain.activityClearingDistanceM = attachTrain.Cars.Count < standardTrainMinCarNo ? shortClearingDistanceM : standardClearingDistanceM;
                 attachCar.SignalEvent(Event.Couple);
 
                 // <CSComment> as of now it seems to run better without this initialization
@@ -4087,6 +4102,7 @@ namespace ORTS
             PresentPosition[1].SetTCPosition(tn.TCCrossReference, offset, direction);
             // set various items
             CheckFreight();
+            activityClearingDistanceM = Cars.Count < standardTrainMinCarNo ? shortClearingDistanceM : standardClearingDistanceM;
             attachCar.SignalEvent(Event.Couple);
 
             physicsUpdate(0);   // stop the wheels from moving etc
@@ -4316,7 +4332,9 @@ namespace ORTS
             attachTrain.PresentPosition[1].SetTCPosition(tn.TCCrossReference, offset, direction);
             // set various items
             CheckFreight();
+            activityClearingDistanceM = Cars.Count < standardTrainMinCarNo ? shortClearingDistanceM : standardClearingDistanceM;
             attachTrain.CheckFreight();
+            attachTrain.activityClearingDistanceM = attachTrain.Cars.Count < standardTrainMinCarNo ? shortClearingDistanceM : standardClearingDistanceM;
             // anticipate reversal point and remove active action
             TCRoute.ReversalInfo[TCRoute.activeSubpath].ReverseReversalOffset = PresentPosition[0].TCOffset - 10f;
             // move WP, if any, just under the loco;
@@ -4474,7 +4492,7 @@ namespace ORTS
             float activateDistanceTravelledM = PresentPosition[0].DistanceTravelledM + distanceToTrainM;
             if (thisItem != null)
             {
-                activateDistanceTravelledM -= clearingDistanceM;
+                activateDistanceTravelledM -= Simulator.TimetableMode? clearingDistanceM : activityClearingDistanceM;
             }
 
             // calculate braking distance
@@ -4660,7 +4678,6 @@ namespace ORTS
                              FormatStrings.FormatSpeed(SpeedMpS, true) + ")\n");
                 }
             }
-
             nextActionInfo = null;
             foreach (ObjectItemInfo thisInfo in SignalObjectItems)
             {

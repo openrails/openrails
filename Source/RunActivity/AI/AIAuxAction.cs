@@ -1777,7 +1777,7 @@ namespace ORTS
                     if (thisTrain is AITrain)
                     {
                         AITrain aiTrain = thisTrain as AITrain;
-                        float distanceToGoM = AITrain.clearingDistanceM;
+                        float distanceToGoM = thisTrain.activityClearingDistanceM;
                         distanceToGoM = ActivateDistanceM - aiTrain.PresentPosition[0].DistanceTravelledM;
                         float NextStopDistanceM = distanceToGoM;
                         if (distanceToGoM <= 0f)
@@ -1985,7 +1985,7 @@ namespace ORTS
                     movementState = HandleAction(thisTrain, presentTime, elapsedClockSeconds, mvtState);
                     break;
                 case AITrain.AI_MOVEMENT_STATE.BRAKING:
-                    float distanceToGoM = AITrain.clearingDistanceM;
+                    float distanceToGoM = thisTrain.activityClearingDistanceM;
                     distanceToGoM = ActivateDistanceM - thisTrain.PresentPosition[0].DistanceTravelledM;
                     float NextStopDistanceM = distanceToGoM;
                     if (distanceToGoM < 0f)
@@ -2184,7 +2184,7 @@ namespace ORTS
                     movementState = HandleAction(thisTrain, presentTime, elapsedClockSeconds, mvtState);
                     break;
                 case AITrain.AI_MOVEMENT_STATE.BRAKING:
-                    float distanceToGoM = AITrain.clearingDistanceM;
+                    float distanceToGoM = thisTrain.activityClearingDistanceM;
                     distanceToGoM = ActivateDistanceM - thisTrain.PresentPosition[0].DistanceTravelledM;
                     float NextStopDistanceM = distanceToGoM;
                     if (distanceToGoM < 0f)
@@ -2383,7 +2383,7 @@ namespace ORTS
                     movementState = HandleAction(thisTrain, presentTime, elapsedClockSeconds, mvtState);
                     break;
                 case AITrain.AI_MOVEMENT_STATE.BRAKING:
-                    float distanceToGoM = AITrain.clearingDistanceM;
+                    float distanceToGoM = thisTrain.activityClearingDistanceM;
                     distanceToGoM = ActivateDistanceM - thisTrain.PresentPosition[0].DistanceTravelledM;
                     float NextStopDistanceM = distanceToGoM;
                     if (distanceToGoM < 0f)

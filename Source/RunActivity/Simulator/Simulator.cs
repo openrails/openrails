@@ -1248,6 +1248,9 @@ namespace ORTS
                 train.RepositionRearTraveller();    // fix the rear traveller
             }
 
+            train.activityClearingDistanceM = train.Cars.Count < Train.standardTrainMinCarNo ? Train.shortClearingDistanceM : Train.standardClearingDistanceM;
+            train2.activityClearingDistanceM = train2.Cars.Count < Train.standardTrainMinCarNo ? Train.shortClearingDistanceM : Train.standardClearingDistanceM;
+
 
             train.UncoupledFrom = train2;
             train2.UncoupledFrom = train;

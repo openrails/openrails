@@ -255,6 +255,11 @@ namespace ORTS
         public DistanceTravelledActions requiredActions = new DistanceTravelledActions(); // distance travelled action list
         public AuxActionsContainer AuxActionsContain;          // Action To Do during activity, like WP
 
+        public float activityClearingDistanceM = 30.0f;        // clear distance to stopping point for activities
+        public const float shortClearingDistanceM = 15.0f;     // clearing distance for short trains in activities
+        public const float standardClearingDistanceM = 30.0f;  // standard clearing distance for trains in activities
+        public const int standardTrainMinCarNo = 10;           // Minimum number of cars for a train to have standard clearing distance
+
         public float ClearanceAtRearM = -1;              // save distance behind train (when moving backward)
         public SignalObject RearSignalObject;            // direct reference to signal at rear (when moving backward)
         public bool tilted;
