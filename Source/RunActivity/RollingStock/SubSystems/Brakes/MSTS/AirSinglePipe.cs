@@ -206,7 +206,7 @@ namespace ORTS
             BrakeLine2PressurePSI = Car.Train.BrakeLine2PressurePSI;
             BrakeLine3PressurePSI = 0;
             AuxResPressurePSI = maxPressurePSI > BrakeLine1PressurePSI ? maxPressurePSI : BrakeLine1PressurePSI;
-            if ((Car as MSTSWagon).EmergencyReservoirPresent || maxPressurePSI != 0)
+            if (maxPressurePSI > 0)
                 EmergResPressurePSI = maxPressurePSI;
             FullServPressurePSI = fullServPressurePSI;
             AutoCylPressurePSI = immediateRelease ? 0 : Math.Min((maxPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio, MaxCylPressurePSI);
