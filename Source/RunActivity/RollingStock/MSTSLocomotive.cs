@@ -1003,9 +1003,10 @@ namespace ORTS
                 } // foreach
             } // end when not lead loco
 #else
-            if (Train.IsPlayerDriven) // for player locomotives
+            // Steam locomotives have their MotiveForceN already pre-inverted based on Direction
+            if (!(this is MSTSSteamLocomotive))
             {
-                if (this.IsLeadLocomotive())
+                if (Train.IsPlayerDriven)
                 {
                     switch (Direction)
                     {
@@ -1021,48 +1022,18 @@ namespace ORTS
                             break;
                     }
                 }
-                else
+                else // for AI locomotives
                 {
-                    // When not LeadLocomotive; check if lead is in Neutral
-                    // if so this loco will have no motive force
-
-                    var LeadLocomotive = Program.Simulator.PlayerLocomotive;
-
-                    if (LeadLocomotive == null) { }
-                    else if (LeadLocomotive.Direction == Direction.N)
-                        MotiveForceN *= 0;
-                    else
+                    switch (Direction)
                     {
-                        switch (Direction)
-                        {
-                            case Direction.Forward:
-                                MotiveForceN *= 1;     //Not necessary
-                                break;
-                            case Direction.Reverse:
-                                MotiveForceN *= -1;
-                                break;
-                            case Direction.N:
-                            default:
-                                MotiveForceN *= 0;
-                                break;
-                        }
+                        case Direction.Reverse:
+                            MotiveForceN *= -1;
+                            break;
+                        default:
+                            break;
                     }
-
-
-                } // end when not lead loco
-            }// end Player locomotive
-
-            else // for AI locomotives
-            {
-                switch (Direction)
-                {
-                    case Direction.Reverse:
-                        MotiveForceN *= -1;
-                        break;
-                    default:
-                        break;
-                }
-            }// end AI locomotive
+                }// end AI locomotive
+            }
 #endif
 
             if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null)
