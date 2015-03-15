@@ -913,8 +913,8 @@ namespace ORTS
                                 stringBuild.Append("\n");
                                 File.AppendAllText(LogStationLogFile, stringBuild.ToString());
                             }
-                            
-//                            Program.Simulator.Confirmer.Viewer.QuitWindow.Visible = Program.Simulator.Paused = true;
+
+                            IsCompleted = true;
                         }
                     }
                 }
