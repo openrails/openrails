@@ -6478,6 +6478,11 @@ namespace ORTS
                     AllowedMaxSpeedMpS = allowedMaxSpeedLimitMpS;
                 }
             }
+                // No speed limits behind us, initialize allowedMaxSpeedLimitMpS.
+            else if (!Simulator.TimetableMode)
+            {
+                AllowedMaxSpeedMpS = allowedMaxSpeedLimitMpS;
+            }
 
             // check backward for last signal in direction of train - check with list of pending signal speeds
             // search also checks for speedlimit to see which is nearest train
