@@ -1137,6 +1137,22 @@ namespace ORTS.Viewer3D
     }
 
     [Serializable()]
+    public class PauseActivityCommand : ActivityCommand
+    {
+        public PauseActivityCommand(CommandLog log, string eventNameLabel, double pauseDurationS)
+            : base(log, eventNameLabel, pauseDurationS)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.PauseActivity();
+            // Report();
+        }
+    }
+
+    [Serializable()]
     public class QuitActivityCommand : ActivityCommand {
         public QuitActivityCommand( CommandLog log, string eventNameLabel, double pauseDurationS )
             : base( log, eventNameLabel, pauseDurationS ) {

@@ -88,7 +88,11 @@ namespace ORTS.Viewer3D.Popups
         void ResumeActivity_Click(Control arg1, Point arg2)
         {
             TimeSpan diff = DateTime.Now - PopupTime;
-            new ResumeActivityCommand( Owner.Viewer.Log, EventNameLabel.Text, diff.TotalMilliseconds / 1000 );
+            if (Owner.Viewer.Simulator.Paused)
+                new ResumeActivityCommand(Owner.Viewer.Log, EventNameLabel.Text, diff.TotalMilliseconds / 1000);
+                //it's a toggle click
+            else
+                new PauseActivityCommand(Owner.Viewer.Log, EventNameLabel.Text, diff.TotalMilliseconds / 1000);
         }
 
         void CloseBox_Click(Control arg1, Point arg2)
@@ -128,6 +132,15 @@ namespace ORTS.Viewer3D.Popups
             Owner.Viewer.Simulator.Paused = false;   // Move to Viewer3D?
             Activity.IsActivityResumed = !Owner.Viewer.Simulator.Paused;
             if( Owner.Viewer.IsReplaying ) Owner.Viewer.Simulator.Confirmer.Confirm( CabControl.Activity, CabSetting.On );
+            ResumeMenu();
+        }
+
+        public void PauseActivity()
+        {
+            Owner.Viewer.Simulator.Paused = true;   // Move to Viewer3D?
+            Activity.IsActivityResumed = !Owner.Viewer.Simulator.Paused;
+            if (Owner.Viewer.IsReplaying) Owner.Viewer.Simulator.Confirmer.Confirm(CabControl.Activity, CabSetting.On);
+            ResumeMenu();
         }
 
         public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
@@ -148,7 +161,7 @@ namespace ORTS.Viewer3D.Popups
                             ComposeMenu(e.ParsedObject.Name, Viewer.Catalog.GetStringFmt("This activity has ended {0}.\nFor a detailed evaluation, see the Help Window (F1).",
                                 Activity.IsSuccessful ? Viewer.Catalog.GetString("") : Viewer.Catalog.GetString("without success")));
                             EndMenu();
-                    }
+                        }
                         else
                         {
                             var text = e.ParsedObject.Outcomes.DisplayMessage;
@@ -172,11 +185,12 @@ namespace ORTS.Viewer3D.Popups
                                 else
                                 {
                                     // Only needs updating the first time through
-                                    if (!Owner.Viewer.Simulator.Paused)
+                                    if (!Owner.Viewer.Simulator.Paused && Visible == false)
                                     {
-                                        Owner.Viewer.Simulator.Paused = true;
+                                        Owner.Viewer.Simulator.Paused = !e.ParsedObject.Continue;
                                         ComposeMenu( e.ParsedObject.Name, text );
-                                        ResumeMenu();
+                                        if (!e.ParsedObject.Continue) ResumeMenu();
+                                        else NoPauseMenu();
                                         PopupTime = DateTime.Now;
                                     }
                                 }
@@ -184,6 +198,11 @@ namespace ORTS.Viewer3D.Popups
                             } else {
                                 // Cancel the event as pop-up not needed.
                                 Activity.TriggeredEvent = null;
+                            }
+                            TimeSpan diff1 = DateTime.Now - PopupTime;
+                            if (Visible && diff1.TotalSeconds > 10 && e.ParsedObject.Continue && !Owner.Viewer.Simulator.Paused)
+                            {
+                                CloseBox();
                             }
                         }
                     }
@@ -200,11 +219,11 @@ namespace ORTS.Viewer3D.Popups
         // </CJComment>
         void ResumeMenu()
         {
-            ResumeLabel.Text = Viewer.Catalog.GetString("Resume");
-            CloseLabel.Text = Viewer.Catalog.GetString("Resume and close box");
+            ResumeLabel.Text = Owner.Viewer.Simulator.Paused ? Viewer.Catalog.GetString("Resume") : Viewer.Catalog.GetString("Pause");
+            CloseLabel.Text = Owner.Viewer.Simulator.Paused ? Viewer.Catalog.GetString("Resume and close box") : Viewer.Catalog.GetString("Close box");
             QuitLabel.Text = Viewer.Catalog.GetString("Quit activity");
-            StatusLabel.Text = Viewer.Catalog.GetString("Status: Activity paused");
-            StatusLabel.Color = Color.LightSalmon;
+            StatusLabel.Text = Owner.Viewer.Simulator.Paused ? Viewer.Catalog.GetString("Status: Activity paused") : Viewer.Catalog.GetString("Status: Activity resumed");
+            StatusLabel.Color = Owner.Viewer.Simulator.Paused ? Color.LightSalmon : Color.LightGreen;
         }
 
         // <CJComment> At this point, would like to change dialog box background from solid to see-through,
@@ -222,10 +241,19 @@ namespace ORTS.Viewer3D.Popups
         void EndMenu()
         {
             ResumeLabel.Text = "";
-            CloseLabel.Text = "Resume and close box";
+            CloseLabel.Text = Viewer.Catalog.GetString("Resume and close box");
             QuitLabel.Text = Viewer.Catalog.GetString("End Activity");
             StatusLabel.Text = Viewer.Catalog.GetString("Status: Activity paused");
             StatusLabel.Color = Color.LightSalmon;
+        }
+
+        void NoPauseMenu()
+        {
+            ResumeLabel.Text = Viewer.Catalog.GetString("Pause");
+            CloseLabel.Text = Viewer.Catalog.GetString("Close box");
+            QuitLabel.Text = Viewer.Catalog.GetString("Quit activity");
+            StatusLabel.Text = Viewer.Catalog.GetString("Status: Activity running");
+            StatusLabel.Color = Color.LightGreen;
         }
 
         void ComposeMenu(string eventLabel, string message)
