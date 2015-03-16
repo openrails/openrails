@@ -658,7 +658,7 @@ namespace Orts.Formats.Msts
         public string TextToDisplayOnCompletionIfTriggered = "";
         public string TextToDisplayOnCompletionIfNotTriggered = "";
         public Boolean Reversible;
-        public Boolean Continue;
+        public int ORTSContinue;
     }
 
     public class EventCategoryLocation : Event {
@@ -689,7 +689,7 @@ namespace Orts.Formats.Msts
                     RadiusM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     stf.MustMatch(")");
                 }),
-                new STFReader.TokenProcessor("continue", ()=>{ Continue = stf.ReadBoolBlock(false); }),
+                new STFReader.TokenProcessor("ortscontinue", ()=>{ ORTSContinue = stf.ReadIntBlock(-1); }),
             });
         }
     }
@@ -727,7 +727,7 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("reversable_event", ()=>{ stf.MustMatch("("); stf.MustMatch(")"); Reversible = true; }),
                 // Also support the correct spelling !
                 new STFReader.TokenProcessor("reversible_event", ()=>{ stf.MustMatch("("); stf.MustMatch(")"); Reversible = true; }),
-                new STFReader.TokenProcessor("continue", ()=>{ Continue = stf.ReadBoolBlock(false); }),
+                new STFReader.TokenProcessor("ortscontinue", ()=>{ ORTSContinue = stf.ReadIntBlock(-1); }),
             });
         }
     }
@@ -780,7 +780,7 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("texttodisplayoncompletionifnotrriggered", ()=>{ TextToDisplayOnCompletionIfNotTriggered = stf.ReadStringBlock(""); }),
                 new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(""); }),
                 new STFReader.TokenProcessor("time", ()=>{ Time = (int)stf.ReadFloatBlock(STFReader.UNITS.Time, null); }),
-                new STFReader.TokenProcessor("continue", ()=>{ Continue = stf.ReadBoolBlock(false); }),
+                new STFReader.TokenProcessor("ortscontinue", ()=>{ ORTSContinue = stf.ReadIntBlock(-1); }),
             });
         }
     }
