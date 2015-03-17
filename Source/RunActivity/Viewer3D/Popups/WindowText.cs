@@ -149,6 +149,7 @@ namespace ORTS.Viewer3D.Popups
             FontHeight = Font.Height;
             OutlineSize = outlineSize;
             Characters = new CharacterGroup(Font, OutlineSize);
+            EnsureCharacterData(Viewer3D.Viewer.Catalog.GetString("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890 \",.-+|!$%&/()=?;:'_[]"));
         }
 
         /// <summary>
