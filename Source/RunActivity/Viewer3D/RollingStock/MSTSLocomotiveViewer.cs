@@ -1320,7 +1320,7 @@ namespace ORTS.Viewer3D.RollingStock
         Color DrawColor;
         Double Num;
         bool IsFire;
-
+        
         public CabViewGaugeRenderer(Viewer viewer, MSTSLocomotive locomotive, CVCGauge control, CabShader shader)
             : base(viewer, locomotive, control, shader)
         {
@@ -2150,7 +2150,23 @@ namespace ORTS.Viewer3D.RollingStock
                     }
                     else if (style != null && style is CabViewGaugeRenderer)
                     {
-                        Gauges.Add(key, new ThreeDimCabGaugeNative(viewer, iMatrix, parameter1, parameter2, this.TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
+                        var CVFR = (CabViewGaugeRenderer)style;
+
+                        if (CVFR.GetGauge().ControlStyle != CABViewControlStyles.POINTER) //pointer will be animated, others will be drawn dynamicaly
+                        {
+                            Gauges.Add(key, new ThreeDimCabGaugeNative(viewer, iMatrix, parameter1, parameter2, this.TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
+                        }
+                        else
+                        {//for pointer animation
+                            //if there is a part already, will insert this into it, otherwise, create a new
+                            if (!AnimateParts.ContainsKey(key))
+                            {
+                                tmpPart = new AnimatedPartMultiState(TrainCarShape, type, key);
+                                AnimateParts.Add(key, tmpPart);
+                            }
+                            else tmpPart = AnimateParts[key];
+                            tmpPart.AddMatrix(iMatrix); //tmpPart.SetPosition(false);
+                        }
                     }
                     else if (type == CABViewControlTypes.EXTERNALWIPERS)
                     {
