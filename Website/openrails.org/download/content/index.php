@@ -26,6 +26,8 @@ There are more than 40 of these ORTS parameters which are used to provide featur
 <p>
 The Spanish websites <a href="http://viajerosaltren.es">Viajeros al Tren</a> and <a href="http://www.spaintrainzrutas.com/">Spain Trainz Rutas</a> are some of the first to offer ORTS-specific products.
 </p><p>
+<a href="http://www.dekosoft.com">Dekosoft Trains</a> have since offered GP30 locos with 3D cabs exclusively for Open Rails.
+</p><p>
 Some Australian routes (New South Wales) have been packaged by Peter Newell to work just with OR:
 </p>
 <ul>

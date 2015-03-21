@@ -26,6 +26,15 @@ When MSTS is installed, then Open Rails can safely make use of all the MSTS cont
 </p><p>
 Most non-MSTS routes, activities and rolling stock make use of some MSTS content, usually sound files, textures and cab interiors. If products designed for MSTS are used on a PC with OR but not MSTS, then they are likely to work but some sounds and textures will be missing. Such files will be listed with warnings in the OR log file.
 </p>
+<h3>How can I recognise add-on products for MSTS that require MSTS files?</h3>
+<p>
+Add-ons designed for MSTS may rely on files from the MSTS product. For instance:
+<ul>
+  <li>Routes provided with an Install.bat file that copies <i>shapes</i> and <i>textures</i> from the routes on the MSTS CDs.</li>
+  <li>Locomotives that re-use <i>cabviews</i> or <i>sounds</i> from the locomotives on the MSTS CDs (see folder TRAINSET).</li>
+  <li>Rolling stock that have sound management (SMS) files that refer to <i>wave</i> files from the MSTS CDs (see folder SOUND).</li>
+</ul>
+</p>
 <h3>If I install OR, will it change my MSTS files?</h3>
 <p>
 No, OR does not modify any MSTS files.

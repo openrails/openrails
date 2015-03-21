@@ -91,6 +91,7 @@ These are the experts in creating buildings, locos, routes, signs, even grass. T
           <table>
             <tr><td>engmod</td></tr>
             <tr><td>Genma Saotome</td></tr>
+            <tr><td>Jeffrey Kraus-Yao</td></tr>
             <tr><td>plainsman</td></tr>
             <tr><td>thegrindre</td></tr>
             <tr><td>Turbo Bill</td></tr>

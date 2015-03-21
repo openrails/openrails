@@ -61,17 +61,19 @@ echo(date('d-M-Y', filemtime("files/$simple_download")));
             <h4>News</h4>
           </div>
           <p>
+            <strong>Dec 2014</strong>
+            <a href="http://www.dekosoft.com">Dekosoft Trains</a> has added locos exclusively for Open Rails to its range.
+            These are GP30 diesels taking advantage of our 3D cab feature.
+          </p>
+          <p>
             <strong>July 2014</strong>
-          The legacy graphics-heavy web site has been replaced by one based on Bootstrap which is both easier to maintain and
-          suitable for phones and tablets as well as PCs.
+            The legacy graphics-heavy web site has been replaced by one based on Bootstrap which is both easier to maintain and
+            suitable for phones and tablets as well as PCs.
           </p><p>
           You can still <a href="/web1/index.html">see an archive of the old site</a>.
           </p><p>
             <strong>April 2014</strong>
             &#8212; An installer is now available, so Open Rails and its pre-requisites such as XNA can be delivered in a single download. 
-          </p><p>
-            <strong>March 2014</strong>
-            &#8212; OR becomes available in additional languages, initially eight including Chinese. 
           </p>
         </div>
         <div class="col-md-4 divider">

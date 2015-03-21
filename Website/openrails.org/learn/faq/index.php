@@ -32,8 +32,9 @@
 				</p>
 				<h3>Is OR just an improved version of MSTS?</h3>
 				<p>
-				OR is not an improvement to MSTS, but a complete new simulator that can use MSTS routes, activities, consists and train sets. It 
-				reads the MSTS entries in the Windows registry to locate any MSTS files on your computer and use them in the OR simulator.
+				OR is not an improvement to MSTS, but a complete new simulator that can use MSTS routes, activities, consists and train sets. At
+        installation, OR looks for MSTS entries in the Windows registry to locate any MSTS files on your computer. It will offer to use them
+        in the simulation.
 				</p><p>
 				The OR simulator operates train services independently of MSTS and without running any MSTS code. Currently you must use the MSTS Route Editor to build
 				new routes, but we intend to develop our own Route Editor.
