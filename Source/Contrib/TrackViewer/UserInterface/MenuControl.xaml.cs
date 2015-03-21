@@ -86,25 +86,6 @@ namespace ORTS.TrackViewer.UserInterface
         }
 
         /// <summary>
-        /// Return the scaling factor in case of retina screens or other screen enlargements
-        /// </summary>
-        /// <returns>the effective scale if it is know, 1 otherwise</returns>
-        public float DpiScale()
-        {
-            double scaleX = 1.0;
-            //double scaleY = 1.0;
-            System.Windows.PresentationSource presentationsource = System.Windows.PresentationSource.FromVisual(this);
-
-            if (presentationsource != null) // make sure it's connected
-            {
-                scaleX = presentationsource.CompositionTarget.TransformToDevice.M11;
-                //scaleY = presentationsource.CompositionTarget.TransformToDevice.M22;
-            }
-            float dpiY = System.Drawing.Graphics.FromHwnd(IntPtr.Zero).DpiY;
-            return (float)scaleX;
-        }
-
-        /// <summary>
         /// set the size of the menu control (also after rescaling)
         /// </summary>
         /// <param name="width"></param>

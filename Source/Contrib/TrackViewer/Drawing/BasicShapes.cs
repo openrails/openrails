@@ -558,19 +558,8 @@ namespace ORTS.TrackViewer.Drawing
 
             fonts = new Dictionary<int, WindowTextFont>();
             textManager = new WindowTextManager();
-            UpdateDpi(1);
-        }
-
-        /// <summary>
-        /// Update the font and text handling in case DPI scale (e.g. for retina screens) is changed
-        /// </summary>
-        /// <param name="DpiScale">Ratio between real pixels and program pixels. Normal reference vale is 1.0</param>
-        public void UpdateDpi(float DpiScale)
-        {
-            fonts.Clear();
             DefaultFont = InitFont(defaultFontSize);
             RequestFontSize(expandingFontSize);
-            WindowTextFont.DpiScale = DpiScale;
         }
 
         /// <summary>
