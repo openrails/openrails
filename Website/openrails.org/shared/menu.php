@@ -17,7 +17,7 @@ function ends_with($string, $end) { // From http://stackoverflow.com/questions/6
         <div class="navbar-collapse collapse navbar-responsive-collapse">
           <ul class="nav navbar-nav">
 <?php if (ends_with($cwd, "dev")) { echo "<li class = 'active'>"; }else{ echo "<li>"; } ?>
-						  <a href='/'>Home</a>
+              <a href='/'>Home</a>
             </li>
 <?php 
 if (ends_with($cwd, "open_rails_project") 
@@ -27,7 +27,8 @@ if (ends_with($cwd, "open_rails_project")
 || ends_with($cwd, "or_news")
 || ends_with($cwd, "or_license")) 
   { echo "<li class='active dropdown'>"; }else{ echo "<li class='dropdown'>"; }
-?>              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Discover <b class="caret"></b></a>
+?>
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Discover <b class="caret"></b></a>
               <ul class="dropdown-menu">
                 <li><a href="/discover/open-rails/">Open Rails</a></li>
                 <li><a href="/discover/our-mission/">Our Mission</a></li>

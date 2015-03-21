@@ -6,14 +6,14 @@
 <?php include "../../shared/banners/choose_banner.php" ?>
 <?php include "../../shared/banners/show_banner.php" ?>
 <?php include "../../shared/menu.php" ?>
-		<div class="row">
-			<div class="col-md-12">
-        <h1>Download > Content</h1>
+      <div class="row">
+        <div class="col-md-12">
+          <h1>Download > Content</h1>
+        </div>
       </div>
-    </div>
- 		<div class="row">
-			<div class="col-md-3"></div>
-			<div class="col-md-6">
+      <div class="row">
+        <div class="col-md-3"></div>
+        <div class="col-md-6">
 <h2>Expected To Grow</h2>
 <p>
 Now that Open Rails has reached a stage where it can do most of what MSTS does, attention is shifting to features that only Open Rails can provide. You should expect the lists below to grow.
@@ -31,9 +31,9 @@ The Spanish websites <a href="http://viajerosaltren.es">Viajeros al Tren</a> and
 Some Australian routes (New South Wales) have been packaged by Peter Newell to work just with OR:
 </p>
 <ul>
-  <li><a href="http://www.craven.coalstonewcastle.com.au/">Craven Timber Railway</a></li>
-  <li><a href="http://www.manning-river.coalstonewcastle.com.au/">Manning River Breakwall Railway</a></li>
-	<li><a href="http://www.tweed.coalstonewcastle.com.au/">Tweed Railway</a></li>
+<li><a href="http://www.craven.coalstonewcastle.com.au/">Craven Timber Railway</a></li>
+<li><a href="http://www.manning-river.coalstonewcastle.com.au/">Manning River Breakwall Railway</a></li>
+<li><a href="http://www.tweed.coalstonewcastle.com.au/">Tweed Railway</a></li>
 </ul>
 <h3>Forum Library Files</h3>
 <ul>
@@ -44,8 +44,8 @@ Some Australian routes (New South Wales) have been packaged by Peter Newell to w
 <p>
 <small>[Searches made 30-May-2014]</small>
 </p>
-			</div>
-		</div>
+        </div>
+      </div>
 <?php include "../../shared/tail.php" ?>
 <?php include "../../shared/banners/preload_next_banner.php" ?>
   </body>
