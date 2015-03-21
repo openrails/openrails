@@ -80,7 +80,7 @@
 			<div class="col-md-4">
         <h2>Recent Code Changes</h2>
 		<ul>
-			<?php include "../../scripts/experimental_changelog1.html" ?>
+			<?php include "../../api/update/testing/changelog.html" ?>
 		</ul>
 		<p><a href='../../download/changes/'>See more code changes</a></p>
   			<div class="col-md-1">

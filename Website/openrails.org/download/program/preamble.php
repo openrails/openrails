@@ -22,7 +22,7 @@ echo("<h2 class='modal-title'>$title</h2>");
                     <a href='http://openrails.org/share/community/'>free from a forum</a> before you can use Open Rails.
                   </p><p class="text-right">
 <?php 
-echo ("<a href='/download/program/confirm.php?filepath=$file_path&file=$download_file&fileext=$ext' class='btn download_button'>Download</a>");
+echo ("<a href='/download/program/confirm.php?filepath=../../files&file=$download_file&fileext=$ext' class='btn download_button'>Download</a>");
 ?>
                     <button type="button" data-dismiss="modal" aria-hidden="true" class="btn btn-default cancel_button">Cancel</button>
                   </p>

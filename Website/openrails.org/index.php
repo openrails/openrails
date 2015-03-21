@@ -20,6 +20,10 @@
         </div>
       </div>
 <?php include "shared/menu.php" ?>
+<?php
+  $download_stable = 'OpenRailsInstaller.exe';
+  $file_path = "files";
+?>
       <div class="row">
         <div class="col-md-6">
           <img class="focus_image" src='shared/banners/banner058.jpg' title="UP7964 leads 'K' Liner on LSRC (Michigan)&#xa;posted by ATW" alt="UP7964 leads 'K' Liner on LSRC (Michigan)&#xa;posted by ATW">
@@ -27,20 +31,17 @@
         <div class="row preload hidden"></div> <!-- empty div used to hold banner preload -->
         <div class="col-md-6">
           <p>&nbsp;</p>
-            <div class="description">
-              Open Rails is a train simulator that supports <br />
-              the world's largest range of digital content. 
-            </div>
-            <div class="download">
-              <!-- Button to trigger modal -->
-              <a href="#modal1" role="button" class='btn download_button' data-toggle="modal">
-                <span class='glyphicon glyphicon-download'></span>&nbsp; Download OR installer 
-<?php
-$simple_download = 'setup_OR_pre-v1.0_from_download.exe';
-echo(date('d-M-Y', filemtime("files/$simple_download"))); 
-?>
-              </a>
-            </div>
+          <div class="description">
+            Open Rails is a train simulator that supports <br />
+            the world's largest range of digital content. 
+          </div>
+          <div class="download">
+            <!-- Button to trigger modal -->
+            <!--<a href="#modal1" role="button" class='btn download_button' data-toggle="modal">
+              <span class='glyphicon glyphicon-download'></span>&nbsp; Download the installer 
+              <?php echo(date('d-M-Y', filemtime("$file_path/$download_stable"))); ?>
+            </a>-->
+          </div>
         </div>
       </div>
       <div class="row">
@@ -102,10 +103,9 @@ echo(date('d-M-Y', filemtime("files/$simple_download")));
 <?php include "shared/banners/preload_next_banner.php" ?>
 <?php 
 $modal = 'modal1';
-$title = 'Simple Download';
-$download_file = $simple_download;
+$title = 'Download Open Rails';
+$download_file = $download_stable;
 $ext = 'exe';
-$file_path = "../../files"; 
 include "download/program/preamble.php";
 ?>
   </body>

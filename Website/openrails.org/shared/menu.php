@@ -49,7 +49,7 @@ if (ends_with($cwd, "program")
               <ul class="dropdown-menu">
                 <li><a href="/download/program/">Program</a></li>
                 <li><a href="/download/source/">Source</a></li>
-                <li><a href="/download/changes/">Code Changes</a></li>
+                <li><a href="/download/changes/">Changes</a></li>
                 <li><a href="/download/content/">Content</a></li>
               </ul>
             </li>
@@ -103,8 +103,8 @@ if (ends_with($cwd, "reporting_bugs")
       </div>
       <noscript>
         <div class="row">
-    			<div class="col-md-4"></div>
-		    	<div class="col-md-4">
+          <div class="col-md-4"></div>
+          <div class="col-md-4">
             <p>&nbsp;</p>
             <p>&nbsp;</p>
             <p>&nbsp;</p>
@@ -113,5 +113,3 @@ if (ends_with($cwd, "reporting_bugs")
           </div>
         </div>
       </noscript>
-    
-

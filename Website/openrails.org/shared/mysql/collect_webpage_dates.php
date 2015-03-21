@@ -39,6 +39,7 @@ function build_folder_array($folder, $menu_path, $level){
 		&& $file != 'or'
 		&& $file != 'web1'
 		&& $file != 'files'
+		&& $file != 'api'
 		&& $file != 'shared'
 		&& $file != 'sessions') { // The sessions folder contains files without extensions so test for "." will mislead.
 //		if (is_dir($file)) {  // Returns TRUE only for . and .. on this system

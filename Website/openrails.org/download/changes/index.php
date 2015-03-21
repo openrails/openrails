@@ -9,16 +9,16 @@
 <?php include "../../shared/menu.php" ?>
       <div class="row">
         <div class="col-md-4">
-          <h1>Download > Code Changes</h1>
+          <h1>Download > Changes</h1>
         </div>
       </div>
       <div class="row">
         <div class="col-md-12">
           <p>
-            This is a list of all the code changes included in the latest Supporters' Download. Those since the previous Supporters' Download are <span style="color: blue;">highlighted</span>.
+            This is a list of all the code changes since the last stable version. Those since the previous testing version are <span class="text-primary">highlighted</span>.
           </p>
           <ul class="revisions">
-            <?php include "../../scripts/experimental_changelog.html" ?>
+            <?php include "../../api/update/testing/changelog_stable.html" ?>
           </ul>
         </div>
       </div>

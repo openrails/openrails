@@ -7,6 +7,11 @@
 <?php include "../../shared/banners/choose_banner.php" ?>
 <?php include "../../shared/banners/show_banner.php" ?>
 <?php include "../../shared/menu.php" ?>
+<?php
+  $download_stable = 'OpenRailsInstaller.exe';
+  $download_testing = 'OpenRailsTesting.zip';
+  $file_path = "../../files";
+?>
       <div class="row">
         <div class="col-md-4">
           <h1>Download > Program</h1>
@@ -15,41 +20,35 @@
       <div class="row">
         <div class="col-md-1"></div>
         <div class="col-md-4">
-          <h1>Simple Download <small>(recommended)</small></h1>
+          <h1>Stable Version <small>(recommended)</small></h1>
           <br>
           <!-- Button to trigger modal -->
-          <a href="#modal1" role="button" class='btn download_button btn-lg btn-block' data-toggle="modal">
+          <!--<a href="#modal1" role="button" class='btn download_button btn-lg btn-block' data-toggle="modal">
             <h2><span class='glyphicon glyphicon-download'></span> &nbsp; Download the installer</h2>
             <p>
-              This installer provides any missing pre-requisites for OR and an uninstaller too.
+              This installer provides all pre-requisites for Open Rails and an uninstaller.
             </p>
           </a>
           <p style="text-align: center;">
-<?php
-$simple_download = 'setup_OR_pre-v1.0_from_download.exe';
-$file_path = "../../files";
-echo 'Date: ' . date('d-M-Y', filemtime("$file_path/$simple_download")) . '&nbsp; &nbsp; &nbsp; Size: ' . round(filesize("$file_path/$simple_download") / 1024 / 1024) . 'MB'; ?>
+            <?php echo 'Date: ' . date('d-M-Y', filemtime("$file_path/$download_stable")) . '&nbsp; &nbsp; &nbsp; Size: ' . round(filesize("$file_path/$download_stable") / 1024 / 1024) . 'MB'; ?>
+          </p>-->
+          <p class="alert alert-info">
+            We're working hard on producing the next stable version. Please check back soon.
           </p>
         </div>
         <div class="col-md-2"></div>
         <div class="col-md-4">
-          <h1>Supporters' Download</h1>
+          <h1>Testing Version</h1>
           <br>
-            <!-- Button to trigger modal -->
-            <a href="#modal2" role="button" class='btn download_button btn-lg btn-block' data-toggle="modal">
-              <h2><span class='glyphicon glyphicon-download'></span> &nbsp; Download just Open Rails</h2>
-              <p>
-                You must download and install any missing pre-requisites - see installation guides below.
-              </p>
-            </a>
+          <!-- Button to trigger modal -->
+          <a href="#modal2" role="button" class='btn download_button btn-lg btn-block' data-toggle="modal">
+            <h2><span class='glyphicon glyphicon-download'></span> &nbsp; Download the executables</h2>
+            <p>
+              See the installation guides below for the pre-requisites you'll need.
+            </p>
+          </a>
           <p style="text-align: center;">
-<?php 
-$supporters_download = 'OR_X.zip';
-$file_path = "../../files";
-echo 'Date: ' . date('d-M-Y', filemtime("$file_path/$supporters_download")) . '&nbsp; &nbsp; &nbsp; Size: ' . round(filesize("$file_path/$supporters_download") / 1024 / 1024) . 'MB'; ?>
-          </p>
-          <p>
-            This build of OR contains an easy, semi-automatic updater.
+            <?php echo 'Date: ' . date('d-M-Y', filemtime("$file_path/$download_testing")) . '&nbsp; &nbsp; &nbsp; Size: ' . round(filesize("$file_path/$download_testing") / 1024 / 1024) . 'MB'; ?>
           </p>
         </div>
       </div>
@@ -59,34 +58,26 @@ echo 'Date: ' . date('d-M-Y', filemtime("$file_path/$supporters_download")) . '&
           <?php include "../../learn/faq/install.php" ?>
         </div>
         <div class="col-md-6">
-<h2>Recent Code Changes</h2>
-<ul>
-<?php include "../../scripts/experimental_changelog1.html" ?>
-</ul>
-<p><a href='../changes/'>See more code changes</a></p>
-<h2>Installation Guides</h2>
+          <h2>Recent Code Changes</h2>
+          <ul>
+            <?php include "../../api/update/testing/changelog.html" ?>
+          </ul>
+          <p><a href='../changes/'>See more code changes</a></p>
+          <h2>Installation Guides</h2>
 <ul>
 <li><a href="/files/installation_guide_en.pdf">Installation Guide (English)</a></li>
 <li><a href="/files/installation_guide_es.pdf">Tutorial de Instalación (Spanish)</a></li>
 </ul>
 <p>
-Note: Open Rails does not have to be installed into the Windows Registry and multiple versions can co-exist in different folders too. 
+Note: No installation is necessary and multiple versions of Open Rails can co-exist in different folders.
 </p>
-<h2>Versions and Updater</h2>
+<h2>Updater</h2>
 <p>
-The updater checks this website for the arrival of a new update (usually Friday around 7pm London time).
+The built-in updater checks this website for new updates once per day. The testing version is updated once per week, usually on Friday around 7pm UK time.
 </p>
-<h3>Supporter's Update Setting</h3>
+<h2>Unstable Version</h2>
 <p>
-The updater can be set to check for the latest weekly version. Supporters may prefer this to get changes as soon as possible.
-</p>
-<h3>Safe Update Setting</h3>
-<p>
-By default, the updater is set to check for a version that is one week behind the latest. Occasionally, a new version may cause problems so this delay gives the team a chance to fix or withdraw any problem versions. 
-</p>
-<h3>Older Versions</h3>
-<p>
-You can download <a href='http://james-ross.co.uk/projects/or/builds'>previous versions of the Open Rails Supporters' Download</a> back to September 2013.
+To support development, the <a href='http://james-ross.co.uk/projects/or'>latest unstable version</a> is also available, which is updated as and when we <a href='http://james-ross.co.uk/projects/or/log'>make changes to it</a>. <a href='http://james-ross.co.uk/projects/or/builds'>Previous unstable versions are available</a>. The unstable versions are more <strong>likely to contain serious bugs</strong> and are only recommended for users wishing to help with Open Rails development.
 </p>
         </div>
       </div>
@@ -94,16 +85,14 @@ You can download <a href='http://james-ross.co.uk/projects/or/builds'>previous v
 <?php include "../../shared/banners/preload_next_banner.php" ?>
 <?php 
 $modal = 'modal1';
-$title = 'Simple Download';
-$download_file = $simple_download;
-$file_path = "../../files";
+$title = 'Download Open Rails (stable version)';
+$download_file = $download_stable;
 $ext = 'exe';
 include "preamble.php";
 
 $modal = 'modal2';
-$title = "Supporters' Download";
-$download_file = $supporters_download;
-$file_path = "../../files";
+$title = "Download Open Rails (testing version)";
+$download_file = $download_testing;
 $ext = 'zip';
 include "preamble.php";
 ?>
