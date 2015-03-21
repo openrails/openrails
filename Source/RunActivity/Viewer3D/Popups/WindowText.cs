@@ -138,6 +138,17 @@ namespace ORTS.Viewer3D.Popups
         readonly int FontHeight;
         readonly int OutlineSize;
 
+        /// <summary>
+        /// For retina screens and other DPI scaling features fonts are normally scaled automatically
+        /// But we also have to make sure the corresponding boxes are scaled.
+        /// For that scaling this static scale factor can be set.
+        /// Caveats: The DPI scaling has to be set from external for now, possibly before the relevant instance is created.
+        /// using System.Drawing.Graphics.FromHwnd(IntPtr.Zero).DpiY / 96 does not seem to be working
+        /// For TrackViewer the existing WPF features are used.
+        /// For RunActivity, not solution yet.
+        /// </summary>
+        public static float DpiScale = 1.0f;
+
         // THREAD SAFETY:
         //   All accesses must be done in local variables. No modifications to the objects are allowed except by
         //   assignment of a new instance (possibly cloned and then modified).
@@ -150,7 +161,9 @@ namespace ORTS.Viewer3D.Popups
             OutlineSize = outlineSize;
             Characters = new CharacterGroup(Font, OutlineSize);
             if (Viewer3D.Viewer.Catalog != null)
-            EnsureCharacterData(Viewer3D.Viewer.Catalog.GetString("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890 \",.-+|!$%&/()=?;:'_[]"));
+            {
+                EnsureCharacterData(Viewer3D.Viewer.Catalog.GetString("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890 \",.-+|!$%&/()=?;:'_[]"));
+            }
         }
 
         /// <summary>
@@ -459,7 +472,7 @@ namespace ORTS.Viewer3D.Popups
                     var spacing = BoxSpacing + OutlineSize;
                     var x = spacing;
                     var y = spacing;
-                    var height = (int)Math.Ceiling(Font.GetHeight()) + 1;
+                    var height = (int)(DpiScale * Math.Ceiling(Font.GetHeight())) + 1;
                     for (var i = 0; i < Characters.Length; i++)
                     {
                         // Copy ABC widths from merge data or calculate ourselves.
@@ -472,7 +485,8 @@ namespace ORTS.Viewer3D.Popups
                         {
                             NativeStructs.AbcFloatWidth characterAbcWidth;
                             if (!NativeMethods.GetCharABCWidthsFloat(hdc, Characters[i], Characters[i], out characterAbcWidth)) throw new Exception();
-                            AbcWidths[i] = new Vector3(characterAbcWidth.A, characterAbcWidth.B, characterAbcWidth.C);
+                            AbcWidths[i] = Vector3.Multiply(new Vector3(characterAbcWidth.A, characterAbcWidth.B, characterAbcWidth.C),
+                                                            DpiScale);
                         }
                         else
                         {

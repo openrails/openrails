@@ -279,16 +279,22 @@ namespace ORTS.TrackViewer
         void setSubwindowSizes()
         {
             int insetRatio = 10;
-            int menuHeight = menuControl.MenuHeight;
-            int statusbarHeight = statusBarControl.StatusbarHeight;
+
+            float DpiScale = menuControl.DpiScale();
+
+            int menuHeight = (int)(DpiScale*menuControl.MenuHeight);
+            int statusbarHeight = (int)(DpiScale*statusBarControl.StatusbarHeight);
+            int offset = (int)(DpiScale * 10);
+            
             menuControl.SetScreenSize(ScreenW, menuHeight);
             statusBarControl.SetScreenSize(ScreenW, statusbarHeight, ScreenH);
 
             DrawArea.SetScreenSize(0, menuHeight, ScreenW, ScreenH - statusbarHeight - menuHeight);
             drawAreaInset.SetScreenSize(ScreenW - ScreenW / insetRatio, menuHeight + 1, ScreenW / insetRatio, ScreenH / insetRatio);
-            drawScaleRuler.SetLowerLeftPoint(10, ScreenH - statusbarHeight - 10);
-            drawLongitudeLatitude = new DrawLongitudeLatitude(10, menuHeight + 10);
+            drawScaleRuler.SetLowerLeftPoint(offset, ScreenH - statusbarHeight - offset);
+            drawLongitudeLatitude = new DrawLongitudeLatitude(offset, menuHeight + offset);
 
+            FontManager.Instance().UpdateDpi(DpiScale);
         }
  
         /// <summary>
@@ -517,7 +523,11 @@ namespace ORTS.TrackViewer
             }
 
             GraphicsDevice.Clear(DrawColors.colorsNormal.ClearWindow);
-            if (DrawTrackDB == null) return;
+            if (DrawTrackDB == null)
+            {
+                setSubwindowSizes(); // Only here to make sure correct DpiScaling is done even initially
+                return;
+            }
 
             spriteBatch.Begin();
             drawWorldTiles.Draw(DrawArea);
