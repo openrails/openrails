@@ -442,6 +442,8 @@ namespace ORTS
 
         void buttonOptions_Click(object sender, EventArgs e)
         {
+            SaveOptions();
+
             using (var form = new OptionsForm(Settings, UpdateManager, false))
             {
                 switch (form.ShowDialog(this))
