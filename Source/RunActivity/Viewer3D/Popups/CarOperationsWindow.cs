@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
+﻿// COPYRIGHT 2013, 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -18,15 +18,12 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
-using ORTS.Viewer3D;
 using System;
-using System.Linq;
 
 namespace ORTS.Viewer3D.Popups
 {
-    public class CarOperationsWindow :Window
+    public class CarOperationsWindow : Window
     {
         readonly Viewer Viewer;
 
@@ -37,63 +34,39 @@ namespace ORTS.Viewer3D.Popups
         }
 
         public CarOperationsWindow(WindowManager owner)
-            : base(owner, Window.DecorationSize.X + owner.TextFontDefault.Height * 19, Window.DecorationSize.Y + owner.TextFontDefault.Height * 14, Viewer.Catalog.GetString("Car Operation Menu"))
+            : base(owner, Window.DecorationSize.X + owner.TextFontDefault.Height * 19, Window.DecorationSize.Y + owner.TextFontDefault.Height * 8 + ControlLayout.SeparatorSize * 7, Viewer.Catalog.GetString("Car Operation Menu"))
         {
             Viewer = owner.Viewer;
         }
 
         protected override ControlLayout Layout(ControlLayout layout)
         {
-            Label buttonHandbrake, buttonTogglePower, buttonToggleMU, buttonToggleBrakeHose, buttonToggleAngleCockA, buttonToggleAngleCockB, buttonToggleBleedOffValve, buttonClose;           
+            Label buttonHandbrake, buttonTogglePower, buttonToggleMU, buttonToggleBrakeHose, buttonToggleAngleCockA, buttonToggleAngleCockB, buttonToggleBleedOffValve, buttonClose;
 
             var vbox = base.Layout(layout).AddLayoutVertical();
-            var heightForLabels = 10;
-			heightForLabels = (vbox.RemainingHeight - 2 * ControlLayout.SeparatorSize) / 8;
-            var spacing = (heightForLabels - Owner.TextFontDefault.Height) / 3;
-            vbox.AddSpace(0, spacing);
-
             vbox.Add(buttonHandbrake = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Toggle Handbrake"), LabelAlignment.Center));
-
-            vbox.AddSpace(0, spacing);
             vbox.AddHorizontalSeparator();
-
-            buttonTogglePower = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Toggle Power"), LabelAlignment.Center);
-
-			vbox.AddSpace(0, spacing);
-			vbox.Add(buttonTogglePower);
-			
-            vbox.AddSpace(0, spacing);
-			vbox.AddHorizontalSeparator();
-			buttonTogglePower.Click += new Action<Control, Point>(buttonTogglePower_Click);
-            vbox.AddSpace(0, spacing);
+            vbox.Add(buttonTogglePower = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Toggle Power"), LabelAlignment.Center));
+            vbox.AddHorizontalSeparator();
             vbox.Add(buttonToggleMU = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Toggle MU Connection"), LabelAlignment.Center));
-            vbox.AddSpace(0, spacing);
             vbox.AddHorizontalSeparator();
-            vbox.AddSpace(0, spacing);
             vbox.Add(buttonToggleBrakeHose = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Toggle Brake Hose Connection"), LabelAlignment.Center));
-            vbox.AddSpace(0, spacing);
             vbox.AddHorizontalSeparator();
-            vbox.AddSpace(0, spacing);
             vbox.Add(buttonToggleAngleCockA = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Open/Close Front Angle Cock"), LabelAlignment.Center));
-            vbox.AddSpace(0, spacing);
             vbox.AddHorizontalSeparator();
-            vbox.AddSpace(0, spacing);
             vbox.Add(buttonToggleAngleCockB = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Open/Close Rear Angle Cock"), LabelAlignment.Center));
-            vbox.AddSpace(0, spacing);
             vbox.AddHorizontalSeparator();
-            vbox.AddSpace(0, spacing);
             vbox.Add(buttonToggleBleedOffValve = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Open/Close Bleed Off Valve"), LabelAlignment.Center));
+            vbox.AddHorizontalSeparator();
+            vbox.Add(buttonClose = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Close window"), LabelAlignment.Center));
+
             buttonHandbrake.Click += new Action<Control, Point>(buttonHandbrake_Click);
+            buttonTogglePower.Click += new Action<Control, Point>(buttonTogglePower_Click);
             buttonToggleMU.Click += new Action<Control, Point>(buttonToggleMU_Click);
             buttonToggleBrakeHose.Click += new Action<Control, Point>(buttonToggleBrakeHose_Click);
             buttonToggleAngleCockA.Click += new Action<Control, Point>(buttonToggleAngleCockA_Click);
             buttonToggleAngleCockB.Click += new Action<Control, Point>(buttonToggleAngleCockB_Click);
             buttonToggleBleedOffValve.Click += new Action<Control, Point>(buttonToggleBleedOffValve_Click);
-            vbox.AddSpace(0, spacing);
-            vbox.AddHorizontalSeparator();
-            vbox.AddHorizontalSeparator();
-            vbox.AddSpace(0, spacing);
-            vbox.Add(buttonClose = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Close window"), LabelAlignment.Center));
             buttonClose.Click += new Action<Control, Point>(buttonClose_Click);
 
             return vbox;
@@ -107,19 +80,7 @@ namespace ORTS.Viewer3D.Popups
         public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
         {
             base.PrepareFrame(elapsedTime, updateFull);
-
-
-            //if (updateFull)
-            //{
-            //    if ((PlayerTrain != Owner.Viewer.PlayerTrain))
-            //    {
-            //        PlayerTrain = Owner.Viewer.PlayerTrain;
-            //        Layout();
-            //    }
-            //}
         }
-
-        
 
         void buttonHandbrake_Click(Control arg1, Point arg2)
         {
@@ -140,7 +101,7 @@ namespace ORTS.Viewer3D.Popups
               (Viewer.PlayerTrain.Cars[CarPosition].GetType() == typeof(MSTSDieselLocomotive)))
             {
                 new PowerCommand(Viewer.Log, (Viewer.PlayerTrain.Cars[CarPosition] as MSTSLocomotive), !(Viewer.PlayerTrain.Cars[CarPosition] as MSTSLocomotive).PowerOn);
-                if((Viewer.PlayerTrain.Cars[CarPosition] as MSTSLocomotive).PowerOn)
+                if ((Viewer.PlayerTrain.Cars[CarPosition] as MSTSLocomotive).PowerOn)
                     Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Power OFF command sent"));
                 else
                     Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Power ON command sent"));
@@ -153,7 +114,7 @@ namespace ORTS.Viewer3D.Popups
 
         void buttonToggleMU_Click(Control arg1, Point arg2)
         {
-            
+
             if ((Viewer.PlayerTrain.Cars[CarPosition].GetType() == typeof(MSTSLocomotive))
                 ||
               (Viewer.PlayerTrain.Cars[CarPosition].GetType() == typeof(MSTSElectricLocomotive))
@@ -161,7 +122,7 @@ namespace ORTS.Viewer3D.Popups
               (Viewer.PlayerTrain.Cars[CarPosition].GetType() == typeof(MSTSDieselLocomotive)))
             {
                 new ToggleMUCommand(Viewer.Log, (Viewer.PlayerTrain.Cars[CarPosition] as MSTSLocomotive), !(Viewer.PlayerTrain.Cars[CarPosition] as MSTSLocomotive).AcceptMUSignals);
-                if((Viewer.PlayerTrain.Cars[CarPosition] as MSTSLocomotive).AcceptMUSignals)
+                if ((Viewer.PlayerTrain.Cars[CarPosition] as MSTSLocomotive).AcceptMUSignals)
                     Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("MU signal connected"));
                 else
                     Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("MU signal disconnected"));
@@ -212,4 +173,3 @@ namespace ORTS.Viewer3D.Popups
         }
     }
 }
-

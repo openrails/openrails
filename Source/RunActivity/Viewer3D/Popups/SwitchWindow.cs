@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -19,22 +19,20 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MSTS;
 using Orts.Formats.Msts;
 using ORTS.Common;
-using ORTS.Viewer3D;
 using System;
 using System.Diagnostics;
 using System.Linq;
 
 namespace ORTS.Viewer3D.Popups
 {
-	public class SwitchWindow : Window
-	{
-		const int SwitchImageSize = 32;
+    public class SwitchWindow : Window
+    {
+        const int SwitchImageSize = 32;
 
-		Image SwitchForwards;
-		Image SwitchBackwards;
+        Image SwitchForwards;
+        Image SwitchBackwards;
 
 #if NEW_SIGNALLING
         Image TrainDirection;
@@ -44,13 +42,13 @@ namespace ORTS.Viewer3D.Popups
 
         static Texture2D SwitchStates;
 
-		public SwitchWindow(WindowManager owner)
+        public SwitchWindow(WindowManager owner)
 #if NEW_SIGNALLING
             : base(owner, Window.DecorationSize.X + (int)2.5 * SwitchImageSize, Window.DecorationSize.Y + 2 * SwitchImageSize, Viewer.Catalog.GetString("Switch"))
 #else
             : base(owner, Window.DecorationSize.X + 2 * SwitchImageSize, Window.DecorationSize.Y + 2 * SwitchImageSize, "Switch")
 #endif
-		{
+        {
         }
 
         protected internal override void Initialize()
@@ -96,18 +94,18 @@ namespace ORTS.Viewer3D.Popups
         }
 #endif
 
-		void SwitchForwards_Click(Control arg1, Point arg2)
-		{
+        void SwitchForwards_Click(Control arg1, Point arg2)
+        {
 #if !NEW_SIGNALLING
             if( Owner.Viewer.Simulator.SwitchTrackAhead(Owner.Viewer.PlayerTrain) )
 #endif
             {
                 new ToggleSwitchAheadCommand(Owner.Viewer.Log);
             }
-		}
+        }
 
-		void SwitchBackwards_Click(Control arg1, Point arg2)
-		{
+        void SwitchBackwards_Click(Control arg1, Point arg2)
+        {
 #if !NEW_SIGNALLING
             if( Owner.Viewer.Simulator.SwitchTrackBehind(Owner.Viewer.PlayerTrain) )
 #endif
@@ -123,12 +121,12 @@ namespace ORTS.Viewer3D.Popups
             if (updateFull)
             {
                 var train = Owner.Viewer.PlayerTrain;
-				try
-				{
-					UpdateSwitch(SwitchForwards, train, true);
-					UpdateSwitch(SwitchBackwards, train, false);
-				}
-				catch (Exception) { }
+                try
+                {
+                    UpdateSwitch(SwitchForwards, train, true);
+                    UpdateSwitch(SwitchBackwards, train, false);
+                }
+                catch (Exception) { }
 #if NEW_SIGNALLING
                 UpdateDirection(TrainDirection, train);
                 UpdateEye(ForwardEye, train, true);
@@ -137,51 +135,51 @@ namespace ORTS.Viewer3D.Popups
             }
         }
 
-		void UpdateSwitch(Image image, Train train, bool front)
-		{
-			image.Source = new Rectangle(0, 0, SwitchImageSize, SwitchImageSize);
+        void UpdateSwitch(Image image, Train train, bool front)
+        {
+            image.Source = new Rectangle(0, 0, SwitchImageSize, SwitchImageSize);
 
 #if !NEW_SIGNALLING
             var traveller = front ^ train.LeadLocomotive.Flipped ? new Traveller(train.FrontTDBTraveller) : new Traveller(train.RearTDBTraveller, Traveller.TravellerDirection.Backward);
 #else
             var traveller = front ? new Traveller(train.FrontTDBTraveller) : new Traveller(train.RearTDBTraveller, Traveller.TravellerDirection.Backward);
 #endif
-			TrackNode SwitchPreviousNode = traveller.TN;
-			TrackNode SwitchNode = null;
-			while (traveller.NextSection())
-			{
-				if (traveller.IsJunction)
-				{
-					SwitchNode = traveller.TN;
-					break;
-				}
-				SwitchPreviousNode = traveller.TN;
-			}
-			if (SwitchNode == null)
-				return;
+            TrackNode SwitchPreviousNode = traveller.TN;
+            TrackNode SwitchNode = null;
+            while (traveller.NextSection())
+            {
+                if (traveller.IsJunction)
+                {
+                    SwitchNode = traveller.TN;
+                    break;
+                }
+                SwitchPreviousNode = traveller.TN;
+            }
+            if (SwitchNode == null)
+                return;
 
-			Debug.Assert(SwitchPreviousNode != null);
-			Debug.Assert(SwitchNode.Inpins == 1);
-			Debug.Assert(SwitchNode.Outpins == 2 || SwitchNode.Outpins == 3);  // allow for 3-way switch
-			Debug.Assert(SwitchNode.TrPins.Count() == 3 || SwitchNode.TrPins.Count() == 4);  // allow for 3-way switch
-			Debug.Assert(SwitchNode.TrJunctionNode != null);
-			Debug.Assert(SwitchNode.TrJunctionNode.SelectedRoute == 0 || SwitchNode.TrJunctionNode.SelectedRoute == 1);
+            Debug.Assert(SwitchPreviousNode != null);
+            Debug.Assert(SwitchNode.Inpins == 1);
+            Debug.Assert(SwitchNode.Outpins == 2 || SwitchNode.Outpins == 3);  // allow for 3-way switch
+            Debug.Assert(SwitchNode.TrPins.Count() == 3 || SwitchNode.TrPins.Count() == 4);  // allow for 3-way switch
+            Debug.Assert(SwitchNode.TrJunctionNode != null);
+            Debug.Assert(SwitchNode.TrJunctionNode.SelectedRoute == 0 || SwitchNode.TrJunctionNode.SelectedRoute == 1);
 
-			var switchPreviousNodeID = Owner.Viewer.Simulator.TDB.TrackDB.TrackNodesIndexOf(SwitchPreviousNode);
-			var switchBranchesAwayFromUs = SwitchNode.TrPins[0].Link == switchPreviousNodeID;
-			var switchTrackSection = Owner.Viewer.Simulator.TSectionDat.TrackShapes.Get(SwitchNode.TrJunctionNode.ShapeIndex);  // TSECTION.DAT tells us which is the main route
-			var switchMainRouteIsLeft = (int)switchTrackSection.MainRoute == 0;  // align the switch
+            var switchPreviousNodeID = Owner.Viewer.Simulator.TDB.TrackDB.TrackNodesIndexOf(SwitchPreviousNode);
+            var switchBranchesAwayFromUs = SwitchNode.TrPins[0].Link == switchPreviousNodeID;
+            var switchTrackSection = Owner.Viewer.Simulator.TSectionDat.TrackShapes.Get(SwitchNode.TrJunctionNode.ShapeIndex);  // TSECTION.DAT tells us which is the main route
+            var switchMainRouteIsLeft = (int)switchTrackSection.MainRoute == 0;  // align the switch
 
-			image.Source.X = ((switchBranchesAwayFromUs == front ? 1 : 3) + (switchMainRouteIsLeft ? 1 : 0)) * SwitchImageSize;
-			image.Source.Y = SwitchNode.TrJunctionNode.SelectedRoute * SwitchImageSize;
+            image.Source.X = ((switchBranchesAwayFromUs == front ? 1 : 3) + (switchMainRouteIsLeft ? 1 : 0)) * SwitchImageSize;
+            image.Source.Y = SwitchNode.TrJunctionNode.SelectedRoute * SwitchImageSize;
 
 #if NEW_SIGNALLING
             TrackCircuitSection switchSection = Owner.Viewer.Simulator.Signals.TrackCircuitList[SwitchNode.TCCrossReference[0].Index];
-            if (switchSection.CircuitState.HasTrainsOccupying() || switchSection.CircuitState.SignalReserved >= 0 || 
+            if (switchSection.CircuitState.HasTrainsOccupying() || switchSection.CircuitState.SignalReserved >= 0 ||
                 (switchSection.CircuitState.TrainReserved != null && switchSection.CircuitState.TrainReserved.Train.ControlMode != Train.TRAIN_CONTROL.MANUAL))
                 image.Source.Y += 2 * SwitchImageSize;
 #endif
-		}
+        }
 
 #if NEW_SIGNALLING
         static void UpdateDirection(Image image, Train train)
@@ -202,5 +200,5 @@ namespace ORTS.Viewer3D.Popups
 
 #endif
 
-	}
+    }
 }

@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -17,10 +17,9 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using System;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
-using ORTS.Viewer3D;
+using System;
 
 namespace ORTS.Viewer3D.Popups
 {
@@ -51,7 +50,7 @@ namespace ORTS.Viewer3D.Popups
         Label Message;
 
         public NextStationWindow(WindowManager owner)
-            : base(owner, 550, 135, Viewer.Catalog.GetString("Next Station"))
+            : base(owner, Window.DecorationSize.X + owner.TextFontDefault.Height * 34, Window.DecorationSize.Y + owner.TextFontDefault.Height * 6 + ControlLayout.SeparatorSize * 2, Viewer.Catalog.GetString("Next Station"))
         {
         }
 
@@ -60,14 +59,14 @@ namespace ORTS.Viewer3D.Popups
             var vbox = base.Layout(layout).AddLayoutVertical();
             var boxWidth = vbox.RemainingWidth / 8;
             {
-                var hbox = vbox.AddLayoutHorizontal(16);
+                var hbox = vbox.AddLayoutHorizontalLineOfText();
                 hbox.Add(StationPlatform = new Label(boxWidth * 3, hbox.RemainingHeight, "", LabelAlignment.Left));
                 hbox.Add(CurrentDelay = new Label(boxWidth * 4, hbox.RemainingHeight, ""));
                 hbox.Add(CurrentTime = new Label(boxWidth, hbox.RemainingHeight, "", LabelAlignment.Center));
             }
             vbox.AddHorizontalSeparator();
             {
-                var hbox = vbox.AddLayoutHorizontal(16);
+                var hbox = vbox.AddLayoutHorizontalLineOfText();
                 hbox.Add(new Label(boxWidth * 3, hbox.RemainingHeight, Viewer.Catalog.GetString("Station")));
                 hbox.Add(new Label(boxWidth, hbox.RemainingHeight, Viewer.Catalog.GetString("Distance"), LabelAlignment.Center));
                 hbox.Add(new Label(boxWidth, hbox.RemainingHeight, Viewer.Catalog.GetString("Arrive"), LabelAlignment.Center));
@@ -76,7 +75,7 @@ namespace ORTS.Viewer3D.Popups
                 hbox.Add(new Label(boxWidth, hbox.RemainingHeight, Viewer.Catalog.GetString("Actual"), LabelAlignment.Center));
             }
             {
-                var hbox = vbox.AddLayoutHorizontal(16);
+                var hbox = vbox.AddLayoutHorizontalLineOfText();
                 hbox.Add(StationPreviousName = new Label(boxWidth * 3, hbox.RemainingHeight, ""));
                 hbox.Add(StationPreviousDistance = new Label(boxWidth, hbox.RemainingHeight, "", LabelAlignment.Center));
                 hbox.Add(StationPreviousArriveScheduled = new Label(boxWidth, hbox.RemainingHeight, "", LabelAlignment.Center));
@@ -85,7 +84,7 @@ namespace ORTS.Viewer3D.Popups
                 hbox.Add(StationPreviousDepartActual = new Label(boxWidth, hbox.RemainingHeight, "", LabelAlignment.Center));
             }
             {
-                var hbox = vbox.AddLayoutHorizontal(16);
+                var hbox = vbox.AddLayoutHorizontalLineOfText();
                 hbox.Add(StationCurrentName = new Label(boxWidth * 3, hbox.RemainingHeight, ""));
                 hbox.Add(StationCurrentDistance = new Label(boxWidth, hbox.RemainingHeight, "", LabelAlignment.Center));
                 hbox.Add(StationCurrentArriveScheduled = new Label(boxWidth, hbox.RemainingHeight, "", LabelAlignment.Center));
@@ -94,7 +93,7 @@ namespace ORTS.Viewer3D.Popups
                 hbox.AddSpace(boxWidth, hbox.RemainingHeight);
             }
             {
-                var hbox = vbox.AddLayoutHorizontal(16);
+                var hbox = vbox.AddLayoutHorizontalLineOfText();
                 hbox.Add(StationNextName = new Label(boxWidth * 3, hbox.RemainingHeight, ""));
                 hbox.Add(StationNextDistance = new Label(boxWidth, hbox.RemainingHeight, "", LabelAlignment.Center));
                 hbox.Add(StationNextArriveScheduled = new Label(boxWidth, hbox.RemainingHeight, "", LabelAlignment.Center));
@@ -104,7 +103,7 @@ namespace ORTS.Viewer3D.Popups
             }
             vbox.AddHorizontalSeparator();
             {
-                var hbox = vbox.AddLayoutHorizontal(16);
+                var hbox = vbox.AddLayoutHorizontalLineOfText();
                 hbox.Add(Message = new Label(boxWidth * 7, hbox.RemainingHeight, ""));
             }
             return vbox;

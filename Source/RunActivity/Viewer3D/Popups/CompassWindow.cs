@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2010, 2011 by the Open Rails project.
+﻿// COPYRIGHT 2010, 2011, 2013, 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -31,16 +31,16 @@ namespace ORTS.Viewer3D.Popups
 		Label Longitude;
 
 		public CompassWindow(WindowManager owner)
-			: base(owner, 250, 95, Viewer.Catalog.GetString("Compass"))
+			: base(owner, Window.DecorationSize.X + owner.TextFontDefault.Height * 15, Window.DecorationSize.Y + owner.TextFontDefault.Height * 4, Viewer.Catalog.GetString("Compass"))
 		{
 		}
 
 		protected override ControlLayout Layout(ControlLayout layout)
 		{
 			var vbox = base.Layout(layout).AddLayoutVertical();
-			vbox.Add(Compass = new PopupCompass(vbox.RemainingWidth, 50));
+			vbox.Add(Compass = new PopupCompass(vbox.RemainingWidth, vbox.RemainingHeight - vbox.TextHeight));
 			{
-				var hbox = vbox.AddLayoutHorizontal(16);
+				var hbox = vbox.AddLayoutHorizontalLineOfText();
 				var w = hbox.RemainingWidth / 9;
 				hbox.Add(new Label(1 * w, hbox.RemainingHeight, Viewer.Catalog.GetString("Lat:"), LabelAlignment.Right));
 				hbox.Add(Latitude = new Label(3 * w, hbox.RemainingHeight, "000.000000", LabelAlignment.Right));
@@ -104,7 +104,7 @@ namespace ORTS.Viewer3D.Popups
                     HeadingHalfWidths[i] = Font.MeasureString((i * 30).ToString()) / 2;
             }
             const int headingScale = 2;
-            var height = (int)((Position.Height - 16) / 3);
+            var height = (int)((Position.Height - Font.Height) / 3);
             for (float heading = 0; heading < 360; heading += 10)
             {
                 var x = Position.Width / 2 + (int)(((heading - Heading + 360 + 180) % 360 - 180) * headingScale);
@@ -115,11 +115,11 @@ namespace ORTS.Viewer3D.Popups
                         var textHalfWidth = HeadingHalfWidths[(int)heading / 30];
                         if ((x - textHalfWidth >= 0) && (x + textHalfWidth < Position.Width))
                             Font.Draw(spriteBatch, new Point(offset.X + Position.X + x - textHalfWidth, offset.Y + Position.Y), heading.ToString(), Color.White);
-                        spriteBatch.Draw(CompassTexture, new Rectangle(offset.X + Position.X + x, offset.Y + Position.Y + 16, 1, height * 2), Color.White);
+                        spriteBatch.Draw(CompassTexture, new Rectangle(offset.X + Position.X + x, offset.Y + Position.Y + Font.Height, 1, height * 2), Color.White);
                     }
                     else
                     {
-                        spriteBatch.Draw(CompassTexture, new Rectangle(offset.X + Position.X + x, offset.Y + Position.Y + 16, 1, height), Color.White);
+                        spriteBatch.Draw(CompassTexture, new Rectangle(offset.X + Position.X + x, offset.Y + Position.Y + Font.Height, 1, height), Color.White);
                     }
                 }
             }

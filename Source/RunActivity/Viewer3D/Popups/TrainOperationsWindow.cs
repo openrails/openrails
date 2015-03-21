@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -20,46 +20,50 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
-using ORTS.Viewer3D;
 using System;
 using System.Linq;
 
 namespace ORTS.Viewer3D.Popups
 {
-    public class TrainOperationsWindow : Window {
-        const int CarListHeight = 16;
+    public class TrainOperationsWindow : Window
+    {
         const int CarListPadding = 2;
-        const int CarWidth = 100;
-        internal const int CouplerSize = 16;
         internal static Texture2D CouplerTexture;
         Train PlayerTrain;
         int LastPlayerTrainCars;
 
-        public TrainOperationsWindow( WindowManager owner )
-            : base( owner, 600, Window.DecorationSize.Y + CarListHeight + CarListPadding + ControlLayoutScrollbox.ScrollbarSize, Viewer.Catalog.GetString("Train Operations")) {
+        public TrainOperationsWindow(WindowManager owner)
+            : base(owner, Window.DecorationSize.X + owner.TextFontDefault.Height * 37, Window.DecorationSize.Y + CarListPadding + owner.TextFontDefault.Height * 2, Viewer.Catalog.GetString("Train Operations"))
+        {
         }
 
-        protected internal override void Initialize() {
+        protected internal override void Initialize()
+        {
             base.Initialize();
             if (CouplerTexture == null)
                 // TODO: This should happen on the loader thread.
                 CouplerTexture = SharedTextureManager.Get(Owner.Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Owner.Viewer.ContentPath, "TrainOperationsCoupler.png"));
         }
 
-        protected override ControlLayout Layout( ControlLayout layout ) {
-            var hbox = base.Layout( layout ).AddLayoutHorizontal();
-            var scrollbox = hbox.AddLayoutScrollboxHorizontal( hbox.RemainingHeight );
-            if( PlayerTrain != null ) {
+        protected override ControlLayout Layout(ControlLayout layout)
+        {
+            var textHeight = Owner.TextFontDefault.Height;
+
+            var hbox = base.Layout(layout).AddLayoutHorizontal();
+            var scrollbox = hbox.AddLayoutScrollboxHorizontal(hbox.RemainingHeight);
+            if (PlayerTrain != null)
+            {
                 int carPosition = 0;
-                foreach( var car in PlayerTrain.Cars ) {
-                    var carLabel = new TrainOperationsLabel(CarWidth, CarListHeight, Owner.Viewer, car, carPosition, LabelAlignment.Center);
+                foreach (var car in PlayerTrain.Cars)
+                {
+                    var carLabel = new TrainOperationsLabel(textHeight * 6, textHeight, Owner.Viewer, car, carPosition, LabelAlignment.Center);
                     carLabel.Click += new Action<Control, Point>(carLabel_Click);
 #if NEW_SIGNALLING
                     if (car == PlayerTrain.LeadLocomotive) carLabel.Color = Color.Red;
 #endif
-                    scrollbox.Add( carLabel );
-                    if( car != PlayerTrain.Cars.Last() )
-                        scrollbox.Add( new TrainOperationsCoupler( 0, (CarListHeight - CouplerSize) / 2, Owner.Viewer, car, carPosition ) );
+                    scrollbox.Add(carLabel);
+                    if (car != PlayerTrain.Cars.Last())
+                        scrollbox.Add(new TrainOperationsCoupler(0, 0, textHeight, Owner.Viewer, car, carPosition));
                     carPosition++;
                 }
             }
@@ -68,14 +72,17 @@ namespace ORTS.Viewer3D.Popups
 
         void carLabel_Click(Control arg1, Point arg2)
         {
-            
+
         }
 
-        public override void PrepareFrame( ElapsedTime elapsedTime, bool updateFull ) {
-            base.PrepareFrame( elapsedTime, updateFull );
+        public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
+        {
+            base.PrepareFrame(elapsedTime, updateFull);
 
-            if( updateFull ) {
-                if( (PlayerTrain != Owner.Viewer.PlayerTrain) || (Owner.Viewer.PlayerTrain.Cars.Count != LastPlayerTrainCars) ) {
+            if (updateFull)
+            {
+                if ((PlayerTrain != Owner.Viewer.PlayerTrain) || (Owner.Viewer.PlayerTrain.Cars.Count != LastPlayerTrainCars))
+                {
                     PlayerTrain = Owner.Viewer.PlayerTrain;
                     LastPlayerTrainCars = Owner.Viewer.PlayerTrain.Cars.Count;
                     Layout();
@@ -84,21 +91,24 @@ namespace ORTS.Viewer3D.Popups
         }
     }
 
-    class TrainOperationsCoupler : Image {
+    class TrainOperationsCoupler : Image
+    {
         readonly Viewer Viewer;
         readonly int CarPosition;
 
-        public TrainOperationsCoupler( int x, int y, Viewer viewer, TrainCar car, int carPosition )
-            : base( x, y, TrainOperationsWindow.CouplerSize, TrainOperationsWindow.CouplerSize ) {
+        public TrainOperationsCoupler(int x, int y, int size, Viewer viewer, TrainCar car, int carPosition)
+            : base(x, y, size, size)
+        {
             Viewer = viewer;
             CarPosition = carPosition;
             Texture = TrainOperationsWindow.CouplerTexture;
-            Source = new Rectangle( 0, 0, TrainOperationsWindow.CouplerSize, TrainOperationsWindow.CouplerSize );
-            Click += new Action<Control, Point>( TrainOperationsCoupler_Click );
+            Source = new Rectangle(0, 0, size, size);
+            Click += new Action<Control, Point>(TrainOperationsCoupler_Click);
         }
 
-        void TrainOperationsCoupler_Click( Control arg1, Point arg2 ) {
-            new UncoupleCommand( Viewer.Log, CarPosition );
+        void TrainOperationsCoupler_Click(Control arg1, Point arg2)
+        {
+            new UncoupleCommand(Viewer.Log, CarPosition);
             if (Viewer.CarOperationsWindow.CarPosition > CarPosition)
                 Viewer.CarOperationsWindow.Visible = false;
         }

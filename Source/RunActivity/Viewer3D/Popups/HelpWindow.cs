@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2010, 2011, 2012 by the Open Rails project.
+﻿// COPYRIGHT 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -23,26 +23,22 @@ using ORTS.Common;
 using ORTS.Settings;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 
 namespace ORTS.Viewer3D.Popups
 {
-	public class HelpWindow : Window
-	{
-        const int TextHeight = 16;
-
+    public class HelpWindow : Window
+    {
         public bool ActivityUpdated;
         public int lastLastEventID = -1;
 
         List<TabData> Tabs = new List<TabData>();
         int ActiveTab;
 
-		public HelpWindow(WindowManager owner)
-			: base(owner, 600, 450, Viewer.Catalog.GetString("Help"))
-		{
-            Tabs.Add( new TabData( Tab.KeyboardShortcuts, Viewer.Catalog.GetString("Key Commands"), ( cl ) =>
+        public HelpWindow(WindowManager owner)
+            : base(owner, Window.DecorationSize.X + owner.TextFontDefault.Height * 37, Window.DecorationSize.Y + owner.TextFontDefault.Height * 24, Viewer.Catalog.GetString("Help"))
+        {
+            Tabs.Add(new TabData(Tab.KeyboardShortcuts, Viewer.Catalog.GetString("Key Commands"), (cl) =>
             {
                 var scrollbox = cl.AddLayoutScrollboxVertical(cl.RemainingWidth);
                 var keyWidth = scrollbox.RemainingWidth / InputSettings.KeyboardLayout[0].Length;
@@ -60,7 +56,7 @@ namespace ORTS.Viewer3D.Popups
                 });
                 foreach (UserCommands command in Enum.GetValues(typeof(UserCommands)))
                 {
-                    var line = scrollbox.AddLayoutHorizontal(TextHeight);
+                    var line = scrollbox.AddLayoutHorizontalLineOfText();
                     var width = line.RemainingWidth / 2;
                     line.Add(new Label(width, line.RemainingHeight, InputSettings.GetPrettyLocalizedName(command)));
                     line.Add(new Label(width, line.RemainingHeight, Owner.Viewer.Settings.Input.Commands[(int)command].ToString()));
@@ -81,9 +77,9 @@ namespace ORTS.Viewer3D.Popups
                 }));
                 Tabs.Add(new TabData(Tab.ActivityTimetable, Viewer.Catalog.GetString("Timetable"), (cl) =>
                 {
-                    var colWidth = (cl.RemainingWidth - ControlLayoutScrollbox.ScrollbarSize) / 7;
+                    var colWidth = (cl.RemainingWidth - cl.TextHeight) / 7;
                     {
-                        var line = cl.AddLayoutHorizontal(TextHeight);
+                        var line = cl.AddLayoutHorizontalLineOfText();
                         line.Add(new Label(colWidth * 3, line.RemainingHeight, Viewer.Catalog.GetString("Station")));
                         line.Add(new Label(colWidth, line.RemainingHeight, Viewer.Catalog.GetString("Arrive"), LabelAlignment.Center));
                         line.Add(new Label(colWidth, line.RemainingHeight, Viewer.Catalog.GetString("Actual"), LabelAlignment.Center));
@@ -100,7 +96,7 @@ namespace ORTS.Viewer3D.Popups
                             if (stopAt != null)
                             {
                                 Label arrive, depart;
-                                var line = scrollbox.AddLayoutHorizontal(TextHeight);
+                                var line = scrollbox.AddLayoutHorizontalLineOfText();
                                 line.Add(new Label(colWidth * 3, line.RemainingHeight, stopAt.PlatformEnd1.Station));
                                 line.Add(new Label(colWidth, line.RemainingHeight, stopAt.SchArrive.ToString("HH:mm:ss"), LabelAlignment.Center));
                                 line.Add(arrive = new Label(colWidth, line.RemainingHeight, stopAt.ActArrive.HasValue ? stopAt.ActArrive.Value.ToString("HH:mm:ss") : stopAt.IsCompleted.HasValue && task.NextTask != null ? Viewer.Catalog.GetString("(missed)") : "", LabelAlignment.Center));
@@ -114,13 +110,13 @@ namespace ORTS.Viewer3D.Popups
                 }));
                 Tabs.Add(new TabData(Tab.ActivityWorkOrders, Viewer.Catalog.GetString("Work Orders"), (cl) =>
                 {
-                    var colWidth = (cl.RemainingWidth - ControlLayoutScrollbox.ScrollbarSize) / 20;
+                    var colWidth = (cl.RemainingWidth - cl.TextHeight) / 20;
                     {
-                        var line = cl.AddLayoutHorizontal(TextHeight);
+                        var line = cl.AddLayoutHorizontalLineOfText();
                         line.Add(new Label(colWidth * 4, line.RemainingHeight, Viewer.Catalog.GetString("Task")));
                         line.Add(new Label(colWidth * 6, line.RemainingHeight, Viewer.Catalog.GetString("Car(s)")));
-						line.Add(new Label(colWidth * 7, line.RemainingHeight, Viewer.Catalog.GetString("Location")));
-						line.Add(new Label(colWidth * 6, line.RemainingHeight, Viewer.Catalog.GetString("Status")));
+                        line.Add(new Label(colWidth * 7, line.RemainingHeight, Viewer.Catalog.GetString("Location")));
+                        line.Add(new Label(colWidth * 6, line.RemainingHeight, Viewer.Catalog.GetString("Status")));
                     }
                     cl.AddHorizontalSeparator();
                     var scrollbox = cl.AddLayoutScrollboxVertical(cl.RemainingWidth);
@@ -134,7 +130,7 @@ namespace ORTS.Viewer3D.Popups
                             {
                                 if (separatorShown)
                                     scrollbox.AddHorizontalSeparator();
-                                var line = scrollbox.AddLayoutHorizontal(TextHeight);
+                                var line = scrollbox.AddLayoutHorizontalLineOfText();
                                 // Task column
                                 switch (eventAction.Type)
                                 {
@@ -143,7 +139,7 @@ namespace ORTS.Viewer3D.Popups
                                         line.Add(new Label(colWidth * 4, line.RemainingHeight, Viewer.Catalog.GetString("Assemble Train")));
                                         if (eventAction.Type == Orts.Formats.Msts.EventType.AssembleTrainAtLocation)
                                         {
-                                            line = scrollbox.AddLayoutHorizontal(TextHeight);
+                                            line = scrollbox.AddLayoutHorizontalLineOfText();
                                             line.Add(new Label(colWidth * 4, line.RemainingHeight, Viewer.Catalog.GetString("At Location")));
                                         }
                                         break;
@@ -155,15 +151,17 @@ namespace ORTS.Viewer3D.Popups
                                         line.Add(new Label(colWidth * 4, line.RemainingHeight, Viewer.Catalog.GetString("Pick Up")));
                                         break;
                                 }
-                                if (eventAction.WagonList != null) {
+                                if (eventAction.WagonList != null)
+                                {
                                     var location = "";
                                     var locationShown = false;
-									var wagonIdx = 0;
+                                    var wagonIdx = 0;
                                     var locationFirst = "";
                                     foreach (Orts.Formats.Msts.WorkOrderWagon wagonItem in eventAction.WagonList.WorkOrderWagonList)
                                     {
-                                        if (locationShown) {
-                                            line = scrollbox.AddLayoutHorizontal(TextHeight);
+                                        if (locationShown)
+                                        {
+                                            line = scrollbox.AddLayoutHorizontalLineOfText();
                                             line.AddSpace(colWidth * 4, 0);
                                         }
 
@@ -213,7 +211,7 @@ namespace ORTS.Viewer3D.Popups
 
                                         // Location column
                                         if (locationShown &&
-                                            !((eventAction.Type == Orts.Formats.Msts.EventType.PickUpPassengers)||(eventAction.Type == Orts.Formats.Msts.EventType.PickUpWagons)))
+                                            !((eventAction.Type == Orts.Formats.Msts.EventType.PickUpPassengers) || (eventAction.Type == Orts.Formats.Msts.EventType.PickUpWagons)))
                                         {
                                             line.AddSpace(colWidth * 7, 0);
                                         }
@@ -222,24 +220,26 @@ namespace ORTS.Viewer3D.Popups
                                             var sidingId = eventAction.Type == Orts.Formats.Msts.EventType.AssembleTrainAtLocation
                                                 || eventAction.Type == Orts.Formats.Msts.EventType.DropOffWagonsAtLocation
                                                 ? (uint)eventAction.SidingId : wagonItem.SidingId;
-                                            foreach (var item in owner.Viewer.Simulator.TDB.TrackDB.TrItemTable) {
+                                            foreach (var item in owner.Viewer.Simulator.TDB.TrackDB.TrItemTable)
+                                            {
                                                 var siding = item as Orts.Formats.Msts.SidingItem;
-                                                if (siding != null && siding.TrItemId == sidingId) {
+                                                if (siding != null && siding.TrItemId == sidingId)
+                                                {
                                                     location = siding.ItemName;
                                                     break;
                                                 }
                                             }
-                                            if ( locationFirst != location )
-                                            line.Add(new Label(colWidth * 7, line.RemainingHeight, location));
+                                            if (locationFirst != location)
+                                                line.Add(new Label(colWidth * 7, line.RemainingHeight, location));
                                             else if ((eventAction.Type == Orts.Formats.Msts.EventType.PickUpPassengers) || (eventAction.Type == Orts.Formats.Msts.EventType.PickUpWagons))
                                                 line.AddSpace(colWidth * 7, 0);
                                             locationFirst = location;
                                             locationShown = true;
                                         }
-										// Status column
-										if (@event.TimesTriggered == 1 &&wagonIdx == 0) line.Add(new Label(colWidth * 6, line.RemainingHeight, Viewer.Catalog.GetString("Done")));
-										else line.Add(new Label(colWidth, line.RemainingHeight, ""));
-										wagonIdx++;
+                                        // Status column
+                                        if (@event.TimesTriggered == 1 && wagonIdx == 0) line.Add(new Label(colWidth * 6, line.RemainingHeight, Viewer.Catalog.GetString("Done")));
+                                        else line.Add(new Label(colWidth, line.RemainingHeight, ""));
+                                        wagonIdx++;
 
                                     }
                                 }
@@ -269,17 +269,17 @@ namespace ORTS.Viewer3D.Popups
             Layout();
         }
 
-		protected override ControlLayout Layout(ControlLayout layout)
-		{
-			var vbox = base.Layout(layout).AddLayoutVertical();
+        protected override ControlLayout Layout(ControlLayout layout)
+        {
+            var vbox = base.Layout(layout).AddLayoutVertical();
 
             if (Tabs.Count > 0)
             {
-                var hbox = vbox.AddLayoutHorizontal(TextHeight);
+                var hbox = vbox.AddLayoutHorizontalLineOfText();
                 var tabWidth = hbox.RemainingWidth / Tabs.Count;
                 for (var i = 0; i < Tabs.Count; i++)
                 {
-                    var label = new Label(tabWidth, TextHeight, Tabs[i].TabLabel, LabelAlignment.Center) { Color = ActiveTab == i ? Color.White : Color.Gray, Tag = i };
+                    var label = new Label(tabWidth, hbox.RemainingHeight, Tabs[i].TabLabel, LabelAlignment.Center) { Color = ActiveTab == i ? Color.White : Color.Gray, Tag = i };
                     label.Click += label_Click;
                     hbox.Add(label);
                 }
@@ -349,12 +349,12 @@ namespace ORTS.Viewer3D.Popups
                     }
                 }
             }
-			if (this.ActivityUpdated == true) //true value is set in ActivityWindow.cs
-			{
-				this.ActivityUpdated = false;
-				Layout();
-			}
-			//UpdateActivityStatus();
+            if (this.ActivityUpdated == true) //true value is set in ActivityWindow.cs
+            {
+                this.ActivityUpdated = false;
+                Layout();
+            }
+            //UpdateActivityStatus();
         }
 
         static bool GetStoppedAt(ActivityTask task)

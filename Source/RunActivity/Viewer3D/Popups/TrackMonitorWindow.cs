@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -22,7 +22,6 @@ using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace ORTS.Viewer3D.Popups
 {
@@ -31,8 +30,9 @@ namespace ORTS.Viewer3D.Popups
         public const int MaximumDistance = 5000;
         public const int TrackMonitorLabelHeight = 130; // Height of labels above the main display.
         public const int TrackMonitorOffsetY = 25/*Window.DecorationOffset.Y*/ + TrackMonitorLabelHeight;
-        public const int TrackMonitorWidth = 150;
-        public const int TrackMonitorHeight = 250;
+        public const int TrackMonitorWidth = 150; // FIXME: NOT USED
+        public const int TrackMonitorHeight = 250; // FIXME: NOT USED
+        const int TrackMonitorHeightInLinesOfText = 16;
 
         Label SpeedCurrent;
         Label SpeedProjected;
@@ -44,8 +44,8 @@ namespace ORTS.Viewer3D.Popups
 
         readonly Dictionary<Train.TRAIN_CONTROL, string> ControlModeLabels;
 
-        static readonly Dictionary<Train.END_AUTHORITY, string> AuthorityLabels =
-            new Dictionary<Train.END_AUTHORITY, string> {
+        static readonly Dictionary<Train.END_AUTHORITY, string> AuthorityLabels = new Dictionary<Train.END_AUTHORITY, string>
+        {
 			{ Train.END_AUTHORITY.END_OF_TRACK, "End Trck" },
 			{ Train.END_AUTHORITY.END_OF_PATH, "End Path" },
 			{ Train.END_AUTHORITY.RESERVED_SWITCH, "Switch" },
@@ -57,8 +57,8 @@ namespace ORTS.Viewer3D.Popups
             { Train.END_AUTHORITY.END_OF_AUTHORITY, "End Auth" },
 		};
 
-        static readonly Dictionary<Train.OUTOFCONTROL, string> OutOfControlLabels =
-            new Dictionary<Train.OUTOFCONTROL, string> {
+        static readonly Dictionary<Train.OUTOFCONTROL, string> OutOfControlLabels = new Dictionary<Train.OUTOFCONTROL, string>
+        {
 			{ Train.OUTOFCONTROL.SPAD, "SPAD" },
 			{ Train.OUTOFCONTROL.SPAD_REAR, "SPAD-Rear" },
             { Train.OUTOFCONTROL.MISALIGNED_SWITCH, "Misalg Sw" },
@@ -70,9 +70,8 @@ namespace ORTS.Viewer3D.Popups
 			{ Train.OUTOFCONTROL.UNDEFINED, "Undefined" },
 		};
 
-        // Constructor
         public TrackMonitorWindow(WindowManager owner)
-            : base(owner, TrackMonitorWidth + Window.DecorationSize.X, TrackMonitorLabelHeight + TrackMonitorHeight + Window.DecorationSize.Y, Viewer.Catalog.GetString("Track Monitor"))
+            : base(owner, Window.DecorationSize.X + owner.TextFontDefault.Height * 10, Window.DecorationSize.Y + owner.TextFontDefault.Height * (7 + TrackMonitorHeightInLinesOfText) + ControlLayout.SeparatorSize * 4, Viewer.Catalog.GetString("Track Monitor"))
         {
             ControlModeLabels = new Dictionary<Train.TRAIN_CONTROL, string> 
             {
@@ -86,103 +85,70 @@ namespace ORTS.Viewer3D.Popups
 		    };
         }
 
-        // Initialize
-        protected internal override void Initialize()
-        {
-        }
-
-        // Build Layout
         protected override ControlLayout Layout(ControlLayout layout)
         {
-            // main box - add items in vertical order
             var vbox = base.Layout(layout).AddLayoutVertical();
             {
-
-                // first text box - speed - items added in horizontal order
-                var hbox_t1 = vbox.AddLayoutHorizontal(16);
-                {
-                    hbox_t1.Add(new Label(hbox_t1.RemainingWidth / 2, hbox_t1.RemainingHeight, Viewer.Catalog.GetString("Speed:")));
-                    hbox_t1.Add(SpeedCurrent = new Label(hbox_t1.RemainingWidth, hbox_t1.RemainingHeight, "", LabelAlignment.Right));
-                }
-
-                // second text box - projected speed - items added in horizontal order
-                var hbox_t2 = vbox.AddLayoutHorizontal(16);
-                {
-                    hbox_t2.Add(new Label(hbox_t2.RemainingWidth / 2, hbox_t2.RemainingHeight, Viewer.Catalog.GetString("Projected:")));
-                    hbox_t2.Add(SpeedProjected = new Label(hbox_t2.RemainingWidth, hbox_t2.RemainingHeight, "", LabelAlignment.Right));
-                }
-
-                // third text box - max allowed speed - items added in horizontal order
-                var hbox_t3 = vbox.AddLayoutHorizontal(16);
-                {
-                    hbox_t3.Add(new Label(hbox_t3.RemainingWidth / 2, hbox_t3.RemainingHeight, Viewer.Catalog.GetString("Limit:")));
-                    hbox_t3.Add(SpeedAllowed = new Label(hbox_t3.RemainingWidth, hbox_t3.RemainingHeight, "", LabelAlignment.Right));
-                }
-
-                vbox.AddHorizontalSeparator();
-
-                // fourth text box - odometer label
-                var hbox_t4 = vbox.AddLayoutHorizontal(16);
-                {
-                    hbox_t4.Add(new Label(hbox_t4.RemainingWidth / 2, hbox_t4.RemainingHeight, Viewer.Catalog.GetString("Odometer")));
-                    hbox_t4.Add(new Label(hbox_t4.RemainingWidth, hbox_t4.RemainingHeight, Viewer.Catalog.GetString("End"), LabelAlignment.Right));
-                }
-
-                // fifth text box - odometer head - odometer tail
-                var hbox_t5 = vbox.AddLayoutHorizontal(16);
-                {
-                    hbox_t5.Add(OdoMeterHead = new Label(hbox_t5.RemainingWidth / 2, hbox_t5.RemainingHeight, ""));
-                    hbox_t5.Add(OdoMeterTail = new Label(hbox_t5.RemainingWidth, hbox_t5.RemainingHeight, "", LabelAlignment.Right));
-                }
-
-                // add separator between speed and authority areas
-                vbox.AddHorizontalSeparator();
-
-                // first authority box : control mode
-                var hbox_a1 = vbox.AddLayoutHorizontal(16);
-                {
-                    hbox_a1.Add(ControlMode = new Label(hbox_a1.RemainingWidth - 18, hbox_a1.RemainingHeight, "", LabelAlignment.Left));
-                }
-
-                // add separator between authority areas and object area header
-                vbox.AddHorizontalSeparator();
-
-                // add object area header
-                var hbox_oh = vbox.AddLayoutHorizontal(16);
-                hbox_oh.Add(new Label(hbox_oh.RemainingWidth, hbox_oh.RemainingHeight, Viewer.Catalog.GetString(" Dist      Speed   Aspect")));
-
-                // add separator between object area header and object area
-                vbox.AddHorizontalSeparator();
-
-                // add object area
-                vbox.Add(Monitor = new TrackMonitor(vbox.RemainingWidth, 50, Owner));
+                var hbox = vbox.AddLayoutHorizontalLineOfText();
+                hbox.Add(new Label(hbox.RemainingWidth / 2, hbox.RemainingHeight, Viewer.Catalog.GetString("Speed:")));
+                hbox.Add(SpeedCurrent = new Label(hbox.RemainingWidth, hbox.RemainingHeight, "", LabelAlignment.Right));
             }
+            {
+                var hbox = vbox.AddLayoutHorizontalLineOfText();
+                hbox.Add(new Label(hbox.RemainingWidth / 2, hbox.RemainingHeight, Viewer.Catalog.GetString("Projected:")));
+                hbox.Add(SpeedProjected = new Label(hbox.RemainingWidth, hbox.RemainingHeight, "", LabelAlignment.Right));
+            }
+            {
+                var hbox = vbox.AddLayoutHorizontalLineOfText();
+                hbox.Add(new Label(hbox.RemainingWidth / 2, hbox.RemainingHeight, Viewer.Catalog.GetString("Limit:")));
+                hbox.Add(SpeedAllowed = new Label(hbox.RemainingWidth, hbox.RemainingHeight, "", LabelAlignment.Right));
+            }
+            vbox.AddHorizontalSeparator();
+            {
+                var hbox = vbox.AddLayoutHorizontalLineOfText();
+                hbox.Add(new Label(hbox.RemainingWidth / 2, hbox.RemainingHeight, Viewer.Catalog.GetString("Odometer")));
+                hbox.Add(new Label(hbox.RemainingWidth, hbox.RemainingHeight, Viewer.Catalog.GetString("End"), LabelAlignment.Right));
+            }
+            {
+                var hbox = vbox.AddLayoutHorizontalLineOfText();
+                hbox.Add(OdoMeterHead = new Label(hbox.RemainingWidth / 2, hbox.RemainingHeight, ""));
+                hbox.Add(OdoMeterTail = new Label(hbox.RemainingWidth, hbox.RemainingHeight, "", LabelAlignment.Right));
+            }
+            vbox.AddHorizontalSeparator();
+            {
+                var hbox = vbox.AddLayoutHorizontalLineOfText();
+                hbox.Add(ControlMode = new Label(hbox.RemainingWidth - 18, hbox.RemainingHeight, "", LabelAlignment.Left));
+            }
+            vbox.AddHorizontalSeparator();
+            {
+                var hbox = vbox.AddLayoutHorizontalLineOfText();
+                hbox.Add(new Label(hbox.RemainingWidth, hbox.RemainingHeight, Viewer.Catalog.GetString(" Dist      Speed   Aspect")));
+            }
+            vbox.AddHorizontalSeparator();
+            vbox.Add(Monitor = new TrackMonitor(vbox.RemainingWidth, vbox.RemainingHeight, Owner));
 
             return vbox;
         }
 
-        // Display
         public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
         {
             base.PrepareFrame(elapsedTime, updateFull);
 
-            // always get train details to pass on to Monitor
-            Train.TrainInfo thisInfo = Owner.Viewer.PlayerTrain.GetTrainInfo();
+            // Always get train details to pass on to TrackMonitor.
+            var thisInfo = Owner.Viewer.PlayerTrain.GetTrainInfo();
             Monitor.StoreInfo(thisInfo);
 
-
-            // update text fields
+            // Update text fields on full update only.
             if (updateFull)
             {
-                // speeds
                 SpeedCurrent.Text = FormatStrings.FormatSpeedDisplay(Math.Abs(thisInfo.speedMpS), Owner.Viewer.MilepostUnitsMetric);
                 SpeedProjected.Text = FormatStrings.FormatSpeedDisplay(Math.Abs(thisInfo.projectedSpeedMpS), Owner.Viewer.MilepostUnitsMetric);
                 SpeedAllowed.Text = FormatStrings.FormatSpeedLimit(thisInfo.allowedSpeedMpS, Owner.Viewer.MilepostUnitsMetric);
+                // TODO: Casting to MSTSLocomotive here suggests a problem with the data model in the Simulator.
                 OdoMeterHead.Text = FormatStrings.FormatShortDistanceDisplay((Owner.Viewer.PlayerLocomotive as MSTSLocomotive).OdoMeterM, Owner.Viewer.MilepostUnitsMetric);
                 OdoMeterTail.Text = FormatStrings.FormatShortDistanceDisplay((Owner.Viewer.PlayerLocomotive as MSTSLocomotive).OdoMeterM - Owner.Viewer.PlayerTrain.Length, Owner.Viewer.MilepostUnitsMetric);
 
-                // control mode
-                string ControlText = ControlModeLabels[thisInfo.ControlMode];
+                var ControlText = ControlModeLabels[thisInfo.ControlMode];
                 if (thisInfo.ControlMode == Train.TRAIN_CONTROL.AUTO_NODE)
                 {
                     ControlText = FindAuthorityInfo(thisInfo.ObjectInfoForward, ControlText);
@@ -197,17 +163,16 @@ namespace ORTS.Viewer3D.Popups
 
         static string FindAuthorityInfo(List<Train.TrainObjectItem> ObjectInfo, string ControlText)
         {
-            bool authorityFound = false;
-            foreach (Train.TrainObjectItem thisInfo in ObjectInfo)
+            foreach (var thisInfo in ObjectInfo)
             {
-                if (!authorityFound && thisInfo.ItemType == Train.TrainObjectItem.TRAINOBJECTTYPE.AUTHORITY)
+                if (thisInfo.ItemType == Train.TrainObjectItem.TRAINOBJECTTYPE.AUTHORITY)
                 {
-                    authorityFound = true;
-                    return (String.Concat(ControlText, " : ", AuthorityLabels[thisInfo.AuthorityType]));
+                    // TODO: Concatenating strings is bad for localization.
+                    return ControlText + " : " + AuthorityLabels[thisInfo.AuthorityType];
                 }
             }
 
-            return (ControlText);
+            return ControlText;
         }
     }
 
@@ -223,23 +188,25 @@ namespace ORTS.Viewer3D.Popups
 
         Train.TrainInfo validInfo;
 
+        const int DesignWidth = 150; // All Width/X values are relative to this width.
+
         // position constants
-        const int additionalInfoHeight = 16; // vertical offset on window for additional out-of-range info at top and bottom
+        readonly int additionalInfoHeight = 16; // vertical offset on window for additional out-of-range info at top and bottom
         readonly int[] mainOffset = new int[2] { 12, 12 }; // offset for items, cell 0 is upward, 1 is downward
-        const int textSpacing = 10; // minimum vertical distance between two labels
+        readonly int textSpacing = 10; // minimum vertical distance between two labels
 
         // The track is 24 wide = 6 + 2 + 8 + 2 + 6.
-        const int trackRail1Offset = 6;
-        const int trackRail2Offset = 6 + 2 + 8;
-        const int trackRailWidth = 2;
+        readonly int trackRail1Offset = 6;
+        readonly int trackRail2Offset = 6 + 2 + 8;
+        readonly int trackRailWidth = 2;
 
         // Vertical offset for text for forwards ([0]) and backwards ([1]).
         readonly int[] textOffset = new int[2] { -11, -3 };
 
         // Horizontal offsets for various elements.
-        const int distanceTextOffset = 0;
-        const int trackOffset = 42;
-        const int speedTextOffset = 70;
+        readonly int distanceTextOffset = 0;
+        readonly int trackOffset = 42;
+        readonly int speedTextOffset = 70;
 
         // position definition arrays
         // contents :
@@ -249,14 +216,14 @@ namespace ORTS.Viewer3D.Popups
         // cell 3 : X size
         // cell 4 : Y size
 
-        int[] eyePosition          = new int[5] {  42,  -4, -20, 24, 24 };
-        int[] trainPosition        = new int[5] {  42, -12, -12, 24, 24 }; // Relative positioning
-        int[] otherTrainPosition   = new int[5] {  42, -24,   0, 24, 24 }; // Relative positioning
-        int[] stationPosition      = new int[5] {  42,   0, -24, 24, 12 }; // Relative positioning
-        int[] reversalPosition     = new int[5] {  42, -21,  -3, 24, 24 }; // Relative positioning
-        int[] endAuthorityPosition = new int[5] {  42, -14, -10, 24, 24 }; // Relative positioning
-        int[] signalPosition       = new int[5] { 134, -16,   0, 16, 16 }; // Relative positioning
-        int[] arrowPosition        = new int[5] {  22, -12, -12, 24, 24 };
+        int[] eyePosition = new int[5] { 42, -4, -20, 24, 24 };
+        int[] trainPosition = new int[5] { 42, -12, -12, 24, 24 }; // Relative positioning
+        int[] otherTrainPosition = new int[5] { 42, -24, 0, 24, 24 }; // Relative positioning
+        int[] stationPosition = new int[5] { 42, 0, -24, 24, 12 }; // Relative positioning
+        int[] reversalPosition = new int[5] { 42, -21, -3, 24, 24 }; // Relative positioning
+        int[] endAuthorityPosition = new int[5] { 42, -14, -10, 24, 24 }; // Relative positioning
+        int[] signalPosition = new int[5] { 134, -16, 0, 16, 16 }; // Relative positioning
+        int[] arrowPosition = new int[5] { 22, -12, -12, 24, 24 };
 
         // texture rectangles : X-offset, Y-offset, width, height
         Rectangle eyeSprite = new Rectangle(0, 144, 24, 24);
@@ -272,29 +239,28 @@ namespace ORTS.Viewer3D.Popups
         Rectangle forwardArrowSprite = new Rectangle(24, 48, 24, 24);
         Rectangle backwardArrowSprite = new Rectangle(0, 48, 24, 24);
 
-        Dictionary<TrackMonitorSignalAspect, Rectangle> SignalMarkers =
-            new Dictionary<TrackMonitorSignalAspect, Rectangle>
-            { { TrackMonitorSignalAspect.Clear_2, new Rectangle (0, 0, 16, 16)},
-              { TrackMonitorSignalAspect.Clear_1, new Rectangle (16, 0, 16, 16)},
-              { TrackMonitorSignalAspect.Approach_3, new Rectangle (0, 16, 16, 16)},
-              { TrackMonitorSignalAspect.Approach_2, new Rectangle (16, 16, 16, 16)},
-              { TrackMonitorSignalAspect.Approach_1, new Rectangle (0, 32, 16, 16)},
-              { TrackMonitorSignalAspect.Restricted, new Rectangle (16, 32, 16, 16)},
-              { TrackMonitorSignalAspect.StopAndProceed, new Rectangle (0, 48, 16, 16)},
-              { TrackMonitorSignalAspect.Stop, new Rectangle (16, 48, 16, 16)},
-              { TrackMonitorSignalAspect.Permission, new Rectangle (0, 64, 16, 16)},
-              { TrackMonitorSignalAspect.None, new Rectangle (16, 64, 16, 16)}};
-
+        Dictionary<TrackMonitorSignalAspect, Rectangle> SignalMarkers = new Dictionary<TrackMonitorSignalAspect, Rectangle>
+        {
+            { TrackMonitorSignalAspect.Clear_2, new Rectangle(0, 0, 16, 16) },
+            { TrackMonitorSignalAspect.Clear_1, new Rectangle(16, 0, 16, 16) },
+            { TrackMonitorSignalAspect.Approach_3, new Rectangle(0, 16, 16, 16) },
+            { TrackMonitorSignalAspect.Approach_2, new Rectangle(16, 16, 16, 16) },
+            { TrackMonitorSignalAspect.Approach_1, new Rectangle(0, 32, 16, 16) },
+            { TrackMonitorSignalAspect.Restricted, new Rectangle(16, 32, 16, 16) },
+            { TrackMonitorSignalAspect.StopAndProceed, new Rectangle(0, 48, 16, 16) },
+            { TrackMonitorSignalAspect.Stop, new Rectangle(16, 48, 16, 16) },
+            { TrackMonitorSignalAspect.Permission, new Rectangle(0, 64, 16, 16) },
+            { TrackMonitorSignalAspect.None, new Rectangle(16, 64, 16, 16) }
+        };
 
         // fixed distance rounding values as function of maximum distance
+        Dictionary<float, float> roundingValues = new Dictionary<float, float>
+        {
+            { 0.0f, 0.5f },
+            { 5.0f, 1.0f },
+            { 10.0f, 2.0f }
+        };
 
-        Dictionary<float, float> roundingValues =
-            new Dictionary<float, float>
-            {{0.0f, 0.5f},
-             {5.0f, 1.0f},
-             {10.0f, 2.0f}};
-
-        // Constructor
         public TrackMonitor(int width, int height, WindowManager owner)
             : base(0, 0, width, height)
         {
@@ -308,36 +274,66 @@ namespace ORTS.Viewer3D.Popups
             metric = owner.Viewer.MilepostUnitsMetric;
 
             Font = owner.TextFontSmall;
+
+            ScaleDesign(ref additionalInfoHeight);
+            ScaleDesign(ref mainOffset);
+            ScaleDesign(ref textSpacing);
+
+            ScaleDesign(ref trackRail1Offset);
+            ScaleDesign(ref trackRail2Offset);
+            ScaleDesign(ref trackRailWidth);
+
+            ScaleDesign(ref textOffset);
+
+            ScaleDesign(ref distanceTextOffset);
+            ScaleDesign(ref trackOffset);
+            ScaleDesign(ref speedTextOffset);
+
+            ScaleDesign(ref eyePosition);
+            ScaleDesign(ref trainPosition);
+            ScaleDesign(ref otherTrainPosition);
+            ScaleDesign(ref stationPosition);
+            ScaleDesign(ref reversalPosition);
+            ScaleDesign(ref endAuthorityPosition);
+            ScaleDesign(ref signalPosition);
+            ScaleDesign(ref arrowPosition);
         }
 
-        // Draw
+        void ScaleDesign(ref int variable)
+        {
+            variable = variable * Position.Width / DesignWidth;
+        }
+
+        void ScaleDesign(ref int[] variable)
+        {
+            for (var i = 0; i < variable.Length; i++)
+                ScaleDesign(ref variable[i]);
+        }
+
         internal override void Draw(SpriteBatch spriteBatch, Point offset)
         {
-            // blank texture
             if (MonitorTexture == null)
             {
                 MonitorTexture = new Texture2D(spriteBatch.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
                 MonitorTexture.SetData(new[] { Color.White });
             }
 
-            offset.X += Window.DecorationOffset.X;
-            offset.Y += TrackMonitorWindow.TrackMonitorOffsetY;
+            // Adjust offset to point at the control's position so we can keep code below simple.
+            offset.X += Position.X;
+            offset.Y += Position.Y;
 
-            // no info available
             if (validInfo == null)
             {
                 drawTrack(spriteBatch, offset, 0f, 1f);
                 return;
             }
 
-            // track lines
             drawTrack(spriteBatch, offset, validInfo.speedMpS, validInfo.allowedSpeedMpS);
 
             if (MultiPlayer.MPManager.IsMultiPlayer())
             {
                 drawMPInfo(spriteBatch, offset);
             }
-            // info in AUTO node
             else if (validInfo.ControlMode == Train.TRAIN_CONTROL.AUTO_NODE || validInfo.ControlMode == Train.TRAIN_CONTROL.AUTO_SIGNAL)
             {
                 drawAutoInfo(spriteBatch, offset);
@@ -348,13 +344,11 @@ namespace ORTS.Viewer3D.Popups
             }
         }
 
-        // Store train info
         public void StoreInfo(Train.TrainInfo thisInfo)
         {
             validInfo = thisInfo;
         }
 
-        // draw track lines
         void drawTrack(SpriteBatch spriteBatch, Point offset, float speedMpS, float allowedSpeedMpS)
         {
             var absoluteSpeedMpS = Math.Abs(speedMpS);
@@ -363,18 +357,15 @@ namespace ORTS.Viewer3D.Popups
                 absoluteSpeedMpS < allowedSpeedMpS + 0.0f ? Color.PaleGreen :
                 absoluteSpeedMpS < allowedSpeedMpS + 5.0f ? Color.Orange : Color.Red;
 
-            spriteBatch.Draw(MonitorTexture, new Rectangle(offset.X + trackOffset + trackRail1Offset, offset.Y, trackRailWidth, TrackMonitorWindow.TrackMonitorHeight), trackColor);
-            spriteBatch.Draw(MonitorTexture, new Rectangle(offset.X + trackOffset + trackRail2Offset, offset.Y, trackRailWidth, TrackMonitorWindow.TrackMonitorHeight), trackColor);
+            spriteBatch.Draw(MonitorTexture, new Rectangle(offset.X + trackOffset + trackRail1Offset, offset.Y, trackRailWidth, Position.Height), trackColor);
+            spriteBatch.Draw(MonitorTexture, new Rectangle(offset.X + trackOffset + trackRail2Offset, offset.Y, trackRailWidth, Position.Height), trackColor);
         }
-
-        // draw auto info
-        // all details accessed through class variables
 
         void drawAutoInfo(SpriteBatch spriteBatch, Point offset)
         {
             // set area details
             var startObjectArea = additionalInfoHeight;
-            var endObjectArea = TrackMonitorWindow.TrackMonitorHeight - additionalInfoHeight - trainPosition[4];
+            var endObjectArea = Position.Height - additionalInfoHeight - trainPosition[4];
             var zeroObjectPointTop = endObjectArea;
             var zeroObjectPointMiddle = zeroObjectPointTop - trainPosition[1];
             var zeroObjectPointBottom = zeroObjectPointMiddle - trainPosition[2];
@@ -389,7 +380,7 @@ namespace ORTS.Viewer3D.Popups
             {
                 lineColor = Color.Red;
             }
-            spriteBatch.Draw(MonitorTexture, new Rectangle(offset.X, offset.Y + endObjectArea, TrackMonitorWindow.TrackMonitorWidth, 1), lineColor);
+            spriteBatch.Draw(MonitorTexture, new Rectangle(offset.X, offset.Y + endObjectArea, Position.Width, 1), lineColor);
 
             // draw direction arrow
             if (validInfo.direction == 0)
@@ -402,7 +393,7 @@ namespace ORTS.Viewer3D.Popups
             }
 
             // draw eye
-            drawEye(spriteBatch, offset, 0, TrackMonitorWindow.TrackMonitorHeight);
+            drawEye(spriteBatch, offset, 0, Position.Height);
 
             // draw fixed distance indications
             var firstMarkerDistance = drawDistanceMarkers(spriteBatch, offset, TrackMonitorWindow.MaximumDistance, distanceFactor, zeroObjectPointTop, 4, true);
@@ -422,7 +413,7 @@ namespace ORTS.Viewer3D.Popups
         {
             // set area details
             var startObjectArea = additionalInfoHeight;
-            var endObjectArea = TrackMonitorWindow.TrackMonitorHeight - additionalInfoHeight;
+            var endObjectArea = Position.Height - additionalInfoHeight;
             var zeroObjectPointTop = 0;
             var zeroObjectPointMiddle = 0;
             var zeroObjectPointBottom = 0;
@@ -490,15 +481,15 @@ namespace ORTS.Viewer3D.Popups
         {
             // set area details
             var startObjectArea = additionalInfoHeight;
-            var endObjectArea = TrackMonitorWindow.TrackMonitorHeight - additionalInfoHeight;
+            var endObjectArea = Position.Height - additionalInfoHeight;
             var zeroObjectPointMiddle = startObjectArea + (endObjectArea - startObjectArea) / 2;
             var zeroObjectPointTop = zeroObjectPointMiddle + trainPosition[1];
             var zeroObjectPointBottom = zeroObjectPointMiddle - trainPosition[2];
             var distanceFactor = (float)(zeroObjectPointTop - startObjectArea) / TrackMonitorWindow.MaximumDistance;
 
             // draw lines through own train
-            spriteBatch.Draw(MonitorTexture, new Rectangle(offset.X, offset.Y + zeroObjectPointTop, TrackMonitorWindow.TrackMonitorWidth, 1), Color.DarkGray);
-            spriteBatch.Draw(MonitorTexture, new Rectangle(offset.X, offset.Y + zeroObjectPointBottom - 1, TrackMonitorWindow.TrackMonitorWidth, 1), Color.DarkGray);
+            spriteBatch.Draw(MonitorTexture, new Rectangle(offset.X, offset.Y + zeroObjectPointTop, Position.Width, 1), Color.DarkGray);
+            spriteBatch.Draw(MonitorTexture, new Rectangle(offset.X, offset.Y + zeroObjectPointBottom - 1, Position.Width, 1), Color.DarkGray);
 
             // draw direction arrow
             if (validInfo.direction == 0)
@@ -511,7 +502,7 @@ namespace ORTS.Viewer3D.Popups
             }
 
             // draw eye
-            drawEye(spriteBatch, offset, 0, TrackMonitorWindow.TrackMonitorHeight);
+            drawEye(spriteBatch, offset, 0, Position.Height);
 
             // draw fixed distance indications
             var firstMarkerDistance = drawDistanceMarkers(spriteBatch, offset, TrackMonitorWindow.MaximumDistance, distanceFactor, zeroObjectPointTop, 3, true);
