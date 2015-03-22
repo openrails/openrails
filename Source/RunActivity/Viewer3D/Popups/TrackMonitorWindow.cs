@@ -37,8 +37,6 @@ namespace ORTS.Viewer3D.Popups
         Label SpeedCurrent;
         Label SpeedProjected;
         Label SpeedAllowed;
-        Label OdoMeterHead;
-        Label OdoMeterTail;
         Label ControlMode;
         TrackMonitor Monitor;
 
@@ -71,7 +69,7 @@ namespace ORTS.Viewer3D.Popups
 		};
 
         public TrackMonitorWindow(WindowManager owner)
-            : base(owner, Window.DecorationSize.X + owner.TextFontDefault.Height * 10, Window.DecorationSize.Y + owner.TextFontDefault.Height * (7 + TrackMonitorHeightInLinesOfText) + ControlLayout.SeparatorSize * 4, Viewer.Catalog.GetString("Track Monitor"))
+            : base(owner, Window.DecorationSize.X + owner.TextFontDefault.Height * 10, Window.DecorationSize.Y + owner.TextFontDefault.Height * (5 + TrackMonitorHeightInLinesOfText) + ControlLayout.SeparatorSize * 3, Viewer.Catalog.GetString("Track Monitor"))
         {
             ControlModeLabels = new Dictionary<Train.TRAIN_CONTROL, string> 
             {
@@ -106,17 +104,6 @@ namespace ORTS.Viewer3D.Popups
             vbox.AddHorizontalSeparator();
             {
                 var hbox = vbox.AddLayoutHorizontalLineOfText();
-                hbox.Add(new Label(hbox.RemainingWidth / 2, hbox.RemainingHeight, Viewer.Catalog.GetString("Odometer")));
-                hbox.Add(new Label(hbox.RemainingWidth, hbox.RemainingHeight, Viewer.Catalog.GetString("End"), LabelAlignment.Right));
-            }
-            {
-                var hbox = vbox.AddLayoutHorizontalLineOfText();
-                hbox.Add(OdoMeterHead = new Label(hbox.RemainingWidth / 2, hbox.RemainingHeight, ""));
-                hbox.Add(OdoMeterTail = new Label(hbox.RemainingWidth, hbox.RemainingHeight, "", LabelAlignment.Right));
-            }
-            vbox.AddHorizontalSeparator();
-            {
-                var hbox = vbox.AddLayoutHorizontalLineOfText();
                 hbox.Add(ControlMode = new Label(hbox.RemainingWidth - 18, hbox.RemainingHeight, "", LabelAlignment.Left));
             }
             vbox.AddHorizontalSeparator();
@@ -144,9 +131,6 @@ namespace ORTS.Viewer3D.Popups
                 SpeedCurrent.Text = FormatStrings.FormatSpeedDisplay(Math.Abs(thisInfo.speedMpS), Owner.Viewer.MilepostUnitsMetric);
                 SpeedProjected.Text = FormatStrings.FormatSpeedDisplay(Math.Abs(thisInfo.projectedSpeedMpS), Owner.Viewer.MilepostUnitsMetric);
                 SpeedAllowed.Text = FormatStrings.FormatSpeedLimit(thisInfo.allowedSpeedMpS, Owner.Viewer.MilepostUnitsMetric);
-                // TODO: Casting to MSTSLocomotive here suggests a problem with the data model in the Simulator.
-                OdoMeterHead.Text = FormatStrings.FormatShortDistanceDisplay((Owner.Viewer.PlayerLocomotive as MSTSLocomotive).OdoMeterM, Owner.Viewer.MilepostUnitsMetric);
-                OdoMeterTail.Text = FormatStrings.FormatShortDistanceDisplay((Owner.Viewer.PlayerLocomotive as MSTSLocomotive).OdoMeterM - Owner.Viewer.PlayerTrain.Length, Owner.Viewer.MilepostUnitsMetric);
 
                 var ControlText = ControlModeLabels[thisInfo.ControlMode];
                 if (thisInfo.ControlMode == Train.TRAIN_CONTROL.AUTO_NODE)

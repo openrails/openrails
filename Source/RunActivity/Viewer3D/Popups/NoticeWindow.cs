@@ -109,6 +109,17 @@ namespace ORTS.Viewer3D.Popups
                         SetNotice(Viewer.Catalog.GetStringFmt("FOV: {0:F0}°", FieldOfView));
                     }
                 }
+                // TODO: Casting to MSTSLocomotive here suggests a problem with the data model in the Simulator.
+                var playerLocomotive = Owner.Viewer.PlayerLocomotive as MSTSLocomotive;
+                if (playerLocomotive != null && playerLocomotive.Train != null)
+                {
+                    var odoMeterM = playerLocomotive.OdoMeterM;
+                    var trainLength = playerLocomotive.Train.Length;
+                    if (odoMeterM < trainLength)
+                    {
+                        SetNotice(Viewer.Catalog.GetStringFmt("Odometer {0}", FormatStrings.FormatShortDistanceDisplay(trainLength - odoMeterM, Owner.Viewer.MilepostUnitsMetric)));
+                    }
+                }
             }
         }
 

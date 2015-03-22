@@ -118,7 +118,7 @@ namespace ORTS
         public bool MilepostUnitsMetric;
         public PressureUnit PressureUnit = PressureUnit.None;
 
-        private float OdoMeterResetPositionM;
+        private float OdoMeterResetPositionM = -100000; // Needs to be longer than any train.
         private Direction OdoMeterDirection = Direction.N;
         /// <summary>
         /// Travelled distance to be displayed to locomotive driver. The odometer may be reset to zero.
