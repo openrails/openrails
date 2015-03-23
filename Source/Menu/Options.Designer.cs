@@ -1411,7 +1411,7 @@
             this.labelUpdateChannel.Name = "labelUpdateChannel";
             this.labelUpdateChannel.Size = new System.Drawing.Size(86, 13);
             this.labelUpdateChannel.TabIndex = 0;
-            this.labelUpdateChannel.Text = "Update channel:";
+            this.labelUpdateChannel.Text = "Update mode:";
             // 
             // tabPageExperimental
             // 

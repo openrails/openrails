@@ -223,16 +223,16 @@ namespace ORTS
 
             // Updater tab
             var updateChannelNames = new Dictionary<string, string> {
-                { "release", catalog.GetString("Release channel (Recommended for users)") },
-                { "experimental", catalog.GetString("Experimental channel (For supporters)") },
-                { "nightly", catalog.GetString("Nightly channel (For developers)") },
+                { "stable", catalog.GetString("Stable (recommended)") },
+                { "testing", catalog.GetString("Testing") },
+                { "unstable", catalog.GetString("Unstable") },
                 { "", catalog.GetString("None") },
             };
             var updateChannelDescriptions = new Dictionary<string, string> {
-                { "release", catalog.GetString("The release channel contains only official, hand-picked stable versions.") },
-                { "experimental", catalog.GetString("The experimental channel contains automatically generated weekly versions.") },
-                { "nightly", catalog.GetString("The nightly channel contains every single version created.") },
-                { "", catalog.GetString("No automatic updates.") },
+                { "stable", catalog.GetString("Infrequent updates to official, hand-picked versions. Recommended for most users.") },
+                { "testing", catalog.GetString("Weekly updates which may contain noticable defects. For project supporters.") },
+                { "unstable", catalog.GetString("Daily updates which may contain serious defects. For developers only.") },
+                { "", catalog.GetString("No updates.") },
             };
             var spacing = labelUpdateChannel.Margin.Size;
             var indent = 20;
