@@ -36,7 +36,6 @@ namespace ORTS
         readonly UpdateManager UpdateManager;
 
         private GettextResourceManager catalog = new GettextResourceManager("Menu");
-        private Boolean Initialized = false;
 
         public class ComboBoxMember
         {
@@ -235,32 +234,32 @@ namespace ORTS
                 { "nightly", catalog.GetString("The nightly channel contains every single version created.") },
                 { "", catalog.GetString("No automatic updates.") },
             };
-            var spacing = labelUpdateChannel.Margin.All * 2;
+            var spacing = labelUpdateChannel.Margin.Size;
             var indent = 20;
-            var top = labelUpdateChannel.Bottom + spacing;
+            var top = labelUpdateChannel.Bottom + spacing.Height;
             foreach (var channel in UpdateManager.GetChannels())
             {
                 var radio = new RadioButton() {
                     Text = updateChannelNames[channel.ToLowerInvariant()],
                     Margin = labelUpdateChannel.Margin,
-                    Left = spacing,
+                    Left = spacing.Width,
                     Top = top,
                     Checked = updateManager.ChannelName.Equals(channel, StringComparison.InvariantCultureIgnoreCase),
                     AutoSize = true,
                     Tag = channel,
                 };
                 tabPageUpdater.Controls.Add(radio);
-                top += radio.Height + spacing;
+                top += radio.Height + spacing.Height;
                 var label = new Label() {
                     Text = updateChannelDescriptions[channel.ToLowerInvariant()],
                     Margin = labelUpdateChannel.Margin,
-                    Left = spacing + indent,
+                    Left = spacing.Width + indent,
                     Top = top,
-                    Width = tabPageUpdater.ClientSize.Width - indent - spacing * 2,
+                    Width = tabPageUpdater.ClientSize.Width - indent - spacing.Width * 2,
                     AutoSize = true,
                 };
                 tabPageUpdater.Controls.Add(label);
-                top += label.Height + spacing;
+                top += label.Height + spacing.Height;
             }
 
             // Experimental tab
@@ -287,8 +286,6 @@ namespace ORTS
             trackAdhesionFactorChange.Value = Settings.AdhesionFactorChange;
             SetAdhesionLevelValue();
             checkShapeWarnings.Checked = !Settings.SuppressShapeWarnings;
-
-            Initialized = true;
         }
 
         static string ParseCategoryFrom(string name)

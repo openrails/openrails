@@ -30,8 +30,6 @@ namespace ORTS.Viewer3D.Popups
         public const int MaximumDistance = 5000;
         public const int TrackMonitorLabelHeight = 130; // Height of labels above the main display.
         public const int TrackMonitorOffsetY = 25/*Window.DecorationOffset.Y*/ + TrackMonitorLabelHeight;
-        public const int TrackMonitorWidth = 150; // FIXME: NOT USED
-        public const int TrackMonitorHeight = 250; // FIXME: NOT USED
         const int TrackMonitorHeightInLinesOfText = 16;
 
         Label SpeedCurrent;
