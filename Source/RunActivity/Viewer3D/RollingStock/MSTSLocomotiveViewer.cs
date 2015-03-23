@@ -1667,6 +1667,9 @@ namespace ORTS.Viewer3D.RollingStock
                 case CABViewControlTypes.RESET:
                 case CABViewControlTypes.WIPERS:
                 case CABViewControlTypes.EXTERNALWIPERS:
+                case CABViewControlTypes.LEFTDOOR:
+                case CABViewControlTypes.RIGHTDOOR:
+                case CABViewControlTypes.MIRRORS:
                 case CABViewControlTypes.HORN:
                 case CABViewControlTypes.WHISTLE:
                 case CABViewControlTypes.BELL:
@@ -2069,6 +2072,7 @@ namespace ORTS.Viewer3D.RollingStock
         Dictionary<int, AnimatedPart> OnDemandAnimateParts = null; //like external wipers, and other parts that will be switched on by mouse in the future
         //Dictionary<int, DigitalDisplay> DigitParts = null;
         Dictionary<int, ThreeDimCabDigit> DigitParts3D = null;
+        Dictionary<CABViewControlTypes, AnimatedPart> ExternalAnimatedParts;
         AnimatedPart ExternalWipers;
         protected MSTSLocomotive MSTSLocomotive { get { return (MSTSLocomotive)Car; } }
 		MSTSLocomotiveViewer LocoViewer;
@@ -2125,7 +2129,7 @@ namespace ORTS.Viewer3D.RollingStock
                     try
                     {
                         order = int.Parse(tmp[1].Trim());
-                        parameter1 = tmp[2].Trim();
+                        if (tmp.Length>=3) parameter1 = tmp[2].Trim();
                         if (tmp.Length == 4) parameter2 = tmp[3].Trim();//we can get max two parameters per part
                     }
                     catch { continue; }
@@ -2133,7 +2137,8 @@ namespace ORTS.Viewer3D.RollingStock
                     {
                         type = (CABViewControlTypes)Enum.Parse(typeof(CABViewControlTypes), tmp[0].Trim(), true); //convert from string to enum
                         key = 1000 * (int)type + order;
-                        if (type != CABViewControlTypes.EXTERNALWIPERS) style = locoViewer.ThreeDimentionCabRenderer.ControlMap[key]; //cvf file has no external wipers key word
+                        if (type != CABViewControlTypes.EXTERNALWIPERS && type != CABViewControlTypes.MIRRORS && type != CABViewControlTypes.LEFTDOOR && type != CABViewControlTypes.RIGHTDOOR)
+                            style = locoViewer.ThreeDimentionCabRenderer.ControlMap[key]; //cvf file has no external wipers, left door, right door and mirrors key word
                     }
                     catch
                     {
@@ -2168,18 +2173,7 @@ namespace ORTS.Viewer3D.RollingStock
                             tmpPart.AddMatrix(iMatrix); //tmpPart.SetPosition(false);
                         }
                     }
-                    else if (type == CABViewControlTypes.EXTERNALWIPERS)
-                    {
-                        //if there is a part already, will insert this into it, otherwise, create a new
-                        if (!OnDemandAnimateParts.ContainsKey(key))
-                        {
-                            ExternalWipers = new AnimatedPartMultiState(TrainCarShape, type, key);
-                            OnDemandAnimateParts.Add(key, ExternalWipers);
-                        }
-                        else ExternalWipers = OnDemandAnimateParts[key];
-                        ExternalWipers.AddMatrix(iMatrix);
-                    }
-                    else//others
+                    else 
                     {
                         //if there is a part already, will insert this into it, otherwise, create a new
                         if (!AnimateParts.ContainsKey(key))
@@ -2222,7 +2216,26 @@ namespace ORTS.Viewer3D.RollingStock
 
 			foreach (var p in AnimateParts)
 			{
-				p.Value.Update(this.LocoViewer, elapsedTime);
+                if (p.Value.Type >= CABViewControlTypes.EXTERNALWIPERS) //for wipers, doors and mirrors
+                {
+                    switch (p.Value.Type) {
+                        case CABViewControlTypes.EXTERNALWIPERS:
+                            p.Value.UpdateLoop(Locomotive.Wiper, elapsedTime);
+                            break;
+                        case CABViewControlTypes.LEFTDOOR:
+                            p.Value.UpdateLoop(Locomotive.DoorLeftOpen, elapsedTime);
+                            break;
+                        case CABViewControlTypes.RIGHTDOOR:
+                            p.Value.UpdateLoop(Locomotive.DoorRightOpen, elapsedTime);
+                            break;
+                        case CABViewControlTypes.MIRRORS:
+                            p.Value.UpdateLoop(Locomotive.MirrorOpen, elapsedTime);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+				else p.Value.Update(this.LocoViewer, elapsedTime); //for all other intruments with animations
 			}
             foreach (var p in DigitParts3D)
             {
@@ -2851,7 +2864,7 @@ namespace ORTS.Viewer3D.RollingStock
 	// On Update( position ) it slowly moves the parts towards the specified position
 	public class AnimatedPartMultiState : AnimatedPart
 	{
-		CABViewControlTypes Type;
+		public CABViewControlTypes Type;
 		int Key;
 		/// <summary>
 		/// Construct with a link to the shape that contains the animated parts 

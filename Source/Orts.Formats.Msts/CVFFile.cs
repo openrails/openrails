@@ -143,10 +143,13 @@ namespace Orts.Formats.Msts
         PANTOGRAPHS_4,
         PANTOGRAPHS_4C,
         PANTOGRAPHS_5,
-        EXTERNALWIPERS,
         ORTS_OIL_PRESSURE,
         ORTS_DIESEL_TEMPERATURE,
-        ORTS_CYL_COMP
+        ORTS_CYL_COMP,
+        EXTERNALWIPERS,
+        LEFTDOOR,
+        RIGHTDOOR,
+        MIRRORS
     }
 
     public enum CABViewControlStyles
