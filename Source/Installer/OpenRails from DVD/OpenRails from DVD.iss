@@ -3,7 +3,7 @@
 
 #define NetRedistPath "..\..\..\Microsoft .NET Framework Redistributable 3.5 SP1"
 #define NetRedist "dotnetfx35.exe"
-#define OutputBaseFilename "OR_X_dvd_setup"
+#define OutputBaseFilename "OpenRailsTestingDVDSetup"
 
 #include "..\OpenRails shared\OpenRails.iss"
 

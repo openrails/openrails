@@ -21,7 +21,7 @@
       </div>
 <?php include "shared/menu.php" ?>
 <?php
-  $download_stable = 'OpenRailsInstaller.exe';
+  $download_stable = 'OpenRailsSetup.exe';
   $file_path = "files";
 ?>
       <div class="row">

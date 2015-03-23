@@ -3,7 +3,7 @@
 
 #define NetRedistPath "..\..\..\Microsoft .NET Framework Redistributable 3.5 SP1 download manager"
 #define NetRedist "dotnetfx35setup.exe"
-#define OutputBaseFilename "OR_X_setup"
+#define OutputBaseFilename "OpenRailsTestingSetup"
 
 #include "..\OpenRails shared\OpenRails.iss"
 

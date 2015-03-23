@@ -8,7 +8,7 @@
 <?php include "../../shared/banners/show_banner.php" ?>
 <?php include "../../shared/menu.php" ?>
 <?php
-  $download_stable = 'OpenRailsInstaller.exe';
+  $download_stable = 'OpenRailsSetup.exe';
   $download_testing = 'OpenRailsTesting.zip';
   $file_path = "../../files";
 ?>
