@@ -7700,28 +7700,21 @@ namespace ORTS
             }
 
             // breakdown present routes, forward and backward
-
             signalRef.BreakDownRouteList(ValidRoute[0], 0, routedForward);
             signalRef.BreakDownRouteList(ValidRoute[1], 0, routedBackward);
 
-            // clear occupied sections
-
-            for (int iSection = OccupiedTrack.Count() - 1; iSection >= 0; iSection--)
-            {
-                TrackCircuitSection thisSection = OccupiedTrack[iSection];
-                thisSection.ResetOccupied(this);
-            }
-
+            
             // remove any actions build up during manual mode
-
             requiredActions.RemovePendingAIActionItems(true);
 
             // restore train placement
-
             RestoreTrainPlacement(ref newRoute, oldRoute, routeIndex, reversal);
 
-            // restore signal information
+            // set track occupation (using present route)
+            // This procedure is also needed for clearing track occupation.
+            UpdateSectionStateManual();
 
+            // restore signal information
             PassedSignalSpeeds.Clear();
             InitializeSignals(true);
 
