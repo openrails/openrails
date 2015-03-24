@@ -250,9 +250,9 @@ namespace ORTS.TrackViewer
             DrawArea = new DrawArea(drawScaleRuler);
             drawAreaInset = new ShadowDrawArea(null);
             drawAreaInset.StrictChecking = true;
-            setSubwindowSizes();
-
+            
             fontManager = FontManager.Instance();
+            setSubwindowSizes();
 
             this.IsMouseVisible = true;
 
@@ -278,16 +278,23 @@ namespace ORTS.TrackViewer
         /// </summary>
         void setSubwindowSizes()
         {
-            int insetRatio = 10;
-            int menuHeight = menuControl.MenuHeight;
-            int statusbarHeight = statusBarControl.StatusbarHeight;
+            int insetRatio = 10; 
+
+            //We need to give enough room for menu and status bar in raw pixels
+            float dpiScale = System.Drawing.Graphics.FromHwnd(IntPtr.Zero).DpiY / 96;
+            int menuHeight = (int)(menuControl.MenuHeight * dpiScale);
+            int statusbarHeight = (int)(statusBarControl.StatusbarHeight * dpiScale);       
             menuControl.SetScreenSize(ScreenW, menuHeight);
             statusBarControl.SetScreenSize(ScreenW, statusbarHeight, ScreenH);
 
+            //The rest of the available pixes are for the draw-area's
             DrawArea.SetScreenSize(0, menuHeight, ScreenW, ScreenH - statusbarHeight - menuHeight);
             drawAreaInset.SetScreenSize(ScreenW - ScreenW / insetRatio, menuHeight + 1, ScreenW / insetRatio, ScreenH / insetRatio);
-            drawScaleRuler.SetLowerLeftPoint(10, ScreenH - statusbarHeight - 10);
-            drawLongitudeLatitude = new DrawLongitudeLatitude(10, menuHeight + 10);
+
+            //Some on-screen features depend on the actual font-height
+            int halfHeight = (int)(fontManager.DefaultFont.Height / 2);
+            drawScaleRuler.SetLocationAndSize(halfHeight, ScreenH - statusbarHeight - halfHeight, 2*halfHeight);
+            drawLongitudeLatitude = new DrawLongitudeLatitude(halfHeight, menuHeight);
 
         }
  

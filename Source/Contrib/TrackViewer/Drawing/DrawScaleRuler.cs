@@ -50,8 +50,9 @@ namespace ORTS.TrackViewer.Drawing
         private List<RulerDatum> rulerDataMiles = new List<RulerDatum>();
         private RulerDatum currentRuler;
 
-        private readonly int maxPixelWidth = 200; // we do not want a wider scale than this.
+        private int maxPixelWidth = 200; // we do not want a wider scale than this.
         private Vector2 lowerLeftPoint;  // lower left point we can use for drawing
+        private int halfFontHeight;      // Height of the font being used
         private int fullPixelWidth;      // width of the scale
         private double pixelsPerMeter;   // store it in case we change meters to miles v.v.
         private bool useMilesNotMeters;  // we need to store this to be able to check whether it changed
@@ -99,13 +100,16 @@ namespace ORTS.TrackViewer.Drawing
         }
 
         /// <summary>
-        /// Simply give the lower-left point we can use for drawing the ruler
+        /// Simply give the lower-left point we can use for drawing the ruler, as well as the size of the font
         /// </summary>
         /// <param name="xLowerLeft">x-value of the point</param>
         /// <param name="yLowerLeft">y-value of the point</param>
-        public void SetLowerLeftPoint(int xLowerLeft, int yLowerLeft)
+        /// <param name="fontHeight">Height of the current font in pixels</param>
+        public void SetLocationAndSize(int xLowerLeft, int yLowerLeft, int fontHeight)
         {
             lowerLeftPoint = new Vector2(xLowerLeft, yLowerLeft);
+            halfFontHeight = (int)(fontHeight/2);
+            maxPixelWidth = 11 * fontHeight;
         }
 
         /// <summary>
@@ -149,8 +153,8 @@ namespace ORTS.TrackViewer.Drawing
             string scaleText = " (" + (1.0f / pixelsPerMeter).ToString(System.Globalization.CultureInfo.CurrentCulture) + "m/pixel)";
 
             Vector2 lowerRightPoint = new Vector2(lowerLeftPoint.X + fullPixelWidth, lowerLeftPoint.Y);
-            Vector2 bigMarker = new Vector2(0, -10);
-            Vector2 smallMarker = new Vector2(0, -5);
+            Vector2 bigMarker = new Vector2(0, -halfFontHeight);
+            Vector2 smallMarker = new Vector2(0, -(int)(halfFontHeight/2));
             Color color = DrawColors.colorsNormal.Text;
 
             BasicShapes.DrawLine(1, color, lowerLeftPoint, lowerRightPoint);
