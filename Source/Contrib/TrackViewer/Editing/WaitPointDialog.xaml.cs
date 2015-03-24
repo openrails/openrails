@@ -75,6 +75,10 @@ namespace ORTS.TrackViewer.Editing
                 selectUncouple.IsChecked = true;
                 keepRear.IsChecked = (currentWaitTimeS >= 50000);
             }
+            else if (currentWaitTimeS == 60001)
+            {
+                selectJoinSplit.IsChecked = true;
+            }
             else
             {
                 int minutes = currentWaitTimeS / 60;
@@ -92,30 +96,44 @@ namespace ORTS.TrackViewer.Editing
         public int GetWaitTime()
         {
             
-            
-
             if (selectUntil.IsChecked == true)
             {
                 // coding is 3HHMM
                 return 30000 +
-                    100 * Convert.ToInt32(untilTimeHours.Text, System.Globalization.CultureInfo.CurrentCulture)
-                        + Convert.ToInt32(untilTimeMinutes.Text, System.Globalization.CultureInfo.CurrentCulture);
+                    100 * getIntOrZero(untilTimeHours.Text) + getIntOrZero(untilTimeMinutes.Text);
             }
 
             if (selectUncouple.IsChecked == true)
             {
-                // coding is 4NNSS or 5NNSS. 5NNSS is supported in an hidden way only, because it might change in the future
+                // coding is 4NNSS or 5NNSS.
                 return ((keepRear.IsChecked == true) ? 50000 : 40000) +
-                    100 * Convert.ToInt32(uncoupleCars.Text, System.Globalization.CultureInfo.CurrentCulture)
-                        + Convert.ToInt32(uncoupleWaitSeconds.Text, System.Globalization.CultureInfo.CurrentCulture);
+                    100 * getIntOrZero(uncoupleCars.Text) + getIntOrZero(uncoupleWaitSeconds.Text);
+            }
+
+            if (selectJoinSplit.IsChecked == true)
+            {
+                // coding is only one number
+                return 60001;
             }
 
             //if (selectWait.IsChecked == true)
             {
                 // default calculation
-                return 60 * Convert.ToInt32(waitTimeMinutes.Text, System.Globalization.CultureInfo.CurrentCulture)
-                          + Convert.ToInt32(waitTimeSeconds.Text, System.Globalization.CultureInfo.CurrentCulture);
+                return 60 * getIntOrZero(waitTimeMinutes.Text) + getIntOrZero(waitTimeSeconds.Text);
             }
+        }
+
+        int getIntOrZero(string inputText)
+        {
+            int returnValue; 
+            try
+            {
+                returnValue = Convert.ToInt32(inputText, System.Globalization.CultureInfo.CurrentCulture);
+            }
+            catch {
+                returnValue=0;
+            }
+            return returnValue;
         }
 
         private void buttonOK_Click(object sender, RoutedEventArgs e)
@@ -146,6 +164,7 @@ namespace ORTS.TrackViewer.Editing
             {
                 buttonOK_Click(sender, e);
             }
+            updateWaitTime();
         }
 
         private void option_CheckChanged(object sender, RoutedEventArgs e)
@@ -184,6 +203,31 @@ namespace ORTS.TrackViewer.Editing
                 keepRear.IsEnabled = true;
                 uncoupleWaitSeconds.Focus();
             }
+
+            updateWaitTime();
+        }
+
+        private void updateWaitTime()
+        {
+            try
+            {
+                int waitTime = GetWaitTime();
+                WaitTimeDecimal.Content = String.Format("{0:D5},", waitTime);
+                WaitTimeHexadecimal.Content = String.Format("{0:x4}.", waitTime);
+            }
+            catch { }
+        }
+
+
+        private void twoDigits_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var textBox = sender as TextBox;
+            int ww = getIntOrZero(textBox.Text);
+            if (ww > 99)
+            {
+                textBox.Text = "99";
+            }
+            updateWaitTime();
         }
  
     }
