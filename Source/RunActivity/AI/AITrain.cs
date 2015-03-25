@@ -3543,7 +3543,7 @@ namespace ORTS
 
         public void RecalculateAllowedMaxSpeed()
         {
-            var allowedMaxSpeedPathMpS = Math.Min(allowedAbsoluteMaxSpeedSignalMpS, allowedAbsoluteMaxSpeedLimitMpS);
+            var allowedMaxSpeedPathMpS = Math.Min(allowedMaxSpeedSignalMpS, allowedMaxSpeedLimitMpS);
             AllowedMaxSpeedMpS = Math.Min(allowedMaxSpeedPathMpS, TrainMaxSpeedMpS);
         }
 
@@ -4755,12 +4755,12 @@ namespace ORTS
         {
             if (speedInfo.MaxSpeedMpSSignal > 0)
             {
-                allowedMaxSpeedSignalMpS = speedInfo.MaxSpeedMpSSignal;
+                allowedMaxSpeedSignalMpS = Program.Simulator.TimetableMode ? speedInfo.MaxSpeedMpSSignal : allowedAbsoluteMaxSpeedSignalMpS;
                 AllowedMaxSpeedMpS = Math.Min(allowedMaxSpeedLimitMpS, speedInfo.MaxSpeedMpSSignal);
             }
             if (speedInfo.MaxSpeedMpSLimit > 0)
             {
-                allowedMaxSpeedLimitMpS = speedInfo.MaxSpeedMpSLimit;
+                allowedMaxSpeedLimitMpS = Program.Simulator.TimetableMode ? speedInfo.MaxSpeedMpSLimit : allowedAbsoluteMaxSpeedLimitMpS;
                 AllowedMaxSpeedMpS = speedInfo.MaxSpeedMpSLimit;
             }
             // <CScomment> following statement should be valid in general, as it seems there was a bug here in the original SW

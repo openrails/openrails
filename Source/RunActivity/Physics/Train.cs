@@ -2277,6 +2277,20 @@ namespace ORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "Passed Signal : " + firstObject.ObjectDetails.thisRef.ToString() +
                         " with speed : " + firstObject.actual_speed.ToString() + "\n");
 #endif
+                    var temp1MaxSpeedMpS = IsFreight ? firstObject.speed_freight : firstObject.speed_passenger;
+                    if (firstObject.ObjectDetails.isSignal)
+                    {
+                        allowedAbsoluteMaxSpeedSignalMpS = temp1MaxSpeedMpS == -1 ? (float)Program.Simulator.TRK.Tr_RouteFile.SpeedLimit : temp1MaxSpeedMpS;
+                    }
+                    else if (firstObject.speed_reset == 0)
+                    {
+                        allowedAbsoluteMaxSpeedLimitMpS = temp1MaxSpeedMpS == -1 ? (float)Program.Simulator.TRK.Tr_RouteFile.SpeedLimit : temp1MaxSpeedMpS;
+                    }
+                    else
+                    {
+                        allowedAbsoluteMaxSpeedSignalMpS = allowedAbsoluteMaxSpeedLimitMpS;
+                    }
+
                     if (firstObject.actual_speed > 0)
                     {
 #if DEBUG_REPORTS
@@ -2325,14 +2339,6 @@ namespace ORTS
                             else speedLimit = new ActivateSpeedLimit(reqDistance, firstObject.actual_speed, firstObject.actual_speed);
                             requiredActions.InsertAction(speedLimit);
                             requiredActions.UpdatePendingSpeedlimits(firstObject.actual_speed);  // update any older pending speed limits
-                        }
-                        if (firstObject.ObjectDetails.isSignal)
-                        {
-                            allowedAbsoluteMaxSpeedSignalMpS = firstObject.actual_speed;
-                        }
-                        else
-                        {
-                            allowedAbsoluteMaxSpeedLimitMpS = firstObject.actual_speed;
                         }
                     }
                     else if (!Simulator.TimetableMode)
@@ -8121,12 +8127,12 @@ namespace ORTS
 
             if (speedInfo.MaxSpeedMpSSignal > 0)
             {
-                allowedMaxSpeedSignalMpS = speedInfo.MaxSpeedMpSSignal;
+                allowedMaxSpeedSignalMpS = Program.Simulator.TimetableMode? speedInfo.MaxSpeedMpSSignal : allowedAbsoluteMaxSpeedSignalMpS;
                 AllowedMaxSpeedMpS = Math.Min(speedInfo.MaxSpeedMpSSignal, allowedMaxSpeedLimitMpS);
             }
             if (speedInfo.MaxSpeedMpSLimit > 0)
             {
-                allowedMaxSpeedLimitMpS = speedInfo.MaxSpeedMpSLimit;
+                allowedMaxSpeedLimitMpS = Program.Simulator.TimetableMode ? speedInfo.MaxSpeedMpSLimit : allowedAbsoluteMaxSpeedLimitMpS;
                 if (Program.Simulator.TimetableMode)
                     AllowedMaxSpeedMpS = speedInfo.MaxSpeedMpSLimit;
                 else
