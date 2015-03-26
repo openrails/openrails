@@ -20,7 +20,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
 using ORTS.Common;
-using ORTS.Viewer3D.Popups;
+using ORTS.Viewer3D;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -70,11 +70,15 @@ namespace ORTS
         // station stop logging flags - these are saved to resume correct logging after save
         private string StationStopLogFile;   // logfile name
         private bool StationStopLogActive;   // logging is active
+        public Orts.Formats.Msts.Event triggeredEvent = null;        // used for exchange with Sound.cs to trigger activity sounds;
+
+        public ORTSActSoundSources ORTSActSoundSourceList; // Dictionary of activity sound sources
 
         private Activity(BinaryReader inf, Simulator simulator, List<EventWrapper> oldEventList)
         {
             Simulator = simulator;
             RestoreThis(inf, simulator, oldEventList);
+            ORTSActSoundSourceList = new ORTSActSoundSources();
         }
 
         public Activity(ACTFile actFile, Simulator simulator)
@@ -133,6 +137,8 @@ namespace ORTS
                 EventWrapper eventAdded = EventList.Last();
                 eventAdded.OriginalActivationLevel = i.Activation_Level;
             }
+
+            ORTSActSoundSourceList = new ORTSActSoundSources();
 
             StationStopLogActive = false;
             StationStopLogFile = null;
@@ -1088,6 +1094,13 @@ namespace ORTS
                 }
             }
 
+            // Activity sound management
+
+            if (this.ParsedObject.ORTSActSoundFile != null)
+            {
+                if (activity.triggeredEvent == null) activity.triggeredEvent = this.ParsedObject;
+            }
+
             if (this.ParsedObject.Outcomes.ActivityFail != null)
             {
                 activity.IsSuccessful = false;
@@ -1101,6 +1114,7 @@ namespace ORTS
             return false;
         }
 
+      
     }
 
     public class EventCategoryActionWrapper : EventWrapper

@@ -220,6 +220,10 @@ namespace ORTS
                             }
                         }
                     }
+
+                    //Update check for activity sounds
+                    if (Program.Simulator != null && Program.Simulator.ActivityRun != null && Program.Simulator.ActivityRun.ORTSActSoundSourceList != null)
+                    Program.Simulator.ActivityRun.ORTSActSoundSourceList.Update(viewer);
                 }
                 //if (UpdateInterrupts > 1)
                 //    Trace.TraceInformation("Sound Source Update Interrupted more than once: {0}", UpdateInterrupts);

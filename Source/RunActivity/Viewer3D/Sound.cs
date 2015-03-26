@@ -259,6 +259,10 @@ namespace ORTS.Viewer3D
         /// Sound attenuation factor. Calculated to achieve goal set by <see cref="GainAtMaxDistance"/>
         /// </summary>
         public float RolloffFactor;
+        /// <summary>
+        /// Used for InGame sounds and activity sounds of type "Overall"
+        /// </summary>
+        public bool IsUnattenuated = false;
 
         /// <summary>
         /// Construct a SoundSource attached to a train car.
@@ -278,8 +282,9 @@ namespace ORTS.Viewer3D
         /// <param name="viewer"></param>
         /// <param name="eventSource"></param>
         /// <param name="smsFilePath"></param>
-        public SoundSource(Viewer viewer, Events.Source eventSource, string smsFilePath)
+        public SoundSource(Viewer viewer, Events.Source eventSource, string smsFilePath, bool isUnattenuated)
         {
+            IsUnattenuated = isUnattenuated;
             Initialize(viewer, WorldLocation.None, eventSource, smsFilePath);
         }
 
@@ -312,6 +317,45 @@ namespace ORTS.Viewer3D
         }
 
         /// <summary>
+        /// Construct a SoundSource attached to a train car, with predefined parameters (activity sound).
+        /// </summary>
+        /// <param name="viewer"></param>
+        /// <param name="car"></param>
+        /// <param name="smsFilePath"></param>
+        public SoundSource(Viewer viewer, MSTSWagon car, string wavFilePath, int ORTSActSoundFileType,  bool preCompiled)
+        {
+            Car = car;
+            Initialize(viewer, car.WorldPosition.WorldLocation, Events.Source.MSTSCar, wavFilePath, ORTSActSoundFileType, preCompiled);
+        }
+
+        /// <summary>
+        /// Construct a SoundSource which has no specific location - like ingame.sms, with predefined parameters (activity sound)
+        /// </summary>
+        /// <param name="viewer"></param>
+        /// <param name="eventSource"></param>
+        /// <param name="smsFilePath"></param>
+        public SoundSource(Viewer viewer, Events.Source eventSource, string wavFilePath, int ORTSActSoundFileType, bool isUnattenuated, bool preCompiled)
+        {
+            IsUnattenuated = isUnattenuated;
+            Initialize(viewer, WorldLocation.None, eventSource, wavFilePath, ORTSActSoundFileType, preCompiled);
+        }
+
+        /// <summary>
+        /// Construct a SoundSource stationary at the specified worldLocation, with predefined parameters (activity sound)
+        /// </summary>
+        /// <param name="viewer"></param>
+        /// <param name="worldLocation"></param>
+        /// <param name="eventSource"></param>
+        /// <param name="smsFilePath"></param>
+        /// <param name="slowRolloff"></param>
+        public SoundSource(Viewer viewer, WorldLocation worldLocation, Events.Source eventSource, string wavFilePath, bool slowRolloff, int ORTSActSoundFileType, bool preCompiled)
+        {
+            IsEnvSound = true;
+            SlowRolloff = slowRolloff;
+            Initialize(viewer, worldLocation, eventSource, wavFilePath, ORTSActSoundFileType, preCompiled);
+        }
+
+        /// <summary>
         /// Stop the streams, free up OpenAL sound source IDs and try to unload wave data from memory
         /// </summary>
         public override void Uninitialize()
@@ -335,6 +379,8 @@ namespace ORTS.Viewer3D
         /// </summary>
         public string SMSFolder;
         public string SMSFileName;
+        public string WavFolder;
+        public string WavFileName;
         public bool Active;
         private Orts.Formats.Msts.Activation ActivationConditions;
         private Orts.Formats.Msts.Deactivation DeactivationConditions;
@@ -410,6 +456,92 @@ namespace ORTS.Viewer3D
                     SoundStreams.Add(new SoundStream(mstsStream, eventSource, this));
                 }
             }
+        }
+
+                /// <summary>
+        /// Set properties of this SoundSource with default precompiled parameters, and generate SoundStreams
+        /// </summary>
+        /// <param name="viewer">Current <see cref="Viewer3D"/></param>
+        /// <param name="worldLocation">World location of <see cref="SoundSource"/></param>
+        /// <param name="eventSource">Type of game part sound source belongs to, to determine how to interpret discrete trigger numbers</param>
+        /// <param name="smsFilePath">Full path for sms file</param>
+        public void Initialize(Viewer viewer, WorldLocation worldLocation, Events.Source eventSource, string wavFilePath, int ORTSActSoundFileType, bool preCompiled)
+        {
+            Viewer = viewer;
+            WorldLocation = worldLocation;
+
+            if (wavFilePath == null)
+                return;
+
+            WavFolder = Path.GetDirectoryName(wavFilePath);
+            WavFileName = Path.GetFileName(wavFilePath);
+            SMSFolder = WavFolder;
+            SMSFileName = WavFileName;
+
+            if (Viewer.Settings.SoundDetailLevel >= 3)
+            {
+                // base initializations
+                ActivationConditions = new Orts.Formats.Msts.Activation();
+                DeactivationConditions = new Orts.Formats.Msts.Deactivation();
+                ActivationConditions.TrackType = -1;
+                DeactivationConditions.TrackType = -1;
+                ActivationConditions.Distance = 1000;
+                DeactivationConditions.Distance = 1000;
+                switch (ORTSActSoundFileType)
+                {
+                    case 0:
+                    default:
+                        ActivationConditions.CabCam = true;
+                        ActivationConditions.ExternalCam = true;
+                        ActivationConditions.PassengerCam = true;
+                        DeactivationConditions.CabCam = false;
+                        DeactivationConditions.ExternalCam = false;
+                        DeactivationConditions.PassengerCam = false;
+                        Ignore3D = true;
+                        IsExternal = true;
+                        break;
+                    case 1:
+                        ActivationConditions.CabCam = true;
+                        ActivationConditions.ExternalCam = false;
+                        ActivationConditions.PassengerCam = false;
+                        DeactivationConditions.CabCam = false;
+                        DeactivationConditions.ExternalCam = true;
+                        DeactivationConditions.PassengerCam = true;
+                        Ignore3D = true;
+                        IsExternal = false;
+                        break;
+                    case 2:
+                        ActivationConditions.CabCam = false;
+                        ActivationConditions.ExternalCam = false;
+                        ActivationConditions.PassengerCam = true;
+                        DeactivationConditions.CabCam = true;
+                        DeactivationConditions.ExternalCam = true;
+                        DeactivationConditions.PassengerCam = false;
+                        Ignore3D = true;
+                        IsExternal = false;
+                        break;
+                    case 3:
+                        ActivationConditions.CabCam = true;
+                        ActivationConditions.ExternalCam = true;
+                        ActivationConditions.PassengerCam = true;
+                        DeactivationConditions.CabCam = false;
+                        DeactivationConditions.ExternalCam = false;
+                        DeactivationConditions.PassengerCam = false;
+                        Ignore3D = false;
+                        IsExternal = true;
+                        break;
+                }
+                Volume = 1.0f;
+                var deactivationDistance = DeactivationConditions != null && DeactivationConditions.Distance != 0 ? DeactivationConditions.Distance : MaxDistanceM;
+                var maxDistanceM = Math.Min(MaxDistanceM, deactivationDistance);
+
+                 RolloffFactor = SlowRolloff ? 0.4f : ReferenceDistanceM * (1f / GainAtMaxDistance - 1f) / (maxDistanceM - ReferenceDistanceM);
+
+                // initialization of the only one sound stream
+                SoundStreams.Add(new SoundStream(WavFileName, eventSource, this)); 
+            }
+
+
         }
 
         /// <summary>
@@ -812,6 +944,18 @@ namespace ORTS.Viewer3D
                                 select t).ToList();
         }
 
+        public SoundStream(string wavFileName, Events.Source eventSource, SoundSource soundSource)
+        {
+            SoundSource = soundSource;
+            Volume = 1.0f;
+
+            ALSoundSource = new ALSoundSource(soundSource.IsEnvSound, soundSource.RolloffFactor);
+
+            _InitialTrigger = new ORTSInitialTrigger(this, wavFileName);
+            Triggers.Add(_InitialTrigger);
+
+        }
+
         /// <summary>
         /// Update OpenAL sound source position, then calls the main <see cref="Update()"/> function
         /// Position is relative to camera tile's center
@@ -832,7 +976,10 @@ namespace ORTS.Viewer3D
             {
                 return;
             }
-
+            if (Triggers.Count == 1 && _InitialTrigger != null &&_InitialTrigger.SoundCommand is ORTSPlayOneShot)
+            {
+                int pippo = 1;
+            }
             foreach (ORTSTrigger trigger in Triggers)
                 trigger.TryTrigger();
             
@@ -879,7 +1026,12 @@ namespace ORTS.Viewer3D
             if (ALSoundSource == null)
                 return;
 
-            if (MSTSStream.FrequencyCurve != null) 
+            if (MSTSStream == null)
+            {
+                int pippo = 1;
+            }
+
+            if (MSTSStream != null && MSTSStream.FrequencyCurve != null) 
             {
                 if (SoundSource.Car != null || SoundSource.Viewer.Camera.AttachedCar != null)
                 {
@@ -897,7 +1049,7 @@ namespace ORTS.Viewer3D
 
             float volume = SoundSource.Volume * Volume;
 
-            if (MSTSStream.VolumeCurves.Count > 0)
+            if (MSTSStream != null && MSTSStream.VolumeCurves.Count > 0)
                 for (int i = 0; i < MSTSStream.VolumeCurves.Count; i++)
                 {
                     float x;
@@ -911,7 +1063,7 @@ namespace ORTS.Viewer3D
                     volume *= Interpolate(x, MSTSStream.VolumeCurves[i]);
                 }
 
-            if (SoundSource.IsExternal && SoundSource.Viewer.Camera.Style != Camera.Styles.External && SoundSource != SoundSource.Viewer.World.GameSounds)
+            if (SoundSource.IsExternal && SoundSource.Viewer.Camera.Style != Camera.Styles.External && !SoundSource.IsUnattenuated)
                 volume *= 0.5f;
 
             ALSoundSource.Volume = volume;
@@ -1248,6 +1400,13 @@ namespace ORTS.Viewer3D
             SoundStream = soundStream;
         }
 
+        // For pre-compiled activity sound
+        public ORTSInitialTrigger(SoundStream soundStream, string wavFileName)
+        {
+            SoundCommand = ORTSSoundCommand.Precompiled(wavFileName, soundStream);
+            SoundStream = soundStream;
+        }
+
         public override void Initialize()
         {
             if (Enabled)
@@ -1472,6 +1631,12 @@ namespace ORTS.Viewer3D
             : base(ortsStream, mstsSoundPlayCommand)
         {
         }
+        // precompiled version for activity sounds
+        public ORTSPlayOneShot(SoundStream ortsStream, string wavFileName)
+            : base(ortsStream, wavFileName)
+        {
+        }
+
         public override void Run()
         {
             string p = GetNextFile();
@@ -1702,7 +1867,20 @@ namespace ORTS.Viewer3D
 			throw new ArgumentException("Unexpected soundCommand type " + mstsSoundCommand.GetType().ToString() + " in " + soundStream.SoundSource.SMSFolder, "mstsSoundCommand");
         }
 
+
+        /// <summary>
+        /// Create a pre-compiled sound command for activity files.
+        /// </summary>
+        /// <param name="wavFilePath"></param>
+        /// <param name="soundStream"></param>
+        /// <returns></returns>
+        public static ORTSSoundCommand Precompiled(string wavFileName, SoundStream soundStream)
+        {
+            return new ORTSPlayOneShot(soundStream, wavFileName);        
+        }
+
     }// ORTSSoundCommand
+
 
     /// <summary>
     /// A base class for commands that play a sound.
@@ -1729,6 +1907,15 @@ namespace ORTS.Viewer3D
         {
             Files = mstsSoundPlayCommand.Files;
             SelectionMethod = mstsSoundPlayCommand.SelectionMethod;
+        }
+
+        // precompiled version for activity sounds
+        public ORTSSoundPlayCommand(SoundStream ortsStream, string wavFileName)
+            : base(ortsStream)
+        {
+            Files = new String[1];
+            Files[0] = wavFileName;
+            SelectionMethod = Orts.Formats.Msts.SoundCommand.SelectionMethods.SequentialSelection;
         }
 
         /// <summary>
@@ -2162,5 +2349,91 @@ namespace ORTS.Viewer3D
             return null;
         }
     }
+    public class ORTSActSoundSources
+    {
+        public SoundSource ActivitySounds;
+        Viewer MyViewer;
+        public ORTSActSoundSources( )
+        {
+        }
+
+        public void Update ( Viewer viewer )
+        {
+            if (Program.Simulator.ActivityRun.triggeredEvent == null ) return;
+            MyViewer = viewer;
+            var localEventID = Program.Simulator.ActivityRun.triggeredEvent.ID;
+            var ORTSActSoundFile = Program.Simulator.ActivityRun.triggeredEvent.ORTSActSoundFile;
+            var ORTSActSoundFileType = Program.Simulator.ActivityRun.triggeredEvent.ORTSActSoundFileType;
+            Program.Simulator.ActivityRun.triggeredEvent = null;
+            var extension = Path.GetExtension(ORTSActSoundFile);
+            switch (extension)
+            {
+                case ".sms":
+                    switch (ORTSActSoundFileType)
+                    {
+                        case 0:
+                            ActivitySounds = new SoundSource(MyViewer, Events.Source.MSTSInGame, ORTSActSoundFile, true);
+                            MyViewer.SoundProcess.AddSoundSources(localEventID, new List<SoundSourceBase>() { ActivitySounds });
+                            break;
+                        case 1:
+                            var playerLoco = (MSTSWagon)MyViewer.Simulator.PlayerLocomotive;
+                            ActivitySounds = new SoundSource(MyViewer, playerLoco, ORTSActSoundFile);
+                            MyViewer.SoundProcess.AddSoundSources(localEventID, new List<SoundSourceBase>() { ActivitySounds });
+                            break;
+                        case 2:
+                            if (MyViewer.Camera.Style == Camera.Styles.Passenger && MyViewer.Camera.AttachedCar != null)
+                            {
+                                var selectedWagon = (MSTSWagon)MyViewer.Camera.AttachedCar;
+                                ActivitySounds = new SoundSource(MyViewer, selectedWagon, ORTSActSoundFile);
+                                MyViewer.SoundProcess.AddSoundSources(localEventID, new List<SoundSourceBase>() { ActivitySounds });
+                            }
+                            break;
+                        case 3:
+                            var worldLocation = MyViewer.Simulator.PlayerLocomotive.WorldPosition.WorldLocation;
+                            worldLocation.Location.Y = worldLocation.Location.Y + 3; // Sound does not come from earth!
+                            ActivitySounds = new SoundSource(MyViewer, worldLocation, Events.Source.None, ORTSActSoundFile, true);
+                            MyViewer.SoundProcess.AddSoundSources(localEventID, new List<SoundSourceBase>() { ActivitySounds });
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                case ".wav":
+                    switch (ORTSActSoundFileType)
+                    {
+                        case 0:
+                            ActivitySounds = new SoundSource(MyViewer, Events.Source.MSTSInGame, ORTSActSoundFile, ORTSActSoundFileType, true, true);
+                            MyViewer.SoundProcess.AddSoundSources(localEventID, new List<SoundSourceBase>() { ActivitySounds });
+                            break;
+                        case 1:
+                            var playerLoco = (MSTSWagon)MyViewer.Simulator.PlayerLocomotive;
+                            ActivitySounds = new SoundSource(MyViewer, playerLoco, ORTSActSoundFile, ORTSActSoundFileType, true);
+                            MyViewer.SoundProcess.AddSoundSources(localEventID, new List<SoundSourceBase>() { ActivitySounds });
+                            break;
+                        case 2:
+                            if (MyViewer.Camera.Style == Camera.Styles.Passenger && MyViewer.Camera.AttachedCar != null)
+                            {
+                                var selectedWagon = (MSTSWagon)MyViewer.Camera.AttachedCar;
+                                ActivitySounds = new SoundSource(MyViewer, selectedWagon, ORTSActSoundFile, ORTSActSoundFileType, true);
+                                MyViewer.SoundProcess.AddSoundSources(localEventID, new List<SoundSourceBase>() { ActivitySounds });
+                            }
+                            break;
+                        case 3:
+                            var worldLocation = MyViewer.Simulator.PlayerLocomotive.WorldPosition.WorldLocation;
+                            worldLocation.Location.Y = worldLocation.Location.Y + 3; // Sound does not come from earth!
+                            ActivitySounds = new SoundSource(MyViewer, worldLocation, Events.Source.None, ORTSActSoundFile, true, ORTSActSoundFileType, true);
+                            MyViewer.SoundProcess.AddSoundSources(localEventID, new List<SoundSourceBase>() { ActivitySounds });
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                default:
+                    break;
+            }
+            return;
+        }
+
+     }
 }
 

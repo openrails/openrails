@@ -70,7 +70,7 @@ namespace ORTS.Viewer3D
                 // Keep it silent while loading.
                 ALSoundSource.MuteAll();
                 // TODO: This looks kinda evil; do something about it.
-                GameSounds = new SoundSource(viewer, Events.Source.MSTSInGame, viewer.Simulator.RoutePath + "\\Sound\\ingame.sms");
+                GameSounds = new SoundSource(viewer, Events.Source.MSTSInGame, viewer.Simulator.RoutePath + "\\Sound\\ingame.sms", true);
                 Viewer.SoundProcess.AddSoundSources(GameSounds.SMSFolder + "\\" + GameSounds.SMSFileName, new List<SoundSourceBase>() { GameSounds });
                 Sounds = new WorldSounds(viewer);
             }

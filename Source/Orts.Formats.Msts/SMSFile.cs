@@ -127,6 +127,11 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("tracktype", ()=>{ TrackType = stf.ReadIntBlock(null); }),
             });
         }
+
+        // for precompiled sound sources for activity sound
+        public Activation()
+        { }
+
     }
 
     public class Deactivation: Activation
@@ -134,6 +139,10 @@ namespace Orts.Formats.Msts
         public Deactivation(STFReader stf): base(stf)
         {
         }
+
+        // for precompiled sound sources for activity sound
+        public Deactivation(): base()
+        { }
     }
 
     public class SMSStreams : List<SMSStream>

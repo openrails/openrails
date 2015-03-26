@@ -659,6 +659,8 @@ namespace Orts.Formats.Msts
         public string TextToDisplayOnCompletionIfNotTriggered = "";
         public Boolean Reversible;
         public int ORTSContinue;
+        public string ORTSActSoundFile;
+        public int ORTSActSoundFileType;
     }
 
     public class EventCategoryLocation : Event {
@@ -689,7 +691,33 @@ namespace Orts.Formats.Msts
                     RadiusM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     stf.MustMatch(")");
                 }),
-                new STFReader.TokenProcessor("ortscontinue", ()=>{ ORTSContinue = stf.ReadIntBlock(-1); }),
+                new STFReader.TokenProcessor("ortscontinue", ()=>{ ORTSContinue = stf.ReadIntBlock(0); }),
+                new STFReader.TokenProcessor("ortsactsoundfile", ()=>
+                {
+                    stf.MustMatch("(");
+                    var tempString = stf.ReadString();
+                    ORTSActSoundFile =Path.Combine(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(stf.FileName)), "SOUND"), tempString);
+                    var ORTSActSoundFileTypeString = stf.ReadString();
+                    switch (ORTSActSoundFileTypeString)
+	                    {
+                            case "Everywhere":
+                                ORTSActSoundFileType = 0;
+                                break;
+                            case "Cab":
+                                ORTSActSoundFileType = 1;
+                                break;
+                            case "Pass":
+                                ORTSActSoundFileType = 2;
+                                break;
+                            case "Ground":
+                                ORTSActSoundFileType = 3;
+                                break;
+                            default:
+                                ORTSActSoundFileType = 0;
+                                break;
+	                    }
+                    stf.MustMatch(")");
+                }),
             });
         }
     }
@@ -727,7 +755,33 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("reversable_event", ()=>{ stf.MustMatch("("); stf.MustMatch(")"); Reversible = true; }),
                 // Also support the correct spelling !
                 new STFReader.TokenProcessor("reversible_event", ()=>{ stf.MustMatch("("); stf.MustMatch(")"); Reversible = true; }),
-                new STFReader.TokenProcessor("ortscontinue", ()=>{ ORTSContinue = stf.ReadIntBlock(-1); }),
+                new STFReader.TokenProcessor("ortscontinue", ()=>{ ORTSContinue = stf.ReadIntBlock(0); }),
+                                new STFReader.TokenProcessor("ortsactsoundfile", ()=>
+                {
+                    stf.MustMatch("(");
+                    var tempString = stf.ReadString();
+                    ORTSActSoundFile =Path.Combine(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(stf.FileName)), "SOUND"), tempString);
+                    var ORTSActSoundFileTypeString = stf.ReadString();
+                    switch (ORTSActSoundFileTypeString)
+	                    {
+                            case "Everywhere":
+                                ORTSActSoundFileType = 0;
+                                break;
+                            case "Cab":
+                                ORTSActSoundFileType = 1;
+                                break;
+                            case "Pass":
+                                ORTSActSoundFileType = 2;
+                                break;
+                            case "Ground":
+                                ORTSActSoundFileType = 3;
+                                break;
+                            default:
+                                ORTSActSoundFileType = 0;
+                                break;
+	                    }
+                    stf.MustMatch(")");
+                }),
             });
         }
     }
@@ -780,7 +834,33 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("texttodisplayoncompletionifnotrriggered", ()=>{ TextToDisplayOnCompletionIfNotTriggered = stf.ReadStringBlock(""); }),
                 new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(""); }),
                 new STFReader.TokenProcessor("time", ()=>{ Time = (int)stf.ReadFloatBlock(STFReader.UNITS.Time, null); }),
-                new STFReader.TokenProcessor("ortscontinue", ()=>{ ORTSContinue = stf.ReadIntBlock(-1); }),
+                new STFReader.TokenProcessor("ortscontinue", ()=>{ ORTSContinue = stf.ReadIntBlock(0); }),
+                new STFReader.TokenProcessor("ortsactsoundfile", ()=>
+                {
+                    stf.MustMatch("(");
+                    var tempString = stf.ReadString();
+                    ORTSActSoundFile =Path.Combine(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(stf.FileName)), "SOUND"), tempString);
+                    var ORTSActSoundFileTypeString = stf.ReadString();
+                    switch (ORTSActSoundFileTypeString)
+	                    {
+                            case "Everywhere":
+                                ORTSActSoundFileType = 0;
+                                break;
+                            case "Cab":
+                                ORTSActSoundFileType = 1;
+                                break;
+                            case "Pass":
+                                ORTSActSoundFileType = 2;
+                                break;
+                            case "Ground":
+                                ORTSActSoundFileType = 3;
+                                break;
+                            default:
+                                ORTSActSoundFileType = 0;
+                                break;
+	                    }
+                    stf.MustMatch(")");
+                }),
             });
         }
     }
@@ -808,6 +888,7 @@ namespace Orts.Formats.Msts
             });
         }
     }
+
 
     /// <summary>
     /// Parses ActivityObject objects and saves them in ActivityObjectList.
