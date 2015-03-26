@@ -79,7 +79,8 @@ namespace ORTS
             comboLanguage.SelectedValue = Settings.Language;
 
             comboBoxOtherUnits.DataSource = new[] {
-                new ComboBoxMember { Code = "Automatic", Name = catalog.GetString("System") },
+                new ComboBoxMember { Code = "Route", Name = catalog.GetString("Route") },
+                new ComboBoxMember { Code = "Automatic", Name = catalog.GetString("Player's location") },
                 new ComboBoxMember { Code = "Metric", Name = catalog.GetString("Metric") },
                 new ComboBoxMember { Code = "US", Name = catalog.GetString("Imperial US") },
                 new ComboBoxMember { Code = "UK", Name = catalog.GetString("Imperial UK") },

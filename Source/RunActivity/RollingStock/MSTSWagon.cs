@@ -223,7 +223,8 @@ namespace ORTS
 
         public void GetMeasurementUnits()
         {
-            IsMetric = Simulator.Settings.Units == "Metric" || Simulator.Settings.Units == "Automatic" && System.Globalization.RegionInfo.CurrentRegion.IsMetric;
+            IsMetric = Simulator.Settings.Units == "Metric" || (Simulator.Settings.Units == "Automatic" && System.Globalization.RegionInfo.CurrentRegion.IsMetric) ||
+                (Simulator.Settings.Units == "Route" && Simulator.TRK.Tr_RouteFile.MilepostUnitsMetric);
             IsUK = Simulator.Settings.Units == "UK";
         }
 
