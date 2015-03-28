@@ -83,6 +83,7 @@ namespace ORTS.Viewer3D
         /// If needs active management or can be left to OpenAL to deal with sound properties
         /// </summary>
         public bool NeedsFrequentUpdate;
+        public bool TrackSound = false;
 
         public abstract void Dispose();
     }
@@ -100,6 +101,7 @@ namespace ORTS.Viewer3D
 
         public TrackSoundSource(MSTSWagon car, Viewer viewer)
         {
+            TrackSound = true;
             Car = car;
             Viewer = viewer;
             _inSources = new List<SoundSource>();
@@ -109,7 +111,8 @@ namespace ORTS.Viewer3D
             {
                 MSTSLocomotive loco = Car as MSTSLocomotive;
 
-                if (!string.IsNullOrEmpty(Car.InteriorSoundFileName) || (loco != null && !string.IsNullOrEmpty(loco.CabSoundFileName)) )
+                //if (!string.IsNullOrEmpty(Car.InteriorSoundFileName) || (loco != null && !string.IsNullOrEmpty(loco.CabSoundFileName)))
+                if (!string.IsNullOrEmpty(Car.InteriorShapeFileName) || (loco != null && (loco.HasFrontCab || loco.HasRearCab)))
                     LoadTrackSound(ttdf.InsideSound, true);
 
                 LoadTrackSound(ttdf.OutsideSound, false);
@@ -135,7 +138,14 @@ namespace ORTS.Viewer3D
                 _outSources.Add(new SoundSource(Viewer, Car, fullPath));
         }
 
-		public override void Uninitialize() { }
+		public override void Uninitialize()
+        {
+            //Trace.TraceInformation("TrackSoundSource Uninitialize");
+            if (_activeInSource != null)
+                _activeInSource.Uninitialize();
+            if (_activeOutSource !=null)
+                _activeOutSource.Uninitialize();
+        }
 
         public override void InitInitials()
         {
@@ -147,8 +157,6 @@ namespace ORTS.Viewer3D
 
             _curTType = 0;
             _prevTType = 0;
-            _roughcurTType = 0;
-            _roughprevTType = 0;
         }
 
         public void UpdateTType()
@@ -158,39 +166,87 @@ namespace ORTS.Viewer3D
 
             if (Car != null && Car.Train != null)
             {
-                //_curTType = Viewer.WorldSounds.GetTType(_tdbObjs);
-                _curTType = Viewer.World.Sounds.GetTType(Car.Train);
-                _roughcurTType = _curTType;
-                if (_curTType > Viewer.TrackTypes.Count - 1 && _curTType != int.MaxValue)
+                int CarIncr = 0;
+                int CarLeading = 0;
+                if (Car.Train.SpeedMpS > 0.1f)
                 {
-                    // Track type out of range
-                    _curTType = 0;
-                    if (_roughcurTType != _roughprevTType) Trace.TraceWarning("Sound region {0} out of range", _roughcurTType);
-                 }
-                if (_curTType != _prevTType && _curTType != int.MaxValue)
+                    CarIncr = 1;
+                    CarLeading = 0;
+                }
+                else
+                    if (Car.Train.SpeedMpS < -0.1f)
+                    {
+                        CarIncr = -1;
+                        CarLeading = Car.Train.Cars.Count - 1;
+                    }
+                    else
+                        return;
+
+                var CarNo = Car.Train.Cars.IndexOf(Car);
+
+                if (CarNo == CarLeading)
+                {
+                    //_curTType = Viewer.WorldSounds.GetTType(_tdbObjs);
+                    Car.TrackSoundType = Viewer.World.Sounds.GetTType(Car.Train);
+                    if (Car.TrackSoundType != int.MaxValue)
+                        if (Car.TrackSoundType < Viewer.TrackTypes.Count)
+                            _curTType = Car.TrackSoundType;
+                        else
+                        {
+                            // Track type out of range
+                            _curTType = 0;
+                            Trace.TraceWarning("Sound region {0} out of range", Car.TrackSoundType);
+                        }
+                    else
+                        Car.TrackSoundType = _curTType;
+                }
+                else
+                    if (Car.Train.Cars[CarNo-CarIncr].TrackSoundLocation != WorldLocation.None)
+                    {
+                        if (_curTType == Car.TrackSoundType && Car.TrackSoundType != Car.Train.Cars[CarNo-CarIncr].TrackSoundType)
+                        {
+                            Car.TrackSoundType = Car.Train.Cars[CarNo-CarIncr].TrackSoundType;
+                            Car.TrackSoundLocation = new WorldLocation(Car.Train.Cars[CarNo-CarIncr].TrackSoundLocation);
+                            Car.TrackSoundDistSquared = WorldLocation.GetDistanceSquared(Car.WorldPosition.WorldLocation, Car.TrackSoundLocation);
+                        }
+
+                        if (Car.TrackSoundLocation != WorldLocation.None)
+                        {
+                            var trackSoundDistSquared = WorldLocation.GetDistanceSquared(Car.WorldPosition.WorldLocation, Car.TrackSoundLocation);
+                            if (trackSoundDistSquared <= Car.TrackSoundDistSquared)
+                                Car.TrackSoundDistSquared = trackSoundDistSquared;
+                            else
+                                _curTType = Car.TrackSoundType;
+                        }
+                    }
+
+                //if (_curTType != _prevTType && _curTType != int.MaxValue)
+                if (_curTType != _prevTType)
                 {
                     if (_activeInSource != null)
                     {
                         _activeInSource.Uninitialize();
-                        _activeInSource.Car = null;
+                        //_activeInSource.Car = null;
                         _activeInSource = _inSources[_curTType];
-                        _activeInSource.Car = Car;
+                        //_activeInSource.Car = Car;
                     }
 
                     if (_activeOutSource != null)
                     {
                         _activeOutSource.Uninitialize();
-                        _activeOutSource.Car = null;
+                        //_activeOutSource.Car = null;
                         _activeOutSource = _outSources[_curTType];
-                        _activeOutSource.Car = Car;
+                        //_activeOutSource.Car = Car;
                     }
 #if DEBUGSCR
                     Trace.TraceInformation("Sound region changed from {0} to {1}.", _prevTType, _curTType);
 #endif
 
+                    //Trace.TraceInformation("Train {0} Speed {1}, Car {2}: Sound Region {3} changed to {4}", Car.Train.Number, Car.Train.SpeedMpS, CarNo, _prevTType, _curTType);
+                    if (CarNo == CarLeading)
+                        Car.TrackSoundLocation = new WorldLocation(Car.WorldPosition.WorldLocation);
                     _prevTType = _curTType;
                 }
-                _roughprevTType = _roughcurTType;
             }
         }
 
@@ -209,8 +265,8 @@ namespace ORTS.Viewer3D
 
             if (_activeOutSource != null)
             {
-                NeedsFrequentUpdate |= _activeOutSource.NeedsFrequentUpdate;
                 retval &= _activeOutSource.Update();
+                NeedsFrequentUpdate |= _activeOutSource.NeedsFrequentUpdate;
             }
 
             return retval;
@@ -2006,16 +2062,23 @@ namespace ORTS.Viewer3D
         public int GetTType(Train train)
         {
             int retval = 0;
+            Traveller traveller;
+            Traveller tmp;
 
-            Traveller traveller = train.FrontTDBTraveller;
+            if (train.SpeedMpS >= 0)
+            {
+                traveller = new Traveller(train.FrontTDBTraveller);
+            }
+            else
+            {
+                traveller = new Traveller(train.RearTDBTraveller, Traveller.TravellerDirection.Backward);
+            }
 
             Orts.Formats.Msts.TrackDB trackDB = Viewer.Simulator.TDB.TrackDB;
             Orts.Formats.Msts.TrItem[] trItems = trackDB.TrItemTable;
 
             WorldSoundRegion prevItem = null;
             WorldSoundRegion nextItem = null;
-            
-            Traveller tmp;
 
             float prevDist = float.MaxValue;
             float nextDist = float.MaxValue;

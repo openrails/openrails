@@ -61,7 +61,7 @@ namespace ORTS.Viewer3D.RollingStock
             string wagonFolderSlash = Path.GetDirectoryName(Locomotive.WagFilePath) + "\\";
             if (Locomotive.CabSoundFileName != null) LoadCarSound(wagonFolderSlash, Locomotive.CabSoundFileName);
 
-            Viewer.SoundProcess.AddSoundSource(this, new TrackSoundSource(MSTSWagon, Viewer));
+            //Viewer.SoundProcess.AddSoundSource(this, new TrackSoundSource(MSTSWagon, Viewer));
 
             if (Locomotive.TrainControlSystem != null && Locomotive.TrainControlSystem.Sounds.Count > 0)
                 foreach (var script in Locomotive.TrainControlSystem.Sounds.Keys)

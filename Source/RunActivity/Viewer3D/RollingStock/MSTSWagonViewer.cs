@@ -89,8 +89,9 @@ namespace ORTS.Viewer3D.RollingStock
             Wipers = new AnimatedPart(TrainCarShape);
 
             LoadCarSounds(wagonFolderSlash);
-            if (!(MSTSWagon is MSTSLocomotive))
-                LoadTrackSounds();
+            //if (!(MSTSWagon is MSTSLocomotive))
+            //    LoadTrackSounds();
+            Viewer.SoundProcess.AddSoundSource(this, new TrackSoundSource(MSTSWagon, Viewer));
 
             // Determine if it has first pantograph. So we can match unnamed panto parts correctly
             for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)

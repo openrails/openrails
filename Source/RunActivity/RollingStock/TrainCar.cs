@@ -1434,6 +1434,10 @@ namespace ORTS
 
         public float[] Velocity = new float[] { 0, 0, 0 };
         WorldLocation SoundLocation;
+        public int TrackSoundType = 0;
+        public WorldLocation TrackSoundLocation = WorldLocation.None;
+        public float TrackSoundDistSquared = 0;
+
         public void UpdateSoundPosition()
         {
             if (SoundSourceIDs.Count == 0 || Program.Simulator.Confirmer.Viewer == null || Program.Simulator.Confirmer.Viewer.Camera == null)
