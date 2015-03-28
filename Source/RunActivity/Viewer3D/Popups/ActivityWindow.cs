@@ -180,10 +180,10 @@ namespace ORTS.Viewer3D.Popups
                                     if (!Owner.Viewer.Simulator.Paused && Visible == false)
                                     {
                                         Owner.Viewer.Simulator.Paused = e.ParsedObject.ORTSContinue < 0? true : false;
-                                        if (e.ParsedObject.ORTSContinue > 0)
+                                        if (e.ParsedObject.ORTSContinue != 0)
                                         {
                                             ComposeMenu(e.ParsedObject.Name, text);
-                                            if (e.ParsedObject.ORTSContinue <= 0) ResumeMenu();
+                                            if (e.ParsedObject.ORTSContinue < 0) ResumeMenu();
                                             else NoPauseMenu();
                                         }
                                         PopupTime = DateTime.Now;

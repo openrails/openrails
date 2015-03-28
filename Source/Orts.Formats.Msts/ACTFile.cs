@@ -658,7 +658,7 @@ namespace Orts.Formats.Msts
         public string TextToDisplayOnCompletionIfTriggered = "";
         public string TextToDisplayOnCompletionIfNotTriggered = "";
         public Boolean Reversible;
-        public int ORTSContinue;
+        public int ORTSContinue = -1;
         public string ORTSActSoundFile;
         public int ORTSActSoundFileType;
     }
