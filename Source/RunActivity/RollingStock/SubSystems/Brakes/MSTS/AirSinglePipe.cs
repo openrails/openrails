@@ -206,7 +206,7 @@ namespace ORTS
             BrakeLine2PressurePSI = Car.Train.BrakeLine2PressurePSI;
             BrakeLine3PressurePSI = 0;
             AuxResPressurePSI = maxPressurePSI > BrakeLine1PressurePSI ? maxPressurePSI : BrakeLine1PressurePSI;
-            if (maxPressurePSI > 0)
+            if ((Car as MSTSWagon).EmergencyReservoirPresent || maxPressurePSI > 0)
                 EmergResPressurePSI = maxPressurePSI;
             FullServPressurePSI = fullServPressurePSI;
             AutoCylPressurePSI = immediateRelease ? 0 : Math.Min((maxPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio, MaxCylPressurePSI);
@@ -222,9 +222,14 @@ namespace ORTS
                 AuxBrakeLineVolumeRatio = 3.1f;
         }
 
-        public override void InitializeMoving () // used when initial speed > 0
+        /// <summary>
+        /// Used when initial speed > 0
+        /// </summary>
+        public override void InitializeMoving ()
         {
+            var emergResPressurePSI = EmergResPressurePSI;
             Initialize(false, 0, FullServPressurePSI, true);
+            EmergResPressurePSI = emergResPressurePSI;
         }
 
         public override void LocoInitializeMoving() // starting conditions when starting speed > 0

@@ -33,7 +33,7 @@ namespace ORTS
                 case "ep": return new EPBrakeSystem(car);
                 case "air_piped":
                 case "vacuum_piped": return new SingleTransferPipe(car);
-                default: return new AirSinglePipe(car);
+                default: return new SingleTransferPipe(car);
             }
         }
 

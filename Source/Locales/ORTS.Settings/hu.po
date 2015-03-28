@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
-"POT-Creation-Date: 2015-02-23 20:09:09+0100\n"
-"PO-Revision-Date: 2015-02-23 20:21+0100\n"
+"POT-Creation-Date: 2015-03-28 16:08:39+0100\n"
+"PO-Revision-Date: 2015-03-28 16:22+0100\n"
 "Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: hu\n"
@@ -293,44 +293,44 @@ msgid "Camera Move Slow"
 msgstr "Kamera Lassú mozgás"
 
 #: ../../ORTS.Settings/InputSettings.cs:115
-msgid "Camera Pan Left"
-msgstr "Kamera Pásztázás balra"
+msgid "Camera Pan (Rotate) Left"
+msgstr "Kamera Balra húzás (fordulás)"
 
 #: ../../ORTS.Settings/InputSettings.cs:116
-msgid "Camera Pan Right"
-msgstr "Kamera Pásztázás jobbra"
+msgid "Camera Pan (Rotate) Right"
+msgstr "Kamera Jobbra húzás (fordulás)"
 
 #: ../../ORTS.Settings/InputSettings.cs:117
-msgid "Camera Pan Up"
-msgstr "Kamera Pásztázás fel"
+msgid "Camera Pan (Rotate) Up"
+msgstr "Kamera Felfelé húzás (fordulás)"
 
 #: ../../ORTS.Settings/InputSettings.cs:118
-msgid "Camera Pan Down"
-msgstr "Kamera Pásztázás le"
+msgid "Camera Pan (Rotate) Down"
+msgstr "Kamera Lefelé húzás (fordulás)"
 
 #: ../../ORTS.Settings/InputSettings.cs:119
-msgid "Camera Zoom In"
-msgstr "Kamera Nagyítás"
+msgid "Camera Zoom In (Move Z)"
+msgstr "Kamera Nagyítás (Z irányba mozgás)"
 
 #: ../../ORTS.Settings/InputSettings.cs:120
-msgid "Camera Zoom Out"
-msgstr "Kamera Kicsinyítés"
+msgid "Camera Zoom Out (Move Z)"
+msgstr "Kamera Kicsinyítés (Z irányba mozgás)"
 
 #: ../../ORTS.Settings/InputSettings.cs:121
-msgid "Camera Rotate Left"
-msgstr "Kamera Forgatás balra"
+msgid "Camera Rotate (Pan) Left"
+msgstr "Kamera Balra fordulás (húzás)"
 
 #: ../../ORTS.Settings/InputSettings.cs:122
-msgid "Camera Rotate Right"
-msgstr "Kamera Forgatás jobbra"
+msgid "Camera Rotate (Pan) Right"
+msgstr "Kamera Jobbra fordulás (húzás)"
 
 #: ../../ORTS.Settings/InputSettings.cs:123
-msgid "Camera Rotate Up"
-msgstr "Kamera Forgatás felfelé"
+msgid "Camera Rotate (Pan) Up"
+msgstr "Kamera Felfelé fordulás (húzás)"
 
 #: ../../ORTS.Settings/InputSettings.cs:124
-msgid "Camera Rotate Down"
-msgstr "Kamera Forgatás lefelé"
+msgid "Camera Rotate (Pan) Down"
+msgstr "Kamera Lefelé fordulás (húzás)"
 
 #: ../../ORTS.Settings/InputSettings.cs:125
 msgid "Camera Car Next"
@@ -619,6 +619,36 @@ msgstr "A {0} parancs eleve használja az Alt-ot, nem lehet módosítani is vele
 #, csharp-format
 msgid "{0} and {1} both match {2}"
 msgstr "{0} és {1} is ehhez rendelve: {2}"
+
+#~ msgid "Camera Pan Left"
+#~ msgstr "Kamera Pásztázás balra"
+
+#~ msgid "Camera Pan Right"
+#~ msgstr "Kamera Pásztázás jobbra"
+
+#~ msgid "Camera Pan Up"
+#~ msgstr "Kamera Pásztázás fel"
+
+#~ msgid "Camera Pan Down"
+#~ msgstr "Kamera Pásztázás le"
+
+#~ msgid "Camera Zoom In"
+#~ msgstr "Kamera Nagyítás"
+
+#~ msgid "Camera Zoom Out"
+#~ msgstr "Kamera Kicsinyítés"
+
+#~ msgid "Camera Rotate Left"
+#~ msgstr "Kamera Forgatás balra"
+
+#~ msgid "Camera Rotate Right"
+#~ msgstr "Kamera Forgatás jobbra"
+
+#~ msgid "Camera Rotate Up"
+#~ msgstr "Kamera Forgatás felfelé"
+
+#~ msgid "Camera Rotate Down"
+#~ msgstr "Kamera Forgatás lefelé"
 
 #~ msgid "Debug Dump Keymap"
 #~ msgstr "Hibakeresés Billentyűzetkép"
