@@ -2223,13 +2223,13 @@ namespace ORTS.Viewer3D.RollingStock
                             p.Value.UpdateLoop(Locomotive.Wiper, elapsedTime);
                             break;
                         case CABViewControlTypes.LEFTDOOR:
-                            p.Value.UpdateLoop(Locomotive.DoorLeftOpen, elapsedTime);
+                            p.Value.UpdateState(Locomotive.DoorLeftOpen, elapsedTime);
                             break;
                         case CABViewControlTypes.RIGHTDOOR:
-                            p.Value.UpdateLoop(Locomotive.DoorRightOpen, elapsedTime);
+                            p.Value.UpdateState(Locomotive.DoorRightOpen, elapsedTime);
                             break;
                         case CABViewControlTypes.MIRRORS:
-                            p.Value.UpdateLoop(Locomotive.MirrorOpen, elapsedTime);
+                            p.Value.UpdateState(Locomotive.MirrorOpen, elapsedTime);
                             break;
                         default:
                             break;
