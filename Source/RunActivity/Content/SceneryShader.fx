@@ -148,7 +148,7 @@ void _VSNormalProjection(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
 	
 	// Normal lighting (range 0.0 - 1.0)
 	// Need to calc. here instead of _VSLightsAndShadows() to avoid calling it from VSForest(), where it has gone into pre-shader in Shaders.cs
-	Out.Normal_Light.w = saturate(dot(Out.Normal_Light.xyz, LightVector_ZFar.xyz));
+	Out.Normal_Light.w = dot(Out.Normal_Light.xyz, LightVector_ZFar.xyz) * 0.5 + 0.5;
 }
 
 void _VSSignalProjection(uniform bool Glow, in VERTEX_INPUT_SIGNAL In, inout VERTEX_OUTPUT Out)
