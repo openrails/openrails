@@ -2284,7 +2284,7 @@ namespace ORTS
                     }
                     else if (firstObject.speed_reset == 0)
                     {
-                        allowedAbsoluteMaxSpeedLimitMpS = temp1MaxSpeedMpS == -1 ? (float)Program.Simulator.TRK.Tr_RouteFile.SpeedLimit : temp1MaxSpeedMpS;
+                        allowedAbsoluteMaxSpeedLimitMpS = temp1MaxSpeedMpS == -1 ? allowedAbsoluteMaxSpeedLimitMpS : temp1MaxSpeedMpS;
                     }
                     else
                     {
