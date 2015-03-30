@@ -239,12 +239,6 @@ namespace ORTS.Viewer3D
             return true;
         }
 
-        public bool CanSee(Matrix xnaMatrix, float objectRadius, float objectViewingDistance)
-        {
-            var mstsLocation = new Vector3(xnaMatrix.Translation.X, xnaMatrix.Translation.Y, -xnaMatrix.Translation.Z);
-            return CanSee(mstsLocation, objectRadius, objectViewingDistance);
-        }
-
         protected static float GetSpeed(ElapsedTime elapsedTime)
         {
             var speed = 5 * elapsedTime.RealSeconds;

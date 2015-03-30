@@ -128,7 +128,7 @@ struct VERTEX_INPUT_SIGNAL
 struct VERTEX_OUTPUT
 {
 	float4 Position     : POSITION;  // position x, y, z, w
-	float3 RelPosition  : TEXCOORD0; // rel position x, y, z
+	float4 RelPosition  : TEXCOORD0; // rel position x, y, z; position z
 	float2 TexCoords    : TEXCOORD1; // tex coords x, y
 	float4 Color        : COLOR0;    // color r, g, b, a
 	float4 Normal_Light : TEXCOORD2; // normal x, y, z; light dot
@@ -143,6 +143,7 @@ void _VSNormalProjection(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
 	// Project position, normal and copy texture coords
 	Out.Position = mul(In.Position, WorldViewProjection);
 	Out.RelPosition.xyz = mul(In.Position, World) - ViewerPos;
+	Out.RelPosition.w = Out.Position.z;
 	Out.TexCoords.xy = In.TexCoords;
 	Out.Normal_Light.xyz = normalize(mul(In.Normal, World).xyz);
 	
@@ -170,6 +171,7 @@ void _VSSignalProjection(uniform bool Glow, in VERTEX_INPUT_SIGNAL In, inout VER
 	}
 	Out.Position = mul(In.Position, WorldViewProjection);
 	Out.RelPosition.xyz = relPos;
+	Out.RelPosition.w = Out.Position.z;
 	Out.TexCoords.xy = In.TexCoords;
 	Out.Color = In.Color;
 }
@@ -179,6 +181,7 @@ void _VSTransferProjection(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
 	// Project position, normal and copy texture coords
 	Out.Position = mul(In.Position, WorldViewProjection);
 	Out.RelPosition.xyz = mul(In.Position, World) - ViewerPos;
+	Out.RelPosition.w = Out.Position.z;
 	Out.TexCoords.xy = In.TexCoords;
 	Out.Normal_Light.w = 1;
 }
@@ -255,6 +258,7 @@ VERTEX_OUTPUT VSForest(in VERTEX_INPUT In)
 	// Project vertex with fixed w=1 and normal=eye.
 	Out.Position = mul(In.Position, WorldViewProjection);
 	Out.RelPosition.xyz = mul(In.Position, World) - ViewerPos;
+	Out.RelPosition.w = Out.Position.z;
 	Out.TexCoords.xy = In.TexCoords;
 	Out.Normal_Light = EyeVector;
 
@@ -290,9 +294,10 @@ float3 _PS2GetShadowEffect(in VERTEX_OUTPUT In)
 {
 	return float3(tex2D(ShadowMap0, In.Shadow.xy).xy, In.Shadow.z);
 }
+
 float3 _PS3GetShadowEffect(in VERTEX_OUTPUT In)
 {
-	float depth = length(In.RelPosition);
+	float depth = In.RelPosition.w;
 	float3 rv;
 	if (depth < ShadowMapLimit.x) {
 		float3 pos0 = mul(In.Shadow, LightViewProjectionShadowProjection0).xyz;
@@ -315,29 +320,31 @@ float3 _PS3GetShadowEffect(in VERTEX_OUTPUT In)
 	}
 	return rv;
 }
-//void _PSApplyShadowColor(inout float3 Color, in VERTEX_OUTPUT In)
-//{
-//	float depth = length(In.RelPosition);
-//	if (depth < ShadowMapLimit.x) {
-//		Color.rgb *= 0.9;
-//		Color.r += 0.1;
-//	} else {
-//		if (depth < ShadowMapLimit.y) {
-//			Color.rgb *= 0.9;
-//			Color.g += 0.1;
-//		} else {
-//			if (depth < ShadowMapLimit.z) {
-//				Color.rgb *= 0.9;
-//				Color.b += 0.1;
-//			} else {
-//				if (depth < ShadowMapLimit.w) {
-//					Color.rgb *= 0.9;
-//					Color.rg += 0.1;
-//				}
-//			}
-//		}
-//	}
-//}
+
+void _PSApplyShadowColor(inout float3 Color, in VERTEX_OUTPUT In)
+{
+	float depth = In.RelPosition.w;
+	if (depth < ShadowMapLimit.x) {
+		Color.rgb *= 0.9;
+		Color.r += 0.1;
+	} else {
+		if (depth < ShadowMapLimit.y) {
+			Color.rgb *= 0.9;
+			Color.g += 0.1;
+		} else {
+			if (depth < ShadowMapLimit.z) {
+				Color.rgb *= 0.9;
+				Color.b += 0.1;
+			} else {
+				if (depth < ShadowMapLimit.w) {
+					Color.rgb *= 0.9;
+					Color.rg += 0.1;
+				}
+			}
+		}
+	}
+}
+
 float _PSGetShadowEffect(uniform bool ShaderModel3, uniform bool NormalLighting, in VERTEX_OUTPUT In)
 {
 	float3 moments;

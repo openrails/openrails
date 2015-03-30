@@ -545,12 +545,12 @@ namespace ORTS.Viewer3D
             {
                 if (Camera != null && Camera.InFov(mstsLocation, objectRadius))
                     AddPrimitive(material, primitive, group, ref xnaMatrix, flags);
-
-                if (Game.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && ((flags & ShapeFlags.ShadowCaster) != 0))
-                    for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
-                        if (IsInShadowMap(shadowMapIndex, mstsLocation, objectRadius, objectViewingDistance))
-                            AddShadowPrimitive(shadowMapIndex, material, primitive, ref xnaMatrix, flags);
             }
+
+            if (Game.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && ((flags & ShapeFlags.ShadowCaster) != 0))
+                for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
+                    if (IsInShadowMap(shadowMapIndex, mstsLocation, objectRadius, objectViewingDistance))
+                        AddShadowPrimitive(shadowMapIndex, material, primitive, ref xnaMatrix, flags);
         }
 
         [CallOnThread("Updater")]

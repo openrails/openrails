@@ -1655,6 +1655,7 @@ namespace ORTS.Viewer3D
                 var displayDetailLevel = lodControl.DistanceLevels.Length - 1;
 
                 // If this LOD group is not in the FOV, skip the whole LOD group.
+                // TODO: This might imair some shadows.
                 if (!Viewer.Camera.InFov(mstsLocation, lodControl.DistanceLevels[displayDetailLevel].ViewSphereRadius))
                     continue;
 
