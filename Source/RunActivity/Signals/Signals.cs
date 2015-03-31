@@ -1214,7 +1214,7 @@ namespace ORTS
         //
 
         public TrackCircuitSignalItem Find_Next_Object_InRoute(Train.TCSubpathRoute routePath,
-                int routeIndex, float routePosition, float maxDistance, MstsSignalFunction fn_type)
+                int routeIndex, float routePosition, float maxDistance, MstsSignalFunction fn_type, Train.TrainRouted thisTrain)
         {
 
             ObjectItemInfo.ObjectItemFindState locstate = ObjectItemInfo.ObjectItemFindState.None;
@@ -1268,9 +1268,16 @@ namespace ORTS
                         TrackCircuitSignalItem thisSpeedpost = thisSpeedpostList.TrackCircuitItem[iPost];
                         if (thisSpeedpost.SignalLocation > lengthOffset)
                         {
-                            locstate = ObjectItemInfo.ObjectItemFindState.Object;
-                            foundObject = thisSpeedpost.SignalRef;
-                            totalLength += (thisSpeedpost.SignalLocation - lengthOffset);
+                            ObjectSpeedInfo thisSpeed = thisSpeedpost.SignalRef.this_sig_speed(MstsSignalFunction.SPEED);
+                            if (thisTrain == null ||
+                                (thisSpeed != null &&
+                                (thisSpeed.speed_flag == 1 || thisSpeed.speed_reset == 1 ||
+                                (thisTrain.Train.IsFreight && thisSpeed.speed_freight != -1) || (!thisTrain.Train.IsFreight && thisSpeed.speed_pass != -1))))
+                            {
+                                locstate = ObjectItemInfo.ObjectItemFindState.Object;
+                                foundObject = thisSpeedpost.SignalRef;
+                                totalLength += (thisSpeedpost.SignalLocation - lengthOffset);
+                            }
                         }
                     }
                 }
@@ -1409,7 +1416,7 @@ namespace ORTS
 
             TrackCircuitSignalItem nextSignal =
                 Find_Next_Object_InRoute(usedRoute, routeIndex, routePosition,
-                        maxDistance, MstsSignalFunction.NORMAL);
+                        maxDistance, MstsSignalFunction.NORMAL, thisTrain);
 
             signalState = nextSignal.SignalState;
             if (nextSignal.SignalState == ObjectItemInfo.ObjectItemFindState.Object)
@@ -1434,7 +1441,7 @@ namespace ORTS
             {
                 TrackCircuitSignalItem nextSpeedpost =
                     Find_Next_Object_InRoute(usedRoute, routeIndex, routePosition,
-                        maxDistance, MstsSignalFunction.SPEED);
+                        maxDistance, MstsSignalFunction.SPEED, thisTrain);
 
                 if (nextSpeedpost.SignalState == ObjectItemInfo.ObjectItemFindState.Object)
                 {
