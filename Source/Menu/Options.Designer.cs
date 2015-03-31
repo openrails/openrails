@@ -128,6 +128,7 @@
             this.tabPageUpdater = new System.Windows.Forms.TabPage();
             this.labelUpdateChannel = new System.Windows.Forms.Label();
             this.tabPageExperimental = new System.Windows.Forms.TabPage();
+            this.checkShapeWarnings = new System.Windows.Forms.CheckBox();
             this.labelLODBias = new System.Windows.Forms.Label();
             this.label21 = new System.Windows.Forms.Label();
             this.trackLODBias = new System.Windows.Forms.TrackBar();
@@ -163,7 +164,7 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.checkShapeWarnings = new System.Windows.Forms.CheckBox();
+            this.labelDayAmbientLight = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -509,6 +510,7 @@
             // 
             // tabPageVideo
             // 
+            this.tabPageVideo.Controls.Add(this.labelDayAmbientLight);
             this.tabPageVideo.Controls.Add(this.checkModelInstancing);
             this.tabPageVideo.Controls.Add(this.trackDayAmbientLight);
             this.tabPageVideo.Controls.Add(this.label15);
@@ -554,26 +556,26 @@
             this.trackDayAmbientLight.AutoSize = false;
             this.trackDayAmbientLight.BackColor = System.Drawing.SystemColors.Window;
             this.trackDayAmbientLight.LargeChange = 4;
-            this.trackDayAmbientLight.Location = new System.Drawing.Point(9, 343);
+            this.trackDayAmbientLight.Location = new System.Drawing.Point(6, 343);
             this.trackDayAmbientLight.Margin = new System.Windows.Forms.Padding(6, 3, 6, 3);
             this.trackDayAmbientLight.Maximum = 30;
             this.trackDayAmbientLight.Minimum = 15;
             this.trackDayAmbientLight.Name = "trackDayAmbientLight";
-            this.trackDayAmbientLight.Size = new System.Drawing.Size(286, 26);
+            this.trackDayAmbientLight.Size = new System.Drawing.Size(292, 26);
             this.trackDayAmbientLight.SmallChange = 2;
             this.trackDayAmbientLight.TabIndex = 21;
-            this.toolTip1.SetToolTip(this.trackDayAmbientLight, "Default is 100");
+            this.toolTip1.SetToolTip(this.trackDayAmbientLight, "Default is 100%");
             this.trackDayAmbientLight.Value = 20;
+            this.trackDayAmbientLight.ValueChanged += new System.EventHandler(this.trackDayAmbientLight_ValueChanged);
             // 
             // label15
             // 
-            this.label15.AutoSize = true;
             this.label15.Location = new System.Drawing.Point(6, 324);
             this.label15.Margin = new System.Windows.Forms.Padding(3);
             this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(135, 13);
+            this.label15.Size = new System.Drawing.Size(211, 13);
             this.label15.TabIndex = 20;
-            this.label15.Text = "Ambient daylight brightness";
+            this.label15.Text = "Ambient daylight brightness:";
             // 
             // checkVerticalSync
             // 
@@ -684,7 +686,7 @@
             // labelFOVHelp
             // 
             this.labelFOVHelp.AutoSize = true;
-            this.labelFOVHelp.Location = new System.Drawing.Point(301, 247);
+            this.labelFOVHelp.Location = new System.Drawing.Point(304, 247);
             this.labelFOVHelp.Margin = new System.Windows.Forms.Padding(3);
             this.labelFOVHelp.Name = "labelFOVHelp";
             this.labelFOVHelp.Size = new System.Drawing.Size(28, 13);
@@ -1409,7 +1411,7 @@
             this.labelUpdateChannel.Location = new System.Drawing.Point(6, 6);
             this.labelUpdateChannel.Margin = new System.Windows.Forms.Padding(3);
             this.labelUpdateChannel.Name = "labelUpdateChannel";
-            this.labelUpdateChannel.Size = new System.Drawing.Size(86, 13);
+            this.labelUpdateChannel.Size = new System.Drawing.Size(74, 13);
             this.labelUpdateChannel.TabIndex = 0;
             this.labelUpdateChannel.Text = "Update mode:";
             // 
@@ -1458,12 +1460,22 @@
             this.tabPageExperimental.Text = "Experimental";
             this.tabPageExperimental.UseVisualStyleBackColor = true;
             // 
+            // checkShapeWarnings
+            // 
+            this.checkShapeWarnings.AutoSize = true;
+            this.checkShapeWarnings.Location = new System.Drawing.Point(6, 191);
+            this.checkShapeWarnings.Name = "checkShapeWarnings";
+            this.checkShapeWarnings.Size = new System.Drawing.Size(130, 17);
+            this.checkShapeWarnings.TabIndex = 36;
+            this.checkShapeWarnings.Text = "Show shape warnings";
+            this.checkShapeWarnings.UseVisualStyleBackColor = true;
+            // 
             // labelLODBias
             // 
-            this.labelLODBias.Location = new System.Drawing.Point(171, 237);
+            this.labelLODBias.Location = new System.Drawing.Point(148, 237);
             this.labelLODBias.Margin = new System.Windows.Forms.Padding(3);
             this.labelLODBias.Name = "labelLODBias";
-            this.labelLODBias.Size = new System.Drawing.Size(127, 13);
+            this.labelLODBias.Size = new System.Drawing.Size(150, 13);
             this.labelLODBias.TabIndex = 15;
             this.labelLODBias.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
@@ -1472,7 +1484,7 @@
             this.label21.Location = new System.Drawing.Point(6, 237);
             this.label21.Margin = new System.Windows.Forms.Padding(3);
             this.label21.Name = "label21";
-            this.label21.Size = new System.Drawing.Size(159, 13);
+            this.label21.Size = new System.Drawing.Size(136, 13);
             this.label21.TabIndex = 14;
             this.label21.Text = "Level of detail bias:";
             // 
@@ -1481,20 +1493,20 @@
             this.trackLODBias.AutoSize = false;
             this.trackLODBias.BackColor = System.Drawing.SystemColors.Window;
             this.trackLODBias.LargeChange = 10;
-            this.trackLODBias.Location = new System.Drawing.Point(3, 256);
+            this.trackLODBias.Location = new System.Drawing.Point(6, 256);
             this.trackLODBias.Maximum = 100;
             this.trackLODBias.Minimum = -100;
             this.trackLODBias.Name = "trackLODBias";
             this.trackLODBias.Size = new System.Drawing.Size(292, 26);
             this.trackLODBias.TabIndex = 16;
             this.trackLODBias.TickFrequency = 10;
-            this.toolTip1.SetToolTip(this.trackLODBias, "Default is 0 (middle)");
+            this.toolTip1.SetToolTip(this.trackLODBias, "Default is 0%");
             this.trackLODBias.ValueChanged += new System.EventHandler(this.trackLODBias_ValueChanged);
             // 
             // checkAutopilot
             // 
             this.checkAutopilot.AutoSize = true;
-            this.checkAutopilot.Location = new System.Drawing.Point(307, 99);
+            this.checkAutopilot.Location = new System.Drawing.Point(304, 99);
             this.checkAutopilot.Name = "checkAutopilot";
             this.checkAutopilot.Size = new System.Drawing.Size(67, 17);
             this.checkAutopilot.TabIndex = 20;
@@ -1504,7 +1516,7 @@
             // checkExtendedAIShunting
             // 
             this.checkExtendedAIShunting.AutoSize = true;
-            this.checkExtendedAIShunting.Location = new System.Drawing.Point(307, 76);
+            this.checkExtendedAIShunting.Location = new System.Drawing.Point(304, 76);
             this.checkExtendedAIShunting.Name = "checkExtendedAIShunting";
             this.checkExtendedAIShunting.Size = new System.Drawing.Size(150, 17);
             this.checkExtendedAIShunting.TabIndex = 19;
@@ -1514,7 +1526,7 @@
             // checkConditionalLoadOfNightTextures
             // 
             this.checkConditionalLoadOfNightTextures.AutoSize = true;
-            this.checkConditionalLoadOfNightTextures.Location = new System.Drawing.Point(307, 30);
+            this.checkConditionalLoadOfNightTextures.Location = new System.Drawing.Point(304, 30);
             this.checkConditionalLoadOfNightTextures.Name = "checkConditionalLoadOfNightTextures";
             this.checkConditionalLoadOfNightTextures.Size = new System.Drawing.Size(206, 17);
             this.checkConditionalLoadOfNightTextures.TabIndex = 17;
@@ -1533,36 +1545,33 @@
             // 
             // AdhesionFactorChangeValueLabel
             // 
-            this.AdhesionFactorChangeValueLabel.Location = new System.Drawing.Point(522, 311);
+            this.AdhesionFactorChangeValueLabel.Location = new System.Drawing.Point(521, 311);
             this.AdhesionFactorChangeValueLabel.Margin = new System.Windows.Forms.Padding(3);
             this.AdhesionFactorChangeValueLabel.Name = "AdhesionFactorChangeValueLabel";
-            this.AdhesionFactorChangeValueLabel.Size = new System.Drawing.Size(74, 13);
+            this.AdhesionFactorChangeValueLabel.Size = new System.Drawing.Size(75, 13);
             this.AdhesionFactorChangeValueLabel.TabIndex = 31;
-            this.AdhesionFactorChangeValueLabel.Text = "10%";
             this.AdhesionFactorChangeValueLabel.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
             // AdhesionFactorValueLabel
             // 
-            this.AdhesionFactorValueLabel.Location = new System.Drawing.Point(522, 237);
+            this.AdhesionFactorValueLabel.Location = new System.Drawing.Point(521, 237);
             this.AdhesionFactorValueLabel.Margin = new System.Windows.Forms.Padding(3);
             this.AdhesionFactorValueLabel.Name = "AdhesionFactorValueLabel";
-            this.AdhesionFactorValueLabel.Size = new System.Drawing.Size(74, 13);
+            this.AdhesionFactorValueLabel.Size = new System.Drawing.Size(75, 13);
             this.AdhesionFactorValueLabel.TabIndex = 27;
-            this.AdhesionFactorValueLabel.Text = "130%";
             this.AdhesionFactorValueLabel.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
             // AdhesionLevelValue
             // 
-            this.AdhesionLevelValue.Location = new System.Drawing.Point(360, 363);
+            this.AdhesionLevelValue.Location = new System.Drawing.Point(360, 362);
             this.AdhesionLevelValue.Margin = new System.Windows.Forms.Padding(3);
             this.AdhesionLevelValue.Name = "AdhesionLevelValue";
             this.AdhesionLevelValue.Size = new System.Drawing.Size(236, 13);
             this.AdhesionLevelValue.TabIndex = 34;
-            this.AdhesionLevelValue.Text = "Normal";
             // 
             // AdhesionLevelLabel
             // 
-            this.AdhesionLevelLabel.Location = new System.Drawing.Point(304, 363);
+            this.AdhesionLevelLabel.Location = new System.Drawing.Point(304, 362);
             this.AdhesionLevelLabel.Margin = new System.Windows.Forms.Padding(3);
             this.AdhesionLevelLabel.Name = "AdhesionLevelLabel";
             this.AdhesionLevelLabel.Size = new System.Drawing.Size(50, 13);
@@ -1574,7 +1583,7 @@
             this.label16.Location = new System.Drawing.Point(304, 311);
             this.label16.Margin = new System.Windows.Forms.Padding(3);
             this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(212, 13);
+            this.label16.Size = new System.Drawing.Size(211, 13);
             this.label16.TabIndex = 30;
             this.label16.Text = "Adhesion factor random change:";
             // 
@@ -1589,16 +1598,16 @@
             this.trackAdhesionFactorChange.Size = new System.Drawing.Size(292, 26);
             this.trackAdhesionFactorChange.TabIndex = 32;
             this.trackAdhesionFactorChange.TickFrequency = 10;
-            this.toolTip1.SetToolTip(this.trackAdhesionFactorChange, "Default is 100");
+            this.toolTip1.SetToolTip(this.trackAdhesionFactorChange, "Default is 10%");
             this.trackAdhesionFactorChange.Value = 10;
-            this.trackAdhesionFactorChange.ValueChanged += new System.EventHandler(this.AdhesionFactorTrackBar1_ValueChanged);
+            this.trackAdhesionFactorChange.ValueChanged += new System.EventHandler(this.trackAdhesionFactor_ValueChanged);
             // 
             // label9
             // 
             this.label9.Location = new System.Drawing.Point(304, 237);
             this.label9.Margin = new System.Windows.Forms.Padding(3);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(212, 13);
+            this.label9.Size = new System.Drawing.Size(211, 13);
             this.label9.TabIndex = 26;
             this.label9.Text = "Adhesion factor correction:";
             // 
@@ -1614,14 +1623,14 @@
             this.trackAdhesionFactor.Size = new System.Drawing.Size(292, 26);
             this.trackAdhesionFactor.TabIndex = 28;
             this.trackAdhesionFactor.TickFrequency = 10;
-            this.toolTip1.SetToolTip(this.trackAdhesionFactor, "Default is 100");
+            this.toolTip1.SetToolTip(this.trackAdhesionFactor, "Default is 130%");
             this.trackAdhesionFactor.Value = 130;
-            this.trackAdhesionFactor.ValueChanged += new System.EventHandler(this.AdhesionFactorTrackBar1_ValueChanged);
+            this.trackAdhesionFactor.ValueChanged += new System.EventHandler(this.trackAdhesionFactor_ValueChanged);
             // 
             // checkAdhesionPropToWeather
             // 
             this.checkAdhesionPropToWeather.AutoSize = true;
-            this.checkAdhesionPropToWeather.Location = new System.Drawing.Point(307, 288);
+            this.checkAdhesionPropToWeather.Location = new System.Drawing.Point(304, 288);
             this.checkAdhesionPropToWeather.Name = "checkAdhesionPropToWeather";
             this.checkAdhesionPropToWeather.Size = new System.Drawing.Size(210, 17);
             this.checkAdhesionPropToWeather.TabIndex = 29;
@@ -1632,7 +1641,7 @@
             // checkCircularSpeedGauge
             // 
             this.checkCircularSpeedGauge.AutoSize = true;
-            this.checkCircularSpeedGauge.Location = new System.Drawing.Point(307, 122);
+            this.checkCircularSpeedGauge.Location = new System.Drawing.Point(304, 122);
             this.checkCircularSpeedGauge.Name = "checkCircularSpeedGauge";
             this.checkCircularSpeedGauge.Size = new System.Drawing.Size(156, 17);
             this.checkCircularSpeedGauge.TabIndex = 21;
@@ -1642,7 +1651,7 @@
             // checkSignalLightGlow
             // 
             this.checkSignalLightGlow.AutoSize = true;
-            this.checkSignalLightGlow.Location = new System.Drawing.Point(307, 53);
+            this.checkSignalLightGlow.Location = new System.Drawing.Point(304, 53);
             this.checkSignalLightGlow.Name = "checkSignalLightGlow";
             this.checkSignalLightGlow.Size = new System.Drawing.Size(102, 17);
             this.checkSignalLightGlow.TabIndex = 18;
@@ -1652,7 +1661,7 @@
             // checkUseMSTSEnv
             // 
             this.checkUseMSTSEnv.AutoSize = true;
-            this.checkUseMSTSEnv.Location = new System.Drawing.Point(307, 214);
+            this.checkUseMSTSEnv.Location = new System.Drawing.Point(304, 214);
             this.checkUseMSTSEnv.Name = "checkUseMSTSEnv";
             this.checkUseMSTSEnv.Size = new System.Drawing.Size(122, 17);
             this.checkUseMSTSEnv.TabIndex = 25;
@@ -1662,7 +1671,7 @@
             // checkUseLocationPassingPaths
             // 
             this.checkUseLocationPassingPaths.AutoSize = true;
-            this.checkUseLocationPassingPaths.Location = new System.Drawing.Point(307, 191);
+            this.checkUseLocationPassingPaths.Location = new System.Drawing.Point(304, 191);
             this.checkUseLocationPassingPaths.Name = "checkUseLocationPassingPaths";
             this.checkUseLocationPassingPaths.Size = new System.Drawing.Size(215, 17);
             this.checkUseLocationPassingPaths.TabIndex = 24;
@@ -1731,7 +1740,7 @@
             // checkLODViewingExtention
             // 
             this.checkLODViewingExtention.AutoSize = true;
-            this.checkLODViewingExtention.Location = new System.Drawing.Point(307, 145);
+            this.checkLODViewingExtention.Location = new System.Drawing.Point(304, 145);
             this.checkLODViewingExtention.Name = "checkLODViewingExtention";
             this.checkLODViewingExtention.Size = new System.Drawing.Size(268, 17);
             this.checkLODViewingExtention.TabIndex = 22;
@@ -1863,22 +1872,21 @@
             // checkPreferDDSTexture
             // 
             this.checkPreferDDSTexture.AutoSize = true;
-            this.checkPreferDDSTexture.Location = new System.Drawing.Point(307, 168);
+            this.checkPreferDDSTexture.Location = new System.Drawing.Point(304, 168);
             this.checkPreferDDSTexture.Name = "checkPreferDDSTexture";
             this.checkPreferDDSTexture.Size = new System.Drawing.Size(217, 17);
             this.checkPreferDDSTexture.TabIndex = 23;
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
             // 
-            // checkShapeWarnings
+            // labelDayAmbientLight
             // 
-            this.checkShapeWarnings.AutoSize = true;
-            this.checkShapeWarnings.Location = new System.Drawing.Point(6, 191);
-            this.checkShapeWarnings.Name = "checkShapeWarnings";
-            this.checkShapeWarnings.Size = new System.Drawing.Size(130, 17);
-            this.checkShapeWarnings.TabIndex = 36;
-            this.checkShapeWarnings.Text = "Show shape warnings";
-            this.checkShapeWarnings.UseVisualStyleBackColor = true;
+            this.labelDayAmbientLight.Location = new System.Drawing.Point(223, 324);
+            this.labelDayAmbientLight.Margin = new System.Windows.Forms.Padding(3);
+            this.labelDayAmbientLight.Name = "labelDayAmbientLight";
+            this.labelDayAmbientLight.Size = new System.Drawing.Size(75, 13);
+            this.labelDayAmbientLight.TabIndex = 22;
+            this.labelDayAmbientLight.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
             // OptionsForm
             // 
@@ -2078,5 +2086,6 @@
         private System.Windows.Forms.Button buttonContentAdd;
         private System.Windows.Forms.Label labelContent;
         private System.Windows.Forms.CheckBox checkShapeWarnings;
+        private System.Windows.Forms.Label labelDayAmbientLight;
     }
 }

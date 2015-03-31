@@ -149,6 +149,7 @@ namespace ORTS
             numericWorldObjectDensity.Value = Settings.WorldObjectDensity;
             comboWindowSize.Text = Settings.WindowSize;
             trackDayAmbientLight.Value = Settings.DayAmbientLight;
+            trackDayAmbientLight_ValueChanged(null, null);
 
             // Simulation tab
             checkUseAdvancedAdhesion.Checked = Settings.UseAdvancedAdhesion;
@@ -285,7 +286,7 @@ namespace ORTS
             trackAdhesionFactor.Value = Settings.AdhesionFactor;
             checkAdhesionPropToWeather.Checked = Settings.AdhesionProportionalToWeather;
             trackAdhesionFactorChange.Value = Settings.AdhesionFactorChange;
-            SetAdhesionLevelValue();
+            trackAdhesionFactor_ValueChanged(null, null);
             checkShapeWarnings.Checked = !Settings.SuppressShapeWarnings;
         }
 
@@ -519,7 +520,7 @@ namespace ORTS
             toolTip1.SetToolTip(trackDayAmbientLight, (trackDayAmbientLight.Value * 5).ToString() + " %");
         }
 
-        private void AdhesionFactorTrackBar1_ValueChanged(object sender, EventArgs e)
+        private void trackAdhesionFactor_ValueChanged(object sender, EventArgs e)
         {
             SetAdhesionLevelValue();
             AdhesionFactorValueLabel.Text = trackAdhesionFactor.Value.ToString() + "%";
@@ -551,6 +552,11 @@ namespace ORTS
         private void AdhesionPropToWeatherCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             SetAdhesionLevelValue();
+        }
+
+        private void trackDayAmbientLight_ValueChanged(object sender, EventArgs e)
+        {
+            labelDayAmbientLight.Text = catalog.GetStringFmt("{0}%", trackDayAmbientLight.Value * 5);
         }
 
         private void trackLODBias_ValueChanged(object sender, EventArgs e)
