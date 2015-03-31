@@ -73,7 +73,7 @@ namespace ORTS.Viewer3D
             var dTileZ = TileZ - Viewer.Camera.TileZ;
             var mstsLocation = new Vector3(dTileX * 2048 - 1024 + 1024 * Size, 0, dTileZ * 2048 - 1024 + 1024 * Size);
 
-            if (Viewer.Camera.InFov(mstsLocation, Size * 1448f))
+            if (Viewer.Camera.InFov(mstsLocation, Size * 1448f) && WaterLayers != null)
             {
                 xnaMatrix.M41 = mstsLocation.X;
                 xnaMatrix.M43 = -mstsLocation.Z;
@@ -162,6 +162,7 @@ namespace ORTS.Viewer3D
         [CallOnThread("Loader")]
         internal static void Mark()
         {
+            if (WaterLayers == null) return;
             foreach (var material in WaterLayers.Select(kvp => kvp.Value))
                 material.Mark();
         }
