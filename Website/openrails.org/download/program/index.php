@@ -23,7 +23,7 @@
           <h1>Stable Version <small>(recommended)</small></h1>
           <br>
           <!-- Button to trigger modal -->
-          <!--<a href="#modal1" role="button" class='btn download_button btn-lg btn-block' data-toggle="modal">
+          <a href="#modal1" role="button" class='btn download_button btn-lg btn-block' data-toggle="modal">
             <h2><span class='glyphicon glyphicon-download'></span> &nbsp; Download the installer</h2>
             <p>
               This installer provides all pre-requisites for Open Rails and an uninstaller.
@@ -31,10 +31,10 @@
           </a>
           <p style="text-align: center;">
             <?php echo 'Date: ' . date('d-M-Y', filemtime("$file_path/$download_stable")) . '&nbsp; &nbsp; &nbsp; Size: ' . round(filesize("$file_path/$download_stable") / 1024 / 1024) . 'MB'; ?>
-          </p>-->
-          <p class="alert alert-info">
-            We're working hard on producing the next stable version. Please check back soon.
           </p>
+          <!--<p class="alert alert-info">
+            We're working hard on producing the next stable version. Please check back soon.
+          </p>-->
         </div>
         <div class="col-md-2"></div>
         <div class="col-md-4">

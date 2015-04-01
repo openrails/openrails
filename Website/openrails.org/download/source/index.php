@@ -21,7 +21,7 @@
         <div class="col-md-4">
           <h1>Stable Version</h1>
           <br>
-          <!--<a href='<?php echo "$file_path/$source_stable" ?>' class='btn download_button btn-lg btn-block'>
+          <a href='<?php echo "$file_path/$source_stable" ?>' class='btn download_button btn-lg btn-block'>
             <h2><span class='glyphicon glyphicon-download'></span> &nbsp; Download the source code</h2>
             <p>
               This is the source code for the Stable Version.
@@ -29,10 +29,10 @@
           </a>
           <p style="text-align: center;">
             <?php echo 'Date: ' . date('d-M-Y', filemtime("$file_path/$source_stable")) . '&nbsp; &nbsp; &nbsp; Size: ' . round(filesize("$file_path/$source_stable") / 1024 / 1024) . 'MB'; ?>
-          </p>-->
-          <p class="alert alert-info">
-            We're working hard on producing the next stable version. Please check back soon.
           </p>
+          <!--<p class="alert alert-info">
+            We're working hard on producing the next stable version. Please check back soon.
+          </p>-->
         </div>
         <div class="col-md-2"></div>
         <div class="col-md-4">

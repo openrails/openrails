@@ -37,10 +37,10 @@
           </div>
           <div class="download">
             <!-- Button to trigger modal -->
-            <!--<a href="#modal1" role="button" class='btn download_button' data-toggle="modal">
+            <a href="#modal1" role="button" class='btn download_button' data-toggle="modal">
               <span class='glyphicon glyphicon-download'></span>&nbsp; Download the installer 
               <?php echo(date('d-M-Y', filemtime("$file_path/$download_stable"))); ?>
-            </a>-->
+            </a>
           </div>
         </div>
       </div>
