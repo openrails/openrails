@@ -19,7 +19,7 @@
 #define MyAppSupportURL "http://launchpad.net/or"
 
 #define MyAppExeName "OpenRails.exe"
-#define MyAppManual "Documentation\Manual.doc"
+#define MyAppManual "Documentation\Manual.pdf"
 
 #define XNARedistPath "..\..\..\Microsoft XNA Framework Redistributable 3.1"
 #define XNARedist "xnafx31_redist.msi"
