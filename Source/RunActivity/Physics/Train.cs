@@ -2745,7 +2745,7 @@ namespace ORTS
 
                 if (thisObject.ObjectDetails.isSignal)
                 {
-                    if (actualSpeedMpS > 0 && thisObject.speed_flag == 0)
+                    if (actualSpeedMpS > 0 && (thisObject.speed_flag == 0 || !Program.Simulator.TimetableMode))
                     {
                         validSpeedSignalMpS = actualSpeedMpS;
                         if (validSpeedSignalMpS > validSpeedLimitMpS)
