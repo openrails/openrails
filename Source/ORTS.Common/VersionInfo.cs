@@ -62,7 +62,7 @@ namespace ORTS.Common
             {
                 using (var f = new StreamReader(Path.Combine(ApplicationPath, fileName)))
                 {
-                    var version = f.ReadLine();
+                    var version = f.ReadLine().Trim();
                     if (!String.IsNullOrEmpty(Revision))
                         return version + Revision;
                 }
