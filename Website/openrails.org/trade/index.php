@@ -51,6 +51,7 @@ These vendors sell or distribute products suitable for MSTS:
   <li><a href="http://www.dieselswest.com" target="_blank">DieselsWest</a> - USA</li>
   <li><a href="http://www.mstsgmo.com" target="_blank">GM&amp;O Simulations</a> - USA</li>
   <li><a href="http://www.mapleleaftracks.com" target="_blank">Maple Leaf Tracks</a> - Canada</li>
+  <li><a href="http://web9.glarotech.ch/~mailsoft/simtrain/" target="_blank">SimTrain.ch</a> - Switzerland</li>
   <li><a href="http://www.uktrainsim.com" target="_blank">UKTrainSim</a> - UK</li>
   <li><a href="http://www.vscalecreations.com" target="_blank">V Scale Creations</a> - USA</li>
 </ul>
