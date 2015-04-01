@@ -1397,14 +1397,14 @@ namespace Orts.Formats.Msts
     public class animation
     {
         public int FrameCount;          // :uint,num_frames
-        public float FrameRate;           // :uint,frame_rate 
+        public int FrameRate;           // :uint,frame_rate 
         public anim_nodes anim_nodes;    // :anim_nodes,AnimNodes .
 
         public animation(SBR block)
         {
             block.VerifyID(TokenID.animation);
             FrameCount = block.ReadInt();
-            FrameRate = block.ReadFloat();
+            FrameRate = block.ReadInt();
             anim_nodes = new anim_nodes(block.ReadSubBlock());
             block.VerifyEndOfBlock();
         }
