@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-03-28 16:08:42+0100\n"
-"PO-Revision-Date: 2015-03-28 16:08:44+0100\n"
+"POT-Creation-Date: 2015-04-02 20:30:56+0200\n"
+"PO-Revision-Date: 2015-04-02 20:31:01+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -1673,7 +1673,7 @@ msgid "Wipers"
 msgstr ""
 
 #: ../../RunActivity/Simulator/Confirmation.cs:185
-#: ../../RunActivity/Viewer3D/Cameras.cs:1511
+#: ../../RunActivity/Viewer3D/Cameras.cs:1505
 msgid "Cab"
 msgstr ""
 
@@ -1866,35 +1866,35 @@ msgstr ""
 msgid "Held for connecting train : "
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:595
+#: ../../RunActivity/Viewer3D/Cameras.cs:589
 msgid "Free"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:986
+#: ../../RunActivity/Viewer3D/Cameras.cs:980
 msgid "Outside Front"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:986
+#: ../../RunActivity/Viewer3D/Cameras.cs:980
 msgid "Outside Rear"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1242
+#: ../../RunActivity/Viewer3D/Cameras.cs:1236
 msgid "Brakeman"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1397
+#: ../../RunActivity/Viewer3D/Cameras.cs:1391
 msgid "Passenger"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1467
+#: ../../RunActivity/Viewer3D/Cameras.cs:1461
 msgid "Head out"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1691
+#: ../../RunActivity/Viewer3D/Cameras.cs:1685
 msgid "Trackside"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1843
+#: ../../RunActivity/Viewer3D/Cameras.cs:1837
 msgid "3D Cab"
 msgstr ""
 
