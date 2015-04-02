@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Contrib\n"
-"POT-Creation-Date: 2015-02-13 18:43:41+0000\n"
-"PO-Revision-Date: 2015-02-14 20:37+0100\n"
+"POT-Creation-Date: 2015-03-27 19:29:44+0000\n"
+"PO-Revision-Date: 2015-04-02 16:56+0100\n"
 "Last-Translator: Altmann <altmann@bk.ru>\n"
 "Language-Team: \n"
 "Language: cs\n"
@@ -284,8 +284,8 @@ msgid "Status"
 msgstr "Stav"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:302
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2026
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2128
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2025
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2127
 msgid "v"
 msgstr "v"
 
@@ -366,25 +366,25 @@ msgstr "Kliknutím editovat metadata pro zvolenou trať"
 msgid "Form1"
 msgstr "Form1"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:164
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:163
 msgid "Route MetaData"
 msgstr "Metadata tratě"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2004
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2093
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2003
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2092
 msgid "Display"
 msgstr "Displej"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2015
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2117
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2014
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2116
 msgid "x"
 msgstr "x"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2041
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2040
 msgid "Tag"
 msgstr "Značka"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2107
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2106
 msgid "Station"
 msgstr "Stanice"
 
@@ -674,15 +674,15 @@ msgstr "Nahrávám..."
 msgid "Open Rails Content Manager"
 msgstr "Správce obsahu Open Rails"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:598
+#: ../../Contrib/TrackViewer/TrackViewer.cs:605
 msgid "The path you are working on has un-saved changes.\n"
 msgstr "Cesta, na které pracujete má neuložené změny.\n"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:600
+#: ../../Contrib/TrackViewer/TrackViewer.cs:607
 msgid "Do you really want to Quit?"
 msgstr "Opravdu chcete odejít?"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:642
+#: ../../Contrib/TrackViewer/TrackViewer.cs:649
 msgid ""
 "Directory is not a valid install directory.\n"
 "The install directory needs to contain ROUTES, GLOBAL, ..."
@@ -690,19 +690,19 @@ msgstr ""
 "Adresář není platným instalačním adresářem.\n"
 "Je třeba, aby obsahoval podadresáře ROUTES, GLOBAL..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:716
+#: ../../Contrib/TrackViewer/TrackViewer.cs:723
 msgid "Loading route..."
 msgstr "Nahrávám trať..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:738
+#: ../../Contrib/TrackViewer/TrackViewer.cs:745
 msgid "Route cannot be loaded. Sorry"
 msgstr "Trať nelze načíst, je nám líto"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:805
+#: ../../Contrib/TrackViewer/TrackViewer.cs:812
 msgid "Loading .pat file ..."
 msgstr "Nahrávám soubor .pat..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:808
+#: ../../Contrib/TrackViewer/TrackViewer.cs:815
 msgid "Processing .pat file ..."
 msgstr "Zpracovávám soubor .pat..."
 
@@ -916,6 +916,10 @@ msgstr "Neznámé"
 msgid "1"
 msgstr "1"
 
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:228
+msgid "99"
+msgstr "99"
+
 #: ../../Contrib/TrackViewer/UserInterface/Languages.cs:65
 msgid "Please restart TrackViewer in order to load the new language."
 msgstr "Pro změnu jazyka prosím restartujte TrackViewer."
@@ -1049,13 +1053,13 @@ msgstr "Konec cesty"
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:24
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:15
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:37
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:47
 msgid " OK "
 msgstr " OK "
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:25
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:16
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:38
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:48
 msgid " Cancel "
 msgstr " Storno "
 
@@ -1120,9 +1124,29 @@ msgstr " vozů a čekat"
 msgid "seconds. "
 msgstr "sekund. "
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:34
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:32
 msgid "Keep rear"
 msgstr "Zachovat zadní"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:36
+msgid "Join and split"
+msgstr "Připojit a rozdělit"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:40
+msgid "Wait time code as decimal ="
+msgstr "Kód doby čekání decimálně ="
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:41
+msgid "00000"
+msgstr "00000"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:42
+msgid "hexadecimal ="
+msgstr "hexadecimálně ="
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:43
+msgid "0000"
+msgstr "0000"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:8
 msgid "(Re)load route"

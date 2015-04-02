@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
-"POT-Creation-Date: 2015-02-27 18:43:02+0000\n"
-"PO-Revision-Date: 2015-02-28 06:09+0100\n"
+"POT-Creation-Date: 2015-03-27 19:29:54+0000\n"
+"PO-Revision-Date: 2015-04-02 16:22+0100\n"
 "Last-Translator: Altmann <altmann@bk.ru>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: cs\n"
@@ -458,7 +458,7 @@ msgstr "Ovladač Tlačítko bdělosti"
 
 #: ../../ORTS.Settings/InputSettings.cs:157
 msgid "Control Emergency Push Button"
-msgstr "Ovladač Nouzové tlačítko"
+msgstr "Ovladač Nouzová brzda"
 
 #: ../../ORTS.Settings/InputSettings.cs:158
 msgid "Control Sander"
@@ -498,7 +498,7 @@ msgstr "Ovladač Zrcátka"
 
 #: ../../ORTS.Settings/InputSettings.cs:167
 msgid "Control Light"
-msgstr "Ovladač Světlo"
+msgstr "Ovladač Osvětlení kabiny"
 
 #: ../../ORTS.Settings/InputSettings.cs:168
 msgid "Control Pantograph 1"
