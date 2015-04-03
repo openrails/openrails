@@ -174,6 +174,7 @@ namespace ORTS
         
         // precomputed values
         float CylinderSweptVolumeFT3pFT;     // Volume of steam Cylinder
+        float LPCylinderSweptVolumeFT3pFT;     // Volume of LP steam Cylinder
         float CylinderCondensationFactor;  // Cylinder compensation factor for condensation in cylinder
         float BlowerSteamUsageFactor;
         float InjectorFlowRateLBpS;
@@ -356,7 +357,8 @@ namespace ORTS
         float HPCylinderMEPAtmPSI;                 // Mean effective Pressure of HP Cylinder
         float HPCylinderClearancePC = 0.19f;    // Assume cylinder clearance of 19% of the piston displacement for HP cylinder
         float CompoundRecieverVolumePCHP = 0.3f; // Volume of receiver or passages between HP and LP cylinder as a fraction of the HP cylinder volume.
-
+        float HPCylinderVolumeFactor = 1.0f;    // Represents the full volume of the HP steam cylinder    
+        float LPCylinderVolumeFactor = 1.0f;    // Represents the full volume of the LP steam cylinder 
 
         // Compound Cylinder Information - LP Cylinder
         float LPCylinderInitialPressureAtmPSI;    // Initial Pressure to LP cylinder @ start if stroke
@@ -1100,6 +1102,7 @@ namespace ORTS
             CylinderPistonAreaFt2 = Me2.ToFt2(MathHelper.Pi * CylinderDiameterM * CylinderDiameterM / 4.0f);
             LPCylinderPistonAreaFt2 = Me2.ToFt2(MathHelper.Pi * LPCylinderDiameterM * LPCylinderDiameterM / 4.0f);
             CylinderSweptVolumeFT3pFT = ((CylinderPistonAreaFt2 * Me.ToFt(CylinderStrokeM)) - CylinderPistonShaftFt3);
+            LPCylinderSweptVolumeFT3pFT = ((LPCylinderPistonAreaFt2 * Me.ToFt(CylinderStrokeM)) - CylinderPistonShaftFt3);
 
             // Cylinder Steam Usage	= SweptVolumeToTravelRatioFT3pFT x cutoff x {(speed x (SteamDensity (CylPress) - SteamDensity (CylBackPress)) 
             // lbs/s                = ft3/ft                                  x   ft/s  x  lbs/ft3
@@ -2060,8 +2063,6 @@ namespace ORTS
 
                 // Define volume of cylinder at different points on cycle - the points align with points on indicator curve
                 // Note: All LP cylinder values to be multiplied by Cylinder ratio to adjust volumes to same scale
-                float HPCylinderVolumeFactor = 1.0f;    // Represents the full volume of the HP steam cylinder    
-                float LPCylinderVolumeFactor = 1.0f;    // Represents the full volume of the LP steam cylinder 
                 float HPCylinderVolumePoint_a = HPCylinderClearancePC;
                 float HPCylinderVolumePoint_b = cutoff + HPCylinderClearancePC;
                 float HPCylinderVolumePoint_d = CylinderExhaustOpenFactor + HPCylinderClearancePC;
@@ -2591,22 +2592,47 @@ namespace ORTS
           // To calculate steam usage, Calculate amount of steam in cylinder 
           // Cylinder steam usage = steam volume (and weight) at start of release stage - steam remaining in cylinder after compression
           // This amount then should be corrected to allow for cylinder condensation in saturated locomotives or not in superheated locomotives
-          
-          float CylinderExhaustPressureGaugePSI = CylinderReleasePressureAtmPSI - OneAtmospherePSI; // Convert to gauge pressure as steam tables are in gauge pressure
-          float CylinderPreAdmissionPressureGaugePSI = CylinderPreAdmissionPressureAtmPSI - OneAtmospherePSI; // Convert to gauge pressure as steam tables are in gauge pressure  
-          float CylinderVolumeReleaseFt3 = CylinderSweptVolumeFT3pFT * (CylinderExhaustOpenFactor + CylinderClearancePC); // Calculate volume of cylinder at start of release
-          float CylinderReleaseSteamWeightLbs = CylinderVolumeReleaseFt3 * CylinderSteamDensityPSItoLBpFT3[CylinderReleasePressureAtmPSI]; // Weight of steam in Cylinder at release
-          float CylinderClearanceSteamVolumeFt3 = CylinderSweptVolumeFT3pFT * (CylinderPreAdmissionOpenFactor + CylinderClearancePC); // volume of the clearance area + area of steam at pre-admission
-          float CylinderClearanceSteamWeightLbs = CylinderClearanceSteamVolumeFt3 * CylinderSteamDensityPSItoLBpFT3[CylinderPreAdmissionPressureAtmPSI]; // Weight of total steam remaining in the cylinder
-          
-          if (IsCompoundLoco && !CylinderCompoundOn)
+                  
+
+
+          if (IsCompoundLoco)
           {
+
+            if (!CylinderCompoundOn) // compound mode
+                // The steam in the HP @ Release will give an indication of steam usage.
+            {
+              float CylinderExhaustPressureGaugePSI = HPCylinderReleasePressureRecvAtmPSI - OneAtmospherePSI; // Convert to gauge pressure as steam tables are in gauge pressure
+              float CylinderPreAdmissionPressureGaugePSI = HPCylinderPreAdmissionOpenPressureAtmPSI - OneAtmospherePSI; // Convert to gauge pressure as steam tables are in gauge pressure  
+              float CylinderVolumeReleaseFt3 = CylinderSweptVolumeFT3pFT * (CylinderExhaustOpenFactor + HPCylinderClearancePC); // Calculate volume of cylinder at start of release
+              float CylinderReleaseSteamWeightLbs = CylinderVolumeReleaseFt3 * CylinderSteamDensityPSItoLBpFT3[HPCylinderReleasePressureRecvAtmPSI]; // Weight of steam in Cylinder at release
+              float CylinderClearanceSteamVolumeFt3 = CylinderSweptVolumeFT3pFT * (HPCylinderVolumeFactor - CylinderExhaustOpenFactor) + HPCylinderClearancePC; // volume of the clearance area + area of steam at pre-admission
+              float CylinderClearanceSteamWeightLbs = CylinderClearanceSteamVolumeFt3 * CylinderSteamDensityPSItoLBpFT3[HPCylinderPreAdmissionOpenPressureAtmPSI]; // Weight of total steam remaining in the cylinder
+              CalculatedCylinderSteamUsageLBpS = NumCylinders * DrvWheelRevRpS * CylStrokesPerCycle * (CylinderReleaseSteamWeightLbs - CylinderClearanceSteamWeightLbs);
+              
               // For time being assume that compound locomotive doesn't experience cylinder condensation.
               CalculatedCylinderSteamUsageLBpS = NumCylinders * DrvWheelRevRpS * CylStrokesPerCycle * (CylinderReleaseSteamWeightLbs - CylinderClearanceSteamWeightLbs);
- 
+            }
+            else  // Simple mode
+            // Steam at releas in LP will will give an indication of steam usage.
+            {
+                float CylinderExhaustPressureGaugePSI = LPCylinderReleasePressureAtmPSI - OneAtmospherePSI; // Convert to gauge pressure as steam tables are in gauge pressure
+                float CylinderPreAdmissionPressureGaugePSI = LPCylinderPreAdmissionPressureAtmPSI - OneAtmospherePSI; // Convert to gauge pressure as steam tables are in gauge pressure  
+                float CylinderVolumeReleaseFt3 = LPCylinderSweptVolumeFT3pFT * (CylinderExhaustOpenFactor + LPCylinderClearancePC); // Calculate volume of cylinder at start of release
+                float CylinderReleaseSteamWeightLbs = CylinderVolumeReleaseFt3 * CylinderSteamDensityPSItoLBpFT3[LPCylinderReleasePressureAtmPSI]; // Weight of steam in Cylinder at release
+                float CylinderClearanceSteamVolumeFt3 = LPCylinderSweptVolumeFT3pFT * ((LPCylinderVolumeFactor - CylinderExhaustOpenFactor) + LPCylinderClearancePC); // volume of the clearance area + area of steam at pre-admission
+                float CylinderClearanceSteamWeightLbs = CylinderClearanceSteamVolumeFt3 * CylinderSteamDensityPSItoLBpFT3[LPCylinderPreAdmissionPressureAtmPSI]; // Weight of total steam remaining in the cylinder
+                CalculatedCylinderSteamUsageLBpS = NumCylinders * DrvWheelRevRpS * CylStrokesPerCycle * (CylinderReleaseSteamWeightLbs - CylinderClearanceSteamWeightLbs) * SuperheaterSteamUsageFactor;
+
+            }
           }
           else // Calculate steam usage for simple and geared locomotives.
           {
+              float CylinderExhaustPressureGaugePSI = CylinderReleasePressureAtmPSI - OneAtmospherePSI; // Convert to gauge pressure as steam tables are in gauge pressure
+              float CylinderPreAdmissionPressureGaugePSI = CylinderPreAdmissionPressureAtmPSI - OneAtmospherePSI; // Convert to gauge pressure as steam tables are in gauge pressure  
+              float CylinderVolumeReleaseFt3 = CylinderSweptVolumeFT3pFT * (CylinderExhaustOpenFactor + CylinderClearancePC); // Calculate volume of cylinder at start of release
+              float CylinderReleaseSteamWeightLbs = CylinderVolumeReleaseFt3 * CylinderSteamDensityPSItoLBpFT3[CylinderReleasePressureAtmPSI]; // Weight of steam in Cylinder at release
+              float CylinderClearanceSteamVolumeFt3 = CylinderSweptVolumeFT3pFT * (CylinderPreAdmissionOpenFactor + CylinderClearancePC); // volume of the clearance area + area of steam at pre-admission
+              float CylinderClearanceSteamWeightLbs = CylinderClearanceSteamVolumeFt3 * CylinderSteamDensityPSItoLBpFT3[CylinderPreAdmissionPressureAtmPSI]; // Weight of total steam remaining in the cylinder
               CalculatedCylinderSteamUsageLBpS = NumCylinders * DrvWheelRevRpS * CylStrokesPerCycle * (CylinderReleaseSteamWeightLbs - CylinderClearanceSteamWeightLbs) * SuperheaterSteamUsageFactor;
  
           }
