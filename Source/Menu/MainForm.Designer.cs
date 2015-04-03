@@ -82,7 +82,7 @@ namespace ORTS
             this.label8 = new System.Windows.Forms.Label();
             this.panelModeTimetable = new System.Windows.Forms.Panel();
             this.label24 = new System.Windows.Forms.Label();
-            this.comboBoxPlayerTrain = new System.Windows.Forms.ComboBox();
+            this.comboBoxTimetableTrain = new System.Windows.Forms.ComboBox();
             this.label23 = new System.Windows.Forms.Label();
             this.comboBoxTimetableDay = new System.Windows.Forms.ComboBox();
             this.label22 = new System.Windows.Forms.Label();
@@ -90,8 +90,8 @@ namespace ORTS
             this.label20 = new System.Windows.Forms.Label();
             this.comboBoxTimetableSeason = new System.Windows.Forms.ComboBox();
             this.label21 = new System.Windows.Forms.Label();
-            this.comboBoxPlayerTimetable = new System.Windows.Forms.ComboBox();
             this.comboBoxTimetable = new System.Windows.Forms.ComboBox();
+            this.comboBoxTimetableSet = new System.Windows.Forms.ComboBox();
             this.label15 = new System.Windows.Forms.Label();
             this.linkLabelUpdate = new System.Windows.Forms.LinkLabel();
             this.testingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -666,7 +666,7 @@ namespace ORTS
             // panelModeTimetable
             // 
             this.panelModeTimetable.Controls.Add(this.label24);
-            this.panelModeTimetable.Controls.Add(this.comboBoxPlayerTrain);
+            this.panelModeTimetable.Controls.Add(this.comboBoxTimetableTrain);
             this.panelModeTimetable.Controls.Add(this.label23);
             this.panelModeTimetable.Controls.Add(this.comboBoxTimetableDay);
             this.panelModeTimetable.Controls.Add(this.label22);
@@ -674,8 +674,8 @@ namespace ORTS
             this.panelModeTimetable.Controls.Add(this.label20);
             this.panelModeTimetable.Controls.Add(this.comboBoxTimetableSeason);
             this.panelModeTimetable.Controls.Add(this.label21);
-            this.panelModeTimetable.Controls.Add(this.comboBoxPlayerTimetable);
             this.panelModeTimetable.Controls.Add(this.comboBoxTimetable);
+            this.panelModeTimetable.Controls.Add(this.comboBoxTimetableSet);
             this.panelModeTimetable.Controls.Add(this.label15);
             this.panelModeTimetable.Location = new System.Drawing.Point(299, 119);
             this.panelModeTimetable.Margin = new System.Windows.Forms.Padding(0);
@@ -695,15 +695,15 @@ namespace ORTS
             this.label24.Text = "Train:";
             this.label24.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // comboBoxPlayerTrain
+            // comboBoxTimetableTrain
             // 
-            this.comboBoxPlayerTrain.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBoxPlayerTrain.FormattingEnabled = true;
-            this.comboBoxPlayerTrain.Location = new System.Drawing.Point(91, 76);
-            this.comboBoxPlayerTrain.Name = "comboBoxPlayerTrain";
-            this.comboBoxPlayerTrain.Size = new System.Drawing.Size(193, 21);
-            this.comboBoxPlayerTrain.TabIndex = 5;
-            this.comboBoxPlayerTrain.SelectedIndexChanged += new System.EventHandler(this.comboBoxPlayerTrain_SelectedIndexChanged);
+            this.comboBoxTimetableTrain.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxTimetableTrain.FormattingEnabled = true;
+            this.comboBoxTimetableTrain.Location = new System.Drawing.Point(91, 76);
+            this.comboBoxTimetableTrain.Name = "comboBoxTimetableTrain";
+            this.comboBoxTimetableTrain.Size = new System.Drawing.Size(193, 21);
+            this.comboBoxTimetableTrain.TabIndex = 5;
+            this.comboBoxTimetableTrain.SelectedIndexChanged += new System.EventHandler(this.comboBoxTimetableTrain_SelectedIndexChanged);
             // 
             // label23
             // 
@@ -726,6 +726,7 @@ namespace ORTS
             this.comboBoxTimetableDay.Size = new System.Drawing.Size(73, 21);
             this.comboBoxTimetableDay.TabIndex = 8;
             this.comboBoxTimetableDay.Visible = false;
+            this.comboBoxTimetableDay.SelectedIndexChanged += new System.EventHandler(this.comboBoxTimetableDay_SelectedIndexChanged);
             // 
             // label22
             // 
@@ -749,6 +750,7 @@ namespace ORTS
             this.comboBoxTimetableWeather.Name = "comboBoxTimetableWeather";
             this.comboBoxTimetableWeather.Size = new System.Drawing.Size(73, 21);
             this.comboBoxTimetableWeather.TabIndex = 12;
+            this.comboBoxTimetableWeather.SelectedIndexChanged += new System.EventHandler(this.comboBoxTimetableWeather_SelectedIndexChanged);
             // 
             // label20
             // 
@@ -771,6 +773,7 @@ namespace ORTS
             this.comboBoxTimetableSeason.Name = "comboBoxTimetableSeason";
             this.comboBoxTimetableSeason.Size = new System.Drawing.Size(73, 21);
             this.comboBoxTimetableSeason.TabIndex = 10;
+            this.comboBoxTimetableSeason.SelectedIndexChanged += new System.EventHandler(this.comboBoxTimetableSeason_SelectedIndexChanged);
             // 
             // label21
             // 
@@ -783,25 +786,25 @@ namespace ORTS
             this.label21.Text = "Season:";
             this.label21.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // comboBoxPlayerTimetable
-            // 
-            this.comboBoxPlayerTimetable.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBoxPlayerTimetable.FormattingEnabled = true;
-            this.comboBoxPlayerTimetable.Location = new System.Drawing.Point(91, 49);
-            this.comboBoxPlayerTimetable.Name = "comboBoxPlayerTimetable";
-            this.comboBoxPlayerTimetable.Size = new System.Drawing.Size(193, 21);
-            this.comboBoxPlayerTimetable.TabIndex = 3;
-            this.comboBoxPlayerTimetable.SelectedIndexChanged += new System.EventHandler(this.comboboxPlayerTimetable_selectedIndexChanged);
-            // 
             // comboBoxTimetable
             // 
             this.comboBoxTimetable.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxTimetable.FormattingEnabled = true;
-            this.comboBoxTimetable.Location = new System.Drawing.Point(3, 22);
+            this.comboBoxTimetable.Location = new System.Drawing.Point(91, 49);
             this.comboBoxTimetable.Name = "comboBoxTimetable";
-            this.comboBoxTimetable.Size = new System.Drawing.Size(281, 21);
-            this.comboBoxTimetable.TabIndex = 1;
-            this.comboBoxTimetable.SelectedIndexChanged += new System.EventHandler(this.ComboBoxTimetable_SelectedIndexChanged);
+            this.comboBoxTimetable.Size = new System.Drawing.Size(193, 21);
+            this.comboBoxTimetable.TabIndex = 3;
+            this.comboBoxTimetable.SelectedIndexChanged += new System.EventHandler(this.comboBoxTimetable_selectedIndexChanged);
+            // 
+            // comboBoxTimetableSet
+            // 
+            this.comboBoxTimetableSet.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxTimetableSet.FormattingEnabled = true;
+            this.comboBoxTimetableSet.Location = new System.Drawing.Point(3, 22);
+            this.comboBoxTimetableSet.Name = "comboBoxTimetableSet";
+            this.comboBoxTimetableSet.Size = new System.Drawing.Size(281, 21);
+            this.comboBoxTimetableSet.TabIndex = 1;
+            this.comboBoxTimetableSet.SelectedIndexChanged += new System.EventHandler(this.comboBoxTimetableSet_SelectedIndexChanged);
             // 
             // label15
             // 
@@ -952,7 +955,7 @@ namespace ORTS
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Panel panelModeTimetable;
         private System.Windows.Forms.Label label24;
-        private System.Windows.Forms.ComboBox comboBoxPlayerTrain;
+        private System.Windows.Forms.ComboBox comboBoxTimetableTrain;
         private System.Windows.Forms.Label label23;
         private System.Windows.Forms.ComboBox comboBoxTimetableDay;
         private System.Windows.Forms.Label label22;
@@ -960,8 +963,8 @@ namespace ORTS
         private System.Windows.Forms.Label label20;
         private System.Windows.Forms.ComboBox comboBoxTimetableSeason;
         private System.Windows.Forms.Label label21;
-        private System.Windows.Forms.ComboBox comboBoxPlayerTimetable;
         private System.Windows.Forms.ComboBox comboBoxTimetable;
+        private System.Windows.Forms.ComboBox comboBoxTimetableSet;
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.LinkLabel linkLabelUpdate;
         private System.Windows.Forms.ToolStripMenuItem testingToolStripMenuItem;

@@ -75,6 +75,11 @@ namespace ORTS.Formats
             }
         }
 
+        public override string ToString()
+        {
+            return Description;
+        }
+
         /// <summary>
         /// ORTTFilePreliminaryRead
         /// Read function to obtain pre-info
@@ -281,7 +286,6 @@ namespace ORTS.Formats
             public string[] ToInfo()
             {
                 string[] infoString = new string[] {
-                    Catalog.GetStringFmt("Selected train: {0}", Train),
                     Catalog.GetStringFmt("Start time: {0}", StartTime),
                 };
 

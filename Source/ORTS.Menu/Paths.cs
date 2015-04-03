@@ -147,7 +147,6 @@ namespace ORTS.Menu
         public string[] ToInfo()
         {
             string[] infoString = new string[] {
-                catalog.GetStringFmt("Path Name: {0}", Name),
                 catalog.GetStringFmt("Start at: {0}", Start),
                 catalog.GetStringFmt("Heading to: {0}", End),
             };

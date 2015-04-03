@@ -108,12 +108,12 @@ namespace ORTS
                             break;
                         case MainForm.UserAction.SinglePlayerTimetableGame:
                             parameters.Add(String.Format("-timetable \"{0}\" \"{1}:{2}\" {3} {4} {5}",
-                                MainForm.SelectedTimetable.fileName,
-                                MainForm.SelectedPlayerTimetable,
+                                MainForm.SelectedTimetableSet.fileName,
+                                MainForm.SelectedTimetable,
                                 MainForm.SelectedTimetableTrain,
-                                MainForm.SelectedTimetable.Day,
-                                MainForm.SelectedTimetable.Season,
-                                MainForm.SelectedTimetable.Weather));
+                                MainForm.SelectedTimetableSet.Day,
+                                MainForm.SelectedTimetableSet.Season,
+                                MainForm.SelectedTimetableSet.Weather));
                             break;
                         case MainForm.UserAction.SinglePlayerResumeTimetableGame:
                             parameters.Add("\"" + MainForm.SelectedSaveFile + "\"");

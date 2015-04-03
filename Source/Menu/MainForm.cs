@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -58,13 +58,13 @@ namespace ORTS
         List<Activity> Activities = new List<Activity>();
         List<Consist> Consists = new List<Consist>();
         List<Path> Paths = new List<Path>();
-        List<TimetableInfo> ORTimeTables = new List<TimetableInfo>();
+        List<TimetableInfo> TimetableSets = new List<TimetableInfo>();
         Task<List<Folder>> FolderLoader;
         Task<List<Route>> RouteLoader;
         Task<List<Activity>> ActivityLoader;
         Task<List<Consist>> ConsistLoader;
         Task<List<Path>> PathLoader;
-        Task<List<TimetableInfo>> ORTimeTableLoader;
+        Task<List<TimetableInfo>> TimetableSetLoader;
         readonly ResourceManager Resources = new ResourceManager("ORTS.Properties.Resources", typeof(MainForm).Assembly);
         readonly UpdateManager UpdateManager;
         readonly Image ElevationIcon;
@@ -81,21 +81,30 @@ namespace ORTS
             }
         }
 
+        // Base items
         public Folder SelectedFolder { get { return (Folder)comboBoxFolder.SelectedItem; } }
         public Route SelectedRoute { get { return (Route)comboBoxRoute.SelectedItem; } }
+
+        // Activity mode items
         public Activity SelectedActivity { get { return (Activity)comboBoxActivity.SelectedItem; } }
         public Consist SelectedConsist { get { return (Consist)comboBoxConsist.SelectedItem; } }
         public Path SelectedPath { get { return (Path)comboBoxHeadTo.SelectedItem; } }
         public string SelectedStartTime { get { return comboBoxStartTime.Text; } }
-        public int SelectedStartSeason { get { return comboBoxStartSeason.SelectedIndex; } }
-        public int SelectedStartWeather { get { return comboBoxStartWeather.SelectedIndex; } }
-        public string SelectedSaveFile { get; set; }
-        public UserAction SelectedAction { get; set; }
-        public TimetableInfo SelectedTimetable { get { return (TimetableInfo) comboBoxTimetable.SelectedItem; } }
-        public String SelectedPlayerTimetable { get { return (String) comboBoxPlayerTimetable.SelectedItem; } }
-        public TTPreInfo.TTTrainPreInfo SelectedTimetableTrain { get { return (TTPreInfo.TTTrainPreInfo)comboBoxPlayerTrain.SelectedItem; } }
+
+        // Timetable mode items
+        public TimetableInfo SelectedTimetableSet { get { return (TimetableInfo)comboBoxTimetableSet.SelectedItem; } }
+        public TTPreInfo SelectedTimetable { get { return (TTPreInfo)comboBoxTimetable.SelectedItem; } }
+        public TTPreInfo.TTTrainPreInfo SelectedTimetableTrain { get { return (TTPreInfo.TTTrainPreInfo)comboBoxTimetableTrain.SelectedItem; } }
+        public int SelectedTimetableDay { get { return (comboBoxTimetableDay.SelectedItem as KeyedComboBoxItem).Key; } }
         public Consist SelectedTimetableConsist;
         public Path SelectedTimetablePath;
+
+        // Shared items
+        public int SelectedStartSeason { get { return radioButtonModeActivity.Checked ? (comboBoxStartSeason.SelectedItem as KeyedComboBoxItem).Key : (comboBoxTimetableSeason.SelectedItem as KeyedComboBoxItem).Key; } }
+        public int SelectedStartWeather { get { return radioButtonModeActivity.Checked ? (comboBoxStartWeather.SelectedItem as KeyedComboBoxItem).Key : (comboBoxTimetableWeather.SelectedItem as KeyedComboBoxItem).Key; } }
+
+        public string SelectedSaveFile { get; set; }
+        public UserAction SelectedAction { get; set; }
 
         GettextResourceManager catalog = new GettextResourceManager("Menu");
 
@@ -132,15 +141,15 @@ namespace ORTS
             if (!Initialized)
             {
                 var Seasons = new[] {
-                    catalog.GetString("Spring"),
-                    catalog.GetString("Summer"),
-                    catalog.GetString("Autumn"),
-                    catalog.GetString("Winter"),
+                    new KeyedComboBoxItem(0, catalog.GetString("Spring")),
+                    new KeyedComboBoxItem(1, catalog.GetString("Summer")),
+                    new KeyedComboBoxItem(2, catalog.GetString("Autumn")),
+                    new KeyedComboBoxItem(3, catalog.GetString("Winter")),
                 };
                 var Weathers = new[] {
-                    catalog.GetString("Clear"),
-                    catalog.GetString("Snow"),
-                    catalog.GetString("Rain"),
+                    new KeyedComboBoxItem(0, catalog.GetString("Clear")),
+                    new KeyedComboBoxItem(1, catalog.GetString("Snow")),
+                    new KeyedComboBoxItem(2, catalog.GetString("Rain")),
                 };
                 var Difficulties = new[] {
                     catalog.GetString("Easy"),
@@ -149,13 +158,13 @@ namespace ORTS
                     "",
                 };
                 var Days = new[] {
-                    catalog.GetString("Monday"),
-                    catalog.GetString("Tuesday"),
-                    catalog.GetString("Wednesday"),
-                    catalog.GetString("Thursday"),
-                    catalog.GetString("Friday"),
-                    catalog.GetString("Saturday"),
-                    catalog.GetString("Sunday"),
+                    new KeyedComboBoxItem(0, catalog.GetString("Monday")),
+                    new KeyedComboBoxItem(1, catalog.GetString("Tuesday")),
+                    new KeyedComboBoxItem(2, catalog.GetString("Wednesday")),
+                    new KeyedComboBoxItem(3, catalog.GetString("Thursday")),
+                    new KeyedComboBoxItem(4, catalog.GetString("Friday")),
+                    new KeyedComboBoxItem(5, catalog.GetString("Saturday")),
+                    new KeyedComboBoxItem(6, catalog.GetString("Sunday")),
                 };
 
                 comboBoxStartSeason.Items.AddRange(Seasons);
@@ -211,6 +220,7 @@ namespace ORTS
             }
 
             ShowEnvironment();
+            ShowTimetableEnvironment();
 
             CheckForUpdate();
 
@@ -232,8 +242,8 @@ namespace ORTS
                 ConsistLoader.Cancel();
             if (PathLoader != null)
                 PathLoader.Cancel();
-            if (ORTimeTableLoader != null)
-                ORTimeTableLoader.Cancel();
+            if (TimetableSetLoader != null)
+                TimetableSetLoader.Cancel();
 
             // Remove any deleted saves
 			if (Directory.Exists(UserSettings.DeletedSaveFolder))
@@ -311,7 +321,7 @@ namespace ORTS
         {
             LoadActivityList();
             LoadStartAtList();
-            LoadORTimeTableList();
+            LoadTimetableSetList();
             ShowDetails();
         }
         #endregion
@@ -321,7 +331,7 @@ namespace ORTS
         {
             panelModeActivity.Visible = radioButtonModeActivity.Checked;
             panelModeTimetable.Visible = radioButtonModeTimetable.Checked;
-            SelectedAction = radioButtonModeTimetable.Checked ? UserAction.SinglePlayerTimetableGame : UserAction.SingleplayerNewGame;
+            UpdateEnabled();
             ShowDetails();
         }
         #endregion
@@ -329,7 +339,6 @@ namespace ORTS
         #region Activities
         void comboBoxActivity_SelectedIndexChanged(object sender, EventArgs e)
         {
-            comboBoxTimetable.SelectedItem = null;
             ShowLocomotiveList();
             ShowConsistList();
             ShowStartAtList();
@@ -382,6 +391,50 @@ namespace ORTS
         void comboBoxStartWeather_SelectedIndexChanged(object sender, EventArgs e)
         {
             UpdateExploreActivity();
+        }
+        #endregion
+
+        #region Timetable Sets
+        void comboBoxTimetableSet_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            UpdateTimetableSet();
+            ShowTimetableList();
+            ShowDetails();
+        }
+        #endregion
+
+        #region Timetables
+        void comboBoxTimetable_selectedIndexChanged(object sender, EventArgs e)
+        {
+            ShowTimetableTrainList();
+            ShowDetails();
+        }
+        #endregion
+
+        #region Timetable Trains
+        void comboBoxTimetableTrain_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var selectedTrain = comboBoxTimetableTrain.SelectedItem as TTPreInfo.TTTrainPreInfo;
+            SelectedTimetableConsist = Consist.GetConsist(SelectedFolder, selectedTrain.LeadingConsist, selectedTrain.ReverseConsist);
+            SelectedTimetablePath = Path.GetPath(SelectedRoute, selectedTrain.Path, false);
+            ShowDetails();
+        }
+        #endregion
+
+        #region Timetable environment
+        void comboBoxTimetableDay_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            UpdateTimetableSet();
+        }
+
+        void comboBoxTimetableSeason_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            UpdateTimetableSet();
+        }
+
+        void comboBoxTimetableWeather_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            UpdateTimetableSet();
         }
         #endregion
 
@@ -463,32 +516,29 @@ namespace ORTS
         {
             SaveOptions();
 
-            if (SelectedAction == UserAction.SinglePlayerTimetableGame)
-            {
-                if (SelectedTimetable != null)
-                {
-                    DialogResult = CheckAndBuildTimetableInfo();
-                }
-            }
-            else
+            if (radioButtonModeActivity.Checked)
             {
                 SelectedAction = UserAction.SingleplayerNewGame;
                 if (SelectedActivity != null)
-                {
                     DialogResult = DialogResult.OK;
-                }
+            }
+            else
+            {
+                SelectedAction = UserAction.SinglePlayerTimetableGame;
+                if (SelectedTimetableTrain != null)
+                    DialogResult = DialogResult.OK;
             }
         }
 
         void buttonResume_Click(object sender, EventArgs e)
         {
             // if timetable mode but no timetable selected - no action
-            if (SelectedAction == UserAction.SinglePlayerTimetableGame && SelectedTimetable == null)
+            if (SelectedAction == UserAction.SinglePlayerTimetableGame && SelectedTimetableSet == null)
             {
                 return;
             }
 
-            using (var form = new ResumeForm(Settings, SelectedRoute, SelectedAction, SelectedActivity, SelectedTimetable, this))
+            using (var form = new ResumeForm(Settings, SelectedRoute, SelectedAction, SelectedActivity, SelectedTimetableSet, this))
             {
                 if (form.ShowDialog(this) == DialogResult.OK)
                 {
@@ -544,9 +594,32 @@ namespace ORTS
                 Settings.Multiplayer_Port = (int)Settings.GetDefaultValue("Multiplayer_Port");
             }
             Settings.Menu_Selection = new[] {
-                comboBoxFolder.SelectedItem != null ? (comboBoxFolder.SelectedItem as Folder).Path : "",
-                comboBoxRoute.SelectedItem != null ? (comboBoxRoute.SelectedItem as Route).Path : "",
-                comboBoxActivity.SelectedItem != null && (comboBoxActivity.SelectedItem as Activity).FilePath != null ? (comboBoxActivity.SelectedItem as Activity).FilePath : "",
+                // Base items
+                SelectedFolder != null ? SelectedFolder.Path : "",
+                SelectedRoute != null ? SelectedRoute.Path : "",
+                // Activity mode items / Explore mode items
+                radioButtonModeActivity.Checked ?
+                    SelectedActivity != null && SelectedActivity.FilePath != null ? SelectedActivity.FilePath : "" :
+                    SelectedTimetableSet != null ? SelectedTimetableSet.fileName : "",
+                radioButtonModeActivity.Checked ?
+                    SelectedActivity is ExploreActivity && comboBoxLocomotive.SelectedItem != null && (comboBoxLocomotive.SelectedItem as Locomotive).FilePath != null ? (comboBoxLocomotive.SelectedItem as Locomotive).FilePath : "" :
+                    SelectedTimetable != null ? SelectedTimetable.Description : "",
+                radioButtonModeActivity.Checked ?
+                    SelectedActivity is ExploreActivity && SelectedConsist != null ? SelectedConsist.FilePath : "" :
+                    SelectedTimetableTrain != null ? SelectedTimetableTrain.Column.ToString() : "",
+                radioButtonModeActivity.Checked ?
+                    SelectedActivity is ExploreActivity && SelectedPath != null ? SelectedPath.FilePath : "" :
+                    SelectedTimetableDay.ToString(),
+                radioButtonModeActivity.Checked ?
+                    SelectedActivity is ExploreActivity ? SelectedStartTime : "" :
+                    "",
+                // Shared items
+                radioButtonModeActivity.Checked ?
+                    SelectedActivity is ExploreActivity ? SelectedStartSeason.ToString() : "" :
+                    SelectedStartSeason.ToString(),
+                radioButtonModeActivity.Checked ?
+                    SelectedActivity is ExploreActivity ? SelectedStartWeather.ToString() : "" :
+                    SelectedStartWeather.ToString(),
             };
             Settings.Save();
         }
@@ -564,7 +637,11 @@ namespace ORTS
             comboBoxHeadTo.Enabled = comboBoxHeadTo.Items.Count > 0 && SelectedActivity is ExploreActivity;
             comboBoxStartTime.Enabled = comboBoxStartSeason.Enabled = comboBoxStartWeather.Enabled = SelectedActivity is ExploreActivity;
             comboBoxStartTime.DropDownStyle = SelectedActivity is ExploreActivity ? ComboBoxStyle.DropDown : ComboBoxStyle.DropDownList;
-            buttonResume.Enabled = buttonStart.Enabled = SelectedActivity != null && (!(SelectedActivity is ExploreActivity) || (comboBoxConsist.Items.Count > 0 && comboBoxHeadTo.Items.Count > 0));
+            comboBoxTimetable.Enabled = comboBoxTimetableSet.Items.Count > 0;
+            comboBoxTimetableTrain.Enabled = comboBoxTimetable.Items.Count > 0;
+            buttonResume.Enabled = buttonStart.Enabled = radioButtonModeActivity.Checked ?
+                SelectedActivity != null && (!(SelectedActivity is ExploreActivity) || (comboBoxConsist.Items.Count > 0 && comboBoxHeadTo.Items.Count > 0)) :
+                SelectedTimetableTrain != null;
             buttonMPClient.Enabled = buttonStart.Enabled && !String.IsNullOrEmpty(textBoxMPUser.Text) && !String.IsNullOrEmpty(textBoxMPHost.Text);
             buttonMPServer.Enabled = buttonStart.Enabled && !String.IsNullOrEmpty(textBoxMPUser.Text);
         }
@@ -607,11 +684,7 @@ namespace ORTS
             comboBoxFolder.Items.Clear();
             foreach (var folder in Folders)
                 comboBoxFolder.Items.Add(folder);
-            if (comboBoxFolder.Items.Count > 0)
-            {
-                var selectionIndex = Settings.Menu_Selection.Length > 0 ? Folders.FindIndex(f => f.Path == Settings.Menu_Selection[0]) : -1;
-                comboBoxFolder.SelectedIndex = Math.Max(0, selectionIndex);
-            }
+            UpdateFromMenuSelection<Folder>(comboBoxFolder, UserSettings.Menu_SelectionIndex.Folder, f => f.Path);
             UpdateEnabled();
         }
         #endregion
@@ -643,10 +716,15 @@ namespace ORTS
             comboBoxRoute.Items.Clear();
             foreach (var route in Routes)
                 comboBoxRoute.Items.Add(route);
-            if (comboBoxRoute.Items.Count > 0)
+            UpdateFromMenuSelection<Route>(comboBoxRoute, UserSettings.Menu_SelectionIndex.Route, r => r.Path);
+            if (Settings.Menu_Selection.Length > (int)UserSettings.Menu_SelectionIndex.Activity)
             {
-                var selectionIndex = Settings.Menu_Selection.Length > 1 ? Routes.FindIndex(f => f.Path == Settings.Menu_Selection[1]) : -1;
-                comboBoxRoute.SelectedIndex = Math.Max(0, selectionIndex);
+                var path = Settings.Menu_Selection[(int)UserSettings.Menu_SelectionIndex.Activity]; // Activity or Timetable
+                var extension = System.IO.Path.GetExtension(path).ToLower();
+                if (extension == ".act")
+                    radioButtonModeActivity.Checked = true;
+                else if (extension == ".timetable_or")
+                    radioButtonModeTimetable.Checked = true;
             }
             UpdateEnabled();
         }
@@ -675,11 +753,7 @@ namespace ORTS
             comboBoxActivity.Items.Clear();
             foreach (var activity in Activities)
                 comboBoxActivity.Items.Add(activity);
-            if (comboBoxActivity.Items.Count > 0)
-            {
-                var selectionIndex = Settings.Menu_Selection.Length > 2 ? Activities.FindIndex(f => f.FilePath == Settings.Menu_Selection[2]) : -1;
-                comboBoxActivity.SelectedIndex = Math.Max(0, selectionIndex);
-            }
+            UpdateFromMenuSelection<Activity>(comboBoxActivity, UserSettings.Menu_SelectionIndex.Activity, a => a.FilePath);
             UpdateEnabled();
         }
 
@@ -726,8 +800,7 @@ namespace ORTS
                     comboBoxLocomotive.Items.Add(loco);
                 if (comboBoxLocomotive.Items.Count == 1)
                     comboBoxLocomotive.Items.Clear();
-                if (comboBoxLocomotive.Items.Count > 0)
-                    comboBoxLocomotive.SelectedIndex = 0;
+                UpdateFromMenuSelection<Locomotive>(comboBoxLocomotive, UserSettings.Menu_SelectionIndex.Locomotive, l => l.FilePath);
             }
             else
             {
@@ -749,8 +822,7 @@ namespace ORTS
                 comboBoxConsist.Items.Clear();
                 foreach (var consist in Consists.Where(c => comboBoxLocomotive.SelectedItem.Equals(c.Locomotive)).OrderBy(c => c.Name))
                     comboBoxConsist.Items.Add(consist);
-                if (comboBoxConsist.Items.Count > 0)
-                    comboBoxConsist.SelectedIndex = 0;
+                UpdateFromMenuSelection<Consist>(comboBoxConsist, UserSettings.Menu_SelectionIndex.Consist, c => c.FilePath);
             }
             UpdateEnabled();
         }
@@ -782,8 +854,16 @@ namespace ORTS
                 comboBoxStartAt.Items.Clear();
                 foreach (var place in Paths.Select(p => p.Start).Distinct().OrderBy(s => s.ToString()))
                     comboBoxStartAt.Items.Add(place);
-                if (comboBoxStartAt.Items.Count > 0)
-                    comboBoxStartAt.SelectedIndex = 0;
+                // Because this list is unique names, we have to do some extra work to select it.
+                if (Settings.Menu_Selection.Length >= (int)UserSettings.Menu_SelectionIndex.Path)
+                {
+                    var pathFilePath = Settings.Menu_Selection[(int)UserSettings.Menu_SelectionIndex.Path];
+                    var path = Paths.FirstOrDefault(p => p.FilePath == pathFilePath);
+                    if (path != null)
+                        SelectComboBoxItem<string>(comboBoxStartAt, s => s == path.Start);
+                    else if (comboBoxStartAt.Items.Count > 0)
+                        comboBoxStartAt.SelectedIndex = 0;
+                }
             }
             else
             {
@@ -805,14 +885,13 @@ namespace ORTS
                 comboBoxHeadTo.Items.Clear();
                 foreach (var path in Paths.Where(p => p.Start == (string)comboBoxStartAt.SelectedItem))
                     comboBoxHeadTo.Items.Add(path);
-                if (comboBoxHeadTo.Items.Count > 0)
-                    comboBoxHeadTo.SelectedIndex = 0;
+                UpdateFromMenuSelection<Path>(comboBoxHeadTo, UserSettings.Menu_SelectionIndex.Path, c => c.FilePath);
             }
             UpdateEnabled();
         }
         #endregion
 
-        #region Environment and details
+        #region Environment
         void ShowEnvironment()
         {
             if (SelectedActivity == null || SelectedActivity is ExploreActivity)
@@ -820,13 +899,13 @@ namespace ORTS
                 comboBoxStartTime.Items.Clear();
                 foreach (var hour in Enumerable.Range(0, 24))
                     comboBoxStartTime.Items.Add(String.Format("{0}:00", hour));
-                comboBoxStartTime.SelectedIndex = 12;
+                UpdateFromMenuSelection<string>(comboBoxStartTime, UserSettings.Menu_SelectionIndex.Time, "12:00");
+                UpdateFromMenuSelection<KeyedComboBoxItem>(comboBoxStartSeason, UserSettings.Menu_SelectionIndex.Season, s => s.Key.ToString(), new KeyedComboBoxItem(1, ""));
+                UpdateFromMenuSelection<KeyedComboBoxItem>(comboBoxStartWeather, UserSettings.Menu_SelectionIndex.Weather, w => w.Key.ToString(), new KeyedComboBoxItem(0, ""));
                 comboBoxDifficulty.SelectedIndex = 3;
                 comboBoxDuration.Items.Clear();
                 comboBoxDuration.Items.Add("");
                 comboBoxDuration.SelectedIndex = 0;
-                comboBoxStartSeason.SelectedIndex = 1;
-                comboBoxStartWeather.SelectedIndex = 0;
             }
             else
             {
@@ -841,7 +920,86 @@ namespace ORTS
                 comboBoxDuration.SelectedIndex = 0;
             }
         }
+        #endregion
 
+        #region Timetable Set list
+        void LoadTimetableSetList()
+        {
+            if (TimetableSetLoader != null)
+                TimetableSetLoader.Cancel();
+
+            TimetableSets.Clear();
+            ShowTimetableSetList();
+
+            var selectedFolder = SelectedFolder;
+            var selectedRoute = SelectedRoute;
+            TimetableSetLoader = new Task<List<TimetableInfo>>(this, () => TimetableInfo.GetTimetableInfo(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (timetableSets) =>
+            {
+                TimetableSets = timetableSets;
+                ShowTimetableSetList();
+            });
+        }
+
+        void ShowTimetableSetList()
+        {
+            comboBoxTimetableSet.Items.Clear();
+            foreach (var timetableSet in TimetableSets)
+                comboBoxTimetableSet.Items.Add(timetableSet);
+            UpdateFromMenuSelection<TimetableInfo>(comboBoxTimetableSet, UserSettings.Menu_SelectionIndex.TimetableSet, t => t.fileName);
+            UpdateEnabled();
+        }
+
+        void UpdateTimetableSet()
+        {
+            if (SelectedTimetableSet != null)
+            {
+                SelectedTimetableSet.Day = SelectedTimetableDay;
+                SelectedTimetableSet.Season = SelectedStartSeason;
+                SelectedTimetableSet.Weather = SelectedStartWeather;
+            }
+        }
+        #endregion
+
+        #region Timetable list
+        void ShowTimetableList()
+        {
+            comboBoxTimetable.Items.Clear();
+            if (SelectedTimetableSet != null)
+            {
+                foreach (var timetable in SelectedTimetableSet.ORTTList)
+                    comboBoxTimetable.Items.Add(timetable);
+                UpdateFromMenuSelection<TTPreInfo>(comboBoxTimetable, UserSettings.Menu_SelectionIndex.Timetable, t => t.Description);
+            }
+            UpdateEnabled();
+        }
+        #endregion
+
+        #region Timetable Train list
+        void ShowTimetableTrainList()
+        {
+            comboBoxTimetableTrain.Items.Clear();
+            if (SelectedTimetable != null)
+            {
+                var trains = SelectedTimetableSet.ORTTList[comboBoxTimetable.SelectedIndex].Trains;
+                trains.Sort();
+                foreach (var train in trains)
+                    comboBoxTimetableTrain.Items.Add(train);
+                UpdateFromMenuSelection<TTPreInfo.TTTrainPreInfo>(comboBoxTimetableTrain, UserSettings.Menu_SelectionIndex.Train, t => t.Column.ToString());
+            }
+            UpdateEnabled();
+        }
+        #endregion
+
+        #region Timetable environment
+        void ShowTimetableEnvironment()
+        {
+            UpdateFromMenuSelection<KeyedComboBoxItem>(comboBoxTimetableDay, UserSettings.Menu_SelectionIndex.Day, d => d.Key.ToString(), new KeyedComboBoxItem(0, ""));
+            UpdateFromMenuSelection<KeyedComboBoxItem>(comboBoxTimetableSeason, UserSettings.Menu_SelectionIndex.Season, s => s.Key.ToString(), new KeyedComboBoxItem(1, ""));
+            UpdateFromMenuSelection<KeyedComboBoxItem>(comboBoxTimetableWeather, UserSettings.Menu_SelectionIndex.Weather, w => w.Key.ToString(), new KeyedComboBoxItem(0, ""));
+        }
+        #endregion
+
+        #region Details
         void ShowDetails()
         {
             Win32.LockWindowUpdate(Handle);
@@ -852,7 +1010,9 @@ namespace ORTS
             if (radioButtonModeActivity.Checked)
             {
                 if (SelectedConsist != null && SelectedConsist.Locomotive != null && SelectedConsist.Locomotive.Description != null)
+                {
                     ShowDetail(catalog.GetStringFmt("Locomotive: {0}", SelectedConsist.Locomotive.Name), SelectedConsist.Locomotive.Description.Split('\n'));
+                }
                 if (SelectedActivity != null && SelectedActivity.Description != null)
                 {
                     ShowDetail(catalog.GetStringFmt("Activity: {0}", SelectedActivity.Name), SelectedActivity.Description.Split('\n'));
@@ -861,20 +1021,20 @@ namespace ORTS
             }
             if (radioButtonModeTimetable.Checked)
             {
+                if (SelectedTimetableSet != null)
+                {
+                    ShowDetail(catalog.GetStringFmt("Timetable set: {0}", SelectedTimetableSet), new string[0]);
+                }
                 if (SelectedTimetable != null)
                 {
-                    ShowDetail(catalog.GetString("Timetable"), new string[1] { SelectedTimetable.ToString() });
-                }
-                if (!String.IsNullOrEmpty(SelectedPlayerTimetable))
-                {
-                    ShowDetail(catalog.GetString("Player Timetable"), new string[1] { SelectedPlayerTimetable });
+                    ShowDetail(catalog.GetStringFmt("Timetable: {0}", SelectedTimetable), new string[0]);
                 }
                 if (SelectedTimetableTrain != null)
                 {
-                    ShowDetail(catalog.GetString("Player Train"), SelectedTimetableTrain.ToInfo());
+                    ShowDetail(catalog.GetStringFmt("Train: {0}", SelectedTimetableTrain), SelectedTimetableTrain.ToInfo());
                     if (SelectedTimetableConsist != null)
                     {
-                        ShowDetail(catalog.GetString("Consist : "), new string[1] { SelectedTimetableTrain.Consist.ToString() });
+                        ShowDetail(catalog.GetStringFmt("Consist: {0}", SelectedTimetableConsist.Name), new string[0]);
                         if (SelectedTimetableConsist.Locomotive != null && SelectedTimetableConsist.Locomotive.Description != null)
                         {
                             ShowDetail(catalog.GetStringFmt("Locomotive: {0}", SelectedTimetableConsist.Locomotive.Name), SelectedTimetableConsist.Locomotive.Description.Split('\n'));
@@ -882,7 +1042,7 @@ namespace ORTS
                     }
                     if (SelectedTimetablePath != null)
                     {
-                        ShowDetail(catalog.GetString("Path : "), SelectedTimetablePath.ToInfo());
+                        ShowDetail(catalog.GetStringFmt("Path: {0}", SelectedTimetablePath.Name), SelectedTimetablePath.ToInfo());
                     }
                 }
             }
@@ -1025,6 +1185,69 @@ namespace ORTS
         #endregion
 
         #region Utility functions
+        void UpdateFromMenuSelection<T>(ComboBox comboBox, UserSettings.Menu_SelectionIndex index, T defaultValue)
+        {
+            UpdateFromMenuSelection<T>(comboBox, index, _ => _.ToString(), defaultValue);
+        }
+
+        void UpdateFromMenuSelection<T>(ComboBox comboBox, UserSettings.Menu_SelectionIndex index, Func<T, string> map)
+        {
+            UpdateFromMenuSelection<T>(comboBox, index, map, default(T));
+        }
+
+        void UpdateFromMenuSelection<T>(ComboBox comboBox, UserSettings.Menu_SelectionIndex index, Func<T, string> map, T defaultValue)
+        {
+            if (Settings.Menu_Selection.Length > (int)index && Settings.Menu_Selection[(int)index] != "")
+            {
+                if (comboBox.DropDownStyle == ComboBoxStyle.DropDown)
+                    comboBox.Text = Settings.Menu_Selection[(int)index];
+                else
+                    SelectComboBoxItem<T>(comboBox, item => map(item) == Settings.Menu_Selection[(int)index]);
+            }
+            else
+            {
+                if (comboBox.DropDownStyle == ComboBoxStyle.DropDown)
+                    comboBox.Text = map(defaultValue);
+                else if (defaultValue != null)
+                    SelectComboBoxItem<T>(comboBox, item => map(item) == map(defaultValue));
+                else if (comboBox.Items.Count > 0)
+                    comboBox.SelectedIndex = 0;
+            }
+        }
+
+        void SelectComboBoxItem<T>(ComboBox comboBox, Func<T, bool> predicate)
+        {
+            if (comboBox.Items.Count == 0)
+                return;
+
+            for (var i = 0; i < comboBox.Items.Count; i++)
+            {
+                if (comboBox.Items[i] is T && predicate((T)comboBox.Items[i]))
+                {
+                    comboBox.SelectedIndex = i;
+                    return;
+                }
+            }
+            comboBox.SelectedIndex = 0;
+        }
+
+        private class KeyedComboBoxItem
+        {
+            public readonly int Key;
+            public readonly string Value;
+
+            public override string ToString()
+            {
+                return Value;
+            }
+
+            public KeyedComboBoxItem(int key, string value)
+            {
+                Key = key;
+                Value = value;
+            }
+        }
+
         private sealed class Win32
         {
             Win32() { }
@@ -1034,127 +1257,6 @@ namespace ORTS
             /// </summary>
             [DllImport("user32")]
             public static extern int LockWindowUpdate(IntPtr hwnd);
-        }
-        #endregion
-
-        #region ORTimeTable
-        void LoadORTimeTableList()
-        {
-            if (ORTimeTableLoader != null)
-                ORTimeTableLoader.Cancel();
-
-            ORTimeTables.Clear();
-            ShowORTimetableList();
-
-            var selectedFolder = SelectedFolder;
-            var selectedRoute = SelectedRoute;
-            ORTimeTableLoader = new Task<List<TimetableInfo>>(this, () => TimetableInfo.GetTimetableInfo(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (ortimetables) =>
-            {
-                ORTimeTables = ortimetables;
-                ShowORTimetableList();
-            });
-        }
-        #endregion
-
-        #region ORTimetableList
-        void ShowORTimetableList()
-        {
-            comboBoxTimetable.Items.Clear();
-            foreach (var timetable in ORTimeTables)
-                comboBoxTimetable.Items.Add(timetable);
-            UpdateEnabled();
-        }
-
-        private void ComboBoxTimetable_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            SelectedAction = UserAction.SinglePlayerTimetableGame;
-            ClearTrainList();
-            ShowORSubTimetableList();
-            PresetTimetableAdditionalInfo();
-            ShowDetails();
-        }
-
-        private DialogResult CheckAndBuildTimetableInfo()
-        {
-            if (SelectedTimetableTrain == null)
-            {
-                return DialogResult.None;
-            }
-            SelectedTimetable.Day = comboBoxTimetableDay.SelectedIndex;
-            SelectedTimetable.Season = comboBoxTimetableSeason.SelectedIndex;
-            SelectedTimetable.Weather = comboBoxTimetableWeather.SelectedIndex;
-
-            return DialogResult.OK;
-        }
-        #endregion
-
-        #region ORSubTimetable
-        void ShowORSubTimetableList()
-        {
-            comboBoxPlayerTimetable.Items.Clear();
-            if (SelectedTimetable != null)
-            {
-                foreach (ORTS.Formats.TTPreInfo ttInfo in SelectedTimetable.ORTTList)
-                {
-                    comboBoxPlayerTimetable.Items.Add(ttInfo.Description);
-                }
-                if (comboBoxPlayerTimetable.Items.Count == 1)
-                {
-                    comboBoxPlayerTimetable.SelectedIndex = 0;
-                }
-            }
-            else
-            {
-                comboBoxPlayerTimetable.Items.Clear();
-                comboBoxPlayerTimetable.SelectedItem = null;
-            }
-        }
-        #endregion
-
-        #region ORSubTimetableList
-        private void comboboxPlayerTimetable_selectedIndexChanged(object sender, EventArgs e)
-        {
-            ShowORTimetableTrainList();
-            ShowDetails();
-        }
-        #endregion
-
-        #region ORTimetableTrain
-        void ShowORTimetableTrainList()
-        {
-            comboBoxPlayerTrain.Items.Clear();
-            if (comboBoxTimetable.SelectedIndex >= 0)
-            {
-                List<TTPreInfo.TTTrainPreInfo> usedTrains = SelectedTimetable.ORTTList[comboBoxPlayerTimetable.SelectedIndex].Trains;
-                usedTrains.Sort();
-
-                foreach (TTPreInfo.TTTrainPreInfo train in usedTrains)
-                {
-                    comboBoxPlayerTrain.Items.Add(train);
-                }
-            }
-        }
-
-        void ClearTrainList()
-        {
-            comboBoxPlayerTrain.Items.Clear();
-        }
-
-        private void comboBoxPlayerTrain_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            TTPreInfo.TTTrainPreInfo selectedTrain = comboBoxPlayerTrain.SelectedItem as TTPreInfo.TTTrainPreInfo;
-            SelectedTimetableConsist = Consist.GetConsist(SelectedFolder, selectedTrain.LeadingConsist, selectedTrain.ReverseConsist);
-            SelectedTimetablePath = Path.GetPath(SelectedRoute, selectedTrain.Path, false);
-            ShowDetails();
-        }
-        #endregion
-
-        #region TimetableAdditionInfo
-        void PresetTimetableAdditionalInfo()
-        {
-            comboBoxTimetableDay.SelectedIndex = 0;
-            comboBoxTimetableSeason.SelectedIndex = 1;
-            comboBoxTimetableWeather.SelectedIndex = 0;
         }
         #endregion
 
