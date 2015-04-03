@@ -18,12 +18,10 @@
 			  <h1>Confirm Download</h1>
 <?php 
 $file = $_REQUEST['file'];
-$filepath = $_REQUEST['filepath'];
-$fileext = $_REQUEST['fileext'];
 echo("<p>Your download of $file has started.</p>");
 // Invisible <iframe> to start download as a background task
-echo("<iframe src='download.php?filepath=$filepath&file=$file&fileext=$fileext&id=" . $_SESSION['id'] . "' seamless height=1 width=1 style='border:none;'></iframe>");
-echo("<p>If you have problems, please try <a href='$filepath/$file'>this alternative link</a>.</p>");
+echo("<iframe src='download.php?file=$file&id=" . $_SESSION['id'] . "' seamless height=1 width=1 style='border:none;'></iframe>");
+echo("<p>If you have problems, please try <a href='../../files/$file'>this alternative link</a>.</p>");
 ?>
 			</div>
 		</div>

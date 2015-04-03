@@ -87,13 +87,11 @@ To support development, the <a href='http://james-ross.co.uk/projects/or'>latest
 $modal = 'modal1';
 $title = 'Download Open Rails (stable version)';
 $download_file = $download_stable;
-$ext = 'exe';
 include "preamble.php";
 
 $modal = 'modal2';
 $title = "Download Open Rails (testing version)";
 $download_file = $download_testing;
-$ext = 'zip';
 include "preamble.php";
 ?>
   </body>

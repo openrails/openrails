@@ -105,7 +105,6 @@
 $modal = 'modal1';
 $title = 'Download Open Rails';
 $download_file = $download_stable;
-$ext = 'exe';
 include "download/program/preamble.php";
 ?>
   </body>
