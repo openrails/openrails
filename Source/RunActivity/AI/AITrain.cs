@@ -3554,13 +3554,12 @@ namespace ORTS
 
         public override void BuildWaitingPointList(float clearingDistanceM)
         {
-            bool insertSigDelegate;
+            bool insertSigDelegate = true;
             // loop through all waiting points - back to front as the processing affects the actual routepaths
 
             List<int> signalIndex = new List<int>();
             for (int iWait = 0; iWait <= TCRoute.WaitingPoints.Count - 1; iWait++)
             {
-                insertSigDelegate = false;
                 int[] waitingPoint = TCRoute.WaitingPoints[iWait];
 
                 //check if waiting point is in existing subpath
@@ -3573,9 +3572,6 @@ namespace ORTS
                 TCSubpathRoute thisRoute = TCRoute.TCRouteSubpaths[waitingPoint[0]];
                 int routeIndex = thisRoute.GetRouteIndex(waitingPoint[1], 0);
                 int lastIndex = routeIndex;
-                if (iWait == TCRoute.WaitingPoints.Count - 1 || TCRoute.WaitingPoints[iWait + 1][1] != waitingPoint[1])
-                    insertSigDelegate = true;
-
 
                 // check if waiting point is in route - else give warning and skip
                 if (routeIndex < 0)
@@ -3628,18 +3624,20 @@ namespace ORTS
                     if (nextSection != null) distanceToEndOfWPSection += nextSection.Length;
                 }
                 signalIndex.Add(endSignalIndex);
-                // move backwards WPs within clearingDistanceM
+                // move backwards WPs within clearingDistanceM, except if of type Horn
                 for (int rWP = iWait; insertSigDelegate && signalIndex[iWait] != -1 && rWP >= 0; rWP--)
                 {
                     int[] currWP = TCRoute.WaitingPoints[rWP];
-                    if (currWP[1] != thisSection.Index || currWP[5] < (int)(thisSection.Length + distanceToEndOfWPSection - clearingDistanceM - 1)) break;
+                    if ((Simulator.Settings.ExtendedAIShunting && currWP[2] >= 60011 && currWP[2] <= 60020)
+                        || currWP[1] != thisSection.Index || currWP[5] < (int)(thisSection.Length + distanceToEndOfWPSection - clearingDistanceM - 1)) break;
                     currWP[5] = (int)(thisSection.Length + distanceToEndOfWPSection - clearingDistanceM - 1);
                 }
 
             }
-            insertSigDelegate = false;
+//            insertSigDelegate = false;
             for (int iWait = 0; iWait <= TCRoute.WaitingPoints.Count - 1; iWait++)
             {
+                insertSigDelegate = true;
                 int[] waitingPoint = TCRoute.WaitingPoints[iWait];
 
                 //check if waiting point is in existing subpath
@@ -3652,8 +3650,25 @@ namespace ORTS
                 TCSubpathRoute thisRoute = TCRoute.TCRouteSubpaths[waitingPoint[0]];
                 int routeIndex = thisRoute.GetRouteIndex(waitingPoint[1], 0);
                 int lastIndex = routeIndex;
-                if (iWait == TCRoute.WaitingPoints.Count - 1 || signalIndex[iWait + 1] != signalIndex[iWait])
-                    insertSigDelegate = true;
+                if (!(Simulator.Settings.ExtendedAIShunting && waitingPoint[2] >= 60011 && waitingPoint[2] <= 60020))
+                {
+                    if (iWait != TCRoute.WaitingPoints.Count - 1)
+                    {
+                        for (int nextWP = iWait+1; nextWP < TCRoute.WaitingPoints.Count; nextWP++)
+                        {
+                            if (signalIndex[iWait] != signalIndex[nextWP])
+                            {
+                                break;
+                            }
+                            else if (Simulator.Settings.ExtendedAIShunting && TCRoute.WaitingPoints[nextWP][2] >= 60011 && TCRoute.WaitingPoints[nextWP][2] <= 60020) continue;
+                            else
+                            {
+                                insertSigDelegate = false;
+                                break;
+                            }
+                        }
+                    }
+                }
 
 
                 // check if waiting point is in route - else give warning and skip
@@ -3665,18 +3680,27 @@ namespace ORTS
                 int direction = thisRoute[routeIndex].Direction;
                 if (!IsActualPlayerTrain)
                 {
-                    AIActionWPRef action = new AIActionWPRef(this, waitingPoint[5], 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction);
-                    action.SetDelay(waitingPoint[2]);
-                    AuxActionsContain.Add(action);
-                    if (insertSigDelegate && signalIndex[iWait] > -1)
+                    if (Simulator.Settings.ExtendedAIShunting && waitingPoint[2] >= 60011 && waitingPoint[2] <= 60020)
                     {
-                        AIActSigDelegateRef delegateAction = new AIActSigDelegateRef(this, waitingPoint[5], 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction);
-                        signalRef.SignalObjects[signalIndex[iWait]].LockForTrain(this.Number, waitingPoint[0]);
-                        delegateAction.SetEndSignalIndex(signalIndex[iWait]);
-                        delegateAction.Delay = 1;   //   waitingPoint[2] <= 5 ? 5 : waitingPoint[2];
-                        delegateAction.SetSignalObject(signalRef.SignalObjects[signalIndex[iWait]]);
+                        AIActionHornRef action = new AIActionHornRef(this, waitingPoint[5], 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction);
+                        action.SetDelay(waitingPoint[2]-60010);
+                        AuxActionsContain.Add(action);
+                    }
+                    else
+                    {
+                        AIActionWPRef action = new AIActionWPRef(this, waitingPoint[5], 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction);
+                        action.SetDelay(waitingPoint[2]);
+                        AuxActionsContain.Add(action);
+                        if (insertSigDelegate && signalIndex[iWait] > -1)
+                        {
+                            AIActSigDelegateRef delegateAction = new AIActSigDelegateRef(this, waitingPoint[5], 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction);
+                            signalRef.SignalObjects[signalIndex[iWait]].LockForTrain(this.Number, waitingPoint[0]);
+                            delegateAction.SetEndSignalIndex(signalIndex[iWait]);
+                            delegateAction.Delay = 1;   //   waitingPoint[2] <= 5 ? 5 : waitingPoint[2];
+                            delegateAction.SetSignalObject(signalRef.SignalObjects[signalIndex[iWait]]);
 
-                        AuxActionsContain.Add(delegateAction);
+                            AuxActionsContain.Add(delegateAction);
+                        }
                     }
                 }
                 else if (insertSigDelegate && signalIndex[iWait] > -1)
@@ -3692,7 +3716,7 @@ namespace ORTS
 
                     AuxActionsContain.Add(delegateAction);
                 }
-                insertSigDelegate = false;
+//                insertSigDelegate = false;
             }
         }
 

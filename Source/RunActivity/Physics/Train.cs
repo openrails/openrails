@@ -15975,7 +15975,7 @@ namespace ORTS
                     if (nextNode.Value is AuxActionItem)
                     {
                         AuxActionItem item = nextNode.Value as AuxActionItem;
-                        if (item.CanActivate(thisTrain, distance, false))
+                        if (item.CanActivate(thisTrain, thisTrain.SpeedMpS, false))
                             itemList.Add(nextNode.Value);
                     }
                     nextNode = nextNode.Next;

@@ -352,6 +352,8 @@ namespace ORTS
                         RemoveSpecReqAction(action);
                 }
             }
+            if (action.ActionRef.ActionType == AuxActionRef.AUX_ACTION.SOUND_HORN)
+                RemoveSpecReqAction(action);
             if (CountSpec() > 0)
                 RemoveAt(0);
             if (ThisTrain is AITrain)
@@ -397,81 +399,92 @@ namespace ORTS
             if (SpecAuxActions.Count <= 0)
                 return;
             AIAuxActionsRef thisAction;
-            while (SpecAuxActions.Count > 0)
+            int specAuxActionsIndex = 0;
+            while (specAuxActionsIndex <= SpecAuxActions.Count-1)
             {
-                thisAction = (AIAuxActionsRef)SpecAuxActions[0];
+                while (SpecAuxActions.Count > 0)
+                {
+                    thisAction = (AIAuxActionsRef)SpecAuxActions[specAuxActionsIndex];
 
-                if (thisAction.SubrouteIndex > thisTrain.TCRoute.activeSubpath)
-                {
-                    return;
-                }
-                if (thisAction.SubrouteIndex == thisTrain.TCRoute.activeSubpath) 
-                    break;
-                else
-                {
-                    SpecAuxActions.RemoveAt(0);
-                    if (SpecAuxActions.Count <= 0) return;
-                }
-            }
-
-            thisAction = (AIAuxActionsRef)SpecAuxActions[0];
-            bool validAction = false;
-            float[] distancesM;
-            while (!validAction)
-            {
-                if (thisTrain is AITrain && thisTrain.TrainType != Train.TRAINTYPE.AI_PLAYERDRIVEN)
-                {
-                    AITrain aiTrain = thisTrain as AITrain;
-                    distancesM = thisAction.CalculateDistancesToNextAction(aiTrain, ((AITrain)aiTrain).TrainMaxSpeedMpS, true);
-                }
-                else
-                {
-                    distancesM = thisAction.CalculateDistancesToNextAction(thisTrain, thisTrain.SpeedMpS, true);
-                }
-                //<CSComment> Next block does not seem useful. distancesM[0] includes distanceTravelledM, so it practically can be 0 only at start of game
-/*                if (distancesM[0]< 0f)
-                {
-                    SpecAuxActions.RemoveAt(0);
-                    if (SpecAuxActions.Count == 0)
+                    if (thisAction.SubrouteIndex > thisTrain.TCRoute.activeSubpath)
                     {
                         return;
                     }
-
-                    thisAction = (AIAuxActionsRef)SpecAuxActions[0];
-                    if (thisAction.SubrouteIndex > thisTrain.TCRoute.activeSubpath) return;
-                }
-                else */
-                {
-                    float requiredSpeedMpS = 0;
-
-                    validAction = true;
-                    AIActionItem newAction = ((AIAuxActionsRef)SpecAuxActions[0]).Handler(distancesM[1], requiredSpeedMpS, distancesM[0], thisTrain.DistanceTravelledM);
-                    if (newAction != null)
+                    if (thisAction.SubrouteIndex == thisTrain.TCRoute.activeSubpath)
+                        break;
+                    else
                     {
-                        if (thisTrain is AITrain && newAction is AuxActionWPItem)   // Put only the WP for AI into the requiredAction, other are on the container
-                        {
-                            bool found = false;
-                            if (thisTrain.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN && thisTrain.requiredActions.Count > 0)
-                            {
-                                // check if action already inserted
-                                foreach (Train.DistanceTravelledItem item in thisTrain.requiredActions)
-                                {
-                                    if (item is AuxActionWPItem)
-                                    {
-                                        found = true;
-                                        break;
-                                    }
-                                }
-                            }
-                            if (!found)
-                            {
-                                thisTrain.requiredActions.InsertAction(newAction);
-//                              ((AITrain)thisTrain).nextActionInfo = newAction; // action must be restored through required actions only
-                            }
-                        }
-                        else specRequiredActions.InsertAction(newAction);
+                        SpecAuxActions.RemoveAt(0);
+                        if (SpecAuxActions.Count <= 0) return;
                     }
                 }
+
+                thisAction = (AIAuxActionsRef)SpecAuxActions[specAuxActionsIndex];
+                bool validAction = false;
+                float[] distancesM;
+                while (!validAction)
+                {
+                    if (thisTrain is AITrain && thisTrain.TrainType != Train.TRAINTYPE.AI_PLAYERDRIVEN)
+                    {
+                        AITrain aiTrain = thisTrain as AITrain;
+                        distancesM = thisAction.CalculateDistancesToNextAction(aiTrain, ((AITrain)aiTrain).TrainMaxSpeedMpS, true);
+                    }
+                    else
+                    {
+                        distancesM = thisAction.CalculateDistancesToNextAction(thisTrain, thisTrain.SpeedMpS, true);
+                    }
+                    //<CSComment> Next block does not seem useful. distancesM[0] includes distanceTravelledM, so it practically can be 0 only at start of game
+                    /*                if (distancesM[0]< 0f)
+                                    {
+                                        SpecAuxActions.RemoveAt(0);
+                                        if (SpecAuxActions.Count == 0)
+                                        {
+                                            return;
+                                        }
+
+                                        thisAction = (AIAuxActionsRef)SpecAuxActions[0];
+                                        if (thisAction.SubrouteIndex > thisTrain.TCRoute.activeSubpath) return;
+                                    }
+                                    else */
+                    {
+                        float requiredSpeedMpS = 0;
+
+                        validAction = true;
+                        AIActionItem newAction = ((AIAuxActionsRef)SpecAuxActions[specAuxActionsIndex]).Handler(distancesM[1], requiredSpeedMpS, distancesM[0], thisTrain.DistanceTravelledM);
+                        if (newAction != null)
+                        {
+                            if (thisTrain is AITrain && newAction is AuxActionWPItem)   // Put only the WP for AI into the requiredAction, other are on the container
+                            {
+                                bool found = false;
+                                if (thisTrain.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN && thisTrain.requiredActions.Count > 0)
+                                {
+                                    // check if action already inserted
+                                    foreach (Train.DistanceTravelledItem item in thisTrain.requiredActions)
+                                    {
+                                        if (item is AuxActionWPItem)
+                                        {
+                                            found = true;
+                                            return;
+                                        }
+                                    }
+                                }
+                                if (!found)
+                                {
+                                    thisTrain.requiredActions.InsertAction(newAction);
+                                    return;
+                                    //                              ((AITrain)thisTrain).nextActionInfo = newAction; // action must be restored through required actions only
+                                }
+                            }
+                            else
+                            {
+                                specRequiredActions.InsertAction(newAction);
+                                if (newAction is AuxActionWPItem || newAction is AuxActSigDelegate )
+                                    return;
+                            }
+                        }
+                    }
+                }
+                specAuxActionsIndex++;
             }
         }
 
@@ -648,6 +661,7 @@ namespace ORTS
                 SetSignalObject(thisTrain.signalRef.SignalObjects[EndSignalIndex]);
             else
                 SetSignalObject(null);
+            ActionType = actionType;
         }
 
         public virtual List<KeyValuePair<System.Type, AuxActionRef>> GetCallFunction()
@@ -1046,9 +1060,9 @@ namespace ORTS
             {
                 LinkedAuxAction = true;
                 info = new AuxActionHornItem(this, AIActionItem.AI_ACTION_TYPE.AUX_ACTION);
-                info.SetParam(0f, (float)list[0], 0f, 0f);
+                info.SetParam((float)list[0], (float)list[1], (float)list[2], (float)list[3]);
                 ((AuxActionHornItem)info).SetDelay(Delay);
-                ((AuxActionHornItem)info).RequiredDistance = RequiredDistance;
+//                ((AuxActionHornItem)info).RequiredDistance = RequiredDistance;
             }
             return (AIActionItem)info;
         }
@@ -1883,6 +1897,7 @@ namespace ORTS
                 return false;
             float[] distancesM = ((AIAuxActionsRef)ActionRef).CalculateDistancesToNextAction(thisTrain, SpeedMpS, reschedule);
 
+
             if (RequiredDistance < thisTrain.DistanceTravelledM) // trigger point
             {
                 return true;
@@ -1985,15 +2000,17 @@ namespace ORTS
                     movementState = HandleAction(thisTrain, presentTime, elapsedClockSeconds, mvtState);
                     break;
                 case AITrain.AI_MOVEMENT_STATE.BRAKING:
-                    float distanceToGoM = thisTrain.activityClearingDistanceM;
-                    distanceToGoM = ActivateDistanceM - thisTrain.PresentPosition[0].DistanceTravelledM;
-                    float NextStopDistanceM = distanceToGoM;
-                    if (distanceToGoM < 0f)
+                    if (this.ActionRef.ActionType != AuxActionRef.AUX_ACTION.SOUND_HORN)
                     {
-                        currentMvmtState = movementState;
-                        movementState = AITrain.AI_MOVEMENT_STATE.INIT_ACTION;
+                        float distanceToGoM = thisTrain.activityClearingDistanceM;
+                        distanceToGoM = ActivateDistanceM - thisTrain.PresentPosition[0].DistanceTravelledM;
+                        float NextStopDistanceM = distanceToGoM;
+                        if (distanceToGoM < 0f)
+                        {
+                            currentMvmtState = movementState;
+                            movementState = AITrain.AI_MOVEMENT_STATE.INIT_ACTION;
+                        }
                     }
-
                     break;
                 case AITrain.AI_MOVEMENT_STATE.STOPPED:
                     if (thisTrain is AITrain)
