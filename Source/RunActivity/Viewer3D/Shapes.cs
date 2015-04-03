@@ -681,7 +681,7 @@ namespace ORTS.Viewer3D
                 from tid in CrossingObj.trItemIDList where tid.db == 1 select tid.dbID,
                 CrossingObj.levelCrParameters.warningTime,
                 CrossingObj.levelCrParameters.minimumDistance);
-            AnimationFrames = CrossingObj.levelCrTiming.animTiming < 0 ? SharedShape.Animations[0].FrameCount : 1;
+            AnimationFrames = SharedShape.Animations[0].FrameCount;
         }
 
         public override void Unload()
@@ -705,7 +705,8 @@ namespace ORTS.Viewer3D
                 if (Sound != null) Sound.HandleEvent(Opening ? Event.CrossingOpening : Event.CrossingClosing);
             }
 
-            // Looping when animTiming < 0 (forwards then backwards then forwards again).
+            // When animTiming < 0 the shape is using a single static frame 0 for "open" and a cyclic looping animation for "closed".
+            // When animTiming > 0 the shape is using frame 0 for "open" and frame max for "closed" with animation in both directions.
             if (CrossingObj.levelCrTiming.animTiming < 0)
             {
                 if (Opening)
@@ -717,12 +718,12 @@ namespace ORTS.Viewer3D
             else if (CrossingObj.levelCrTiming.animTiming > 0)
             {
                 if (Opening)
-                    AnimationKey -= elapsedTime.ClockSeconds / CrossingObj.levelCrTiming.animTiming;
+                    AnimationKey -= AnimationFrames * elapsedTime.ClockSeconds / CrossingObj.levelCrTiming.animTiming;
                 else
-                    AnimationKey += elapsedTime.ClockSeconds / CrossingObj.levelCrTiming.animTiming;
+                    AnimationKey += AnimationFrames * elapsedTime.ClockSeconds / CrossingObj.levelCrTiming.animTiming;
             }
             if (AnimationKey < 0) AnimationKey = 0;
-            if (AnimationKey > AnimationFrames) AnimationKey = 1;
+            if (AnimationKey > AnimationFrames) AnimationKey = AnimationFrames;
 
             for (var i = 0; i < SharedShape.Matrices.Length; ++i)
                 AnimateMatrix(i, AnimationKey);
