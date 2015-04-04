@@ -642,7 +642,8 @@ namespace ORTS.Viewer3D
 		readonly SoundSource Sound;
 		readonly LevelCrossing Crossing;
 
-        readonly int AnimationFrames;
+        readonly float AnimationFrames;
+        readonly float AnimationSpeed;
         bool Opening = true;
         float AnimationKey;
 
@@ -681,7 +682,16 @@ namespace ORTS.Viewer3D
                 from tid in CrossingObj.trItemIDList where tid.db == 1 select tid.dbID,
                 CrossingObj.levelCrParameters.warningTime,
                 CrossingObj.levelCrParameters.minimumDistance);
-            AnimationFrames = SharedShape.Animations[0].FrameCount;
+            // LOOPED COSSINGS (animTiming < 0)
+            //     MSTS plays through all the frames of the animation for "closed" and sits on frame 0 for "open". The
+            //     speed of animation is the normal speed (frame rate at 30FPS) scaled by the timing value. Since the
+            //     timing value is negative, the animation actually plays in reverse.
+            // NON-LOOPED CROSSINGS (animTiming > 0)
+            //     MSTS plays through the first 1.0 seconds of the animation forwards for closing and backwards for
+            //     opening. The number of frames defined doesn't matter; the animation is limited by time so the frame
+            //     rate (based on 30FPS) is what's needed.
+            AnimationFrames = CrossingObj.levelCrTiming.animTiming < 0 ? SharedShape.Animations[0].FrameCount : SharedShape.Animations[0].FrameRate / 30f;
+            AnimationSpeed = SharedShape.Animations[0].FrameRate / 30f / CrossingObj.levelCrTiming.animTiming;
         }
 
         public override void Unload()
@@ -705,22 +715,16 @@ namespace ORTS.Viewer3D
                 if (Sound != null) Sound.HandleEvent(Opening ? Event.CrossingOpening : Event.CrossingClosing);
             }
 
-            // When animTiming < 0 the shape is using a single static frame 0 for "open" and a cyclic looping animation for "closed".
-            // When animTiming > 0 the shape is using frame 0 for "open" and frame max for "closed" with animation in both directions.
+            if (Opening)
+                AnimationKey -= elapsedTime.ClockSeconds * AnimationSpeed;
+            else
+                AnimationKey += elapsedTime.ClockSeconds * AnimationSpeed;
+
             if (CrossingObj.levelCrTiming.animTiming < 0)
             {
-                if (Opening)
-                    AnimationKey = 0;
-                else
-                    AnimationKey -= elapsedTime.ClockSeconds *AnimationFrames / (CrossingObj.levelCrTiming.animTiming*60);
-                if (AnimationKey > AnimationFrames) AnimationKey -= AnimationFrames;
-            }
-            else if (CrossingObj.levelCrTiming.animTiming > 0)
-            {
-                if (Opening)
-                    AnimationKey -= AnimationFrames * elapsedTime.ClockSeconds / CrossingObj.levelCrTiming.animTiming;
-                else
-                    AnimationKey += AnimationFrames * elapsedTime.ClockSeconds / CrossingObj.levelCrTiming.animTiming;
+                // Stick to frame 0 for "open" and loop for "closed".
+                if (Opening) AnimationKey = 0;
+                if (AnimationKey < 0) AnimationKey += AnimationFrames;
             }
             if (AnimationKey < 0) AnimationKey = 0;
             if (AnimationKey > AnimationFrames) AnimationKey = AnimationFrames;
