@@ -108,8 +108,6 @@ namespace ORTS.Viewer3D.Popups
 
             var textPages = new List<Action<TableData>>();
             textPages.Add(TextPageCommon);
-            if (MultiPlayer.MPManager.IsMultiPlayer())
-                textPages.Add(TextPageMultiPlayerInfo);
             textPages.Add(TextPageConsistInfo);
             textPages.Add(TextPageLocomotiveInfo);
             textPages.Add(TextPageBrakeInfo);
@@ -446,21 +444,18 @@ namespace ORTS.Viewer3D.Popups
 
                 TableAddLabelValue(table, Viewer.Catalog.GetString("Doors open") + color, status);
             }
-        }
+            if (MultiPlayer.MPManager.IsMultiPlayer())
+            {
+                var text = MultiPlayer.MPManager.Instance().GetOnlineUsersInfo();
 
-        void TextPageMultiPlayerInfo(TableData table)
-        {
-            TextPageHeading(table, Viewer.Catalog.GetString("MULTI-PLAYER INFORMATION"));
-
-            var text = MultiPlayer.MPManager.Instance().GetOnlineUsersInfo();
-
-            TableAddLabelValue(table, Viewer.Catalog.GetString("Mode"), "{0}", MultiPlayer.MPManager.IsServer()
-                ? Viewer.Catalog.GetString("Dispatcher") : MultiPlayer.MPManager.Instance().AmAider
-                ? Viewer.Catalog.GetString("Helper") : MultiPlayer.MPManager.IsClient()
-                ? Viewer.Catalog.GetString("Client") : "");
-            TableAddLine(table);
-            foreach (var t in text.Split('\t'))
-                TableAddLine(table, "{0}", t);
+                TableAddLabelValue(table, Viewer.Catalog.GetString("MultiPlayerStatus: "), "{0}", MultiPlayer.MPManager.IsServer()
+                    ? Viewer.Catalog.GetString("Dispatcher") : MultiPlayer.MPManager.Instance().AmAider
+                    ? Viewer.Catalog.GetString("Helper") : MultiPlayer.MPManager.IsClient()
+                    ? Viewer.Catalog.GetString("Client") : "");
+                TableAddLine(table);
+                foreach (var t in text.Split('\t'))
+                    TableAddLine(table, "{0}", t);
+            }
         }
 
         void TextPageConsistInfo(TableData table)
