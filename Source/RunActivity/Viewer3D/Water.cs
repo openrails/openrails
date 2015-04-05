@@ -136,7 +136,7 @@ namespace ORTS.Viewer3D
             }
             indexBuffer = new IndexBuffer(graphicsDevice, typeof(short), indexData.Count, BufferUsage.WriteOnly);
             indexBuffer.SetData(indexData.ToArray());
-            var vertexData = new List<VertexPositionNormalTexture>(16 * 16);
+            var vertexData = new List<VertexPositionNormalTexture>(17 * 17);
             for (var z = 0; z < 17; ++z)
             {
                 for (var x = 0; x < 17; ++x)
