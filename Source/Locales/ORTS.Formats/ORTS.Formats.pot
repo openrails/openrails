@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-02-05 21:23:07+0100\n"
-"PO-Revision-Date: 2015-02-05 21:23:07+0100\n"
+"POT-Creation-Date: 2015-04-05 18:18:51+0200\n"
+"PO-Revision-Date: 2015-04-05 18:18:51+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -11,12 +11,7 @@ msgstr ""
 "X-Generator: MonoDevelop Gettext addin\n"
 
 
-#: ../../ORTS.Formats/ORTimetableFile.cs:284
-#, csharp-format
-msgid "Selected train: {0}"
-msgstr ""
-
-#: ../../ORTS.Formats/ORTimetableFile.cs:285
+#: ../../ORTS.Formats/ORTimetableFile.cs:289
 #, csharp-format
 msgid "Start time: {0}"
 msgstr ""

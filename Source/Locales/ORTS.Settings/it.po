@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
-"POT-Creation-Date: 2015-03-28 16:08:39+0100\n"
-"PO-Revision-Date: 2015-04-02 20:46+0100\n"
+"POT-Creation-Date: 2015-04-05 18:18:51+0200\n"
+"PO-Revision-Date: 2015-04-05 18:26+0100\n"
 "Last-Translator: Roberto Ceccarelli (The Strawberry Field) <strawberry."
 "field@libero.it>\n"
 "Language-Team: Open Rails Dev Team\n"
@@ -434,189 +434,197 @@ msgid "Control Handbrake None"
 msgstr "Controllo Freno a mano disinserito"
 
 #: ../../ORTS.Settings/InputSettings.cs:151
+msgid "Control Odometer Show/Hide"
+msgstr "Controllo mostra/nascondi contachilometri"
+
+#: ../../ORTS.Settings/InputSettings.cs:152
 msgid "Control Odometer Reset"
 msgstr "Controllo azzera contachilometri"
 
-#: ../../ORTS.Settings/InputSettings.cs:152
+#: ../../ORTS.Settings/InputSettings.cs:153
+msgid "Control Odometer Direction"
+msgstr "Controllo direzione contachilometri"
+
+#: ../../ORTS.Settings/InputSettings.cs:154
 msgid "Control Retainers On"
 msgstr "Controllo fermi attivi"
 
-#: ../../ORTS.Settings/InputSettings.cs:153
+#: ../../ORTS.Settings/InputSettings.cs:155
 msgid "Control Retainers Off"
 msgstr "Controllo fermi disattivati"
 
-#: ../../ORTS.Settings/InputSettings.cs:154
+#: ../../ORTS.Settings/InputSettings.cs:156
 msgid "Control Brake Hose Connect"
 msgstr "Controllo Condotta freni collegata"
 
-#: ../../ORTS.Settings/InputSettings.cs:155
+#: ../../ORTS.Settings/InputSettings.cs:157
 msgid "Control Brake Hose Disconnect"
 msgstr "Controllo Condotta freni scollegata"
 
-#: ../../ORTS.Settings/InputSettings.cs:156
+#: ../../ORTS.Settings/InputSettings.cs:158
 msgid "Control Alerter"
 msgstr "Controllo Allertatore"
 
-#: ../../ORTS.Settings/InputSettings.cs:157
+#: ../../ORTS.Settings/InputSettings.cs:159
 msgid "Control Emergency Push Button"
 msgstr "Controllo Pulsante Emergenza"
 
-#: ../../ORTS.Settings/InputSettings.cs:158
+#: ../../ORTS.Settings/InputSettings.cs:160
 msgid "Control Sander"
 msgstr "Controllo Sabbiere"
 
-#: ../../ORTS.Settings/InputSettings.cs:159
+#: ../../ORTS.Settings/InputSettings.cs:161
 msgid "Control Sander Toggle"
 msgstr "Controllo Attiva / Disattiva Sabbiere"
 
-#: ../../ORTS.Settings/InputSettings.cs:160
+#: ../../ORTS.Settings/InputSettings.cs:162
 msgid "Control Wiper"
 msgstr "Controllo Tergicristalli"
 
-#: ../../ORTS.Settings/InputSettings.cs:161
+#: ../../ORTS.Settings/InputSettings.cs:163
 msgid "Control Horn"
 msgstr "Controllo Tromba"
 
-#: ../../ORTS.Settings/InputSettings.cs:162
+#: ../../ORTS.Settings/InputSettings.cs:164
 msgid "Control Bell"
 msgstr "Controllo Campana"
 
-#: ../../ORTS.Settings/InputSettings.cs:163
+#: ../../ORTS.Settings/InputSettings.cs:165
 msgid "Control Bell Toggle"
 msgstr "Controllo Campana attiva/disattiva"
 
-#: ../../ORTS.Settings/InputSettings.cs:164
+#: ../../ORTS.Settings/InputSettings.cs:166
 msgid "Control Door Left"
 msgstr "Controllo porte a sinistra"
 
-#: ../../ORTS.Settings/InputSettings.cs:165
+#: ../../ORTS.Settings/InputSettings.cs:167
 msgid "Control Door Right"
 msgstr "Controllo porte a destra"
 
-#: ../../ORTS.Settings/InputSettings.cs:166
+#: ../../ORTS.Settings/InputSettings.cs:168
 msgid "Control Mirror"
 msgstr "Controllo Specchietti"
 
-#: ../../ORTS.Settings/InputSettings.cs:167
+#: ../../ORTS.Settings/InputSettings.cs:169
 msgid "Control Light"
 msgstr "Controllo Luce"
 
-#: ../../ORTS.Settings/InputSettings.cs:168
+#: ../../ORTS.Settings/InputSettings.cs:170
 msgid "Control Pantograph 1"
 msgstr "Controllo pantografo 1"
 
-#: ../../ORTS.Settings/InputSettings.cs:169
+#: ../../ORTS.Settings/InputSettings.cs:171
 msgid "Control Pantograph 2"
 msgstr "Controllo pantografo 2"
 
-#: ../../ORTS.Settings/InputSettings.cs:170
+#: ../../ORTS.Settings/InputSettings.cs:172
 msgid "Control Diesel Player"
 msgstr "Controllo Accensione Loco Diesel"
 
-#: ../../ORTS.Settings/InputSettings.cs:171
+#: ../../ORTS.Settings/InputSettings.cs:173
 msgid "Control Diesel Helper"
 msgstr "Controllo Accensione Loco Diesel aggiuntiva"
 
-#: ../../ORTS.Settings/InputSettings.cs:172
+#: ../../ORTS.Settings/InputSettings.cs:174
 msgid "Control Headlight Increase"
 msgstr "Controllo Aumento luminosità fanali"
 
-#: ../../ORTS.Settings/InputSettings.cs:173
+#: ../../ORTS.Settings/InputSettings.cs:175
 msgid "Control Headlight Decrease"
 msgstr "Controllo Diminuzione luminosità fanali"
 
-#: ../../ORTS.Settings/InputSettings.cs:174
+#: ../../ORTS.Settings/InputSettings.cs:176
 msgid "Control Injector 1 Increase"
 msgstr "Controllo aumenta iniettore 1"
 
-#: ../../ORTS.Settings/InputSettings.cs:175
+#: ../../ORTS.Settings/InputSettings.cs:177
 msgid "Control Injector 1 Decrease"
 msgstr "Controllo diminuisci iniettore 1"
 
-#: ../../ORTS.Settings/InputSettings.cs:176
+#: ../../ORTS.Settings/InputSettings.cs:178
 msgid "Control Injector 1"
 msgstr "Controllo iniettore 1"
 
-#: ../../ORTS.Settings/InputSettings.cs:177
+#: ../../ORTS.Settings/InputSettings.cs:179
 msgid "Control Injector 2 Increase"
 msgstr "Controllo aumenta iniettore 2"
 
-#: ../../ORTS.Settings/InputSettings.cs:178
+#: ../../ORTS.Settings/InputSettings.cs:180
 msgid "Control Injector 2 Decrease"
 msgstr "Controllo diminuisci iniettore 2"
 
-#: ../../ORTS.Settings/InputSettings.cs:179
+#: ../../ORTS.Settings/InputSettings.cs:181
 msgid "Control Injector 2"
 msgstr "Controllo iniettore 2"
 
-#: ../../ORTS.Settings/InputSettings.cs:180
+#: ../../ORTS.Settings/InputSettings.cs:182
 msgid "Control Blower Increase"
 msgstr "Controllo aumenta Blower "
 
-#: ../../ORTS.Settings/InputSettings.cs:181
+#: ../../ORTS.Settings/InputSettings.cs:183
 msgid "Control Blower Decrease"
 msgstr "Controllo diminuisci Blower "
 
-#: ../../ORTS.Settings/InputSettings.cs:182
+#: ../../ORTS.Settings/InputSettings.cs:184
 msgid "Control Damper Increase"
 msgstr "Controllo aumenta Damper"
 
-#: ../../ORTS.Settings/InputSettings.cs:183
+#: ../../ORTS.Settings/InputSettings.cs:185
 msgid "Control Damper Decrease"
 msgstr "Controllo diminuisci Damper"
 
-#: ../../ORTS.Settings/InputSettings.cs:184
+#: ../../ORTS.Settings/InputSettings.cs:186
 msgid "Control Firebox Open"
 msgstr "Controllo apri la porta del forno"
 
-#: ../../ORTS.Settings/InputSettings.cs:185
+#: ../../ORTS.Settings/InputSettings.cs:187
 msgid "Control Firebox Close"
 msgstr "Controllo chiudi la porta del forno"
 
-#: ../../ORTS.Settings/InputSettings.cs:186
+#: ../../ORTS.Settings/InputSettings.cs:188
 msgid "Control Firing Rate Increase"
 msgstr "Controllo aumenta fuoco"
 
-#: ../../ORTS.Settings/InputSettings.cs:187
+#: ../../ORTS.Settings/InputSettings.cs:189
 msgid "Control Firing Rate Decrease"
 msgstr "Controllo diminuisci fuoco"
 
-#: ../../ORTS.Settings/InputSettings.cs:188
+#: ../../ORTS.Settings/InputSettings.cs:190
 msgid "Control Fire Shovel Full"
 msgstr "Controllo aggiunta carbone"
 
-#: ../../ORTS.Settings/InputSettings.cs:189
+#: ../../ORTS.Settings/InputSettings.cs:191
 msgid "Control Cylinder Cocks"
 msgstr "Controllo sfogo cilindri"
 
-#: ../../ORTS.Settings/InputSettings.cs:190
+#: ../../ORTS.Settings/InputSettings.cs:192
 msgid "Control Cylinder Compound"
 msgstr "Controllo Cylinder Compound"
 
-#: ../../ORTS.Settings/InputSettings.cs:191
+#: ../../ORTS.Settings/InputSettings.cs:193
 msgid "Control Firing"
 msgstr "Controllo fuoco"
 
-#: ../../ORTS.Settings/InputSettings.cs:192
+#: ../../ORTS.Settings/InputSettings.cs:194
 msgid "Control Refill"
 msgstr "Controllo rifornimento"
 
-#: ../../ORTS.Settings/InputSettings.cs:633
+#: ../../ORTS.Settings/InputSettings.cs:637
 #, csharp-format
 msgid "{0} requires and is modified by Shift"
 msgstr "{0} richiede ed è modificato da Shift"
 
-#: ../../ORTS.Settings/InputSettings.cs:635
+#: ../../ORTS.Settings/InputSettings.cs:639
 #, csharp-format
 msgid "{0} requires and is modified by Control"
 msgstr "{0} richiede ed è modificato da Control"
 
-#: ../../ORTS.Settings/InputSettings.cs:637
+#: ../../ORTS.Settings/InputSettings.cs:641
 #, csharp-format
 msgid "{0} requires and is modified by Alt"
 msgstr "{0} richiede ed è modificato da Alt"
 
-#: ../../ORTS.Settings/InputSettings.cs:668
+#: ../../ORTS.Settings/InputSettings.cs:672
 #, csharp-format
 msgid "{0} and {1} both match {2}"
 msgstr "{0} e {1} entrambi corrispondono a {2}"

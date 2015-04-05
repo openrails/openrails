@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-04-02 20:30:54+0200\n"
-"PO-Revision-Date: 2015-04-02 20:30:55+0200\n"
+"POT-Creation-Date: 2015-04-05 18:18:49+0200\n"
+"PO-Revision-Date: 2015-04-05 18:18:50+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -23,12 +23,12 @@ msgid "Cancel"
 msgstr ""
 
 #: ../../Menu/FolderForm.Designer.cs:77
-#: ../../Menu/Options.Designer.cs:1298
+#: ../../Menu/Options.Designer.cs:1310
 msgid "Path:"
 msgstr ""
 
 #: ../../Menu/FolderForm.Designer.cs:86
-#: ../../Menu/Options.Designer.cs:1289
+#: ../../Menu/Options.Designer.cs:1301
 msgid "Name:"
 msgstr ""
 
@@ -109,117 +109,96 @@ msgstr ""
 msgid "Reset to default"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:135
+#: ../../Menu/MainForm.cs:144
 msgid "Spring"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:136
+#: ../../Menu/MainForm.cs:145
 msgid "Summer"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:137
+#: ../../Menu/MainForm.cs:146
 msgid "Autumn"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:138
+#: ../../Menu/MainForm.cs:147
 msgid "Winter"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:141
+#: ../../Menu/MainForm.cs:150
 msgid "Clear"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:142
+#: ../../Menu/MainForm.cs:151
 msgid "Snow"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:143
+#: ../../Menu/MainForm.cs:152
 msgid "Rain"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:146
+#: ../../Menu/MainForm.cs:155
 #: ../../Menu/Options.cs:539
 msgid "Easy"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:147
+#: ../../Menu/MainForm.cs:156
 msgid "Medium"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:148
+#: ../../Menu/MainForm.cs:157
 #: ../../Menu/Options.cs:545
 msgid "Hard"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:152
+#: ../../Menu/MainForm.cs:161
 msgid "Monday"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:153
+#: ../../Menu/MainForm.cs:162
 msgid "Tuesday"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:154
+#: ../../Menu/MainForm.cs:163
 msgid "Wednesday"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:155
+#: ../../Menu/MainForm.cs:164
 msgid "Thursday"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:156
+#: ../../Menu/MainForm.cs:165
 msgid "Friday"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:157
+#: ../../Menu/MainForm.cs:166
 msgid "Saturday"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:158
+#: ../../Menu/MainForm.cs:167
 msgid "Sunday"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:260
+#: ../../Menu/MainForm.cs:270
 msgid "Update check failed"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:399
+#: ../../Menu/MainForm.cs:452
 msgid ""
 "User name must be 4-10 characters long, cannot contain space, ', \" or - and "
 "must not start with a digit."
 msgstr ""
 
-#: ../../Menu/MainForm.cs:859
+#: ../../Menu/MainForm.cs:1019
 msgid "Activity Briefing"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:866
-#: ../../Menu/MainForm.Designer.cs:397
-msgid "Timetable"
-msgstr ""
-
-#: ../../Menu/MainForm.cs:870
-msgid "Player Timetable"
-msgstr ""
-
-#: ../../Menu/MainForm.cs:874
-msgid "Player Train"
-msgstr ""
-
-#: ../../Menu/MainForm.cs:877
-msgid "Consist : "
-msgstr ""
-
-#: ../../Menu/MainForm.cs:885
-msgid "Path : "
-msgstr ""
-
-#: ../../Menu/MainForm.cs:262
+#: ../../Menu/MainForm.cs:272
 #, csharp-format
 msgid "Update to {0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:412
+#: ../../Menu/MainForm.cs:465
 #, csharp-format
 msgid ""
 "The update check failed due to an error:\n"
@@ -227,7 +206,7 @@ msgid ""
 "{0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:420
+#: ../../Menu/MainForm.cs:473
 #, csharp-format
 msgid ""
 "The update failed due to an error:\n"
@@ -235,20 +214,45 @@ msgid ""
 "{0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:850
+#: ../../Menu/MainForm.cs:1008
 #, csharp-format
 msgid "Route: {0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:855
-#: ../../Menu/MainForm.cs:880
+#: ../../Menu/MainForm.cs:1014
+#: ../../Menu/MainForm.cs:1040
 #, csharp-format
 msgid "Locomotive: {0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:858
+#: ../../Menu/MainForm.cs:1018
 #, csharp-format
 msgid "Activity: {0}"
+msgstr ""
+
+#: ../../Menu/MainForm.cs:1026
+#, csharp-format
+msgid "Timetable set: {0}"
+msgstr ""
+
+#: ../../Menu/MainForm.cs:1030
+#, csharp-format
+msgid "Timetable: {0}"
+msgstr ""
+
+#: ../../Menu/MainForm.cs:1034
+#, csharp-format
+msgid "Train: {0}"
+msgstr ""
+
+#: ../../Menu/MainForm.cs:1037
+#, csharp-format
+msgid "Consist: {0}"
+msgstr ""
+
+#: ../../Menu/MainForm.cs:1045
+#, csharp-format
+msgid "Path: {0}"
 msgstr ""
 
 #: ../../Menu/MainForm.Designer.cs:118
@@ -272,7 +276,7 @@ msgid "Logging"
 msgstr ""
 
 #: ../../Menu/MainForm.Designer.cs:178
-#: ../../Menu/Options.Designer.cs:1906
+#: ../../Menu/Options.Designer.cs:1913
 msgid "Options"
 msgstr ""
 
@@ -325,6 +329,10 @@ msgstr ""
 msgid "Activity"
 msgstr ""
 
+#: ../../Menu/MainForm.Designer.cs:397
+msgid "Timetable"
+msgstr ""
+
 #: ../../Menu/MainForm.Designer.cs:437
 msgid "Activity:"
 msgstr ""
@@ -354,7 +362,7 @@ msgid "Time:"
 msgstr ""
 
 #: ../../Menu/MainForm.Designer.cs:616
-#: ../../Menu/MainForm.Designer.cs:761
+#: ../../Menu/MainForm.Designer.cs:763
 msgid "Weather:"
 msgstr ""
 
@@ -363,7 +371,7 @@ msgid "Difficulty:"
 msgstr ""
 
 #: ../../Menu/MainForm.Designer.cs:663
-#: ../../Menu/MainForm.Designer.cs:783
+#: ../../Menu/MainForm.Designer.cs:786
 msgid "Season:"
 msgstr ""
 
@@ -375,25 +383,25 @@ msgstr ""
 msgid "Timetable:"
 msgstr ""
 
-#: ../../Menu/MainForm.Designer.cs:738
+#: ../../Menu/MainForm.Designer.cs:739
 msgid "Day:"
 msgstr ""
 
-#: ../../Menu/MainForm.Designer.cs:814
+#: ../../Menu/MainForm.Designer.cs:817
 msgid "Timetable set:"
 msgstr ""
 
-#: ../../Menu/MainForm.Designer.cs:834
+#: ../../Menu/MainForm.Designer.cs:837
 #: ../../Menu/Options.cs:229
 #: ../../Menu/TestingForm.Designer.cs:314
 msgid "Testing"
 msgstr ""
 
-#: ../../Menu/MainForm.Designer.cs:851
+#: ../../Menu/MainForm.Designer.cs:854
 msgid "What's new?"
 msgstr ""
 
-#: ../../Menu/MainForm.Designer.cs:884
+#: ../../Menu/MainForm.Designer.cs:887
 msgid "Open Rails"
 msgstr ""
 
@@ -704,310 +712,310 @@ msgstr ""
 msgid "Video"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:551
+#: ../../Menu/Options.Designer.cs:560
 msgid "Model instancing"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:578
+#: ../../Menu/Options.Designer.cs:588
 msgid "Ambient daylight brightness:"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:587
+#: ../../Menu/Options.Designer.cs:597
 msgid "Vertical sync"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:598
+#: ../../Menu/Options.Designer.cs:608
 msgid "Viewing distance (km)"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:636
+#: ../../Menu/Options.Designer.cs:646
 msgid "Fast full-screen alt-tab"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:646
+#: ../../Menu/Options.Designer.cs:656
 msgid "Distant mountains"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:657
+#: ../../Menu/Options.Designer.cs:667
 msgid "Viewing distance (m)"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:694
+#: ../../Menu/Options.Designer.cs:704
 msgid "XXX"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:727
+#: ../../Menu/Options.Designer.cs:737
 msgid "Viewing vertical FOV"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:751
+#: ../../Menu/Options.Designer.cs:761
 msgid "% cab 2D stretch"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:761
+#: ../../Menu/Options.Designer.cs:771
 msgid "World object density"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:806
+#: ../../Menu/Options.Designer.cs:816
 msgid "Glass on in-game windows"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:817
+#: ../../Menu/Options.Designer.cs:827
 msgid "Window size"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:826
+#: ../../Menu/Options.Designer.cs:836
 msgid "Dynamic shadows"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:836
+#: ../../Menu/Options.Designer.cs:846
 msgid "Overhead wire"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:855
+#: ../../Menu/Options.Designer.cs:865
 msgid "Simulation"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:865
+#: ../../Menu/Options.Designer.cs:875
 msgid "Steam locomotive hot start"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:875
+#: ../../Menu/Options.Designer.cs:885
 msgid "Curve dependent speed limit"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:885
+#: ../../Menu/Options.Designer.cs:895
 msgid "Curve dependent resistance"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:895
+#: ../../Menu/Options.Designer.cs:905
 msgid "Tunnel dependent resistance"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:905
+#: ../../Menu/Options.Designer.cs:915
 msgid "Override non-electrified route line-voltage"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:916
+#: ../../Menu/Options.Designer.cs:926
 msgid "Adhesion moving average filter size"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:943
+#: ../../Menu/Options.Designer.cs:953
 msgid "Break couplers"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:953
+#: ../../Menu/Options.Designer.cs:963
 msgid "Advanced adhesion model"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:968
+#: ../../Menu/Options.Designer.cs:978
 msgid "Keyboard"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:978
+#: ../../Menu/Options.Designer.cs:988
 msgid "Export"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:991
+#: ../../Menu/Options.Designer.cs:1001
 msgid "Defaults"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1003
+#: ../../Menu/Options.Designer.cs:1013
 msgid "Check"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1035
+#: ../../Menu/Options.Designer.cs:1045
 msgid "Data logger"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1066
+#: ../../Menu/Options.Designer.cs:1076
 msgid "Speed units"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1087
+#: ../../Menu/Options.Designer.cs:1098
 msgid "Log miscellaneous data"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1097
+#: ../../Menu/Options.Designer.cs:1108
 msgid "Log performance data"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1107
+#: ../../Menu/Options.Designer.cs:1118
 msgid "Start logging with the simulation start"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1118
+#: ../../Menu/Options.Designer.cs:1129
 msgid "Separator"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1127
+#: ../../Menu/Options.Designer.cs:1138
 msgid "Log physics data"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1142
+#: ../../Menu/Options.Designer.cs:1153
 msgid "Evaluation"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1162
+#: ../../Menu/Options.Designer.cs:1173
 msgid "Interval (sec)"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1171
+#: ../../Menu/Options.Designer.cs:1182
 msgid "Log station stops"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1204
+#: ../../Menu/Options.Designer.cs:1215
 msgid "Log train speed"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1219
+#: ../../Menu/Options.Designer.cs:1230
 msgid "Content"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1241
+#: ../../Menu/Options.Designer.cs:1253
 #: ../../Menu/ResumeForm.Designer.cs:218
 msgid "Delete"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1259
+#: ../../Menu/Options.Designer.cs:1271
 msgid "Installation profile"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1268
+#: ../../Menu/Options.Designer.cs:1280
 msgid "Browse..."
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1317
+#: ../../Menu/Options.Designer.cs:1329
 msgid "Add"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1405
+#: ../../Menu/Options.Designer.cs:1417
 msgid "Updater"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1416
+#: ../../Menu/Options.Designer.cs:1428
 msgid "Update mode:"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1460
+#: ../../Menu/Options.Designer.cs:1472
 msgid "Experimental"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1470
+#: ../../Menu/Options.Designer.cs:1482
 msgid "Show shape warnings"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1489
+#: ../../Menu/Options.Designer.cs:1502
 msgid "Level of detail bias:"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1513
+#: ../../Menu/Options.Designer.cs:1526
 msgid "Autopilot"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1523
+#: ../../Menu/Options.Designer.cs:1536
 msgid "Extended AI train shunting"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1533
+#: ../../Menu/Options.Designer.cs:1546
 msgid "Load night textures only when needed"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1543
+#: ../../Menu/Options.Designer.cs:1556
 msgid "Forced red at station stops"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1579
+#: ../../Menu/Options.Designer.cs:1592
 msgid "Level:"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1588
+#: ../../Menu/Options.Designer.cs:1602
 msgid "Adhesion factor random change:"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1612
+#: ../../Menu/Options.Designer.cs:1627
 msgid "Adhesion factor correction:"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1637
+#: ../../Menu/Options.Designer.cs:1652
 msgid "Adhesion proportional to rain/snow/fog"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1648
+#: ../../Menu/Options.Designer.cs:1663
 msgid "ETCS circular speed gauge"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1658
+#: ../../Menu/Options.Designer.cs:1673
 msgid "Signal light glow"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1668
+#: ../../Menu/Options.Designer.cs:1683
 msgid "MSTS environments"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1678
+#: ../../Menu/Options.Designer.cs:1693
 msgid "Location-linked passing path processing"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1689
+#: ../../Menu/Options.Designer.cs:1704
 msgid "Target frame rate"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1727
+#: ../../Menu/Options.Designer.cs:1742
 msgid "Automatically tune settings to keep performance level"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1737
+#: ../../Menu/Options.Designer.cs:1752
 msgid "Double overhead wires"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1747
+#: ../../Menu/Options.Designer.cs:1762
 msgid "Extend object maximum viewing distance to horizon"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1758
+#: ../../Menu/Options.Designer.cs:1773
 msgid "Gauge (mm)"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1796
+#: ../../Menu/Options.Designer.cs:1811
 msgid "Minimum length (m)"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1835
+#: ../../Menu/Options.Designer.cs:1850
 msgid "Level"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1846
+#: ../../Menu/Options.Designer.cs:1862
 msgid ""
 "Experimental features that may slow down the game, use at your own risk."
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1870
+#: ../../Menu/Options.Designer.cs:1886
 msgid "Super-elevation"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1879
+#: ../../Menu/Options.Designer.cs:1895
 msgid "Load DDS textures in preference to ACE"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1077
+#: ../../Menu/Options.Designer.cs:1088
 msgid ""
 "Use data logger to record your simulation data (in-game command: F12).\r\n"
 "Please remember that the size of the dump file grows with the simulation "
 "time!"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1231
+#: ../../Menu/Options.Designer.cs:1243
 msgid ""
 "Installation profiles tell Open Rails where to look for game content. Add "
 "each full and mini-route MSTS installation."
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1380
+#: ../../Menu/Options.Designer.cs:1392
 msgid "Name"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1388
+#: ../../Menu/Options.Designer.cs:1400
 #: ../../Menu/ResumeForm.Designer.cs:148
 msgid "Path"
 msgstr ""
@@ -1016,50 +1024,50 @@ msgstr ""
 msgid "Sound Volume 0-100"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:567
+#: ../../Menu/Options.Designer.cs:576
 msgid "Default is 100%"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:622
-#: ../../Menu/Options.Designer.cs:1713
+#: ../../Menu/Options.Designer.cs:632
+#: ../../Menu/Options.Designer.cs:1728
 msgid "Distance to see mountains"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:992
+#: ../../Menu/Options.Designer.cs:1002
 msgid "Load the factory default key assignments."
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1004
+#: ../../Menu/Options.Designer.cs:1014
 msgid "Check for incorrect key assignments."
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1503
+#: ../../Menu/Options.Designer.cs:1516
 msgid "Default is 0%"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1601
+#: ../../Menu/Options.Designer.cs:1615
 msgid "Default is 10%"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1626
+#: ../../Menu/Options.Designer.cs:1641
 msgid "Default is 130%"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1820
+#: ../../Menu/Options.Designer.cs:1835
 msgid "Shortest curve to have elevation"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1860
+#: ../../Menu/Options.Designer.cs:1876
 msgid "0: no elevation, 1: 9cm max; 10: 18cm max"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:740
+#: ../../Menu/Options.Designer.cs:750
 msgid ""
 "0 to clip cab view, 100 to stretch it. For cab views that match the display, "
 "use 100."
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:979
+#: ../../Menu/Options.Designer.cs:989
 msgid ""
 "Generate a listing of your keyboard assignments.  \r\n"
 "The output is placed on your desktop."

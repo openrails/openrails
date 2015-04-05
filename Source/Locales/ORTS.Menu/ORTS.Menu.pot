@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-02-03 20:14:48+0100\n"
-"PO-Revision-Date: 2015-02-03 20:14:48+0100\n"
+"POT-Creation-Date: 2015-04-05 18:18:51+0200\n"
+"PO-Revision-Date: 2015-04-05 18:18:51+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -64,15 +64,10 @@ msgstr ""
 
 #: ../../ORTS.Menu/Paths.cs:150
 #, csharp-format
-msgid "Path Name: {0}"
-msgstr ""
-
-#: ../../ORTS.Menu/Paths.cs:151
-#, csharp-format
 msgid "Start at: {0}"
 msgstr ""
 
-#: ../../ORTS.Menu/Paths.cs:152
+#: ../../ORTS.Menu/Paths.cs:151
 #, csharp-format
 msgid "Heading to: {0}"
 msgstr ""
