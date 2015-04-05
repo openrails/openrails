@@ -198,6 +198,10 @@ namespace ORTS
         {
             get
             {
+                if (Simulator.PlayerLocomotive == null)
+                {
+                    return false;
+                }
                 return this == Simulator.PlayerLocomotive.Train;
             }
         }
@@ -5139,7 +5143,7 @@ namespace ORTS
                 TCRoute.SetReversalOffset(Length);
 
                 // clear existing list of occupied track, and build new list
-                for (int iSection = OccupiedTrack.Count() - 1; iSection >= 0; iSection--)
+                for (int iSection = OccupiedTrack.Count - 1; iSection >= 0; iSection--)
                 {
                     TrackCircuitSection thisSection = OccupiedTrack[iSection];
                     thisSection.ResetOccupied(this);
@@ -7710,6 +7714,14 @@ namespace ORTS
             signalRef.BreakDownRouteList(ValidRoute[1], 0, routedBackward);
 
             
+            // clear occupied sections
+
+            for (int iSection = OccupiedTrack.Count - 1; iSection >= 0; iSection--)
+            {
+                TrackCircuitSection thisSection = OccupiedTrack[iSection];
+                thisSection.ResetOccupied(this);
+            }
+
             // remove any actions build up during manual mode
             requiredActions.RemovePendingAIActionItems(true);
 
@@ -9076,13 +9088,10 @@ namespace ORTS
                 bool validTrain = true;
 
                 // check if not AI_Static
-                if (otherTrain.TrainType == TRAINTYPE.AI)
+
+                if (otherTrain.GetAIMovementState() == AITrain.AI_MOVEMENT_STATE.AI_STATIC)
                 {
-                    AITrain otherAITrain = otherTrain as AITrain;
-                    if (otherAITrain.MovementState == AITrain.AI_MOVEMENT_STATE.AI_STATIC)
-                    {
-                        validTrain = false;
-                    }
+                    validTrain = false;
                 }
 
                 if (otherTrain.Number != thisNumber && otherTrain.TrainType != TRAINTYPE.STATIC && validTrain)
@@ -11446,8 +11455,7 @@ namespace ORTS
                         {
                             SignalObject thisSpeedpost = thisSpeeditem.SignalRef;
                             ObjectSpeedInfo thisSpeedInfo = thisSpeedpost.this_sig_speed(MstsSignalFunction.SPEED);
-                            float validSpeed = IsFreight ? thisSpeedInfo.speed_freight : thisSpeedInfo.speed_pass;
-
+                            float validSpeed = thisSpeedInfo == null ? -1 : (IsFreight ? thisSpeedInfo.speed_freight : thisSpeedInfo.speed_pass);
                             distanceToTrainM = sectionStart + thisSpeeditem.SignalLocation;
 
                             if (distanceToTrainM > 0 && validSpeed > 0)

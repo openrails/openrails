@@ -219,6 +219,7 @@ namespace ORTS
             }
 
             HazzardManager = new HazzardManager(this);
+
             FuelManager = new FuelManager(this);
             ScriptManager = new ScriptManager(this);
 
@@ -1166,6 +1167,12 @@ namespace ORTS
 
         public void UncoupleBehind(TrainCar car, bool keepFront)
         {
+            if (TimetableMode)
+            {
+                UncoupleBehindTT(car, keepFront);
+                return;
+            }
+
             Train train = car.Train;
 
             if (MPManager.IsMultiPlayer() && !MPManager.TrainOK2Decouple(train)) return;
@@ -1335,6 +1342,55 @@ namespace ORTS
             if (Confirmer !=null && Confirmer.Viewer != null && Confirmer.Viewer.IsReplaying) Confirmer.Confirm(CabControl.Uncouple, train.LastCar.CarID);
         }
 
+        //uncouple behind car in Timetable mode
+        public void UncoupleBehindTT(TrainCar car, bool keepFront)
+        {
+            TTTrain newTrain = new TTTrain(this);
+            TTTrain uncoupleTrain = car.Train as TTTrain;
+
+            newTrain.Name = String.Concat("U", newTrain.Number.ToString());
+            newTrain.MovementState = AITrain.AI_MOVEMENT_STATE.AI_STATIC;
+            newTrain.TCRoute = new Train.TCRoutePath(uncoupleTrain.TCRoute);
+            newTrain.TCRoute.activeAltpath = -1;
+            newTrain.TCRoute.activeSubpath = 0;
+            newTrain.TCRoute.TCAlternativePaths.Clear();
+            newTrain.TCRoute.TCRouteSubpaths.Clear();
+            newTrain.ValidRoute[0] = null;
+            newTrain.ValidRoute[1] = null;
+
+            int noUnits = 1;
+            foreach (var tcar in uncoupleTrain.Cars)
+            {
+                if (tcar == car) break;
+                noUnits++;
+            }
+
+            if (!keepFront) noUnits = uncoupleTrain.Cars.Count - noUnits;
+
+            UncoupleBehind(uncoupleTrain, noUnits, keepFront, newTrain, false);
+
+            int lastIndex = uncoupleTrain.Cars.Count - 1;
+            if (uncoupleTrain.Cars[0].IsDriveable)
+            {
+                AI.Simulator.PlayerLocomotive = uncoupleTrain.LeadLocomotive = uncoupleTrain.Cars[0];
+            }
+            else if (uncoupleTrain.Cars[lastIndex].IsDriveable)
+            {
+                AI.Simulator.PlayerLocomotive = uncoupleTrain.LeadLocomotive = uncoupleTrain.Cars[lastIndex];
+            }
+            else
+            {
+                foreach (TrainCar tcar in uncoupleTrain.Cars)
+                {
+                    if (car.IsDriveable)  // first loco is the one the player drives
+                    {
+                        AI.Simulator.PlayerLocomotive = uncoupleTrain.LeadLocomotive = car;
+                        break;
+                    }
+                }
+            }
+        }
+
         // uncouple to pre-defined train (AI - timetable mode only)
         public void UncoupleBehind(AITrain train, int noUnits, bool frontportion, AITrain newTrain, bool reverseTrain)
         {
@@ -1468,17 +1524,28 @@ namespace ORTS
             direction = (int)newTrain.RearTDBTraveller.Direction;
 
             newTrain.PresentPosition[1].SetTCPosition(tn.TCCrossReference, offset, direction);
-            newTrain.PresentPosition[1].RouteListIndex = newTrain.ValidRoute[0].GetRouteIndex(newTrain.PresentPosition[1].TCSectionIndex, 0);
 
-            // set track section occupied
+            // build temp route for new train
             Train.TCSubpathRoute tempRouteNewTrain = Signals.BuildTempRoute(newTrain, newTrain.PresentPosition[1].TCSectionIndex,
                 newTrain.PresentPosition[1].TCOffset, newTrain.PresentPosition[1].TCDirection, newTrain.Length, false, true, false);
 
+            // if train has no valid route, create from occupied sections
+            if (newTrain.ValidRoute[0] == null)
+            {
+                newTrain.ValidRoute[0] = new Train.TCSubpathRoute(tempRouteNewTrain);
+                newTrain.TCRoute.TCRouteSubpaths.Add(new Train.TCSubpathRoute(tempRouteNewTrain));
+            }
+
+            // set track section occupied
             for (int iIndex = 0; iIndex < tempRouteNewTrain.Count; iIndex++)
             {
                 TrackCircuitSection thisSection = Signals.TrackCircuitList[tempRouteNewTrain[iIndex].TCSectionIndex];
                 thisSection.SetOccupied(newTrain.routedForward);
             }
+
+            newTrain.PresentPosition[0].RouteListIndex = newTrain.ValidRoute[0].GetRouteIndex(newTrain.PresentPosition[0].TCSectionIndex, 0);
+            newTrain.PresentPosition[0].CopyTo(ref newTrain.PreviousPosition[0]);
+            newTrain.PresentPosition[1].RouteListIndex = newTrain.ValidRoute[0].GetRouteIndex(newTrain.PresentPosition[1].TCSectionIndex, 0);
 
         }
 

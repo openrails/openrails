@@ -41,6 +41,9 @@ using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using ORTS.Common;
 using ORTS.Viewer3D.Popups;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using System.Windows.Forms;
 
 namespace ORTS
 {
@@ -94,6 +97,7 @@ namespace ORTS
             MaxDecelMpSSF = DefMaxDecelMpSSF;
 
             MovementState = AI_MOVEMENT_STATE.AI_STATIC;
+            AI = simulator.AI;
         }
 
         //================================================================================================//
@@ -356,9 +360,20 @@ namespace ORTS
         {
 
 #if DEBUG_CHECKTRAIN
-            if (Number == 2)
+            if (!CheckTrain)
             {
-                CheckTrain = true;
+                if (Number == 0)
+                {
+                    DateTime baseDT = new DateTime();
+                    DateTime actTime = baseDT.AddSeconds(AI.clockTime);
+
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "--------\n");
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "Activated : ");
+                    File.AppendAllText(@"C:\temp\checktrain.txt", actTime.ToString("HH:mm:ss") + "\n");
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "--------\n");
+
+                    CheckTrain = true;
+                }
             }
 #endif
             // if train itself forms other train, check if train is to end at station (only if other train is not autogen and this train has SetStop set)
@@ -472,7 +487,11 @@ namespace ORTS
 
             if (CheckTrain)
             {
+                DateTime baseDT = new DateTime();
+                DateTime actTime = baseDT.AddSeconds(AI.clockTime);
+
                 File.AppendAllText(@"C:\temp\checktrain.txt", "--------\n");
+                File.AppendAllText(@"C:\temp\checktrain.txt", "PostInit at " + actTime.ToString("HH:mm:ss") + "\n");
                 File.AppendAllText(@"C:\temp\checktrain.txt", "Train : " + Number.ToString() + "\n");
                 File.AppendAllText(@"C:\temp\checktrain.txt", "Name  : " + Name + "\n");
                 File.AppendAllText(@"C:\temp\checktrain.txt", "Frght : " + IsFreight.ToString() + "\n");
@@ -1349,9 +1368,43 @@ namespace ORTS
 
         public override void UpdateAIStaticState(int presentTime)
         {
+#if DEBUG_CHECKTRAIN
+            if (!CheckTrain)
+            {
+                if (Number == 0)
+                {
+                    DateTime baseDT = new DateTime();
+                    DateTime actTime = baseDT.AddSeconds(AI.clockTime);
+
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "--------\n");
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "Activated : ");
+                    File.AppendAllText(@"C:\temp\checktrain.txt", actTime.ToString("HH:mm:ss") + "\n");
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "--------\n");
+
+                    CheckTrain = true;
+                }
+            }
+#endif
+
+            if (CheckTrain)
+            {
+                File.AppendAllText(@"C:\temp\checktrain.txt", "Train update AI state : " + Number + " ; type : " + TrainType + "\n");
+            }
+
             // start if start time is reached
             if (ActivateTime.HasValue && ActivateTime.Value < (presentTime % (24 * 3600)) && TrainHasPower())
             {
+                if (CheckTrain)
+                {
+                    DateTime baseDT = new DateTime();
+                    DateTime actTime = baseDT.AddSeconds(AI.clockTime);
+
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "--------\n");
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "Train " + Number + " activated \n");
+                    File.AppendAllText(@"C:\temp\checktrain.txt", actTime.ToString("HH:mm:ss") + "\n");
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "--------\n");
+                }
+
                 foreach (var car in Cars)
                 {
                     if (car is MSTSLocomotive)
@@ -1364,6 +1417,11 @@ namespace ORTS
 
                 if (TrainType == TRAINTYPE.INTENDED_PLAYER)
                 {
+                    if (CheckTrain)
+                    {
+                        File.AppendAllText(@"C:\temp\checktrain.txt", "Train promoted to PLAYER : " + Number + "\n");
+                    }
+
                     TrainType = TRAINTYPE.PLAYER;
                 }
 
@@ -1378,7 +1436,7 @@ namespace ORTS
             }
 
             // check if anything needs be detached
-            if (DetachDetails.Count > 0)
+            if (TrainType != TRAINTYPE.PLAYER && DetachDetails.Count > 0)
             {
                 for (int iDetach = DetachDetails.Count - 1; iDetach >= 0; iDetach--)
                 {
@@ -3487,6 +3545,30 @@ namespace ORTS
             return (tempRoute);
         }
 
+
+        //================================================================================================//
+        //
+        // Initiate player train
+        //
+
+        public void InitalizePlayerTrain()
+        {
+            TrainType = TRAINTYPE.PLAYER;
+            InitializeBrakes();
+
+            foreach (var tcar in Cars)
+            {
+                if (tcar is MSTSLocomotive)
+                {
+                    MSTSLocomotive loco = tcar as MSTSLocomotive;
+                    loco.SetPower(true);
+                    loco.AntiSlip = leadLocoAntiSlip;
+                }
+            }
+
+            PowerState = true;
+        }
+
         //================================================================================================//
         //
         // Initial train placement
@@ -3794,8 +3876,18 @@ namespace ORTS
         {
             // stop train
             SpeedMpS = 0;
+            foreach (var car in Cars)
+            {
+                car.SpeedMpS = 0;
+            }
+ 
             AdjustControlsThrottleOff();
             physicsUpdate(0);
+
+            if (attachTrain.CheckTrain || CheckTrain)
+            {
+                File.AppendAllText(@"C:\temp\checktrain.txt", "Attaching : " + Number + " ; to : " + attachTrain.Number + " ; at front : " + attachTrainFront.ToString() + "\n");
+            }
 
             // check on reverse formation
             if (thisTrainFront == attachTrainFront)
@@ -3890,6 +3982,50 @@ namespace ORTS
             }
 
             attachTrain.physicsUpdate(0);   // stop the wheels from moving etc
+
+            // if train is player or intended player and train has no player engine, determine new loco lead index
+            if (attachTrain.TrainType == Train.TRAINTYPE.PLAYER || attachTrain.TrainType == Train.TRAINTYPE.INTENDED_PLAYER)
+            {
+                if (attachTrain.LeadLocomotive == null)
+                {
+                    if (attachTrain.Cars[0].IsDriveable)
+                    {
+                        attachTrain.LeadLocomotive = attachTrain.Simulator.PlayerLocomotive = attachTrain.Cars[0];
+                    }
+                    else if (attachTrain.Cars[(Cars.Count - 1)].IsDriveable)
+                    {
+                        attachTrain.LeadLocomotive = attachTrain.Simulator.PlayerLocomotive = attachTrain.Cars[(Cars.Count - 1)];
+                    }
+                    else
+                    {
+                        foreach (var thisCar in attachTrain.Cars)
+                        {
+                            if (thisCar.IsDriveable)
+                            {
+                                attachTrain.LeadLocomotive = attachTrain.Simulator.PlayerLocomotive = thisCar;
+                            }
+                        }
+                    }
+                }
+
+                attachTrain.InitializeBrakes();
+
+                if (AI.Simulator.PlayerLocomotive == null)
+                {
+                    throw new InvalidDataException("Can't find player locomotive in " + attachTrain.Name);
+                }
+                else
+                {
+                    foreach (TrainCar car in attachTrain.Cars)
+                    {
+                        if (car.GetWagonType().Equals("Engine"))
+                        {
+                            MSTSLocomotive loco = car as MSTSLocomotive;
+                            loco.AntiSlip = attachTrain.leadLocoAntiSlip;
+                        }
+                    }
+                }
+            }
 
             // remove original train
             RemoveTrain();
@@ -5173,7 +5309,7 @@ namespace ORTS
 
                         if (formedTrain.TrainType == TRAINTYPE.INTENDED_PLAYER)
                         {
-                            formedTrain.TrainType = TRAINTYPE.PLAYER;
+                            AI.TrainsToAdd.Add(formedTrain);
 
                             // set player locomotive
                             // first test first and last cars - if either is drivable, use it as player locomotive
@@ -5929,25 +6065,6 @@ namespace ORTS
             TTTrain nextPlayerTrain = null;
             List<int> newTrains = new List<int>();
 
-            // detach whatever needs to be detached
-            // is still tbs
-
-            //if (DetachDetails.Count > 0)
-            //{
-            //    int newTrainNumber = -1;
-            //
-            //    for (int iDetach = DetachDetails.Count - 1; iDetach >= 0; iDetach--)
-            //    {
-            //        DetachInfo thisDetach = DetachDetails[iDetach];
-            //        if (thisDetach.DetachPosition == DetachInfo.DetachPositionInfo.atEnd)
-            //        {
-            //            newTrainNumber = thisDetach.Detach(this, presentTime);
-            //            newTrains.Add(newTrainNumber);
-            //            DetachDetails.RemoveAt(iDetach);
-            //        }
-            //    }
-            //}
-
             bool autogenStart = false;
 
             // get train which is to be formed
@@ -6007,7 +6124,6 @@ namespace ORTS
                 // clear this train - prepare for removal
                 RemoveFromTrack();
                 ClearDeadlocks();
-                AI.AITrains.RemoveAt(0);
                 Simulator.Trains.Remove(this);
                 Number = formedTrain.Number;  // switch numbers
                 AI.TrainsToRemove.Add(this);
@@ -6027,16 +6143,13 @@ namespace ORTS
                 formedTrain.SetupStationStopHandling();
 
                 // copy train control details
-                formedTrain.BrakeLine1PressurePSIorInHg = BrakeLine1PressurePSIorInHg;
-                formedTrain.BrakeLine2PressurePSI = BrakeLine2PressurePSI;
-                formedTrain.BrakeLine3PressurePSI = BrakeLine3PressurePSI;
-                formedTrain.BrakeLine4 = BrakeLine4;
-
                 formedTrain.MUDirection = MUDirection;
                 formedTrain.MUThrottlePercent = MUThrottlePercent;
                 formedTrain.MUGearboxGearIndex = MUGearboxGearIndex;
                 formedTrain.MUReverserPercent = MUReverserPercent;
                 formedTrain.MUDynamicBrakePercent = MUDynamicBrakePercent;
+
+                formedTrain.InitializeBrakes();
 
                 // reallocate deadlock path references for new train
                 signalRef.ReallocateDeadlockPathReferences(nextTrainNumber, 0);
@@ -6045,10 +6158,10 @@ namespace ORTS
                 TrainCar newPlayerLocomotive = null;
 
                 // copy car information, also search for player locomotive
-                for (int icar = 0; icar <= formedTrain.Cars.Count; icar++)
+                for (int icar = 0; icar < formedTrain.Cars.Count; icar++)
                 {
                     var car = formedTrain.Cars[icar];
-                    if (car.HasFrontCab || car.HasRearCab)
+                    if (car.IsDriveable)
                     {
                         if (Simulator.PlayerLocomotive == car)
                         {
@@ -6058,8 +6171,9 @@ namespace ORTS
                         }
                         else if (newPlayerLocomotive == null)
                         {
-                            newPlayerLocomotive = car;
-                            formedTrain.LeadLocomotiveIndex = icar;
+                            // cannot switch to new engine on new train - causes crashes in viewer
+                            MessageBox.Show("Newly formed train does not contain present player locomotive, program can not continue");
+                            Simulator.Confirmer.Viewer.Game.PopState();
                         }
                     }
                 }
@@ -6076,11 +6190,11 @@ namespace ORTS
 
                 if (!foundPlayerLocomotive)
                 {
-                    Simulator.PlayerLocomotive = newPlayerLocomotive;
                     formedTrain.InitializeBrakes(); // Initialize brakes on new engine
                     if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
                         Simulator.Confirmer.Information("Player switched to new locomotive");
                 }
+                Simulator.PlayerLocomotive.Train = formedTrain;
             }
         }
 
@@ -6819,6 +6933,11 @@ namespace ORTS
                     break;
             }
 
+            if (train.CheckTrain)
+            {
+                File.AppendAllText(@"C:\temp\checktrain.txt", "Detaching from : " + train.Number + " ; units : " + iunits + " ; from front position : " + frontpos.ToString() + "\n");
+            }
+            
             // check if anything to detach and anything left on train
             if (iunits > 0 && iunits < train.Cars.Count)
             {
@@ -6835,8 +6954,29 @@ namespace ORTS
                     newTrain.StartTime = presentTime + 30; // start in 30 seconds
                     newTrain.ActivateTime = presentTime + 30; // activate in 30 seconds
                     newTrainNumber = newTrain.Number;
+
+                    if (train.CheckTrain)
+                    {
+                        File.AppendAllText(@"C:\temp\checktrain.txt", "Detaching from : " + train.Number + " ; to : " + newTrainNumber + "\n");
+                    }
                 }
             }
+
+            // if train is player or intended player, determine new loco lead index
+            if (train.TrainType == Train.TRAINTYPE.PLAYER || train.TrainType == Train.TRAINTYPE.INTENDED_PLAYER)
+            {
+                train.LeadLocomotive = null;
+                train.Simulator.PlayerLocomotive = null;
+
+                foreach (var thisCar in train.Cars)
+                {
+                    if (thisCar.IsDriveable)
+                    {
+                        train.LeadLocomotive = train.Simulator.PlayerLocomotive = thisCar;
+                    }
+                }
+            }
+
             return (newTrainNumber);
         }
     }

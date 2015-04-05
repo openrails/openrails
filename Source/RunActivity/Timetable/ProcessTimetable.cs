@@ -662,12 +662,20 @@ namespace ORTS
             TTTrain playerTrain = reqTrain.AITrain;
             reqTrain.playerTrain = true;
 
-            playerTrain.TrainType = Train.TRAINTYPE.PLAYER;
+            playerTrain.TrainType = Train.TRAINTYPE.INTENDED_PLAYER;
             playerTrain.Number = 0;
             playerTrain.ControlMode = Train.TRAIN_CONTROL.AUTO_NODE;
 
             // define style of passing path
             simulator.Signals.UseLocationPassingPaths = true;
+
+            // create traveller
+            AIPath usedPath = Paths[TrainRouteXRef[reqTrain.Index]];
+            playerTrain.RearTDBTraveller = new Traveller(simulator.TSectionDat, simulator.TDB.TrackDB.TrackNodes, usedPath);
+
+            // extract train path
+            playerTrain.SetRoutePath(usedPath, simulator.Signals);
+            playerTrain.ValidRoute[0] = new Train.TCSubpathRoute(playerTrain.TCRoute.TCRouteSubpaths[0]);
         }
 
         /// <summary>
@@ -678,14 +686,6 @@ namespace ORTS
         {
             // set player train idents
             TTTrain playerTrain = reqTrain.AITrain;
-
-            // create traveller
-            AIPath usedPath = Paths[TrainRouteXRef[reqTrain.Index]];
-            playerTrain.RearTDBTraveller = new Traveller(simulator.TSectionDat, simulator.TDB.TrackDB.TrackNodes, usedPath);
-
-            // extract train path
-            playerTrain.SetRoutePath(usedPath, simulator.Signals);
-            playerTrain.ValidRoute[0] = new Train.TCSubpathRoute(playerTrain.TCRoute.TCRouteSubpaths[0]);
 
             simulator.Trains.Add(playerTrain);
 
@@ -1434,8 +1434,8 @@ namespace ORTS
                         continue;
                     }
 
-                    try
-                    {
+                    //try
+                    //{
                         car = RollingStock.Load(simulator, wagonFilePath);
                         car.Flipped = wagon.Flip;
 
@@ -1448,11 +1448,11 @@ namespace ORTS
                         {
                             cars.Add(car);
                         }
-                    }
-                    catch (Exception error)
-                    {
-                        Trace.WriteLine(new FileLoadException(wagonFilePath, error));
-                    }
+                    //}
+                    //catch (Exception error)
+                    //{
+                    //    Trace.WriteLine(new FileLoadException(wagonFilePath, error));
+                    //}
 
                 }// for each rail car
 

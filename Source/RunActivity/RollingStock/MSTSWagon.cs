@@ -218,7 +218,7 @@ namespace ORTS
             }
 
             if (BrakeSystem == null)
-                BrakeSystem = new AirSinglePipe(this);
+                BrakeSystem = MSTSBrakeSystem.Create(brakeSystemType, this);
         }
 
         public void GetMeasurementUnits()

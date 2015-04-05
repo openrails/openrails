@@ -353,9 +353,20 @@ namespace ORTS
         {
 
 #if DEBUG_CHECKTRAIN
-            if (Number == 3889)
+            if (!CheckTrain)
             {
-                CheckTrain = true;
+                if (Number == 0)
+                {
+                    DateTime baseDT = new DateTime();
+                    DateTime actTime = baseDT.AddSeconds(AI.clockTime);
+
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "--------\n");
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "Activated : ");
+                    File.AppendAllText(@"C:\temp\checktrain.txt", actTime.ToString("HH:mm:ss") + "\n");
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "--------\n");
+
+                    CheckTrain = true;
+                }
             }
 #endif
             // check deadlocks
@@ -444,7 +455,11 @@ namespace ORTS
 
             if (CheckTrain)
             {
+                DateTime baseDT = new DateTime();
+                DateTime actTime = baseDT.AddSeconds(AI.clockTime);
+
                 File.AppendAllText(@"C:\temp\checktrain.txt", "--------\n");
+                File.AppendAllText(@"C:\temp\checktrain.txt", "PostInit at " + actTime.ToString("HH:mm:ss") + "\n");
                 File.AppendAllText(@"C:\temp\checktrain.txt", "Train : " + Number.ToString() + "\n");
                 File.AppendAllText(@"C:\temp\checktrain.txt", "Name  : " + Name + "\n");
                 File.AppendAllText(@"C:\temp\checktrain.txt", "Frght : " + IsFreight.ToString() + "\n");
@@ -575,9 +590,20 @@ namespace ORTS
         public void AIUpdate(float elapsedClockSeconds, double clockTime, bool preUpdate)
         {
 #if DEBUG_CHECKTRAIN
-            if (Number == 3889)
+            if (!CheckTrain)
             {
-                CheckTrain = true;
+                if (Number == 0)
+                {
+                    DateTime baseDT = new DateTime();
+                    DateTime actTime = baseDT.AddSeconds(AI.clockTime);
+
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "--------\n");
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "Activated : ");
+                    File.AppendAllText(@"C:\temp\checktrain.txt", actTime.ToString("HH:mm:ss") + "\n");
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "--------\n");
+
+                    CheckTrain = true;
+                }
             }
 #endif
 
