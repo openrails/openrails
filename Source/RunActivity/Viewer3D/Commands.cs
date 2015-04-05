@@ -975,6 +975,75 @@ namespace ORTS.Viewer3D
     }
 
     [Serializable()]
+    public class ToggleOdometerCommand : Command
+    {
+        public static MSTSLocomotive Receiver { get; set; }
+
+        public ToggleOdometerCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.OdometerToggle();
+            // Report();
+        }
+
+        public override string ToString()
+        {
+            return base.ToString();
+        }
+    }
+
+    [Serializable()]
+    public class ResetOdometerCommand : Command
+    {
+        public static MSTSLocomotive Receiver { get; set; }
+
+        public ResetOdometerCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.OdometerReset();
+            // Report();
+        }
+
+        public override string ToString()
+        {
+            return base.ToString();
+        }
+    }
+
+    [Serializable()]
+    public class ToggleOdometerDirectionCommand : Command
+    {
+        public static MSTSLocomotive Receiver { get; set; }
+
+        public ToggleOdometerDirectionCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.OdometerToggleDirection();
+            // Report();
+        }
+
+        public override string ToString()
+        {
+            return base.ToString();
+        }
+    }
+
+    [Serializable()]
     public class ToggleCylinderCocksCommand : Command {
         public static MSTSSteamLocomotive Receiver { get; set; }
 

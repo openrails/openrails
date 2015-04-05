@@ -94,6 +94,13 @@ namespace ORTS.Viewer3D.Popups
 
             if (Owner.Viewer.RealTime > 0.1)
             {
+                // TODO: Casting to MSTSLocomotive here suggests a problem with the data model in the Simulator.
+                var playerLocomotive = Owner.Viewer.PlayerLocomotive as MSTSLocomotive;
+                if (playerLocomotive != null && playerLocomotive.Train != null && playerLocomotive.OdometerVisible)
+                {
+                    SetNotice(Viewer.Catalog.GetStringFmt("Odometer {0}", FormatStrings.FormatShortDistanceDisplay(playerLocomotive.OdometerM, Owner.Viewer.MilepostUnitsMetric)));
+                }
+                // Camera notices are temporary so we put them after to override.
                 if (Owner.Viewer.Camera != null)
                 {
                     if (Owner.Viewer.Camera.Name != Camera)
@@ -107,17 +114,6 @@ namespace ORTS.Viewer3D.Popups
                     {
                         FieldOfView = Owner.Viewer.Camera.FieldOfView;
                         SetNotice(Viewer.Catalog.GetStringFmt("FOV: {0:F0}°", FieldOfView));
-                    }
-                }
-                // TODO: Casting to MSTSLocomotive here suggests a problem with the data model in the Simulator.
-                var playerLocomotive = Owner.Viewer.PlayerLocomotive as MSTSLocomotive;
-                if (playerLocomotive != null && playerLocomotive.Train != null)
-                {
-                    var odoMeterM = playerLocomotive.OdoMeterM;
-                    var trainLength = playerLocomotive.Train.Length;
-                    if (odoMeterM < trainLength)
-                    {
-                        SetNotice(Viewer.Catalog.GetStringFmt("Odometer {0}", FormatStrings.FormatShortDistanceDisplay(trainLength - odoMeterM, Owner.Viewer.MilepostUnitsMetric)));
                     }
                 }
             }

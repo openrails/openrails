@@ -188,20 +188,24 @@ namespace ORTS
         {
             //TODO: following code lines have been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
             // To achieve the same result with other means, without flipping trainset physics, the code lines probably should be changed
-            get {
+            get
+            {
                 if (IsDriveable && Train.IsActualPlayerTrain)
-                    {
-                        var loco = this as MSTSLocomotive;
-                        return Flipped ^ loco.UsingRearCab ? DirectionControl.Flip(Train.MUDirection) : Train.MUDirection;
-                    }
-                
-                    else return Flipped ? DirectionControl.Flip(Train.MUDirection) : Train.MUDirection; 
-                } 
-            set {
+                {
                     var loco = this as MSTSLocomotive;
-                    Train.MUDirection = Flipped ^ loco.UsingRearCab? DirectionControl.Flip(value) : value;
-            }
+                    return Flipped ^ loco.UsingRearCab ? DirectionControl.Flip(Train.MUDirection) : Train.MUDirection;
                 }
+                else
+                {
+                    return Flipped ? DirectionControl.Flip(Train.MUDirection) : Train.MUDirection;
+                }
+            }
+            set
+            {
+                var loco = this as MSTSLocomotive;
+                Train.MUDirection = Flipped ^ loco.UsingRearCab ? DirectionControl.Flip(value) : value;
+            }
+        }
         public BrakeSystem BrakeSystem;
 
         // TrainCar.Update() must set these variables

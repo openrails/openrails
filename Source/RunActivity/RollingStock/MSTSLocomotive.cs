@@ -118,28 +118,19 @@ namespace ORTS
         public bool MilepostUnitsMetric;
         public PressureUnit PressureUnit = PressureUnit.None;
 
-        private float OdoMeterResetPositionM = -100000; // Needs to be longer than any train.
-        private Direction OdoMeterDirection = Direction.N;
-        /// <summary>
-        /// Travelled distance to be displayed to locomotive driver. The odometer may be reset to zero.
-        /// Reverse movement is subtracted, but positive direction is set to the actual direction at reset time.
-        /// </summary>
-        public float OdoMeterM
+        float OdometerResetPositionM = 0;
+        bool OdometerCountingUp = true;
+        bool OdometerCountingForwards = true;
+
+        public bool OdometerVisible { get; private set; }
+        public float OdometerM
         {
             get
             {
                 if (Train == null)
                     return 0;
 
-                var odoMeterM = Train.DistanceTravelledM - OdoMeterResetPositionM;
-
-                if (OdoMeterDirection == Direction.N && odoMeterM != 0)
-                    OdoMeterDirection = Direction;
-
-                if (OdoMeterDirection == Common.Direction.Reverse)
-                    odoMeterM = -odoMeterM;
-
-                return odoMeterM;
+                return OdometerCountingForwards ? Train.DistanceTravelledM - OdometerResetPositionM : OdometerResetPositionM - Train.DistanceTravelledM;
             }
         }
 
@@ -689,6 +680,10 @@ namespace ORTS
             outf.Write(Bell);
             outf.Write(Sander);
             outf.Write(Wiper);
+            outf.Write(OdometerResetPositionM);
+            outf.Write(OdometerCountingUp);
+            outf.Write(OdometerCountingForwards);
+            outf.Write(OdometerVisible);
             outf.Write(MainResPressurePSI);
             outf.Write(CompressorIsOn);
             outf.Write(AverageForceN);
@@ -712,6 +707,10 @@ namespace ORTS
             if (inf.ReadBoolean()) SignalEvent(Event.BellOn);
             if (inf.ReadBoolean()) SignalEvent(Event.SanderOn);
             if (inf.ReadBoolean()) SignalEvent(Event.WiperOn);
+            OdometerResetPositionM = inf.ReadSingle();
+            OdometerCountingUp = inf.ReadBoolean();
+            OdometerCountingForwards = inf.ReadBoolean();
+            OdometerVisible = inf.ReadBoolean();
             MainResPressurePSI = inf.ReadSingle();
             CompressorIsOn = inf.ReadBoolean();
             AverageForceN = inf.ReadSingle();
@@ -2174,14 +2173,51 @@ namespace ORTS
             // Electric locos do nothing. Diesel and steam override this.
         }
 
+        public void OdometerToggle()
+        {
+            OdometerVisible = !OdometerVisible;
+        }
+
         /// <summary>
         /// Set odometer reference distance to actual travelled distance,
         /// and set measuring direction to the actual direction
         /// </summary>
-        public void ResetOdoMeter()
+        public void OdometerReset()
         {
-            OdoMeterResetPositionM = Train != null ? Train.DistanceTravelledM : 0;
-            OdoMeterDirection = Direction;
+            if (Train == null)
+                return;
+
+            if (OdometerCountingForwards != OdometerCountingUp ^ (Direction == Direction.Reverse))
+            {
+                OdometerCountingForwards = !OdometerCountingForwards;
+            }
+
+            if (Direction == Direction.Reverse)
+            {
+                if (OdometerCountingForwards)
+                    OdometerResetPositionM = Train.DistanceTravelledM - Train.Length;
+                else
+                    OdometerResetPositionM = Train.DistanceTravelledM;
+            }
+            else
+            {
+                if (OdometerCountingForwards)
+                    OdometerResetPositionM = Train.DistanceTravelledM;
+                else
+                    OdometerResetPositionM = Train.DistanceTravelledM + Train.Length;
+            }
+
+            Simulator.Confirmer.Confirm(CabControl.Odometer, CabSetting.On);
+        }
+
+        public void OdometerToggleDirection()
+        {
+            if (Train == null)
+                return;
+
+            OdometerCountingUp = !OdometerCountingUp;
+
+            Simulator.Confirmer.Confirm(CabControl.Odometer, OdometerCountingUp ? CabSetting.Increase : CabSetting.Decrease);
         }
 
 #if NEW_SIGNALLING
