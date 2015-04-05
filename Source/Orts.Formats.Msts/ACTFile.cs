@@ -437,6 +437,8 @@ namespace Orts.Formats.Msts
         public Traffic_Definition Traffic_Definition;
         public PlatformNumPassengersWaiting PlatformNumPassengersWaiting;
         public ActivityRestrictedSpeedZones ActivityRestrictedSpeedZones;
+        public int ORTSAIHornAtCrossings = -1;
+
 
         public Tr_Activity_File(STFReader stf) {
             stf.MustMatch("(");
@@ -444,6 +446,7 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("player_service_definition",()=>{ Player_Service_Definition = new Player_Service_Definition(stf); }),
                 new STFReader.TokenProcessor("nextserviceuid",()=>{ NextServiceUID = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("nextactivityobjectuid",()=>{ NextActivityObjectUID = stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("ortsaihornatcrossings", ()=>{ ORTSAIHornAtCrossings = stf.ReadIntBlock(ORTSAIHornAtCrossings); }),
                 new STFReader.TokenProcessor("events",()=>{ Events = new Events(stf); }),
                 new STFReader.TokenProcessor("traffic_definition",()=>{ Traffic_Definition = new Traffic_Definition(stf); }),
                 new STFReader.TokenProcessor("activityobjects",()=>{ ActivityObjects = new ActivityObjects(stf); }),

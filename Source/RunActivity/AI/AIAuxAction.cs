@@ -197,7 +197,7 @@ namespace ORTS
         }
 
         protected List<KeyValuePair<string, AuxActionRef>> SetGenAuxActions(AITrain thisTrain, ORRouteConfig orRouteConfig)  //  Add here the new Generic Action
-        {
+         {
             List<KeyValuePair<string, AuxActionRef>> loaded = null;
 #if WITH_GEN_ACTION
             //AIActionSignalRef actionSignal = new AIActionSignalRef(thisTrain, 0f, 0f, 0, 0, 0, 0);
@@ -227,6 +227,15 @@ namespace ORTS
             {
                 loaded = ConvertActions(thisTrain, orRouteConfig.ActionContainer);
             }
+            if (!Program.Simulator.TimetableMode && Program.Simulator.Activity.Tr_Activity.Tr_Activity_File.ORTSAIHornAtCrossings > 0 && SpecAuxActions.Count == 0)
+            {
+                AuxActionHorn auxActionHorn = new AuxActionHorn(true);
+                AIActionHornRef horn = new AIActionHornRef(thisTrain, auxActionHorn, 0);
+                List<KeyValuePair<System.Type, AuxActionRef>> listInfo = horn.GetCallFunction();
+                foreach (var function in listInfo)
+                    GenFunctions.Add(function);
+            }
+
             //loaded = orRouteConfig.getGenAuxAction();
             return loaded;
         }
@@ -266,7 +275,7 @@ namespace ORTS
 #if WITH_PATH_DEBUG
             File.AppendAllText(@"C:\temp\checkpath.txt", "Remove GenAction for train " + ThisTrain.Number + "\n");
 #endif
-            if (!(ThisTrain is AITrain))
+            if ((ThisTrain is AITrain))
             {
                 AITrain aiTrain = ThisTrain as AITrain;
                 foreach (var fonction in GenFunctions)
@@ -342,6 +351,7 @@ namespace ORTS
         public void Remove(AuxActionItem action)
         {
             bool ret = false;
+            bool remove = true;
             if (action.ActionRef.IsGeneric)
             {
                 if (genRequiredActions.Count > 0)
@@ -353,8 +363,11 @@ namespace ORTS
                 }
             }
             if (action.ActionRef.ActionType == AuxActionRef.AUX_ACTION.SOUND_HORN)
-                RemoveSpecReqAction(action);
-            if (CountSpec() > 0)
+            {
+                if (specRequiredActions.Contains(action)) RemoveSpecReqAction(action);
+                else remove = false;
+            }
+            if (CountSpec() > 0 && remove == true)
                 RemoveAt(0);
             if (ThisTrain is AITrain)
                 ((AITrain)ThisTrain).ResetActions(true);
@@ -1074,16 +1087,20 @@ namespace ORTS
             float rearDist = (float)list[0];
             float frontDist = (float)list[1];
             uint trackNodeIndex = (uint)list[2];
-            float minDist = Math.Min(rearDist, frontDist);
+            float minDist = Math.Min(Math.Abs(rearDist), frontDist);
 
             float[] distances = GetActivationDistances(thisTrain, location);
+            
 #if WITH_PATH_DEBUG
             File.AppendAllText(@"C:\temp\checkpath.txt", "GenFunctions not yet defined for train:" + thisTrain.Number + 
                 " Activation Distance: " + distances[0] + " & train distance: " + (-minDist) + "\n");
 #endif
             if (distances[0] >= -minDist)   //  We call the handler to generate an actionRef
             {
-                newAction = Handler(thisTrain.SpeedMpS);
+                //Pseudorandom value between 2 and 5
+                int Rand = (DateTime.Now.Millisecond % 10) / 3 + 2;
+                this.Delay = Rand;
+                newAction = Handler(distances[0] + thisTrain.DistanceTravelledM, thisTrain.SpeedMpS, distances[0] + thisTrain.DistanceTravelledM, thisTrain.DistanceTravelledM);
                 Register(thisTrain.Number, location);
 #if WITH_PATH_DEBUG
             File.AppendAllText(@"C:\temp\checkpath.txt", "Caller registered for\n");
@@ -1136,8 +1153,8 @@ namespace ORTS
         public override float[] GetActivationDistances(Train thisTrain, WorldLocation location)
         {
             float[] distancesM = new float[2];
-            distancesM[0] = this.RequiredDistance;   //  Dès 100m
-            distancesM[1] = this.RequiredDistance + thisTrain.Length;
+            distancesM[0] = this.RequiredDistance + 100;   //  Dès 100m
+            distancesM[1] = this.RequiredDistance + 100 + thisTrain.Length;
             return (distancesM);
         }
 
