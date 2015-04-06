@@ -1005,9 +1005,9 @@ namespace ORTS
             foreach (var axles in WheelAxles) if (offset.AlmostEqual(axles.OffsetM, 0.05f)) { offset = axles.OffsetM + 0.1f; break; }
             if (wheels.Length == 8)
             {
-                if (wheels == "WHEELS11" || wheels == "WHEELS12" || wheels == "WHEELS13")
+                if (wheels == "WHEELS11" || wheels == "WHEELS12" || wheels == "WHEELS13" || wheels == "SPOKES11" || wheels == "SPOKES12" || wheels == "SPOKES13")
                     WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
-                else if (wheels == "WHEELS21" || wheels == "WHEELS22" || wheels == "WHEELS23")
+                else if (wheels == "WHEELS21" || wheels == "WHEELS22" || wheels == "WHEELS23" || wheels == "SPOKES21" || wheels == "SPOKES22" || wheels == "SPOKES23")
                 {
                     // The process would assign 2 to the id because WHEELS21 or WHEELS22 would contain the number 2.
                     // If the shape file contained only one set of WHEELS that was labeled as WHEELS21 && WHEELS22 then BogieIndex would be 2, not 1.
@@ -1084,6 +1084,9 @@ namespace ORTS
                 Console.WriteLine("  part:  matrix {1,5:F0}  offset {0,10:F4}  weight {2,5:F0}", p.OffsetM, p.iMatrix, p.SumWgt);
 #endif
             WheelHasBeenSet = true;
+            // No parts means no bogies (always?), so make sure we've got Parts[0] for the car itself.
+            if (Parts.Count == 0)
+                Parts.Add(new TrainCarPart(0, 0));
             // No axles but we have bogies.
             if (WheelAxles.Count == 0 && Parts.Count > 1)
             {
@@ -1092,9 +1095,6 @@ namespace ORTS
                     WheelAxles.Add(new WheelAxle(part.OffsetM, part.iMatrix, 0));
                 Trace.TraceInformation("Wheel axle data faked based on {1} bogies for {0}", WagFilePath, Parts.Count - 1);
             }
-            // No parts means no bogies (always?), so make sure we've got Parts[0] for the car itself.
-            if (Parts.Count == 0)
-                Parts.Add(new TrainCarPart(0, 0));
             bool articFront = !WheelAxles.Any(a => a.OffsetM < 0);
             bool articRear = !WheelAxles.Any(a => a.OffsetM > 0);
             // Validate the axles' assigned bogies and count up the axles on each bogie.
@@ -1104,7 +1104,7 @@ namespace ORTS
                 {
                     if (w.BogieIndex >= Parts.Count)
                         w.BogieIndex = 0;
-                    if (w.BogieMatrix > 0 && w.BogieIndex > 0)
+                    if (w.BogieMatrix > 0)
                     {
                         for (var i = 0; i < Parts.Count; i++)
                             if (Parts[i].iMatrix == w.BogieMatrix)
