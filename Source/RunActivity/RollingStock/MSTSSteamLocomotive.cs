@@ -137,9 +137,10 @@ namespace ORTS
 
         float MaxBoilerPressurePSI = 180f;  // maximum boiler pressure, safety valve setting
         float BoilerVolumeFT3;      // total space in boiler that can hold water and steam
-        int NumCylinders = 2;
+        int NumCylinders = 2;       // Number of Cylinders
         float CylinderStrokeM;      // High pressure cylinders
         float CylinderDiameterM;    // High pressure cylinders
+        int LPNumCylinders = 2;       // Number of LP Cylinders
         float LPCylinderStrokeM;      // Low pressure cylinders
         float LPCylinderDiameterM;    // Low pressure cylinders
         float CompoundCylinderRatio;    // Compound locomotive - ratio of low pressure to high pressure cylinder
@@ -508,6 +509,7 @@ namespace ORTS
 	            case "engine(numcylinders": NumCylinders = stf.ReadIntBlock(null); break;
                 case "engine(cylinderstroke": CylinderStrokeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(cylinderdiameter": CylinderDiameterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "engine(lpnumcylinders": LPNumCylinders = stf.ReadIntBlock(null); break;
                 case "engine(lpcylinderstroke": LPCylinderStrokeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(lpcylinderdiameter": LPCylinderDiameterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(ortscylinderexhaustopen": CylinderExhaustOpenFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
@@ -584,6 +586,7 @@ namespace ORTS
             NumCylinders = locoCopy.NumCylinders;
             CylinderStrokeM = locoCopy.CylinderStrokeM;
             CylinderDiameterM = locoCopy.CylinderDiameterM;
+            LPNumCylinders = locoCopy.LPNumCylinders;
             LPCylinderStrokeM = locoCopy.LPCylinderStrokeM;
             LPCylinderDiameterM = locoCopy.LPCylinderDiameterM;
             CylinderExhaustOpenFactor = locoCopy.CylinderExhaustOpenFactor;
@@ -819,11 +822,11 @@ namespace ORTS
                 SteamLocoType = "Compound locomotive";
                 
                 // Model current based upon a four cylinder, balanced compound, type Vauclain, as built by Baldwin, with no receiver between the HP and LP cylinder
-                // Set to simple operation intially
+                // Set to compound operation intially
                 CompoundCylinderRatio = (LPCylinderDiameterM * LPCylinderDiameterM) / (CylinderDiameterM * CylinderDiameterM);
                 MotiveForceGearRatio = 1.0f;  // set gear ratio to default, as not a geared locomotive
                 SteamGearRatio = 1.0f;     // set gear ratio to default, as not a geared locomotive
-                MaxTractiveEffortLbf = CylinderEfficiencyRate * (1.6f * MaxBoilerPressurePSI * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM)) / (Me.ToIn(DriverWheelRadiusM * 2.0f));   
+                MaxTractiveEffortLbf = CylinderEfficiencyRate * (1.6f * MaxBoilerPressurePSI * Me.ToIn(LPCylinderDiameterM) * Me.ToIn(LPCylinderDiameterM) * Me.ToIn(LPCylinderStrokeM)) / ((CompoundCylinderRatio + 1.0f) * (Me.ToIn(DriverWheelRadiusM * 2.0f)));
 
             }
             else if (IsGearedSteamLoco)
@@ -1102,7 +1105,7 @@ namespace ORTS
             CylinderPistonAreaFt2 = Me2.ToFt2(MathHelper.Pi * CylinderDiameterM * CylinderDiameterM / 4.0f);
             LPCylinderPistonAreaFt2 = Me2.ToFt2(MathHelper.Pi * LPCylinderDiameterM * LPCylinderDiameterM / 4.0f);
             CylinderSweptVolumeFT3pFT = ((CylinderPistonAreaFt2 * Me.ToFt(CylinderStrokeM)) - CylinderPistonShaftFt3);
-            LPCylinderSweptVolumeFT3pFT = ((LPCylinderPistonAreaFt2 * Me.ToFt(CylinderStrokeM)) - CylinderPistonShaftFt3);
+            LPCylinderSweptVolumeFT3pFT = ((LPCylinderPistonAreaFt2 * Me.ToFt(LPCylinderStrokeM)) - CylinderPistonShaftFt3);
 
             // Cylinder Steam Usage	= SweptVolumeToTravelRatioFT3pFT x cutoff x {(speed x (SteamDensity (CylPress) - SteamDensity (CylBackPress)) 
             // lbs/s                = ft3/ft                                  x   ft/s  x  lbs/ft3
@@ -2184,9 +2187,17 @@ namespace ORTS
                     // Steam Indicator Diagram reference - (a) 
                     HPCylinderInitialPressureAtmPSI = ((throttle * BoilerPressurePSI) + OneAtmospherePSI) * InitialPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)]; // This is the gauge pressure + atmospheric pressure to find the absolute pressure - pressure drop gas been allowed for as the steam goes into the cylinder through the opening in the steam chest port.
 
+                    // Calculate Cut-off Pressure drop - cutoff pressure drops as speed of locomotive increases.
+                    float CutoffDropUpper = CutoffInitialPressureDropRatioUpper.Get(pS.TopM(DrvWheelRevRpS), cutoff);  // Get Cutoff Pressure to Initial pressure drop - upper limit
+                    float CutoffDropLower = CutoffInitialPressureDropRatioLower.Get(pS.TopM(DrvWheelRevRpS), cutoff);  // Get Cutoff Pressure to Initial pressure drop - lower limit
+
+                    // calculate value based upon setting of Cylinder port opening
+
+                    float HPCutoffPressureDropRatio = (((CylinderPortOpeningFactor - CylinderPortOpeningLower) / (CylinderPortOpeningUpper - CylinderPortOpeningLower)) * (CutoffDropUpper - CutoffDropLower)) + CutoffDropLower;
+
                     // Cutoff pressure also drops with locomotive speed
                     // Steam Indicator Diagram reference - (b)
-                    HPCylinderCutoffPressureAtmPSI = HPCylinderInitialPressureAtmPSI * CutoffInitialPressureDropRatioUpper.Get(pS.TopM(DrvWheelRevRpS), cutoff);
+                    HPCylinderCutoffPressureAtmPSI = HPCylinderInitialPressureAtmPSI * HPCutoffPressureDropRatio;
 
                     // Mean pressure & work between a) - b) - Admission
                     float HPMeanPressureCuttoffAtmPSI = (HPCylinderInitialPressureAtmPSI + HPCylinderCutoffPressureAtmPSI) / 2.0f;
@@ -2246,7 +2257,17 @@ namespace ORTS
                     // Steam Indicator Diagram reference - (h) - In HP Cylinder post cutoff in LP Cylinder
                     // Pressure will have equalised in HP & LP Cylinder, so will be the same as the pressure pre-cutoff
                     HPCylinderPreCompressionPressureAtmPSI = LPCylinderPreCutoffPressureAtmPSI;
-                    LPCylinderPreCutoffPressureAtmPSI *= CutoffInitialPressureDropRatioLower.Get(pS.TopM(DrvWheelRevRpS), cutoff);  // allow for wire drawing into LP cylinder
+
+                    // Calculate Cut-off Pressure drop - cutoff pressure drops as speed of locomotive increases.
+                    float LPCutoffDropUpper = CutoffInitialPressureDropRatioUpper.Get(pS.TopM(DrvWheelRevRpS), cutoff);  // Get Cutoff Pressure to Initial pressure drop - upper limit
+                    float LPCutoffDropLower = CutoffInitialPressureDropRatioLower.Get(pS.TopM(DrvWheelRevRpS), cutoff);  // Get Cutoff Pressure to Initial pressure drop - lower limit
+
+                    // calculate value based upon setting of Cylinder port opening
+
+                    float LPCutoffPressureDropRatio = (((CylinderPortOpeningFactor - CylinderPortOpeningLower) / (CylinderPortOpeningUpper - CylinderPortOpeningLower)) * (LPCutoffDropUpper - LPCutoffDropLower)) + LPCutoffDropLower;
+
+
+                    LPCylinderPreCutoffPressureAtmPSI *= LPCutoffPressureDropRatio;  // allow for wire drawing into LP cylinder
 
                     // Mean pressure & work between g) - h) - This curve is the admission curve for the LP and the Backpressure curve for the HP - it is an expansion curve
                     float LPExpansionRatioPreCutoff = LPCylinderVolumePoint_h_pre / LPCylinderVolumePoint_g;  // Invert volume ratio to find Expansion ratio
