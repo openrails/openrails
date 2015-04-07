@@ -532,6 +532,15 @@ namespace ORTS
 
         void buttonResume_Click(object sender, EventArgs e)
         {
+            if (radioButtonModeActivity.Checked)
+            {
+                SelectedAction = UserAction.SingleplayerNewGame;
+            }
+            else
+            {
+                SelectedAction = UserAction.SinglePlayerTimetableGame;
+            }
+
             // if timetable mode but no timetable selected - no action
             if (SelectedAction == UserAction.SinglePlayerTimetableGame && SelectedTimetableSet == null)
             {
