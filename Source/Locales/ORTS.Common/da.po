@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Common\n"
-"POT-Creation-Date: 2014-05-18 03:06:05+0200\n"
-"PO-Revision-Date: 2014-07-27 12:43+0100\n"
-"Last-Translator: Zepder\n"
+"POT-Creation-Date: 2015-04-08 11:02:14+0200\n"
+"PO-Revision-Date: 2015-04-08 11:07+0100\n"
+"Last-Translator: Zepder <admin@tog-sim.dk>\n"
 "Language-Team: \n"
 "Language: da\n"
 "MIME-Version: 1.0\n"
@@ -12,46 +12,184 @@ msgstr ""
 "X-Generator: Poedit 1.6.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../../ORTS.Common/Conversions.cs:97
+#: ../../ORTS.Common/Conversions.cs:511
 msgid "m"
 msgstr "m"
 
-#: ../../ORTS.Common/Conversions.cs:98
+#: ../../ORTS.Common/Conversions.cs:512
 msgid "km"
 msgstr "km"
 
-#: ../../ORTS.Common/Conversions.cs:99
+#: ../../ORTS.Common/Conversions.cs:513
+msgid "mm"
+msgstr "mm"
+
+#: ../../ORTS.Common/Conversions.cs:514
 msgid "mi"
 msgstr "mi"
 
-#: ../../ORTS.Common/Conversions.cs:100
+#: ../../ORTS.Common/Conversions.cs:515
+msgid "ft"
+msgstr "ft"
+
+#: ../../ORTS.Common/Conversions.cs:516
 msgid "yd"
 msgstr "yd"
 
-#: ../../ORTS.Common/Conversions.cs:101
+#: ../../ORTS.Common/Conversions.cs:517
+msgid "m²"
+msgstr "m²"
+
+#: ../../ORTS.Common/Conversions.cs:518
+msgid "ft²"
+msgstr "ft²"
+
+#: ../../ORTS.Common/Conversions.cs:519
+msgid "m³"
+msgstr "m³"
+
+#: ../../ORTS.Common/Conversions.cs:520
+msgid "ft³"
+msgstr "ft³"
+
+#: ../../ORTS.Common/Conversions.cs:521
 msgid "km/h"
 msgstr "km/t"
 
-#: ../../ORTS.Common/Conversions.cs:102
+#: ../../ORTS.Common/Conversions.cs:522
 msgid "mph"
 msgstr "mph"
 
-#: ../../ORTS.Common/Conversions.cs:103
+#: ../../ORTS.Common/Conversions.cs:523
 msgid "kPa"
 msgstr "kPa"
 
-#: ../../ORTS.Common/Conversions.cs:104
+#: ../../ORTS.Common/Conversions.cs:524
 msgid "bar"
 msgstr "bar"
 
-#: ../../ORTS.Common/Conversions.cs:105
+#: ../../ORTS.Common/Conversions.cs:525
 msgid "psi"
 msgstr "psi"
 
-#: ../../ORTS.Common/Conversions.cs:106
+#: ../../ORTS.Common/Conversions.cs:526
 msgid "inHg"
 msgstr "inHg"
 
-#: ../../ORTS.Common/Conversions.cs:107
-msgid "kgf/cm^2"
-msgstr "kgf/cm^2"
+#: ../../ORTS.Common/Conversions.cs:527
+msgid "kgf/cm²"
+msgstr "kgf/cm²"
+
+#: ../../ORTS.Common/Conversions.cs:528
+msgid "kg"
+msgstr "kg"
+
+#: ../../ORTS.Common/Conversions.cs:529
+msgid "t"
+msgstr "t"
+
+#: ../../ORTS.Common/Conversions.cs:530
+msgid "ltn"
+msgstr "ltn"
+
+#: ../../ORTS.Common/Conversions.cs:531
+msgid "stn"
+msgstr "stn"
+
+#: ../../ORTS.Common/Conversions.cs:532
+msgid "lb"
+msgstr "lb"
+
+#: ../../ORTS.Common/Conversions.cs:533
+msgid "s"
+msgstr "s"
+
+#: ../../ORTS.Common/Conversions.cs:534
+msgid "min"
+msgstr "min"
+
+#: ../../ORTS.Common/Conversions.cs:535
+msgid "h"
+msgstr "h"
+
+#: ../../ORTS.Common/Conversions.cs:536
+msgid "L"
+msgstr "L"
+
+#: ../../ORTS.Common/Conversions.cs:537
+msgid "Imp.gal"
+msgstr "Imp.gal"
+
+#: ../../ORTS.Common/Conversions.cs:538
+msgid "U.S.gal"
+msgstr "U.S.gal"
+
+#: ../../ORTS.Common/Conversions.cs:539
+msgid "rpm"
+msgstr "opm"
+
+#: ../../ORTS.Common/Conversions.cs:540
+msgid "kW"
+msgstr "kW"
+
+#: ../../ORTS.Common/Conversions.cs:541
+msgid "hp"
+msgstr "hk"
+
+#: ../../ORTS.Common/Conversions.cs:542
+msgid "bhp"
+msgstr "bhp"
+
+#: ../../ORTS.Common/Conversions.cs:543
+msgid "kJ"
+msgstr "kJ"
+
+#: ../../ORTS.Common/Conversions.cs:544
+msgid "MJ"
+msgstr "MJ"
+
+#: ../../ORTS.Common/Conversions.cs:545
+msgid "BTU"
+msgstr "BTU"
+
+#: ../../ORTS.Common/Conversions.cs:546
+msgid "°C"
+msgstr "°C"
+
+#: ../../ORTS.Common/Conversions.cs:547
+msgid "°F"
+msgstr "°F"
+
+#: ../../ORTS.Common/Conversions.cs:548
+msgid "N"
+msgstr "N"
+
+#: ../../ORTS.Common/Conversions.cs:549
+msgid "kN"
+msgstr "kN"
+
+#: ../../ORTS.Common/Conversions.cs:550
+msgid "lbf"
+msgstr "lbf"
+
+#: ../../ORTS.Common/Conversions.cs:551
+msgid "klbf"
+msgstr "klbf"
+
+#. Context: Reverser
+#: ../../ORTS.Common/enums.cs:27
+msgctxt "Reverser"
+msgid "Forward"
+msgstr "Frem"
+
+#. Context: Reverser
+#: ../../ORTS.Common/enums.cs:28
+msgctxt "Reverser"
+msgid "Reverse"
+msgstr "Tilbage"
+
+#. Context: Reverser
+#: ../../ORTS.Common/enums.cs:29
+msgctxt "Reverser"
+msgid "N"
+msgstr "N"
