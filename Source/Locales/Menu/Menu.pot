@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-04-05 18:18:49+0200\n"
-"PO-Revision-Date: 2015-04-05 18:18:50+0200\n"
+"POT-Creation-Date: 2015-04-11 13:12:55-0400\n"
+"PO-Revision-Date: 2015-04-11 13:12:55-0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -189,7 +189,7 @@ msgid ""
 "must not start with a digit."
 msgstr ""
 
-#: ../../Menu/MainForm.cs:1019
+#: ../../Menu/MainForm.cs:1028
 msgid "Activity Briefing"
 msgstr ""
 
@@ -214,43 +214,43 @@ msgid ""
 "{0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:1008
+#: ../../Menu/MainForm.cs:1017
 #, csharp-format
 msgid "Route: {0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:1014
-#: ../../Menu/MainForm.cs:1040
+#: ../../Menu/MainForm.cs:1023
+#: ../../Menu/MainForm.cs:1049
 #, csharp-format
 msgid "Locomotive: {0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:1018
+#: ../../Menu/MainForm.cs:1027
 #, csharp-format
 msgid "Activity: {0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:1026
+#: ../../Menu/MainForm.cs:1035
 #, csharp-format
 msgid "Timetable set: {0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:1030
+#: ../../Menu/MainForm.cs:1039
 #, csharp-format
 msgid "Timetable: {0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:1034
+#: ../../Menu/MainForm.cs:1043
 #, csharp-format
 msgid "Train: {0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:1037
+#: ../../Menu/MainForm.cs:1046
 #, csharp-format
 msgid "Consist: {0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:1045
+#: ../../Menu/MainForm.cs:1054
 #, csharp-format
 msgid "Path: {0}"
 msgstr ""
