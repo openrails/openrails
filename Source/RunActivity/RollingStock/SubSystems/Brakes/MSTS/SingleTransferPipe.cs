@@ -50,7 +50,7 @@ namespace ORTS
 
         public override string GetFullStatus(BrakeSystem lastCarBrakeSystem, PressureUnit unit)
         {
-            var s = string.Format("BP {1}", FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, unit, false));
+            var s = string.Format("BP {0}", FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, unit, false));
             if (lastCarBrakeSystem != null && lastCarBrakeSystem != this)
                 s += " EOT " + lastCarBrakeSystem.GetStatus(unit);
             if (HandbrakePercent > 0)
