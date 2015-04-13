@@ -1153,8 +1153,8 @@ namespace ORTS
         public override float[] GetActivationDistances(Train thisTrain, WorldLocation location)
         {
             float[] distancesM = new float[2];
-            distancesM[0] = this.RequiredDistance + 100;   //  Dès 100m
-            distancesM[1] = this.RequiredDistance + 100 + thisTrain.Length;
+            distancesM[0] = this.RequiredDistance;   // 
+            distancesM[1] = this.RequiredDistance + thisTrain.Length;
             return (distancesM);
         }
 

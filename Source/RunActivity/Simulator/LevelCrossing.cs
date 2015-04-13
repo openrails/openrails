@@ -106,16 +106,19 @@ namespace ORTS
                 var totalMaxDist = predictedDist + maxPredictedDist + minimumDist + 1;
 
                 var reqDist = 0f; // actual used distance
+                var hornReqDist = 0f; // used distance for horn blow
 
                 if (WorldLocation.Within(crossing.Location, train.FrontTDBTraveller.WorldLocation, totalDist) || WorldLocation.Within(crossing.Location, train.RearTDBTraveller.WorldLocation, totalDist))
                 {
                     validTrain = true;
                     reqDist = totalDist;
+                    hornReqDist = Math.Min(totalDist, 80.0f);
                 }
                 else if (WorldLocation.Within(crossing.Location, train.FrontTDBTraveller.WorldLocation, totalMaxDist) || WorldLocation.Within(crossing.Location, train.RearTDBTraveller.WorldLocation, totalMaxDist))
                 {
                     validTrain = true;
                     reqDist = totalMaxDist;
+                    hornReqDist = Math.Min(totalMaxDist, 80.0f);
                 }
 
                 if (!validTrain && !crossing.Trains.Contains(train))
@@ -150,22 +153,22 @@ namespace ORTS
                     frontDist = temp;
                 }
 
-                if (frontDist <= reqDist && (train.ReservedTrackLengthM <= 0 || frontDist < train.ReservedTrackLengthM) && rearDist <= minimumDist)
+                if (train is AITrain && frontDist <= hornReqDist && (train.ReservedTrackLengthM <= 0 || frontDist < train.ReservedTrackLengthM) && rearDist <= minimumDist)
                 {
                     //  Add generic actions if needed
-                    if (train is AITrain)
-                    {
                         ((AITrain)train).AuxActionsContain.CheckGenActions(this.GetType(), crossing.Location, rearDist, frontDist, crossing.TrackIndex);
-                    }
+                }
+                else if (train is AITrain)
+                {
+                    ((AITrain)train).AuxActionsContain.RemoveGenActions(this.GetType(), crossing.Location);
+                }
+
+                if (frontDist <= reqDist && (train.ReservedTrackLengthM <= 0 || frontDist < train.ReservedTrackLengthM) && rearDist <= minimumDist)
+                {
                     crossing.AddTrain(train);
                 }
                 else
                 {
-                    //  Add generic actions if needed
-                    if (train is AITrain)
-                    {
-                        ((AITrain)train).AuxActionsContain.RemoveGenActions(this.GetType(), crossing.Location);
-                    }
                     crossing.RemoveTrain(train);
                 }
             }
