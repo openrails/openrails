@@ -12,8 +12,25 @@
         </div>
       </div>
       <div class="row">
-        <div class="col-md-3"></div>
-        <div class="col-md-6">
+        <div class="col-md-1"></div>
+        <div class="col-md-4">
+<h2>Demo Model 1</h2>
+<p>
+You can try out Open Rails by <a href="http://www.openrails.org/files/DemoModel1.zip" title="Warning: large download - 250MB">downloading this model</a> to drive the route from Edinburgh towards Glasgow.
+</p><p>
+Models contain lots of detail
+and this model, which is cut down from a full-size commercial route, compresses to 250MB. Installation instructions are included.
+</p><p>
+<br>
+<img src="waverley.jpg" width=300><br>
+<p style="text-align: center">Edinburgh Waverley station</p>
+The model, generously donated by <a href="http://www.MakingTracks-online.co.uk" target="_blank">Making Tracks Ltd</a>, reproduces the route between the Scottish capitals during the "blue" period of British Rail. Your service is a morning express from Edinburgh Waverley as far as the town of Linlithgow, about 20 minutes running.
+</p><p>
+You can also watch a player driving the route on Open Rails in <a href="https://www.youtube.com/watch?v=aZ5aVEvbOOE&feature=youtu.be" target="_blank">this video</a>, which provides a voice-over.
+</p>
+        </div>
+        <div class="col-md-2"></div>
+        <div class="col-md-4">
 <h2>Expected To Grow</h2>
 <p>
 Now that Open Rails has reached a stage where it can do most of what MSTS does, attention is shifting to features that only Open Rails can provide. You should expect the lists below to grow.
@@ -37,12 +54,12 @@ Some Australian routes (New South Wales) have been packaged by Peter Newell to w
 </ul>
 <h3>Forum Library Files</h3>
 <ul>
-<li>A search for "ORTS" and "Open Rails" on <a href="http://www.trainsim.com">TrainSim</a> finds 16 files.</li>
-<li>A search for "ORTS" and "Open Rails" on <a href="http://www.uktrainsim.com">UKTrainSim</a> finds no files.</li>
-<li>A search for "ORTS" and "Open Rails" on <a href="http://www.elvastower.com">Elvas Tower</a> finds no files.</li>
+<li>A search for "ORTS" or "Open Rails" on <a href="http://www.trainsim.com">TrainSim</a> finds 31 files.</li>
+<li>A search for "ORTS" or "Open Rails" on <a href="http://www.uktrainsim.com">UKTrainSim</a> finds no files.</li>
+<li>A search for "ORTS" or "Open Rails" on <a href="http://www.elvastower.com">Elvas Tower</a> finds no files.</li>
 </ul>
 <p>
-<small>[Searches made 30-May-2014]</small>
+<small>[Searches made 7-Apr-2015]</small>
 </p>
         </div>
       </div>

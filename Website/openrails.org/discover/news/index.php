@@ -15,15 +15,14 @@
 		<div class="row">
 			<div class="col-md-1"></div>
 			<div class="col-md-5">
+          <h2>Apr 2015 - Demo Model 1</h2>
+          <p>
+          Open Rails first demonstration route <a href="/download/content">Demo Model 1</a> has been published.
+          </p>
           <h2>Dec 2014 - 3D Cabs</h2> 
           <p>
           <a href="http://www.dekosoft.com">Dekosoft Trains</a> has added locos exclusively for Open Rails to its range.
           These are GP30 diesels taking advantage of our 3D cab feature.
-          </p>
-          <hr />
-          <h2>Apr 2014 - Installer</h2>
-          <p>
-          An installer is now available, so Open Rails and its pre-requisites such as XNA can be delivered in a single download. 
           </p>
           <hr />
           <h2>Jul 2014 - Web Site</h2>

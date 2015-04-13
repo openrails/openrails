@@ -50,6 +50,8 @@
             <h4>Features</h4>
           </div>
           <p>
+            <strong>Multiple languages</strong> are available for all text and menus.
+          </p><p>
             <strong>Accurate behaviour</strong> for steam, diesel and electric traction including trains with multiple locos.
           </p><p>
             <strong>Signals</strong> which correctly protect the train and permit complex timetabled operations.
@@ -62,6 +64,10 @@
             <h4>News</h4>
           </div>
           <p>
+            <strong>Apr 2015</strong>
+            Open Rails first demonstration route <a href="/download/content">Demo Model 1</a> has been published.
+          </p>
+          <p>
             <strong>Dec 2014</strong>
             <a href="http://www.dekosoft.com">Dekosoft Trains</a> has added locos exclusively for Open Rails to its range.
             These are GP30 diesels taking advantage of our 3D cab feature.
@@ -72,9 +78,6 @@
             suitable for phones and tablets as well as PCs.
           </p><p>
           You can still <a href="/web1/index.html">see an archive of the old site</a>.
-          </p><p>
-            <strong>April 2014</strong>
-            &#8212; An installer is now available, so Open Rails and its pre-requisites such as XNA can be delivered in a single download. 
           </p>
         </div>
         <div class="col-md-4 divider">
@@ -82,10 +85,11 @@
             <h4>Videos</h4>
           </div>
           <div class="headed_content">
-            <h5>Open Rails Version 0.9</h5>
+            <h5>Demo Model 1</h5>
             <p>
-              <a href="https://www.youtube.com/watch?v=G73ktiCNKRs" target="_blank">Improvements arriving in v0.9 of Open Rails</a> are demonstrated by one 
-              of the project team.
+            <a href="https://www.youtube.com/watch?v=aZ5aVEvbOOE&feature=youtu.be" target="_blank">This video</a> records a player driving the
+            first <a href="/download/content">Open Rails demonstration route</a>
+            and providing a voice-over commentary.
             </p>
             <h5>Video Review <a href="http://www.attherailyard.com" target="_blank">At The Railyard</a></h5>
             <p>
@@ -94,6 +98,11 @@
                 a review of the fictional Full Bucket Line running in Open Rails</a>.
             </p><p>
               See more with this <a href="https://www.youtube.com/results?search_query=open+rails" target="_blank">YouTube search</a>.
+            </p>
+            <h5>Open Rails Version 0.9</h5>
+            <p>
+              <a href="https://www.youtube.com/watch?v=G73ktiCNKRs" target="_blank">Improvements arriving in v0.9 of Open Rails</a> are demonstrated by one 
+              of the project team.
             </p>
           </div>
         </div>
