@@ -6155,9 +6155,8 @@ namespace ORTS
                 signalRef.ReallocateDeadlockPathReferences(nextTrainNumber, 0);
 
                 bool foundPlayerLocomotive = false;
-                TrainCar newPlayerLocomotive = null;
 
-                // copy car information, also search for player locomotive
+                // search for player locomotive
                 for (int icar = 0; icar < formedTrain.Cars.Count; icar++)
                 {
                     var car = formedTrain.Cars[icar];
@@ -6169,17 +6168,19 @@ namespace ORTS
                             formedTrain.LeadLocomotiveIndex = icar;
                             break;
                         }
-                        else if (newPlayerLocomotive == null)
-                        {
-                            // cannot switch to new engine on new train - causes crashes in viewer
-                            MessageBox.Show("Newly formed train does not contain present player locomotive, program can not continue");
-                            Simulator.Confirmer.Viewer.Game.PopState();
-                        }
                     }
+                }
+
+                if (!foundPlayerLocomotive)
+                {
+                    // cannot switch to new engine on new train - causes crashes in viewer
+                    MessageBox.Show("Newly formed train does not contain present player locomotive, program can not continue");
+                    Simulator.Confirmer.Viewer.Game.PopState();
                 }
 
                 // notify viewer of change in selected train
                 Simulator.Confirmer.Viewer.ChangeTrain(this, formedTrain);
+                Simulator.PlayerLocomotive.Train = formedTrain;
 
                 // clear replay commands
                 Simulator.Confirmer.Viewer.Log.CommandList.Clear();
@@ -6187,14 +6188,6 @@ namespace ORTS
                 // display messages
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
                     Simulator.Confirmer.Information("Player switched to train : " + formedTrain.Name);
-
-                if (!foundPlayerLocomotive)
-                {
-                    formedTrain.InitializeBrakes(); // Initialize brakes on new engine
-                    if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
-                        Simulator.Confirmer.Information("Player switched to new locomotive");
-                }
-                Simulator.PlayerLocomotive.Train = formedTrain;
             }
         }
 
