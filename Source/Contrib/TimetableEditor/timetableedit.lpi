@@ -16,7 +16,8 @@
       <OutDir Value="languages"/>
     </i18n>
     <VersionInfo>
-      <StringTable ProductVersion=""/>
+      <UseVersionInfo Value="True"/>
+      <StringTable CompanyName="Open Rails" FileDescription="Open Rails Timetable Editor (Contributed)" LegalCopyright="Copyright © 2009, 2010, 2011, 2012, 2013, 2014, 2015" ProductName="Open Rails" ProductVersion=""/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="Default" Default="True"/>

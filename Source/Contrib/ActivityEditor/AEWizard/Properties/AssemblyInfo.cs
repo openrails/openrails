@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("AEWizard")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Open Rails AEWizard Library (Contributed)")]
+[assembly: AssemblyDescription("Open Rails Transport Simulator")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Microsoft")]
-[assembly: AssemblyProduct("AEWizard")]
-[assembly: AssemblyCopyright("Copyright © Microsoft 2013")]
+[assembly: AssemblyCompany("Open Rails")]
+[assembly: AssemblyProduct("Open Rails")]
+[assembly: AssemblyCopyright("Copyright © 2009, 2010, 2011, 2012, 2013, 2014, 2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
