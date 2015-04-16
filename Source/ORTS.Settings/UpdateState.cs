@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -15,12 +15,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using ORTS.Common;
 
 namespace ORTS.Settings
 {
@@ -41,7 +41,7 @@ namespace ORTS.Settings
         #endregion
 
         public UpdateState()
-            : base(SettingsStore.GetSettingStore(UpdateSettings.SettingsFilePath, null, "State"))
+            : base(SettingsStore.GetSettingStore(UserSettings.SettingsFilePath, UserSettings.RegistryKey, "UpdateState"))
         {
             Load(new string[0]);
         }

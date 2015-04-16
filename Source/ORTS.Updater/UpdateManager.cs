@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -142,6 +142,10 @@ namespace ORTS.Updater
                 {
                     LastUpdate = State.Update.Length > 0 ? JsonConvert.DeserializeObject<Update>(State.Update) : null;
                     LastCheckError = State.Update.Length > 0 || string.IsNullOrEmpty(Channel.URL) ? null : new InvalidDataException("Last update check failed.");
+
+                    // Validate that the deserialized update is sane.
+                    ValidateLastUpdate();
+
                     return;
                 }
 
@@ -156,13 +160,6 @@ namespace ORTS.Updater
                     return;
                 }
 
-                // Clean up any remaining bits from the just-applied update, but don't mind if this fails.
-                try
-                {
-                    CleanDirectories();
-                }
-                catch (Exception) { }
-
                 // Fetch the update URL (adding ?force=true if forced) and cache the update/error.
                 var client = new WebClient()
                 {
@@ -175,6 +172,9 @@ namespace ORTS.Updater
                 LastUpdate = JsonConvert.DeserializeObject<Update>(updateData);
                 LastCheckError = null;
 
+                // Check it's all good.
+                ValidateLastUpdate();
+
                 CacheUpdate(updateData);
             }
             catch (Exception error)
@@ -185,6 +185,19 @@ namespace ORTS.Updater
                 Trace.WriteLine(error);
 
                 ResetCachedUpdate();
+            }
+        }
+
+        void ValidateLastUpdate()
+        {
+            if (LastUpdate != null)
+            {
+                var uri = new Uri(LastUpdate.Url, UriKind.RelativeOrAbsolute);
+                if (uri.IsAbsoluteUri)
+                {
+                    LastUpdate = null;
+                    LastCheckError = new InvalidDataException("Update URL must be relative to channel URL.");
+                }
             }
         }
 
@@ -242,11 +255,7 @@ namespace ORTS.Updater
             }
             finally
             {
-                try
-                {
-                    CleanDirectories();
-                }
-                catch { }
+                CleanDirectories();
             }
         }
 
@@ -285,11 +294,8 @@ namespace ORTS.Updater
         }
 
         string PathUpdateTest { get { return Path.Combine(BasePath, "UpdateTest"); } }
-        // The temporary path is always on the same drive as the base path - this avoids problems with moving files
-        // and directories across drives (in-use files and all directories will fail otherwise).
-        string PathUpdateTemp { get { return Path.Combine(Path.GetPathRoot(BasePath), TemporaryDirectoryName); } }
-        string PathUpdateDirty { get { return Path.Combine(PathUpdateTemp, "UpdateDirty"); } }
-        string PathUpdateStage { get { return Path.Combine(PathUpdateTemp, "UpdateStage"); } }
+        string PathUpdateDirty { get { return Path.Combine(BasePath, "UpdateDirty"); } }
+        string PathUpdateStage { get { return Path.Combine(BasePath, "UpdateStage"); } }
         string FileUpdateStage { get { return Path.Combine(PathUpdateStage, "Update.zip"); } }
         string FileUpdateStageIsReady { get { return GetMainExecutable(PathUpdateStage, ProductName); } }
         string FileSettings { get { return Path.Combine(BasePath, "OpenRails.ini"); } }
@@ -303,8 +309,35 @@ namespace ORTS.Updater
 
         void CleanDirectories()
         {
-            if (Directory.Exists(PathUpdateTemp))
-                Directory.Delete(PathUpdateTemp, true);
+            if (Directory.Exists(PathUpdateDirty))
+                CleanDirectory(PathUpdateDirty);
+
+            if (Directory.Exists(PathUpdateStage))
+                CleanDirectory(PathUpdateStage);
+        }
+
+        void CleanDirectory(string path)
+        {
+            // Clean up as much as we can here, but any in-use files will fail. Don't worry about them. This is
+            // called before the update begins so we'll always start from a clean slate.
+
+            // Scan the files in any order.
+            var files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
+            foreach (var file in files)
+            {
+                try { File.Delete(file); }
+                catch { }
+            }
+
+            // Scan the directories by descending length, so that we never try and delete a parent before a child.
+            var directories = Directory.GetDirectories(path, "*", SearchOption.AllDirectories).OrderByDescending(s => s.Length);
+            foreach (var directory in directories)
+            {
+                try { Directory.Delete(directory); }
+                catch { }
+            }
+            try { Directory.Delete(path); }
+            catch { }
         }
 
         void DownloadUpdate(int progressMin, int progressLength)
@@ -404,7 +437,10 @@ namespace ORTS.Updater
 
         void ApplyUpdate()
         {
-            var basePathFiles = Directory.GetFiles(BasePath, "*", SearchOption.AllDirectories).Where(file => !file.Equals(FileSettings, StringComparison.OrdinalIgnoreCase)).ToArray();
+            var basePathFiles = Directory.GetFiles(BasePath, "*", SearchOption.AllDirectories).Where(file =>
+                !file.StartsWith(PathUpdateDirty, StringComparison.OrdinalIgnoreCase) &&
+                !file.StartsWith(PathUpdateStage, StringComparison.OrdinalIgnoreCase) &&
+                !file.Equals(FileSettings, StringComparison.OrdinalIgnoreCase)).ToArray();
             var updateStageFiles = Directory.GetFiles(PathUpdateStage, "*", SearchOption.AllDirectories);
 
             // Move (almost) all the files from the base path to the dirty path - this removes all the old program files.
@@ -412,9 +448,6 @@ namespace ORTS.Updater
 
             // Move all the files from the stage path to the base path - this adds all the new program files.
             MoveDirectoryFiles(PathUpdateStage, BasePath, updateStageFiles);
-
-            // Forcing a save of the state adds back this information to the new "Updater.ini" file, without overwriting the new updater settings.
-            State.Save();
         }
 
         void MoveDirectoryFiles(string source, string destination, string[] files)
@@ -424,8 +457,12 @@ namespace ORTS.Updater
             foreach (var file in files)
                 File.Move(file, Path.Combine(destination, GetRelativePath(file, source)));
 
-            foreach (var directory in Directory.GetDirectories(source))
-                Directory.Delete(directory);
+            foreach (var file in files)
+            {
+                var directory = Path.GetDirectoryName(file);
+                if (!directory.Equals(source, StringComparison.OrdinalIgnoreCase) && Directory.Exists(directory))
+                    Directory.Delete(directory);
+            }
         }
 
         void CreateDirectoryLayout(string source, string destination)
