@@ -671,7 +671,7 @@ namespace ORTS
         {
 
             List<SignalObject> newSignals = new List<SignalObject>();
-            int newindex = foundSignals + 1;
+            int newindex = foundSignals; //the last was placed into foundSignals-1, thus the new ones need to start from foundSignals
 
             //
             // Loop through all signals to check on Backfacing heads
@@ -864,7 +864,7 @@ namespace ORTS
             // length of array was set to all possible signals, so there will be space to spare
             //
 
-            newindex = foundSignals + 1;
+            newindex = foundSignals;
             foreach (SignalObject newSignal in newSignals)
             {
                 signalObjects[newindex] = newSignal;
