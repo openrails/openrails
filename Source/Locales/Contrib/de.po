@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Contrib\n"
-"POT-Creation-Date: 2014-12-03 20:27:45+0100\n"
-"PO-Revision-Date: 2015-03-06 12:52+0100\n"
+"POT-Creation-Date: 2015-04-11 13:12:53-0400\n"
+"PO-Revision-Date: 2015-04-18 13:32+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -109,6 +109,7 @@ msgstr ""
 msgid "HornProperties"
 msgstr ""
 
+# Should be removed due to wrong English text and presence of a corrected entry
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:100
 msgid "Activiti Description"
 msgstr "Beschreibung der Aufgabe"
@@ -165,12 +166,16 @@ msgstr "Beschreibung:"
 msgid "Activity Name : "
 msgstr "Name der Aufgabe:"
 
+# AI-traffic?If yes, "KI-Verkehr" is tranlsation used in other places
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:238
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:249
+#, fuzzy
 msgid "Traffic Description"
-msgstr "Verkehrsbeschreibung"
+msgstr "KI-Verkehrsbeschreibung"
 
+# English original doesn´t look like a displayed string on the GUI, rather like a debugging entry.
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:464
+#, fuzzy
 msgid "StartActivity"
 msgstr "Aufgabe starten"
 
@@ -227,7 +232,9 @@ msgstr "KI-Verkehr"
 msgid "Save"
 msgstr "Speichern"
 
+# Better wording than "Metadaten"?
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:161
+#, fuzzy
 msgid "Metadata"
 msgstr "Metadaten"
 
@@ -239,7 +246,9 @@ msgstr "Speichern unter ..."
 msgid "Load Activity"
 msgstr "Aufgabe laden"
 
+# Better wording than "Metadaten"?
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:184
+#, fuzzy
 msgid "Load Metada"
 msgstr "Lade Metadaten"
 
@@ -252,10 +261,12 @@ msgstr "Beenden"
 msgid "Tools"
 msgstr "Werkzeuge"
 
+# We also have an "Editor Options" string...
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:214
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:532
+#, fuzzy
 msgid "Options"
-msgstr "Optionen"
+msgstr "Einstellungen"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:221
 msgid "Import"
@@ -278,9 +289,11 @@ msgstr ""
 msgid "Status"
 msgstr "Status"
 
+# What is this string used for / there for?
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:302
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2026
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2128
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2025
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2127
+#, fuzzy
 msgid "v"
 msgstr "v"
 
@@ -294,8 +307,9 @@ msgstr "Bahnhofsbereich hinzufügen"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:380
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:273
+#, fuzzy
 msgid "Station Configuration"
-msgstr ""
+msgstr "Bahnhofskonfiguration"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:389
 msgid "Add Tag"
@@ -311,7 +325,7 @@ msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:431
 msgid "Move"
-msgstr "Bewegen"
+msgstr "Verschieben"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:441
 msgid "Rotate"
@@ -326,12 +340,14 @@ msgid "Activity Stop"
 msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:488
+#, fuzzy
 msgid "Waiting Point"
-msgstr ""
+msgstr "Wartepubkt"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:498
+#, fuzzy
 msgid "Action Point"
-msgstr ""
+msgstr "Aktionspunkt"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:508
 msgid "Action Check"
@@ -361,25 +377,31 @@ msgstr ""
 msgid "Form1"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:164
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:163
 msgid "Route MetaData"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2004
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2093
+# Does it mean the LCD / CRT display settings, or is it used to show / hide various items in the editor window?
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2003
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2092
+#, fuzzy
 msgid "Display"
-msgstr "Anzeuge"
+msgstr "Anzeige"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2015
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2117
+# What is this string used for / there for?
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2014
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2116
+#, fuzzy
 msgid "x"
 msgstr "x"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2041
+# What kind of tag?
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2040
+#, fuzzy
 msgid "Tag"
-msgstr ""
+msgstr "Tag"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2107
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2106
 msgid "Station"
 msgstr "Bahnhof"
 
@@ -387,9 +409,11 @@ msgstr "Bahnhof"
 msgid "Center view"
 msgstr "Ansicht zentrieren"
 
+# We also have an "Options" string...
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:114
+#, fuzzy
 msgid "Editor Options"
-msgstr ""
+msgstr "Editoreinstellungen"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:124
 msgid "Show Platform Label"
@@ -407,7 +431,9 @@ msgstr ""
 msgid "Show Snap circle"
 msgstr ""
 
+# Why "Show ALL signals"? Is it more than a simple 'show all or none" option?
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:220
+#, fuzzy
 msgid "Show all Signal"
 msgstr "Signale anzeigen"
 
@@ -417,8 +443,9 @@ msgid "Editor Preference"
 msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:250
+#, fuzzy
 msgid "Path Options"
-msgstr ""
+msgstr "Farhstraßeneinstellungen"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:261
 msgid "Please, configure your paths"
@@ -436,9 +463,11 @@ msgstr ""
 msgid "Browse"
 msgstr "Durchsuchen"
 
+# Translation needs checking for coherence with naming convetion (same translation used in the ORTS main menu?)
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:342
+#, fuzzy
 msgid "MSTS Path :"
-msgstr ""
+msgstr "MSTS-Installationsverzeichnis"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:358
 msgid "Debug Options"
@@ -464,9 +493,11 @@ msgstr "Maßstab anzeigen"
 msgid "Show Track Info"
 msgstr ""
 
+# Would "Tilegrenzen" be more appropriate / descriptive?
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:423
+#, fuzzy
 msgid "Show Tiles"
-msgstr ""
+msgstr "Tiles anzeigen"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:451
 msgid "Actions Configuration"
@@ -497,7 +528,7 @@ msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:73
 msgid "Buffer Label : "
-msgstr "Label des Prellbocks:"
+msgstr "Prellbockbeschriftung:"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:93
 msgid "Buffer Direction : "
@@ -511,13 +542,17 @@ msgstr ""
 msgid "Not yet implemented"
 msgstr "Feature noch nicht verfügbar"
 
+# What kind of connection?
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:67
+#, fuzzy
 msgid "Connection Direction : "
 msgstr "Richtung der Verbindung:"
 
+# What kind of connection?
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:87
+#, fuzzy
 msgid "Connection Label : "
-msgstr "Label der Verbindung:"
+msgstr "Verbindungsbeschriftung:"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:130
 msgid "Station Route Interface"
@@ -531,7 +566,9 @@ msgstr ""
 msgid "List of Paths seems OK:"
 msgstr ""
 
+# What is it used for?
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:119
+#, fuzzy
 msgid "###"
 msgstr "###"
 
@@ -568,8 +605,9 @@ msgid "Number of Siding"
 msgstr "Nummer des Nebengleises"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:229
+#, fuzzy
 msgid "Max. Passing Length"
-msgstr ""
+msgstr "Maximale lönge Der Ausweichstrecke"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:248
 msgid "Load Paths"
@@ -658,8 +696,8 @@ msgid ""
 "Sample header subtitle will help a user complete a certain task in the "
 "Sample wizard by clarifying the task in some way."
 msgstr ""
-"Der Untertitel des Sample-Headers soll dem Benutzer durch Beschreibung einer "
-"Aufgabe helfen, diese im Sample-Wizzard auszuführen."
+"Der Untertitel des Sample-Headers soll dem Benutzer durch Beschreibung eines "
+"Arbeitsschrittes helfen, diesen im Sample-Wizzard auszuführen."
 
 #: ../../Contrib/ContentManager/ContentManagerGUI.cs:61
 msgid "Loading..."
@@ -669,35 +707,38 @@ msgstr "Laden ..."
 msgid "Open Rails Content Manager"
 msgstr "Open Rails Content Manager"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:598
+#: ../../Contrib/TrackViewer/TrackViewer.cs:605
 msgid "The path you are working on has un-saved changes.\n"
 msgstr "Die gerade bearbeitete Fahrstraße wurde nicht gespeichert. \n"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:600
+#: ../../Contrib/TrackViewer/TrackViewer.cs:607
 msgid "Do you really want to Quit?"
 msgstr "Wollen Sie das Programm wirklich beenden?"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:642
+# Check naming convetion for instllation directory´s translation.
+#: ../../Contrib/TrackViewer/TrackViewer.cs:649
+#, fuzzy
 msgid ""
 "Directory is not a valid install directory.\n"
 "The install directory needs to contain ROUTES, GLOBAL, ..."
 msgstr ""
-"Der ausgewählte Ordner ist kein gültiger Installationsordner.\n"
-"Der Installationsordner muss die Unterordner ROUTES, GLOBAL, etc. enthalten."
+"Der ausgewählte Ordner ist kein gültiges Installationsverzeichnis.\n"
+"Der Ordner muss die Unterordner ROUTES, GLOBAL, etc. enthalten."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:716
+#: ../../Contrib/TrackViewer/TrackViewer.cs:723
 msgid "Loading route..."
 msgstr "Lade Route ..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:738
+#: ../../Contrib/TrackViewer/TrackViewer.cs:745
+#, fuzzy
 msgid "Route cannot be loaded. Sorry"
-msgstr "Route konnte nicht geladen werden. Sorry."
+msgstr "Die Route konnte leider nicht geladen werden."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:805
+#: ../../Contrib/TrackViewer/TrackViewer.cs:812
 msgid "Loading .pat file ..."
 msgstr "Lade .pat Datei ..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:808
+#: ../../Contrib/TrackViewer/TrackViewer.cs:815
 msgid "Processing .pat file ..."
 msgstr "Lese .pat Datei..."
 
@@ -705,11 +746,15 @@ msgstr "Lese .pat Datei..."
 msgid "Select broken path color"
 msgstr "Farbe für unterbrochene Fahrstraße auswählen"
 
+# Is the difference between "main" and "siding" the asme as main path and passing path?
 #: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:86
+#, fuzzy
 msgid "Select path color (main)"
 msgstr "Fahrstraßenfarbe (Hauptgleis) auswählen"
 
+# Is the difference between "main" and "siding" the asme as main path and passing path?
 #: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:96
+#, fuzzy
 msgid "Select path color (siding)"
 msgstr "Fahrstraßenfarbe (Nebengleis) auswählen"
 
@@ -725,11 +770,15 @@ msgstr "Textfarbe auswählen"
 msgid "Select junction color"
 msgstr "Weichenfarbe auswählen"
 
+# "Endnode" = buffer (Prellbock)?
 #: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:159
+#, fuzzy
 msgid "Select endnode color"
 msgstr "Prellbockfarbe auswählen"
 
+# Does "siding" mean the same as passing path?
 #: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:164
+#, fuzzy
 msgid "Select siding color"
 msgstr "Nebegleismarkerfarbe auswählen"
 
@@ -769,9 +818,11 @@ msgstr "Lade tsection.dat Datei ..."
 msgid "Finding the angles to draw signals, endnodes, ..."
 msgstr "Symbole für Signale, Prellböcke, etc. zur Strecke ausrichten ..."
 
+# Used for what?
 #: ../../Contrib/TrackViewer/Editing/EditorActions.cs:171
+#, fuzzy
 msgid "Not to be used, template only"
-msgstr "Nur Vorlage, nicht verwenden!"
+msgstr "Vorlage! Bitte nicht verwenden!"
 
 #: ../../Contrib/TrackViewer/Editing/EditorActions.cs:194
 msgid "Place start point"
@@ -805,64 +856,70 @@ msgstr "Umkehrpunkt platzieren"
 msgid "Remove reversal point"
 msgstr "Umkehrpunkt entfernen"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:466
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:458
 msgid "Place wait point"
 msgstr "Wartepunkt platzieren"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:493
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:485
 msgid "Edit wait point"
 msgstr "Wartepunkt bearbeiten"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:517
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:509
 msgid "Remove wait point"
 msgstr "Wartepunkt entfernen"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:720
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1290
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:712
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1282
 msgid "Take other exit"
 msgstr "Anderes Gleis nehmen"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:767
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:759
 msgid "Add passing path"
 msgstr "Ausweichstrecke hinzufügen"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:807
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:799
 msgid "Start passing path"
 msgstr "Ausweichstrecke beginnen"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:872
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:864
 msgid "Remove passing path"
 msgstr "Ausweichstrecke entfernen"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:912
+# Find better translation for "Invalid Node".
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:904
+#, fuzzy
 msgid "Fix invalid node"
 msgstr "Unterbrochenen Punkt reparieren"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:936
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:928
 msgid "Delete rest of path"
 msgstr "Rest der Farhstraße löschen"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:965
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:957
 msgid "Cut path here and store its tail"
 msgstr "Fahrstraße hier teilen, Rest speichern"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1019
+# Find better translation for "broken Node".
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1011
+#, fuzzy
 msgid "Auto-fix broken nodes"
 msgstr "Unterbochene Punkte automatisch reparieren"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1127
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1119
 msgid "Reconnect to tail"
 msgstr "Zum Rest verbinden"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1188
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1180
 msgid "Reconnect passing path"
 msgstr "Ausweichstrecke zu Hauptstrecke verbinden"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1960
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1952
 msgid "Draw path until here"
 msgstr "Fahrstraße bis hier anzeigen"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1991
+# Find better translation for "broken Node".
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1983
+#, fuzzy
 msgid "Draw path until next broken point"
 msgstr "Fahrstraße bis zum nächsten unterbrochenen Punkt anzeigen"
 
@@ -879,10 +936,12 @@ msgid "Reversing a path without end node is not supported"
 msgstr "Fahrstraßen ohne Endpunkt können nicht umgekehrt werden."
 
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:98
-msgid "Saving broken paths is not supported"
-msgstr "Fahrstraßen mit unterbrochenen Punkten können nicht gespeichert werden"
+msgid "Saving broken paths might not always work correctly.\n"
+msgstr "Unterbrochene Fahstraßen können eventuell nicht gespeichert werden.\n"
 
+# Set what as invalis?
 #: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:269
+#, fuzzy
 msgid "Set as invalid in .pat file"
 msgstr "In .PAT-Datei als ungültig markieren"
 
@@ -898,9 +957,24 @@ msgstr "Punkt konnte nicht auf dem Gleis platziert werden"
 msgid "Dangling siding node"
 msgstr ""
 
+# Used where?
 #: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:277
+#, fuzzy
 msgid "Unknown"
 msgstr "Unbekannt"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:52
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:53
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:54
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:55
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:56
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:57
+msgid "1"
+msgstr ""
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:228
+msgid "99"
+msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/Languages.cs:65
 msgid "Please restart TrackViewer in order to load the new language."
@@ -976,20 +1050,22 @@ msgstr "Open Rails Trackviewer Version"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:507
 msgid "It is a 'Contribution' to ORTS, and as such\n"
-msgstr "Ein 'Zusatzprogramm' zu Open Rails und als\n"
+msgstr "Ein 'Zusatzprogramm' zu Open Rails und\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:508
 msgid "not an integral part of ORTS."
-msgstr "solches keine direkter Teil von Open Rails."
+msgstr "damit kein direkter Teil von Open Rails."
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:770
 msgid ""
 "Currently all intended and planned editor features have been implemented."
 msgstr "Derzeit sind alle vorgesehenen und geplanten Features umgesetzt."
 
+# Where?
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:772
+#, fuzzy
 msgid "Documentation is available"
-msgstr "Dokumentation zu den Features ist verfügbar."
+msgstr "Eine Beschreibung der Features ist verfügbar."
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:774
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:129
@@ -1006,18 +1082,22 @@ msgid ""
 "* Possibly non-standard junctions (> 1 incoming or > 2 outgoing tracks) "
 "might not work."
 msgstr ""
-"* Möglicherweise keine Standard-Weiche (mehr als 1 Einfahrts- oder 2 "
-"Ausfahrtswege bereiten möglicherweise Probleme)"
+"* Weichen, die nicht dem Standard entsprechen (< 1 Einfahrts- bzw < 2 "
+"Ausfahrtswege), bereiten eventuell Probleme."
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:780
 msgid "Feedback is appreciated."
 msgstr "Feedback ist gerne erwünscht."
 
+# Find better translation for "Metadata"
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:4
+#, fuzzy
 msgid "Path metadata"
-msgstr "Fahrstraßen-Beschreibungsdaten"
+msgstr "Fahrstraßen-Metadaten"
 
+# What kind of ID?
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:7
+#, fuzzy
 msgid "Path ID"
 msgstr "ID der Fahstraße"
 
@@ -1035,13 +1115,13 @@ msgstr "Endpunkt der Farhstraße"
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:24
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:15
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:25
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:47
 msgid " OK "
 msgstr " OK "
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:25
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:16
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:26
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:48
 msgid " Cancel "
 msgstr "Abbrechen"
 
@@ -1062,7 +1142,7 @@ msgid "cars, wait for "
 msgstr ""
 
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:12
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:22
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:12
 msgid "seconds"
 msgstr "Sekunden"
 
@@ -1070,13 +1150,71 @@ msgstr "Sekunden"
 msgid "Wait Point"
 msgstr "Wartepunkt"
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:18
-msgid "Wait time = "
-msgstr "Wartezeit ="
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:8
+msgid "Wait time: "
+msgstr "Wartezeit:"
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:20
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:10
 msgid "minutes"
 msgstr "Minuten"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:15
+msgid "Openrails advanced shunting options:"
+msgstr "Erweiterete Rangieroptionen für Open Rails:"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:19
+#, fuzzy
+msgid "Wait until:  "
+msgstr "Warten bis"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:21
+msgid ":"
+msgstr ":"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:23
+msgid "HH:MM"
+msgstr "HH:MM"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:27
+msgid "Uncouple: keep "
+msgstr ""
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:29
+msgid " cars, and wait"
+msgstr ""
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:31
+msgid "seconds. "
+msgstr "Sekunden."
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:32
+#, fuzzy
+msgid "Keep rear"
+msgstr "Ende erhalten"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:36
+msgid "Join and split"
+msgstr ""
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:40
+msgid "Wait time code as decimal ="
+msgstr "Wartezeit-code dezimal ="
+
+# Used for what?
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:41
+#, fuzzy
+msgid "00000"
+msgstr "00000"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:42
+msgid "hexadecimal ="
+msgstr "Hexadezimal ="
+
+# Used for What?
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:43
+#, fuzzy
+msgid "0000"
+msgstr "0000"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:8
 msgid "(Re)load route"
@@ -1084,7 +1222,7 @@ msgstr "Route (erneut) laden"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:10
 msgid "Select install folder"
-msgstr "Installationsordner auswählen"
+msgstr "Installationsverzeichnis auswählen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:11
 msgid "Select route"
@@ -1164,11 +1302,11 @@ msgstr "Minikarte anzeigen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:43
 msgid "Show world tiles"
-msgstr "World Tiles anzeigen"
+msgstr "Tiles mit Streckenteilen hervorheben"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:44
 msgid "Show grid lines"
-msgstr "Raster anzeigen"
+msgstr "Tile-Raster anzeigen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:45
 msgid "Show scale ruler"
@@ -1226,6 +1364,7 @@ msgstr "Keine anzeigen"
 msgid "Highlight items (shift-F10)"
 msgstr "Elemente hervorheben (Shift+F10)"
 
+# Is "Ends" = buffers?
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:64
 #, fuzzy
 msgid "Junctions/ends"
@@ -1235,7 +1374,9 @@ msgstr "Weichen / Prellböcke"
 msgid "Show junctions"
 msgstr "Weichen anzeigen"
 
+# End node = Buffer?
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:66
+#, fuzzy
 msgid "Show end nodes"
 msgstr "Prellböcke anzeigen"
 
@@ -1317,7 +1458,7 @@ msgstr "Straßen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:91
 msgid "Draw roads"
-msgstr "Straßen zeichnen"
+msgstr "Straßen anzeigen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:92
 msgid "Show car spawners"
@@ -1375,7 +1516,9 @@ msgstr "Andere Fahrstraßen anzeigen"
 msgid "Save path"
 msgstr "Fahrstraße speichern"
 
+# What exactly does "visited" mean?
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:121
+#, fuzzy
 msgid "Save visited stations"
 msgstr "Besuchte Bahnhöfe speichern"
 
@@ -1387,9 +1530,11 @@ msgstr "Bearbeitung aktivieren"
 msgid "New path"
 msgstr "Neue Fahrstraße"
 
+# Find better translation for "Metadata"
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:126
+#, fuzzy
 msgid "Edit path metadata"
-msgstr "Fahrstraßen-Beschreibungsdaten bearbeiten"
+msgstr "Fahrstraßen-Metadaten bearbeiten"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:127
 msgid "Reverse path"
@@ -1418,7 +1563,7 @@ msgstr "Suchen"
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:33
 msgid "Shows tileX and tileZ of the world location at the mouse pointer"
-msgstr "Zeigt tileX und tileZ der worldposition beim Mauszeiger an."
+msgstr "Zeigt tileX- und tileZ-Koordinaten beim Mauszeiger an."
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:41
 msgid "Shows X-coordinate (without tileX) at the mouse pointer"
@@ -1437,6 +1582,7 @@ msgstr "Gleisindex"
 msgid "Index in the Track DataBase (.tdb) file"
 msgstr "Index in der Schienendatenbankdatei (.tdb)"
 
+# What kind of item?
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:66
 #, fuzzy
 msgid "Item"
@@ -1458,9 +1604,6 @@ msgstr "Andere relevante Infos, bitte im Menüpunkt \"Statusleiste\" auswählen"
 #, fuzzy
 #~ msgid "elementHost"
 #~ msgstr "elementHost"
-
-#~ msgid "Wait until  "
-#~ msgstr "Warten bis"
 
 #~ msgid " = "
 #~ msgstr " = "
