@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
 "POT-Creation-Date: 2015-04-11 12:48:38-0400\n"
-"PO-Revision-Date: 2015-04-11 13:10-0500\n"
+"PO-Revision-Date: 2015-04-14 20:16-0500\n"
 "Last-Translator: Jijun Tang\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: zh_CN\n"
@@ -2513,7 +2513,7 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:627
 msgid "Brake"
-msgstr ""
+msgstr "制动"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:628
 msgid "Friction"
@@ -2736,7 +2736,7 @@ msgstr "限速："
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:110
 msgid " Dist      Speed   Aspect"
-msgstr "距离       速度    信号  "
+msgstr "距离       速度        信号  "
 
 #: ../../RunActivity/Viewer3D/Popups/TrainOperationsWindow.cs:36
 msgid "Train Operations"
