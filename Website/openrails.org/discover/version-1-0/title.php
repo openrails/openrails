@@ -1,0 +1,1 @@
+<?php echo "<title>Open Rails - Stable Release of Open Rails 1.0</title>"; ?>

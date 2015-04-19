@@ -34,9 +34,11 @@ modeling people or road traffic or moving water. A specialist could deliver and 
 These vendors sell or distribute products suitable for Open Rails:
 </p>
 <ul>
+  <li><a href="http://www.3dtrains.com" target="_blank">3DTrains</a> - USA</li>
   <li><a href="http://www.conbuilder.com" target="_blank">ConBuilder</a> - Utility Suite</li>
   <li><a href="http://dekosoft.com/trains">Dekosoft Trains</a> - USA</li>
   <li><a href="http://www.makingtracks-online.co.uk" target="_blank">Making Tracks</a> - UK</li>
+  <li><a href="http://pikku.msts.cz/openrails.html">Pikku Locomotive Works</a> - Czechoslovakia</li>
   <li><a href="http://www.streamlines.ca">Stream Lines</a> - Canada</li>
 </ul>
 <p>&nbsp;</p>
@@ -45,7 +47,6 @@ These vendors sell or distribute products suitable for Open Rails:
 These vendors sell or distribute products suitable for MSTS:
 </p>
 <ul>
-  <li><a href="http://www.3dtrains.com" target="_blank">3DTrains</a> - USA</li>
   <li><a href="http://www.3dtrainstuff.com" target="_blank">3DTrainStuff</a> - USA and UK</li>
   <li><a href="http://www.valleypass.com/Sales/Sales.htm" target="_blank">BLW Productions</a> - Canada</li>
   <li><a href="http://www.dieselswest.com" target="_blank">DieselsWest</a> - USA</li>
