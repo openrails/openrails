@@ -1121,6 +1121,37 @@ namespace ORTS
                 // Attempting to sort car w/o WheelAxles will resort to an error.
                 WheelAxles.Sort(WheelAxles[0]);
             }
+
+            //fix bogies with only one wheel set:
+            // This process is to fix the bogies that did not pivot under the cab of steam locomotives as well as other locomotives that have this symptom.
+            // The cause involved the bogie and axle being close by 0.05f or less on the ZAxis.
+            // The ComputePosition() process was unable to work with this.
+            // The fix involves first testing for how close they are then moving the bogie offset up.
+            // The final fix involves adding an additional axle.  Without this, both bogie and axle would never track properly?
+            // Note: Steam locomotive modelers are aware of this issue and are now making sure there is ample spacing between axle and bogie.
+            for (var i = 1; i < Parts.Count; i++)
+            {
+                if (Parts[i].bogie == true && Parts[i].SumWgt < 1.5)
+                {
+                    foreach (var w in WheelAxles)
+                    {
+                        if (w.BogieMatrix == Parts[i].iMatrix)
+                        {
+                            if (w.OffsetM.AlmostEqual(Parts[i].OffsetM, 0.6f))
+                            {
+                                var w1 = new WheelAxle(w.OffsetM - 0.5f, w.BogieIndex, i);
+                                w1.Part = Parts[w1.BogieIndex]; //create virtual wheel
+                                w1.Part.SumWgt++;
+                                WheelAxles.Add(w1);
+                                w.OffsetM += 0.5f; //move the original bogie forward, so we have two bogies to make the future calculation happy
+                                Trace.TraceInformation("A virtual wheel axle was added for bogie {1} of {0}", WagFilePath, i);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
             // Count up the number of bogies (parts) with at least 2 axles.
             for (var i = 1; i < Parts.Count; i++)
                 if (Parts[i].SumWgt > 1.5)
