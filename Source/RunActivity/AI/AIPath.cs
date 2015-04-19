@@ -502,7 +502,7 @@ namespace ORTS
                 if (tn == null) continue;
                 if (wantJunctionNode && (tn.TrJunctionNode == null)) continue;
                 if (!wantJunctionNode && !tn.TrEndNode) continue;
-                if (tn.UiD.WorldTileX != location.TileX || tn.UiD.WorldTileZ != location.TileZ) continue;
+                if (tn.UiD.TileX != location.TileX || tn.UiD.TileZ != location.TileZ) continue;
 
                 float dx = tn.UiD.X - location.Location.X;
                 dx += (tn.UiD.TileX - location.TileX) * 2048;
