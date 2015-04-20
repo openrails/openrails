@@ -282,6 +282,7 @@ namespace ORTS.Viewer3D
             SaveActivityFileStem = fileStem;
             SaveActivityThumbnail = true;
             outf.Write(NightTexturesNotLoaded);
+            World.WeatherControl.SaveWeatherParameters(outf);
         }
 
         [CallOnThread("Render")]
@@ -305,7 +306,7 @@ namespace ORTS.Viewer3D
             NightTexturesNotLoaded = inf.ReadBoolean();
             LoadMemoryThreshold = (long)HUDWindow.GetVirtualAddressLimit() - 512 * 1024 * 1024;
             tryLoadingNightTextures = true;
-
+            World.WeatherControl.RestoreWeatherParameters(inf);
         }
 
         /// <summary>

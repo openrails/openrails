@@ -23,6 +23,7 @@ using ORTS.Common;
 using ORTS.MultiPlayer;
 using ORTS.Settings;
 using System.Collections.Generic;
+using System.IO;
 
 namespace ORTS.Viewer3D
 {
@@ -96,6 +97,21 @@ namespace ORTS.Viewer3D
             SetInitialWeatherParameters();
             UpdateWeatherParameters();
         }
+
+         public void SaveWeatherParameters(BinaryWriter outf)
+        {
+            outf.Write(fogDistance);
+            outf.Write(overcastFactor);
+            outf.Write(pricipitationIntensityPPSPM2);
+        }
+
+         public void RestoreWeatherParameters(BinaryReader inf)
+         {
+             fogDistance = inf.ReadSingle();
+             overcastFactor = inf.ReadSingle();
+             pricipitationIntensityPPSPM2 = inf.ReadSingle();
+             UpdateVolume();
+         }
 
         void SetInitialWeatherParameters()
         {
