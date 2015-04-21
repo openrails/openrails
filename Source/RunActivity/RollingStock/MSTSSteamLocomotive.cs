@@ -159,7 +159,8 @@ namespace ORTS
         float SuperheatAreaM2 = 0.0f;      // Heating area of superheater
         float SuperheatKFactor = 11.7f;     // Factor used to calculate superheat temperature - guesstimate
         float SuperheatRefTempF;            // Superheat temperature in deg Fahrenheit, based upon the heating area.
-        float SuperheatTempRatio;          // A ratio used to calculate the superheat - based on the ratio of superheat (using heat area) to "known" curve. 
+        float SuperheatTempRatio;          // A ratio used to calculate the superheat temp - based on the ratio of superheat (using heat area) to "known" curve. 
+        float SuperheatUsageRatio;          // A ratio used to calculate the steam usage axis for superheat - based on the ratio of steam usage to "known" curve. 
         float CurrentSuperheatTeampF;      // current value of superheating based upon boiler steam output
         float SuperheatVolumeRatio;   // Approximate ratio of Superheated steam to saturated steam at same pressure
         float FuelCalorificKJpKG = 33400;
@@ -432,7 +433,7 @@ namespace ORTS
         float MotiveForceGearRatio; // mulitplication factor to be used in calculating motive force etc, when a geared locomotive.
         float SteamGearPosition = 0.0f; // Position of Gears if set
         
-        float CalculatedFactorofAdhesion; // Calculated factor of adhesion
+       float CalculatedFactorofAdhesion; // Calculated factor of adhesion
        float TangentialCrankWheelForceLbf; 		// Tangential force on wheel
        float StaticWheelFrictionForceLbf; 		// Static force on wheel due to adhesion	
        float PistonForceLbf;    // Max force exerted by piston.
@@ -995,6 +996,13 @@ namespace ORTS
 
             MaxBoilerKW = Kg.FromLb(TheoreticalMaxSteamOutputLBpS) * W.ToKW(W.FromBTUpS(SteamHeatPSItoBTUpLB[MaxBoilerPressurePSI]));
             MaxFlueTempK = (MaxBoilerKW / (W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2 * HeatMaterialThicknessFactor)) + baseTempK;
+
+            // Cylinder Steam Usage	= SweptVolumeToTravelRatioFT3pFT x cutoff x {(speed x (SteamDensity (CylPress) - SteamDensity (CylBackPress)) 
+            // lbs/s                = ft3/ft                                  x   ft/s  x  lbs/ft3
+            MaxBoilerOutputLBpH = pS.TopH(TheoreticalMaxSteamOutputLBpS);
+
+            // Adjust superheat steam usage axis based upon actual max boiler output
+            SuperheatUsageRatio = 36000.0f / MaxBoilerOutputLBpH;
                     
             // Determine if Superheater in use
             if (SuperheatAreaM2 == 0) // If super heating area not specified
@@ -1002,7 +1010,7 @@ namespace ORTS
               if (SuperheaterFactor > 1.0 ) // check if MSTS value, then set superheating
                 {
                     HasSuperheater = true;
-                    SuperheatRefTempF = 200.0f; // Assume a superheating temp of 250degF
+                    SuperheatRefTempF = 200.0f; // Assume a superheating temp of 200degF
                     SuperheatTempRatio = SuperheatRefTempF / SuperheatTempLbpHtoDegF[pS.TopH(TheoreticalMaxSteamOutputLBpS)];
                     SuperheatAreaM2 = Me2.FromFt2((SuperheatRefTempF * pS.TopH(TheoreticalMaxSteamOutputLBpS)) / (C.ToF(C.FromK(MaxFlueTempK)) * SuperheatKFactor)); // Back calculate Superheat area for display purposes only.
                     CylinderClearancePC = 0.09f;
@@ -1106,11 +1114,6 @@ namespace ORTS
             LPCylinderPistonAreaFt2 = Me2.ToFt2(MathHelper.Pi * LPCylinderDiameterM * LPCylinderDiameterM / 4.0f);
             CylinderSweptVolumeFT3pFT = ((CylinderPistonAreaFt2 * Me.ToFt(CylinderStrokeM)) - CylinderPistonShaftFt3);
             LPCylinderSweptVolumeFT3pFT = ((LPCylinderPistonAreaFt2 * Me.ToFt(LPCylinderStrokeM)) - CylinderPistonShaftFt3);
-
-            // Cylinder Steam Usage	= SweptVolumeToTravelRatioFT3pFT x cutoff x {(speed x (SteamDensity (CylPress) - SteamDensity (CylBackPress)) 
-            // lbs/s                = ft3/ft                                  x   ft/s  x  lbs/ft3
-
-            MaxBoilerOutputLBpH = pS.TopH(TheoreticalMaxSteamOutputLBpS);
 
             float MaxCombustionRateKgpS = pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH(TheoreticalMaxSteamOutputLBpS)]));
 
@@ -2024,13 +2027,13 @@ namespace ORTS
             // Determine if Superheater in use
             if (HasSuperheater)
             {
-                CurrentSuperheatTeampF = SuperheatTempLbpHtoDegF[pS.TopH(CylinderSteamUsageLBpS)] * SuperheatTempRatio; // Calculate current superheat temp
+                CurrentSuperheatTeampF = SuperheatTempLbpHtoDegF[pS.TopH(CylinderSteamUsageLBpS * SuperheatUsageRatio)] * SuperheatTempRatio; // Calculate current superheat temp
                 float DifferenceSuperheatTeampF = CurrentSuperheatTeampF - SuperheatTempLimitXtoDegF[cutoff]; // reduce superheat temp due to cylinder condensation
                 SuperheatVolumeRatio = 1.0f + (0.0015f * DifferenceSuperheatTeampF); // Based on formula Vsup = Vsat ( 1 + 0.0015 Tsup) - Tsup temperature at superheated level
                 // look ahead to see what impact superheat will have on cylinder usage
                 float FutureCylinderSteamUsageLBpS = CylinderSteamUsageLBpS * 1.0f / SuperheatVolumeRatio; // Calculate potential future new cylinder steam usage
-                float FutureSuperheatTeampF = SuperheatTempLbpHtoDegF[pS.TopH(FutureCylinderSteamUsageLBpS)] * SuperheatTempRatio; // Calculate potential future new superheat temp
-                
+                float FutureSuperheatTeampF = SuperheatTempLbpHtoDegF[pS.TopH(FutureCylinderSteamUsageLBpS * SuperheatUsageRatio)] * SuperheatTempRatio; // Calculate potential future new superheat temp
+                float SuperheatLowerLimit = SuperheatTempLimitXtoDegF[cutoff] - 10.0f;
 
                 if (CurrentSuperheatTeampF > SuperheatTempLimitXtoDegF[cutoff])
                 {
@@ -2045,9 +2048,12 @@ namespace ORTS
                 }
                 else
                 {
-                    CylinderCondensationFactor = CylinderCondensationFractionX[cutoff] / CylinderCondensationFractionX[0.3f];
-                    CylinderCondensationFactor = MathHelper.Clamp(CylinderCondensationFactor, 0.0f, CylinderCondensationFactor); // ensure condensation factor does not go out of bounds.
-                    SuperheaterSteamUsageFactor = 1.0f + (CylinderCondensationFactorSpeed[pS.TopM(DrvWheelRevRpS)] * CylinderCondensationFactor);
+                    if (FutureSuperheatTeampF < SuperheatLowerLimit) // Only reset super heat ratio if superheat temp drops below lower limit
+                    {
+                        CylinderCondensationFactor = CylinderCondensationFractionX[cutoff] / CylinderCondensationFractionX[0.3f];
+                        CylinderCondensationFactor = MathHelper.Clamp(CylinderCondensationFactor, 0.0f, CylinderCondensationFactor); // ensure condensation factor does not go out of bounds.
+                        SuperheaterSteamUsageFactor = 1.0f + (CylinderCondensationFactorSpeed[pS.TopM(DrvWheelRevRpS)] * CylinderCondensationFactor);
+                    }
                 }
             }
             else
