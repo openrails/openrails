@@ -55,6 +55,7 @@ namespace ORTS.TrackViewer.Editing
             uncoupleWaitSeconds.Text = "1";
             waitTimeMinutes.Text = "1";
             waitTimeSeconds.Text = "1";
+            blowHornSeconds.Text = "1";
             
             if (currentWaitTimeS >= 30000 && currentWaitTimeS < 40000)
             {
@@ -78,6 +79,12 @@ namespace ORTS.TrackViewer.Editing
             else if (currentWaitTimeS == 60001)
             {
                 selectJoinSplit.IsChecked = true;
+            }
+            else if (currentWaitTimeS >= 60011 && currentWaitTimeS <= 60020)
+            {
+                int seconds = currentWaitTimeS - 60010;
+                blowHornSeconds.Text = seconds.ToString(System.Globalization.CultureInfo.CurrentCulture);
+                selectBlowHorn.IsChecked = true;
             }
             else
             {
@@ -114,6 +121,24 @@ namespace ORTS.TrackViewer.Editing
             {
                 // coding is only one number
                 return 60001;
+            }
+
+            if (selectBlowHorn.IsChecked == true)
+            {
+                // coding is 60011 to 60020
+                int seconds = getIntOrZero(blowHornSeconds.Text);
+                if (seconds < 0)
+                {
+                    // we need to allow 0 itself (which we get from an empty string) otherwise it is not even possible to go from '1' to '2' or so.
+                    seconds = 1;
+                    blowHornSeconds.Text = "1";
+                }
+                if (seconds > 10)
+                {
+                    seconds = 10;
+                    blowHornSeconds.Text = "10";
+                }
+                return 60010 + seconds;
             }
 
             //if (selectWait.IsChecked == true)
@@ -180,6 +205,7 @@ namespace ORTS.TrackViewer.Editing
             untilTimeMinutes.IsEnabled = false;
             uncoupleCars.IsEnabled = false;
             uncoupleWaitSeconds.IsEnabled = false;
+            blowHornSeconds.IsEnabled = false;
             keepRear.IsEnabled = false;
 
             if (selectWait.IsChecked == true)
@@ -202,6 +228,12 @@ namespace ORTS.TrackViewer.Editing
                 uncoupleCars.IsEnabled = true;
                 keepRear.IsEnabled = true;
                 uncoupleWaitSeconds.Focus();
+            }
+
+            if (selectBlowHorn.IsChecked == true)
+            {
+                blowHornSeconds.IsEnabled = true;
+                blowHornSeconds.Focus();
             }
 
             updateWaitTime();
