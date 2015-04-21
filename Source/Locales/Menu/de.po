@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
 "POT-Creation-Date: 2015-04-11 13:12:55-0400\n"
-"PO-Revision-Date: 2015-04-18 14:26+0100\n"
+"PO-Revision-Date: 2015-04-21 11:33+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -260,7 +260,6 @@ msgstr "Pfad: {0}"
 
 # Better translation?
 #: ../../Menu/MainForm.Designer.cs:118
-#, fuzzy
 msgid "Windowed"
 msgstr "Fenstermodus"
 
@@ -1118,6 +1117,7 @@ msgstr ""
 "Spielstände in neueren Versionen von Open Rails ungültig, wenn ein "
 "Ladeversuch zum Abstürzt führt.\n"
 
+# Duplicate entry; wrong spelling in source;Used where?
 #: ../../Menu/ResumeForm.cs:382
 #, fuzzy
 msgid "Delete of invalid saves"
