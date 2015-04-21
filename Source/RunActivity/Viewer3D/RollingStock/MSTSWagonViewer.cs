@@ -148,16 +148,18 @@ namespace ORTS.Viewer3D.RollingStock
             var matrixName = TrainCarShape.SharedShape.MatrixNames[matrix].ToUpper();
             // Gate all RunningGearPartIndexes on this!
             var matrixAnimated = TrainCarShape.SharedShape.Animations != null && TrainCarShape.SharedShape.Animations.Count > 0 && TrainCarShape.SharedShape.Animations[0].anim_nodes.Count > matrix && TrainCarShape.SharedShape.Animations[0].anim_nodes[matrix].controllers.Count > 0;
-            if (matrixName.StartsWith("WHEELS") && matrixName.Length == 7 | matrixName.Length == 8)
+            if (matrixName.StartsWith("WHEELS") && (matrixName.Length == 7 || matrixName.Length == 8 || matrixName.Length == 9))
             {
+                // Standard WHEELS length would be 8 to test for WHEELS11. Came across WHEELS tag that used a period(.) between the last 2 numbers, changing max length to 9.
+                // Changing max length to 9 is not a problem since the initial WHEELS test will still be good.
                 var m = TrainCarShape.SharedShape.GetMatrixProduct(matrix);
                 //someone uses wheel to animate fans, thus check if the wheel is not too high (lower than 3m), will animate it as real wheel
                 if (m.M42 < 3)
                 {
                     var id = 0;
-                    if (matrixName.Length == 8)
+                    if (matrixName.Length == 8 || matrixName.Length == 9)
                         Int32.TryParse(matrixName.Substring(6, 1), out id);
-                    if (matrixName.Length == 8 || !matrixAnimated)
+                    if (matrixName.Length == 8 || matrixName.Length == 9 || !matrixAnimated)
                         WheelPartIndexes.Add(matrix);
                     else
                         RunningGear.AddMatrix(matrix);
