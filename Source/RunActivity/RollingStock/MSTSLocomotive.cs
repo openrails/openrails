@@ -694,6 +694,7 @@ namespace ORTS
             ControllerFactory.Save(TrainBrakeController, outf);
             ControllerFactory.Save(EngineBrakeController, outf);
             ControllerFactory.Save(DynamicBrakeController, outf);
+            outf.Write(AcceptMUSignals);
 
             base.Save(outf);
         }
@@ -721,6 +722,7 @@ namespace ORTS
             ControllerFactory.Restore(TrainBrakeController, inf);
             ControllerFactory.Restore(EngineBrakeController, inf);
             ControllerFactory.Restore(DynamicBrakeController, inf);
+            AcceptMUSignals = inf.ReadBoolean();
             AdhesionFilter.Reset(0.5f);
 
             base.Restore(inf);
