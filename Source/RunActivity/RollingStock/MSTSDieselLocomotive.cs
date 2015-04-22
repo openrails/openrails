@@ -143,6 +143,17 @@ namespace ORTS
         {
             base.LoadFromWagFile(wagFilePath);
 
+            if (DieselEngines == null)
+                DieselEngines = new DieselEngines(this);
+
+            if (DieselEngines.Count == 0)
+            {
+                DieselEngines.Add(new DieselEngine());
+
+                DieselEngines[0].InitFromMSTS(this);
+                DieselEngines[0].Initialize(true);
+            }
+
             InitialMassKg = MassKG;
         }
 
@@ -183,19 +194,14 @@ namespace ORTS
                 GearBoxController = new MSTSNotchController(locoCopy.GearBoxController);
 
             DieselEngines = new DieselEngines(locoCopy.DieselEngines, this);
+            foreach (DieselEngine de in DieselEngines)
+            {
+                de.Initialize(true);
+            }
         }
 
         public override void Initialize()
         {
-            if (DieselEngines == null)
-                DieselEngines = new DieselEngines(this);
-
-            if (DieselEngines.Count == 0)
-            {
-                DieselEngines.Add(new DieselEngine());
-                DieselEngines[0].InitFromMSTS(this);
-            }
-
             if ((GearBox != null) && (GearBoxController == null))
             {
                 if (!GearBox.IsInitialized)
@@ -213,7 +219,7 @@ namespace ORTS
                 }
             }
 
-            DieselEngines.Initialize(true);
+            DieselEngines.Initialize(false);
 
             base.Initialize();
         }
@@ -241,15 +247,6 @@ namespace ORTS
             base.Restore(inf);
             DieselLevelL = inf.ReadSingle();
             ControllerFactory.Restore(GearBoxController, inf);
-
-            if (DieselEngines == null)
-                DieselEngines = new DieselEngines(this);
-
-            if (DieselEngines.Count == 0)
-            {
-                DieselEngines.Add(new DieselEngine());
-                DieselEngines[0].InitFromMSTS(this);
-            }
             DieselEngines.Restore(inf);
         }
 

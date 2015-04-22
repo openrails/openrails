@@ -75,6 +75,7 @@ namespace ORTS
         {
             Locomotive = loco;
             Parse(stf, loco);
+
         }
 
 
@@ -116,7 +117,8 @@ namespace ORTS
                 if ((!DEList[i].IsInitialized))
                 {
                     STFException.TraceWarning(stf, "Diesel engine model has some errors - loading MSTS format");
-                    DEList[i].InitFromMSTS((MSTSDieselLocomotive)Locomotive);                    
+                    DEList[i].InitFromMSTS((MSTSDieselLocomotive)Locomotive);
+                    DEList[i].Initialize(true);
                 }
             }
         }
@@ -151,6 +153,7 @@ namespace ORTS
                 {
                     DEList.Add(new DieselEngine());
                     DEList[i].InitFromMSTS((MSTSDieselLocomotive)Locomotive);
+                    DEList[i].Initialize(true);
                 }
                 
             }
@@ -776,11 +779,10 @@ namespace ORTS
             {
                 RealRPM = IdleRPM;
                 EngineStatus = Status.Running;
-                RPMRange = MaxRPM - IdleRPM;
-                MagnitudeRange = MaxMagnitude - InitialMagnitude;
-                ExhaustRange = MaxExhaust - InitialExhaust;
             }
-
+            RPMRange = MaxRPM - IdleRPM;
+            MagnitudeRange = MaxMagnitude - InitialMagnitude;
+            ExhaustRange = MaxExhaust - InitialExhaust;
             ExhaustSteadyColor.A = 10;
             ExhaustDecelColor.A = 10;
         }
