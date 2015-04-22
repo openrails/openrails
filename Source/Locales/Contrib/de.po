@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Contrib\n"
 "POT-Creation-Date: 2015-04-11 13:12:53-0400\n"
-"PO-Revision-Date: 2015-04-18 13:32+0100\n"
+"PO-Revision-Date: 2015-04-22 15:33+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -1591,22 +1591,3 @@ msgstr "Element"
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:99
 msgid "Any other relevant information. Make your choice via Statusbar menu"
 msgstr "Andere relevante Infos, bitte im Menüpunkt \"Statusleiste\" auswählen"
-
-#~ msgid "Remove broken point"
-#~ msgstr "Unterbrochenen Punkt entfernen"
-
-#~ msgid "Remove everything after this point"
-#~ msgstr "Rest der Fahrstraße ab hier löschen"
-
-#~ msgid "Path Editor is under construction!"
-#~ msgstr "Fahrstraße in Arbeit!"
-
-#, fuzzy
-#~ msgid "elementHost"
-#~ msgstr "elementHost"
-
-#~ msgid " = "
-#~ msgstr " = "
-
-#~ msgid "hours"
-#~ msgstr "Stunden"

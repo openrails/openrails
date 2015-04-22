@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
 "POT-Creation-Date: 2015-04-11 13:13:01-0400\n"
-"PO-Revision-Date: 2015-04-18 14:31+0100\n"
+"PO-Revision-Date: 2015-04-22 15:34+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -628,36 +628,3 @@ msgstr "{0} {0} benötigt und wird von ALT abgeändert."
 #, csharp-format
 msgid "{0} and {1} both match {2}"
 msgstr "{0} und {1} liegen beide auf {2}."
-
-#~ msgid "Debug Dump Keymap"
-#~ msgstr "Debug: Tastendruck-Liste speichern"
-
-#~ msgid "Camera Pan Left"
-#~ msgstr "Kamera: Schwenken nach links"
-
-#~ msgid "Camera Pan Right"
-#~ msgstr "Kamera: Schwenken nach rechts"
-
-#~ msgid "Camera Pan Up"
-#~ msgstr "Kamera: Schwenken nach oben"
-
-#~ msgid "Camera Pan Down"
-#~ msgstr "Kamera: Schwenken nach unten"
-
-#~ msgid "Camera Zoom In"
-#~ msgstr "Kamera: Hineinzoomen"
-
-#~ msgid "Camera Zoom Out"
-#~ msgstr "Kamera: Herauszoomen"
-
-#~ msgid "Camera Rotate Left"
-#~ msgstr "Kamera: Drehen nach links"
-
-#~ msgid "Camera Rotate Right"
-#~ msgstr "Kamera: Drehen nach rechts"
-
-#~ msgid "Camera Rotate Up"
-#~ msgstr "Kamera: Drehen nach oben"
-
-#~ msgid "Camera Rotate Down"
-#~ msgstr "Kamera: Drehen nach unten"
