@@ -1002,7 +1002,7 @@ namespace ORTS
                 return;
             //some old stocks have only two wheels, but defined to have four, two share the same offset, thus all computing of rotations will have problem
             //will check, if so, make the offset different a bit. 
-            foreach (var axles in WheelAxles) if (offset.AlmostEqual(axles.OffsetM, 0.05f)) { offset = axles.OffsetM + 0.1f; break; }
+            foreach (var axles in WheelAxles) if (offset.AlmostEqual(axles.OffsetM, 0.05f)) { offset = axles.OffsetM + 0.7f; break; }
             if (wheels.Length == 8)
             {
                 if (wheels == "WHEELS11" || wheels == "WHEELS12" || wheels == "WHEELS13" || wheels == "SPOKES11" || wheels == "SPOKES12" || wheels == "SPOKES13")
