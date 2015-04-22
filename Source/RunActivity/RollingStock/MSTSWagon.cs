@@ -477,8 +477,8 @@ namespace ORTS
                 HeadOutViewpoints.Add(headOutViewPoint);
             if (copy.CabViewpoints != null)
             {
-                CabViewpoints = new List<ViewPoint>();
-                foreach (ViewPoint cabViewPoint in copy.CabViewpoints)
+                CabViewpoints = new List<PassengerViewPoint>();
+                foreach (PassengerViewPoint cabViewPoint in copy.CabViewpoints)
                 CabViewpoints.Add(cabViewPoint);
             }
             foreach (MSTSCoupling coupler in copy.Couplers)
@@ -519,7 +519,7 @@ namespace ORTS
             // Set initial direction
             passengerViewPoint.RotationXRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.X);
             passengerViewPoint.RotationYRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.Y);
-            if (this.CabViewpoints == null) CabViewpoints = new List<ViewPoint>();
+            if (this.CabViewpoints == null) CabViewpoints = new List<PassengerViewPoint>();
             CabViewpoints.Add(passengerViewPoint);
         }
         public static float ParseFloat(string token)

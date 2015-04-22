@@ -241,7 +241,7 @@ namespace ORTS
 
         // For use by cameras, initialized in MSTSWagon class and its derived classes
         public List<PassengerViewPoint> PassengerViewpoints = new List<PassengerViewPoint>();
-        public List<ViewPoint> CabViewpoints; //three dimensional cab view point
+        public List<PassengerViewPoint> CabViewpoints; //three dimensional cab view point
         public List<ViewPoint> HeadOutViewpoints = new List<ViewPoint>();
 
         // Used by Curve Speed Method
