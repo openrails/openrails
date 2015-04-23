@@ -140,7 +140,7 @@ namespace ORTS.Debugging
             if (selectedNode == null)
                 selectedNode = inactiveSoundList.SelectedNode;
 
-            if (selectedNode != null)
+            if (selectedNode != null && selectedNode.Tag is SoundSource)
                 selectedSoundSource = (SoundSource)selectedNode.Tag;
             else
                 selectedSoundSource = null;
