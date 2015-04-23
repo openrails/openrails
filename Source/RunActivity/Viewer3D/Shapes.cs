@@ -682,16 +682,20 @@ namespace ORTS.Viewer3D
                 from tid in CrossingObj.trItemIDList where tid.db == 1 select tid.dbID,
                 CrossingObj.levelCrParameters.warningTime,
                 CrossingObj.levelCrParameters.minimumDistance);
-            // LOOPED COSSINGS (animTiming < 0)
-            //     MSTS plays through all the frames of the animation for "closed" and sits on frame 0 for "open". The
-            //     speed of animation is the normal speed (frame rate at 30FPS) scaled by the timing value. Since the
-            //     timing value is negative, the animation actually plays in reverse.
-            // NON-LOOPED CROSSINGS (animTiming > 0)
-            //     MSTS plays through the first 1.0 seconds of the animation forwards for closing and backwards for
-            //     opening. The number of frames defined doesn't matter; the animation is limited by time so the frame
-            //     rate (based on 30FPS) is what's needed.
-            AnimationFrames = CrossingObj.levelCrTiming.animTiming < 0 ? SharedShape.Animations[0].FrameCount : SharedShape.Animations[0].FrameRate / 30f;
-            AnimationSpeed = SharedShape.Animations[0].FrameRate / 30f / CrossingObj.levelCrTiming.animTiming;
+            // If there are no animations, we leave the frame count and speed at 0 and nothing will try to animate.
+            if (SharedShape.Animations != null && SharedShape.Animations.Count > 0)
+            {
+                // LOOPED COSSINGS (animTiming < 0)
+                //     MSTS plays through all the frames of the animation for "closed" and sits on frame 0 for "open". The
+                //     speed of animation is the normal speed (frame rate at 30FPS) scaled by the timing value. Since the
+                //     timing value is negative, the animation actually plays in reverse.
+                // NON-LOOPED CROSSINGS (animTiming > 0)
+                //     MSTS plays through the first 1.0 seconds of the animation forwards for closing and backwards for
+                //     opening. The number of frames defined doesn't matter; the animation is limited by time so the frame
+                //     rate (based on 30FPS) is what's needed.
+                AnimationFrames = CrossingObj.levelCrTiming.animTiming < 0 ? SharedShape.Animations[0].FrameCount : SharedShape.Animations[0].FrameRate / 30f;
+                AnimationSpeed = SharedShape.Animations[0].FrameRate / 30f / CrossingObj.levelCrTiming.animTiming;
+            }
         }
 
         public override void Unload()
