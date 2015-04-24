@@ -477,6 +477,7 @@ namespace ORTS
                     if (worldObject.GetType() == typeof(SignalObj))
                     {
                         var thisWorldObject = worldObject as SignalObj;
+                        if (thisWorldObject.SignalUnits == null) continue; //this has no unit, will ignore it and treat it as static in scenary.cs
                         var SignalWorldSignal = new SignalWorldObject(thisWorldObject, sigcfg);
                         SignalWorldList.Add(SignalWorldSignal);
                         foreach (var thisref in SignalWorldSignal.HeadReference)
