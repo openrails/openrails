@@ -471,7 +471,7 @@ namespace ORTS.Viewer3D.RollingStock
                     FormatStrings.FormatSpeedLimit(match.Pickup.SpeedRange.MinMpS, Viewer.MilepostUnitsMetric)));
                 return;
             }
-            if (loco.SpeedMpS > match.Pickup.SpeedRange.MinMpS)
+            if (loco.SpeedMpS > match.Pickup.SpeedRange.MaxMpS)
             {
                 var speedLimitMpH = MpS.ToMpH(match.Pickup.SpeedRange.MaxMpS);
                 Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: Loco speed must not exceed {0}.",
