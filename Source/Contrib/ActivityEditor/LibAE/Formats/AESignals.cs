@@ -469,7 +469,7 @@ namespace LibAE.Formats
         {
 
             List<AESignalObject> newSignals = new List<AESignalObject>();
-            int newindex = foundSignals + 1;
+            int newindex = foundSignals;
 
             //
             // Loop through all signals to check on Backfacing heads
@@ -662,7 +662,7 @@ namespace LibAE.Formats
             // length of array was set to all possible signals, so there will be space to spare
             //
 
-            newindex = foundSignals + 1;
+            newindex = foundSignals;
             foreach (AESignalObject newSignal in newSignals)
             {
                 signalObjects[newindex] = newSignal;

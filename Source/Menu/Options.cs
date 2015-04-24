@@ -77,6 +77,7 @@ namespace ORTS
             comboLanguage.DisplayMember = "Name";
             comboLanguage.ValueMember = "Code";
             comboLanguage.SelectedValue = Settings.Language;
+            if (comboLanguage.SelectedValue == null) comboLanguage.SelectedIndex = 0;
 
             comboBoxOtherUnits.DataSource = new[] {
                 new ComboBoxMember { Code = "Route", Name = catalog.GetString("Route") },
