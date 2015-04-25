@@ -4067,7 +4067,6 @@ namespace ORTS
                 //  <CSComment> Why initialize brakes of a disappeared train?    
                 //            InitializeBrakes();
                 attachTrain.physicsUpdate(0);   // stop the wheels from moving etc
-
                 // remove original train
                 if (!UncondAttach) RemoveTrain();
                 else
@@ -4075,6 +4074,7 @@ namespace ORTS
                     // if there is just here a reversal point, increment subpath in order to be in accordance with attachTrain
 
                     var ppTCSectionIndex = PresentPosition[0].TCSectionIndex;
+                    this.IncorporatingTrain = attachTrain;
                     SuspendTrain();
                     if (ppTCSectionIndex == TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1].TCSectionIndex)
                         IncrementSubpath(this);

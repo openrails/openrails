@@ -468,6 +468,11 @@ namespace ORTS.Viewer3D
             FreeRoamCameraList.RemoveAt(0);
         }
 
+        public void ChangeSelectedTrain(Train selectedTrain)
+        {
+            SelectedTrain = selectedTrain;
+        }
+
         public void AdjustCabHeight(int windowWidth, int windowHeight)
         {
             int MSTSCabHeightPixels = windowWidth * 3 / 4; // MSTS cab views are designed for 4:3 aspect ratio.

@@ -186,6 +186,7 @@ namespace ORTS
 
         public int AttachTo = -1;                              // attach information : train to which to attach at end of run
         public int IncorporatedTrainNo = -1;                        // number of train incorporated in actual train
+        public Train IncorporatingTrain;                      // train incorporating another train
 
         public Traffic_Service_Definition TrafficService;
         public int[,] MisalignedSwitch = new int[2, 2] { { -1, -1 }, { -1, -1 } };  // misaligned switch indication per direction:
