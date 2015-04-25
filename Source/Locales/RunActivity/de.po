@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
 "POT-Creation-Date: 2015-04-11 13:13:02-0400\n"
-"PO-Revision-Date: 2015-04-22 15:34+0100\n"
+"PO-Revision-Date: 2015-04-25 19:01+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -149,6 +149,7 @@ msgstr "Geschlossen"
 msgid "Switching Request Sent to the Server"
 msgstr "Weichenstellanfrage an Server gesendet"
 
+# Used where?
 #: ../../RunActivity/Debugging/DebugViewerForm.cs:177
 #, fuzzy
 msgid "View Self"
@@ -296,7 +297,7 @@ msgstr "3D"
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:391
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:664
 msgid "Speed"
-msgstr "Geschwindk.:"
+msgstr "Geschwi."
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:310
 msgid "Variable 2"
@@ -315,7 +316,7 @@ msgstr "Variable 1"
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:672
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:71
 msgid "Distance"
-msgstr "Entfernung"
+msgstr "Entfernu."
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:359
 msgid "Volume"
@@ -508,7 +509,7 @@ msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSDieselLocomotive.cs:817
 msgid "Engine"
-msgstr "Motor"
+msgstr "Motor:"
 
 #: ../../RunActivity/RollingStock/MSTSDieselLocomotive.cs:821
 #: ../../RunActivity/RollingStock/MSTSDieselLocomotive.cs:833
@@ -907,7 +908,7 @@ msgstr ""
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3651
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3709
 msgid "Status:"
-msgstr "Status"
+msgstr "Status:"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3652
 #, fuzzy
@@ -1091,7 +1092,6 @@ msgid "Drawbar"
 msgstr "Zugstange"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3734
-#, fuzzy
 msgid "Force:"
 msgstr "Kraft:"
 
@@ -1214,12 +1214,11 @@ msgstr "Ihr Zug hat sich überschlagen."
 
 #: ../../RunActivity/RollingStock/TrainCar.cs:799
 msgid "(flipped)"
-msgstr "(108°)"
+msgstr "(verkehrt)"
 
 #: ../../RunActivity/RollingStock/TrainCar.cs:801
-#, fuzzy
 msgid "MU'd"
-msgstr "Mehrfachsteuerung"
+msgstr "Tandemst."
 
 #: ../../RunActivity/RollingStock/TrainCar.cs:801
 msgid "Single"
@@ -1247,12 +1246,11 @@ msgstr "Status"
 
 #: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:302
 msgid "Load"
-msgstr ""
+msgstr "Belastung"
 
 #: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:309
-#, fuzzy
 msgid "Flow"
-msgstr "Durchfluss"
+msgstr "Fluss"
 
 #: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:317
 msgid "Oil"
@@ -1348,7 +1346,7 @@ msgstr ""
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:394
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:543
 msgid "Throttle"
-msgstr "Regler"
+msgstr "Regler:"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:143
 #: ../../RunActivity/Simulator/Confirmation.cs:155
@@ -1452,7 +1450,7 @@ msgstr "Pantograph 2"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:150
 msgid "Player Diesel Power"
-msgstr "Dieselmotor Spielerlok"
+msgstr "Dieselmotor Spielerlok:"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:150
 msgid "locked. Close throttle then re-try."
@@ -1460,7 +1458,7 @@ msgstr "gepserrt. Regler auf null stellen und nochmals versuchen"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:151
 msgid "Helper Diesel Power"
-msgstr "Dieselmotoren Hilfsloks"
+msgstr "Dieselmotoren Hilfsloks:"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:152
 msgid "Diesel Tank"
@@ -1478,7 +1476,7 @@ msgstr "Füllung"
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:394
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:543
 msgid "Regulator"
-msgstr "Regler"
+msgstr "Regler:"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:156
 msgid "Injector 1"
@@ -1557,7 +1555,7 @@ msgstr "Wasserstand"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:169
 msgid "Train Brake"
-msgstr "Zugbremse"
+msgstr "Zugbremse:"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:169
 #: ../../RunActivity/Simulator/Confirmation.cs:170
@@ -1573,11 +1571,11 @@ msgstr "anwenden"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:170
 msgid "Engine Brake"
-msgstr "Lokbremse"
+msgstr "Lokbremse:"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:171
 msgid "Dynamic Brake"
-msgstr "E-Bremse"
+msgstr "E-Bremse:"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:171
 msgid "setup"
@@ -1858,7 +1856,7 @@ msgstr "{0} {1:0}%"
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:542
 msgctxt "NonSteam"
 msgid "Reverser"
-msgstr "Richtungswender"
+msgstr "Richt.wend:"
 
 #. Context: Steam
 #: ../../RunActivity/Simulator/Confirmation.cs:154
@@ -2278,17 +2276,18 @@ msgid "Power In/Out"
 msgstr "Arbeit ein/aus"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:130
+#, fuzzy
 msgid "Motive force"
-msgstr ""
+msgstr "Beschleunigungskräfte"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:132
 msgid "Num of substeps"
-msgstr ""
+msgstr "Anzahl der Teilschritte"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:135
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:783
 msgid "Memory"
-msgstr "Speicher"
+msgstr "Speicher:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:136
 msgid "GCs"
@@ -2301,58 +2300,58 @@ msgstr "Framezeit"
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:138
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:797
 msgid "Render process"
-msgstr "Render-Prozess"
+msgstr "Render-Prozess:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:139
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:798
 msgid "Updater process"
-msgstr "Updater-Prozess"
+msgstr "Updater-Prozess:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:140
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:799
 msgid "Loader process"
-msgstr "Lade-Prozess"
+msgstr "Lade-Prozess:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:141
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:800
 msgid "Sound process"
-msgstr "Sound-Prozess"
+msgstr "Sound-Prozess:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:380
 msgid "Version"
-msgstr "Version"
+msgstr "Version:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:384
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:386
 msgid "Time"
-msgstr "Zeit"
+msgstr "Zeit:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:392
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:634
 msgid "Gradient"
-msgstr "Steigung"
+msgstr "Steigung:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:393
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:541
 msgid "Direction"
-msgstr "Richtung"
+msgstr "Richtung:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:395
 msgid "Train brake"
-msgstr "Zugbremse"
+msgstr "Zugbremse:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:399
 msgid "Engine brake"
-msgstr "Lokbremse"
+msgstr "Lokbremse:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:401
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:544
 msgid "Dynamic brake"
-msgstr "E-Bremse"
+msgstr "E-Bremse:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:415
 msgid "FPS"
-msgstr "FPS"
+msgstr "FPS:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:419
 msgid "Autopilot"
@@ -2361,7 +2360,7 @@ msgstr "Autopilot"
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:422
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:601
 msgid "Wheel slip"
-msgstr "Radschlupf"
+msgstr "Radschlupf:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:424
 msgid "Wheel slip warning"
@@ -2412,15 +2411,14 @@ msgid "Player"
 msgstr "Spieler"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:471
-#, fuzzy
 msgid "Tilted"
-msgstr "Neigetechnik"
+msgstr "Neigetech."
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:472
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:492
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:564
 msgid "Type"
-msgstr "Type"
+msgstr "Typ"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:473
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:493
@@ -2442,7 +2440,6 @@ msgid "Out of Control"
 msgstr "Außer Kontrolle"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:477
-#, fuzzy
 msgid "Cab Aspect"
 msgstr "Führerstand-Signalanzeige"
 
@@ -2464,7 +2461,7 @@ msgstr "Güter"
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:481
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:502
 msgid "Pass"
-msgstr "Passagier"
+msgstr "Pass"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:490
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:563
@@ -2475,16 +2472,14 @@ msgstr "Waggon"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:491
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:653
-#, fuzzy
 msgid "Flipped"
-msgstr "Ausrichtung"
+msgstr "Verkehrt"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:495
 msgid "Drv/Cabs"
-msgstr ""
+msgstr "Fahrb/Fst"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:496
-#, fuzzy
 msgid "Wheels"
 msgstr "Räder"
 
@@ -2498,25 +2493,21 @@ msgstr "BREMS-INFORMATION"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:560
 msgid "Main reservoir"
-msgstr "Haupdruckbehälter"
+msgstr "Haupdruckbehälter:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:565
-#, fuzzy
 msgid "BrkCyl"
 msgstr "BreZyl"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:566
-#, fuzzy
 msgid "BrkPipe"
 msgstr "BreLtg"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:567
-#, fuzzy
 msgid "AuxRes"
 msgstr "HilfBeh"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:568
-#, fuzzy
 msgid "ErgRes"
 msgstr "NotBeh"
 
@@ -2526,29 +2517,27 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:570
 msgid "RetValve"
-msgstr ""
+msgstr "HalteVent"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:571
-#, fuzzy
 msgid "TripleValve"
 msgstr "3wegVent"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:573
-#, fuzzy
 msgid "Handbrk"
 msgstr "HandBre"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:574
 msgid "Conn"
-msgstr ""
+msgstr "Vbdg"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:575
 msgid "AnglCock"
-msgstr ""
+msgstr "BreLtgVent"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:576
 msgid "BleedOff"
-msgstr ""
+msgstr "DruckAblass"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:592
 msgid "FORCE INFORMATION"
@@ -2556,24 +2545,23 @@ msgstr "KRÄFTE-INFORMATION"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:602
 msgid "Conditions"
-msgstr ""
+msgstr "Schienenbeding.:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:603
 msgid "Axle drive force"
-msgstr "Achsantriebskraft"
+msgstr "Achsantriebskraft:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:604
 msgid "Axle brake force"
-msgstr "Achsbremskraft"
+msgstr "Achsbremskraft:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:605
 msgid "Number of substeps"
-msgstr ""
+msgstr "Anz. der Teilschritte:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:607
-#, fuzzy
 msgid "Solver"
-msgstr "Löser"
+msgstr "Löser:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:608
 msgid "Stability correction"
@@ -2590,37 +2578,33 @@ msgstr "(Detaillierteres Reibungsmodell deaktiviert)"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:625
 msgid "Total"
-msgstr "Total"
+msgstr "Gesamt"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:626
 msgid "Motive"
-msgstr ""
+msgstr "Beschleun."
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:627
 msgid "Brake"
-msgstr ""
+msgstr "Bremskr."
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:628
-#, fuzzy
 msgid "Friction"
 msgstr "Reibung"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:629
 msgid "Gravity"
-msgstr ""
+msgstr "Gravitation"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:630
-#, fuzzy
 msgid "Curve"
 msgstr "Kurve"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:631
-#, fuzzy
 msgid "Tunnel"
 msgstr "Tunnel"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:632
-#, fuzzy
 msgid "Coupler"
 msgstr "Kupplung"
 
@@ -2633,17 +2617,14 @@ msgid "Train"
 msgstr "Zug"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:663
-#, fuzzy
 msgid "Travelled"
-msgstr "Zurückgelegt"
+msgstr "Gereist"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:666
-#, fuzzy
 msgid "AI mode"
 msgstr "KI-Modus"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:667
-#, fuzzy
 msgid "AI data"
 msgstr "KI-Daten"
 
@@ -2653,7 +2634,7 @@ msgstr "Modus"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:669
 msgid "Auth"
-msgstr ""
+msgstr "Erlaubnis"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:671
 #, fuzzy
@@ -2661,9 +2642,8 @@ msgid "Signal"
 msgstr "Signal"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:673
-#, fuzzy
 msgid "Consist"
-msgstr "Zugverband"
+msgstr "Zugverbd."
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:674
 msgid "Path"
@@ -2674,29 +2654,28 @@ msgid "DEBUG INFORMATION"
 msgstr "DEBUGGING-INFORMATION"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:781
-#, fuzzy
 msgid "Logging enabled"
-msgstr "Logger an"
+msgstr "Logger an:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:782
 msgid "Build"
-msgstr "Build"
+msgstr "Build:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:786
 msgid "Adapter"
-msgstr ""
+msgstr "Grafik-Adapter:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:791
 msgid "Shadow maps"
-msgstr ""
+msgstr "Shadow Maps:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:793
 msgid "Shadow primitives"
-msgstr ""
+msgstr "Schattenprimitiven:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:796
 msgid "Render primitives"
-msgstr ""
+msgstr "Darstell.primitiven:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:797
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:798
@@ -2708,19 +2687,19 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:801
 msgid "Total process"
-msgstr ""
+msgstr "Geamt-Prozess:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:802
 msgid "Camera"
-msgstr ""
+msgstr "Kamera:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:606
-#, csharp-format
+#, fuzzy, csharp-format
 msgid "filtered by {0:F0}"
-msgstr ""
+msgstr "durch {0:F0} gefiltert"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:784
-#, fuzzy, csharp-format
+#, csharp-format
 msgid "{0} logical processor"
 msgid_plural "{0} logical processors"
 msgstr[0] "{0} logischer Processor"
@@ -2846,6 +2825,8 @@ msgid ""
 "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890 \",.-+|!$%&/"
 "()=?;:'_[]"
 msgstr ""
+"AÄBCDEFGHIJKLMNOÖPQRSTUÜVWXYZaäbcdefghijklmnoöpqrsßtuüvwxyz1234567890 \",.-"
+"+|!$%&/()=?;:'_[]#€@"
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:331
 msgid "diesel oil"

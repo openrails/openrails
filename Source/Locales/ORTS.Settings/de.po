@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
 "POT-Creation-Date: 2015-04-11 13:13:01-0400\n"
-"PO-Revision-Date: 2015-04-22 15:34+0100\n"
+"PO-Revision-Date: 2015-04-25 17:28+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -441,7 +441,6 @@ msgid "Control Odometer Reset"
 msgstr "Steuerung: Entfernungsmesser zurücksetzen"
 
 #: ../../ORTS.Settings/InputSettings.cs:153
-#, fuzzy
 msgid "Control Odometer Direction"
 msgstr "Steuerung: Entfernungsmesser Zählrichtung umschalten"
 

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Contrib\n"
 "POT-Creation-Date: 2015-04-11 13:12:53-0400\n"
-"PO-Revision-Date: 2015-04-22 15:33+0100\n"
+"PO-Revision-Date: 2015-04-25 17:26+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -102,8 +102,9 @@ msgid "Delay :"
 msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/HornProperties.Designer.cs:72
+#, fuzzy
 msgid "Required Trigger Distance :"
-msgstr ""
+msgstr "Auslöserradius:"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/HornProperties.Designer.cs:93
 msgid "HornProperties"
@@ -111,6 +112,7 @@ msgstr ""
 
 # Should be removed due to wrong English text and presence of a corrected entry
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:100
+#, fuzzy
 msgid "Activiti Description"
 msgstr "Beschreibung der Aufgabe"
 
@@ -377,9 +379,11 @@ msgstr ""
 msgid "Form1"
 msgstr ""
 
+# Find better translation for "metadata"
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:163
+#, fuzzy
 msgid "Route MetaData"
-msgstr ""
+msgstr "Routen-Metadaten"
 
 # Does it mean the LCD / CRT display settings, or is it used to show / hide various items in the editor window?
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2003
@@ -424,12 +428,14 @@ msgid "Zoom level :"
 msgstr "Zoom:"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:200
+#, fuzzy
 msgid "Size of snap circle :"
-msgstr ""
+msgstr "Größe des Auswahlkreises:"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:209
+#, fuzzy
 msgid "Show Snap circle"
-msgstr ""
+msgstr "Auswwahlkreis anzeigen"
 
 # Why "Show ALL signals"? Is it more than a simple 'show all or none" option?
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:220
@@ -465,9 +471,8 @@ msgstr "Durchsuchen"
 
 # Translation needs checking for coherence with naming convetion (same translation used in the ORTS main menu?)
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:342
-#, fuzzy
 msgid "MSTS Path :"
-msgstr "MSTS-Installationsverzeichnis"
+msgstr "MSTS-Installationsprofil"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:358
 msgid "Debug Options"
@@ -500,8 +505,9 @@ msgid "Show Tiles"
 msgstr "Tiles anzeigen"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:451
+#, fuzzy
 msgid "Actions Configuration"
-msgstr ""
+msgstr "Aktionsereignis-Konfiguration"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:468
 msgid "< remove"
@@ -512,8 +518,9 @@ msgid "Add >"
 msgstr "Hinzufügen >"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:511
+#, fuzzy
 msgid "Configuration for Generic Auxiliary Actions"
-msgstr ""
+msgstr "Konfiguration erweiterter Aktionsereignisee"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.cs:33
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.cs:57
@@ -523,8 +530,9 @@ msgstr "Bitte Namen hinzufügen"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:56
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:104
+#, fuzzy
 msgid "TC Section : "
-msgstr ""
+msgstr "Zugkontroll-Abschnitt:"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:73
 msgid "Buffer Label : "
@@ -730,7 +738,6 @@ msgid "Loading route..."
 msgstr "Lade Route ..."
 
 #: ../../Contrib/TrackViewer/TrackViewer.cs:745
-#, fuzzy
 msgid "Route cannot be loaded. Sorry"
 msgstr "Die Route konnte leider nicht geladen werden."
 
@@ -746,17 +753,13 @@ msgstr "Lese .pat Datei..."
 msgid "Select broken path color"
 msgstr "Farbe für unterbrochene Fahrstraße auswählen"
 
-# Is the difference between "main" and "siding" the asme as main path and passing path?
 #: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:86
-#, fuzzy
 msgid "Select path color (main)"
 msgstr "Fahrstraßenfarbe (Hauptgleis) auswählen"
 
-# Is the difference between "main" and "siding" the asme as main path and passing path?
 #: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:96
-#, fuzzy
 msgid "Select path color (siding)"
-msgstr "Fahrstraßenfarbe (Nebengleis) auswählen"
+msgstr "Fahrstraßenfarbe (Ausweichgleis) auswählen"
 
 #: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:134
 msgid "Select background color"
@@ -770,15 +773,11 @@ msgstr "Textfarbe auswählen"
 msgid "Select junction color"
 msgstr "Weichenfarbe auswählen"
 
-# "Endnode" = buffer (Prellbock)?
 #: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:159
-#, fuzzy
 msgid "Select endnode color"
 msgstr "Prellbockfarbe auswählen"
 
-# Does "siding" mean the same as passing path?
 #: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:164
-#, fuzzy
 msgid "Select siding color"
 msgstr "Nebegleismarkerfarbe auswählen"
 
@@ -885,11 +884,10 @@ msgstr "Ausweichstrecke beginnen"
 msgid "Remove passing path"
 msgstr "Ausweichstrecke entfernen"
 
-# Find better translation for "Invalid Node".
 #: ../../Contrib/TrackViewer/Editing/EditorActions.cs:904
 #, fuzzy
 msgid "Fix invalid node"
-msgstr "Unterbrochenen Punkt reparieren"
+msgstr "Ungültigen Punkt Punkt reparieren"
 
 #: ../../Contrib/TrackViewer/Editing/EditorActions.cs:928
 msgid "Delete rest of path"
@@ -899,11 +897,10 @@ msgstr "Rest der Farhstraße löschen"
 msgid "Cut path here and store its tail"
 msgstr "Fahrstraße hier teilen, Rest speichern"
 
-# Find better translation for "broken Node".
 #: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1011
 #, fuzzy
 msgid "Auto-fix broken nodes"
-msgstr "Unterbochene Punkte automatisch reparieren"
+msgstr "Ungültige Punkte automatisch reparieren"
 
 #: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1119
 msgid "Reconnect to tail"
@@ -917,11 +914,10 @@ msgstr "Ausweichstrecke zu Hauptstrecke verbinden"
 msgid "Draw path until here"
 msgstr "Fahrstraße bis hier anzeigen"
 
-# Find better translation for "broken Node".
 #: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1983
 #, fuzzy
 msgid "Draw path until next broken point"
-msgstr "Fahrstraße bis zum nächsten unterbrochenen Punkt anzeigen"
+msgstr "Fahrstraße bis zum nächsten ungültigen Punkt anzeigen"
 
 #: ../../Contrib/TrackViewer/Editing/PathEditor.cs:698
 msgid "Reversing broken paths is not supported"
@@ -963,18 +959,22 @@ msgstr ""
 msgid "Unknown"
 msgstr "Unbekannt"
 
+# Used for what?
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:52
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:53
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:54
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:55
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:56
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:57
+#, fuzzy
 msgid "1"
-msgstr ""
+msgstr "1"
 
+# Used for what?
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:228
+#, fuzzy
 msgid "99"
-msgstr ""
+msgstr "99"
 
 #: ../../Contrib/TrackViewer/UserInterface/Languages.cs:65
 msgid "Please restart TrackViewer in order to load the new language."
@@ -1175,22 +1175,27 @@ msgstr ":"
 msgid "HH:MM"
 msgstr "HH:MM"
 
+# Do strings 250 thru 252 belong together?
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:27
+#, fuzzy
 msgid "Uncouple: keep "
-msgstr ""
+msgstr "Abkuppel:"
 
+# Do strings 250 thru 252 belong together?
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:29
+#, fuzzy
 msgid " cars, and wait"
-msgstr ""
+msgstr "Waggons, "
 
+# Do strings 250 thru 252 belong together?
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:31
+#, fuzzy
 msgid "seconds. "
-msgstr "Sekunden."
+msgstr "Sekunden warten."
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:32
-#, fuzzy
 msgid "Keep rear"
-msgstr "Ende erhalten"
+msgstr "Ende behalten"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:36
 msgid "Join and split"
@@ -1364,9 +1369,7 @@ msgstr "Keine anzeigen"
 msgid "Highlight items (shift-F10)"
 msgstr "Elemente hervorheben (Shift+F10)"
 
-# Is "Ends" = buffers?
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:64
-#, fuzzy
 msgid "Junctions/ends"
 msgstr "Weichen / Prellböcke"
 
@@ -1374,9 +1377,7 @@ msgstr "Weichen / Prellböcke"
 msgid "Show junctions"
 msgstr "Weichen anzeigen"
 
-# End node = Buffer?
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:66
-#, fuzzy
 msgid "Show end nodes"
 msgstr "Prellböcke anzeigen"
 
