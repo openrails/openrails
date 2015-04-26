@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
-"POT-Creation-Date: 2015-04-11 12:48:38-0400\n"
-"PO-Revision-Date: 2015-04-11 13:10-0500\n"
+"POT-Creation-Date: 2015-04-11 13:13:02-0400\n"
+"PO-Revision-Date: 2015-04-25 22:28-0500\n"
 "Last-Translator: Jijun Tang\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: zh_CN\n"
@@ -20,7 +20,7 @@ msgstr "缓解"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:218
 msgid "Quick Release"
-msgstr "快速缓解"
+msgstr "过充"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:220
 msgid "Neutral"
@@ -33,7 +33,7 @@ msgstr "制动"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:222
 msgid "EPApply"
-msgstr "强力制动"
+msgstr "电空制动"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:223
 #: ../../RunActivity/RollingStock/SubSystems/Brakes/MSTS/AirSinglePipe.cs:56
@@ -57,7 +57,7 @@ msgstr "抑制"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:229
 msgid "Cont. Service"
-msgstr "继续制动"
+msgstr "持续制动"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:230
 msgid "Full Service"
@@ -65,7 +65,7 @@ msgstr "全制动"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:231
 msgid "Overcharge"
-msgstr "过充"
+msgstr "过载"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:232
 msgid "Emergency Braking Push Button"
@@ -73,11 +73,11 @@ msgstr "紧急制动按钮(backspace键)"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:233
 msgid "TCS Emergency Braking"
-msgstr "列监紧急制动"
+msgstr "运监紧急制动"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:234
 msgid "TCS Full Service Braking"
-msgstr "列监全制动"
+msgstr "运监全制动"
 
 #. Context: Brake Controller
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:219
@@ -643,7 +643,7 @@ msgstr "机车类型"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3490
 msgid "Input:"
-msgstr "输入"
+msgstr "输入："
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3491
 msgid "Evap"
@@ -655,7 +655,7 @@ msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3493
 msgid "Boiler"
-msgstr ""
+msgstr "锅炉"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3494
 msgid "SuperHr"
@@ -663,7 +663,7 @@ msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3495
 msgid "FuelCal"
-msgstr ""
+msgstr "油量计算"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3503
 msgid "Adj:"
@@ -683,16 +683,16 @@ msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3512
 msgid "Steam Production"
-msgstr ""
+msgstr "蒸汽发生量"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3517
 msgid "Boiler:"
-msgstr ""
+msgstr "锅炉："
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3519
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:633
 msgid "Mass"
-msgstr ""
+msgstr "质量"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3520
 msgid "MaxOutp"
@@ -708,7 +708,7 @@ msgstr "热量"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3530
 msgid "In"
-msgstr ""
+msgstr "在"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3531
 msgid "Out"
@@ -722,7 +722,7 @@ msgstr ""
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3685
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:665
 msgid "Max"
-msgstr ""
+msgstr "最大"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3540
 msgid "Temp:"
@@ -809,7 +809,7 @@ msgstr ""
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3611
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3633
 msgid "Initial"
-msgstr ""
+msgstr "初始"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3591
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3613
@@ -830,7 +830,7 @@ msgstr ""
 #: ../../RunActivity/RollingStock/SubSystems/Brakes/BrakeSystem.cs:82
 #: ../../RunActivity/Simulator/Confirmation.cs:176
 msgid "Exhaust"
-msgstr ""
+msgstr "烟"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3599
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3617
@@ -861,12 +861,12 @@ msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3631
 msgid "Press:"
-msgstr ""
+msgstr "压力"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3651
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3709
 msgid "Status:"
-msgstr ""
+msgstr "状态："
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3652
 msgid "Safety"
@@ -875,11 +875,11 @@ msgstr ""
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3653
 #: ../../RunActivity/RollingStock/SubSystems/Brakes/MSTS/AirSinglePipe.cs:129
 msgid "Open"
-msgstr ""
+msgstr "开"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3653
 msgid "Closed"
-msgstr ""
+msgstr "关"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3654
 msgid "Plug"
@@ -915,7 +915,7 @@ msgstr ""
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:501
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:781
 msgid "No"
-msgstr ""
+msgstr "不"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3656
 msgid "Prime"
@@ -931,23 +931,23 @@ msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3661
 msgid "Off"
-msgstr ""
+msgstr "关"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3661
 msgid "On"
-msgstr ""
+msgstr "开"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3665
 msgid "Fireman"
-msgstr ""
+msgstr "司炉"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3667
 msgid "Fire:"
-msgstr ""
+msgstr "火："
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3668
 msgid "Ideal"
-msgstr ""
+msgstr "目标"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3669
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:85
@@ -959,7 +959,7 @@ msgstr "  实际"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3670
 msgid "MaxFireR"
-msgstr ""
+msgstr "最大火量"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3671
 msgid "FeedRate"
@@ -971,15 +971,15 @@ msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3673
 msgid "Combust"
-msgstr ""
+msgstr "燃烧"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3684
 msgid "Injector:"
-msgstr "注水"
+msgstr "注水器："
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3686
 msgid "Inj1"
-msgstr ""
+msgstr "注水1"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3687
 msgid "Temp1"
@@ -987,7 +987,7 @@ msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3688
 msgid "Inj2"
-msgstr ""
+msgstr "注水2"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3689
 msgid "Temp2"
@@ -995,11 +995,11 @@ msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3700
 msgid "Tender:"
-msgstr ""
+msgstr "煤水车："
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3701
 msgid "Coal"
-msgstr ""
+msgstr "煤"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3710
 msgid "CoalOut"
@@ -1007,11 +1007,11 @@ msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3711
 msgid "WaterOut"
-msgstr ""
+msgstr "无水"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3712
 msgid "FireOut"
-msgstr ""
+msgstr "火灭"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3714
 msgid "Boost"
@@ -1027,7 +1027,7 @@ msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3725
 msgid "Power:"
-msgstr ""
+msgstr "动力："
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3726
 msgid "MaxInd"
@@ -1043,7 +1043,7 @@ msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3734
 msgid "Force:"
-msgstr ""
+msgstr "力："
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3735
 msgid "TheorTE"
@@ -1059,7 +1059,7 @@ msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3738
 msgid "Draw"
-msgstr ""
+msgstr "画"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3739
 msgid "CritSpTE"
@@ -1071,12 +1071,12 @@ msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3749
 msgid "Move:"
-msgstr ""
+msgstr "运动："
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3750
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3765
 msgid "Piston"
-msgstr ""
+msgstr "活塞"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3751
 msgid "SpdFact"
@@ -1092,15 +1092,15 @@ msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3762
 msgid "Experimental"
-msgstr ""
+msgstr "实验"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3762
 msgid "Slip Monitor"
-msgstr ""
+msgstr "轮滑监控"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3764
 msgid "Slip:"
-msgstr ""
+msgstr "轮滑："
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3766
 msgid "Tang(c)"
@@ -1120,7 +1120,7 @@ msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3770
 msgid "Slip"
-msgstr ""
+msgstr "轮滑"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3771
 msgid "WheelM"
@@ -1133,7 +1133,7 @@ msgstr ""
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3835
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3882
 msgid "Gears can't be changed unless throttle is at zero."
-msgstr ""
+msgstr "档位中立才能换档"
 
 #. Context: HUD
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3518
@@ -1291,7 +1291,7 @@ msgstr "锁死，关闭节流阀，停车后再试"
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:394
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:543
 msgid "Throttle"
-msgstr "节流阀"
+msgstr "功率"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:143
 #: ../../RunActivity/Simulator/Confirmation.cs:155
@@ -1321,7 +1321,7 @@ msgstr "开"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:143
 msgid "locked. Release dynamic brake then re-try."
-msgstr "锁死，解除机车制动后再试"
+msgstr "锁死，解除电阻制动后再试"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:144
 msgid "Wheel-slip"
@@ -1425,11 +1425,11 @@ msgstr "调节器"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:156
 msgid "Injector 1"
-msgstr "注水1"
+msgstr "注水器1"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:157
 msgid "Injector 2"
-msgstr "注水2"
+msgstr "注水器2"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:158
 #: ../../RunActivity/Simulator/Confirmation.cs:161
@@ -1475,7 +1475,7 @@ msgstr "汽缸通汽旋塞"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:165
 msgid "Cylinder Compound"
-msgstr "汽缸通汽旋塞"
+msgstr "汽缸通汽复合"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:166
 #: ../../RunActivity/Simulator/Confirmation.cs:167
@@ -1520,7 +1520,7 @@ msgstr "机车制动"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:171
 msgid "Dynamic Brake"
-msgstr "动力制动"
+msgstr "电阻制动"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:171
 msgid "setup"
@@ -2153,7 +2153,7 @@ msgstr "  到达"
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:86
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:74
 msgid "Depart"
-msgstr "  开车"
+msgstr " 开车"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:102
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:104
@@ -2205,11 +2205,11 @@ msgstr "次序"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:126
 msgid "Power In/Out"
-msgstr ""
+msgstr "动力进/出"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:130
 msgid "Motive force"
-msgstr ""
+msgstr "推动力"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:132
 msgid "Num of substeps"
@@ -2218,7 +2218,7 @@ msgstr ""
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:135
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:783
 msgid "Memory"
-msgstr ""
+msgstr "内存"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:136
 msgid "GCs"
@@ -2226,7 +2226,7 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:137
 msgid "Frame time"
-msgstr ""
+msgstr "渲染一帧时间"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:138
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:797
@@ -2241,7 +2241,7 @@ msgstr ""
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:140
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:799
 msgid "Loader process"
-msgstr ""
+msgstr "加载"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:141
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:800
@@ -2278,7 +2278,7 @@ msgstr "机车制动"
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:401
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:544
 msgid "Dynamic brake"
-msgstr "动力制动"
+msgstr "电阻制动"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:415
 msgid "FPS"
@@ -2424,11 +2424,11 @@ msgstr "总风缸"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:565
 msgid "BrkCyl"
-msgstr ""
+msgstr "制动缸"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:566
 msgid "BrkPipe"
-msgstr ""
+msgstr "制动管"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:567
 msgid "AuxRes"
@@ -2448,11 +2448,11 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:571
 msgid "TripleValve"
-msgstr ""
+msgstr "三通阀"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:573
 msgid "Handbrk"
-msgstr ""
+msgstr "手刹车"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:574
 msgid "Conn"
@@ -2460,7 +2460,7 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:575
 msgid "AnglCock"
-msgstr ""
+msgstr "角门"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:576
 msgid "BleedOff"
@@ -2501,7 +2501,7 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:615
 msgid "(Advanced adhesion model disabled)"
-msgstr ""
+msgstr "（禁用先进粘着模型）"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:625
 msgid "Total"
@@ -2509,71 +2509,71 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:626
 msgid "Motive"
-msgstr ""
+msgstr "动力"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:627
 msgid "Brake"
-msgstr ""
+msgstr "制动"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:628
 msgid "Friction"
-msgstr ""
+msgstr "摩擦"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:629
 msgid "Gravity"
-msgstr ""
+msgstr "重力"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:630
 msgid "Curve"
-msgstr ""
+msgstr "曲线"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:631
 msgid "Tunnel"
-msgstr ""
+msgstr "隧道"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:632
 msgid "Coupler"
-msgstr ""
+msgstr "车钩"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:660
 msgid "DISPATCHER INFORMATION"
-msgstr ""
+msgstr "联控信息"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:662
 msgid "Train"
-msgstr ""
+msgstr "列车:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:663
 msgid "Travelled"
-msgstr ""
+msgstr "运行里程"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:666
 msgid "AI mode"
-msgstr ""
+msgstr "AI 模式"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:667
 msgid "AI data"
-msgstr ""
+msgstr "AI 数据"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:668
 msgid "Mode"
-msgstr ""
+msgstr "模式"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:669
 msgid "Auth"
-msgstr ""
+msgstr "权限"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:671
 msgid "Signal"
-msgstr ""
+msgstr "信号"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:673
 msgid "Consist"
-msgstr ""
+msgstr "编组:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:674
 msgid "Path"
-msgstr ""
+msgstr "路径"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:775
 msgid "DEBUG INFORMATION"
@@ -2581,15 +2581,15 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:781
 msgid "Logging enabled"
-msgstr ""
+msgstr "记录数据"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:782
 msgid "Build"
-msgstr ""
+msgstr "加"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:786
 msgid "Adapter"
-msgstr ""
+msgstr "显卡"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:791
 msgid "Shadow maps"
@@ -2609,7 +2609,7 @@ msgstr ""
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:800
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:801
 msgid "wait"
-msgstr ""
+msgstr "等待"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:801
 msgid "Total process"
@@ -2617,7 +2617,7 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:802
 msgid "Camera"
-msgstr ""
+msgstr "视角"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:606
 #, csharp-format
@@ -2736,7 +2736,7 @@ msgstr "限速："
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:110
 msgid " Dist      Speed   Aspect"
-msgstr "距离       速度    信号  "
+msgstr "距离          速度        信号"
 
 #: ../../RunActivity/Viewer3D/Popups/TrainOperationsWindow.cs:36
 msgid "Train Operations"
@@ -2750,7 +2750,7 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:331
 msgid "diesel oil"
-msgstr "油"
+msgstr "柴油"
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:332
 msgid "wood"

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
-"POT-Creation-Date: 2015-04-05 18:18:49+0200\n"
-"PO-Revision-Date: 2015-04-11 12:01-0500\n"
+"POT-Creation-Date: 2015-04-11 13:12:55-0400\n"
+"PO-Revision-Date: 2015-04-24 19:06-0500\n"
 "Last-Translator: Jijun Tang <huochemi@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: zh_CN\n"
@@ -184,7 +184,7 @@ msgid ""
 "must not start with a digit."
 msgstr "用户名必须是2-5字节，不能有空格，-等特殊字符 "
 
-#: ../../Menu/MainForm.cs:1019
+#: ../../Menu/MainForm.cs:1028
 msgid "Activity Briefing"
 msgstr "任务简介"
 
@@ -215,42 +215,42 @@ msgstr ""
 "\n"
 "{0}"
 
-#: ../../Menu/MainForm.cs:1008
+#: ../../Menu/MainForm.cs:1017
 #, csharp-format
 msgid "Route: {0}"
 msgstr "线路: {0}"
 
-#: ../../Menu/MainForm.cs:1014 ../../Menu/MainForm.cs:1040
+#: ../../Menu/MainForm.cs:1023 ../../Menu/MainForm.cs:1049
 #, csharp-format
 msgid "Locomotive: {0}"
 msgstr "机车: {0}"
 
-#: ../../Menu/MainForm.cs:1018
+#: ../../Menu/MainForm.cs:1027
 #, csharp-format
 msgid "Activity: {0}"
 msgstr "任务: {0}"
 
-#: ../../Menu/MainForm.cs:1026
+#: ../../Menu/MainForm.cs:1035
 #, csharp-format
 msgid "Timetable set: {0}"
 msgstr "时刻表设置: {0}"
 
-#: ../../Menu/MainForm.cs:1030
+#: ../../Menu/MainForm.cs:1039
 #, csharp-format
 msgid "Timetable: {0}"
 msgstr "时刻表: {0}"
 
-#: ../../Menu/MainForm.cs:1034
+#: ../../Menu/MainForm.cs:1043
 #, csharp-format
 msgid "Train: {0}"
 msgstr "列车: {0}"
 
-#: ../../Menu/MainForm.cs:1037
+#: ../../Menu/MainForm.cs:1046
 #, csharp-format
 msgid "Consist: {0}"
 msgstr "编组: {0}"
 
-#: ../../Menu/MainForm.cs:1045
+#: ../../Menu/MainForm.cs:1054
 #, csharp-format
 msgid "Path: {0}"
 msgstr "路径: {0}"
@@ -470,7 +470,7 @@ msgstr ""
 
 #: ../../Menu/Options.cs:181
 msgid "mph"
-msgstr ""
+msgstr "英里每小時"
 
 #: ../../Menu/Options.cs:195 ../../Menu/ResumeForm.Designer.cs:156
 msgid "Time"
@@ -722,7 +722,7 @@ msgstr "高光"
 
 #: ../../Menu/Options.Designer.cs:597
 msgid "Vertical sync"
-msgstr ""
+msgstr "垂向协调"
 
 #: ../../Menu/Options.Designer.cs:608
 msgid "Viewing distance (km)"
@@ -906,7 +906,7 @@ msgstr "显示物体问题"
 
 #: ../../Menu/Options.Designer.cs:1502
 msgid "Level of detail bias:"
-msgstr ""
+msgstr "距离精度偏向"
 
 #: ../../Menu/Options.Designer.cs:1526
 msgid "Autopilot"
@@ -930,19 +930,19 @@ msgstr "水平"
 
 #: ../../Menu/Options.Designer.cs:1602
 msgid "Adhesion factor random change:"
-msgstr ""
+msgstr "粘着力系数随机改变"
 
 #: ../../Menu/Options.Designer.cs:1627
 msgid "Adhesion factor correction:"
-msgstr ""
+msgstr "修正粘着力系数"
 
 #: ../../Menu/Options.Designer.cs:1652
 msgid "Adhesion proportional to rain/snow/fog"
-msgstr ""
+msgstr "粘着力与雨雪雾有关"
 
 #: ../../Menu/Options.Designer.cs:1663
 msgid "ETCS circular speed gauge"
-msgstr ""
+msgstr "欧式圆形速度表"
 
 #: ../../Menu/Options.Designer.cs:1673
 msgid "Signal light glow"
@@ -954,7 +954,7 @@ msgstr "MSTS环境设置"
 
 #: ../../Menu/Options.Designer.cs:1693
 msgid "Location-linked passing path processing"
-msgstr ""
+msgstr "处理位置链接的超车路径"
 
 #: ../../Menu/Options.Designer.cs:1704
 msgid "Target frame rate"
@@ -1002,13 +1002,13 @@ msgid ""
 "Use data logger to record your simulation data (in-game command: F12).\r\n"
 "Please remember that the size of the dump file grows with the simulation "
 "time!"
-msgstr ""
+msgstr "记录游戏中的数据"
 
 #: ../../Menu/Options.Designer.cs:1243
 msgid ""
 "Installation profiles tell Open Rails where to look for game content. Add "
 "each full and mini-route MSTS installation."
-msgstr ""
+msgstr "安装配置文件告诉OR 到哪里去找游戏内容。添加每个全和迷你 MSTS 的安装。"
 
 #: ../../Menu/Options.Designer.cs:1392
 msgid "Name"
@@ -1080,7 +1080,7 @@ msgstr "探索模式"
 msgid ""
 "To prevent crashes and unexpected behaviour, Open Rails invalidates games "
 "saved from older versions if they fail to restore.\n"
-msgstr ""
+msgstr "为防止事故和意外的行为，OR会检查保存的文件并剔除无效保存。\n"
 
 #: ../../Menu/ResumeForm.cs:382
 msgid "Delete of invalid saves"
@@ -1217,7 +1217,7 @@ msgstr "取消排序"
 
 #: ../../Menu/TestingForm.Designer.cs:156
 msgid "ToTest"
-msgstr ""
+msgstr "测试"
 
 #: ../../Menu/TestingForm.Designer.cs:165
 msgid "ActivityFilePath"

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-04-11 13:13:02-0400\n"
-"PO-Revision-Date: 2015-04-11 13:13:03-0400\n"
+"POT-Creation-Date: 2015-04-25 22:28:57-0400\n"
+"PO-Revision-Date: 2015-04-25 22:29:01-0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -12,7 +12,7 @@ msgstr ""
 
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:217
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3635
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3642
 #: ../../RunActivity/RollingStock/SubSystems/Brakes/MSTS/AirSinglePipe.cs:55
 msgid "Release"
 msgstr ""
@@ -487,23 +487,23 @@ msgstr ""
 msgid "Activity Save file '*.save' not found in folder {0}"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSDieselLocomotive.cs:817
+#: ../../RunActivity/RollingStock/MSTSDieselLocomotive.cs:814
 msgid "Engine"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSDieselLocomotive.cs:821
-#: ../../RunActivity/RollingStock/MSTSDieselLocomotive.cs:833
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3459
+#: ../../RunActivity/RollingStock/MSTSDieselLocomotive.cs:818
+#: ../../RunActivity/RollingStock/MSTSDieselLocomotive.cs:830
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3466
 msgid "Gear"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSDieselLocomotive.cs:834
+#: ../../RunActivity/RollingStock/MSTSDieselLocomotive.cs:831
 msgid "Fuel"
 msgstr ""
 
 #. Context: Gear
-#: ../../RunActivity/RollingStock/MSTSDieselLocomotive.cs:822
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3460
+#: ../../RunActivity/RollingStock/MSTSDieselLocomotive.cs:819
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3467
 msgctxt "Gear"
 msgid "N"
 msgstr ""
@@ -552,404 +552,404 @@ msgctxt "PowerSupply"
 msgid "Power"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1411
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1418
 msgid "Tender coal supply is empty. Your loco will fail."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1425
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1432
 msgid "Tender water supply is empty. Your loco will fail."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1482
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1489
 msgid "Fire has dropped too far. Your loco will fail."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1539
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1546
 msgid ""
 "FireMass is getting low. Your fireman will shovel faster, but don't wear him "
 "out."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1552
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1559
 msgid "FireMass is back within limits. Your fireman will shovel as per normal."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3094
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3101
 msgid "Water level dropped too far. Plug has fused and loco has failed."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3101
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3108
 msgid "Boiler overfull and priming."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3107
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3114
 msgid "Boiler no longer priming."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3457
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3464
 msgid "Fixed gear"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3462
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3469
 msgid "Steam usage"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3463
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3470
 msgid "Boiler pressure"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3464
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3468
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3471
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3475
 msgid "Boiler water level"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3464
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3471
 msgid "(safe range)"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3468
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3475
 msgid "(absolute)"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3470
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3477
 msgid "Fire mass"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3472
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3479
 msgid "Fire ratio"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3475
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3482
 msgid "Fuel levels"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3475
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3482
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:330
 msgid "coal"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3475
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3482
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:329
 msgid "water"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3484
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3491
 msgid "Key Inputs"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3486
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3493
 msgid "Locomotive Type:"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3490
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3497
 msgid "Input:"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3491
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3498
 msgid "Evap"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3492
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3499
 msgid "Grate"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3493
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3500
 msgid "Boiler"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3494
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3501
 msgid "SuperHr"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3495
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3502
 msgid "FuelCal"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3503
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3510
 msgid "Adj:"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3504
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3511
 msgid "CylEff"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3505
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3512
 msgid "CylExh"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3506
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3513
 msgid "PortOpen"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3512
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3519
 msgid "Steam Production"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3517
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3524
 msgid "Boiler:"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3519
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3526
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:633
 msgid "Mass"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3520
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3527
 msgid "MaxOutp"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3521
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3528
 msgid "BoilerEff"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3529
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3536
 msgid "Heat:"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3530
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3537
 msgid "In"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3531
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3538
 msgid "Out"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3532
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3539
 msgid "Stored"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3533
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3685
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3540
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3692
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:665
 msgid "Max"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3540
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3547
 msgid "Temp:"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3541
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3548
 msgid "Flue"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3542
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3702
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3549
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3709
 msgid "Water"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3543
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3550
 msgid "MaxSupH"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3544
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3551
 msgid "CurSupH"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3545
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3552
 msgid "SupFact"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3553
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3560
 msgid "Steam Usage"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3558
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3565
 msgid "Usage:"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3559
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3566
 msgid "Cyl"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3560
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3567
 #: ../../RunActivity/Simulator/Confirmation.cs:158
 msgid "Blower"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3561
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3568
 msgid "Radiation"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3562
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3569
 msgid "Comprsr"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3563
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3570
 msgid "SafetyV"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3564
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3571
 msgid "CylCock"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3565
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3572
 msgid "Genertr"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3566
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3713
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3573
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3720
 msgid "Stoker"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3567
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3574
 msgid "MaxSafe"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3586
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3593
 msgid "PressHP:"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3587
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3609
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3632
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3594
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3616
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3639
 msgid "Chest"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3589
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3611
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3633
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3596
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3618
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3640
 msgid "Initial"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3591
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3613
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3634
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3598
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3620
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3641
 msgid "Cutoff"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3593
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3615
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3600
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3622
 msgid "Rel"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3595
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3602
 msgid "RelR"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3597
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3604
 #: ../../RunActivity/RollingStock/SubSystems/Brakes/BrakeSystem.cs:82
 #: ../../RunActivity/Simulator/Confirmation.cs:176
 msgid "Exhaust"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3599
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3617
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3636
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3606
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3624
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3643
 msgid "Back"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3601
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3619
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3637
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3608
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3626
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3644
 msgid "PreComp"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3603
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3623
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3639
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3610
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3630
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3646
 msgid "MEP"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3608
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3615
 msgid "PressLP:"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3621
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3638
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3628
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3645
 msgid "PreAdm"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3631
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3638
 msgid "Press:"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3651
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3709
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3658
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3716
 msgid "Status:"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3652
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3659
 msgid "Safety"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3653
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3660
 #: ../../RunActivity/RollingStock/SubSystems/Brakes/MSTS/AirSinglePipe.cs:129
 msgid "Open"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3653
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3660
 msgid "Closed"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3654
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3661
 msgid "Plug"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3655
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3657
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3659
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3716
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3717
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3718
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3719
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3720
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3721
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3778
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3662
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3664
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3666
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3723
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3724
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3725
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3726
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3727
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3728
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3785
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:480
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:501
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:781
 msgid "Yes"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3655
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3657
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3659
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3716
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3717
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3718
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3719
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3720
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3721
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3778
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3662
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3664
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3666
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3723
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3724
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3725
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3726
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3727
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3728
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3785
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:480
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:501
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:781
 msgid "No"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3656
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3663
 msgid "Prime"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3658
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3665
 msgid "BoilHeat"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3660
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3667
 msgid "Comp"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3661
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3668
 msgid "Off"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3661
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3668
 msgid "On"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3665
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3672
 msgid "Fireman"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3667
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3674
 msgid "Fire:"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3668
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3675
 msgid "Ideal"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3669
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3676
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:85
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:87
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:73
@@ -957,187 +957,187 @@ msgstr ""
 msgid "Actual"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3670
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3677
 msgid "MaxFireR"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3671
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3678
 msgid "FeedRate"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3672
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3679
 msgid "BurnRate"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3673
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3680
 msgid "Combust"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3684
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3691
 msgid "Injector:"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3686
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3693
 msgid "Inj1"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3687
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3694
 msgid "Temp1"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3688
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3695
 msgid "Inj2"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3689
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3696
 msgid "Temp2"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3700
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3707
 msgid "Tender:"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3701
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3708
 msgid "Coal"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3710
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3717
 msgid "CoalOut"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3711
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3718
 msgid "WaterOut"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3712
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3719
 msgid "FireOut"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3714
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3721
 msgid "Boost"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3715
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3722
 msgid "BstReset"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3723
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3730
 msgid "Performance"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3725
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3732
 msgid "Power:"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3726
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3733
 msgid "MaxInd"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3727
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3734
 msgid "Ind"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3728
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3735
 msgid "Drawbar"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3734
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3741
 msgid "Force:"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3735
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3742
 msgid "TheorTE"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3736
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3743
 msgid "StartTE"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3737
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3744
 msgid "TE"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3738
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3745
 msgid "Draw"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3739
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3746
 msgid "CritSpTE"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3740
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3747
 msgid "CritSpeed"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3749
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3756
 msgid "Move:"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3750
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3765
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3757
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3772
 msgid "Piston"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3751
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3758
 msgid "SpdFact"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3752
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3759
 msgid "DrvWhl"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3753
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3760
 msgid "MF-Gear"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3762
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3769
 msgid "Experimental"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3762
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3769
 msgid "Slip Monitor"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3764
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3771
 msgid "Slip:"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3766
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3773
 msgid "Tang(c)"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3767
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3774
 msgid "Tang(t)"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3768
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3775
 msgid "Static"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3769
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3776
 msgid "Coeff"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3770
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3777
 msgid "Slip"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3771
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3778
 msgid "WheelM"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3772
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3779
 msgid "FoA"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3835
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3882
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3842
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3889
 msgid "Gears can't be changed unless throttle is at zero."
 msgstr ""
 
 #. Context: HUD
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3518
-#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:298
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3525
+#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:301
 msgctxt "HUD"
 msgid "Power"
 msgstr ""
@@ -1185,43 +1185,43 @@ msgstr ""
 msgid "Slow Direct"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:294
+#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:297
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:119
 msgid "Status"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:302
+#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:305
 msgid "Load"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:309
+#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:312
 msgid "Flow"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:317
+#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:320
 msgid "Oil"
 msgstr ""
 
 #. Context: Engine
-#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:392
+#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:395
 msgctxt "Engine"
 msgid "Stopped"
 msgstr ""
 
 #. Context: Engine
-#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:393
+#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:396
 msgctxt "Engine"
 msgid "Starting"
 msgstr ""
 
 #. Context: Engine
-#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:394
+#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:397
 msgctxt "Engine"
 msgid "Running"
 msgstr ""
 
 #. Context: Engine
-#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:395
+#: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:398
 msgctxt "Engine"
 msgid "Stopping"
 msgstr ""
@@ -1636,7 +1636,7 @@ msgid "Wipers"
 msgstr ""
 
 #: ../../RunActivity/Simulator/Confirmation.cs:187
-#: ../../RunActivity/Viewer3D/Cameras.cs:1505
+#: ../../RunActivity/Viewer3D/Cameras.cs:1504
 msgid "Cab"
 msgstr ""
 
@@ -1867,76 +1867,76 @@ msgstr ""
 msgid "Brakeman"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1391
+#: ../../RunActivity/Viewer3D/Cameras.cs:1427
 msgid "Passenger"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1461
+#: ../../RunActivity/Viewer3D/Cameras.cs:1460
 msgid "Head out"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1685
+#: ../../RunActivity/Viewer3D/Cameras.cs:1684
 msgid "Trackside"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1837
+#: ../../RunActivity/Viewer3D/Cameras.cs:1836
 msgid "3D Cab"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:590
-#: ../../RunActivity/Viewer3D/Viewer.cs:708
+#: ../../RunActivity/Viewer3D/Viewer.cs:591
+#: ../../RunActivity/Viewer3D/Viewer.cs:709
 msgid "Cab view not available"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:652
+#: ../../RunActivity/Viewer3D/Viewer.cs:653
 msgid "In MP, use Alt-F4 to quit directly"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:719
+#: ../../RunActivity/Viewer3D/Viewer.cs:720
 msgid "3D Cab view not available"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:746
+#: ../../RunActivity/Viewer3D/Viewer.cs:747
 msgid "Will not ratate cab and land"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:854
+#: ../../RunActivity/Viewer3D/Viewer.cs:855
 msgid "Switched to player control"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:859
+#: ../../RunActivity/Viewer3D/Viewer.cs:860
 msgid "You can't switch from manual to autopilot mode"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:863
+#: ../../RunActivity/Viewer3D/Viewer.cs:864
 msgid "Switched to autopilot"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1204
+#: ../../RunActivity/Viewer3D/Viewer.cs:1205
 msgid "Game saved"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:737
+#: ../../RunActivity/Viewer3D/Viewer.cs:738
 #, csharp-format
 msgid "Vibrating at level {0}"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:745
+#: ../../RunActivity/Viewer3D/Viewer.cs:746
 #, csharp-format
 msgid "Rotating cab {0}/4, rotating land {1}/4"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:872
+#: ../../RunActivity/Viewer3D/Viewer.cs:873
 #, csharp-format
 msgid "Keyboard map list saved to '{0}'."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:876
+#: ../../RunActivity/Viewer3D/Viewer.cs:877
 #, csharp-format
 msgid "Keyboard map image saved to '{0}'."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:774
+#: ../../RunActivity/Viewer3D/Viewer.cs:775
 #, csharp-format
 msgid "{0} viewpoint stored. Use Shift+8 to restore viewpoints."
 msgid_plural "{0} viewpoints stored. Use Shift+8 to restore viewpoints."

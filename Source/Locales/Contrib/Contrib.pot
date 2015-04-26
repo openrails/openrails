@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-04-11 13:12:53-0400\n"
-"PO-Revision-Date: 2015-04-11 13:12:54-0400\n"
+"POT-Creation-Date: 2015-04-25 22:28:31-0400\n"
+"PO-Revision-Date: 2015-04-25 22:28:44-0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -666,34 +666,34 @@ msgstr ""
 msgid "Open Rails Content Manager"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:605
+#: ../../Contrib/TrackViewer/TrackViewer.cs:607
 msgid ""
 "The path you are working on has un-saved changes.\n"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:607
+#: ../../Contrib/TrackViewer/TrackViewer.cs:609
 msgid "Do you really want to Quit?"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:649
+#: ../../Contrib/TrackViewer/TrackViewer.cs:651
 msgid ""
 "Directory is not a valid install directory.\n"
 "The install directory needs to contain ROUTES, GLOBAL, ..."
 msgstr ""
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:723
+#: ../../Contrib/TrackViewer/TrackViewer.cs:725
 msgid "Loading route..."
 msgstr ""
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:745
+#: ../../Contrib/TrackViewer/TrackViewer.cs:747
 msgid "Route cannot be loaded. Sorry"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:812
+#: ../../Contrib/TrackViewer/TrackViewer.cs:814
 msgid "Loading .pat file ..."
 msgstr ""
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:815
+#: ../../Contrib/TrackViewer/TrackViewer.cs:817
 msgid "Processing .pat file ..."
 msgstr ""
 
@@ -905,10 +905,16 @@ msgstr ""
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:55
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:56
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:57
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:58
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:134
 msgid "1"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:228
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:139
+msgid "10"
+msgstr ""
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:260
 msgid "99"
 msgstr ""
 
@@ -1055,13 +1061,13 @@ msgstr ""
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:24
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:15
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:47
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:53
 msgid " OK "
 msgstr ""
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:25
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:16
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:48
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:54
 msgid " Cancel "
 msgstr ""
 
@@ -1123,6 +1129,7 @@ msgid " cars, and wait"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:31
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:42
 msgid "seconds. "
 msgstr ""
 
@@ -1135,18 +1142,22 @@ msgid "Join and split"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:40
+msgid "Blow horn for"
+msgstr ""
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:46
 msgid "Wait time code as decimal ="
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:41
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:47
 msgid "00000"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:42
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:48
 msgid "hexadecimal ="
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:43
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:49
 msgid "0000"
 msgstr ""
 

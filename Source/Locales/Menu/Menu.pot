@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-04-11 13:12:55-0400\n"
-"PO-Revision-Date: 2015-04-11 13:12:55-0400\n"
+"POT-Creation-Date: 2015-04-25 22:28:47-0400\n"
+"PO-Revision-Date: 2015-04-25 22:28:48-0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -138,7 +138,7 @@ msgid "Rain"
 msgstr ""
 
 #: ../../Menu/MainForm.cs:155
-#: ../../Menu/Options.cs:539
+#: ../../Menu/Options.cs:540
 msgid "Easy"
 msgstr ""
 
@@ -147,7 +147,7 @@ msgid "Medium"
 msgstr ""
 
 #: ../../Menu/MainForm.cs:157
-#: ../../Menu/Options.cs:545
+#: ../../Menu/Options.cs:546
 msgid "Hard"
 msgstr ""
 
@@ -392,7 +392,7 @@ msgid "Timetable set:"
 msgstr ""
 
 #: ../../Menu/MainForm.Designer.cs:837
-#: ../../Menu/Options.cs:229
+#: ../../Menu/Options.cs:230
 #: ../../Menu/TestingForm.Designer.cs:314
 msgid "Testing"
 msgstr ""
@@ -405,208 +405,208 @@ msgstr ""
 msgid "Open Rails"
 msgstr ""
 
-#: ../../Menu/Options.cs:82
+#: ../../Menu/Options.cs:83
 #: ../../Menu/TestingForm.Designer.cs:184
 msgid "Route"
 msgstr ""
 
-#: ../../Menu/Options.cs:83
+#: ../../Menu/Options.cs:84
 msgid "Player's location"
 msgstr ""
 
-#: ../../Menu/Options.cs:84
+#: ../../Menu/Options.cs:85
 msgid "Metric"
 msgstr ""
 
-#: ../../Menu/Options.cs:85
+#: ../../Menu/Options.cs:86
 msgid "Imperial US"
 msgstr ""
 
-#: ../../Menu/Options.cs:86
+#: ../../Menu/Options.cs:87
 msgid "Imperial UK"
 msgstr ""
 
-#: ../../Menu/Options.cs:93
+#: ../../Menu/Options.cs:94
 msgid "Automatic"
 msgstr ""
 
-#: ../../Menu/Options.cs:94
+#: ../../Menu/Options.cs:95
 msgid "bar"
 msgstr ""
 
-#: ../../Menu/Options.cs:95
+#: ../../Menu/Options.cs:96
 msgid "psi"
 msgstr ""
 
-#: ../../Menu/Options.cs:96
+#: ../../Menu/Options.cs:97
 msgid "inHg"
 msgstr ""
 
-#: ../../Menu/Options.cs:97
+#: ../../Menu/Options.cs:98
 msgid "kgf/cm²"
 msgstr ""
 
-#: ../../Menu/Options.cs:169
+#: ../../Menu/Options.cs:170
 msgid "comma"
 msgstr ""
 
-#: ../../Menu/Options.cs:170
+#: ../../Menu/Options.cs:171
 msgid "semicolon"
 msgstr ""
 
-#: ../../Menu/Options.cs:171
+#: ../../Menu/Options.cs:172
 msgid "tab"
 msgstr ""
 
-#: ../../Menu/Options.cs:172
+#: ../../Menu/Options.cs:173
 msgid "space"
 msgstr ""
 
-#: ../../Menu/Options.cs:178
+#: ../../Menu/Options.cs:179
 msgid "route"
 msgstr ""
 
-#: ../../Menu/Options.cs:179
+#: ../../Menu/Options.cs:180
 msgid "m/s"
 msgstr ""
 
-#: ../../Menu/Options.cs:180
+#: ../../Menu/Options.cs:181
 msgid "km/h"
 msgstr ""
 
-#: ../../Menu/Options.cs:181
+#: ../../Menu/Options.cs:182
 msgid "mph"
 msgstr ""
 
-#: ../../Menu/Options.cs:195
+#: ../../Menu/Options.cs:196
 #: ../../Menu/ResumeForm.Designer.cs:156
 msgid "Time"
 msgstr ""
 
-#: ../../Menu/Options.cs:196
+#: ../../Menu/Options.cs:197
 msgid "Train Speed"
 msgstr ""
 
-#: ../../Menu/Options.cs:197
+#: ../../Menu/Options.cs:198
 msgid "Max. Speed"
 msgstr ""
 
-#: ../../Menu/Options.cs:198
+#: ../../Menu/Options.cs:199
 msgid "Signal State"
 msgstr ""
 
-#: ../../Menu/Options.cs:199
+#: ../../Menu/Options.cs:200
 msgid "Track Elevation"
 msgstr ""
 
-#: ../../Menu/Options.cs:200
+#: ../../Menu/Options.cs:201
 msgid "Direction"
 msgstr ""
 
-#: ../../Menu/Options.cs:201
+#: ../../Menu/Options.cs:202
 msgid "Control Mode"
 msgstr ""
 
-#: ../../Menu/Options.cs:202
+#: ../../Menu/Options.cs:203
 msgid "Distance Travelled"
 msgstr ""
 
-#: ../../Menu/Options.cs:203
+#: ../../Menu/Options.cs:204
 msgid "Throttle %"
 msgstr ""
 
-#: ../../Menu/Options.cs:204
+#: ../../Menu/Options.cs:205
 msgid "Brake Cyl Press"
 msgstr ""
 
-#: ../../Menu/Options.cs:205
+#: ../../Menu/Options.cs:206
 msgid "Dyn Brake %"
 msgstr ""
 
-#: ../../Menu/Options.cs:206
+#: ../../Menu/Options.cs:207
 msgid "Gear Setting"
 msgstr ""
 
-#: ../../Menu/Options.cs:228
+#: ../../Menu/Options.cs:229
 msgid "Stable (recommended)"
 msgstr ""
 
-#: ../../Menu/Options.cs:230
+#: ../../Menu/Options.cs:231
 msgid "Unstable"
 msgstr ""
 
-#: ../../Menu/Options.cs:231
+#: ../../Menu/Options.cs:232
 msgid "None"
 msgstr ""
 
-#: ../../Menu/Options.cs:234
+#: ../../Menu/Options.cs:235
 msgid ""
 "Infrequent updates to official, hand-picked versions. Recommended for most "
 "users."
 msgstr ""
 
-#: ../../Menu/Options.cs:235
+#: ../../Menu/Options.cs:236
 msgid ""
 "Weekly updates which may contain noticable defects. For project supporters."
 msgstr ""
 
-#: ../../Menu/Options.cs:236
+#: ../../Menu/Options.cs:237
 msgid "Daily updates which may contain serious defects. For developers only."
 msgstr ""
 
-#: ../../Menu/Options.cs:237
+#: ../../Menu/Options.cs:238
 msgid "No updates."
 msgstr ""
 
-#: ../../Menu/Options.cs:358
+#: ../../Menu/Options.cs:359
 msgid "Click to change this key"
 msgstr ""
 
-#: ../../Menu/Options.cs:374
+#: ../../Menu/Options.cs:375
 msgid ""
 "Continue with conflicting key assignments?\n"
 "\n"
 msgstr ""
 
-#: ../../Menu/Options.cs:481
+#: ../../Menu/Options.cs:482
 msgid "Remove all custom key assignments?"
 msgstr ""
 
-#: ../../Menu/Options.cs:492
+#: ../../Menu/Options.cs:493
 msgid ""
 "A listing of all keyboard commands and keys has been placed here:\n"
 "\n"
 msgstr ""
 
-#: ../../Menu/Options.cs:501
+#: ../../Menu/Options.cs:502
 msgid "No errors found."
 msgstr ""
 
-#: ../../Menu/Options.cs:537
+#: ../../Menu/Options.cs:538
 msgid "Very easy"
 msgstr ""
 
-#: ../../Menu/Options.cs:541
+#: ../../Menu/Options.cs:542
 msgid "MSTS Compatibile"
 msgstr ""
 
-#: ../../Menu/Options.cs:543
+#: ../../Menu/Options.cs:544
 msgid "Normal"
 msgstr ""
 
-#: ../../Menu/Options.cs:547
+#: ../../Menu/Options.cs:548
 msgid "Very Hard"
 msgstr ""
 
-#: ../../Menu/Options.cs:549
+#: ../../Menu/Options.cs:550
 msgid "Good luck!"
 msgstr ""
 
-#: ../../Menu/Options.cs:609
+#: ../../Menu/Options.cs:610
 msgid "Select an installation profile (MSTS folder) to add:"
 msgstr ""
 
-#: ../../Menu/Options.cs:515
+#: ../../Menu/Options.cs:516
 #, csharp-format
 msgid ""
 "{0:F0}° vertical FOV is the same as:\n"
@@ -614,32 +614,32 @@ msgid ""
 "{2:F0}° horizontal FOV on 16:9"
 msgstr ""
 
-#: ../../Menu/Options.cs:559
+#: ../../Menu/Options.cs:560
 #, csharp-format
 msgid "{0}%"
 msgstr ""
 
-#: ../../Menu/Options.cs:565
+#: ../../Menu/Options.cs:566
 #, csharp-format
 msgid "No detail (-{0}%)"
 msgstr ""
 
-#: ../../Menu/Options.cs:567
+#: ../../Menu/Options.cs:568
 #, csharp-format
 msgid "Less detail (-{0}%)"
 msgstr ""
 
-#: ../../Menu/Options.cs:569
+#: ../../Menu/Options.cs:570
 #, csharp-format
 msgid "Default detail (+{0}%)"
 msgstr ""
 
-#: ../../Menu/Options.cs:571
+#: ../../Menu/Options.cs:572
 #, csharp-format
 msgid "More detail (+{0}%)"
 msgstr ""
 
-#: ../../Menu/Options.cs:573
+#: ../../Menu/Options.cs:574
 #, csharp-format
 msgid "All detail (+{0}%)"
 msgstr ""
