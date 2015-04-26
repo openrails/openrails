@@ -11,8 +11,17 @@ IF NOT EXIST "%FindExecutable%" (
 )
 SET Lazarus.lazbuild=%FindExecutable%
 
+SET FindExecutable.Default=%SystemDrive%\Lazarus\fpc\2.6.4\bin\i386-win32\strip.exe
+CALL :find-executable strip.exe
+IF NOT EXIST "%FindExecutable%" (
+	ECHO Error: Lazarus compiler ^(lazbuild.exe^) not found.
+	ECHO Expected location is %FindExecutable.Default% or on the PATH.
+	GOTO :EOF
+)
+SET Lazarus.strip=%FindExecutable%
+
 IF EXIST lib RMDIR /S /Q lib
-%Lazarus.lazbuild% timetableedit.lpi && MOVE /Y timetableedit.exe ..\..\..\Program\Contrib.TimetableEditor.exe && XCOPY /S /I /Y languages ..\..\..\Program\languages
+%Lazarus.lazbuild% timetableedit.lpi && %Lazarus.strip% --strip-all timetableedit.exe && MOVE /Y timetableedit.exe ..\..\..\Program\Contrib.TimetableEditor.exe && XCOPY /S /I /Y languages ..\..\..\Program\languages
 
 ENDLOCAL
 GOTO :EOF
