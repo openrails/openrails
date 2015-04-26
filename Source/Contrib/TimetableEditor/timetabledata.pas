@@ -459,7 +459,7 @@ var r, res: integer;
 begin
   res:=-1;
   for r:=0 to form1.grid.RowCount -1 do begin
-    if ansilowercase(form1.grid.cells[0,r])=bez then begin
+    if pos(ansilowercase(bez),ansilowercase(form1.grid.cells[0,r]))>0 then begin
       res:=r;
       break;
     end;
@@ -472,7 +472,7 @@ var r, res: integer;
 begin
   res:=-1;
   for r:=0 to form1.grid.RowCount -1 do begin
-    if ansilowercase(form1.grid.cells[0,r])=bez then begin
+    if pos(ansilowercase(bez),ansilowercase(form1.grid.cells[0,r]))>0 then begin
       res:=r;
       break;
     end;

@@ -14,9 +14,8 @@ type
   TForm2 = class(TForm)
     Button1: TButton;
     Label1: TLabel;
+    Label2: TLabel;
     StaticText1: TStaticText;
-    StaticText2: TStaticText;
-    StaticText5: TStaticText;
     procedure Button1Click(Sender: TObject);
     procedure StaticText4Click(Sender: TObject);
 

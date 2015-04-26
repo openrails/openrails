@@ -93,16 +93,6 @@ object Form3: TForm3
     OnClick = BitBtn2Click
     TabOrder = 6
   end
-  object CheckBox1: TCheckBox
-    Left = 9
-    Height = 19
-    Top = 94
-    Width = 80
-    BidiMode = bdRightToLeft
-    Caption = 'binary path'
-    ParentBidiMode = False
-    TabOrder = 7
-  end
   object SpeedButton1: TSpeedButton
     Left = 616
     Height = 22
@@ -141,7 +131,7 @@ object Form3: TForm3
     Top = 14
     Width = 65
     Caption = 'Paths'
-    TabOrder = 8
+    TabOrder = 7
   end
   object StaticText6: TStaticText
     Left = 376
@@ -149,7 +139,7 @@ object Form3: TForm3
     Top = 240
     Width = 65
     Caption = 'Consists'
-    TabOrder = 9
+    TabOrder = 8
   end
   object CheckBox2: TCheckBox
     Left = 41
@@ -160,7 +150,7 @@ object Form3: TForm3
     Caption = 'multi'
     OnChange = CheckBox2Change
     ParentBidiMode = False
-    TabOrder = 10
+    TabOrder = 9
   end
   object ListBox3: TListBox
     Left = 96
@@ -168,7 +158,7 @@ object Form3: TForm3
     Top = 150
     Width = 256
     ItemHeight = 0
-    TabOrder = 11
+    TabOrder = 10
     Visible = False
   end
   object SpeedButton5: TSpeedButton
@@ -518,7 +508,7 @@ object Form3: TForm3
     Caption = 'create$'
     OnChange = CheckBox3Change
     ParentBidiMode = False
-    TabOrder = 12
+    TabOrder = 11
   end
   object MaskEdit1: TMaskEdit
     Left = 96
@@ -528,7 +518,7 @@ object Form3: TForm3
     CharCase = ecNormal
     Enabled = False
     MaxLength = 0
-    TabOrder = 13
+    TabOrder = 12
     SpaceChar = '_'
   end
   object CheckBox4: TCheckBox
@@ -540,7 +530,7 @@ object Form3: TForm3
     Caption = 'ahead/'
     OnChange = CheckBox4Change
     ParentBidiMode = False
-    TabOrder = 14
+    TabOrder = 13
   end
   object Label3: TLabel
     Left = 99
@@ -557,7 +547,7 @@ object Form3: TForm3
     Width = 256
     ItemHeight = 0
     OnClick = ListBox4Click
-    TabOrder = 15
+    TabOrder = 14
   end
   object MaskEdit2: TMaskEdit
     Left = 96
@@ -566,7 +556,7 @@ object Form3: TForm3
     Width = 256
     CharCase = ecNormal
     MaxLength = 0
-    TabOrder = 16
+    TabOrder = 15
     SpaceChar = '_'
   end
   object StaticText7: TStaticText
@@ -576,14 +566,14 @@ object Form3: TForm3
     Width = 65
     Alignment = taRightJustify
     Caption = 'Comment:'
-    TabOrder = 17
+    TabOrder = 16
   end
   object Edit2: TEdit
     Left = 96
     Height = 23
     Top = 34
     Width = 256
-    TabOrder = 18
+    TabOrder = 17
   end
   object ListView1: TListView
     Left = 376
@@ -600,7 +590,7 @@ object Form3: TForm3
         Width = 167
       end>
     ReadOnly = True
-    TabOrder = 19
+    TabOrder = 18
     ViewStyle = vsReport
     OnDblClick = ListView1DblClick
   end
@@ -619,7 +609,7 @@ object Form3: TForm3
         Width = 167
       end>
     ReadOnly = True
-    TabOrder = 20
+    TabOrder = 19
     ViewStyle = vsReport
     OnDblClick = ListView2DblClick
   end
@@ -632,7 +622,7 @@ object Form3: TForm3
     Checked = True
     OnChange = CheckBox5Change
     State = cbChecked
-    TabOrder = 21
+    TabOrder = 20
   end
   object CheckBox6: TCheckBox
     Left = 584
@@ -643,7 +633,7 @@ object Form3: TForm3
     Checked = True
     OnChange = CheckBox6Change
     State = cbChecked
-    TabOrder = 22
+    TabOrder = 21
   end
   object CheckBox7: TCheckBox
     Left = 456
@@ -654,7 +644,7 @@ object Form3: TForm3
     Checked = True
     OnChange = CheckBox7Change
     State = cbChecked
-    TabOrder = 23
+    TabOrder = 22
   end
   object CheckBox8: TCheckBox
     Left = 584
@@ -665,7 +655,7 @@ object Form3: TForm3
     Checked = True
     OnChange = CheckBox8Change
     State = cbChecked
-    TabOrder = 24
+    TabOrder = 23
   end
   object CheckBox9: TCheckBox
     Left = 96
@@ -674,6 +664,6 @@ object Form3: TForm3
     Width = 111
     Caption = 'show static trains'
     OnChange = CheckBox9Change
-    TabOrder = 25
+    TabOrder = 24
   end
 end

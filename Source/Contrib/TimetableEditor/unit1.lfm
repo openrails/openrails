@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = 237
+  Left = 236
   Height = 522
-  Top = 281
+  Top = 390
   Width = 914
   Caption = 'Timetable-Editor'
   ClientHeight = 522

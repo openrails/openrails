@@ -15,7 +15,6 @@ type
   TForm3 = class(TForm)
     BitBtn1: TBitBtn;
     BitBtn2: TBitBtn;
-    CheckBox1: TCheckBox;
     CheckBox2: TCheckBox;
     CheckBox3: TCheckBox;
     CheckBox4: TCheckBox;
@@ -285,8 +284,7 @@ var start: string;
 begin
   form1.grid.cells[col,0]:=edit1.text;
   form1.grid.cells[col,1]:=edit2.text;
-  if checkbox1.checked then setRow('#path',label1.caption+' /binary')
-  else setRow('#path',label1.caption);
+  setRow('#path',label1.caption);
   setRow('#consist',label2.caption);
   start:=maskedit2.text;
   if checkbox3.checked then start:=start+' $create='+maskedit1.text;
@@ -379,10 +377,6 @@ begin
   edit1.Text:=form1.grid.cells[col,0];
   edit2.text:=form1.grid.cells[col,1];
   label1.caption:=form1.grid.cells[col,getRow('#path')];
-  if pos('/binary',label1.caption) > 0 then begin
-    label1.caption:=trimright(leftstr(label1.caption,pos('/binary',label1.caption)-1));
-    checkbox1.Checked:=true;
-  end;
   //label2.caption:=form1.grid.cells[col,getRow('#consist')];
   showconsists;
   checkbox3.checked:=false;
