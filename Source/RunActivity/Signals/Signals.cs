@@ -592,15 +592,17 @@ namespace ORTS
             if (noSignals > 0)
             {
                 signalObjects = new SignalObject[noSignals];
-                SignalObject.trackNodes = trackNodes;
                 SignalObject.signalObjects = signalObjects;
-                SignalObject.trItems = TrItems;
+            }
+            SignalObject.trackNodes = trackNodes;
+            SignalObject.trItems = TrItems;
 
-                for (int i = 1; i < trackNodes.Length; i++)
-                {
-                    ScanSection(TrItems, trackNodes, i, tsectiondat, tdbfile, platformList);
-                }
-
+            for (int i = 1; i < trackNodes.Length; i++)
+            {
+                ScanSection(TrItems, trackNodes, i, tsectiondat, tdbfile, platformList);
+            }
+            if (noSignals > 0)
+            {
                 // using world cross-reference list, merge heads to single signal
 
                 MergeHeads();
