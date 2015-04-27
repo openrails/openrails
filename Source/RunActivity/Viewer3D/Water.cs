@@ -98,10 +98,11 @@ namespace ORTS.Viewer3D
             var waterLevels = new ORTSMath.Matrix2x2(tile.WaterNW, tile.WaterNE, tile.WaterSW, tile.WaterSE);
 
             var indexData = new List<short>(16 * 16 * 2 * 3);
-            for (var z = 0; z < 16; ++z)
+            for (var z = 0; z < tile.PatchCount; ++z)
             {
-                for (var x = 0; x < 16; ++x)
+                for (var x = 0; x < tile.PatchCount; ++x)
                 {
+                    
                     var patch = tile.GetPatch(x, z);
 
                     if (!patch.WaterEnabled)
