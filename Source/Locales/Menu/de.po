@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
 "POT-Creation-Date: 2015-04-25 22:28:47-0400\n"
-"PO-Revision-Date: 2015-04-26 13:38+0100\n"
+"PO-Revision-Date: 2015-04-27 17:28+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -414,11 +414,9 @@ msgstr "Open Rails"
 msgid "Route"
 msgstr "Route"
 
-# Does it refer to player computer´s set locale?
 #: ../../Menu/Options.cs:84
-#, fuzzy
 msgid "Player's location"
-msgstr "Systemeinstellungen"
+msgstr "System"
 
 #: ../../Menu/Options.cs:85
 msgid "Metric"
@@ -508,11 +506,9 @@ msgstr "Steigung"
 msgid "Direction"
 msgstr "Richtung"
 
-# Used where?
 #: ../../Menu/Options.cs:202
-#, fuzzy
 msgid "Control Mode"
-msgstr "Fahrtkontrollmodus"
+msgstr "Kontrollmodus"
 
 #: ../../Menu/Options.cs:203
 msgid "Distance Travelled"
@@ -762,9 +758,7 @@ msgstr "Entfernte Berge"
 msgid "Viewing distance (m)"
 msgstr "Sichtweite (m)"
 
-# Used foe what?
 #: ../../Menu/Options.Designer.cs:704
-#, fuzzy
 msgid "XXX"
 msgstr "XXX"
 

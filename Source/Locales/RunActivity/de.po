@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
 "POT-Creation-Date: 2015-04-25 22:28:57-0400\n"
-"PO-Revision-Date: 2015-04-26 13:49+0100\n"
+"PO-Revision-Date: 2015-04-27 18:24+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -149,11 +149,9 @@ msgstr "Geschlossen"
 msgid "Switching Request Sent to the Server"
 msgstr "Weichenstellanfrage an Server gesendet"
 
-# Used where?
 #: ../../RunActivity/Debugging/DebugViewerForm.cs:177
-#, fuzzy
 msgid "View Self"
-msgstr "Selbst ansehen"
+msgstr "Spieler-zentriertView Self__"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.cs:549
 msgid "MSG to Server"
@@ -193,6 +191,7 @@ msgstr "Nachricht an Ausgewählte"
 msgid "Compose MSG"
 msgstr "Nachricht verfassen"
 
+# Used where?
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:251
 msgid "Res"
 msgstr ""
@@ -233,7 +232,7 @@ msgstr "Folgen"
 msgid "Penalty"
 msgstr "Strafe"
 
-# Used Where?
+# Used for what?
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:433
 #, fuzzy
 msgid "Prefer Green"
@@ -266,10 +265,8 @@ msgstr "Nachrichtenansicht"
 msgid "-"
 msgstr "-"
 
-# Used for what?
 #: ../../RunActivity/Debugging/SoundDebugForm.cs:205
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:189
-#, fuzzy
 msgid "0"
 msgstr "0"
 
@@ -692,8 +689,9 @@ msgid "FuelCal"
 msgstr "Heizwert"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3510
+#, fuzzy
 msgid "Adj:"
-msgstr ""
+msgstr "Anp:"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3511
 msgid "CylEff"
@@ -733,14 +731,12 @@ msgid "Heat:"
 msgstr "Hitze:"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3537
-#, fuzzy
 msgid "In"
-msgstr "Eingabe"
+msgstr "Zufuhr"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3538
-#, fuzzy
 msgid "Out"
-msgstr "Ausgabe"
+msgstr "Abgabe"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3539
 msgid "Stored"
@@ -825,7 +821,7 @@ msgstr "MaxSichr"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3593
 msgid "PressHP:"
-msgstr ""
+msgstr "DruckHDZ:"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3594
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3616
@@ -843,7 +839,7 @@ msgstr ""
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3620
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3641
 msgid "Cutoff"
-msgstr "Steuerkast"
+msgstr "SteuerK"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3600
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3622
@@ -864,7 +860,7 @@ msgstr "Abgas"
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3624
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3643
 msgid "Back"
-msgstr ""
+msgstr "AbgStau"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3608
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3626
@@ -880,7 +876,7 @@ msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3615
 msgid "PressLP:"
-msgstr ""
+msgstr "DruckNDZ:"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3628
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3645
@@ -943,16 +939,15 @@ msgstr "Ja"
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:501
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:781
 msgid "No"
-msgstr "Zu"
+msgstr "Nein"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3663
 msgid "Prime"
-msgstr "ZSaugWas"
+msgstr "SaugWas"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3665
-#, fuzzy
 msgid "BoilHeat"
-msgstr "VerdapHi"
+msgstr "VerdamHi"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3667
 msgid "Comp"
@@ -988,7 +983,7 @@ msgstr "Ist"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3677
 msgid "MaxFireR"
-msgstr "MaxHeizR"
+msgstr "MaxHeiR"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3678
 msgid "FeedRate"
@@ -1047,8 +1042,9 @@ msgid "Boost"
 msgstr "Booster"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3722
+#, fuzzy
 msgid "BstReset"
-msgstr ""
+msgstr "BstZrckstz"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3730
 msgid "Performance"
@@ -1060,11 +1056,11 @@ msgstr "Leistung:"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3733
 msgid "MaxInd"
-msgstr ""
+msgstr "MaxBere"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3734
 msgid "Ind"
-msgstr ""
+msgstr "Berech"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3735
 msgid "Drawbar"
@@ -1095,13 +1091,12 @@ msgid "CritSpTE"
 msgstr "MaxZK"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3747
-#, fuzzy
 msgid "CritSpeed"
-msgstr "GesMaxZK"
+msgstr "V-MaxZK"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3756
 msgid "Move:"
-msgstr "Bewegung:"
+msgstr "Bewegng:"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3757
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3772
@@ -1110,7 +1105,7 @@ msgstr "Kolben"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3758
 msgid "SpdFact"
-msgstr "GeschFakt"
+msgstr "V-Fakt"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3759
 msgid "DrvWhl"
@@ -1134,15 +1129,15 @@ msgstr "Schlupf:"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3773
 msgid "Tang(c)"
-msgstr ""
+msgstr "TangF(K)"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3774
 msgid "Tang(t)"
-msgstr ""
+msgstr "TangF(L)"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3775
 msgid "Static"
-msgstr ""
+msgstr "Reibung"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3776
 msgid "Coeff"
@@ -1154,11 +1149,11 @@ msgstr "Schlupf"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3778
 msgid "WheelM"
-msgstr "RadMasse"
+msgstr "RadMass"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3779
 msgid "FoA"
-msgstr ""
+msgstr "HrW"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3842
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3889
@@ -1873,13 +1868,13 @@ msgstr "zurückgesetzt"
 #: ../../RunActivity/Simulator/Confirmation.cs:188
 msgctxt "Odometer"
 msgid "counting down"
-msgstr ""
+msgstr "Von Zuglänge herunter zählen"
 
 #. Context: Odometer
 #: ../../RunActivity/Simulator/Confirmation.cs:188
 msgctxt "Odometer"
 msgid "counting up"
-msgstr ""
+msgstr "Von Null hinauf zählen"
 
 #. Context: Switch
 #: ../../RunActivity/Simulator/Confirmation.cs:194
@@ -2035,9 +2030,8 @@ msgid "End Activity"
 msgstr "Aufgabe beenden"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:252
-#, fuzzy
 msgid "Status: Activity running"
-msgstr "Status: Aufgabe fortgesetzt"
+msgstr "Status: Aufgabe läuft"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:153
 #, csharp-format
@@ -2364,7 +2358,7 @@ msgstr "Türen offen"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:451
 msgid "MultiPlayerStatus: "
-msgstr ""
+msgstr "Mehrspieler-Status:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:452
 msgid "Dispatcher"
@@ -2372,7 +2366,7 @@ msgstr "Disponent"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:453
 msgid "Helper"
-msgstr "Hilfslok"
+msgstr "Helfer"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:454
 msgid "Client"
@@ -2407,7 +2401,6 @@ msgid "Weight"
 msgstr "Gewicht"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:475
-#, fuzzy
 msgid "Control Mode"
 msgstr "Kontrollmodus"
 
@@ -2420,12 +2413,10 @@ msgid "Cab Aspect"
 msgstr "Führerstand-Signalanzeige"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:479
-#, fuzzy
 msgid "R"
 msgstr "R"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:479
-#, fuzzy
 msgid "F"
 msgstr "F"
 
@@ -2699,7 +2690,6 @@ msgstr[0] "Aktuelle Verspätung: {0} Minute"
 msgstr[1] "Aktuelle Verspätung: {0} Minuten"
 
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:163
-#, fuzzy
 msgid "Train not active."
 msgstr "Zug inaktiv"
 
@@ -2766,7 +2756,6 @@ msgid "OutOfControl : "
 msgstr "AußerKontrolle:"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:79
-#, fuzzy
 msgid "Inactive"
 msgstr "Inaktiv"
 
