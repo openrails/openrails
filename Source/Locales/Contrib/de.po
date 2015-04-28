@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Contrib\n"
-"POT-Creation-Date: 2015-04-11 13:12:53-0400\n"
-"PO-Revision-Date: 2015-04-25 17:26+0100\n"
+"POT-Creation-Date: 2015-04-28 11:53:34+0200\n"
+"PO-Revision-Date: 2015-04-28 14:55+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -12,44 +12,57 @@ msgstr ""
 "X-Generator: Poedit 1.6.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:17
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:89
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:555
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:287
+#, fuzzy
 msgid "Activity Editor"
 msgstr "Aufgabeneditor"
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:18
+#, fuzzy
 msgid "0.1"
 msgstr "0.1"
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:19
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:136
 msgid "Copyright by Open Rails project"
-msgstr "Copyright by Open Rails Projekt"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:20
 msgid "OR"
-msgstr "OR"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:21
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:125
 msgid ""
 "Tool intended for the creation of activities for the Open simulator Rail."
-msgstr "Tool zur Erstellung von Aufgaben für den Open Rails Simulator."
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:111
 msgid "&OK"
-msgstr "&OK"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:148
+#, fuzzy
 msgid "Version 0.1"
 msgstr "Version 0.1"
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:166
+#, fuzzy
 msgid "AboutActEdit"
 msgstr "Über den Aufgabeneditor"
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:47
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStoppedProperties.Designer.cs:41
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/HornProperties.Designer.cs:44
@@ -61,20 +74,24 @@ msgstr "Über den Aufgabeneditor"
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:48
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.Designer.cs:42
 msgid "OK"
-msgstr "OK"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:74
 msgid "ActionDuration"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:85
 msgid "Pre-delay :"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:100
 msgid "ControlStartProperties"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:75
 msgid ""
 "ActionDuration:\r\n"
@@ -82,6 +99,7 @@ msgid ""
 "25sec.\r\n"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:86
 msgid ""
 "Pre-Delay:\r\n"
@@ -89,45 +107,51 @@ msgid ""
 "Minimum 1sec, maximu 20sec, and not over the ActionDuration\r\n"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStoppedProperties.Designer.cs:52
 msgid "No Parameter to set"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStoppedProperties.Designer.cs:62
 msgid "ControlStoppedProperties"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/HornProperties.Designer.cs:55
 msgid "Delay :"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/HornProperties.Designer.cs:72
-#, fuzzy
 msgid "Required Trigger Distance :"
-msgstr "Auslöserradius:"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/HornProperties.Designer.cs:93
 msgid "HornProperties"
 msgstr ""
 
-# Should be removed due to wrong English text and presence of a corrected entry
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:100
-#, fuzzy
 msgid "Activiti Description"
-msgstr "Beschreibung der Aufgabe"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:111
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:339
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:92
 #: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:92
 msgid "Activity Description"
-msgstr "Beschreibung der Aufgabe"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:123
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:351
 msgid "Path Events"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:131
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:257
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:359
@@ -135,76 +159,86 @@ msgstr ""
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:82
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:76
 msgid "Remove"
-msgstr "Entfernen"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:140
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:273
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:368
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:199
 msgid "Edit"
-msgstr "Bearbeiten"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:179
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:406
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:96
 msgid "Description"
-msgstr "Beschreibung"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:195
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:283
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:422
 msgid "Consist :"
-msgstr "Zugverband:"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:212
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:329
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:439
 msgid "Description :"
-msgstr "Beschreibung:"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:228
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:320
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:455
 msgid "Activity Name : "
-msgstr "Name der Aufgabe:"
+msgstr ""
 
-# AI-traffic?If yes, "KI-Verkehr" is tranlsation used in other places
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:238
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:249
-#, fuzzy
 msgid "Traffic Description"
-msgstr "KI-Verkehrsbeschreibung"
+msgstr ""
 
-# English original doesn´t look like a displayed string on the GUI, rather like a debugging entry.
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:464
-#, fuzzy
 msgid "StartActivity"
-msgstr "Aufgabe starten"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:67
 msgid "Give your description :"
-msgstr "Bitte Beschreibung eingeben:"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:76
 msgid "Environment"
-msgstr "Umgebung"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:105
 msgid "Place Name : "
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:115
 msgid "WAIT Activity Description"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:127
 msgid "WaitActivity"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.cs:529
 msgid "NoMoreAct"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:106
 msgid "menuStrip1"
 msgstr ""
@@ -215,429 +249,483 @@ msgstr ""
 msgid "File"
 msgstr "Datei"
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:128
 msgid "New"
-msgstr "Neu"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:135
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:292
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.Designer.cs:117
 msgid "Activity"
-msgstr "Aufgabe"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:143
 msgid "Traffic"
-msgstr "KI-Verkehr"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:154
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/SimpleTextEd.Designer.cs:68
 msgid "Save"
-msgstr "Speichern"
+msgstr ""
 
-# Better wording than "Metadaten"?
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:161
-#, fuzzy
 msgid "Metadata"
-msgstr "Metadaten"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:169
 msgid "Save As"
-msgstr "Speichern unter ..."
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:176
 msgid "Load Activity"
-msgstr "Aufgabe laden"
+msgstr ""
 
-# Better wording than "Metadaten"?
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:184
-#, fuzzy
 msgid "Load Metada"
-msgstr "Lade Metadaten"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:192
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:83
 msgid "Quit"
-msgstr "Beenden"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:208
 msgid "Tools"
-msgstr "Werkzeuge"
+msgstr ""
 
-# We also have an "Editor Options" string...
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:214
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:532
-#, fuzzy
 msgid "Options"
-msgstr "Einstellungen"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:221
 msgid "Import"
-msgstr "Importieren"
+msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:229
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:131
 msgid "Help"
 msgstr "Hilfe"
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:235
+#, fuzzy
 msgid "About Activity Editor"
 msgstr "Über den Aufgabeneditor"
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:246
 msgid "statusStrip1"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:252
 msgid "Status"
-msgstr "Status"
+msgstr ""
 
-# What is this string used for / there for?
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:302
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2025
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2127
-#, fuzzy
 msgid "v"
-msgstr "v"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:312
 msgid "Edit Description"
-msgstr "Beschreibung bearbeiten"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:370
 msgid "Add Station Area"
-msgstr "Bahnhofsbereich hinzufügen"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:380
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:273
-#, fuzzy
 msgid "Station Configuration"
-msgstr "Bahnhofskonfiguration"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:389
 msgid "Add Tag"
-msgstr "Tag hinzufügen"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:399
 msgid "Add Station"
-msgstr "Bahnhof hinzufügen"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:409
 msgid "Edit MetaSegment"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:431
 msgid "Move"
-msgstr "Verschieben"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:441
 msgid "Rotate"
-msgstr "Drehen"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:468
 msgid "Activity Start"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:478
 msgid "Activity Stop"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:488
-#, fuzzy
 msgid "Waiting Point"
-msgstr "Wartepubkt"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:498
-#, fuzzy
 msgid "Action Point"
-msgstr "Aktionspunkt"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:508
 msgid "Action Check"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:518
 msgid "toolStripButton10"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:136
 msgid "Click to start new Activity Description (not ready)"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:144
 msgid "Click to create new Traffic description (not ready)"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:177
 msgid "Click to load an existing OR Activity (not ready)"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:185
 msgid "Click to Edit Metadata for a specified route"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/SimpleTextEd.Designer.cs:85
 msgid "Form1"
 msgstr ""
 
-# Find better translation for "metadata"
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:163
-#, fuzzy
 msgid "Route MetaData"
-msgstr "Routen-Metadaten"
+msgstr ""
 
-# Does it mean the LCD / CRT display settings, or is it used to show / hide various items in the editor window?
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2003
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2092
-#, fuzzy
 msgid "Display"
-msgstr "Anzeige"
+msgstr ""
 
-# What is this string used for / there for?
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2014
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2116
-#, fuzzy
 msgid "x"
-msgstr "x"
+msgstr ""
 
-# What kind of tag?
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2040
-#, fuzzy
 msgid "Tag"
-msgstr "Tag"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2106
 msgid "Station"
-msgstr "Bahnhof"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.Designer.cs:107
 msgid "Center view"
-msgstr "Ansicht zentrieren"
+msgstr ""
 
-# We also have an "Options" string...
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:114
-#, fuzzy
 msgid "Editor Options"
-msgstr "Editoreinstellungen"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:124
 msgid "Show Platform Label"
-msgstr "Bahnsteigbeschriftung anzeigen"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:190
 msgid "Zoom level :"
-msgstr "Zoom:"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:200
-#, fuzzy
 msgid "Size of snap circle :"
-msgstr "Größe des Auswahlkreises:"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:209
-#, fuzzy
 msgid "Show Snap circle"
-msgstr "Auswwahlkreis anzeigen"
+msgstr ""
 
-# Why "Show ALL signals"? Is it more than a simple 'show all or none" option?
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:220
-#, fuzzy
 msgid "Show all Signal"
-msgstr "Signale anzeigen"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:232
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:435
 msgid "Editor Preference"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:250
-#, fuzzy
 msgid "Path Options"
-msgstr "Farhstraßeneinstellungen"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:261
 msgid "Please, configure your paths"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:305
 msgid "Add"
-msgstr "Hinzufügen"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:316
 msgid "Route Paths"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:324
 msgid "Browse"
-msgstr "Durchsuchen"
+msgstr ""
 
-# Translation needs checking for coherence with naming convetion (same translation used in the ORTS main menu?)
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:342
 msgid "MSTS Path :"
-msgstr "MSTS-Installationsprofil"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:358
 msgid "Debug Options"
-msgstr "Debugging-Optionen"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:368
 msgid "Show Snap Track Info"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:379
 msgid "Show Snap Info"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:390
 msgid "Show Snap Line"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:401
 msgid "Show Ruler"
-msgstr "Maßstab anzeigen"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:412
 msgid "Show Track Info"
 msgstr ""
 
-# Would "Tilegrenzen" be more appropriate / descriptive?
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:423
-#, fuzzy
 msgid "Show Tiles"
-msgstr "Tiles anzeigen"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:451
-#, fuzzy
 msgid "Actions Configuration"
-msgstr "Aktionsereignis-Konfiguration"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:468
 msgid "< remove"
-msgstr "< Entfernen"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:478
 msgid "Add >"
-msgstr "Hinzufügen >"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:511
-#, fuzzy
 msgid "Configuration for Generic Auxiliary Actions"
-msgstr "Konfiguration erweiterter Aktionsereignisee"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.cs:33
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.cs:57
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.cs:28
 msgid "Please, give a name"
-msgstr "Bitte Namen hinzufügen"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:56
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:104
-#, fuzzy
 msgid "TC Section : "
-msgstr "Zugkontroll-Abschnitt:"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:73
 msgid "Buffer Label : "
-msgstr "Prellbockbeschriftung:"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:93
 msgid "Buffer Direction : "
-msgstr "Richtung des Prellbocks:"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:128
 msgid "BufferInterface"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.cs:48
 msgid "Not yet implemented"
-msgstr "Feature noch nicht verfügbar"
+msgstr ""
 
-# What kind of connection?
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:67
-#, fuzzy
 msgid "Connection Direction : "
-msgstr "Richtung der Verbindung:"
+msgstr ""
 
-# What kind of connection?
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:87
-#, fuzzy
 msgid "Connection Label : "
-msgstr "Verbindungsbeschriftung:"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:130
 msgid "Station Route Interface"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:38
 msgid "Please Load Paths:"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:42
 msgid "List of Paths seems OK:"
 msgstr ""
 
-# What is it used for?
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:119
-#, fuzzy
 msgid "###"
-msgstr "###"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:161
 msgid "Loaded:"
-msgstr "Geladen:"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:94
 msgid "Station :"
-msgstr "Bahnhof:"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:163
 msgid "From"
-msgstr "Von"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:174
 msgid " To "
-msgstr "Nach"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:185
 msgid "Max. Platform Length"
-msgstr "Maximale Bahnsteigslänge"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:196
 msgid "Max. Siding Length"
-msgstr "Maximale Nebengleislänge"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:207
 msgid "Number of Platform"
-msgstr "Nummer des Bahnsteiges"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:218
 msgid "Number of Siding"
-msgstr "Nummer des Nebengleises"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:229
-#, fuzzy
 msgid "Max. Passing Length"
-msgstr "Maximale lönge Der Ausweichstrecke"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:248
 msgid "Load Paths"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:260
 msgid "label7"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.Designer.cs:60
 msgid "Segment Label : "
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.Designer.cs:71
 msgid "TrackSegmentInterface"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:108
 #: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:108
 msgid "Activity Name"
-msgstr "Name der Aufgabe"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:124
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/SelectRoute.cs:68
 #: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:124
@@ -645,67 +733,77 @@ msgstr "Name der Aufgabe"
 msgid "Route Path"
 msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:141
 #: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:141
 msgid "Activity Editor: Create new activity"
-msgstr "Aufgabeneditor: Neue Aufgabe erstellen"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/SelectRoute.cs:47
 #: ../../Contrib/ActivityEditor/AEWizard/SelectRoute.cs:47
 msgid "Route Configuration: Select Route"
-msgstr "Routenkonfiguration: Route auswählen"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/TrainInfo.cs:175
 #: ../../Contrib/ActivityEditor/AEWizard/TrainInfo.cs:175
 msgid "Activity Editor: Specify Train Info"
-msgstr "Aufgabeneditor: Zuginformationen angeben"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/TrainInfo.cs:194
 #: ../../Contrib/ActivityEditor/AEWizard/TrainInfo.cs:194
 msgid "Select Train Consist"
-msgstr "Zugverband auswählen"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/TrainInfo.cs:211
 #: ../../Contrib/ActivityEditor/AEWizard/TrainInfo.cs:211
 msgid "Train Name (Opt.)"
-msgstr "Name des Zuges (optional)"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:191
 #: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:191
 msgid "< &Back"
-msgstr "< &Zurück"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:200
 #: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:200
 msgid "&Next >"
-msgstr "&Weiter >"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:210
 #: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:210
 #: ../../Contrib/TrackViewer/UserInterface/SearchControl.xaml:12
 msgid "Cancel"
-msgstr "Abbrechen"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:219
 #: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:219
 msgid "&Finish"
-msgstr "&Fertig"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/AEWizard/ExteriorWizardPage.cs:72
 msgid "Welcome to the Sample Setup Wizard"
-msgstr "Willkommen zum Beispiel-Setup-Wizzard"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/AEWizard/InteriorWizardPage.cs:105
 msgid "Sample Header Title"
-msgstr "Titel des Sample Headers"
+msgstr ""
 
+# AE
 #: ../../Contrib/ActivityEditor/AEWizard/InteriorWizardPage.cs:114
 msgid ""
 "Sample header subtitle will help a user complete a certain task in the "
 "Sample wizard by clarifying the task in some way."
 msgstr ""
-"Der Untertitel des Sample-Headers soll dem Benutzer durch Beschreibung eines "
-"Arbeitsschrittes helfen, diesen im Sample-Wizzard auszuführen."
 
 #: ../../Contrib/ContentManager/ContentManagerGUI.cs:61
 msgid "Loading..."
@@ -715,37 +813,35 @@ msgstr "Laden ..."
 msgid "Open Rails Content Manager"
 msgstr "Open Rails Content Manager"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:605
+#: ../../Contrib/TrackViewer/TrackViewer.cs:607
 msgid "The path you are working on has un-saved changes.\n"
 msgstr "Die gerade bearbeitete Fahrstraße wurde nicht gespeichert. \n"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:607
+#: ../../Contrib/TrackViewer/TrackViewer.cs:609
 msgid "Do you really want to Quit?"
 msgstr "Wollen Sie das Programm wirklich beenden?"
 
-# Check naming convetion for instllation directory´s translation.
-#: ../../Contrib/TrackViewer/TrackViewer.cs:649
-#, fuzzy
+#: ../../Contrib/TrackViewer/TrackViewer.cs:651
 msgid ""
 "Directory is not a valid install directory.\n"
 "The install directory needs to contain ROUTES, GLOBAL, ..."
 msgstr ""
-"Der ausgewählte Ordner ist kein gültiges Installationsverzeichnis.\n"
+"Der ausgewählte Ordner ist kein gültiges MSTS-Installationsverzeichnis.\n"
 "Der Ordner muss die Unterordner ROUTES, GLOBAL, etc. enthalten."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:723
+#: ../../Contrib/TrackViewer/TrackViewer.cs:725
 msgid "Loading route..."
 msgstr "Lade Route ..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:745
+#: ../../Contrib/TrackViewer/TrackViewer.cs:747
 msgid "Route cannot be loaded. Sorry"
 msgstr "Die Route konnte leider nicht geladen werden."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:812
+#: ../../Contrib/TrackViewer/TrackViewer.cs:814
 msgid "Loading .pat file ..."
 msgstr "Lade .pat Datei ..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:815
+#: ../../Contrib/TrackViewer/TrackViewer.cs:817
 msgid "Processing .pat file ..."
 msgstr "Lese .pat Datei..."
 
@@ -817,7 +913,7 @@ msgstr "Lade tsection.dat Datei ..."
 msgid "Finding the angles to draw signals, endnodes, ..."
 msgstr "Symbole für Signale, Prellböcke, etc. zur Strecke ausrichten ..."
 
-# Used for what?
+# Used where and for what?
 #: ../../Contrib/TrackViewer/Editing/EditorActions.cs:171
 #, fuzzy
 msgid "Not to be used, template only"
@@ -884,6 +980,7 @@ msgstr "Ausweichstrecke beginnen"
 msgid "Remove passing path"
 msgstr "Ausweichstrecke entfernen"
 
+# Where used?
 #: ../../Contrib/TrackViewer/Editing/EditorActions.cs:904
 #, fuzzy
 msgid "Fix invalid node"
@@ -897,6 +994,7 @@ msgstr "Rest der Farhstraße löschen"
 msgid "Cut path here and store its tail"
 msgstr "Fahrstraße hier teilen, Rest speichern"
 
+# Where used?
 #: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1011
 #, fuzzy
 msgid "Auto-fix broken nodes"
@@ -914,6 +1012,7 @@ msgstr "Ausweichstrecke zu Hauptstrecke verbinden"
 msgid "Draw path until here"
 msgstr "Fahrstraße bis hier anzeigen"
 
+# Where used?
 #: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1983
 #, fuzzy
 msgid "Draw path until next broken point"
@@ -935,7 +1034,8 @@ msgstr "Fahrstraßen ohne Endpunkt können nicht umgekehrt werden."
 msgid "Saving broken paths might not always work correctly.\n"
 msgstr "Unterbrochene Fahstraßen können eventuell nicht gespeichert werden.\n"
 
-# Set what as invalis?
+# Where used?
+# Set what as invalid?
 #: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:269
 #, fuzzy
 msgid "Set as invalid in .pat file"
@@ -950,29 +1050,32 @@ msgid "Not able to place node on track"
 msgstr "Punkt konnte nicht auf dem Gleis platziert werden"
 
 #: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:275
+#, fuzzy
 msgid "Dangling siding node"
-msgstr ""
+msgstr "Defekter Nebengleis-Punkt"
 
-# Used where?
+# Used for what and where?
 #: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:277
 #, fuzzy
 msgid "Unknown"
 msgstr "Unbekannt"
 
-# Used for what?
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:52
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:53
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:54
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:55
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:56
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:57
-#, fuzzy
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:58
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:134
 msgid "1"
 msgstr "1"
 
-# Used for what?
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:228
-#, fuzzy
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:139
+msgid "10"
+msgstr "1"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:260
 msgid "99"
 msgstr "99"
 
@@ -1061,7 +1164,7 @@ msgid ""
 "Currently all intended and planned editor features have been implemented."
 msgstr "Derzeit sind alle vorgesehenen und geplanten Features umgesetzt."
 
-# Where?
+# Available from where?
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:772
 #, fuzzy
 msgid "Documentation is available"
@@ -1089,39 +1192,35 @@ msgstr ""
 msgid "Feedback is appreciated."
 msgstr "Feedback ist gerne erwünscht."
 
-# Find better translation for "Metadata"
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:4
-#, fuzzy
 msgid "Path metadata"
-msgstr "Fahrstraßen-Metadaten"
+msgstr "Fahrstraßenbeschreibung"
 
-# What kind of ID?
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:7
-#, fuzzy
 msgid "Path ID"
-msgstr "ID der Fahstraße"
+msgstr "Dateiname:"
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:11
 msgid "Path name"
-msgstr "Name der Fahrstraße"
+msgstr "Name der Fahrstraße:"
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:15
 msgid "Path start"
-msgstr "Startpunkt der Fahstraße"
+msgstr "Startpunkt:"
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:19
 msgid "Path end"
-msgstr "Endpunkt der Farhstraße"
+msgstr "Endpunkt:"
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:24
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:15
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:47
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:53
 msgid " OK "
 msgstr " OK "
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:25
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:16
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:48
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:54
 msgid " Cancel "
 msgstr "Abbrechen"
 
@@ -1139,7 +1238,7 @@ msgstr "Ankuppel"
 
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:10
 msgid "cars, wait for "
-msgstr ""
+msgstr "Waggns, warte"
 
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:12
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:12
@@ -1163,9 +1262,8 @@ msgid "Openrails advanced shunting options:"
 msgstr "Erweiterete Rangieroptionen für Open Rails:"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:19
-#, fuzzy
 msgid "Wait until:  "
-msgstr "Warten bis"
+msgstr "Warten bis:"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:21
 msgid ":"
@@ -1175,49 +1273,45 @@ msgstr ":"
 msgid "HH:MM"
 msgstr "HH:MM"
 
-# Do strings 250 thru 252 belong together?
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:27
-#, fuzzy
 msgid "Uncouple: keep "
-msgstr "Abkuppel:"
+msgstr "Abkuppeln: Beh."
 
-# Do strings 250 thru 252 belong together?
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:29
-#, fuzzy
 msgid " cars, and wait"
-msgstr "Waggons, "
+msgstr "Waggns, warte"
 
-# Do strings 250 thru 252 belong together?
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:31
-#, fuzzy
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:42
 msgid "seconds. "
-msgstr "Sekunden warten."
+msgstr "Sekunden"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:32
 msgid "Keep rear"
-msgstr "Ende behalten"
+msgstr "Ende beh."
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:36
+#, fuzzy
 msgid "Join and split"
-msgstr ""
+msgstr "Verbinden und trennen"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:40
-msgid "Wait time code as decimal ="
-msgstr "Wartezeit-code dezimal ="
+msgid "Blow horn for"
+msgstr "Horn betätigen:"
 
-# Used for what?
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:41
-#, fuzzy
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:46
+msgid "Wait time code as decimal ="
+msgstr "Wartezeitcode Dezimal ="
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:47
 msgid "00000"
 msgstr "00000"
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:42
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:48
 msgid "hexadecimal ="
 msgstr "Hexadezimal ="
 
-# Used for What?
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:43
-#, fuzzy
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:49
 msgid "0000"
 msgstr "0000"
 
@@ -1355,7 +1449,7 @@ msgstr "Anti-Aliasing (Neustart des Programms erforderlich)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:60
 msgid "Track items"
-msgstr "Gleise & Marker"
+msgstr "Simulationselemente"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:61
 msgid "Show all items"
@@ -1517,11 +1611,9 @@ msgstr "Andere Fahrstraßen anzeigen"
 msgid "Save path"
 msgstr "Fahrstraße speichern"
 
-# What exactly does "visited" mean?
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:121
-#, fuzzy
 msgid "Save visited stations"
-msgstr "Besuchte Bahnhöfe speichern"
+msgstr "Bahnhöfe entlang Pfad speichern"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:123
 msgid "Enable editing"
@@ -1531,11 +1623,9 @@ msgstr "Bearbeitung aktivieren"
 msgid "New path"
 msgstr "Neue Fahrstraße"
 
-# Find better translation for "Metadata"
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:126
-#, fuzzy
 msgid "Edit path metadata"
-msgstr "Fahrstraßen-Metadaten bearbeiten"
+msgstr "Fahrstraßenbeschreibung bearbeiten"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:127
 msgid "Reverse path"
@@ -1583,9 +1673,7 @@ msgstr "Gleisindex"
 msgid "Index in the Track DataBase (.tdb) file"
 msgstr "Index in der Schienendatenbankdatei (.tdb)"
 
-# What kind of item?
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:66
-#, fuzzy
 msgid "Item"
 msgstr "Element"
 

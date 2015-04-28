@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
-"POT-Creation-Date: 2015-04-25 22:28:55-0400\n"
-"PO-Revision-Date: 2015-04-26 11:56+0100\n"
+"POT-Creation-Date: 2015-04-28 11:53:47+0200\n"
+"PO-Revision-Date: 2015-04-28 12:39+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -446,11 +446,11 @@ msgstr "Steuerung: Entfernungsmesser Zählrichtung umschalten"
 
 #: ../../ORTS.Settings/InputSettings.cs:154
 msgid "Control Retainers On"
-msgstr "Steuerung: Retainer an"
+msgstr "Steuerung: Bremsdruckhalteventil schließen"
 
 #: ../../ORTS.Settings/InputSettings.cs:155
 msgid "Control Retainers Off"
-msgstr "Steuerung: Retainer aus"
+msgstr "Steuerung: Bremsdruckhalteventil zurücksetzen"
 
 #: ../../ORTS.Settings/InputSettings.cs:156
 msgid "Control Brake Hose Connect"

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
-"POT-Creation-Date: 2015-04-25 22:28:57-0400\n"
-"PO-Revision-Date: 2015-04-27 18:24+0100\n"
+"POT-Creation-Date: 2015-04-28 11:53:49+0200\n"
+"PO-Revision-Date: 2015-04-28 12:38+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -151,20 +151,20 @@ msgstr "Weichenstellanfrage an Server gesendet"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.cs:177
 msgid "View Self"
-msgstr "Spieler-zentriertView Self__"
+msgstr "Spieler-zentriert"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.cs:549
 msgid "MSG to Server"
-msgstr "Nachricht an Server"
+msgstr "Nachr an Server"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.cs:553
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:227
 msgid "MSG to All"
-msgstr "Nachricht an alle"
+msgstr "Nachr an alle"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:93
 msgid "View Train"
-msgstr "Zug ansehen"
+msgstr "Zug anseh."
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:138
 msgid "m"
@@ -174,9 +174,11 @@ msgstr "m"
 msgid "Remove"
 msgstr "Entfernen"
 
+# Does what?
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:174
+#, fuzzy
 msgid "Auto Switch"
-msgstr "Auto-Weiche"
+msgstr "Weichensperre"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:189
 msgid "Show Avatars"
@@ -184,17 +186,16 @@ msgstr "Avatare anzeigen"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:215
 msgid "MSG to Selected"
-msgstr "Nachricht an Ausgewählte"
+msgstr "Nachr an Markiert"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:238
 #: ../../RunActivity/Debugging/MessageViewer.Designer.cs:88
 msgid "Compose MSG"
-msgstr "Nachricht verfassen"
+msgstr "Nachr verfassen"
 
-# Used where?
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:251
 msgid "Res"
-msgstr ""
+msgstr "Ans"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:261
 msgid "Reply to Selected"
@@ -202,7 +203,7 @@ msgstr "Ausgewählten antworten"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:276
 msgid "Draw Path"
-msgstr "Fahrstraße zeichnen"
+msgstr "Fahrstraße anzeigen"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:326
 msgid "Pick Signals"
@@ -228,11 +229,13 @@ msgstr "Normal"
 msgid "Follow"
 msgstr "Folgen"
 
+# Does what?
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:418
+#, fuzzy
 msgid "Penalty"
 msgstr "Strafe"
 
-# Used for what?
+# Does what? Used where?
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:433
 #, fuzzy
 msgid "Prefer Green"
@@ -240,7 +243,7 @@ msgstr "Grün vorziehen"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:447
 msgid "See in Game"
-msgstr "Im Spiel anschauen"
+msgstr "In Spiel ansehen"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:486
 msgid "DispatchViewer"
@@ -422,77 +425,77 @@ msgstr[1] ""
 "Abkuppeln nicht möglich: Zug von {0} Spielern bedient, muss vollständig "
 "anhalten."
 
-#: ../../RunActivity/Physics/Train.cs:1458
+#: ../../RunActivity/Physics/Train.cs:1459
 msgid "Coupler broken!"
 msgstr "Kupplung gebrochen!"
 
-#: ../../RunActivity/Physics/Train.cs:1461
+#: ../../RunActivity/Physics/Train.cs:1462
 msgid "Coupler overloaded!"
 msgstr "Kupplung überlastet!"
 
-#: ../../RunActivity/Physics/Train.cs:4587
-#: ../../RunActivity/Physics/Train.cs:4592
+#: ../../RunActivity/Physics/Train.cs:4588
+#: ../../RunActivity/Physics/Train.cs:4593
 msgid "Other train is blocking path"
 msgstr "Anderer Zug blockiert Fahrstraße."
 
 # Route (tdb / trk / etc) or path settings?
-#: ../../RunActivity/Physics/Train.cs:5469
+#: ../../RunActivity/Physics/Train.cs:5470
 #, fuzzy
 msgid "Stopped due to errors in route setting"
 msgstr "Wegen Fehlern in den Routeneinstellungen angehalten"
 
-#: ../../RunActivity/Physics/Train.cs:6131
-#: ../../RunActivity/Physics/Train.cs:7209
+#: ../../RunActivity/Physics/Train.cs:6132
+#: ../../RunActivity/Physics/Train.cs:7210
 msgid "No signal in train's path"
 msgstr "Kein Signal entlang der Fahrstraße"
 
-#: ../../RunActivity/Physics/Train.cs:6139
+#: ../../RunActivity/Physics/Train.cs:6140
 msgid "Next signal already allocated to other train"
 msgstr "Nächstes Signal schon anderem Zug zugewiesen"
 
-#: ../../RunActivity/Physics/Train.cs:6200
+#: ../../RunActivity/Physics/Train.cs:6201
 msgid "Request to clear signal cannot be processed"
 msgstr "Anfrage zur Signalfreigabe kann nicht verarbeitet werden"
 
-#: ../../RunActivity/Physics/Train.cs:6306
-#: ../../RunActivity/Physics/Train.cs:7329
+#: ../../RunActivity/Physics/Train.cs:6307
+#: ../../RunActivity/Physics/Train.cs:7330
 msgid "No switch found"
 msgstr "Keine Weiche gefunden"
 
-#: ../../RunActivity/Physics/Train.cs:7563
+#: ../../RunActivity/Physics/Train.cs:7564
 msgid "You cannot enter manual mode when autopiloted"
 msgstr "Wechsel zum manuellen Modus im Autopilot nicht möglich."
 
-#: ../../RunActivity/Physics/Train.cs:7575
+#: ../../RunActivity/Physics/Train.cs:7576
 msgid "Train is not back on original route"
 msgstr "Zug nicht wieder auf ursprünglicher Fahrstraße"
 
-#: ../../RunActivity/Physics/Train.cs:7584
+#: ../../RunActivity/Physics/Train.cs:7585
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
 "Ursprüngliche Farhstraße verläuft in entgegengesetzte Richtung. Zug vor "
 "umschalten anhalten."
 
-#: ../../RunActivity/Physics/Train.cs:7597
+#: ../../RunActivity/Physics/Train.cs:7598
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr "Umschalten zum Manuellen Modus im Erkundungsmodus nicht möglich."
 
-#: ../../RunActivity/Physics/Train.cs:7692
+#: ../../RunActivity/Physics/Train.cs:7693
 msgid "Reversal required and rear of train not on required route"
 msgstr ""
 "Richtungsänderung erforderlich, aber Zugenede nicht auf richiger Fahrstraße."
 
-#: ../../RunActivity/Physics/Train.cs:7898
+#: ../../RunActivity/Physics/Train.cs:7899
 msgid "Cannot clear signal behind train while in AUTO mode"
 msgstr "Signalfreigabe hinter dem Zug im automatischen Modus nicht möglich."
 
-#: ../../RunActivity/Physics/Train.cs:8147
+#: ../../RunActivity/Physics/Train.cs:8148
 #, csharp-format
 msgid "Allowed speed raised to {0}"
 msgstr "Geschwindigkeitsbegrenzung auf {0} erhöht."
 
-#: ../../RunActivity/Physics/Train.cs:8189
+#: ../../RunActivity/Physics/Train.cs:8190
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr "Zug wegen Problemen mit anderem Zug angehalten: Zug {0} , Grund: {1}"
@@ -644,7 +647,7 @@ msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3482
 msgid "Fuel levels"
-msgstr "Kraftstoffstände"
+msgstr "Kraftstoffstände:"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3482
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:330
@@ -1035,7 +1038,7 @@ msgstr "WassAus"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3719
 msgid "FireOut"
-msgstr "FeuerAusFireOut"
+msgstr "FeuerAus"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3721
 msgid "Boost"
@@ -1044,7 +1047,7 @@ msgstr "Booster"
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3722
 #, fuzzy
 msgid "BstReset"
-msgstr "BstZrckstz"
+msgstr "BstRckstz"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3730
 msgid "Performance"
@@ -1666,7 +1669,7 @@ msgid "Wipers"
 msgstr "Scheibenwischer"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:187
-#: ../../RunActivity/Viewer3D/Cameras.cs:1504
+#: ../../RunActivity/Viewer3D/Cameras.cs:1505
 msgid "Cab"
 msgstr "Führerstand"
 
@@ -1891,90 +1894,90 @@ msgstr "Wartet auf Anschlusszug:"
 msgid "Free"
 msgstr "Frei beweglich"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:980
+#: ../../RunActivity/Viewer3D/Cameras.cs:981
 msgid "Outside Front"
 msgstr "Außen 1 (Zugspitze)"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:980
+#: ../../RunActivity/Viewer3D/Cameras.cs:981
 msgid "Outside Rear"
 msgstr "Außen 2 (Zugende)"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1236
+#: ../../RunActivity/Viewer3D/Cameras.cs:1237
 msgid "Brakeman"
 msgstr "Bremser"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1427
+#: ../../RunActivity/Viewer3D/Cameras.cs:1428
 msgid "Passenger"
 msgstr "Passagier"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1460
+#: ../../RunActivity/Viewer3D/Cameras.cs:1461
 msgid "Head out"
 msgstr "Hinauslehnen"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1684
+#: ../../RunActivity/Viewer3D/Cameras.cs:1685
 msgid "Trackside"
 msgstr "Beobachter"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1836
+#: ../../RunActivity/Viewer3D/Cameras.cs:1837
 msgid "3D Cab"
 msgstr "3D-Führerstand"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:591
-#: ../../RunActivity/Viewer3D/Viewer.cs:709
+#: ../../RunActivity/Viewer3D/Viewer.cs:596
+#: ../../RunActivity/Viewer3D/Viewer.cs:714
 msgid "Cab view not available"
 msgstr "Führerstandsansicht nicht verfügbar."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:653
+#: ../../RunActivity/Viewer3D/Viewer.cs:658
 msgid "In MP, use Alt-F4 to quit directly"
 msgstr "Benutzen Sie Alt-F4, um den Mehrspielermodus direkt zu beenden."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:720
+#: ../../RunActivity/Viewer3D/Viewer.cs:725
 msgid "3D Cab view not available"
 msgstr "3D-Führerstandsansicht nicht verfügbar."
 
 # Spelling mistake in source text
-#: ../../RunActivity/Viewer3D/Viewer.cs:747
+#: ../../RunActivity/Viewer3D/Viewer.cs:752
 #, fuzzy
 msgid "Will not ratate cab and land"
 msgstr "Führerstand und Umgebung werden nicht mehr mitgedreht."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:855
+#: ../../RunActivity/Viewer3D/Viewer.cs:860
 msgid "Switched to player control"
 msgstr "Manuelle Steuerung reaktiviert"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:860
+#: ../../RunActivity/Viewer3D/Viewer.cs:865
 msgid "You can't switch from manual to autopilot mode"
 msgstr "Wechsel zum Autopiloten im manuellen Modus nicht möglich."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:864
+#: ../../RunActivity/Viewer3D/Viewer.cs:869
 msgid "Switched to autopilot"
 msgstr "Autopilot aktiviert"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1205
+#: ../../RunActivity/Viewer3D/Viewer.cs:1210
 msgid "Game saved"
 msgstr "Spiel gespeichert"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:738
+#: ../../RunActivity/Viewer3D/Viewer.cs:743
 #, csharp-format
 msgid "Vibrating at level {0}"
 msgstr "Vibrationslevel {0}"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:746
+#: ../../RunActivity/Viewer3D/Viewer.cs:751
 #, csharp-format
 msgid "Rotating cab {0}/4, rotating land {1}/4"
 msgstr "Führerstands-Drehung {0}/4, Umgebungs-Drehung {1}/4"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:873
+#: ../../RunActivity/Viewer3D/Viewer.cs:878
 #, csharp-format
 msgid "Keyboard map list saved to '{0}'."
 msgstr "Tastenbelegung (Liste) in '{0}' gespeichert."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:877
+#: ../../RunActivity/Viewer3D/Viewer.cs:882
 #, csharp-format
 msgid "Keyboard map image saved to '{0}'."
 msgstr "Tastenbelegung (Grafik) in '{0}' gespeichert."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:775
+#: ../../RunActivity/Viewer3D/Viewer.cs:780
 #, csharp-format
 msgid "{0} viewpoint stored. Use Shift+8 to restore viewpoints."
 msgid_plural "{0} viewpoints stored. Use Shift+8 to restore viewpoints."

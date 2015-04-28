@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-04-25 22:28:57-0400\n"
-"PO-Revision-Date: 2015-04-25 22:29:01-0400\n"
+"POT-Creation-Date: 2015-04-28 11:53:49+0200\n"
+"PO-Revision-Date: 2015-04-28 11:53:51+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -412,72 +412,72 @@ msgid_plural "Cannot decouple: train has {0} players, need to completely stop."
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../../RunActivity/Physics/Train.cs:1458
+#: ../../RunActivity/Physics/Train.cs:1459
 msgid "Coupler broken!"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:1461
+#: ../../RunActivity/Physics/Train.cs:1462
 msgid "Coupler overloaded!"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:4587
-#: ../../RunActivity/Physics/Train.cs:4592
+#: ../../RunActivity/Physics/Train.cs:4588
+#: ../../RunActivity/Physics/Train.cs:4593
 msgid "Other train is blocking path"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5469
+#: ../../RunActivity/Physics/Train.cs:5470
 msgid "Stopped due to errors in route setting"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6131
-#: ../../RunActivity/Physics/Train.cs:7209
+#: ../../RunActivity/Physics/Train.cs:6132
+#: ../../RunActivity/Physics/Train.cs:7210
 msgid "No signal in train's path"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6139
+#: ../../RunActivity/Physics/Train.cs:6140
 msgid "Next signal already allocated to other train"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6200
+#: ../../RunActivity/Physics/Train.cs:6201
 msgid "Request to clear signal cannot be processed"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6306
-#: ../../RunActivity/Physics/Train.cs:7329
+#: ../../RunActivity/Physics/Train.cs:6307
+#: ../../RunActivity/Physics/Train.cs:7330
 msgid "No switch found"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7563
+#: ../../RunActivity/Physics/Train.cs:7564
 msgid "You cannot enter manual mode when autopiloted"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7575
+#: ../../RunActivity/Physics/Train.cs:7576
 msgid "Train is not back on original route"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7584
+#: ../../RunActivity/Physics/Train.cs:7585
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7597
+#: ../../RunActivity/Physics/Train.cs:7598
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7692
+#: ../../RunActivity/Physics/Train.cs:7693
 msgid "Reversal required and rear of train not on required route"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7898
+#: ../../RunActivity/Physics/Train.cs:7899
 msgid "Cannot clear signal behind train while in AUTO mode"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:8147
+#: ../../RunActivity/Physics/Train.cs:8148
 #, csharp-format
 msgid "Allowed speed raised to {0}"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:8189
+#: ../../RunActivity/Physics/Train.cs:8190
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr ""
@@ -1636,7 +1636,7 @@ msgid "Wipers"
 msgstr ""
 
 #: ../../RunActivity/Simulator/Confirmation.cs:187
-#: ../../RunActivity/Viewer3D/Cameras.cs:1504
+#: ../../RunActivity/Viewer3D/Cameras.cs:1505
 msgid "Cab"
 msgstr ""
 
@@ -1855,88 +1855,88 @@ msgstr ""
 msgid "Free"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:980
+#: ../../RunActivity/Viewer3D/Cameras.cs:981
 msgid "Outside Front"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:980
+#: ../../RunActivity/Viewer3D/Cameras.cs:981
 msgid "Outside Rear"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1236
+#: ../../RunActivity/Viewer3D/Cameras.cs:1237
 msgid "Brakeman"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1427
+#: ../../RunActivity/Viewer3D/Cameras.cs:1428
 msgid "Passenger"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1460
+#: ../../RunActivity/Viewer3D/Cameras.cs:1461
 msgid "Head out"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1684
+#: ../../RunActivity/Viewer3D/Cameras.cs:1685
 msgid "Trackside"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1836
+#: ../../RunActivity/Viewer3D/Cameras.cs:1837
 msgid "3D Cab"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:591
-#: ../../RunActivity/Viewer3D/Viewer.cs:709
+#: ../../RunActivity/Viewer3D/Viewer.cs:596
+#: ../../RunActivity/Viewer3D/Viewer.cs:714
 msgid "Cab view not available"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:653
+#: ../../RunActivity/Viewer3D/Viewer.cs:658
 msgid "In MP, use Alt-F4 to quit directly"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:720
+#: ../../RunActivity/Viewer3D/Viewer.cs:725
 msgid "3D Cab view not available"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:747
+#: ../../RunActivity/Viewer3D/Viewer.cs:752
 msgid "Will not ratate cab and land"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:855
+#: ../../RunActivity/Viewer3D/Viewer.cs:860
 msgid "Switched to player control"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:860
+#: ../../RunActivity/Viewer3D/Viewer.cs:865
 msgid "You can't switch from manual to autopilot mode"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:864
+#: ../../RunActivity/Viewer3D/Viewer.cs:869
 msgid "Switched to autopilot"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1205
+#: ../../RunActivity/Viewer3D/Viewer.cs:1210
 msgid "Game saved"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:738
+#: ../../RunActivity/Viewer3D/Viewer.cs:743
 #, csharp-format
 msgid "Vibrating at level {0}"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:746
+#: ../../RunActivity/Viewer3D/Viewer.cs:751
 #, csharp-format
 msgid "Rotating cab {0}/4, rotating land {1}/4"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:873
+#: ../../RunActivity/Viewer3D/Viewer.cs:878
 #, csharp-format
 msgid "Keyboard map list saved to '{0}'."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:877
+#: ../../RunActivity/Viewer3D/Viewer.cs:882
 #, csharp-format
 msgid "Keyboard map image saved to '{0}'."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:775
+#: ../../RunActivity/Viewer3D/Viewer.cs:780
 #, csharp-format
 msgid "{0} viewpoint stored. Use Shift+8 to restore viewpoints."
 msgid_plural "{0} viewpoints stored. Use Shift+8 to restore viewpoints."
