@@ -2065,7 +2065,7 @@ namespace ORTS
                 float FutureSuperheatTeampF = SuperheatTempLbpHtoDegF[pS.TopH(FutureCylinderSteamUsageLBpS)] * SuperheatTempRatio; // Calculate potential future new superheat temp
                 
                 
-                float SuperheatTempThresholdXtoDegF = SuperheatTempLimitXtoDegF[cutoff] - 10.0f; // 10 deg bandwith reduction to reset superheat flag
+                float SuperheatTempThresholdXtoDegF = SuperheatTempLimitXtoDegF[cutoff] - 25.0f; // 10 deg bandwith reduction to reset superheat flag
                 if (CurrentSuperheatTeampF > SuperheatTempLimitXtoDegF[cutoff])
                 {
                 IsSuperSet = true;    // Set to use superheat factor if above superheat temp threshold             
