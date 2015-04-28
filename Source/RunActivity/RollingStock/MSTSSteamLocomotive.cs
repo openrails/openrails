@@ -74,8 +74,10 @@ namespace ORTS
         bool FuelBoostReset = false;
         bool StokerIsMechanical = false;
         bool HotStart; // Determine whether locomotive is started in hot or cold state - selectable option in Options TAB
-        bool BoilerHeat = false;
+        bool BoilerHeat = false;    // Boiler heat has exceeded total max possible heat in boiler
+        bool IsGrateLimit = false; // Grate limit of locomotive exceeded
         bool HasSuperheater = false;  // Flag to indicate whether locomotive is superheated steam type
+        bool IsSuperSet = false;    // Flag to indicate whether superheating is reducing cylinder condenstation
         bool IsSaturated = false;     // Flag to indicate locomotive is saturated steam type
         bool safety2IsOn = false; // Safety valve #2 is on and opertaing
         bool safety3IsOn = false; // Safety valve #3 is on and opertaing
@@ -85,8 +87,9 @@ namespace ORTS
         bool IsCompoundLoco = false;    // Indicates that it is a compound locomotive
         bool IsFixGeared = false;
         bool IsSelectGeared = false; 
-        bool IsLocoSlip = false; 	// locomotive is slipping
-        bool IsSteamDebug = false; // Steam debugging is off by default - set to true for debug on.
+        bool IsLocoSlip = false; 	   // locomotive is slipping
+        bool IsSteamDebug = false;    // Steam debugging is off (false) by default - set to true for debug on - provides printout in log at set speed for steam indicator pressures.
+        bool IsBurnDebug = false;      // Burn debugging is off (false) by default - set to true for debug on - provides visibility of burn related parameters on extended HUD.
                
         string SteamLocoType;     // Type of steam locomotive type
         
@@ -148,7 +151,8 @@ namespace ORTS
         float IdealFireMassKG;      // Target fire mass
         float MaxFireMassKG;        // Max possible fire mass
         float MaxFiringRateKGpS;              // Max rate at which fireman or stoker can can feed coal into fire
-        float GrateLimitLBpS = 140.0f;       // Max combustion rate of the grate, once this is reached, no more steam is produced.
+        float GrateLimitLBpFt2 = 150.0f;       // Max combustion rate of the grate, once this is reached, no more steam is produced.
+        float MaxFuelBurnGrateKGpS;            // Maximum rate of fuel burnt depending upon grate limit
         float PreviousFireHeatTxfKW;    // Capture max FireHeat value before Grate limit is exceeded.
         float GrateCombustionRateLBpFt2;     // Grate combustion rate, ie how many lbs coal burnt per sq ft grate area.
         float ORTSMaxFiringRateKGpS;          // OR equivalent of above
@@ -160,14 +164,13 @@ namespace ORTS
         float SuperheatKFactor = 11.7f;     // Factor used to calculate superheat temperature - guesstimate
         float SuperheatRefTempF;            // Superheat temperature in deg Fahrenheit, based upon the heating area.
         float SuperheatTempRatio;          // A ratio used to calculate the superheat temp - based on the ratio of superheat (using heat area) to "known" curve. 
-        float SuperheatUsageRatio;          // A ratio used to calculate the steam usage axis for superheat - based on the ratio of steam usage to "known" curve. 
         float CurrentSuperheatTeampF;      // current value of superheating based upon boiler steam output
         float SuperheatVolumeRatio;   // Approximate ratio of Superheated steam to saturated steam at same pressure
         float FuelCalorificKJpKG = 33400;
         float ManBlowerMultiplier = 20.0f; // Blower Multipler for Manual firing
         float ShovelMassKG = 6;
         float HeatRatio = 0.001f;        // Ratio to control burn rate - based on ratio of heat in vs heat out
-        float PressureRatio = 0.01f;    // Ratio to control burn rate - based upon boiler pressure
+        float PressureRatio = 0.001f;    // Ratio to control burn rate - based upon boiler pressure
         float BurnRateRawKGpS;           // Raw combustion (burn) rate
         SmoothedData FuelRateStoker = new SmoothedData(15); // Stoker is more responsive and only takes x seconds to fully react to changing needs.
         SmoothedData FuelRate = new SmoothedData(45); // Automatic fireman takes x seconds to fully react to changing needs.
@@ -962,6 +965,12 @@ namespace ORTS
                     IdealFireMassKG = GrateAreaM2 * 720.0f * 0.08333f * 0.02382f * 1.293f;  // Check this formula as conversion factors maybe incorrect, also grate area is now in SqM
                 else
                     IdealFireMassKG = GrateAreaM2 * Me.FromIn(IdealFireDepthIN) * FuelDensityKGpM3;
+
+              // Calculate the maximum fuel burn rate based upon grate area and limit
+            float GrateLimitLBpFt2add = 162.0f;     // Alow burn rate to slightly exceed grate limit
+            MaxFuelBurnGrateKGpS = pS.FrompH(Kg.FromLb(Me2.ToFt2(GrateAreaM2) * GrateLimitLBpFt2add));
+
+
             if (MaxFireMassKG == 0) // If not specified, assume twice as much as ideal. 
                 // Scale FIREBOX control to show FireMassKG as fraction of MaxFireMassKG.
                 MaxFireMassKG = 2 * IdealFireMassKG;
@@ -1034,8 +1043,6 @@ namespace ORTS
 
             MaxBoilerOutputLBpH = pS.TopH(TheoreticalMaxSteamOutputLBpS);
 
-            // Adjust superheat steam usage axis based upon actual max boiler output, ie adjust x axis of steam table            
-            SuperheatUsageRatio = 36000.0f/MaxBoilerOutputLBpH;
 
             // Assign default steam table values if table not in ENG file 
             // Back pressure increases with the speed of the locomotive, as cylinder finds it harder to exhaust all the steam.
@@ -1486,7 +1493,8 @@ namespace ORTS
                  BurnRateRawKGpS = pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH((BlowerBurnEffect + HeatRatio * FiringSteamUsageRateLBpS * PressureRatio * BoilerHeatRatio * MaxBoilerHeatRatio))]));
 
                 //  Limit burn rate in AI fireman to within acceptable range of Fireman firing rate
-                      BurnRateRawKGpS = MathHelper.Clamp(BurnRateRawKGpS, 0.05f, MaxTheoreticalFiringRateKgpS); // Allow burnrate to max out at MaxTheoreticalFiringRateKgpS
+              //        BurnRateRawKGpS = MathHelper.Clamp(BurnRateRawKGpS, 0.05f, MaxTheoreticalFiringRateKgpS); // Allow burnrate to max out at MaxTheoreticalFiringRateKgpS
+                 BurnRateRawKGpS = MathHelper.Clamp(BurnRateRawKGpS, 0.001f, MaxFuelBurnGrateKGpS); // Allow burnrate to max out at MaxTheoreticalFiringRateKgpS
             }
 
             FuelFeedRateKGpS = BurnRateRawKGpS;
@@ -1517,9 +1525,9 @@ namespace ORTS
 
             BurnRateSmoothKGpS.Update(elapsedClockSeconds, BurnRateRawKGpS);
             FuelBurnRateKGpS = BurnRateSmoothKGpS.SmoothedValue;
-            FuelBurnRateKGpS = MathHelper.Clamp(FuelBurnRateKGpS, 0, MaxFireMassKG); // clamp burnrate to maintain it within limits
+            //   FuelBurnRateKGpS = MathHelper.Clamp(FuelBurnRateKGpS, 0.0f, MaxFireMassKG); // clamp burnrate to maintain it within limits  MaxFuelBurnGrateKGpS
+            FuelBurnRateKGpS = MathHelper.Clamp(FuelBurnRateKGpS, 0.0f, MaxFuelBurnGrateKGpS); // clamp burnrate to maintain it within limits
 #endregion
-
 
 #region Firing (feeding fuel) Rate of locomotive
 
@@ -1586,7 +1594,7 @@ namespace ORTS
             // Calculate update to firemass as a result of adding fuel to the fire
             FireMassKG += elapsedClockSeconds * (FuelFeedRateKGpS - FuelBurnRateKGpS);
             FireMassKG = MathHelper.Clamp(FireMassKG, 0, MaxFireMassKG);
-            GrateCombustionRateLBpFt2 = Kg.ToLb(FuelBurnRateKGpS) / Me2.ToFt2(GrateAreaM2); //coal burnt per sq ft grate area
+            GrateCombustionRateLBpFt2 = pS.TopH(Kg.ToLb(FuelBurnRateKGpS) / Me2.ToFt2(GrateAreaM2)); //coal burnt per sq ft grate area per hour
             // Time Fuel Boost reset timer if all time has been used up on boost timer
             if (FuelBoostOnTimerS >= TimeFuelBoostOnS)
             {
@@ -1873,16 +1881,6 @@ namespace ORTS
             // Heat transferred per unit time (W or J/s) = (Heat Txf Coeff (W/m2K) * Heat Txf Area (m2) * Temp Difference (K)) / Material Thickness - in this instance the material thickness is a means of increasing the boiler output - convection heat formula.
             // Heat transfer Coefficient for Locomotive Boiler = 45.0 Wm^2K            
             BoilerKW = (FlueTempK - BoilerWaterTempK) * W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2 / HeatMaterialThicknessFactor;
-            if (GrateCombustionRateLBpFt2 > GrateLimitLBpS)
-            {
-                FireHeatTxfKW = PreviousFireHeatTxfKW; // if greater then grate limit don't allow any more heat txf
-            }
-            else
-            {
-             FireHeatTxfKW = FuelBurnRateKGpS * FuelCalorificKJpKG * BoilerEfficiencyGrateAreaLBpFT2toX[(pS.TopH(Kg.ToLb(FuelBurnRateKGpS)) / Me2.ToFt2(GrateAreaM2))] / (SpecificHeatCoalKJpKGpK * FireMassKG); // Current heat txf based on fire burning rate 
-            }
-
-            PreviousFireHeatTxfKW = FireHeatTxfKW; // store the last value of FireHeatTxfKW
             
             FlueTempDiffK = ((BoilerHeatInBTUpS - BoilerHeatOutBTUpS) * BTUpHtoKJpS) / (W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2); // calculate current FlueTempK difference, based upon heat input due to firing - heat taken out by boiler
 
@@ -1918,11 +1916,16 @@ namespace ORTS
                 }
                 else
                 {
-                    BoilerHeat = false;
-                    BoilerHeatRatio = 1.0f;
+                    float BoilerHeatDiffValue = MaxBoilerHeatBTU * (MaxBoilerPressurePSI * 0.025f); // Set a differenntial to reset boilerheat flag - Allow a 2.5% drop in boiler pressure
+                    if (BoilerHeatBTU < BoilerHeatDiffValue)
+                    {
+                        BoilerHeat = false;
+                        BoilerHeatRatio = 1.0f;
+                    }
                 }
-                BoilerHeatRatio = MathHelper.Clamp(BoilerHeatRatio, 0.0f, 1.0f); // Keep Boiler Heat ratio within bounds
-                if (BoilerHeatBTU > MaxBoilerPressHeatBTU)
+                BoilerHeatRatio = MathHelper.Clamp(BoilerHeatRatio, 0.001f, 1.0f); // Keep Boiler Heat ratio within bounds
+
+                if (BoilerHeatBTU > MaxBoilerPressHeatBTU)  // Limit boiler heat further if heat excced the pressure that the safety valves are set to.
                 {
                     float FactorPower = BoilerHeatBTU / (MaxBoilerPressHeatBTU - MaxBoilerHeatBTU);
                     MaxBoilerHeatRatio = MaxBoilerHeatBTU / (float)Math.Pow(BoilerHeatBTU, FactorPower); 
@@ -1931,11 +1934,34 @@ namespace ORTS
                 {
                     MaxBoilerHeatRatio = 1.0f;
                 }
-                MaxBoilerHeatRatio = MathHelper.Clamp(MaxBoilerHeatRatio, 0.0f, 1.0f); // Keep Max Boiler Heat ratio within bounds
+                MaxBoilerHeatRatio = MathHelper.Clamp(MaxBoilerHeatRatio, 0.001f, 1.0f); // Keep Max Boiler Heat ratio within bounds
             }
 
-            BoilerHeatInBTUpS = W.ToBTUpS(W.FromKW(FuelCalorificKJpKG * FuelBurnRateKGpS)) * BoilerEfficiencyGrateAreaLBpFT2toX[(pS.TopH(Kg.ToLb(FuelBurnRateKGpS)) / Me2.ToFt2(GrateAreaM2))];
-            BoilerHeatBTU += elapsedClockSeconds * W.ToBTUpS(W.FromKW(FuelCalorificKJpKG * FuelBurnRateKGpS)) * BoilerEfficiencyGrateAreaLBpFT2toX[(pS.TopH(Kg.ToLb(FuelBurnRateKGpS)) / Me2.ToFt2(GrateAreaM2))];
+            // Limit Boiler heat input once grate limit is reached.
+            if (GrateCombustionRateLBpFt2 > GrateLimitLBpFt2)
+            {
+                FireHeatTxfKW = PreviousFireHeatTxfKW; // if greater then grate limit don't allow any more heat txf
+                if (!IsGrateLimit)  // Provide message to player that grate limit has been exceeded
+                {
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("Grate limit exceeded - boiler heat rate cannot increase."));
+                }
+                IsGrateLimit = true;
+            }
+            else
+            {
+       //      FireHeatTxfKW = FuelBurnRateKGpS * FuelCalorificKJpKG * BoilerEfficiencyGrateAreaLBpFT2toX[(pS.TopH(Kg.ToLb(FuelBurnRateKGpS)) / Me2.ToFt2(GrateAreaM2))] / (SpecificHeatCoalKJpKGpK * FireMassKG); // Current heat txf based on fire burning rate 
+               FireHeatTxfKW = FuelCalorificKJpKG * FuelBurnRateKGpS;
+               if (IsGrateLimit)  // Provide message to player that grate limit has now returned within limits
+               {
+                   Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("Grate limit return to normal."));
+               }
+                IsGrateLimit = false;
+            }
+
+            PreviousFireHeatTxfKW = FireHeatTxfKW; // store the last value of FireHeatTxfKW
+
+            BoilerHeatInBTUpS = W.ToBTUpS(W.FromKW(FireHeatTxfKW)) * BoilerEfficiencyGrateAreaLBpFT2toX[(pS.TopH(Kg.ToLb(FuelBurnRateKGpS)) / Me2.ToFt2(GrateAreaM2))];
+            BoilerHeatBTU += elapsedClockSeconds * W.ToBTUpS(W.FromKW(FireHeatTxfKW)) * BoilerEfficiencyGrateAreaLBpFT2toX[(pS.TopH(Kg.ToLb(FuelBurnRateKGpS)) / Me2.ToFt2(GrateAreaM2))];
 
             // Basic steam radiation losses 
             RadiationSteamLossLBpS = pS.FrompM((absSpeedMpS == 0.0f) ?
@@ -1988,11 +2014,11 @@ namespace ORTS
             {
                 if (BoilerHeat)
                 {
-                    PressureRatio = MathHelper.Clamp((MaxBoilerPressurePSI / BoilerPressurePSI), 0.01f, 0.99f); // Boiler pressure ratio to adjust burn rate, if maxboiler heat reached, then clamp ratio < 1.0
+                    PressureRatio = MathHelper.Clamp((MaxBoilerPressurePSI / BoilerPressurePSI), 0.001f, 0.99f); // Boiler pressure ratio to adjust burn rate, if maxboiler heat reached, then clamp ratio < 1.0
                 }
                 else
                 {
-                    PressureRatio = MathHelper.Clamp((MaxBoilerPressurePSI / BoilerPressurePSI), 0.01f, 1.2f); // Boiler pressure ratio to adjust burn rate
+                    PressureRatio = MathHelper.Clamp((MaxBoilerPressurePSI / BoilerPressurePSI), 0.001f, 1.5f); // Boiler pressure ratio to adjust burn rate
                 }
             }
             #endregion
@@ -2031,24 +2057,28 @@ namespace ORTS
             // Determine if Superheater in use
             if (HasSuperheater)
             {
-                CurrentSuperheatTeampF = SuperheatTempLbpHtoDegF[pS.TopH(CylinderSteamUsageLBpS * SuperheatUsageRatio)] * SuperheatTempRatio; // Calculate current superheat temp
+                CurrentSuperheatTeampF = SuperheatTempLbpHtoDegF[pS.TopH(CylinderSteamUsageLBpS)] * SuperheatTempRatio; // Calculate current superheat temp
                 float DifferenceSuperheatTeampF = CurrentSuperheatTeampF - SuperheatTempLimitXtoDegF[cutoff]; // reduce superheat temp due to cylinder condensation
                 SuperheatVolumeRatio = 1.0f + (0.0015f * DifferenceSuperheatTeampF); // Based on formula Vsup = Vsat ( 1 + 0.0015 Tsup) - Tsup temperature at superheated level
                 // look ahead to see what impact superheat will have on cylinder usage
                 float FutureCylinderSteamUsageLBpS = CylinderSteamUsageLBpS * 1.0f / SuperheatVolumeRatio; // Calculate potential future new cylinder steam usage
-                float FutureSuperheatTeampF = SuperheatTempLbpHtoDegF[pS.TopH(FutureCylinderSteamUsageLBpS * SuperheatUsageRatio)] * SuperheatTempRatio; // Calculate potential future new superheat temp
+                float FutureSuperheatTeampF = SuperheatTempLbpHtoDegF[pS.TopH(FutureCylinderSteamUsageLBpS)] * SuperheatTempRatio; // Calculate potential future new superheat temp
                 
-
+                
+                float SuperheatTempThresholdXtoDegF = SuperheatTempLimitXtoDegF[cutoff] - 10.0f; // 10 deg bandwith reduction to reset superheat flag
                 if (CurrentSuperheatTeampF > SuperheatTempLimitXtoDegF[cutoff])
                 {
-                  if (FutureSuperheatTeampF < SuperheatTempLimitXtoDegF[cutoff])
-                  {
-                  SuperheaterSteamUsageFactor = 1.0f; // Superheating has minimal impact as all heat has been lost in the steam, so no steam reduction is achieved, but condensation has stopped
-                  }
-                  else
-                  {
-                  SuperheaterSteamUsageFactor = 1.0f / SuperheatVolumeRatio; // set steam reduction based on Superheat Volume Ratio
-                  }
+                IsSuperSet = true;    // Set to use superheat factor if above superheat temp threshold             
+                }
+                else if (FutureSuperheatTeampF < SuperheatTempThresholdXtoDegF)
+                {
+                IsSuperSet = false;    // Reset if superheat temp drops 
+                }
+                
+
+                if (IsSuperSet)
+                {
+                 SuperheaterSteamUsageFactor = 1.0f / SuperheatVolumeRatio; // set steam reduction based on Superheat Volume Ratio
                 }
                 else
                 {
@@ -3376,20 +3406,33 @@ namespace ORTS
             
             // Determine Heat Ratio - for calculating burn rate
 
-            if (BoilerHeat)
+            if (BoilerHeat) // If heat in boiler is going too high
             {
                 if (EvaporationLBpS > TotalSteamUsageLBpS)
                 {
-                    HeatRatio = MathHelper.Clamp(((BoilerHeatOutBTUpS / BoilerHeatInBTUpS) * (TotalSteamUsageLBpS / EvaporationLBpS)), 0.1f, 1.0f);  // Factor to determine how hard to drive burn rate, based on steam gen & usage rate, in AI mode only, clamp < 1 if max boiler heat reached.
+                    HeatRatio = MathHelper.Clamp(((BoilerHeatOutBTUpS / BoilerHeatInBTUpS) * (TotalSteamUsageLBpS / EvaporationLBpS)), 0.001f, 1.0f);  // Factor to determine how hard to drive burn rate, based on steam gen & usage rate, in AI mode only, clamp < 1 if max boiler heat reached.
                 }
                 else
                 {
-                    HeatRatio = MathHelper.Clamp(((BoilerHeatOutBTUpS / BoilerHeatInBTUpS) * (EvaporationLBpS / TotalSteamUsageLBpS)), 0.1f, 1.0f);  // Factor to determine how hard to drive burn rate, based on steam gen & usage rate, in AI mode only, clamp < 1 if max boiler heat reached.
+                    HeatRatio = MathHelper.Clamp(((BoilerHeatOutBTUpS / BoilerHeatInBTUpS) * (EvaporationLBpS / TotalSteamUsageLBpS)), 0.001f, 1.0f);  // Factor to determine how hard to drive burn rate, based on steam gen & usage rate, in AI mode only, clamp < 1 if max boiler heat reached.
                 }
             }
-            else
+            else  // If heat in boiler is normal or low
             {
-                HeatRatio = MathHelper.Clamp((BoilerHeatOutBTUpS / BoilerHeatInBTUpS), 0.1f, 1.3f);  // Factor to determine how hard to drive burn rate, based on steam gen & usage rate, in AI mode only
+                if (PressureRatio > 1.1) // If pressure drops by more then 10%, increase firing rate
+                {
+                    float HeatFactor = (BoilerHeatOutBTUpS - BoilerHeatInBTUpS);
+                    if(HeatFactor <0)
+                    {
+                        HeatFactor *= -1.0f; // If negative convert to positive number
+                    }
+                    HeatRatio = MathHelper.Clamp(((BoilerHeatOutBTUpS * HeatFactor) / BoilerHeatInBTUpS), 0.001f, 1.6f);  // Factor to determine how hard to drive burn rate, based on steam gen & usage rate, in AI mode only
+                }
+                else // if boiler pressure is "normal"
+                {
+                    HeatRatio = MathHelper.Clamp((BoilerHeatOutBTUpS / BoilerHeatInBTUpS), 0.001f, 1.6f);  // Factor to determine how hard to drive burn rate, based on steam gen & usage rate, in AI mode only
+                }
+                
             }
         }
 
@@ -3665,7 +3708,7 @@ namespace ORTS
                 FormatStrings.FormatPressure(MeanEffectivePressurePSI, PressureUnit.PSI, PressureUnit, true));
             }
 
-            status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\n",
+            status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n",
                 Viewer.Catalog.GetString("Status:"),
                 Viewer.Catalog.GetString("Safety"),
                 SafetyIsOn ? Viewer.Catalog.GetString("Open") : Viewer.Catalog.GetString("Closed"),
@@ -3673,8 +3716,6 @@ namespace ORTS
                 FusiblePlugIsBlown ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
                 Viewer.Catalog.GetString("Prime"),
                 BoilerIsPriming ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
-                Viewer.Catalog.GetString("BoilHeat"),
-                BoilerHeat ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
                 Viewer.Catalog.GetString("Comp"),
                 CylinderCompoundOn ? Viewer.Catalog.GetString("Off") : Viewer.Catalog.GetString("On")                
                 );
@@ -3694,9 +3735,33 @@ namespace ORTS
                 FormatStrings.FormatMass(pS.TopH(DisplayMaxFiringRateKGpS), IsMetric),
                 FormatStrings.FormatMass(pS.TopH(FuelFeedRateKGpS), IsMetric),
                 FormatStrings.FormatMass(pS.TopH(FuelBurnRateKGpS), IsMetric),
-                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(IsMetric ? Me2.ToFt2(GrateCombustionRateLBpFt2) : GrateCombustionRateLBpFt2)), IsMetric),
+                FormatStrings.FormatMass(Kg.FromLb(GrateCombustionRateLBpFt2), IsMetric),
                 FormatStrings.h,
                 IsMetric ? FormatStrings.m2 : FormatStrings.ft2);
+
+               if (IsBurnDebug)
+               {
+                   status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4:N2}\t{5}\t{6:N2}\t{7}\t{8:N2}\t{9}\t{10:N2}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\t{17}\t{18}\n",
+                        Viewer.Catalog.GetString("DbgBurn:"),
+                        Viewer.Catalog.GetString("BoilHeat"),
+                        BoilerHeat ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"), 
+                        Viewer.Catalog.GetString("H/R"),
+                        HeatRatio,
+                        Viewer.Catalog.GetString("BoilH/R"),
+                        BoilerHeatRatio,
+                        Viewer.Catalog.GetString("MBoilH/R"),
+                        MaxBoilerHeatRatio,
+                        Viewer.Catalog.GetString("PrRatio"),
+                        PressureRatio,
+                        Viewer.Catalog.GetString("FireHeat"),
+                        FireHeatTxfKW,
+                        Viewer.Catalog.GetString("RawBurn"),
+                        FormatStrings.FormatMass(pS.TopH(BurnRateRawKGpS), IsMetric),
+                        Viewer.Catalog.GetString("SuperSet"),
+                        IsSuperSet,
+                        Viewer.Catalog.GetString("MaxFuel"),
+                        FormatStrings.FormatMass(pS.TopH( MaxFuelBurnGrateKGpS), IsMetric));
+               }
 
             status.AppendFormat("{0}\t{1}\t{6}/{12}\t\t({7:N0} {13})\t{2}\t{8}/{12}\t\t{3}\t{9}\t\t{4}\t{10}/{12}\t\t{5}\t{11}\n",
                 Viewer.Catalog.GetString("Injector:"),
@@ -3723,20 +3788,22 @@ namespace ORTS
                 FormatStrings.FormatFuelVolume(L.FromGUK(TenderWaterVolumeUKG), IsMetric, IsUK),
                 TenderWaterVolumeUKG / (Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG) * 100);
 
-            status.AppendFormat("{0}\t{1}\t{7}\t\t{2}\t{8}\t{3}\t{9}\t{4}\t{10}\t{5}\t{11}\t{6}\t{12}\n",
+            status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\n",
                 Viewer.Catalog.GetString("Status:"),
                 Viewer.Catalog.GetString("CoalOut"),
-                Viewer.Catalog.GetString("WaterOut"),
-                Viewer.Catalog.GetString("FireOut"),
-                Viewer.Catalog.GetString("Stoker"),
-                Viewer.Catalog.GetString("Boost"),
-                Viewer.Catalog.GetString("BstReset"),
                 CoalIsExhausted ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
+                Viewer.Catalog.GetString("WaterOut"),
                 WaterIsExhausted ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
+                Viewer.Catalog.GetString("FireOut"),
                 FireIsExhausted ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
+                Viewer.Catalog.GetString("Stoker"),
                 StokerIsMechanical ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
+                Viewer.Catalog.GetString("Boost"),
                 FuelBoost ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
-                FuelBoostReset ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"));
+                Viewer.Catalog.GetString("BstReset"),
+                FuelBoostReset ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
+                Viewer.Catalog.GetString("GrLimit"),
+                IsGrateLimit ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"));
 
             status.AppendFormat("\n\t\t === {0} === \n", Viewer.Catalog.GetString("Performance"));
             status.AppendFormat("{0}\t{1}\t{4}\t{2}\t{5}\t{3}\t{6}\n",
