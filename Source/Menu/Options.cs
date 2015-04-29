@@ -67,10 +67,20 @@ namespace ORTS
 
             // Turn the list of codes in to a list of code + name pairs for
             // displaying in the dropdown list.
-            comboLanguage.DataSource = 
+            comboLanguage.DataSource =
                 new[] { new ComboBoxMember { Code = "", Name = "System" } }
                 .Union(languageCodes
-                    .Select(lc => new ComboBoxMember { Code = lc, Name = CultureInfo.GetCultureInfo(lc).NativeName })
+                    .SelectMany(lc =>
+                    {
+                        try
+                        {
+                            return new[] { new ComboBoxMember { Code = lc, Name = CultureInfo.GetCultureInfo(lc).NativeName } };
+                        }
+                        catch (ArgumentException)
+                        {
+                            return new ComboBoxMember[0];
+                        }
+                    })
                     .OrderBy(l => l.Name)
                 )
                 .ToList();

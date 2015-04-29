@@ -1,629 +1,630 @@
-msgid ""
-msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-04-29 17:09:15+0100\n"
-"PO-Revision-Date: 2015-04-29 17:09:15+0100\n"
+﻿msgid ""
+msgstr "[!!!  !!!]"
+"Project-Id-Version: ORTS.Settings\n"
+"POT-Creation-Date: 2015-04-29 17:01:59+0100\n"
+"PO-Revision-Date: 2015-04-29 17:01:59+0100\n"
 "Last-Translator: \n"
-"Language-Team: \n"
+"Language-Team: Open Rails Dev Team\n"
+"Language: qps-ploc\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: MonoDevelop Gettext addin\n"
+"X-Generator: PowerShell Update-Pseudo.ps1\n"
 
 
 #: ../../ORTS.Settings/InputSettings.cs:42
 msgid "Game Pause Menu"
-msgstr ""
+msgstr "[!!! Gá₥è Þáúƨè Mèñú !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:43
 msgid "Game Save"
-msgstr ""
+msgstr "[!!! Gá₥è §áƲè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:44
 msgid "Game Quit"
-msgstr ""
+msgstr "[!!! Gá₥è Qúïƭ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:45
 msgid "Game Pause"
-msgstr ""
+msgstr "[!!! Gá₥è Þáúƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:46
 msgid "Game Screenshot"
-msgstr ""
+msgstr "[!!! Gá₥è §çřèèñƨλôƭ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:47
 msgid "Game Fullscreen"
-msgstr ""
+msgstr "[!!! Gá₥è Fúℓℓƨçřèèñ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:48
 msgid "Game Switch Ahead"
-msgstr ""
+msgstr "[!!! Gá₥è §ωïƭçλ Âλèáδ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:49
 msgid "Game Switch Behind"
-msgstr ""
+msgstr "[!!! Gá₥è §ωïƭçλ ßèλïñδ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:50
 msgid "Game Switch Picked"
-msgstr ""
+msgstr "[!!! Gá₥è §ωïƭçλ Þïçƙèδ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:51
 msgid "Game Signal Picked"
-msgstr ""
+msgstr "[!!! Gá₥è §ïϱñáℓ Þïçƙèδ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:52
 msgid "Game Switch With Mouse"
-msgstr ""
+msgstr "[!!! Gá₥è §ωïƭçλ Wïƭλ Môúƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:53
 msgid "Game Uncouple With Mouse"
-msgstr ""
+msgstr "[!!! Gá₥è Ûñçôúƥℓè Wïƭλ Môúƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:54
 msgid "Game Change Cab"
-msgstr ""
+msgstr "[!!! Gá₥è Çλáñϱè Çáβ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:55
 msgid "Game Request Control"
-msgstr ""
+msgstr "[!!! Gá₥è Rè9úèƨƭ Çôñƭřôℓ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:56
 msgid "Game Multi Player Dispatcher"
-msgstr ""
+msgstr "[!!! Gá₥è Múℓƭï Þℓá¥èř Ðïƨƥáƭçλèř !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:57
 msgid "Game Multi Player Texting"
-msgstr ""
+msgstr "[!!! Gá₥è Múℓƭï Þℓá¥èř Tèжƭïñϱ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:58
 msgid "Game Switch Manual Mode"
-msgstr ""
+msgstr "[!!! Gá₥è §ωïƭçλ Máñúáℓ Môδè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:59
 msgid "Game Clear Signal Forward"
-msgstr ""
+msgstr "[!!! Gá₥è Çℓèář §ïϱñáℓ Fôřωářδ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:60
 msgid "Game Clear Signal Backward"
-msgstr ""
+msgstr "[!!! Gá₥è Çℓèář §ïϱñáℓ ßáçƙωářδ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:61
 msgid "Game Reset Signal Forward"
-msgstr ""
+msgstr "[!!! Gá₥è Rèƨèƭ §ïϱñáℓ Fôřωářδ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:62
 msgid "Game Reset Signal Backward"
-msgstr ""
+msgstr "[!!! Gá₥è Rèƨèƭ §ïϱñáℓ ßáçƙωářδ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:63
 msgid "Game Autopilot Mode"
-msgstr ""
+msgstr "[!!! Gá₥è Âúƭôƥïℓôƭ Môδè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:65
 msgid "Display Next Window Tab"
-msgstr ""
+msgstr "[!!! Ðïƨƥℓá¥ Nèжƭ Wïñδôω Táβ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:66
 msgid "Display Help Window"
-msgstr ""
+msgstr "[!!! Ðïƨƥℓá¥ Hèℓƥ Wïñδôω !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:67
 msgid "Display Track Monitor Window"
-msgstr ""
+msgstr "[!!! Ðïƨƥℓá¥ Třáçƙ Môñïƭôř Wïñδôω !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:68
 msgid "Display HUD"
-msgstr ""
+msgstr "[!!! Ðïƨƥℓá¥ HÛÐ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:69
 msgid "Display Car Labels"
-msgstr ""
+msgstr "[!!! Ðïƨƥℓá¥ Çář £áβèℓƨ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:70
 msgid "Display Station Labels"
-msgstr ""
+msgstr "[!!! Ðïƨƥℓá¥ §ƭáƭïôñ £áβèℓƨ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:71
 msgid "Display Switch Window"
-msgstr ""
+msgstr "[!!! Ðïƨƥℓá¥ §ωïƭçλ Wïñδôω !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:72
 msgid "Display Train Operations Window"
-msgstr ""
+msgstr "[!!! Ðïƨƥℓá¥ Třáïñ Óƥèřáƭïôñƨ Wïñδôω !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:73
 msgid "Display Next Station Window"
-msgstr ""
+msgstr "[!!! Ðïƨƥℓá¥ Nèжƭ §ƭáƭïôñ Wïñδôω !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:74
 msgid "Display Compass Window"
-msgstr ""
+msgstr "[!!! Ðïƨƥℓá¥ Çô₥ƥáƨƨ Wïñδôω !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:75
 msgid "Display Basic HUD Toggle"
-msgstr ""
+msgstr "[!!! Ðïƨƥℓá¥ ßáƨïç HÛÐ Tôϱϱℓè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:77
 msgid "Debug Speed Up"
-msgstr ""
+msgstr "[!!! Ðèβúϱ §ƥèèδ Ûƥ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:78
 msgid "Debug Speed Down"
-msgstr ""
+msgstr "[!!! Ðèβúϱ §ƥèèδ Ðôωñ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:79
 msgid "Debug Speed Reset"
-msgstr ""
+msgstr "[!!! Ðèβúϱ §ƥèèδ Rèƨèƭ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:80
 msgid "Debug Overcast Increase"
-msgstr ""
+msgstr "[!!! Ðèβúϱ ÓƲèřçáƨƭ Ìñçřèáƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:81
 msgid "Debug Overcast Decrease"
-msgstr ""
+msgstr "[!!! Ðèβúϱ ÓƲèřçáƨƭ Ðèçřèáƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:82
 msgid "Debug Fog Increase"
-msgstr ""
+msgstr "[!!! Ðèβúϱ Fôϱ Ìñçřèáƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:83
 msgid "Debug Fog Decrease"
-msgstr ""
+msgstr "[!!! Ðèβúϱ Fôϱ Ðèçřèáƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:84
 msgid "Debug Precipitation Increase"
-msgstr ""
+msgstr "[!!! Ðèβúϱ Þřèçïƥïƭáƭïôñ Ìñçřèáƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:85
 msgid "Debug Precipitation Decrease"
-msgstr ""
+msgstr "[!!! Ðèβúϱ Þřèçïƥïƭáƭïôñ Ðèçřèáƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:86
 msgid "Debug Weather Change"
-msgstr ""
+msgstr "[!!! Ðèβúϱ Wèáƭλèř Çλáñϱè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:87
 msgid "Debug Clock Forwards"
-msgstr ""
+msgstr "[!!! Ðèβúϱ Çℓôçƙ Fôřωářδƨ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:88
 msgid "Debug Clock Backwards"
-msgstr ""
+msgstr "[!!! Ðèβúϱ Çℓôçƙ ßáçƙωářδƨ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:89
 msgid "Debug Logger"
-msgstr ""
+msgstr "[!!! Ðèβúϱ £ôϱϱèř !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:90
 msgid "Debug Lock Shadows"
-msgstr ""
+msgstr "[!!! Ðèβúϱ £ôçƙ §λáδôωƨ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:91
 msgid "Debug Dump Keyboard Map"
-msgstr ""
+msgstr "[!!! Ðèβúϱ Ðú₥ƥ Kè¥βôářδ Máƥ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:92
 msgid "Debug Log Render Frame"
-msgstr ""
+msgstr "[!!! Ðèβúϱ £ôϱ Rèñδèř Fřá₥è !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:93
 msgid "Debug Tracks"
-msgstr ""
+msgstr "[!!! Ðèβúϱ Třáçƙƨ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:94
 msgid "Debug Signalling"
-msgstr ""
+msgstr "[!!! Ðèβúϱ §ïϱñáℓℓïñϱ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:95
 msgid "Debug Reset Wheel Slip"
-msgstr ""
+msgstr "[!!! Ðèβúϱ Rèƨèƭ Wλèèℓ §ℓïƥ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:96
 msgid "Debug Toggle Advanced Adhesion"
-msgstr ""
+msgstr "[!!! Ðèβúϱ Tôϱϱℓè ÂδƲáñçèδ Âδλèƨïôñ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:97
 msgid "Debug Sound Form"
-msgstr ""
+msgstr "[!!! Ðèβúϱ §ôúñδ Fôř₥ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:98
 msgid "Debug Physics Form"
-msgstr ""
+msgstr "[!!! Ðèβúϱ Þλ¥ƨïçƨ Fôř₥ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:100
 msgid "Camera Cab"
-msgstr ""
+msgstr "[!!! Çá₥èřá Çáβ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:101
 msgid "Camera 3D Cab"
-msgstr ""
+msgstr "[!!! Çá₥èřá 3Ð Çáβ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:102
 msgid "Camera Toggle Show Cab"
-msgstr ""
+msgstr "[!!! Çá₥èřá Tôϱϱℓè §λôω Çáβ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:103
 msgid "Camera Head Out Forward"
-msgstr ""
+msgstr "[!!! Çá₥èřá Hèáδ Óúƭ Fôřωářδ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:104
 msgid "Camera Head Out Backward"
-msgstr ""
+msgstr "[!!! Çá₥èřá Hèáδ Óúƭ ßáçƙωářδ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:105
 msgid "Camera Outside Front"
-msgstr ""
+msgstr "[!!! Çá₥èřá Óúƭƨïδè Fřôñƭ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:106
 msgid "Camera Outside Rear"
-msgstr ""
+msgstr "[!!! Çá₥èřá Óúƭƨïδè Rèář !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:107
 msgid "Camera Trackside"
-msgstr ""
+msgstr "[!!! Çá₥èřá Třáçƙƨïδè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:108
 msgid "Camera Passenger"
-msgstr ""
+msgstr "[!!! Çá₥èřá Þáƨƨèñϱèř !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:109
 msgid "Camera Brakeman"
-msgstr ""
+msgstr "[!!! Çá₥èřá ßřáƙè₥áñ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:110
 msgid "Camera Free"
-msgstr ""
+msgstr "[!!! Çá₥èřá Fřèè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:111
 msgid "Camera Previous Free"
-msgstr ""
+msgstr "[!!! Çá₥èřá ÞřèƲïôúƨ Fřèè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:112
 msgid "Camera Reset"
-msgstr ""
+msgstr "[!!! Çá₥èřá Rèƨèƭ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:113
 msgid "Camera Move Fast"
-msgstr ""
+msgstr "[!!! Çá₥èřá MôƲè Fáƨƭ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:114
 msgid "Camera Move Slow"
-msgstr ""
+msgstr "[!!! Çá₥èřá MôƲè §ℓôω !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:115
 msgid "Camera Pan (Rotate) Left"
-msgstr ""
+msgstr "[!!! Çá₥èřá Þáñ (Rôƭáƭè) £èƒƭ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:116
 msgid "Camera Pan (Rotate) Right"
-msgstr ""
+msgstr "[!!! Çá₥èřá Þáñ (Rôƭáƭè) Rïϱλƭ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:117
 msgid "Camera Pan (Rotate) Up"
-msgstr ""
+msgstr "[!!! Çá₥èřá Þáñ (Rôƭáƭè) Ûƥ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:118
 msgid "Camera Pan (Rotate) Down"
-msgstr ""
+msgstr "[!!! Çá₥èřá Þáñ (Rôƭáƭè) Ðôωñ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:119
 msgid "Camera Zoom In (Move Z)"
-msgstr ""
+msgstr "[!!! Çá₥èřá Zôô₥ Ìñ (MôƲè Z) !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:120
 msgid "Camera Zoom Out (Move Z)"
-msgstr ""
+msgstr "[!!! Çá₥èřá Zôô₥ Óúƭ (MôƲè Z) !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:121
 msgid "Camera Rotate (Pan) Left"
-msgstr ""
+msgstr "[!!! Çá₥èřá Rôƭáƭè (Þáñ) £èƒƭ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:122
 msgid "Camera Rotate (Pan) Right"
-msgstr ""
+msgstr "[!!! Çá₥èřá Rôƭáƭè (Þáñ) Rïϱλƭ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:123
 msgid "Camera Rotate (Pan) Up"
-msgstr ""
+msgstr "[!!! Çá₥èřá Rôƭáƭè (Þáñ) Ûƥ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:124
 msgid "Camera Rotate (Pan) Down"
-msgstr ""
+msgstr "[!!! Çá₥èřá Rôƭáƭè (Þáñ) Ðôωñ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:125
 msgid "Camera Car Next"
-msgstr ""
+msgstr "[!!! Çá₥èřá Çář Nèжƭ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:126
 msgid "Camera Car Previous"
-msgstr ""
+msgstr "[!!! Çá₥èřá Çář ÞřèƲïôúƨ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:127
 msgid "Camera Car First"
-msgstr ""
+msgstr "[!!! Çá₥èřá Çář Fïřƨƭ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:128
 msgid "Camera Car Last"
-msgstr ""
+msgstr "[!!! Çá₥èřá Çář £áƨƭ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:129
 msgid "Camera Jumping Trains"
-msgstr ""
+msgstr "[!!! Çá₥èřá Jú₥ƥïñϱ Třáïñƨ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:130
 msgid "Camera Jump Back Player"
-msgstr ""
+msgstr "[!!! Çá₥èřá Jú₥ƥ ßáçƙ Þℓá¥èř !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:131
 msgid "Camera Jump See Switch"
-msgstr ""
+msgstr "[!!! Çá₥èřá Jú₥ƥ §èè §ωïƭçλ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:132
 msgid "Camera Vibrate"
-msgstr ""
+msgstr "[!!! Çá₥èřá Vïβřáƭè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:133
 msgid "Camera Cab Rotate"
-msgstr ""
+msgstr "[!!! Çá₥èřá Çáβ Rôƭáƭè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:135
 msgid "Control Forwards"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Fôřωářδƨ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:136
 msgid "Control Backwards"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ ßáçƙωářδƨ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:137
 msgid "Control Throttle Increase"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Tλřôƭƭℓè Ìñçřèáƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:138
 msgid "Control Throttle Decrease"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Tλřôƭƭℓè Ðèçřèáƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:139
 msgid "Control Gear Up"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Gèář Ûƥ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:140
 msgid "Control Gear Down"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Gèář Ðôωñ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:141
 msgid "Control Train Brake Increase"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Třáïñ ßřáƙè Ìñçřèáƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:142
 msgid "Control Train Brake Decrease"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Třáïñ ßřáƙè Ðèçřèáƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:143
 msgid "Control Engine Brake Increase"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Éñϱïñè ßřáƙè Ìñçřèáƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:144
 msgid "Control Engine Brake Decrease"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Éñϱïñè ßřáƙè Ðèçřèáƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:145
 msgid "Control Dynamic Brake Increase"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Ð¥ñá₥ïç ßřáƙè Ìñçřèáƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:146
 msgid "Control Dynamic Brake Decrease"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Ð¥ñá₥ïç ßřáƙè Ðèçřèáƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:147
 msgid "Control Bail Off"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ ßáïℓ Óƒƒ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:148
 msgid "Control Initialize Brakes"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Ìñïƭïáℓïƺè ßřáƙèƨ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:149
 msgid "Control Handbrake Full"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Háñδβřáƙè Fúℓℓ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:150
 msgid "Control Handbrake None"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Háñδβřáƙè Nôñè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:151
 msgid "Control Odometer Show/Hide"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Óδô₥èƭèř §λôω/Hïδè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:152
 msgid "Control Odometer Reset"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Óδô₥èƭèř Rèƨèƭ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:153
 msgid "Control Odometer Direction"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Óδô₥èƭèř Ðïřèçƭïôñ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:154
 msgid "Control Retainers On"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Rèƭáïñèřƨ Óñ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:155
 msgid "Control Retainers Off"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Rèƭáïñèřƨ Óƒƒ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:156
 msgid "Control Brake Hose Connect"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ ßřáƙè Hôƨè Çôññèçƭ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:157
 msgid "Control Brake Hose Disconnect"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ ßřáƙè Hôƨè Ðïƨçôññèçƭ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:158
 msgid "Control Alerter"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Âℓèřƭèř !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:159
 msgid "Control Emergency Push Button"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ É₥èřϱèñç¥ Þúƨλ ßúƭƭôñ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:160
 msgid "Control Sander"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ §áñδèř !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:161
 msgid "Control Sander Toggle"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ §áñδèř Tôϱϱℓè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:162
 msgid "Control Wiper"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Wïƥèř !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:163
 msgid "Control Horn"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Hôřñ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:164
 msgid "Control Bell"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ ßèℓℓ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:165
 msgid "Control Bell Toggle"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ ßèℓℓ Tôϱϱℓè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:166
 msgid "Control Door Left"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Ðôôř £èƒƭ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:167
 msgid "Control Door Right"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Ðôôř Rïϱλƭ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:168
 msgid "Control Mirror"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Mïřřôř !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:169
 msgid "Control Light"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ £ïϱλƭ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:170
 msgid "Control Pantograph 1"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Þáñƭôϱřáƥλ 1 !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:171
 msgid "Control Pantograph 2"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Þáñƭôϱřáƥλ 2 !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:172
 msgid "Control Diesel Player"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Ðïèƨèℓ Þℓá¥èř !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:173
 msgid "Control Diesel Helper"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Ðïèƨèℓ Hèℓƥèř !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:174
 msgid "Control Headlight Increase"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Hèáδℓïϱλƭ Ìñçřèáƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:175
 msgid "Control Headlight Decrease"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Hèáδℓïϱλƭ Ðèçřèáƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:176
 msgid "Control Injector 1 Increase"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ ÌñJèçƭôř 1 Ìñçřèáƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:177
 msgid "Control Injector 1 Decrease"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ ÌñJèçƭôř 1 Ðèçřèáƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:178
 msgid "Control Injector 1"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ ÌñJèçƭôř 1 !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:179
 msgid "Control Injector 2 Increase"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ ÌñJèçƭôř 2 Ìñçřèáƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:180
 msgid "Control Injector 2 Decrease"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ ÌñJèçƭôř 2 Ðèçřèáƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:181
 msgid "Control Injector 2"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ ÌñJèçƭôř 2 !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:182
 msgid "Control Blower Increase"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ ßℓôωèř Ìñçřèáƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:183
 msgid "Control Blower Decrease"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ ßℓôωèř Ðèçřèáƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:184
 msgid "Control Damper Increase"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Ðá₥ƥèř Ìñçřèáƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:185
 msgid "Control Damper Decrease"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Ðá₥ƥèř Ðèçřèáƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:186
 msgid "Control Firebox Open"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Fïřèβôж Óƥèñ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:187
 msgid "Control Firebox Close"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Fïřèβôж Çℓôƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:188
 msgid "Control Firing Rate Increase"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Fïřïñϱ Ráƭè Ìñçřèáƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:189
 msgid "Control Firing Rate Decrease"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Fïřïñϱ Ráƭè Ðèçřèáƨè !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:190
 msgid "Control Fire Shovel Full"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Fïřè §λôƲèℓ Fúℓℓ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:191
 msgid "Control Cylinder Cocks"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Ç¥ℓïñδèř Çôçƙƨ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:192
 msgid "Control Cylinder Compound"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Ç¥ℓïñδèř Çô₥ƥôúñδ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:193
 msgid "Control Firing"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Fïřïñϱ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:194
 msgid "Control Refill"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Rèƒïℓℓ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:637
 #, csharp-format
 msgid "{0} requires and is modified by Shift"
-msgstr ""
+msgstr "[!!! {0} řè9úïřèƨ áñδ ïƨ ₥ôδïƒïèδ β¥ §λïƒƭ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:639
 #, csharp-format
 msgid "{0} requires and is modified by Control"
-msgstr ""
+msgstr "[!!! {0} řè9úïřèƨ áñδ ïƨ ₥ôδïƒïèδ β¥ Çôñƭřôℓ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:641
 #, csharp-format
 msgid "{0} requires and is modified by Alt"
-msgstr ""
+msgstr "[!!! {0} řè9úïřèƨ áñδ ïƨ ₥ôδïƒïèδ β¥ Âℓƭ !!!]"
 
 #: ../../ORTS.Settings/InputSettings.cs:672
 #, csharp-format
 msgid "{0} and {1} both match {2}"
-msgstr ""
+msgstr "[!!! {0} áñδ {1} βôƭλ ₥áƭçλ {2} !!!]"
 

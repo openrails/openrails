@@ -1,409 +1,410 @@
-msgid ""
-msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-04-29 17:09:17+0100\n"
-"PO-Revision-Date: 2015-04-29 17:09:18+0100\n"
+﻿msgid ""
+msgstr "[!!!  !!!]"
+"Project-Id-Version: RunActivity\n"
+"POT-Creation-Date: 2015-04-29 17:02:00+0100\n"
+"PO-Revision-Date: 2015-04-29 17:02:02+0100\n"
 "Last-Translator: \n"
-"Language-Team: \n"
+"Language-Team: Open Rails Dev Team\n"
+"Language: qps-ploc\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: MonoDevelop Gettext addin\n"
+"X-Generator: PowerShell Update-Pseudo.ps1\n"
 
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:217
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3685
 #: ../../RunActivity/RollingStock/SubSystems/Brakes/MSTS/AirSinglePipe.cs:55
 msgid "Release"
-msgstr ""
+msgstr "[!!! Rèℓèáƨè !!!]"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:218
 msgid "Quick Release"
-msgstr ""
+msgstr "[!!! Qúïçƙ Rèℓèáƨè !!!]"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:220
 msgid "Neutral"
-msgstr ""
+msgstr "[!!! Nèúƭřáℓ !!!]"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:221
 #: ../../RunActivity/RollingStock/SubSystems/Brakes/MSTS/AirSinglePipe.cs:54
 msgid "Apply"
-msgstr ""
+msgstr "[!!! Âƥƥℓ¥ !!!]"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:222
 msgid "EPApply"
-msgstr ""
+msgstr "[!!! ÉÞÂƥƥℓ¥ !!!]"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:223
 #: ../../RunActivity/RollingStock/SubSystems/Brakes/MSTS/AirSinglePipe.cs:56
 msgid "Emergency"
-msgstr ""
+msgstr "[!!! É₥èřϱèñç¥ !!!]"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:224
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:227
 #: ../../RunActivity/RollingStock/SubSystems/Brakes/MSTS/AirSinglePipe.cs:53
 msgid "Lap"
-msgstr ""
+msgstr "[!!! £áƥ !!!]"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:225
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:226
 msgid "Service"
-msgstr ""
+msgstr "[!!! §èřƲïçè !!!]"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:228
 msgid "Suppression"
-msgstr ""
+msgstr "[!!! §úƥƥřèƨƨïôñ !!!]"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:229
 msgid "Cont. Service"
-msgstr ""
+msgstr "[!!! Çôñƭ. §èřƲïçè !!!]"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:230
 msgid "Full Service"
-msgstr ""
+msgstr "[!!! Fúℓℓ §èřƲïçè !!!]"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:231
 msgid "Overcharge"
-msgstr ""
+msgstr "[!!! ÓƲèřçλářϱè !!!]"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:232
 msgid "Emergency Braking Push Button"
-msgstr ""
+msgstr "[!!! É₥èřϱèñç¥ ßřáƙïñϱ Þúƨλ ßúƭƭôñ !!!]"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:233
 msgid "TCS Emergency Braking"
-msgstr ""
+msgstr "[!!! TÇ§ É₥èřϱèñç¥ ßřáƙïñϱ !!!]"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:234
 msgid "TCS Full Service Braking"
-msgstr ""
+msgstr "[!!! TÇ§ Fúℓℓ §èřƲïçè ßřáƙïñϱ !!!]"
 
 #. Context: Brake Controller
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:219
 msgctxt "Brake Controller"
 msgid "Running"
-msgstr ""
+msgstr "[!!! Rúññïñϱ !!!]"
 
 #. Context: PowerSupply
 #: ../../RunActivity/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:79
 msgctxt "PowerSupply"
 msgid "Off"
-msgstr ""
+msgstr "[!!! Óƒƒ !!!]"
 
 #. Context: PowerSupply
 #: ../../RunActivity/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:80
 msgctxt "PowerSupply"
 msgid "On ongoing"
-msgstr ""
+msgstr "[!!! Óñ ôñϱôïñϱ !!!]"
 
 #. Context: PowerSupply
 #: ../../RunActivity/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:81
 msgctxt "PowerSupply"
 msgid "On"
-msgstr ""
+msgstr "[!!! Óñ !!!]"
 
 #. Context: Pantograph
 #: ../../RunActivity/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:86
 msgctxt "Pantograph"
 msgid "Down"
-msgstr ""
+msgstr "[!!! Ðôωñ !!!]"
 
 #. Context: Pantograph
 #: ../../RunActivity/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:87
 msgctxt "Pantograph"
 msgid "Lowering"
-msgstr ""
+msgstr "[!!! £ôωèřïñϱ !!!]"
 
 #. Context: Pantograph
 #: ../../RunActivity/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:88
 msgctxt "Pantograph"
 msgid "Raising"
-msgstr ""
+msgstr "[!!! Ráïƨïñϱ !!!]"
 
 #. Context: Pantograph
 #: ../../RunActivity/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:89
 msgctxt "Pantograph"
 msgid "Up"
-msgstr ""
+msgstr "[!!! Ûƥ !!!]"
 
 #. Context: CircuitBraker
 #: ../../RunActivity/Common/Scripting/PowerSupply/CircuitBreaker.cs:79
 msgctxt "CircuitBraker"
 msgid "Open"
-msgstr ""
+msgstr "[!!! Óƥèñ !!!]"
 
 #. Context: CircuitBraker
 #: ../../RunActivity/Common/Scripting/PowerSupply/CircuitBreaker.cs:80
 msgctxt "CircuitBraker"
 msgid "Closing"
-msgstr ""
+msgstr "[!!! Çℓôƨïñϱ !!!]"
 
 #. Context: CircuitBraker
 #: ../../RunActivity/Common/Scripting/PowerSupply/CircuitBreaker.cs:81
 msgctxt "CircuitBraker"
 msgid "Closed"
-msgstr ""
+msgstr "[!!! Çℓôƨèδ !!!]"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.cs:2041
 msgid "Switching Request Sent to the Server"
-msgstr ""
+msgstr "[!!! §ωïƭçλïñϱ Rè9úèƨƭ §èñƭ ƭô ƭλè §èřƲèř !!!]"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.cs:177
 msgid "View Self"
-msgstr ""
+msgstr "[!!! Vïèω §èℓƒ !!!]"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.cs:549
 msgid "MSG to Server"
-msgstr ""
+msgstr "[!!! M§G ƭô §èřƲèř !!!]"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.cs:553
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:227
 msgid "MSG to All"
-msgstr ""
+msgstr "[!!! M§G ƭô Âℓℓ !!!]"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:93
 msgid "View Train"
-msgstr ""
+msgstr "[!!! Vïèω Třáïñ !!!]"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:138
 msgid "m"
-msgstr ""
+msgstr "[!!! ₥ !!!]"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:159
 msgid "Remove"
-msgstr ""
+msgstr "[!!! Rè₥ôƲè !!!]"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:174
 msgid "Auto Switch"
-msgstr ""
+msgstr "[!!! Âúƭô §ωïƭçλ !!!]"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:189
 msgid "Show Avatars"
-msgstr ""
+msgstr "[!!! §λôω ÂƲáƭářƨ !!!]"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:215
 msgid "MSG to Selected"
-msgstr ""
+msgstr "[!!! M§G ƭô §èℓèçƭèδ !!!]"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:238
 #: ../../RunActivity/Debugging/MessageViewer.Designer.cs:88
 msgid "Compose MSG"
-msgstr ""
+msgstr "[!!! Çô₥ƥôƨè M§G !!!]"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:251
 msgid "Res"
-msgstr ""
+msgstr "[!!! Rèƨ !!!]"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:261
 msgid "Reply to Selected"
-msgstr ""
+msgstr "[!!! Rèƥℓ¥ ƭô §èℓèçƭèδ !!!]"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:276
 msgid "Draw Path"
-msgstr ""
+msgstr "[!!! Ðřáω Þáƭλ !!!]"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:326
 msgid "Pick Signals"
-msgstr ""
+msgstr "[!!! Þïçƙ §ïϱñáℓƨ !!!]"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:340
 msgid "Pick Switches"
-msgstr ""
+msgstr "[!!! Þïçƙ §ωïƭçλèƨ !!!]"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:354
 msgid "Can Join"
-msgstr ""
+msgstr "[!!! Çáñ Jôïñ !!!]"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:378
 msgid "Assist"
-msgstr ""
+msgstr "[!!! Âƨƨïƨƭ !!!]"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:390
 msgid "Normal"
-msgstr ""
+msgstr "[!!! Nôř₥áℓ !!!]"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:403
 msgid "Follow"
-msgstr ""
+msgstr "[!!! Fôℓℓôω !!!]"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:418
 msgid "Penalty"
-msgstr ""
+msgstr "[!!! Þèñáℓƭ¥ !!!]"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:433
 msgid "Prefer Green"
-msgstr ""
+msgstr "[!!! Þřèƒèř Gřèèñ !!!]"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:447
 msgid "See in Game"
-msgstr ""
+msgstr "[!!! §èè ïñ Gá₥è !!!]"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:486
 msgid "DispatchViewer"
-msgstr ""
+msgstr "[!!! ÐïƨƥáƭçλVïèωèř !!!]"
 
 #: ../../RunActivity/Debugging/MessageViewer.Designer.cs:46
 msgid "Clear All"
-msgstr ""
+msgstr "[!!! Çℓèář Âℓℓ !!!]"
 
 #: ../../RunActivity/Debugging/MessageViewer.Designer.cs:57
 msgid "Reply Selected"
-msgstr ""
+msgstr "[!!! Rèƥℓ¥ §èℓèçƭèδ !!!]"
 
 #: ../../RunActivity/Debugging/MessageViewer.Designer.cs:102
 msgid "MessageViewer"
-msgstr ""
+msgstr "[!!! MèƨƨáϱèVïèωèř !!!]"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.cs:176
 #: ../../RunActivity/Debugging/SoundDebugForm.cs:206
 #: ../../RunActivity/Debugging/SoundDebugForm.cs:207
 #: ../../RunActivity/Debugging/SoundDebugForm.cs:208
 msgid "-"
-msgstr ""
+msgstr "[!!! - !!!]"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.cs:205
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:189
 msgid "0"
-msgstr ""
+msgstr "[!!! 0 !!!]"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:136
 msgid "Active sounds"
-msgstr ""
+msgstr "[!!! ÂçƭïƲè ƨôúñδƨ !!!]"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:147
 msgid "Inactive sounds"
-msgstr ""
+msgstr "[!!! ÌñáçƭïƲè ƨôúñδƨ !!!]"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:179
 msgid "Sound cache"
-msgstr ""
+msgstr "[!!! §ôúñδ çáçλè !!!]"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:202
 msgid "Selected sound"
-msgstr ""
+msgstr "[!!! §èℓèçƭèδ ƨôúñδ !!!]"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:214
 msgid "3D"
-msgstr ""
+msgstr "[!!! 3Ð !!!]"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:282
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:391
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:664
 msgid "Speed"
-msgstr ""
+msgstr "[!!! §ƥèèδ !!!]"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:310
 msgid "Variable 2"
-msgstr ""
+msgstr "[!!! Vářïáβℓè 2 !!!]"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:329
 msgid "Variable 3"
-msgstr ""
+msgstr "[!!! Vářïáβℓè 3 !!!]"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:339
 msgid "Variable 1"
-msgstr ""
+msgstr "[!!! Vářïáβℓè 1 !!!]"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:349
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:670
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:672
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:71
 msgid "Distance"
-msgstr ""
+msgstr "[!!! Ðïƨƭáñçè !!!]"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:359
 msgid "Volume"
-msgstr ""
+msgstr "[!!! Vôℓú₥è !!!]"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:370
 msgid "Sound Debug"
-msgstr ""
+msgstr "[!!! §ôúñδ Ðèβúϱ !!!]"
 
 #: ../../RunActivity/MultiPlayer/ClientComm.cs:116
 #: ../../RunActivity/MultiPlayer/ClientComm.cs:128
 msgid "Connection to the server is lost, will play as single mode"
-msgstr ""
+msgstr "[!!! Çôññèçƭïôñ ƭô ƭλè ƨèřƲèř ïƨ ℓôƨƭ, ωïℓℓ ƥℓá¥ áƨ ƨïñϱℓè ₥ôδè !!!]"
 
 #: ../../RunActivity/MultiPlayer/ClientComm.cs:145
 msgid "Alt-E to gain control of your train"
-msgstr ""
+msgstr "[!!! Âℓƭ-É ƭô ϱáïñ çôñƭřôℓ ôƒ ¥ôúř ƭřáïñ !!!]"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:647
 msgid "Dispatcher does not allow hand throw at this time"
-msgstr ""
+msgstr "[!!! Ðïƨƥáƭçλèř δôèƨ ñôƭ áℓℓôω λáñδ ƭλřôω áƭ ƭλïƨ ƭï₥è !!!]"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:691
 msgid "main route"
-msgstr ""
+msgstr "[!!! ₥áïñ řôúƭè !!!]"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:691
 msgid "side route"
-msgstr ""
+msgstr "[!!! ƨïδè řôúƭè !!!]"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:1465
 msgid "You are the new dispatcher. Enjoy!"
-msgstr ""
+msgstr "[!!! Ýôú ářè ƭλè ñèω δïƨƥáƭçλèř. ÉñJô¥! !!!]"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:1595
 msgid "Name conflicted with people in the game, will play in single mode"
-msgstr ""
+msgstr "[!!! Ná₥è çôñƒℓïçƭèδ ωïƭλ ƥèôƥℓè ïñ ƭλè ϱá₥è, ωïℓℓ ƥℓá¥ ïñ ƨïñϱℓè ₥ôδè !!!]"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:1670
 #: ../../RunActivity/MultiPlayer/MPManager.cs:130
 msgid "You gained back the control of your train"
-msgstr ""
+msgstr "[!!! Ýôú ϱáïñèδ βáçƙ ƭλè çôñƭřôℓ ôƒ ¥ôúř ƭřáïñ !!!]"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:1885
 msgid "Server quits, will play as single mode"
-msgstr ""
+msgstr "[!!! §èřƲèř 9úïƭƨ, ωïℓℓ ƥℓá¥ áƨ ƨïñϱℓè ₥ôδè !!!]"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:2166
 #: ../../RunActivity/MultiPlayer/Message.cs:2412
 msgid "Trains uncoupled, gain back control by Alt-E"
-msgstr ""
+msgstr "[!!! Třáïñƨ úñçôúƥℓèδ, ϱáïñ βáçƙ çôñƭřôℓ β¥ Âℓƭ-É !!!]"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:2550
 #: ../../RunActivity/MultiPlayer/Message.cs:2658
 msgid "Trains coupled, hit \\ then Shift-? to release brakes"
-msgstr ""
+msgstr "[!!! Třáïñƨ çôúƥℓèδ, λïƭ \\ ƭλèñ §λïƒƭ-? ƭô řèℓèáƨè βřáƙèƨ !!!]"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:3102
 msgid "You are an assistant now, will be able to handle switches and signals."
-msgstr ""
+msgstr "[!!! Ýôú ářè áñ áƨƨïƨƭáñƭ ñôω, ωïℓℓ βè áβℓè ƭô λáñδℓè ƨωïƭçλèƨ áñδ ƨïϱñáℓƨ. !!!]"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:3108
 msgid "You are no longer an assistant."
-msgstr ""
+msgstr "[!!! Ýôú ářè ñô ℓôñϱèř áñ áƨƨïƨƭáñƭ. !!!]"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:690
 #, csharp-format
 msgid "Switched, current route is {0}"
-msgstr ""
+msgstr "[!!! §ωïƭçλèδ, çúřřèñƭ řôúƭè ïƨ {0} !!!]"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:1472
 #, csharp-format
 msgid "New dispatcher is {0}"
-msgstr ""
+msgstr "[!!! Nèω δïƨƥáƭçλèř ïƨ {0} !!!]"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:1896
 #: ../../RunActivity/MultiPlayer/OnlinePlayer.cs:148
 #, csharp-format
 msgid "{0} quit."
-msgstr ""
+msgstr "[!!! {0} 9úïƭ. !!!]"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:1968
 #, csharp-format
 msgid "{0} lost."
-msgstr ""
+msgstr "[!!! {0} ℓôƨƭ. !!!]"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:2988
 #, csharp-format
 msgid " From {0}: {1}"
-msgstr ""
+msgstr "[!!!  Fřô₥ {0}: {1} !!!]"
 
 #: ../../RunActivity/MultiPlayer/MPManager.cs:749
 msgid "Missing car, have substituted with other one."
-msgstr ""
+msgstr "[!!! Mïƨƨïñϱ çář, λáƲè ƨúβƨƭïƭúƭèδ ωïƭλ ôƭλèř ôñè. !!!]"
 
 #: ../../RunActivity/MultiPlayer/MPManager.cs:388
 #, csharp-format
@@ -414,484 +415,487 @@ msgstr[1] ""
 
 #: ../../RunActivity/Physics/Train.cs:1459
 msgid "Coupler broken!"
-msgstr ""
+msgstr "[!!! Çôúƥℓèř βřôƙèñ! !!!]"
 
 #: ../../RunActivity/Physics/Train.cs:1462
 msgid "Coupler overloaded!"
-msgstr ""
+msgstr "[!!! Çôúƥℓèř ôƲèřℓôáδèδ! !!!]"
 
 #: ../../RunActivity/Physics/Train.cs:4588
 #: ../../RunActivity/Physics/Train.cs:4593
 msgid "Other train is blocking path"
-msgstr ""
+msgstr "[!!! Óƭλèř ƭřáïñ ïƨ βℓôçƙïñϱ ƥáƭλ !!!]"
 
 #: ../../RunActivity/Physics/Train.cs:5470
 msgid "Stopped due to errors in route setting"
-msgstr ""
+msgstr "[!!! §ƭôƥƥèδ δúè ƭô èřřôřƨ ïñ řôúƭè ƨèƭƭïñϱ !!!]"
 
 #: ../../RunActivity/Physics/Train.cs:6132
 #: ../../RunActivity/Physics/Train.cs:7210
 msgid "No signal in train's path"
-msgstr ""
+msgstr "[!!! Nô ƨïϱñáℓ ïñ ƭřáïñ'ƨ ƥáƭλ !!!]"
 
 #: ../../RunActivity/Physics/Train.cs:6140
 msgid "Next signal already allocated to other train"
-msgstr ""
+msgstr "[!!! Nèжƭ ƨïϱñáℓ áℓřèáδ¥ áℓℓôçáƭèδ ƭô ôƭλèř ƭřáïñ !!!]"
 
 #: ../../RunActivity/Physics/Train.cs:6201
 msgid "Request to clear signal cannot be processed"
-msgstr ""
+msgstr "[!!! Rè9úèƨƭ ƭô çℓèář ƨïϱñáℓ çáññôƭ βè ƥřôçèƨƨèδ !!!]"
 
 #: ../../RunActivity/Physics/Train.cs:6307
 #: ../../RunActivity/Physics/Train.cs:7330
 msgid "No switch found"
-msgstr ""
+msgstr "[!!! Nô ƨωïƭçλ ƒôúñδ !!!]"
 
 #: ../../RunActivity/Physics/Train.cs:7564
 msgid "You cannot enter manual mode when autopiloted"
-msgstr ""
+msgstr "[!!! Ýôú çáññôƭ èñƭèř ₥áñúáℓ ₥ôδè ωλèñ áúƭôƥïℓôƭèδ !!!]"
 
 #: ../../RunActivity/Physics/Train.cs:7576
 msgid "Train is not back on original route"
-msgstr ""
+msgstr "[!!! Třáïñ ïƨ ñôƭ βáçƙ ôñ ôřïϱïñáℓ řôúƭè !!!]"
 
 #: ../../RunActivity/Physics/Train.cs:7585
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
+"[!!! Óřïϱïñáℓ řôúƭè ïƨ řèƲèřƨè ƒřô₥ ƥřèƨèñƭ δïřèçƭïôñ, ƨƭôƥ ƭřáïñ βèƒôřè ƨωïƭçλïñϱ !!!]"
 
 #: ../../RunActivity/Physics/Train.cs:7598
 msgid "Cannot change to Manual Mode while in Explorer Mode"
-msgstr ""
+msgstr "[!!! Çáññôƭ çλáñϱè ƭô Máñúáℓ Môδè ωλïℓè ïñ Éжƥℓôřèř Môδè !!!]"
 
 #: ../../RunActivity/Physics/Train.cs:7693
 msgid "Reversal required and rear of train not on required route"
-msgstr ""
+msgstr "[!!! RèƲèřƨáℓ řè9úïřèδ áñδ řèář ôƒ ƭřáïñ ñôƭ ôñ řè9úïřèδ řôúƭè !!!]"
 
 #: ../../RunActivity/Physics/Train.cs:7899
 msgid "Cannot clear signal behind train while in AUTO mode"
-msgstr ""
+msgstr "[!!! Çáññôƭ çℓèář ƨïϱñáℓ βèλïñδ ƭřáïñ ωλïℓè ïñ ÂÛTÓ ₥ôδè !!!]"
 
 #: ../../RunActivity/Physics/Train.cs:8148
 #, csharp-format
 msgid "Allowed speed raised to {0}"
-msgstr ""
+msgstr "[!!! Âℓℓôωèδ ƨƥèèδ řáïƨèδ ƭô {0} !!!]"
 
 #: ../../RunActivity/Physics/Train.cs:8190
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
-msgstr ""
+msgstr "[!!! Třáïñ ƨƭôƥƥèδ δúè ƭô ƥřôβℓè₥ƨ ωïƭλ ôƭλèř ƭřáïñ: ƭřáïñ {0} , řèáƨôñ: {1} !!!]"
 
 #: ../../RunActivity/Processes/GameStateRunActivity.cs:1080
 #, csharp-format
 msgid "Activity Save file '*.save' not found in folder {0}"
-msgstr ""
+msgstr "[!!! ÂçƭïƲïƭ¥ §áƲè ƒïℓè '*.ƨáƲè' ñôƭ ƒôúñδ ïñ ƒôℓδèř {0} !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSDieselLocomotive.cs:814
 msgid "Engine"
-msgstr ""
+msgstr "[!!! Éñϱïñè !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSDieselLocomotive.cs:818
 #: ../../RunActivity/RollingStock/MSTSDieselLocomotive.cs:830
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3509
 msgid "Gear"
-msgstr ""
+msgstr "[!!! Gèář !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSDieselLocomotive.cs:831
 msgid "Fuel"
-msgstr ""
+msgstr "[!!! Fúèℓ !!!]"
 
 #. Context: Gear
 #: ../../RunActivity/RollingStock/MSTSDieselLocomotive.cs:819
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3510
 msgctxt "Gear"
 msgid "N"
-msgstr ""
+msgstr "[!!! N !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:221
 msgid "No power line!"
-msgstr ""
+msgstr "[!!! Nô ƥôωèř ℓïñè! !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:223
 msgid "Power line condition overridden."
-msgstr ""
+msgstr "[!!! Þôωèř ℓïñè çôñδïƭïôñ ôƲèřřïδδèñ. !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:317
 msgid "Pantographs"
-msgstr ""
+msgstr "[!!! Þáñƭôϱřáƥλƨ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:331
 msgid "Circuit breaker"
-msgstr ""
+msgstr "[!!! Çïřçúïƭ βřèáƙèř !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:332
 msgid "TCS"
-msgstr ""
+msgstr "[!!! TÇ§ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:332
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:333
 msgid "OK"
-msgstr ""
+msgstr "[!!! ÓK !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:332
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:333
 msgid "NOT OK"
-msgstr ""
+msgstr "[!!! NÓT ÓK !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:333
 msgid "Driver"
-msgstr ""
+msgstr "[!!! ÐřïƲèř !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:334
 msgid "Auxiliary power"
-msgstr ""
+msgstr "[!!! Âúжïℓïář¥ ƥôωèř !!!]"
 
 #. Context: PowerSupply
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:322
 msgctxt "PowerSupply"
 msgid "Power"
-msgstr ""
+msgstr "[!!! Þôωèř !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1425
 msgid "Tender coal supply is empty. Your loco will fail."
-msgstr ""
+msgstr "[!!! Tèñδèř çôáℓ ƨúƥƥℓ¥ ïƨ è₥ƥƭ¥. Ýôúř ℓôçô ωïℓℓ ƒáïℓ. !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1439
 msgid "Tender water supply is empty. Your loco will fail."
-msgstr ""
+msgstr "[!!! Tèñδèř ωáƭèř ƨúƥƥℓ¥ ïƨ è₥ƥƭ¥. Ýôúř ℓôçô ωïℓℓ ƒáïℓ. !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1497
 msgid "Fire has dropped too far. Your loco will fail."
-msgstr ""
+msgstr "[!!! Fïřè λáƨ δřôƥƥèδ ƭôô ƒář. Ýôúř ℓôçô ωïℓℓ ƒáïℓ. !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1554
 msgid ""
 "FireMass is getting low. Your fireman will shovel faster, but don't wear him "
 "out."
 msgstr ""
+"[!!! FïřèMáƨƨ ïƨ ϱèƭƭïñϱ ℓôω. Ýôúř ƒïřè₥áñ ωïℓℓ ƨλôƲèℓ ƒáƨƭèř, βúƭ δôñ'ƭ ωèář λï₥ "
+"ôúƭ. !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1567
 msgid "FireMass is back within limits. Your fireman will shovel as per normal."
-msgstr ""
+msgstr "[!!! FïřèMáƨƨ ïƨ βáçƙ ωïƭλïñ ℓï₥ïƭƨ. Ýôúř ƒïřè₥áñ ωïℓℓ ƨλôƲèℓ áƨ ƥèř ñôř₥áℓ. !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1935
 msgid "Grate limit exceeded - boiler heat rate cannot increase."
-msgstr ""
+msgstr "[!!! Gřáƭè ℓï₥ïƭ èжçèèδèδ - βôïℓèř λèáƭ řáƭè çáññôƭ ïñçřèáƨè. !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1945
 msgid "Grate limit return to normal."
-msgstr ""
+msgstr "[!!! Gřáƭè ℓï₥ïƭ řèƭúřñ ƭô ñôř₥áℓ. !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3131
 msgid "Water level dropped too far. Plug has fused and loco has failed."
-msgstr ""
+msgstr "[!!! Wáƭèř ℓèƲèℓ δřôƥƥèδ ƭôô ƒář. Þℓúϱ λáƨ ƒúƨèδ áñδ ℓôçô λáƨ ƒáïℓèδ. !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3138
 msgid "Boiler overfull and priming."
-msgstr ""
+msgstr "[!!! ßôïℓèř ôƲèřƒúℓℓ áñδ ƥřï₥ïñϱ. !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3144
 msgid "Boiler no longer priming."
-msgstr ""
+msgstr "[!!! ßôïℓèř ñô ℓôñϱèř ƥřï₥ïñϱ. !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3507
 msgid "Fixed gear"
-msgstr ""
+msgstr "[!!! Fïжèδ ϱèář !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3512
 msgid "Steam usage"
-msgstr ""
+msgstr "[!!! §ƭèá₥ úƨáϱè !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3513
 msgid "Boiler pressure"
-msgstr ""
+msgstr "[!!! ßôïℓèř ƥřèƨƨúřè !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3514
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3518
 msgid "Boiler water level"
-msgstr ""
+msgstr "[!!! ßôïℓèř ωáƭèř ℓèƲèℓ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3514
 msgid "(safe range)"
-msgstr ""
+msgstr "[!!! (ƨáƒè řáñϱè) !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3518
 msgid "(absolute)"
-msgstr ""
+msgstr "[!!! (áβƨôℓúƭè) !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3520
 msgid "Fire mass"
-msgstr ""
+msgstr "[!!! Fïřè ₥áƨƨ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3522
 msgid "Fire ratio"
-msgstr ""
+msgstr "[!!! Fïřè řáƭïô !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3525
 msgid "Fuel levels"
-msgstr ""
+msgstr "[!!! Fúèℓ ℓèƲèℓƨ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3525
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:330
 msgid "coal"
-msgstr ""
+msgstr "[!!! çôáℓ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3525
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:329
 msgid "water"
-msgstr ""
+msgstr "[!!! ωáƭèř !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3534
 msgid "Key Inputs"
-msgstr ""
+msgstr "[!!! Kè¥ Ìñƥúƭƨ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3536
 msgid "Locomotive Type:"
-msgstr ""
+msgstr "[!!! £ôçô₥ôƭïƲè T¥ƥè: !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3540
 msgid "Input:"
-msgstr ""
+msgstr "[!!! Ìñƥúƭ: !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3541
 msgid "Evap"
-msgstr ""
+msgstr "[!!! ÉƲáƥ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3542
 msgid "Grate"
-msgstr ""
+msgstr "[!!! Gřáƭè !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3543
 msgid "Boiler"
-msgstr ""
+msgstr "[!!! ßôïℓèř !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3544
 msgid "SuperHr"
-msgstr ""
+msgstr "[!!! §úƥèřHř !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3545
 msgid "FuelCal"
-msgstr ""
+msgstr "[!!! FúèℓÇáℓ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3553
 msgid "Adj:"
-msgstr ""
+msgstr "[!!! ÂδJ: !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3554
 msgid "CylEff"
-msgstr ""
+msgstr "[!!! Ç¥ℓÉƒƒ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3555
 msgid "CylExh"
-msgstr ""
+msgstr "[!!! Ç¥ℓÉжλ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3556
 msgid "PortOpen"
-msgstr ""
+msgstr "[!!! ÞôřƭÓƥèñ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3562
 msgid "Steam Production"
-msgstr ""
+msgstr "[!!! §ƭèá₥ Þřôδúçƭïôñ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3567
 msgid "Boiler:"
-msgstr ""
+msgstr "[!!! ßôïℓèř: !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3569
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:633
 msgid "Mass"
-msgstr ""
+msgstr "[!!! Máƨƨ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3570
 msgid "MaxOutp"
-msgstr ""
+msgstr "[!!! MáжÓúƭƥ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3571
 msgid "BoilerEff"
-msgstr ""
+msgstr "[!!! ßôïℓèřÉƒƒ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3579
 msgid "Heat:"
-msgstr ""
+msgstr "[!!! Hèáƭ: !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3580
 msgid "In"
-msgstr ""
+msgstr "[!!! Ìñ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3581
 msgid "Out"
-msgstr ""
+msgstr "[!!! Óúƭ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3582
 msgid "Stored"
-msgstr ""
+msgstr "[!!! §ƭôřèδ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3583
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3757
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:665
 msgid "Max"
-msgstr ""
+msgstr "[!!! Máж !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3590
 msgid "Temp:"
-msgstr ""
+msgstr "[!!! Tè₥ƥ: !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3591
 msgid "Flue"
-msgstr ""
+msgstr "[!!! Fℓúè !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3592
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3774
 msgid "Water"
-msgstr ""
+msgstr "[!!! Wáƭèř !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3593
 msgid "MaxSupH"
-msgstr ""
+msgstr "[!!! Máж§úƥH !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3594
 msgid "CurSupH"
-msgstr ""
+msgstr "[!!! Çúř§úƥH !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3595
 msgid "SupFact"
-msgstr ""
+msgstr "[!!! §úƥFáçƭ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3603
 msgid "Steam Usage"
-msgstr ""
+msgstr "[!!! §ƭèá₥ Ûƨáϱè !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3608
 msgid "Usage:"
-msgstr ""
+msgstr "[!!! Ûƨáϱè: !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3609
 msgid "Cyl"
-msgstr ""
+msgstr "[!!! Ç¥ℓ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3610
 #: ../../RunActivity/Simulator/Confirmation.cs:158
 msgid "Blower"
-msgstr ""
+msgstr "[!!! ßℓôωèř !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3611
 msgid "Radiation"
-msgstr ""
+msgstr "[!!! Ráδïáƭïôñ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3612
 msgid "Comprsr"
-msgstr ""
+msgstr "[!!! Çô₥ƥřƨř !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3613
 msgid "SafetyV"
-msgstr ""
+msgstr "[!!! §áƒèƭ¥V !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3614
 msgid "CylCock"
-msgstr ""
+msgstr "[!!! Ç¥ℓÇôçƙ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3615
 msgid "Genertr"
-msgstr ""
+msgstr "[!!! Gèñèřƭř !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3616
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3788
 msgid "Stoker"
-msgstr ""
+msgstr "[!!! §ƭôƙèř !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3617
 msgid "MaxSafe"
-msgstr ""
+msgstr "[!!! Máж§áƒè !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3636
 msgid "PressHP:"
-msgstr ""
+msgstr "[!!! ÞřèƨƨHÞ: !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3637
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3659
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3682
 msgid "Chest"
-msgstr ""
+msgstr "[!!! Çλèƨƭ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3639
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3661
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3683
 msgid "Initial"
-msgstr ""
+msgstr "[!!! Ìñïƭïáℓ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3641
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3663
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3684
 msgid "Cutoff"
-msgstr ""
+msgstr "[!!! Çúƭôƒƒ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3643
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3665
 msgid "Rel"
-msgstr ""
+msgstr "[!!! Rèℓ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3645
 msgid "RelR"
-msgstr ""
+msgstr "[!!! RèℓR !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3647
 #: ../../RunActivity/RollingStock/SubSystems/Brakes/BrakeSystem.cs:82
 #: ../../RunActivity/Simulator/Confirmation.cs:176
 msgid "Exhaust"
-msgstr ""
+msgstr "[!!! Éжλáúƨƭ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3649
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3667
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3686
 msgid "Back"
-msgstr ""
+msgstr "[!!! ßáçƙ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3651
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3669
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3687
 msgid "PreComp"
-msgstr ""
+msgstr "[!!! ÞřèÇô₥ƥ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3653
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3673
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3689
 msgid "MEP"
-msgstr ""
+msgstr "[!!! MÉÞ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3658
 msgid "PressLP:"
-msgstr ""
+msgstr "[!!! Þřèƨƨ£Þ: !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3671
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3688
 msgid "PreAdm"
-msgstr ""
+msgstr "[!!! ÞřèÂδ₥ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3681
 msgid "Press:"
-msgstr ""
+msgstr "[!!! Þřèƨƨ: !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3701
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3781
 msgid "Status:"
-msgstr ""
+msgstr "[!!! §ƭáƭúƨ: !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3702
 msgid "Safety"
-msgstr ""
+msgstr "[!!! §áƒèƭ¥ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3703
 #: ../../RunActivity/RollingStock/SubSystems/Brakes/MSTS/AirSinglePipe.cs:129
 msgid "Open"
-msgstr ""
+msgstr "[!!! Óƥèñ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3703
 msgid "Closed"
-msgstr ""
+msgstr "[!!! Çℓôƨèδ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3704
 msgid "Plug"
-msgstr ""
+msgstr "[!!! Þℓúϱ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3705
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3707
@@ -908,7 +912,7 @@ msgstr ""
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:501
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:781
 msgid "Yes"
-msgstr ""
+msgstr "[!!! Ýèƨ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3705
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3707
@@ -925,35 +929,35 @@ msgstr ""
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:501
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:781
 msgid "No"
-msgstr ""
+msgstr "[!!! Nô !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3706
 msgid "Prime"
-msgstr ""
+msgstr "[!!! Þřï₥è !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3708
 msgid "Comp"
-msgstr ""
+msgstr "[!!! Çô₥ƥ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3709
 msgid "Off"
-msgstr ""
+msgstr "[!!! Óƒƒ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3709
 msgid "On"
-msgstr ""
+msgstr "[!!! Óñ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3713
 msgid "Fireman"
-msgstr ""
+msgstr "[!!! Fïřè₥áñ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3715
 msgid "Fire:"
-msgstr ""
+msgstr "[!!! Fïřè: !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3716
 msgid "Ideal"
-msgstr ""
+msgstr "[!!! Ìδèáℓ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3717
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:85
@@ -961,387 +965,391 @@ msgstr ""
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:73
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:75
 msgid "Actual"
-msgstr ""
+msgstr "[!!! Âçƭúáℓ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3718
 msgid "MaxFireR"
-msgstr ""
+msgstr "[!!! MáжFïřèR !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3719
 msgid "FeedRate"
-msgstr ""
+msgstr "[!!! FèèδRáƭè !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3720
 msgid "BurnRate"
-msgstr ""
+msgstr "[!!! ßúřñRáƭè !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3721
 msgid "Combust"
-msgstr ""
+msgstr "[!!! Çô₥βúƨƭ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3734
 msgid "DbgBurn:"
-msgstr ""
+msgstr "[!!! Ðβϱßúřñ: !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3735
 msgid "BoilHeat"
-msgstr ""
+msgstr "[!!! ßôïℓHèáƭ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3737
 msgid "H/R"
-msgstr ""
+msgstr "[!!! H/R !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3739
 msgid "BoilH/R"
-msgstr ""
+msgstr "[!!! ßôïℓH/R !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3741
 msgid "MBoilH/R"
-msgstr ""
+msgstr "[!!! MßôïℓH/R !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3743
 msgid "PrRatio"
-msgstr ""
+msgstr "[!!! ÞřRáƭïô !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3745
 msgid "FireHeat"
-msgstr ""
+msgstr "[!!! FïřèHèáƭ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3747
 msgid "RawBurn"
-msgstr ""
+msgstr "[!!! Ráωßúřñ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3749
 msgid "SuperSet"
-msgstr ""
+msgstr "[!!! §úƥèř§èƭ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3751
 msgid "MaxFuel"
-msgstr ""
+msgstr "[!!! MáжFúèℓ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3756
 msgid "Injector:"
-msgstr ""
+msgstr "[!!! ÌñJèçƭôř: !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3758
 msgid "Inj1"
-msgstr ""
+msgstr "[!!! ÌñJ1 !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3759
 msgid "Temp1"
-msgstr ""
+msgstr "[!!! Tè₥ƥ1 !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3760
 msgid "Inj2"
-msgstr ""
+msgstr "[!!! ÌñJ2 !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3761
 msgid "Temp2"
-msgstr ""
+msgstr "[!!! Tè₥ƥ2 !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3772
 msgid "Tender:"
-msgstr ""
+msgstr "[!!! Tèñδèř: !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3773
 msgid "Coal"
-msgstr ""
+msgstr "[!!! Çôáℓ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3782
 msgid "CoalOut"
-msgstr ""
+msgstr "[!!! ÇôáℓÓúƭ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3784
 msgid "WaterOut"
-msgstr ""
+msgstr "[!!! WáƭèřÓúƭ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3786
 msgid "FireOut"
-msgstr ""
+msgstr "[!!! FïřèÓúƭ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3790
 msgid "Boost"
-msgstr ""
+msgstr "[!!! ßôôƨƭ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3792
 msgid "BstReset"
-msgstr ""
+msgstr "[!!! ßƨƭRèƨèƭ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3794
 msgid "GrLimit"
-msgstr ""
+msgstr "[!!! Gř£ï₥ïƭ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3797
 msgid "Performance"
-msgstr ""
+msgstr "[!!! Þèřƒôř₥áñçè !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3799
 msgid "Power:"
-msgstr ""
+msgstr "[!!! Þôωèř: !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3800
 msgid "MaxInd"
-msgstr ""
+msgstr "[!!! MáжÌñδ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3801
 msgid "Ind"
-msgstr ""
+msgstr "[!!! Ìñδ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3802
 msgid "Drawbar"
-msgstr ""
+msgstr "[!!! Ðřáωβář !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3808
 msgid "Force:"
-msgstr ""
+msgstr "[!!! Fôřçè: !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3809
 msgid "TheorTE"
-msgstr ""
+msgstr "[!!! TλèôřTÉ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3810
 msgid "StartTE"
-msgstr ""
+msgstr "[!!! §ƭářƭTÉ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3811
 msgid "TE"
-msgstr ""
+msgstr "[!!! TÉ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3812
 msgid "Draw"
-msgstr ""
+msgstr "[!!! Ðřáω !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3813
 msgid "CritSpTE"
-msgstr ""
+msgstr "[!!! Çřïƭ§ƥTÉ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3814
 msgid "CritSpeed"
-msgstr ""
+msgstr "[!!! Çřïƭ§ƥèèδ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3823
 msgid "Move:"
-msgstr ""
+msgstr "[!!! MôƲè: !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3824
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3839
 msgid "Piston"
-msgstr ""
+msgstr "[!!! Þïƨƭôñ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3825
 msgid "SpdFact"
-msgstr ""
+msgstr "[!!! §ƥδFáçƭ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3826
 msgid "DrvWhl"
-msgstr ""
+msgstr "[!!! ÐřƲWλℓ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3827
 msgid "MF-Gear"
-msgstr ""
+msgstr "[!!! MF-Gèář !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3836
 msgid "Experimental"
-msgstr ""
+msgstr "[!!! Éжƥèřï₥èñƭáℓ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3836
 msgid "Slip Monitor"
-msgstr ""
+msgstr "[!!! §ℓïƥ Môñïƭôř !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3838
 msgid "Slip:"
-msgstr ""
+msgstr "[!!! §ℓïƥ: !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3840
 msgid "Tang(c)"
-msgstr ""
+msgstr "[!!! Táñϱ(ç) !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3841
 msgid "Tang(t)"
-msgstr ""
+msgstr "[!!! Táñϱ(ƭ) !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3842
 msgid "Static"
-msgstr ""
+msgstr "[!!! §ƭáƭïç !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3843
 msgid "Coeff"
-msgstr ""
+msgstr "[!!! Çôèƒƒ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3844
 msgid "Slip"
-msgstr ""
+msgstr "[!!! §ℓïƥ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3845
 msgid "WheelM"
-msgstr ""
+msgstr "[!!! WλèèℓM !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3846
 msgid "FoA"
-msgstr ""
+msgstr "[!!! FôÂ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3909
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3956
 msgid "Gears can't be changed unless throttle is at zero."
-msgstr ""
+msgstr "[!!! Gèářƨ çáñ'ƭ βè çλáñϱèδ úñℓèƨƨ ƭλřôƭƭℓè ïƨ áƭ ƺèřô. !!!]"
 
 #. Context: HUD
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3568
 #: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:301
 msgctxt "HUD"
 msgid "Power"
-msgstr ""
+msgstr "[!!! Þôωèř !!!]"
 
 #: ../../RunActivity/RollingStock/TrainCar.cs:583
 msgid ""
 "You are traveling too fast for this curve. Slow down, your freight may be "
 "damaged and your train may derail."
 msgstr ""
+"[!!! Ýôú ářè ƭřáƲèℓïñϱ ƭôô ƒáƨƭ ƒôř ƭλïƨ çúřƲè. §ℓôω δôωñ, ¥ôúř ƒřèïϱλƭ ₥á¥ βè "
+"δá₥áϱèδ áñδ ¥ôúř ƭřáïñ ₥á¥ δèřáïℓ. !!!]"
 
 #: ../../RunActivity/RollingStock/TrainCar.cs:587
 msgid ""
 "You are travelling too fast for this curve. Slow down, your passengers are "
 "feeling uncomfortable and your train may derail."
 msgstr ""
+"[!!! Ýôú ářè ƭřáƲèℓℓïñϱ ƭôô ƒáƨƭ ƒôř ƭλïƨ çúřƲè. §ℓôω δôωñ, ¥ôúř ƥáƨƨèñϱèřƨ ářè "
+"ƒèèℓïñϱ úñçô₥ƒôřƭáβℓè áñδ ¥ôúř ƭřáïñ ₥á¥ δèřáïℓ. !!!]"
 
 #: ../../RunActivity/RollingStock/TrainCar.cs:620
 msgid "Your train has overturned."
-msgstr ""
+msgstr "[!!! Ýôúř ƭřáïñ λáƨ ôƲèřƭúřñèδ. !!!]"
 
 #: ../../RunActivity/RollingStock/TrainCar.cs:799
 msgid "(flipped)"
-msgstr ""
+msgstr "[!!! (ƒℓïƥƥèδ) !!!]"
 
 #: ../../RunActivity/RollingStock/TrainCar.cs:801
 msgid "MU'd"
-msgstr ""
+msgstr "[!!! MÛ'δ !!!]"
 
 #: ../../RunActivity/RollingStock/TrainCar.cs:801
 msgid "Single"
-msgstr ""
+msgstr "[!!! §ïñϱℓè !!!]"
 
 #: ../../RunActivity/RollingStock/SubSystems/Brakes/BrakeSystem.cs:83
 #: ../../RunActivity/Simulator/Confirmation.cs:176
 msgid "High Pressure"
-msgstr ""
+msgstr "[!!! Hïϱλ Þřèƨƨúřè !!!]"
 
 #: ../../RunActivity/RollingStock/SubSystems/Brakes/BrakeSystem.cs:84
 #: ../../RunActivity/Simulator/Confirmation.cs:176
 msgid "Low Pressure"
-msgstr ""
+msgstr "[!!! £ôω Þřèƨƨúřè !!!]"
 
 #: ../../RunActivity/RollingStock/SubSystems/Brakes/BrakeSystem.cs:85
 #: ../../RunActivity/Simulator/Confirmation.cs:176
 msgid "Slow Direct"
-msgstr ""
+msgstr "[!!! §ℓôω Ðïřèçƭ !!!]"
 
 #: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:297
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:119
 msgid "Status"
-msgstr ""
+msgstr "[!!! §ƭáƭúƨ !!!]"
 
 #: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:305
 msgid "Load"
-msgstr ""
+msgstr "[!!! £ôáδ !!!]"
 
 #: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:312
 msgid "Flow"
-msgstr ""
+msgstr "[!!! Fℓôω !!!]"
 
 #: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:320
 msgid "Oil"
-msgstr ""
+msgstr "[!!! Óïℓ !!!]"
 
 #. Context: Engine
 #: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:395
 msgctxt "Engine"
 msgid "Stopped"
-msgstr ""
+msgstr "[!!! §ƭôƥƥèδ !!!]"
 
 #. Context: Engine
 #: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:396
 msgctxt "Engine"
 msgid "Starting"
-msgstr ""
+msgstr "[!!! §ƭářƭïñϱ !!!]"
 
 #. Context: Engine
 #: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:397
 msgctxt "Engine"
 msgid "Running"
-msgstr ""
+msgstr "[!!! Rúññïñϱ !!!]"
 
 #. Context: Engine
 #: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:398
 msgctxt "Engine"
 msgid "Stopping"
-msgstr ""
+msgstr "[!!! §ƭôƥƥïñϱ !!!]"
 
 #: ../../RunActivity/Simulator/Activity.cs:877
 #: ../../RunActivity/Timetable/TTTrain.cs:5791
 msgid "Passenger boarding completed. Waiting for signal ahead to clear."
-msgstr ""
+msgstr "[!!! Þáƨƨèñϱèř βôářδïñϱ çô₥ƥℓèƭèδ. Wáïƭïñϱ ƒôř ƨïϱñáℓ áλèáδ ƭô çℓèář. !!!]"
 
 #: ../../RunActivity/Simulator/Activity.cs:882
 #: ../../RunActivity/Timetable/TTTrain.cs:5796
 msgid "Passenger boarding completed. You may depart now."
-msgstr ""
+msgstr "[!!! Þáƨƨèñϱèř βôářδïñϱ çô₥ƥℓèƭèδ. Ýôú ₥á¥ δèƥářƭ ñôω. !!!]"
 
 #: ../../RunActivity/Simulator/Activity.cs:866
 #: ../../RunActivity/Timetable/TTTrain.cs:5803
 #, csharp-format
 msgid "Passenger boarding completes in {0:D2}:{1:D2}"
-msgstr ""
+msgstr "[!!! Þáƨƨèñϱèř βôářδïñϱ çô₥ƥℓèƭèƨ ïñ {0:Ð2}:{1:Ð2} !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:26
 msgid "None"
-msgstr ""
+msgstr "[!!! Nôñè !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:27
 msgid "Information"
-msgstr ""
+msgstr "[!!! Ìñƒôř₥áƭïôñ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:28
 msgid "Warning"
-msgstr ""
+msgstr "[!!! Wářñïñϱ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:29
 msgid "Error"
-msgstr ""
+msgstr "[!!! Éřřôř !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:30
 msgid "MSG"
-msgstr ""
+msgstr "[!!! M§G !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:140
 msgid "<none>"
-msgstr ""
+msgstr "[!!! <ñôñè> !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:142
 #: ../../RunActivity/Simulator/Confirmation.cs:154
 msgid "reverse"
-msgstr ""
+msgstr "[!!! řèƲèřƨè !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:142
 #: ../../RunActivity/Simulator/Confirmation.cs:154
 msgid "neutral"
-msgstr ""
+msgstr "[!!! ñèúƭřáℓ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:142
 #: ../../RunActivity/Simulator/Confirmation.cs:154
 msgid "forward"
-msgstr ""
+msgstr "[!!! ƒôřωářδ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:142
 #: ../../RunActivity/Simulator/Confirmation.cs:154
 msgid "locked. Close throttle, stop train then re-try."
-msgstr ""
+msgstr "[!!! ℓôçƙèδ. Çℓôƨè ƭλřôƭƭℓè, ƨƭôƥ ƭřáïñ ƭλèñ řè-ƭř¥. !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:143
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:125
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:394
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:543
 msgid "Throttle"
-msgstr ""
+msgstr "[!!! Tλřôƭƭℓè !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:143
 #: ../../RunActivity/Simulator/Confirmation.cs:155
@@ -1354,7 +1362,7 @@ msgstr ""
 #: ../../RunActivity/Simulator/Confirmation.cs:190
 #: ../../RunActivity/Simulator/Confirmation.cs:191
 msgid "close"
-msgstr ""
+msgstr "[!!! çℓôƨè !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:143
 #: ../../RunActivity/Simulator/Confirmation.cs:155
@@ -1367,31 +1375,31 @@ msgstr ""
 #: ../../RunActivity/Simulator/Confirmation.cs:190
 #: ../../RunActivity/Simulator/Confirmation.cs:191
 msgid "open"
-msgstr ""
+msgstr "[!!! ôƥèñ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:143
 msgid "locked. Release dynamic brake then re-try."
-msgstr ""
+msgstr "[!!! ℓôçƙèδ. Rèℓèáƨè δ¥ñá₥ïç βřáƙè ƭλèñ řè-ƭř¥. !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:144
 msgid "Wheel-slip"
-msgstr ""
+msgstr "[!!! Wλèèℓ-ƨℓïƥ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:144
 msgid "over"
-msgstr ""
+msgstr "[!!! ôƲèř !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:144
 msgid "occurring. Tractive power greatly reduced."
-msgstr ""
+msgstr "[!!! ôççúřřïñϱ. TřáçƭïƲè ƥôωèř ϱřèáƭℓ¥ řèδúçèδ. !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:144
 msgid "warning"
-msgstr ""
+msgstr "[!!! ωářñïñϱ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:146
 msgid "Power"
-msgstr ""
+msgstr "[!!! Þôωèř !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:146
 #: ../../RunActivity/Simulator/Confirmation.cs:150
@@ -1410,7 +1418,7 @@ msgstr ""
 #: ../../RunActivity/Simulator/Confirmation.cs:186
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:548
 msgid "off"
-msgstr ""
+msgstr "[!!! ôƒƒ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:146
 #: ../../RunActivity/Simulator/Confirmation.cs:150
@@ -1423,568 +1431,570 @@ msgstr ""
 #: ../../RunActivity/Simulator/Confirmation.cs:185
 #: ../../RunActivity/Simulator/Confirmation.cs:186
 msgid "on"
-msgstr ""
+msgstr "[!!! ôñ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:147
 msgid "Pantograph 1"
-msgstr ""
+msgstr "[!!! Þáñƭôϱřáƥλ 1 !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:147
 #: ../../RunActivity/Simulator/Confirmation.cs:148
 msgid "lower"
-msgstr ""
+msgstr "[!!! ℓôωèř !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:147
 #: ../../RunActivity/Simulator/Confirmation.cs:148
 msgid "raise"
-msgstr ""
+msgstr "[!!! řáïƨè !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:148
 msgid "Pantograph 2"
-msgstr ""
+msgstr "[!!! Þáñƭôϱřáƥλ 2 !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:150
 msgid "Player Diesel Power"
-msgstr ""
+msgstr "[!!! Þℓá¥èř Ðïèƨèℓ Þôωèř !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:150
 msgid "locked. Close throttle then re-try."
-msgstr ""
+msgstr "[!!! ℓôçƙèδ. Çℓôƨè ƭλřôƭƭℓè ƭλèñ řè-ƭř¥. !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:151
 msgid "Helper Diesel Power"
-msgstr ""
+msgstr "[!!! Hèℓƥèř Ðïèƨèℓ Þôωèř !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:152
 msgid "Diesel Tank"
-msgstr ""
+msgstr "[!!! Ðïèƨèℓ Táñƙ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:152
 msgid "re-fueled"
-msgstr ""
+msgstr "[!!! řè-ƒúèℓèδ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:152
 msgid "level"
-msgstr ""
+msgstr "[!!! ℓèƲèℓ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:155
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:394
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:543
 msgid "Regulator"
-msgstr ""
+msgstr "[!!! Rèϱúℓáƭôř !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:156
 msgid "Injector 1"
-msgstr ""
+msgstr "[!!! ÌñJèçƭôř 1 !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:157
 msgid "Injector 2"
-msgstr ""
+msgstr "[!!! ÌñJèçƭôř 2 !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:158
 #: ../../RunActivity/Simulator/Confirmation.cs:161
 #: ../../RunActivity/Simulator/Confirmation.cs:171
 #: ../../RunActivity/Simulator/Confirmation.cs:197
 msgid "decrease"
-msgstr ""
+msgstr "[!!! δèçřèáƨè !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:158
 #: ../../RunActivity/Simulator/Confirmation.cs:161
 #: ../../RunActivity/Simulator/Confirmation.cs:171
 #: ../../RunActivity/Simulator/Confirmation.cs:197
 msgid "increase"
-msgstr ""
+msgstr "[!!! ïñçřèáƨè !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:159
 msgid "Damper"
-msgstr ""
+msgstr "[!!! Ðá₥ƥèř !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:160
 msgid "Firebox Door"
-msgstr ""
+msgstr "[!!! Fïřèβôж Ðôôř !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:161
 msgid "Firing Rate"
-msgstr ""
+msgstr "[!!! Fïřïñϱ Ráƭè !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:162
 msgid "Manual Firing"
-msgstr ""
+msgstr "[!!! Máñúáℓ Fïřïñϱ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:163
 msgid "Fire"
-msgstr ""
+msgstr "[!!! Fïřè !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:163
 msgid "add shovel-full"
-msgstr ""
+msgstr "[!!! áδδ ƨλôƲèℓ-ƒúℓℓ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:164
 msgid "Cylinder Cocks"
-msgstr ""
+msgstr "[!!! Ç¥ℓïñδèř Çôçƙƨ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:165
 msgid "Cylinder Compound"
-msgstr ""
+msgstr "[!!! Ç¥ℓïñδèř Çô₥ƥôúñδ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:166
 #: ../../RunActivity/Simulator/Confirmation.cs:167
 msgid "Tender"
-msgstr ""
+msgstr "[!!! Tèñδèř !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:166
 msgid "Coal re-filled"
-msgstr ""
+msgstr "[!!! Çôáℓ řè-ƒïℓℓèδ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:166
 msgid "Coal level"
-msgstr ""
+msgstr "[!!! Çôáℓ ℓèƲèℓ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:167
 msgid "Water re-filled"
-msgstr ""
+msgstr "[!!! Wáƭèř řè-ƒïℓℓèδ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:167
 msgid "Water level"
-msgstr ""
+msgstr "[!!! Wáƭèř ℓèƲèℓ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:169
 msgid "Train Brake"
-msgstr ""
+msgstr "[!!! Třáïñ ßřáƙè !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:169
 #: ../../RunActivity/Simulator/Confirmation.cs:170
 #: ../../RunActivity/Simulator/Confirmation.cs:172
 msgid "release"
-msgstr ""
+msgstr "[!!! řèℓèáƨè !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:169
 #: ../../RunActivity/Simulator/Confirmation.cs:170
 #: ../../RunActivity/Simulator/Confirmation.cs:172
 msgid "apply"
-msgstr ""
+msgstr "[!!! áƥƥℓ¥ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:170
 msgid "Engine Brake"
-msgstr ""
+msgstr "[!!! Éñϱïñè ßřáƙè !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:171
 msgid "Dynamic Brake"
-msgstr ""
+msgstr "[!!! Ð¥ñá₥ïç ßřáƙè !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:171
 msgid "setup"
-msgstr ""
+msgstr "[!!! ƨèƭúƥ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:172
 msgid "Emergency Brake"
-msgstr ""
+msgstr "[!!! É₥èřϱèñç¥ ßřáƙè !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:173
 msgid "Bail Off"
-msgstr ""
+msgstr "[!!! ßáïℓ Óƒƒ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:173
 msgid "disengage"
-msgstr ""
+msgstr "[!!! δïƨèñϱáϱè !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:173
 msgid "engage"
-msgstr ""
+msgstr "[!!! èñϱáϱè !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:174
 msgid "Brakes"
-msgstr ""
+msgstr "[!!! ßřáƙèƨ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:174
 msgid "initialize"
-msgstr ""
+msgstr "[!!! ïñïƭïáℓïƺè !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:174
 msgid "cannot initialize. Stop train then re-try."
-msgstr ""
+msgstr "[!!! çáññôƭ ïñïƭïáℓïƺè. §ƭôƥ ƭřáïñ ƭλèñ řè-ƭř¥. !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:175
 msgid "Handbrake"
-msgstr ""
+msgstr "[!!! Háñδβřáƙè !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:175
 msgid "none"
-msgstr ""
+msgstr "[!!! ñôñè !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:175
 msgid "full"
-msgstr ""
+msgstr "[!!! ƒúℓℓ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:176
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:397
 msgid "Retainers"
-msgstr ""
+msgstr "[!!! Rèƭáïñèřƨ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:177
 msgid "Brake Hose"
-msgstr ""
+msgstr "[!!! ßřáƙè Hôƨè !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:177
 msgid "disconnect"
-msgstr ""
+msgstr "[!!! δïƨçôññèçƭ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:177
 msgid "connect"
-msgstr ""
+msgstr "[!!! çôññèçƭ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:179
 msgid "Sander"
-msgstr ""
+msgstr "[!!! §áñδèř !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:180
 msgid "Alerter"
-msgstr ""
+msgstr "[!!! Âℓèřƭèř !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:180
 msgid "acknowledge"
-msgstr ""
+msgstr "[!!! áçƙñôωℓèδϱè !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:181
 msgid "Horn"
-msgstr ""
+msgstr "[!!! Hôřñ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:182
 msgid "Whistle"
-msgstr ""
+msgstr "[!!! Wλïƨƭℓè !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:182
 msgid "blow"
-msgstr ""
+msgstr "[!!! βℓôω !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:183
 msgid "Bell"
-msgstr ""
+msgstr "[!!! ßèℓℓ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:183
 msgid "ring"
-msgstr ""
+msgstr "[!!! řïñϱ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:184
 msgid "Headlight"
-msgstr ""
+msgstr "[!!! Hèáδℓïϱλƭ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:184
 msgid "dim"
-msgstr ""
+msgstr "[!!! δï₥ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:184
 msgid "bright"
-msgstr ""
+msgstr "[!!! βřïϱλƭ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:185
 msgid "Cab Light"
-msgstr ""
+msgstr "[!!! Çáβ £ïϱλƭ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:186
 msgid "Wipers"
-msgstr ""
+msgstr "[!!! Wïƥèřƨ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:187
 #: ../../RunActivity/Viewer3D/Cameras.cs:1505
 msgid "Cab"
-msgstr ""
+msgstr "[!!! Çáβ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:187
 msgid "changing is not available"
-msgstr ""
+msgstr "[!!! çλáñϱïñϱ ïƨ ñôƭ áƲáïℓáβℓè !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:187
 msgid ""
 "changing disabled. Close throttle, set reverser to neutral, stop train then "
 "re-try."
 msgstr ""
+"[!!! çλáñϱïñϱ δïƨáβℓèδ. Çℓôƨè ƭλřôƭƭℓè, ƨèƭ řèƲèřƨèř ƭô ñèúƭřáℓ, ƨƭôƥ ƭřáïñ ƭλèñ "
+"řè-ƭř¥. !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:188
 msgid "Odometer"
-msgstr ""
+msgstr "[!!! Óδô₥èƭèř !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:190
 msgid "Doors Left"
-msgstr ""
+msgstr "[!!! Ðôôřƨ £èƒƭ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:191
 msgid "Doors Right"
-msgstr ""
+msgstr "[!!! Ðôôřƨ Rïϱλƭ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:192
 msgid "Mirror"
-msgstr ""
+msgstr "[!!! Mïřřôř !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:192
 msgid "retract"
-msgstr ""
+msgstr "[!!! řèƭřáçƭ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:192
 msgid "extend"
-msgstr ""
+msgstr "[!!! èжƭèñδ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:194
 msgid "Switch Ahead"
-msgstr ""
+msgstr "[!!! §ωïƭçλ Âλèáδ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:194
 #: ../../RunActivity/Simulator/Confirmation.cs:195
 msgid "locked. Use Control+M to change signals to manual mode then re-try."
-msgstr ""
+msgstr "[!!! ℓôçƙèδ. Ûƨè Çôñƭřôℓ+M ƭô çλáñϱè ƨïϱñáℓƨ ƭô ₥áñúáℓ ₥ôδè ƭλèñ řè-ƭř¥. !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:195
 msgid "Switch Behind"
-msgstr ""
+msgstr "[!!! §ωïƭçλ ßèλïñδ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:197
 msgid "Simulation Speed"
-msgstr ""
+msgstr "[!!! §ï₥úℓáƭïôñ §ƥèèδ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:197
 msgid "reset"
-msgstr ""
+msgstr "[!!! řèƨèƭ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:198
 msgid "Uncouple After"
-msgstr ""
+msgstr "[!!! Ûñçôúƥℓè Âƒƭèř !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:199
 msgid "Activity"
-msgstr ""
+msgstr "[!!! ÂçƭïƲïƭ¥ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:199
 msgid "quit"
-msgstr ""
+msgstr "[!!! 9úïƭ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:199
 msgid "resume"
-msgstr ""
+msgstr "[!!! řèƨú₥è !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:200
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:389
 msgid "Replay"
-msgstr ""
+msgstr "[!!! Rèƥℓá¥ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:200
 msgid "Overriding camera replay. Press Escape to resume camera replay."
-msgstr ""
+msgstr "[!!! ÓƲèřřïδïñϱ çá₥èřá řèƥℓá¥. Þřèƨƨ Éƨçáƥè ƭô řèƨú₥è çá₥èřá řèƥℓá¥. !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:201
 msgid "Gearbox"
-msgstr ""
+msgstr "[!!! Gèářβôж !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:201
 msgid "down"
-msgstr ""
+msgstr "[!!! δôωñ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:201
 msgid "up"
-msgstr ""
+msgstr "[!!! úƥ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:201
 msgid "locked. Use shaft before changing gear."
-msgstr ""
+msgstr "[!!! ℓôçƙèδ. Ûƨè ƨλáƒƭ βèƒôřè çλáñϱïñϱ ϱèář. !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:202
 msgid "Signal mode"
-msgstr ""
+msgstr "[!!! §ïϱñáℓ ₥ôδè !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:202
 msgid "manual"
-msgstr ""
+msgstr "[!!! ₥áñúáℓ !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:202
 msgid "auto"
-msgstr ""
+msgstr "[!!! áúƭô !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:202
 msgid "locked. Stop train, then re-try."
-msgstr ""
+msgstr "[!!! ℓôçƙèδ. §ƭôƥ ƭřáïñ, ƭλèñ řè-ƭř¥. !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:211
 #: ../../RunActivity/Simulator/Confirmation.cs:220
 #: ../../RunActivity/Simulator/Confirmation.cs:258
 #, csharp-format
 msgid "{0} {1}"
-msgstr ""
+msgstr "[!!! {0} {1} !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:215
 #, csharp-format
 msgid "{0}"
-msgstr ""
+msgstr "[!!! {0} !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:225
 #, csharp-format
 msgid "{0} to {1:0}%"
-msgstr ""
+msgstr "[!!! {0} ƭô {1:0}% !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:230
 #, csharp-format
 msgid "{0} {1:0}% {2}"
-msgstr ""
+msgstr "[!!! {0} {1:0}% {2} !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:235
 #, csharp-format
 msgid "{0:0}% {1}"
-msgstr ""
+msgstr "[!!! {0:0}% {1} !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:240
 #, csharp-format
 msgid "{0:0}%"
-msgstr ""
+msgstr "[!!! {0:0}% !!!]"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:248
 #: ../../RunActivity/Simulator/Confirmation.cs:253
 #, csharp-format
 msgid "{0} {1:0}%"
-msgstr ""
+msgstr "[!!! {0} {1:0}% !!!]"
 
 #. Context: NonSteam
 #: ../../RunActivity/Simulator/Confirmation.cs:142
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:542
 msgctxt "NonSteam"
 msgid "Reverser"
-msgstr ""
+msgstr "[!!! RèƲèřƨèř !!!]"
 
 #. Context: Steam
 #: ../../RunActivity/Simulator/Confirmation.cs:154
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:542
 msgctxt "Steam"
 msgid "Reverser"
-msgstr ""
+msgstr "[!!! RèƲèřƨèř !!!]"
 
 #. Context: Alerter
 #: ../../RunActivity/Simulator/Confirmation.cs:180
 msgctxt "Alerter"
 msgid "sound"
-msgstr ""
+msgstr "[!!! ƨôúñδ !!!]"
 
 #. Context: Horn
 #: ../../RunActivity/Simulator/Confirmation.cs:181
 msgctxt "Horn"
 msgid "sound"
-msgstr ""
+msgstr "[!!! ƨôúñδ !!!]"
 
 #. Context: Cab
 #: ../../RunActivity/Simulator/Confirmation.cs:187
 msgctxt "Cab"
 msgid "change"
-msgstr ""
+msgstr "[!!! çλáñϱè !!!]"
 
 #. Context: Odometer
 #: ../../RunActivity/Simulator/Confirmation.cs:188
 msgctxt "Odometer"
 msgid "reset"
-msgstr ""
+msgstr "[!!! řèƨèƭ !!!]"
 
 #. Context: Odometer
 #: ../../RunActivity/Simulator/Confirmation.cs:188
 msgctxt "Odometer"
 msgid "counting down"
-msgstr ""
+msgstr "[!!! çôúñƭïñϱ δôωñ !!!]"
 
 #. Context: Odometer
 #: ../../RunActivity/Simulator/Confirmation.cs:188
 msgctxt "Odometer"
 msgid "counting up"
-msgstr ""
+msgstr "[!!! çôúñƭïñϱ úƥ !!!]"
 
 #. Context: Switch
 #: ../../RunActivity/Simulator/Confirmation.cs:194
 #: ../../RunActivity/Simulator/Confirmation.cs:195
 msgctxt "Switch"
 msgid "change"
-msgstr ""
+msgstr "[!!! çλáñϱè !!!]"
 
 #: ../../RunActivity/Timetable/TTTrain.cs:5733
 msgid "Held for connecting train : "
-msgstr ""
+msgstr "[!!! Hèℓδ ƒôř çôññèçƭïñϱ ƭřáïñ :  !!!]"
 
 #: ../../RunActivity/Viewer3D/Cameras.cs:589
 msgid "Free"
-msgstr ""
+msgstr "[!!! Fřèè !!!]"
 
 #: ../../RunActivity/Viewer3D/Cameras.cs:981
 msgid "Outside Front"
-msgstr ""
+msgstr "[!!! Óúƭƨïδè Fřôñƭ !!!]"
 
 #: ../../RunActivity/Viewer3D/Cameras.cs:981
 msgid "Outside Rear"
-msgstr ""
+msgstr "[!!! Óúƭƨïδè Rèář !!!]"
 
 #: ../../RunActivity/Viewer3D/Cameras.cs:1237
 msgid "Brakeman"
-msgstr ""
+msgstr "[!!! ßřáƙè₥áñ !!!]"
 
 #: ../../RunActivity/Viewer3D/Cameras.cs:1428
 msgid "Passenger"
-msgstr ""
+msgstr "[!!! Þáƨƨèñϱèř !!!]"
 
 #: ../../RunActivity/Viewer3D/Cameras.cs:1461
 msgid "Head out"
-msgstr ""
+msgstr "[!!! Hèáδ ôúƭ !!!]"
 
 #: ../../RunActivity/Viewer3D/Cameras.cs:1685
 msgid "Trackside"
-msgstr ""
+msgstr "[!!! Třáçƙƨïδè !!!]"
 
 #: ../../RunActivity/Viewer3D/Cameras.cs:1837
 msgid "3D Cab"
-msgstr ""
+msgstr "[!!! 3Ð Çáβ !!!]"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:596
 #: ../../RunActivity/Viewer3D/Viewer.cs:714
 msgid "Cab view not available"
-msgstr ""
+msgstr "[!!! Çáβ Ʋïèω ñôƭ áƲáïℓáβℓè !!!]"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:658
 msgid "In MP, use Alt-F4 to quit directly"
-msgstr ""
+msgstr "[!!! Ìñ MÞ, úƨè Âℓƭ-F4 ƭô 9úïƭ δïřèçƭℓ¥ !!!]"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:725
 msgid "3D Cab view not available"
-msgstr ""
+msgstr "[!!! 3Ð Çáβ Ʋïèω ñôƭ áƲáïℓáβℓè !!!]"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:752
 msgid "Will not ratate cab and land"
-msgstr ""
+msgstr "[!!! Wïℓℓ ñôƭ řáƭáƭè çáβ áñδ ℓáñδ !!!]"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:860
 msgid "Switched to player control"
-msgstr ""
+msgstr "[!!! §ωïƭçλèδ ƭô ƥℓá¥èř çôñƭřôℓ !!!]"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:865
 msgid "You can't switch from manual to autopilot mode"
-msgstr ""
+msgstr "[!!! Ýôú çáñ'ƭ ƨωïƭçλ ƒřô₥ ₥áñúáℓ ƭô áúƭôƥïℓôƭ ₥ôδè !!!]"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:869
 msgid "Switched to autopilot"
-msgstr ""
+msgstr "[!!! §ωïƭçλèδ ƭô áúƭôƥïℓôƭ !!!]"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:1210
 msgid "Game saved"
-msgstr ""
+msgstr "[!!! Gá₥è ƨáƲèδ !!!]"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:743
 #, csharp-format
 msgid "Vibrating at level {0}"
-msgstr ""
+msgstr "[!!! Vïβřáƭïñϱ áƭ ℓèƲèℓ {0} !!!]"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:751
 #, csharp-format
 msgid "Rotating cab {0}/4, rotating land {1}/4"
-msgstr ""
+msgstr "[!!! Rôƭáƭïñϱ çáβ {0}/4, řôƭáƭïñϱ ℓáñδ {1}/4 !!!]"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:878
 #, csharp-format
 msgid "Keyboard map list saved to '{0}'."
-msgstr ""
+msgstr "[!!! Kè¥βôářδ ₥áƥ ℓïƨƭ ƨáƲèδ ƭô '{0}'. !!!]"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:882
 #, csharp-format
 msgid "Keyboard map image saved to '{0}'."
-msgstr ""
+msgstr "[!!! Kè¥βôářδ ₥áƥ ï₥áϱè ƨáƲèδ ƭô '{0}'. !!!]"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:780
 #, csharp-format
@@ -1995,55 +2005,55 @@ msgstr[1] ""
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:41
 msgid "Activity Events"
-msgstr ""
+msgstr "[!!! ÂçƭïƲïƭ¥ ÉƲèñƭƨ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:154
 msgid "without success"
-msgstr ""
+msgstr "[!!! ωïƭλôúƭ ƨúççèƨƨ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:219
 msgid "Resume"
-msgstr ""
+msgstr "[!!! Rèƨú₥è !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:219
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:249
 msgid "Pause"
-msgstr ""
+msgstr "[!!! Þáúƨè !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:220
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:241
 msgid "Resume and close box"
-msgstr ""
+msgstr "[!!! Rèƨú₥è áñδ çℓôƨè βôж !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:220
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:232
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:250
 msgid "Close box"
-msgstr ""
+msgstr "[!!! Çℓôƨè βôж !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:221
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:233
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:251
 msgid "Quit activity"
-msgstr ""
+msgstr "[!!! Qúïƭ áçƭïƲïƭ¥ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:222
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:243
 msgid "Status: Activity paused"
-msgstr ""
+msgstr "[!!! §ƭáƭúƨ: ÂçƭïƲïƭ¥ ƥáúƨèδ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:222
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:234
 msgid "Status: Activity resumed"
-msgstr ""
+msgstr "[!!! §ƭáƭúƨ: ÂçƭïƲïƭ¥ řèƨú₥èδ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:242
 msgid "End Activity"
-msgstr ""
+msgstr "[!!! Éñδ ÂçƭïƲïƭ¥ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:252
 msgid "Status: Activity running"
-msgstr ""
+msgstr "[!!! §ƭáƭúƨ: ÂçƭïƲïƭ¥ řúññïñϱ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:153
 #, csharp-format
@@ -2051,158 +2061,160 @@ msgid ""
 "This activity has ended {0}.\n"
 "For a detailed evaluation, see the Help Window (F1)."
 msgstr ""
+"[!!! Tλïƨ áçƭïƲïƭ¥ λáƨ èñδèδ {0}.\n"
+"Fôř á δèƭáïℓèδ èƲáℓúáƭïôñ, ƨèè ƭλè Hèℓƥ Wïñδôω (F1). !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:258
 #, csharp-format
 msgid "Event: {0}"
-msgstr ""
+msgstr "[!!! ÉƲèñƭ: {0} !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:37
 msgid "Car Operation Menu"
-msgstr ""
+msgstr "[!!! Çář Óƥèřáƭïôñ Mèñú !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:47
 msgid "Toggle Handbrake"
-msgstr ""
+msgstr "[!!! Tôϱϱℓè Háñδβřáƙè !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:49
 msgid "Toggle Power"
-msgstr ""
+msgstr "[!!! Tôϱϱℓè Þôωèř !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:51
 msgid "Toggle MU Connection"
-msgstr ""
+msgstr "[!!! Tôϱϱℓè MÛ Çôññèçƭïôñ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:53
 msgid "Toggle Brake Hose Connection"
-msgstr ""
+msgstr "[!!! Tôϱϱℓè ßřáƙè Hôƨè Çôññèçƭïôñ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:55
 msgid "Open/Close Front Angle Cock"
-msgstr ""
+msgstr "[!!! Óƥèñ/Çℓôƨè Fřôñƭ Âñϱℓè Çôçƙ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:57
 msgid "Open/Close Rear Angle Cock"
-msgstr ""
+msgstr "[!!! Óƥèñ/Çℓôƨè Rèář Âñϱℓè Çôçƙ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:59
 msgid "Open/Close Bleed Off Valve"
-msgstr ""
+msgstr "[!!! Óƥèñ/Çℓôƨè ßℓèèδ Óƒƒ VáℓƲè !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:61
 msgid "Close window"
-msgstr ""
+msgstr "[!!! Çℓôƨè ωïñδôω !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:89
 msgid "Handbrake set"
-msgstr ""
+msgstr "[!!! Háñδβřáƙè ƨèƭ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:91
 msgid "Handbrake off"
-msgstr ""
+msgstr "[!!! Háñδβřáƙè ôƒƒ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:105
 msgid "Power OFF command sent"
-msgstr ""
+msgstr "[!!! Þôωèř ÓFF çô₥₥áñδ ƨèñƭ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:107
 msgid "Power ON command sent"
-msgstr ""
+msgstr "[!!! Þôωèř ÓN çô₥₥áñδ ƨèñƭ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:110
 msgid "No power command for this type of car!"
-msgstr ""
+msgstr "[!!! Nô ƥôωèř çô₥₥áñδ ƒôř ƭλïƨ ƭ¥ƥè ôƒ çář! !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:126
 msgid "MU signal connected"
-msgstr ""
+msgstr "[!!! MÛ ƨïϱñáℓ çôññèçƭèδ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:128
 msgid "MU signal disconnected"
-msgstr ""
+msgstr "[!!! MÛ ƨïϱñáℓ δïƨçôññèçƭèδ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:131
 msgid "No MU command for this type of car!"
-msgstr ""
+msgstr "[!!! Nô MÛ çô₥₥áñδ ƒôř ƭλïƨ ƭ¥ƥè ôƒ çář! !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:140
 msgid "Front brake hose connected"
-msgstr ""
+msgstr "[!!! Fřôñƭ βřáƙè λôƨè çôññèçƭèδ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:142
 msgid "Front brake hose disconnected"
-msgstr ""
+msgstr "[!!! Fřôñƭ βřáƙè λôƨè δïƨçôññèçƭèδ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:149
 msgid "Front angle cock opened"
-msgstr ""
+msgstr "[!!! Fřôñƭ áñϱℓè çôçƙ ôƥèñèδ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:151
 msgid "Front angle cock closed"
-msgstr ""
+msgstr "[!!! Fřôñƭ áñϱℓè çôçƙ çℓôƨèδ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:158
 msgid "Rear angle cock opened"
-msgstr ""
+msgstr "[!!! Rèář áñϱℓè çôçƙ ôƥèñèδ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:160
 msgid "Rear angle cock closed"
-msgstr ""
+msgstr "[!!! Rèář áñϱℓè çôçƙ çℓôƨèδ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:170
 msgid "Bleed off valve opened"
-msgstr ""
+msgstr "[!!! ßℓèèδ ôƒƒ ƲáℓƲè ôƥèñèδ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:172
 msgid "Bleed off valve closed"
-msgstr ""
+msgstr "[!!! ßℓèèδ ôƒƒ ƲáℓƲè çℓôƨèδ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/CompassWindow.cs:34
 msgid "Compass"
-msgstr ""
+msgstr "[!!! Çô₥ƥáƨƨ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/CompassWindow.cs:45
 msgid "Lat:"
-msgstr ""
+msgstr "[!!! £áƭ: !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/CompassWindow.cs:48
 msgid "Lon:"
-msgstr ""
+msgstr "[!!! £ôñ: !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/ComposeMessage.cs:31
 msgid "Compose Message (e.g.   receiver1, receiver2: message body)"
-msgstr ""
+msgstr "[!!! Çô₥ƥôƨè Mèƨƨáϱè (è.ϱ.   řèçèïƲèř1, řèçèïƲèř2: ₥èƨƨáϱè βôδ¥) !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:39
 msgid "Help"
-msgstr ""
+msgstr "[!!! Hèℓƥ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:41
 msgid "Key Commands"
-msgstr ""
+msgstr "[!!! Kè¥ Çô₥₥áñδƨ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:67
 msgid "Briefing"
-msgstr ""
+msgstr "[!!! ßřïèƒïñϱ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:78
 msgid "Timetable"
-msgstr ""
+msgstr "[!!! Tï₥èƭáβℓè !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:83
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:70
 msgid "Station"
-msgstr ""
+msgstr "[!!! §ƭáƭïôñ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:84
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:72
 msgid "Arrive"
-msgstr ""
+msgstr "[!!! ÂřřïƲè !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:86
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:74
 msgid "Depart"
-msgstr ""
+msgstr "[!!! Ðèƥářƭ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:102
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:104
@@ -2210,447 +2222,447 @@ msgstr ""
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:279
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:282
 msgid "(missed)"
-msgstr ""
+msgstr "[!!! (₥ïƨƨèδ) !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:111
 msgid "Work Orders"
-msgstr ""
+msgstr "[!!! Wôřƙ Óřδèřƨ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:116
 msgid "Task"
-msgstr ""
+msgstr "[!!! Táƨƙ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:117
 msgid "Car(s)"
-msgstr ""
+msgstr "[!!! Çář(ƨ) !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:118
 msgid "Location"
-msgstr ""
+msgstr "[!!! £ôçáƭïôñ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:139
 msgid "Assemble Train"
-msgstr ""
+msgstr "[!!! Âƨƨè₥βℓè Třáïñ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:143
 msgid "At Location"
-msgstr ""
+msgstr "[!!! Âƭ £ôçáƭïôñ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:147
 msgid "Drop Off"
-msgstr ""
+msgstr "[!!! Ðřôƥ Óƒƒ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:151
 msgid "Pick Up"
-msgstr ""
+msgstr "[!!! Þïçƙ Ûƥ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:240
 msgid "Done"
-msgstr ""
+msgstr "[!!! Ðôñè !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:253
 msgid "Procedures"
-msgstr ""
+msgstr "[!!! Þřôçèδúřèƨ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:126
 msgid "Power In/Out"
-msgstr ""
+msgstr "[!!! Þôωèř Ìñ/Óúƭ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:130
 msgid "Motive force"
-msgstr ""
+msgstr "[!!! MôƭïƲè ƒôřçè !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:132
 msgid "Num of substeps"
-msgstr ""
+msgstr "[!!! Nú₥ ôƒ ƨúβƨƭèƥƨ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:135
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:783
 msgid "Memory"
-msgstr ""
+msgstr "[!!! Mè₥ôř¥ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:136
 msgid "GCs"
-msgstr ""
+msgstr "[!!! GÇƨ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:137
 msgid "Frame time"
-msgstr ""
+msgstr "[!!! Fřá₥è ƭï₥è !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:138
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:797
 msgid "Render process"
-msgstr ""
+msgstr "[!!! Rèñδèř ƥřôçèƨƨ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:139
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:798
 msgid "Updater process"
-msgstr ""
+msgstr "[!!! Ûƥδáƭèř ƥřôçèƨƨ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:140
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:799
 msgid "Loader process"
-msgstr ""
+msgstr "[!!! £ôáδèř ƥřôçèƨƨ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:141
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:800
 msgid "Sound process"
-msgstr ""
+msgstr "[!!! §ôúñδ ƥřôçèƨƨ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:380
 msgid "Version"
-msgstr ""
+msgstr "[!!! Vèřƨïôñ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:384
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:386
 msgid "Time"
-msgstr ""
+msgstr "[!!! Tï₥è !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:392
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:634
 msgid "Gradient"
-msgstr ""
+msgstr "[!!! Gřáδïèñƭ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:393
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:541
 msgid "Direction"
-msgstr ""
+msgstr "[!!! Ðïřèçƭïôñ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:395
 msgid "Train brake"
-msgstr ""
+msgstr "[!!! Třáïñ βřáƙè !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:399
 msgid "Engine brake"
-msgstr ""
+msgstr "[!!! Éñϱïñè βřáƙè !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:401
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:544
 msgid "Dynamic brake"
-msgstr ""
+msgstr "[!!! Ð¥ñá₥ïç βřáƙè !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:415
 msgid "FPS"
-msgstr ""
+msgstr "[!!! FÞ§ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:419
 msgid "Autopilot"
-msgstr ""
+msgstr "[!!! Âúƭôƥïℓôƭ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:422
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:601
 msgid "Wheel slip"
-msgstr ""
+msgstr "[!!! Wλèèℓ ƨℓïƥ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:424
 msgid "Wheel slip warning"
-msgstr ""
+msgstr "[!!! Wλèèℓ ƨℓïƥ ωářñïñϱ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:430
 msgid "Sander blocked"
-msgstr ""
+msgstr "[!!! §áñδèř βℓôçƙèδ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:432
 msgid "Sander on"
-msgstr ""
+msgstr "[!!! §áñδèř ôñ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:440
 msgid "Left"
-msgstr ""
+msgstr "[!!! £èƒƭ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:442
 msgid "Right"
-msgstr ""
+msgstr "[!!! Rïϱλƭ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:445
 msgid "Doors open"
-msgstr ""
+msgstr "[!!! Ðôôřƨ ôƥèñ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:451
 msgid "MultiPlayerStatus: "
-msgstr ""
+msgstr "[!!! MúℓƭïÞℓá¥èř§ƭáƭúƨ:  !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:452
 msgid "Dispatcher"
-msgstr ""
+msgstr "[!!! Ðïƨƥáƭçλèř !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:453
 msgid "Helper"
-msgstr ""
+msgstr "[!!! Hèℓƥèř !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:454
 msgid "Client"
-msgstr ""
+msgstr "[!!! Çℓïèñƭ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:463
 msgid "CONSIST INFORMATION"
-msgstr ""
+msgstr "[!!! ÇÓN§Ì§T ÌNFÓRMÂTÌÓN !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:470
 msgid "Player"
-msgstr ""
+msgstr "[!!! Þℓá¥èř !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:471
 msgid "Tilted"
-msgstr ""
+msgstr "[!!! Tïℓƭèδ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:472
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:492
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:564
 msgid "Type"
-msgstr ""
+msgstr "[!!! T¥ƥè !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:473
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:493
 msgid "Length"
-msgstr ""
+msgstr "[!!! £èñϱƭλ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:474
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:494
 msgid "Weight"
-msgstr ""
+msgstr "[!!! Wèïϱλƭ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:475
 msgid "Control Mode"
-msgstr ""
+msgstr "[!!! Çôñƭřôℓ Môδè !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:476
 msgid "Out of Control"
-msgstr ""
+msgstr "[!!! Óúƭ ôƒ Çôñƭřôℓ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:477
 msgid "Cab Aspect"
-msgstr ""
+msgstr "[!!! Çáβ Âƨƥèçƭ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:479
 msgid "R"
-msgstr ""
+msgstr "[!!! R !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:479
 msgid "F"
-msgstr ""
+msgstr "[!!! F !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:481
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:502
 msgid "Freight"
-msgstr ""
+msgstr "[!!! Fřèïϱλƭ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:481
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:502
 msgid "Pass"
-msgstr ""
+msgstr "[!!! Þáƨƨ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:490
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:563
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:624
 msgid "Car"
-msgstr ""
+msgstr "[!!! Çář !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:491
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:653
 msgid "Flipped"
-msgstr ""
+msgstr "[!!! Fℓïƥƥèδ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:495
 msgid "Drv/Cabs"
-msgstr ""
+msgstr "[!!! ÐřƲ/Çáβƨ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:496
 msgid "Wheels"
-msgstr ""
+msgstr "[!!! Wλèèℓƨ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:535
 msgid "LOCOMOTIVE INFORMATION"
-msgstr ""
+msgstr "[!!! £ÓÇÓMÓTÌVÉ ÌNFÓRMÂTÌÓN !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:557
 msgid "BRAKE INFORMATION"
-msgstr ""
+msgstr "[!!! ßRÂKÉ ÌNFÓRMÂTÌÓN !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:560
 msgid "Main reservoir"
-msgstr ""
+msgstr "[!!! Máïñ řèƨèřƲôïř !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:565
 msgid "BrkCyl"
-msgstr ""
+msgstr "[!!! ßřƙÇ¥ℓ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:566
 msgid "BrkPipe"
-msgstr ""
+msgstr "[!!! ßřƙÞïƥè !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:567
 msgid "AuxRes"
-msgstr ""
+msgstr "[!!! ÂúжRèƨ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:568
 msgid "ErgRes"
-msgstr ""
+msgstr "[!!! ÉřϱRèƨ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:569
 msgid "MRPipe"
-msgstr ""
+msgstr "[!!! MRÞïƥè !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:570
 msgid "RetValve"
-msgstr ""
+msgstr "[!!! RèƭVáℓƲè !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:571
 msgid "TripleValve"
-msgstr ""
+msgstr "[!!! TřïƥℓèVáℓƲè !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:573
 msgid "Handbrk"
-msgstr ""
+msgstr "[!!! Háñδβřƙ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:574
 msgid "Conn"
-msgstr ""
+msgstr "[!!! Çôññ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:575
 msgid "AnglCock"
-msgstr ""
+msgstr "[!!! ÂñϱℓÇôçƙ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:576
 msgid "BleedOff"
-msgstr ""
+msgstr "[!!! ßℓèèδÓƒƒ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:592
 msgid "FORCE INFORMATION"
-msgstr ""
+msgstr "[!!! FÓRÇÉ ÌNFÓRMÂTÌÓN !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:602
 msgid "Conditions"
-msgstr ""
+msgstr "[!!! Çôñδïƭïôñƨ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:603
 msgid "Axle drive force"
-msgstr ""
+msgstr "[!!! Âжℓè δřïƲè ƒôřçè !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:604
 msgid "Axle brake force"
-msgstr ""
+msgstr "[!!! Âжℓè βřáƙè ƒôřçè !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:605
 msgid "Number of substeps"
-msgstr ""
+msgstr "[!!! Nú₥βèř ôƒ ƨúβƨƭèƥƨ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:607
 msgid "Solver"
-msgstr ""
+msgstr "[!!! §ôℓƲèř !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:608
 msgid "Stability correction"
-msgstr ""
+msgstr "[!!! §ƭáβïℓïƭ¥ çôřřèçƭïôñ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:609
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:616
 msgid "Axle out force"
-msgstr ""
+msgstr "[!!! Âжℓè ôúƭ ƒôřçè !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:615
 msgid "(Advanced adhesion model disabled)"
-msgstr ""
+msgstr "[!!! (ÂδƲáñçèδ áδλèƨïôñ ₥ôδèℓ δïƨáβℓèδ) !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:625
 msgid "Total"
-msgstr ""
+msgstr "[!!! Tôƭáℓ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:626
 msgid "Motive"
-msgstr ""
+msgstr "[!!! MôƭïƲè !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:627
 msgid "Brake"
-msgstr ""
+msgstr "[!!! ßřáƙè !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:628
 msgid "Friction"
-msgstr ""
+msgstr "[!!! Fřïçƭïôñ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:629
 msgid "Gravity"
-msgstr ""
+msgstr "[!!! GřáƲïƭ¥ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:630
 msgid "Curve"
-msgstr ""
+msgstr "[!!! ÇúřƲè !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:631
 msgid "Tunnel"
-msgstr ""
+msgstr "[!!! Túññèℓ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:632
 msgid "Coupler"
-msgstr ""
+msgstr "[!!! Çôúƥℓèř !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:660
 msgid "DISPATCHER INFORMATION"
-msgstr ""
+msgstr "[!!! ÐÌ§ÞÂTÇHÉR ÌNFÓRMÂTÌÓN !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:662
 msgid "Train"
-msgstr ""
+msgstr "[!!! Třáïñ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:663
 msgid "Travelled"
-msgstr ""
+msgstr "[!!! TřáƲèℓℓèδ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:666
 msgid "AI mode"
-msgstr ""
+msgstr "[!!! ÂÌ ₥ôδè !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:667
 msgid "AI data"
-msgstr ""
+msgstr "[!!! ÂÌ δáƭá !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:668
 msgid "Mode"
-msgstr ""
+msgstr "[!!! Môδè !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:669
 msgid "Auth"
-msgstr ""
+msgstr "[!!! Âúƭλ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:671
 msgid "Signal"
-msgstr ""
+msgstr "[!!! §ïϱñáℓ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:673
 msgid "Consist"
-msgstr ""
+msgstr "[!!! Çôñƨïƨƭ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:674
 msgid "Path"
-msgstr ""
+msgstr "[!!! Þáƭλ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:775
 msgid "DEBUG INFORMATION"
-msgstr ""
+msgstr "[!!! ÐÉßÛG ÌNFÓRMÂTÌÓN !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:781
 msgid "Logging enabled"
-msgstr ""
+msgstr "[!!! £ôϱϱïñϱ èñáβℓèδ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:782
 msgid "Build"
-msgstr ""
+msgstr "[!!! ßúïℓδ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:786
 msgid "Adapter"
-msgstr ""
+msgstr "[!!! Âδáƥƭèř !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:791
 msgid "Shadow maps"
-msgstr ""
+msgstr "[!!! §λáδôω ₥áƥƨ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:793
 msgid "Shadow primitives"
-msgstr ""
+msgstr "[!!! §λáδôω ƥřï₥ïƭïƲèƨ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:796
 msgid "Render primitives"
-msgstr ""
+msgstr "[!!! Rèñδèř ƥřï₥ïƭïƲèƨ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:797
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:798
@@ -2658,20 +2670,20 @@ msgstr ""
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:800
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:801
 msgid "wait"
-msgstr ""
+msgstr "[!!! ωáïƭ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:801
 msgid "Total process"
-msgstr ""
+msgstr "[!!! Tôƭáℓ ƥřôçèƨƨ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:802
 msgid "Camera"
-msgstr ""
+msgstr "[!!! Çá₥èřá !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:606
 #, csharp-format
 msgid "filtered by {0:F0}"
-msgstr ""
+msgstr "[!!! ƒïℓƭèřèδ β¥ {0:F0} !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:784
 #, csharp-format
@@ -2682,15 +2694,15 @@ msgstr[1] ""
 
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:53
 msgid "Next Station"
-msgstr ""
+msgstr "[!!! Nèжƭ §ƭáƭïôñ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:224
 msgid "No more stations."
-msgstr ""
+msgstr "[!!! Nô ₥ôřè ƨƭáƭïôñƨ. !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:359
 msgid "Activity completed."
-msgstr ""
+msgstr "[!!! ÂçƭïƲïƭ¥ çô₥ƥℓèƭèδ. !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:123
 #, csharp-format
@@ -2701,140 +2713,142 @@ msgstr[1] ""
 
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:163
 msgid "Train not active."
-msgstr ""
+msgstr "[!!! Třáïñ ñôƭ áçƭïƲè. !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/NoticeWindow.cs:101
 #, csharp-format
 msgid "Odometer {0}"
-msgstr ""
+msgstr "[!!! Óδô₥èƭèř {0} !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/NoticeWindow.cs:111
 #, csharp-format
 msgid "Camera: {0}"
-msgstr ""
+msgstr "[!!! Çá₥èřá: {0} !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/NoticeWindow.cs:116
 #, csharp-format
 msgid "FOV: {0:F0}°"
-msgstr ""
+msgstr "[!!! FÓV: {0:F0}° !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:32
 msgid "Pause Menu"
-msgstr ""
+msgstr "[!!! Þáúƨè Mèñú !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:46
 #, csharp-format
 msgid "Quit {1} ({0})"
-msgstr ""
+msgstr "[!!! Qúïƭ {1} ({0}) !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:51
 #, csharp-format
 msgid "Save your game ({0})"
-msgstr ""
+msgstr "[!!! §áƲè ¥ôúř ϱá₥è ({0}) !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:59
 #, csharp-format
 msgid "Continue playing ({0})"
-msgstr ""
+msgstr "[!!! Çôñƭïñúè ƥℓá¥ïñϱ ({0}) !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/SwitchWindow.cs:47
 msgid "Switch"
-msgstr ""
+msgstr "[!!! §ωïƭçλ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:70
 msgid "Track Monitor"
-msgstr ""
+msgstr "[!!! Třáçƙ Môñïƭôř !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:74
 msgid "Auto Signal"
-msgstr ""
+msgstr "[!!! Âúƭô §ïϱñáℓ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:75
 msgid "Node"
-msgstr ""
+msgstr "[!!! Nôδè !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:76
 msgid "Manual"
-msgstr ""
+msgstr "[!!! Máñúáℓ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:77
 msgid "Explorer"
-msgstr ""
+msgstr "[!!! Éжƥℓôřèř !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:78
 msgid "OutOfControl : "
-msgstr ""
+msgstr "[!!! ÓúƭÓƒÇôñƭřôℓ :  !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:79
 msgid "Inactive"
-msgstr ""
+msgstr "[!!! ÌñáçƭïƲè !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:80
 msgid "Unknown"
-msgstr ""
+msgstr "[!!! Ûñƙñôωñ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:89
 msgid "Speed:"
-msgstr ""
+msgstr "[!!! §ƥèèδ: !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:94
 msgid "Projected:"
-msgstr ""
+msgstr "[!!! ÞřôJèçƭèδ: !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:99
 msgid "Limit:"
-msgstr ""
+msgstr "[!!! £ï₥ïƭ: !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:110
 msgid " Dist      Speed   Aspect"
-msgstr ""
+msgstr "[!!!  Ðïƨƭ      §ƥèèδ   Âƨƥèçƭ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/TrainOperationsWindow.cs:36
 msgid "Train Operations"
-msgstr ""
+msgstr "[!!! Třáïñ Óƥèřáƭïôñƨ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/WindowText.cs:153
 msgid ""
 "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890 "
 "\",.-+|!$%&/()=?;:'_[]"
 msgstr ""
+"[!!! ÂßÇÐÉFGHÌJK£MNÓÞQR§TÛVWXÝZáβçδèƒϱλïJƙℓ₥ñôƥ9řƨƭúƲωж¥ƺ1234567890 "
+"\",.-+|!$%&/()=?;:'_[] !!!]"
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:331
 msgid "diesel oil"
-msgstr ""
+msgstr "[!!! δïèƨèℓ ôïℓ !!!]"
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:332
 msgid "wood"
-msgstr ""
+msgstr "[!!! ωôôδ !!!]"
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:448
 msgid "Refill: No suitable pick-up point anywhere, so refilling immediately."
-msgstr ""
+msgstr "[!!! Rèƒïℓℓ: Nô ƨúïƭáβℓè ƥïçƙ-úƥ ƥôïñƭ áñ¥ωλèřè, ƨô řèƒïℓℓïñϱ ï₥₥èδïáƭèℓ¥. !!!]"
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:456
 #, csharp-format
 msgid "Refill: Distance to {0} supply is {1}."
-msgstr ""
+msgstr "[!!! Rèƒïℓℓ: Ðïƨƭáñçè ƭô {0} ƨúƥƥℓ¥ ïƨ {1}. !!!]"
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:464
 #, csharp-format
 msgid "Refill: Loco must be stationary to refill {0}."
-msgstr ""
+msgstr "[!!! Rèƒïℓℓ: £ôçô ₥úƨƭ βè ƨƭáƭïôñář¥ ƭô řèƒïℓℓ {0}. !!!]"
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:470
 #, csharp-format
 msgid "Refill: Loco speed must exceed {0}."
-msgstr ""
+msgstr "[!!! Rèƒïℓℓ: £ôçô ƨƥèèδ ₥úƨƭ èжçèèδ {0}. !!!]"
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:477
 #, csharp-format
 msgid "Refill: Loco speed must not exceed {0}."
-msgstr ""
+msgstr "[!!! Rèƒïℓℓ: £ôçô ƨƥèèδ ₥úƨƭ ñôƭ èжçèèδ {0}. !!!]"
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:484
 #, csharp-format
 msgid "Refill: {0} supply now replenished."
-msgstr ""
+msgstr "[!!! Rèƒïℓℓ: {0} ƨúƥƥℓ¥ ñôω řèƥℓèñïƨλèδ. !!!]"
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:457
 #, csharp-format
