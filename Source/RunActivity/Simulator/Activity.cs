@@ -1356,11 +1356,11 @@ namespace ORTS
             }
 
             var trainFrontPosition = new Traveller(Simulator.PlayerLocomotive.Train.FrontTDBTraveller);
-            var distance = trainFrontPosition.DistanceTo(e.TileX, e.TileZ, e.X, trainFrontPosition.Y, e.Z);
+            var distance = trainFrontPosition.DistanceTo(e.TileX, e.TileZ, e.X, trainFrontPosition.Y, e.Z, e.RadiusM);
             if (distance == -1)
             {
                 trainFrontPosition.ReverseDirection();
-                distance = trainFrontPosition.DistanceTo(e.TileX, e.TileZ, e.X, trainFrontPosition.Y, e.Z);
+                distance = trainFrontPosition.DistanceTo(e.TileX, e.TileZ, e.X, trainFrontPosition.Y, e.Z, e.RadiusM);
                 if (distance == -1)
                     return triggered;
             }
