@@ -545,6 +545,9 @@ namespace ORTS
     /// </summary>
     public class TDBTravellerDistanceCalculatorHelper
     {
+        /// <summary>Maximum size of a platform or station we use for searching forward and backward</summary>
+        const float maxPlatformOrStationSize = 10000f;
+
         // Result of calculation
         public enum DistanceResult
         {
@@ -568,7 +571,7 @@ namespace ORTS
             poiTraveller = new Traveller(refTraveller);
 
             // Find distance once
-            Distance = poiTraveller.DistanceTo(TileX, TileZ, X, Y, Z);
+            Distance = poiTraveller.DistanceTo(TileX, TileZ, X, Y, Z, maxPlatformOrStationSize);
 
             // If valid
             if (Distance > 0)
@@ -580,7 +583,7 @@ namespace ORTS
                 // Go to opposite direction
                 poiTraveller = new Traveller(refTraveller, Traveller.TravellerDirection.Backward);
 
-                Distance = poiTraveller.DistanceTo(TileX, TileZ, X, Y, Z);
+                Distance = poiTraveller.DistanceTo(TileX, TileZ, X, Y, Z, maxPlatformOrStationSize);
                 // If valid, it is behind us
                 if (Distance > 0)
                 {
