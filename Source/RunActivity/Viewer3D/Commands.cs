@@ -1060,7 +1060,7 @@ namespace ORTS.Viewer3D
     }
 
     // Compound Valve command
-
+    [Serializable()]
     public class ToggleCylinderCompoundCommand : Command {
         public static MSTSSteamLocomotive Receiver { get; set; }
 
