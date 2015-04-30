@@ -1,8 +1,8 @@
 ﻿msgid ""
 msgstr "[!!!  !!!]"
 "Project-Id-Version: Menu\n"
-"POT-Creation-Date: 2015-04-29 17:01:52+0100\n"
-"PO-Revision-Date: 2015-04-29 17:01:52+0100\n"
+"POT-Creation-Date: 2015-04-30 23:02:27+0100\n"
+"PO-Revision-Date: 2015-04-30 23:02:27+0100\n"
 "Last-Translator: \n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: qps-ploc\n"
@@ -11,31 +11,6 @@ msgstr "[!!!  !!!]"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: PowerShell Update-Pseudo.ps1\n"
 
-
-#: ../../Menu/FolderForm.Designer.cs:56
-#: ../../Menu/Options.Designer.cs:210
-msgid "OK"
-msgstr "[!!! ÓK !!!]"
-
-#: ../../Menu/FolderForm.Designer.cs:67
-#: ../../Menu/Options.Designer.cs:264
-#: ../../Menu/TestingForm.Designer.cs:87
-msgid "Cancel"
-msgstr "[!!! Çáñçèℓ !!!]"
-
-#: ../../Menu/FolderForm.Designer.cs:77
-#: ../../Menu/Options.Designer.cs:1310
-msgid "Path:"
-msgstr "[!!! Þáƭλ: !!!]"
-
-#: ../../Menu/FolderForm.Designer.cs:86
-#: ../../Menu/Options.Designer.cs:1301
-msgid "Name:"
-msgstr "[!!! Ná₥è: !!!]"
-
-#: ../../Menu/FolderForm.Designer.cs:116
-msgid "Installation Profile"
-msgstr "[!!! Ìñƨƭáℓℓáƭïôñ Þřôƒïℓè !!!]"
 
 #: ../../Menu/ImportExportSaveForm.cs:52
 msgid "Save Packs"
@@ -139,7 +114,7 @@ msgid "Rain"
 msgstr "[!!! Ráïñ !!!]"
 
 #: ../../Menu/MainForm.cs:155
-#: ../../Menu/Options.cs:540
+#: ../../Menu/Options.cs:550
 msgid "Easy"
 msgstr "[!!! Éáƨ¥ !!!]"
 
@@ -148,7 +123,7 @@ msgid "Medium"
 msgstr "[!!! Mèδïú₥ !!!]"
 
 #: ../../Menu/MainForm.cs:157
-#: ../../Menu/Options.cs:546
+#: ../../Menu/Options.cs:556
 msgid "Hard"
 msgstr "[!!! Hářδ !!!]"
 
@@ -184,7 +159,7 @@ msgstr "[!!! §úñδá¥ !!!]"
 msgid "Update check failed"
 msgstr "[!!! Ûƥδáƭè çλèçƙ ƒáïℓèδ !!!]"
 
-#: ../../Menu/MainForm.cs:453
+#: ../../Menu/MainForm.cs:452
 msgid ""
 "User name must be 4-10 characters long, cannot contain space, ', \" or - and "
 "must not start with a digit."
@@ -192,16 +167,16 @@ msgstr ""
 "[!!! Ûƨèř ñá₥è ₥úƨƭ βè 4-10 çλářáçƭèřƨ ℓôñϱ, çáññôƭ çôñƭáïñ ƨƥáçè, ', \" ôř - áñδ "
 "₥úƨƭ ñôƭ ƨƭářƭ ωïƭλ á δïϱïƭ. !!!]"
 
-#: ../../Menu/MainForm.cs:1029
+#: ../../Menu/MainForm.cs:1028
 msgid "Activity Briefing"
 msgstr "[!!! ÂçƭïƲïƭ¥ ßřïèƒïñϱ !!!]"
 
-#: ../../Menu/MainForm.cs:273
+#: ../../Menu/MainForm.cs:272
 #, csharp-format
 msgid "Update to {0}"
 msgstr "[!!! Ûƥδáƭè ƭô {0} !!!]"
 
-#: ../../Menu/MainForm.cs:466
+#: ../../Menu/MainForm.cs:465
 #, csharp-format
 msgid ""
 "The update check failed due to an error:\n"
@@ -212,7 +187,7 @@ msgstr ""
 "\n"
 "{0} !!!]"
 
-#: ../../Menu/MainForm.cs:474
+#: ../../Menu/MainForm.cs:473
 #, csharp-format
 msgid ""
 "The update failed due to an error:\n"
@@ -223,43 +198,43 @@ msgstr ""
 "\n"
 "{0} !!!]"
 
-#: ../../Menu/MainForm.cs:1018
+#: ../../Menu/MainForm.cs:1017
 #, csharp-format
 msgid "Route: {0}"
 msgstr "[!!! Rôúƭè: {0} !!!]"
 
-#: ../../Menu/MainForm.cs:1024
-#: ../../Menu/MainForm.cs:1050
+#: ../../Menu/MainForm.cs:1023
+#: ../../Menu/MainForm.cs:1049
 #, csharp-format
 msgid "Locomotive: {0}"
 msgstr "[!!! £ôçô₥ôƭïƲè: {0} !!!]"
 
-#: ../../Menu/MainForm.cs:1028
+#: ../../Menu/MainForm.cs:1027
 #, csharp-format
 msgid "Activity: {0}"
 msgstr "[!!! ÂçƭïƲïƭ¥: {0} !!!]"
 
-#: ../../Menu/MainForm.cs:1036
+#: ../../Menu/MainForm.cs:1035
 #, csharp-format
 msgid "Timetable set: {0}"
 msgstr "[!!! Tï₥èƭáβℓè ƨèƭ: {0} !!!]"
 
-#: ../../Menu/MainForm.cs:1040
+#: ../../Menu/MainForm.cs:1039
 #, csharp-format
 msgid "Timetable: {0}"
 msgstr "[!!! Tï₥èƭáβℓè: {0} !!!]"
 
-#: ../../Menu/MainForm.cs:1044
+#: ../../Menu/MainForm.cs:1043
 #, csharp-format
 msgid "Train: {0}"
 msgstr "[!!! Třáïñ: {0} !!!]"
 
-#: ../../Menu/MainForm.cs:1047
+#: ../../Menu/MainForm.cs:1046
 #, csharp-format
 msgid "Consist: {0}"
 msgstr "[!!! Çôñƨïƨƭ: {0} !!!]"
 
-#: ../../Menu/MainForm.cs:1055
+#: ../../Menu/MainForm.cs:1054
 #, csharp-format
 msgid "Path: {0}"
 msgstr "[!!! Þáƭλ: {0} !!!]"
@@ -401,7 +376,7 @@ msgid "Timetable set:"
 msgstr "[!!! Tï₥èƭáβℓè ƨèƭ: !!!]"
 
 #: ../../Menu/MainForm.Designer.cs:837
-#: ../../Menu/Options.cs:230
+#: ../../Menu/Options.cs:240
 #: ../../Menu/TestingForm.Designer.cs:314
 msgid "Testing"
 msgstr "[!!! Tèƨƭïñϱ !!!]"
@@ -414,141 +389,141 @@ msgstr "[!!! Wλáƭ'ƨ ñèω? !!!]"
 msgid "Open Rails"
 msgstr "[!!! Óƥèñ Ráïℓƨ !!!]"
 
-#: ../../Menu/Options.cs:83
+#: ../../Menu/Options.cs:93
 #: ../../Menu/TestingForm.Designer.cs:184
 msgid "Route"
 msgstr "[!!! Rôúƭè !!!]"
 
-#: ../../Menu/Options.cs:84
+#: ../../Menu/Options.cs:94
 msgid "Player's location"
 msgstr "[!!! Þℓá¥èř'ƨ ℓôçáƭïôñ !!!]"
 
-#: ../../Menu/Options.cs:85
+#: ../../Menu/Options.cs:95
 msgid "Metric"
 msgstr "[!!! Mèƭřïç !!!]"
 
-#: ../../Menu/Options.cs:86
+#: ../../Menu/Options.cs:96
 msgid "Imperial US"
 msgstr "[!!! Ì₥ƥèřïáℓ Û§ !!!]"
 
-#: ../../Menu/Options.cs:87
+#: ../../Menu/Options.cs:97
 msgid "Imperial UK"
 msgstr "[!!! Ì₥ƥèřïáℓ ÛK !!!]"
 
-#: ../../Menu/Options.cs:94
+#: ../../Menu/Options.cs:104
 msgid "Automatic"
 msgstr "[!!! Âúƭô₥áƭïç !!!]"
 
-#: ../../Menu/Options.cs:95
+#: ../../Menu/Options.cs:105
 msgid "bar"
 msgstr "[!!! βář !!!]"
 
-#: ../../Menu/Options.cs:96
+#: ../../Menu/Options.cs:106
 msgid "psi"
 msgstr "[!!! ƥƨï !!!]"
 
-#: ../../Menu/Options.cs:97
+#: ../../Menu/Options.cs:107
 msgid "inHg"
 msgstr "[!!! ïñHϱ !!!]"
 
-#: ../../Menu/Options.cs:98
+#: ../../Menu/Options.cs:108
 msgid "kgf/cm²"
 msgstr "[!!! ƙϱƒ/ç₥² !!!]"
 
-#: ../../Menu/Options.cs:170
+#: ../../Menu/Options.cs:180
 msgid "comma"
 msgstr "[!!! çô₥₥á !!!]"
 
-#: ../../Menu/Options.cs:171
+#: ../../Menu/Options.cs:181
 msgid "semicolon"
 msgstr "[!!! ƨè₥ïçôℓôñ !!!]"
 
-#: ../../Menu/Options.cs:172
+#: ../../Menu/Options.cs:182
 msgid "tab"
 msgstr "[!!! ƭáβ !!!]"
 
-#: ../../Menu/Options.cs:173
+#: ../../Menu/Options.cs:183
 msgid "space"
 msgstr "[!!! ƨƥáçè !!!]"
 
-#: ../../Menu/Options.cs:179
+#: ../../Menu/Options.cs:189
 msgid "route"
 msgstr "[!!! řôúƭè !!!]"
 
-#: ../../Menu/Options.cs:180
+#: ../../Menu/Options.cs:190
 msgid "m/s"
 msgstr "[!!! ₥/ƨ !!!]"
 
-#: ../../Menu/Options.cs:181
+#: ../../Menu/Options.cs:191
 msgid "km/h"
 msgstr "[!!! ƙ₥/λ !!!]"
 
-#: ../../Menu/Options.cs:182
+#: ../../Menu/Options.cs:192
 msgid "mph"
 msgstr "[!!! ₥ƥλ !!!]"
 
-#: ../../Menu/Options.cs:196
+#: ../../Menu/Options.cs:206
 #: ../../Menu/ResumeForm.Designer.cs:156
 msgid "Time"
 msgstr "[!!! Tï₥è !!!]"
 
-#: ../../Menu/Options.cs:197
+#: ../../Menu/Options.cs:207
 msgid "Train Speed"
 msgstr "[!!! Třáïñ §ƥèèδ !!!]"
 
-#: ../../Menu/Options.cs:198
+#: ../../Menu/Options.cs:208
 msgid "Max. Speed"
 msgstr "[!!! Máж. §ƥèèδ !!!]"
 
-#: ../../Menu/Options.cs:199
+#: ../../Menu/Options.cs:209
 msgid "Signal State"
 msgstr "[!!! §ïϱñáℓ §ƭáƭè !!!]"
 
-#: ../../Menu/Options.cs:200
+#: ../../Menu/Options.cs:210
 msgid "Track Elevation"
 msgstr "[!!! Třáçƙ ÉℓèƲáƭïôñ !!!]"
 
-#: ../../Menu/Options.cs:201
+#: ../../Menu/Options.cs:211
 msgid "Direction"
 msgstr "[!!! Ðïřèçƭïôñ !!!]"
 
-#: ../../Menu/Options.cs:202
+#: ../../Menu/Options.cs:212
 msgid "Control Mode"
 msgstr "[!!! Çôñƭřôℓ Môδè !!!]"
 
-#: ../../Menu/Options.cs:203
+#: ../../Menu/Options.cs:213
 msgid "Distance Travelled"
 msgstr "[!!! Ðïƨƭáñçè TřáƲèℓℓèδ !!!]"
 
-#: ../../Menu/Options.cs:204
+#: ../../Menu/Options.cs:214
 msgid "Throttle %"
 msgstr "[!!! Tλřôƭƭℓè % !!!]"
 
-#: ../../Menu/Options.cs:205
+#: ../../Menu/Options.cs:215
 msgid "Brake Cyl Press"
 msgstr "[!!! ßřáƙè Ç¥ℓ Þřèƨƨ !!!]"
 
-#: ../../Menu/Options.cs:206
+#: ../../Menu/Options.cs:216
 msgid "Dyn Brake %"
 msgstr "[!!! Ð¥ñ ßřáƙè % !!!]"
 
-#: ../../Menu/Options.cs:207
+#: ../../Menu/Options.cs:217
 msgid "Gear Setting"
 msgstr "[!!! Gèář §èƭƭïñϱ !!!]"
 
-#: ../../Menu/Options.cs:229
+#: ../../Menu/Options.cs:239
 msgid "Stable (recommended)"
 msgstr "[!!! §ƭáβℓè (řèçô₥₥èñδèδ) !!!]"
 
-#: ../../Menu/Options.cs:231
+#: ../../Menu/Options.cs:241
 msgid "Unstable"
 msgstr "[!!! Ûñƨƭáβℓè !!!]"
 
-#: ../../Menu/Options.cs:232
+#: ../../Menu/Options.cs:242
 msgid "None"
 msgstr "[!!! Nôñè !!!]"
 
-#: ../../Menu/Options.cs:235
+#: ../../Menu/Options.cs:245
 msgid ""
 "Infrequent updates to official, hand-picked versions. Recommended for most "
 "users."
@@ -556,25 +531,25 @@ msgstr ""
 "[!!! Ìñƒřè9úèñƭ úƥδáƭèƨ ƭô ôƒƒïçïáℓ, λáñδ-ƥïçƙèδ Ʋèřƨïôñƨ. Rèçô₥₥èñδèδ ƒôř ₥ôƨƭ "
 "úƨèřƨ. !!!]"
 
-#: ../../Menu/Options.cs:236
+#: ../../Menu/Options.cs:246
 msgid ""
 "Weekly updates which may contain noticable defects. For project supporters."
 msgstr ""
 "[!!! Wèèƙℓ¥ úƥδáƭèƨ ωλïçλ ₥á¥ çôñƭáïñ ñôƭïçáβℓè δèƒèçƭƨ. Fôř ƥřôJèçƭ ƨúƥƥôřƭèřƨ. !!!]"
 
-#: ../../Menu/Options.cs:237
+#: ../../Menu/Options.cs:247
 msgid "Daily updates which may contain serious defects. For developers only."
 msgstr "[!!! Ðáïℓ¥ úƥδáƭèƨ ωλïçλ ₥á¥ çôñƭáïñ ƨèřïôúƨ δèƒèçƭƨ. Fôř δèƲèℓôƥèřƨ ôñℓ¥. !!!]"
 
-#: ../../Menu/Options.cs:238
+#: ../../Menu/Options.cs:248
 msgid "No updates."
 msgstr "[!!! Nô úƥδáƭèƨ. !!!]"
 
-#: ../../Menu/Options.cs:359
+#: ../../Menu/Options.cs:369
 msgid "Click to change this key"
 msgstr "[!!! Çℓïçƙ ƭô çλáñϱè ƭλïƨ ƙè¥ !!!]"
 
-#: ../../Menu/Options.cs:375
+#: ../../Menu/Options.cs:385
 msgid ""
 "Continue with conflicting key assignments?\n"
 "\n"
@@ -582,11 +557,11 @@ msgstr ""
 "[!!! Çôñƭïñúè ωïƭλ çôñƒℓïçƭïñϱ ƙè¥ áƨƨïϱñ₥èñƭƨ?\n"
 "\n !!!]"
 
-#: ../../Menu/Options.cs:482
+#: ../../Menu/Options.cs:492
 msgid "Remove all custom key assignments?"
 msgstr "[!!! Rè₥ôƲè áℓℓ çúƨƭô₥ ƙè¥ áƨƨïϱñ₥èñƭƨ? !!!]"
 
-#: ../../Menu/Options.cs:493
+#: ../../Menu/Options.cs:503
 msgid ""
 "A listing of all keyboard commands and keys has been placed here:\n"
 "\n"
@@ -594,35 +569,35 @@ msgstr ""
 "[!!! Â ℓïƨƭïñϱ ôƒ áℓℓ ƙè¥βôářδ çô₥₥áñδƨ áñδ ƙè¥ƨ λáƨ βèèñ ƥℓáçèδ λèřè:\n"
 "\n !!!]"
 
-#: ../../Menu/Options.cs:502
+#: ../../Menu/Options.cs:512
 msgid "No errors found."
 msgstr "[!!! Nô èřřôřƨ ƒôúñδ. !!!]"
 
-#: ../../Menu/Options.cs:538
+#: ../../Menu/Options.cs:548
 msgid "Very easy"
 msgstr "[!!! Vèř¥ èáƨ¥ !!!]"
 
-#: ../../Menu/Options.cs:542
-msgid "MSTS Compatibile"
-msgstr "[!!! M§T§ Çô₥ƥáƭïβïℓè !!!]"
+#: ../../Menu/Options.cs:552
+msgid "MSTS Compatible"
+msgstr "[!!! M§T§ Çô₥ƥáƭïβℓè !!!]"
 
-#: ../../Menu/Options.cs:544
+#: ../../Menu/Options.cs:554
 msgid "Normal"
 msgstr "[!!! Nôř₥áℓ !!!]"
 
-#: ../../Menu/Options.cs:548
+#: ../../Menu/Options.cs:558
 msgid "Very Hard"
 msgstr "[!!! Vèř¥ Hářδ !!!]"
 
-#: ../../Menu/Options.cs:550
+#: ../../Menu/Options.cs:560
 msgid "Good luck!"
 msgstr "[!!! Gôôδ ℓúçƙ! !!!]"
 
-#: ../../Menu/Options.cs:610
+#: ../../Menu/Options.cs:620
 msgid "Select an installation profile (MSTS folder) to add:"
 msgstr "[!!! §èℓèçƭ áñ ïñƨƭáℓℓáƭïôñ ƥřôƒïℓè (M§T§ ƒôℓδèř) ƭô áδδ: !!!]"
 
-#: ../../Menu/Options.cs:516
+#: ../../Menu/Options.cs:526
 #, csharp-format
 msgid ""
 "{0:F0}° vertical FOV is the same as:\n"
@@ -633,35 +608,39 @@ msgstr ""
 "{1:F0}° λôřïƺôñƭáℓ FÓV ôñ 4:3\n"
 "{2:F0}° λôřïƺôñƭáℓ FÓV ôñ 16:9 !!!]"
 
-#: ../../Menu/Options.cs:560
+#: ../../Menu/Options.cs:570
 #, csharp-format
 msgid "{0}%"
 msgstr "[!!! {0}% !!!]"
 
-#: ../../Menu/Options.cs:566
+#: ../../Menu/Options.cs:576
 #, csharp-format
 msgid "No detail (-{0}%)"
 msgstr "[!!! Nô δèƭáïℓ (-{0}%) !!!]"
 
-#: ../../Menu/Options.cs:568
+#: ../../Menu/Options.cs:578
 #, csharp-format
 msgid "Less detail (-{0}%)"
 msgstr "[!!! £èƨƨ δèƭáïℓ (-{0}%) !!!]"
 
-#: ../../Menu/Options.cs:570
+#: ../../Menu/Options.cs:580
 #, csharp-format
 msgid "Default detail (+{0}%)"
 msgstr "[!!! Ðèƒáúℓƭ δèƭáïℓ (+{0}%) !!!]"
 
-#: ../../Menu/Options.cs:572
+#: ../../Menu/Options.cs:582
 #, csharp-format
 msgid "More detail (+{0}%)"
 msgstr "[!!! Môřè δèƭáïℓ (+{0}%) !!!]"
 
-#: ../../Menu/Options.cs:574
+#: ../../Menu/Options.cs:584
 #, csharp-format
 msgid "All detail (+{0}%)"
 msgstr "[!!! Âℓℓ δèƭáïℓ (+{0}%) !!!]"
+
+#: ../../Menu/Options.Designer.cs:210
+msgid "OK"
+msgstr "[!!! ÓK !!!]"
 
 #: ../../Menu/Options.Designer.cs:244
 msgid "Brake pipe charging rate (PSI/s)"
@@ -670,6 +649,11 @@ msgstr "[!!! ßřáƙè ƥïƥè çλářϱïñϱ řáƭè (Þ§Ì/ƨ) !!!]"
 #: ../../Menu/Options.Designer.cs:253
 msgid "Graduated release air brakes"
 msgstr "[!!! Gřáδúáƭèδ řèℓèáƨè áïř βřáƙèƨ !!!]"
+
+#: ../../Menu/Options.Designer.cs:264
+#: ../../Menu/TestingForm.Designer.cs:87
+msgid "Cancel"
+msgstr "[!!! Çáñçèℓ !!!]"
 
 #: ../../Menu/Options.Designer.cs:274
 msgid "Alerter in cab"
@@ -903,6 +887,14 @@ msgstr "[!!! Ìñƨƭáℓℓáƭïôñ ƥřôƒïℓè !!!]"
 #: ../../Menu/Options.Designer.cs:1280
 msgid "Browse..."
 msgstr "[!!! ßřôωƨè... !!!]"
+
+#: ../../Menu/Options.Designer.cs:1301
+msgid "Name:"
+msgstr "[!!! Ná₥è: !!!]"
+
+#: ../../Menu/Options.Designer.cs:1310
+msgid "Path:"
+msgstr "[!!! Þáƭλ: !!!]"
 
 #: ../../Menu/Options.Designer.cs:1329
 msgid "Add"

@@ -1,8 +1,8 @@
 ﻿msgid ""
 msgstr "[!!!  !!!]"
 "Project-Id-Version: RunActivity\n"
-"POT-Creation-Date: 2015-04-29 17:02:00+0100\n"
-"PO-Revision-Date: 2015-04-29 17:02:02+0100\n"
+"POT-Creation-Date: 2015-04-30 23:02:28+0100\n"
+"PO-Revision-Date: 2015-04-30 23:02:29+0100\n"
 "Last-Translator: \n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: qps-ploc\n"
@@ -1284,17 +1284,17 @@ msgctxt "Engine"
 msgid "Stopping"
 msgstr "[!!! §ƭôƥƥïñϱ !!!]"
 
-#: ../../RunActivity/Simulator/Activity.cs:877
+#: ../../RunActivity/Simulator/Activity.cs:880
 #: ../../RunActivity/Timetable/TTTrain.cs:5791
 msgid "Passenger boarding completed. Waiting for signal ahead to clear."
 msgstr "[!!! Þáƨƨèñϱèř βôářδïñϱ çô₥ƥℓèƭèδ. Wáïƭïñϱ ƒôř ƨïϱñáℓ áλèáδ ƭô çℓèář. !!!]"
 
-#: ../../RunActivity/Simulator/Activity.cs:882
+#: ../../RunActivity/Simulator/Activity.cs:885
 #: ../../RunActivity/Timetable/TTTrain.cs:5796
 msgid "Passenger boarding completed. You may depart now."
 msgstr "[!!! Þáƨƨèñϱèř βôářδïñϱ çô₥ƥℓèƭèδ. Ýôú ₥á¥ δèƥářƭ ñôω. !!!]"
 
-#: ../../RunActivity/Simulator/Activity.cs:866
+#: ../../RunActivity/Simulator/Activity.cs:869
 #: ../../RunActivity/Timetable/TTTrain.cs:5803
 #, csharp-format
 msgid "Passenger boarding completes in {0:D2}:{1:D2}"
@@ -1942,6 +1942,26 @@ msgstr "[!!! Třáçƙƨïδè !!!]"
 #: ../../RunActivity/Viewer3D/Cameras.cs:1837
 msgid "3D Cab"
 msgstr "[!!! 3Ð Çáβ !!!]"
+
+#: ../../RunActivity/Viewer3D/Materials.cs:165
+#, csharp-format
+msgid "{0:F0} textures"
+msgstr "[!!! {0:F0} ƭèжƭúřèƨ !!!]"
+
+#: ../../RunActivity/Viewer3D/Materials.cs:391
+#, csharp-format
+msgid "{0:F0} materials"
+msgstr "[!!! {0:F0} ₥áƭèřïáℓƨ !!!]"
+
+#: ../../RunActivity/Viewer3D/Shapes.cs:106
+#, csharp-format
+msgid "{0:F0} shapes"
+msgstr "[!!! {0:F0} ƨλáƥèƨ !!!]"
+
+#: ../../RunActivity/Viewer3D/Terrain.cs:121
+#, csharp-format
+msgid "{0:F0} tiles"
+msgstr "[!!! {0:F0} ƭïℓèƨ !!!]"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:596
 #: ../../RunActivity/Viewer3D/Viewer.cs:714
@@ -2648,6 +2668,14 @@ msgstr "[!!! £ôϱϱïñϱ èñáβℓèδ !!!]"
 msgid "Build"
 msgstr "[!!! ßúïℓδ !!!]"
 
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:784
+msgid "CPU"
+msgstr "[!!! ÇÞÛ !!!]"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:785
+msgid "GPU"
+msgstr "[!!! GÞÛ !!!]"
+
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:786
 msgid "Adapter"
 msgstr "[!!! Âδáƥƭèř !!!]"
@@ -2684,6 +2712,59 @@ msgstr "[!!! Çá₥èřá !!!]"
 #, csharp-format
 msgid "filtered by {0:F0}"
 msgstr "[!!! ƒïℓƭèřèδ β¥ {0:F0} !!!]"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:783
+#, csharp-format
+msgid ""
+"{0:F0} MB ({5}, {6}, {7}, {8}, {1:F0} MB managed, {9:F0} kB/frame allocated, "
+"{2:F0}/{3:F0}/{4:F0} GCs)"
+msgstr ""
+"[!!! {0:F0} Mß ({5}, {6}, {7}, {8}, {1:F0} Mß ₥áñáϱèδ, {9:F0} ƙß/ƒřá₥è áℓℓôçáƭèδ, "
+"{2:F0}/{3:F0}/{4:F0} GÇƨ) !!!]"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:784
+#, csharp-format
+msgid "{0:F0}% ({1})"
+msgstr "[!!! {0:F0}% ({1}) !!!]"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:785
+#, csharp-format
+msgid ""
+"{0:F0} FPS (50th/95th/99th percentiles {1:F1} / {2:F1} / {3:F1} ms, shader "
+"model {4})"
+msgstr ""
+"[!!! {0:F0} FÞ§ (50ƭλ/95ƭλ/99ƭλ ƥèřçèñƭïℓèƨ {1:F1} / {2:F1} / {3:F1} ₥ƨ, ƨλáδèř "
+"₥ôδèℓ {4}) !!!]"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:786
+#, csharp-format
+msgid "{0} ({1:F0} MB)"
+msgstr "[!!! {0} ({1:F0} Mß) !!!]"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:789
+#, csharp-format
+msgid "{0}/{1}"
+msgstr "[!!! {0}/{1} !!!]"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:790
+#, csharp-format
+msgid "({0}x{0})"
+msgstr "[!!! ({0}ж{0}) !!!]"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:793
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:796
+#, csharp-format
+msgid "{0:F0}"
+msgstr "[!!! {0:F0} !!!]"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:797
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:798
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:799
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:800
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:801
+#, csharp-format
+msgid "{0:F0}% ({1:F0}% {2})"
+msgstr "[!!! {0:F0}% ({1:F0}% {2}) !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:784
 #, csharp-format

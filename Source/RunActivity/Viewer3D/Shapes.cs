@@ -103,7 +103,7 @@ namespace ORTS.Viewer3D
         [CallOnThread("Updater")]
         public string GetStatus()
         {
-            return String.Format("{0:F0} shapes", Shapes.Keys.Count);
+            return Viewer.Catalog.GetStringFmt("{0:F0} shapes", Shapes.Keys.Count);
         }
     }
 

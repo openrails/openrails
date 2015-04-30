@@ -162,7 +162,7 @@ namespace ORTS.Viewer3D
         [CallOnThread("Updater")]
         public string GetStatus()
         {
-            return String.Format("{0:F0} textures", Textures.Keys.Count);
+            return Viewer.Catalog.GetStringFmt("{0:F0} textures", Textures.Keys.Count);
         }
     }
 
@@ -388,7 +388,7 @@ namespace ORTS.Viewer3D
         [CallOnThread("Updater")]
         public string GetStatus()
         {
-            return String.Format("{0:F0} materials", Materials.Keys.Count);
+            return Viewer.Catalog.GetStringFmt("{0:F0} materials", Materials.Keys.Count);
         }
 
         public static Color FogColor = new Color(110, 110, 110, 255);

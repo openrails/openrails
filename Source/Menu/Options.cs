@@ -549,7 +549,7 @@ namespace ORTS
             else if (level > 139)
                 AdhesionLevelValue.Text = catalog.GetString("Easy");
             else if (level > 119)
-                AdhesionLevelValue.Text = catalog.GetString("MSTS Compatibile");
+                AdhesionLevelValue.Text = catalog.GetString("MSTS Compatible");
             else if (level > 89)
                 AdhesionLevelValue.Text = catalog.GetString("Normal");
             else if (level > 69)

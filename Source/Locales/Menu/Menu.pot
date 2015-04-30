@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-04-30 19:21:35+0200\n"
-"PO-Revision-Date: 2015-04-30 19:21:35+0200\n"
+"POT-Creation-Date: 2015-04-30 23:02:27+0100\n"
+"PO-Revision-Date: 2015-04-30 23:02:27+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -10,31 +10,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: MonoDevelop Gettext addin\n"
 
-
-#: ../../Menu/FolderForm.Designer.cs:56
-#: ../../Menu/Options.Designer.cs:210
-msgid "OK"
-msgstr ""
-
-#: ../../Menu/FolderForm.Designer.cs:67
-#: ../../Menu/Options.Designer.cs:264
-#: ../../Menu/TestingForm.Designer.cs:87
-msgid "Cancel"
-msgstr ""
-
-#: ../../Menu/FolderForm.Designer.cs:77
-#: ../../Menu/Options.Designer.cs:1310
-msgid "Path:"
-msgstr ""
-
-#: ../../Menu/FolderForm.Designer.cs:86
-#: ../../Menu/Options.Designer.cs:1301
-msgid "Name:"
-msgstr ""
-
-#: ../../Menu/FolderForm.Designer.cs:116
-msgid "Installation Profile"
-msgstr ""
 
 #: ../../Menu/ImportExportSaveForm.cs:52
 msgid "Save Packs"
@@ -587,7 +562,7 @@ msgid "Very easy"
 msgstr ""
 
 #: ../../Menu/Options.cs:552
-msgid "MSTS Compatibile"
+msgid "MSTS Compatible"
 msgstr ""
 
 #: ../../Menu/Options.cs:554
@@ -644,12 +619,21 @@ msgstr ""
 msgid "All detail (+{0}%)"
 msgstr ""
 
+#: ../../Menu/Options.Designer.cs:210
+msgid "OK"
+msgstr ""
+
 #: ../../Menu/Options.Designer.cs:244
 msgid "Brake pipe charging rate (PSI/s)"
 msgstr ""
 
 #: ../../Menu/Options.Designer.cs:253
 msgid "Graduated release air brakes"
+msgstr ""
+
+#: ../../Menu/Options.Designer.cs:264
+#: ../../Menu/TestingForm.Designer.cs:87
+msgid "Cancel"
 msgstr ""
 
 #: ../../Menu/Options.Designer.cs:274
@@ -883,6 +867,14 @@ msgstr ""
 
 #: ../../Menu/Options.Designer.cs:1280
 msgid "Browse..."
+msgstr ""
+
+#: ../../Menu/Options.Designer.cs:1301
+msgid "Name:"
+msgstr ""
+
+#: ../../Menu/Options.Designer.cs:1310
+msgid "Path:"
 msgstr ""
 
 #: ../../Menu/Options.Designer.cs:1329
