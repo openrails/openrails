@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
-"POT-Creation-Date: 2015-04-28 11:53:47+0200\n"
-"PO-Revision-Date: 2015-04-28 12:39+0100\n"
+"POT-Creation-Date: 2015-04-30 17:47:54+0200\n"
+"PO-Revision-Date: 2015-04-30 17:52+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -134,7 +134,7 @@ msgstr "Anzeigen: Zugbedienungs-Fenster"
 
 #: ../../ORTS.Settings/InputSettings.cs:73
 msgid "Display Next Station Window"
-msgstr "Anzeigen: Nöchster Halt Fenster"
+msgstr "Anzeigen: Nächster-Halt-Fenster"
 
 #: ../../ORTS.Settings/InputSettings.cs:74
 msgid "Display Compass Window"
