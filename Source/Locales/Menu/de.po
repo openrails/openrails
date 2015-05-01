@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
-"POT-Creation-Date: 2015-04-30 17:47:42+0200\n"
-"PO-Revision-Date: 2015-04-30 17:50+0100\n"
+"POT-Creation-Date: 2015-05-01 14:33:57+0200\n"
+"PO-Revision-Date: 2015-05-01 14:34+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -12,29 +12,6 @@ msgstr ""
 "X-Generator: Poedit 1.6.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-Bookmarks: 189,-1,-1,-1,-1,-1,-1,-1,-1,-1\n"
-
-#: ../../Menu/FolderForm.Designer.cs:56 ../../Menu/Options.Designer.cs:210
-msgid "OK"
-msgstr "OK"
-
-#: ../../Menu/FolderForm.Designer.cs:67 ../../Menu/Options.Designer.cs:264
-#: ../../Menu/TestingForm.Designer.cs:87
-msgid "Cancel"
-msgstr "Abbrechen"
-
-#: ../../Menu/FolderForm.Designer.cs:77 ../../Menu/Options.Designer.cs:1310
-msgid "Path:"
-msgstr "Pfad:"
-
-#: ../../Menu/FolderForm.Designer.cs:86 ../../Menu/Options.Designer.cs:1301
-msgid "Name:"
-msgstr "Name:"
-
-# Duplicate entry
-#: ../../Menu/FolderForm.Designer.cs:116
-#, fuzzy
-msgid "Installation Profile"
-msgstr "Installationsprofil"
 
 #: ../../Menu/ImportExportSaveForm.cs:52
 msgid "Save Packs"
@@ -321,9 +298,7 @@ msgstr "Mehrspieler"
 msgid "Singleplayer"
 msgstr "Einzelspieler"
 
-# Duplicate entry.
 #: ../../Menu/MainForm.Designer.cs:329
-#, fuzzy
 msgid "Installation profile:"
 msgstr "Installationsprofil:"
 
@@ -595,10 +570,8 @@ msgstr "Keine Probleme entdeckt."
 msgid "Very easy"
 msgstr "Sehr einfach"
 
-# Spelling mistake in source text.
 #: ../../Menu/Options.cs:552
-#, fuzzy
-msgid "MSTS Compatibile"
+msgid "MSTS Compatible"
 msgstr "MSTS-kompatibel"
 
 #: ../../Menu/Options.cs:554
@@ -658,6 +631,10 @@ msgstr "Höheres Detaillevel (+{0}%)"
 msgid "All detail (+{0}%)"
 msgstr "Maximum-Detaillevel (+{0}%)"
 
+#: ../../Menu/Options.Designer.cs:210
+msgid "OK"
+msgstr "OK"
+
 #: ../../Menu/Options.Designer.cs:244
 msgid "Brake pipe charging rate (PSI/s)"
 msgstr "Bremsleitungs-Auffüllrate (PSI/s)"
@@ -665,6 +642,10 @@ msgstr "Bremsleitungs-Auffüllrate (PSI/s)"
 #: ../../Menu/Options.Designer.cs:253
 msgid "Graduated release air brakes"
 msgstr "Teilweise lösbare Luftdruckbremsen"
+
+#: ../../Menu/Options.Designer.cs:264 ../../Menu/TestingForm.Designer.cs:87
+msgid "Cancel"
+msgstr "Abbrechen"
 
 #: ../../Menu/Options.Designer.cs:274
 msgid "Alerter in cab"
@@ -892,15 +873,21 @@ msgstr "Inhalt"
 msgid "Delete"
 msgstr "Löschen"
 
-# Duplicate Entry
 #: ../../Menu/Options.Designer.cs:1271
-#, fuzzy
 msgid "Installation profile"
 msgstr "Installationsprofil"
 
 #: ../../Menu/Options.Designer.cs:1280
 msgid "Browse..."
 msgstr "Durchsuchen ..."
+
+#: ../../Menu/Options.Designer.cs:1301
+msgid "Name:"
+msgstr "Name:"
+
+#: ../../Menu/Options.Designer.cs:1310
+msgid "Path:"
+msgstr "Pfad:"
 
 #: ../../Menu/Options.Designer.cs:1329
 msgid "Add"
@@ -1282,3 +1269,8 @@ msgstr "Ladezeit"
 #: ../../Menu/TestingForm.Designer.cs:238
 msgid "FPS"
 msgstr "Framerate"
+
+# Duplicate entry
+#, fuzzy
+#~ msgid "Installation Profile"
+#~ msgstr "Installationsprofil"
