@@ -478,6 +478,31 @@ namespace ORTS
                     {
                         var thisWorldObject = worldObject as SignalObj;
                         if (thisWorldObject.SignalUnits == null) continue; //this has no unit, will ignore it and treat it as static in scenary.cs
+
+                        //check if signalheads are on same or adjacent tile as signal itself - otherwise there is an invalid match
+                        uint? BadSignal = null;
+                        foreach (var si in thisWorldObject.SignalUnits.Units)
+                        {
+                            if (si.TrItem >= this.trackDB.TrItemTable.Count())
+                            {
+                                BadSignal = si.TrItem;
+                                break;
+                            }
+                            var item = this.trackDB.TrItemTable[si.TrItem];
+                            if (Math.Abs(item.TileX - WFile.TileX) > 1 || Math.Abs(item.TileZ - WFile.TileZ) > 1)
+                            {
+                                BadSignal = si.TrItem;
+                                break;
+                            }
+                        }
+                        if (BadSignal.HasValue)
+                        {
+                            Trace.TraceWarning("Signal referenced in .w file {0} {1} as TrItem {2} not present in .tdb file ", WFile.TileX, WFile.TileZ, BadSignal.Value);
+                            continue;
+                        }
+
+                        // if valid, add signal
+
                         var SignalWorldSignal = new SignalWorldObject(thisWorldObject, sigcfg);
                         SignalWorldList.Add(SignalWorldSignal);
                         foreach (var thisref in SignalWorldSignal.HeadReference)
@@ -6569,7 +6594,14 @@ namespace ORTS
                 direction = nextLink.Direction;
 
                 if (thisSectionIndex > 0)
+                {
                     thisSection = signalRef.TrackCircuitList[thisSectionIndex];
+                    if (thisSectionIndex == startSectionIndex)  // loop found - return distance found sofar
+                    {
+                        distanceM -= startOffset;
+                        return (distanceM);
+                    }
+                }
             }
 
             // use found distance, correct for begin and end offset
