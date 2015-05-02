@@ -3693,7 +3693,7 @@ namespace ORTS
                 Viewer.Catalog.GetString("Chest"),
                 Viewer.Catalog.GetString("Initial"),
                 Viewer.Catalog.GetString("Cutoff"),
-                Viewer.Catalog.GetString("Release"),
+                Viewer.Catalog.GetString("Rel"),
                 Viewer.Catalog.GetString("Back"),
                 Viewer.Catalog.GetString("PreComp"),
                 Viewer.Catalog.GetString("PreAdm"),
@@ -3741,7 +3741,7 @@ namespace ORTS
 
                if (IsBurnDebug)
                {
-                   status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4:N2}\t{5}\t{6:N2}\t{7}\t{8:N2}\t{9}\t{10:N2}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\t{17}\t{18}\n",
+                   status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4:N2}\t{5}\t{6:N2}\t{7}\t{8:N2}\t{9}\t{10:N2}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\t{17}\t{18}\t{19}\t{20}\n",
                         Viewer.Catalog.GetString("DbgBurn:"),
                         Viewer.Catalog.GetString("BoilHeat"),
                         BoilerHeat ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"), 
@@ -3760,7 +3760,9 @@ namespace ORTS
                         Viewer.Catalog.GetString("SuperSet"),
                         IsSuperSet,
                         Viewer.Catalog.GetString("MaxFuel"),
-                        FormatStrings.FormatMass(pS.TopH( MaxFuelBurnGrateKGpS), IsMetric));
+                        FormatStrings.FormatMass(pS.TopH( MaxFuelBurnGrateKGpS), IsMetric),
+                        Viewer.Catalog.GetString("BstReset"),
+                        FuelBoostReset ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"));
                }
 
             status.AppendFormat("{0}\t{1}\t{6}/{12}\t\t({7:N0} {13})\t{2}\t{8}/{12}\t\t{3}\t{9}\t\t{4}\t{10}/{12}\t\t{5}\t{11}\n",
@@ -3788,7 +3790,7 @@ namespace ORTS
                 FormatStrings.FormatFuelVolume(L.FromGUK(TenderWaterVolumeUKG), IsMetric, IsUK),
                 TenderWaterVolumeUKG / (Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG) * 100);
 
-            status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\n",
+            status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\n",
                 Viewer.Catalog.GetString("Status:"),
                 Viewer.Catalog.GetString("CoalOut"),
                 CoalIsExhausted ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
@@ -3800,8 +3802,6 @@ namespace ORTS
                 StokerIsMechanical ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
                 Viewer.Catalog.GetString("Boost"),
                 FuelBoost ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
-                Viewer.Catalog.GetString("BstReset"),
-                FuelBoostReset ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
                 Viewer.Catalog.GetString("GrLimit"),
                 IsGrateLimit ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"));
 
