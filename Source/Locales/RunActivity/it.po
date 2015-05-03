@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
 "POT-Creation-Date: 2015-05-01 14:34:08+0200\n"
-"PO-Revision-Date: 2015-05-02 16:07+0100\n"
+"PO-Revision-Date: 2015-05-03 16:33+0100\n"
 "Last-Translator: Roberto Ceccarelli (The Strawberry Field) <strawberry."
 "field@libero.it>\n"
 "Language-Team: Open Rails Dev Team\n"
@@ -2433,7 +2433,7 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:463
 msgid "CONSIST INFORMATION"
-msgstr "INFORMATIONI CONSIST"
+msgstr "INFORMAZIONI CONSIST"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:470
 msgid "Player"
@@ -2675,7 +2675,7 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:775
 msgid "DEBUG INFORMATION"
-msgstr "INFORMATIONI DEBUG"
+msgstr "INFORMAZIONI DEBUG"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:781
 msgid "Logging enabled"
