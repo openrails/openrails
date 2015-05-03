@@ -1,15 +1,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Contrib\n"
-"POT-Creation-Date: 2015-03-27 19:29:44+0000\n"
-"PO-Revision-Date: 2015-04-02 16:56+0100\n"
+"POT-Creation-Date: 2015-05-02 13:29:37+0100\n"
+"PO-Revision-Date: 2015-05-02 16:53+0100\n"
 "Last-Translator: Altmann <altmann@bk.ru>\n"
 "Language-Team: \n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.7.4\n"
+"X-Generator: Poedit 1.7.5\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:17
@@ -674,15 +674,15 @@ msgstr "Nahrávám..."
 msgid "Open Rails Content Manager"
 msgstr "Správce obsahu Open Rails"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:605
+#: ../../Contrib/TrackViewer/TrackViewer.cs:607
 msgid "The path you are working on has un-saved changes.\n"
 msgstr "Cesta, na které pracujete má neuložené změny.\n"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:607
+#: ../../Contrib/TrackViewer/TrackViewer.cs:609
 msgid "Do you really want to Quit?"
 msgstr "Opravdu chcete odejít?"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:649
+#: ../../Contrib/TrackViewer/TrackViewer.cs:651
 msgid ""
 "Directory is not a valid install directory.\n"
 "The install directory needs to contain ROUTES, GLOBAL, ..."
@@ -690,19 +690,19 @@ msgstr ""
 "Adresář není platným instalačním adresářem.\n"
 "Je třeba, aby obsahoval podadresáře ROUTES, GLOBAL..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:723
+#: ../../Contrib/TrackViewer/TrackViewer.cs:725
 msgid "Loading route..."
 msgstr "Nahrávám trať..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:745
+#: ../../Contrib/TrackViewer/TrackViewer.cs:747
 msgid "Route cannot be loaded. Sorry"
 msgstr "Trať nelze načíst, je nám líto"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:812
+#: ../../Contrib/TrackViewer/TrackViewer.cs:814
 msgid "Loading .pat file ..."
 msgstr "Nahrávám soubor .pat..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:815
+#: ../../Contrib/TrackViewer/TrackViewer.cs:817
 msgid "Processing .pat file ..."
 msgstr "Zpracovávám soubor .pat..."
 
@@ -913,10 +913,16 @@ msgstr "Neznámé"
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:55
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:56
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:57
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:58
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:134
 msgid "1"
 msgstr "1"
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:228
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:139
+msgid "10"
+msgstr "10"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:260
 msgid "99"
 msgstr "99"
 
@@ -1053,13 +1059,13 @@ msgstr "Konec cesty"
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:24
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:15
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:47
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:53
 msgid " OK "
 msgstr " OK "
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:25
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:16
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:48
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:54
 msgid " Cancel "
 msgstr " Storno "
 
@@ -1121,6 +1127,7 @@ msgid " cars, and wait"
 msgstr " vozů a čekat"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:31
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:42
 msgid "seconds. "
 msgstr "sekund. "
 
@@ -1133,18 +1140,22 @@ msgid "Join and split"
 msgstr "Připojit a rozdělit"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:40
+msgid "Blow horn for"
+msgstr "Zahoukat na"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:46
 msgid "Wait time code as decimal ="
 msgstr "Kód doby čekání decimálně ="
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:41
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:47
 msgid "00000"
 msgstr "00000"
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:42
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:48
 msgid "hexadecimal ="
 msgstr "hexadecimálně ="
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:43
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:49
 msgid "0000"
 msgstr "0000"
 
