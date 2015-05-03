@@ -4741,6 +4741,14 @@ namespace ORTS
                     PresentPosition[0].RouteListIndex = ValidRoute[0].GetRouteIndex(frontSection, 0);
                     PresentPosition[1].RouteListIndex = ValidRoute[0].GetRouteIndex(rearSection, 0);
 
+                    // Invalidate preceding section indexes to avoid wrong indexing when building route forward (in Reserve())
+
+                    for (int routeListIndex = 0; routeListIndex < PresentPosition[1].RouteListIndex; routeListIndex++)
+                    {
+                        ValidRoute[0][routeListIndex].TCSectionIndex = -1;
+                    }
+                    returnState[0] = true;
+                    returnState[1] = true;
                     return (returnState);
                 }
 

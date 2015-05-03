@@ -3130,7 +3130,7 @@ namespace ORTS
 
                     if (firstIndex != nextIndex)
                     {
-                        for (int iIndex = 0; iIndex <= firstIndex; iIndex++)
+                        for (int iIndex = 0; iIndex < rearIndex; iIndex++)
                         {
                             thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex][iIndex].TCSectionIndex = -1; // invalidate route upto loop point
                         }
@@ -3189,6 +3189,8 @@ namespace ORTS
 
                 // train ahead has moved on, check next sections
 
+                int startRouteIndex = routeIndex;
+
                 while (routeIndex < routePart.Count && routeAvailable && !furthestRouteCleared)
                 {
                     if (thisTrain.Train.CheckTrain)
@@ -3204,7 +3206,8 @@ namespace ORTS
 
                     // check if section is in loop
 
-                    if (sectionsInRoute.Contains(thisSection.Index))
+                    if (sectionsInRoute.Contains(thisSection.Index) ||
+                        (routeIndex > startRouteIndex && sectionIndex == thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].TCSectionIndex))
                     {
                         endAuthority = Train.END_AUTHORITY.LOOP;
                         thisTrain.Train.LoopSection = thisSection.Index;
