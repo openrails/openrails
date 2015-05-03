@@ -44,10 +44,20 @@ namespace ORTS.TrackViewer.UserInterface
 
             // Turn the list of codes in to a list of code + name pairs for
             // displaying in the dropdown list.
-            Languages = 
+            Languages =
                 new[] { new Language { Code = "", Name = "System" } }
                 .Union(languageCodes
-                    .Select(lc => new Language { Code = lc, Name = CultureInfo.GetCultureInfo(lc).NativeName })
+                    .SelectMany(lc =>
+                        {
+                            try
+                            {
+                                return new[] { new Language { Code = lc, Name = CultureInfo.GetCultureInfo(lc).NativeName } };
+                            }
+                            catch (ArgumentException)
+                            {
+                                return new Language[0];
+                            }
+                        })
                     .OrderBy(l => l.Name)
                 )
                 .ToList();
