@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
-"POT-Creation-Date: 2015-05-01 14:33:57+0200\n"
-"PO-Revision-Date: 2015-05-01 14:34+0100\n"
+"POT-Creation-Date: 2015-05-04 21:43:55+0200\n"
+"PO-Revision-Date: 2015-05-04 21:47+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -238,150 +238,142 @@ msgid "Path: {0}"
 msgstr "Pfad: {0}"
 
 # Better translation?
-#: ../../Menu/MainForm.Designer.cs:118
+#: ../../Menu/MainForm.Designer.cs:117
 msgid "Windowed"
 msgstr "Fenstermodus"
 
-#: ../../Menu/MainForm.Designer.cs:128
+#: ../../Menu/MainForm.Designer.cs:127
 msgid "Start"
 msgstr "Start"
 
-#: ../../Menu/MainForm.Designer.cs:141
-msgid "open"
-msgstr "Open"
+#: ../../Menu/MainForm.Designer.cs:139 ../../Menu/MainForm.Designer.cs:875
+msgid "Open Rails"
+msgstr "Open Rails"
 
-#: ../../Menu/MainForm.Designer.cs:153
-msgid "rails"
-msgstr "Rails"
-
-#: ../../Menu/MainForm.Designer.cs:169
+#: ../../Menu/MainForm.Designer.cs:157
 msgid "Logging"
 msgstr "Logger"
 
-#: ../../Menu/MainForm.Designer.cs:178 ../../Menu/Options.Designer.cs:1913
+#: ../../Menu/MainForm.Designer.cs:166 ../../Menu/Options.Designer.cs:1913
 msgid "Options"
 msgstr "Optionen"
 
-#: ../../Menu/MainForm.Designer.cs:188
+#: ../../Menu/MainForm.Designer.cs:176
 msgid "Resume/ Replay..."
 msgstr "Fortsetzen/ Abspielen..."
 
-#: ../../Menu/MainForm.Designer.cs:197
+#: ../../Menu/MainForm.Designer.cs:185
 msgid "Tools ▼"
 msgstr "Werkzeuge ▼"
 
-#: ../../Menu/MainForm.Designer.cs:232
+#: ../../Menu/MainForm.Designer.cs:220
 msgid "Route:"
 msgstr "Route:"
 
-#: ../../Menu/MainForm.Designer.cs:251
+#: ../../Menu/MainForm.Designer.cs:239
 msgid "Host/port:"
 msgstr "Host/Port:"
 
-#: ../../Menu/MainForm.Designer.cs:262
+#: ../../Menu/MainForm.Designer.cs:250
 msgid "User name:"
 msgstr "Nickname:"
 
-#: ../../Menu/MainForm.Designer.cs:272
+#: ../../Menu/MainForm.Designer.cs:260
 msgid "Client"
 msgstr "Client"
 
-#: ../../Menu/MainForm.Designer.cs:282
+#: ../../Menu/MainForm.Designer.cs:270
 msgid "Server"
 msgstr "Server"
 
-#: ../../Menu/MainForm.Designer.cs:307
+#: ../../Menu/MainForm.Designer.cs:295
 msgid "Multiplayer"
 msgstr "Mehrspieler"
 
-#: ../../Menu/MainForm.Designer.cs:319
+#: ../../Menu/MainForm.Designer.cs:307
 msgid "Singleplayer"
 msgstr "Einzelspieler"
 
-#: ../../Menu/MainForm.Designer.cs:329
+#: ../../Menu/MainForm.Designer.cs:317
 msgid "Installation profile:"
 msgstr "Installationsprofil:"
 
-#: ../../Menu/MainForm.Designer.cs:376
+#: ../../Menu/MainForm.Designer.cs:365
 msgid "Mode:"
 msgstr "Modus:"
 
-#: ../../Menu/MainForm.Designer.cs:387 ../../Menu/TestingForm.Designer.cs:192
+#: ../../Menu/MainForm.Designer.cs:376 ../../Menu/TestingForm.Designer.cs:192
 msgid "Activity"
 msgstr "Aufgabe"
 
-#: ../../Menu/MainForm.Designer.cs:397
+#: ../../Menu/MainForm.Designer.cs:386
 msgid "Timetable"
 msgstr "Fahrplan"
 
-#: ../../Menu/MainForm.Designer.cs:437
+#: ../../Menu/MainForm.Designer.cs:426
 msgid "Activity:"
 msgstr "Aufgabe:"
 
-#: ../../Menu/MainForm.Designer.cs:460
+#: ../../Menu/MainForm.Designer.cs:449
 msgid "Locomotive:"
 msgstr "Lokomotive:"
 
-#: ../../Menu/MainForm.Designer.cs:497
+#: ../../Menu/MainForm.Designer.cs:486
 msgid "Consist:"
 msgstr "Zugverband:"
 
-#: ../../Menu/MainForm.Designer.cs:508
+#: ../../Menu/MainForm.Designer.cs:497
 msgid "Starting at:"
 msgstr "Start bei:"
 
-#: ../../Menu/MainForm.Designer.cs:532
+#: ../../Menu/MainForm.Designer.cs:521
 msgid "Heading to:"
 msgstr "Richtung:"
 
-#: ../../Menu/MainForm.Designer.cs:556
+#: ../../Menu/MainForm.Designer.cs:545
 msgid "Duration:"
 msgstr "Dauer:"
 
-#: ../../Menu/MainForm.Designer.cs:567
+#: ../../Menu/MainForm.Designer.cs:556
 msgid "Time:"
 msgstr "Tageszeit:"
 
-#: ../../Menu/MainForm.Designer.cs:616 ../../Menu/MainForm.Designer.cs:763
+#: ../../Menu/MainForm.Designer.cs:605 ../../Menu/MainForm.Designer.cs:752
 msgid "Weather:"
 msgstr "Wetter:"
 
-#: ../../Menu/MainForm.Designer.cs:640
+#: ../../Menu/MainForm.Designer.cs:629
 msgid "Difficulty:"
 msgstr "Schwierigkeit:"
 
-#: ../../Menu/MainForm.Designer.cs:663 ../../Menu/MainForm.Designer.cs:786
+#: ../../Menu/MainForm.Designer.cs:652 ../../Menu/MainForm.Designer.cs:775
 msgid "Season:"
 msgstr "Jahreszeit:"
 
-#: ../../Menu/MainForm.Designer.cs:695
+#: ../../Menu/MainForm.Designer.cs:684
 msgid "Train:"
 msgstr "Zug:"
 
-#: ../../Menu/MainForm.Designer.cs:716
+#: ../../Menu/MainForm.Designer.cs:705
 msgid "Timetable:"
 msgstr "Fahrplan:"
 
-#: ../../Menu/MainForm.Designer.cs:739
+#: ../../Menu/MainForm.Designer.cs:728
 msgid "Day:"
 msgstr "Tag:"
 
-#: ../../Menu/MainForm.Designer.cs:817
+#: ../../Menu/MainForm.Designer.cs:806
 msgid "Timetable set:"
 msgstr "Fahrplanset:"
 
-#: ../../Menu/MainForm.Designer.cs:837 ../../Menu/Options.cs:240
+#: ../../Menu/MainForm.Designer.cs:826 ../../Menu/Options.cs:240
 #: ../../Menu/TestingForm.Designer.cs:314
 msgid "Testing"
 msgstr "Tägliche Testversionen"
 
-#: ../../Menu/MainForm.Designer.cs:854
+#: ../../Menu/MainForm.Designer.cs:843
 msgid "What's new?"
 msgstr "Was gibt es Neues?"
-
-#: ../../Menu/MainForm.Designer.cs:887
-msgid "Open Rails"
-msgstr "Open Rails"
 
 #: ../../Menu/Options.cs:93 ../../Menu/TestingForm.Designer.cs:184
 msgid "Route"
@@ -1098,12 +1090,6 @@ msgstr ""
 "Spielstände in neueren Versionen von Open Rails ungültig, wenn ein "
 "Ladeversuch zum Abstürzt führt.\n"
 
-# Duplicate entry; wrong spelling in source;Used where?
-#: ../../Menu/ResumeForm.cs:382
-#, fuzzy
-msgid "Delete of invalid saves"
-msgstr "Ungültige Spielstände löschen"
-
 #: ../../Menu/ResumeForm.cs:196
 #, csharp-format
 msgid ""
@@ -1137,14 +1123,10 @@ msgstr ""
 "\n"
 "Fortsetzen?"
 
-#: ../../Menu/ResumeForm.cs:382
+#: ../../Menu/ResumeForm.cs:377
 #, csharp-format
-msgid ""
-"{0} invalid saves deleted\n"
-"{1} saves remain"
-msgstr ""
-"{0} ungültige Spielstände gelöscht\n"
-"{1} Spielstände verbleiben."
+msgid "{0} invalid saves have been deleted."
+msgstr "{0} ungültige Spielstände gelöscht"
 
 #: ../../Menu/ResumeForm.Designer.cs:207
 msgid "Resume"
@@ -1154,8 +1136,9 @@ msgstr "Fortsetzen"
 msgid "Undelete"
 msgstr "Wiederherstellen"
 
+# Duplicate entry; wrong spelling in source;Used where?
 #: ../../Menu/ResumeForm.Designer.cs:252
-msgid "Delete all invalid saves in Open Rails"
+msgid "Delete all invalid saves"
 msgstr "Ungültige Spielstände löschen"
 
 #: ../../Menu/ResumeForm.Designer.cs:263
@@ -1269,6 +1252,15 @@ msgstr "Ladezeit"
 #: ../../Menu/TestingForm.Designer.cs:238
 msgid "FPS"
 msgstr "Framerate"
+
+#~ msgid "open"
+#~ msgstr "Open"
+
+#~ msgid "rails"
+#~ msgstr "Rails"
+
+#~ msgid "Delete all invalid saves in Open Rails"
+#~ msgstr "Ungültige Spielstände löschen"
 
 # Duplicate entry
 #, fuzzy
