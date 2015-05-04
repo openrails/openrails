@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-05-01 14:34:08+0200\n"
-"PO-Revision-Date: 2015-05-01 14:34:10+0200\n"
+"POT-Creation-Date: 2015-05-04 11:13:21+0100\n"
+"PO-Revision-Date: 2015-05-04 11:13:22+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -12,7 +12,6 @@ msgstr ""
 
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:217
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3685
 #: ../../RunActivity/RollingStock/SubSystems/Brakes/MSTS/AirSinglePipe.cs:55
 msgid "Release"
 msgstr ""
@@ -425,59 +424,59 @@ msgstr ""
 msgid "Other train is blocking path"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5470
+#: ../../RunActivity/Physics/Train.cs:5478
 msgid "Stopped due to errors in route setting"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6132
-#: ../../RunActivity/Physics/Train.cs:7210
+#: ../../RunActivity/Physics/Train.cs:6140
+#: ../../RunActivity/Physics/Train.cs:7218
 msgid "No signal in train's path"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6140
+#: ../../RunActivity/Physics/Train.cs:6148
 msgid "Next signal already allocated to other train"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6201
+#: ../../RunActivity/Physics/Train.cs:6209
 msgid "Request to clear signal cannot be processed"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6307
-#: ../../RunActivity/Physics/Train.cs:7330
+#: ../../RunActivity/Physics/Train.cs:6315
+#: ../../RunActivity/Physics/Train.cs:7338
 msgid "No switch found"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7564
+#: ../../RunActivity/Physics/Train.cs:7572
 msgid "You cannot enter manual mode when autopiloted"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7576
+#: ../../RunActivity/Physics/Train.cs:7584
 msgid "Train is not back on original route"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7585
+#: ../../RunActivity/Physics/Train.cs:7593
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7598
+#: ../../RunActivity/Physics/Train.cs:7606
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7693
+#: ../../RunActivity/Physics/Train.cs:7701
 msgid "Reversal required and rear of train not on required route"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7899
+#: ../../RunActivity/Physics/Train.cs:7907
 msgid "Cannot clear signal behind train while in AUTO mode"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:8148
+#: ../../RunActivity/Physics/Train.cs:8156
 #, csharp-format
 msgid "Allowed speed raised to {0}"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:8190
+#: ../../RunActivity/Physics/Train.cs:8198
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr ""
@@ -727,7 +726,7 @@ msgid "Stored"
 msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3583
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3757
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3759
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:665
 msgid "Max"
 msgstr ""
@@ -741,7 +740,7 @@ msgid "Flue"
 msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3592
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3774
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3776
 msgid "Water"
 msgstr ""
 
@@ -795,7 +794,7 @@ msgid "Genertr"
 msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3616
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3788
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3790
 msgid "Stoker"
 msgstr ""
 
@@ -827,6 +826,7 @@ msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3643
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3665
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3685
 msgid "Rel"
 msgstr ""
 
@@ -872,7 +872,7 @@ msgid "Press:"
 msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3701
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3781
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3783
 msgid "Status:"
 msgstr ""
 
@@ -896,7 +896,7 @@ msgstr ""
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3705
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3707
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3736
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3783
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3754
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3785
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3787
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3789
@@ -913,7 +913,7 @@ msgstr ""
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3705
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3707
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3736
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3783
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3754
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3785
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3787
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3789
@@ -1019,52 +1019,52 @@ msgstr ""
 msgid "MaxFuel"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3756
-msgid "Injector:"
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3753
+msgid "BstReset"
 msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3758
-msgid "Inj1"
-msgstr ""
-
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3759
-msgid "Temp1"
+msgid "Injector:"
 msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3760
-msgid "Inj2"
+msgid "Inj1"
 msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3761
+msgid "Temp1"
+msgstr ""
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3762
+msgid "Inj2"
+msgstr ""
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3763
 msgid "Temp2"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3772
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3774
 msgid "Tender:"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3773
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3775
 msgid "Coal"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3782
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3784
 msgid "CoalOut"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3784
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3786
 msgid "WaterOut"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3786
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3788
 msgid "FireOut"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3790
-msgid "Boost"
-msgstr ""
-
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3792
-msgid "BstReset"
+msgid "Boost"
 msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3794

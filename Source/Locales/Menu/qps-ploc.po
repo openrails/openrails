@@ -1,8 +1,8 @@
 ﻿msgid ""
 msgstr "[!!!  !!!]"
 "Project-Id-Version: Menu\n"
-"POT-Creation-Date: 2015-04-30 23:02:27+0100\n"
-"PO-Revision-Date: 2015-04-30 23:02:27+0100\n"
+"POT-Creation-Date: 2015-05-04 11:13:20+0100\n"
+"PO-Revision-Date: 2015-05-04 11:13:20+0100\n"
 "Last-Translator: \n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: qps-ploc\n"
@@ -239,155 +239,148 @@ msgstr "[!!! Çôñƨïƨƭ: {0} !!!]"
 msgid "Path: {0}"
 msgstr "[!!! Þáƭλ: {0} !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:118
+#: ../../Menu/MainForm.Designer.cs:117
 msgid "Windowed"
 msgstr "[!!! Wïñδôωèδ !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:128
+#: ../../Menu/MainForm.Designer.cs:127
 msgid "Start"
 msgstr "[!!! §ƭářƭ !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:141
-msgid "open"
-msgstr "[!!! ôƥèñ !!!]"
+#: ../../Menu/MainForm.Designer.cs:139
+#: ../../Menu/MainForm.Designer.cs:875
+msgid "Open Rails"
+msgstr "[!!! Óƥèñ Ráïℓƨ !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:153
-msgid "rails"
-msgstr "[!!! řáïℓƨ !!!]"
-
-#: ../../Menu/MainForm.Designer.cs:169
+#: ../../Menu/MainForm.Designer.cs:157
 msgid "Logging"
 msgstr "[!!! £ôϱϱïñϱ !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:178
+#: ../../Menu/MainForm.Designer.cs:166
 #: ../../Menu/Options.Designer.cs:1913
 msgid "Options"
 msgstr "[!!! Óƥƭïôñƨ !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:188
+#: ../../Menu/MainForm.Designer.cs:176
 msgid "Resume/ Replay..."
 msgstr "[!!! Rèƨú₥è/ Rèƥℓá¥... !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:197
+#: ../../Menu/MainForm.Designer.cs:185
 msgid "Tools ▼"
 msgstr "[!!! Tôôℓƨ ▼ !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:232
+#: ../../Menu/MainForm.Designer.cs:220
 msgid "Route:"
 msgstr "[!!! Rôúƭè: !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:251
+#: ../../Menu/MainForm.Designer.cs:239
 msgid "Host/port:"
 msgstr "[!!! Hôƨƭ/ƥôřƭ: !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:262
+#: ../../Menu/MainForm.Designer.cs:250
 msgid "User name:"
 msgstr "[!!! Ûƨèř ñá₥è: !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:272
+#: ../../Menu/MainForm.Designer.cs:260
 msgid "Client"
 msgstr "[!!! Çℓïèñƭ !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:282
+#: ../../Menu/MainForm.Designer.cs:270
 msgid "Server"
 msgstr "[!!! §èřƲèř !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:307
+#: ../../Menu/MainForm.Designer.cs:295
 msgid "Multiplayer"
 msgstr "[!!! Múℓƭïƥℓá¥èř !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:319
+#: ../../Menu/MainForm.Designer.cs:307
 msgid "Singleplayer"
 msgstr "[!!! §ïñϱℓèƥℓá¥èř !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:329
+#: ../../Menu/MainForm.Designer.cs:317
 msgid "Installation profile:"
 msgstr "[!!! Ìñƨƭáℓℓáƭïôñ ƥřôƒïℓè: !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:376
+#: ../../Menu/MainForm.Designer.cs:365
 msgid "Mode:"
 msgstr "[!!! Môδè: !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:387
+#: ../../Menu/MainForm.Designer.cs:376
 #: ../../Menu/TestingForm.Designer.cs:192
 msgid "Activity"
 msgstr "[!!! ÂçƭïƲïƭ¥ !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:397
+#: ../../Menu/MainForm.Designer.cs:386
 msgid "Timetable"
 msgstr "[!!! Tï₥èƭáβℓè !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:437
+#: ../../Menu/MainForm.Designer.cs:426
 msgid "Activity:"
 msgstr "[!!! ÂçƭïƲïƭ¥: !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:460
+#: ../../Menu/MainForm.Designer.cs:449
 msgid "Locomotive:"
 msgstr "[!!! £ôçô₥ôƭïƲè: !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:497
+#: ../../Menu/MainForm.Designer.cs:486
 msgid "Consist:"
 msgstr "[!!! Çôñƨïƨƭ: !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:508
+#: ../../Menu/MainForm.Designer.cs:497
 msgid "Starting at:"
 msgstr "[!!! §ƭářƭïñϱ áƭ: !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:532
+#: ../../Menu/MainForm.Designer.cs:521
 msgid "Heading to:"
 msgstr "[!!! Hèáδïñϱ ƭô: !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:556
+#: ../../Menu/MainForm.Designer.cs:545
 msgid "Duration:"
 msgstr "[!!! Ðúřáƭïôñ: !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:567
+#: ../../Menu/MainForm.Designer.cs:556
 msgid "Time:"
 msgstr "[!!! Tï₥è: !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:616
-#: ../../Menu/MainForm.Designer.cs:763
+#: ../../Menu/MainForm.Designer.cs:605
+#: ../../Menu/MainForm.Designer.cs:752
 msgid "Weather:"
 msgstr "[!!! Wèáƭλèř: !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:640
+#: ../../Menu/MainForm.Designer.cs:629
 msgid "Difficulty:"
 msgstr "[!!! Ðïƒƒïçúℓƭ¥: !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:663
-#: ../../Menu/MainForm.Designer.cs:786
+#: ../../Menu/MainForm.Designer.cs:652
+#: ../../Menu/MainForm.Designer.cs:775
 msgid "Season:"
 msgstr "[!!! §èáƨôñ: !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:695
+#: ../../Menu/MainForm.Designer.cs:684
 msgid "Train:"
 msgstr "[!!! Třáïñ: !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:716
+#: ../../Menu/MainForm.Designer.cs:705
 msgid "Timetable:"
 msgstr "[!!! Tï₥èƭáβℓè: !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:739
+#: ../../Menu/MainForm.Designer.cs:728
 msgid "Day:"
 msgstr "[!!! Ðá¥: !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:817
+#: ../../Menu/MainForm.Designer.cs:806
 msgid "Timetable set:"
 msgstr "[!!! Tï₥èƭáβℓè ƨèƭ: !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:837
+#: ../../Menu/MainForm.Designer.cs:826
 #: ../../Menu/Options.cs:240
 #: ../../Menu/TestingForm.Designer.cs:314
 msgid "Testing"
 msgstr "[!!! Tèƨƭïñϱ !!!]"
 
-#: ../../Menu/MainForm.Designer.cs:854
+#: ../../Menu/MainForm.Designer.cs:843
 msgid "What's new?"
 msgstr "[!!! Wλáƭ'ƨ ñèω? !!!]"
-
-#: ../../Menu/MainForm.Designer.cs:887
-msgid "Open Rails"
-msgstr "[!!! Óƥèñ Ráïℓƨ !!!]"
 
 #: ../../Menu/Options.cs:93
 #: ../../Menu/TestingForm.Designer.cs:184
@@ -1106,10 +1099,6 @@ msgstr ""
 "[!!! Tô ƥřèƲèñƭ çřáƨλèƨ áñδ úñèжƥèçƭèδ βèλáƲïôúř, Óƥèñ Ráïℓƨ ïñƲáℓïδáƭèƨ ϱá₥èƨ "
 "ƨáƲèδ ƒřô₥ ôℓδèř Ʋèřƨïôñƨ ïƒ ƭλè¥ ƒáïℓ ƭô řèƨƭôřè.\n !!!]"
 
-#: ../../Menu/ResumeForm.cs:382
-msgid "Delete of invalid saves"
-msgstr "[!!! Ðèℓèƭè ôƒ ïñƲáℓïδ ƨáƲèƨ !!!]"
-
 #: ../../Menu/ResumeForm.cs:196
 #, csharp-format
 msgid ""
@@ -1139,14 +1128,10 @@ msgstr ""
 "\n"
 "Çôñƭïñúè? !!!]"
 
-#: ../../Menu/ResumeForm.cs:382
+#: ../../Menu/ResumeForm.cs:377
 #, csharp-format
-msgid ""
-"{0} invalid saves deleted\n"
-"{1} saves remain"
-msgstr ""
-"[!!! {0} ïñƲáℓïδ ƨáƲèƨ δèℓèƭèδ\n"
-"{1} ƨáƲèƨ řè₥áïñ !!!]"
+msgid "{0} invalid saves have been deleted."
+msgstr "[!!! {0} ïñƲáℓïδ ƨáƲèƨ λáƲè βèèñ δèℓèƭèδ. !!!]"
 
 #: ../../Menu/ResumeForm.Designer.cs:207
 msgid "Resume"
@@ -1157,8 +1142,8 @@ msgid "Undelete"
 msgstr "[!!! Ûñδèℓèƭè !!!]"
 
 #: ../../Menu/ResumeForm.Designer.cs:252
-msgid "Delete all invalid saves in Open Rails"
-msgstr "[!!! Ðèℓèƭè áℓℓ ïñƲáℓïδ ƨáƲèƨ ïñ Óƥèñ Ráïℓƨ !!!]"
+msgid "Delete all invalid saves"
+msgstr "[!!! Ðèℓèƭè áℓℓ ïñƲáℓïδ ƨáƲèƨ !!!]"
 
 #: ../../Menu/ResumeForm.Designer.cs:263
 msgid "Import/ export"

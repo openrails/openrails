@@ -140,7 +140,7 @@
             this.realTimeDataGridViewTextBoxColumn.HeaderText = "Saved At";
             this.realTimeDataGridViewTextBoxColumn.Name = "realTimeDataGridViewTextBoxColumn";
             this.realTimeDataGridViewTextBoxColumn.ReadOnly = true;
-            this.realTimeDataGridViewTextBoxColumn.Width = 74;
+            this.realTimeDataGridViewTextBoxColumn.Width = 76;
             // 
             // pathNameDataGridViewTextBoxColumn
             // 
@@ -148,7 +148,7 @@
             this.pathNameDataGridViewTextBoxColumn.HeaderText = "Path";
             this.pathNameDataGridViewTextBoxColumn.Name = "pathNameDataGridViewTextBoxColumn";
             this.pathNameDataGridViewTextBoxColumn.ReadOnly = true;
-            this.pathNameDataGridViewTextBoxColumn.Width = 52;
+            this.pathNameDataGridViewTextBoxColumn.Width = 54;
             // 
             // gameTimeDataGridViewTextBoxColumn
             // 
@@ -156,7 +156,7 @@
             this.gameTimeDataGridViewTextBoxColumn.HeaderText = "Time";
             this.gameTimeDataGridViewTextBoxColumn.Name = "gameTimeDataGridViewTextBoxColumn";
             this.gameTimeDataGridViewTextBoxColumn.ReadOnly = true;
-            this.gameTimeDataGridViewTextBoxColumn.Width = 53;
+            this.gameTimeDataGridViewTextBoxColumn.Width = 55;
             // 
             // distanceDataGridViewTextBoxColumn
             // 
@@ -166,7 +166,7 @@
             this.distanceDataGridViewTextBoxColumn.HeaderText = "Distance";
             this.distanceDataGridViewTextBoxColumn.Name = "distanceDataGridViewTextBoxColumn";
             this.distanceDataGridViewTextBoxColumn.ReadOnly = true;
-            this.distanceDataGridViewTextBoxColumn.Width = 72;
+            this.distanceDataGridViewTextBoxColumn.Width = 74;
             // 
             // currentTileDataGridViewTextBoxColumn
             // 
@@ -174,7 +174,7 @@
             this.currentTileDataGridViewTextBoxColumn.HeaderText = "Tile";
             this.currentTileDataGridViewTextBoxColumn.Name = "currentTileDataGridViewTextBoxColumn";
             this.currentTileDataGridViewTextBoxColumn.ReadOnly = true;
-            this.currentTileDataGridViewTextBoxColumn.Width = 47;
+            this.currentTileDataGridViewTextBoxColumn.Width = 49;
             // 
             // validDataGridViewCheckBoxColumn
             // 
@@ -183,7 +183,7 @@
             this.validDataGridViewCheckBoxColumn.Name = "validDataGridViewCheckBoxColumn";
             this.validDataGridViewCheckBoxColumn.ReadOnly = true;
             this.validDataGridViewCheckBoxColumn.ThreeState = true;
-            this.validDataGridViewCheckBoxColumn.Width = 34;
+            this.validDataGridViewCheckBoxColumn.Width = 36;
             // 
             // Blank
             // 
@@ -249,7 +249,7 @@
             this.buttonDeleteInvalid.Name = "buttonDeleteInvalid";
             this.buttonDeleteInvalid.Size = new System.Drawing.Size(194, 23);
             this.buttonDeleteInvalid.TabIndex = 1;
-            this.buttonDeleteInvalid.Text = "Delete all invalid saves in Open Rails";
+            this.buttonDeleteInvalid.Text = "Delete all invalid saves";
             this.buttonDeleteInvalid.UseVisualStyleBackColor = true;
             this.buttonDeleteInvalid.Click += new System.EventHandler(this.buttonDeleteInvalid_Click);
             // 

@@ -1,8 +1,8 @@
 ﻿msgid ""
 msgstr "[!!!  !!!]"
 "Project-Id-Version: Contrib\n"
-"POT-Creation-Date: 2015-04-30 23:02:26+0100\n"
-"PO-Revision-Date: 2015-04-30 23:02:27+0100\n"
+"POT-Creation-Date: 2015-05-04 11:13:19+0100\n"
+"PO-Revision-Date: 2015-05-04 11:13:20+0100\n"
 "Last-Translator: \n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: qps-ploc\n"
@@ -932,7 +932,7 @@ msgstr "[!!! 10 !!!]"
 msgid "99"
 msgstr "[!!! 99 !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/Languages.cs:65
+#: ../../Contrib/TrackViewer/UserInterface/Languages.cs:75
 msgid "Please restart TrackViewer in order to load the new language."
 msgstr "[!!! Þℓèáƨè řèƨƭářƭ TřáçƙVïèωèř ïñ ôřδèř ƭô ℓôáδ ƭλè ñèω ℓáñϱúáϱè. !!!]"
 

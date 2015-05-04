@@ -1,8 +1,8 @@
 ﻿msgid ""
 msgstr "[!!!  !!!]"
 "Project-Id-Version: RunActivity\n"
-"POT-Creation-Date: 2015-04-30 23:02:28+0100\n"
-"PO-Revision-Date: 2015-04-30 23:02:29+0100\n"
+"POT-Creation-Date: 2015-05-04 11:13:21+0100\n"
+"PO-Revision-Date: 2015-05-04 11:13:22+0100\n"
 "Last-Translator: \n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: qps-ploc\n"
@@ -13,7 +13,6 @@ msgstr "[!!!  !!!]"
 
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:217
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3685
 #: ../../RunActivity/RollingStock/SubSystems/Brakes/MSTS/AirSinglePipe.cs:55
 msgid "Release"
 msgstr "[!!! Rèℓèáƨè !!!]"
@@ -426,60 +425,60 @@ msgstr "[!!! Çôúƥℓèř ôƲèřℓôáδèδ! !!!]"
 msgid "Other train is blocking path"
 msgstr "[!!! Óƭλèř ƭřáïñ ïƨ βℓôçƙïñϱ ƥáƭλ !!!]"
 
-#: ../../RunActivity/Physics/Train.cs:5470
+#: ../../RunActivity/Physics/Train.cs:5478
 msgid "Stopped due to errors in route setting"
 msgstr "[!!! §ƭôƥƥèδ δúè ƭô èřřôřƨ ïñ řôúƭè ƨèƭƭïñϱ !!!]"
 
-#: ../../RunActivity/Physics/Train.cs:6132
-#: ../../RunActivity/Physics/Train.cs:7210
+#: ../../RunActivity/Physics/Train.cs:6140
+#: ../../RunActivity/Physics/Train.cs:7218
 msgid "No signal in train's path"
 msgstr "[!!! Nô ƨïϱñáℓ ïñ ƭřáïñ'ƨ ƥáƭλ !!!]"
 
-#: ../../RunActivity/Physics/Train.cs:6140
+#: ../../RunActivity/Physics/Train.cs:6148
 msgid "Next signal already allocated to other train"
 msgstr "[!!! Nèжƭ ƨïϱñáℓ áℓřèáδ¥ áℓℓôçáƭèδ ƭô ôƭλèř ƭřáïñ !!!]"
 
-#: ../../RunActivity/Physics/Train.cs:6201
+#: ../../RunActivity/Physics/Train.cs:6209
 msgid "Request to clear signal cannot be processed"
 msgstr "[!!! Rè9úèƨƭ ƭô çℓèář ƨïϱñáℓ çáññôƭ βè ƥřôçèƨƨèδ !!!]"
 
-#: ../../RunActivity/Physics/Train.cs:6307
-#: ../../RunActivity/Physics/Train.cs:7330
+#: ../../RunActivity/Physics/Train.cs:6315
+#: ../../RunActivity/Physics/Train.cs:7338
 msgid "No switch found"
 msgstr "[!!! Nô ƨωïƭçλ ƒôúñδ !!!]"
 
-#: ../../RunActivity/Physics/Train.cs:7564
+#: ../../RunActivity/Physics/Train.cs:7572
 msgid "You cannot enter manual mode when autopiloted"
 msgstr "[!!! Ýôú çáññôƭ èñƭèř ₥áñúáℓ ₥ôδè ωλèñ áúƭôƥïℓôƭèδ !!!]"
 
-#: ../../RunActivity/Physics/Train.cs:7576
+#: ../../RunActivity/Physics/Train.cs:7584
 msgid "Train is not back on original route"
 msgstr "[!!! Třáïñ ïƨ ñôƭ βáçƙ ôñ ôřïϱïñáℓ řôúƭè !!!]"
 
-#: ../../RunActivity/Physics/Train.cs:7585
+#: ../../RunActivity/Physics/Train.cs:7593
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
 "[!!! Óřïϱïñáℓ řôúƭè ïƨ řèƲèřƨè ƒřô₥ ƥřèƨèñƭ δïřèçƭïôñ, ƨƭôƥ ƭřáïñ βèƒôřè ƨωïƭçλïñϱ !!!]"
 
-#: ../../RunActivity/Physics/Train.cs:7598
+#: ../../RunActivity/Physics/Train.cs:7606
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr "[!!! Çáññôƭ çλáñϱè ƭô Máñúáℓ Môδè ωλïℓè ïñ Éжƥℓôřèř Môδè !!!]"
 
-#: ../../RunActivity/Physics/Train.cs:7693
+#: ../../RunActivity/Physics/Train.cs:7701
 msgid "Reversal required and rear of train not on required route"
 msgstr "[!!! RèƲèřƨáℓ řè9úïřèδ áñδ řèář ôƒ ƭřáïñ ñôƭ ôñ řè9úïřèδ řôúƭè !!!]"
 
-#: ../../RunActivity/Physics/Train.cs:7899
+#: ../../RunActivity/Physics/Train.cs:7907
 msgid "Cannot clear signal behind train while in AUTO mode"
 msgstr "[!!! Çáññôƭ çℓèář ƨïϱñáℓ βèλïñδ ƭřáïñ ωλïℓè ïñ ÂÛTÓ ₥ôδè !!!]"
 
-#: ../../RunActivity/Physics/Train.cs:8148
+#: ../../RunActivity/Physics/Train.cs:8156
 #, csharp-format
 msgid "Allowed speed raised to {0}"
 msgstr "[!!! Âℓℓôωèδ ƨƥèèδ řáïƨèδ ƭô {0} !!!]"
 
-#: ../../RunActivity/Physics/Train.cs:8190
+#: ../../RunActivity/Physics/Train.cs:8198
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr "[!!! Třáïñ ƨƭôƥƥèδ δúè ƭô ƥřôβℓè₥ƨ ωïƭλ ôƭλèř ƭřáïñ: ƭřáïñ {0} , řèáƨôñ: {1} !!!]"
@@ -731,7 +730,7 @@ msgid "Stored"
 msgstr "[!!! §ƭôřèδ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3583
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3757
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3759
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:665
 msgid "Max"
 msgstr "[!!! Máж !!!]"
@@ -745,7 +744,7 @@ msgid "Flue"
 msgstr "[!!! Fℓúè !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3592
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3774
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3776
 msgid "Water"
 msgstr "[!!! Wáƭèř !!!]"
 
@@ -799,7 +798,7 @@ msgid "Genertr"
 msgstr "[!!! Gèñèřƭř !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3616
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3788
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3790
 msgid "Stoker"
 msgstr "[!!! §ƭôƙèř !!!]"
 
@@ -831,6 +830,7 @@ msgstr "[!!! Çúƭôƒƒ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3643
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3665
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3685
 msgid "Rel"
 msgstr "[!!! Rèℓ !!!]"
 
@@ -876,7 +876,7 @@ msgid "Press:"
 msgstr "[!!! Þřèƨƨ: !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3701
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3781
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3783
 msgid "Status:"
 msgstr "[!!! §ƭáƭúƨ: !!!]"
 
@@ -900,7 +900,7 @@ msgstr "[!!! Þℓúϱ !!!]"
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3705
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3707
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3736
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3783
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3754
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3785
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3787
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3789
@@ -917,7 +917,7 @@ msgstr "[!!! Ýèƨ !!!]"
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3705
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3707
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3736
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3783
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3754
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3785
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3787
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3789
@@ -1023,53 +1023,53 @@ msgstr "[!!! §úƥèř§èƭ !!!]"
 msgid "MaxFuel"
 msgstr "[!!! MáжFúèℓ !!!]"
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3756
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3753
+msgid "BstReset"
+msgstr "[!!! ßƨƭRèƨèƭ !!!]"
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3758
 msgid "Injector:"
 msgstr "[!!! ÌñJèçƭôř: !!!]"
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3758
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3760
 msgid "Inj1"
 msgstr "[!!! ÌñJ1 !!!]"
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3759
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3761
 msgid "Temp1"
 msgstr "[!!! Tè₥ƥ1 !!!]"
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3760
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3762
 msgid "Inj2"
 msgstr "[!!! ÌñJ2 !!!]"
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3761
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3763
 msgid "Temp2"
 msgstr "[!!! Tè₥ƥ2 !!!]"
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3772
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3774
 msgid "Tender:"
 msgstr "[!!! Tèñδèř: !!!]"
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3773
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3775
 msgid "Coal"
 msgstr "[!!! Çôáℓ !!!]"
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3782
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3784
 msgid "CoalOut"
 msgstr "[!!! ÇôáℓÓúƭ !!!]"
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3784
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3786
 msgid "WaterOut"
 msgstr "[!!! WáƭèřÓúƭ !!!]"
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3786
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3788
 msgid "FireOut"
 msgstr "[!!! FïřèÓúƭ !!!]"
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3790
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3792
 msgid "Boost"
 msgstr "[!!! ßôôƨƭ !!!]"
-
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3792
-msgid "BstReset"
-msgstr "[!!! ßƨƭRèƨèƭ !!!]"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3794
 msgid "GrLimit"

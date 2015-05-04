@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-04-30 23:02:26+0100\n"
-"PO-Revision-Date: 2015-04-30 23:02:27+0100\n"
+"POT-Creation-Date: 2015-05-04 11:13:19+0100\n"
+"PO-Revision-Date: 2015-05-04 11:13:20+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -918,7 +918,7 @@ msgstr ""
 msgid "99"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/Languages.cs:65
+#: ../../Contrib/TrackViewer/UserInterface/Languages.cs:75
 msgid "Please restart TrackViewer in order to load the new language."
 msgstr ""
 

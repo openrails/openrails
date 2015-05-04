@@ -382,7 +382,6 @@ namespace ORTS
             if (Directory.Exists(directory))
             {
                 var build = VersionInfo.Build.Contains(" ") ? VersionInfo.Build.Substring(VersionInfo.Build.IndexOf(" ") + 1) : null;
-                var remains = 0;
                 var deletes = 0;
                 foreach (var saveFile in Directory.GetFiles(directory, "*.save"))
                 {
@@ -405,12 +404,8 @@ namespace ORTS
                         }
                         deletes++;
                     }
-                    else
-                    {
-                        remains++;
-                    }
                 }
-                MessageBox.Show(catalog.GetStringFmt("{0} invalid saves deleted\n{1} saves remain", deletes, remains), catalog.GetString("Delete of invalid saves"));
+                MessageBox.Show(catalog.GetStringFmt("{0} invalid saves have been deleted.", deletes), Application.ProductName + " " + VersionInfo.VersionOrBuild);
             }
             LoadSaves();
         }

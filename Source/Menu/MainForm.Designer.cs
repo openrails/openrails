@@ -34,8 +34,7 @@ namespace ORTS
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.checkBoxWindowed = new System.Windows.Forms.CheckBox();
             this.buttonStart = new System.Windows.Forms.Button();
-            this.labelLogo1 = new System.Windows.Forms.Label();
-            this.labelLogo2 = new System.Windows.Forms.Label();
+            this.labelLogo = new System.Windows.Forms.Label();
             this.folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.checkBoxWarnings = new System.Windows.Forms.CheckBox();
             this.buttonOptions = new System.Windows.Forms.Button();
@@ -128,29 +127,18 @@ namespace ORTS
             this.buttonStart.Text = "Start";
             this.buttonStart.Click += new System.EventHandler(this.buttonStart_Click);
             // 
-            // labelLogo1
+            // labelLogo
             // 
-            this.labelLogo1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.labelLogo1.AutoSize = true;
-            this.labelLogo1.Font = new System.Drawing.Font("Arial", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelLogo1.ForeColor = System.Drawing.Color.Gray;
-            this.labelLogo1.Location = new System.Drawing.Point(146, 467);
-            this.labelLogo1.Name = "labelLogo1";
-            this.labelLogo1.Size = new System.Drawing.Size(71, 29);
-            this.labelLogo1.TabIndex = 11;
-            this.labelLogo1.Text = "open";
-            // 
-            // labelLogo2
-            // 
-            this.labelLogo2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.labelLogo2.AutoSize = true;
-            this.labelLogo2.Font = new System.Drawing.Font("Arial", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelLogo2.ForeColor = System.Drawing.Color.Gray;
-            this.labelLogo2.Location = new System.Drawing.Point(185, 492);
-            this.labelLogo2.Name = "labelLogo2";
-            this.labelLogo2.Size = new System.Drawing.Size(62, 29);
-            this.labelLogo2.TabIndex = 12;
-            this.labelLogo2.Text = "rails";
+            this.labelLogo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.labelLogo.Font = new System.Drawing.Font("Arial", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelLogo.ForeColor = System.Drawing.Color.Gray;
+            this.labelLogo.Location = new System.Drawing.Point(82, 472);
+            this.labelLogo.Name = "labelLogo";
+            this.labelLogo.Size = new System.Drawing.Size(248, 64);
+            this.labelLogo.TabIndex = 11;
+            this.labelLogo.Text = "Open Rails";
+            this.labelLogo.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.labelLogo.UseMnemonic = false;
             // 
             // folderBrowserDialog
             // 
@@ -347,9 +335,10 @@ namespace ORTS
             // 
             this.pictureBoxLogo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.pictureBoxLogo.Image = ((System.Drawing.Image)(resources.GetObject("pictureBoxLogo.Image")));
-            this.pictureBoxLogo.Location = new System.Drawing.Point(73, 462);
+            this.pictureBoxLogo.Location = new System.Drawing.Point(12, 472);
             this.pictureBoxLogo.Name = "pictureBoxLogo";
-            this.pictureBoxLogo.Size = new System.Drawing.Size(67, 68);
+            this.pictureBoxLogo.Size = new System.Drawing.Size(64, 64);
+            this.pictureBoxLogo.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBoxLogo.TabIndex = 5;
             this.pictureBoxLogo.TabStop = false;
             // 
@@ -876,8 +865,7 @@ namespace ORTS
             this.Controls.Add(this.comboBoxRoute);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.pictureBoxLogo);
-            this.Controls.Add(this.labelLogo2);
-            this.Controls.Add(this.labelLogo1);
+            this.Controls.Add(this.labelLogo);
             this.Controls.Add(this.label2);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -907,9 +895,8 @@ namespace ORTS
 
         private System.Windows.Forms.CheckBox checkBoxWindowed;
         private System.Windows.Forms.Button buttonStart;
-        private System.Windows.Forms.Label labelLogo1;
+        private System.Windows.Forms.Label labelLogo;
         private System.Windows.Forms.PictureBox pictureBoxLogo;
-        private System.Windows.Forms.Label labelLogo2;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog;
         private System.Windows.Forms.CheckBox checkBoxWarnings;
         private System.Windows.Forms.Button buttonOptions;
