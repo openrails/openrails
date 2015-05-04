@@ -1,8 +1,8 @@
 ﻿msgid ""
-msgstr "[!!!  !!!]"
+msgstr "[ !!!]"
 "Project-Id-Version: Updater\n"
-"POT-Creation-Date: 2015-05-04 11:13:22+0100\n"
-"PO-Revision-Date: 2015-05-04 11:13:22+0100\n"
+"POT-Creation-Date: 2015-05-04 12:50:15+0100\n"
+"PO-Revision-Date: 2015-05-04 12:50:15+0100\n"
 "Last-Translator: \n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: qps-ploc\n"
@@ -14,5 +14,5 @@ msgstr "[!!!  !!!]"
 
 #: ../../Updater/UpdaterProgress.Designer.cs:55
 msgid "Open Rails Updater"
-msgstr "[!!! Óƥèñ Ráïℓƨ Ûƥδáƭèř !!!]"
+msgstr "[Óƥèñ Ráïℓƨ Ûƥδáƭèř !!!]"
 

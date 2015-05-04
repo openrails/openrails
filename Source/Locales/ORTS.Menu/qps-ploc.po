@@ -1,8 +1,8 @@
 ﻿msgid ""
-msgstr "[!!!  !!!]"
+msgstr "[ !!!]"
 "Project-Id-Version: ORTS.Menu\n"
-"POT-Creation-Date: 2015-05-04 11:13:20+0100\n"
-"PO-Revision-Date: 2015-05-04 11:13:20+0100\n"
+"POT-Creation-Date: 2015-05-04 12:50:11+0100\n"
+"PO-Revision-Date: 2015-05-04 12:50:12+0100\n"
 "Last-Translator: \n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: qps-ploc\n"
@@ -14,7 +14,7 @@ msgstr "[!!!  !!!]"
 
 #: ../../ORTS.Menu/Activities.cs:46
 msgid "- Explore Route -"
-msgstr "[!!! - Éжƥℓôřè Rôúƭè - !!!]"
+msgstr "[- Éжƥℓôřè Rôúƭè - !!!]"
 
 #: ../../ORTS.Menu/Activities.cs:75
 #: ../../ORTS.Menu/Consists.cs:47
@@ -25,7 +25,7 @@ msgstr "[!!! - Éжƥℓôřè Rôúƭè - !!!]"
 #: ../../ORTS.Menu/Paths.cs:63
 #: ../../ORTS.Menu/Routes.cs:47
 msgid "load error:"
-msgstr "[!!! ℓôáδ èřřôř: !!!]"
+msgstr "[ℓôáδ èřřôř: !!!]"
 
 #: ../../ORTS.Menu/Activities.cs:78
 #: ../../ORTS.Menu/Consists.cs:50
@@ -36,7 +36,7 @@ msgstr "[!!! ℓôáδ èřřôř: !!!]"
 #: ../../ORTS.Menu/Paths.cs:67
 #: ../../ORTS.Menu/Routes.cs:49
 msgid "unnamed:"
-msgstr "[!!! úññá₥èδ: !!!]"
+msgstr "[úññá₥èδ: !!!]"
 
 #: ../../ORTS.Menu/Activities.cs:84
 #: ../../ORTS.Menu/Consists.cs:54
@@ -47,29 +47,29 @@ msgstr "[!!! úññá₥èδ: !!!]"
 #: ../../ORTS.Menu/Paths.cs:71
 #: ../../ORTS.Menu/Routes.cs:54
 msgid "missing:"
-msgstr "[!!! ₥ïƨƨïñϱ: !!!]"
+msgstr "[₥ïƨƨïñϱ: !!!]"
 
 #: ../../ORTS.Menu/Activities.cs:77
 #, csharp-format
 msgid "Activity '{0}' is excluded."
-msgstr "[!!! ÂçƭïƲïƭ¥ '{0}' ïƨ èжçℓúδèδ. !!!]"
+msgstr "[ÂçƭïƲïƭ¥ '{0}' ïƨ èжçℓúδèδ. !!!]"
 
 #: ../../ORTS.Menu/Consists.cs:185
 msgid "- Any Locomotive -"
-msgstr "[!!! - Âñ¥ £ôçô₥ôƭïƲè - !!!]"
+msgstr "[- Âñ¥ £ôçô₥ôƭïƲè - !!!]"
 
 #: ../../ORTS.Menu/Consists.cs:201
 #, csharp-format
 msgid "Locomotive '{0}' is excluded."
-msgstr "[!!! £ôçô₥ôƭïƲè '{0}' ïƨ èжçℓúδèδ. !!!]"
+msgstr "[£ôçô₥ôƭïƲè '{0}' ïƨ èжçℓúδèδ. !!!]"
 
 #: ../../ORTS.Menu/Paths.cs:150
 #, csharp-format
 msgid "Start at: {0}"
-msgstr "[!!! §ƭářƭ áƭ: {0} !!!]"
+msgstr "[§ƭářƭ áƭ: {0} !!!]"
 
 #: ../../ORTS.Menu/Paths.cs:151
 #, csharp-format
 msgid "Heading to: {0}"
-msgstr "[!!! Hèáδïñϱ ƭô: {0} !!!]"
+msgstr "[Hèáδïñϱ ƭô: {0} !!!]"
 

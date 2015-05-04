@@ -1,8 +1,8 @@
 ﻿msgid ""
-msgstr "[!!!  !!!]"
+msgstr "[ !!!]"
 "Project-Id-Version: ORTS.Formats\n"
-"POT-Creation-Date: 2015-05-04 11:13:20+0100\n"
-"PO-Revision-Date: 2015-05-04 11:13:20+0100\n"
+"POT-Creation-Date: 2015-05-04 12:50:11+0100\n"
+"PO-Revision-Date: 2015-05-04 12:50:11+0100\n"
 "Last-Translator: \n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: qps-ploc\n"
@@ -15,5 +15,5 @@ msgstr "[!!!  !!!]"
 #: ../../ORTS.Formats/ORTimetableFile.cs:289
 #, csharp-format
 msgid "Start time: {0}"
-msgstr "[!!! §ƭářƭ ƭï₥è: {0} !!!]"
+msgstr "[§ƭářƭ ƭï₥è: {0} !!!]"
 

@@ -2,7 +2,15 @@
     process {
         $a = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
         $b = "ÂßÇÐÉFGHÌJK£MNÓÞQR§TÛVWXÝZáβçδèƒϱλïJƙℓ₥ñôƥ9řƨƭúƲωж¥ƺ"
-        Write-Output ('[!!! {0} !!!]' -f ((($_ -split '' | %{ $i = $a.IndexOf($_); if ($_ -and $i -ge 0) { $b[$i] } else { $_ } }) -join '') -creplace '\\ř','\r' -creplace '\\ñ','\n'))
+        Write-Output ('[{0} !!!]' -f ((($_ -split '' | % {
+            $inFormat = 0
+        } {
+            $i = $a.IndexOf($_);
+            if (-not $inFormat -and $_ -and $i -ge 0) { Write-Output $b[$i] } else { Write-Output $_ }
+            if (-not $inFormat -and $_ -eq '{') { $inFormat = 1 }
+            elseif ($inFormat -and $_ -eq '{') { $inFormat = 0 }
+            elseif ($inFormat -and $_ -eq '}') { $inFormat = 0 }
+        }) -join '') -creplace '\\ř','\r' -creplace '\\ñ','\n'))
     }
 }
 
