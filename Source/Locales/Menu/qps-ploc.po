@@ -1,8 +1,8 @@
-﻿msgid ""
+msgid ""
 msgstr "[ !!!]"
 "Project-Id-Version: Menu\n"
-"POT-Creation-Date: 2015-05-06 22:37:38+0100\n"
-"PO-Revision-Date: 2015-05-06 22:37:39+0100\n"
+"POT-Creation-Date: 2015-05-06 23:00:37+0100\n"
+"PO-Revision-Date: 2015-05-06 23:00:37+0100\n"
 "Last-Translator: \n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: qps-ploc\n"
@@ -34,8 +34,8 @@ msgstr "[§áƲè Þáçƙ '{0}' èжƥôřƭèδ ƨúççèƨƨƒúℓℓ¥. !!
 #, csharp-format
 msgid "Save Pack folder contains {0} save pack:"
 msgid_plural "Save Pack folder contains {0} save packs:"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "[§áƲè Þáçƙ ƒôℓδèř çôñƭáïñƨ {0} ƨáƲè ƥáçƙ: !!!]"
+msgstr[1] "[§áƲè Þáçƙ ƒôℓδèř çôñƭáïñƨ {0} ƨáƲè ƥáçƙƨ: !!!]"
 
 #: ../../Menu/ImportExportSaveForm.Designer.cs:39
 msgid "Open Save Packs folder"

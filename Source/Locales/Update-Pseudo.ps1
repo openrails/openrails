@@ -17,14 +17,21 @@
 gci -Directory | %{
     $file = $_
     Write-Host ('Reading template file ''{0}''' -f (gi ($file.Name + '\*.pot')))
-    gc -Encoding UTF8 ($file.Name + '\*.pot') | %{
+    (gc -Encoding UTF8 ($file.Name + '\*.pot') | %{
         $msgid = @()
+        $msgid_plural = @()
     } {
         if ($_ -cmatch '^msgid "(.*)"') {
             $msgid = @($Matches[1])
             Write-Output $_
-        } elseif ($msgid.Length -gt 0 -and $_ -cmatch '^"(.*)"$') {
+        } elseif ($_ -cmatch '^msgid_plural "(.*)"') {
+            $msgid_plural = @($Matches[1])
+            Write-Output $_
+        } elseif ($msgid.Length -gt 0 -and $msgid_plural.Length -eq 0 -and $_ -cmatch '^"(.*)"$') {
             $msgid += @($Matches[1])
+            Write-Output $_
+        } elseif ($msgid_plural.Length -gt 0 -and $_ -cmatch '^"(.*)"$') {
+            $msgid_plural += @($Matches[1])
             Write-Output $_
         } elseif ($msgid.Length -gt 0 -and $_ -cmatch '^msgstr ""') {
             if ($msgid.Length -gt 1) {
@@ -34,6 +41,22 @@ gci -Directory | %{
                 $msgid[0] | Get-Translation | %{'msgstr "{0}"' -f $_}
             }
             $msgid = @()
+        } elseif ($msgid.Length -gt 0 -and $_ -cmatch '^msgstr\[0\] ""') {
+            if ($msgid.Length -gt 1) {
+                Write-Output 'msgstr[0] ""'
+                ((($msgid | select -Skip 1) -join "`n") | Get-Translation) -split "`n" | %{'"{0}"' -f $_}
+            } else {
+                $msgid[0] | Get-Translation | %{'msgstr[0] "{0}"' -f $_}
+            }
+            $msgid = @()
+        } elseif ($msgid_plural.Length -gt 0 -and $_ -cmatch '^msgstr\[1\] ""') {
+            if ($msgid_plural.Length -gt 1) {
+                Write-Output 'msgstr[1] ""'
+                ((($msgid_plural | select -Skip 1) -join "`n") | Get-Translation) -split "`n" | %{'"{0}"' -f $_}
+            } else {
+                $msgid_plural[0] | Get-Translation | %{'msgstr[1] "{0}"' -f $_}
+            }
+            $msgid_plural = @()
         } elseif ($_ -like '"Project-Id-Version: *"') {
             Write-Output ('"Project-Id-Version: {0}\n"' -f $file.Name)
         } elseif ($_ -like '"Language-Team: *"') {
@@ -45,5 +68,7 @@ gci -Directory | %{
         } else {
             Write-Output $_
         }
-    } | Out-File -Encoding utf8 ($_.Name + '\qps-ploc.po')
+    }) -join "`r`n" | % {
+        [System.IO.File]::WriteAllLines(($file.Name + '\qps-ploc.po'), $_)
+    }
 }

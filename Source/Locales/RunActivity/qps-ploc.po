@@ -1,8 +1,8 @@
-﻿msgid ""
+msgid ""
 msgstr "[ !!!]"
 "Project-Id-Version: RunActivity\n"
-"POT-Creation-Date: 2015-05-06 22:37:39+0100\n"
-"PO-Revision-Date: 2015-05-06 22:37:41+0100\n"
+"POT-Creation-Date: 2015-05-06 23:00:38+0100\n"
+"PO-Revision-Date: 2015-05-06 23:00:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: qps-ploc\n"
@@ -409,8 +409,8 @@ msgstr "[Mïƨƨïñϱ çář, λáƲè ƨúβƨƭïƭúƭèδ ωïƭλ ôƭλè
 #, csharp-format
 msgid "Cannot decouple: train has {0} player, need to completely stop."
 msgid_plural "Cannot decouple: train has {0} players, need to completely stop."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "[Çáññôƭ δèçôúƥℓè: ƭřáïñ λáƨ {0} ƥℓá¥èř, ñèèδ ƭô çô₥ƥℓèƭèℓ¥ ƨƭôƥ. !!!]"
+msgstr[1] "[Çáññôƭ δèçôúƥℓè: ƭřáïñ λáƨ {0} ƥℓá¥èřƨ, ñèèδ ƭô çô₥ƥℓèƭèℓ¥ ƨƭôƥ. !!!]"
 
 #: ../../RunActivity/Physics/Train.cs:1459
 msgid "Coupler broken!"
@@ -2020,8 +2020,8 @@ msgstr "[Kè¥βôářδ ₥áƥ ï₥áϱè ƨáƲèδ ƭô '{0}'. !!!]"
 #, csharp-format
 msgid "{0} viewpoint stored. Use Shift+8 to restore viewpoints."
 msgid_plural "{0} viewpoints stored. Use Shift+8 to restore viewpoints."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "[{0} Ʋïèωƥôïñƭ ƨƭôřèδ. Ûƨè §λïƒƭ+8 ƭô řèƨƭôřè Ʋïèωƥôïñƭƨ. !!!]"
+msgstr[1] "[{0} Ʋïèωƥôïñƭƨ ƨƭôřèδ. Ûƨè §λïƒƭ+8 ƭô řèƨƭôřè Ʋïèωƥôïñƭƨ. !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:41
 msgid "Activity Events"
@@ -2770,8 +2770,8 @@ msgstr "[{0:F0}% ({1:F0}% {2}) !!!]"
 #, csharp-format
 msgid "{0} logical processor"
 msgid_plural "{0} logical processors"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "[{0} ℓôϱïçáℓ ƥřôçèƨƨôř !!!]"
+msgstr[1] "[{0} ℓôϱïçáℓ ƥřôçèƨƨôřƨ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:53
 msgid "Next Station"
@@ -2789,8 +2789,8 @@ msgstr "[ÂçƭïƲïƭ¥ çô₥ƥℓèƭèδ. !!!]"
 #, csharp-format
 msgid "Current Delay: {0} minute"
 msgid_plural "Current Delay: {0} minutes"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "[Çúřřèñƭ Ðèℓá¥: {0} ₥ïñúƭè !!!]"
+msgstr[1] "[Çúřřèñƭ Ðèℓá¥: {0} ₥ïñúƭèƨ !!!]"
 
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:163
 msgid "Train not active."
@@ -2935,6 +2935,6 @@ msgstr "[Rèƒïℓℓ: {0} ƨúƥƥℓ¥ ñôω řèƥℓèñïƨλèδ. !!!]"
 #, csharp-format
 msgid "{0} meter"
 msgid_plural "{0} meters"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "[{0} ₥èƭèř !!!]"
+msgstr[1] "[{0} ₥èƭèřƨ !!!]"
 
