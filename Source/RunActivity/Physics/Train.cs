@@ -1434,7 +1434,7 @@ namespace ORTS
             {
                 car.MotiveForceN = 0;
                 car.Update(elapsedClockSeconds);
-                car.TotalForceN = car.MotiveForceN + car.GravityForceN - car.CurveForceN - car.TunnelForceN;
+                car.TotalForceN = car.MotiveForceN + car.GravityForceN;
                 massKg += car.MassKG;
                 //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
                 // To achieve the same result with other means, without flipping trainset physics, the line should be changed as follows:
@@ -3495,11 +3495,12 @@ namespace ORTS
 
         public void ComputeCouplerForces()
         {
+            // TODO: this loop could be extracted and become a separate method, that could be called also by TTTrain.physicsPreUpdate
             for (int i = 0; i < Cars.Count; i++)
                 if (Cars[i].SpeedMpS > 0)
-                    Cars[i].TotalForceN -= (Cars[i].FrictionForceN + Cars[i].BrakeForceN);
+                    Cars[i].TotalForceN -= (Cars[i].FrictionForceN + Cars[i].BrakeForceN + Cars[i].CurveForceN + Cars[i].TunnelForceN);
                 else if (Cars[i].SpeedMpS < 0)
-                    Cars[i].TotalForceN += Cars[i].FrictionForceN + Cars[i].BrakeForceN;
+                    Cars[i].TotalForceN += Cars[i].FrictionForceN + Cars[i].BrakeForceN + Cars[i].CurveForceN + Cars[i].TunnelForceN;
             if (Cars.Count < 2)
                 return;
             SetupCouplerForceEquations();
@@ -3592,7 +3593,7 @@ namespace ORTS
             for (int i = 0; i < Cars.Count; i++)
             {
                 TrainCar car = Cars[i];
-                if (car.SpeedMpS != 0 || car.TotalForceN <= (car.FrictionForceN + car.BrakeForceN))
+                if (car.SpeedMpS != 0 || car.TotalForceN <= (car.FrictionForceN + car.BrakeForceN + car.CurveForceN + car.TunnelForceN))
                     continue;
                 int j = i;
                 float f = 0;
@@ -3600,9 +3601,9 @@ namespace ORTS
                 for (; ; )
                 {
                     if (car.IsDriveable)
-                        f += car.TotalForceN - (car.FrictionForceN);
+                        f += car.TotalForceN - (car.FrictionForceN + car.CurveForceN + car.TunnelForceN);
                     else
-                        f += car.TotalForceN - (car.FrictionForceN + car.BrakeForceN);
+                        f += car.TotalForceN - (car.FrictionForceN + car.BrakeForceN + car.CurveForceN + car.TunnelForceN);
                     m += car.MassKG;
                     if (j == Cars.Count - 1 || car.CouplerSlackM < car.GetMaximumCouplerSlack2M())
                         break;
@@ -3622,7 +3623,7 @@ namespace ORTS
             for (int i = Cars.Count - 1; i >= 0; i--)
             {
                 TrainCar car = Cars[i];
-                if (car.SpeedMpS != 0 || car.TotalForceN > (-1.0f * (car.FrictionForceN + car.BrakeForceN)))
+                if (car.SpeedMpS != 0 || car.TotalForceN > (-1.0f * (car.FrictionForceN + car.BrakeForceN + car.CurveForceN + car.TunnelForceN)))
                     continue;
                 int j = i;
                 float f = 0;
@@ -3630,9 +3631,9 @@ namespace ORTS
                 for (; ; )
                 {
                     if (car.IsDriveable)
-                        f += car.TotalForceN + car.FrictionForceN;
+                        f += car.TotalForceN + car.FrictionForceN + car.CurveForceN + car.TunnelForceN;
                     else
-                        f += car.TotalForceN + car.FrictionForceN + car.BrakeForceN;
+                        f += car.TotalForceN + car.FrictionForceN + car.BrakeForceN + car.CurveForceN + car.TunnelForceN;
                     m += car.MassKG;
                     if (j == 0 || car.CouplerSlackM > -car.GetMaximumCouplerSlack2M())
                         break;
