@@ -749,7 +749,7 @@ namespace ORTS.Viewer3D
             {
                 Simulator.CabRotating = (Simulator.CabRotating + 1) % 4; //cab rotation can be shared by cab and land, 1 means cab rotate 1/4, land rotate 3/4
                 if (Simulator.Confirmer != null && Simulator.CabRotating != 0) Simulator.Confirmer.Message(ConfirmLevel.Information, Catalog.GetStringFmt("Rotating cab {0}/4, rotating land {1}/4", Simulator.CabRotating, (4 - Simulator.CabRotating)));
-                else if (Simulator.Confirmer != null) Simulator.Confirmer.Message(ConfirmLevel.Information, Catalog.GetString("Will not ratate cab and land"));
+                else if (Simulator.Confirmer != null) Simulator.Confirmer.Message(ConfirmLevel.Information, Catalog.GetString("Will not rotate cab and land"));
             }
             //hit 9 key, get back to player train
             if (UserInput.IsPressed(UserCommands.CameraJumpBackPlayer))

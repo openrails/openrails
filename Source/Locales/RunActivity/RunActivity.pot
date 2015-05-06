@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-05-04 11:13:21+0100\n"
-"PO-Revision-Date: 2015-05-04 11:13:22+0100\n"
+"POT-Creation-Date: 2015-05-06 22:37:39+0100\n"
+"PO-Revision-Date: 2015-05-06 22:37:41+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -419,64 +419,64 @@ msgstr ""
 msgid "Coupler overloaded!"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:4588
-#: ../../RunActivity/Physics/Train.cs:4593
+#: ../../RunActivity/Physics/Train.cs:4589
+#: ../../RunActivity/Physics/Train.cs:4594
 msgid "Other train is blocking path"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5478
+#: ../../RunActivity/Physics/Train.cs:5479
 msgid "Stopped due to errors in route setting"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6140
-#: ../../RunActivity/Physics/Train.cs:7218
+#: ../../RunActivity/Physics/Train.cs:6141
+#: ../../RunActivity/Physics/Train.cs:7219
 msgid "No signal in train's path"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6148
+#: ../../RunActivity/Physics/Train.cs:6149
 msgid "Next signal already allocated to other train"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6209
+#: ../../RunActivity/Physics/Train.cs:6210
 msgid "Request to clear signal cannot be processed"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6315
-#: ../../RunActivity/Physics/Train.cs:7338
+#: ../../RunActivity/Physics/Train.cs:6316
+#: ../../RunActivity/Physics/Train.cs:7339
 msgid "No switch found"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7572
+#: ../../RunActivity/Physics/Train.cs:7573
 msgid "You cannot enter manual mode when autopiloted"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7584
+#: ../../RunActivity/Physics/Train.cs:7585
 msgid "Train is not back on original route"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7593
+#: ../../RunActivity/Physics/Train.cs:7594
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7606
+#: ../../RunActivity/Physics/Train.cs:7607
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7701
+#: ../../RunActivity/Physics/Train.cs:7702
 msgid "Reversal required and rear of train not on required route"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7907
+#: ../../RunActivity/Physics/Train.cs:7908
 msgid "Cannot clear signal behind train while in AUTO mode"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:8156
+#: ../../RunActivity/Physics/Train.cs:8157
 #, csharp-format
 msgid "Allowed speed raised to {0}"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:8198
+#: ../../RunActivity/Physics/Train.cs:8199
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr ""
@@ -1967,7 +1967,7 @@ msgid "3D Cab view not available"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:752
-msgid "Will not ratate cab and land"
+msgid "Will not rotate cab and land"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:860
