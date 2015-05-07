@@ -65,6 +65,7 @@ gci -Directory | %{
         } elseif ($_ -like '"Language: *"') {
         } elseif ($_ -like '"X-Generator: *"') {
             Write-Output '"X-Generator: PowerShell Update-Pseudo.ps1\n"'
+            Write-Output '"Plural-Forms: nplurals=2; plural=(n != 1);\n"'
         } else {
             Write-Output $_
         }

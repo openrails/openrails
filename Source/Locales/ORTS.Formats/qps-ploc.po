@@ -1,8 +1,8 @@
 msgid ""
 msgstr "[ !!!]"
 "Project-Id-Version: ORTS.Formats\n"
-"POT-Creation-Date: 2015-05-06 23:00:37+0100\n"
-"PO-Revision-Date: 2015-05-06 23:00:37+0100\n"
+"POT-Creation-Date: 2015-05-07 19:53:26+0100\n"
+"PO-Revision-Date: 2015-05-07 19:53:26+0100\n"
 "Last-Translator: \n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: qps-ploc\n"
@@ -10,6 +10,7 @@ msgstr "[ !!!]"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: PowerShell Update-Pseudo.ps1\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 
 #: ../../ORTS.Formats/ORTimetableFile.cs:289
