@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
-"POT-Creation-Date: 2015-05-01 14:34:08+0200\n"
-"PO-Revision-Date: 2015-05-01 14:36+0100\n"
+"POT-Creation-Date: 2015-05-07 18:33:17+0200\n"
+"PO-Revision-Date: 2015-05-07 22:26+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -13,7 +13,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:217
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3685
 #: ../../RunActivity/RollingStock/SubSystems/Brakes/MSTS/AirSinglePipe.cs:55
 msgid "Release"
 msgstr "Lösen"
@@ -174,11 +173,10 @@ msgstr "m"
 msgid "Remove"
 msgstr "Entfernen"
 
-# Does what?
+# Functionality unknown - translation thus likely incorrect, but can´t be verified
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:174
-#, fuzzy
 msgid "Auto Switch"
-msgstr "Weichensperre"
+msgstr "Auto-Weiche"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:189
 msgid "Show Avatars"
@@ -199,7 +197,7 @@ msgstr "Ans"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:261
 msgid "Reply to Selected"
-msgstr "Ausgewählten antworten"
+msgstr "Ausgew. antwortn"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:276
 msgid "Draw Path"
@@ -229,15 +227,13 @@ msgstr "Normal"
 msgid "Follow"
 msgstr "Folgen"
 
-# Does what?
+# Due to scrambled appearance of the dispatcher window in any other language than English, checking the avaialble space and if the string fits into it was impossible.
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:418
-#, fuzzy
 msgid "Penalty"
-msgstr "Strafe"
+msgstr "Notbremse bei überfahrenem Haltesignal"
 
-# Does what? Used where?
+# Not implemented checkbox in multiplayer´s dispatcher window. Translated word by word, for the sake of completeness.
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:433
-#, fuzzy
 msgid "Prefer Green"
 msgstr "Grün vorziehen"
 
@@ -433,69 +429,67 @@ msgstr "Kupplung gebrochen!"
 msgid "Coupler overloaded!"
 msgstr "Kupplung überlastet!"
 
-#: ../../RunActivity/Physics/Train.cs:4588
-#: ../../RunActivity/Physics/Train.cs:4593
+#: ../../RunActivity/Physics/Train.cs:4589
+#: ../../RunActivity/Physics/Train.cs:4594
 msgid "Other train is blocking path"
 msgstr "Anderer Zug blockiert Fahrstraße."
 
-# Route (tdb / trk / etc) or path settings?
-#: ../../RunActivity/Physics/Train.cs:5470
-#, fuzzy
+#: ../../RunActivity/Physics/Train.cs:5479
 msgid "Stopped due to errors in route setting"
-msgstr "Wegen Fehlern in den Routeneinstellungen angehalten"
+msgstr "Wegen Problemen mit der Fahrstraße angehalten."
 
-#: ../../RunActivity/Physics/Train.cs:6132
-#: ../../RunActivity/Physics/Train.cs:7210
+#: ../../RunActivity/Physics/Train.cs:6141
+#: ../../RunActivity/Physics/Train.cs:7219
 msgid "No signal in train's path"
 msgstr "Kein Signal entlang der Fahrstraße"
 
-#: ../../RunActivity/Physics/Train.cs:6140
+#: ../../RunActivity/Physics/Train.cs:6149
 msgid "Next signal already allocated to other train"
 msgstr "Nächstes Signal schon anderem Zug zugewiesen"
 
-#: ../../RunActivity/Physics/Train.cs:6201
+#: ../../RunActivity/Physics/Train.cs:6210
 msgid "Request to clear signal cannot be processed"
 msgstr "Anfrage zur Signalfreigabe kann nicht verarbeitet werden"
 
-#: ../../RunActivity/Physics/Train.cs:6307
-#: ../../RunActivity/Physics/Train.cs:7330
+#: ../../RunActivity/Physics/Train.cs:6316
+#: ../../RunActivity/Physics/Train.cs:7339
 msgid "No switch found"
 msgstr "Keine Weiche gefunden"
 
-#: ../../RunActivity/Physics/Train.cs:7564
+#: ../../RunActivity/Physics/Train.cs:7573
 msgid "You cannot enter manual mode when autopiloted"
 msgstr "Wechsel zum manuellen Modus im Autopilot nicht möglich."
 
-#: ../../RunActivity/Physics/Train.cs:7576
+#: ../../RunActivity/Physics/Train.cs:7585
 msgid "Train is not back on original route"
 msgstr "Zug nicht wieder auf ursprünglicher Fahrstraße"
 
-#: ../../RunActivity/Physics/Train.cs:7585
+#: ../../RunActivity/Physics/Train.cs:7594
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
 "Ursprüngliche Farhstraße verläuft in entgegengesetzte Richtung. Zug vor "
 "umschalten anhalten."
 
-#: ../../RunActivity/Physics/Train.cs:7598
+#: ../../RunActivity/Physics/Train.cs:7607
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr "Umschalten zum Manuellen Modus im Erkundungsmodus nicht möglich."
 
-#: ../../RunActivity/Physics/Train.cs:7693
+#: ../../RunActivity/Physics/Train.cs:7702
 msgid "Reversal required and rear of train not on required route"
 msgstr ""
 "Richtungsänderung erforderlich, aber Zugenede nicht auf richiger Fahrstraße."
 
-#: ../../RunActivity/Physics/Train.cs:7899
+#: ../../RunActivity/Physics/Train.cs:7908
 msgid "Cannot clear signal behind train while in AUTO mode"
 msgstr "Signalfreigabe hinter dem Zug im automatischen Modus nicht möglich."
 
-#: ../../RunActivity/Physics/Train.cs:8148
+#: ../../RunActivity/Physics/Train.cs:8157
 #, csharp-format
 msgid "Allowed speed raised to {0}"
 msgstr "Geschwindigkeitsbegrenzung auf {0} erhöht."
 
-#: ../../RunActivity/Physics/Train.cs:8190
+#: ../../RunActivity/Physics/Train.cs:8199
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr "Zug wegen Problemen mit anderem Zug angehalten: Zug {0} , Grund: {1}"
@@ -755,7 +749,7 @@ msgid "Stored"
 msgstr "Gespeich"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3583
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3757
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3759
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:665
 msgid "Max"
 msgstr "Max."
@@ -769,7 +763,7 @@ msgid "Flue"
 msgstr "AbgRohre"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3592
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3774
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3776
 msgid "Water"
 msgstr "Wasser"
 
@@ -823,7 +817,7 @@ msgid "Genertr"
 msgstr "Generator"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3616
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3788
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3790
 msgid "Stoker"
 msgstr "AutHeizr"
 
@@ -855,6 +849,7 @@ msgstr "EinlsEnd"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3643
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3665
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3685
 msgid "Rel"
 msgstr "Abg"
 
@@ -900,7 +895,7 @@ msgid "Press:"
 msgstr "Druck:"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3701
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3781
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3783
 msgid "Status:"
 msgstr "Status:"
 
@@ -924,7 +919,7 @@ msgstr "SihtPfropf"
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3705
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3707
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3736
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3783
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3754
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3785
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3787
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3789
@@ -941,7 +936,7 @@ msgstr "Ja"
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3705
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3707
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3736
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3783
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3754
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3785
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3787
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3789
@@ -1047,53 +1042,53 @@ msgstr "SuperSet"
 msgid "MaxFuel"
 msgstr "MaxVerbrR"
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3756
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3753
+msgid "BstReset"
+msgstr "HeizRksz"
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3758
 msgid "Injector:"
 msgstr "Injektor:"
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3758
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3760
 msgid "Inj1"
 msgstr "Injekt1"
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3759
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3761
 msgid "Temp1"
 msgstr "Temp1"
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3760
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3762
 msgid "Inj2"
 msgstr "Injekt2"
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3761
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3763
 msgid "Temp2"
 msgstr "Temp2"
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3772
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3774
 msgid "Tender:"
 msgstr "Tender:"
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3773
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3775
 msgid "Coal"
 msgstr "Kohle"
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3782
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3784
 msgid "CoalOut"
 msgstr "KohleAus"
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3784
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3786
 msgid "WaterOut"
 msgstr "WassAus"
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3786
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3788
 msgid "FireOut"
 msgstr "FeuerAus"
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3790
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3792
 msgid "Boost"
 msgstr "ZusHeiz"
-
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3792
-msgid "BstReset"
-msgstr "HeizRksz"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3794
 msgid "GrLimit"
@@ -2005,10 +2000,8 @@ msgstr "Benutzen Sie Alt-F4, um den Mehrspielermodus direkt zu beenden."
 msgid "3D Cab view not available"
 msgstr "3D-Führerstandsansicht nicht verfügbar."
 
-# Spelling mistake in source text
 #: ../../RunActivity/Viewer3D/Viewer.cs:752
-#, fuzzy
-msgid "Will not ratate cab and land"
+msgid "Will not rotate cab and land"
 msgstr "Führerstand und Umgebung werden nicht mehr mitgedreht."
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:860
@@ -2604,12 +2597,12 @@ msgstr "Löser:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:608
 msgid "Stability correction"
-msgstr ""
+msgstr "Math. Stabilitätkorr:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:609
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:616
 msgid "Axle out force"
-msgstr ""
+msgstr "Ges. Achskraft:"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:615
 msgid "(Advanced adhesion model disabled)"
