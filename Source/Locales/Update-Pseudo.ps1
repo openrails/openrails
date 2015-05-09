@@ -18,10 +18,25 @@ gci -Directory | %{
     $file = $_
     Write-Host ('Reading template file ''{0}''' -f (gi ($file.Name + '\*.pot')))
     (gc -Encoding UTF8 ($file.Name + '\*.pot') | %{
+        $header = 1
         $msgid = @()
         $msgid_plural = @()
     } {
-        if ($_ -cmatch '^msgid "(.*)"') {
+        if ($header -and $_ -cmatch '^#:') {
+            $header = 0
+            Write-Output $_
+        } elseif ($header -and $_ -like '"Project-Id-Version: *"') {
+            Write-Output ('"Project-Id-Version: {0}\n"' -f $file.Name)
+        } elseif ($header -and $_ -like '"Language-Team: *"') {
+            Write-Output '"Language-Team: Open Rails Dev Team\n"'
+            Write-Output '"Language: qps-ploc\n"'
+        } elseif ($header -and $_ -like '"Language: *"') {
+        } elseif ($header -and $_ -like '"X-Generator: *"') {
+            Write-Output '"X-Generator: PowerShell Update-Pseudo.ps1\n"'
+            Write-Output '"Plural-Forms: nplurals=2; plural=(n != 1);\n"'
+        } elseif ($header) {
+            Write-Output $_
+        } elseif ($_ -cmatch '^msgid "(.*)"') {
             $msgid = @($Matches[1])
             Write-Output $_
         } elseif ($_ -cmatch '^msgid_plural "(.*)"') {
