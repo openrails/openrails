@@ -47,6 +47,12 @@ namespace ORTS
         {
             public string Name { get; set; }
             public string Path { get; set; }
+
+            public ContentFolder()
+            {
+                Name = "";
+                Path = "";
+            }
         }
 
         public OptionsForm(UserSettings settings, UpdateManager updateManager, bool initialContentSetup)
