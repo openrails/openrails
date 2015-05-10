@@ -290,7 +290,11 @@ namespace ORTS.Viewer3D
         {
             Train playerTrain = Simulator.Trains[inf.ReadInt32()];
             PlayerLocomotive = playerTrain.Cars[inf.ReadInt32()];
-            SelectedTrain = Simulator.Trains[inf.ReadInt32()];
+            var selected = inf.ReadInt32();
+            if (selected >= 0 && selected < Simulator.Trains.Count)
+            {
+                SelectedTrain = Simulator.Trains[selected];
+            }
 
             WindowManager.Restore(inf);
 
