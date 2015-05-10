@@ -70,35 +70,35 @@ namespace ORTS.TrackViewer.Editing
 
         static void DisplayNoPathAvailable()
         {
-            MessageBox.Show("Path does not even have a start node.\nSaving is not possible.",
-                        "Trackviewer Path Editor", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(TrackViewer.catalog.GetString("Path does not even have a start node.\nSaving is not possible."),
+                        TrackViewer.catalog.GetString("Trackviewer Path Editor"), MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         static bool UserCancelledBecauseOfUnfinishedPath(Trainpath trainpath)
         {
             List<string> cancelReasons = new List<string>();
-            if (!trainpath.HasEnd) cancelReasons.Add("* The path does not have a well-defined end-point");
-            //if (trainpath.IsBroken) cancelReasons.Add("* The path has broken nodes or links");
-            if (trainpath.FirstNodeOfTail!=null) cancelReasons.Add("* The path has a stored and not-yet reconnected tail");
+            if (!trainpath.HasEnd) cancelReasons.Add(TrackViewer.catalog.GetString("* The path does not have a well-defined end-point"));
+            //if (trainpath.IsBroken) cancelReasons.Add(TrackViewer.catalog.GetString("* The path has broken nodes or links"));
+            if (trainpath.FirstNodeOfTail!=null) cancelReasons.Add(TrackViewer.catalog.GetString("* The path has a stored and not-yet reconnected tail"));
             
             if (cancelReasons.Count == 0) return false;
 
-            string message = "The current path is not finished:\n";
+            string message = TrackViewer.catalog.GetString("The current path is not finished:") + "\n";
             message += String.Join("\n", cancelReasons.ToArray());
-            message += "\nDo you want to continue?";
+            message += "\n" + TrackViewer.catalog.GetString("Do you want to continue?");
 
             DialogResult dialogResult = MessageBox.Show(message, 
-                        "Trackviewer Path Editor", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+                        TrackViewer.catalog.GetString("Trackviewer Path Editor"), MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
             return (dialogResult == DialogResult.Cancel);
 
         }
 
         static void InformUserPathIsBroken()
         {
-            MessageBox.Show(TrackViewer.catalog.GetString(
-                "Saving broken paths might not always work correctly.\n" +
-                "The MSTS format for defining broken paths is not understood very well.\n" +
-                "Reopening it in TrackViewer, however, is likely to work."));
+            MessageBox.Show(
+                TrackViewer.catalog.GetString("Saving broken paths might not always work correctly.") + "\n" +
+                TrackViewer.catalog.GetString("The MSTS format for defining broken paths is not understood very well.") + "\n" +
+                TrackViewer.catalog.GetString("Reopening it in TrackViewer, however, is likely to work."));
         }
 
         /// <summary>

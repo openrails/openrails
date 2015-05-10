@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Contrib\n"
-"POT-Creation-Date: 2015-05-09 10:34:16+0100\n"
-"PO-Revision-Date: 2015-05-09 10:34:16+0100\n"
+"POT-Creation-Date: 2015-05-10 20:45:40+0200\n"
+"PO-Revision-Date: 2015-05-10 20:45:41+0200\n"
 "Last-Translator: \n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: qps-ploc\n"
@@ -711,6 +711,21 @@ msgstr "[£ôáδïñϱ .ƥáƭ ƒïℓè ... !!!]"
 msgid "Processing .pat file ..."
 msgstr "[Þřôçèƨƨïñϱ .ƥáƭ ƒïℓè ... !!!]"
 
+#: ../../Contrib/TrackViewer/TrackViewer.cs:842
+msgid "Path has been modified. Loading a new path will discard changes."
+msgstr "[Þáƭλ λáƨ βèèñ ₥ôδïƒïèδ. £ôáδïñϱ á ñèω ƥáƭλ ωïℓℓ δïƨçářδ çλáñϱèƨ. !!!]"
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:843
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:88
+msgid "Do you want to continue?"
+msgstr "[Ðô ¥ôú ωáñƭ ƭô çôñƭïñúè? !!!]"
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:844
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:74
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:91
+msgid "Trackviewer Path Editor"
+msgstr "[TřáçƙƲïèωèř Þáƭλ Éδïƭôř !!!]"
+
 #: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:80
 msgid "Select broken path color"
 msgstr "[§èℓèçƭ βřôƙèñ ƥáƭλ çôℓôř !!!]"
@@ -780,99 +795,95 @@ msgid "Finding the angles to draw signals, endnodes, ..."
 msgstr "[Fïñδïñϱ ƭλè áñϱℓèƨ ƭô δřáω ƨïϱñáℓƨ, èñδñôδèƨ, ... !!!]"
 
 #: ../../Contrib/TrackViewer/Editing/EditorActions.cs:171
-msgid "Not to be used, template only"
-msgstr "[Nôƭ ƭô βè úƨèδ, ƭè₥ƥℓáƭè ôñℓ¥ !!!]"
-
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:194
 msgid "Place start point"
 msgstr "[Þℓáçè ƨƭářƭ ƥôïñƭ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:226
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:203
 msgid "Remove start point"
 msgstr "[Rè₥ôƲè ƨƭářƭ ƥôïñƭ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:253
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:230
 msgid "Clear path (keep tail)"
 msgstr "[Çℓèář ƥáƭλ (ƙèèƥ ƭáïℓ) !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:277
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:254
 msgid "Change start direction"
 msgstr "[Çλáñϱè ƨƭářƭ δïřèçƭïôñ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:305
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:282
 msgid "Place end point"
 msgstr "[Þℓáçè èñδ ƥôïñƭ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:343
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:320
 msgid "Remove end point"
 msgstr "[Rè₥ôƲè èñδ ƥôïñƭ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:369
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:346
 msgid "Place reversal point"
 msgstr "[Þℓáçè řèƲèřƨáℓ ƥôïñƭ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:405
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:382
 msgid "Remove reversal point"
 msgstr "[Rè₥ôƲè řèƲèřƨáℓ ƥôïñƭ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:458
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:436
 msgid "Place wait point"
 msgstr "[Þℓáçè ωáïƭ ƥôïñƭ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:485
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:463
 msgid "Edit wait point"
 msgstr "[Éδïƭ ωáïƭ ƥôïñƭ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:509
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:487
 msgid "Remove wait point"
 msgstr "[Rè₥ôƲè ωáïƭ ƥôïñƭ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:712
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1282
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:690
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1260
 msgid "Take other exit"
 msgstr "[Táƙè ôƭλèř èжïƭ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:759
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:737
 msgid "Add passing path"
 msgstr "[Âδδ ƥáƨƨïñϱ ƥáƭλ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:799
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:777
 msgid "Start passing path"
 msgstr "[§ƭářƭ ƥáƨƨïñϱ ƥáƭλ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:864
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:842
 msgid "Remove passing path"
 msgstr "[Rè₥ôƲè ƥáƨƨïñϱ ƥáƭλ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:904
-msgid "Fix invalid node"
-msgstr "[Fïж ïñƲáℓïδ ñôδè !!!]"
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:882
+msgid "Fix invalid point"
+msgstr "[Fïж ïñƲáℓïδ ƥôïñƭ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:928
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:906
 msgid "Delete rest of path"
 msgstr "[Ðèℓèƭè řèƨƭ ôƒ ƥáƭλ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:957
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:935
 msgid "Cut path here and store its tail"
 msgstr "[Çúƭ ƥáƭλ λèřè áñδ ƨƭôřè ïƭƨ ƭáïℓ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1011
-msgid "Auto-fix broken nodes"
-msgstr "[Âúƭô-ƒïж βřôƙèñ ñôδèƨ !!!]"
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:989
+msgid "Auto-fix broken points"
+msgstr "[Âúƭô-ƒïж βřôƙèñ ƥôïñƭƨ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1119
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1097
 msgid "Reconnect to tail"
 msgstr "[Rèçôññèçƭ ƭô ƭáïℓ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1180
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1158
 msgid "Reconnect passing path"
 msgstr "[Rèçôññèçƭ ƥáƨƨïñϱ ƥáƭλ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1952
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1930
 msgid "Draw path until here"
 msgstr "[Ðřáω ƥáƭλ úñƭïℓ λèřè !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1983
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1961
 msgid "Draw path until next broken point"
 msgstr "[Ðřáω ƥáƭλ úñƭïℓ ñèжƭ βřôƙèñ ƥôïñƭ !!!]"
 
@@ -888,11 +899,37 @@ msgstr "[RèƲèřƨïñϱ á ƥáƭλ ωïƭλôúƭ ƨƭářƭ ñôδè ïƨ �
 msgid "Reversing a path without end node is not supported"
 msgstr "[RèƲèřƨïñϱ á ƥáƭλ ωïƭλôúƭ èñδ ñôδè ïƨ ñôƭ ƨúƥƥôřƭèδ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:98
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:73
 msgid ""
-"Saving broken paths might not always work correctly.\n"
+"Path does not even have a start node.\n"
+"Saving is not possible."
 msgstr ""
-"[§áƲïñϱ βřôƙèñ ƥáƭλƨ ₥ïϱλƭ ñôƭ áℓωá¥ƨ ωôřƙ çôřřèçƭℓ¥.\n !!!]"
+"[Þáƭλ δôèƨ ñôƭ èƲèñ λáƲè á ƨƭářƭ ñôδè.\n"
+"§áƲïñϱ ïƨ ñôƭ ƥôƨƨïβℓè. !!!]"
+
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:80
+msgid "* The path does not have a well-defined end-point"
+msgstr "[* Tλè ƥáƭλ δôèƨ ñôƭ λáƲè á ωèℓℓ-δèƒïñèδ èñδ-ƥôïñƭ !!!]"
+
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:82
+msgid "* The path has a stored and not-yet reconnected tail"
+msgstr "[* Tλè ƥáƭλ λáƨ á ƨƭôřèδ áñδ ñôƭ-¥èƭ řèçôññèçƭèδ ƭáïℓ !!!]"
+
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:86
+msgid "The current path is not finished:"
+msgstr "[Tλè çúřřèñƭ ƥáƭλ ïƨ ñôƭ ƒïñïƨλèδ: !!!]"
+
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:99
+msgid "Saving broken paths might not always work correctly."
+msgstr "[§áƲïñϱ βřôƙèñ ƥáƭλƨ ₥ïϱλƭ ñôƭ áℓωá¥ƨ ωôřƙ çôřřèçƭℓ¥. !!!]"
+
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:100
+msgid "The MSTS format for defining broken paths is not understood very well."
+msgstr "[Tλè M§T§ ƒôř₥áƭ ƒôř δèƒïñïñϱ βřôƙèñ ƥáƭλƨ ïƨ ñôƭ úñδèřƨƭôôδ Ʋèř¥ ωèℓℓ. !!!]"
+
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:101
+msgid "Reopening it in TrackViewer, however, is likely to work."
+msgstr "[Rèôƥèñïñϱ ïƭ ïñ TřáçƙVïèωèř, λôωèƲèř, ïƨ ℓïƙèℓ¥ ƭô ωôřƙ. !!!]"
 
 #: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:269
 msgid "Set as invalid in .pat file"
@@ -1039,26 +1076,32 @@ msgstr ""
 msgid "not an integral part of ORTS."
 msgstr "[ñôƭ áñ ïñƭèϱřáℓ ƥářƭ ôƒ ÓRT§. !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:770
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:515
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:780
+msgid "Documentation is available"
+msgstr "[Ðôçú₥èñƭáƭïôñ ïƨ áƲáïℓáβℓè !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:516
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:781
+msgid "Right column → OR_Trackviewer"
+msgstr "[Rïϱλƭ çôℓú₥ñ → ÓR_TřáçƙƲïèωèř !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:778
 msgid ""
 "Currently all intended and planned editor features have been implemented."
 msgstr ""
 "[Çúřřèñƭℓ¥ áℓℓ ïñƭèñδèδ áñδ ƥℓáññèδ èδïƭôř ƒèáƭúřèƨ λáƲè βèèñ ï₥ƥℓè₥èñƭèδ. !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:772
-msgid "Documentation is available"
-msgstr "[Ðôçú₥èñƭáƭïôñ ïƨ áƲáïℓáβℓè !!!]"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:774
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:783
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:129
 msgid "Known limitations"
 msgstr "[Kñôωñ ℓï₥ïƭáƭïôñƨ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:776
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:785
 msgid "* The saved-paths have not been tested with MSTS or ORTS."
 msgstr "[* Tλè ƨáƲèδ-ƥáƭλƨ λáƲè ñôƭ βèèñ ƭèƨƭèδ ωïƭλ M§T§ ôř ÓRT§. !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:778
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:787
 msgid ""
 "* Possibly non-standard junctions (> 1 incoming or > 2 outgoing tracks) might "
 "not work."
@@ -1066,7 +1109,7 @@ msgstr ""
 "[* Þôƨƨïβℓ¥ ñôñ-ƨƭáñδářδ Júñçƭïôñƨ (> 1 ïñçô₥ïñϱ ôř > 2 ôúƭϱôïñϱ ƭřáçƙƨ) ₥ïϱλƭ "
 "ñôƭ ωôřƙ. !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:780
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:789
 msgid "Feedback is appreciated."
 msgstr "[Fèèδβáçƙ ïƨ áƥƥřèçïáƭèδ. !!!]"
 
@@ -1089,6 +1132,10 @@ msgstr "[Þáƭλ ƨƭářƭ !!!]"
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:19
 msgid "Path end"
 msgstr "[Þáƭλ èñδ !!!]"
+
+#: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:22
+msgid "Player path"
+msgstr "[Þℓá¥èř ƥáƭλ !!!]"
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:24
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:15
@@ -1513,6 +1560,10 @@ msgid "Shortcuts"
 msgstr "[§λôřƭçúƭƨ !!!]"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:133
+msgid "Documentation"
+msgstr "[Ðôçú₥èñƭáƭïôñ !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:134
 msgid "About"
 msgstr "[Âβôúƭ !!!]"
 

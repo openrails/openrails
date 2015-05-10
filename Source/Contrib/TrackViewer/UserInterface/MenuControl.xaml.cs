@@ -509,6 +509,14 @@ namespace ORTS.TrackViewer.UserInterface
             MessageBox.Show(about.ToString());
         }
 
+        private void menuDocumentation_Click(object sender, RoutedEventArgs e)
+        {
+            StringBuilder documentation = new StringBuilder();
+            documentation.Append(TrackViewer.catalog.GetString("Documentation is available") + ": http://openrails.org/learn/manual-and-tutorials/ (" +
+       TrackViewer.catalog.GetString("Right column → OR_Trackviewer") + ")");
+            MessageBox.Show(documentation.ToString());
+        }
+
         private void menuZoomSave_Click(object sender, RoutedEventArgs e)
         {
             trackViewer.DrawArea.Save(trackViewer.CurrentRoute.Path);
@@ -769,7 +777,8 @@ namespace ORTS.TrackViewer.UserInterface
             StringBuilder limitations = new StringBuilder();
             limitations.Append(TrackViewer.catalog.GetString("Currently all intended and planned editor features have been implemented."));
             limitations.Append("\n");
-            limitations.Append(TrackViewer.catalog.GetString("Documentation is available"));
+            limitations.Append(TrackViewer.catalog.GetString("Documentation is available") + ": http://openrails.org/learn/manual-and-tutorials/ (" +
+                   TrackViewer.catalog.GetString("Right column → OR_Trackviewer") + ")");
             limitations.Append("\n\n");
             limitations.Append(TrackViewer.catalog.GetString("Known limitations"));
             limitations.Append("\n");

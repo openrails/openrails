@@ -120,7 +120,7 @@ namespace ORTS.TrackViewer
     {
         #region Public members
         /// <summary>String showing the date of the program</summary>
-        public readonly static string TrackViewerVersion = "2015/04/21";
+        public readonly static string TrackViewerVersion = "2015/05/10";
         /// <summary>Path where the content (like .png files) is stored</summary>
         public string ContentPath { get; private set; }
         /// <summary>Folder where MSTS is installed (or at least, where the files needed for tracks, routes and paths are stored)</summary>
@@ -839,9 +839,9 @@ namespace ORTS.TrackViewer
             if (PathEditor == null) return true;
             if (!PathEditor.HasModifiedPath) return true;
             DialogResult dialogResult = MessageBox.Show(
-                        "Path has been modified. Loading a new path will discard changes.\n" +
-                        "Do you want to continue?", 
-                        "Trackviewer Path Editor", MessageBoxButtons.OKCancel, 
+                        catalog.GetString("Path has been modified. Loading a new path will discard changes.") + "\n" +
+                        catalog.GetString("Do you want to continue?"), 
+                        catalog.GetString("Trackviewer Path Editor"), MessageBoxButtons.OKCancel, 
                         System.Windows.Forms.MessageBoxIcon.Question);
             return (dialogResult == DialogResult.OK);
         }

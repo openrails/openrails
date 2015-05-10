@@ -587,6 +587,11 @@ namespace ORTS.TrackViewer.Editing
             List<string> stationNames = new List<string>();
 
             TrainpathNode currentNode = this.FirstNode;
+            if (currentNode == null)
+            {   // No route, so return no names
+                return new string[0];
+            }
+
             while (currentNode.NextMainNode != null)
             {
                 stationNames.AddRange(StationNamesBetweenNodes(currentNode, currentNode.NextMainNode));

@@ -130,6 +130,7 @@
             </MenuItem>
             <MenuItem Header="Help">
                 <MenuItem Header="Shortcuts" Name="menuShortcuts" IsCheckable="False" Click="menuShortcuts_Click"/>
+                <MenuItem Header="Documentation" Name="menuDocumentation" IsCheckable="False" Click="menuDocumentation_Click"/>
                 <MenuItem Header="About" Name="menuAbout" IsCheckable="False" Click="menuAbout_Click"/>
             </MenuItem>
         </Menu>

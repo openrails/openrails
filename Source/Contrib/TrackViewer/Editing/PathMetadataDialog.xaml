@@ -19,7 +19,7 @@
             <Label Content="Path end" HorizontalAlignment="Left" Width="130"/>
             <TextBox Height="23" Name="pathEnd" Width="200"/>
         </StackPanel>
-        <CheckBox Name="pathIsPlayerPath" Width="200" Height="25">Player path</CheckBox>
+        <CheckBox Name="pathIsPlayerPath" Width="200" Height="25" Content="Player path"/>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
             <Button Height="23" Content=" OK " Name="buttonOK" Margin="20,3,20,3" VerticalAlignment="Top" Click="buttonOK_Click"/>
             <Button Height="23" Content=" Cancel " Name="buttonCancel" Margin="20,3,20,3" VerticalAlignment="Top" Click="buttonCancel_Click"/>

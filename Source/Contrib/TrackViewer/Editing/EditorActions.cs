@@ -160,29 +160,6 @@ namespace ORTS.TrackViewer.Editing
         }
     }
     #endregion
-
-    #region Template
-    /// <summary>
-    /// Subclass to implement the action:
-    /// </summary>
-    public class EditorActionTemplate : EditorAction
-    {
-        /// <summary>Constructor</summary>
-        public EditorActionTemplate() : base(TrackViewer.catalog.GetString("Not to be used, template only"), "") { }
-
-        /// <summary>Can the action be executed given the current path and active nodes?</summary>
-        protected override bool CanExecuteAction()
-        {
-            if (Trainpath.FirstNode == null) return false;
-            return true;
-        }
-
-        /// <summary>Execute the action. This assumes that the action can be executed</summary>
-        protected override void ExecuteAction()
-        {
-        }
-    }
-    #endregion
     
     #region AddStart
     /// <summary>
@@ -440,6 +417,7 @@ namespace ORTS.TrackViewer.Editing
                 nodeToEdit.WaitTimeS = 602; // some initial value: 10 minutes, 2 seconds
             }
             WaitPointDialog waitDialog = new WaitPointDialog(MouseX, MouseY, nodeToEdit.WaitTimeS);
+            TrackViewer.Localize(waitDialog);
             if (waitDialog.ShowDialog() == true)
             {
                 nodeToEdit.WaitTimeS = waitDialog.GetWaitTime();
@@ -901,7 +879,7 @@ namespace ORTS.TrackViewer.Editing
     public class EditorActionFixInvalidNode : EditorAction
     {
         /// <summary>Constructor</summary>
-        public EditorActionFixInvalidNode() : base(TrackViewer.catalog.GetString("Fix invalid node"), "activeBroken") { }
+        public EditorActionFixInvalidNode() : base(TrackViewer.catalog.GetString("Fix invalid point"), "activeBroken") { }
 
         /// <summary>Can the action be executed given the current path and active nodes?</summary>
         protected override bool CanExecuteAction()
@@ -1008,7 +986,7 @@ namespace ORTS.TrackViewer.Editing
 
         /// <summary>Constructor</summary>
         public EditorActionAutoFixBrokenNodes()
-            : base(TrackViewer.catalog.GetString("Auto-fix broken nodes"), "activeBroken")
+            : base(TrackViewer.catalog.GetString("Auto-fix broken points"), "activeBroken")
         {
             autoConnectTools = new AutoConnectTools();
         }
