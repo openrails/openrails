@@ -1515,11 +1515,14 @@ namespace ORTS
                     {
                         Train OtherTrain = trainAhead.Key;
                         if (Math.Abs(OtherTrain.SpeedMpS) < 0.001f &&
-                                    (DistanceToEndNodeAuthorityM[0] > followDistanceStatTrainM || UncondAttach))
+                                    (DistanceToEndNodeAuthorityM[0] > followDistanceStatTrainM || UncondAttach || OtherTrain.TrainType == TRAINTYPE.STATIC ||
+                                    OtherTrain.PresentPosition[0].TCSectionIndex ==
+                                    TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1].TCSectionIndex
+                                    || OtherTrain.PresentPosition[1].TCSectionIndex ==
+                                    TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1].TCSectionIndex))
                         {
                             // allow creeping closer
-                            CreateTrainAction(creepSpeedMpS, 0.0f,
-                                    DistanceToEndNodeAuthorityM[0], null, AIActionItem.AI_ACTION_TYPE.TRAIN_AHEAD);
+                            CreateTrainAction(creepSpeedMpS, 0.0f,                                    DistanceToEndNodeAuthorityM[0], null, AIActionItem.AI_ACTION_TYPE.TRAIN_AHEAD);
                             MovementState = AI_MOVEMENT_STATE.FOLLOWING;
                             StartMoving(AI_START_MOVEMENT.FOLLOW_TRAIN);
                         }
