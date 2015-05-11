@@ -4391,7 +4391,13 @@ namespace ORTS
             attachTrain.CheckFreight();
             attachTrain.activityClearingDistanceM = attachTrain.Cars.Count < standardTrainMinCarNo ? shortClearingDistanceM : standardClearingDistanceM;
             // anticipate reversal point and remove active action
-            TCRoute.ReversalInfo[TCRoute.activeSubpath].ReverseReversalOffset = PresentPosition[0].TCOffset - 10f;
+            TCRoute.ReversalInfo[TCRoute.activeSubpath].ReverseReversalOffset = Math.Max (PresentPosition[0].TCOffset - 10f, 0.3f);
+            if (PresentPosition[0].TCSectionIndex != TCRoute.ReversalInfo[TCRoute.activeSubpath].ReversalSectionIndex)
+            {
+                TCRoute.ReversalInfo[TCRoute.activeSubpath].ReversalSectionIndex = PresentPosition[0].TCSectionIndex;
+            }
+            if (PresentPosition[1].RouteListIndex < TCRoute.ReversalInfo[TCRoute.activeSubpath].LastSignalIndex)
+                TCRoute.ReversalInfo[TCRoute.activeSubpath].LastSignalIndex = PresentPosition[1].RouteListIndex;
             // move WP, if any, just under the loco;
             AuxActionsContain.MoveAuxActionAfterReversal(this);
             ResetActions(true);
