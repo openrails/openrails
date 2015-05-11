@@ -2872,19 +2872,21 @@ namespace ORTS
                         float keepDistanceTrainM = 0f;
                         bool attachToTrain = AttachTo == OtherTrain.Number;
 
-                        // <CScomment> Make check when this train in same section of OtherTrain; if other train is static or this train is in last section, pass to passive coupling
+                        // <CScomment> Make check when this train in same section of OtherTrain or other train at less than 50m;
+                        // if other train is static or other train is in last section of this train, pass to passive coupling
                         if (OtherTrain.SpeedMpS == 0.0f)
                         {
                             var rearOrFront = ValidRoute[0][ValidRoute[0].Count - 1].Direction == 1 ? 0 : 1;
                             if (PresentPosition[rearOrFront].TCSectionIndex == OtherTrain.PresentPosition[0].TCSectionIndex ||
-                               PresentPosition[rearOrFront].TCSectionIndex == OtherTrain.PresentPosition[1].TCSectionIndex)
+                               PresentPosition[rearOrFront].TCSectionIndex == OtherTrain.PresentPosition[1].TCSectionIndex || distanceToTrain < keepDistanceStatTrainM_F)
                             {
-                                if (OtherTrain.TrainType == TRAINTYPE.STATIC || PresentPosition[0].TCSectionIndex ==
+                                if (OtherTrain.TrainType == TRAINTYPE.STATIC || OtherTrain.PresentPosition[0].TCSectionIndex ==
+                                    TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1].TCSectionIndex
+                                    || OtherTrain.PresentPosition[1].TCSectionIndex ==
                                     TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1].TCSectionIndex
                                     || UncondAttach)
                                 {
-                                    attachToTrain = true;
-                                    AttachTo = OtherTrain.Number;
+                                    attachToTrain = true;                                    AttachTo = OtherTrain.Number;
                                 }
                             }
                         }
