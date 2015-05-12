@@ -54,6 +54,7 @@ function isInList(item: String; list: tstringlist): boolean;
 function extractcons(item: string): tstringlist;
 function entsorg(item: String): String;
 function getconsisttypes: tstringlist;
+function getroute(): String;
 
 resourceString
   irgendwas = 'irgendas';
@@ -64,11 +65,16 @@ uses unit1;
 
 
 var
-   routepath,consistspath,pathspath: string;
+   routepath,consistspath,pathspath, route: string;
    consistslist, consistnameslist, consisttypeslist, pathslist, pathnameslist: tstringlist;
    selectedconsist, selectedpath: string;
    stationslist, stationsfiles: tstringlist;
    col: integer;
+
+function getroute(): String;
+begin
+  result:=route;
+end;
 
 procedure Split (const Delimiter: Char; Input: string; const Strings: TStringlist);
 begin
@@ -203,6 +209,7 @@ begin
     consistspath:=consistspath+rpath[i]+'\';
     i:=i+1;
   end;
+  route:=copy(rpath[rpath.Count -1],1,length(rpath[rpath.count -1])-4);
   consistspath:=consistspath+'trains\consists\';
   loadconsists(consistspath);
   pathspath:=routepath+'paths\';

@@ -514,7 +514,9 @@ begin
     savedialog1.Title:=DLGsave;
     savedialog1.InitialDir:=utf8tosys(getroutepath+'Activities\Openrails');
     //savedialog1.Filter:='Openrails Zeitplan|*.timetable_or';
-    savedialog1.Filter:='Openrails timetable|*.timetable_or';
+    savedialog1.Filter:='Openrails timetable (*.timetable_or)|*.timetable_or';
+    if ttfilename <> '' then savedialog1.filename:=ttfilename
+    else savedialog1.filename:=title+'.timetable_or';
     save:=true;
     but:=1;
     if (savedialog1.Execute) and (savedialog1.FileName<>'') then begin
@@ -553,8 +555,10 @@ procedure TForm1.SpeedButton1Click(Sender: TObject);      // Neu
 var tmp: tstringlist;
 begin
   tmp:=tstringlist.create;
-  opendialog1.Filter:='routedatabase|*.tdb';
+  opendialog1.Filter:='routedatabase (*.tdb)|*.tdb';
+  opendialog1.filename:='';
   opendialog1.Title:=DLGopenRDB;
+  ttfilename:='';
   if (opendialog1.Execute) and (opendialog1.filename <> '') then begin
     shadowlist.clear;
     grid.enabled:=true;
@@ -592,7 +596,8 @@ begin
   //opendialog1.Title:='Zeitplan öffnen';
   opendialog1.Title:=DLGopenTT;
   //opendialog1.Filter:='Openrails Zeitplan|*.timetable_or';
-  opendialog1.Filter:='Openrails timetable|*.timetable_or';
+  opendialog1.Filter:='Openrails timetable (*.timetable_or)|*.timetable_or';
+  opendialog1.filename:='';
   if (opendialog1.execute) and (opendialog1.FileName<>'') then begin
     resetgrid;
     shadowlist.clear;

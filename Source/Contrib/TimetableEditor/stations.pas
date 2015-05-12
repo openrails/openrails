@@ -96,7 +96,8 @@ begin
   //savedialog1.Title:='Bahnhöfe speichern';
   savedialog1.Title:=savedlgtitle;
   //savedialog1.Filter:='Bahnhofsdateien|*.stations';
-  savedialog1.Filter:='stationfiles|*.stations';
+  savedialog1.Filter:='stationfiles (*.stations)|*.stations';
+  savedialog1.FileName:=getroute+'.stations';
   if savedialog1.execute then begin
     fCES := TCharEncStream.Create;
     fCES.Reset;
@@ -104,7 +105,7 @@ begin
     fces.HaveType:=true;
     fCES.UniStreamType:=ufUtf16le;
     fCES.UTF8Text:=memo1.text;
-    fces.SaveToFile(savedialog1.FileName);
+    fces.SaveToFile(utf8tosys(savedialog1.FileName));
     fCes.Free;
     writestations;
   end;
