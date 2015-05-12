@@ -2685,6 +2685,7 @@ namespace ORTS
                 }
             }
             if (ClearSignal(thisTrain) ||(thisTrain.NextSignalObject[0] !=null && (thisTrain.NextSignalObject[0].this_sig_lr(MstsSignalFunction.NORMAL) > MstsSignalAspect.STOP)) ||
+                thisTrain.NextSignalObject[0] == null || SignalReferenced != thisTrain.NextSignalObject[0] ||
                 thisTrain.PresentPosition[0].TCSectionIndex == thisTrain.ValidRoute[0][thisTrain.ValidRoute[0].Count-1].TCSectionIndex)
                 movementState = AITrain.AI_MOVEMENT_STATE.END_ACTION;
             return movementState;
