@@ -90,6 +90,7 @@ namespace ORTS
         bool IsLocoSlip = false; 	   // locomotive is slipping
         bool IsSteamDebug = false;    // Steam debugging is off (false) by default - set to true for debug on - provides printout in log at set speed for steam indicator pressures.
         bool IsBurnDebug = false;      // Burn debugging is off (false) by default - set to true for debug on - provides visibility of burn related parameters on extended HUD.
+        bool IsSteamUsageDebug = false; // Steam usage debugging is off (false) by default - set to true for debug on - provides visibility of steam usage related parameters on extended HUD. 
                
         string SteamLocoType;     // Type of steam locomotive type
         
@@ -164,7 +165,7 @@ namespace ORTS
         float SuperheatKFactor = 11.7f;     // Factor used to calculate superheat temperature - guesstimate
         float SuperheatRefTempF;            // Superheat temperature in deg Fahrenheit, based upon the heating area.
         float SuperheatTempRatio;          // A ratio used to calculate the superheat temp - based on the ratio of superheat (using heat area) to "known" curve. 
-        float CurrentSuperheatTeampF;      // current value of superheating based upon boiler steam output
+        float CurrentSuperheatTempF;      // current value of superheating based upon boiler steam output
         float SuperheatVolumeRatio;   // Approximate ratio of Superheated steam to saturated steam at same pressure
         float FuelCalorificKJpKG = 33400;
         float ManBlowerMultiplier = 20.0f; // Blower Multipler for Manual firing
@@ -180,7 +181,8 @@ namespace ORTS
         // precomputed values
         float CylinderSweptVolumeFT3pFT;     // Volume of steam Cylinder
         float LPCylinderSweptVolumeFT3pFT;     // Volume of LP steam Cylinder
-        float CylinderCondensationFactor;  // Cylinder compensation factor for condensation in cylinder
+        float CylinderCondensationFactor;  // Cylinder compensation factor for condensation in cylinder due to cutoff
+        float CylinderSpeedCondensationFactor;  // Cylinder compensation factor for condensation in cylinder due to speed
         float BlowerSteamUsageFactor;
         float InjectorFlowRateLBpS;
         Interpolator BackPressureIHPtoAtmPSI;             // back pressure in cylinders given usage
@@ -387,7 +389,12 @@ namespace ORTS
         float CylinderPistonShaftDiaIn = 3.5f; // Assume cylinder piston shaft to be 3.5 inches
         float CylinderPistonAreaFt2;    // Area of the piston in the cylinder (& HP Cylinder in case of Compound locomotive)
         float LPCylinderPistonAreaFt2;    // Area of the piston in the LP cylinder
-        
+        float CylinderClearanceSteamWeightLbs; // Weight of steam remaining in cylinder at "compression" (after exhaust valve closed)
+        float CylinderCutoffSteamWeightLbs;   // Weight of steam remaining in cylinder at "compression" (after exhaust valve opens)
+        float CylinderCutoffSteamVolumeFt3; // Volume of cylinder at steam release in cylinder
+        float CylinderClearanceSteamVolumeFt3; // Volume in cylinder at start of steam compression
+        float RawCylinderSteamWeightLbs;    // 
+        float RawCalculatedCylinderSteamUsageLBpS;  // Steam usage before superheat or cylinder condensation compensation
         float CalculatedCylinderSteamUsageLBpS; // Steam usage calculated from steam indicator diagram
         
         const int CylStrokesPerCycle = 2;  // each cylinder does 2 strokes for every wheel rotation, within each stroke
@@ -2054,45 +2061,6 @@ namespace ORTS
         {
             // Calculate speed of locomotive in wheel rpm - used to determine changes in performance based upon speed.
             DrvWheelRevRpS = absSpeedMpS / (2.0f * MathHelper.Pi * DriverWheelRadiusM);
-            // Determine if Superheater in use
-            if (HasSuperheater)
-            {
-                CurrentSuperheatTeampF = SuperheatTempLbpHtoDegF[pS.TopH(CylinderSteamUsageLBpS)] * SuperheatTempRatio; // Calculate current superheat temp
-                float DifferenceSuperheatTeampF = CurrentSuperheatTeampF - SuperheatTempLimitXtoDegF[cutoff]; // reduce superheat temp due to cylinder condensation
-                SuperheatVolumeRatio = 1.0f + (0.0015f * DifferenceSuperheatTeampF); // Based on formula Vsup = Vsat ( 1 + 0.0015 Tsup) - Tsup temperature at superheated level
-                // look ahead to see what impact superheat will have on cylinder usage
-                float FutureCylinderSteamUsageLBpS = CylinderSteamUsageLBpS * 1.0f / SuperheatVolumeRatio; // Calculate potential future new cylinder steam usage
-                float FutureSuperheatTeampF = SuperheatTempLbpHtoDegF[pS.TopH(FutureCylinderSteamUsageLBpS)] * SuperheatTempRatio; // Calculate potential future new superheat temp
-                
-                
-                float SuperheatTempThresholdXtoDegF = SuperheatTempLimitXtoDegF[cutoff] - 25.0f; // 10 deg bandwith reduction to reset superheat flag
-                if (CurrentSuperheatTeampF > SuperheatTempLimitXtoDegF[cutoff])
-                {
-                IsSuperSet = true;    // Set to use superheat factor if above superheat temp threshold             
-                }
-                else if (FutureSuperheatTeampF < SuperheatTempThresholdXtoDegF)
-                {
-                IsSuperSet = false;    // Reset if superheat temp drops 
-                }
-                
-
-                if (IsSuperSet)
-                {
-                 SuperheaterSteamUsageFactor = 1.0f / SuperheatVolumeRatio; // set steam reduction based on Superheat Volume Ratio
-                }
-                else
-                {
-                    CylinderCondensationFactor = CylinderCondensationFractionX[cutoff] / CylinderCondensationFractionX[0.3f];
-                    CylinderCondensationFactor = MathHelper.Clamp(CylinderCondensationFactor, 0.0f, CylinderCondensationFactor); // ensure condensation factor does not go out of bounds.
-                    SuperheaterSteamUsageFactor = 1.0f + (CylinderCondensationFactorSpeed[pS.TopM(DrvWheelRevRpS)] * CylinderCondensationFactor);
-                }
-            }
-            else
-            {
-                CylinderCondensationFactor = CylinderCondensationFractionX[cutoff] / CylinderCondensationFractionX[0.3f];
-                CylinderCondensationFactor = MathHelper.Clamp(CylinderCondensationFactor, 0.0f, CylinderCondensationFactor); // ensure condensation factor does not go out of bounds.
-                SuperheaterSteamUsageFactor = 1.0f + (CylinderCondensationFactorSpeed[pS.TopM(DrvWheelRevRpS)] * CylinderCondensationFactor);
-            }
 
             float DebugWheelRevs = pS.TopM(DrvWheelRevRpS);
             
@@ -2620,6 +2588,54 @@ namespace ORTS
             }
 
             #endregion
+            // Determine if Superheater in use
+            if (HasSuperheater)
+            {
+                CurrentSuperheatTempF = SuperheatTempLbpHtoDegF[pS.TopH(CylinderSteamUsageLBpS)] * SuperheatTempRatio; // Calculate current superheat temp
+                CurrentSuperheatTempF = MathHelper.Clamp(CurrentSuperheatTempF, 0.0f, SuperheatRefTempF); // max sure that superheat temp does not exceed max superheat temp
+                float DifferenceSuperheatTeampF = CurrentSuperheatTempF - SuperheatTempLimitXtoDegF[cutoff]; // reduce superheat temp due to cylinder condensation
+                SuperheatVolumeRatio = 1.0f + (0.0015f * DifferenceSuperheatTeampF); // Based on formula Vsup = Vsat ( 1 + 0.0015 Tsup) - Tsup temperature at superheated level
+                // look ahead to see what impact superheat will have on cylinder usage
+                float FutureCylinderSteamUsageLBpS = CylinderSteamUsageLBpS * 1.0f / SuperheatVolumeRatio; // Calculate potential future new cylinder steam usage
+                float FutureSuperheatTempF = SuperheatTempLbpHtoDegF[pS.TopH(FutureCylinderSteamUsageLBpS)] * SuperheatTempRatio; // Calculate potential future new superheat temp
+
+                float SuperheatTempThresholdXtoDegF = SuperheatTempLimitXtoDegF[cutoff] - 25.0f; // 10 deg bandwith reduction to reset superheat flag
+
+                if (CurrentSuperheatTempF > SuperheatTempLimitXtoDegF[cutoff])
+                {
+                IsSuperSet = true;    // Set to use superheat factor if above superheat temp threshold      
+                }
+                else if (FutureSuperheatTempF < SuperheatTempThresholdXtoDegF)
+                {
+                IsSuperSet = false;    // Reset if superheat temp drops 
+                }
+                
+
+                if (IsSuperSet)
+                {
+                SuperheaterSteamUsageFactor = 1.0f; // set steam condensation to unity as no condensation occurs
+                }
+                else
+                {
+                    CylinderCondensationFactor = CylinderCondensationFractionX[cutoff];
+                    CylinderSpeedCondensationFactor = CylinderCondensationFactorSpeed[pS.TopM(DrvWheelRevRpS)] / CylinderCondensationFactorSpeed[0.01f]; // Calculate compensating factor for condensation due to speed of locomotive
+                    float CondensationFactorTemp =  1.0f + (CylinderCondensationFactor * CylinderSpeedCondensationFactor);  // Calculate correcting factor for steam use due to compensation
+                    float TempCondensationFactor = CondensationFactorTemp - 1.0f;
+                    float SuperHeatMultiplier = (1.0f - (CurrentSuperheatTempF / SuperheatTempLimitXtoDegF[cutoff])) * TempCondensationFactor;
+                    SuperHeatMultiplier = MathHelper.Clamp(SuperHeatMultiplier, 0.0f, SuperHeatMultiplier);
+                    float SuperHeatFactorFinal = 1.0f + SuperHeatMultiplier;
+                    SuperheaterSteamUsageFactor = SuperHeatFactorFinal;
+                }
+            }
+            else
+            {
+                CylinderCondensationFactor = CylinderCondensationFractionX[cutoff];
+                CylinderSpeedCondensationFactor = CylinderCondensationFactorSpeed[pS.TopM(DrvWheelRevRpS)] / CylinderCondensationFactorSpeed[0.01f]; // Calculate compensating factor for condensation due to speed of locomotive
+                float CondensationFactorTemp = 1.0f + (CylinderCondensationFactor * CylinderSpeedCondensationFactor);  // Calculate correcting factor for steam use due to compensation
+                SuperheaterSteamUsageFactor = CondensationFactorTemp;
+            }
+            
+            SuperheaterSteamUsageFactor = MathHelper.Clamp(SuperheaterSteamUsageFactor, 0.9f, SuperheaterSteamUsageFactor); // ensure factor does not go below 0.9, as this represents base steam consumption by the cylinders.
 
             // mean pressure during stroke = ((absolute mean pressure + (clearance + cylstroke)) - (initial pressure + clearance)) / cylstroke
             // Mean effective pressure = cylpressure - backpressure
@@ -2646,7 +2662,7 @@ namespace ORTS
 
             CylinderPressureAtmPSI = MathHelper.Clamp(CylinderPressureAtmPSI, 0, MaxBoilerPressurePSI + OneAtmospherePSI); // Make sure that Cylinder pressure does not go negative
           
-          #region Calculation of Cylinder steam usage using an Indicator Diagram type approach - Single Expansion
+          #region Calculation of Cylinder steam usage using an Indicator Diagram type approach
           // To calculate steam usage, Calculate amount of steam in cylinder 
           // Cylinder steam usage = steam volume (and weight) at start of release stage - steam remaining in cylinder after compression
           // This amount then should be corrected to allow for cylinder condensation in saturated locomotives or not in superheated locomotives
@@ -2657,42 +2673,60 @@ namespace ORTS
           {
 
             if (!CylinderCompoundOn) // compound mode
-                // The steam in the HP @ Release will give an indication of steam usage.
+                // The steam in the HP @ Cutoff will give an indication of steam usage.
             {
-              float CylinderExhaustPressureGaugePSI = HPCylinderReleasePressureRecvAtmPSI - OneAtmospherePSI; // Convert to gauge pressure as steam tables are in gauge pressure
-              float CylinderPreAdmissionPressureGaugePSI = HPCylinderPreAdmissionOpenPressureAtmPSI - OneAtmospherePSI; // Convert to gauge pressure as steam tables are in gauge pressure  
-              float CylinderVolumeReleaseFt3 = CylinderSweptVolumeFT3pFT * (CylinderExhaustOpenFactor + HPCylinderClearancePC); // Calculate volume of cylinder at start of release
-              float CylinderReleaseSteamWeightLbs = CylinderVolumeReleaseFt3 * CylinderSteamDensityPSItoLBpFT3[HPCylinderReleasePressureRecvAtmPSI]; // Weight of steam in Cylinder at release
-              float CylinderClearanceSteamVolumeFt3 = CylinderSweptVolumeFT3pFT * (HPCylinderVolumeFactor - CylinderExhaustOpenFactor) + HPCylinderClearancePC; // volume of the clearance area + area of steam at pre-admission
-              float CylinderClearanceSteamWeightLbs = CylinderClearanceSteamVolumeFt3 * CylinderSteamDensityPSItoLBpFT3[HPCylinderPreAdmissionOpenPressureAtmPSI]; // Weight of total steam remaining in the cylinder
-              CalculatedCylinderSteamUsageLBpS = NumCylinders * DrvWheelRevRpS * CylStrokesPerCycle * (CylinderReleaseSteamWeightLbs - CylinderClearanceSteamWeightLbs);
-              
+                float HPCylinderCutoffPressureGaugePSI = HPCylinderCutoffPressureAtmPSI - OneAtmospherePSI; // Convert to gauge pressure as steam tables are in gauge pressure
+              float HPCylinderPreAdmissionPressureGaugePSI = HPCylinderPreAdmissionOpenPressureAtmPSI - OneAtmospherePSI; // Convert to gauge pressure as steam tables are in gauge pressure  
+              CylinderCutoffSteamVolumeFt3 = CylinderSweptVolumeFT3pFT * (cutoff + HPCylinderClearancePC); // Calculate volume of cylinder at start of release
+              CylinderCutoffSteamWeightLbs = CylinderCutoffSteamVolumeFt3 * CylinderSteamDensityPSItoLBpFT3[HPCylinderCutoffPressureGaugePSI]; // Weight of steam in Cylinder at release
+              CylinderClearanceSteamVolumeFt3 = CylinderSweptVolumeFT3pFT * (HPCylinderVolumeFactor - CylinderExhaustOpenFactor) + HPCylinderClearancePC; // volume of the clearance area + area of steam at pre-admission
+             // CylinderClearanceSteamWeightLbs = CylinderClearanceSteamVolumeFt3 * CylinderSteamDensityPSItoLBpFT3[HPCylinderPreAdmissionPressureGaugePSI]; // Weight of total steam remaining in the cylinder
+              CylinderClearanceSteamWeightLbs = 0.0f; // Requires proper steam tables at atmospheric - To Do
               // For time being assume that compound locomotive doesn't experience cylinder condensation.
-              CalculatedCylinderSteamUsageLBpS = NumCylinders * DrvWheelRevRpS * CylStrokesPerCycle * (CylinderReleaseSteamWeightLbs - CylinderClearanceSteamWeightLbs);
+              RawCylinderSteamWeightLbs = CylinderCutoffSteamWeightLbs - CylinderClearanceSteamWeightLbs;
+              RawCalculatedCylinderSteamUsageLBpS = NumCylinders * DrvWheelRevRpS * CylStrokesPerCycle * (RawCylinderSteamWeightLbs);
+              CalculatedCylinderSteamUsageLBpS =  RawCalculatedCylinderSteamUsageLBpS;
+             
             }
             else  // Simple mode
-            // Steam at releas in LP will will give an indication of steam usage.
+            // Steam at cutoff in LP will will give an indication of steam usage.
             {
-                float CylinderExhaustPressureGaugePSI = LPCylinderReleasePressureAtmPSI - OneAtmospherePSI; // Convert to gauge pressure as steam tables are in gauge pressure
-                float CylinderPreAdmissionPressureGaugePSI = LPCylinderPreAdmissionPressureAtmPSI - OneAtmospherePSI; // Convert to gauge pressure as steam tables are in gauge pressure  
-                float CylinderVolumeReleaseFt3 = LPCylinderSweptVolumeFT3pFT * (CylinderExhaustOpenFactor + LPCylinderClearancePC); // Calculate volume of cylinder at start of release
-                float CylinderReleaseSteamWeightLbs = CylinderVolumeReleaseFt3 * CylinderSteamDensityPSItoLBpFT3[LPCylinderReleasePressureAtmPSI]; // Weight of steam in Cylinder at release
-                float CylinderClearanceSteamVolumeFt3 = LPCylinderSweptVolumeFT3pFT * ((LPCylinderVolumeFactor - CylinderExhaustOpenFactor) + LPCylinderClearancePC); // volume of the clearance area + area of steam at pre-admission
-                float CylinderClearanceSteamWeightLbs = CylinderClearanceSteamVolumeFt3 * CylinderSteamDensityPSItoLBpFT3[LPCylinderPreAdmissionPressureAtmPSI]; // Weight of total steam remaining in the cylinder
-                CalculatedCylinderSteamUsageLBpS = NumCylinders * DrvWheelRevRpS * CylStrokesPerCycle * (CylinderReleaseSteamWeightLbs - CylinderClearanceSteamWeightLbs) * SuperheaterSteamUsageFactor;
-
+                float LPCylinderCutoffPressureGaugePSI = LPCylinderReleasePressureAtmPSI - OneAtmospherePSI; // Convert to gauge pressure as steam tables are in gauge pressure
+                float LPCylinderPreAdmissionPressureGaugePSI = LPCylinderPreAdmissionPressureAtmPSI - OneAtmospherePSI; // Convert to gauge pressure as steam tables are in gauge pressure  
+                CylinderCutoffSteamVolumeFt3 = LPCylinderSweptVolumeFT3pFT * (CylinderExhaustOpenFactor + LPCylinderClearancePC); // Calculate volume of cylinder at start of release
+                CylinderCutoffSteamWeightLbs = CylinderCutoffSteamVolumeFt3 * CylinderSteamDensityPSItoLBpFT3[LPCylinderCutoffPressureGaugePSI]; // Weight of steam in Cylinder at release
+                CylinderClearanceSteamVolumeFt3 = LPCylinderSweptVolumeFT3pFT * ((LPCylinderVolumeFactor - CylinderExhaustOpenFactor) + LPCylinderClearancePC); // volume of the clearance area + area of steam at pre-admission
+                if (LPCylinderPreAdmissionPressureGaugePSI > 0.0) // need to consider steam density for pressures less then 0 gauge pressure - To Do
+                {
+                    CylinderClearanceSteamWeightLbs = CylinderClearanceSteamVolumeFt3 * CylinderSteamDensityPSItoLBpFT3[LPCylinderPreAdmissionPressureGaugePSI]; // Weight of total steam remaining in the cylinder
+                }
+                else
+                {
+                    CylinderClearanceSteamWeightLbs = 0.0f;
+                }
+                RawCylinderSteamWeightLbs = CylinderCutoffSteamWeightLbs - CylinderClearanceSteamWeightLbs;
+                RawCalculatedCylinderSteamUsageLBpS = NumCylinders * DrvWheelRevRpS * CylStrokesPerCycle * (RawCylinderSteamWeightLbs);
+                CalculatedCylinderSteamUsageLBpS =  RawCalculatedCylinderSteamUsageLBpS * SuperheaterSteamUsageFactor;
             }
           }
           else // Calculate steam usage for simple and geared locomotives.
           {
-              float CylinderExhaustPressureGaugePSI = CylinderReleasePressureAtmPSI - OneAtmospherePSI; // Convert to gauge pressure as steam tables are in gauge pressure
+              float CylinderCutoffPressureGaugePSI = CutoffPressureAtmPSI - OneAtmospherePSI; // Convert to gauge pressure as steam tables are in gauge pressure
               float CylinderPreAdmissionPressureGaugePSI = CylinderPreAdmissionPressureAtmPSI - OneAtmospherePSI; // Convert to gauge pressure as steam tables are in gauge pressure  
-              float CylinderVolumeReleaseFt3 = CylinderSweptVolumeFT3pFT * (CylinderExhaustOpenFactor + CylinderClearancePC); // Calculate volume of cylinder at start of release
-              float CylinderReleaseSteamWeightLbs = CylinderVolumeReleaseFt3 * CylinderSteamDensityPSItoLBpFT3[CylinderReleasePressureAtmPSI]; // Weight of steam in Cylinder at release
-              float CylinderClearanceSteamVolumeFt3 = CylinderSweptVolumeFT3pFT * (CylinderPreAdmissionOpenFactor + CylinderClearancePC); // volume of the clearance area + area of steam at pre-admission
-              float CylinderClearanceSteamWeightLbs = CylinderClearanceSteamVolumeFt3 * CylinderSteamDensityPSItoLBpFT3[CylinderPreAdmissionPressureAtmPSI]; // Weight of total steam remaining in the cylinder
-              CalculatedCylinderSteamUsageLBpS = NumCylinders * DrvWheelRevRpS * CylStrokesPerCycle * (CylinderReleaseSteamWeightLbs - CylinderClearanceSteamWeightLbs) * SuperheaterSteamUsageFactor;
- 
+              CylinderCutoffSteamVolumeFt3 = CylinderSweptVolumeFT3pFT * (cutoff + CylinderClearancePC); // Calculate volume of cylinder at start of release
+              CylinderCutoffSteamWeightLbs = CylinderCutoffSteamVolumeFt3 * CylinderSteamDensityPSItoLBpFT3[CylinderCutoffPressureGaugePSI]; // Weight of steam in Cylinder at release
+              CylinderClearanceSteamVolumeFt3 = CylinderSweptVolumeFT3pFT * (CylinderPreAdmissionOpenFactor + CylinderClearancePC); // volume of the clearance area + area of steam at pre-admission
+              if (CylinderPreAdmissionPressureGaugePSI > 0.0) // need to consider steam density for pressures less then 0 gauge pressure - To Do
+              {
+                  CylinderClearanceSteamWeightLbs = CylinderClearanceSteamVolumeFt3 * CylinderSteamDensityPSItoLBpFT3[CylinderPreAdmissionPressureGaugePSI]; // Weight of total steam remaining in the cylinder
+              }
+              else
+              {
+                  CylinderClearanceSteamWeightLbs = 0.0f;
+              }     
+              RawCylinderSteamWeightLbs = CylinderCutoffSteamWeightLbs - CylinderClearanceSteamWeightLbs;
+              RawCalculatedCylinderSteamUsageLBpS = NumCylinders * DrvWheelRevRpS * CylStrokesPerCycle * (RawCylinderSteamWeightLbs);
+              CalculatedCylinderSteamUsageLBpS =  RawCalculatedCylinderSteamUsageLBpS * SuperheaterSteamUsageFactor;
           }
            
           
@@ -3597,18 +3631,16 @@ namespace ORTS
                 FormatStrings.FormatEnergy(W.FromBTUpS(BoilerHeatSmoothBTU.Value), IsMetric),
                 FormatStrings.FormatEnergy(W.FromBTUpS(MaxBoilerHeatBTU), IsMetric));
 
-            status.AppendFormat("{0}\t{1}\t{6}\t{2}\t{7}\t{3}\t{8}\t{4}\t{9}\t\t{5}\t{10:N2}\n",
+            status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n",
                 Viewer.Catalog.GetString("Temp:"),
                 Viewer.Catalog.GetString("Flue"),
-                Viewer.Catalog.GetString("Water"),
-                Viewer.Catalog.GetString("MaxSupH"),
-                Viewer.Catalog.GetString("CurSupH"),
-                Viewer.Catalog.GetString("SupFact"),
                 FormatStrings.FormatTemperature(C.FromK(FlueTempK), IsMetric, false),
+                Viewer.Catalog.GetString("Water"),
                 FormatStrings.FormatTemperature(C.FromK(BoilerWaterTempK), IsMetric, false),
+                Viewer.Catalog.GetString("MaxSupH"),
                 FormatStrings.FormatTemperature(C.FromF(SuperheatRefTempF), IsMetric, false),
-                FormatStrings.FormatTemperature(C.FromF(CurrentSuperheatTeampF), IsMetric, false),
-                SuperheaterSteamUsageFactor);
+                Viewer.Catalog.GetString("CurSupH"),
+                FormatStrings.FormatTemperature(C.FromF(CurrentSuperheatTempF), IsMetric, false));
 
             status.AppendFormat("\n\t\t === {0} === \t\t{1}/{2}\n",
                 Viewer.Catalog.GetString("Steam Usage"),
@@ -3719,6 +3751,34 @@ namespace ORTS
                 Viewer.Catalog.GetString("Comp"),
                 CylinderCompoundOn ? Viewer.Catalog.GetString("Off") : Viewer.Catalog.GetString("On")                
                 );
+
+               if (IsSteamUsageDebug)
+               {
+                   status.AppendFormat("{0}\t{1}\t{2:N2}\t{3}\t{4:N2}\t{5}\t{6:N2}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12:N2}\t{13}\t{14:N2}\t{15}\t{16:N2}\t{17}\t{18:N2}\t{19}\t{20:N2}\t{21}\t{22:N2}\n",
+                Viewer.Catalog.GetString("DbgUse:"),
+                Viewer.Catalog.GetString("SwpVol"),
+                CylinderSweptVolumeFT3pFT,
+                Viewer.Catalog.GetString("RelVol"),
+                CylinderCutoffSteamVolumeFt3,
+                Viewer.Catalog.GetString("CompVol"),
+                CylinderClearanceSteamVolumeFt3,
+                Viewer.Catalog.GetString("RawSt"),
+                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(RawCalculatedCylinderSteamUsageLBpS)), IsMetric),
+                Viewer.Catalog.GetString("CalcSt"),
+                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CalculatedCylinderSteamUsageLBpS)), IsMetric),
+                Viewer.Catalog.GetString("ClrWt"),
+                CylinderClearanceSteamWeightLbs,
+                Viewer.Catalog.GetString("CutWt"),
+                CylinderCutoffSteamWeightLbs,
+                Viewer.Catalog.GetString("TotWt"),
+                RawCylinderSteamWeightLbs,
+                Viewer.Catalog.GetString("SupFact"),
+                SuperheaterSteamUsageFactor,
+                Viewer.Catalog.GetString("CondFact"),
+                CylinderCondensationFactor,
+                Viewer.Catalog.GetString("CondSp"),
+                CylinderSpeedCondensationFactor);
+                }
                                 
 
             status.AppendFormat("\n\t\t === {0} === \n", Viewer.Catalog.GetString("Fireman"));
