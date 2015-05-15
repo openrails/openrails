@@ -4226,6 +4226,7 @@ namespace ORTS
             float lengthToGoM = -PresentPosition[0].TCOffset;
             TrackCircuitSection thisSection;
             int reversalRouteIndex = ValidRoute[0].GetRouteIndex(TCRoute.ReversalInfo[TCRoute.activeSubpath].ReversalSectionIndex, PresentPosition[0].RouteListIndex);
+            if (PresentPosition[0].RouteListIndex == -1) return -1;
             if (PresentPosition[0].RouteListIndex <= reversalRouteIndex)
             {
                 for (int iElement = PresentPosition[0].RouteListIndex; iElement < ValidRoute[0].Count; iElement++)
