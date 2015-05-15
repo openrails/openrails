@@ -3097,7 +3097,8 @@ namespace ORTS
             // Calculate steam locomotive mechanical friction value, ie 20 (or 98.0667 metric) x DrvWheelWeight x Valve Factor, Assume VF = 1
                           
             const float MetricTonneFromKg = 1000.0f;    // Conversion factor to convert from kg to tonnes
-            return 98.0667f * (DrvWheelWeightKg / MetricTonneFromKg);
+            return 0.0f;  // Mechanical friction may already be in the FCalc equations - so zero out and check after v1.0 - To Do
+          //  return 98.0667f * (DrvWheelWeightKg / MetricTonneFromKg);
         }
 
         private void UpdateAuxiliaries(float elapsedClockSeconds, float absSpeedMpS)
