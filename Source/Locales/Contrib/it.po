@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Contrib\n"
-"POT-Creation-Date: 2015-03-28 16:08:11+0100\n"
-"PO-Revision-Date: 2015-04-02 21:10+0100\n"
+"POT-Creation-Date: 2015-05-11 22:21:16+0200\n"
+"PO-Revision-Date: 2015-05-16 09:04+0100\n"
 "Last-Translator: Roberto Ceccarelli (The Strawberry Field) <strawberry."
 "field@libero.it>\n"
 "Language-Team: Open Rails Dev Team\n"
@@ -10,7 +10,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.6.4\n"
+"X-Generator: Poedit 1.7.6\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:17
@@ -670,15 +670,15 @@ msgstr "Caricamento..."
 msgid "Open Rails Content Manager"
 msgstr "Gestore contenuti di Open Rails"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:605
+#: ../../Contrib/TrackViewer/TrackViewer.cs:607
 msgid "The path you are working on has un-saved changes.\n"
 msgstr "Ci sono modifiche non salvate nel path che stai creando.\n"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:607
+#: ../../Contrib/TrackViewer/TrackViewer.cs:609
 msgid "Do you really want to Quit?"
 msgstr "Confermi la chiusura?"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:649
+#: ../../Contrib/TrackViewer/TrackViewer.cs:651
 msgid ""
 "Directory is not a valid install directory.\n"
 "The install directory needs to contain ROUTES, GLOBAL, ..."
@@ -686,21 +686,37 @@ msgstr ""
 "La directory del profilo non è valida.\n"
 "La directory deve contenere ROUTES, GLOBAL, ..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:723
+#: ../../Contrib/TrackViewer/TrackViewer.cs:725
 msgid "Loading route..."
 msgstr "Caricamento route..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:745
+#: ../../Contrib/TrackViewer/TrackViewer.cs:747
 msgid "Route cannot be loaded. Sorry"
 msgstr "La route non può essere caricata."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:812
+#: ../../Contrib/TrackViewer/TrackViewer.cs:814
 msgid "Loading .pat file ..."
 msgstr "Caricamento file .pat ..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:815
+#: ../../Contrib/TrackViewer/TrackViewer.cs:817
 msgid "Processing .pat file ..."
 msgstr "Elaborazione file .pat ..."
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:842
+msgid "Path has been modified. Loading a new path will discard changes."
+msgstr ""
+"Il path è stato modificato. Caricando un nuovo path perderai le modifiche."
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:843
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:88
+msgid "Do you want to continue?"
+msgstr "Vuoi continuare?"
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:844
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:74
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:91
+msgid "Trackviewer Path Editor"
+msgstr ""
 
 #: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:80
 msgid "Select broken path color"
@@ -771,99 +787,95 @@ msgid "Finding the angles to draw signals, endnodes, ..."
 msgstr "Ricerca degli angoli per disegnare i segnali ..."
 
 #: ../../Contrib/TrackViewer/Editing/EditorActions.cs:171
-msgid "Not to be used, template only"
-msgstr "Non usare, è solo un modello"
-
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:194
 msgid "Place start point"
 msgstr "Piazza il punto di partenza"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:226
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:203
 msgid "Remove start point"
 msgstr "Rimuovi il punto di partenza"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:253
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:230
 msgid "Clear path (keep tail)"
-msgstr ""
+msgstr "Azzera il path (mantieni la coda)"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:277
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:254
 msgid "Change start direction"
 msgstr "Cambia la direzione iniziale"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:305
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:282
 msgid "Place end point"
 msgstr "Piazza il punto di arrivo"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:343
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:320
 msgid "Remove end point"
 msgstr "Rimuovi il puto di arrivo"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:369
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:346
 msgid "Place reversal point"
 msgstr "Piazza un punto di inversione"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:405
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:382
 msgid "Remove reversal point"
 msgstr "Rimuovi il punto di inversione"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:458
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:436
 msgid "Place wait point"
 msgstr "Piazza punto di attesa"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:485
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:463
 msgid "Edit wait point"
 msgstr "Termine punto di attesa"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:509
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:487
 msgid "Remove wait point"
 msgstr "Rimuovi il punto di attesa"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:712
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1282
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:690
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1260
 msgid "Take other exit"
 msgstr "Prendi un'altra uscita"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:759
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:737
 msgid "Add passing path"
 msgstr "Aggiungi un percorso di passaggio"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:799
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:777
 msgid "Start passing path"
 msgstr "Inizio del percorso di passaggio"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:864
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:842
 msgid "Remove passing path"
 msgstr "Rimuovi il percorso di passaggio"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:904
-msgid "Fix invalid node"
-msgstr ""
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:882
+msgid "Fix invalid point"
+msgstr "Correggi i punti non validi"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:928
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:906
 msgid "Delete rest of path"
 msgstr "Cancella il resto del path"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:957
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:935
 msgid "Cut path here and store its tail"
 msgstr "Taglia il percorso qui e memorizza la testata"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1011
-msgid "Auto-fix broken nodes"
-msgstr "Sistema automaticamente i nodi interrotti"
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:989
+msgid "Auto-fix broken points"
+msgstr "Ripara automaticamente i punti errati"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1119
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1097
 msgid "Reconnect to tail"
 msgstr "Riconnetti alla testata"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1180
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1158
 msgid "Reconnect passing path"
 msgstr "Riconnetti il percorso di passaggio"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1952
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1930
 msgid "Draw path until here"
 msgstr "Traccia il percorso fino a qui"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1983
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1961
 msgid "Draw path until next broken point"
 msgstr "Traccia il percorso fino al prossimo punto interrotto"
 
@@ -879,13 +891,43 @@ msgstr "Non è possibile invertire path senza nodo di partenza"
 msgid "Reversing a path without end node is not supported"
 msgstr "Non è possibile invertire path senza nodo terminale"
 
-#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:98
-msgid "Saving broken paths might not always work correctly.\n"
-msgstr "Non sempre funziona il salvataggio dei percorsi interrotti.\n"
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:73
+msgid ""
+"Path does not even have a start node.\n"
+"Saving is not possible."
+msgstr ""
+"Il path non ha un punto di partenza.\n"
+"Non è possibile salvarlo."
+
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:80
+msgid "* The path does not have a well-defined end-point"
+msgstr "* Il path non ha una fine ben definita"
+
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:82
+msgid "* The path has a stored and not-yet reconnected tail"
+msgstr "* Il path ha una coda memorizzata ma non connessa"
+
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:86
+msgid "The current path is not finished:"
+msgstr "Il path corrente è incompleto:"
+
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:99
+msgid "Saving broken paths might not always work correctly."
+msgstr "Salvando path interrotti questi potrebbero non funzionare."
+
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:100
+msgid "The MSTS format for defining broken paths is not understood very well."
+msgstr ""
+"Il formato di MSTS per definire path interrotti non è interpretato "
+"correttamente."
+
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:101
+msgid "Reopening it in TrackViewer, however, is likely to work."
+msgstr "Riaprendolo in TrackViewer, comunque, dovrebbe funzionare."
 
 #: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:269
 msgid "Set as invalid in .pat file"
-msgstr ""
+msgstr "Marca come non valido nel file .pat"
 
 #: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:271
 msgid "Closest junction is too far away"
@@ -909,14 +951,20 @@ msgstr "Sconosciuto"
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:55
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:56
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:57
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:58
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:134
 msgid "1"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:228
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:139
+msgid "10"
+msgstr ""
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:260
 msgid "99"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/Languages.cs:65
+#: ../../Contrib/TrackViewer/UserInterface/Languages.cs:75
 msgid "Please restart TrackViewer in order to load the new language."
 msgstr "Riavvia TrackViewer per utilizzare la nuova lingua"
 
@@ -996,32 +1044,39 @@ msgstr "Questa è una 'Contribuzione' a ORTS e come tale\n"
 msgid "not an integral part of ORTS."
 msgstr "non è parte integrante di ORTS."
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:770
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:515
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:780
+msgid "Documentation is available"
+msgstr "La documentazione è disponibile"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:516
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:781
+msgid "Right column → OR_Trackviewer"
+msgstr "Colonna a destra → OR_Trackviewer"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:778
 msgid ""
 "Currently all intended and planned editor features have been implemented."
 msgstr ""
 "Al momento tutte le funzioni previste dell'editor sono state implementate."
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:772
-msgid "Documentation is available"
-msgstr "La documentazione è disponibile"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:774
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:783
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:129
 msgid "Known limitations"
 msgstr "Limitazioni note"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:776
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:785
 msgid "* The saved-paths have not been tested with MSTS or ORTS."
 msgstr "* I path salvati non sono stati testati con MSTS o ORTS"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:778
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:787
 msgid ""
 "* Possibly non-standard junctions (> 1 incoming or > 2 outgoing tracks) "
 "might not work."
 msgstr ""
+"* Scambi non standard (> 1 entrate o >2 uscite) potrebbero non funzionare."
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:780
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:789
 msgid "Feedback is appreciated."
 msgstr "I commenti sono graditi."
 
@@ -1045,15 +1100,19 @@ msgstr "Inizio del Path"
 msgid "Path end"
 msgstr "Termine del Path"
 
+#: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:22
+msgid "Player path"
+msgstr ""
+
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:24
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:15
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:47
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:53
 msgid " OK "
 msgstr ""
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:25
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:16
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:48
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:54
 msgid " Cancel "
 msgstr "Annulla"
 
@@ -1071,7 +1130,7 @@ msgstr "Aggancio"
 
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:10
 msgid "cars, wait for "
-msgstr "rotabili, attendi per"
+msgstr "rotabili, attendi "
 
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:12
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:12
@@ -1084,7 +1143,7 @@ msgstr "Punto di attesa"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:8
 msgid "Wait time: "
-msgstr "Tempo di attesa:"
+msgstr "Attesa:"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:10
 msgid "minutes"
@@ -1092,11 +1151,11 @@ msgstr "minuti"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:15
 msgid "Openrails advanced shunting options:"
-msgstr ""
+msgstr "Funzioni di aggancio avanzate di OpenRails:"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:19
 msgid "Wait until:  "
-msgstr "Attendi fino alle:"
+msgstr "Attendi le:"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:21
 msgid ":"
@@ -1112,33 +1171,38 @@ msgstr "Sgancio: tieni "
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:29
 msgid " cars, and wait"
-msgstr " rotabili, e attendi per"
+msgstr " rotabili, e attendi "
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:31
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:42
 msgid "seconds. "
 msgstr "secondi."
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:32
 msgid "Keep rear"
-msgstr ""
+msgstr "Tieni dietro"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:36
 msgid "Join and split"
-msgstr ""
+msgstr "Unisci e separa"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:40
-msgid "Wait time code as decimal ="
-msgstr ""
+msgid "Blow horn for"
+msgstr "Suona per"
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:41
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:46
+msgid "Wait time code as decimal ="
+msgstr "Codice attesa in decimale ="
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:47
 msgid "00000"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:42
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:48
 msgid "hexadecimal ="
-msgstr ""
+msgstr "esadecimale ="
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:43
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:49
 msgid "0000"
 msgstr ""
 
@@ -1463,6 +1527,10 @@ msgid "Shortcuts"
 msgstr "Scorciatoie"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:133
+msgid "Documentation"
+msgstr "Documentazione"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:134
 msgid "About"
 msgstr "Info"
 
@@ -1507,6 +1575,15 @@ msgstr "Elemento"
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:99
 msgid "Any other relevant information. Make your choice via Statusbar menu"
 msgstr "Altre informazioni. Scegli dal menu della barra di stato"
+
+#~ msgid "Not to be used, template only"
+#~ msgstr "Non usare, è solo un modello"
+
+#~ msgid "Auto-fix broken nodes"
+#~ msgstr "Sistema automaticamente i nodi interrotti"
+
+#~ msgid "Saving broken paths might not always work correctly.\n"
+#~ msgstr "Non sempre funziona il salvataggio dei percorsi interrotti.\n"
 
 #~ msgid "Remove broken point"
 #~ msgstr "Rimuovi il punto interrotto"
