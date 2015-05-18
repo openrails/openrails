@@ -1060,10 +1060,16 @@ namespace ORTS
             }
             else if (EndAuthorityType[0] == END_AUTHORITY.RESERVED_SWITCH || EndAuthorityType[0] == END_AUTHORITY.LOOP)
             {
-                ResetActions(true);
-                NextStopDistanceM = DistanceToEndNodeAuthorityM[0] - 2.0f * junctionOverlapM;
-                CreateTrainAction(SpeedMpS, 0.0f, NextStopDistanceM, null,
-                           AIActionItem.AI_ACTION_TYPE.END_OF_AUTHORITY);
+                if (MovementState != AI_MOVEMENT_STATE.INIT_ACTION && MovementState != AI_MOVEMENT_STATE.HANDLE_ACTION && MovementState != AI_MOVEMENT_STATE.END_ACTION)
+                {
+                    var reProcess = false;
+                    if (nextActionInfo != null && nextActionInfo is AuxActionWPItem) reProcess = true;
+                    ResetActions(true);
+                    NextStopDistanceM = DistanceToEndNodeAuthorityM[0] - 2.0f * junctionOverlapM;
+                    CreateTrainAction(SpeedMpS, 0.0f, NextStopDistanceM, null,
+                                AIActionItem.AI_ACTION_TYPE.END_OF_AUTHORITY);
+                    if (reProcess) ObtainRequiredActions(0);
+                }
             }
             // first handle outstanding actions
             else if (EndAuthorityType[0] == END_AUTHORITY.END_OF_PATH &&
