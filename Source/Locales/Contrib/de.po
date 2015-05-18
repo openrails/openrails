@@ -1,15 +1,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Contrib\n"
-"POT-Creation-Date: 2015-05-11 22:21:16+0200\n"
-"PO-Revision-Date: 2015-05-16 10:42+0100\n"
-"Last-Translator: Daniel Heitepriem <semirben12@googlemail.com>\n"
+"POT-Creation-Date: 2015-05-18 22:30:47+0200\n"
+"PO-Revision-Date: 2015-05-18 22:35+0100\n"
+"Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.7.6\n"
+"X-Generator: Poedit 1.6.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 # AE
@@ -30,23 +30,27 @@ msgstr "0.1"
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:19
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:136
+#, fuzzy
 msgid "Copyright by Open Rails project"
 msgstr "Copyright by Open Rails project"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:20
+#, fuzzy
 msgid "OR"
 msgstr "OR"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:21
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:125
+#, fuzzy
 msgid ""
 "Tool intended for the creation of activities for the Open simulator Rail."
 msgstr "Werkzeug zur Erstellung von Aufgaben für den Open Rails Simulator."
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:111
+#, fuzzy
 msgid "&OK"
 msgstr "&OK"
 
@@ -73,16 +77,19 @@ msgstr "Über den Aufgabeneditor"
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:110
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:48
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.Designer.cs:42
+#, fuzzy
 msgid "OK"
 msgstr "OK"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:74
+#, fuzzy
 msgid "ActionDuration"
 msgstr "Aufgabendauer"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:85
+#, fuzzy
 msgid "Pre-delay :"
 msgstr "Vorlaufzeit :"
 
@@ -93,6 +100,7 @@ msgstr ""
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:75
+#, fuzzy
 msgid ""
 "ActionDuration:\r\n"
 "How long does the action takes.  With a minimum of 10sec and a maximum of "
@@ -104,6 +112,7 @@ msgstr ""
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:86
+#, fuzzy
 msgid ""
 "Pre-Delay:\r\n"
 "Define the advance period for this action before the end of caller.\r\n"
@@ -126,6 +135,7 @@ msgstr ""
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/HornProperties.Designer.cs:55
+#, fuzzy
 msgid "Delay :"
 msgstr "Verzögerung :"
 
@@ -141,6 +151,7 @@ msgstr ""
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:100
+#, fuzzy
 msgid "Activiti Description"
 msgstr "Aufgabenbeschreibung"
 
@@ -149,6 +160,7 @@ msgstr "Aufgabenbeschreibung"
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:339
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:92
 #: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:92
+#, fuzzy
 msgid "Activity Description"
 msgstr "Aufgabenbeschreibung"
 
@@ -165,6 +177,7 @@ msgstr ""
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:295
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:82
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:76
+#, fuzzy
 msgid "Remove"
 msgstr "Entfernen"
 
@@ -173,6 +186,7 @@ msgstr "Entfernen"
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:273
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:368
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:199
+#, fuzzy
 msgid "Edit"
 msgstr "Bearbeiten"
 
@@ -180,6 +194,7 @@ msgstr "Bearbeiten"
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:179
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:406
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:96
+#, fuzzy
 msgid "Description"
 msgstr "Beschreibung"
 
@@ -187,6 +202,7 @@ msgstr "Beschreibung"
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:195
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:283
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:422
+#, fuzzy
 msgid "Consist :"
 msgstr "Zugverband:"
 
@@ -194,6 +210,7 @@ msgstr "Zugverband:"
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:212
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:329
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:439
+#, fuzzy
 msgid "Description :"
 msgstr "Beschreibung :"
 
@@ -201,27 +218,32 @@ msgstr "Beschreibung :"
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:228
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:320
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:455
+#, fuzzy
 msgid "Activity Name : "
 msgstr "Name der Aufgabe :"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:238
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:249
+#, fuzzy
 msgid "Traffic Description"
 msgstr "Verkehrsbeschreibung"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:464
+#, fuzzy
 msgid "StartActivity"
 msgstr "Aufgabe starten"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:67
+#, fuzzy
 msgid "Give your description :"
 msgstr "Bitte Beschreibung eingeben:"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:76
+#, fuzzy
 msgid "Environment"
 msgstr "Umgebung"
 
@@ -258,6 +280,7 @@ msgstr "Datei"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:128
+#, fuzzy
 msgid "New"
 msgstr "Neu"
 
@@ -265,59 +288,70 @@ msgstr "Neu"
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:135
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:292
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.Designer.cs:117
+#, fuzzy
 msgid "Activity"
 msgstr "Aufgabe"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:143
+#, fuzzy
 msgid "Traffic"
 msgstr "KI-Verkehr"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:154
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/SimpleTextEd.Designer.cs:68
+#, fuzzy
 msgid "Save"
 msgstr "Speichern"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:161
+#, fuzzy
 msgid "Metadata"
 msgstr "Metadaten"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:169
+#, fuzzy
 msgid "Save As"
 msgstr "Speichern unter ..."
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:176
+#, fuzzy
 msgid "Load Activity"
 msgstr "Aufgabe laden"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:184
+#, fuzzy
 msgid "Load Metada"
 msgstr "Lade Metadaten"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:192
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:83
+#, fuzzy
 msgid "Quit"
 msgstr "Beenden"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:208
+#, fuzzy
 msgid "Tools"
 msgstr "Werkzeuge"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:214
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:532
+#, fuzzy
 msgid "Options"
 msgstr "Optionen"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:221
+#, fuzzy
 msgid "Import"
 msgstr "Importieren"
 
@@ -339,6 +373,7 @@ msgstr ""
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:252
+#, fuzzy
 msgid "Status"
 msgstr "Status"
 
@@ -346,16 +381,19 @@ msgstr "Status"
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:302
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2025
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2127
+#, fuzzy
 msgid "v"
 msgstr "v"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:312
+#, fuzzy
 msgid "Edit Description"
 msgstr "Beschreibung bearbeiten"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:370
+#, fuzzy
 msgid "Add Station Area"
 msgstr "Bahnhofsbereich hinzufügen"
 
@@ -367,11 +405,13 @@ msgstr ""
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:389
+#, fuzzy
 msgid "Add Tag"
 msgstr "Tag hinzufügen"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:399
+#, fuzzy
 msgid "Add Station"
 msgstr "Bahnhof hinzufügen"
 
@@ -383,11 +423,13 @@ msgstr "Metasegment bearbeiten"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:431
+#, fuzzy
 msgid "Move"
 msgstr "Bewegen"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:441
+#, fuzzy
 msgid "Rotate"
 msgstr "Drehen"
 
@@ -403,6 +445,7 @@ msgstr ""
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:488
+#, fuzzy
 msgid "Waiting Point"
 msgstr "Wartepunkt"
 
@@ -418,31 +461,37 @@ msgstr ""
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:518
+#, fuzzy
 msgid "toolStripButton10"
 msgstr "toolStripButton10"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:136
+#, fuzzy
 msgid "Click to start new Activity Description (not ready)"
 msgstr "Klicken um neue Aufgabenbeschreibung zu erstellen (nicht umgesetzt)"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:144
+#, fuzzy
 msgid "Click to create new Traffic description (not ready)"
 msgstr "Klicken um Verkehrsbeschreibung zu erstellen (nicht umgesetzt)"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:177
+#, fuzzy
 msgid "Click to load an existing OR Activity (not ready)"
 msgstr "Klicken um bestehende Open Rails Aufgabe zu laden (nicht umgesetzt)"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:185
+#, fuzzy
 msgid "Click to Edit Metadata for a specified route"
 msgstr "Klicken um Metadaten für bestimmte Route zu editieren"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/SimpleTextEd.Designer.cs:85
+#, fuzzy
 msgid "Form1"
 msgstr "Form1"
 
@@ -454,6 +503,7 @@ msgstr ""
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2003
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2092
+#, fuzzy
 msgid "Display"
 msgstr "Anzeige"
 
@@ -465,16 +515,19 @@ msgstr ""
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2040
+#, fuzzy
 msgid "Tag"
 msgstr "Tag"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2106
+#, fuzzy
 msgid "Station"
 msgstr "Bahnhof"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.Designer.cs:107
+#, fuzzy
 msgid "Center view"
 msgstr "Ansicht zentrieren"
 
@@ -485,11 +538,13 @@ msgstr ""
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:124
+#, fuzzy
 msgid "Show Platform Label"
 msgstr "Bahnsteigbeschriftung anzeigen"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:190
+#, fuzzy
 msgid "Zoom level :"
 msgstr "Zoom:"
 
@@ -505,6 +560,7 @@ msgstr ""
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:220
+#, fuzzy
 msgid "Show all Signal"
 msgstr "Alle Signale anzeigen"
 
@@ -521,31 +577,37 @@ msgstr ""
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:261
+#, fuzzy
 msgid "Please, configure your paths"
 msgstr "Bitte Fahrstraßen konfigurieren"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:305
+#, fuzzy
 msgid "Add"
 msgstr "Hinzufügen"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:316
+#, fuzzy
 msgid "Route Paths"
 msgstr "Fahrstraßen"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:324
+#, fuzzy
 msgid "Browse"
 msgstr "Durchsuchen"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:342
+#, fuzzy
 msgid "MSTS Path :"
 msgstr "Pfad zur MSTS-Installation :"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:358
+#, fuzzy
 msgid "Debug Options"
 msgstr "Debugging-Optionen"
 
@@ -566,16 +628,19 @@ msgstr ""
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:401
+#, fuzzy
 msgid "Show Ruler"
 msgstr "Lineal anzeigen"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:412
+#, fuzzy
 msgid "Show Track Info"
 msgstr "Fahrstraßeninfo anzeigen"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:423
+#, fuzzy
 msgid "Show Tiles"
 msgstr "World Tiles anzeigen"
 
@@ -586,11 +651,13 @@ msgstr ""
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:468
+#, fuzzy
 msgid "< remove"
 msgstr "< Entfernen"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:478
+#, fuzzy
 msgid "Add >"
 msgstr "Hinzufügen >"
 
@@ -603,6 +670,7 @@ msgstr ""
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.cs:33
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.cs:57
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.cs:28
+#, fuzzy
 msgid "Please, give a name"
 msgstr "Bitte Namen hinzufügen"
 
@@ -614,11 +682,13 @@ msgstr ""
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:73
+#, fuzzy
 msgid "Buffer Label : "
 msgstr "Label des Prellbocks:"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:93
+#, fuzzy
 msgid "Buffer Direction : "
 msgstr "Richtung des Prellbocks:"
 
@@ -629,16 +699,19 @@ msgstr ""
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.cs:48
+#, fuzzy
 msgid "Not yet implemented"
 msgstr "Feature noch nicht verfügbar"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:67
+#, fuzzy
 msgid "Connection Direction : "
 msgstr "Richtung der Verbindung:"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:87
+#, fuzzy
 msgid "Connection Label : "
 msgstr "Label der Verbindung:"
 
@@ -649,56 +722,67 @@ msgstr ""
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:38
+#, fuzzy
 msgid "Please Load Paths:"
 msgstr "Bitte Fahrstraßen laden:"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:42
+#, fuzzy
 msgid "List of Paths seems OK:"
 msgstr "Liste der Fahrstraßen scheint in Ordnung:"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:119
+#, fuzzy
 msgid "###"
 msgstr "###"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:161
+#, fuzzy
 msgid "Loaded:"
 msgstr "Geladen:"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:94
+#, fuzzy
 msgid "Station :"
 msgstr "Bahnhof:"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:163
+#, fuzzy
 msgid "From"
 msgstr "Von"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:174
+#, fuzzy
 msgid " To "
 msgstr "Nach"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:185
+#, fuzzy
 msgid "Max. Platform Length"
 msgstr "Maximale Bahnsteigslänge"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:196
+#, fuzzy
 msgid "Max. Siding Length"
 msgstr "Maximale Nebengleislänge"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:207
+#, fuzzy
 msgid "Number of Platform"
 msgstr "Nummer des Bahnsteiges"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:218
+#, fuzzy
 msgid "Number of Siding"
 msgstr "Nummer des Nebengleises"
 
@@ -709,11 +793,13 @@ msgstr ""
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:248
+#, fuzzy
 msgid "Load Paths"
 msgstr "Fahrstraßen laden"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:260
+#, fuzzy
 msgid "label7"
 msgstr "label7"
 
@@ -730,6 +816,7 @@ msgstr ""
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:108
 #: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:108
+#, fuzzy
 msgid "Activity Name"
 msgstr "Name der Aufgabe"
 
@@ -738,48 +825,56 @@ msgstr "Name der Aufgabe"
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/SelectRoute.cs:68
 #: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:124
 #: ../../Contrib/ActivityEditor/AEWizard/SelectRoute.cs:68
+#, fuzzy
 msgid "Route Path"
 msgstr "Route"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:141
 #: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:141
+#, fuzzy
 msgid "Activity Editor: Create new activity"
 msgstr "Aufgabeneditor: Neue Aufgabe erstellen"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/SelectRoute.cs:47
 #: ../../Contrib/ActivityEditor/AEWizard/SelectRoute.cs:47
+#, fuzzy
 msgid "Route Configuration: Select Route"
 msgstr "Routenkonfiguration: Route auswählen"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/TrainInfo.cs:175
 #: ../../Contrib/ActivityEditor/AEWizard/TrainInfo.cs:175
+#, fuzzy
 msgid "Activity Editor: Specify Train Info"
 msgstr "Aufgabeneditor: Zuginformationen angeben"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/TrainInfo.cs:194
 #: ../../Contrib/ActivityEditor/AEWizard/TrainInfo.cs:194
+#, fuzzy
 msgid "Select Train Consist"
 msgstr "Zugverband auswählen"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/TrainInfo.cs:211
 #: ../../Contrib/ActivityEditor/AEWizard/TrainInfo.cs:211
+#, fuzzy
 msgid "Train Name (Opt.)"
 msgstr "Name des Zuges (optional)"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:191
 #: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:191
+#, fuzzy
 msgid "< &Back"
 msgstr "< &Zurück"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:200
 #: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:200
+#, fuzzy
 msgid "&Next >"
 msgstr "&Weiter >"
 
@@ -787,27 +882,32 @@ msgstr "&Weiter >"
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:210
 #: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:210
 #: ../../Contrib/TrackViewer/UserInterface/SearchControl.xaml:12
+#, fuzzy
 msgid "Cancel"
 msgstr "Abbrechen"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:219
 #: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:219
+#, fuzzy
 msgid "&Finish"
 msgstr "&Fertig"
 
 # AE
 #: ../../Contrib/ActivityEditor/AEWizard/ExteriorWizardPage.cs:72
+#, fuzzy
 msgid "Welcome to the Sample Setup Wizard"
 msgstr "Willkommen zum Beispiel-Setup-Wizzard"
 
 # AE
 #: ../../Contrib/ActivityEditor/AEWizard/InteriorWizardPage.cs:105
+#, fuzzy
 msgid "Sample Header Title"
 msgstr "Titel des Sample Headers"
 
 # AE
 #: ../../Contrib/ActivityEditor/AEWizard/InteriorWizardPage.cs:114
+#, fuzzy
 msgid ""
 "Sample header subtitle will help a user complete a certain task in the "
 "Sample wizard by clarifying the task in some way."
