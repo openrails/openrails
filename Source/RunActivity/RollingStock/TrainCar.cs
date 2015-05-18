@@ -1480,7 +1480,15 @@ namespace ORTS
             
             if (Train != null)
             {
-                Vector3 directionVector = Vector3.Multiply(GetXNAMatrix().Forward, SpeedMpS);
+                var realSpeedMpS = SpeedMpS;
+                //TODO Following if block is needed due to physics flipping when using rear cab
+                // If such physics flipping is removed next block has to be removed.
+                if (this is MSTSLocomotive)
+                {
+                    var loco = this as MSTSLocomotive;
+                    if (loco.UsingRearCab) realSpeedMpS = -realSpeedMpS;
+                }
+                Vector3 directionVector = Vector3.Multiply(GetXNAMatrix().Forward, realSpeedMpS);
                 Velocity = new float[] { directionVector.X, directionVector.Y, -directionVector.Z };
             }
             else
