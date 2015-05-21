@@ -22,7 +22,7 @@ echo("<h2 class='modal-title'>$title</h2>");
                     <a href='http://openrails.org/share/community/'>free from a forum</a> before you can use Open Rails.
                   </p><p>
                     However you can try out our free Demo Model 1 in <a href="/download/content">Downloads &gt; Content</a>. 
-                    It's a large download (250MB) but you will get you driving straight away.
+                    It's a large download (250MB) but this will get you driving straight away.
                   </p><p class="text-right">
 <?php 
 echo ("<a href='/download/program/confirm.php?file=$download_file' class='btn download_button'>Download</a>");
