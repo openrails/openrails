@@ -1,1 +1,1 @@
-<?php echo "<title>Open Rails - Frequently Asked Questions (FAQ)</title>"; ?>
+<?php echo "<title>Open Rails - Learn - Frequently Asked Questions (FAQ)</title>"; ?>

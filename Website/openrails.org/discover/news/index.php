@@ -15,10 +15,16 @@
 		<div class="row">
 			<div class="col-md-1"></div>
 			<div class="col-md-5">
+          <h2>May 2015 - Version 1.0</h2>
+          <p>
+            <a href="/discover/version-1-0/">Open Rails 1.0</a> released! <a href="/download/program/">Download it here</a>.
+          </p>
+          <hr />
           <h2>Apr 2015 - Demo Model 1</h2>
           <p>
           Open Rails first demonstration route <a href="/download/content">Demo Model 1</a> has been published.
           </p>
+          <hr />
           <h2>Dec 2014 - 3D Cabs</h2> 
           <p>
           <a href="http://www.dekosoft.com">Dekosoft Trains</a> has added locos exclusively for Open Rails to its range.

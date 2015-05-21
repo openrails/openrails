@@ -1,1 +1,1 @@
-<?php echo "<title>Open Rails - Download Content</title>"; ?>
+<?php echo "<title>Open Rails - Download - Content</title>"; ?>

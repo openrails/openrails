@@ -9,25 +9,25 @@
 <?php include "../../shared/menu.php" ?>
 		<div class="row">
 			<div class="col-md-12"> 
-        <h1>Discover > Stable Release v1.0</h1>
+        <h1>Discover > Version 1.0</h1>
       </div>
     </div>
 		<div class="row">
 			<div class="col-md-1"></div>
 			<div class="col-md-10">
-              <h2>Changes brought in by Open Rails v1.0 (since v0.9)</h2> 
+              <h2>Changes brought in by Open Rails 1.0 (since 0.9)</h2> 
 	          <p>
-			    New features are listed below. However effort has also gone into better sound, environment, enhancing performance
-				to cater for larger and more detailed models and, of course, updating the manual. 
-				Many models take advantage of quirks in MSTS, so much effort has also gone into handling these tricky cases and in
-				eliminating unexpected behaviour in activities. 				
+			    New features are listed below. However, effort has also gone into better sound, environment,
+				enhancing performance to cater for larger and more detailed models and, of course, updating the manual. 
+				Many models take advantage of quirks in MSTS, so much effort has also gone into handling these
+				tricky cases and in eliminating unexpected behaviour in activities.
 			  </p>
 			</div>
 	    </div>
 		<div class="row">
 			<div class="col-md-1"></div>
 			<div class="col-md-4">
-              <h2>New features in Open Rails v1.0 (since v0.9)</h2> 
+              <h2>New features in Open Rails 1.0</h2> 
 			</div>
 	    </div>
 		<div class="row">
@@ -54,6 +54,10 @@
 		      </p><p>
 			    3D cabs and their controls are now available.
 		      </p>
+			  <h3>Detailed Changelog</h3>
+			  <p>
+				A <a href="https://launchpad.net/or/+milestone/1.0">full list of changes</a> is available.
+			  </p>
 			</div>
 			<div class="col-md-2"></div>
 			<div class="col-md-4">
@@ -90,4 +94,3 @@
 <?php include "../../shared/banners/preload_next_banner.php" ?>
   </body>
 </html>
-

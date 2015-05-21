@@ -64,6 +64,10 @@
             <h4>News</h4>
           </div>
           <p>
+            <strong>May 2015</strong>
+            <a href="/discover/version-1-0/">Open Rails 1.0</a> released! <a href="/download/program/">Download it here</a>.
+          </p>
+          <p>
             <strong>Apr 2015</strong>
             Open Rails first demonstration route <a href="/download/content">Demo Model 1</a> has been published.
           </p>

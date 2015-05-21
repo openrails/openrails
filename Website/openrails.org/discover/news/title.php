@@ -1,1 +1,1 @@
-<?php echo "<title>Open Rails - Project News</title>"; ?>
+<?php echo "<title>Open Rails - Discover - News</title>"; ?>

@@ -1,1 +1,1 @@
-<?php echo "<title>Open Rails - Share > Gallery</title>"; ?>
+<?php echo "<title>Open Rails - Share - Gallery</title>"; ?>

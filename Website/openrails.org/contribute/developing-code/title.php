@@ -1,1 +1,1 @@
-<?php echo "<title>Open Rails - Contribute > Developing Code</title>"; ?>
+<?php echo "<title>Open Rails - Contribute - Developing Code</title>"; ?>

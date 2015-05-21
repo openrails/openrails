@@ -1,1 +1,1 @@
-<?php echo "<title>Open Rails - Contact Us form</title>"; ?>
+<?php echo "<title>Open Rails - Contact</title>"; ?>
