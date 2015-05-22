@@ -332,10 +332,6 @@ namespace Orts.Formats.Msts
         public float SemaphoreInfo { get; private set; }
         public ApproachControlLimits ApproachControlDetails;
 
-        public float? DayGlow = null;
-        public float? NightGlow = null;
-        public bool DayLight = true;
-
         /// <summary>
         /// Common initialization part for constructors
         /// </summary>
@@ -383,9 +379,6 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("approachcontrolsettings", ()=>{ ApproachControlDetails = ReadApproachControlDetails(stf); }),
                 new STFReader.TokenProcessor("signalnumclearahead", ()=>{ numClearAhead = numClearAhead >= -1 ? numClearAhead : stf.ReadIntBlock(null); numdefs++;}),
                 new STFReader.TokenProcessor("semaphoreinfo", ()=>{ SemaphoreInfo = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("dayglow", ()=>{ DayGlow = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("nightglow", ()=>{ NightGlow = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),                
-                new STFReader.TokenProcessor("daylight", ()=>{ DayLight = stf.ReadBoolBlock(true); }),
                 new STFReader.TokenProcessor("sigflashduration", ()=>{
                     stf.MustMatch("(");
                     FlashTimeOn = stf.ReadFloat(STFReader.UNITS.None, null);
