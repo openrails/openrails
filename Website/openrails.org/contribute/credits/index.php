@@ -76,7 +76,7 @@
 </div>
 <div class="col-md-3">
 <ul>
-	<li>Peter Newark</li>
+	<li>Peter Newell</li>
 	<li>Phil Voxland</li>
 	<li>Remus Iancu</li>
 	<li>Richard Plokhaar</li>

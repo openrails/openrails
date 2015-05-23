@@ -6,7 +6,8 @@
     <div class="container"><!-- Centres content and sets fixed width to suit device -->
       <div class="row">
         <div class="col-md-9 header">
-          <img class="totally_free_software" src="totally_free_software3.png" alt="Totally free software"/>
+          <!-- <img class="totally_free_software" src="totally_free_software3.png" alt="Totally free software"/> -->
+          <img class="totally_free_software" src="now_at_version_1_0b.png" alt="Now at Version 1.0"/>
           <a href="/">
             <img class="logo" src='shared/logos/or_logo.png' alt='logo for Open Rails'/>
             <div class="logo_text">Open Rails</div>
