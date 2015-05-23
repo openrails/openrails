@@ -2789,15 +2789,12 @@ namespace ORTS.Viewer3D.RollingStock
 
 	public class DigitalDisplay
 	{
-		int X, Y;
 		Viewer Viewer;
 		private SpriteBatchMaterial _Sprite2DCabView;
 		WindowTextFont _Font;
 		PoseableShape TrainCarShape = null;
-		TextPrimitive text = null;
 		int digitPart;
 		int height;
-		Matrix xnaMatrix;
 		Point coor = new Point(0, 0);
 		CabViewDigitalRenderer CVFR;
 //		Color color;
@@ -2810,40 +2807,8 @@ namespace ORTS.Viewer3D.RollingStock
 			CVFR = (CabViewDigitalRenderer)c;
 			_Sprite2DCabView = (SpriteBatchMaterial)viewer.MaterialManager.Load("SpriteBatch");
 			_Font = viewer.WindowManager.TextManager.GetExact("Arial", height, System.Drawing.FontStyle.Regular);
-			X = Y = -1000;//indicating the digit is not in range
 		}
 
-		public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
-		{
-            return; //not used when the 3D text is in effect
-			RecomputeLocation();//not init, or out of range before, recompute
-			if (X == -1000) return; //indicating not able to draw it (out of range or behind camera)
-			text.Text = CVFR.GetDigits(out text.Color);
-			frame.AddPrimitive(_Sprite2DCabView, text, RenderPrimitiveGroup.World, ref xnaMatrix);
-		}
-
-		public void RecomputeLocation()
-		{
-			Matrix mx = TrainCarShape.Location.XNAMatrix;
-			mx.M41 += (TrainCarShape.Location.TileX - Viewer.Camera.TileX) * 2048;
-			mx.M43 += (-TrainCarShape.Location.TileZ + Viewer.Camera.TileZ) * 2048;
-			Matrix m = TrainCarShape.XNAMatrices[digitPart] * mx;
-
-			//project 3D space to 2D (for the top of the line)
-			Vector3 cameraVector = Viewer.GraphicsDevice.Viewport.Project(
-				m.Translation,
-				Viewer.Camera.XnaProjection, Viewer.Camera.XnaView, Matrix.Identity);
-
-			if (cameraVector.Z > 1 || cameraVector.Z < 0)
-			{
-				X = Y = -1000;
-				return; //out of range or behind the camera
-			}
-			X = (int)cameraVector.X; Y = (int)cameraVector.Y;
-			coor.X = X; coor.Y = Y;
-			if (text == null) text = new TextPrimitive(_Sprite2DCabView, coor, Color.Red, _Font);
-			text.Position = coor;
-		}
 	}
 
 	public class TextPrimitive : RenderPrimitive
