@@ -15,69 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 //
-//
-//
-// ENHANCEMENT list for Trackviewer 
-// Short term 
-//      Path editor: improve dragging junction nodes with the mouse.
-//      Update documentation (including new arrows)
-//      Improve the 'take focus' between menu and main window. Re-introduce alt to give menu focus.
-//     
-// Issues
-//      Loop is not done OK. Possibly there is not even a right way given the limitations of MSTS format.
-//
-// Additions
-//      Draw ground textures from .ace files.
-//      Add coloring for speed?
-//
-// Ideas from others
-//      Adding color option also for 'black' parts of path textures
-//      Be able to list the issues directly without going through the ORTS logfile
-//      Make it XNA independent.
-//      Import & export.
-//          via JSON? Might be a good way to learn JSON.
-//          if we are going to write own routines, then use stringbuilder
-//
-// Steps to take for each release.
-//      Always: * Update SVN. 
-//              * make a release build, clean all XML comment warnings
-//              * look at all to-dos and remove temporary changes. 
-//              * remove debug (no statements in runDebug, all debugWindows should be removed)
-//              * run fxcop
-//              * update version.
-//              * test
-//
-// Code improvements
-//      remove drawTrains. Perhaps it is nice to keep it for later when .ace is supported and link to runActivity can be made
-//      remove dependency on ORTS.Settings. Even though it means a bit of code duplication
-//      Colorscheme needs optimalization: now a color needs to go through to many redirections too often. Can I profile this?
-//          Possibly easiest is to have a fixed version that is created once the colorscheme is requested.
-//
-// MSTS trackviewer features perhaps to take over:
-//      different color for switches
-//      track width option
-//      add slope and height
-//      Save and restore? But that is like writing/reading tsection.dat, .tdb, .rdb., and .pat files.
-// 
-// ORTS specific items to add
-//      new signalling TrackCircuitSection number. Cumbersome because of dependence on Simulator.
-//      Add milepost and speedpost texture?
-//
-//
-// Performance improvements
-//      How can I measure performance. I do not want FPS, but it might help measuring improvement.
-//      Instead of creating arcs from lines, create arc textures depending on need
-//      Possibly for paths it also makes sense to gather all textures into a big texture and specify the location within that
-//          big texture. I read somewhere that it affects the graphics card very much.
-//      Once we use more textures, let draw sort them itself. But this needs that we specify z-depth for all textures
-//      Split basicshapes into 'static' and 'mouse-dependent'
-//          update the static part only when needed.
-//          update the mouse-dependent only when needed.
-//      Perhaps even create a texture from tracks, one for current items, and draw these, and only draw hightlights directly
-//          This might already save some time related to the inset (because it can re-use the texture if we make it big enough)
-//          We can also make it more advanced, to support lots of shifting/zooming without generating a new track texture
-//          But might take up memory? 
-//
+
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
@@ -103,6 +41,7 @@ using ORTS.Common;
 using ORTS.TrackViewer.Drawing;
 using ORTS.TrackViewer.UserInterface;
 using ORTS.TrackViewer.Editing;
+using ORTS.TrackViewer.Editing.Charts;
 
 namespace ORTS.TrackViewer
 {
@@ -173,6 +112,8 @@ namespace ORTS.TrackViewer
         DrawTrains drawTrains;
         /// <summary>The routines to draw the world tiles</summary>
         DrawWorldTiles drawWorldTiles;
+        /// <summary>The routines to draw the grade of a path</summary>
+        DrawPathChart drawPathChart;
         /// <summary>The routines to draw the terrain textures</summary>
         DrawTerrain drawTerrain;
 
@@ -270,7 +211,8 @@ namespace ORTS.TrackViewer
             InstallFolder = new Folder("default", Properties.Settings.Default.installDirectory);
 
             findRoutes(InstallFolder);
-            
+
+            drawPathChart = new DrawPathChart();
             
             base.Initialize();
         }
@@ -457,6 +399,7 @@ namespace ORTS.TrackViewer
                 {
                     PathEditor.OnLeftMouseCancel();
                 }
+                drawPathChart.DrawDynamics();
             }
 
             if (!TVUserInput.IsDown(TVUserCommands.EditorTakesMouseClick) && !this.MenuHasMouse)
@@ -578,7 +521,7 @@ namespace ORTS.TrackViewer
 
         #endregion
 
-        #region User actions
+        #region User actions (e.g. from menu)
         /// <summary>
         /// Set aliasing depending on the settings (set in the menu)
         /// </summary>
@@ -589,15 +532,12 @@ namespace ORTS.TrackViewer
             graphics.PreferMultiSampling = Properties.Settings.Default.doAntiAliasing;
         }
 
-        void Window_ClientSizeChanged(object sender, EventArgs e)
+        /// <summary>
+        /// Show the window with the chart of the path
+        /// </summary>
+        public void ShowPathChart()
         {
-            ScreenW = Window.ClientBounds.Width;
-            ScreenH = Window.ClientBounds.Height;
-            if (ScreenW == 0 || ScreenH == 0)
-            {   // if something went wrong during fast window switching, let's not continue
-                return;
-            }
-            setSubwindowSizes();
+            this.drawPathChart.Open();
         }
 
         /// <summary>
@@ -615,6 +555,17 @@ namespace ORTS.TrackViewer
             {
                 this.Exit();
             }
+        }
+ 
+        void Window_ClientSizeChanged(object sender, EventArgs e)
+        {
+            ScreenW = Window.ClientBounds.Width;
+            ScreenH = Window.ClientBounds.Height;
+            if (ScreenW == 0 || ScreenH == 0)
+            {   // if something went wrong during fast window switching, let's not continue
+                return;
+            }
+            setSubwindowSizes();
         }
 
         public bool SetTerrainVisibility(bool isVisible)
@@ -834,6 +785,7 @@ namespace ORTS.TrackViewer
             {
                 DrawPATfile = null;
                 PathEditor = null;
+                drawPathChart.Close();
             }
             else
             {
@@ -842,6 +794,8 @@ namespace ORTS.TrackViewer
 
                 DrawLoadingMessage(catalog.GetString("Processing .pat file ..."));
                 PathEditor = new PathEditor(DrawTrackDB, path);
+                drawPathChart.SetPathEditor(DrawTrackDB, PathEditor);
+                
                 DrawLoadingMessage(" ...");
             }   
         }
@@ -851,6 +805,7 @@ namespace ORTS.TrackViewer
             if (!CanDiscardModifiedPath()) return;
             string pathsDirectory = System.IO.Path.Combine(CurrentRoute.Path, "PATHS");
             PathEditor = new PathEditor(DrawTrackDB, pathsDirectory);
+            drawPathChart.SetPathEditor(DrawTrackDB, PathEditor);
             DrawPATfile = null;
             PathEditor.EditingIsActive = true;
             PathEditor.EditMetaData();
@@ -943,6 +898,7 @@ namespace ORTS.TrackViewer
             //Properties.Settings.Default.statusShowFPS = true;
             //ReloadRoute();
             //SetPath(Paths[21]);
+            //drawPathChart.Open();
             //NewPath(); 
             //PathEditor.EditingIsActive = true;
             //DrawArea.ZoomToTile();

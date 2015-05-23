@@ -231,6 +231,7 @@ namespace ORTS.TrackViewer.UserInterface
             menuShowOtherPaths.IsEnabled = (trackViewer.CurrentRoute != null);
             menuSavePath.IsEnabled = (trackViewer.PathEditor != null);
             menuSaveStations.IsEnabled = (trackViewer.PathEditor != null);
+            menuShowChart.IsEnabled = (trackViewer.PathEditor != null);
             menuEnableEditing.IsEnabled = (trackViewer.PathEditor != null);
             menuEditMetadata.IsEnabled = menuEnableEditing.IsChecked;
             menuReversePath.IsEnabled = menuEnableEditing.IsChecked;
@@ -947,6 +948,11 @@ namespace ORTS.TrackViewer.UserInterface
             {
                 otherPathsWindow.Close();
             }
+        }
+
+        private void menuShowChart_Click(object sender, RoutedEventArgs e)
+        {
+            this.trackViewer.ShowPathChart();
         }
 
     }

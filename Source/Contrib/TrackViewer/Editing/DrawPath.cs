@@ -295,7 +295,7 @@ namespace ORTS.TrackViewer.Editing
                 }
                 if (nextVectorNode != null)
                 {
-                    // Draw from a current mid-point node to next mid-point node. Not sure if this ever happens
+                    // Draw from a current vector node to the next vector node, e.g. for multiple wait points 
                     if (currentVectorNode.IsEarlierOnTrackThan(nextVectorNode))
                     {   // from current to next is in the direction of the vector node
                         tvsiStart = currentVectorNode.TrackVectorSectionIndex;
