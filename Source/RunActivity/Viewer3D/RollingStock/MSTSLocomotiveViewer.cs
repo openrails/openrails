@@ -1195,7 +1195,7 @@ namespace ORTS.Viewer3D.RollingStock
             CABTextureManager.LoadTextures(Viewer, Control.ACEFile);
         }
 
-        public CABViewControlTypes GetType()
+        public CABViewControlTypes GetControlType()
         {
             return Control.ControlType;
         }
@@ -2382,7 +2382,7 @@ namespace ORTS.Viewer3D.RollingStock
         {
             string imageName = "";
             string globalText = Viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\";
-            CABViewControlTypes controltype = CVFR.GetType();
+            CABViewControlTypes controltype = CVFR.GetControlType();
             Material material = null;
 
             if (AceFile != "")
