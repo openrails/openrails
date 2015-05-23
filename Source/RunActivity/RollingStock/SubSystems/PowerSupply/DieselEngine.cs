@@ -902,13 +902,6 @@ namespace ORTS
             if (ExhaustParticles > 100f)
                 ExhaustParticles = 100f;
 
-            //Cooling and temperature
-            float finalTemperature = 0f;
-            float currentTemperature = 0f;
-
-            //if(EngineCooling)
-            //    finalTemperature = 
-
             DieselTemperatureDeg += elapsedClockSeconds * (DieselMaxTemperatureDeg - DieselTemperatureDeg) / DieselTempTimeConstantSec;
             switch(EngineCooling)
             {

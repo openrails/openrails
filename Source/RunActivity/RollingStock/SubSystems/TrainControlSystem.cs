@@ -129,7 +129,6 @@ namespace ORTS
 
         public bool PowerAuthorization { get; private set; }
 
-        bool Activated = false;
         string ScriptName;
         string SoundFileName;
         string ParametersFileName;
@@ -287,7 +286,6 @@ namespace ORTS
             Script.GetStringParameter = (arg1, arg2, arg3) => LoadParameter<string>(arg1, arg2, arg3);
 
             Script.Initialize();
-            Activated = true;
         }
 
         T NextSignalItem<T>(int forsight, ref List<T> list, Train.TrainObjectItem.TRAINOBJECTTYPE type)

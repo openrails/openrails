@@ -92,8 +92,6 @@ namespace ORTS.Viewer3D
     {
         private int _prevTType = -1;
         private int _curTType = -1;
-        private int _roughcurTType = -1; // used in case track type out of range to trace error only once
-        private int _roughprevTType = -1;
         private SoundSource _activeInSource;
         private SoundSource _activeOutSource;
         private List<SoundSource> _inSources;
@@ -1032,10 +1030,7 @@ namespace ORTS.Viewer3D
             {
                 return;
             }
-            if (Triggers.Count == 1 && _InitialTrigger != null &&_InitialTrigger.SoundCommand is ORTSPlayOneShot)
-            {
-                int pippo = 1;
-            }
+
             foreach (ORTSTrigger trigger in Triggers)
                 trigger.TryTrigger();
             
@@ -1081,11 +1076,6 @@ namespace ORTS.Viewer3D
         {
             if (ALSoundSource == null)
                 return;
-
-            if (MSTSStream == null)
-            {
-                int pippo = 1;
-            }
 
             if (MSTSStream != null && MSTSStream.FrequencyCurve != null) 
             {
