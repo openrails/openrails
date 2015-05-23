@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2013, 2014 by the Open Rails project.
+﻿// COPYRIGHT 2013, 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -59,7 +59,7 @@ namespace ORTS
             CircuitBreaker = new ScriptedCircuitBreaker(Locomotive);
         }
 
-        public void Parse(string lowercasetoken, STFReader stf)
+        public override void Parse(string lowercasetoken, STFReader stf)
         {
             switch (lowercasetoken)
             {
@@ -86,7 +86,7 @@ namespace ORTS
             CircuitBreaker.Copy(other.CircuitBreaker);
         }
 
-        public void Restore(BinaryReader inf)
+        public override void Restore(BinaryReader inf)
         {
             ScriptName = inf.ReadString();
 
@@ -136,7 +136,7 @@ namespace ORTS
         /// <summary>
         /// Initialization when simulation starts with moving train
         /// <\summary>
-        public void InitializeMoving()
+        public override void InitializeMoving()
         {
             base.InitializeMoving();
             CircuitBreaker.InitializeMoving();
@@ -155,7 +155,7 @@ namespace ORTS
             CircuitBreaker.HandleEvent(evt);
         }
 
-        public void Save(BinaryWriter outf)
+        public override void Save(BinaryWriter outf)
         {
             outf.Write(ScriptName);
 

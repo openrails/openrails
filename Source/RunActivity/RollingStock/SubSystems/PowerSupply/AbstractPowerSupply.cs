@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2013, 2014 by the Open Rails project.
+﻿// COPYRIGHT 2013, 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -117,7 +117,7 @@ namespace ORTS
             AuxPowerOnDelayS = 0;
         }
 
-        public void Parse(string lowercasetoken, STFReader stf)
+        public virtual void Parse(string lowercasetoken, STFReader stf)
         {
             switch (lowercasetoken)
             {
@@ -140,7 +140,7 @@ namespace ORTS
             AuxPowerOnDelayS = other.AuxPowerOnDelayS;
         }
 
-        public void Restore(BinaryReader inf)
+        public virtual void Restore(BinaryReader inf)
         {
             State = (PowerSupplyState)Enum.Parse(typeof(PowerSupplyState), inf.ReadString());
             AuxiliaryState = (PowerSupplyState)Enum.Parse(typeof(PowerSupplyState), inf.ReadString());
@@ -152,13 +152,13 @@ namespace ORTS
         /// <summary>
         /// Initialization when simulation starts with moving train
         /// <\summary>
-        public void InitializeMoving()
+        public virtual void InitializeMoving()
         {
             State = PowerSupplyState.PowerOn;
             AuxiliaryState = PowerSupplyState.PowerOn;
         }
 
-        public void Save(BinaryWriter outf)
+        public virtual void Save(BinaryWriter outf)
         {
             outf.Write(State.ToString());
             outf.Write(AuxiliaryState.ToString());
