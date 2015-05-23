@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -196,9 +196,7 @@ namespace ORTS.Viewer3D
                         Logger.Data(Viewer.PlayerLocomotive.BrakeForceN.ToString("F0"));
                         Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxle.AxleForceN.ToString("F2"));
                         Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxle.SlipSpeedPercent.ToString("F1"));
-#if !NEW_SIGNALLING
-                    Logger.Data(TrackMonitorWindow.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
-#else
+
                         switch (Viewer.Settings.DataLogSpeedUnits)
                         {
                             case "route":
@@ -217,7 +215,7 @@ namespace ORTS.Viewer3D
                                 Logger.Data(FormatStrings.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
                                 break;
                         }
-#endif
+
                         Logger.Data((Viewer.PlayerLocomotive.DistanceM.ToString("F0")));
                         Logger.Data((Viewer.PlayerLocomotive.GravityForceN.ToString("F0")));
 

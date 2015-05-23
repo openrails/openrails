@@ -949,61 +949,6 @@ namespace ORTS
 
             UpdateMotiveForce(elapsedClockSeconds, t, currentSpeedMpS, currentWheelSpeedMpS);
 
-#if !NEW_SIGNALLING
-            if (this.IsLeadLocomotive())
-            {
-                switch (Direction)
-                {
-                    case Direction.Forward:
-                        //MotiveForceN *= 1;     //Not necessary
-                        break;
-                    case Direction.Reverse:
-                        MotiveForceN *= -1;
-                        break;
-                    case Direction.N:
-                    default:
-                        MotiveForceN *= 0;
-                        break;
-                }
-            }
-            else
-            {
-                int carCount = 0;
-                int controlEngine = -1;
-
-                // When not LeadLocomotive; check if lead is in Neutral
-                // if so this loco will have no motive force
-                var LeadLocomotive = Program.Simulator.PlayerLocomotive.Train;
-
-                foreach (TrainCar car in LeadLocomotive.Cars)
-                {
-                    if (car.IsDriveable)
-                        if (controlEngine == -1)
-                        {
-                            controlEngine = carCount;
-                            if (car.Direction == Direction.N)
-                                MotiveForceN *= 0;
-                            else
-                            {
-                                switch (Direction)
-                                {
-                                    case Direction.Forward:
-                                        MotiveForceN *= 1;     //Not necessary
-                                        break;
-                                    case Direction.Reverse:
-                                        MotiveForceN *= -1;
-                                        break;
-                                    case Direction.N:
-                                    default:
-                                        MotiveForceN *= 0;
-                                        break;
-                                }
-                            }
-                        }
-                    break;
-                } // foreach
-            } // end when not lead loco
-#else
             // Steam locomotives have their MotiveForceN already pre-inverted based on Direction
             if (!(this is MSTSSteamLocomotive))
             {
@@ -1035,7 +980,6 @@ namespace ORTS
                     }
                 }// end AI locomotive
             }
-#endif
 
             if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null)
             {
@@ -1467,16 +1411,6 @@ namespace ORTS
                     Train.MUReverserPercent = -100;
             }
 
-#if !NEW_SIGNALLING
-            if (direction == Direction.N)
-            {
-                Program.Simulator.AI.Dispatcher.ReleasePlayerAuthorization();
-            }
-            else
-            {
-                Program.Simulator.AI.Dispatcher.ExtendPlayerAuthorization(false);
-            }
-#endif
         }
 
         public virtual void StartReverseIncrease(float? target)
@@ -2222,12 +2156,10 @@ namespace ORTS
             Simulator.Confirmer.Confirm(CabControl.Odometer, OdometerCountingUp ? CabSetting.Increase : CabSetting.Decrease);
         }
 
-#if NEW_SIGNALLING
         public override bool GetCabFlipped()
         {
             return UsingRearCab;
         }
-#endif
 
         public void SetEmergency(bool emergency)
         {

@@ -58,9 +58,9 @@ namespace ORTS.Viewer3D.Popups
                 {
                     var carLabel = new TrainOperationsLabel(textHeight * 6, textHeight, Owner.Viewer, car, carPosition, LabelAlignment.Center);
                     carLabel.Click += new Action<Control, Point>(carLabel_Click);
-#if NEW_SIGNALLING
+
                     if (car == PlayerTrain.LeadLocomotive) carLabel.Color = Color.Red;
-#endif
+
                     scrollbox.Add(carLabel);
                     if (car != PlayerTrain.Cars.Last())
                         scrollbox.Add(new TrainOperationsCoupler(0, 0, textHeight, Owner.Viewer, car, carPosition));

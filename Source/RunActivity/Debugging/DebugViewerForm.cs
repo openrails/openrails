@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -1041,42 +1041,9 @@ namespace ORTS.Debugging
             }
             trackNode = new Traveller(position);
 
-#if !NEW_SIGNALLING
-            var distance = 0f;
-            while (true)
-            {
-                var signal = Program.Simulator.Signals.FindNearestSignal(trackNode);
-                if (signal.GetAspect() == SignalHead.SIGASP.UNKNOWN)
-                    break;
-                var signalDistance = signal.DistanceToSignal(trackNode);
-                if (signalDistance > 0)
-                {
-                    distance += signalDistance;
-                    trackNode.Move(signalDistance);
-                    if (trackNode.TrackNodeIndex != nodeIndex)
-                        break;
-                    rv.Objects.Add(new SignallingDebugWindow.TrackSectionSignal() { Distance = distance, Signal = signal });
-                }
-                // TODO: This is a massive hack because the current signalling code is useless at finding the next signal in the face of changing switches.
-                trackNode.Move(0.001f);
-            }
-#endif
-
             rv.Objects = rv.Objects.OrderBy(tso => tso.Distance).ToList();
             return rv;
         }
-
-#if !NEW_SIGNALLING
-	    ORTS.Popups.TrackMonitorSignalAspect GetAspect(Signal signal)
-        {
-            var aspect = signal.GetAspect();
-            if (aspect >= SignalHead.SIGASP.CLEAR_1)
-                return ORTS.Popups.TrackMonitorSignalAspect.Clear;
-            if (aspect >= SignalHead.SIGASP.STOP_AND_PROCEED)
-                return ORTS.Popups.TrackMonitorSignalAspect.Warning;
-            return ORTS.Popups.TrackMonitorSignalAspect.Stop;
-        }
-#endif
 
 	   //draw the train path if it is within the window
 		public void DrawTrainPath(Train train, float subX, float subY, Pen pathPen, Graphics g, PointF scaledA, PointF scaledB, float stepDist, float MaximumSectionDistance)
@@ -1152,16 +1119,7 @@ namespace ORTS.Debugging
 						if (switchErrorDistance < DisplayDistance)
 							break;
 					}
-#if !NEW_SIGNALLING
-					else if (signalObj != null)
-					{
-						if (GetAspect(signalObj.Signal) == ORTS.Popups.TrackMonitorSignalAspect.Stop)
-						{
-							signalErrorDistance = objDistance;
-							break;
-						}
-					}
-#endif
+
 				}
 				if (switchErrorDistance < DisplayDistance || signalErrorDistance < DisplayDistance)
 					break;
@@ -1970,24 +1928,9 @@ namespace ORTS.Debugging
 		  {
 			  case 0:
                   signal.clearHoldSignalDispatcher();
-#if !NEW_SIGNALLING
-				  signal.canUpdate = true;
-				  signal.forcedTime = 0;
-#endif
 				  break;
 			  case 1:
                   signal.requestHoldSignalDispatcher(true);
-#if !NEW_SIGNALLING
-				  signal.enabled = false;
-				  signal.canUpdate = false;
-				  //signal.forcedTime = Program.Simulator.GameTime;
-				  foreach (var head in signal.SignalHeads)
-				  {
-					  head.SetMostRestrictiveAspect();
-					  head.Update();
-				  }
-				  signal.forcedTime = Program.Simulator.GameTime;
-#endif
 				  break;
 			  case 2:
                   signal.holdState = SignalObject.HoldState.ManualApproach;
@@ -2001,23 +1944,6 @@ namespace ORTS.Debugging
                       else { sigHead.state = MstsSignalAspect.APPROACH_3; }
                       sigHead.draw_state = sigHead.def_draw_state(sigHead.state);
                   }
-
-#if !NEW_SIGNALLING
-				  signal.canUpdate = false;
-				  //signal.
-				  foreach (var head in signal.SignalHeads)
-				  {
-					  //first try to set as approach, if not defined, set as the least
-					  var drawstate1 = head.def_draw_state(SignalHead.SIGASP.APPROACH_1);
-					  var drawstate2 = head.def_draw_state(SignalHead.SIGASP.APPROACH_2);
-					  var drawstate3 = head.def_draw_state(SignalHead.SIGASP.APPROACH_3);
-					  if (drawstate1 > 0) { head.state = SignalHead.SIGASP.APPROACH_1; }
-					  else if (drawstate2 > 0) { head.state = SignalHead.SIGASP.APPROACH_2; }
-					  else { head.state = SignalHead.SIGASP.APPROACH_3; }
-					  head.draw_state = head.def_draw_state(head.state);
-				  }
-				  signal.forcedTime = Program.Simulator.GameTime;
-#endif
 				  break;
 			  case 3:
                   signal.holdState = SignalObject.HoldState.ManualPass;
@@ -2026,17 +1952,6 @@ namespace ORTS.Debugging
                       sigHead.SetLeastRestrictiveAspect();
                       sigHead.draw_state = sigHead.def_draw_state(sigHead.state);
                   }
-#if !NEW_SIGNALLING
-				  signal.canUpdate = false;
-				  signal.enabled = true; //force it to be green,
-				  //signal.
-				  foreach (var head in signal.SignalHeads)
-				  {
-					  head.SetLeastRestrictiveAspect();
-					  head.draw_state = head.def_draw_state(head.state);
-				  }
-				  signal.forcedTime = Program.Simulator.GameTime;
-#endif
 				  break;
 		  }
 		  UnHandleItemPick();
@@ -2233,10 +2148,6 @@ namespace ORTS.Debugging
                v2 = v1 - Vector2.Multiply(v3, signal.direction == 0 ? 1.5f : -1.5f);//shift signal along the dir for 2m, so signals will not be overlapped
                Location.X = v2.X; Location.Y = v2.Y;
 			   hasDir = true;
-#if !NEW_SIGNALLING
-			   var pos = signal.WorldObject.Position;
-			   if (pos != null) { Location.X = item.TileX * 2048 + pos.X; Location.Y = item.TileZ * 2048 + pos.Z; }
-#endif
 		   }
 		   catch {  }
 	   }

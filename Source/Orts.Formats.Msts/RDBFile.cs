@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -20,9 +20,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Diagnostics.CodeAnalysis;
 using Orts.Parsers.Msts;
-#if !NEW_SIGNALLING
-using ORTS.Interlocking;
-#endif
 
 namespace Orts.Formats.Msts
 {

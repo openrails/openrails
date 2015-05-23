@@ -1,4 +1,9 @@
-﻿// it under the terms of the GNU General Public License as published by
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
+// 
+// This file is part of Open Rails.
+// 
+// Open Rails is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 // 
@@ -139,10 +144,6 @@ namespace LibAE.Formats
                 Location.X = (float)v2.X;
                 Location.Y = (float)v2.Y;
                 hasDir = true;
-#if !NEW_SIGNALLING
-                var pos = signal.WorldObject.Position;
-                if (pos != null) { Location.X = item.TileX * 2048 + pos.X; Location.Y = item.TileZ * 2048 + pos.Z; }
-#endif
             }
             catch { }
         }

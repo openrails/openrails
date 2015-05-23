@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -35,14 +35,12 @@ namespace ORTS.Viewer3D.Popups
     public class SignallingDebugWindow : LayeredWindow
     {
 
-#if NEW_SIGNALLING
         public enum DebugWindowSignalAspect
         {
             Clear,
             Warning,
             Stop,
         }
-#endif
 
         const float SignalErrorDistance = 100;
         const float SignalWarningDistance = 500;
@@ -148,11 +146,7 @@ namespace ORTS.Viewer3D.Popups
                             }
                             else if (signalObj != null)
                             {
-#if !NEW_SIGNALLING
-                                if (GetAspect(signalObj.Signal) == TrackMonitorSignalAspect.Stop)
-#else
                                 if (GetAspect(signalObj.Signal) == DebugWindowSignalAspect.Stop)
-#endif
                                 {
                                     signalErrorDistance = objDistance;
                                     break;
@@ -221,16 +215,12 @@ namespace ORTS.Viewer3D.Popups
                             }
                             else if (signalObj != null)
                             {
-#if !NEW_SIGNALLING
-                                primitives.Add(new DispatcherLabel(currentPosition.WorldLocation, GetAspect(signalObj.Signal) == TrackMonitorSignalAspect.Stop ? Color.Red : GetAspect(signalObj.Signal) == TrackMonitorSignalAspect.Warning ? Color.Yellow : Color.White, String.Format("Signal ({0}, {1})", signalObj.Signal.nextSigRef, signalObj.Signal.GetAspect()), Owner.TextFontDefaultOutlined));
-#else
                                 primitives.Add(new DispatcherLabel(currentPosition.WorldLocation,
                                            GetAspect(signalObj.Signal) == DebugWindowSignalAspect.Stop ? Color.Red :
                                                GetAspect(signalObj.Signal) == DebugWindowSignalAspect.Warning ? Color.Yellow :
                                                Color.Green,
                                            String.Format("Signal ({0})", signalObj.Signal.this_sig_lr(MstsSignalFunction.NORMAL)),
                                            Owner.TextFontDefaultOutlined));
-#endif
                             }
 
                             if (objDistance >= switchErrorDistance || objDistance >= signalErrorDistance)
@@ -292,12 +282,6 @@ namespace ORTS.Viewer3D.Popups
             var distance = 0f;
             while (true)
             {
-#if !NEW_SIGNALLING
-                var signal = Owner.Viewer.Simulator.Signals.FindNearestSignal(trackNode);
-                if (signal.GetAspect() == SignalHead.SIGASP.UNKNOWN)
-                    break;
-                var signalDistance = signal.DistanceToSignal(trackNode);
-#else
                 Train.TCPosition thisPosition = new Train.TCPosition();
                 TrackNode tn = trackNode.TN;
                 float offset = trackNode.TrackNodeOffset;
@@ -315,7 +299,6 @@ namespace ORTS.Viewer3D.Popups
                 if (signal.this_sig_lr(MstsSignalFunction.NORMAL) == MstsSignalAspect.UNKNOWN)
                     break;
                 var signalDistance = thisInfo.distance_found;
-#endif
 
                 if (signalDistance > 0)
                 {
@@ -325,26 +308,11 @@ namespace ORTS.Viewer3D.Popups
                         break;
                     rv.Objects.Add(new TrackSectionSignal() { Distance = distance, Signal = signal });
                 }
-#if !NEW_SIGNALLING
-                // TODO: This is a massive hack because the current signalling code is useless at finding the next signal in the face of changing switches.
-                trackNode.Move(0.001f);
-#endif
             }
             rv.Objects = rv.Objects.OrderBy(tso => tso.Distance).ToList();
             return rv;
         }
 
-#if !NEW_SIGNALLING
-        TrackMonitorSignalAspect GetAspect(Signal signal)
-        {
-            var aspect = signal.GetAspect();
-            if (aspect >= SignalHead.SIGASP.CLEAR_1)
-                return TrackMonitorSignalAspect.Clear;
-            if (aspect >= SignalHead.SIGASP.STOP_AND_PROCEED)
-                return TrackMonitorSignalAspect.Warning;
-            return TrackMonitorSignalAspect.Stop;
-        }
-#else
         static DebugWindowSignalAspect GetAspect(SignalObject signal)
         {
             var aspect = signal.this_sig_lr(MstsSignalFunction.NORMAL);
@@ -355,7 +323,6 @@ namespace ORTS.Viewer3D.Popups
                 return DebugWindowSignalAspect.Warning;
             return DebugWindowSignalAspect.Stop;
         }
-#endif
 
         enum DistanceToType
         {
@@ -389,11 +356,7 @@ namespace ORTS.Viewer3D.Popups
 
         public class TrackSectionSignal : TrackSectionObject
         {
-#if !NEW_SIGNALLING
-            public Signal Signal;
-#else
             public SignalObject Signal;
-#endif
         }
     }
 

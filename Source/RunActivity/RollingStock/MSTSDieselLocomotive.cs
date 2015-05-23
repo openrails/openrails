@@ -546,65 +546,6 @@ namespace ORTS
                 AverageForceN = w * AverageForceN + (1 - w) * MotiveForceN;
             }
 
- 
-
-#if !NEW_SIGNALLING
-            if (this.IsLeadLocomotive())
-            {
-                switch (Direction)
-                {
-                    case Direction.Forward:
-                        //MotiveForceN *= 1;     //Not necessary
-                        break;
-                    case Direction.Reverse:
-                        MotiveForceN *= -1;
-                        break;
-                    case Direction.N:
-                    default:
-                        MotiveForceN *= 0;
-                        break;
-                }
-                ConfirmWheelslip();
-            }
-            else
-            {
-                int carCount = 0;
-                int controlEngine = -1;
-
-                // When not LeadLocomotive; check if lead is in Neutral
-                // if so this loco will have no motive force
-				var LeadLocomotive = Simulator.PlayerLocomotive.Train;
-
-                foreach (TrainCar car in LeadLocomotive.Cars)
-                {
-                    if (car.IsDriveable)
-                        if (controlEngine == -1)
-                        {
-                            controlEngine = carCount;
-                            if (car.Direction == Direction.N)
-                                MotiveForceN *= 0;
-                            else
-                            {
-                                switch (Direction)
-                                {
-                                    case Direction.Forward:
-                                        MotiveForceN *= 1;     //Not necessary
-                                        break;
-                                    case Direction.Reverse:
-                                        MotiveForceN *= -1;
-                                        break;
-                                    case Direction.N:
-                                    default:
-                                        MotiveForceN *= 0;
-                                        break;
-                                }
-                            }
-                        }
-                    break;
-                } // foreach
-            } // end when not lead loco
-#else
-
             if (Train.IsPlayerDriven)
             {
                 if (this.IsLeadLocomotive())
@@ -666,7 +607,6 @@ namespace ORTS
                         break;
                 }
             }// end AI locomotive
-#endif
 
             switch (this.Train.TrainType)
             {

@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2013, 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -271,9 +271,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-#if NEW_SIGNALLING
 using System.IO;
-#endif
 using Orts.Parsers.Msts; // For class S (seconds)
 
 namespace Orts.Formats.Msts
@@ -613,9 +611,7 @@ namespace Orts.Formats.Msts
     /// </summary>
     public class Traffic_Definition {
         public string Name;
-#if NEW_SIGNALLING
         public TRFFile TrafficFile;
-#endif
         public List<Service_Definition> ServiceDefinitionList = new List<Service_Definition>();
 
         public Traffic_Definition(STFReader stf) {
@@ -625,14 +621,10 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("service_definition", ()=>{ ServiceDefinitionList.Add(new Service_Definition(stf)); }),
             });
 
-#if NEW_SIGNALLING
             TrafficFile = new TRFFile(Path.Combine(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(stf.FileName)), "Traffic"), Name + ".trf"));
-#endif
+
         }
     }
-    
-#if NEW_SIGNALLING
-#endif
 
     /// <summary>
     /// Parses Event objects and saves them in EventList.

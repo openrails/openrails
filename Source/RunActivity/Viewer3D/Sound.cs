@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -2219,22 +2219,12 @@ namespace ORTS.Viewer3D
     public class TDBObjects
     {
         private MSTSWagon _car;
-#if !NEW_SIGNALLING
-        private Dispatcher _dp;
-#endif
         TrackNode[] trackNodes;
         TrItem[] trItems;
-#if !NEW_SIGNALLING
-        private AIPath _aiPath;
-        private TrackAuthority _ta;
-#endif
 
         public TDBObjects(MSTSWagon Car, Viewer Viewer)
         {
             _car = Car;
-#if !NEW_SIGNALLING
-            _dp = Viewer.Simulator.AI.Dispatcher;
-#endif
             trackNodes = Viewer.Simulator.TDB.TrackDB.TrackNodes;
             trItems = Viewer.Simulator.TDB.TrackDB.TrItemTable;
         }
@@ -2242,85 +2232,34 @@ namespace ORTS.Viewer3D
         private AIPathNode FindNode()
         {
             AIPathNode retval = null;
-
-#if !NEW_SIGNALLING
-            if (_aiPath == null)
-            {
-
-                _ta = _dp.TrackAuthorities.Where
-                    (t => t.Train == _car.Train).FirstOrDefault();
-
-                if (_ta != null)
-                {
-                    _aiPath = _ta.Path;
-                }
-            }
-
-            if (_aiPath != null)
-            {
-                retval = _aiPath.FindTrackNode(_ta.Path.FirstNode, _car.Train.FrontTDBTraveller.TrackNodeIndex);
-            }
-#endif
-
             return retval;
         }
 
-		private AIPathNode GetNextNode(AIPathNode node)
-		{
-#if !NEW_SIGNALLING
-			if ((_ta != null && node == _ta.SidingNode) || node.NextMainNode == null)
-				return node.NextSidingNode;
-			else
-				return node.NextMainNode;
-#else
-                        if (node.NextMainNode == null)
-                                return node.NextSidingNode;
-                        else
-                                return node.NextMainNode;
-#endif
-		}
+        private AIPathNode GetNextNode(AIPathNode node)
+        {
+            if (node.NextMainNode == null)
+                return node.NextSidingNode;
+            else
+                return node.NextMainNode;
+        }
 
         private AIPathNode GetPrevNode(AIPathNode node)
         {
             AIPathNode retval = null;
             AIPathNode p = node;
-
-#if !NEW_SIGNALLING
-            if (_aiPath != null)
-            {
-                AIPathNode c = _aiPath.FirstNode;
-
-                while (c != p && c != null)
-                {
-                    retval = c;
-                    c = GetNextNode(c);
-                }
-
-                if (c == null)
-                    retval = null;
-            }
-#endif
-
             return retval;
         }
 
         private int GetTVNIndex(AIPathNode node)
-		{
+        {
             if (node == null)
                 return -1;
 
-#if !NEW_SIGNALLING
-            if ((_ta != null && node == _ta.SidingNode) || node.NextMainNode == null)
-				return node.NextSidingTVNIndex;
-			else
-				return node.NextMainTVNIndex;
-#else
-			if (node.NextMainNode == null)
-                                return node.NextSidingTVNIndex;
-                        else
-                                return node.NextMainTVNIndex;
-#endif
-		}
+            if (node.NextMainNode == null)
+                return node.NextSidingTVNIndex;
+            else
+                return node.NextMainTVNIndex;
+        }
 
         public TrItem FindNextItem<T>(out float distance)
             where T : TrItem

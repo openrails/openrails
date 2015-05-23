@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -892,13 +892,12 @@ namespace ORTS
             }
         }
 
-#if NEW_SIGNALLING
         public virtual bool GetCabFlipped()
         {
             return false;
         }
-#endif
-       // Method to get Track Gauge from MSTSWagon
+
+        // Method to get Track Gauge from MSTSWagon
         public virtual float GetTrackGaugeM()
         {
             

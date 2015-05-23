@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -167,11 +167,6 @@ namespace ORTS.Viewer3D.RollingStock
         /// </summary>
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-#if !NEW_SIGNALLING
-            if (UserInput.IsPressed(UserCommands.DebugForcePlayerAuthorization))
-                Program.Simulator.AI.Dispatcher.ExtendPlayerAuthorization(true);
-#endif
-
             if (UserInput.IsPressed(UserCommands.CameraToggleShowCab))
                 Locomotive.ShowCab = !Locomotive.ShowCab;
 
