@@ -218,11 +218,26 @@ namespace LibAE
         }
 
         // Equality operator. test if the coordinates are at the same point.
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+                return false;
+
+            if (GetType() != obj.GetType())
+                return false;
+
+            MSTSCoord other = (MSTSCoord) obj;
+            return (this.X == other.X && this.Y == other.Y && this.TileX == other.TileX && this.TileY == other.TileY);
+        }
+
         public static bool operator ==(MSTSCoord x, MSTSCoord y)
         {
-            if (x.X == y.X && x.Y == y.Y && x.TileX == y.TileX && x.TileY == y.TileY)
-                return true;
-            return false;
+            return Object.Equals(x, y);  
+        }
+
+        public static bool operator !=(MSTSCoord x, MSTSCoord y)
+        {
+            return !Object.Equals(x, y);
         }
 
         public static bool near(MSTSCoord x, MSTSCoord y)
@@ -238,18 +253,18 @@ namespace LibAE
                 return true;
             return false;
         }
-        // Inequality operator. Returns dbNull if either operand is
-        // dbNull, otherwise returns dbTrue or dbFalse:
-        public static bool operator !=(MSTSCoord x, MSTSCoord y)
-        {
-            if (x.X == y.X && x.Y == y.Y && x.TileX == y.TileX && x.TileY == y.TileY)
-                return false;
-            return true;
-        }
 
         public override int GetHashCode()
-        {
-            return 0;
+        {   // based on http://stackoverflow.com/questions/5221396/what-is-an-appropriate-gethashcode-algorithm-for-a-2d-point-struct-avoiding
+            unchecked // Overflow is fine, just wrap
+            {
+                int hash = 17;
+                hash = hash * 23 + TileX.GetHashCode();
+                hash = hash * 23 + X.GetHashCode();
+                hash = hash * 23 + TileY.GetHashCode();
+                hash = hash * 23 + Y.GetHashCode();
+                return hash;
+            }
         }
 
 
