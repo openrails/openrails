@@ -5230,6 +5230,8 @@ namespace ORTS
                         }
                     }
 
+                    if (MovementState == AI_MOVEMENT_STATE.INIT_ACTION || MovementState == AI_MOVEMENT_STATE.HANDLE_ACTION) earlier = false;
+
                     // reject if less severe (will be rescheduled if active item is cleared)
 
                     if (!earlier)
