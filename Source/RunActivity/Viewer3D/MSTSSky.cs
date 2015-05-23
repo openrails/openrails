@@ -30,8 +30,6 @@ namespace ORTS.Viewer3D
     #region MSTSSkyVariables
     public class MSTSSkyConstants
     {
-        Viewer viewer;
-
         // Sky dome constants
         public static int skyRadius = 6000;
         public const int skySides = 24;
@@ -316,7 +314,6 @@ namespace ORTS.Viewer3D
         // plus 24 triangles at the zenith)
         // plus six more for the moon quad
         private static short indexCount = 6 + 2 * ((MSTSSkyConstants.skySides * 6 * ((MSTSSkyConstants.skyLevels + 3)) + 3 * MSTSSkyConstants.skySides));
-        Viewer viewer;
         /// <summary>
         /// Constructor.
         /// </summary>

@@ -2082,7 +2082,6 @@ namespace ORTS.Viewer3D.RollingStock
         Dictionary<int, AnimatedPart> OnDemandAnimateParts = null; //like external wipers, and other parts that will be switched on by mouse in the future
         //Dictionary<int, DigitalDisplay> DigitParts = null;
         Dictionary<int, ThreeDimCabDigit> DigitParts3D = null;
-        Dictionary<CABViewControlTypes, AnimatedPart> ExternalAnimatedParts;
         AnimatedPart ExternalWipers;
         protected MSTSLocomotive MSTSLocomotive { get { return (MSTSLocomotive)Car; } }
 		MSTSLocomotiveViewer LocoViewer;
