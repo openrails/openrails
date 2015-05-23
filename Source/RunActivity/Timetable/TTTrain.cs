@@ -41,8 +41,6 @@ using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using ORTS.Common;
 using ORTS.Viewer3D.Popups;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using System.Windows.Forms;
 
 namespace ORTS
