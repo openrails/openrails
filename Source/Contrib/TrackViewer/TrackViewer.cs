@@ -108,8 +108,6 @@ namespace ORTS.TrackViewer
         DrawScaleRuler drawScaleRuler;
         /// <summary>For drawing real world longitude and latitude</summary>
         DrawLongitudeLatitude drawLongitudeLatitude;
-        /// <summary>The routines to draw trains from runactivy</summary>
-        DrawTrains drawTrains;
         /// <summary>The routines to draw the world tiles</summary>
         DrawWorldTiles drawWorldTiles;
         /// <summary>The routines to draw the grade of a path</summary>
@@ -188,7 +186,6 @@ namespace ORTS.TrackViewer
             Localize(menuControl);
             
             drawWorldTiles = new DrawWorldTiles();
-            drawTrains = new DrawTrains();
             drawScaleRuler = new DrawScaleRuler();
             DrawArea = new DrawArea(drawScaleRuler);
             drawAreaInset = new ShadowDrawArea(null);
@@ -297,9 +294,6 @@ namespace ORTS.TrackViewer
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            // Even if not active, still do update from trains
-            if (drawTrains.Update(DrawArea)) skipDrawAmount = 0; 
-
             if (!this.IsActive)
             {
                 lostFocus = true;
@@ -508,8 +502,6 @@ namespace ORTS.TrackViewer
 
             drawScaleRuler.Draw();
             drawLongitudeLatitude.Draw(DrawArea.MouseLocation);
-
-            drawTrains.Draw(DrawArea);
 
             DebugWindow.DrawAll();
 

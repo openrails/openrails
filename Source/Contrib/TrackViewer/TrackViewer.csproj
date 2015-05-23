@@ -78,7 +78,6 @@
     <Compile Include="Drawing\DrawScaleRuler.cs" />
     <Compile Include="Drawing\DrawTerrain.cs" />
     <Compile Include="Drawing\DrawTrackDB.cs" />
-    <Compile Include="Drawing\DrawTrains.cs" />
     <Compile Include="Drawing\DrawWorldTiles.cs" />
     <Compile Include="Drawing\ShadowDrawArea.cs" />
     <Compile Include="Editing\AutoConnectTools.cs" />
@@ -129,7 +128,6 @@
     <Compile Include="UserInterface\StatusBarControl.xaml.cs">
       <DependentUpon>StatusBarControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UserInterface\TrackviewerIPC.cs" />
     <Compile Include="UserInterface\TVInputSettings.cs" />
     <Compile Include="UserInterface\TVUserInput.cs" />
   </ItemGroup>
