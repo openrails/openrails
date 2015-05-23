@@ -324,10 +324,6 @@ namespace LibAE
                 Location.X = (float)v2.X;
                 Location.Y = (float)v2.Y;
                 hasDir = true;
-#if !NEW_SIGNALLING
-                var pos = signal.WorldObject.Position;
-                if (pos != null) { Location.X = item.TileX * 2048 + pos.X; Location.Y = item.TileZ * 2048 + pos.Z; }
-#endif
             }
             catch { }
         }
