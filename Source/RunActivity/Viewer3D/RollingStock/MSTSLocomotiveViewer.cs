@@ -2082,7 +2082,7 @@ namespace ORTS.Viewer3D.RollingStock
         Dictionary<int, AnimatedPart> OnDemandAnimateParts = null; //like external wipers, and other parts that will be switched on by mouse in the future
         //Dictionary<int, DigitalDisplay> DigitParts = null;
         Dictionary<int, ThreeDimCabDigit> DigitParts3D = null;
-        AnimatedPart ExternalWipers;
+        AnimatedPart ExternalWipers = null; // setting to zero to prevent a warning. Probably this will be used later. TODO
         protected MSTSLocomotive MSTSLocomotive { get { return (MSTSLocomotive)Car; } }
 		MSTSLocomotiveViewer LocoViewer;
 		private SpriteBatchMaterial _Sprite2DCabView;
