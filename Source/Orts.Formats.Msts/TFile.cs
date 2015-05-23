@@ -213,9 +213,9 @@ namespace Orts.Formats.Msts
             RangeY = block.ReadFloat();     // 0
             RadiusM = block.ReadFloat();    // 64
             ShaderIndex = block.ReadInt();  // 0 , 14, 6 etc  TODO, I think there is something wrong here
-            X = block.ReadFloat();   // 0.001953 or 0.998 or 0.001
+            X = block.ReadFloat();   // 0.001953 or 0.998 or 0.001  (1/512, 511/512, 1/1024) typically, but not always
             Y = block.ReadFloat();   // 0.001953 or 0.998 or 0.001
-            W = block.ReadFloat();	 // 0.06225586 0 -0.06225586  
+            W = block.ReadFloat();	 // 0.06225586 0 -0.06225586  (255/256)/16
             B = block.ReadFloat();	 // 0.06225586 0 -0.06225586  
             C = block.ReadFloat();   // 0.06225586 0 -0.06225586  
             H = block.ReadFloat();   // 0.06225586 0 -0.06225586  

@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -311,8 +311,8 @@ namespace ORTS.TrackViewer.Drawing
                 {
                     Texture2D texture = Orts.Formats.Msts.ACEFile.Texture2DFromFile(graphicsDevice, path);
                     textures[textureName] = texture;
-                    textureScales[textureName] = textures[textureName].Width;
-                    textureOffsets[textureName] = Vector2.Zero;
+                    textureScales[textureName] = texture.Width;
+                    textureOffsets[textureName] = new Vector2(texture.Width / 2, texture.Height / 2);
                     oldAceFiles.Add(textureName);
                 }
             }
@@ -490,11 +490,15 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="angle">Angle used to rotate the texture</param>
         /// <param name="size">Size of the texture in pixels</param>
         /// <param name="color">Color mask for the texture to draw (white will not affect the texture)</param>
-        public static void DrawTexture(Vector2 point, string textureName, float angle, float size, Color color)
+        /// <param name="flip">Whether the texture needs to be flipped (vertically)</param>
+        public static void DrawTexture(Vector2 point, string textureName, float angle, float size, Color color, bool flip)
         {
-            float scaledSize = size/ textureScales[textureName];
-            spriteBatch.Draw(textures[textureName], point, null, color, 
-                angle, textureOffsets[textureName], new Vector2(scaledSize), SpriteEffects.None, 0);
+            if (textureScales.ContainsKey(textureName))
+            {
+                float scaledSize = size / textureScales[textureName];
+                spriteBatch.Draw(textures[textureName], point, null, color,
+                    angle, textureOffsets[textureName], new Vector2(scaledSize), (flip ? SpriteEffects.FlipVertically : SpriteEffects.None), 0);
+            }
         }
 
         /// <summary>

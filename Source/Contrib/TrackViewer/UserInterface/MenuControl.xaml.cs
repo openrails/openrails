@@ -141,6 +141,10 @@ namespace ORTS.TrackViewer.UserInterface
 
             menuZoomIsCenteredOnMouse.IsChecked = Properties.Settings.Default.zoomIsCenteredOnMouse;
 
+            // Terrain should be off by default. We do not want to burden people with having this load always
+            menuShowTerrain.IsChecked = false;
+            menuShowPatchLines.IsChecked = false;
+
             UpdateMenuSettings();  // to be sure some other settings are done correctly
 
             menuDoAntiAliasing.IsChecked = Properties.Settings.Default.doAntiAliasing;
@@ -162,6 +166,16 @@ namespace ORTS.TrackViewer.UserInterface
             if (menuShowStationNames.IsChecked)
             {
                 menuShowPlatformNames.IsChecked = false;
+            }
+
+            if (menuShowTerrain.IsChecked)
+            {
+                menuShowWorldTiles.IsChecked = false;
+                menuShowPatchLines.IsEnabled = true;
+            }
+            else
+            {
+                menuShowPatchLines.IsEnabled = false;
             }
 
             Properties.Settings.Default.showInset = menuShowInset.IsChecked;
@@ -660,6 +674,49 @@ namespace ORTS.TrackViewer.UserInterface
             UpdateMenuSettings();
         }
 
+        /// <summary>
+        /// Toggle whether the terrain is shown or not
+        /// </summary>
+        public void MenuToggleShowTerrain()
+        {
+            menuShowTerrain.IsChecked = !menuShowTerrain.IsChecked;
+            menuShowTerrain_Click(null, null);
+        }
+
+        /// <summary>
+        /// Set whether the terrain is shown or not
+        /// </summary>
+        /// <param name="show">Set to true if you want to show the terrain</param>
+        public void MenuSetShowTerrain(bool show)
+        {
+            menuShowTerrain.IsChecked = show;
+            menuShowTerrain_Click(null, null);
+        }
+
+        private void menuShowTerrain_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateMenuSettings();
+            bool succeeded = trackViewer.SetTerrainVisibility(menuShowTerrain.IsChecked);
+            if (!succeeded && (menuShowTerrain.IsChecked==true))
+            {
+                MenuSetShowTerrain(false);
+            }
+        }
+
+        /// <summary>
+        /// Toggle whether the patchlines of the terrain are shown or not
+        /// </summary>
+        public void MenuToggleShowPatchLines()
+        {
+            menuShowPatchLines.IsChecked = !menuShowPatchLines.IsChecked;
+            menuShowPatchLines_Click(null, null);
+        }
+
+        private void menuShowPatchLines_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateMenuSettings();
+            trackViewer.SetPatchLineVisibility(menuShowTerrain.IsChecked);
+        }
 
         private void menuSearchTrackNode_Click(object sender, RoutedEventArgs e)
         {

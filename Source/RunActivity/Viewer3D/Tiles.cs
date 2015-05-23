@@ -351,7 +351,7 @@ namespace ORTS.Viewer3D
         readonly YFile YFile;
         readonly FFile FFile;
 
-        internal Tile(string filePath, int tileX, int tileZ, TileName.Zoom zoom, bool visible)
+        public Tile(string filePath, int tileX, int tileZ, TileName.Zoom zoom, bool visible)
         {
             TileX = tileX;
             TileZ = tileZ;

@@ -104,6 +104,10 @@ namespace ORTS.TrackViewer.UserInterface
         ToggleHighlightTracks,
         /// <summary>command for toggling higlighting track items</summary>
         ToggleHighlightItems,
+        /// <summary>command for toggling showing terrain textures</summary>
+        ToggleShowTerrain,
+        /// <summary>command for toggling showing patch lines around terrain textures</summary>
+        ToggleShowPatchLines,
         /// <summary>command for allowing slow zoom with mouse</summary>
         MouseZoomSlow,
         /// <summary>command for redo in editor</summary>
@@ -166,6 +170,8 @@ namespace ORTS.TrackViewer.UserInterface
             
             Commands[(int)TVUserCommands.ToggleShowSpeedLimits] = new ORTS.Settings.UserCommandKeyInput(0x3F);
             Commands[(int)TVUserCommands.ToggleShowMilePosts] = new ORTS.Settings.UserCommandKeyInput(0x3F, ORTS.Settings.KeyModifiers.Shift);
+            Commands[(int)TVUserCommands.ToggleShowTerrain] = new ORTS.Settings.UserCommandKeyInput(0x40);
+            Commands[(int)TVUserCommands.ToggleShowPatchLines] = new ORTS.Settings.UserCommandKeyInput(0x40, ORTS.Settings.KeyModifiers.Shift);
             Commands[(int)TVUserCommands.ToggleShowSignals] = new ORTS.Settings.UserCommandKeyInput(0x41);
             Commands[(int)TVUserCommands.ToggleShowPlatforms] = new ORTS.Settings.UserCommandKeyInput(0x42);
             Commands[(int)TVUserCommands.ToggleShowPlatformNames] = new ORTS.Settings.UserCommandKeyInput(0x42, ORTS.Settings.KeyModifiers.Shift);

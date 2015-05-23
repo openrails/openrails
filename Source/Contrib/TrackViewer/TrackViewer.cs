@@ -173,9 +173,9 @@ namespace ORTS.TrackViewer
         DrawTrains drawTrains;
         /// <summary>The routines to draw the world tiles</summary>
         DrawWorldTiles drawWorldTiles;
-        
-        // /// <summary>The routines to draw the terrain textures</summary>
-        //DrawTerrain drawTerrain;
+        /// <summary>The routines to draw the terrain textures</summary>
+        DrawTerrain drawTerrain;
+
 
         /// <summary>The menu at the top</summary>
         MenuControl menuControl;
@@ -486,7 +486,9 @@ namespace ORTS.TrackViewer
             drawAreaInset.Follow(DrawArea, 10f);
 
             if (TVUserInput.IsPressed(TVUserCommands.ToggleZoomAroundMouse)) menuControl.MenuToggleZoomingAroundMouse();
-            
+
+            if (TVUserInput.IsPressed(TVUserCommands.ToggleShowTerrain)) menuControl.MenuToggleShowTerrain();
+            if (TVUserInput.IsPressed(TVUserCommands.ToggleShowPatchLines)) menuControl.MenuToggleShowPatchLines();
             if (TVUserInput.IsPressed(TVUserCommands.ToggleShowSignals)) menuControl.MenuToggleShowSignals();
             if (TVUserInput.IsPressed(TVUserCommands.ToggleShowSidings)) menuControl.MenuToggleShowSidings();
             if (TVUserInput.IsPressed(TVUserCommands.ToggleShowSidingNames)) menuControl.MenuToggleShowSidingNames();
@@ -529,6 +531,7 @@ namespace ORTS.TrackViewer
             if (DrawTrackDB == null) return;
 
             spriteBatch.Begin();
+            if (drawTerrain != null) { drawTerrain.Draw(DrawArea); }
             drawWorldTiles.Draw(DrawArea);
             DrawArea.DrawTileGrid();
             
@@ -612,6 +615,28 @@ namespace ORTS.TrackViewer
             {
                 this.Exit();
             }
+        }
+
+        public bool SetTerrainVisibility(bool isVisible)
+        {
+            if (drawTerrain == null)
+            {
+                return false;
+            }
+
+            drawTerrain.SetTerrainVisibility(isVisible, DrawArea);
+            return true;
+        }
+
+        public bool SetPatchLineVisibility(bool isVisible)
+        {
+            if (drawTerrain == null)
+            {
+                return false;
+            }
+
+            drawTerrain.SetPatchLineVisibility(isVisible);
+            return true;
         }
         #endregion
 
@@ -760,8 +785,9 @@ namespace ORTS.TrackViewer
             try
             {
                 drawWorldTiles.SetRoute(CurrentRoute.Path);
-                //drawTerrain = new DrawTerrain(CurrentRoute.Path, messageHandler, drawWorldTiles);
-                //drawTerrain.LoadContent(GraphicsDevice);
+                drawTerrain = new DrawTerrain(CurrentRoute.Path, messageHandler, drawWorldTiles);
+                drawTerrain.LoadContent(GraphicsDevice);
+                menuControl.MenuSetShowTerrain(false);
             }
             catch { }
 

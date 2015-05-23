@@ -41,6 +41,8 @@
                 <MenuItem Header="Additional views">
                     <MenuItem Header="Show inset" Name="menuShowInset" IsCheckable="True" Click="UpdateMenuSettings"/>
                     <MenuItem Header="Show world tiles" Name="menuShowWorldTiles" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show terrain textures (F6)" Name="menuShowTerrain" IsCheckable="True" Click="menuShowTerrain_Click"/>
+                    <MenuItem Header="Show patch lines (shift F6)" Name="menuShowPatchLines" IsCheckable="True" Click="menuShowPatchLines_Click"/>
                     <MenuItem Header="Show grid lines" Name="menuShowGridLines" IsCheckable="True" Click="UpdateMenuSettings"/>
                     <MenuItem Header="Show scale ruler" Name="menuShowScaleRuler" IsCheckable="True" Click="UpdateMenuSettings"/>
                     <MenuItem Header="Show longitude/latitude" Name="menuShowLonLat" IsCheckable="True" Click="UpdateMenuSettings"/>
