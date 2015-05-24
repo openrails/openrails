@@ -2983,6 +2983,7 @@ namespace ORTS
                                 {
                                     MovementState = AI_MOVEMENT_STATE.STOPPED;
                                     CoupleAI(OtherTrain, thisTrainFront, otherTrainFront);
+                                    AttachTo = -1;
                                 }
                                 else if ((SpeedMpS - reqMinSpeedMpS) > 0.1f)
                                 {

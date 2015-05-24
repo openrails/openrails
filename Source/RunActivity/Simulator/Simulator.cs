@@ -1271,6 +1271,7 @@ namespace ORTS
 
             if (train.IncorporatedTrainNo != -1)
             {
+                train2.AITrainBrakePercent = 100;
                 train2.TrainType = Train.TRAINTYPE.AI;
                 train.IncorporatedTrainNo = -1;
                 train2.MUDirection = Direction.Forward;
