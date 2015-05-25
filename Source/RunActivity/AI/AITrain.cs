@@ -4546,6 +4546,8 @@ namespace ORTS
             ClearDeadlocks();
             NextSignalObject[0] = null;
             NextSignalObject[1] = null;
+            // reset AuxAction if any
+            AuxActionsContain.ResetAuxAction(this);
             TrainType = TRAINTYPE.AI_INCORPORATED;
             requiredActions.RemovePendingAIActionItems(true);
             UncondAttach = false;

@@ -504,6 +504,23 @@ namespace ORTS
         //================================================================================================//
         //  
         /// <summary>
+        /// Reset WP Aux Action, if any
+        /// <\summary>
+
+        public void ResetAuxAction(Train thisTrain)
+        {
+            if (SpecAuxActions.Count <= 0)
+                return;
+            AIAuxActionsRef thisAction;
+            thisAction = (AIAuxActionsRef)SpecAuxActions[0];
+            if (thisAction.SubrouteIndex != thisTrain.TCRoute.activeSubpath) return;
+            thisAction.LinkedAuxAction = false;
+            return;
+         }
+
+        //================================================================================================//
+        //  
+        /// <summary>
         /// Move next Aux Action, if in same section, under train in case of decoupling
         /// <\summary>
         public void MoveAuxAction(Train thisTrain)
@@ -520,7 +537,11 @@ namespace ORTS
                 if (thisAITrain.nextActionInfo != null && thisAITrain.nextActionInfo is AuxActionWPItem)
                 {
                     thisWPItem = (AuxActionWPItem)thisAITrain.nextActionInfo;
-                    if (thisWPItem.ActionRef == thisAction) thisWPItem.ActivateDistanceM = thisTrain.PresentPosition[0].DistanceTravelledM - 5;
+                    if (thisWPItem.ActionRef == thisAction)
+                    {
+                        thisWPItem.ActivateDistanceM = thisTrain.PresentPosition[0].DistanceTravelledM - 5;
+                        thisAction.LinkedAuxAction = true;
+                    }
                  }
                 thisAction.RequiredDistance = thisTrain.PresentPosition[0].TCOffset - 5;
             }
