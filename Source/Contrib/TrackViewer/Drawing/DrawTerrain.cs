@@ -78,12 +78,13 @@ namespace ORTS.TrackViewer.Drawing
 
         // Storing our own generated data for viewing
         private Dictionary<uint, TerrainTile2D> terrainTiles;
-        private Dictionary<uint, TerrainTile2D> terrainTiles2;  // those with zoom level 2;
         private HashSet<uint> emptyTerrainTiles;
         private Dictionary<string, VertexBuffer> vertexBuffers;
         private Dictionary<string, int> vertexBufferCounts;
 
         //visibility of terrain and patchlines
+        private bool terrainIsVisible;
+        private bool terrainDMIsVisible;
         private bool showPatchLines;
 
         //drawArea
@@ -110,7 +111,6 @@ namespace ORTS.TrackViewer.Drawing
 
             locationTranslator = new Translate3Dto2D(drawWorldTiles);
             terrainTiles = new Dictionary<uint, TerrainTile2D>();
-            terrainTiles2 = new Dictionary<uint, TerrainTile2D>();
             emptyTerrainTiles = new HashSet<uint>();
         }
 
@@ -138,11 +138,14 @@ namespace ORTS.TrackViewer.Drawing
         /// Set whether the terrain is visible (drawn) or not.
         /// </summary>
         /// <param name="isVisible">Terrain will be drawn if this is set to yes</param>
+        /// <param name="isVisibleDM">Distant mountain terrain will be drawn if this is set to yes</param>
         /// <param name="drawArea">The area currently visible and for which all tiles and textures need to be loaded</param>
-        public void SetTerrainVisibility(bool isVisible, DrawArea drawArea)
+        public void SetTerrainVisibility(bool isVisible, bool isVisibleDM, DrawArea drawArea)
         {
             DiscardVertexBuffers();
-            if (isVisible)
+            terrainIsVisible = isVisible;
+            terrainDMIsVisible = isVisibleDM;
+            if (isVisible || isVisibleDM)
             {
                 if (drawArea == null)
                 {
@@ -150,7 +153,7 @@ namespace ORTS.TrackViewer.Drawing
                 }
                 DetermineVisibleArea(drawArea);
                 EnsureAllTilesAreLoaded();
-                CreateVertexBuffers(this.showPatchLines);
+                CreateVertexBuffers();
             }
         }
 
@@ -161,7 +164,7 @@ namespace ORTS.TrackViewer.Drawing
         {
             this.showPatchLines = isVisible;
             DiscardVertexBuffers();
-            CreateVertexBuffers(isVisible);
+            CreateVertexBuffers();
         }
         #endregion
 
@@ -214,26 +217,23 @@ namespace ORTS.TrackViewer.Drawing
         void EnsureTileIsLoaded(int tileX, int tileZ)
         {
             uint index = TileIndex(tileX, tileZ);
-            if (emptyTerrainTiles.Contains(index) || terrainTiles.ContainsKey(index) || terrainTiles2.ContainsKey(index))
+            if (emptyTerrainTiles.Contains(index) || terrainTiles.ContainsKey(index))
             {
                 return;
             }
-            Tile newTile = LoadTile(tileX, tileZ);
+            Tile newTile = LoadTile(tileX, tileZ, false);
             if (newTile == null)
             {
-                emptyTerrainTiles.Add(index);
-                return;
+                newTile = LoadTile(tileX, tileZ, true);
+                if (newTile == null)
+                {
+                    emptyTerrainTiles.Add(index);
+                    return;
+                }
             }
 
             var newTerrainTile = new TerrainTile2D(newTile, textureManager, locationTranslator);
-            if (newTile.Size == 1)
-            {
-                terrainTiles.Add(index, newTerrainTile);
-            }
-            else
-            {
-                terrainTiles2.Add(index, newTerrainTile);
-            }
+            terrainTiles.Add(index, newTerrainTile);
         }
 
         /// <summary>
@@ -241,24 +241,28 @@ namespace ORTS.TrackViewer.Drawing
         /// </summary>
         /// <param name="tileX">The cornerIndexX-value of the tile number</param>
         /// <param name="tileZ">The cornerIndexZ-value of the tile number</param>
+        /// <param name="loTiles">Loading LO tile (Distant Mountain) or not</param>
         /// <returns>The tile information as a 'Tile' object</returns>
-        private Tile LoadTile(int tileX, int tileZ)
+        private Tile LoadTile(int tileX, int tileZ, bool loTiles)
         {
+            TileName.Zoom zoom = loTiles ? TileName.Zoom.DMSmall : TileName.Zoom.Small;
+            string path = loTiles ? this.lotilesPath : this.tilesPath;
+
             // Note, code is similar to ORTS.Viewer3D.TileManager.Load
-            // Check for 1x1 tiles.
-            TileName.Snap(ref tileX, ref tileZ, TileName.Zoom.Small);
+            // Check for 1x1 or 8x8 tiles.
+            TileName.Snap(ref tileX, ref tileZ, zoom);
 
             // we set visible to false to make sure errors are loaded
-            Tile newTile = new Tile(tilesPath, tileX, tileZ, TileName.Zoom.Small, false);
+            Tile newTile = new Tile(path, tileX, tileZ, zoom, false);
             if (newTile.Loaded)
             {
                 return newTile;
             }
             else
             {
-                // Check for 2x2 tiles.
-                TileName.Snap(ref tileX, ref tileZ, TileName.Zoom.Large);
-                newTile = new Tile(tilesPath, tileX, tileZ, TileName.Zoom.Large, false);
+                // Check for 2x2 or 16x16 tiles.
+                TileName.Snap(ref tileX, ref tileZ, zoom - 1);
+                newTile = new Tile(tilesPath, tileX, tileZ, zoom - 1, false);
                 if (newTile.Loaded)
                 {
                     return newTile;
@@ -274,30 +278,45 @@ namespace ORTS.TrackViewer.Drawing
         /// The vertex buffers are created from information pre-calculated in stored 'TerrainTile2D' objects.
         /// </summary>
         /// <param name="showPatchLines">If patchLines need to be shown, we need to load different vertices</param>
-        void CreateVertexBuffers(bool showPatchLines)
+        void CreateVertexBuffers()
         {
+            List<int> zoomSizesToShow = new List<int>();
+            if (this.terrainDMIsVisible)
+            {
+                zoomSizesToShow.Add(16);
+                zoomSizesToShow.Add(8);
+            }
+            if (this.terrainIsVisible)
+            {
+                zoomSizesToShow.Add(2);
+                zoomSizesToShow.Add(1);
+            }
+
             foreach (string textureName in textureManager.Keys)
             {
                 //It seems that this implementation has quite some copying of data of vertices, but I am not sure how to prevent this.
                 var vertices = new List<VertexPositionTexture>();
-                
-                //make sure we first draw those tiles with zoom level 2
-                foreach (TerrainTile2D terrainTile in terrainTiles2.Values)
+
+                foreach (int zoomSize in zoomSizesToShow)
                 {
-                    var additionalVertices = terrainTile.GetVertices(textureName, showPatchLines);
-                    vertices.AddRange(additionalVertices);
+                    foreach (TerrainTile2D terrainTile in terrainTiles.Values)
+                    {
+                        if (terrainTile.TileSize == zoomSize)
+                        {
+                            var additionalVertices = terrainTile.GetVertices(textureName, this.showPatchLines);
+                            vertices.AddRange(additionalVertices);
+                        }
+                    }
                 }
 
-                foreach (TerrainTile2D terrainTile in terrainTiles.Values)
+                if (vertices.Count() > 0)
                 {
-                    var additionalVertices = terrainTile.GetVertices(textureName, showPatchLines);
-                    vertices.AddRange(additionalVertices);
+                    VertexBuffer buffer = new VertexBuffer(this.device, VertexPositionTexture.SizeInBytes * vertices.Count(), BufferUsage.WriteOnly);
+                    int vertexCount = vertices.Count();
+                    buffer.SetData(vertices.ToArray(), 0, vertexCount);
+                    vertexBuffers.Add(textureName, buffer);
+                    vertexBufferCounts.Add(textureName, vertexCount);
                 }
-                VertexBuffer buffer = new VertexBuffer(this.device, VertexPositionTexture.SizeInBytes * vertices.Count(), BufferUsage.WriteOnly);
-                int vertexCount = vertices.Count();
-                buffer.SetData(vertices.ToArray(), 0, vertexCount);
-                vertexBuffers.Add(textureName, buffer);
-                vertexBufferCounts.Add(textureName, vertexCount);
             }
 
         }
@@ -461,7 +480,7 @@ namespace ORTS.TrackViewer.Drawing
             string path = terrtexPath + filename;
             if (System.IO.File.Exists(path))
             {
-                messageDelegate(TrackViewer.catalog.GetString("Loading terrain data ...") + filename);
+                messageDelegate(TrackViewer.catalog.GetString("Loading terrain data: ") + filename);
                 this[filename] = Orts.Formats.Msts.ACEFile.Texture2DFromFile(this.device, path);
                 return true;
             }
@@ -480,6 +499,8 @@ namespace ORTS.TrackViewer.Drawing
     /// </summary>
     class TerrainTile2D
     {
+        /// <summary>The size of the tile (1x1, 2x2, 8x8, 16x16</summary>
+        public int TileSize { get; private set; }
         /// <summary>Storing the list of pre-calculated vertices when the textures are drawn fully</summary>
         private Dictionary<string, VertexPositionTexture[]> verticesFull;
         ///<summary>Storing the list of pre-calculated vertices when the textures are drawn with a border to indicate patch lines</summary>
@@ -503,6 +524,7 @@ namespace ORTS.TrackViewer.Drawing
         {
             this.textureManager = textureManager;
             this.locationTranslator = locationTranslator;
+            this.TileSize = tile.Size;
             verticesFull = CreateVerticesFromTile(tile, false);
             verticesLine = CreateVerticesFromTile(tile, true);
         }

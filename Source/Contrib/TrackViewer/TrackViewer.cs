@@ -425,6 +425,7 @@ namespace ORTS.TrackViewer
             if (TVUserInput.IsPressed(TVUserCommands.ToggleZoomAroundMouse)) menuControl.MenuToggleZoomingAroundMouse();
 
             if (TVUserInput.IsPressed(TVUserCommands.ToggleShowTerrain)) menuControl.MenuToggleShowTerrain();
+            if (TVUserInput.IsPressed(TVUserCommands.ToggleShowDMTerrain)) menuControl.MenuToggleShowDMTerrain();
             if (TVUserInput.IsPressed(TVUserCommands.ToggleShowPatchLines)) menuControl.MenuToggleShowPatchLines();
             if (TVUserInput.IsPressed(TVUserCommands.ToggleShowSignals)) menuControl.MenuToggleShowSignals();
             if (TVUserInput.IsPressed(TVUserCommands.ToggleShowSidings)) menuControl.MenuToggleShowSidings();
@@ -560,25 +561,36 @@ namespace ORTS.TrackViewer
             setSubwindowSizes();
         }
 
-        public bool SetTerrainVisibility(bool isVisible)
+        /// <summary>
+        /// Set the visibility of terrain drawing
+        /// </summary>
+        /// <param name="isVisible">Normal terrain textures are visible</param>
+        /// <param name="isVisibleDM">Distant mountain terrain textures are visible</param>
+        /// <returns>true only if there is terrain that can be drawn</returns>
+        public bool SetTerrainVisibility(bool isVisible, bool isVisibleDM)
         {
             if (drawTerrain == null)
             {
                 return false;
             }
 
-            drawTerrain.SetTerrainVisibility(isVisible, DrawArea);
+            drawTerrain.SetTerrainVisibility(isVisible, isVisibleDM, DrawArea);
             return true;
         }
 
-        public bool SetPatchLineVisibility(bool isVisible)
+        /// <summary>
+        /// Set the visibility of the patch lines between terrain
+        /// </summary>
+        /// <param name="showPatchLines">The value to set the visibility to</param>
+        /// <returns>true only if there is terrain that can be drawn</returns>
+        public bool SetPatchLineVisibility(bool showPatchLines)
         {
             if (drawTerrain == null)
             {
                 return false;
             }
 
-            drawTerrain.SetPatchLineVisibility(isVisible);
+            drawTerrain.SetPatchLineVisibility(showPatchLines);
             return true;
         }
         #endregion
@@ -731,6 +743,8 @@ namespace ORTS.TrackViewer
                 drawTerrain = new DrawTerrain(CurrentRoute.Path, messageHandler, drawWorldTiles);
                 drawTerrain.LoadContent(GraphicsDevice);
                 menuControl.MenuSetShowTerrain(false);
+                menuControl.MenuSetShowDMTerrain(false);
+
             }
             catch { }
 

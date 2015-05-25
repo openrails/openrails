@@ -143,6 +143,7 @@ namespace ORTS.TrackViewer.UserInterface
 
             // Terrain should be off by default. We do not want to burden people with having this load always
             menuShowTerrain.IsChecked = false;
+            menuShowDMTerrain.IsChecked = false;
             menuShowPatchLines.IsChecked = false;
 
             UpdateMenuSettings();  // to be sure some other settings are done correctly
@@ -168,7 +169,7 @@ namespace ORTS.TrackViewer.UserInterface
                 menuShowPlatformNames.IsChecked = false;
             }
 
-            if (menuShowTerrain.IsChecked)
+            if (menuShowTerrain.IsChecked || menuShowDMTerrain.IsChecked)
             {
                 menuShowWorldTiles.IsChecked = false;
                 menuShowPatchLines.IsEnabled = true;
@@ -221,7 +222,7 @@ namespace ORTS.TrackViewer.UserInterface
 
             Properties.Settings.Default.Save();
 
-            DrawColors.SetColoursFromOptions(menuColorTracks.IsChecked, menuShowWorldTiles.IsChecked, menuShowTerrain.IsChecked);
+            DrawColors.SetColoursFromOptions(menuColorTracks.IsChecked, menuShowWorldTiles.IsChecked, menuShowTerrain.IsChecked || menuShowDMTerrain.IsChecked);
 
             menuStatusShowPATfile.IsEnabled = menuShowPATfile.IsChecked;
             menuStatusShowTrainpath.IsEnabled = menuShowTrainpath.IsChecked;
@@ -675,12 +676,22 @@ namespace ORTS.TrackViewer.UserInterface
             UpdateMenuSettings();
         }
 
+        #region Terrain
         /// <summary>
         /// Toggle whether the terrain is shown or not
         /// </summary>
         public void MenuToggleShowTerrain()
         {
             menuShowTerrain.IsChecked = !menuShowTerrain.IsChecked;
+            menuShowTerrain_Click(null, null);
+        }
+
+        /// <summary>
+        /// Toggle whether the Distance Mountain terrain is shown or not
+        /// </summary>
+        public void MenuToggleShowDMTerrain()
+        {
+            menuShowDMTerrain.IsChecked = !menuShowDMTerrain.IsChecked;
             menuShowTerrain_Click(null, null);
         }
 
@@ -694,13 +705,27 @@ namespace ORTS.TrackViewer.UserInterface
             menuShowTerrain_Click(null, null);
         }
 
+        /// <summary>
+        /// Set whether the Distance Mountain terrain is shown or not
+        /// </summary>
+        /// <param name="show">Set to true if you want to show the terrain</param>
+        public void MenuSetShowDMTerrain(bool show)
+        {
+            menuShowDMTerrain.IsChecked = show;
+            menuShowTerrain_Click(null, null);
+        }
+
         private void menuShowTerrain_Click(object sender, RoutedEventArgs e)
         {
             UpdateMenuSettings();
-            bool succeeded = trackViewer.SetTerrainVisibility(menuShowTerrain.IsChecked);
+            bool succeeded = trackViewer.SetTerrainVisibility(menuShowTerrain.IsChecked, menuShowDMTerrain.IsChecked);
             if (!succeeded && (menuShowTerrain.IsChecked==true))
             {
                 MenuSetShowTerrain(false);
+            }
+            if (!succeeded && (menuShowDMTerrain.IsChecked == true))
+            {
+                MenuSetShowDMTerrain(false);
             }
         }
 
@@ -716,8 +741,9 @@ namespace ORTS.TrackViewer.UserInterface
         private void menuShowPatchLines_Click(object sender, RoutedEventArgs e)
         {
             UpdateMenuSettings();
-            trackViewer.SetPatchLineVisibility(menuShowTerrain.IsChecked);
+            trackViewer.SetPatchLineVisibility(menuShowPatchLines.IsChecked);
         }
+        #endregion
 
         private void menuSearchTrackNode_Click(object sender, RoutedEventArgs e)
         {
