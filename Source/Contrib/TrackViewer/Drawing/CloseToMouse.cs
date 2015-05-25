@@ -229,22 +229,32 @@ namespace ORTS.TrackViewer.Drawing
     /// </summary>
     public class CloseToMouseTrack : CloseToMouse
     {
-        private TSectionDatFile tsectionDat;
-        private SortedList<double, TrackCandidate> sortedTrackCandidates;
-        private WorldLocation storedMouseLocation;
+        //Note: 'Last' is the one with shortest distance
+        /// <summary>Tracknode that is closest</summary>
+        public TrackNode TrackNode { get { calcRealDistances(); return sortedTrackCandidates.Last().Value.trackNode; } }
+        /// <summary>Vectorsection within the tracnode</summary>
+        public TrVectorSection VectorSection { get { calcRealDistances(); return sortedTrackCandidates.Last().Value.vectorSection; } }
+        /// <summary>Index of vector section that is closest to the mouse</summary>
+        public int TrackVectorSectionIndex { get { calcRealDistances(); return sortedTrackCandidates.Last().Value.trackVectorSectionIndex; } }
+        /// <summary>Distance along the track describing precisely where the mouse is</summary>
+        public float DistanceAlongTrack { get { calcRealDistances(); return sortedTrackCandidates.Last().Value.distanceAlongSection; } }
+        /// <summary>Distance (squared) between mouse and closest track location</summary>
+        public override float ClosestMouseDistanceSquared { get { calcRealDistances(); return (float)sortedTrackCandidates.Last().Key; } }
 
+        private TSectionDatFile tsectionDat;
+        private WorldLocation storedMouseLocation;
         private bool realDistancesAreCalculated;
 
-        /// <summary>Tracknode that is closest</summary>
-        public TrackNode TrackNode { get { calcRealDistances(); return sortedTrackCandidates.First().Value.trackNode; } }
-        /// <summary>Vectorsection within the tracnode</summary>
-        public TrVectorSection VectorSection { get { calcRealDistances(); return sortedTrackCandidates.First().Value.vectorSection; } }
-        /// <summary>Index of vector section that is closest to the mouse</summary>
-        public int TrackVectorSectionIndex { get { calcRealDistances(); return sortedTrackCandidates.First().Value.trackVectorSectionIndex; } }
-        /// <summary>Distance along the track describing precisely where the mouse is</summary>
-        public float DistanceAlongTrack { get { calcRealDistances(); return sortedTrackCandidates.First().Value.distanceAlongSection; } }
-        /// <summary>Distance (squared) between mouse and closest track location</summary>
-        public override float ClosestMouseDistanceSquared { get { calcRealDistances(); return (float)sortedTrackCandidates.First().Key; } }
+        /// <summary>
+        /// Store a finite list of TrackCandidates, sorted by the distance to the mouse location.
+        /// We only want to store the closest ones. 
+        /// The 'double' we use to store the distance is (distance^2). Distance^2 is used because this makes a convenient absolute measure.
+        /// The list is sorted in reverse order: the largest number still in the list is the first one. The reason for that is
+        /// that to know whether a new TrackCandidate needs to be added to the list, we need to compare it to the candidate with the largest distance.
+        /// The initial implementation used normal ordering and the obvious 'Last'. Profiling showed that this single statement was taking > 25% of total CPU. 
+        /// </summary>
+        private SortedList<double, TrackCandidate> sortedTrackCandidates;
+
 
         /// <summary>
         /// Constructor, because we need to store the TsectionDatFile
@@ -256,6 +266,17 @@ namespace ORTS.TrackViewer.Drawing
         }
 
         /// <summary>
+        /// Comparer to sort doubles in reverse order.
+        /// </summary>
+        private class ReverseDoubleComparer : IComparer<double>
+        {
+            int IComparer<double>.Compare(double a, double b)
+            {
+                return Comparer<double>.Default.Compare(b, a);
+            }
+        }
+
+        /// <summary>
         /// Constructor that immediately sets the closest item (and distance)
         /// </summary>
         /// <param name="tn">Tracknode that will be stored as closest item</param>
@@ -263,7 +284,7 @@ namespace ORTS.TrackViewer.Drawing
         public CloseToMouseTrack(TSectionDatFile tsectionDat, TrackNode tn)
         {
             this.tsectionDat = tsectionDat;
-            sortedTrackCandidates = new SortedList<double, TrackCandidate>();
+            sortedTrackCandidates = new SortedList<double, TrackCandidate>(new ReverseDoubleComparer());
             sortedTrackCandidates.Add(0, new TrackCandidate(tn, null, 0, 0));
             realDistancesAreCalculated = true; // we do not want to calculate distance if we override the highlight
         }
@@ -274,7 +295,7 @@ namespace ORTS.TrackViewer.Drawing
         public override void Reset()
         {
             base.Reset();
-            sortedTrackCandidates = new SortedList<double, TrackCandidate>();
+            sortedTrackCandidates = new SortedList<double, TrackCandidate>(new ReverseDoubleComparer());
             sortedTrackCandidates.Add(float.MaxValue, new TrackCandidate(null, null, 0, 0));
             realDistancesAreCalculated = false;
         }
@@ -293,9 +314,9 @@ namespace ORTS.TrackViewer.Drawing
         {
             storedMouseLocation = mouseLocation;
             float distanceSquared = CloseToMouse.GetGroundDistanceSquared(location, mouseLocation);
-            // to make unique distances becasue the also act as Key
+            // to make unique distances becasue they also act as Key
             double distanceSquaredIndexed = ((double)distanceSquared) * (1 + 1e-16 * trackNode.Index);
-            if (distanceSquaredIndexed < sortedTrackCandidates.Last().Key)
+            if (distanceSquaredIndexed < sortedTrackCandidates.First().Key)
             {
                 if (!sortedTrackCandidates.ContainsKey(distanceSquaredIndexed))
                 {
@@ -311,7 +332,7 @@ namespace ORTS.TrackViewer.Drawing
                     int maxNumberOfCandidates = 50 + (int)(100 * pixelsPerMeter);
                     while (sortedTrackCandidates.Count > maxNumberOfCandidates)
                     {
-                        sortedTrackCandidates.RemoveAt(maxNumberOfCandidates);
+                        sortedTrackCandidates.RemoveAt(0); // First one has largest distance
                     }
                 }
             }
