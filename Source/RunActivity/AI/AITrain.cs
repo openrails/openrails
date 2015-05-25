@@ -1244,68 +1244,72 @@ namespace ORTS
                 return;
             }
 
-            // get distance to station
-
+            // get distance to station, but not if just at station now in activity mode
             bool validStop = false;
-            while (!validStop)
+            if (Simulator.TimetableMode || TrainType != TRAINTYPE.AI_PLAYERHOSTING || SpeedMpS != 0 || ( Simulator.PlayerLocomotive != null &&
+                !(Simulator.ActivityRun.Current is ActivityTaskPassengerStopAt && ((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).IsAtStation())))
             {
-                float[] distancesM = CalculateDistancesToNextStation(thisStation, TrainMaxSpeedMpS, false);
-                if (distancesM[0] < 0f) // stop is not valid
+                while (!validStop)
                 {
-                    StationStops.RemoveAt(0);
-                    if (StationStops.Count == 0)
+                    float[] distancesM = CalculateDistancesToNextStation(thisStation, TrainMaxSpeedMpS, false);
+                    if (distancesM[0] < 0f) // stop is not valid
                     {
-                        return;  // no more stations - exit
-                    }
 
-                    thisStation = StationStops[0];
-                    if (thisStation.SubrouteIndex > TCRoute.activeSubpath) return;  // station not in this subpath - exit
-                }
-                else
-                {
-                    validStop = true;
-                    AIActionItem newAction = new AIActionItem(null, AIActionItem.AI_ACTION_TYPE.STATION_STOP);
-                    newAction.SetParam(distancesM[1], 0.0f, distancesM[0], DistanceTravelledM);
-                    requiredActions.InsertAction(newAction);
+                        StationStops.RemoveAt(0);
+                        if (StationStops.Count == 0)
+                        {
+                            return;  // no more stations - exit
+                        }
+
+                        thisStation = StationStops[0];
+                        if (thisStation.SubrouteIndex > TCRoute.activeSubpath) return;  // station not in this subpath - exit
+                    }
+                    else
+                    {
+                        validStop = true;
+                        AIActionItem newAction = new AIActionItem(null, AIActionItem.AI_ACTION_TYPE.STATION_STOP);
+                        newAction.SetParam(distancesM[1], 0.0f, distancesM[0], DistanceTravelledM);
+                        requiredActions.InsertAction(newAction);
 
 #if DEBUG_REPORTS
-                    if (StationStops[0].ActualStopType == StationStop.STOPTYPE.STATION_STOP)
-                    {
-                        File.AppendAllText(@"C:\temp\printproc.txt", "Insert for train " +
-                            Number.ToString() + ", type STATION_STOP (" +
-                            StationStops[0].PlatformItem.Name + "), at " +
-                            FormatStrings.FormatDistance(distancesM[0], true) + ", trigger at " +
-                            FormatStrings.FormatDistance(distancesM[1], true) + " (now at " +
-                            FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + ")\n");
-            }
-            else if (StationStops[0].ActualStopType == StationStop.STOPTYPE.WAITING_POINT)
-            {
-                File.AppendAllText(@"C:\temp\printproc.txt", "Insert for train " +
-                            Number.ToString() + ", type WAITING_POINT (" +
-                            FormatStrings.FormatDistance(distancesM[0], true) + ", trigger at " +
-                            FormatStrings.FormatDistance(distancesM[1], true) + " (now at " +
-                            FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + ")\n");
-                    }
+                if (StationStops[0].ActualStopType == StationStop.STOPTYPE.STATION_STOP)
+                {
+                    File.AppendAllText(@"C:\temp\printproc.txt", "Insert for train " +
+                        Number.ToString() + ", type STATION_STOP (" +
+                        StationStops[0].PlatformItem.Name + "), at " +
+                        FormatStrings.FormatDistance(distancesM[0], true) + ", trigger at " +
+                        FormatStrings.FormatDistance(distancesM[1], true) + " (now at " +
+                        FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + ")\n");
+        }
+        else if (StationStops[0].ActualStopType == StationStop.STOPTYPE.WAITING_POINT)
+        {
+            File.AppendAllText(@"C:\temp\printproc.txt", "Insert for train " +
+                        Number.ToString() + ", type WAITING_POINT (" +
+                        FormatStrings.FormatDistance(distancesM[0], true) + ", trigger at " +
+                        FormatStrings.FormatDistance(distancesM[1], true) + " (now at " +
+                        FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + ")\n");
+                }
 #endif
 
-                    if (CheckTrain)
-                    {
-                        if (StationStops[0].ActualStopType == StationStop.STOPTYPE.STATION_STOP)
+                        if (CheckTrain)
                         {
-                            File.AppendAllText(@"C:\temp\checktrain.txt", "Insert for train " +
-                                    Number.ToString() + ", type STATION_STOP (" +
-                                    StationStops[0].PlatformItem.Name + "), at " +
-                                    FormatStrings.FormatDistance(distancesM[0], true) + ", trigger at " +
-                                    FormatStrings.FormatDistance(distancesM[1], true) + " (now at " +
-                                    FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + ")\n");
-                        }
-                        else if (StationStops[0].ActualStopType == StationStop.STOPTYPE.WAITING_POINT)
-                        {
-                            File.AppendAllText(@"C:\temp\checktrain.txt", "Insert for train " +
-                                        Number.ToString() + ", type WAITING_POINT (" +
+                            if (StationStops[0].ActualStopType == StationStop.STOPTYPE.STATION_STOP)
+                            {
+                                File.AppendAllText(@"C:\temp\checktrain.txt", "Insert for train " +
+                                        Number.ToString() + ", type STATION_STOP (" +
+                                        StationStops[0].PlatformItem.Name + "), at " +
                                         FormatStrings.FormatDistance(distancesM[0], true) + ", trigger at " +
                                         FormatStrings.FormatDistance(distancesM[1], true) + " (now at " +
                                         FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + ")\n");
+                            }
+                            else if (StationStops[0].ActualStopType == StationStop.STOPTYPE.WAITING_POINT)
+                            {
+                                File.AppendAllText(@"C:\temp\checktrain.txt", "Insert for train " +
+                                            Number.ToString() + ", type WAITING_POINT (" +
+                                            FormatStrings.FormatDistance(distancesM[0], true) + ", trigger at " +
+                                            FormatStrings.FormatDistance(distancesM[1], true) + " (now at " +
+                                            FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + ")\n");
+                            }
                         }
                     }
                 }
