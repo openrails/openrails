@@ -61,7 +61,6 @@ namespace ORTS.TrackViewer.Drawing
         #region Properties
 
         //injection dependency properties
-        private DrawWorldTiles worldTiles;
         private MessageDelegate messageDelegate;
 
         //Directory paths of various formats and files
@@ -79,6 +78,8 @@ namespace ORTS.TrackViewer.Drawing
 
         // Storing our own generated data for viewing
         private Dictionary<uint, TerrainTile2D> terrainTiles;
+        private Dictionary<uint, TerrainTile2D> terrainTiles2;  // those with zoom level 2;
+        private HashSet<uint> emptyTerrainTiles;
         private Dictionary<string, VertexBuffer> vertexBuffers;
         private Dictionary<string, int> vertexBufferCounts;
 
@@ -93,7 +94,7 @@ namespace ORTS.TrackViewer.Drawing
         private int visibleTileZmax;
         #endregion
 
-        #region public methods
+        #region Public methods
         /// <summary>
         /// Constructor
         /// </summary>
@@ -106,10 +107,11 @@ namespace ORTS.TrackViewer.Drawing
             this.tilesPath = routePath + @"\TILES\";
             this.lotilesPath = routePath + @"\LO_TILES\";
             this.terrtexPath = routePath + @"\TERRTEX\";
-            this.worldTiles = drawWorldTiles;
 
-            locationTranslator = new Translate3Dto2D(worldTiles);
+            locationTranslator = new Translate3Dto2D(drawWorldTiles);
             terrainTiles = new Dictionary<uint, TerrainTile2D>();
+            terrainTiles2 = new Dictionary<uint, TerrainTile2D>();
+            emptyTerrainTiles = new HashSet<uint>();
         }
 
         /// <summary>
@@ -147,7 +149,7 @@ namespace ORTS.TrackViewer.Drawing
                     return;
                 }
                 DetermineVisibleArea(drawArea);
-                DoForAllVisibleTiles(new TileDelegate(EnsureTileIsLoaded));
+                EnsureAllTilesAreLoaded();
                 CreateVertexBuffers(this.showPatchLines);
             }
         }
@@ -178,22 +180,6 @@ namespace ORTS.TrackViewer.Drawing
         }
 
         /// <summary>
-        /// Run over all visible tiles and perform a function for each tile
-        /// </summary>
-        /// <param name="tileDelegate">The delegate function that will be called for all visibile tiles</param>
-        void DoForAllVisibleTiles(TileDelegate tileDelegate)
-        {
-            this.worldTiles.DoForAllTiles(new TileDelegate((tileX, tileZ) =>
-            {
-                if (tileX > visibleTileXmax) { return; }
-                if (tileX < visibleTileXmin) { return; }
-                if (tileZ > visibleTileZmax) { return; }
-                if (tileZ < visibleTileZmin) { return; }
-                tileDelegate(tileX, tileZ);
-            }));
-        }
-
-        /// <summary>
         /// Translate a tile location given by tileX and tileZ into a single uint index
         /// </summary>
         /// <param name="tileX">The cornerIndexX-value of the tile number</param>
@@ -206,6 +192,20 @@ namespace ORTS.TrackViewer.Drawing
 
         #region Loading
         /// <summary>
+        /// Make sure all tiles that had not been loaded are loaded now.
+        /// </summary>
+        public void EnsureAllTilesAreLoaded()
+        {
+            for (int tileX = visibleTileXmin; tileX <= visibleTileXmax; tileX++)
+            {
+                for (int tileZ = visibleTileZmin; tileZ <= visibleTileZmax; tileZ++)
+                {
+                    EnsureTileIsLoaded(tileX, tileZ);
+                }
+            }
+        }
+
+        /// <summary>
         /// Make sure the Tile and its needed textures are loaded. This means checking if it is already loaded, 
         /// and if it is not loaded, load it.
         /// </summary>
@@ -214,18 +214,26 @@ namespace ORTS.TrackViewer.Drawing
         void EnsureTileIsLoaded(int tileX, int tileZ)
         {
             uint index = TileIndex(tileX, tileZ);
-            if (terrainTiles.ContainsKey(index))
+            if (emptyTerrainTiles.Contains(index) || terrainTiles.ContainsKey(index) || terrainTiles2.ContainsKey(index))
             {
                 return;
             }
             Tile newTile = LoadTile(tileX, tileZ);
             if (newTile == null)
             {
+                emptyTerrainTiles.Add(index);
                 return;
             }
 
             var newTerrainTile = new TerrainTile2D(newTile, textureManager, locationTranslator);
-            terrainTiles.Add(index, newTerrainTile);
+            if (newTile.Size == 1)
+            {
+                terrainTiles.Add(index, newTerrainTile);
+            }
+            else
+            {
+                terrainTiles2.Add(index, newTerrainTile);
+            }
         }
 
         /// <summary>
@@ -272,6 +280,14 @@ namespace ORTS.TrackViewer.Drawing
             {
                 //It seems that this implementation has quite some copying of data of vertices, but I am not sure how to prevent this.
                 var vertices = new List<VertexPositionTexture>();
+                
+                //make sure we first draw those tiles with zoom level 2
+                foreach (TerrainTile2D terrainTile in terrainTiles2.Values)
+                {
+                    var additionalVertices = terrainTile.GetVertices(textureName, showPatchLines);
+                    vertices.AddRange(additionalVertices);
+                }
+
                 foreach (TerrainTile2D terrainTile in terrainTiles.Values)
                 {
                     var additionalVertices = terrainTile.GetVertices(textureName, showPatchLines);
@@ -287,7 +303,7 @@ namespace ORTS.TrackViewer.Drawing
         }
 
         /// <summary>
-        /// Discard the vertexbuffers. No active signal is sent to the Graphics card, but since we are not using the buffers anymore, 
+        /// Discard the vertexbuffers. No active signal is sent to the Graphics card to discard, but since we are not using the buffers anymore, 
         /// this should be save enough (we are not re-using the buffers until the user decides to draw terrain again).
         /// </summary>
         void DiscardVertexBuffers()
@@ -367,7 +383,7 @@ namespace ORTS.TrackViewer.Drawing
         private int referenceTileZ;
 
         /// <summary>
-        /// Constructor
+        /// Constructor. The main thing done in this constructor is determining the reference tile used for calculating from 3D tile-based to effectively 2D without tiles.
         /// </summary>
         /// <param name="worldTiles">The object that know what tiles are in principle available, so a reference location can be chosen nicely in the middle</param>
         public Translate3Dto2D(DrawWorldTiles worldTiles)
