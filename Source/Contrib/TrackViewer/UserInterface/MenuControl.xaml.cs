@@ -221,7 +221,7 @@ namespace ORTS.TrackViewer.UserInterface
 
             Properties.Settings.Default.Save();
 
-            DrawColors.SetColoursFromOptions(menuColorTracks.IsChecked, menuShowWorldTiles.IsChecked);
+            DrawColors.SetColoursFromOptions(menuColorTracks.IsChecked, menuShowWorldTiles.IsChecked, menuShowTerrain.IsChecked);
 
             menuStatusShowPATfile.IsEnabled = menuShowPATfile.IsChecked;
             menuStatusShowTrainpath.IsEnabled = menuShowTrainpath.IsChecked;

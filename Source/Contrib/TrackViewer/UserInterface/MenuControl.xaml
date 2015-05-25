@@ -46,7 +46,6 @@
                     <MenuItem Header="Show grid lines" Name="menuShowGridLines" IsCheckable="True" Click="UpdateMenuSettings"/>
                     <MenuItem Header="Show scale ruler" Name="menuShowScaleRuler" IsCheckable="True" Click="UpdateMenuSettings"/>
                     <MenuItem Header="Show longitude/latitude" Name="menuShowLonLat" IsCheckable="True" Click="UpdateMenuSettings"/>
-                    <MenuItem Header="Use miles i.s.o. meters" Name="menuUseMilesNotMeters" IsCheckable="True" Click="UpdateMenuSettings"/>
                 </MenuItem>
                 <Separator/>
                 <MenuItem Header="Save current zoom" Name="menuZoomSave" Click="menuZoomSave_Click"/>
@@ -106,6 +105,7 @@
             <MenuItem Header="Preferences" Name="menuPreferences">
                 <MenuItem Header="Zooming is centered on mouse (m)" Name="menuZoomIsCenteredOnMouse" IsCheckable="True" IsChecked="True"
                           Click="UpdateMenuSettings"/>
+                <MenuItem Header="Use miles i.s.o. meters" Name="menuUseMilesNotMeters" IsCheckable="True" Click="UpdateMenuSettings"/>
                 <MenuItem Header="Select language">
                     <ComboBox Name="comboBoxLanguage" SelectionChanged="comboBoxLanguage_SelectionChanged"
                               DisplayMemberPath="Name" SelectedValuePath="Code"/>

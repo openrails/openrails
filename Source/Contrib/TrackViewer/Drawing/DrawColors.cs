@@ -53,6 +53,8 @@ namespace ORTS.TrackViewer.Drawing
         static ColorsGroupTrack roadTrackGroupFlat = new ColorsGroupTrack();
         static ColorsGroupTrack trackGroupColoured = new ColorsGroupTrack();
         static ColorsGroupTrack roadTrackGroupColoured = new ColorsGroupTrack();
+        static ColorsGroupTrack trackGroupTerrain = new ColorsGroupTrack();
+        static ColorsGroupTrack roadTrackGroupTerrain = new ColorsGroupTrack();
         
         static ColorsGroupBackground backgroundWithTilesGroup = new ColorsGroupBackground();
         static ColorsGroupBackground backgroundWithoutTilesGroup = new ColorsGroupBackground();
@@ -65,12 +67,13 @@ namespace ORTS.TrackViewer.Drawing
         public static void Initialize(IPreferenceChanger preferenceChanger)
         {
             SetBasicColors(preferenceChanger);
-            SetTrackColors();
+            SetTrackColors(preferenceChanger);
+            SetItemColors(preferenceChanger);
             SetPathColors(preferenceChanger);
             SetBackgroundColors(preferenceChanger);
             SetShadedColors(preferenceChanger);
 
-            SetColoursFromOptions(true, false); //just a default
+            SetColoursFromOptions(true, false, false); //just a default
          }
 
         private static void SetPathColors(IPreferenceChanger preferenceChanger)
@@ -105,7 +108,7 @@ namespace ORTS.TrackViewer.Drawing
             
         }
 
-        private static void SetTrackColors()
+        private static void SetTrackColors(IPreferenceChanger preferenceChanger)
         {
             ColorWithHighlights trackColorColouredStraight = new ColorWithHighlights(Color.Black, Color.Red, Color.LightGoldenrodYellow);
             ColorWithHighlights trackColorColouredCurved = new ColorWithHighlights(Color.Green, Color.Tomato, Color.LightGoldenrodYellow);
@@ -124,6 +127,22 @@ namespace ORTS.TrackViewer.Drawing
             roadTrackGroupFlat.TrackStraight = roadTrackColorFlat;
             roadTrackGroupFlat.TrackCurved = roadTrackColorFlat;
 
+            ColorWithHighlights trackColorTerrain = new ColorWithHighlights(Color.Aquamarine, 0);
+            ColorWithHighlights roadTrackColorTerrain = new ColorWithHighlights(Color.LightGray, 0);
+            trackGroupTerrain.TrackStraight = trackColorTerrain;
+            trackGroupTerrain.TrackCurved = trackColorTerrain;
+            roadTrackGroupTerrain.TrackStraight = roadTrackColorTerrain;
+            roadTrackGroupTerrain.TrackCurved = roadTrackColorTerrain;
+
+            trackColorColouredStraight.MakeIntoUserPreference(preferenceChanger, "track_colored_straight", TrackViewer.catalog.GetString("Select color for multi-colored straight tracks"), true);
+            trackColorColouredCurved.MakeIntoUserPreference(preferenceChanger, "track_colored_curved", TrackViewer.catalog.GetString("Select color for multi-colored curved tracks"), true);
+            trackColorFlat.MakeIntoUserPreference(preferenceChanger, "track_flat", TrackViewer.catalog.GetString("Select color for mono-colored tracks"), true);
+            trackColorTerrain.MakeIntoUserPreference(preferenceChanger, "track_terrain", TrackViewer.catalog.GetString("Select color for tracks on terrain"));
+
+            roadTrackColorColouredStraight.MakeIntoUserPreference(preferenceChanger, "road_colored_straight", TrackViewer.catalog.GetString("Select color for multi-colored straight roads"), true);
+            roadTrackColorColouredCurved.MakeIntoUserPreference(preferenceChanger, "road_colored_curved", TrackViewer.catalog.GetString("Select color for multi-colored curved roads"), true);
+            roadTrackColorFlat.MakeIntoUserPreference(preferenceChanger, "road_flat", TrackViewer.catalog.GetString("Select color for mono-colored roads"), true);
+            roadTrackColorTerrain.MakeIntoUserPreference(preferenceChanger, "road_terrain", TrackViewer.catalog.GetString("Select color for roads on terrain"));
         }
 
         private static void SetBackgroundColors(IPreferenceChanger preferenceChanger)
@@ -145,57 +164,69 @@ namespace ORTS.TrackViewer.Drawing
             ColorWithHighlights basicColor;
 
             basicColor = new ColorWithHighlights(Color.Black, 40);
-            basicColor.MakeIntoUserPreference(preferenceChanger, "text", 
+            basicColor.MakeIntoUserPreference(preferenceChanger, "text",
                 TrackViewer.catalog.GetString("Select text color"));
             basicColors.Text = basicColor;
+        }
 
-            basicColor = new ColorWithHighlights(Color.Blue, 120);
-            basicColor.MakeIntoUserPreference(preferenceChanger, "junction", 
+        private static void SetItemColors(IPreferenceChanger preferenceChanger)
+        {
+            ColorsGroupBasic itemColors = new ColorsGroupBasic();
+
+            ColorWithHighlights itemColor;
+
+            itemColor = new ColorWithHighlights(Color.Black, 40);
+            itemColor.MakeIntoUserPreference(preferenceChanger, "text", 
+                TrackViewer.catalog.GetString("Select text color"));
+            itemColors.Text = itemColor;
+
+            itemColor = new ColorWithHighlights(Color.Blue, 120);
+            itemColor.MakeIntoUserPreference(preferenceChanger, "junction", 
                 TrackViewer.catalog.GetString("Select junction color"));
-            basicColors.Junction = basicColor;
+            itemColors.Junction = itemColor;
 
-            basicColor = new ColorWithHighlights(Color.LimeGreen, 40);
-            basicColor.MakeIntoUserPreference(preferenceChanger, "endnode", 
+            itemColor = new ColorWithHighlights(Color.LimeGreen, 40);
+            itemColor.MakeIntoUserPreference(preferenceChanger, "endnode", 
                 TrackViewer.catalog.GetString("Select endnode color"));
-            basicColors.EndNode = basicColor;
+            itemColors.EndNode = itemColor;
 
-            basicColor = new ColorWithHighlights(Color.Sienna, 40);
-            basicColor.MakeIntoUserPreference(preferenceChanger, "siding", 
+            itemColor = new ColorWithHighlights(Color.Sienna, 40);
+            itemColor.MakeIntoUserPreference(preferenceChanger, "siding", 
                 TrackViewer.catalog.GetString("Select siding color"));
-            basicColors.Siding = basicColor;
+            itemColors.Siding = itemColor;
 
-            basicColor = new ColorWithHighlights(Color.Gray, 40);
-            basicColor.MakeIntoUserPreference(preferenceChanger, "crossing", 
+            itemColor = new ColorWithHighlights(Color.Gray, 40);
+            itemColor.MakeIntoUserPreference(preferenceChanger, "crossing", 
                 TrackViewer.catalog.GetString("Select crossing color"));
-            basicColors.Crossing = basicColor;
+            itemColors.Crossing = itemColor;
 
-            basicColor = new ColorWithHighlights(Color.DarkGray, 40);
-            basicColor.MakeIntoUserPreference(preferenceChanger, "roadcrossing", 
+            itemColor = new ColorWithHighlights(Color.DarkGray, 40);
+            itemColor.MakeIntoUserPreference(preferenceChanger, "roadcrossing", 
                 TrackViewer.catalog.GetString("Select road crossing color"));
-            basicColors.RoadCrossing = basicColor;
+            itemColors.RoadCrossing = itemColor;
 
-            basicColor = new ColorWithHighlights(Color.Purple, 40);
-            basicColor.MakeIntoUserPreference(preferenceChanger, "speedpost", 
+            itemColor = new ColorWithHighlights(Color.Purple, 40);
+            itemColor.MakeIntoUserPreference(preferenceChanger, "speedpost", 
                 TrackViewer.catalog.GetString("Select speedpost color"));
-            basicColors.Speedpost = basicColor;
+            itemColors.Speedpost = itemColor;
 
-            basicColor = new ColorWithHighlights(Color.Blue, 40);
-            basicColors.CandidateNode = basicColor;
+            itemColor = new ColorWithHighlights(Color.Blue, 40);
+            itemColors.CandidateNode = itemColor;
 
-            basicColor = new ColorWithHighlights(Color.Purple, 40);
-            basicColors.ActiveNode = basicColor;
+            itemColor = new ColorWithHighlights(Color.Purple, 40);
+            itemColors.ActiveNode = itemColor;
 
-            basicColor = new ColorWithHighlights(Color.LightBlue, 40);
-            basicColors.ClearWindowInset = basicColor;
+            itemColor = new ColorWithHighlights(Color.LightBlue, 40);
+            itemColors.ClearWindowInset = itemColor;
 
-            colorsNormal.TrackItemColors = basicColors;
-            colorsHighlight.TrackItemColors = basicColors;
-            colorsHotlight.TrackItemColors = basicColors;
-            colorsPathMain.TrackItemColors = basicColors;
-            colorsPathSiding.TrackItemColors = basicColors;
-            colorsRoads.TrackItemColors = basicColors;
-            colorsRoadsHighlight.TrackItemColors = basicColors;
-            colorsRoadsHotlight.TrackItemColors = basicColors;
+            colorsNormal.TrackItemColors = itemColors;
+            colorsHighlight.TrackItemColors = itemColors;
+            colorsHotlight.TrackItemColors = itemColors;
+            colorsPathMain.TrackItemColors = itemColors;
+            colorsPathSiding.TrackItemColors = itemColors;
+            colorsRoads.TrackItemColors = itemColors;
+            colorsRoadsHighlight.TrackItemColors = itemColors;
+            colorsRoadsHotlight.TrackItemColors = itemColors;
 
         }
 
@@ -204,7 +235,8 @@ namespace ORTS.TrackViewer.Drawing
         /// </summary>
         /// <param name="doColoring">Boolean describing whether tracks will be colored or not (i.e. using a flat color)</param>
         /// <param name="doTiles">Boolean describing whether tiles will be shown or not</param>
-        public static void SetColoursFromOptions(bool doColoring, bool doTiles)
+        /// <param name="showTerrain">Boolean describing whether terrain is shown</param>
+        public static void SetColoursFromOptions(bool doColoring, bool doTiles, bool showTerrain)
         {
             if (doTiles)
             {
@@ -225,6 +257,16 @@ namespace ORTS.TrackViewer.Drawing
                 colorsRoadsHighlight.TrackColors = roadTrackGroupColoured;
                 colorsRoadsHotlight.TrackColors = roadTrackGroupColoured;
             }
+            else if (showTerrain)
+            {
+                colorsNormal.TrackColors = trackGroupTerrain;
+                colorsHighlight.TrackColors = trackGroupTerrain;
+                colorsHotlight.TrackColors = trackGroupTerrain;
+
+                colorsRoads.TrackColors = roadTrackGroupTerrain;
+                colorsRoadsHighlight.TrackColors = roadTrackGroupTerrain;
+                colorsRoadsHotlight.TrackColors = roadTrackGroupTerrain;
+            }
             else
             {
                 colorsNormal.TrackColors = trackGroupFlat;
@@ -237,6 +279,9 @@ namespace ORTS.TrackViewer.Drawing
             }
         }
 
+        /// <summary>
+        /// Set the colors that (can) appear multiple times, each time with another shade.
+        /// </summary>
         static void SetShadedColors(IPreferenceChanger preferenceChanger)
         {
             otherPathsReferenceColor = new ColorWithHighlights(Color.Fuchsia, 0);
@@ -427,7 +472,7 @@ namespace ORTS.TrackViewer.Drawing
             : this()
         {
             ChangeColors(normalColor, highlightColor, hotlightColor);
-            defaultColor = Color.Black;
+            defaultColor = normalColor;
         }
 
         /// <summary>
@@ -456,7 +501,7 @@ namespace ORTS.TrackViewer.Drawing
             Colors[HighlightType.Hotlight] = hotlightColor;
         }
 
-        /// <summary>
+                /// <summary>
         /// Make this color with highlights changable via some preference changing mechanism
         /// </summary>
         /// <param name="preferenceChanger">The object that can change a preference</param>
@@ -464,16 +509,27 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="description">Description of the preference, as given to the user</param>
         public void MakeIntoUserPreference(IPreferenceChanger preferenceChanger, string name, string description)
         {
+            MakeIntoUserPreference(preferenceChanger, name, description, false);
+        }
+        /// <summary>
+        /// Make this color with highlights changable via some preference changing mechanism
+        /// </summary>
+        /// <param name="preferenceChanger">The object that can change a preference</param>
+        /// <param name="name">name of the preference (for coding)</param>
+        /// <param name="description">Description of the preference, as given to the user</param>
+        public void MakeIntoUserPreference(IPreferenceChanger preferenceChanger, string name, string description, bool normalOnly)
+        {
             List<string> colorOptions = namedColors.Keys.ToList();
             defaultColorName = FindColorName(defaultColor);
             string defaultColorOption = defaultColorName + defaultOptionExtension;
             colorOptions.Insert(0, defaultColorOption);
 
-            preferenceChanger.AddStringPreference(name, description, colorOptions.ToArray(), defaultColorOption, new StringPreferenceDelegate(PreferenceChangedCallback));
+            var callBack = normalOnly ? new StringPreferenceDelegate(PreferenceChangedCallbackNormalOnly): new StringPreferenceDelegate(PreferenceChangedCallback);
+            preferenceChanger.AddStringPreference(name, description, colorOptions.ToArray(), defaultColorOption, callBack);
         }
 
         /// <summary>
-        /// This is the callback that will be called when a new preference has been set.
+        /// This is the callback that will be called when a new preference has been set, for which only the normal color needs to be changed
         /// </summary>
         /// <param name="selectedColorName">The name of the color that has been selected</param>
         private void PreferenceChangedCallback(string selectedColorName)
@@ -485,6 +541,22 @@ namespace ORTS.TrackViewer.Drawing
             if (namedColors.ContainsKey(selectedColorName))
             {
                 ChangeColors(namedColors[selectedColorName], highlightDelta);
+            }
+        }
+
+        /// <summary>
+        /// This is the callback that will be called when a new preference has been set.
+        /// </summary>
+        /// <param name="selectedColorName">The name of the color that has been selected</param>
+        private void PreferenceChangedCallbackNormalOnly(string selectedColorName)
+        {
+            if (selectedColorName == defaultColorName + defaultOptionExtension)
+            {
+                selectedColorName = defaultColorName;
+            }
+            if (namedColors.ContainsKey(selectedColorName))
+            {
+                ChangeColors(namedColors[selectedColorName], this.Colors[HighlightType.Highlight], this.Colors[HighlightType.Hotlight]);
             }
         }
 
