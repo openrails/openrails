@@ -544,7 +544,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="color"> Color of the line</param>
         /// <param name="point"> WorldLocation of the first point of the line (for zero offset)</param>
         /// <param name="length"> length of the line to draw in meters (also when shifted by offset)</param>
-        /// <param name="angle"> Angle (in degrees east of North)</param>
+        /// <param name="angle"> Angle (in rad east of North)</param>
         /// <param name="lengthOffset">Instead of starting to draw at the given point, only start to draw a distance offset further along the line</param>
         public void DrawLine(float width, Color color, WorldLocation point, float length, float angle, float lengthOffset)
         {

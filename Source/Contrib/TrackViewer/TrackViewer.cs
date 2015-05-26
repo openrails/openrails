@@ -59,7 +59,7 @@ namespace ORTS.TrackViewer
     {
         #region Public members
         /// <summary>String showing the date of the program</summary>
-        public readonly static string TrackViewerVersion = "2015/05/10";
+        public readonly static string TrackViewerVersion = "2015/05/26";
         /// <summary>Path where the content (like .png files) is stored</summary>
         public string ContentPath { get; private set; }
         /// <summary>Folder where MSTS is installed (or at least, where the files needed for tracks, routes and paths are stored)</summary>
@@ -113,7 +113,7 @@ namespace ORTS.TrackViewer
         /// <summary>The routines to draw the grade of a path</summary>
         DrawPathChart drawPathChart;
         /// <summary>The routines to draw the terrain textures</summary>
-        DrawTerrain drawTerrain;
+        public DrawTerrain drawTerrain; //todo, get it private again: statusbar
 
 
         /// <summary>The menu at the top</summary>
@@ -472,7 +472,8 @@ namespace ORTS.TrackViewer
             if (drawTerrain != null) { drawTerrain.Draw(DrawArea); }
             drawWorldTiles.Draw(DrawArea);
             DrawArea.DrawTileGrid();
-            
+            if (drawTerrain != null) { drawTerrain.DrawPatchLines(DrawArea); }
+
             DrawTrackDB.DrawRoads(DrawArea);
             DrawTrackDB.DrawTracks(DrawArea);
             DrawTrackDB.DrawTrackHighlights(DrawArea, true);

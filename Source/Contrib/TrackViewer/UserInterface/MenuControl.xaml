@@ -99,6 +99,8 @@
                           Click="UpdateMenuSettings"/>
                 <MenuItem Header="Show Path info" Name="menuStatusShowTrainpath" IsCheckable="True" IsChecked="True"
                           Click="UpdateMenuSettings"/>
+                <MenuItem Header="Show terrain info" Name="menuStatusShowTerrain" IsCheckable="True" IsChecked="False"
+                          Click="UpdateMenuSettings"/>
             </MenuItem>
             <MenuItem Header="Preferences" Name="menuPreferences">
                 <MenuItem Header="Zooming is centered on mouse (m)" Name="menuZoomIsCenteredOnMouse" IsCheckable="True" IsChecked="True"

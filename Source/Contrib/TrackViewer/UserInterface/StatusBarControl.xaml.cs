@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -102,6 +102,7 @@ namespace ORTS.TrackViewer.UserInterface
             AddVectorSectionStatus(trackViewer);
             AddPATfileStatus(trackViewer);
             AddTrainpathStatus(trackViewer);
+            AddTerrainStatus(trackViewer);
         }
 
         /// <summary>
@@ -300,6 +301,18 @@ namespace ORTS.TrackViewer.UserInterface
             {
                 statusAdditional.Text += string.Format(System.Globalization.CultureInfo.CurrentCulture,
                     " FPS={0:F1} ", trackViewer.FrameRate.SmoothedValue);
+            }
+        }
+
+        /// <summary>
+        /// Add information from terrain
+        /// </summary>
+        /// <param name="trackViewer"></param>
+        private void AddTerrainStatus(TrackViewer trackViewer)
+        {
+            if (Properties.Settings.Default.statusShowTerrain && (trackViewer.drawTerrain != null))
+            {
+                statusAdditional.Text += trackViewer.drawTerrain.StatusInformation;
             }
         }
 

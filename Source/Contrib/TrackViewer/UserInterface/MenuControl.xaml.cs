@@ -130,6 +130,8 @@ namespace ORTS.TrackViewer.UserInterface
             menuStatusShowVectorSection.IsChecked = Properties.Settings.Default.statusShowVectorSections;
             menuStatusShowPATfile.IsChecked = Properties.Settings.Default.statusShowPATfile;
             menuStatusShowTrainpath.IsChecked = Properties.Settings.Default.statusShowTrainpath;
+            menuStatusShowTerrain.IsChecked = Properties.Settings.Default.statusShowTerrain;
+
 
             menuDrawRoads.IsChecked = Properties.Settings.Default.drawRoads;
             menuShowCarSpawners.IsChecked = Properties.Settings.Default.showCarSpawners;
@@ -209,6 +211,7 @@ namespace ORTS.TrackViewer.UserInterface
             Properties.Settings.Default.statusShowVectorSections = menuStatusShowVectorSection.IsChecked;
             Properties.Settings.Default.statusShowPATfile = menuStatusShowPATfile.IsChecked && menuShowPATfile.IsChecked;
             Properties.Settings.Default.statusShowTrainpath = menuStatusShowTrainpath.IsChecked && menuShowTrainpath.IsChecked;
+            Properties.Settings.Default.statusShowTerrain = menuStatusShowTerrain.IsChecked && (menuShowTerrain.IsChecked || menuShowDMTerrain.IsChecked);
 
             Properties.Settings.Default.drawRoads = menuDrawRoads.IsChecked;
             Properties.Settings.Default.showCarSpawners = menuShowCarSpawners.IsChecked;
@@ -226,6 +229,8 @@ namespace ORTS.TrackViewer.UserInterface
 
             menuStatusShowPATfile.IsEnabled = menuShowPATfile.IsChecked;
             menuStatusShowTrainpath.IsEnabled = menuShowTrainpath.IsChecked;
+            menuStatusShowTerrain.IsEnabled = menuShowTerrain.IsChecked || menuShowDMTerrain.IsChecked;
+
 
             menuSelectPath.IsEnabled = (trackViewer.CurrentRoute != null);
             menuNewPath.IsEnabled = (trackViewer.CurrentRoute != null);
@@ -702,6 +707,10 @@ namespace ORTS.TrackViewer.UserInterface
         public void MenuSetShowTerrain(bool show)
         {
             menuShowTerrain.IsChecked = show;
+            if (!show)
+            {
+                menuShowPatchLines.IsChecked = false;
+            }
             menuShowTerrain_Click(null, null);
         }
 
@@ -719,13 +728,16 @@ namespace ORTS.TrackViewer.UserInterface
         {
             UpdateMenuSettings();
             bool succeeded = trackViewer.SetTerrainVisibility(menuShowTerrain.IsChecked, menuShowDMTerrain.IsChecked);
-            if (!succeeded && (menuShowTerrain.IsChecked==true))
+            if (!succeeded)
             {
-                MenuSetShowTerrain(false);
-            }
-            if (!succeeded && (menuShowDMTerrain.IsChecked == true))
-            {
-                MenuSetShowDMTerrain(false);
+                if (menuShowTerrain.IsChecked == true)
+                {
+                    MenuSetShowTerrain(false);
+                }
+                if (menuShowDMTerrain.IsChecked == true)
+                {
+                    MenuSetShowDMTerrain(false);
+                }
             }
         }
 
