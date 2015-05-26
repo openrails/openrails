@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Contrib\n"
-"POT-Creation-Date: 2015-05-02 13:29:37+0100\n"
-"PO-Revision-Date: 2015-05-02 16:53+0100\n"
+"POT-Creation-Date: 2015-05-08 19:04:37+0100\n"
+"PO-Revision-Date: 2015-05-10 08:36+0100\n"
 "Last-Translator: Altmann <altmann@bk.ru>\n"
 "Language-Team: \n"
 "Language: cs\n"
@@ -926,25 +926,25 @@ msgstr "10"
 msgid "99"
 msgstr "99"
 
-#: ../../Contrib/TrackViewer/UserInterface/Languages.cs:65
+#: ../../Contrib/TrackViewer/UserInterface/Languages.cs:75
 msgid "Please restart TrackViewer in order to load the new language."
 msgstr "Pro změnu jazyka prosím restartujte TrackViewer."
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:352
 msgid "<Select path>"
-msgstr "<vybrat cestu>"
+msgstr "<Vybrat cestu>"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:366
 msgid "<Select station>"
-msgstr "<vybrat stanici>"
+msgstr "<Vybrat stanici>"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:379
 msgid "<Select platform>"
-msgstr "<vybrat nástupiště>"
+msgstr "<Vybrat nástupiště>"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:392
 msgid "<Select siding>"
-msgstr "<vybrat vedlejší kolej>"
+msgstr "<Vybrat vedlejší kolej>"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:486
 msgid "left  arrow:  Shift left\n"
@@ -1217,7 +1217,7 @@ msgstr "Cesty"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:34
 msgid "Show path (F11)"
-msgstr "Zobrazit cestu"
+msgstr "Zobrazit cestu (F11)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:35
 msgid "Show raw path from .pat file (shift F11)"

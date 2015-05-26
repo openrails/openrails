@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
 "POT-Creation-Date: 2015-05-02 13:29:47+0100\n"
-"PO-Revision-Date: 2015-05-02 16:19+0100\n"
+"PO-Revision-Date: 2015-05-10 08:48+0100\n"
 "Last-Translator: Altmann <altmann@bk.ru>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: cs\n"
@@ -518,11 +518,11 @@ msgstr "Ovladač Sběrač 2"
 
 #: ../../ORTS.Settings/InputSettings.cs:172
 msgid "Control Diesel Player"
-msgstr "Ovladač Start/Stop motoru (hráč)"
+msgstr "Ovladač Start/Stop motoru dieselu (hráč)"
 
 #: ../../ORTS.Settings/InputSettings.cs:173
 msgid "Control Diesel Helper"
-msgstr "Ovladač Start/Stop motoru (ostatní)"
+msgstr "Ovladač Start/Stop motoru dieselu (ostatní)"
 
 #: ../../ORTS.Settings/InputSettings.cs:174
 msgid "Control Headlight Increase"

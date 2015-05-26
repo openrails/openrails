@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
-"POT-Creation-Date: 2015-05-02 13:29:50+0100\n"
-"PO-Revision-Date: 2015-05-02 17:16+0100\n"
+"POT-Creation-Date: 2015-05-08 19:04:50+0100\n"
+"PO-Revision-Date: 2015-05-10 09:16+0100\n"
 "Last-Translator: Altmann <altmann@bk.ru>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: cs\n"
@@ -389,7 +389,7 @@ msgstr "Nový dispečer je {0}"
 #: ../../RunActivity/MultiPlayer/OnlinePlayer.cs:148
 #, csharp-format
 msgid "{0} quit."
-msgstr "{0} skončilo."
+msgstr "{0} ukončeno."
 
 #: ../../RunActivity/MultiPlayer/Message.cs:1968
 #, csharp-format
@@ -421,64 +421,64 @@ msgstr "Spřáhlo se přetrhlo!"
 msgid "Coupler overloaded!"
 msgstr "Spřáhlo je přetížené!"
 
-#: ../../RunActivity/Physics/Train.cs:4588
-#: ../../RunActivity/Physics/Train.cs:4593
+#: ../../RunActivity/Physics/Train.cs:4589
+#: ../../RunActivity/Physics/Train.cs:4594
 msgid "Other train is blocking path"
 msgstr "Další vlak blokuje cestu."
 
-#: ../../RunActivity/Physics/Train.cs:5470
+#: ../../RunActivity/Physics/Train.cs:5479
 msgid "Stopped due to errors in route setting"
 msgstr "Zastaveno kvůli chybám v nastavení tratě"
 
-#: ../../RunActivity/Physics/Train.cs:6132
-#: ../../RunActivity/Physics/Train.cs:7210
+#: ../../RunActivity/Physics/Train.cs:6141
+#: ../../RunActivity/Physics/Train.cs:7219
 msgid "No signal in train's path"
 msgstr "Ve vlakové cestě není návěstidlo"
 
-#: ../../RunActivity/Physics/Train.cs:6140
+#: ../../RunActivity/Physics/Train.cs:6149
 msgid "Next signal already allocated to other train"
 msgstr "Následující návěstidlo je vyhrazeno pro jiný vlak"
 
-#: ../../RunActivity/Physics/Train.cs:6201
+#: ../../RunActivity/Physics/Train.cs:6210
 msgid "Request to clear signal cannot be processed"
 msgstr "Požadavek na návěst \"volno\" nemůže být zpracován"
 
-#: ../../RunActivity/Physics/Train.cs:6307
-#: ../../RunActivity/Physics/Train.cs:7330
+#: ../../RunActivity/Physics/Train.cs:6316
+#: ../../RunActivity/Physics/Train.cs:7339
 msgid "No switch found"
 msgstr "Výhybka nenalezena"
 
-#: ../../RunActivity/Physics/Train.cs:7564
+#: ../../RunActivity/Physics/Train.cs:7573
 msgid "You cannot enter manual mode when autopiloted"
 msgstr "Nelze přepnout do manuálního režimu, pokud je používán autopilot"
 
-#: ../../RunActivity/Physics/Train.cs:7576
+#: ../../RunActivity/Physics/Train.cs:7585
 msgid "Train is not back on original route"
 msgstr "Vlak není zpět na původní trase"
 
-#: ../../RunActivity/Physics/Train.cs:7585
+#: ../../RunActivity/Physics/Train.cs:7594
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr "Původní trasa je určena pro opačný směr. Před změnou směru zastavte!"
 
-#: ../../RunActivity/Physics/Train.cs:7598
+#: ../../RunActivity/Physics/Train.cs:7607
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr "Nelze přejít do ručního režimu v režimu Prohlížení tratě"
 
-#: ../../RunActivity/Physics/Train.cs:7693
+#: ../../RunActivity/Physics/Train.cs:7702
 msgid "Reversal required and rear of train not on required route"
 msgstr "Je nutná změna směru - přední část vlaku je mimo původní trasu"
 
-#: ../../RunActivity/Physics/Train.cs:7899
+#: ../../RunActivity/Physics/Train.cs:7908
 msgid "Cannot clear signal behind train while in AUTO mode"
 msgstr "V AUTO režimu není možné žádat o volnou cestu za vlakem"
 
-#: ../../RunActivity/Physics/Train.cs:8148
+#: ../../RunActivity/Physics/Train.cs:8157
 #, csharp-format
 msgid "Allowed speed raised to {0}"
 msgstr "Povolená rychlost se zvýšila na {0}"
 
-#: ../../RunActivity/Physics/Train.cs:8190
+#: ../../RunActivity/Physics/Train.cs:8199
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr "Vlak zastavil kvůli problémům s dalším vlakem: {0} , důvod: {1}"
@@ -1264,25 +1264,25 @@ msgstr "Nafta"
 #: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:395
 msgctxt "Engine"
 msgid "Stopped"
-msgstr "Neběží"
+msgstr "Motor neběží"
 
 #. Context: Engine
 #: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:396
 msgctxt "Engine"
 msgid "Starting"
-msgstr "Startuje"
+msgstr "Startuje motor"
 
 #. Context: Engine
 #: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:397
 msgctxt "Engine"
 msgid "Running"
-msgstr "Běží"
+msgstr "Motor běží"
 
 #. Context: Engine
 #: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:398
 msgctxt "Engine"
 msgid "Stopping"
-msgstr "Vypíná"
+msgstr "Vypíná motor"
 
 #: ../../RunActivity/Simulator/Activity.cs:880
 #: ../../RunActivity/Timetable/TTTrain.cs:5791
@@ -1458,7 +1458,7 @@ msgstr "Start/stop dieselu hráče"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:150
 msgid "locked. Close throttle then re-try."
-msgstr "blokován. Nastavte kontrolér do nuly a opakujte"
+msgstr "zablokován. Kontrolér dejte do nulové polohy a opakujte."
 
 #: ../../RunActivity/Simulator/Confirmation.cs:151
 msgid "Helper Diesel Power"
@@ -1611,7 +1611,7 @@ msgstr "inicializovat"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:174
 msgid "cannot initialize. Stop train then re-try."
-msgstr "nemohou být inicializované za jízdy. Zastavte vlak a opakujte."
+msgstr "nemohou být inicializovány za jízdy. Zastavte vlak a opakujte."
 
 #: ../../RunActivity/Simulator/Confirmation.cs:175
 msgid "Handbrake"
@@ -1708,8 +1708,8 @@ msgid ""
 "changing disabled. Close throttle, set reverser to neutral, stop train then "
 "re-try."
 msgstr ""
-"- změna je blokovaná. Nastavte kontrolér do nuly, nastavte směr na neutrál, "
-"zajistěte vlak proti pohybu a změnu opakujte."
+"- změna je zablokována. Kontrolér dejte do nulové polohy, nastavte reverser "
+"na neutrál, zastavte vlak a opakujte."
 
 #: ../../RunActivity/Simulator/Confirmation.cs:188
 msgid "Odometer"
@@ -1870,13 +1870,13 @@ msgstr "Reverser"
 #: ../../RunActivity/Simulator/Confirmation.cs:180
 msgctxt "Alerter"
 msgid "sound"
-msgstr "Zvuk bdělosti"
+msgstr "živák"
 
 #. Context: Horn
 #: ../../RunActivity/Simulator/Confirmation.cs:181
 msgctxt "Horn"
 msgid "sound"
-msgstr "Houká"
+msgstr "houká"
 
 #. Context: Cab
 #: ../../RunActivity/Simulator/Confirmation.cs:187
@@ -1907,7 +1907,7 @@ msgstr "přičítá"
 #: ../../RunActivity/Simulator/Confirmation.cs:195
 msgctxt "Switch"
 msgid "change"
-msgstr "změnit"
+msgstr "přehodit"
 
 #: ../../RunActivity/Timetable/TTTrain.cs:5733
 msgid "Held for connecting train : "
@@ -1972,14 +1972,14 @@ msgstr "Kabina není dostupná"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:658
 msgid "In MP, use Alt-F4 to quit directly"
-msgstr "V síťové hře lze okamžitě skončit pomocí Alt-F4"
+msgstr "Síťovou hru lze okamžitě ukončit pomocí Alt-F4"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:725
 msgid "3D Cab view not available"
 msgstr "3D kabina není dostupná"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:752
-msgid "Will not ratate cab and land"
+msgid "Will not rotate cab and land"
 msgstr "Neotáčet kabinu a terén"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:860
@@ -2011,12 +2011,12 @@ msgstr "Otáčet kabinu {0}/4, otáčet terén {1}/4"
 #: ../../RunActivity/Viewer3D/Viewer.cs:878
 #, csharp-format
 msgid "Keyboard map list saved to '{0}'."
-msgstr "Seznam mapy kláves. byl uložen do '{0}'."
+msgstr "Seznam mapy kláves byl uložen do '{0}'."
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:882
 #, csharp-format
 msgid "Keyboard map image saved to '{0}'."
-msgstr "Obrázek mapy kláves. byl uložen do '{0}'."
+msgstr "Obrázek mapy kláves byl uložen do '{0}'."
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:780
 #, csharp-format
@@ -2058,7 +2058,7 @@ msgstr "Zavřít okno"
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:233
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:251
 msgid "Quit activity"
-msgstr "Opustit aktivitu"
+msgstr "Ukončit aktivitu"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:222
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:243
@@ -2068,7 +2068,7 @@ msgstr "Stav: Aktivita pozastavena"
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:222
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:234
 msgid "Status: Activity resumed"
-msgstr "Stav: Aktivita pokračuje"
+msgstr "Stav: Aktivita obnovena"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:242
 msgid "End Activity"
@@ -2823,7 +2823,7 @@ msgstr "Menu pauzy"
 #: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:46
 #, csharp-format
 msgid "Quit {1} ({0})"
-msgstr "{1} Odejít ({0})"
+msgstr "Ukončit {1} ({0})"
 
 #: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:51
 #, csharp-format
@@ -2943,6 +2943,9 @@ msgid_plural "{0} meters"
 msgstr[0] "{0} metr"
 msgstr[1] "{0} metry"
 msgstr[2] "{0} metrů"
+
+#~ msgid "Will not ratate cab and land"
+#~ msgstr "Neotáčet kabinu a terén"
 
 #~ msgid "Compound locomotive"
 #~ msgstr "Sdružená lokomotiva"

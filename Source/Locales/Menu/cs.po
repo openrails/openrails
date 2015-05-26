@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
-"POT-Creation-Date: 2015-05-02 13:29:39+0100\n"
-"PO-Revision-Date: 2015-05-02 16:14+0100\n"
+"POT-Creation-Date: 2015-05-08 19:04:40+0100\n"
+"PO-Revision-Date: 2015-05-10 08:25+0100\n"
 "Last-Translator: Altmann <altmann@bk.ru>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: cs\n"
@@ -28,13 +28,13 @@ msgstr "Uložené soubory '{0}' úspěšně importovány."
 #: ../../Menu/ImportExportSaveForm.cs:87
 #, csharp-format
 msgid "Save Pack '{0}' exported successfully."
-msgstr "Uložené soubory  {0}' úspěšně exportovány."
+msgstr "Uložené soubory '{0}' úspěšně exportovány."
 
 #: ../../Menu/ImportExportSaveForm.cs:113
 #, csharp-format
 msgid "Save Pack folder contains {0} save pack:"
 msgid_plural "Save Pack folder contains {0} save packs:"
-msgstr[0] "Složka balíčku obsahuje jeden uložený soubor"
+msgstr[0] "Složka balíčku obsahuje jeden uložený soubor:"
 msgstr[1] "Složka balíčku obsahuje {0} uložené soubory:"
 msgstr[2] "Složka balíčku obsahuje {0} uložených souborů:"
 
@@ -163,7 +163,7 @@ msgid ""
 "User name must be 4-10 characters long, cannot contain space, ', \" or - and "
 "must not start with a digit."
 msgstr ""
-"Uživatelské jméno musí mít 4-10 znaků, nesmí obsahovat mezeru, \", \" nebo - "
+"Uživatelské jméno musí mít 4-10 znaků, nesmí obsahovat mezeru, ', \" nebo - "
 "a nesmí začínat číslicí."
 
 #: ../../Menu/MainForm.cs:1028
@@ -237,150 +237,142 @@ msgstr "Sestava: {0}"
 msgid "Path: {0}"
 msgstr "Trať: {0}"
 
-#: ../../Menu/MainForm.Designer.cs:118
+#: ../../Menu/MainForm.Designer.cs:117
 msgid "Windowed"
 msgstr "V okně"
 
-#: ../../Menu/MainForm.Designer.cs:128
+#: ../../Menu/MainForm.Designer.cs:127
 msgid "Start"
 msgstr "Spustit"
 
-#: ../../Menu/MainForm.Designer.cs:141
-msgid "open"
-msgstr "open"
+#: ../../Menu/MainForm.Designer.cs:139 ../../Menu/MainForm.Designer.cs:875
+msgid "Open Rails"
+msgstr "Open Rails"
 
-#: ../../Menu/MainForm.Designer.cs:153
-msgid "rails"
-msgstr "rails"
-
-#: ../../Menu/MainForm.Designer.cs:169
+#: ../../Menu/MainForm.Designer.cs:157
 msgid "Logging"
 msgstr "Logování"
 
-#: ../../Menu/MainForm.Designer.cs:178 ../../Menu/Options.Designer.cs:1913
+#: ../../Menu/MainForm.Designer.cs:166 ../../Menu/Options.Designer.cs:1913
 msgid "Options"
 msgstr "Nastavení"
 
-#: ../../Menu/MainForm.Designer.cs:188
+#: ../../Menu/MainForm.Designer.cs:176
 msgid "Resume/ Replay..."
 msgstr "Přerušit/ Přehrát"
 
-#: ../../Menu/MainForm.Designer.cs:197
+#: ../../Menu/MainForm.Designer.cs:185
 msgid "Tools ▼"
 msgstr "Nástroje ▼"
 
-#: ../../Menu/MainForm.Designer.cs:232
+#: ../../Menu/MainForm.Designer.cs:220
 msgid "Route:"
 msgstr "Trať:"
 
-#: ../../Menu/MainForm.Designer.cs:251
+#: ../../Menu/MainForm.Designer.cs:239
 msgid "Host/port:"
 msgstr "IP adresa/port:"
 
-#: ../../Menu/MainForm.Designer.cs:262
+#: ../../Menu/MainForm.Designer.cs:250
 msgid "User name:"
 msgstr "Uživ. jméno:"
 
-#: ../../Menu/MainForm.Designer.cs:272
+#: ../../Menu/MainForm.Designer.cs:260
 msgid "Client"
 msgstr "Klient"
 
-#: ../../Menu/MainForm.Designer.cs:282
+#: ../../Menu/MainForm.Designer.cs:270
 msgid "Server"
 msgstr "Server"
 
-#: ../../Menu/MainForm.Designer.cs:307
+#: ../../Menu/MainForm.Designer.cs:295
 msgid "Multiplayer"
 msgstr "Síťová hra"
 
-#: ../../Menu/MainForm.Designer.cs:319
+#: ../../Menu/MainForm.Designer.cs:307
 msgid "Singleplayer"
 msgstr "Jeden hráč"
 
-#: ../../Menu/MainForm.Designer.cs:329
+#: ../../Menu/MainForm.Designer.cs:317
 msgid "Installation profile:"
 msgstr "Instalační profil:"
 
-#: ../../Menu/MainForm.Designer.cs:376
+#: ../../Menu/MainForm.Designer.cs:365
 msgid "Mode:"
 msgstr "Režim:"
 
-#: ../../Menu/MainForm.Designer.cs:387 ../../Menu/TestingForm.Designer.cs:192
+#: ../../Menu/MainForm.Designer.cs:376 ../../Menu/TestingForm.Designer.cs:192
 msgid "Activity"
 msgstr "Aktivita"
 
-#: ../../Menu/MainForm.Designer.cs:397
+#: ../../Menu/MainForm.Designer.cs:386
 msgid "Timetable"
 msgstr "Jízdní řád"
 
-#: ../../Menu/MainForm.Designer.cs:437
+#: ../../Menu/MainForm.Designer.cs:426
 msgid "Activity:"
 msgstr "Aktivita:"
 
-#: ../../Menu/MainForm.Designer.cs:460
+#: ../../Menu/MainForm.Designer.cs:449
 msgid "Locomotive:"
 msgstr "Lokomotiva:"
 
-#: ../../Menu/MainForm.Designer.cs:497
+#: ../../Menu/MainForm.Designer.cs:486
 msgid "Consist:"
 msgstr "Složení soupravy:"
 
-#: ../../Menu/MainForm.Designer.cs:508
+#: ../../Menu/MainForm.Designer.cs:497
 msgid "Starting at:"
 msgstr "Začátek trasy:"
 
-#: ../../Menu/MainForm.Designer.cs:532
+#: ../../Menu/MainForm.Designer.cs:521
 msgid "Heading to:"
 msgstr "Konec trasy:"
 
-#: ../../Menu/MainForm.Designer.cs:556
+#: ../../Menu/MainForm.Designer.cs:545
 msgid "Duration:"
 msgstr "Dobra trvání:"
 
-#: ../../Menu/MainForm.Designer.cs:567
+#: ../../Menu/MainForm.Designer.cs:556
 msgid "Time:"
 msgstr "Čas:"
 
-#: ../../Menu/MainForm.Designer.cs:616 ../../Menu/MainForm.Designer.cs:763
+#: ../../Menu/MainForm.Designer.cs:605 ../../Menu/MainForm.Designer.cs:752
 msgid "Weather:"
 msgstr "Počasí:"
 
-#: ../../Menu/MainForm.Designer.cs:640
+#: ../../Menu/MainForm.Designer.cs:629
 msgid "Difficulty:"
 msgstr "Obtížnost:"
 
-#: ../../Menu/MainForm.Designer.cs:663 ../../Menu/MainForm.Designer.cs:786
+#: ../../Menu/MainForm.Designer.cs:652 ../../Menu/MainForm.Designer.cs:775
 msgid "Season:"
 msgstr "Roční doba:"
 
-#: ../../Menu/MainForm.Designer.cs:695
+#: ../../Menu/MainForm.Designer.cs:684
 msgid "Train:"
 msgstr "Vlak:"
 
-#: ../../Menu/MainForm.Designer.cs:716
+#: ../../Menu/MainForm.Designer.cs:705
 msgid "Timetable:"
 msgstr "Jízdní řád:"
 
-#: ../../Menu/MainForm.Designer.cs:739
+#: ../../Menu/MainForm.Designer.cs:728
 msgid "Day:"
 msgstr "Den:"
 
-#: ../../Menu/MainForm.Designer.cs:817
+#: ../../Menu/MainForm.Designer.cs:806
 msgid "Timetable set:"
 msgstr "Nastavení jízdního řádu:"
 
-#: ../../Menu/MainForm.Designer.cs:837 ../../Menu/Options.cs:240
+#: ../../Menu/MainForm.Designer.cs:826 ../../Menu/Options.cs:240
 #: ../../Menu/TestingForm.Designer.cs:314
 msgid "Testing"
 msgstr "Testovací"
 
-#: ../../Menu/MainForm.Designer.cs:854
+#: ../../Menu/MainForm.Designer.cs:843
 msgid "What's new?"
 msgstr "Co je nového?"
-
-#: ../../Menu/MainForm.Designer.cs:887
-msgid "Open Rails"
-msgstr "Open Rails"
 
 #: ../../Menu/Options.cs:93 ../../Menu/TestingForm.Designer.cs:184
 msgid "Route"
@@ -598,9 +590,9 @@ msgid ""
 "{1:F0}° horizontal FOV on 4:3\n"
 "{2:F0}° horizontal FOV on 16:9"
 msgstr ""
-"{0: F0} ° vertikální zorné pole je stejné jako: \n"
-"{1: F0} ° horizontální zorné pole na 4:3 \n"
-"{2: F0} ° horizontální zorné pole na 16:9"
+"{0: F0}° vertikální zorné pole je stejné jako:\n"
+"{1: F0}° horizontální zorné pole na 4:3\n"
+"{2: F0}° horizontální zorné pole na 16:9"
 
 #: ../../Menu/Options.cs:570
 #, csharp-format
@@ -1098,10 +1090,6 @@ msgstr ""
 "Chcete-li zabránit pádům a neočekávanému chování, Open Rails označuje "
 "uložení z předchozích verzí, která se nepodaří načíst jako neplatná.\n"
 
-#: ../../Menu/ResumeForm.cs:382
-msgid "Delete of invalid saves"
-msgstr "Smazat neplatná uložení"
-
 #: ../../Menu/ResumeForm.cs:196
 #, csharp-format
 msgid ""
@@ -1131,14 +1119,10 @@ msgstr ""
 "\n"
 "Pokračovat?"
 
-#: ../../Menu/ResumeForm.cs:382
+#: ../../Menu/ResumeForm.cs:377
 #, csharp-format
-msgid ""
-"{0} invalid saves deleted\n"
-"{1} saves remain"
-msgstr ""
-"{0} smazaných neplatných uložení\n"
-"{1} uložení zůstalo"
+msgid "{0} invalid saves have been deleted."
+msgstr "Bylo smazáno {0} neplatných uložení."
 
 #: ../../Menu/ResumeForm.Designer.cs:207
 msgid "Resume"
@@ -1149,8 +1133,8 @@ msgid "Undelete"
 msgstr "Obnovit"
 
 #: ../../Menu/ResumeForm.Designer.cs:252
-msgid "Delete all invalid saves in Open Rails"
-msgstr "Smazat všechna neplatná uložení v Open Rails"
+msgid "Delete all invalid saves"
+msgstr "Odstranit všechna neplatná uložení"
 
 #: ../../Menu/ResumeForm.Designer.cs:263
 msgid "Import/ export"
@@ -1263,6 +1247,25 @@ msgstr "Načíst"
 #: ../../Menu/TestingForm.Designer.cs:238
 msgid "FPS"
 msgstr "FPS"
+
+#~ msgid "open"
+#~ msgstr "open"
+
+#~ msgid "rails"
+#~ msgstr "rails"
+
+#~ msgid "Delete of invalid saves"
+#~ msgstr "Smazat neplatná uložení"
+
+#~ msgid ""
+#~ "{0} invalid saves deleted\n"
+#~ "{1} saves remain"
+#~ msgstr ""
+#~ "{0} smazaných neplatných uložení\n"
+#~ "{1} uložení zůstalo"
+
+#~ msgid "Delete all invalid saves in Open Rails"
+#~ msgstr "Smazat všechna neplatná uložení v Open Rails"
 
 #~ msgid "Installation Profile"
 #~ msgstr "Zvolený profil"
@@ -1454,9 +1457,6 @@ msgstr "FPS"
 #~ msgstr ""
 #~ "Open Rails považuje hry uložené v předchozích verzích za neplatné, aby se "
 #~ "předešlo pádům hry. {0} z {1} pozic je neplatných."
-
-#~ msgid "Delete all invalid saves"
-#~ msgstr "Odstranit všechna neplatná uložení"
 
 #~ msgid "- Explore Route -"
 #~ msgstr "- Vonalbejárás -"
