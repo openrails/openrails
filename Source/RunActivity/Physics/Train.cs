@@ -6312,8 +6312,10 @@ namespace ORTS
                     int reqRouteIndex = reqSwitch.CircuitState.TrainReserved.TrainRouteDirectionIndex;
                     int routeIndex = ValidRoute[reqRouteIndex].GetRouteIndex(reqSwitch.Index, 0);
                     signalRef.BreakDownRouteList(ValidRoute[reqRouteIndex], routeIndex, reqSwitch.CircuitState.TrainReserved);
-                    ValidRoute[reqRouteIndex].RemoveRange(routeIndex, ValidRoute[reqRouteIndex].Count - routeIndex);
-
+                    if (routeIndex >= 0 && ValidRoute[reqRouteIndex].Count > routeIndex)
+                        ValidRoute[reqRouteIndex].RemoveRange(routeIndex, ValidRoute[reqRouteIndex].Count - routeIndex);
+                    else Trace.TraceWarning ("Switch index {0} could not be found in ValidRoute[{1}]; routeDirectionIndex = {2}",
+                            reqSwitch.Index, reqRouteIndex, routeDirectionIndex);
                     reqSwitch.deAlignSwitchPins();
                     reqSwitch.JunctionSetManual = reqSwitch.JunctionLastRoute == 0 ? 1 : 0;
                     signalRef.setSwitch(reqSwitch.OriginalIndex, reqSwitch.JunctionSetManual, reqSwitch);
