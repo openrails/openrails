@@ -25,47 +25,47 @@ using ORTS.Common;
 
 namespace ORTS.Settings
 {
-	[AttributeUsage(AttributeTargets.Property)]
-	public sealed class DefaultAttribute : Attribute
-	{
-		public readonly object Value;
-		public DefaultAttribute(object value)
-		{
-			Value = value;
-		}
-	}
+    [AttributeUsage(AttributeTargets.Property)]
+    public sealed class DefaultAttribute : Attribute
+    {
+        public readonly object Value;
+        public DefaultAttribute(object value)
+        {
+            Value = value;
+        }
+    }
 
-	[AttributeUsage(AttributeTargets.Property)]
-	public sealed class DoNotSaveAttribute : Attribute
-	{
-	}
+    [AttributeUsage(AttributeTargets.Property)]
+    public sealed class DoNotSaveAttribute : Attribute
+    {
+    }
 
-	public class UserSettings : SettingsBase
-	{
-		public static readonly string RegistryKey;        // ie @"SOFTWARE\OpenRails\ORTS"
-		public static readonly string SettingsFilePath;   // ie @"C:\Program Files\Open Rails\OpenRails.ini"
-		public static readonly string UserDataFolder;     // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails"
-		public static readonly string DeletedSaveFolder;  // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails\Deleted Saves"
-		public static readonly string SavePackFolder;     // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails\Save Packs"
+    public class UserSettings : SettingsBase
+    {
+        public static readonly string RegistryKey;        // ie @"SOFTWARE\OpenRails\ORTS"
+        public static readonly string SettingsFilePath;   // ie @"C:\Program Files\Open Rails\OpenRails.ini"
+        public static readonly string UserDataFolder;     // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails"
+        public static readonly string DeletedSaveFolder;  // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails\Deleted Saves"
+        public static readonly string SavePackFolder;     // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails\Save Packs"
 
-		static UserSettings()
-		{
-			// Only one of these is allowed; if the INI file exists, we use that, otherwise we use the registry.
-			RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
-			SettingsFilePath = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "OpenRails.ini");
-			if (File.Exists(SettingsFilePath))
-				RegistryKey = null;
-			else
-				SettingsFilePath = null;
+        static UserSettings()
+        {
+            // Only one of these is allowed; if the INI file exists, we use that, otherwise we use the registry.
+            RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
+            SettingsFilePath = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "OpenRails.ini");
+            if (File.Exists(SettingsFilePath))
+                RegistryKey = null;
+            else
+                SettingsFilePath = null;
 
-			UserDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Application.ProductName);
+            UserDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Application.ProductName);
             // TODO: If using INI file, move these to application directory as well.
-			if (!Directory.Exists(UserDataFolder)) Directory.CreateDirectory(UserDataFolder);
-			DeletedSaveFolder = Path.Combine(UserDataFolder, "Deleted Saves");
-			SavePackFolder = Path.Combine(UserDataFolder, "Save Packs");
-		}
+            if (!Directory.Exists(UserDataFolder)) Directory.CreateDirectory(UserDataFolder);
+            DeletedSaveFolder = Path.Combine(UserDataFolder, "Deleted Saves");
+            SavePackFolder = Path.Combine(UserDataFolder, "Save Packs");
+        }
 
-		readonly Dictionary<string, object> CustomDefaultValues = new Dictionary<string, object>();
+        readonly Dictionary<string, object> CustomDefaultValues = new Dictionary<string, object>();
 
         #region Menu_Selection enum
         public enum Menu_SelectionIndex
@@ -93,23 +93,23 @@ namespace ORTS.Settings
         #region User Settings
 
         // Please put all user settings in here as auto-properties. Public properties
-		// of type 'string', 'int', 'bool', 'string[]' and 'int[]' are automatically loaded/saved.
+        // of type 'string', 'int', 'bool', 'string[]' and 'int[]' are automatically loaded/saved.
 
-		// Main menu settings:
-		[Default(true)]
-		public bool Logging { get; set; }
-		[Default(false)]
-		public bool FullScreen { get; set; }
-		[Default("")]
-		public string Multiplayer_User { get; set; }
-		[Default("127.0.0.1")]
-		public string Multiplayer_Host { get; set; }
-		[Default(30000)]
-		public int Multiplayer_Port { get; set; }
+        // Main menu settings:
+        [Default(true)]
+        public bool Logging { get; set; }
+        [Default(false)]
+        public bool FullScreen { get; set; }
+        [Default("")]
+        public string Multiplayer_User { get; set; }
+        [Default("127.0.0.1")]
+        public string Multiplayer_Host { get; set; }
+        [Default(30000)]
+        public int Multiplayer_Port { get; set; }
 
-		// General settings:
-		[Default(false)]
-		public bool Alerter { get; set; }
+        // General settings:
+        [Default(false)]
+        public bool Alerter { get; set; }
         [Default(true)]
         public bool AlerterDisableExternal { get; set; }
         [Default(false)]
@@ -130,16 +130,18 @@ namespace ORTS.Settings
         public String PressureUnit { get; set; }
         [Default("Automatic")]
         public String Units { get; set; }
+        [Default(false)]
+        public bool DisableTCSScripts { get; set; }
 
-		// Audio settings:
+        // Audio settings:
         [Default(true)]
         public bool MSTSBINSound { get; set; }
         [Default(100)]
         public int SoundVolumePercent { get; set; }
         [Default(5)]
-		public int SoundDetailLevel { get; set; }
+        public int SoundDetailLevel { get; set; }
 
-		// Video settings:
+        // Video settings:
         [Default(false)]
         public bool DynamicShadows { get; set; }
         [Default(false)]
@@ -169,11 +171,11 @@ namespace ORTS.Settings
         [Default(20)]
         public int DayAmbientLight { get; set; }
 
-		// Simulation settings:
-		[Default(true)]
-		public bool UseAdvancedAdhesion { get; set; }
-		[Default(10)]
-		public int AdhesionMovingAverageFilterSize { get; set; }
+        // Simulation settings:
+        [Default(true)]
+        public bool UseAdvancedAdhesion { get; set; }
+        [Default(10)]
+        public int AdhesionMovingAverageFilterSize { get; set; }
         [Default(false)]
         public bool BreakCouplers { get; set; }
         [Default(false)]
@@ -215,12 +217,12 @@ namespace ORTS.Settings
         // Updater settings are saved only in "Updater.ini".
 
         // Experimental settings:
-		[Default(0)]
-		public int UseSuperElevation { get; set; }
-		[Default(50)]
-		public int SuperElevationMinLen { get; set; }
-		[Default(1435)]
-		public int SuperElevationGauge { get; set; }
+        [Default(0)]
+        public int UseSuperElevation { get; set; }
+        [Default(50)]
+        public int SuperElevationMinLen { get; set; }
+        [Default(1435)]
+        public int SuperElevationGauge { get; set; }
         [Default(0)]
         public int LODBias { get; set; }
         [Default(false)]
@@ -262,156 +264,156 @@ namespace ORTS.Settings
 
 
         // Hidden settings:
-		[Default(0)]
-		public int CarVibratingLevel { get; set; }
-		[Default("OpenRailsLog.txt")]
-		public string LoggingFilename { get; set; }
-		[Default("")] // If left as "", OR will use the user's desktop folder
-		public string LoggingPath { get; set; }
-		[Default("")]
-		public string ScreenshotPath { get; set; }
-		[Default(0)]
-		public int ShaderModel { get; set; }
-		[Default(false)]
-		public bool ShadowAllShapes { get; set; }
-		[Default(true)]
-		public bool ShadowMapBlur { get; set; }
-		[Default(4)]
-		public int ShadowMapCount { get; set; }
-		[Default(0)]
-		public int ShadowMapDistance { get; set; }
-		[Default(1024)]
-		public int ShadowMapResolution { get; set; }
-		[Default(10)]
-		public int Multiplayer_UpdateInterval { get; set; }
-		[Default("http://openrails.org/images/support-logos.jpg")]
-		public string AvatarURL { get; set; }
-		[Default(false)]
-		public bool ShowAvatar { get; set; }
+        [Default(0)]
+        public int CarVibratingLevel { get; set; }
+        [Default("OpenRailsLog.txt")]
+        public string LoggingFilename { get; set; }
+        [Default("")] // If left as "", OR will use the user's desktop folder
+        public string LoggingPath { get; set; }
+        [Default("")]
+        public string ScreenshotPath { get; set; }
+        [Default(0)]
+        public int ShaderModel { get; set; }
+        [Default(false)]
+        public bool ShadowAllShapes { get; set; }
+        [Default(true)]
+        public bool ShadowMapBlur { get; set; }
+        [Default(4)]
+        public int ShadowMapCount { get; set; }
+        [Default(0)]
+        public int ShadowMapDistance { get; set; }
+        [Default(1024)]
+        public int ShadowMapResolution { get; set; }
+        [Default(10)]
+        public int Multiplayer_UpdateInterval { get; set; }
+        [Default("http://openrails.org/images/support-logos.jpg")]
+        public string AvatarURL { get; set; }
+        [Default(false)]
+        public bool ShowAvatar { get; set; }
         [Default(0)] // Do not offer to restore/resume any saves this age or older. Updated whenever a younger save fails to restore.
         public int YoungestFailedToRestore { get; set; }
 
-		// Internal settings:
-		[Default(false)]
-		public bool DataLogger { get; set; }
-		[Default(false)]
-		public bool Profiling { get; set; }
-		[Default(0)]
-		public int ProfilingFrameCount { get; set; }
-		[Default(0)]
-		public int ProfilingTime { get; set; }
-		[Default(0)]
-		public int ReplayPauseBeforeEndS { get; set; }
-		[Default(true)]
-		public bool ReplayPauseBeforeEnd { get; set; }
-		[Default(true)]
-		public bool ShowErrorDialogs { get; set; }
-		[Default(new string[0])]
-		public string[] Menu_Selection { get; set; }
-		[Default(false)]
-		public bool Multiplayer { get; set; }
-		[Default(new[] { 50, 50 })]
-		public int[] WindowPosition_Activity { get; set; }
-		[Default(new[] { 50, 0 })]
-		public int[] WindowPosition_Compass { get; set; }
-		[Default(new[] { 100, 100 })]
-		public int[] WindowPosition_DriverAid { get; set; }
-		[Default(new[] { 50, 50 })]
-		public int[] WindowPosition_Help { get; set; }
-		[Default(new[] { 0, 100 })]
-		public int[] WindowPosition_NextStation { get; set; }
-		[Default(new[] { 50, 50 })]
-		public int[] WindowPosition_Quit { get; set; }
-		[Default(new[] { 0, 50 })]
-		public int[] WindowPosition_Switch { get; set; }
-		[Default(new[] { 100, 0 })]
-		public int[] WindowPosition_TrackMonitor { get; set; }
-		[Default(new[] { 50, 50 })]
-		public int[] WindowPosition_TrainOperations { get; set; }
-		[Default(new[] { 50, 50 })]
-		public int[] WindowPosition_CarOperations { get; set; }
-		[Default(new[] { 50, 50 })]
-		public int[] WindowPosition_ComposeMessage { get; set; }
+        // Internal settings:
+        [Default(false)]
+        public bool DataLogger { get; set; }
+        [Default(false)]
+        public bool Profiling { get; set; }
+        [Default(0)]
+        public int ProfilingFrameCount { get; set; }
+        [Default(0)]
+        public int ProfilingTime { get; set; }
+        [Default(0)]
+        public int ReplayPauseBeforeEndS { get; set; }
+        [Default(true)]
+        public bool ReplayPauseBeforeEnd { get; set; }
+        [Default(true)]
+        public bool ShowErrorDialogs { get; set; }
+        [Default(new string[0])]
+        public string[] Menu_Selection { get; set; }
+        [Default(false)]
+        public bool Multiplayer { get; set; }
+        [Default(new[] { 50, 50 })]
+        public int[] WindowPosition_Activity { get; set; }
+        [Default(new[] { 50, 0 })]
+        public int[] WindowPosition_Compass { get; set; }
+        [Default(new[] { 100, 100 })]
+        public int[] WindowPosition_DriverAid { get; set; }
+        [Default(new[] { 50, 50 })]
+        public int[] WindowPosition_Help { get; set; }
+        [Default(new[] { 0, 100 })]
+        public int[] WindowPosition_NextStation { get; set; }
+        [Default(new[] { 50, 50 })]
+        public int[] WindowPosition_Quit { get; set; }
+        [Default(new[] { 0, 50 })]
+        public int[] WindowPosition_Switch { get; set; }
+        [Default(new[] { 100, 0 })]
+        public int[] WindowPosition_TrackMonitor { get; set; }
+        [Default(new[] { 50, 50 })]
+        public int[] WindowPosition_TrainOperations { get; set; }
+        [Default(new[] { 50, 50 })]
+        public int[] WindowPosition_CarOperations { get; set; }
+        [Default(new[] { 50, 50 })]
+        public int[] WindowPosition_ComposeMessage { get; set; }
 
-		// Menu-game communication settings:
-		[Default(false)]
-		[DoNotSave]
-		public bool MultiplayerClient { get; set; }
-		[Default(false)]
-		[DoNotSave]
-		public bool MultiplayerServer { get; set; }
+        // Menu-game communication settings:
+        [Default(false)]
+        [DoNotSave]
+        public bool MultiplayerClient { get; set; }
+        [Default(false)]
+        [DoNotSave]
+        public bool MultiplayerServer { get; set; }
 
-		#endregion
+        #endregion
 
         public FolderSettings Folders { get; private set; }
         public InputSettings Input { get; private set; }
 
-		public UserSettings(IEnumerable<string> options)
-			: base(SettingsStore.GetSettingStore(SettingsFilePath, RegistryKey, null))
-		{
-			CustomDefaultValues["LoggingPath"] = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-			CustomDefaultValues["ScreenshotPath"] = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), Application.ProductName);
-			CustomDefaultValues["Multiplayer_User"] = Environment.UserName;
-			Load(options);
+        public UserSettings(IEnumerable<string> options)
+            : base(SettingsStore.GetSettingStore(SettingsFilePath, RegistryKey, null))
+        {
+            CustomDefaultValues["LoggingPath"] = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+            CustomDefaultValues["ScreenshotPath"] = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), Application.ProductName);
+            CustomDefaultValues["Multiplayer_User"] = Environment.UserName;
+            Load(options);
             Folders = new FolderSettings(options);
             Input = new InputSettings(options);
-		}
+        }
 
-		public override object GetDefaultValue(string name)
-		{
-			var property = GetType().GetProperty(name);
+        public override object GetDefaultValue(string name)
+        {
+            var property = GetType().GetProperty(name);
 
-			if (CustomDefaultValues.ContainsKey(property.Name))
-				return CustomDefaultValues[property.Name];
+            if (CustomDefaultValues.ContainsKey(property.Name))
+                return CustomDefaultValues[property.Name];
 
-			if (property.GetCustomAttributes(typeof(DefaultAttribute), false).Length > 0)
-				return (property.GetCustomAttributes(typeof(DefaultAttribute), false)[0] as DefaultAttribute).Value;
+            if (property.GetCustomAttributes(typeof(DefaultAttribute), false).Length > 0)
+                return (property.GetCustomAttributes(typeof(DefaultAttribute), false)[0] as DefaultAttribute).Value;
 
-			throw new InvalidDataException(String.Format("UserSetting {0} has no default value.", property.Name));
-		}
+            throw new InvalidDataException(String.Format("UserSetting {0} has no default value.", property.Name));
+        }
 
-		PropertyInfo GetProperty(string name)
-		{
-			return GetType().GetProperty(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy);
-		}
+        PropertyInfo GetProperty(string name)
+        {
+            return GetType().GetProperty(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy);
+        }
 
-		PropertyInfo[] GetProperties()
-		{
-			return GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).Where(pi => pi.Name != "Folders" && pi.Name != "Input").ToArray();
-		}
+        PropertyInfo[] GetProperties()
+        {
+            return GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).Where(pi => pi.Name != "Folders" && pi.Name != "Input").ToArray();
+        }
 
-		protected override object GetValue(string name)
-		{
-			return GetProperty(name).GetValue(this, null);
-		}
+        protected override object GetValue(string name)
+        {
+            return GetProperty(name).GetValue(this, null);
+        }
 
-		protected override void SetValue(string name, object value)
-		{
-			GetProperty(name).SetValue(this, value, null);
-		}
+        protected override void SetValue(string name, object value)
+        {
+            GetProperty(name).SetValue(this, value, null);
+        }
 
-		protected override void Load(bool allowUserSettings, Dictionary<string, string> optionsDictionary)
-		{
-			foreach (var property in GetProperties())
-				Load(allowUserSettings, optionsDictionary, property.Name, property.PropertyType);
-		}
+        protected override void Load(bool allowUserSettings, Dictionary<string, string> optionsDictionary)
+        {
+            foreach (var property in GetProperties())
+                Load(allowUserSettings, optionsDictionary, property.Name, property.PropertyType);
+        }
 
-		public override void Save()
-		{
-			foreach (var property in GetProperties())
-				if (property.GetCustomAttributes(typeof(DoNotSaveAttribute), false).Length == 0)
-					Save(property.Name, property.PropertyType);
+        public override void Save()
+        {
+            foreach (var property in GetProperties())
+                if (property.GetCustomAttributes(typeof(DoNotSaveAttribute), false).Length == 0)
+                    Save(property.Name, property.PropertyType);
 
             Folders.Save();
             Input.Save();
-		}
+        }
 
-		public override void Save(string name)
-		{
-			var property = GetProperty(name);
-			if (property.GetCustomAttributes(typeof(DoNotSaveAttribute), false).Length == 0)
-				Save(property.Name, property.PropertyType);
-		}
+        public override void Save(string name)
+        {
+            var property = GetProperty(name);
+            if (property.GetCustomAttributes(typeof(DoNotSaveAttribute), false).Length == 0)
+                Save(property.Name, property.PropertyType);
+        }
 
         public override void Reset()
         {
@@ -419,19 +421,19 @@ namespace ORTS.Settings
                 Reset(property.Name);
         }
 
-		public void Log()
-		{
-			foreach (var property in GetProperties().OrderBy(p => p.Name))
-			{
-				var value = property.GetValue(this, null);
-				var source = Sources[property.Name] == Source.CommandLine ? "(command-line)" : Sources[property.Name] == Source.User ? "(user set)" : "";
-				if (property.PropertyType == typeof(string[]))
-					Console.WriteLine("{0,-30} = {2,-14} {1}", property.Name, String.Join(", ", ((string[])value).Select(v => v.ToString()).ToArray()), source);
-				else if (property.PropertyType == typeof(int[]))
-					Console.WriteLine("{0,-30} = {2,-14} {1}", property.Name, String.Join(", ", ((int[])value).Select(v => v.ToString()).ToArray()), source);
-				else
-					Console.WriteLine("{0,-30} = {2,-14} {1}", property.Name, value, source);
-			}
-		}
-	}
+        public void Log()
+        {
+            foreach (var property in GetProperties().OrderBy(p => p.Name))
+            {
+                var value = property.GetValue(this, null);
+                var source = Sources[property.Name] == Source.CommandLine ? "(command-line)" : Sources[property.Name] == Source.User ? "(user set)" : "";
+                if (property.PropertyType == typeof(string[]))
+                    Console.WriteLine("{0,-30} = {2,-14} {1}", property.Name, String.Join(", ", ((string[])value).Select(v => v.ToString()).ToArray()), source);
+                else if (property.PropertyType == typeof(int[]))
+                    Console.WriteLine("{0,-30} = {2,-14} {1}", property.Name, String.Join(", ", ((int[])value).Select(v => v.ToString()).ToArray()), source);
+                else
+                    Console.WriteLine("{0,-30} = {2,-14} {1}", property.Name, value, source);
+            }
+        }
+    }
 }

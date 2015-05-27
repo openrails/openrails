@@ -144,6 +144,7 @@ namespace ORTS
             comboLanguage.Text = Settings.Language;
             comboPressureUnit.Text = Settings.PressureUnit;
             comboBoxOtherUnits.Text = settings.Units;
+            checkDisableTCSScripts.Checked = Settings.DisableTCSScripts;
 
 
             // Audio tab
@@ -407,6 +408,7 @@ namespace ORTS
             Settings.Language = comboLanguage.SelectedValue.ToString();
             Settings.PressureUnit = comboPressureUnit.SelectedValue.ToString();
             Settings.Units = comboBoxOtherUnits.SelectedValue.ToString();
+            Settings.DisableTCSScripts = checkDisableTCSScripts.Checked;
             
             // Audio tab
             Settings.MSTSBINSound = checkMSTSBINSound.Checked;

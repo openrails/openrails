@@ -29,8 +29,8 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
             this.buttonOK = new System.Windows.Forms.Button();
             this.numericBrakePipeChargingRate = new System.Windows.Forms.NumericUpDown();
             this.label4 = new System.Windows.Forms.Label();
@@ -41,6 +41,7 @@
             this.checkViewDispatcher = new System.Windows.Forms.CheckBox();
             this.tabOptions = new System.Windows.Forms.TabControl();
             this.tabPageGeneral = new System.Windows.Forms.TabPage();
+            this.checkDisableTCSScripts = new System.Windows.Forms.CheckBox();
             this.labelOtherUnits = new System.Windows.Forms.Label();
             this.labelPressureUnit = new System.Windows.Forms.Label();
             this.comboBoxOtherUnits = new System.Windows.Forms.ComboBox();
@@ -57,10 +58,10 @@
             this.numericSoundDetailLevel = new System.Windows.Forms.NumericUpDown();
             this.checkMSTSBINSound = new System.Windows.Forms.CheckBox();
             this.tabPageVideo = new System.Windows.Forms.TabPage();
+            this.label15 = new System.Windows.Forms.Label();
             this.labelDayAmbientLight = new System.Windows.Forms.Label();
             this.checkModelInstancing = new System.Windows.Forms.CheckBox();
             this.trackDayAmbientLight = new System.Windows.Forms.TrackBar();
-            this.label15 = new System.Windows.Forms.Label();
             this.checkVerticalSync = new System.Windows.Forms.CheckBox();
             this.label11 = new System.Windows.Forms.Label();
             this.numericDistantMountainsViewingDistance = new System.Windows.Forms.NumericUpDown();
@@ -129,21 +130,21 @@
             this.tabPageUpdater = new System.Windows.Forms.TabPage();
             this.labelUpdateChannel = new System.Windows.Forms.Label();
             this.tabPageExperimental = new System.Windows.Forms.TabPage();
-            this.checkShapeWarnings = new System.Windows.Forms.CheckBox();
-            this.labelLODBias = new System.Windows.Forms.Label();
+            this.label16 = new System.Windows.Forms.Label();
+            this.label9 = new System.Windows.Forms.Label();
             this.label21 = new System.Windows.Forms.Label();
+            this.AdhesionFactorChangeValueLabel = new System.Windows.Forms.Label();
+            this.AdhesionFactorValueLabel = new System.Windows.Forms.Label();
+            this.labelLODBias = new System.Windows.Forms.Label();
+            this.checkShapeWarnings = new System.Windows.Forms.CheckBox();
             this.trackLODBias = new System.Windows.Forms.TrackBar();
             this.checkAutopilot = new System.Windows.Forms.CheckBox();
             this.checkExtendedAIShunting = new System.Windows.Forms.CheckBox();
             this.checkConditionalLoadOfNightTextures = new System.Windows.Forms.CheckBox();
             this.checkForcedRedAtStationStops = new System.Windows.Forms.CheckBox();
-            this.AdhesionFactorChangeValueLabel = new System.Windows.Forms.Label();
-            this.AdhesionFactorValueLabel = new System.Windows.Forms.Label();
             this.AdhesionLevelValue = new System.Windows.Forms.Label();
             this.AdhesionLevelLabel = new System.Windows.Forms.Label();
-            this.label16 = new System.Windows.Forms.Label();
             this.trackAdhesionFactorChange = new System.Windows.Forms.TrackBar();
-            this.label9 = new System.Windows.Forms.Label();
             this.trackAdhesionFactor = new System.Windows.Forms.TrackBar();
             this.checkAdhesionPropToWeather = new System.Windows.Forms.CheckBox();
             this.checkCircularSpeedGauge = new System.Windows.Forms.CheckBox();
@@ -317,6 +318,7 @@
             // 
             // tabPageGeneral
             // 
+            this.tabPageGeneral.Controls.Add(this.checkDisableTCSScripts);
             this.tabPageGeneral.Controls.Add(this.labelOtherUnits);
             this.tabPageGeneral.Controls.Add(this.labelPressureUnit);
             this.tabPageGeneral.Controls.Add(this.comboBoxOtherUnits);
@@ -339,6 +341,16 @@
             this.tabPageGeneral.TabIndex = 0;
             this.tabPageGeneral.Text = "General";
             this.tabPageGeneral.UseVisualStyleBackColor = true;
+            // 
+            // checkDisableTCSScripts
+            // 
+            this.checkDisableTCSScripts.AutoSize = true;
+            this.checkDisableTCSScripts.Location = new System.Drawing.Point(6, 279);
+            this.checkDisableTCSScripts.Name = "checkDisableTCSScripts";
+            this.checkDisableTCSScripts.Size = new System.Drawing.Size(118, 17);
+            this.checkDisableTCSScripts.TabIndex = 13;
+            this.checkDisableTCSScripts.Text = "Disable TCS scripts";
+            this.checkDisableTCSScripts.UseVisualStyleBackColor = true;
             // 
             // labelOtherUnits
             // 
@@ -541,6 +553,16 @@
             this.tabPageVideo.Text = "Video";
             this.tabPageVideo.UseVisualStyleBackColor = true;
             // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(6, 324);
+            this.label15.Margin = new System.Windows.Forms.Padding(3);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(138, 13);
+            this.label15.TabIndex = 20;
+            this.label15.Text = "Ambient daylight brightness:";
+            // 
             // labelDayAmbientLight
             // 
             this.labelDayAmbientLight.Location = new System.Drawing.Point(6, 324);
@@ -576,16 +598,6 @@
             this.toolTip1.SetToolTip(this.trackDayAmbientLight, "Default is 100%");
             this.trackDayAmbientLight.Value = 20;
             this.trackDayAmbientLight.ValueChanged += new System.EventHandler(this.trackDayAmbientLight_ValueChanged);
-            // 
-            // label15
-            // 
-            this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(6, 324);
-            this.label15.Margin = new System.Windows.Forms.Padding(3);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(138, 13);
-            this.label15.TabIndex = 20;
-            this.label15.Text = "Ambient daylight brightness:";
             // 
             // checkVerticalSync
             // 
@@ -1353,27 +1365,27 @@
             this.dataGridViewContent.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dataGridViewContent.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
             this.dataGridViewContent.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle9.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle9.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle9.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle9.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle9.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle9;
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
             this.dataGridViewContent.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dataGridViewContent.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.nameDataGridViewTextBoxColumn,
             this.pathDataGridViewTextBoxColumn});
             this.dataGridViewContent.DataSource = this.bindingSourceContent;
-            dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle10.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle10.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle10.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle10.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle10.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle10;
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle6.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle6;
             this.dataGridViewContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridViewContent.Location = new System.Drawing.Point(0, 0);
             this.dataGridViewContent.MultiSelect = false;
@@ -1472,24 +1484,25 @@
             this.tabPageExperimental.Text = "Experimental";
             this.tabPageExperimental.UseVisualStyleBackColor = true;
             // 
-            // checkShapeWarnings
+            // label16
             // 
-            this.checkShapeWarnings.AutoSize = true;
-            this.checkShapeWarnings.Location = new System.Drawing.Point(6, 204);
-            this.checkShapeWarnings.Name = "checkShapeWarnings";
-            this.checkShapeWarnings.Size = new System.Drawing.Size(130, 17);
-            this.checkShapeWarnings.TabIndex = 36;
-            this.checkShapeWarnings.Text = "Show shape warnings";
-            this.checkShapeWarnings.UseVisualStyleBackColor = true;
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(304, 324);
+            this.label16.Margin = new System.Windows.Forms.Padding(3);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(161, 13);
+            this.label16.TabIndex = 30;
+            this.label16.Text = "Adhesion factor random change:";
             // 
-            // labelLODBias
+            // label9
             // 
-            this.labelLODBias.Location = new System.Drawing.Point(6, 250);
-            this.labelLODBias.Margin = new System.Windows.Forms.Padding(3);
-            this.labelLODBias.Name = "labelLODBias";
-            this.labelLODBias.Size = new System.Drawing.Size(292, 13);
-            this.labelLODBias.TabIndex = 15;
-            this.labelLODBias.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(304, 250);
+            this.label9.Margin = new System.Windows.Forms.Padding(3);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(134, 13);
+            this.label9.TabIndex = 26;
+            this.label9.Text = "Adhesion factor correction:";
             // 
             // label21
             // 
@@ -1500,6 +1513,43 @@
             this.label21.Size = new System.Drawing.Size(98, 13);
             this.label21.TabIndex = 14;
             this.label21.Text = "Level of detail bias:";
+            // 
+            // AdhesionFactorChangeValueLabel
+            // 
+            this.AdhesionFactorChangeValueLabel.Location = new System.Drawing.Point(304, 324);
+            this.AdhesionFactorChangeValueLabel.Margin = new System.Windows.Forms.Padding(3);
+            this.AdhesionFactorChangeValueLabel.Name = "AdhesionFactorChangeValueLabel";
+            this.AdhesionFactorChangeValueLabel.Size = new System.Drawing.Size(292, 13);
+            this.AdhesionFactorChangeValueLabel.TabIndex = 31;
+            this.AdhesionFactorChangeValueLabel.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // AdhesionFactorValueLabel
+            // 
+            this.AdhesionFactorValueLabel.Location = new System.Drawing.Point(304, 250);
+            this.AdhesionFactorValueLabel.Margin = new System.Windows.Forms.Padding(3);
+            this.AdhesionFactorValueLabel.Name = "AdhesionFactorValueLabel";
+            this.AdhesionFactorValueLabel.Size = new System.Drawing.Size(292, 13);
+            this.AdhesionFactorValueLabel.TabIndex = 27;
+            this.AdhesionFactorValueLabel.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // labelLODBias
+            // 
+            this.labelLODBias.Location = new System.Drawing.Point(6, 250);
+            this.labelLODBias.Margin = new System.Windows.Forms.Padding(3);
+            this.labelLODBias.Name = "labelLODBias";
+            this.labelLODBias.Size = new System.Drawing.Size(292, 13);
+            this.labelLODBias.TabIndex = 15;
+            this.labelLODBias.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // checkShapeWarnings
+            // 
+            this.checkShapeWarnings.AutoSize = true;
+            this.checkShapeWarnings.Location = new System.Drawing.Point(6, 204);
+            this.checkShapeWarnings.Name = "checkShapeWarnings";
+            this.checkShapeWarnings.Size = new System.Drawing.Size(130, 17);
+            this.checkShapeWarnings.TabIndex = 36;
+            this.checkShapeWarnings.Text = "Show shape warnings";
+            this.checkShapeWarnings.UseVisualStyleBackColor = true;
             // 
             // trackLODBias
             // 
@@ -1556,24 +1606,6 @@
             this.checkForcedRedAtStationStops.Text = "Forced red at station stops";
             this.checkForcedRedAtStationStops.UseVisualStyleBackColor = true;
             // 
-            // AdhesionFactorChangeValueLabel
-            // 
-            this.AdhesionFactorChangeValueLabel.Location = new System.Drawing.Point(304, 324);
-            this.AdhesionFactorChangeValueLabel.Margin = new System.Windows.Forms.Padding(3);
-            this.AdhesionFactorChangeValueLabel.Name = "AdhesionFactorChangeValueLabel";
-            this.AdhesionFactorChangeValueLabel.Size = new System.Drawing.Size(292, 13);
-            this.AdhesionFactorChangeValueLabel.TabIndex = 31;
-            this.AdhesionFactorChangeValueLabel.TextAlign = System.Drawing.ContentAlignment.TopRight;
-            // 
-            // AdhesionFactorValueLabel
-            // 
-            this.AdhesionFactorValueLabel.Location = new System.Drawing.Point(304, 250);
-            this.AdhesionFactorValueLabel.Margin = new System.Windows.Forms.Padding(3);
-            this.AdhesionFactorValueLabel.Name = "AdhesionFactorValueLabel";
-            this.AdhesionFactorValueLabel.Size = new System.Drawing.Size(292, 13);
-            this.AdhesionFactorValueLabel.TabIndex = 27;
-            this.AdhesionFactorValueLabel.TextAlign = System.Drawing.ContentAlignment.TopRight;
-            // 
             // AdhesionLevelValue
             // 
             this.AdhesionLevelValue.Location = new System.Drawing.Point(360, 375);
@@ -1591,16 +1623,6 @@
             this.AdhesionLevelLabel.TabIndex = 33;
             this.AdhesionLevelLabel.Text = "Level:";
             // 
-            // label16
-            // 
-            this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(304, 324);
-            this.label16.Margin = new System.Windows.Forms.Padding(3);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(161, 13);
-            this.label16.TabIndex = 30;
-            this.label16.Text = "Adhesion factor random change:";
-            // 
             // trackAdhesionFactorChange
             // 
             this.trackAdhesionFactorChange.AutoSize = false;
@@ -1615,16 +1637,6 @@
             this.toolTip1.SetToolTip(this.trackAdhesionFactorChange, "Default is 10%");
             this.trackAdhesionFactorChange.Value = 10;
             this.trackAdhesionFactorChange.ValueChanged += new System.EventHandler(this.trackAdhesionFactor_ValueChanged);
-            // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(304, 250);
-            this.label9.Margin = new System.Windows.Forms.Padding(3);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(134, 13);
-            this.label9.TabIndex = 26;
-            this.label9.Text = "Adhesion factor correction:";
             // 
             // trackAdhesionFactor
             // 
@@ -2094,5 +2106,6 @@
         private System.Windows.Forms.Label labelContent;
         private System.Windows.Forms.CheckBox checkShapeWarnings;
         private System.Windows.Forms.Label labelDayAmbientLight;
+        private System.Windows.Forms.CheckBox checkDisableTCSScripts;
     }
 }

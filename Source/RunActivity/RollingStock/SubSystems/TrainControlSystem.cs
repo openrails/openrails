@@ -20,15 +20,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using ORTS.Common;
 using ORTS.Scripting.Api;
-using ORTS.Viewer3D.Popups;
 
 namespace ORTS
 {
@@ -177,7 +172,7 @@ namespace ORTS
         {
             IsAlerterEnabled = Simulator.Settings.Alerter;
 
-            if (ScriptName != null && ScriptName != "MSTS")
+            if (!Simulator.Settings.DisableTCSScripts && ScriptName != null && ScriptName != "MSTS")
             {
                 var pathArray = new string[] { Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script") };
                 Script = Simulator.ScriptManager.Load(pathArray, ScriptName) as TrainControlSystem;
