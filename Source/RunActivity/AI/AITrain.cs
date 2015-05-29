@@ -1228,7 +1228,7 @@ namespace ORTS
         /// Check for next station
         /// <\summary>
 
-        public void SetNextStationAction()
+        public void SetNextStationAction(bool fromAutopilotSwitch = false)
         {
             // check if station in this subpath
 
@@ -1249,9 +1249,9 @@ namespace ORTS
                 return;
             }
 
-            // get distance to station, but not if just at station now in activity mode
+            // get distance to station, but not if just after switch to Autopilot and now during station stop
             bool validStop = false;
-            if (Simulator.TimetableMode || TrainType != TRAINTYPE.AI_PLAYERHOSTING || SpeedMpS != 0 || ( Simulator.PlayerLocomotive != null &&
+            if (!fromAutopilotSwitch || (Simulator.PlayerLocomotive != null && 
                 !(Simulator.ActivityRun.Current is ActivityTaskPassengerStopAt && ((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).IsAtStation())))
             {
                 while (!validStop)
@@ -4729,7 +4729,7 @@ namespace ORTS
         /// Reset action list
         /// <\summary>
 
-        public void ResetActions(bool setEndOfPath)
+        public void ResetActions(bool setEndOfPath, bool fromAutopilotSwitch = false)
         {
 #if DEBUG_REPORTS
             if (nextActionInfo != null)
@@ -4780,7 +4780,7 @@ namespace ORTS
 
             AuxActionsContain.SetAuxAction(this);
             if (StationStops.Count > 0)
-                SetNextStationAction();
+                SetNextStationAction(fromAutopilotSwitch);
             if (setEndOfPath)
             {
                 SetEndOfRouteAction();
@@ -5711,7 +5711,7 @@ namespace ORTS
                     ((MSTSLocomotive)Simulator.PlayerLocomotive).SetTrainBrakePercent(AITrainBrakePercent);
                 }
             }
-            ResetActions(true);
+            ResetActions(true, true);
             if (SpeedMpS != 0) MovementState = AI_MOVEMENT_STATE.BRAKING;
             else if (Simulator.ActivityRun.Current is ActivityTaskPassengerStopAt && ((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).IsAtStation() &&
                 ((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).BoardingS > 0)
