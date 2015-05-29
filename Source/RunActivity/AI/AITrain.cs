@@ -674,7 +674,7 @@ namespace ORTS
 
                 // check if out of control - if so, remove
 
-                if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL)
+                if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL && TrainType != TRAINTYPE.AI_PLAYERHOSTING)
                 {
                     Trace.TraceInformation("Train {0} {1} is removed for out of control, reason : {2}", Number, Name, OutOfControlReason.ToString());
                     RemoveTrain();
@@ -706,7 +706,13 @@ namespace ORTS
                     else
                     {
                         stillExist = ProcessEndOfPath(presentTime);
-                        if (stillExist[1]) UpdateStoppedState();
+                        if (stillExist[1])
+                        {
+                            if (nextActionInfo != null && nextActionInfo.GetType().IsSubclassOf(typeof(AuxActionItem)))
+                                MovementState = nextActionInfo.ProcessAction(this, presentTime, elapsedClockSeconds, MovementState);
+                            else
+                                UpdateStoppedState();
+                        }
                     }
                     break;
                 case AI_MOVEMENT_STATE.INIT:
@@ -1060,15 +1066,14 @@ namespace ORTS
             }
             else if (EndAuthorityType[0] == END_AUTHORITY.RESERVED_SWITCH || EndAuthorityType[0] == END_AUTHORITY.LOOP)
             {
-                if (MovementState != AI_MOVEMENT_STATE.INIT_ACTION && MovementState != AI_MOVEMENT_STATE.HANDLE_ACTION && MovementState != AI_MOVEMENT_STATE.END_ACTION)
+                if (MovementState != AI_MOVEMENT_STATE.INIT_ACTION && MovementState != AI_MOVEMENT_STATE.HANDLE_ACTION && MovementState != AI_MOVEMENT_STATE.END_ACTION &&
+                     (nextActionInfo == null || nextActionInfo.NextAction != AIActionItem.AI_ACTION_TYPE.END_OF_AUTHORITY))
                 {
-                    var reProcess = false;
-                    if (nextActionInfo != null && nextActionInfo is AuxActionWPItem) reProcess = true;
                     ResetActions(true);
                     NextStopDistanceM = DistanceToEndNodeAuthorityM[0] - 2.0f * junctionOverlapM;
                     CreateTrainAction(SpeedMpS, 0.0f, NextStopDistanceM, null,
                                 AIActionItem.AI_ACTION_TYPE.END_OF_AUTHORITY);
-                    if (reProcess) ObtainRequiredActions(0);
+                    ObtainRequiredActions(0);
                 }
             }
             // first handle outstanding actions
@@ -1552,12 +1557,20 @@ namespace ORTS
 
      // Other node mode : check distance ahead (path may have cleared)
 
-            else if (ControlMode == TRAIN_CONTROL.AUTO_NODE &&
+            else if (ControlMode == TRAIN_CONTROL.AUTO_NODE && EndAuthorityType[0] != END_AUTHORITY.RESERVED_SWITCH &&
                         DistanceToEndNodeAuthorityM[0] > activityClearingDistanceM)
             {
                 NextStopDistanceM = DistanceToEndNodeAuthorityM[0];
                 StartMoving(AI_START_MOVEMENT.SIGNAL_CLEARED);
             }
+
+            else if (ControlMode == TRAIN_CONTROL.AUTO_NODE && EndAuthorityType[0] == END_AUTHORITY.RESERVED_SWITCH &&
+                        DistanceToEndNodeAuthorityM[0] > 2.0f * junctionOverlapM + activityClearingDistanceM)
+            {
+                NextStopDistanceM = DistanceToEndNodeAuthorityM[0] - 2.0f * junctionOverlapM;
+                StartMoving(AI_START_MOVEMENT.SIGNAL_CLEARED);
+            }
+
 
     // signal node : check state of signal
 
@@ -1745,7 +1758,8 @@ namespace ORTS
                     }
                 }
             }
-            if (AuxActionnextActionInfo != null && MovementState == AI_MOVEMENT_STATE.STOPPED && tryBraking && distanceToSignal > clearingDistanceM)   // && ControlMode == TRAIN_CONTROL.AUTO_NODE)
+            if (AuxActionnextActionInfo != null && MovementState == AI_MOVEMENT_STATE.STOPPED && tryBraking && distanceToSignal > clearingDistanceM
+                && EndAuthorityType[0] != END_AUTHORITY.RESERVED_SWITCH && DistanceToEndNodeAuthorityM[0] <= 2.0f * junctionOverlapM)   // && ControlMode == TRAIN_CONTROL.AUTO_NODE)
             {
                 MovementState = AI_MOVEMENT_STATE.BRAKING;
             }
@@ -2232,6 +2246,10 @@ namespace ORTS
                 if (EndAuthorityType[0] == END_AUTHORITY.MAX_DISTANCE)
                 {
                     clearAction = true;
+                }
+                else if (EndAuthorityType[0] == END_AUTHORITY.RESERVED_SWITCH)
+                {
+                nextActionInfo.ActivateDistanceM -= 2.0f * junctionOverlapM;
                 }
             }
 
@@ -2884,21 +2902,20 @@ namespace ORTS
 
                         // <CScomment> Make check when this train in same section of OtherTrain or other train at less than 50m;
                         // if other train is static or other train is in last section of this train, pass to passive coupling
-                        if (OtherTrain.SpeedMpS == 0.0f)
+                        if (OtherTrain.SpeedMpS == 0.0f && distanceToTrain <= 2 * keepDistanceMovingTrainM)
                         {
                             var rearOrFront = ValidRoute[0][ValidRoute[0].Count - 1].Direction == 1 ? 0 : 1;
-                            if (PresentPosition[rearOrFront].TCSectionIndex == OtherTrain.PresentPosition[0].TCSectionIndex ||
-                               PresentPosition[rearOrFront].TCSectionIndex == OtherTrain.PresentPosition[1].TCSectionIndex || distanceToTrain < keepDistanceStatTrainM_F)
+
+                            if (OtherTrain.TrainType == TRAINTYPE.STATIC || OtherTrain.PresentPosition[0].TCSectionIndex ==
+                                TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1].TCSectionIndex
+                                || OtherTrain.PresentPosition[1].TCSectionIndex ==
+                                TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1].TCSectionIndex
+                                || UncondAttach)
                             {
-                                if (OtherTrain.TrainType == TRAINTYPE.STATIC || OtherTrain.PresentPosition[0].TCSectionIndex ==
-                                    TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1].TCSectionIndex
-                                    || OtherTrain.PresentPosition[1].TCSectionIndex ==
-                                    TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1].TCSectionIndex
-                                    || UncondAttach)
-                                {
-                                    attachToTrain = true;                                    AttachTo = OtherTrain.Number;
-                                }
+                                attachToTrain = true;
+                                AttachTo = OtherTrain.Number;
                             }
+
                         }
                         if (OtherTrain.SpeedMpS != 0.0f)
                         {
@@ -3145,6 +3162,7 @@ namespace ORTS
                 }
 
                 // train not found - keep moving, state will change next update
+                else AttachTo = -1;
             }
         }
 
@@ -3904,7 +3922,7 @@ namespace ORTS
                 File.AppendAllText(@"C:\temp\checktrain.txt", "Train " +
                      Number.ToString() + " removed\n");
             }
-            RemoveTrain();
+            if (TrainType != TRAINTYPE.AI_PLAYERHOSTING ) RemoveTrain();
             returnValue[1] = false;
         }
 
