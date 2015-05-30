@@ -23,6 +23,7 @@ using System.Text;
 
 namespace ORTS.ContentManager
 {
+    [Serializable]
     public class ContentMSTSPackage : Content
     {
         public override ContentType Type { get { return ContentType.Package; } }
@@ -65,6 +66,7 @@ namespace ORTS.ContentManager
         }
     }
 
+    [Serializable]
     public class ContentMSTSRoute : Content
     {
         public override ContentType Type { get { return ContentType.Route; } }
@@ -109,6 +111,7 @@ namespace ORTS.ContentManager
         }
     }
 
+    [Serializable]
     public class ContentMSTSActivity : Content
     {
         public override ContentType Type { get { return ContentType.Activity; } }
@@ -139,6 +142,7 @@ namespace ORTS.ContentManager
         }
     }
 
+    [Serializable]
     public class ContentMSTSService : Content
     {
         public override ContentType Type { get { return ContentType.Service; } }
@@ -172,6 +176,7 @@ namespace ORTS.ContentManager
         }
     }
 
+    [Serializable]
     public class ContentMSTSPath : Content
     {
         public override ContentType Type { get { return ContentType.Path; } }
@@ -184,6 +189,7 @@ namespace ORTS.ContentManager
         }
     }
 
+    [Serializable]
     public class ContentMSTSConsist : Content
     {
         public override ContentType Type { get { return ContentType.Consist; } }
@@ -196,6 +202,7 @@ namespace ORTS.ContentManager
         }
     }
 
+    [Serializable]
     public class ContentMSTSCar : Content
     {
         public override ContentType Type { get { return ContentType.Car; } }
@@ -233,6 +240,7 @@ namespace ORTS.ContentManager
         //}
     }
 
+    [Serializable]
     public class ContentMSTSCab : Content
     {
         public override ContentType Type { get { return ContentType.Cab; } }
@@ -258,6 +266,7 @@ namespace ORTS.ContentManager
         }
     }
 
+    [Serializable]
     public class ContentMSTSModel : Content
     {
         public override ContentType Type { get { return ContentType.Model; } }
@@ -270,6 +279,7 @@ namespace ORTS.ContentManager
         }
     }
 
+    [Serializable]
     public class ContentMSTSTexture : Content
     {
         public override ContentType Type { get { return ContentType.Texture; } }

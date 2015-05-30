@@ -54,6 +54,7 @@ namespace ORTS.ContentManager
         Texture,
     }
 
+    [Serializable]
     public abstract class Content
     {
         public Content Parent { get; set; }

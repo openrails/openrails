@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -24,8 +24,10 @@ using System.Text;
 
 namespace ORTS.ContentManager
 {
+    [Serializable]
     public class ContentManager : Content
     {
+        [NonSerialized]
         readonly FolderSettings Settings;
 
         public override ContentType Type { get { return ContentType.Root; } }

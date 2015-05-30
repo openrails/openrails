@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using Path = ORTS.ContentManager.Models.Path;
 
@@ -35,8 +36,30 @@ namespace ORTS.ContentManager
             details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, content.Name);
             details.AppendFormat("Path:\t{1}{0}{0}", Environment.NewLine, content.PathName);
 
+            try {
+                var stream = new MemoryStream();
+                var serializer = new BinaryFormatter();
+                serializer.Serialize(stream, content);
+
+                var serializedText = new StringBuilder((int)stream.Length);
+                stream.Position = 0;
+                while (stream.Position < stream.Length)
+                {
+                    var streamByte = stream.ReadByte();
+                    serializedText.Append(streamByte >= 32 ? new String((char)streamByte, 1) : ".");
+                }
+                details.AppendFormat("Serialization:\t{1} bytes\t{2}{0}", Environment.NewLine, stream.Length, serializedText.ToString());
+                details.Append(Environment.NewLine);
+            }
+            catch (Exception error)
+            {
+                details.AppendLine();
+                details.Append(error);
+            }
+
             try
             {
+
                 if (content.Type == ContentType.Route)
                 {
                     var data = new Route(content);
