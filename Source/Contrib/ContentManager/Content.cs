@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -101,6 +102,7 @@ namespace ORTS.ContentManager
 
         public virtual Content Get(string name, ContentType type)
         {
+            Debug.WriteLine(String.Format("{0} naively scanning for {2} '{1}'", this, name, type));
             // This is a very naive implementation which is meant only for prototyping and maybe as a final backstop.
             foreach (var child in Get(type))
                 if (child.Name.Equals(name, StringComparison.OrdinalIgnoreCase))

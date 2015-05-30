@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -203,7 +203,7 @@ namespace ORTS.ContentManager
         public ContentMSTSCar(Content parent, string path)
             : base(parent)
         {
-            Name = Path.GetFileNameWithoutExtension(path);
+            Name = Path.GetFileName(Path.GetDirectoryName(path)) + "/" + Path.GetFileNameWithoutExtension(path);
             PathName = path;
         }
 

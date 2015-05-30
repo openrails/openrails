@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -146,65 +146,21 @@ namespace ORTS.ContentManager
                         details.Append(line);
                     }
                 }
-                else if (content is ContentMSTSPath)
+                else if (content.Type == ContentType.Consist)
                 {
-                    var file = new PATFile(content.PathName);
-                    details.AppendFormat("Path ID:\t{1}{0}", Environment.NewLine, file.PathID);
-                    details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, file.Name);
-                    details.AppendFormat("Start:\t{1}{0}", Environment.NewLine, file.Start);
-                    details.AppendFormat("End:\t{1}{0}", Environment.NewLine, file.End);
-                    details.AppendFormat("Player:\t{1}{0}", Environment.NewLine, file.IsPlayerPath ? "Yes" : "No");
-                    details.AppendFormat("Index:\tTile:\tLocation:\tNotes:\t{0}", Environment.NewLine);
-                    var mainlineIndex = 0;
-                    // Find all mainline nodes first.
-                    var mainlineIndexes = new HashSet<int>();
-                    while (mainlineIndex >= 0 && mainlineIndex < file.TrPathNodes.Count)
-                    {
-                        mainlineIndexes.Add(mainlineIndex);
-                        mainlineIndex = (int)file.TrPathNodes[mainlineIndex].nextMainNode;
-                    }
-                    // Now work alone the mainline.
-                    mainlineIndex = 0;
-                    while (mainlineIndex >= 0 && mainlineIndex < file.TrPathNodes.Count)
-                    {
-                        var mainline = file.TrPathNodes[mainlineIndex];
-                        var pdp = file.TrackPDPs[(int)mainline.fromPDP];
-                        details.AppendFormat("{8}{1}\t{2},{3}\t{4},{5},{6}\t{7}{0}", Environment.NewLine, mainlineIndex, pdp.TileX, pdp.TileZ, pdp.X, pdp.Y, pdp.Z, mainline.HasNextSidingNode ? "Alternate path start" : !mainline.HasNextMainNode ? "End of path" : "", "");
-                        if (mainline.HasNextSidingNode)
-                        {
-                            // Work along a siding...
-                            var sidingIndex = (int)file.TrPathNodes[mainlineIndex].nextSidingNode;
-                            while (sidingIndex >= 0 && sidingIndex < file.TrPathNodes.Count)
-                            {
-                                var siding = file.TrPathNodes[sidingIndex];
-                                var pdp2 = file.TrackPDPs[(int)siding.fromPDP];
-                                details.AppendFormat("{8}{1}\t{2},{3}\t{4},{5},{6}\t{7}{0}", Environment.NewLine, sidingIndex, pdp2.TileX, pdp2.TileZ, pdp2.X, pdp2.Y, pdp2.Z, mainlineIndexes.Contains(sidingIndex) ? "Alternate path end" : "", "> ");
-                                // Stop if we're back on the mainline.
-                                if (mainlineIndexes.Contains(sidingIndex))
-                                    break;
-                                sidingIndex = (int)file.TrPathNodes[sidingIndex].nextSidingNode;
-                            }
-                        }
-                        mainlineIndex = (int)file.TrPathNodes[mainlineIndex].nextMainNode;
-                    }
+                    var data = new Consist(content);
+                    details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, data.Name);
+                    details.AppendFormat("Car ID:\tDirection:\tName:\t{0}", Environment.NewLine);
+                    foreach (var car in data.Cars)
+                        details.AppendFormat("{1}\t{2}\t\u0001{3}\u0002Car\u0001{0}", Environment.NewLine, car.ID, car.Direction, car.Name);
                     details.AppendFormat("{0}", Environment.NewLine);
                 }
-                else if (content is ContentMSTSConsist)
+                else if (content.Type == ContentType.Car)
                 {
-                    var file = new CONFile(content.PathName);
-                    details.AppendFormat("Consist ID:\t{1}{0}", Environment.NewLine, content.Name);
-                    details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, file.Name);
-                    // Always the same as file.Name?  details.AppendFormat("Train:\t{1}{0}", Environment.NewLine, file.Train.TrainCfg.Name);
-                    details.AppendFormat("UID:\tType/Flipped:\tTrainset:\tCar:\t{0}", Environment.NewLine);
-                    foreach (var car in file.Train.TrainCfg.WagonList)
-                        details.AppendFormat("{1}\t{2} {3}\t{4}\t{5}{0}", Environment.NewLine, car.UiD, car.IsEngine ? "Engine" : "Wagon", car.Flip ? "(Flipped)" : "", car.Folder, car.Name);
-                    details.AppendFormat("{0}", Environment.NewLine);
-                }
-                else if (content is ContentMSTSCar)
-                {
-                    var file = new ENGFile(content.PathName);
-                    details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, file.Name);
-                    details.AppendFormat("Description:\t{0}{0}{1}{0}{0}", Environment.NewLine, file.Description);
+                    var data = new Car(content);
+                    details.AppendFormat("Type:\t{1}{0}", Environment.NewLine, data.Type);
+                    details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, data.Name);
+                    details.AppendFormat("Description:\t{0}{0}{1}{0}{0}", Environment.NewLine, data.Description);
                 }
                 else if (content is ContentMSTSCab)
                 {

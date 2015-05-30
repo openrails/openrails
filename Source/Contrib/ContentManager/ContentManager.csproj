@@ -61,6 +61,8 @@
     <Compile Include="ContentManager.cs" />
     <Compile Include="ContentMSTS.cs" />
     <Compile Include="Models\Activity.cs" />
+    <Compile Include="Models\Car.cs" />
+    <Compile Include="Models\Consist.cs" />
     <Compile Include="Models\Path.cs" />
     <Compile Include="Models\Route.cs" />
     <Compile Include="Models\Service.cs" />
