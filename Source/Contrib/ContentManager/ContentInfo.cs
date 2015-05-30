@@ -79,8 +79,8 @@ namespace ORTS.ContentManager
                 {
                     var data = new Activity(content);
                     details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, data.Name);
-                    if (data.PlayerService != null)
-                        details.AppendFormat("Player:\t\u0001{1}\u0002Service\u0001{0}", Environment.NewLine, data.PlayerService);
+                    foreach (var service in data.PlayerServices)
+                        details.AppendFormat("Player:\t\u0001{1}\u0002Service\u0001{0}", Environment.NewLine, service);
                     foreach (var service in data.Services)
                         details.AppendFormat("Traffic:\t\u0001{1}\u0002Service\u0001{0}", Environment.NewLine, service);
                     details.AppendLine();

@@ -32,7 +32,7 @@ namespace ORTS.ContentManager.Models
         public readonly string Description;
         public readonly string Briefing;
 
-        public readonly string PlayerService;
+        public readonly IEnumerable<string> PlayerServices;
         public readonly IEnumerable<string> Services;
 
         public Activity(Content content)
@@ -44,7 +44,7 @@ namespace ORTS.ContentManager.Models
                 Name = file.Tr_Activity.Tr_Activity_Header.Name;
                 Description = file.Tr_Activity.Tr_Activity_Header.Description;
                 Briefing = file.Tr_Activity.Tr_Activity_Header.Briefing;
-                PlayerService = String.Format("Player|{0}", file.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name);
+                PlayerServices = new[] { String.Format("Player|{0}", file.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name) };
                 if (file.Tr_Activity.Tr_Activity_File.Traffic_Definition != null)
                     Services = from service in file.Tr_Activity.Tr_Activity_File.Traffic_Definition.ServiceDefinitionList
                                select String.Format("AI|{0}|{1}", service.Name, file.Tr_Activity.Tr_Activity_File.Traffic_Definition.Name);
@@ -65,7 +65,8 @@ namespace ORTS.ContentManager.Models
 
                     services.Add(file.trainStrings[0][column]);
                 }
-                Services = services;
+                PlayerServices = services;
+                Services = new string[0];
             }
         }
     }
