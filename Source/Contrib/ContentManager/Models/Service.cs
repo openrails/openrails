@@ -16,6 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using Orts.Formats.Msts;
+using ORTS.Formats;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -69,6 +70,35 @@ namespace ORTS.ContentManager.Models
                     ID = activityService.UiD.ToString();
                     StartTime = MSTSTimeToDateTime(activityService.Time);
                     Stops = trafficService.TrafficDetails.Zip(activityService.ServiceList, (tt, stop) => new Stop(0, stop.PlatformStartID, stop.DistanceDownPath, MSTSTimeToDateTime(tt.ArrivalTime), MSTSTimeToDateTime(tt.DepartTime)));
+                }
+            }
+            else if (System.IO.Path.GetExtension(content.PathName).Equals(".timetable_or", StringComparison.OrdinalIgnoreCase))
+            {
+                // TODO: Make common timetable parser.
+                var file = new TTContents(content.PathName);
+                Name = content.Name;
+
+                var consistRow = -1;
+                var pathRow = -1;
+                for (var row = 0; row < file.trainStrings.Count; row++)
+                {
+                    if (file.trainStrings[row][0] == "#consist" && consistRow == -1)
+                    {
+                        consistRow = row;
+                    }
+                    else if (file.trainStrings[row][0] == "#path" && pathRow == -1)
+                    {
+                        pathRow = row;
+                    }
+                }
+                for (var column = 0; column < file.trainStrings[0].Length; column++)
+                {
+                    if (file.trainStrings[0][column] == content.Name)
+                    {
+                        Consist = file.trainStrings[consistRow][column];
+                        Path = file.trainStrings[pathRow][column];
+                        break;
+                    }
                 }
             }
         }

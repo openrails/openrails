@@ -24,15 +24,37 @@ using System.Text;
 namespace ORTS.ContentManager
 {
     [Serializable]
-    public class ContentORActivityTimetable : Content
+    public class ContentORTimetableActivity : Content
     {
         public override ContentType Type { get { return ContentType.Activity; } }
 
-        public ContentORActivityTimetable(Content parent, string path)
+        public ContentORTimetableActivity(Content parent, string path)
             : base(parent)
         {
             Name = Path.GetFileNameWithoutExtension(path);
             PathName = path;
+        }
+
+        public override Content Get(string name, ContentType type)
+        {
+            if (type == ContentType.Service)
+            {
+                return new ContentORTimetableService(this, name);
+            }
+            return base.Get(name, type);
+        }
+    }
+
+    [Serializable]
+    public class ContentORTimetableService : Content
+    {
+        public override ContentType Type { get { return ContentType.Service; } }
+
+        public ContentORTimetableService(Content parent, string serviceName)
+            : base(parent)
+        {
+            Name = serviceName;
+            PathName = parent.PathName;
         }
     }
 }

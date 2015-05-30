@@ -15,9 +15,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+// Uncomment this define to enable debug logging for the Content.Get(string, ContentType) method.
+//#define DEBUG_CONTENT_GET_SCAN
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace ORTS.ContentManager
 {
@@ -80,7 +84,7 @@ namespace ORTS.ContentManager
             if (obj == null || GetType() != obj.GetType())
                 return false;
             var content = obj as Content;
-            return Type == content.Type && PathName == content.PathName;
+            return Type == content.Type && Name == content.Name && PathName == content.PathName;
         }
 
         public override int GetHashCode()
@@ -101,11 +105,26 @@ namespace ORTS.ContentManager
 
         public virtual Content Get(string name, ContentType type)
         {
-            Debug.WriteLine(String.Format("{0} naively scanning for {2} '{1}'", this, name, type));
             // This is a very naive implementation which is meant only for prototyping and maybe as a final backstop.
-            foreach (var child in Get(type))
-                if (child.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
-                    return child;
+            var children = Get(type);
+#if DEBUG_CONTENT_GET_SCAN
+            if (children.Any())
+            {
+                Debug.WriteLine(String.Format("{0} naively scanning for {2} '{1}'", this, name, type));
+#endif
+                foreach (var child in children)
+                {
+                    if (child.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                    {
+#if DEBUG_CONTENT_GET_SCAN
+                        Debug.WriteLine(String.Format("{0} naive scan found match for {2} '{1}'", this, name, type));
+#endif
+                        return child;
+                    }
+                }
+#if DEBUG_CONTENT_GET_SCAN
+            }
+#endif
             // This is how Get(name, type) is meant to work: stepping up the hierarchy as needed.
             if (Parent != null)
                 return Parent.Get(name, type);
