@@ -147,16 +147,16 @@ namespace ORTS.ContentManager
                 {
                     treeViewContent.SelectedNode.Expand();
                     var existingNode = treeViewContent.SelectedNode.Nodes.OfType<TreeNode>().FirstOrDefault(tn => (tn.Tag as Content) == newContent);
-                    if (existingNode != null)
-                    {
-                        treeViewContent.SelectedNode = existingNode;
-                    }
-                    else
+                    if (existingNode == null)
                     {
                         treeViewContent.SelectedNode.Nodes.Insert(0, CreateContentNode(newContent));
-                        treeViewContent.SelectedNode = treeViewContent.SelectedNode.Nodes[0];
+                        existingNode = treeViewContent.SelectedNode.Nodes[0];
                     }
-                    treeViewContent.Focus();
+                    treeViewContent.BeginInvoke((Action)(() =>
+                    {
+                        treeViewContent.SelectedNode = existingNode;
+                        treeViewContent.Focus();
+                    }));
                 }
                 else
                 {
