@@ -194,8 +194,10 @@ namespace ORTS.Debugging
                         Variable3 /= 100f;
                     }
                     if (selectedSoundSource.Car is MSTSElectricLocomotive)
+                    {
                         Variable1 /= 100f;
                         Variable2 /= 100f;
+                    }
 
                     variable1.Text = Variable1.ToString("0.#%");
                     variable2.Text = Variable2.ToString("0.#%");
