@@ -60,6 +60,7 @@
     </Compile>
     <Compile Include="ContentManager.cs" />
     <Compile Include="ContentMSTS.cs" />
+    <Compile Include="ContentOR.cs" />
     <Compile Include="Models\Activity.cs" />
     <Compile Include="Models\Car.cs" />
     <Compile Include="Models\Consist.cs" />
@@ -100,6 +101,10 @@
     <ProjectReference Include="..\..\ORTS.Common\ORTS.Common.csproj">
       <Project>{DA94D876-7D35-46C3-AECE-AFACE72C686C}</Project>
       <Name>ORTS.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ORTS.Formats\ORTS.Formats.csproj">
+      <Project>{0d8d312b-2c02-4b77-a795-566394a9db95}</Project>
+      <Name>ORTS.Formats</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\ORTS.Settings\ORTS.Settings.csproj">
       <Project>{67F84996-8769-4FD8-819B-464AF269037B}</Project>

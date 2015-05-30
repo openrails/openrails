@@ -53,8 +53,10 @@ namespace ORTS.ContentManager
             }
             catch (Exception error)
             {
-                details.AppendLine();
+                details.Append(Environment.NewLine);
                 details.Append(error);
+                details.Append(Environment.NewLine);
+                details.Append(Environment.NewLine);
             }
 
             try
@@ -196,8 +198,10 @@ namespace ORTS.ContentManager
             }
             catch (Exception error)
             {
-                details.AppendLine();
+                details.Append(Environment.NewLine);
                 details.Append(error);
+                details.Append(Environment.NewLine);
+                details.Append(Environment.NewLine);
             }
 
             return details.ToString();

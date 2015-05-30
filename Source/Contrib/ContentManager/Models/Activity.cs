@@ -16,6 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using Orts.Formats.Msts;
+using ORTS.Formats;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -49,6 +50,22 @@ namespace ORTS.ContentManager.Models
                                select String.Format("AI|{0}|{1}", service.Name, file.Tr_Activity.Tr_Activity_File.Traffic_Definition.Name);
                 else
                     Services = new string[0];
+            }
+            else if (System.IO.Path.GetExtension(content.PathName).Equals(".timetable_or", StringComparison.OrdinalIgnoreCase))
+            {
+                // TODO: Make common timetable parser.
+                var file = new TTContents(content.PathName);
+                Name = content.Name;
+
+                var services = new List<string>();
+                for (var column = 0; column < file.trainStrings[0].Length; column++)
+                {
+                    if (String.IsNullOrEmpty(file.trainStrings[0][column]) || file.trainStrings[0][column].StartsWith("#"))
+                        continue;
+
+                    services.Add(file.trainStrings[0][column]);
+                }
+                Services = services;
             }
         }
     }

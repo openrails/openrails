@@ -19,7 +19,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace ORTS.ContentManager
 {
@@ -88,6 +87,11 @@ namespace ORTS.ContentManager
                 if (Directory.Exists(path))
                     foreach (var item in Directory.GetFiles(path, "*.act"))
                         content.Add(new ContentMSTSActivity(this, Path.Combine(path, item)));
+
+                path = Path.Combine(PathName, @"Activities\OpenRails");
+                if (Directory.Exists(path))
+                    foreach (var item in Directory.GetFiles(path, "*.timetable_or"))
+                        content.Add(new ContentORActivityTimetable(this, Path.Combine(path, item)));
             }
             //else if (type == ContentType.Scenery)
             //{
