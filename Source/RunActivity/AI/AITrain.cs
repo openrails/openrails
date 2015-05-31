@@ -4065,7 +4065,7 @@ namespace ORTS
                 if (attachTrainFront)  // coupled to front, so rear position is still valid
                 {
                     attachTrain.CalculatePositionOfCars(0);
-                    DistanceTravelledM += Length;
+                    attachTrain.DistanceTravelledM += Length;
                 }
                 else // coupled to rear so front position is still valid
                 {
@@ -4080,8 +4080,6 @@ namespace ORTS
 
                 attachTrain.PresentPosition[0].SetTCPosition(tn.TCCrossReference, offset, direction);
                 attachTrain.PresentPosition[0].CopyTo(ref attachTrain.PreviousPosition[0]);
-
-                attachTrain.DistanceTravelledM = 0.0f;
 
                 tn = attachTrain.RearTDBTraveller.TN;
                 offset = attachTrain.RearTDBTraveller.TrackNodeOffset;
@@ -4177,8 +4175,6 @@ namespace ORTS
             PresentPosition[0].SetTCPosition(tn.TCCrossReference, offset, direction);
             PresentPosition[0].CopyTo(ref PreviousPosition[0]);
 
-            DistanceTravelledM = 0.0f;
-
             tn = RearTDBTraveller.TN;
             offset = RearTDBTraveller.TrackNodeOffset;
             direction = (int)RearTDBTraveller.Direction;
@@ -4212,6 +4208,7 @@ namespace ORTS
         public void LeaveCarsToLivingTrain(Train attachTrain, bool thisTrainFront, bool attachTrainFront)
         {
             // find set of cars between loco and attachtrain and pass them to train to attachtrain
+            var passedLength = 0.0f;
             if (thisTrainFront)
             {
                 while (0 < Cars.Count - 1)
@@ -4234,6 +4231,7 @@ namespace ORTS
                             attachTrain.Cars.Add(car);
                             car.Train = attachTrain;
                         }
+                        passedLength += car.CarLengthM;
                         attachTrain.Length += car.CarLengthM;
                         Length -= car.CarLengthM;
                         Cars.Remove(car);
@@ -4263,6 +4261,7 @@ namespace ORTS
                             attachTrain.Cars.Insert(0, car);
                             car.Train = attachTrain;
                         }
+                        passedLength += car.CarLengthM;
                         attachTrain.Length += car.CarLengthM;
                         Length -= car.CarLengthM;
                         Cars.Remove(car);
@@ -4271,7 +4270,7 @@ namespace ORTS
                 Cars[Cars.Count - 1].SignalEvent(Event.Couple);
             }
 
-            TerminateCoupling(attachTrain, thisTrainFront, attachTrainFront);
+            TerminateCoupling(attachTrain, thisTrainFront, attachTrainFront, passedLength);
         }
 
         //================================================================================================//
@@ -4281,6 +4280,7 @@ namespace ORTS
 
         public void StealCarsToLivingTrain(Train attachTrain, bool thisTrainFront, bool attachTrainFront)
         {
+            var stealedLength = 0.0f;
             if (attachTrainFront)
             {
                 while (0 < attachTrain.Cars.Count - 1)
@@ -4304,6 +4304,7 @@ namespace ORTS
                             Cars.Add(car);
                             car.Train = this;
                         }
+                        stealedLength += car.CarLengthM;
                         Length += car.CarLengthM;
                         attachTrain.Length -= car.CarLengthM;
                         attachTrain.Cars.Remove(car);
@@ -4334,6 +4335,7 @@ namespace ORTS
                             Cars.Insert(0, car);
                             car.Train = this;
                         }
+                        stealedLength += car.CarLengthM;
                         Length += car.CarLengthM;
                         attachTrain.Length -= car.CarLengthM;
                         attachTrain.Cars.Remove(car);
@@ -4342,7 +4344,7 @@ namespace ORTS
                 attachTrain.Cars[attachTrain.Cars.Count - 1].SignalEvent(Event.Couple);
             }
 
-            TerminateCoupling(attachTrain, thisTrainFront, attachTrainFront);
+            TerminateCoupling(attachTrain, thisTrainFront, attachTrainFront, -stealedLength);
         }
 
         //================================================================================================//
@@ -4350,7 +4352,7 @@ namespace ORTS
         /// Uncouple and perform housekeeping
         /// <\summary>
         /// 
-        public void TerminateCoupling(Train attachTrain, bool thisTrainFront, bool attachTrainFront)
+        public void TerminateCoupling(Train attachTrain, bool thisTrainFront, bool attachTrainFront, float passedLength)
         {
 
             // uncouple
@@ -4362,7 +4364,7 @@ namespace ORTS
             if (thisTrainFront)  // coupled to front, so rear position is still valid
             {
                 CalculatePositionOfCars(0);
-                DistanceTravelledM += Length;
+                DistanceTravelledM -= passedLength;
             }
             else // coupled to rear so front position is still valid
             {
@@ -4374,7 +4376,7 @@ namespace ORTS
             if (attachTrainFront)  // coupled to front, so rear position is still valid
             {
                 attachTrain.CalculatePositionOfCars(0);
-                attachTrain.DistanceTravelledM += Length;
+                attachTrain.DistanceTravelledM += passedLength;
             }
             else // coupled to rear so front position is still valid
             {
@@ -4391,8 +4393,6 @@ namespace ORTS
             PresentPosition[0].SetTCPosition(tn.TCCrossReference, offset, direction);
             PresentPosition[0].CopyTo(ref PreviousPosition[0]);
 
-            DistanceTravelledM = 0.0f;
-
             tn = RearTDBTraveller.TN;
             offset = RearTDBTraveller.TrackNodeOffset;
             direction = (int)RearTDBTraveller.Direction;
@@ -4406,8 +4406,6 @@ namespace ORTS
 
             attachTrain.PresentPosition[0].SetTCPosition(tn.TCCrossReference, offset, direction);
             attachTrain.PresentPosition[0].CopyTo(ref PreviousPosition[0]);
-
-            attachTrain.DistanceTravelledM = 0.0f;
 
             tn = attachTrain.RearTDBTraveller.TN;
             offset = attachTrain.RearTDBTraveller.TrackNodeOffset;
