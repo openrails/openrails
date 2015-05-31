@@ -195,7 +195,7 @@ namespace ORTS.TrackViewer.UserInterface
                 try
                 {
                     // Try to find a fixed track
-                    TrackShape shape = trackViewer.DrawTrackDB.TsectionDat.TrackShapes.Get(shapeIndex);
+                    TrackShape shape = trackViewer.RouteData.TsectionDat.TrackShapes.Get(shapeIndex);
                     shapeName = shape.FileName;
                 }
                 catch
@@ -203,7 +203,7 @@ namespace ORTS.TrackViewer.UserInterface
                     // try to find a dynamic track
                     try
                     {
-                        TrackPath trackPath = trackViewer.DrawTrackDB.TsectionDat.TSectionIdx.TrackPaths[tvs.ShapeIndex];
+                        TrackPath trackPath = trackViewer.RouteData.TsectionDat.TSectionIdx.TrackPaths[tvs.ShapeIndex];
                         shapeName = "<dynamic ?>";
                         foreach (uint trackSection in trackPath.TrackSections)
                         {

@@ -124,12 +124,13 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>
         /// base constructor that only stores the information of the tracks.
         /// </summary>
-        /// <param name="drawTrackDBIn"></param>
-        private PathEditor(DrawTrackDB drawTrackDBIn)
+        /// <param name="routeData">The route information that contains track data base and track section data</param>
+        /// <param name="drawTrackDB">The drawn tracks to know about where the mouse is</param>
+        private PathEditor(RouteData routeData, DrawTrackDB drawTrackDB)
         {
-            this.drawTrackDB = drawTrackDBIn;
-            this.trackDB = drawTrackDBIn.TrackDB;
-            this.tsectionDat = drawTrackDBIn.TsectionDat;
+            this.drawTrackDB = drawTrackDB;
+            this.trackDB = routeData.TrackDB;
+            this.tsectionDat = routeData.TsectionDat;
 
             TrackExtensions.Initialize(trackDB.TrackNodes, tsectionDat); // we might be calling this more than once, but so be it.
 
@@ -155,10 +156,10 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>
         /// Constructor. This will create a new empty path.
         /// </summary>
-        /// <param name="drawTrackDBIn">The (draw)trackDB that also is the reference to the track data base and track section data</param>
-        /// <param name="pathsDirectory">The directory where paths will be stored</param>
-        public PathEditor(DrawTrackDB drawTrackDBIn, string pathsDirectory)
-            :this(drawTrackDBIn)
+        /// <param name="routeData">The route information that contains track data base and track section data</param>
+        /// <param name="drawTrackDB">The drawn tracks to know about where the mouse is</param>/// <param name="pathsDirectory">The directory where paths will be stored</param>
+        public PathEditor(RouteData routeData, DrawTrackDB drawTrackDB, string pathsDirectory)
+            :this(routeData, drawTrackDB)
         {
             currentTrainPath = new Trainpath(trackDB, tsectionDat);
             FileName = currentTrainPath.PathId + ".pat";
@@ -170,10 +171,11 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>
         /// Constructor. This will actually load the .pat from file and create menus as needed
         /// </summary>
-        /// <param name="drawTrackDBIn">The (draw)trackDB that also is the reference to the track data base and track section data</param>
+        /// <param name="routeData">The route information that contains track data base and track section data</param>
+        /// <param name="drawTrackDB">The drawn tracks to know about where the mouse is</param>
         /// <param name="path">Path to the .pat file</param>
-        public PathEditor(DrawTrackDB drawTrackDBIn, ORTS.Menu.Path path)
-            :this(drawTrackDBIn)
+        public PathEditor(RouteData routeData, DrawTrackDB drawTrackDB, ORTS.Menu.Path path)
+            :this(routeData, drawTrackDB)
         {
             FileName = path.FilePath.Split('\\').Last();
             currentTrainPath = new Trainpath(trackDB, tsectionDat, path.FilePath);

@@ -34,10 +34,10 @@ namespace ORTS.TrackViewer.Editing.Charts
         private TSectionDatFile tsectionDat;
         private TrackDB trackDB;
 
-        public PathChartData(ORTS.TrackViewer.Drawing.DrawTrackDB drawTrackDB)
+        public PathChartData(ORTS.TrackViewer.Drawing.RouteData routeData)
         {
-            this.trackDB = drawTrackDB.TrackDB;
-            this.tsectionDat = drawTrackDB.TsectionDat;
+            this.trackDB = routeData.TrackDB;
+            this.tsectionDat = routeData.TsectionDat;
         }
 
         public void Update(Trainpath trainpath)

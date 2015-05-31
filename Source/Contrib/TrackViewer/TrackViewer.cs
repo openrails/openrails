@@ -76,6 +76,8 @@ namespace ORTS.TrackViewer
         public int ScreenW { get; private set; }
         /// <summary>Height of the drawing screen in pixels</summary>
         public int ScreenH { get; private set; }
+        /// <summary>The information of the route like trackDB, tsectiondat, ..., loaded from MSTS route files.</summary>
+        public RouteData RouteData { get; private set; }
         /// <summary>(Draw)trackDB, that also contains the track data base and the track section data</summary>
         public DrawTrackDB DrawTrackDB { get; private set; }
         /// <summary>Main draw area</summary>
@@ -708,8 +710,8 @@ namespace ORTS.TrackViewer
 
             try
             {
-                
-                DrawTrackDB = new DrawTrackDB(newRoute.Path, messageHandler);
+                RouteData = new RouteData(newRoute.Path, messageHandler);
+                DrawTrackDB = new DrawTrackDB(this.RouteData, messageHandler);
                 CurrentRoute = newRoute;
 
                 Properties.Settings.Default.defaultRoute = CurrentRoute.Path.Split('\\').Last();
@@ -762,7 +764,7 @@ namespace ORTS.TrackViewer
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
             AssemblyTitleAttribute assemblyTitle = assembly.GetCustomAttributes(typeof(AssemblyTitleAttribute), false)[0] as AssemblyTitleAttribute;
-            Window.Title = assemblyTitle.Title + ": " + DrawTrackDB.RouteName;
+            Window.Title = assemblyTitle.Title + ": " + RouteData.RouteName;
         }
 
         #endregion
@@ -777,7 +779,7 @@ namespace ORTS.TrackViewer
             Paths = new Collection<Path>(newPaths);
             menuControl.PopulatePaths();
             SetPath(null);
-            DrawMultiplePaths = new DrawMultiplePaths(DrawTrackDB.TrackDB, DrawTrackDB.TsectionDat, Paths);
+            DrawMultiplePaths = new DrawMultiplePaths(this.RouteData, Paths);
         }
 
         /// <summary>
@@ -800,8 +802,8 @@ namespace ORTS.TrackViewer
                 DrawPATfile = new DrawPATfile(path);
 
                 DrawLoadingMessage(catalog.GetString("Processing .pat file ..."));
-                PathEditor = new PathEditor(DrawTrackDB, path);
-                drawPathChart.SetPathEditor(DrawTrackDB, PathEditor);
+                PathEditor = new PathEditor(this.RouteData, this.DrawTrackDB, path);
+                drawPathChart.SetPathEditor(this.RouteData, this.PathEditor);
                 
                 DrawLoadingMessage(" ...");
             }   
@@ -811,8 +813,8 @@ namespace ORTS.TrackViewer
         {
             if (!CanDiscardModifiedPath()) return;
             string pathsDirectory = System.IO.Path.Combine(CurrentRoute.Path, "PATHS");
-            PathEditor = new PathEditor(DrawTrackDB, pathsDirectory);
-            drawPathChart.SetPathEditor(DrawTrackDB, PathEditor);
+            PathEditor = new PathEditor(this.RouteData, this.DrawTrackDB, pathsDirectory);
+            drawPathChart.SetPathEditor(this.RouteData, this.PathEditor);
             DrawPATfile = null;
             PathEditor.EditingIsActive = true;
             PathEditor.EditMetaData();

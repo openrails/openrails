@@ -37,7 +37,7 @@ namespace ORTS.TrackViewer.Editing.Charts
     {
         // Injection dependencies
         private PathEditor pathEditor;
-        private ORTS.TrackViewer.Drawing.DrawTrackDB drawTrack;
+        private ORTS.TrackViewer.Drawing.RouteData routeData;
         
         //
         private PathChartData pathData;
@@ -60,11 +60,11 @@ namespace ORTS.TrackViewer.Editing.Charts
         /// <summary>
         /// Set the route and path-specifics.
         /// </summary>
-        /// <param name="drawTrackDB">The drawTrackDB from which we need the track database and the tsectiondat</param>
+        /// <param name="routeData">The route information from which we need the track database and the tsectiondat</param>
         /// <param name="pathEditor"></param>
-        public void SetPathEditor(ORTS.TrackViewer.Drawing.DrawTrackDB drawTrackDB, PathEditor pathEditor)
+        public void SetPathEditor(ORTS.TrackViewer.Drawing.RouteData routeData, PathEditor pathEditor)
         {
-            this.drawTrack = drawTrackDB;
+            this.routeData = routeData;
             this.pathEditor = pathEditor;
             this.pathEditor.ChangedPath += new ChangedPathHandler(OnPathChanged);
 
@@ -121,7 +121,7 @@ namespace ORTS.TrackViewer.Editing.Charts
 
         private void InitChartData()
         {
-            this.pathData = new PathChartData(drawTrack);
+            this.pathData = new PathChartData(this.routeData);
             this.heightChart = new HeightChart(this.pathData);
             this.gradeChart = new GradeChart(this.pathData);
             this.curvatureChart = new CurvatureChart(this.pathData);
