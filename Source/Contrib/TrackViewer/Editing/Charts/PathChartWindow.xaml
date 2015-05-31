@@ -10,11 +10,17 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="50"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
         <Canvas Grid.Row="0" Name="HeightCanvas"/>
         <GridSplitter Grid.Row="1" Height="3" HorizontalAlignment="Stretch" Background="Gray" VerticalAlignment="Center"/>
         <Canvas Grid.Row="2" Name="GradeCanvas"  SizeChanged="Window_SizeChanged"/>
         <Canvas Grid.Row="3" Name="CurvatureCanvas"/>
+        <StackPanel  Grid.Row="4" Orientation="Horizontal" >
+            <Button Height="25" Width="25" Content="+" Click="ZoomIncrease_Click"/>
+            <Button Height="25" Width="25" Content="-" Click="ZoomDecrease_Click"/>
+            <ScrollBar Name="ChartScrollbar" Minimum="0" Maximum="0.0001" Margin="10,10,0,0" Width="1000" Orientation="Horizontal" Value="0" ViewportSize="0.9999" Height="Auto" ValueChanged="ChartScrollbar_ValueChanged"/>
+        </StackPanel>
     </Grid>
 </Window>

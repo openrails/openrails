@@ -46,11 +46,21 @@ namespace ORTS.TrackViewer.Editing.Charts
         public void Draw()
         {
             //if (this.Visibility == Visibility.Visible && subCharts[0] != null) 
+            double zoomRatioStart = ChartScrollbar.Value;
+            double zoomRatioStop = ChartScrollbar.Value + ChartScrollbar.ViewportSize;
             if (subCharts[0] != null) 
             {
-                subCharts[0].Draw(HeightCanvas);
-                subCharts[1].Draw(GradeCanvas);
-                subCharts[2].Draw(CurvatureCanvas);
+                subCharts[0].Draw(zoomRatioStart, zoomRatioStop, HeightCanvas);
+                subCharts[1].Draw(zoomRatioStart, zoomRatioStop, GradeCanvas);
+                subCharts[2].Draw(zoomRatioStart, zoomRatioStop, CurvatureCanvas);
+            }
+            if (HeightCanvas.ActualWidth > 80)
+            {
+                ChartScrollbar.Width = HeightCanvas.ActualWidth - 80;
+            }
+            else
+            {
+                ChartScrollbar.Width = 800;
             }
 
         }
@@ -86,7 +96,35 @@ namespace ORTS.TrackViewer.Editing.Charts
         }
         #endregion
 
+        #region Zooming
+        private void ZoomIncrease_Click(object sender, RoutedEventArgs e)
+        {
+            ZoomChange(1.5);
+        }
 
+        private void ZoomDecrease_Click(object sender, RoutedEventArgs e)
+        {
+            ZoomChange(1.0/1.5);
+        }
+
+        private void ZoomChange(double zoomFactor)
+        {
+            double zoomCenter = ChartScrollbar.Value + ChartScrollbar.ViewportSize / 2;
+            ChartScrollbar.ViewportSize = ChartScrollbar.ViewportSize / zoomFactor;
+            if (ChartScrollbar.ViewportSize > 0.9999)
+            {
+                ChartScrollbar.ViewportSize = 0.9999;
+            }
+            ChartScrollbar.Maximum = 1 - ChartScrollbar.ViewportSize;
+            ChartScrollbar.Value = zoomCenter - ChartScrollbar.ViewportSize / 2;
+            //Draw(); // No draw is needed here, the Draw will be triggered by a change in value
+        }
+        #endregion
+
+        private void ChartScrollbar_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            Draw();
+        }
 
     }
 }

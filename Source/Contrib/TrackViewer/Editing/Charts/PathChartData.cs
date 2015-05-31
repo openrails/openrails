@@ -27,8 +27,12 @@ using Orts.Formats.Msts;
 
 namespace ORTS.TrackViewer.Editing.Charts
 {
+    /// <summary>
+    /// Class to calculate and store the data needed for showing a chart with altitude, grade and other information for a certain path.
+    /// </summary>
     public class PathChartData
     {
+        /// <summary>List of individual points with path data along the path.</summary>
         public IEnumerable<PathChartPoint> PathChartPoints { get; private set; }
 
         private TSectionDatFile tsectionDat;
@@ -45,122 +49,116 @@ namespace ORTS.TrackViewer.Editing.Charts
             var localPathChartPoints = new List<PathChartPoint>();
 
             TrainpathNode node = trainpath.FirstNode;
-            var firstPoint = new PathChartPoint(node);
-            localPathChartPoints.Add(firstPoint);
+            float lastDistance = 0;
 
-            while (node.NextMainNode != null)
+            while (node != null)
             {
                 IEnumerable<PathChartPoint> additionalPoints = DetermineChartPoints(node);
 
-                float lastDistance = localPathChartPoints.Last().DistanceAlongPath; 
                 foreach (PathChartPoint relativePoint in additionalPoints)
                 {
                     PathChartPoint absolutePoint = new PathChartPoint(relativePoint, lastDistance);
+                    lastDistance += relativePoint.DistanceAlongNextSection;
                     localPathChartPoints.Add(absolutePoint);
                 }
                 
                 node = node.NextMainNode;
             }
 
+            //todo possibly we need to change the information on the last node, and copy e.g. the grade from the last-but-one node
+
             PathChartPoints = localPathChartPoints;
 
         }
 
         /// <summary>
-        /// Determine the ChartPoints from the startNode (not included) until and including the endNode=startNode.NextMainNode
-        /// Each tracksection-end should be a new point
+        /// Determine the ChartPoints from the startNode (included) until but not including the endNode=startNode.NextMainNode
+        /// Each tracksection-begin should be a new point
         /// </summary>
-        /// <param name="currentNode">The node to start with</param>
+        /// <param name="thisNode">The node to start with</param>
         /// <remarks>The assumption is that the two trainpath nodes only have a single tracknode connecting them</remarks>
         /// <returns>At least one new chart point</returns>
-        IEnumerable<PathChartPoint> DetermineChartPoints(TrainpathNode currentNode)
+        IEnumerable<PathChartPoint> DetermineChartPoints(TrainpathNode thisNode)
         {
             // The track consists of a number of sections. These sections might be along the direction we are going in (isForward) or not
-            // The first point (belonging to currentNode we do not return)
-            // The final point is always belonging to the next main node and will always be in the list
-            // Any new intermediate points we are going to add are all at the boundaries of sections
-            // But we get the (height) data only at start of a section. 
-            // If we are moving forward this is information from the section just after the boundary
-            // If we are moving reverse then this is information from the section just before the boundary;
+            // The first point (belonging to currentNode) is the first we return, and possibly the only one.
+            // Any new  points we are going to add are all at the boundaries of sections
+            // From the track database we get the (height) data only at start of a section. 
+            // If we are moving forward the height at the section boundary is coming from the section just after the boundary
+            // If we are moving reverse the height at the section boundary is coming from the section just before the boundary;
             var newPoints = new List<PathChartPoint>();
-            TrainpathNode nextNode = currentNode.NextMainNode;
+            TrainpathNode nextNode = thisNode.NextMainNode;
 
-            TrackNode tn = trackDB.TrackNodes[currentNode.NextMainTvnIndex];
+            if (nextNode == null)
+            {
+                PathChartPoint singlePoint = new PathChartPoint(thisNode);
+                newPoints.Add(singlePoint);
+                return newPoints;
+            }
+
+            TrackNode tn = trackDB.TrackNodes[thisNode.NextMainTvnIndex];
             TrVectorNode vectorNode = tn.TrVectorNode;
 
             bool isForward;
-            bool isReverse; // only dummy
+            bool isReverse; // only dummy out argument
             int tvsiStart;
             int tvsiStop;
             float sectionOffsetStart;
             float sectionOffsetStop;
 
-            DetermineSectionDetails(currentNode, nextNode, tn, out isForward, out tvsiStart, out sectionOffsetStart);
-            DetermineSectionDetails(nextNode, currentNode, tn, out isReverse, out tvsiStop,  out sectionOffsetStop);
+            DetermineSectionDetails(thisNode, nextNode, tn, out isForward, out tvsiStart, out sectionOffsetStart);
+            DetermineSectionDetails(nextNode, thisNode, tn, out isReverse, out tvsiStop,  out sectionOffsetStop);
 
             float distance = 0;
             float previousDistance = distance;
-            //float previousHeight = currentNode.Location.Location.Y;
+            float lengthNextSection;
             PathChartPoint newPoint;
             float gradeFromPitch;
             if (isForward)
             {
-                float sectionOffset = sectionOffsetStart;
-                for (int tvsi = tvsiStart; tvsi < tvsiStop; tvsi++)
-                {   
-                    //from next section:
-                    float height = vectorNode.TrVectorSections[tvsi + 1].Y;
-
-                    //from this section:
-                    distance += SectionLengthAlongTrack(tn, tvsi) - sectionOffset;
+                // We add points in reverse order, so starting at the last section and its index
+                float sectionOffsetNext = sectionOffsetStop;
+                for (int tvsi = tvsiStop; tvsi > tvsiStart; tvsi--)
+                {
+                    lengthNextSection = sectionOffsetNext;
+                    float height = vectorNode.TrVectorSections[tvsi].Y;
                     gradeFromPitch = -vectorNode.TrVectorSections[tvsi].AX; // not a percentage. We can safely assume the pitch is small enough so we do not to take tan(pitch)
-                    newPoint = new PathChartPoint(height, distance, GetCurvature(vectorNode, tvsi, isForward), gradeFromPitch);
-                    //var newPoint = new PathChartPoint(height, distance, GetCurvature(vectorNode, tvsi), previousHeight, previousDistance);
+                    newPoint = new PathChartPoint(height, GetCurvature(vectorNode, tvsi, isForward), gradeFromPitch, lengthNextSection);
                     newPoints.Add(newPoint);
-                    
-                    //previousHeight = height;
-                    previousDistance = distance;
-                    sectionOffset = 0; // the new section is completely present, so it starts at 0 (forward).
+
+                    sectionOffsetNext = SectionLengthAlongTrack(tn, tvsi-1);
                 }
 
-                distance += sectionOffsetStop;
-                gradeFromPitch = -vectorNode.TrVectorSections[tvsiStop].AX; // not a percentage. We can safely assume the pitch is small enough so we do not to take tan(pitch)
-                newPoint = new PathChartPoint(nextNode.Location.Location.Y, distance, GetCurvature(vectorNode, tvsiStop, isForward), gradeFromPitch);
-                //newPoint = new PathChartPoint(nextNode.Location.Location.Y, distance, GetCurvature(vectorNode, tvsiStop), previousHeight, previousDistance);
+                //Also works in case this is the only point we are adding
+                lengthNextSection = sectionOffsetNext - sectionOffsetStart;
+                gradeFromPitch = -vectorNode.TrVectorSections[tvsiStart].AX; // not a percentage. We can safely assume the pitch is small enough so we do not to take tan(pitch)
+                newPoint = new PathChartPoint(thisNode.Location.Location.Y, GetCurvature(vectorNode, tvsiStart, isForward), gradeFromPitch, lengthNextSection);
                 newPoints.Add(newPoint);
-
             }
             else
             {   //reverse
-                float sectionOffset = sectionOffsetStart;
-                for (int tvsi = tvsiStart; tvsi > tvsiStop; tvsi--)
+                // We add points in reverse order, so starting at the first section and its index
+                float sectionOffsetNext = sectionOffsetStop;
+                for (int tvsi = tvsiStop; tvsi < tvsiStart; tvsi++)
                 {
-                    //from next section:
-                    
-                    //from this section:
-                    float height = vectorNode.TrVectorSections[tvsi].Y;
-                    distance += sectionOffset;
+                    lengthNextSection = SectionLengthAlongTrack(tn, tvsi) - sectionOffsetNext;
+                    // The height needs to come from the end of the section, so the where the next section starts. And we only know the height at the start.
+                    float height = vectorNode.TrVectorSections[tvsi+1].Y; 
                     gradeFromPitch = +vectorNode.TrVectorSections[tvsi].AX; // not a percentage. We can safely assume the pitch is small enough so we do not to take tan(pitch)
-                    newPoint = new PathChartPoint(height, distance, GetCurvature(vectorNode, tvsi, isForward), gradeFromPitch);
-                    //var newPoint = new PathChartPoint(height, distance, GetCurvature(vectorNode, tvsi), previousHeight, previousDistance);
+                    newPoint = new PathChartPoint(height, GetCurvature(vectorNode, tvsi, isForward), gradeFromPitch, lengthNextSection);
                     newPoints.Add(newPoint);
 
-                    //previousHeight = height;
-                    previousDistance = distance;
-                    sectionOffset = SectionLengthAlongTrack(tn, tvsi); // the new section is completely present, but reverse, so calculating from the end
+                    sectionOffsetNext = 0;
                 }
 
-                distance += SectionLengthAlongTrack(tn, tvsiStop) - sectionOffsetStop;
-                gradeFromPitch = +vectorNode.TrVectorSections[tvsiStop].AX; 
-                newPoint = new PathChartPoint(nextNode.Location.Location.Y, distance, GetCurvature(vectorNode, tvsiStop, isForward), gradeFromPitch);
-                //newPoint = new PathChartPoint(nextNode.Location.Location.Y, distance, GetCurvature(vectorNode, tvsiStop), previousHeight, previousDistance);
+                //Also works in case this is the only point we are adding
+                lengthNextSection = sectionOffsetStart - sectionOffsetNext;
+                gradeFromPitch = +vectorNode.TrVectorSections[tvsiStart].AX; // not a percentage. We can safely assume the pitch is small enough so we do not to take tan(pitch)
+                newPoint = new PathChartPoint(thisNode.Location.Location.Y, GetCurvature(vectorNode, tvsiStart, isForward), gradeFromPitch, lengthNextSection);
                 newPoints.Add(newPoint);
-
-
             }
+            newPoints.Reverse();
             return newPoints;
-
-            //todo usage model for showing or not showing is not OK yet
         }
 
         private float GetCurvature(TrVectorNode vectorNode, int tvsi, bool isForward)
@@ -284,17 +282,19 @@ namespace ORTS.TrackViewer.Editing.Charts
     /// <summary>
     /// Struct to store charting information for a single point along a path
     /// For information that does not belong to a single point (like the grade), it describes the value for 
-    /// the small track part preceding the point.
+    /// the small track part following the point.
     /// </summary>
     public struct PathChartPoint
     {
-        /// <summary>The distance along the path from a (not-in-this-class specified reference along the path (e.g. real path begin)</summary>
+        /// <summary>The distance along the path from a (not-in-this-class specified) reference along the path (e.g. real path begin)</summary>
         public float DistanceAlongPath;
+        /// <summary>The distance along the path from a (not-in-this-class specified) reference along the path (e.g. real path begin)</summary>
+        public float DistanceAlongNextSection;
         /// <summary>Height of the point (in meters)</summary>
         public float HeightM;
-        /// <summary>Curvature of the track (0 for straight, otherwise 1/radius)</summary>
+        /// <summary>Curvature of the upcoming track (0 for straight, otherwise 1/radius with a sign describing which direction it curves)</summary>
         public float Curvature;
-        /// <summary>Average grade in the previous part of the path</summary>
+        /// <summary>Average grade in the upcoming part of the path</summary>
         public float GradePercent;
 
         /// <summary>
@@ -303,39 +303,32 @@ namespace ORTS.TrackViewer.Editing.Charts
         /// <param name="node">The node describing where the location of the point is</param>
         public PathChartPoint(TrainpathNode node)
         {
+            //todo. No longer correct, already the first point has information.
             HeightM = node.Location.Location.Y; 
             DistanceAlongPath = 0;
             Curvature = 0;
             GradePercent = 0;
+            DistanceAlongNextSection = 0;
         }
 
         /// <summary>
-        /// Constructor where both the details of this point, as well as some information of the previous point are given
+        /// Constructor where all information is given externally
         /// </summary>
         /// <param name="curvature">The curvature to store</param>
-        /// <param name="distance">The distance along the path to store</param>
         /// <param name="height">The height to store</param>
-        /// <param name="previousDistance">The distance along the path of the previous point used to calculate the grade</param>
-        /// <param name="previousHeight">The height of the previous point used to calculate the grade</param>
-        public PathChartPoint(float height, float distance, float curvature, float previousHeight, float previousDistance)
+        /// <param name="grade">The grade along the path (raw, so not in percent)</param>
+        public PathChartPoint(float height, float curvature, float grade, float distanceAlongSection)
         {
             HeightM = height;
-            DistanceAlongPath = distance;
-            Curvature = curvature;
-            GradePercent = 100 * (this.HeightM - previousHeight) / (this.DistanceAlongPath - previousDistance);
-        }
-
-        public PathChartPoint(float height, float distance, float curvature, float grade)
-        {
-            HeightM = height;
-            DistanceAlongPath = distance;
+            DistanceAlongPath = 0;
             Curvature = curvature;
             GradePercent = grade*100;
+            DistanceAlongNextSection = distanceAlongSection;
         }
 
 
         /// <summary>
-        /// Constructor from another ChartPoint, only shifted in distance along the path
+        /// Constructor from another PathChartPoint, only shifted in distance along the path
         /// </summary>
         /// <param name="sourcePoint">The point to copy from</param>
         /// <param name="distanceShift">Extra distance along the path</param>
@@ -344,6 +337,7 @@ namespace ORTS.TrackViewer.Editing.Charts
             HeightM = sourcePoint.HeightM;
             DistanceAlongPath = sourcePoint.DistanceAlongPath + distanceShift;
             Curvature = sourcePoint.Curvature;
+            DistanceAlongNextSection = sourcePoint.DistanceAlongNextSection;
             GradePercent = sourcePoint.GradePercent;
         }
 
@@ -352,7 +346,7 @@ namespace ORTS.TrackViewer.Editing.Charts
         /// </summary>
         public override string ToString()
         {
-            return string.Format("pathChartPoint {0:F1} {1:F1} {2:F1} {3:F3}", this.DistanceAlongPath, this.HeightM, this.GradePercent, this.Curvature);
+            return string.Format("pathChartPoint {0:F1} {1:F1} {2:F1} {3:F1}% {4:F3} ", this.DistanceAlongPath, this.DistanceAlongNextSection, this.HeightM, this.GradePercent, this.Curvature);
         }
     }
 

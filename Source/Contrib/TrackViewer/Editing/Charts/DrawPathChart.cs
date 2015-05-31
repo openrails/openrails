@@ -155,11 +155,13 @@ namespace ORTS.TrackViewer.Editing.Charts
 
     interface ISubChart
     {
-        void Draw(Canvas drawingCanvas);
+        void Draw(double zoomPercentageStart, double zoomPercentageStop, Canvas drawingCanvas);
     }
 
+    #region SubChart
     public abstract class SubChart : ISubChart
     {
+        #region Properties
         protected PathChartData pathData;
 
         protected double minX;
@@ -167,14 +169,27 @@ namespace ORTS.TrackViewer.Editing.Charts
         protected double minY;
         protected double maxY;
 
+        protected double zoomedMinX;
+        protected double zoomedMaxX;
+        protected double zoomedMinY;
+        protected double zoomedMaxY;
+
+
+        protected double zoomRatioLeft;
+        protected double zoomRatioRight;
+
         protected double canvasWidth;
         protected double canvasHeight;
+        #endregion
 
-        public void Draw(Canvas drawingCanvas)
+        public void Draw(double zoomRatioStart, double zoomRatioStop, Canvas drawingCanvas)
         {
             drawingCanvas.Children.Clear();
             canvasWidth = drawingCanvas.ActualWidth;
             canvasHeight = drawingCanvas.ActualHeight;
+
+            this.zoomRatioLeft = zoomRatioStart;
+            this.zoomRatioRight = zoomRatioStop;
 
             DrawSubChart(drawingCanvas);
         }
@@ -206,8 +221,7 @@ namespace ORTS.TrackViewer.Editing.Charts
             dataPolyLine.StrokeThickness = 1;
 
             var points = new PointCollection();
-            double lastX = ScaledX(0);
-            double lastY = ScaledY(0);
+            double lastY = ScaledY(0d);
             foreach (PathChartPoint sourcePoint in sourcePoints)
             {
                 double newX = ScaledX(sourcePoint.DistanceAlongPath);
@@ -215,19 +229,12 @@ namespace ORTS.TrackViewer.Editing.Charts
 
                 if (newY != lastY && repeatPreviousPoint)
                 {
-                    points.Add(new Point(lastX, newY));
+                    points.Add(new Point(newX, lastY));
                 }
 
                 points.Add(new Point(newX, newY));
-                lastX = newX;
                 lastY = newY;
             }
-
-            //var points = new PointCollection();
-            //foreach (PathChartPoint sourcePoint in sourcePoints)
-            //{
-            //    points.Add(new Point(ScaledX(sourcePoint.DistanceAlongPath), ScaledY(getField(sourcePoint))));
-            //}
 
             dataPolyLine.Points = points;
             drawingCanvas.Children.Add(dataPolyLine);
@@ -262,15 +269,31 @@ namespace ORTS.TrackViewer.Editing.Charts
         #region Scaling
         protected void DetermineScaling(IEnumerable<PathChartPoint> points, Func<PathChartPoint,float> getField)
         {
+            DetermineRangeX(points);
+            DetermineZoomedRangeX();
+
+            DetermineRangeY(points, getField);    
+            DetermineZoomedRangeY(points, getField);
+        }
+
+        private void DetermineRangeX(IEnumerable<PathChartPoint> points)
+        {
             //Find min and max values
-            minY = Double.MaxValue;
-            maxY = Double.MinValue;
             minX = 0;
             maxX = 0;
             foreach (PathChartPoint sourcePoint in points)
             {
-                float currentY = getField(sourcePoint);
                 maxX = sourcePoint.DistanceAlongPath;
+            }
+        }
+
+        private void DetermineRangeY(IEnumerable<PathChartPoint> points, Func<PathChartPoint, float> getField)
+        {
+            minY = Double.MaxValue;
+            maxY = Double.MinValue;
+            foreach (PathChartPoint sourcePoint in points)
+            {
+                float currentY = getField(sourcePoint);
                 if (currentY > maxY)
                 {
                     maxY = currentY;
@@ -282,33 +305,65 @@ namespace ORTS.TrackViewer.Editing.Charts
             }
         }
 
-        protected void DetermineScalingOld(PointCollection points)
+        private void DetermineZoomedRangeX()
         {
-            //Find min and max values
-            minY = Double.MaxValue;
-            maxY = Double.MinValue;
-            minX = 0;
-            maxX = 0;
-            foreach (Point sourcePoint in points)
+
+            this.zoomedMaxX = minX + (maxX - minX) * this.zoomRatioRight;
+            this.zoomedMinX = minX + (maxX - minX) * this.zoomRatioLeft;
+        }
+
+        private void DetermineZoomedRangeY(IEnumerable<PathChartPoint> points, Func<PathChartPoint, float> getField)
+        {
+            zoomedMinY = Double.MaxValue;
+            zoomedMaxY = Double.MinValue;
+            bool AddingPoints = true;
+            foreach (PathChartPoint sourcePoint in points)
             {
-                maxX = sourcePoint.X;
-                if (sourcePoint.Y > maxY)
+                float currentY = getField(sourcePoint);
+
+                // for the zoomed-Y we want to make sure that not only the points inside the zooming region, but also both points just outside
+                if (sourcePoint.DistanceAlongPath < zoomedMinX)
                 {
-                    maxY = sourcePoint.Y;
+                    zoomedMinY = currentY;
+                    zoomedMaxY = currentY;
                 }
-                if (sourcePoint.Y < minY)
+                else
                 {
-                    minY = sourcePoint.Y;
+                    if (AddingPoints)
+                    {
+                        if (currentY > zoomedMaxY)
+                        {
+                            zoomedMaxY = currentY;
+                        }
+                        if (currentY < zoomedMinY)
+                        {
+                            zoomedMinY = currentY;
+                        }
+                    }
+                    if (sourcePoint.DistanceAlongPath > zoomedMaxX)
+                    {
+                        AddingPoints = false;
+                    }
                 }
+            }
+
+            // To prevent the zoom range on the Y-value to become too small
+            double minZoomedRange = (this.maxY - this.minY) / 10;
+            if (this.zoomedMaxY - this.zoomedMinY < minZoomedRange)
+            {
+                double zoomedAverage = (this.zoomedMaxY + this.zoomedMinY) / 2;
+                this.zoomedMinY = zoomedAverage - minZoomedRange / 2;
+                this.zoomedMaxY = zoomedAverage + minZoomedRange / 2;
             }
         }
 
+ 
         protected double ScaledX(double sourceX)
         {
             int rightMargin = 10;
             int leftMargin = 50;
             double effectiveWidth = canvasWidth - (leftMargin + rightMargin);
-            return leftMargin + (sourceX - minX) / (maxX - minX) * effectiveWidth;
+            return leftMargin + (sourceX - zoomedMinX) / (zoomedMaxX - zoomedMinX) * effectiveWidth;
         }
 
         protected double ScaledY(double sourceY)
@@ -325,7 +380,9 @@ namespace ORTS.TrackViewer.Editing.Charts
         }
         #endregion
     }
+    #endregion
 
+    #region HeightChart
     public class HeightChart : SubChart
     {
         private NiceScaling niceScale;
@@ -348,29 +405,29 @@ namespace ORTS.TrackViewer.Editing.Charts
         {
             if (Properties.Settings.Default.useMilesNotMeters)
             {
-                niceScale = new NiceScaling(minY, maxY, Me.FromFt(1.0f), "ft");
+                niceScale = new NiceScaling(zoomedMinY, zoomedMaxY, Me.FromFt(1.0f), "ft");
             }
             else
             {
-                niceScale = new NiceScaling(minY, maxY, 1.0, "m");
+                niceScale = new NiceScaling(zoomedMinY, zoomedMaxY, 1.0, "m");
             }
-            minY = niceScale.ValueMin;
-            maxY = niceScale.ValueMax;
+            minY = (double)niceScale.ValueMin;
+            maxY = (double)niceScale.ValueMax;
         }
 
         private void DrawHorizontalLines(Canvas drawingCanvas)
         {
-            foreach (double niceValue in niceScale.NiceValues)
+            foreach (decimal niceValue in niceScale.NiceValues)
             {
-                DrawLine(drawingCanvas, ScaledX(0), ScaledY(niceValue), ScaledX(maxX), ScaledY(niceValue), Colors.Gray);
+                DrawLine(drawingCanvas, ScaledX(this.zoomedMinX), ScaledY((double)niceValue), ScaledX(this.zoomedMaxX), ScaledY((double)niceValue), Colors.Gray);
                 DrawHeightText(drawingCanvas, niceValue);
             }
         }
 
-        private void DrawHeightText(Canvas drawingCanvas, double height)
+        private void DrawHeightText(Canvas drawingCanvas, decimal height)
         {
             string textToDraw = String.Format("{0}{1}", height/niceScale.Scale, niceScale.Unit);
-            DrawText(drawingCanvas, 5, ScaledY(height), textToDraw, Colors.Black);
+            DrawText(drawingCanvas, 5, ScaledY((double)height), textToDraw, Colors.Black);
         }
 
         private void PrintGrades(Canvas drawingCanvas)
@@ -395,11 +452,11 @@ namespace ORTS.TrackViewer.Editing.Charts
             }
         }
     }
+    #endregion
 
-    class GradeChart: SubChart
+    #region GradeChart
+    public class GradeChart: SubChart
     {
-        
-
         public GradeChart(PathChartData pathChartData)
         {
             this.pathData = pathChartData;
@@ -419,18 +476,18 @@ namespace ORTS.TrackViewer.Editing.Charts
 
         private void DrawHorizontalLines(Canvas drawingCanvas)
         {
-            DrawLine(drawingCanvas, ScaledX(0), ScaledY(0), ScaledX(maxX), ScaledY(0), Colors.Black);
+            DrawLine(drawingCanvas, ScaledX(this.zoomedMinX), ScaledY(0d), ScaledX(this.zoomedMaxX), ScaledY(0d), Colors.Black);
             DrawGradePercentageText(drawingCanvas, 0);
 
             for (int grade = 1; grade <= maxY; grade++)
             {
-                DrawLine(drawingCanvas, ScaledX(0), ScaledY(grade), ScaledX(maxX), ScaledY(grade), Colors.Gray);
+                DrawLine(drawingCanvas, ScaledX(this.zoomedMinX), ScaledY(grade), ScaledX(this.zoomedMaxX), ScaledY(grade), Colors.Gray);
                 DrawGradePercentageText(drawingCanvas, grade);
             }
 
             for (int grade = 1; grade <= Math.Abs(minY); grade++)
             {
-                DrawLine(drawingCanvas, ScaledX(0), ScaledY(-grade), ScaledX(maxX), ScaledY(-grade), Colors.Gray);
+                DrawLine(drawingCanvas, ScaledX(this.zoomedMinX), ScaledY(-grade), ScaledX(this.zoomedMaxX), ScaledY(-grade), Colors.Gray);
                 DrawGradePercentageText(drawingCanvas, -grade);
             }
         }
@@ -465,27 +522,30 @@ namespace ORTS.TrackViewer.Editing.Charts
         private void HorizontalScaleText(Canvas drawingCanvas)
         {
             NiceScaling niceScale;
+            int minNumberOfTicks = Math.Max(4, (int)(this.canvasWidth/100));
         
             if (Properties.Settings.Default.useMilesNotMeters)
             {
-                niceScale = new NiceScaling(minX, maxX, Me.FromMi(1.0f), "M");
+                niceScale = new NiceScaling(this.zoomedMinX, this.zoomedMaxX, Me.FromMi(1.0f), "M", minNumberOfTicks, true);
             }
             else
             {
-                niceScale = new NiceScaling(minX, maxX, Me.FromKiloM(1.0f), "km");
+                niceScale = new NiceScaling(this.zoomedMinX, this.zoomedMaxX, Me.FromKiloM(1.0f), "km", minNumberOfTicks, true);
             }
 
-            foreach (double niceValue in niceScale.NiceValues)
+            foreach (decimal niceValue in niceScale.NiceValues)
             {
                 string textToDraw = String.Format("{0}{1}", niceValue / niceScale.Scale, niceScale.Unit);
-                DrawText(drawingCanvas, ScaledX(niceValue), 5, textToDraw, Colors.Black);
+                DrawText(drawingCanvas, ScaledX((double)niceValue), 5, textToDraw, Colors.Black);
                 //DrawTextVertical(drawingCanvas, ScaledX(niceValue), 5, textToDraw, Colors.Red);
 
             }
         }
     }
+    #endregion
 
-    class CurvatureChart : SubChart
+    #region CurvatureChart
+    public class CurvatureChart : SubChart
     {
         public CurvatureChart(PathChartData pathChartData)
         {
@@ -496,6 +556,13 @@ namespace ORTS.TrackViewer.Editing.Charts
         {
             DetermineScaling(this.pathData.PathChartPoints, CurvatureDeviation);
             DrawDataPolyLine(drawingCanvas, this.pathData.PathChartPoints, CurvatureDeviation, true);
+            DebugShowDrawTime(drawingCanvas);
+        }
+
+        private void DebugShowDrawTime(Canvas drawingCanvas)
+        {
+            if (!System.Diagnostics.Debugger.IsAttached) return;
+            DrawText(drawingCanvas, 10, ScaledY(0), DateTime.Now.ToString("mm:ss"), Colors.Black);
         }
 
         private float CurvatureDeviation(PathChartPoint pathPoint)
@@ -504,39 +571,10 @@ namespace ORTS.TrackViewer.Editing.Charts
             //deviation = pathPoint.Curvature;
             return deviation;
         }
-
-        protected void DrawSpecialPolyLine(Canvas drawingCanvas, IEnumerable<PathChartPoint> sourcePoints, Func<PathChartPoint, float> getField)
-        {
-            SolidColorBrush blackBrush = new SolidColorBrush();
-            blackBrush.Color = Colors.Black;
-
-            Polyline dataPolyLine = new Polyline();
-            dataPolyLine.Stroke = blackBrush;
-            dataPolyLine.StrokeThickness = 1;
-
-            var points = new PointCollection();
-            double lastX = ScaledX(0);
-            double lastY = ScaledY(0);
-            foreach (PathChartPoint sourcePoint in sourcePoints)
-            {
-                double newX = ScaledX(sourcePoint.DistanceAlongPath);
-                double newY = ScaledY(getField(sourcePoint));
-
-                if (newY != lastY)
-                {
-                    points.Add(new Point(lastX, newY)); 
-                }
-
-                points.Add(new Point(newX, newY));
-                lastX = newX; 
-                lastY = newY;
-            }
-
-            dataPolyLine.Points = points;
-            drawingCanvas.Children.Add(dataPolyLine);
-        }
     }
+    #endregion
 
+    #region NiceScaling
     /// <summary>
     /// Class to make it easier to do nice scaling of charts.
     /// This means making sure the scales on the x or y axis are nice round numbers
@@ -551,19 +589,19 @@ namespace ORTS.TrackViewer.Editing.Charts
     /// It is also possible to get nice values in a different scale (and unit) then the original data.
     /// If the original data is in meters, but you want to scaling to be in feet, specify the scale to be 0.3048 and the unit in 'ft' or so.
     /// </summary>
-    class NiceScaling
+    public class NiceScaling
     {
         /// <summary>
         /// List of nice round equidistant values covering the range of interest. Values are given in original units (so not scaled)
         /// but they are round in scaled units.
         /// </summary>
-        public IEnumerable<double> NiceValues { get; private set; }
+        public IEnumerable<decimal> NiceValues { get; private set; }
         /// <summary>Minimum of the NiceValues</summary>
-        public double ValueMin { get; private set; }
+        public decimal ValueMin { get; private set; }
         /// <summary>Maximum of the NiceValues</summary>
-        public double ValueMax { get; private set; }
+        public decimal ValueMax { get; private set; }
         /// <summary>Scale between the unit of the data and the unit used for presenting (e.g. 0.3048 for data in m but presenting in feet)</summary>
-        public double Scale { get; private set; }
+        public decimal Scale { get; private set; }
         /// <summary>Unit to be used for printing</summary>
         public string Unit { get; private set; }
 
@@ -573,8 +611,10 @@ namespace ORTS.TrackViewer.Editing.Charts
         /// <param name="valueMin">Minimum value for which a nice scale is needed</param>
         /// <param name="valueMax">Maximum value for which a nice scale is needed</param>
         /// <param name="scale">The requested scale Factor.</param>
-        /// <param name="unit"></param>
-        public NiceScaling(double valueMin, double valueMax, double scale, string unit)
+        /// <param name="unit">The string to use as unit</param>
+        /// <param name="minNumberOfTicks">optional: The minimum number of nice ticks</param>
+        /// <param name="strict">When set, the nice values will never exceed the given ranges</param>
+        public NiceScaling(double valueMin, double valueMax, double scale, string unit, int minNumberOfTicks=4, bool strict=false)
         {
             if (valueMin == valueMax)
             {
@@ -598,34 +638,41 @@ namespace ORTS.TrackViewer.Editing.Charts
             }
 
 
-            this.Scale = scale;
             this.Unit = unit;
             double valueScaledMin = valueMin/scale;
             double valueScaledMax = valueMax/scale;
-            double subDivisionMax = (valueScaledMax - valueScaledMin)/4;
+            double subDivisionMax = (valueScaledMax - valueScaledMin)/minNumberOfTicks;
             double sub10log = Math.Floor(Math.Log10(subDivisionMax));
+
             double power10 = Math.Pow(10.0, sub10log);
             double subDivisionMaxNice = subDivisionMax / power10;
-            double valueScaledStep = power10 * (
+
+            //Now we move to decimal to make sure we do not have rounding errors
+            this.Scale = (decimal)scale;
+            decimal valueScaledStep = ((decimal)power10) * (
                 (subDivisionMaxNice >= 5) ? 5 :
                 (subDivisionMaxNice >= 4) ? 4 :
                 (subDivisionMaxNice >= 2) ? 2 :
                 1);
-            double valueScaledStart = valueScaledStep * (Math.Floor(valueScaledMin / valueScaledStep));
+            decimal valueScaledStart = valueScaledStep * (Math.Floor(((decimal)valueScaledMin) / valueScaledStep));
+            if (strict && (valueScaledStart < (decimal)valueScaledMin))
+            {
+                valueScaledStart += valueScaledStep;
+            }
             
-            List<double> values = new List<double>();
-            double valueScaled = valueScaledStart;
-            while (valueScaled < valueScaledMax) {
-                values.Add(valueScaled * scale);
+            List<decimal> values = new List<decimal>();
+            decimal valueScaled = valueScaledStart;
+            while (valueScaled < (decimal)valueScaledMax) {
+                values.Add(valueScaled * this.Scale);
                 valueScaled += valueScaledStep;
             }
-            values.Add(valueScaled * scale);
+            values.Add(valueScaled * this.Scale);
 
             NiceValues = values.ToArray();
-            ValueMin = valueScaledStart * scale;
-            ValueMax = valueScaled      * scale;
+            ValueMin = valueScaledStart * this.Scale;
+            ValueMax = valueScaled      * this.Scale;
 
         }
-
     }
+    #endregion
 }
