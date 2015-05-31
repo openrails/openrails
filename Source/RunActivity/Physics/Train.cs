@@ -8682,12 +8682,9 @@ namespace ORTS
             TrainRoute = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset,
                 PresentPosition[1].TCDirection, Length, false, true, false);
 
-            foreach (TCRouteElement thisElement in TrainRoute)
-            {
-                TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
-                thisSection.SetOccupied(routedForward);
-            }
+            TrackCircuitSection thisSection;
 
+  
             // static train
 
             if (TrainType == TRAINTYPE.STATIC)
@@ -8718,11 +8715,17 @@ namespace ORTS
 
                 // build dummy route
 
-                TrackCircuitSection thisSection = signalRef.TrackCircuitList[PresentPosition[1].TCSectionIndex];
+                thisSection = signalRef.TrackCircuitList[PresentPosition[1].TCSectionIndex];
                 offset = PresentPosition[1].TCOffset;
 
                 ValidRoute[0] = signalRef.BuildTempRoute(this, thisSection.Index, PresentPosition[1].TCOffset,
                             PresentPosition[1].TCDirection, Length, true, true, false);
+
+                foreach (TCRouteElement thisElement in TrainRoute)
+                {
+                    thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                    thisSection.SetOccupied(routedForward);
+                }
 
             }
 
@@ -8755,6 +8758,12 @@ namespace ORTS
                         }
                         else break;
                     }
+                }
+
+                foreach (TCRouteElement thisElement in TrainRoute)
+                {
+                    thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                    thisSection.SetOccupied(routedForward);
                 }
                 // rebuild list of station stops
 
