@@ -293,7 +293,6 @@ namespace ORTS.TrackViewer.Drawing
         /// Create the texture-name-indexed vertex buffers that the Graphics card will need.
         /// The vertex buffers are created from information pre-calculated in stored 'TerrainTile2D' objects.
         /// </summary>
-        /// <param name="showPatchLines">If patchLines need to be shown, we need to load different vertices</param>
         void CreateVertexBuffers()
         {
             foreach (string textureName in textureManager.Keys)

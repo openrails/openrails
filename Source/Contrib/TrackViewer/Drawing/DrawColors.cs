@@ -517,6 +517,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="preferenceChanger">The object that can change a preference</param>
         /// <param name="name">name of the preference (for coding)</param>
         /// <param name="description">Description of the preference, as given to the user</param>
+        /// <param name="normalOnly">if set only the normal color (non-highlighted) is changeable using the preference</param>
         public void MakeIntoUserPreference(IPreferenceChanger preferenceChanger, string name, string description, bool normalOnly)
         {
             List<string> colorOptions = namedColors.Keys.ToList();

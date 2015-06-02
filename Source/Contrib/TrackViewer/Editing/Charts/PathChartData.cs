@@ -35,18 +35,49 @@ namespace ORTS.TrackViewer.Editing.Charts
         /// <summary>List of individual points with path data along the path.</summary>
         public IEnumerable<PathChartPoint> PathChartPoints { get; private set; }
 
+        /// <summary>point for which all of the data (apart from distance along section) are the maxima seen in all PathChartPoints</summary>
+        public PathChartPoint PointWithMaxima { get; private set; }
+        /// <summary>point for which all of the data (apart from distance along section) are the minima seen in all PathChartPoints</summary>
+        public PathChartPoint PointWithMinima { get; private set; }
+
+        /// <summary>Minimum of all DistanceAlongPath in PathChartPoints</summary>
+        private float MinDistanceAlongPath;
+        /// <summary>Maximum of all DistanceAlongPath in PathChartPoints</summary>
+        private float MaxDistanceAlongPath;
+        /// <summary>Minimum of all HeightM in PathChartPoints</summary>
+        private float MinHeightM;
+        /// <summary>Maximum of all HeightM in PathChartPoints</summary>
+        private float MaxHeightM;
+        /// <summary>Minimum of all GradePercent in PathChartPoints</summary>
+        private float MinGradePercent;
+        /// <summary>Maximum of all GradePercent in PathChartPoints</summary>
+        private float MaxGradePercent;
+        /// <summary>Minimum of all Curvature in PathChartPoints</summary>
+        private float MinCurvature;
+        /// <summary>Maximum of all Curvature in PathChartPoints</summary>
+        private float MaxCurvature;
+
         private TSectionDatFile tsectionDat;
         private TrackDB trackDB;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="routeData">The data of the route (track database, track section information, ...)</param>
         public PathChartData(ORTS.TrackViewer.Drawing.RouteData routeData)
         {
             this.trackDB = routeData.TrackDB;
             this.tsectionDat = routeData.TsectionDat;
         }
 
+        /// <summary>
+        /// Update (or fully recalculate) the data for charting the path
+        /// </summary>
+        /// <param name="trainpath">The train path for which to store chart data</param>
         public void Update(Trainpath trainpath)
         {
             var localPathChartPoints = new List<PathChartPoint>();
+            ResetAllMinMax();
 
             TrainpathNode node = trainpath.FirstNode;
             float lastDistance = 0;
@@ -59,7 +90,7 @@ namespace ORTS.TrackViewer.Editing.Charts
                 {
                     PathChartPoint absolutePoint = new PathChartPoint(relativePoint, lastDistance);
                     lastDistance += relativePoint.DistanceAlongNextSection;
-                    localPathChartPoints.Add(absolutePoint);
+                    AddPoint(localPathChartPoints, absolutePoint);
                 }
                 
                 node = node.NextMainNode;
@@ -68,7 +99,49 @@ namespace ORTS.TrackViewer.Editing.Charts
             //todo possibly we need to change the information on the last node, and copy e.g. the grade from the last-but-one node
 
             PathChartPoints = localPathChartPoints;
+            StoreAllMinMax();
 
+        }
+
+        /// <summary>
+        /// Reset all min and max values so we can update it during the creation of the list of points
+        /// </summary>
+        private void ResetAllMinMax()
+        {
+            this.MinCurvature = float.MaxValue;
+            this.MinDistanceAlongPath = float.MaxValue;
+            this.MinGradePercent = float.MaxValue;
+            this.MinHeightM = float.MaxValue;
+            this.MaxCurvature = float.MinValue;
+            this.MaxDistanceAlongPath = float.MinValue;
+            this.MaxGradePercent = float.MinValue;
+            this.MaxHeightM = float.MinValue;
+        }
+
+        /// <summary>
+        /// Add a point to the list and update all Min/Max values
+        /// </summary>
+        private void AddPoint(List<PathChartPoint> localPathChartPoints, PathChartPoint newPoint)
+        {
+            this.MinDistanceAlongPath = Math.Min(this.MinDistanceAlongPath, newPoint.DistanceAlongPath);
+            this.MaxDistanceAlongPath = Math.Max(this.MaxDistanceAlongPath, newPoint.DistanceAlongPath);
+            this.MinHeightM = Math.Min(this.MinHeightM, newPoint.HeightM);
+            this.MaxHeightM = Math.Max(this.MaxHeightM, newPoint.HeightM);
+            this.MinGradePercent = Math.Min(this.MinGradePercent, newPoint.GradePercent);
+            this.MaxGradePercent = Math.Max(this.MaxGradePercent, newPoint.GradePercent);
+            this.MinCurvature = Math.Min(this.MinCurvature, newPoint.Curvature);
+            this.MaxCurvature = Math.Max(this.MaxCurvature, newPoint.Curvature);
+
+            localPathChartPoints.Add(newPoint);
+        }
+
+        /// <summary>
+        /// Store all the maxima and minima that we found in the dedicated points
+        /// </summary>
+        private void StoreAllMinMax()
+        {
+            this.PointWithMaxima = new PathChartPoint(new PathChartPoint(this.MaxHeightM, this.MaxCurvature, this.MaxGradePercent/100, 0), this.MaxDistanceAlongPath);
+            this.PointWithMinima = new PathChartPoint(new PathChartPoint(this.MinHeightM, this.MinCurvature, this.MinGradePercent/100, 0), this.MinDistanceAlongPath);
         }
 
         /// <summary>
@@ -317,6 +390,7 @@ namespace ORTS.TrackViewer.Editing.Charts
         /// <param name="curvature">The curvature to store</param>
         /// <param name="height">The height to store</param>
         /// <param name="grade">The grade along the path (raw, so not in percent)</param>
+        /// <param name="distanceAlongSection">The distance along the section to store</param>
         public PathChartPoint(float height, float curvature, float grade, float distanceAlongSection)
         {
             HeightM = height;

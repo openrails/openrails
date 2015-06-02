@@ -806,27 +806,6 @@ namespace ORTS.TrackViewer.Drawing
         }
         #endregion
 
-        #region 3D camera and viewpoints
-        // We create a view and projection matrix to allow viewing the world/terrain from the top.
-        // All Vertices will be in real-world locations relative to a certain reference location
-
-        //Using Pi/2 for projection, the distance from camera to plane is the same as the half the distance from top to bottom in the screen.
-        //
-        // So if the vertex positions are real world-locations, the camera-target should be at (worldCenterX, 0, worldCenterZ).
-        // The Cameraposition itself is (world-center-X, cam-height, world-centerZ)
-        //      where camheight is (worldHeight/2 = worldWidth/aspectRatio/2).
-        // The distance of camera can be very large, so the backplane has to be set accordingly: cam-height/2 and cam-height*2.
-
- 
-        void UpdateCamera()
-        {
-            //ViewMatrix = Matrix.CreateLookAt(new Vector3(0, 0, 5), Vector3.Zero, Vector3.Up);
-            //Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver2, aspectRatio, 0.1f, 10);
-        }
-
-        public Matrix ViewMatrix { get; private set; }
-        public Matrix ProjectionMatrix { get; private set; }
-        #endregion
     }
 
     #region DiscreteScale
