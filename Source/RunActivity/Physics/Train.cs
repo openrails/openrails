@@ -4225,8 +4225,17 @@ namespace ORTS
 
             float lengthToGoM = -PresentPosition[0].TCOffset;
             TrackCircuitSection thisSection;
+            if (PresentPosition[0].RouteListIndex == -1)
+            {
+                Trace.TraceWarning("Train {0} service {1} off path; distance to reversal point set to -1", Number, Name);
+                return -1; 
+            }
             int reversalRouteIndex = ValidRoute[0].GetRouteIndex(TCRoute.ReversalInfo[TCRoute.activeSubpath].ReversalSectionIndex, PresentPosition[0].RouteListIndex);
-            if (PresentPosition[0].RouteListIndex == -1) return -1;
+            if (reversalRouteIndex == -1)
+            {
+                Trace.TraceWarning("Train {0} service {1}, reversal or end point off path; distance to reversal point set to -1", Number, Name);
+                return -1;
+            }
             if (PresentPosition[0].RouteListIndex <= reversalRouteIndex)
             {
                 for (int iElement = PresentPosition[0].RouteListIndex; iElement < ValidRoute[0].Count; iElement++)
