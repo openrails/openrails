@@ -48,15 +48,16 @@ The Spanish websites <a href="http://viajerosaltren.es">Viajeros al Tren</a> and
 Some Australian routes (New South Wales) have been packaged by Peter Newell to work just with OR:
 </p>
 <ul>
+<li><a href="http://www.burrinjuck.coalstonewcastle.com.au/">Burrinjuck Railway</a></li>
 <li><a href="http://www.craven.coalstonewcastle.com.au/">Craven Timber Railway</a></li>
 <li><a href="http://www.manning-river.coalstonewcastle.com.au/">Manning River Breakwall Railway</a></li>
 <li><a href="http://www.tweed.coalstonewcastle.com.au/">Tweed Railway</a></li>
 </ul>
-<h3>Forum Library Files</h3>
+<h3>Library Files</h3>
 <ul>
-<li>A search for "ORTS" or "Open Rails" on <a href="http://www.elvastower.com">Elvas Tower</a> finds 146 files.</li>
-<li>A search for "ORTS" or "Open Rails" on <a href="http://www.trainsim.com">TrainSim</a> finds 31 files.</li>
-<li>A search for "ORTS" or "Open Rails" on <a href="http://www.uktrainsim.com">UKTrainSim</a> finds no files.</li>
+<li>A search for "ORTS" or "Open Rails" on <a href="http://www.elvastower.com">Elvas Tower</a> forum finds 146 files.</li>
+<li>A search for "ORTS" or "Open Rails" on <a href="http://www.trainsim.com">TrainSim</a> forum finds 31 files.</li>
+<li>A search for "Open" with simulator = OpenRails on <a href="http://www.uktrainsim.com">UKTrainSim</a> forum finds 6 files.</li>
 </ul>
 <p>
 <small>[Searches made 6-May-2015]</small>
