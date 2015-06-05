@@ -28,6 +28,8 @@ using System.Windows.Shapes;
 using Orts.Formats.Msts;
 using ORTS.Common;
 
+using ORTS.TrackViewer.Drawing;
+
 namespace ORTS.TrackViewer.Editing.Charts
 {
     #region DrawPathChart
@@ -139,15 +141,6 @@ namespace ORTS.TrackViewer.Editing.Charts
             }
 
             Trainpath trainpath = pathEditor.currentTrainPath;
-            if (trainpath.IsBroken)
-            {
-                MessageBox.Show(
-                    TrackViewer.catalog.GetString("For broken paths charting is not supported"));
-
-                Close();
-                return;
-            }
-
             pathData.Update(trainpath);
             chartWindow.Draw();
             chartWindow.SetTitle(pathEditor.currentTrainPath.PathName);
@@ -333,6 +326,27 @@ namespace ORTS.TrackViewer.Editing.Charts
 
             drawingCanvas.Children.Add(textBlock);
         }
+
+        /// <summary>
+        /// Draw an image centered at the given location and identified by its name on the canvas
+        /// </summary>
+        /// <param name="drawingCanvas">The canvas to draw upon</param>
+        /// <param name="centerX">The x-position at the center of the image</param>
+        /// <param name="centerY">The y-position at the center of the image</param>
+        /// <param name="imageName">The name of the image</param>
+        protected static void DrawImage(Canvas drawingCanvas, double centerX, double centerY, string imageName)
+        {
+            int imageSize = 10;
+            var rect = new Rectangle()
+            {
+                Width = imageSize,
+                Height = imageSize,
+                Fill = new ImageBrush(BitmapImageManager.Instance.GetImage(imageName))
+            };
+            Canvas.SetLeft(rect, centerX-imageSize/2);
+            Canvas.SetTop(rect, centerY-imageSize/2);
+            drawingCanvas.Children.Add(rect);
+        }
         #endregion
 
         #region Scaling
@@ -450,7 +464,9 @@ namespace ORTS.TrackViewer.Editing.Charts
             CleanScaling();
             DrawHorizontalGridLines(drawingCanvas);
             DrawDataPolyLine(drawingCanvas, p => p.HeightM, false);
-            PrintGrades(drawingCanvas);
+            PrintGradesAndStations(drawingCanvas);
+            ShowSpecialNodes(drawingCanvas);
+
         }
 
         /// <summary>
@@ -491,10 +507,10 @@ namespace ORTS.TrackViewer.Editing.Charts
         }
 
         /// <summary>
-        /// Print the grades (in percent) along the chart.
+        /// Print the grades (in percent) and station names along the chart.
         /// </summary>
         /// <param name="drawingCanvas">The canvas to draw upon</param>
-        private void PrintGrades(Canvas drawingCanvas)
+        private void PrintGradesAndStations(Canvas drawingCanvas)
         {
             double lastX = ScaledX(0);
             string lastTextToDraw = String.Format("{0,5:0.0}", 0);
@@ -511,8 +527,37 @@ namespace ORTS.TrackViewer.Editing.Charts
                     lastX = newX;
                     lastTextToDraw = newTextToDraw;
                 }
+
+                if (sourcePoint.StationName != null)
+                {
+                    DrawTextVertical(drawingCanvas, newX, 100, sourcePoint.StationName, Colors.Red);
+
+                }
             }
         }
+
+        private void ShowSpecialNodes(Canvas drawingCanvas)
+        {
+            foreach (KeyValuePair<TrainpathNode,double> item in this.pathData.DistanceAlongPath)
+            {
+                if (item.Key.NodeType == TrainpathNodeType.Reverse)
+                {
+                    
+                    DrawImage(drawingCanvas, ScaledX(item.Value), ScaledY(item.Key.Location.Location.Y), "pathReverse");
+                }
+                if (item.Key.NodeType == TrainpathNodeType.Stop)
+                {
+
+                    DrawImage(drawingCanvas, ScaledX(item.Value), ScaledY(item.Key.Location.Location.Y), "pathWait");
+                }
+                if (item.Key.IsBroken)
+                {
+
+                    DrawImage(drawingCanvas, ScaledX(item.Value), ScaledY(item.Key.Location.Location.Y), "activeBroken");
+                }
+            }
+        }
+
     }
     #endregion
 

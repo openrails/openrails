@@ -193,7 +193,7 @@ namespace ORTS.TrackViewer
             drawAreaInset = new ShadowDrawArea(null);
             drawAreaInset.StrictChecking = true;
             
-            fontManager = FontManager.Instance();
+            fontManager = FontManager.Instance;
             setSubwindowSizes();
 
             this.IsMouseVisible = true;

@@ -115,7 +115,7 @@ namespace ORTS.TrackViewer.Drawing
             AreaH = 700;
             metersPerPixel = new DiscreteScale();
             MouseLocation = new WorldLocation(0, 0, 0, 0, 0);  // default mouse location far far away
-            fontManager = FontManager.Instance();
+            fontManager = FontManager.Instance;
             SetDrawArea(-1, 1, -1, 1); // just have a default
             this.drawScaleRuler = drawScaleRuler;
         }

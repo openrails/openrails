@@ -75,14 +75,11 @@ namespace ORTS.TrackViewer.Editing
             ActionMenuItem.IsCheckable = false;
             ActionMenuItem.Click += new RoutedEventHandler(contextExecuteAction_Click);
 
-            string contentPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Content");
-
             if (!string.IsNullOrEmpty(pngFileName))
             {
-                string fullFileName = System.IO.Path.Combine(contentPath, pngFileName + ".png");
                 ActionMenuItem.Icon = new System.Windows.Controls.Image
                 {
-                    Source = new BitmapImage(new Uri(fullFileName, UriKind.Relative)),
+                    Source = BitmapImageManager.Instance.GetImage(pngFileName),
                     Width = 14,
                     Height = 14,
                 };

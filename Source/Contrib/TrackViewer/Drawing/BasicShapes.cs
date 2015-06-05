@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Windows.Media.Imaging;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -91,7 +92,7 @@ namespace ORTS.TrackViewer.Drawing
             LoadAndHighlightTexture(graphicsDevice, contentPath, "playerTrain", "steamTrain",31,31);
 
             prepareArcDrawing();
-            fontManager = FontManager.Instance();
+            fontManager = FontManager.Instance;
 
         }
 
@@ -582,10 +583,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <summary>
         /// Return the singleton instance of the font manager
         /// </summary>
-        public static FontManager Instance() {
-            return instance;
-        }
-
+        public static FontManager Instance { get { return instance; } }
         /// <summary>his is the default font that can be used for drawing</summary>
         public WindowTextFont DefaultFont { get; private set; }
         /// <summary>This is the expanding font that can be used for drawing</summary>
@@ -628,5 +626,49 @@ namespace ORTS.TrackViewer.Drawing
             textManager.Load(graphicsDevice);
         }
 
+    }
+
+    /// <summary>
+    /// Load and store images in bitmap format (needed for WPF-parts)
+    /// </summary>
+    class BitmapImageManager
+    {
+        //Singleton class
+
+        /// <summary>Singleton instance of the class</summary>
+        private static readonly BitmapImageManager instance = new BitmapImageManager();
+
+        private Dictionary<string, BitmapImage> images;
+
+        /// <summary>
+        /// Return the singleton instance of the bitmap manager
+        /// </summary>
+        public static BitmapImageManager Instance { get { return instance; } }
+
+        /// <summary>
+        /// Constructor, private so only called during class initialization
+        /// </summary>
+        private BitmapImageManager()
+        {
+            this.images = new Dictionary<string, BitmapImage>();
+        }
+
+        /// <summary>
+        /// Return an image defined by its name (should be in the Content directory)
+        /// </summary>
+        /// <param name="pngFileName">Name of the file, without extension</param>
+        public BitmapImage GetImage(string pngFileName)
+        {
+            if (images.ContainsKey(pngFileName))
+            {
+                return images[pngFileName];
+            }
+
+            string contentPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Content");
+            string fullFileName = System.IO.Path.Combine(contentPath, pngFileName + ".png");
+            BitmapImage newImage = new BitmapImage(new Uri(fullFileName, UriKind.Relative));
+            images[pngFileName] = newImage;
+            return newImage;
+        }
     }
 }
