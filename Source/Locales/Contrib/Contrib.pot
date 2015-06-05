@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-05-27 03:22:13+0200\n"
-"PO-Revision-Date: 2015-05-27 03:22:14+0200\n"
+"POT-Creation-Date: 2015-06-05 19:48:00+0200\n"
+"PO-Revision-Date: 2015-06-05 19:48:07+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -666,47 +666,47 @@ msgstr ""
 msgid "Open Rails Content Manager"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:544
+#: ../../Contrib/TrackViewer/TrackViewer.cs:546
 msgid ""
 "The path you are working on has un-saved changes.\n"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:546
+#: ../../Contrib/TrackViewer/TrackViewer.cs:548
 msgid "Do you really want to Quit?"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:632
+#: ../../Contrib/TrackViewer/TrackViewer.cs:634
 msgid ""
 "Directory is not a valid install directory.\n"
 "The install directory needs to contain ROUTES, GLOBAL, ..."
 msgstr ""
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:706
+#: ../../Contrib/TrackViewer/TrackViewer.cs:708
 msgid "Loading route..."
 msgstr ""
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:728
+#: ../../Contrib/TrackViewer/TrackViewer.cs:730
 msgid "Route cannot be loaded. Sorry"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:799
+#: ../../Contrib/TrackViewer/TrackViewer.cs:801
 msgid "Loading .pat file ..."
 msgstr ""
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:802
+#: ../../Contrib/TrackViewer/TrackViewer.cs:804
 msgid "Processing .pat file ..."
 msgstr ""
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:830
+#: ../../Contrib/TrackViewer/TrackViewer.cs:832
 msgid "Path has been modified. Loading a new path will discard changes."
 msgstr ""
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:831
+#: ../../Contrib/TrackViewer/TrackViewer.cs:833
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:88
 msgid "Do you want to continue?"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:832
+#: ../../Contrib/TrackViewer/TrackViewer.cs:834
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:74
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:91
 msgid "Trackviewer Path Editor"
@@ -793,23 +793,27 @@ msgstr ""
 msgid "Select other-paths color"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:587
+#: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:586
 msgid "Loading terrain data: "
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:125
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:54
 msgid "Loading trackfile .trk ..."
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:129
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:58
 msgid "Loading track database .tdb ..."
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:134
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:62
 msgid "Loading tsection.dat ..."
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:159
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:74
+msgid "Loading road track database .rdb ..."
+msgstr ""
+
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:189
 msgid "Finding the angles to draw signals, endnodes, ..."
 msgstr ""
 
@@ -906,15 +910,15 @@ msgstr ""
 msgid "Draw path until next broken point"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/PathEditor.cs:710
+#: ../../Contrib/TrackViewer/Editing/PathEditor.cs:712
 msgid "Reversing broken paths is not supported"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/PathEditor.cs:715
+#: ../../Contrib/TrackViewer/Editing/PathEditor.cs:717
 msgid "Reversing a path without start node is not supported"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/PathEditor.cs:720
+#: ../../Contrib/TrackViewer/Editing/PathEditor.cs:722
 msgid "Reversing a path without end node is not supported"
 msgstr ""
 
@@ -987,7 +991,7 @@ msgstr ""
 msgid "99"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/Charts/DrawPathChart.cs:144
+#: ../../Contrib/TrackViewer/Editing/Charts/DrawPathChart.cs:145
 msgid "For broken paths charting is not supported"
 msgstr ""
 
@@ -1246,6 +1250,14 @@ msgstr ""
 
 #: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:6
 msgid "Charting the path"
+msgstr ""
+
+#: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:21
+msgid "+"
+msgstr ""
+
+#: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:22
+msgid "-"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:8
