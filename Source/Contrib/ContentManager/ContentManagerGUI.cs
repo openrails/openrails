@@ -32,6 +32,10 @@ namespace ORTS.ContentManager
         readonly UserSettings Settings;
         readonly ContentManager ContentManager;
 
+        readonly Regex ContentLink = new Regex("\u0001(.*?)\u0002(.*?)\u0001");
+
+        Content PendingSelection;
+
         public ContentManagerGUI()
         {
             InitializeComponent();
@@ -64,25 +68,41 @@ namespace ORTS.ContentManager
                 worker.DoWork += (object sender1, DoWorkEventArgs e1) =>
                 {
                     // Get all the different possible types of content from this content item.
-                    e1.Result = ((ContentType[])Enum.GetValues(typeof(ContentType))).SelectMany(ct => content.Get(ct).Select(c => CreateContentNode(c))).ToArray();
+                    var getChildren = ((ContentType[])Enum.GetValues(typeof(ContentType))).SelectMany(ct => content.Get(ct).Select(c => CreateContentNode(c)));
+                    var linkChildren = ContentLink.Matches(ContentInfo.GetText(e.Node.Tag as Content)).Cast<Match>().Select(linkMatch => CreateContentNode(content.Get(linkMatch.Groups[1].Value, (ContentType)Enum.Parse(typeof(ContentType), linkMatch.Groups[2].Value))));
+                    Debug.Assert(!getChildren.Any() || !linkChildren.Any(), "Content item should not return items from Get(ContentType) and Get(string, ContentType)");
+                    e1.Result = getChildren.Concat(linkChildren).ToArray();
 
                     if (worker.CancellationPending)
                         e1.Cancel = true;
                 };
                 worker.RunWorkerCompleted += (object sender2, RunWorkerCompletedEventArgs e2) =>
                 {
+                    var nodes = e2.Result as TreeNode[];
+
                     // If we got cancelled, or the loading node is missing, we should abort here to avoid issues caused by double-loading.
-                    if (e2.Cancelled || e.Node.Nodes.Count < 1 || e.Node.Nodes[e.Node.Nodes.Count - 1].Text != "Loading..." || e.Node.Nodes[e.Node.Nodes.Count - 1].Tag != null)
+                    if (e2.Cancelled || e.Node.Nodes.Count < 1 || e.Node.Nodes[0].Text != "Loading..." || e.Node.Nodes[0].Tag != null)
                         return;
 
                     // Remove the loading node.
-                    e.Node.Nodes.RemoveAt(e.Node.Nodes.Count - 1);
+                    e.Node.Nodes.RemoveAt(0);
 
                     // Add either the error we encountered or the resulting content items.
                     if (e2.Error != null)
                         e.Node.Nodes.Add(new TreeNode(e2.Error.Message));
                     else
-                        e.Node.Nodes.AddRange((TreeNode[])e2.Result);
+                        e.Node.Nodes.AddRange(nodes);
+
+                    if (PendingSelection != null)
+                    {
+                        var pendingSelectionNode = nodes.FirstOrDefault(node => (Content)node.Tag == PendingSelection);
+                        if (pendingSelectionNode != null)
+                        {
+                            treeViewContent.SelectedNode = pendingSelectionNode;
+                            treeViewContent.Focus();
+                        }
+                        PendingSelection = null;
+                    }
                 };
                 worker.RunWorkerAsync(e.Node.Tag);
             }
@@ -122,15 +142,14 @@ namespace ORTS.ContentManager
                     richTextBoxContent.SelectionFont = boldFont;
                 start = endPos + 1;
             }
-            var linkRe = new Regex("\u0001(.*?)\u0002(.*?)\u0001");
-            var linkMatch = linkRe.Match(richTextBoxContent.Text);
+            var linkMatch = ContentLink.Match(richTextBoxContent.Text);
             while (linkMatch.Success)
             {
                 richTextBoxContent.Select(linkMatch.Index, linkMatch.Length);
                 richTextBoxContent.SelectedRtf = String.Format(@"{{\rtf{{{0}{{\v{{\u1.{0}\u1.{1}}}\v0}}}}}}", linkMatch.Groups[1].Value, linkMatch.Groups[2].Value);
                 richTextBoxContent.Select(linkMatch.Index, linkMatch.Groups[1].Value.Length * 2 + linkMatch.Groups[2].Value.Length + 2);
                 Native.SendMessage(richTextBoxContent.Handle, Native.EmSetCharFormat, Native.ScfSelection, ref link);
-                linkMatch = linkRe.Match(richTextBoxContent.Text);
+                linkMatch = ContentLink.Match(richTextBoxContent.Text);
             }
             richTextBoxContent.Select(0, 0);
             richTextBoxContent.SelectionFont = richTextBoxContent.Font;
@@ -142,25 +161,20 @@ namespace ORTS.ContentManager
             var link = e.LinkText.Split('\u0001');
             if (content != null && link.Length == 3)
             {
-                var newContent = content.Get(link[1], (ContentType)Enum.Parse(typeof(ContentType), link[2]));
-                if (newContent != null)
+                PendingSelection = content.Get(link[1], (ContentType)Enum.Parse(typeof(ContentType), link[2]));
+                if (treeViewContent.SelectedNode.IsExpanded)
                 {
-                    treeViewContent.SelectedNode.Expand();
-                    var existingNode = treeViewContent.SelectedNode.Nodes.OfType<TreeNode>().FirstOrDefault(tn => (tn.Tag as Content) == newContent);
-                    if (existingNode == null)
+                    var pendingSelectionNode = treeViewContent.SelectedNode.Nodes.Cast<TreeNode>().FirstOrDefault(node => (Content)node.Tag == PendingSelection);
+                    if (pendingSelectionNode != null)
                     {
-                        treeViewContent.SelectedNode.Nodes.Insert(0, CreateContentNode(newContent));
-                        existingNode = treeViewContent.SelectedNode.Nodes[0];
-                    }
-                    treeViewContent.BeginInvoke((Action)(() =>
-                    {
-                        treeViewContent.SelectedNode = existingNode;
+                        treeViewContent.SelectedNode = pendingSelectionNode;
                         treeViewContent.Focus();
-                    }));
+                    }
+                    PendingSelection = null;
                 }
                 else
                 {
-                    MessageBox.Show(String.Format("No content was returned for the query:\n\nName: {0}\nType: {1}", link[1], link[2]), Application.ProductName + " " + Application.ProductVersion);
+                    treeViewContent.SelectedNode.Expand();
                 }
             }
         }

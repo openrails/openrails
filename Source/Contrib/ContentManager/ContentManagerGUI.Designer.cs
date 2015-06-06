@@ -31,13 +31,16 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ContentManagerGUI));
             this.treeViewContent = new System.Windows.Forms.TreeView();
             this.richTextBoxContent = new System.Windows.Forms.RichTextBox();
+            this.splitContainer = new System.Windows.Forms.SplitContainer();
+            this.splitContainer.Panel1.SuspendLayout();
+            this.splitContainer.Panel2.SuspendLayout();
+            this.splitContainer.SuspendLayout();
             this.SuspendLayout();
             // 
             // treeViewContent
             // 
-            this.treeViewContent.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-            this.treeViewContent.Location = new System.Drawing.Point(12, 12);
+            this.treeViewContent.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.treeViewContent.Location = new System.Drawing.Point(0, 0);
             this.treeViewContent.Name = "treeViewContent";
             this.treeViewContent.Size = new System.Drawing.Size(300, 514);
             this.treeViewContent.TabIndex = 0;
@@ -46,28 +49,49 @@
             // 
             // richTextBoxContent
             // 
-            this.richTextBoxContent.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.richTextBoxContent.Location = new System.Drawing.Point(318, 12);
+            this.richTextBoxContent.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.richTextBoxContent.Location = new System.Drawing.Point(0, 0);
             this.richTextBoxContent.Name = "richTextBoxContent";
             this.richTextBoxContent.ReadOnly = true;
-            this.richTextBoxContent.Size = new System.Drawing.Size(514, 514);
+            this.richTextBoxContent.Size = new System.Drawing.Size(516, 514);
             this.richTextBoxContent.TabIndex = 1;
             this.richTextBoxContent.Text = "";
             this.richTextBoxContent.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.richTextBoxContent_LinkClicked);
+            // 
+            // splitContainer
+            // 
+            this.splitContainer.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.splitContainer.Location = new System.Drawing.Point(12, 12);
+            this.splitContainer.Name = "splitContainer";
+            // 
+            // splitContainer.Panel1
+            // 
+            this.splitContainer.Panel1.Controls.Add(this.treeViewContent);
+            this.splitContainer.Panel1MinSize = 100;
+            // 
+            // splitContainer.Panel2
+            // 
+            this.splitContainer.Panel2.Controls.Add(this.richTextBoxContent);
+            this.splitContainer.Panel2MinSize = 100;
+            this.splitContainer.Size = new System.Drawing.Size(820, 514);
+            this.splitContainer.SplitterDistance = 300;
+            this.splitContainer.TabIndex = 2;
             // 
             // ContentManagerGUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(844, 538);
-            this.Controls.Add(this.richTextBoxContent);
-            this.Controls.Add(this.treeViewContent);
+            this.Controls.Add(this.splitContainer);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "ContentManagerGUI";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Open Rails Content Manager";
+            this.splitContainer.Panel1.ResumeLayout(false);
+            this.splitContainer.Panel2.ResumeLayout(false);
+            this.splitContainer.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -76,6 +100,7 @@
 
         private System.Windows.Forms.TreeView treeViewContent;
         private System.Windows.Forms.RichTextBox richTextBoxContent;
+        private System.Windows.Forms.SplitContainer splitContainer;
     }
 }
 
