@@ -546,6 +546,7 @@ namespace ORTS.TrackViewer.Drawing
     /// </summary>
     class TerrainTextureManager : Dictionary<string, Texture2D>
     {
+        private int loadedAceFilesCounter=0;
         private HashSet<string> unloadableTerrainTextures;
         private string terrtexPath;
         private MessageDelegate messageDelegate;
@@ -583,7 +584,12 @@ namespace ORTS.TrackViewer.Drawing
             string path = terrtexPath + filename;
             if (System.IO.File.Exists(path))
             {
-                messageDelegate(TrackViewer.catalog.GetString("Loading terrain data: ") + filename);
+                //The message delegate has quite some overhead, so print it only so often to keep the user informed
+                if (loadedAceFilesCounter % 100 == 0)
+                {
+                    messageDelegate(String.Format(TrackViewer.catalog.GetString("Loading terrain ace-files {0}-{1}"), loadedAceFilesCounter, loadedAceFilesCounter+99));
+                }
+                loadedAceFilesCounter++;
                 this[filename] = Orts.Formats.Msts.ACEFile.Texture2DFromFile(this.device, path);
                 return true;
             }
