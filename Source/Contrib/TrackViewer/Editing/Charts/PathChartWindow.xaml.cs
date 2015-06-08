@@ -19,7 +19,10 @@ namespace ORTS.TrackViewer.Editing.Charts
     /// </summary>
     partial class PathChartWindow : Window
     {
-        private ISubChart[] subCharts;
+        private Dictionary<string, Canvas> chartCanvasses;
+        private Dictionary<string, Canvas> legendCanvasses;
+        private Dictionary<string, ISubChart> subCharts;
+
         #region Construction and data setting
         /// <summary>
         /// The Window where the details of a path can be charted (height, grade, ...)
@@ -27,14 +30,32 @@ namespace ORTS.TrackViewer.Editing.Charts
         public PathChartWindow()
         {
             InitializeComponent();
-            subCharts = new ISubChart[3];
+            
+            chartCanvasses = new Dictionary<string, Canvas> {
+                {"height", HeightCanvas},
+                {"grade", GradeCanvas},
+                {"curvature", CurvatureCanvas},
+                {"distance", DistanceCanvas},
+                {"milemarkers", MileMarkersCanvas},
+                {"speedmarkers", SpeedMarkersCanvas}
+            };
+            legendCanvasses = new Dictionary<string, Canvas> {
+                {"height", HeightLegend},
+                {"grade", GradeLegend},
+                {"curvature", CurvatureLegend},
+                {"distance", DistanceLegend},
+                {"milemarkers", MileMarkersLegend},
+                {"speedmarkers", SpeedMarkersLegend}
+            };
+            subCharts = new Dictionary<string, ISubChart>();
+
         }
 
-        internal void SetCanvasData(int canvasIndex, ISubChart subChart)
+        internal void SetCanvasData(string canvasName, ISubChart subChart)
         {
-            if (canvasIndex >= 0 && canvasIndex < subCharts.Count())
+            if (chartCanvasses.ContainsKey(canvasName))
             {
-                subCharts[canvasIndex] = subChart;
+                subCharts[canvasName] = subChart;
             }
         }
         #endregion
@@ -48,18 +69,22 @@ namespace ORTS.TrackViewer.Editing.Charts
             //if (this.Visibility == Visibility.Visible && subCharts[0] != null) 
             double zoomRatioStart = ChartScrollbar.Value;
             double zoomRatioStop = ChartScrollbar.Value + ChartScrollbar.ViewportSize;
-            if (subCharts[0] != null) 
+            foreach (string chartName in chartCanvasses.Keys)
             {
-                subCharts[0].Draw(zoomRatioStart, zoomRatioStop, HeightCanvas);
-                subCharts[1].Draw(zoomRatioStart, zoomRatioStop, GradeCanvas);
-                subCharts[2].Draw(zoomRatioStart, zoomRatioStop, CurvatureCanvas);
+                ISubChart subChart;
+                subCharts.TryGetValue(chartName, out subChart);
+                if (subChart != null) {
+                    subChart.Draw(zoomRatioStart, zoomRatioStop, chartCanvasses[chartName], legendCanvasses[chartName]);
+                }
+                
             }
-            if (HeightCanvas.ActualWidth > 80)
+
+            if (HeightCanvas.ActualWidth > 30)
             {
-                ChartScrollbar.Width = HeightCanvas.ActualWidth - 80;
+                ChartScrollbar.Width = HeightCanvas.ActualWidth - 30;
             }
             else
-            {
+            {   // happens during initialization, when actualWidht is not yet non-zero
                 ChartScrollbar.Width = 800;
             }
 
@@ -109,6 +134,8 @@ namespace ORTS.TrackViewer.Editing.Charts
 
         private void ZoomChange(double zoomFactor)
         {
+            double oldValue = ChartScrollbar.Value;
+
             double zoomCenter = ChartScrollbar.Value + ChartScrollbar.ViewportSize / 2;
             ChartScrollbar.ViewportSize = ChartScrollbar.ViewportSize / zoomFactor;
             if (ChartScrollbar.ViewportSize > 0.9999)
@@ -117,7 +144,11 @@ namespace ORTS.TrackViewer.Editing.Charts
             }
             ChartScrollbar.Maximum = 1 - ChartScrollbar.ViewportSize;
             ChartScrollbar.Value = zoomCenter - ChartScrollbar.ViewportSize / 2;
-            //Draw(); // No draw is needed here, the Draw will be triggered by a change in value
+            if (ChartScrollbar.Value == oldValue)
+            {
+                // Normally, a value change will trigger a draw. But in case value is 0, it stays at 0. So force a draw
+                Draw();
+            }
         }
         #endregion
 

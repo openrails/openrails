@@ -66,7 +66,7 @@ namespace ORTS.TrackViewer.Editing.Charts
 
         private TSectionDatFile tsectionDat;
         private TrackDB trackDB;
-        private StationsManager stations;
+        private TrackItemManager trackItems;
         #endregion
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace ORTS.TrackViewer.Editing.Charts
         {
             this.trackDB = routeData.TrackDB;
             this.tsectionDat = routeData.TsectionDat;
-            stations = new StationsManager(routeData);
+            trackItems = new TrackItemManager(routeData);
         }
 
         #region Update the whole path
@@ -184,7 +184,7 @@ namespace ORTS.TrackViewer.Editing.Charts
                 return newPoints;
             }
 
-            if (thisNode.IsBroken || nextNode.IsBroken)
+            if (thisNode.IsBroken || nextNode.IsBroken || thisNode.NextMainTvnIndex == -1)
             {
                 PathChartPoint singlePoint = CreateBrokenChartPoint(thisNode, nextNode);
                 newPoints.Add(singlePoint);
@@ -194,7 +194,7 @@ namespace ORTS.TrackViewer.Editing.Charts
             TrackNode tn = trackDB.TrackNodes[thisNode.NextMainTvnIndex];
 
             TrVectorNode vectorNode = tn.TrVectorNode;
-            var stationsInTracknode = stations.GetStationsInTracknode(tn);
+            var trackItemsInTracknode = trackItems.GetItemsInTracknode(tn);
 
 
             bool isForward;
@@ -215,14 +215,14 @@ namespace ORTS.TrackViewer.Editing.Charts
                 for (int tvsi = tvsiStop; tvsi > tvsiStart; tvsi--)
                 {
                     height = vectorNode.TrVectorSections[tvsi].Y;
-                    AddNewPointFromSection(newPoints, vectorNode, stationsInTracknode, isForward, height, tvsi, 0, sectionOffsetNext);
+                    AddPointAndTrackItems(newPoints, vectorNode, trackItemsInTracknode, isForward, height, tvsi, 0, sectionOffsetNext);
 
                     sectionOffsetNext = SectionLengthAlongTrack(tn, tvsi-1);
                 }
 
                 //Also works in case this is the only point we are adding
                 height = thisNode.Location.Location.Y;
-                AddNewPointFromSection(newPoints, vectorNode, stationsInTracknode, isForward, height, tvsiStart, sectionOffsetStart, sectionOffsetNext);
+                AddPointAndTrackItems(newPoints, vectorNode, trackItemsInTracknode, isForward, height, tvsiStart, sectionOffsetStart, sectionOffsetNext);
             }
             else
             {   //reverse
@@ -232,14 +232,14 @@ namespace ORTS.TrackViewer.Editing.Charts
                 {
                     // The height needs to come from the end of the section, so the where the next section starts. And we only know the height at the start.
                     height = vectorNode.TrVectorSections[tvsi+1].Y;
-                    AddNewPointFromSection(newPoints, vectorNode, stationsInTracknode, isForward, height, tvsi, sectionOffsetNext, SectionLengthAlongTrack(tn, tvsi));
+                    AddPointAndTrackItems(newPoints, vectorNode, trackItemsInTracknode, isForward, height, tvsi, sectionOffsetNext, SectionLengthAlongTrack(tn, tvsi));
 
                     sectionOffsetNext = 0;
                 }
 
                 //Also works in case this is the only point we are adding
                 height = thisNode.Location.Location.Y;
-                AddNewPointFromSection(newPoints, vectorNode, stationsInTracknode, isForward, height, tvsiStart, sectionOffsetNext, sectionOffsetStart);
+                AddPointAndTrackItems(newPoints, vectorNode, trackItemsInTracknode, isForward, height, tvsiStart, sectionOffsetNext, sectionOffsetStart);
             }
             newPoints.Reverse();
             return newPoints;
@@ -257,38 +257,59 @@ namespace ORTS.TrackViewer.Editing.Charts
         }
 
         /// <summary>
-        /// From section information create a point for charting the path, and add it to newPoints
+        /// From section information create a point for charting the path, and add it to newPoints.
+        /// In case there are track items in this particular section, add those also (starting with the last item as seen from the direction of the path)
         /// </summary>
         /// <param name="newPoints">The list to which to add the point</param>
         /// <param name="vectorNode">The vectorNode to use for curvature and grade</param>
+        /// <param name="trackItems">A list of track items in this vector tracknode</param>
         /// <param name="isForward">Is the path in the same direction as the tracknode</param>
-        /// <param name="lengthNextSection">The length of the next section (either section itself or length from and/or to a node</param>
         /// <param name="height">Height to store in the point</param>
         /// <param name="tvsi">The section index in the track vector node</param>
-        private void AddNewPointFromSection(List<PathChartPoint> newPoints, TrVectorNode vectorNode, IEnumerable<ChartableStation> stations,
+        /// <param name="sectionOffsetStart">Offset of the start of this section (in forward direction of track, not of path)</param>
+        /// <param name="sectionOffsetStart">Offset of the end of this section (in forward direction of track, not of path)</param>
+        private void AddPointAndTrackItems(List<PathChartPoint> newPoints, TrVectorNode vectorNode, IEnumerable<ChartableTrackItem> trackItems,
             bool isForward, float height, int tvsi, float sectionOffsetStart, float sectionOffsetEnd)
         {
-            float lengthNextSection = sectionOffsetEnd - sectionOffsetStart;
+            //Note, we are adding points in in reverse direction
 
-            float gradeFromPitch = -vectorNode.TrVectorSections[tvsi].AX; // not a percentage. We can safely assume the pitch is small enough so we do not to take tan(pitch)
+            var additionalPoints = new List<PathChartPoint>();
+
+            // not a percentage. We can safely assume the pitch is small enough so we do not to take tan(pitch)
+            float gradeFromPitch = -vectorNode.TrVectorSections[tvsi].AX * (isForward ? 1 : -1);
             float curvature = GetCurvature(vectorNode, tvsi, isForward);
 
-            PathChartPoint newPoint;
-            foreach (ChartableStation station in stations)
+            List<ChartableTrackItem> items_local = trackItems.ToList();
+            if (isForward)
             {
-                //todo finer control is still possible. The station has information on the offset. 
-                //I considered the idea to crate two points: one at the beginning and one at the point where the station is
-                //We might not need that accuracy. And in many cases it would lead to the station appearing twice.
-                if (station.TrackVectorSectionIndex == tvsi)
+                items_local.Reverse();
+            }
+
+            PathChartPoint newPoint;
+            foreach (ChartableTrackItem chartableItem in items_local)
+            {
+                if (chartableItem.TrackVectorSectionIndex == tvsi && sectionOffsetStart <= chartableItem.TrackVectorSectionOffset && chartableItem.TrackVectorSectionOffset < sectionOffsetEnd)
                 {
-                    newPoint = new PathChartPoint(height, curvature, gradeFromPitch, lengthNextSection, station.StationName);
-                    newPoints.Add(newPoint);
-                    return;
+                    if (isForward)
+                    {
+                        //For forward, we start at the last item in the track
+                        newPoint = new PathChartPoint(chartableItem.Height, curvature, gradeFromPitch, sectionOffsetEnd - chartableItem.TrackVectorSectionOffset, chartableItem.ItemText, chartableItem.ItemType);
+                        sectionOffsetEnd = chartableItem.TrackVectorSectionOffset;
+                    }
+                    else
+                    {
+                        //For reverse, we start at the first item in the track
+                        newPoint = new PathChartPoint(chartableItem.Height, curvature, gradeFromPitch, chartableItem.TrackVectorSectionOffset - sectionOffsetStart, chartableItem.ItemText, chartableItem.ItemType);
+                        sectionOffsetStart = chartableItem.TrackVectorSectionOffset;
+                    }
+                    additionalPoints.Add(newPoint);
                 }
             }
 
-            newPoint = new PathChartPoint(height, curvature, gradeFromPitch, lengthNextSection);
-            newPoints.Add(newPoint);
+            newPoint = new PathChartPoint(height, curvature, gradeFromPitch, sectionOffsetEnd - sectionOffsetStart);
+            additionalPoints.Add(newPoint);
+
+            newPoints.AddRange(additionalPoints);
         }
 
         /// <summary>
@@ -443,8 +464,10 @@ namespace ORTS.TrackViewer.Editing.Charts
         public float Curvature;
         /// <summary>Average grade in the upcoming part of the path</summary>
         public float GradePercent;
-        /// <summary>The name of the station at this location</summary>
-        public string StationName;
+        /// <summary>The text of the track item (e.g. name of the station) at this location</summary>
+        public string TrackItemText;
+        /// <summary>The type of the trackItem</summary>
+        public ChartableTrackItemType TrackItemType;
 
         /// <summary>
         /// Constructor for a first point
@@ -457,7 +480,8 @@ namespace ORTS.TrackViewer.Editing.Charts
             Curvature = 0;
             GradePercent = 0;
             DistanceAlongNextSection = 0;
-            StationName = null;
+            TrackItemText = null;
+            TrackItemType = ChartableTrackItemType.None;
         }
 
         /// <summary>
@@ -467,14 +491,17 @@ namespace ORTS.TrackViewer.Editing.Charts
         /// <param name="height">The height to store</param>
         /// <param name="grade">The grade along the path (raw, so not in percent)</param>
         /// <param name="distanceAlongSection">The distance along the section to store</param>
-        public PathChartPoint(float height, float curvature, float grade, float distanceAlongSection, string stationName = null)
+        /// <param name="itemText">The text to show on an item when drawing</param>
+        /// <param name="type">The type of trackitem (if any) at this point</param>
+        public PathChartPoint(float height, float curvature, float grade, float distanceAlongSection, string itemText = null, ChartableTrackItemType type = ChartableTrackItemType.None)
         {
             HeightM = height;
             DistanceAlongPath = 0;
             Curvature = curvature;
             GradePercent = grade*100;
             DistanceAlongNextSection = distanceAlongSection;
-            StationName = stationName;
+            TrackItemText = itemText;
+            TrackItemType = type;
         }
 
 
@@ -490,7 +517,8 @@ namespace ORTS.TrackViewer.Editing.Charts
             Curvature = sourcePoint.Curvature;
             DistanceAlongNextSection = sourcePoint.DistanceAlongNextSection;
             GradePercent = sourcePoint.GradePercent;
-            StationName = sourcePoint.StationName;
+            TrackItemText = sourcePoint.TrackItemText;
+            TrackItemType = sourcePoint.TrackItemType;
         }
 
         /// <summary>
@@ -498,92 +526,190 @@ namespace ORTS.TrackViewer.Editing.Charts
         /// </summary>
         public override string ToString()
         {
-            return string.Format("pathChartPoint {0:F1} {1:F1} {2:F1} {3:F1}% {4:F3} ", this.DistanceAlongPath, this.DistanceAlongNextSection, this.HeightM, this.GradePercent, this.Curvature);
+            string basicInfo = string.Format("pathChartPoint {0:F1} {1:F1} {2:F1} {3:F1}% {4:F3} ", this.DistanceAlongPath, this.DistanceAlongNextSection, this.HeightM, this.GradePercent, this.Curvature);
+            if (this.TrackItemText == null)
+            {
+                return basicInfo;
+            }
+            return basicInfo + " (" + this.TrackItemText + ")";
         }
     }
     #endregion
 
-    #region StationsManager
+    #region TrackItemManager
     /// <summary>
-    /// For each requested tracknode find the stations (from platform markers) and their location and store this information
+    /// The type of what originally was a track item so we can use it for charting
     /// </summary>
-    public class StationsManager
+    public enum ChartableTrackItemType
+    {
+        /// <summary>No item given at all</summary>
+        None,
+        /// <summary>TrackItem type is a station</summary>
+        Station,
+        /// <summary>TrackItem type is a milepost (or kilometer type)</summary>
+        MilePost,
+        /// <summary>TrackItem type is a speedlimit</summary>
+        SpeedLimit
+    }
+
+    /// <summary>
+    /// For each requested tracknode find the track items we want to keep (stations, speed, mile markers, ...) and their location and store this information
+    /// </summary>
+    class TrackItemManager
     {
         private TrackDB trackDB;
         private TSectionDatFile tsectionDat;
-        private Dictionary<TrackNode, IEnumerable<ChartableStation>> cachedStations;
+        private Dictionary<TrackNode, IEnumerable<ChartableTrackItem>> cachedItems;
+
+        private HashSet<TrItem.trItemType> supportedTrackTypes;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="routeData">The data needed for the route</param>
-        public StationsManager(ORTS.TrackViewer.Drawing.RouteData routeData)
+        public TrackItemManager(ORTS.TrackViewer.Drawing.RouteData routeData)
         {
             this.trackDB = routeData.TrackDB;
             this.tsectionDat = routeData.TsectionDat;
 
-            cachedStations = new Dictionary<TrackNode, IEnumerable<ChartableStation>>();
+            cachedItems = new Dictionary<TrackNode, IEnumerable<ChartableTrackItem>>();
+
+            supportedTrackTypes = new HashSet<TrItem.trItemType> {
+                TrItem.trItemType.trPLATFORM,
+                TrItem.trItemType.trSPEEDPOST,
+            };
         }
 
         /// <summary>
-        /// Determine the stations and their location in the given tracknode.
+        /// Determine the trackItems and their location in the given tracknode.
         /// </summary>
-        /// <param name="tn">The tracknode in which to search for stations</param>
-        /// <returns>The list/set of stations together with their position information</returns>
-        public IEnumerable<ChartableStation> GetStationsInTracknode(TrackNode tn)
+        /// <param name="tn">The tracknode in which to search for track items</param>
+        /// <returns>The list/set of track itemss together with their position information</returns>
+        public IEnumerable<ChartableTrackItem> GetItemsInTracknode(TrackNode tn)
         {
-            if (cachedStations.ContainsKey(tn))
+            if (cachedItems.ContainsKey(tn))
             {
-                return cachedStations[tn];
+                return cachedItems[tn];
             }
 
-            List<ChartableStation> tracknodeStations = new List<ChartableStation>();
+            List<ChartableTrackItem> tracknodeItems = new List<ChartableTrackItem>();
             TrVectorNode vectorNode = tn.TrVectorNode;
-            if (vectorNode.TrItemRefs == null) return tracknodeStations;
+            if (vectorNode.TrItemRefs == null) return tracknodeItems;
 
             foreach (int trackItemIndex in vectorNode.TrItemRefs)
             {
                 TrItem trItem = trackDB.TrItemTable[trackItemIndex];
-                if (trItem.ItemType == TrItem.trItemType.trPLATFORM)
+                if (supportedTrackTypes.Contains(trItem.ItemType))
                 {
-                    var traveller = new Traveller(tsectionDat, trackDB.TrackNodes, tn,
+                    var travellerAtItem = new Traveller(tsectionDat, trackDB.TrackNodes, tn,
                         trItem.TileX, trItem.TileZ, trItem.X, trItem.Z, Traveller.TravellerDirection.Forward);
-                    if (traveller != null)
+                    
+                    if (travellerAtItem != null)
                     {
-                        tracknodeStations.Add(new ChartableStation(trItem as PlatformItem, traveller));
+                        tracknodeItems.Add(new ChartableTrackItem(trItem, travellerAtItem));
                     }
 
                 }
             }
-            cachedStations[tn] = tracknodeStations;
-            return tracknodeStations;
+            tracknodeItems.Sort(new AlongTrackComparer());
+            cachedItems[tn] = tracknodeItems;
+            return tracknodeItems;
+        }
+
+        /// <summary>
+        /// Comparer to sort doubles in reverse order.
+        /// </summary>
+        private class AlongTrackComparer : IComparer<ChartableTrackItem>
+        {
+            int IComparer<ChartableTrackItem>.Compare(ChartableTrackItem a, ChartableTrackItem b)
+            {
+                int tvsCompare = a.TrackVectorSectionIndex.CompareTo(b.TrackVectorSectionIndex);
+                if (tvsCompare != 0)
+                {
+                    return tvsCompare;
+                }
+                else
+                {
+                    return a.TrackVectorSectionOffset.CompareTo(b.TrackVectorSectionOffset);
+                }
+            }
         }
     }
     #endregion
 
-    #region ChartableStation
+    #region ChartableTrackItem
     /// <summary>
-    /// Store the station name (coming from a platform marker) as well as its location inside a tracknode
+    /// Store the text of a trackItem (e.g. station name) as well as its type and its location inside a tracknode
     /// </summary>
-    public struct ChartableStation
+    struct ChartableTrackItem
     {
-        /// <summary>The name of the station</summary>
-        public string StationName;
-        /// <summary>The index of the section in the vector-tracknode</summary>
+        /// <summary>The text of this item that needs to be shown in a chart</summary>
+        public string ItemText;
+        /// <summary>The height of the item</summary>
+        public float Height;
+        /// <summary>The index of the section in the vector tracknode</summary>
         public int TrackVectorSectionIndex;
-        /// <summary>The offset (in the forward direction of the tracknode) in the section where the station (marker) is</summary>
-        public float TrackNodeOffset;
+        /// <summary>The offset (in the forward direction of the tracknode) in the section where the item (marker) is</summary>
+        public float TrackVectorSectionOffset;
+        /// <summary>The type of item</summary>
+        public ChartableTrackItemType ItemType;
         
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="platform">The original platform item that is the source of the station</param>
-        /// <param name="traveller">The traveller located at the location of the platform marker</param>
-        public ChartableStation(PlatformItem platform, Traveller traveller)
+        /// <param name="item">The original track item</param>
+        /// <param name="travellerAtItem">The traveller located at the location of the track item</param>
+        public ChartableTrackItem(TrItem item, Traveller travellerAtItem)
         {
-            this.StationName = platform.Station;
-            this.TrackVectorSectionIndex = traveller.TrackVectorSectionIndex;
-            this.TrackNodeOffset = traveller.TrackNodeOffset;
+            this.Height = item.Y;
+            this.ItemText = string.Empty;
+            this.ItemType = ChartableTrackItemType.Station;
+            switch (item.ItemType)
+            {
+                case TrItem.trItemType.trEMPTY:
+                    break;
+                case TrItem.trItemType.trCROSSOVER:
+                    break;
+                case TrItem.trItemType.trSIGNAL:
+                    break;
+                case TrItem.trItemType.trSPEEDPOST:
+                    SpeedPostItem speedPost = item as SpeedPostItem;
+                    this.ItemText = speedPost.SpeedInd.ToString(System.Globalization.CultureInfo.CurrentCulture);
+                    if (speedPost.IsMilePost)
+                    {
+                        this.ItemType = ChartableTrackItemType.MilePost;
+                    }
+                    if (speedPost.IsLimit)
+                    {
+                        this.ItemType = ChartableTrackItemType.SpeedLimit;
+                    }
+                    break;
+                case TrItem.trItemType.trPLATFORM:
+                    this.ItemText = (item as PlatformItem).Station;
+                    this.ItemType = ChartableTrackItemType.Station;
+                    break;
+                case TrItem.trItemType.trSOUNDREGION:
+                    break;
+                case TrItem.trItemType.trXING:
+                    break;
+                case TrItem.trItemType.trSIDING:
+                    break;
+                case TrItem.trItemType.trHAZZARD:
+                    break;
+                case TrItem.trItemType.trPICKUP:
+                    break;
+                case TrItem.trItemType.trCARSPAWNER:
+                    break;
+                default:
+                    break;
+            }
+
+
+            this.TrackVectorSectionIndex = travellerAtItem.TrackVectorSectionIndex;
+            var travellerAtSectionStart = new Traveller(travellerAtItem);
+            travellerAtSectionStart.MoveInSection(float.MinValue); // Move to begin of section
+            this.TrackVectorSectionOffset = travellerAtItem.TrackNodeOffset - travellerAtSectionStart.TrackNodeOffset;
+
         }
     }
     #endregion
