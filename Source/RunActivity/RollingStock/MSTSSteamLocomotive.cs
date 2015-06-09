@@ -60,7 +60,6 @@ namespace ORTS
         //Configure a default cutoff controller
         //If none is specified, this will be used, otherwise those values will be overwritten
         public MSTSNotchController CutoffController = new MSTSNotchController(-0.9f, 0.9f, 0.1f);
-        public MSTSNotchController SteamHeatController = new MSTSNotchController(0, 1, 0.1f);
         public MSTSNotchController Injector1Controller = new MSTSNotchController(0, 1, 0.1f);
         public MSTSNotchController Injector2Controller = new MSTSNotchController(0, 1, 0.1f);
         public MSTSNotchController BlowerController = new MSTSNotchController(0, 1, 0.1f);
@@ -541,7 +540,6 @@ namespace ORTS
                 case "engine(steamfiremanismechanicalstoker": Stoker = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortssteamfiremanmaxpossiblefiringrate": ORTSMaxFiringRateKGpS = stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null) / 2.2046f / 3600; break;
                 case "engine(enginecontrollers(cutoff": CutoffController.Parse(stf); break;
-                case "engine(enginecontrollers(steamheat": SteamHeatController.Parse(stf); break;
                 case "engine(enginecontrollers(injector1water": Injector1Controller.Parse(stf); break;
                 case "engine(enginecontrollers(injector2water": Injector2Controller.Parse(stf); break;
                 case "engine(enginecontrollers(blower": BlowerController.Parse(stf); break;
@@ -619,7 +617,6 @@ namespace ORTS
             Stoker = locoCopy.Stoker;
             ORTSMaxFiringRateKGpS = locoCopy.ORTSMaxFiringRateKGpS;
             CutoffController = (MSTSNotchController)locoCopy.CutoffController.Clone();
-            SteamHeatController = (MSTSNotchController)locoCopy.SteamHeatController.Clone();
             Injector1Controller = (MSTSNotchController)locoCopy.Injector1Controller.Clone();
             Injector2Controller = (MSTSNotchController)locoCopy.Injector2Controller.Clone();
             BlowerController = (MSTSNotchController)locoCopy.BlowerController.Clone();
@@ -671,7 +668,6 @@ namespace ORTS
             outf.Write(SteamGearPosition);
             outf.Write(WaterFraction);
             ControllerFactory.Save(CutoffController, outf);
-            ControllerFactory.Save(SteamHeatController, outf);
             ControllerFactory.Save(Injector1Controller, outf);
             ControllerFactory.Save(Injector2Controller, outf);
             ControllerFactory.Save(BlowerController, outf);
@@ -702,7 +698,6 @@ namespace ORTS
             FlueTempK = inf.ReadSingle();
             SteamGearPosition = inf.ReadSingle();
             ControllerFactory.Restore(CutoffController, inf);
-            ControllerFactory.Restore(SteamHeatController, inf);
             ControllerFactory.Restore(Injector1Controller, inf);
             ControllerFactory.Restore(Injector2Controller, inf);
             ControllerFactory.Restore(BlowerController, inf);
@@ -1357,10 +1352,6 @@ namespace ORTS
                     Simulator.Confirmer.UpdateWithPerCent(CabControl.Blower, CabSetting.Increase, BlowerController.CurrentValue * 100);
                 if (BlowerController.UpdateValue < 0.0)
                     Simulator.Confirmer.UpdateWithPerCent(CabControl.Blower, CabSetting.Decrease, BlowerController.CurrentValue * 100);
-                if (SteamHeatController.UpdateValue > 0.0)
-                    Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamHeat, CabSetting.Increase, SteamHeatController.CurrentValue * 100);
-                if (SteamHeatController.UpdateValue < 0.0)
-                    Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamHeat, CabSetting.Decrease, SteamHeatController.CurrentValue * 100);
                 if (DamperController.UpdateValue > 0.0)
                     Simulator.Confirmer.UpdateWithPerCent(CabControl.Damper, CabSetting.Increase, DamperController.CurrentValue * 100);
                 if (DamperController.UpdateValue < 0.0)
@@ -1373,15 +1364,6 @@ namespace ORTS
                     Simulator.Confirmer.UpdateWithPerCent(CabControl.FiringRate, CabSetting.Increase, FiringRateController.CurrentValue * 100);
                 if (FiringRateController.UpdateValue < 0.0)
                     Simulator.Confirmer.UpdateWithPerCent(CabControl.FiringRate, CabSetting.Decrease, FiringRateController.CurrentValue * 100);
-            }
-
-            SteamHeatController.Update(elapsedClockSeconds);
-            if (IsPlayerTrain)
-            {
-                if (SteamHeatController.UpdateValue > 0.0)
-                    Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamHeat, CabSetting.Increase, SteamHeatController.CurrentValue * 100);
-                if (SteamHeatController.UpdateValue < 0.0)
-                    Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamHeat, CabSetting.Decrease, SteamHeatController.CurrentValue * 100);
             }
 
             Injector1Controller.Update(elapsedClockSeconds);
@@ -3534,9 +3516,6 @@ namespace ORTS
                 case CABViewControlTypes.FIREHOLE:
                     data = FireboxDoorController.CurrentValue;
                     break;
-                case CABViewControlTypes.STEAM_HEAT:
-                    data = SteamHeatController.CurrentValue;
-                    break;
                 case CABViewControlTypes.WATER_INJECTOR1:
                     data = Injector1Controller.CurrentValue;
                     break;
@@ -4053,71 +4032,6 @@ namespace ORTS
         }
 
         //Gear Box
-
-        #region Steam heating control
-
-        public void StartSteamHeatIncrease(float? target)
-        {
-            SteamHeatController.CommandStartTime = Simulator.ClockTime;
-            if (IsPlayerTrain)
-                Simulator.Confirmer.ConfirmWithPerCent(CabControl.SteamHeat, CabSetting.Increase, SteamHeatController.CurrentValue * 100);
-            SteamHeatController.StartIncrease(target);
-            SignalEvent(Event.SteamHeatChange);
-        }
-
-        public void StopSteamHeatIncrease()
-        {
-            SteamHeatController.StopIncrease();
-            new ContinuousSteamHeatCommand(Simulator.Confirmer.Viewer.Log, 1, true, SteamHeatController.CurrentValue, SteamHeatController.CommandStartTime);
-        }
-
-        public void StartSteamHeatDecrease(float? target)
-        {
-            if (IsPlayerTrain)
-                Simulator.Confirmer.ConfirmWithPerCent(CabControl.SteamHeat, CabSetting.Decrease, SteamHeatController.CurrentValue * 100);
-            SteamHeatController.StartDecrease(target);
-            SignalEvent(Event.SteamHeatChange);
-        }
-
-        public void StopSteamHeatDecrease()
-        {
-            SteamHeatController.StopDecrease();
-            if (IsPlayerTrain)
-            new ContinuousSteamHeatCommand(Simulator.Confirmer.Viewer.Log, 1, false, SteamHeatController.CurrentValue, SteamHeatController.CommandStartTime);
-        }
-
-        public void SteamHeatChangeTo(bool increase, float? target)
-        {
-            if (increase)
-            {
-                if (target > SteamHeatController.CurrentValue)
-                {
-                    StartSteamHeatIncrease(target);
-                }
-            }
-            else
-            {
-                if (target < SteamHeatController.CurrentValue)
-                {
-                    StartSteamHeatDecrease(target);
-                }
-            }
-        }
-
-        public void SetSteamHeatValue(float value)
-        {
-            var controller = SteamHeatController;
-            var oldValue = controller.IntermediateValue;
-            var change = controller.SetValue(value);
-            if (change != 0)
-            {
-                new ContinuousSteamHeatCommand(Simulator.Confirmer.Viewer.Log, 1, change > 0, controller.CurrentValue, Simulator.GameTime);
-            }
-            if (oldValue != controller.IntermediateValue)
-                Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamHeat, oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, controller.CurrentValue * 100);
-        }
-
-        #endregion
 
 
         public override void StartReverseIncrease(float? target)
@@ -4648,7 +4562,7 @@ namespace ORTS
             return 0f;
         }
 
-        public void GetLocoInfo(ref float CC, ref float BC, ref float DC, ref float FC, ref float I1, ref float I2, ref float SH)
+        public void GetLocoInfo(ref float CC, ref float BC, ref float DC, ref float FC, ref float I1, ref float I2)
         {
             CC = CutoffController.CurrentValue;
             BC = BlowerController.CurrentValue;
@@ -4656,10 +4570,9 @@ namespace ORTS
             FC = FiringRateController.CurrentValue;
             I1 = Injector1Controller.CurrentValue;
             I2 = Injector2Controller.CurrentValue;
-            SH = SteamHeatController.CurrentValue;
         }
 
-        public void SetLocoInfo(float CC, float BC, float DC, float FC, float I1, float I2, float SH)
+        public void SetLocoInfo(float CC, float BC, float DC, float FC, float I1, float I2)
         {
             CutoffController.CurrentValue = CC;
             CutoffController.UpdateValue = 0.0f;
@@ -4673,8 +4586,6 @@ namespace ORTS
             Injector1Controller.UpdateValue = 0.0f;
             Injector2Controller.CurrentValue = I2;
             Injector2Controller.UpdateValue = 0.0f;
-            SteamHeatController.CurrentValue = SH;
-            SteamHeatController.UpdateValue = 0.0f;
         }
 
         public override void SwitchToPlayerControl()

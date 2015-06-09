@@ -802,27 +802,6 @@ namespace ORTS.Viewer3D
     
     // Steam controls
     [Serializable()]
-    public class ContinuousSteamHeatCommand : ContinuousCommand
-    {
-        public static MSTSSteamLocomotive Receiver { get; set; }
-        
-        public ContinuousSteamHeatCommand(CommandLog log, int injector, bool toState, float? target, double startTime)
-            : base(log, toState, target, startTime)
-        {
-            Redo();
-        }
-
-        public override void Redo()
-        {
-            if (Receiver == null) return;
-            {
-                Receiver.SteamHeatChangeTo(ToState, Target);
-                           }
-            // Report();
-        }   
-    }
-
-    [Serializable()]
     public class ContinuousInjectorCommand : ContinuousCommand {
         public static MSTSSteamLocomotive Receiver { get; set; }
         int Injector;

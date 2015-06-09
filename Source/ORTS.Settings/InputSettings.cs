@@ -181,8 +181,6 @@ namespace ORTS.Settings
         [GetString("Control Injector 2")] ControlInjector2,
         [GetString("Control Blower Increase")] ControlBlowerIncrease,
         [GetString("Control Blower Decrease")] ControlBlowerDecrease,
-        [GetString("Control Steam Heat Increase")] ControlSteamHeatIncrease,
-        [GetString("Control Steam Heat Decrease")] ControlSteamHeatDecrease,
         [GetString("Control Damper Increase")] ControlDamperIncrease,
         [GetString("Control Damper Decrease")] ControlDamperDecrease,
         [GetString("Control Firebox Open")] ControlFireboxOpen,
@@ -502,8 +500,6 @@ namespace ORTS.Settings
             Commands[(int)UserCommands.ControlBellToggle] = new UserCommandKeyInput(0x30, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlBlowerDecrease] = new UserCommandKeyInput(0x31, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlBlowerIncrease] = new UserCommandKeyInput(0x31);
-            Commands[(int)UserCommands.ControlSteamHeatDecrease] = new UserCommandKeyInput(0x20, KeyModifiers.Alt);
-            Commands[(int)UserCommands.ControlSteamHeatIncrease] = new UserCommandKeyInput(0x16, KeyModifiers.Alt);
             Commands[(int)UserCommands.ControlBrakeHoseConnect] = new UserCommandKeyInput(0x2B);
             Commands[(int)UserCommands.ControlBrakeHoseDisconnect] = new UserCommandKeyInput(0x2B, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlCylinderCocks] = new UserCommandKeyInput(0x2E);

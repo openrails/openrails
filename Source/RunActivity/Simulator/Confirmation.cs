@@ -51,7 +51,6 @@ namespace ORTS {
       , Injector1
       , Injector2
       , Blower
-      , SteamHeat
       , Damper
       , FireboxDoor
       , FiringRate
@@ -157,7 +156,6 @@ namespace ORTS {
                 , new string [] { GetString("Injector 1"), GetString("off"), null, GetString("on"), GetString("close"), GetString("open") } 
                 , new string [] { GetString("Injector 2"), GetString("off"), null, GetString("on"), GetString("close"), GetString("open") } 
                 , new string [] { GetString("Blower"), null, null, null, GetString("decrease"), GetString("increase") } 
-                , new string [] { GetString("SteamHeat"), null, null, null, GetString("decrease"), GetString("increase") } 
                 , new string [] { GetString("Damper"), null, null, null, GetString("close"), GetString("open") } 
                 , new string [] { GetString("Firebox Door"), null, null, null, GetString("close"), GetString("open") }
                 , new string [] { GetString("Firing Rate"), null, null, null, GetString("decrease"), GetString("increase") } 
