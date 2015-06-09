@@ -116,6 +116,8 @@ namespace ORTS.Viewer3D.RollingStock
             UserInputCommands.Add(UserCommands.ControlInjector2, new Action[] { Noop, () => new ToggleInjectorCommand(Viewer.Log, 2) });
             UserInputCommands.Add(UserCommands.ControlBlowerIncrease, new Action[] { () => SteamLocomotive.StopBlowerIncrease(), () => SteamLocomotive.StartBlowerIncrease(null) });
             UserInputCommands.Add(UserCommands.ControlBlowerDecrease, new Action[] { () => SteamLocomotive.StopBlowerDecrease(), () => SteamLocomotive.StartBlowerDecrease(null) });
+            UserInputCommands.Add(UserCommands.ControlSteamHeatIncrease, new Action[] { () => SteamLocomotive.StopSteamHeatIncrease(), () => SteamLocomotive.StartSteamHeatIncrease(null) });
+            UserInputCommands.Add(UserCommands.ControlSteamHeatDecrease, new Action[] { () => SteamLocomotive.StopSteamHeatDecrease(), () => SteamLocomotive.StartSteamHeatDecrease(null) });
             UserInputCommands.Add(UserCommands.ControlDamperIncrease, new Action[] { () => SteamLocomotive.StopDamperIncrease(), () => SteamLocomotive.StartDamperIncrease(null) });
             UserInputCommands.Add(UserCommands.ControlDamperDecrease, new Action[] { () => SteamLocomotive.StopDamperDecrease(), () => SteamLocomotive.StartDamperDecrease(null) });
             UserInputCommands.Add(UserCommands.ControlFireboxOpen, new Action[] { () => SteamLocomotive.StopFireboxDoorIncrease(), () => SteamLocomotive.StartFireboxDoorIncrease(null) });
