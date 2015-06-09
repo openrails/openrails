@@ -38,10 +38,13 @@ namespace ORTS.TrackViewer.Editing.Charts
     /// </summary>
     public class DrawPathChart
     {
+        /// <summary>Does the chart window have focus (actived) or not</summary>
+        public bool IsActived { get { return this.chartWindow.IsActivated; } }
+        
         // Injection dependencies
         private PathEditor pathEditor;
         private ORTS.TrackViewer.Drawing.RouteData routeData;
-        
+
         //
         private PathChartData pathData;
         private PathChartWindow chartWindow;
@@ -126,7 +129,7 @@ namespace ORTS.TrackViewer.Editing.Charts
             chartWindow.SetCanvasData("grade", new GradeChart(this.pathData));
             chartWindow.SetCanvasData("curvature", new CurvatureChart(this.pathData));
             chartWindow.SetCanvasData("distance", new DistanceChart(this.pathData));
-            chartWindow.SetCanvasData("milemarkers", new DistanceMarkersChart(this.pathData));
+            chartWindow.SetCanvasData("milemarkers", new MileMarkersChart(this.pathData));
             chartWindow.SetCanvasData("speedmarkers", new SpeedlimitsChart(this.pathData));
 
 
@@ -143,6 +146,24 @@ namespace ORTS.TrackViewer.Editing.Charts
             pathData.Update(trainpath);
             chartWindow.Draw();
             chartWindow.SetTitle(pathEditor.currentTrainPath.PathName);
+        }
+        
+        /// <summary>
+        /// Zoom the chart window
+        /// </summary>
+        /// <param name="zoomSteps">The number of zoom steps (negative for zooming in)</param>
+        public void Zoom(int zoomSteps)
+        {
+            this.chartWindow.ZoomChange(Math.Exp(-0.1*zoomSteps));
+        }
+
+        /// <summary>
+        /// Shift the chartwindow (when zoomed)
+        /// </summary>
+        /// <param name="shiftSteps">The number of zoom steps (negative for shifting left)</param>
+        public void Shift(int shiftSteps)
+        {
+            this.chartWindow.Shift(shiftSteps);
         }
     }
     #endregion
@@ -814,17 +835,17 @@ namespace ORTS.TrackViewer.Editing.Charts
     }
     #endregion
 
-    #region DistanceMarkersChart
+    #region MileMarkersChart
     /// <summary>
     /// Draw the distances along the path
     /// </summary>
-    public class DistanceMarkersChart : SubChart
+    public class MileMarkersChart : SubChart
     {
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="pathChartData">The data for which we will be creating charts</param>
-        public DistanceMarkersChart(PathChartData pathChartData) : base(pathChartData) { }
+        public MileMarkersChart(PathChartData pathChartData) : base(pathChartData) { }
 
         /// <summary>
         /// Overridden abstract method to do the chart-specific (and hence not the general) parts of the drawing
@@ -835,7 +856,8 @@ namespace ORTS.TrackViewer.Editing.Charts
         {
             DetermineScaling();
             DrawText(legendCanvas, 5, 10, "Markers", Colors.Black);
-    
+
+            List<PathChartPoint> pointsWithMarkers = new List<PathChartPoint>();
             foreach (PathChartPoint sourcePoint in this.pathData.PathChartPoints)
             {
                 if (!InZoomRange(sourcePoint))
@@ -844,9 +866,34 @@ namespace ORTS.TrackViewer.Editing.Charts
                 }
                 if (sourcePoint.TrackItemType == ChartableTrackItemType.MilePost)
                 {
-                    double newX = ScaledX(sourcePoint.DistanceAlongPath);
-                    DrawText(drawingCanvas, newX, 10, sourcePoint.TrackItemText, Colors.Black);
+                    pointsWithMarkers.Add(sourcePoint);
                 }
+            }
+
+            if (0 == pointsWithMarkers.Count())
+            {
+                return;
+            }
+
+            double pixelsPerMarker = this.canvasWidth / pointsWithMarkers.Count();
+            bool onlyShowMultiplesOf5 = (pixelsPerMarker < 25);
+            foreach (PathChartPoint sourcePoint in pointsWithMarkers)
+            {
+                double newX = ScaledX(sourcePoint.DistanceAlongPath);
+                string textToDraw = sourcePoint.TrackItemText;
+                if (onlyShowMultiplesOf5)
+                {
+                    double textAsDouble;
+                    if (Double.TryParse(textToDraw, out textAsDouble))
+                    {
+                        int textAsInt = (int)Math.Round(textAsDouble);
+                        if (textAsInt % 5 != 0)
+                        {
+                            textToDraw = String.Empty;
+                        }
+                    }
+                }
+                DrawText(drawingCanvas, newX, 10, textToDraw, Colors.Black);
             }
         }
     }

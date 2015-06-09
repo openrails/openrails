@@ -319,13 +319,24 @@ namespace ORTS.TrackViewer
             }
 
             // First check all the buttons that can be kept down.
-            if (TVUserInput.IsDown(TVUserCommands.ShiftLeft)) { DrawArea.ShiftLeft(); skipDrawAmount = 0; }
-            if (TVUserInput.IsDown(TVUserCommands.ShiftRight)) { DrawArea.ShiftRight(); skipDrawAmount = 0; }
-            if (TVUserInput.IsDown(TVUserCommands.ShiftUp)) { DrawArea.ShiftUp(); skipDrawAmount = 0; }
-            if (TVUserInput.IsDown(TVUserCommands.ShiftDown)) { DrawArea.ShiftDown(); skipDrawAmount = 0; }
 
-            if (TVUserInput.IsDown(TVUserCommands.ZoomIn)) { DrawArea.Zoom(-1); skipDrawAmount = 0; }
-            if (TVUserInput.IsDown(TVUserCommands.ZoomOut)) { DrawArea.Zoom(1); skipDrawAmount = 0; }
+            if (this.drawPathChart.IsActived)
+            {
+                if (TVUserInput.IsDown(TVUserCommands.ShiftLeft)) { drawPathChart.Shift(-1); skipDrawAmount = 0; }
+                if (TVUserInput.IsDown(TVUserCommands.ShiftRight)) { drawPathChart.Shift(1); skipDrawAmount = 0; }
+                if (TVUserInput.IsDown(TVUserCommands.ZoomIn)) { drawPathChart.Zoom(-1); skipDrawAmount = 0; }
+                if (TVUserInput.IsDown(TVUserCommands.ZoomOut)) { drawPathChart.Zoom(1); skipDrawAmount = 0; } 
+            }
+            else
+            {
+                if (TVUserInput.IsDown(TVUserCommands.ShiftLeft)) { DrawArea.ShiftLeft(); skipDrawAmount = 0; }
+                if (TVUserInput.IsDown(TVUserCommands.ShiftRight)) { DrawArea.ShiftRight(); skipDrawAmount = 0; }
+                if (TVUserInput.IsDown(TVUserCommands.ShiftUp)) { DrawArea.ShiftUp(); skipDrawAmount = 0; }
+                if (TVUserInput.IsDown(TVUserCommands.ShiftDown)) { DrawArea.ShiftDown(); skipDrawAmount = 0; }
+
+                if (TVUserInput.IsDown(TVUserCommands.ZoomIn)) { DrawArea.Zoom(-1); skipDrawAmount = 0; }
+                if (TVUserInput.IsDown(TVUserCommands.ZoomOut)) { DrawArea.Zoom(1); skipDrawAmount = 0; }
+            }
 
             if (TVUserInput.Changed)
             {
@@ -398,7 +409,7 @@ namespace ORTS.TrackViewer
                 drawPathChart.DrawDynamics();
             }
 
-            if (!TVUserInput.IsDown(TVUserCommands.EditorTakesMouseClick) && !this.MenuHasMouse)
+            if (!TVUserInput.IsDown(TVUserCommands.EditorTakesMouseClick) && !this.MenuHasMouse && !this.drawPathChart.IsActived)
             {
                 if (TVUserInput.IsMouseMoved() && TVUserInput.IsMouseLeftButtonDown())
                 {
@@ -409,13 +420,16 @@ namespace ORTS.TrackViewer
             if (TVUserInput.IsMouseWheelChanged())
             {
                 int mouseWheelChange = TVUserInput.MouseWheelChange();
-                if (TVUserInput.IsDown(TVUserCommands.MouseZoomSlow))
+                if (!this.drawPathChart.IsActived)
                 {
-                    DrawArea.Zoom(mouseWheelChange > 0 ? -1 : 1);  
-                }
-                else
-                {
-                    DrawArea.Zoom(-mouseWheelChange / 40);
+                    if (TVUserInput.IsDown(TVUserCommands.MouseZoomSlow))
+                    {
+                        DrawArea.Zoom(mouseWheelChange > 0 ? -1 : 1);
+                    }
+                    else
+                    {
+                        DrawArea.Zoom(-mouseWheelChange / 40);
+                    }
                 }
             }
 

@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              Title="Charting the path"
+             Activated="Window_Activated" Deactivated="Window_Deactivated" MouseWheel="OnMouseWheel"
              Width="1500" Height="400">
     <Grid>
         <Grid.RowDefinitions>

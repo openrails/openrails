@@ -19,6 +19,9 @@ namespace ORTS.TrackViewer.Editing.Charts
     /// </summary>
     partial class PathChartWindow : Window
     {
+        /// <summary>Does the window have focus (actived) or not</summary>
+        public bool IsActivated { get; set; }
+
         private Dictionary<string, Canvas> chartCanvasses;
         private Dictionary<string, Canvas> legendCanvasses;
         private Dictionary<string, ISubChart> subCharts;
@@ -48,7 +51,7 @@ namespace ORTS.TrackViewer.Editing.Charts
                 {"speedmarkers", SpeedMarkersLegend}
             };
             subCharts = new Dictionary<string, ISubChart>();
-
+            ChartScrollbar.Value = ChartScrollbar.Maximum / 2;
         }
 
         internal void SetCanvasData(string canvasName, ISubChart subChart)
@@ -119,6 +122,24 @@ namespace ORTS.TrackViewer.Editing.Charts
             e.Cancel = true;  // cancels the window close    
             this.Hide();      // Programmatically hides the window
         }
+
+        private void Window_Activated(object sender, EventArgs e)
+        {
+            this.IsActivated = true;
+        }
+
+        private void Window_Deactivated(object sender, EventArgs e)
+        {
+            this.IsActivated = false;
+        }
+
+        private void OnMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            double xPositionOfMouse = Mouse.GetPosition(this.HeightCanvas).X;
+            double xPositionOfMouseAsRatio = xPositionOfMouse / this.HeightCanvas.ActualWidth;
+
+            ZoomChange(Math.Exp(0.1 * e.Delta / 40), xPositionOfMouseAsRatio);
+        }
         #endregion
 
         #region Zooming
@@ -132,23 +153,41 @@ namespace ORTS.TrackViewer.Editing.Charts
             ZoomChange(1.0/1.5);
         }
 
-        private void ZoomChange(double zoomFactor)
+        /// <summary>
+        /// Zoom the charting window
+        /// </summary>
+        /// <param name="zoomFactor">Factor to zoom with</param>
+        public void ZoomChange(double zoomFactor)
+        {
+            ZoomChange(zoomFactor, ChartScrollbar.Value / ChartScrollbar.Maximum);
+        }
+
+        private void ZoomChange(double zoomFactor, double zoomCenterRatio)
         {
             double oldValue = ChartScrollbar.Value;
 
-            double zoomCenter = ChartScrollbar.Value + ChartScrollbar.ViewportSize / 2;
+            double zoomCenter = ChartScrollbar.Value + zoomCenterRatio * ChartScrollbar.ViewportSize;
             ChartScrollbar.ViewportSize = ChartScrollbar.ViewportSize / zoomFactor;
             if (ChartScrollbar.ViewportSize > 0.9999)
             {
                 ChartScrollbar.ViewportSize = 0.9999;
             }
             ChartScrollbar.Maximum = 1 - ChartScrollbar.ViewportSize;
-            ChartScrollbar.Value = zoomCenter - ChartScrollbar.ViewportSize / 2;
+            ChartScrollbar.Value = zoomCenter - zoomCenterRatio * ChartScrollbar.ViewportSize;
             if (ChartScrollbar.Value == oldValue)
             {
                 // Normally, a value change will trigger a draw. But in case value is 0, it stays at 0. So force a draw
                 Draw();
             }
+        }
+
+        public void Shift(int shiftSteps)
+        {
+            double shiftSize = Math.Min(ChartScrollbar.Maximum / 10, ChartScrollbar.ViewportSize * 0.5);
+            ChartScrollbar.Value += shiftSteps * shiftSize;
+            if (ChartScrollbar.Value < ChartScrollbar.Minimum) ChartScrollbar.Value = ChartScrollbar.Minimum;
+            if (ChartScrollbar.Value > ChartScrollbar.Maximum) ChartScrollbar.Value = ChartScrollbar.Maximum;
+
         }
         #endregion
 
@@ -156,6 +195,8 @@ namespace ORTS.TrackViewer.Editing.Charts
         {
             Draw();
         }
+
+
 
     }
 }
