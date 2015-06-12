@@ -71,6 +71,12 @@ namespace ORTS.TrackViewer.Editing.Charts
             this.pathEditor = pathEditor;
             this.pathEditor.ChangedPath += new ChangedPathHandler(OnPathChanged);
 
+            if (pathEditor == null || pathEditor.currentTrainPath == null || pathEditor.currentTrainPath.FirstNode == null)
+            {
+                pathData = null;
+                return;
+            }
+
             if (ChartWindowIsOpen)
             {
                 InitChartData();
@@ -131,18 +137,22 @@ namespace ORTS.TrackViewer.Editing.Charts
             chartWindow.SetCanvasData("distance", new DistanceChart(this.pathData));
             chartWindow.SetCanvasData("milemarkers", new MileMarkersChart(this.pathData));
             chartWindow.SetCanvasData("speedmarkers", new SpeedlimitsChart(this.pathData));
-
-
         }
 
         private void OnPathChanged()
         {
             if (pathData == null)
             {
+                Close();
                 return;
             }
 
             Trainpath trainpath = pathEditor.currentTrainPath;
+            if (trainpath.FirstNode == null)
+            {
+                Close();
+                return;
+            }
             pathData.Update(trainpath);
             chartWindow.Draw();
             chartWindow.SetTitle(pathEditor.currentTrainPath.PathName);
@@ -234,6 +244,12 @@ namespace ORTS.TrackViewer.Editing.Charts
         {
             drawingCanvas.Children.Clear();
             legendCanvas.Children.Clear();
+
+            if (this.pathData == null || !this.pathData.HasPath)
+            {
+                return;
+            }
+
             canvasWidth = drawingCanvas.ActualWidth;
             canvasHeight = drawingCanvas.ActualHeight;
 
@@ -341,6 +357,26 @@ namespace ORTS.TrackViewer.Editing.Charts
             Canvas.SetLeft(textBlock, leftX);
             Canvas.SetTop(textBlock, centerY - textBlock.DesiredSize.Height / 2); // So no it should be centered vertically
             
+            drawingCanvas.Children.Add(textBlock);
+        }
+
+        /// <summary>
+        /// Draw/print text on the WPF canvas, centered around the given coordinates
+        /// </summary>
+        /// <param name="drawingCanvas">The canvas to draw upon</param>
+        /// <param name="centerX">The x-position at the left of the text</param>
+        /// <param name="centerY">The y-position at the center of the text</param>
+        /// <param name="text">The text to draw/print</param>
+        /// <param name="color">The color to use for printing the text</param>
+        protected static void DrawTextCentered(Canvas drawingCanvas, double centerX, double centerY, string text, Color color)
+        {
+            TextBlock textBlock = new TextBlock();
+            textBlock.Text = text;
+            textBlock.Foreground = new SolidColorBrush(color);
+            textBlock.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity)); // find out how tall it wants to be
+            Canvas.SetLeft(textBlock, centerX - textBlock.DesiredSize.Width / 2);
+            Canvas.SetTop(textBlock, centerY - textBlock.DesiredSize.Height / 2); // So no it should be centered vertically
+
             drawingCanvas.Children.Add(textBlock);
         }
 
@@ -720,15 +756,54 @@ namespace ORTS.TrackViewer.Editing.Charts
         protected override void DrawSubChart(Canvas drawingCanvas, Canvas legendCanvas)
         {
             DetermineScaling(CurvatureDeviation);
-            DrawDataPolyLine(drawingCanvas, CurvatureDeviation, true);
             DrawText(legendCanvas, 5, ScaledY(0), "Curvature", Colors.Black);
-            //DebugShowDrawTime(legendCanvas);
+            DrawLine(drawingCanvas, ScaledX(this.zoomedMinX), ScaledY(0d), ScaledX(this.zoomedMaxX), ScaledY(0d), Colors.LightGray);
+            DrawDataPolyLine(drawingCanvas, CurvatureDeviation, true);
+            DrawDegreesTurned(drawingCanvas);
         }
 
-        private void DebugShowDrawTime(Canvas legendCanvas)
+        private void DrawDegreesTurned(Canvas drawingCanvas)
         {
-            if (!System.Diagnostics.Debugger.IsAttached) return;
-            DrawText(legendCanvas, 10, ScaledY(0), DateTime.Now.ToString("mm:ss"), Colors.Black);
+            double pixelsPerKm = 1000*this.canvasWidth / (this.zoomedMaxX - this.zoomedMinX);
+            if (pixelsPerKm < 100)
+            {   // do not draw if we do not have enoug pixels
+                return;
+            }
+
+            bool InCurve = false;
+            double accumulatedCurveRad=0;
+            double distanceAlongPathAtStart = 0;
+            char degree = (char)176;
+            foreach (PathChartPoint sourcePoint in this.pathData.PathChartPoints)
+            {
+                if (!InZoomRange(sourcePoint))
+                {
+                    continue;
+                }
+                if (0 == sourcePoint.Curvature)
+                {   //  now in straight.
+                    if (InCurve)
+                    {   // end of a curve
+
+                        string textToDraw = String.Format("{0:F0}{1}", 180*accumulatedCurveRad/Math.PI, degree);
+                        DrawTextCentered(drawingCanvas, ScaledX((sourcePoint.DistanceAlongPath + distanceAlongPathAtStart) / 2), 30, textToDraw, Colors.Red);
+                    }
+                    InCurve = false;
+                }
+                else
+                {   // now in a curve
+                    if (!InCurve)
+                    {   // starting Curve
+                        accumulatedCurveRad = 0;
+                        distanceAlongPathAtStart = sourcePoint.DistanceAlongPath;
+                    }
+                    // curvature = 1/radius (plus a sign). distance along section = angles in Rad * radius
+                    // angles in rad = distance along section / radius = distance along section * curvature
+                    accumulatedCurveRad += sourcePoint.DistanceAlongNextSection * sourcePoint.Curvature;
+                    InCurve = true;
+                }
+
+            }
         }
 
         /// <summary>

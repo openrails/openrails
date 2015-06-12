@@ -135,10 +135,13 @@ namespace ORTS.TrackViewer.Editing.Charts
 
         private void OnMouseWheel(object sender, MouseWheelEventArgs e)
         {
-            double xPositionOfMouse = Mouse.GetPosition(this.HeightCanvas).X;
-            double xPositionOfMouseAsRatio = xPositionOfMouse / this.HeightCanvas.ActualWidth;
+            if (this.IsActivated)
+            {   // We want to make sure that mouse scrolling is not captured here if already captured in trackViewer.
+                double xPositionOfMouse = Mouse.GetPosition(this.HeightCanvas).X;
+                double xPositionOfMouseAsRatio = xPositionOfMouse / this.HeightCanvas.ActualWidth;
 
-            ZoomChange(Math.Exp(0.1 * e.Delta / 40), xPositionOfMouseAsRatio);
+                ZoomChange(Math.Exp(0.1 * e.Delta / 40), xPositionOfMouseAsRatio);
+            }
         }
         #endregion
 

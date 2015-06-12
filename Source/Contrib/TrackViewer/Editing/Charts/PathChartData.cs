@@ -43,6 +43,8 @@ namespace ORTS.TrackViewer.Editing.Charts
         /// <summary>The distance along the path for each path-node</summary>
         public IDictionary<TrainpathNode, double> DistanceAlongPath;
 
+        public bool HasPath { get { return PathChartPoints != null && PathChartPoints.Count() > 0;} }
+
         #endregion
 
         #region private members
