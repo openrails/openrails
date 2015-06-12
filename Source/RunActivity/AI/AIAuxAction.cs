@@ -2474,7 +2474,6 @@ namespace ORTS
         int Delay;
         public int ActualDepart;
         bool HornTriggered = false;
-        AITrain.AI_MOVEMENT_STATE currentMvmtState;
 
         //================================================================================================//
         /// <summary>
