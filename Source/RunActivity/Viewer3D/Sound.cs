@@ -195,6 +195,7 @@ namespace ORTS.Viewer3D
                             _curTType = 0;
                             Trace.TraceWarning("Sound region {0} out of range in tile {1} {2}", Car.TrackSoundType,
                                 Car.WorldPosition.WorldLocation.TileX, Car.WorldPosition.WorldLocation.TileZ);
+                            Car.TrackSoundType = 0;
                         }
                     else
                         Car.TrackSoundType = _curTType;
@@ -216,18 +217,7 @@ namespace ORTS.Viewer3D
                                 Car.TrackSoundDistSquared = trackSoundDistSquared;
                             else
                             {
-                                if (Car.TrackSoundType != int.MaxValue)
-                                    if (Car.TrackSoundType < Viewer.TrackTypes.Count)
-                                        _curTType = Car.TrackSoundType;
-                                    else
-                                    {
-                                        // Track type out of range
-                                        _curTType = 0;
-                                        Trace.TraceWarning("Sound region {0} out of range in tile {1} {2}", Car.TrackSoundType,
-                                            Car.WorldPosition.WorldLocation.TileX, Car.WorldPosition.WorldLocation.TileZ);
-                                    }
-                                else
-                                    Car.TrackSoundType = _curTType;
+                                _curTType = Car.TrackSoundType;
                             }
                         }
                     }
