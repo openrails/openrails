@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -17,15 +17,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Diagnostics;
+using System.Text.RegularExpressions;
 using Xunit;
 
 namespace Tests
 {
     /// <summary>
-    /// This class can be used to test for Trace.Tracewarning calls from tested objects.
+    /// This class can be used to test for Trace.TraceWarning() calls.
     /// Instead of having the warnings go to the output window of xunit, they are captured by this class.
     /// This means that if a warning is not expected, a fail will result.
     /// And if you want to test that a warning is given, you can test for that also.
@@ -36,120 +37,111 @@ namespace Tests
     /// </summary>
     class AssertWarnings : TraceListener
     {
-        static AssertWarnings listener;  // singleton, but not even available from outside
+        static AssertWarnings Listener = new AssertWarnings();
 
-        /// <summary>
-        /// Activate the monitoring of warnings. Warnings that appear when not expected will initiate a fail.
-        /// Probably you should call this at the beginning of each test-method for classes that generate Trace.Tracewarning s.
-        /// Note, also ExpectedWarning will activate.
-        /// </summary>
-        public static void Activate()
+        static void Initialize()
         {
-            if (listener == null)
-            {
-                listener = new AssertWarnings();
-            }
-            // Prevent warfnings to go to Xunit output window.
-            // We assume that Xunit takes control back for the next unit test (meaning that the listener will be removed again for the next test
+            // Prevent warnings from going to xunit.
+            // We assume that xunit takes control back for the next unit test (meaning that the listener will be removed again for the next test).
             Trace.Listeners.Clear();
-            // We now intercept the trace warnings with our own listener
-            Trace.Listeners.Add(listener);
-            listener.Reset();
+            // We now intercept the trace warnings with our own listener.
+            Trace.Listeners.Add(Listener);
         }
 
         /// <summary>
-        /// Call this methed if you expect the testCode to generate a warning
+        /// Declare that no warnings are expected to be generated during the following test.
         /// </summary>
-        /// <param name="testCode">Code that will be executed</param>
-        /// <param name="pattern">Pattern to match the warning against; if there is no match, a test fail will result.</param>
-        public static void ExpectWarning(Assert.ThrowsDelegate testCode, string pattern)
+        public static void NotExpected()
         {
-            Activate();
-            listener._ExpectWarning(testCode, pattern);
+            Initialize();
+            Listener.Set(false);
         }
 
         /// <summary>
-        /// Call this method if you expect a warning, but you do not want to catch it (because e.g. also an exception will be thrown).
+        /// Declare that warnings are expected to be generated during the following test.
         /// </summary>
-        public static void ExpectAWarning()
+        public static void Expected()
         {
-            Activate();
-            listener._ExpectWarning();
+            Initialize();
+            Listener.Set(true);
         }
 
-        bool expectingAWarning;
-        bool warningHappened;
-        string lastWarning;
+        /// <summary>
+        /// Declare that a specific warning is expected to be generated during the specified code.
+        /// </summary>
+        /// <param name="pattern">Pattern to match the warning against; if there is no match, the test fails.</param>
+        /// <param name="code">Code which is expected to generate a matching warning.</param>
+        public static void Matching(string pattern, Assert.ThrowsDelegate code)
+        {
+            Initialize();
+            Listener.InternalMatching(pattern, code);
+        }
+
+        bool WarningExpected;
+        bool WarningOccurred;
+        string LastWarning;
 
         AssertWarnings()
         {
         }
 
-        void Reset()
+        void Set(bool expected)
         {
-            expectingAWarning = false;
-            warningHappened = false;
+            WarningExpected = expected;
+            WarningOccurred = false;
+            LastWarning = null;
         }
 
-        void _ExpectWarning()
+        void InternalMatching(string pattern, Assert.ThrowsDelegate callback)
         {
-            expectingAWarning = true;
-            warningHappened = false;
-        }
-
-        void _ExpectWarning(Assert.ThrowsDelegate testCode, string pattern)
-        {
-            _ExpectWarning();
-            testCode.Invoke();
-            expectingAWarning = false;
-            Assert.True(warningHappened, "Expected a warning, but did not get it");
-            if (pattern == null)
+            Set(true);
+            LastWarning = null;
+            callback.Invoke();
+            Assert.True(WarningOccurred, "Expected a warning, but did not get it");
+            if (WarningOccurred && pattern != null)
             {
-                return;
+                Assert.True(Regex.IsMatch(LastWarning, pattern), LastWarning + " does not match pattern " + pattern);
             }
-            Assert.True(System.Text.RegularExpressions.Regex.IsMatch(lastWarning, pattern), lastWarning + " does not match pattern: " + pattern);
-        
+            Set(false);
         }
 
         public override void Write(string message)
-        {   //Not sure what this is needed for exactly, calling a fail until we know something better
-            //base.Write((object) message);
-            Assert.True(false, "warning is called 1");
+        {
+            //Not sure what this is needed for exactly, calling a fail until we know something better
+            Assert.True(false, "Unexpected TraceListener.Write(string) call");
         }
 
         public override void WriteLine(string message)
-        {   //Not sure what this is needed for exactly, calling a fail until we know something better
-            //base.WriteLine((object)message);
-            Assert.True(expectingAWarning, "Unexpected tracewarning, possibly a Debug.Assert");
-            warningHappened = true;
+        {
+            //Not sure what this is needed for exactly, calling a fail until we know something better
+            Assert.True(false, "Unexpected TraceListener.WriteLine(string) call");
         }
 
         public override void WriteLine(object o)
-        {   //Not sure what this is needed for exactly, calling a fail until we know something better
-            //base.WriteLine((object)message);
-            Assert.True(false, "warning is called 3");
+        {
+            //Not sure what this is needed for exactly, calling a fail until we know something better
+            Assert.True(false, "Unexpected TraceListener.WriteLine(object) call");
         }
 
         public override void TraceEvent(TraceEventCache eventCache, string source, TraceEventType eventType, int id)
         {
-            Assert.True(expectingAWarning, "Unexpected tracewarning");
-            warningHappened = true;
+            LastWarning = "";
+            Assert.True(WarningExpected, "Unexpected warning");
+            WarningOccurred = true;
         }
 
         public override void TraceEvent(TraceEventCache eventCache, string source, TraceEventType eventType, int id, string message)
         {
-            lastWarning = message;
-            Assert.True(expectingAWarning, "Unexpected tracewarning: " + lastWarning);
-            warningHappened = true;
-
+            LastWarning = message;
+            Assert.True(WarningExpected, "Unexpected warning: " + LastWarning);
+            WarningOccurred = true;
         }
 
         public override void TraceEvent(TraceEventCache eventCache, string source, TraceEventType eventType, int id, string format, params object[] args)
         {
-            lastWarning = String.Format(format, args);
-            Assert.True(expectingAWarning, "Unexpected tracewarning: " + lastWarning);
-            warningHappened = true;
+            LastWarning = String.Format(format, args);
+            Assert.True(WarningExpected, "Unexpected warning: " + LastWarning);
+            WarningOccurred = true;
         }
-
     }
 }
