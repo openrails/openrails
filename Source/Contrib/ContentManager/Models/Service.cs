@@ -16,12 +16,11 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using Orts.Formats.Msts;
-using ORTS.Formats;
+using Orts.Parsers.OR;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 
 namespace ORTS.ContentManager.Models
 {
@@ -75,28 +74,28 @@ namespace ORTS.ContentManager.Models
             else if (System.IO.Path.GetExtension(content.PathName).Equals(".timetable_or", StringComparison.OrdinalIgnoreCase))
             {
                 // TODO: Make common timetable parser.
-                var file = new TTContents(content.PathName);
+                var file = new TimetableReader(content.PathName);
                 Name = content.Name;
 
                 var consistRow = -1;
                 var pathRow = -1;
-                for (var row = 0; row < file.trainStrings.Count; row++)
+                for (var row = 0; row < file.Strings.Count; row++)
                 {
-                    if (file.trainStrings[row][0] == "#consist" && consistRow == -1)
+                    if (file.Strings[row][0] == "#consist" && consistRow == -1)
                     {
                         consistRow = row;
                     }
-                    else if (file.trainStrings[row][0] == "#path" && pathRow == -1)
+                    else if (file.Strings[row][0] == "#path" && pathRow == -1)
                     {
                         pathRow = row;
                     }
                 }
-                for (var column = 0; column < file.trainStrings[0].Length; column++)
+                for (var column = 0; column < file.Strings[0].Length; column++)
                 {
-                    if (file.trainStrings[0][column] == content.Name)
+                    if (file.Strings[0][column] == content.Name)
                     {
-                        Consist = file.trainStrings[consistRow][column];
-                        Path = file.trainStrings[pathRow][column];
+                        Consist = file.Strings[consistRow][column];
+                        Path = file.Strings[pathRow][column];
                         break;
                     }
                 }

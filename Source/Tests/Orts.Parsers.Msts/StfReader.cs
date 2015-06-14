@@ -26,7 +26,7 @@ using System.Text.RegularExpressions;
 using Xunit;
 
 #region Integration tests (all tests from original reader)
-namespace Tests.Msts.Parsers
+namespace Tests.Orts.Parsers.Msts
 {
     public static class StfReaderIntegration
     {
@@ -711,7 +711,7 @@ namespace Tests.Msts.Parsers
 #endregion
 
 #region Unit tests
-namespace Tests.Msts.Parsers.StfException
+namespace Tests.Orts.Parsers.Msts.StfException
 {
     #region StfExceptionTests
     /// <summary>
@@ -722,7 +722,7 @@ namespace Tests.Msts.Parsers.StfException
         [Fact]
         public static void BeConstructableFromStfReader()
         {
-            var reader = Tests.Msts.Parsers.StfReader.Create.Reader("sometoken");
+            var reader = Tests.Orts.Parsers.Msts.StfReader.Create.Reader("sometoken");
             Assert.DoesNotThrow(() => new STFException(reader, "some message"));
         }
 
@@ -752,7 +752,7 @@ namespace Tests.Msts.Parsers.StfException
     #endregion
 
 }
-namespace Tests.Msts.Parsers.StfReader
+namespace Tests.Orts.Parsers.Msts.StfReader
 {   
     // NEW_READER compilation flag is set for those tests that can be performed (compiled) only for the new STFReader, 
     // but not on the old reader. The new reader should also pass all tests that compile on the old reader.

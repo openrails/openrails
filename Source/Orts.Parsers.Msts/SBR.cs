@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2013 by the Open Rails project.
+﻿// COPYRIGHT 2013, 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -15,22 +15,21 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-/// <summary>
-/// Structured Block Reader can read compressed binary or uncompressed unicode files.
-/// Its intended to replace the KujuBinary classes ( which are binary only ).
-/// Every block must be closed with either Skip() or VerifyEndOfBlock()
-/// </summary>
-
+using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
+using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
-using Microsoft.Xna.Framework;
 
 namespace Orts.Parsers.Msts
 {
+    /// <summary>
+    /// Structured Block Reader can read compressed binary or uncompressed unicode files.
+    /// Its intended to replace the KujuBinary classes ( which are binary only ).
+    /// Every block must be closed with either Skip() or VerifyEndOfBlock()
+    /// </summary>
     public abstract class SBR : IDisposable
     {
         public TokenID ID;

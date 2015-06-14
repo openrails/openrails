@@ -16,13 +16,11 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using Orts.Formats.Msts;
-using ORTS.Formats;
+using Orts.Parsers.OR;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace ORTS.ContentManager.Models
 {
@@ -54,16 +52,16 @@ namespace ORTS.ContentManager.Models
             else if (System.IO.Path.GetExtension(content.PathName).Equals(".timetable_or", StringComparison.OrdinalIgnoreCase))
             {
                 // TODO: Make common timetable parser.
-                var file = new TTContents(content.PathName);
+                var file = new TimetableReader(content.PathName);
                 Name = content.Name;
 
                 var services = new List<string>();
-                for (var column = 0; column < file.trainStrings[0].Length; column++)
+                for (var column = 0; column < file.Strings[0].Length; column++)
                 {
-                    if (String.IsNullOrEmpty(file.trainStrings[0][column]) || file.trainStrings[0][column].StartsWith("#"))
+                    if (String.IsNullOrEmpty(file.Strings[0][column]) || file.Strings[0][column].StartsWith("#"))
                         continue;
 
-                    services.Add(file.trainStrings[0][column]);
+                    services.Add(file.Strings[0][column]);
                 }
                 PlayerServices = services;
                 Services = new string[0];

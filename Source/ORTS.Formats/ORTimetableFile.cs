@@ -435,51 +435,6 @@ namespace ORTS.Formats
             }
         }
     }
-
-        /// <summary>
-        /// class TTContents : extracts full information as unprocessed strings
-        /// </summary>
-
-    public class TTContents
-    {
-        public List<string[]> trainStrings = new List<string[]>();
-        public string TTfilename;
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="filePath"></param>
-
-        public TTContents(string filePath)
-        {
-            TTfilename = String.Copy(filePath);
-            StreamReader filestream = new StreamReader(filePath, true);
-
-            // read all lines in file
-            string readLine = filestream.ReadLine();
-
-            // extract separator from first line
-            string[] separator = new string[1] { String.Copy(readLine.Substring(0, 1)) };
-
-            // check : only ";" or "," are allowed as separators
-            bool validSeparator = String.Compare(separator[0], ";") == 0 || String.Compare(separator[0], ",") == 0;
-            if (!validSeparator)
-            {
-                throw new InvalidDataException("Invalid separator found in file : " + filePath);
-            }
-
-            // extract and store all strings
-
-            while (readLine != null)
-            {
-                string[] parts = readLine.Split(separator, System.StringSplitOptions.None);
-                trainStrings.Add(parts);
-                readLine = filestream.ReadLine();
-            }
-
-            filestream.Close();
-        }
-    }
 }
 
 

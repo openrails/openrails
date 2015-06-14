@@ -106,6 +106,10 @@
       <Project>{0d8d312b-2c02-4b77-a795-566394a9db95}</Project>
       <Name>ORTS.Formats</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Orts.Parsers.OR\Orts.Parsers.OR.csproj">
+      <Project>{1cc3bd5c-06c5-4784-b067-f93945a7ca2c}</Project>
+      <Name>Orts.Parsers.OR</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\ORTS.Settings\ORTS.Settings.csproj">
       <Project>{67F84996-8769-4FD8-819B-464AF269037B}</Project>
       <Name>ORTS.Settings</Name>

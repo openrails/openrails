@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
+﻿// COPYRIGHT 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -21,14 +21,14 @@
 // Note:  the SBR classes are more general in that they are capable of reading
 //        both unicode and binary compressed data files.
 
+using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Text;
-using Microsoft.Xna.Framework;
 using System.Linq;
+using System.Text;
 
 #region Original STFreader
 #if !NEW_READER

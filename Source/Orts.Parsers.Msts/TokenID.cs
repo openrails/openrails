@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2013 by the Open Rails project.
+﻿// COPYRIGHT 2013, 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -15,18 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-////////////////////////////////////////////////////
-/// Provides an enum for all the binary tokens used
-/// in the header record in the Kuju compressed
-/// binary file format.
-////////////////////////////////////////////////////
-
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Orts.Parsers.Msts
 {
+    /// <summary>
+    /// Provides an enum for all the binary tokens used
+    /// in the header record in the Kuju compressed
+    /// binary file format.
+    /// </summary>
     public enum TokenID : uint
     {
         //////////////////////////////////////////////////////////////

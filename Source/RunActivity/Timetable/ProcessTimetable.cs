@@ -41,6 +41,7 @@ using ORTS.Viewer3D.Popups;
 using ORTS.Formats;
 using ORTS;
 using ORTS.Processes;
+using Orts.Parsers.OR;
 
 namespace ORTS
 {
@@ -112,7 +113,7 @@ namespace ORTS
             {
                 // get contents as strings
                 Trace.Write("TT File : " + filePath + "\n");
-                TTContents fileContents = new TTContents(filePath);
+                var fileContents = new TimetableReader(filePath);
 
 #if DEBUG_TIMETABLE
                 File.AppendAllText(@"C:\temp\timetableproc.txt", "\nProcessing file : " + filePath + "\n");
@@ -244,7 +245,7 @@ namespace ORTS
         /// <param name="signalRef"></param>
         /// <param name="TDB"></param>
         /// <param name="trainInfoList"></param>
-        private int ConvertFileContents(TTContents fileContents, Signals signalRef, ref List<TTTrainInfo> trainInfoList, int indexcount, string filePath)
+        private int ConvertFileContents(TimetableReader fileContents, Signals signalRef, ref List<TTTrainInfo> trainInfoList, int indexcount, string filePath)
         {
             int consistRow = -1;
             int pathRow = -1;
@@ -260,16 +261,16 @@ namespace ORTS
             Dictionary<int, List<int>> addTrainColumns = new Dictionary<int, List<int>>(); // key int = main train column, value = add columns
             Dictionary<int, StationInfo> stationNames = new Dictionary<int, StationInfo>();          // key int = row no, value string = station name
 
-            rowType[] RowInfo = new rowType[fileContents.trainStrings.Count];
-            columnType[] ColInfo = new columnType[fileContents.trainStrings[0].Length];
+            rowType[] RowInfo = new rowType[fileContents.Strings.Count];
+            columnType[] ColInfo = new columnType[fileContents.Strings[0].Length];
 
             // process first row separately
 
             ColInfo[0] = columnType.stationInfo;
 
-            for (int iColumn = 1; iColumn <= fileContents.trainStrings[0].Length - 1; iColumn++)
+            for (int iColumn = 1; iColumn <= fileContents.Strings[0].Length - 1; iColumn++)
             {
-                string columnDef = fileContents.trainStrings[0][iColumn];
+                string columnDef = fileContents.Strings[0][iColumn];
 
                 // empty : continuation column
                 if (String.IsNullOrEmpty(columnDef))
@@ -324,10 +325,10 @@ namespace ORTS
             // get row information
             RowInfo[0] = rowType.trainInfo;
 
-            for (int iRow = 1; iRow <= fileContents.trainStrings.Count - 1; iRow++)
+            for (int iRow = 1; iRow <= fileContents.Strings.Count - 1; iRow++)
             {
 
-                string rowDef = fileContents.trainStrings[iRow][0];
+                string rowDef = fileContents.Strings[iRow][0];
 
                 string[] rowCommands = null;
                 if (rowDef.Contains('/'))
@@ -467,15 +468,15 @@ namespace ORTS
             // extract description
 
             string description = (firstCommentRow >= 0 && firstCommentColumn >= 0) ?
-                fileContents.trainStrings[firstCommentRow][firstCommentColumn] : Path.GetFileNameWithoutExtension(fileContents.TTfilename);
+                fileContents.Strings[firstCommentRow][firstCommentColumn] : Path.GetFileNameWithoutExtension(fileContents.FilePath);
 
             // extract additional station info
 
-            for (int iRow = 1; iRow <= fileContents.trainStrings.Count - 1; iRow++)
+            for (int iRow = 1; iRow <= fileContents.Strings.Count - 1; iRow++)
             {
                 if (RowInfo[iRow] == rowType.stationInfo)
                 {
-                    string[] columnStrings = fileContents.trainStrings[iRow];
+                    string[] columnStrings = fileContents.Strings[iRow];
                     for (int iColumn = 1; iColumn <= ColInfo.Length - 1; iColumn++)
                     {
                         if (ColInfo[iColumn] == columnType.addStationInfo)
@@ -516,10 +517,10 @@ namespace ORTS
 
                     if (addColumns != null)
                     {
-                        ConcatTrainStrings(fileContents.trainStrings, iColumn, addColumns);
+                        ConcatTrainStrings(fileContents.Strings, iColumn, addColumns);
                     }
 
-                    if (!trainInfo[iColumn].BuildTrain(fileContents.trainStrings, RowInfo, pathRow, consistRow, startRow, disposeRow, description, stationNames, this))
+                    if (!trainInfo[iColumn].BuildTrain(fileContents.Strings, RowInfo, pathRow, consistRow, startRow, disposeRow, description, stationNames, this))
                     {
                         allCorrectBuild = false;
                     }
