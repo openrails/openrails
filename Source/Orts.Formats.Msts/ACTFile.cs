@@ -656,6 +656,7 @@ namespace Orts.Formats.Msts
         public int ORTSContinue = -1;
         public string ORTSActSoundFile;
         public int ORTSActSoundFileType;
+        public ORTSWeatherChange ORTSWeatherChange;
     }
 
     public class EventCategoryLocation : Event {
@@ -713,6 +714,7 @@ namespace Orts.Formats.Msts
 	                    }
                     stf.MustMatch(")");
                 }),
+                new STFReader.TokenProcessor("ortsweatherchange", ()=>{ ORTSWeatherChange = new ORTSWeatherChange(stf);}),
             });
         }
     }
@@ -751,7 +753,7 @@ namespace Orts.Formats.Msts
                 // Also support the correct spelling !
                 new STFReader.TokenProcessor("reversible_event", ()=>{ stf.MustMatch("("); stf.MustMatch(")"); Reversible = true; }),
                 new STFReader.TokenProcessor("ortscontinue", ()=>{ ORTSContinue = stf.ReadIntBlock(0); }),
-                                new STFReader.TokenProcessor("ortsactsoundfile", ()=>
+                new STFReader.TokenProcessor("ortsactsoundfile", ()=>
                 {
                     stf.MustMatch("(");
                     var tempString = stf.ReadString();
@@ -780,6 +782,7 @@ namespace Orts.Formats.Msts
             });
         }
     }
+
 
     public class WagonList {
         public List<WorkOrderWagon> WorkOrderWagonList = new List<WorkOrderWagon>();
@@ -856,6 +859,7 @@ namespace Orts.Formats.Msts
 	                    }
                     stf.MustMatch(")");
                 }),
+                new STFReader.TokenProcessor("ortsweatherchange", ()=>{ ORTSWeatherChange = new ORTSWeatherChange(stf);}),
             });
         }
     }
@@ -883,6 +887,54 @@ namespace Orts.Formats.Msts
             });
         }
     }
+
+    public class ORTSWeatherChange
+    {
+        public float ORTSOvercast = -1;
+        public int ORTSOvercastTransitionTimeS = -1;
+        public float ORTSFog = -1;
+        public int ORTSFogTransitionTimeS = -1;
+        public float ORTSPrecipitationIntensity = -1;
+        public int ORTSPrecipitationIntensityTransitionTimeS = -1;
+        public float ORTSPrecipitationLiquidity = -1;
+        public int ORTSPrecipitationLiquidityTransitionTimeS = -1;
+
+        public ORTSWeatherChange(STFReader stf)
+        {
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("ortsovercast", ()=>
+                {
+                    stf.MustMatch("(");                    
+                    ORTSOvercast = stf.ReadFloat(0, -1);
+                    ORTSOvercastTransitionTimeS = stf.ReadInt(-1);
+                    stf.MustMatch(")");                
+                }),
+                new STFReader.TokenProcessor("ortsfog", ()=>
+                {
+                    stf.MustMatch("(");
+                    ORTSFog = stf.ReadFloat(0, -1);
+                    ORTSFogTransitionTimeS = stf.ReadInt(-1);
+                    stf.MustMatch(")");
+                }),
+                new STFReader.TokenProcessor("ortsprecipitationintensity", ()=>
+                {
+                    stf.MustMatch("(");
+                    ORTSPrecipitationIntensity = stf.ReadFloat(0, -1);
+                    ORTSPrecipitationIntensityTransitionTimeS = stf.ReadInt(-1);
+                    stf.MustMatch(")");
+                }),
+                               new STFReader.TokenProcessor("ortsprecipitationliquidity", ()=>
+                {
+                    stf.MustMatch("(");
+                    ORTSPrecipitationLiquidity = stf.ReadFloat(0, -1);
+                    ORTSPrecipitationLiquidityTransitionTimeS = stf.ReadInt(-1);
+                    stf.MustMatch(")");
+                })
+            });
+        }
+    }
+
 
 
     /// <summary>

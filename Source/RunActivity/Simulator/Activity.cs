@@ -1104,6 +1104,11 @@ namespace ORTS
                 if (activity.triggeredEvent == null) activity.triggeredEvent = this.ParsedObject;
             }
 
+            if (this.ParsedObject.ORTSWeatherChange != null)
+            {
+                if (activity.triggeredEvent == null) activity.triggeredEvent = this.ParsedObject;
+            }
+
             if (this.ParsedObject.Outcomes.ActivityFail != null)
             {
                 activity.IsSuccessful = false;
