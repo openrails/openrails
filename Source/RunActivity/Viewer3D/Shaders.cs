@@ -144,6 +144,11 @@ namespace ORTS.Viewer3D
             shadowMapLimit.SetValue(new Vector4(limits[0], limits.Length > 1 ? limits[1] : 0, limits.Length > 2 ? limits[2] : 0, limits.Length > 3 ? limits[3] : 0));
         }
 
+        public void ClearShadowMap()
+        {
+            shadowMapLimit.SetValue(Vector4.Zero);
+        }
+
         public float ZBias { get { return _zBias_Lighting.X; } set { _zBias_Lighting.X = value; zBias_Lighting.SetValue(_zBias_Lighting); } }
         public float LightingDiffuse { get { return _zBias_Lighting.Y; } set { _zBias_Lighting.Y = value; zBias_Lighting.SetValue(_zBias_Lighting); } }
         public float LightingSpecular { get { return _zBias_Lighting.Z; } set { _zBias_Lighting.Z = value; _zBias_Lighting.W = value >= 1 ? 1 : 0; zBias_Lighting.SetValue(_zBias_Lighting); } }

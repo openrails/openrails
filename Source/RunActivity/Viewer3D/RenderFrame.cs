@@ -849,6 +849,9 @@ namespace ORTS.Viewer3D
                 }
                 if (logging) Console.WriteLine("    }");
             }
+
+            if (Game.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && SceneryShader != null)
+                SceneryShader.ClearShadowMap();
         }
 
         void DrawSequencesDistantMountains(GraphicsDevice graphicsDevice, bool logging)
