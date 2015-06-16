@@ -42,6 +42,8 @@ namespace ORTS.TrackViewer.UserInterface
     /// </summary>
     public enum TVUserCommands
     {
+        /// <summary>Reload the route</summary>
+        ReloadRoute,
         /// <summary>command for zooming in</summary>
         ZoomIn,
         /// <summary>command for zooming out</summary>
@@ -155,7 +157,8 @@ namespace ORTS.TrackViewer.UserInterface
         /// Set the default mapping from keys or key-combinations to commands
         /// </summary>
         public static void SetDefaults()
-        { 
+        {
+            Commands[(int)TVUserCommands.ReloadRoute] = new ORTS.Settings.UserCommandKeyInput(0x13, ORTS.Settings.KeyModifiers.Control);
             Commands[(int)TVUserCommands.ZoomIn]     = new ORTS.Settings.UserCommandKeyInput(0x0D);
             Commands[(int)TVUserCommands.ZoomOut]    = new ORTS.Settings.UserCommandKeyInput(0x0C);
             Commands[(int)TVUserCommands.ZoomInSlow] = new ORTS.Settings.UserCommandKeyInput(0x0D, ORTS.Settings.KeyModifiers.Shift);

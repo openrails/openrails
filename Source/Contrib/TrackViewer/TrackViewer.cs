@@ -344,6 +344,7 @@ namespace ORTS.TrackViewer
             }
 
             if (TVUserInput.IsPressed(TVUserCommands.Quit)) this.Quit();
+            if (TVUserInput.IsPressed(TVUserCommands.ReloadRoute)) this.ReloadRoute();
 
             if (TVUserInput.IsPressed(TVUserCommands.ShiftToMouseLocation)) DrawArea.ShiftToLocation(DrawArea.MouseLocation);
             if (TVUserInput.IsPressed(TVUserCommands.ZoomInSlow)) DrawArea.Zoom(-1);

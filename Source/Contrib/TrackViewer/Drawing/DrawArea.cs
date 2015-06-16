@@ -187,6 +187,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="drawTrackDB">Track database used to determine what the complete track area is</param>
         public void ZoomReset(DrawTrackDB drawTrackDB)
         {
+            if (drawTrackDB == null) return;
             float minX = drawTrackDB.MinTileX * 2048 - 1024f;
             float minZ = drawTrackDB.MinTileZ * 2048 - 1024f;
             float maxX = drawTrackDB.MaxTileX * 2048 + 1024f;
