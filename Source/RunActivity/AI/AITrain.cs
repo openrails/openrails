@@ -140,6 +140,8 @@ namespace ORTS
             Name = String.Copy(name);
             TrafficService = trafficService;
             MaxVelocityA = maxVelocityA;
+            // <CSComment> TODO: as Cars.Count is always = 0 at this point, activityClearingDistanceM is set to the short distance also for long trains
+            // However as no one complained about AI train SPADs it may be considered to consolidate short distance for all trains</CSComment>
             if (Cars.Count < standardTrainMinCarNo) activityClearingDistanceM = shortClearingDistanceM;
         }
 
@@ -3684,6 +3686,8 @@ namespace ORTS
                     if (nextSection != null) distanceToEndOfWPSection += nextSection.Length;
                 }
                 signalIndex.Add(endSignalIndex);
+
+                //<CSComment> TODO This is probably redundant now, however removing it would require extensive testing </CSComment>
                 // move backwards WPs within clearingDistanceM, except if of type Horn
                 for (int rWP = iWait; insertSigDelegate && signalIndex[iWait] != -1 && rWP >= 0; rWP--)
                 {
@@ -5187,6 +5191,19 @@ namespace ORTS
                 }
             }
 
+            // if still valid - check if actual next action is WP and signal is WP controlled signal
+            // if so, use minimum distance of both items to ensure train stops in time for signal
+
+            if (actionValid && nextActionInfo != null &&  nextActionInfo is AuxActionWPItem &&
+                thisItem.NextAction == AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_STOP)
+            {
+                if (thisItem.ActiveItem.ObjectDetails.HasLockForTrain(Number, TCRoute.activeSubpath) && nextActionInfo.ActivateDistanceM - thisItem.ActivateDistanceM < 40)
+                {
+                    actionValid = false;
+                    nextActionInfo.ActivateDistanceM = Math.Min(nextActionInfo.ActivateDistanceM, thisItem.ActivateDistanceM);
+                }
+            }
+
             // if still valid - check if more severe as existing action
 
             if (actionValid)
@@ -5247,6 +5264,20 @@ namespace ORTS
                                nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_STOP)
                     {
                         if (HoldingSignals.Contains(nextActionInfo.ActiveItem.ObjectDetails.thisRef))
+                        {
+                            earlier = true;
+                            thisItem.ActivateDistanceM = Math.Min(nextActionInfo.ActivateDistanceM, thisItem.ActivateDistanceM);
+                        }
+                    }
+
+                    // if not earlier and is a waiting point and present action is signal stop : check if signal is locking signal, if so set waiting
+                    // set distance to signal if that is less than distance to WP to ensure trains stops at signal
+
+                    if (!earlier && thisItem is AuxActionWPItem &&
+                               nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_STOP)
+                    {
+                         // check if it is the the AI action is related to the signal linked to the WP
+                        if (nextActionInfo.ActiveItem.ObjectDetails.HasLockForTrain(Number, TCRoute.activeSubpath) && thisItem.ActivateDistanceM - nextActionInfo.ActivateDistanceM < 40)
                         {
                             earlier = true;
                             thisItem.ActivateDistanceM = Math.Min(nextActionInfo.ActivateDistanceM, thisItem.ActivateDistanceM);
