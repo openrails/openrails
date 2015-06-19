@@ -7701,6 +7701,7 @@ namespace ORTS
             ApproachControlCleared = inf.ReadBoolean();
             ReqNumClearAhead = inf.ReadInt32();
             StationHold = inf.ReadBoolean();
+            hasPermission = (Permission)inf.ReadInt32();
 
             // set dummy train, route direction index will be set later on restore of train
 
@@ -7840,6 +7841,7 @@ namespace ORTS
             outf.Write(isPropagated);
             outf.Write(ReqNumClearAhead);
             outf.Write(StationHold);
+            outf.Write((int)hasPermission);
             outf.Write(LockedTrains.Count);
             for (int cnt = 0; cnt < LockedTrains.Count; cnt++)
             {
