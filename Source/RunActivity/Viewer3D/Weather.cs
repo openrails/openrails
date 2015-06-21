@@ -459,7 +459,7 @@ namespace ORTS.Viewer3D
                 var wChangeOn = false;
                 if (ORTSOvercast >= 0)
                 {
-                    overcastTimer -= elapsedTime.RealSeconds;
+                    overcastTimer -= elapsedTime.ClockSeconds;
                     if (overcastTimer <= 0) overcastTimer = 0;
                     else wChangeOn = true;
                     weatherControl.overcastFactor = ORTSOvercast - overcastTimer * overcastChangeRate;
@@ -467,7 +467,7 @@ namespace ORTS.Viewer3D
                 }
                 if (ORTSFog >= 0)
                 {
-                    fogTimer -= elapsedTime.RealSeconds;
+                    fogTimer -= elapsedTime.ClockSeconds;
                     if (fogTimer <= 0) fogTimer = 0;
                     else wChangeOn = true;
                     if (!fogDistanceIncreasing)
@@ -481,7 +481,7 @@ namespace ORTS.Viewer3D
                 }
                 if (ORTSPrecipitationIntensity >= 0)
                 {
-                    precipitationIntensityTimer -= elapsedTime.RealSeconds;
+                    precipitationIntensityTimer -= elapsedTime.ClockSeconds;
                     if (precipitationIntensityTimer <= 0) precipitationIntensityTimer = 0;
                     else wChangeOn = true;
                     var oldPricipitationIntensityPPSPM2 = weatherControl.pricipitationIntensityPPSPM2;
@@ -508,7 +508,7 @@ namespace ORTS.Viewer3D
                 }
                 if (ORTSPrecipitationLiquidity >= 0)
                 {
-                    precipitationLiquidityTimer -= elapsedTime.RealSeconds;
+                    precipitationLiquidityTimer -= elapsedTime.ClockSeconds;
                     if (precipitationLiquidityTimer <= 0) precipitationLiquidityTimer = 0;
                     else wChangeOn = true;
                     var oldPrecipitationLiquidity = weatherControl.precipitationLiquidity;
