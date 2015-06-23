@@ -19,16 +19,20 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
+using Newtonsoft.Json;
+
 using Orts.Formats.Msts;
 using ORTS.Common;
 
 using ORTS.TrackViewer.Drawing;
+
 
 namespace ORTS.TrackViewer.Editing.Charts
 {
@@ -57,6 +61,7 @@ namespace ORTS.TrackViewer.Editing.Charts
         public DrawPathChart()
         {
             chartWindow = new PathChartWindow();
+            chartWindow.OnJsonSaveClick = OnJsonSave;
             TrackViewer.Localize(chartWindow);
         }
 
@@ -175,6 +180,41 @@ namespace ORTS.TrackViewer.Editing.Charts
         {
             this.chartWindow.Shift(shiftSteps);
         }
+
+        #region Save to JSON
+        private void OnJsonSave()
+        {
+            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
+            dlg.OverwritePrompt = true;
+            dlg.FileName = "pathchartdata.json";
+            dlg.DefaultExt = ".json";
+            dlg.Filter = "JSON Files (.json)|*.json";
+            if (dlg.ShowDialog() == true)
+            {
+                WriteJson(dlg.FileName);
+            }
+        }
+
+        public void WriteJson(string completeFileName)
+        {
+            if (!this.pathData.HasPath)
+            {
+                return;
+            }
+
+            JsonSerializer serializer = new JsonSerializer();
+            serializer.PreserveReferencesHandling = PreserveReferencesHandling.Objects;
+            serializer.TypeNameHandling = TypeNameHandling.All;
+            serializer.Formatting = Formatting.Indented;
+            using (StreamWriter wr = new StreamWriter(completeFileName))
+            {
+                using (JsonWriter writer = new JsonTextWriter(wr))
+                {
+                    serializer.Serialize(writer, this.pathData);
+                }
+            }
+        }
+        #endregion
     }
     #endregion
 
@@ -442,6 +482,11 @@ namespace ORTS.TrackViewer.Editing.Charts
             this.maxX = this.pathData.PointWithMaxima.DistanceAlongPath;
             this.minY = getField(this.pathData.PointWithMinima);
             this.maxY = getField(this.pathData.PointWithMaxima);
+            if (this.maxY == this.minY)
+            {
+                this.maxY += 10;
+                this.minY -= 10;
+            }
 
             this.zoomedMaxX = minX + (maxX - minX) * this.zoomRatioRight;
             this.zoomedMinX = minX + (maxX - minX) * this.zoomRatioLeft;
@@ -890,6 +935,9 @@ namespace ORTS.TrackViewer.Editing.Charts
         /// <param name="legendCanvas">The WPF canvas to draw the legend upon</param>
         protected override void DrawSubChart(Canvas drawingCanvas, Canvas legendCanvas)
         {
+            char arrowRight = '\u2192';
+            char arrowLeft = '\u2190';
+
             DetermineScaling();
             DrawText(legendCanvas, 5, 10, "Speed limit", Colors.Black);
 
@@ -899,10 +947,15 @@ namespace ORTS.TrackViewer.Editing.Charts
                 {
                     continue;
                 }
-                if (sourcePoint.TrackItemType == ChartableTrackItemType.SpeedLimit)
+                if (sourcePoint.TrackItemType == ChartableTrackItemType.SpeedLimitForward)
                 {
                     double newX = ScaledX(sourcePoint.DistanceAlongPath);
-                    DrawText(drawingCanvas, newX, 10, sourcePoint.TrackItemText, Colors.Black);
+                    DrawText(drawingCanvas, newX, 10, sourcePoint.TrackItemText + arrowRight, Colors.Black);
+                }
+                if (sourcePoint.TrackItemType == ChartableTrackItemType.SpeedLimitReverse)
+                {
+                    double newX = ScaledX(sourcePoint.DistanceAlongPath);
+                    DrawText(drawingCanvas, newX, 20, arrowLeft + sourcePoint.TrackItemText, Colors.Black);
                 }
             }
         }

@@ -18,7 +18,7 @@
             <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="50"/>
+            <ColumnDefinition Width="57"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         
@@ -43,8 +43,7 @@
         <Canvas Grid.Row="6" Grid.Column="1" Name="CurvatureCanvas"/>
         
         <StackPanel  Grid.Row="7" Grid.Column="0" Orientation="Horizontal" >
-            <Button Height="25" Width="25" Content="+" Click="ZoomIncrease_Click"/>
-            <Button Height="25" Width="25" Content="-" Click="ZoomDecrease_Click"/>
+            <Button Height="25" Content="Save json" Click="SaveJson_Click"/>
         </StackPanel>
         <ScrollBar Grid.Row="7" Grid.Column="1" Name="ChartScrollbar" Minimum="0" Maximum="0.0001" Margin="10,10,0,0" Width="1000" 
                    Orientation="Horizontal" Value="0" ViewportSize="0.9999" Height="Auto" ValueChanged="ChartScrollbar_ValueChanged"/>

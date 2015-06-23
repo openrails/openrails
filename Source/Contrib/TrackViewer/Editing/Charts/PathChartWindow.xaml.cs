@@ -79,7 +79,6 @@ namespace ORTS.TrackViewer.Editing.Charts
                 if (subChart != null) {
                     subChart.Draw(zoomRatioStart, zoomRatioStop, chartCanvasses[chartName], legendCanvasses[chartName]);
                 }
-                
             }
 
             if (HeightCanvas.ActualWidth > 30)
@@ -146,16 +145,6 @@ namespace ORTS.TrackViewer.Editing.Charts
         #endregion
 
         #region Zooming
-        private void ZoomIncrease_Click(object sender, RoutedEventArgs e)
-        {
-            ZoomChange(1.5);
-        }
-
-        private void ZoomDecrease_Click(object sender, RoutedEventArgs e)
-        {
-            ZoomChange(1.0/1.5);
-        }
-
         /// <summary>
         /// Zoom the charting window
         /// </summary>
@@ -190,16 +179,24 @@ namespace ORTS.TrackViewer.Editing.Charts
             ChartScrollbar.Value += shiftSteps * shiftSize;
             if (ChartScrollbar.Value < ChartScrollbar.Minimum) ChartScrollbar.Value = ChartScrollbar.Minimum;
             if (ChartScrollbar.Value > ChartScrollbar.Maximum) ChartScrollbar.Value = ChartScrollbar.Maximum;
-
         }
-        #endregion
 
         private void ChartScrollbar_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             Draw();
         }
+        #endregion
 
+        #region Save JSON
+        public Action OnJsonSaveClick { get; set; }
 
-
+        private void SaveJson_Click(object sender, RoutedEventArgs e)
+        {
+            if (OnJsonSaveClick != null)
+            {
+                OnJsonSaveClick();
+            }
+        }
+        #endregion
     }
 }

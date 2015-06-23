@@ -21,6 +21,7 @@ using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Media;
+using Newtonsoft.Json;
 
 using ORTS.Common;
 using Orts.Formats.Msts;
@@ -30,21 +31,29 @@ namespace ORTS.TrackViewer.Editing.Charts
     /// <summary>
     /// Class to calculate and store the data needed for showing a chart with altitude, grade and other information for a certain path.
     /// </summary>
+    [Serializable()]
     public class PathChartData
     {
         #region public members
         /// <summary>List of individual points with path data along the path.</summary>
+        [JsonProperty("PathChartPoints")]
         public IEnumerable<PathChartPoint> PathChartPoints { get; private set; }
 
         /// <summary>point for which all of the data (apart from distance along section) are the maxima seen in all PathChartPoints</summary>
+        [JsonProperty("PointWithMaxima")]
         public PathChartPoint PointWithMaxima { get; private set; }
         /// <summary>point for which all of the data (apart from distance along section) are the minima seen in all PathChartPoints</summary>
+        [JsonProperty("PointWithMinima")]
         public PathChartPoint PointWithMinima { get; private set; }
         /// <summary>The distance along the path for each path-node</summary>
+        [JsonIgnore]
         public IDictionary<TrainpathNode, double> DistanceAlongPath;
-
+        /// <summary>Is there actually a path loaded with one or more points</summary>
+        [JsonIgnore]
         public bool HasPath { get { return PathChartPoints != null && PathChartPoints.Count() > 0;} }
 
+        [JsonProperty("PathName")]
+        private string PathName { get; set; }
         #endregion
 
         #region private members
@@ -89,6 +98,7 @@ namespace ORTS.TrackViewer.Editing.Charts
         /// <param name="trainpath">The train path for which to store chart data</param>
         public void Update(Trainpath trainpath)
         {
+            this.PathName = trainpath.PathName;
             var localPathChartPoints = new List<PathChartPoint>();
             DistanceAlongPath = new Dictionary<TrainpathNode, double>();
             ResetAllMinMax();
@@ -300,8 +310,13 @@ namespace ORTS.TrackViewer.Editing.Charts
                     }
                     else
                     {
+                        //For reverse, we have to swap forward and reverse speed limits
+                        ChartableTrackItemType itemType =
+                            chartableItem.ItemType == ChartableTrackItemType.SpeedLimitForward ? ChartableTrackItemType.SpeedLimitReverse :
+                            chartableItem.ItemType == ChartableTrackItemType.SpeedLimitReverse ? ChartableTrackItemType.SpeedLimitForward :
+                            chartableItem.ItemType;
                         //For reverse, we start at the first item in the track
-                        newPoint = new PathChartPoint(chartableItem.Height, curvature, gradeFromPitch, chartableItem.TrackVectorSectionOffset - sectionOffsetStart, chartableItem.ItemText, chartableItem.ItemType);
+                        newPoint = new PathChartPoint(chartableItem.Height, curvature, gradeFromPitch, chartableItem.TrackVectorSectionOffset - sectionOffsetStart, chartableItem.ItemText, itemType);
                         sectionOffsetStart = chartableItem.TrackVectorSectionOffset;
                     }
                     additionalPoints.Add(newPoint);
@@ -454,21 +469,29 @@ namespace ORTS.TrackViewer.Editing.Charts
     /// For information that does not belong to a single point (like the grade), it describes the value for 
     /// the small track part following the point.
     /// </summary>
+    [Serializable()]
     public struct PathChartPoint
     {
         /// <summary>The distance along the path from a (not-in-this-class specified) reference along the path (e.g. real path begin)</summary>
+        [JsonProperty("DistanceAlongPath")]
         public float DistanceAlongPath;
         /// <summary>The distance along the path from a (not-in-this-class specified) reference along the path (e.g. real path begin)</summary>
+        [JsonProperty("DistanceAlongNextSection")]
         public float DistanceAlongNextSection;
         /// <summary>Height of the point (in meters)</summary>
+        [JsonProperty("HeightM")]
         public float HeightM;
         /// <summary>Curvature of the upcoming track (0 for straight, otherwise 1/radius with a sign describing which direction it curves)</summary>
+        [JsonProperty("Curvature")]
         public float Curvature;
         /// <summary>Average grade in the upcoming part of the path</summary>
+        [JsonProperty("GradePercent")]
         public float GradePercent;
         /// <summary>The text of the track item (e.g. name of the station) at this location</summary>
+        [JsonProperty("TrackItemText")]
         public string TrackItemText;
         /// <summary>The type of the trackItem</summary>
+        [JsonProperty("TrackItemType")]
         public ChartableTrackItemType TrackItemType;
 
         /// <summary>
@@ -482,7 +505,7 @@ namespace ORTS.TrackViewer.Editing.Charts
             Curvature = 0;
             GradePercent = 0;
             DistanceAlongNextSection = 0;
-            TrackItemText = null;
+            TrackItemText = String.Empty;
             TrackItemType = ChartableTrackItemType.None;
         }
 
@@ -495,7 +518,7 @@ namespace ORTS.TrackViewer.Editing.Charts
         /// <param name="distanceAlongSection">The distance along the section to store</param>
         /// <param name="itemText">The text to show on an item when drawing</param>
         /// <param name="type">The type of trackitem (if any) at this point</param>
-        public PathChartPoint(float height, float curvature, float grade, float distanceAlongSection, string itemText = null, ChartableTrackItemType type = ChartableTrackItemType.None)
+        public PathChartPoint(float height, float curvature, float grade, float distanceAlongSection, string itemText = "", ChartableTrackItemType type = ChartableTrackItemType.None)
         {
             HeightM = height;
             DistanceAlongPath = 0;
@@ -529,7 +552,7 @@ namespace ORTS.TrackViewer.Editing.Charts
         public override string ToString()
         {
             string basicInfo = string.Format("pathChartPoint {0:F1} {1:F1} {2:F1} {3:F1}% {4:F3} ", this.DistanceAlongPath, this.DistanceAlongNextSection, this.HeightM, this.GradePercent, this.Curvature);
-            if (this.TrackItemText == null)
+            if (this.TrackItemText == string.Empty)
             {
                 return basicInfo;
             }
@@ -550,8 +573,10 @@ namespace ORTS.TrackViewer.Editing.Charts
         Station,
         /// <summary>TrackItem type is a milepost (or kilometer type)</summary>
         MilePost,
-        /// <summary>TrackItem type is a speedlimit</summary>
-        SpeedLimit
+        /// <summary>TrackItem type is a speedlimit in forward direction</summary>
+        SpeedLimitForward,
+        /// <summary>TrackItem type is a speedlimit in reverse direction</summary>
+        SpeedLimitReverse
     }
 
     /// <summary>
@@ -683,7 +708,16 @@ namespace ORTS.TrackViewer.Editing.Charts
                     }
                     if (speedPost.IsLimit)
                     {
-                        this.ItemType = ChartableTrackItemType.SpeedLimit;
+                        float relativeAngle = Microsoft.Xna.Framework.MathHelper.WrapAngle(travellerAtItem.RotY + speedPost.Angle - (float)Math.PI / 2);
+                        bool inSameDirection = Math.Abs(relativeAngle) < Math.PI / 2;
+                        if (inSameDirection)
+                        {
+                            this.ItemType = ChartableTrackItemType.SpeedLimitForward;
+                        }
+                        else
+                        {
+                            this.ItemType = ChartableTrackItemType.SpeedLimitReverse;
+                        }
                     }
                     break;
                 case TrItem.trItemType.trPLATFORM:
