@@ -5100,12 +5100,14 @@ namespace ORTS
                 // check if reverse is required
 
                 int newIndex = nextRoute.GetRouteIndex(PresentPosition[0].TCSectionIndex, 0);
+                var oldDirection = ValidRoute[0][PresentPosition[0].RouteListIndex].Direction;
                 if (newIndex < 0)
                 {
                     newIndex = nextRoute.GetRouteIndex(PresentPosition[1].TCSectionIndex, 0);
+                    oldDirection = ValidRoute[0][PresentPosition[1].RouteListIndex].Direction;
                 }
 
-                if (ValidRoute[0][PresentPosition[0].RouteListIndex].Direction != nextRoute[newIndex].Direction)
+                if (oldDirection != nextRoute[newIndex].Direction)
                 {
 
                     // set new train positions and reset distance travelled
