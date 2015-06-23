@@ -1171,7 +1171,7 @@ namespace ORTS
 
                 if (thisInfo.ObjectType == ObjectItemInfo.ObjectItemType.Signal &&
                         thisInfo.signal_state < MstsSignalAspect.APPROACH_1 &&
-                        !thisInfo.processed)
+                        !thisInfo.processed && thisInfo.ObjectDetails.hasPermission != SignalObject.Permission.Granted)
                 {
                     if (CheckTrain)
                     {
@@ -1579,16 +1579,21 @@ namespace ORTS
             else if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL)
             {
                 MstsSignalAspect nextAspect = MstsSignalAspect.UNKNOWN;
+                bool nextPermission = false;
+                SignalObject nextSignal = null;
                 // there is a next item and it is the next signal
                 if (nextActionInfo != null && nextActionInfo.ActiveItem != null &&
                     nextActionInfo.ActiveItem.ObjectDetails == NextSignalObject[0])
                 {
-                    nextAspect = nextActionInfo.ActiveItem.ObjectDetails.this_sig_lr(MstsSignalFunction.NORMAL);
+                    nextSignal = nextActionInfo.ActiveItem.ObjectDetails;
+                    nextAspect = nextSignal.this_sig_lr(MstsSignalFunction.NORMAL);
                 }
                 else
                 {
                     nextAspect = GetNextSignalAspect(0);
+                    if (NextSignalObject[0] != null) nextSignal = NextSignalObject[0];
                 }
+                nextPermission = nextSignal != null && nextSignal.hasPermission == SignalObject.Permission.Granted;
 
                 if (NextSignalObject[0] == null) // no signal ahead so switch Node control
                 {
@@ -1596,7 +1601,7 @@ namespace ORTS
                     NextStopDistanceM = DistanceToEndNodeAuthorityM[0];
                 }
 
-                else if (nextAspect > MstsSignalAspect.STOP &&
+                else if ((nextAspect > MstsSignalAspect.STOP || nextPermission) &&
                         nextAspect < MstsSignalAspect.APPROACH_1)
                 {
                     // check if any other signals within clearing distance
@@ -2162,7 +2167,9 @@ namespace ORTS
 
             else if (nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_STOP)
             {
-                if (nextActionInfo.ActiveItem.signal_state >= MstsSignalAspect.APPROACH_1)
+                var nextSignal = nextActionInfo.ActiveItem.ObjectDetails;
+                var nextPermission = nextSignal.hasPermission == SignalObject.Permission.Granted;
+                if (nextActionInfo.ActiveItem.signal_state >= MstsSignalAspect.APPROACH_1 || nextPermission)
                 {
                     clearAction = true;
 
@@ -3755,7 +3762,7 @@ namespace ORTS
                         AIActionWPRef action = new AIActionWPRef(this, waitingPoint[5], 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction);
                         action.SetDelay(waitingPoint[2]);
                         AuxActionsContain.Add(action);
-                        if (insertSigDelegate && signalIndex[iWait] > -1)
+                        if (insertSigDelegate && (waitingPoint[2] != 60002 || !Simulator.Settings.ExtendedAIShunting) && signalIndex[iWait] > -1)
                         {
                             AIActSigDelegateRef delegateAction = new AIActSigDelegateRef(this, waitingPoint[5], 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction);
                             signalRef.SignalObjects[signalIndex[iWait]].LockForTrain(this.Number, waitingPoint[0]);
@@ -4522,6 +4529,54 @@ namespace ORTS
 
         //================================================================================================//
         /// <summary>
+        /// TestPermission
+        /// Tests if Waiting point delay =60002; a permission request to pass next signal is launched.
+
+        /// </summary>
+        /// 
+        public void TestPermission(ref int delay)
+        {
+            if (!Program.Simulator.Settings.ExtendedAIShunting) return;
+            if (delay != 60002) return;
+            else
+            {
+                delay = 20;
+                RequestSignalPermission(ValidRoute[0], 0);
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Request signal permission for AI trains (triggered by WP 60002)
+        //
+
+        public void RequestSignalPermission(TCSubpathRoute selectedRoute, int routeIndex)
+        {
+
+            // check if signal at danger
+
+            TCRouteElement thisElement = selectedRoute[PresentPosition[0].RouteListIndex];
+            TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+
+            // no signal in required direction
+
+            if (thisSection.EndSignals[thisElement.Direction] == null)
+                 return;
+
+            var requestedSignal = thisSection.EndSignals[thisElement.Direction];
+            if (requestedSignal.enabledTrain != null && requestedSignal.enabledTrain.Train != this)
+                return;
+
+            requestedSignal.enabledTrain = routeIndex == 0 ? routedForward : routedBackward;
+            requestedSignal.holdState = SignalObject.HoldState.None;
+            requestedSignal.hasPermission = SignalObject.Permission.Requested;
+
+            requestedSignal.checkRouteState(false, requestedSignal.signalRoute, routedForward, false);
+        }
+
+
+        //================================================================================================//
+        /// <summary>
         /// Remove train
         /// <\summary>
 
@@ -4855,7 +4910,10 @@ namespace ORTS
             if (speedInfo.MaxSpeedMpSLimit > 0)
             {
                 allowedMaxSpeedLimitMpS = Program.Simulator.TimetableMode ? speedInfo.MaxSpeedMpSLimit : allowedAbsoluteMaxSpeedLimitMpS;
-                AllowedMaxSpeedMpS = speedInfo.MaxSpeedMpSLimit;
+                if (Program.Simulator.TimetableMode)
+                    AllowedMaxSpeedMpS = speedInfo.MaxSpeedMpSLimit;
+                else
+                    AllowedMaxSpeedMpS = Math.Min(speedInfo.MaxSpeedMpSLimit, allowedMaxSpeedSignalMpS);
             }
             // <CScomment> following statement should be valid in general, as it seems there was a bug here in the original SW
             AllowedMaxSpeedMpS = Math.Min(AllowedMaxSpeedMpS, TrainMaxSpeedMpS);

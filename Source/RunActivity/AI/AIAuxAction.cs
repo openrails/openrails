@@ -1759,6 +1759,8 @@ namespace ORTS
                 thisTrain.TestAbsDelay(ref Delay, correctedTime);
                 // If delay equal to 60001 it is considered as a command to unconditionally attach to the nearby train;
                 aiTrain.TestUncondAttach(ref Delay);
+                // If delay equal to 60002 it is considered as a request for permission to pass signal;
+                aiTrain.TestPermission(ref Delay);
                 ActualDepart = correctedTime + Delay;
                 aiTrain.AuxActionsContain.CheckGenActions(this.GetType(), aiTrain.RearTDBTraveller.WorldLocation, Delay);
 

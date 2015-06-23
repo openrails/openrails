@@ -2360,6 +2360,10 @@ namespace ORTS
                                 allowedMaxSpeedLimitMpS = tempMaxSpeedMps;
                             }
                         }
+                        else if (firstObject.ObjectDetails.isSignal)
+                        {
+                            allowedMaxSpeedSignalMpS = allowedAbsoluteMaxSpeedSignalMpS;
+                        }
                     }
 
                     if (NextSignalObject[0] != null && firstObject.ObjectDetails == NextSignalObject[0])

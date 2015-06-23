@@ -9321,7 +9321,7 @@ namespace ORTS
         // check and update Route State
         //
 
-        public void checkRouteState(bool isPropagated, Train.TCSubpathRoute thisRoute, Train.TrainRouted thisTrain)
+        public void checkRouteState(bool isPropagated, Train.TCSubpathRoute thisRoute, Train.TrainRouted thisTrain, bool sound = true)
         {
             // check if signal must be hold
             bool signalHold = (holdState != HoldState.None);
@@ -9414,7 +9414,7 @@ namespace ORTS
             if (internalBlockState == InternalBlockstate.OccupiedSameDirection && hasPermission == Permission.Requested && !isPropagated)
             {
                 hasPermission = Permission.Granted;
-                Program.Simulator.SoundNotify = Event.PermissionGranted;
+                if (sound) Program.Simulator.SoundNotify = Event.PermissionGranted;
             }
             else
             {
@@ -9425,7 +9425,7 @@ namespace ORTS
                 }
                 else if (hasPermission == Permission.Requested)
                 {
-                    Program.Simulator.SoundNotify = Event.PermissionDenied;
+                    if (sound) Program.Simulator.SoundNotify = Event.PermissionDenied;
                 }
 
                 if (enabledTrain != null && enabledTrain.Train.ControlMode == Train.TRAIN_CONTROL.MANUAL && signalState == MstsSignalAspect.STOP &&
