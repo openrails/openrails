@@ -81,9 +81,9 @@ namespace ORTS.TrackViewer.Editing.Charts
                 }
             }
 
-            if (HeightCanvas.ActualWidth > 30)
+            if (HeightCanvas.ActualWidth > 10)
             {
-                ChartScrollbar.Width = HeightCanvas.ActualWidth - 30;
+                ChartScrollbar.Width = HeightCanvas.ActualWidth - 10;
             }
             else
             {   // happens during initialization, when actualWidht is not yet non-zero
@@ -140,6 +140,43 @@ namespace ORTS.TrackViewer.Editing.Charts
                 double xPositionOfMouseAsRatio = xPositionOfMouse / this.HeightCanvas.ActualWidth;
 
                 ZoomChange(Math.Exp(0.1 * e.Delta / 40), xPositionOfMouseAsRatio);
+            }
+        }
+
+        private bool mouseIsMoving = false;
+        private double realXatMouse=0;
+        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.LeftButton != MouseButtonState.Pressed)
+                return;
+            var sourceElement = e.Source as Window;
+            if (sourceElement != null)
+            {
+                sourceElement.CaptureMouse();
+                this.mouseIsMoving = true;
+                double mouseXstart = e.GetPosition(sourceElement).X;
+                double mouseXAsRatio = mouseXstart / this.HeightCanvas.ActualWidth;
+                this.realXatMouse = ChartScrollbar.Value + mouseXAsRatio * ChartScrollbar.ViewportSize;
+            }
+        }
+
+        private void Window_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (this.mouseIsMoving)
+            {
+                double mouseXstart = e.GetPosition(null).X;
+                double mouseXAsRatio = mouseXstart / this.HeightCanvas.ActualWidth;
+                ChartScrollbar.Value = this.realXatMouse - mouseXAsRatio * ChartScrollbar.ViewportSize;
+            }
+        }
+
+        private void Window_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            var sourceElement = e.Source as Window;
+            if (sourceElement != null)
+            {
+                sourceElement.ReleaseMouseCapture();
+                this.mouseIsMoving = false;
             }
         }
         #endregion

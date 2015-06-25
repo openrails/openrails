@@ -666,7 +666,7 @@ namespace ORTS.TrackViewer.Editing.Charts
 
                 if (sourcePoint.TrackItemType == ChartableTrackItemType.Station)
                 {
-                    DrawTextVertical(drawingCanvas, newX, 100, sourcePoint.TrackItemText, Colors.Red);
+                    DrawTextVertical(drawingCanvas, newX, ScaledY(sourcePoint.HeightM), sourcePoint.TrackItemText, Colors.Red);
 
                 }
             }
