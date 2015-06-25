@@ -868,25 +868,6 @@ namespace ORTS.TrackViewer.UserInterface
             trackViewer.PathEditor.EditMetaData();
         }
 
-        private void menuKnownLimitations_Click(object sender, RoutedEventArgs e)
-        {
-            StringBuilder limitations = new StringBuilder();
-            limitations.Append(TrackViewer.catalog.GetString("Currently all intended and planned editor features have been implemented."));
-            limitations.Append("\n");
-            limitations.Append(TrackViewer.catalog.GetString("Documentation is available") + ": http://openrails.org/learn/manual-and-tutorials/ (" +
-                   TrackViewer.catalog.GetString("Right column → OR_Trackviewer") + ")");
-            limitations.Append("\n\n");
-            limitations.Append(TrackViewer.catalog.GetString("Known limitations"));
-            limitations.Append("\n");
-            limitations.Append(TrackViewer.catalog.GetString("* The saved-paths have not been tested with MSTS or ORTS."));
-            limitations.Append("\n");
-            limitations.Append(TrackViewer.catalog.GetString("* Possibly non-standard junctions (> 1 incoming or > 2 outgoing tracks) might not work."));
-            limitations.Append("\n\n");
-            limitations.Append(TrackViewer.catalog.GetString("Feedback is appreciated."));
-            limitations.Append("\n\n");
-            MessageBox.Show(limitations.ToString());
-        }
-
         #region IDisposable
         private bool disposed;
         /// <summary>
