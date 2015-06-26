@@ -9367,7 +9367,7 @@ namespace ORTS
             {
                 if (fullRoute)
                 {
-                    bool newroute = getBlockState(thisRoute, thisTrain);
+                    bool newroute = getBlockState(thisRoute, thisTrain, !sound);
                     if (newroute)
                         thisRoute = this.signalRoute;
                 }
@@ -9712,11 +9712,11 @@ namespace ORTS
         //
 
         // check for train
-        private bool getBlockState(Train.TCSubpathRoute thisRoute, Train.TrainRouted thisTrain)
+        private bool getBlockState(Train.TCSubpathRoute thisRoute, Train.TrainRouted thisTrain, bool AIPermissionRequest)
         {
             if (signalRef.UseLocationPassingPaths)
             {
-                return (getBlockState_locationBased(thisRoute, thisTrain));
+                return (getBlockState_locationBased(thisRoute, thisTrain, AIPermissionRequest));
             }
             else
             {
@@ -9905,7 +9905,7 @@ namespace ORTS
         // based on location-based deadlock processing
         //
 
-        private bool getBlockState_locationBased(Train.TCSubpathRoute thisRoute, Train.TrainRouted thisTrain)
+        private bool getBlockState_locationBased(Train.TCSubpathRoute thisRoute, Train.TrainRouted thisTrain, bool AIPermissionRequest)
         {
             List<int> SectionsWithAlternativePath = new List<int>();
             List<int> SectionsWithAltPathSet = new List<int>();
@@ -9962,6 +9962,7 @@ namespace ORTS
                         }
                     }
                 }
+                if (blockstate == InternalBlockstate.OccupiedSameDirection && AIPermissionRequest) break;
             }
 
             // if deadlock area : check alternative path if not yet selected - but only if opening junction is reservable
