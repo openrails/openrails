@@ -3835,6 +3835,15 @@ namespace ORTS
         {
             bool[] returnValue = new bool[2] { false, true };
 
+            if (PresentPosition[0].RouteListIndex < 0)
+                // Is already off path
+            {
+                returnValue[0] = true;
+                if (TrainType != TRAINTYPE.AI_PLAYERHOSTING) Trace.TraceWarning("AI Train {0} service {1} off path and removed", Number, Name);
+                ProcessEndOfPathReached(ref returnValue, presentTime);
+                return (returnValue);
+            }
+
             int directionNow = ValidRoute[0][PresentPosition[0].RouteListIndex].Direction;
             int positionNow = ValidRoute[0][PresentPosition[0].RouteListIndex].TCSectionIndex;
 
