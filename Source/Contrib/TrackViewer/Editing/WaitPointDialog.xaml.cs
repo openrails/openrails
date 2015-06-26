@@ -80,6 +80,10 @@ namespace ORTS.TrackViewer.Editing
             {
                 selectJoinSplit.IsChecked = true;
             }
+            else if (currentWaitTimeS == 60002)
+            {
+                aiRequestPassRed.IsChecked = true;
+            }
             else if (currentWaitTimeS >= 60011 && currentWaitTimeS <= 60020)
             {
                 int seconds = currentWaitTimeS - 60010;
@@ -123,6 +127,11 @@ namespace ORTS.TrackViewer.Editing
                 return 60001;
             }
 
+            if (aiRequestPassRed.IsChecked == true)
+            {
+                // coding is only one number
+                return 60002;
+            }
             if (selectBlowHorn.IsChecked == true)
             {
                 // coding is 60011 to 60020
