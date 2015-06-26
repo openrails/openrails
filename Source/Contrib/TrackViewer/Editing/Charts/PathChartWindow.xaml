@@ -59,7 +59,16 @@
         </Grid>
 
         <StackPanel Grid.Row="3" Grid.Column="0" Orientation="Horizontal">
-        <Button Height="25" Width="57" Content="Save json" Click="SaveJson_Click"/>
+            <Button Height="25" Width="57" Content="Save json" Click="SaveJson_Click">
+                <Button.ToolTip>
+                    <ToolTip>
+                        <StackPanel>
+                            <TextBlock>Save the data of the chart in json format into a .js file.</TextBlock>
+                            <TextBlock>The saved data can then be used to show the chart on an HTML5 canvas.</TextBlock>
+                        </StackPanel>
+                    </ToolTip>
+                </Button.ToolTip>
+            </Button>
             <ScrollBar Grid.Row="3" Grid.Column="1" Name="ChartScrollbar" Minimum="0" Maximum="0.0001" Margin="10,10,0,0" Width="1000" 
                    Orientation="Horizontal" Value="0" ViewportSize="0.9999" Height="Auto" ValueChanged="ChartScrollbar_ValueChanged"/>
         </StackPanel>

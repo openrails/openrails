@@ -186,9 +186,9 @@ namespace ORTS.TrackViewer.Editing.Charts
         {
             Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
             dlg.OverwritePrompt = true;
-            dlg.FileName = "pathchartdata.json";
-            dlg.DefaultExt = ".json";
-            dlg.Filter = "JSON Files (.json)|*.json";
+            dlg.FileName = "pathchartdata.js";
+            dlg.DefaultExt = ".js";
+            dlg.Filter = "Javascript Files (.js)|*.js";
             if (dlg.ShowDialog() == true)
             {
                 WriteJson(dlg.FileName);
@@ -208,6 +208,10 @@ namespace ORTS.TrackViewer.Editing.Charts
             serializer.Formatting = Formatting.Indented;
             using (StreamWriter wr = new StreamWriter(completeFileName))
             {
+                wr.WriteLine("//Define a global variable that contains the data in JSON format");
+                wr.WriteLine("//for the path chart.");
+                wr.WriteLine("//Because of the variable definition the file is javascript, not pure json");
+                wr.Write("var pathchartdata = ");
                 using (JsonWriter writer = new JsonTextWriter(wr))
                 {
                     serializer.Serialize(writer, this.pathData);
