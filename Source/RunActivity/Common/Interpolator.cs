@@ -265,6 +265,7 @@ namespace ORTS
         }
         public InterpolatorDiesel2D(STFReader stf, bool tab)
         {
+            // <CSComment> TODO: probably there is some other stf.SkipRestOfBlock() that should be removed </CSComment>
             List<float> xlist = new List<float>();
             List<Interpolator> ilist = new List<Interpolator>();
 
@@ -379,7 +380,6 @@ namespace ORTS
                     xlist.Add(stf.ReadFloat(STFReader.UNITS.Any, null));
                     ilist.Add(new Interpolator(stf));
                 }
-                stf.SkipRestOfBlock(); 
             }
 
 
