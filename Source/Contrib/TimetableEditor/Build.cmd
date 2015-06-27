@@ -7,7 +7,7 @@ CALL :find-executable lazbuild.exe
 IF NOT EXIST "%FindExecutable%" (
 	ECHO Error: Lazarus compiler ^(lazbuild.exe^) not found.
 	ECHO Expected location is %FindExecutable.Default% or on the PATH.
-	GOTO :EOF
+	EXIT /B 1
 )
 SET Lazarus.lazbuild=%FindExecutable%
 
@@ -16,12 +16,12 @@ CALL :find-executable strip.exe
 IF NOT EXIST "%FindExecutable%" (
 	ECHO Error: Lazarus compiler ^(lazbuild.exe^) not found.
 	ECHO Expected location is %FindExecutable.Default% or on the PATH.
-	GOTO :EOF
+	EXIT /B 1
 )
 SET Lazarus.strip=%FindExecutable%
 
 IF EXIST lib RMDIR /S /Q lib
-%Lazarus.lazbuild% timetableedit.lpi && %Lazarus.strip% --strip-all timetableedit.exe && MOVE /Y timetableedit.exe ..\..\..\Program\Contrib.TimetableEditor.exe && XCOPY /S /I /Y languages ..\..\..\Program\languages
+%Lazarus.lazbuild% timetableedit.lpi && %Lazarus.strip% --strip-all timetableedit.exe && MOVE /Y timetableedit.exe ..\..\..\Program\Contrib.TimetableEditor.exe && XCOPY /S /I /Y languages ..\..\..\Program\languages || EXIT /B 1
 
 ENDLOCAL
 GOTO :EOF
