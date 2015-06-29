@@ -166,6 +166,9 @@ namespace ORTS.Viewer3D.RollingStock
                     var pmatrix = TrainCarShape.SharedShape.GetParentMatrix(matrix);
                     car.AddWheelSet(m.M43, id, pmatrix, matrixName.ToString(), numWheels1, numWheels2);
                 }
+                // Standard wheels are processed above, but wheels used as animated fans that are greater than 3m are processed here.
+                else
+                    RunningGear.AddMatrix(matrix);
             }
             else if (matrixName.StartsWith("BOGIE") && matrixName.Length <= 6) //BOGIE1 is valid, BOGIE11 is not, it is used by some modelers to indicate this is part of bogie1
             {
