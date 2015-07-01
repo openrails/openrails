@@ -32,8 +32,13 @@ namespace ORTS.Viewer3D
     public class PrecipitationViewer
     {
         public const float MinIntensityPPSPM2 = 0;
-        public const float MaxIntensityPPSPM2 = 0.015f;
-
+        // 16 bit version.
+        public const float MaxIntensityPPSPM2_16 = 0.010f;
+        // Default 32 bit version.
+        public const float MaxIntensityPPSPM2 = 0.020f;
+        // 32 bit version for systems unable to take advantage of the LAA option.
+        public const float MaxIntensityPPSPM2_Limited = 0.015f;
+        
         readonly Viewer Viewer;
         readonly WeatherControl Weather;
 
@@ -71,8 +76,12 @@ namespace ORTS.Viewer3D
 
         public void Reset()
         {
-            Wind.X = Viewer.Simulator.Weather == Orts.Formats.Msts.WeatherType.Snow ? 2 : 20;
-
+            // This procedure is only called once at the start of an activity.
+            // Added random Wind.X value for rain and snow.
+            Random randWind = new Random();
+            // Max value used by randWind.Next is max value - 1.
+            Wind.X = Viewer.Simulator.Weather == Orts.Formats.Msts.WeatherType.Snow ? randWind.Next(2, 6) : randWind.Next(15, 21);
+                                    
             var gameTime = (float)Viewer.Simulator.GameTime;
             Pricipitation.Initialize(Viewer.Simulator.Weather, Wind);
             // Camera is null during first initialisation.
@@ -90,16 +99,30 @@ namespace ORTS.Viewer3D
     {
         // http://www-das.uwyo.edu/~geerts/cwx/notes/chap09/hydrometeor.html
         // "Rain  1.8 - 2.2mm  6.1 - 6.9m/s"
-        const float RainVelocityMpS = 6.5f;
+        const float RainVelocityMpS = 6.9f;
         // "Snow flakes of any size falls at about 1 m/s"
         const float SnowVelocityMpS = 1.0f;
         // This is a fiddle factor because the above values feel too slow. Alternative suggestions welcome.
         const float ParticleVelocityFactor = 10.0f;
 
-        // The width/depth of the box containing pricipitation. It is centered around the camera usually.
-        const float ParticleBoxSizeM = 500;
-        // The height of the box containing pricipitation.
-        const float ParticleBoxHeightM = 43;
+        readonly float ParticleBoxLengthM;
+        readonly float ParticleBoxWidthM;
+        readonly float ParticleBoxHeightM;
+
+        // 32bitbit Box Parameters
+        const float ParticleBoxLengthM_32 = 2000;
+        const float ParticleBoxWidthM_32 = 1000;
+        const float ParticleBoxHeightM_32 = 240;
+
+        // 32bitbit Box Parameters for systems that are unable to take advantage of LAA
+        const float ParticleBoxLengthM_Limited_32 = 1400;
+        const float ParticleBoxWidthM_Limited_32 = 870;
+        const float ParticleBoxHeightM_Limited_32 = 175;
+
+        // 16bit Box Parameters
+        const float ParticleBoxLengthM_16 = 500;
+        const float ParticleBoxWidthM_16 = 500;
+        const float ParticleBoxHeightM_16 = 43;
 
         const int IndiciesPerParticle = 6;
         const int VerticiesPerParticle = 4;
@@ -147,23 +170,86 @@ namespace ORTS.Viewer3D
         public PrecipitationPrimitive(GraphicsDevice graphicsDevice)
         {
             // Snow is the slower particle, hence longer duration, hence more particles in total.
-            MaxParticles = (int)(PrecipitationViewer.MaxIntensityPPSPM2 * ParticleBoxSizeM * ParticleBoxSizeM * ParticleBoxHeightM / SnowVelocityMpS / ParticleVelocityFactor);
-            Debug.Assert(MaxParticles * VerticiesPerParticle < ushort.MaxValue, "The maximum number of pricipitation verticies must be able to fit in a ushort (16bit unsigned) index buffer.");
+            // Setting the precipitaton box size based on GraphicsDeviceCapabilities.
+            if (graphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF) // As an integer, 0xFFFF is 65535.
+            {
+                // Testing if UseLargeAddressAware has been selected.
+                if(Program.Simulator.Settings.UseLargeAddressAware)
+                {
+                    ParticleBoxLengthM = ParticleBoxLengthM_32;
+                    ParticleBoxWidthM = ParticleBoxWidthM_32;
+                    ParticleBoxHeightM = ParticleBoxHeightM_32;
+                }
+                // if UseLargeAddressAware is not selected, use box size with smaller values.
+                else
+                {
+                    ParticleBoxLengthM = ParticleBoxLengthM_Limited_32;
+                    ParticleBoxWidthM = ParticleBoxWidthM_Limited_32;
+                    ParticleBoxHeightM = ParticleBoxHeightM_Limited_32;
+                }
+            }
+            else
+            {
+                ParticleBoxLengthM = ParticleBoxLengthM_16;
+                ParticleBoxWidthM = ParticleBoxWidthM_16;
+                ParticleBoxHeightM = ParticleBoxHeightM_16;
+            }
+            if (graphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF) // As an integer, 0xFFFF is 65535.
+            {
+                // Testing if UseLargeAddressAware has been selected.
+                if(Program.Simulator.Settings.UseLargeAddressAware)
+                    MaxParticles = (int)(PrecipitationViewer.MaxIntensityPPSPM2 * ParticleBoxLengthM * ParticleBoxWidthM * ParticleBoxHeightM / SnowVelocityMpS / ParticleVelocityFactor);
+                else
+                    MaxParticles = (int)(PrecipitationViewer.MaxIntensityPPSPM2_Limited * ParticleBoxLengthM * ParticleBoxWidthM * ParticleBoxHeightM / SnowVelocityMpS / ParticleVelocityFactor);
+            }
+            // Processing 16bit device
+            else
+                MaxParticles = (int)(PrecipitationViewer.MaxIntensityPPSPM2_16 * ParticleBoxLengthM * ParticleBoxWidthM * ParticleBoxHeightM / SnowVelocityMpS / ParticleVelocityFactor);
+            // Checking if graphics device is 16bit.
+            if (graphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex == 0xFFFF)
+                Debug.Assert(MaxParticles * VerticiesPerParticle < ushort.MaxValue, "The maximum number of precipitation verticies must be able to fit in a ushort (16bit unsigned) index buffer.");
             Vertices = new ParticleVertex[MaxParticles * VerticiesPerParticle];
             VertexDeclaration = new VertexDeclaration(graphicsDevice, ParticleVertex.VertexElements);
             VertexStride = Marshal.SizeOf(typeof(ParticleVertex));
             VertexBuffer = new DynamicVertexBuffer(graphicsDevice, typeof(ParticleVertex), MaxParticles * VerticiesPerParticle, BufferUsage.WriteOnly);
             VertexBuffer.ContentLost += VertexBuffer_ContentLost;
-            IndexBuffer = InitIndexBuffer(graphicsDevice, MaxParticles * IndiciesPerParticle);
+            // Processing either 32bit or 16bit InitIndexBuffer depending on GraphicsDeviceCapabilities.
+           if (graphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF) // As an integer, 0xFFFF is 65535.
+               IndexBuffer = InitIndexBuffer(graphicsDevice, MaxParticles * IndiciesPerParticle);
+           else
+               IndexBuffer = InitIndexBuffer16(graphicsDevice, MaxParticles * IndiciesPerParticle);
             Heights = new HeightCache(8);
+            // This Trace command is used to show how much memory is used.
+            //Trace.TraceInformation(String.Format("Allocation for {0:N0} particles:\n\n  {1,13:N0} B RAM vertex data\n  {2,13:N0} B RAM index data (temporary)\n  {1,13:N0} B VRAM DynamicVertexBuffer\n  {2,13:N0} B VRAM IndexBuffer", MaxParticles, Marshal.SizeOf(typeof(ParticleVertex)) * MaxParticles * VerticiesPerParticle, (graphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF ? sizeof(uint) : sizeof(ushort)) * MaxParticles * IndiciesPerParticle));
         }
 
         void VertexBuffer_ContentLost(object sender, EventArgs e)
         {
             VertexBuffer.SetData(0, Vertices, 0, Vertices.Length, VertexStride, SetDataOptions.NoOverwrite);
         }
-
+        // IndexBuffer for 32bit process.
         static IndexBuffer InitIndexBuffer(GraphicsDevice graphicsDevice, int numIndicies)
+        {
+            var indices = new uint[numIndicies];
+            var index = 0;
+            for (var i = 0; i < numIndicies; i += IndiciesPerParticle)
+            {
+                indices[i] = (uint)index;
+                indices[i + 1] = (uint)(index + 1);
+                indices[i + 2] = (uint)(index + 2);
+
+                indices[i + 3] = (uint)(index + 2);
+                indices[i + 4] = (uint)(index + 3);
+                indices[i + 5] = (uint)(index);
+
+                index += VerticiesPerParticle;
+            }
+            var indexBuffer = new IndexBuffer(graphicsDevice, sizeof(uint) * numIndicies, BufferUsage.WriteOnly, IndexElementSize.ThirtyTwoBits);
+            indexBuffer.SetData(indices);
+            return indexBuffer;
+        }
+        // IndexBuffer for computers that still use 16bit graphics.
+        static IndexBuffer InitIndexBuffer16(GraphicsDevice graphicsDevice, int numIndicies)
         {
             var indices = new ushort[numIndicies];
             var index = 0;
@@ -248,18 +334,18 @@ namespace ORTS.Viewer3D
             var tiles = viewer.Tiles;
             var scenery = viewer.World.Scenery;
             var worldLocation = viewer.Camera.CameraWorldLocation;
-
+                        
             if (TimeParticlesLastEmitted == 0)
             {
                 TimeParticlesLastEmitted = currentTime - ParticleDuration;
-                ParticlesToEmit += ParticleDuration * particlesPerSecondPerM2 * ParticleBoxSizeM * ParticleBoxSizeM;
+                ParticlesToEmit += ParticleDuration * particlesPerSecondPerM2 * ParticleBoxLengthM * ParticleBoxWidthM;
             }
             else
             {
                 RetireActiveParticles(currentTime);
                 FreeRetiredParticles();
 
-                ParticlesToEmit += elapsedTime.ClockSeconds * particlesPerSecondPerM2 * ParticleBoxSizeM * ParticleBoxSizeM;
+                ParticlesToEmit += elapsedTime.ClockSeconds * particlesPerSecondPerM2 * ParticleBoxLengthM * ParticleBoxWidthM;
             }
 
             var numParticlesAdded = 0;
@@ -269,7 +355,7 @@ namespace ORTS.Viewer3D
 
             for (var i = 0; i < numToEmit; i++)
             {
-                var temp = new WorldLocation(worldLocation.TileX, worldLocation.TileZ, worldLocation.Location.X + (float)((Program.Random.NextDouble() - 0.5) * ParticleBoxSizeM), 0, worldLocation.Location.Z + (float)((Program.Random.NextDouble() - 0.5) * ParticleBoxSizeM));
+                var temp = new WorldLocation(worldLocation.TileX, worldLocation.TileZ, worldLocation.Location.X + (float)((Program.Random.NextDouble() - 0.5) * ParticleBoxLengthM), 0, worldLocation.Location.Z + (float)((Program.Random.NextDouble() - 0.5) * ParticleBoxWidthM));
                 temp.Location.Y = Heights.GetHeight(temp, tiles, scenery);
                 var position = new WorldPosition(temp);
 
