@@ -557,7 +557,12 @@ namespace ORTS.Viewer3D.Popups
             TextPageHeading(table, Viewer.Catalog.GetString("BRAKE INFORMATION"));
 
             var train = Viewer.PlayerLocomotive.Train;
-            TableAddLabelValue(table, Viewer.Catalog.GetString("Main reservoir"), "{0}", FormatStrings.FormatPressure(train.BrakeLine2PressurePSI, PressureUnit.PSI, (Viewer.PlayerLocomotive as MSTSLocomotive).PressureUnit, true));
+            TableAddLines(table, String.Format("{0}\t\t{1}\t{2}\t\t{3}",
+                Viewer.Catalog.GetString("Main reservoir"),
+                FormatStrings.FormatPressure(train.BrakeLine2PressurePSI, PressureUnit.PSI, (Viewer.PlayerLocomotive as MSTSLocomotive).PressureUnit, true),
+                Viewer.Catalog.GetString("Compressor"),
+                (Viewer.PlayerLocomotive as MSTSLocomotive).CompressorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off")));
+            TableAddLine(table);
 
             TableSetCells(table, 0,
                 Viewer.Catalog.GetString("Car"),
