@@ -3090,15 +3090,7 @@ namespace ORTS
             }
         }
 
-        protected override float GetSteamLocoMechFrictN()
-        {
-            // Calculate steam locomotive mechanical friction value, ie 20 (or 98.0667 metric) x DrvWheelWeight x Valve Factor, Assume VF = 1
-
-            return 0.0f;  // Mechanical friction may already be in the FCalc equations - so zero out and check after v1.0 - To Do
-            //return 98.0667f * (DrvWheelWeightKg / Kg.FromTonne(1);
-        }
-
-        private void UpdateAuxiliaries(float elapsedClockSeconds, float absSpeedMpS)
+         private void UpdateAuxiliaries(float elapsedClockSeconds, float absSpeedMpS)
         {
             // Calculate Air Compressor steam Usage if turned on
             if (CompressorIsOn)
