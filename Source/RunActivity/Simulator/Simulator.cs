@@ -547,14 +547,30 @@ namespace ORTS
 
         private void FinishCoupling(Train drivenTrain, Train train, bool couple_to_front)
         {
-            train.RemoveFromTrack();
-            if (train.TrainType != Train.TRAINTYPE.AI_INCORPORATED)
+            if (train.TrainType == Train.TRAINTYPE.AI && ((AITrain)train).UncondAttach)
             {
-                Trains.Remove(train);
-                TrainDictionary.Remove(train.Number);
-                NameDictionary.Remove(train.Name.ToLower());
-            }
+                // if there is just here a reversal point, increment subpath in order to be in accordance with attachTrain
 
+                var ppTCSectionIndex = train.PresentPosition[0].TCSectionIndex;
+                train.IncorporatingTrain = drivenTrain;
+                ((AITrain)train).SuspendTrain();
+                if (ppTCSectionIndex == train.TCRoute.TCRouteSubpaths[train.TCRoute.activeSubpath][train.TCRoute.TCRouteSubpaths[train.TCRoute.activeSubpath].Count - 1].TCSectionIndex)
+                    train.IncrementSubpath(train);
+                // doubled check in case of double reverse point.
+                if (ppTCSectionIndex == train.TCRoute.TCRouteSubpaths[train.TCRoute.activeSubpath][train.TCRoute.TCRouteSubpaths[train.TCRoute.activeSubpath].Count - 1].TCSectionIndex)
+                    train.IncrementSubpath(train);
+                drivenTrain.IncorporatedTrainNo = train.Number;
+            }
+            else
+            {
+                train.RemoveFromTrack();
+                if (train.TrainType != Train.TRAINTYPE.AI_INCORPORATED)
+                {
+                    Trains.Remove(train);
+                    TrainDictionary.Remove(train.Number);
+                    NameDictionary.Remove(train.Name.ToLower());
+                }
+            }
             if (train.UncoupledFrom != null)
                 train.UncoupledFrom.UncoupledFrom = null;
 
@@ -592,7 +608,7 @@ namespace ORTS
             if (drivenTrain.SpeedMpS < 0)
             {
                 foreach (Train train in Trains)
-                    if (train != drivenTrain)
+                    if (train != drivenTrain && train.TrainType != Train.TRAINTYPE.AI_INCORPORATED)
                     {
                         //avoid coupling of player train with other players train
                         if (MPManager.IsMultiPlayer() && !MPManager.TrainOK2Couple(drivenTrain, train)) continue;
@@ -651,7 +667,7 @@ namespace ORTS
             else if (drivenTrain.SpeedMpS > 0)
             {
                 foreach (Train train in Trains)
-                    if (train != drivenTrain)
+                    if (train != drivenTrain && train.TrainType != Train.TRAINTYPE.AI_INCORPORATED)
                     {
                         //avoid coupling of player train with other players train if it is too short alived (e.g, when a train is just spawned, it may overlap with another train)
                         if (MPManager.IsMultiPlayer() && !MPManager.TrainOK2Couple(drivenTrain, train)) continue;
@@ -680,6 +696,7 @@ namespace ORTS
                                 car.Train = drivenTrain;
                                 car.prevElev = -60f;
                             }
+                            if (drivenTrain.LeadLocomotiveIndex >= 0) drivenTrain.LeadLocomotiveIndex += train.Cars.Count;
                             FinishFrontCoupling(drivenTrain, train, lead);
                             if (MPManager.IsMultiPlayer()) MPManager.BroadCast((new MSGCouple(drivenTrain, train)).ToString());
                             return;
@@ -706,6 +723,7 @@ namespace ORTS
                                 car.Flipped = !car.Flipped;
                                 car.prevElev = -60f;
                             }
+                            if (drivenTrain.LeadLocomotiveIndex >= 0) drivenTrain.LeadLocomotiveIndex += train.Cars.Count;
                             FinishFrontCoupling(drivenTrain, train, lead);
                             if (MPManager.IsMultiPlayer()) MPManager.BroadCast((new MSGCouple(drivenTrain, train)).ToString());
                             return;

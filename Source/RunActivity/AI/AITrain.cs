@@ -4633,6 +4633,7 @@ namespace ORTS
             // reset AuxAction if any
             AuxActionsContain.ResetAuxAction(this);
             TrainType = TRAINTYPE.AI_INCORPORATED;
+            Cars.Clear();
             requiredActions.RemovePendingAIActionItems(true);
             UncondAttach = false;
         }

@@ -9962,7 +9962,7 @@ namespace ORTS
                         }
                     }
                 }
-                if (blockstate == InternalBlockstate.OccupiedSameDirection && AIPermissionRequest) break;
+                if (thisTrain != null && blockstate == InternalBlockstate.OccupiedSameDirection && (AIPermissionRequest || hasPermission == Permission.Requested)) break;
             }
 
             // if deadlock area : check alternative path if not yet selected - but only if opening junction is reservable
