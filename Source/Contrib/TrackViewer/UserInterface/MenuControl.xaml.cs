@@ -174,10 +174,12 @@ namespace ORTS.TrackViewer.UserInterface
             if (menuShowTerrain.IsChecked || menuShowDMTerrain.IsChecked)
             {
                 menuShowWorldTiles.IsChecked = false;
+                menuShowWorldTiles.IsEnabled = false;
                 menuShowPatchLines.IsEnabled = true;
             }
             else
             {
+                menuShowWorldTiles.IsEnabled = true;
                 menuShowPatchLines.IsEnabled = false;
             }
 
