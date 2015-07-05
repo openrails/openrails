@@ -398,7 +398,7 @@ namespace ORTS.Settings
                 writer.WriteLine("{0,-40}{1,-40}{2}", "Command", "Key", "Unique Inputs");
                 writer.WriteLine(new String('=', 40 * 3));
                 foreach (var command in GetCommands())
-                    writer.WriteLine("{0,-40}{1,-40}{2}", GetPrettyCommandName(command), Commands[(int)command].ToString(), String.Join(", ", Commands[(int)command].GetUniqueInputs().OrderBy(s => s).ToArray()));
+                    writer.WriteLine("{0,-40}{1,-40}{2}", GetPrettyCommandName(command), Commands[(int)command], String.Join(", ", Commands[(int)command].GetUniqueInputs().OrderBy(s => s).ToArray()));
             }
         }
 
