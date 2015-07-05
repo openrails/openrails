@@ -247,6 +247,10 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public abstract void Update();
         /// <summary>
+        /// Called regularly at every simulator update cycle by loco of autopiloted train.
+        /// </summary>
+        public abstract float UpdateInputs();
+        /// <summary>
         /// Called when an event happens (like the alerter button pressed)
         /// </summary>
         /// <param name="evt">The event happened</param>

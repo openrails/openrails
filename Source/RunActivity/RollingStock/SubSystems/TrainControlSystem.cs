@@ -397,26 +397,41 @@ namespace ORTS
             // If script not loaded or not in player's locomotive = all restrictions disabled
             if (Script == null || Locomotive != Simulator.PlayerLocomotive || !Locomotive.IsLeadLocomotive())
             {
-                PowerAuthorization = true;
-                if (Locomotive.TrainBrakeController != null)
-                {
-                    Locomotive.TrainBrakeController.TCSFullServiceBraking = false;
-                    Locomotive.TrainBrakeController.TCSEmergencyBraking = false;
-                }
+                DisableRestrictions();
             }
             else
             {
-                SignalSpeedLimits.Clear();
-                SignalAspects.Clear();
-                SignalDistances.Clear();
-                PostSpeedLimits.Clear();
-                PostDistances.Clear();
+                ClearParams();
 
                 IsAlerterEnabled = Simulator.Settings.Alerter
                     & !(Simulator.Settings.AlerterDisableExternal & Simulator.Confirmer.Viewer.Camera.Style != Viewer3D.Camera.Styles.Cab & Simulator.Confirmer.Viewer.Camera.Style != Viewer3D.Camera.Styles.ThreeDimCab);
-
                 Script.Update();
+             }
+            // Autopiloted train
+            if (Script != null && Locomotive == Simulator.PlayerLocomotive && Locomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
+            {
+                ClearParams();
+                Script.UpdateInputs();
             }
+        }
+
+        public void DisableRestrictions()
+        {
+            PowerAuthorization = true;
+            if (Locomotive.TrainBrakeController != null)
+            {
+                Locomotive.TrainBrakeController.TCSFullServiceBraking = false;
+                Locomotive.TrainBrakeController.TCSEmergencyBraking = false;
+            }
+        }
+
+        public void ClearParams()
+        {
+            SignalSpeedLimits.Clear();
+            SignalAspects.Clear();
+            SignalDistances.Clear();
+            PostSpeedLimits.Clear();
+            PostDistances.Clear();
         }
 
         public void AlerterPressed(bool pressed)
@@ -520,16 +535,7 @@ namespace ORTS
 
         public override void Update()
         {
-            SetNextSignalAspect(NextSignalAspect(0));
-
-            CurrentSpeedLimitMpS = CurrentSignalSpeedLimitMpS() >= 0 ? CurrentSignalSpeedLimitMpS() : TrainSpeedLimitMpS();
-            if (CurrentSpeedLimitMpS > TrainSpeedLimitMpS())
-                CurrentSpeedLimitMpS = TrainSpeedLimitMpS();
-            
-            var nextSpeedLimitMpS = NextSignalSpeedLimitMpS(0) >= 0 && NextSignalSpeedLimitMpS(0) < TrainSpeedLimitMpS() ? NextSignalSpeedLimitMpS(0) : TrainSpeedLimitMpS();
-
-            SetCurrentSpeedLimitMpS(CurrentSpeedLimitMpS);
-            SetNextSpeedLimitMpS(nextSpeedLimitMpS);
+            var nextSpeedLimitMpS = UpdateInputs();
 
             if (VigilanceMonitor != null)
                 UpdateVigilance();
@@ -603,6 +609,21 @@ namespace ORTS
             else
                 Status = MonitoringStatus.Normal;
             SetMonitoringStatus(Status);
+        }
+
+        public override float UpdateInputs()
+        {
+            SetNextSignalAspect(NextSignalAspect(0));
+
+            CurrentSpeedLimitMpS = CurrentSignalSpeedLimitMpS() >= 0 ? CurrentSignalSpeedLimitMpS() : TrainSpeedLimitMpS();
+            if (CurrentSpeedLimitMpS > TrainSpeedLimitMpS())
+                CurrentSpeedLimitMpS = TrainSpeedLimitMpS();
+
+            var nextSpeedLimitMpS = NextSignalSpeedLimitMpS(0) >= 0 && NextSignalSpeedLimitMpS(0) < TrainSpeedLimitMpS() ? NextSignalSpeedLimitMpS(0) : TrainSpeedLimitMpS();
+
+            SetCurrentSpeedLimitMpS(CurrentSpeedLimitMpS);
+            SetNextSpeedLimitMpS(nextSpeedLimitMpS);
+            return nextSpeedLimitMpS;
         }
 
         public override void HandleEvent(TCSEvent evt, string message)
