@@ -3032,6 +3032,14 @@ namespace ORTS
         /// Find lead locomotive
         /// <\summary>
 
+        // FindLeadLocomotives stores the index of a single locomotive, or alternatively multiple locomotives, such as 
+        // in the case of MU'd diesel units, the "first" and "last" values enclose the group of locomotives where the 
+        // lead locomotive (the player driven one) resides. Within this group both the main reservoir pressure and the 
+        // engine brake pipe pressure will be propagated. It only identifies multiple units when coupled directly together,
+        // for example a double headed steam locomotive will most often have a tender separating the two locomotives, 
+        // so the second locomotive will not be identified, nor will a lcomotive added at the rear of the train. 
+
+
         public void FindLeadLocomotives(ref int first, ref int last)
         {
             first = last = -1;
@@ -3041,6 +3049,22 @@ namespace ORTS
                     last = i;
                 for (int i = LeadLocomotiveIndex; i >= 0 && Cars[i].IsDriveable; i--)
                     first = i;
+            }
+
+            // If double headed tank locomotive then only apply engine brake to first locomotive for consistency
+            if (last == first +1 && Cars[first] is MSTSSteamLocomotive && Cars[last] is MSTSSteamLocomotive)
+            {
+                last = first;
+            }
+            
+            // If increasing the last locomotive index will exceed the total number of cars, skip next section.
+            // This may be the case where there is a light engine or double headed tank locomotive combination.
+            if (last + 1 < Cars.Count)
+            {
+                if (Cars[last] is MSTSSteamLocomotive && Cars[last + 1].IsTender)
+                {
+                    last += 1;
+                }
             }
         }
 
