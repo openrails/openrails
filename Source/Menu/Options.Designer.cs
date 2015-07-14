@@ -29,8 +29,8 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.buttonOK = new System.Windows.Forms.Button();
             this.numericBrakePipeChargingRate = new System.Windows.Forms.NumericUpDown();
             this.label4 = new System.Windows.Forms.Label();
@@ -130,6 +130,12 @@
             this.tabPageUpdater = new System.Windows.Forms.TabPage();
             this.labelUpdateChannel = new System.Windows.Forms.Label();
             this.tabPageExperimental = new System.Windows.Forms.TabPage();
+            this.label25 = new System.Windows.Forms.Label();
+            this.precipitationBoxLength = new System.Windows.Forms.NumericUpDown();
+            this.label24 = new System.Windows.Forms.Label();
+            this.precipitationBoxWidth = new System.Windows.Forms.NumericUpDown();
+            this.label23 = new System.Windows.Forms.Label();
+            this.precipitationBoxHeight = new System.Windows.Forms.NumericUpDown();
             this.label16 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
             this.label21 = new System.Windows.Forms.Label();
@@ -192,6 +198,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.bindingSourceContent)).BeginInit();
             this.tabPageUpdater.SuspendLayout();
             this.tabPageExperimental.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.precipitationBoxLength)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.precipitationBoxWidth)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.precipitationBoxHeight)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackLODBias)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactorChange)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactor)).BeginInit();
@@ -1365,27 +1374,27 @@
             this.dataGridViewContent.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dataGridViewContent.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
             this.dataGridViewContent.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dataGridViewContent.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dataGridViewContent.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.nameDataGridViewTextBoxColumn,
             this.pathDataGridViewTextBoxColumn});
             this.dataGridViewContent.DataSource = this.bindingSourceContent;
-            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle6.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle6;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle2;
             this.dataGridViewContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridViewContent.Location = new System.Drawing.Point(0, 0);
             this.dataGridViewContent.MultiSelect = false;
@@ -1441,6 +1450,12 @@
             // 
             // tabPageExperimental
             // 
+            this.tabPageExperimental.Controls.Add(this.label25);
+            this.tabPageExperimental.Controls.Add(this.precipitationBoxLength);
+            this.tabPageExperimental.Controls.Add(this.label24);
+            this.tabPageExperimental.Controls.Add(this.precipitationBoxWidth);
+            this.tabPageExperimental.Controls.Add(this.label23);
+            this.tabPageExperimental.Controls.Add(this.precipitationBoxHeight);
             this.tabPageExperimental.Controls.Add(this.label16);
             this.tabPageExperimental.Controls.Add(this.label9);
             this.tabPageExperimental.Controls.Add(this.label21);
@@ -1483,6 +1498,117 @@
             this.tabPageExperimental.TabIndex = 3;
             this.tabPageExperimental.Text = "Experimental";
             this.tabPageExperimental.UseVisualStyleBackColor = true;
+            // 
+            // label25
+            // 
+            this.label25.AutoSize = true;
+            this.label25.Location = new System.Drawing.Point(70, 355);
+            this.label25.Margin = new System.Windows.Forms.Padding(3);
+            this.label25.Name = "label25";
+            this.label25.Size = new System.Drawing.Size(134, 13);
+            this.label25.TabIndex = 42;
+            this.label25.Text = "Precipitation box length (m)";
+            // 
+            // precipitationBoxLength
+            // 
+            this.precipitationBoxLength.Increment = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+            this.precipitationBoxLength.Location = new System.Drawing.Point(10, 353);
+            this.precipitationBoxLength.Maximum = new decimal(new int[] {
+            3000,
+            0,
+            0,
+            0});
+            this.precipitationBoxLength.Minimum = new decimal(new int[] {
+            500,
+            0,
+            0,
+            0});
+            this.precipitationBoxLength.Name = "precipitationBoxLength";
+            this.precipitationBoxLength.Size = new System.Drawing.Size(54, 20);
+            this.precipitationBoxLength.TabIndex = 41;
+            this.precipitationBoxLength.Value = new decimal(new int[] {
+            500,
+            0,
+            0,
+            0});
+            // 
+            // label24
+            // 
+            this.label24.AutoSize = true;
+            this.label24.Location = new System.Drawing.Point(70, 329);
+            this.label24.Margin = new System.Windows.Forms.Padding(3);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(130, 13);
+            this.label24.TabIndex = 40;
+            this.label24.Text = "Precipitation box width (m)";
+            // 
+            // precipitationBoxWidth
+            // 
+            this.precipitationBoxWidth.Increment = new decimal(new int[] {
+            25,
+            0,
+            0,
+            0});
+            this.precipitationBoxWidth.Location = new System.Drawing.Point(10, 327);
+            this.precipitationBoxWidth.Maximum = new decimal(new int[] {
+            1500,
+            0,
+            0,
+            0});
+            this.precipitationBoxWidth.Minimum = new decimal(new int[] {
+            500,
+            0,
+            0,
+            0});
+            this.precipitationBoxWidth.Name = "precipitationBoxWidth";
+            this.precipitationBoxWidth.Size = new System.Drawing.Size(54, 20);
+            this.precipitationBoxWidth.TabIndex = 39;
+            this.precipitationBoxWidth.Value = new decimal(new int[] {
+            500,
+            0,
+            0,
+            0});
+            // 
+            // label23
+            // 
+            this.label23.AutoSize = true;
+            this.label23.Location = new System.Drawing.Point(70, 303);
+            this.label23.Margin = new System.Windows.Forms.Padding(3);
+            this.label23.Name = "label23";
+            this.label23.Size = new System.Drawing.Size(134, 13);
+            this.label23.TabIndex = 38;
+            this.label23.Text = "Precipitation box height (m)";
+            // 
+            // precipitationBoxHeight
+            // 
+            this.precipitationBoxHeight.Increment = new decimal(new int[] {
+            25,
+            0,
+            0,
+            0});
+            this.precipitationBoxHeight.Location = new System.Drawing.Point(10, 301);
+            this.precipitationBoxHeight.Maximum = new decimal(new int[] {
+            300,
+            0,
+            0,
+            0});
+            this.precipitationBoxHeight.Minimum = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+            this.precipitationBoxHeight.Name = "precipitationBoxHeight";
+            this.precipitationBoxHeight.Size = new System.Drawing.Size(54, 20);
+            this.precipitationBoxHeight.TabIndex = 37;
+            this.precipitationBoxHeight.Value = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
             // 
             // label16
             // 
@@ -1959,6 +2085,9 @@
             this.tabPageUpdater.PerformLayout();
             this.tabPageExperimental.ResumeLayout(false);
             this.tabPageExperimental.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.precipitationBoxLength)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.precipitationBoxWidth)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.precipitationBoxHeight)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackLODBias)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactorChange)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactor)).EndInit();
@@ -2107,5 +2236,11 @@
         private System.Windows.Forms.CheckBox checkShapeWarnings;
         private System.Windows.Forms.Label labelDayAmbientLight;
         private System.Windows.Forms.CheckBox checkDisableTCSScripts;
+        private System.Windows.Forms.NumericUpDown precipitationBoxHeight;
+        private System.Windows.Forms.NumericUpDown precipitationBoxWidth;
+        private System.Windows.Forms.Label label23;
+        private System.Windows.Forms.Label label24;
+        private System.Windows.Forms.Label label25;
+        private System.Windows.Forms.NumericUpDown precipitationBoxLength;
     }
 }

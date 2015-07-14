@@ -172,16 +172,8 @@ namespace ORTS.Viewer3D
         {
             if (Viewer.GraphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF) // 0xFFFF represents 65535 which is the max for 16bit devices.
             {
-                if (Program.Simulator.Settings.UseLargeAddressAware)
-                {
-                    foreach (var soundSource in RainSound) soundSource.Volume = pricipitationIntensityPPSPM2 / PrecipitationViewer.MaxIntensityPPSPM2;
-                    foreach (var soundSource in SnowSound) soundSource.Volume = pricipitationIntensityPPSPM2 / PrecipitationViewer.MaxIntensityPPSPM2;
-                }
-                else
-                {
-                    foreach (var soundSource in RainSound) soundSource.Volume = pricipitationIntensityPPSPM2 / PrecipitationViewer.MaxIntensityPPSPM2_Limited;
-                    foreach (var soundSource in SnowSound) soundSource.Volume = pricipitationIntensityPPSPM2 / PrecipitationViewer.MaxIntensityPPSPM2_Limited;
-                }
+                foreach (var soundSource in RainSound) soundSource.Volume = pricipitationIntensityPPSPM2 / PrecipitationViewer.MaxIntensityPPSPM2;
+                foreach (var soundSource in SnowSound) soundSource.Volume = pricipitationIntensityPPSPM2 / PrecipitationViewer.MaxIntensityPPSPM2;
             }
             else
             {
@@ -286,35 +278,17 @@ namespace ORTS.Viewer3D
                 // 16bit uses PrecipitationViewer.MaxIntensityPPSPM2_16
                 if (Viewer.GraphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF) // 0xFFFF represents 65535 which is the max for 16bit devices.
                 {
-                    if (Program.Simulator.Settings.UseLargeAddressAware)
+                    if (UserInput.IsDown(UserCommands.DebugPrecipitationIncrease))
                     {
-                        if (UserInput.IsDown(UserCommands.DebugPrecipitationIncrease))
-                        {
-                            pricipitationIntensityPPSPM2 = MathHelper.Clamp(pricipitationIntensityPPSPM2 * 1.05f, PrecipitationViewer.MinIntensityPPSPM2, PrecipitationViewer.MaxIntensityPPSPM2);
-                            weatherChangeOn = false;
-                            if (dynamicWeather != null) dynamicWeather.ORTSPrecipitationIntensity = -1;
-                        }
-                        if (UserInput.IsDown(UserCommands.DebugPrecipitationDecrease))
-                        {
-                            pricipitationIntensityPPSPM2 = MathHelper.Clamp(pricipitationIntensityPPSPM2 / 1.05f, PrecipitationViewer.MinIntensityPPSPM2, PrecipitationViewer.MaxIntensityPPSPM2);
-                            weatherChangeOn = false;
-                            if (dynamicWeather != null) dynamicWeather.ORTSPrecipitationIntensity = -1;
-                        }
+                        pricipitationIntensityPPSPM2 = MathHelper.Clamp(pricipitationIntensityPPSPM2 * 1.05f, PrecipitationViewer.MinIntensityPPSPM2, PrecipitationViewer.MaxIntensityPPSPM2);
+                        weatherChangeOn = false;
+                        if (dynamicWeather != null) dynamicWeather.ORTSPrecipitationIntensity = -1;
                     }
-                    else
+                    if (UserInput.IsDown(UserCommands.DebugPrecipitationDecrease))
                     {
-                        if (UserInput.IsDown(UserCommands.DebugPrecipitationIncrease))
-                        {
-                            pricipitationIntensityPPSPM2 = MathHelper.Clamp(pricipitationIntensityPPSPM2 * 1.05f, PrecipitationViewer.MinIntensityPPSPM2, PrecipitationViewer.MaxIntensityPPSPM2_Limited);
-                            weatherChangeOn = false;
-                            if (dynamicWeather != null) dynamicWeather.ORTSPrecipitationIntensity = -1;
-                        }
-                        if (UserInput.IsDown(UserCommands.DebugPrecipitationDecrease))
-                        {
-                            pricipitationIntensityPPSPM2 = MathHelper.Clamp(pricipitationIntensityPPSPM2 / 1.05f, PrecipitationViewer.MinIntensityPPSPM2, PrecipitationViewer.MaxIntensityPPSPM2_Limited);
-                            weatherChangeOn = false;
-                            if (dynamicWeather != null) dynamicWeather.ORTSPrecipitationIntensity = -1;
-                        }
+                        pricipitationIntensityPPSPM2 = MathHelper.Clamp(pricipitationIntensityPPSPM2 / 1.05f, PrecipitationViewer.MinIntensityPPSPM2, PrecipitationViewer.MaxIntensityPPSPM2);
+                        weatherChangeOn = false;
+                        if (dynamicWeather != null) dynamicWeather.ORTSPrecipitationIntensity = -1;
                     }
                     if (UserInput.IsDown(UserCommands.DebugPrecipitationIncrease) || UserInput.IsDown(UserCommands.DebugPrecipitationDecrease)) UpdateVolume();
                 }
@@ -492,14 +466,8 @@ namespace ORTS.Viewer3D
                     // Pricipitation ranges from 0 to max PrecipitationViewer.MaxIntensityPPSPM2 if 32bit.
                     // 16bit uses PrecipitationViewer.MaxIntensityPPSPM2_16
                     if (weatherControl.Viewer.GraphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF)
-                    {
-                        if (Program.Simulator.Settings.UseLargeAddressAware)
-                            precipitationIntensityChangeRate = (MathHelper.Clamp(ORTSPrecipitationIntensity, 0, PrecipitationViewer.MaxIntensityPPSPM2)
-                            - weatherControl.pricipitationIntensityPPSPM2) / ORTSPrecipitationIntensityTransitionTimeS;
-                        else
-                            precipitationIntensityChangeRate = (MathHelper.Clamp(ORTSPrecipitationIntensity, 0, PrecipitationViewer.MaxIntensityPPSPM2_Limited)
-                            - weatherControl.pricipitationIntensityPPSPM2) / ORTSPrecipitationIntensityTransitionTimeS;
-                    }
+                        precipitationIntensityChangeRate = (MathHelper.Clamp(ORTSPrecipitationIntensity, 0, PrecipitationViewer.MaxIntensityPPSPM2)
+                        - weatherControl.pricipitationIntensityPPSPM2) / ORTSPrecipitationIntensityTransitionTimeS;
                     else
                         precipitationIntensityChangeRate = (MathHelper.Clamp(ORTSPrecipitationIntensity, 0, PrecipitationViewer.MaxIntensityPPSPM2_16)
                         - weatherControl.pricipitationIntensityPPSPM2) / ORTSPrecipitationIntensityTransitionTimeS;

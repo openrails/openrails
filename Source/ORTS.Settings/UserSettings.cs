@@ -261,6 +261,12 @@ namespace ORTS.Settings
         public bool ExtendedAIShunting { get; set; }
         [Default(false)]
         public bool Autopilot { get; set; }
+        [Default(100)]
+        public int PrecipitationBoxHeight { get; set; }
+        [Default(500)]
+        public int PrecipitationBoxWidth { get; set; }
+        [Default(500)]
+        public int PrecipitationBoxLength { get; set; }
 
 
         // Hidden settings:

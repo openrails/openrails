@@ -259,7 +259,8 @@ namespace ORTS
             var top = labelUpdateChannel.Bottom + spacing.Height;
             foreach (var channel in UpdateManager.GetChannels())
             {
-                var radio = new RadioButton() {
+                var radio = new RadioButton()
+                {
                     Text = updateChannelNames[channel.ToLowerInvariant()],
                     Margin = labelUpdateChannel.Margin,
                     Left = spacing.Width,
@@ -270,7 +271,8 @@ namespace ORTS
                 };
                 tabPageUpdater.Controls.Add(radio);
                 top += radio.Height + spacing.Height;
-                var label = new Label() {
+                var label = new Label()
+                {
                     Text = updateChannelDescriptions[channel.ToLowerInvariant()],
                     Margin = labelUpdateChannel.Margin,
                     Left = spacing.Width + indent,
@@ -306,6 +308,9 @@ namespace ORTS
             trackAdhesionFactorChange.Value = Settings.AdhesionFactorChange;
             trackAdhesionFactor_ValueChanged(null, null);
             checkShapeWarnings.Checked = !Settings.SuppressShapeWarnings;
+            precipitationBoxHeight.Value = Settings.PrecipitationBoxHeight;
+            precipitationBoxWidth.Value = Settings.PrecipitationBoxWidth;
+            precipitationBoxLength.Value = Settings.PrecipitationBoxLength;
         }
 
         static string ParseCategoryFrom(string name)
@@ -409,12 +414,12 @@ namespace ORTS
             Settings.PressureUnit = comboPressureUnit.SelectedValue.ToString();
             Settings.Units = comboBoxOtherUnits.SelectedValue.ToString();
             Settings.DisableTCSScripts = checkDisableTCSScripts.Checked;
-            
+
             // Audio tab
             Settings.MSTSBINSound = checkMSTSBINSound.Checked;
             Settings.SoundVolumePercent = (int)numericSoundVolumePercent.Value;
             Settings.SoundDetailLevel = (int)numericSoundDetailLevel.Value;
-            
+
             // Video tab
             Settings.DynamicShadows = checkDynamicShadows.Checked;
             Settings.FastFullScreenAltTab = checkFastFullScreenAltTab.Checked;
@@ -430,7 +435,7 @@ namespace ORTS
             Settings.WorldObjectDensity = (int)numericWorldObjectDensity.Value;
             Settings.WindowSize = comboWindowSize.Text;
             Settings.DayAmbientLight = (int)trackDayAmbientLight.Value;
-            
+
             // Simulation tab
             Settings.UseAdvancedAdhesion = checkUseAdvancedAdhesion.Checked;
             Settings.AdhesionMovingAverageFilterSize = (int)numericAdhesionMovingAverageFilterSize.Value;
@@ -440,10 +445,10 @@ namespace ORTS
             Settings.TunnelResistanceDependent = checkTunnelResistanceDependent.Checked;
             Settings.OverrideNonElectrifiedRoutes = checkOverrideNonElectrifiedRoutes.Checked;
             Settings.HotStart = checkHotStart.Checked;
-            
+
             // Keyboard tab
             // These are edited live.
-            
+
             // DataLogger tab
             Settings.DataLoggerSeparator = comboDataLoggerSeparator.SelectedValue.ToString();
             Settings.DataLogSpeedUnits = comboDataLogSpeedUnits.SelectedValue.ToString();
@@ -451,7 +456,7 @@ namespace ORTS
             Settings.DataLogPerformance = checkDataLogPerformance.Checked;
             Settings.DataLogPhysics = checkDataLogPhysics.Checked;
             Settings.DataLogMisc = checkDataLogMisc.Checked;
-            
+
             // Evaluation tab
             Settings.DataLogTrainSpeed = checkDataLogTrainSpeed.Checked;
             Settings.DataLogTSInterval = (int)numericDataLogTSInterval.Value;
@@ -491,6 +496,9 @@ namespace ORTS
             Settings.AdhesionProportionalToWeather = checkAdhesionPropToWeather.Checked;
             Settings.AdhesionFactorChange = (int)trackAdhesionFactorChange.Value;
             Settings.SuppressShapeWarnings = !checkShapeWarnings.Checked;
+            Settings.PrecipitationBoxHeight = (int)precipitationBoxHeight.Value;
+            Settings.PrecipitationBoxWidth = (int)precipitationBoxWidth.Value;
+            Settings.PrecipitationBoxLength = (int)precipitationBoxLength.Value;
 
             Settings.Save();
         }
@@ -520,12 +528,13 @@ namespace ORTS
                 MessageBox.Show(catalog.GetString("No errors found."), Application.ProductName);
         }
 
-        private void comboBoxWindowSize_SelectedIndexChanged( object sender, EventArgs e ) {
-            var windowSizeParts = comboWindowSize.Text.Split( new[] { 'x' }, 2 );
-            double width = Convert.ToDouble( windowSizeParts[0] );
-            double height = Convert.ToDouble( windowSizeParts[1] );
+        private void comboBoxWindowSize_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var windowSizeParts = comboWindowSize.Text.Split(new[] { 'x' }, 2);
+            double width = Convert.ToDouble(windowSizeParts[0]);
+            double height = Convert.ToDouble(windowSizeParts[1]);
             double aspectRatio = width / height;
-            bool wideScreen = aspectRatio > (4.0 / 3.0); 
+            bool wideScreen = aspectRatio > (4.0 / 3.0);
             numericCab2DStretch.Enabled = wideScreen;
         }
 

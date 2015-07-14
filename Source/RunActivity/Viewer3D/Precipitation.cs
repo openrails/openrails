@@ -36,9 +36,7 @@ namespace ORTS.Viewer3D
         public const float MaxIntensityPPSPM2_16 = 0.010f;
         // Default 32 bit version.
         public const float MaxIntensityPPSPM2 = 0.020f;
-        // 32 bit version for systems unable to take advantage of the LAA option.
-        public const float MaxIntensityPPSPM2_Limited = 0.015f;
-        
+                
         readonly Viewer Viewer;
         readonly WeatherControl Weather;
 
@@ -109,16 +107,6 @@ namespace ORTS.Viewer3D
         readonly float ParticleBoxWidthM;
         readonly float ParticleBoxHeightM;
 
-        // 32bitbit Box Parameters
-        const float ParticleBoxLengthM_32 = 2000;
-        const float ParticleBoxWidthM_32 = 1000;
-        const float ParticleBoxHeightM_32 = 240;
-
-        // 32bitbit Box Parameters for systems that are unable to take advantage of LAA
-        const float ParticleBoxLengthM_Limited_32 = 1400;
-        const float ParticleBoxWidthM_Limited_32 = 870;
-        const float ParticleBoxHeightM_Limited_32 = 175;
-
         // 16bit Box Parameters
         const float ParticleBoxLengthM_16 = 500;
         const float ParticleBoxWidthM_16 = 500;
@@ -173,20 +161,9 @@ namespace ORTS.Viewer3D
             // Setting the precipitaton box size based on GraphicsDeviceCapabilities.
             if (graphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF) // As an integer, 0xFFFF is 65535.
             {
-                // Testing if UseLargeAddressAware has been selected.
-                if(Program.Simulator.Settings.UseLargeAddressAware)
-                {
-                    ParticleBoxLengthM = ParticleBoxLengthM_32;
-                    ParticleBoxWidthM = ParticleBoxWidthM_32;
-                    ParticleBoxHeightM = ParticleBoxHeightM_32;
-                }
-                // if UseLargeAddressAware is not selected, use box size with smaller values.
-                else
-                {
-                    ParticleBoxLengthM = ParticleBoxLengthM_Limited_32;
-                    ParticleBoxWidthM = ParticleBoxWidthM_Limited_32;
-                    ParticleBoxHeightM = ParticleBoxHeightM_Limited_32;
-                }
+                ParticleBoxLengthM = (float)Program.Simulator.Settings.PrecipitationBoxLength;
+                ParticleBoxWidthM = (float)Program.Simulator.Settings.PrecipitationBoxWidth;
+                ParticleBoxHeightM = (float)Program.Simulator.Settings.PrecipitationBoxHeight;
             }
             else
             {
@@ -195,13 +172,7 @@ namespace ORTS.Viewer3D
                 ParticleBoxHeightM = ParticleBoxHeightM_16;
             }
             if (graphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF) // As an integer, 0xFFFF is 65535.
-            {
-                // Testing if UseLargeAddressAware has been selected.
-                if(Program.Simulator.Settings.UseLargeAddressAware)
-                    MaxParticles = (int)(PrecipitationViewer.MaxIntensityPPSPM2 * ParticleBoxLengthM * ParticleBoxWidthM * ParticleBoxHeightM / SnowVelocityMpS / ParticleVelocityFactor);
-                else
-                    MaxParticles = (int)(PrecipitationViewer.MaxIntensityPPSPM2_Limited * ParticleBoxLengthM * ParticleBoxWidthM * ParticleBoxHeightM / SnowVelocityMpS / ParticleVelocityFactor);
-            }
+                MaxParticles = (int)(PrecipitationViewer.MaxIntensityPPSPM2 * ParticleBoxLengthM * ParticleBoxWidthM * ParticleBoxHeightM / SnowVelocityMpS / ParticleVelocityFactor);
             // Processing 16bit device
             else
                 MaxParticles = (int)(PrecipitationViewer.MaxIntensityPPSPM2_16 * ParticleBoxLengthM * ParticleBoxWidthM * ParticleBoxHeightM / SnowVelocityMpS / ParticleVelocityFactor);
@@ -220,7 +191,7 @@ namespace ORTS.Viewer3D
                IndexBuffer = InitIndexBuffer16(graphicsDevice, MaxParticles * IndiciesPerParticle);
             Heights = new HeightCache(8);
             // This Trace command is used to show how much memory is used.
-            //Trace.TraceInformation(String.Format("Allocation for {0:N0} particles:\n\n  {1,13:N0} B RAM vertex data\n  {2,13:N0} B RAM index data (temporary)\n  {1,13:N0} B VRAM DynamicVertexBuffer\n  {2,13:N0} B VRAM IndexBuffer", MaxParticles, Marshal.SizeOf(typeof(ParticleVertex)) * MaxParticles * VerticiesPerParticle, (graphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF ? sizeof(uint) : sizeof(ushort)) * MaxParticles * IndiciesPerParticle));
+            Trace.TraceInformation(String.Format("Allocation for {0:N0} particles:\n\n  {1,13:N0} B RAM vertex data\n  {2,13:N0} B RAM index data (temporary)\n  {1,13:N0} B VRAM DynamicVertexBuffer\n  {2,13:N0} B VRAM IndexBuffer", MaxParticles, Marshal.SizeOf(typeof(ParticleVertex)) * MaxParticles * VerticiesPerParticle, (graphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF ? sizeof(uint) : sizeof(ushort)) * MaxParticles * IndiciesPerParticle));
         }
 
         void VertexBuffer_ContentLost(object sender, EventArgs e)
