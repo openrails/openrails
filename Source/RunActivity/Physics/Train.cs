@@ -3052,20 +3052,20 @@ namespace ORTS
             }
 
             // If double headed tank locomotive then only apply engine brake to first locomotive for consistency
-            if (last != first && Cars[first] is MSTSSteamLocomotive && Cars[last] is MSTSSteamLocomotive)
-            {
-                last = first;
-            }
+    //        if (last != first && Cars[first] is MSTSSteamLocomotive && Cars[last] is MSTSSteamLocomotive)
+    //        {
+    //            last = first;
+   //         }
             
             // If increasing the last locomotive index will exceed the total number of cars, skip next section.
             // This may be the case where there is a light engine or double headed tank locomotive combination.
-            if (last < Cars.Count)
-            {
-                if (Cars[last] is MSTSSteamLocomotive && Cars[last + 1].IsTender)
-                {
-                    last += 1;
-                }
-            }
+    //        if (last != first && last < Cars.Count)
+   //         {
+   //             if (Cars[last] is MSTSSteamLocomotive && Cars[last + 1].IsTender)
+  //              {
+  //                  last += 1;
+  //              }
+  //          }
         }
 
         public TrainCar FindLeadLocomotive()
