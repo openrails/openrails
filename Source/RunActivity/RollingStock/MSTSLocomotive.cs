@@ -1232,7 +1232,7 @@ namespace ORTS
                 }
                     if (elapsedClockSeconds > 0) LocomotiveAxle.AdhesionConditions = (float)(Simulator.Settings.AdhesionFactor) * 0.01f *
                         AdhesionFilter.Filter(max0 + (float)((float)(Simulator.Settings.AdhesionFactorChange) * 0.01f * 2f * (Program.Random.NextDouble() - 0.5f)), elapsedClockSeconds);
-                    
+                    LocomotiveAxle.AdhesionConditions = MathHelper.Clamp(0.05f, LocomotiveAxle.AdhesionConditions, 2.5f); // Avoids NaNs in axle speed computing                      
 
                 //Compute axle inertia from parameters if possible
                 if (AxleInertiaKgm2 > 10000.0f)
