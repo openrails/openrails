@@ -1309,11 +1309,11 @@ namespace ORTS.Viewer3D
             };
 
             static readonly Dictionary<string, SceneryMaterialOptions> ShaderNames = new Dictionary<string, SceneryMaterialOptions> {
-                { "Tex", SceneryMaterialOptions.None },
+                { "Tex", SceneryMaterialOptions.ShaderFullBright },
                 { "TexDiff", SceneryMaterialOptions.Diffuse },
-                { "BlendATex", SceneryMaterialOptions.AlphaBlendingBlend },
+                { "BlendATex", SceneryMaterialOptions.AlphaBlendingBlend | SceneryMaterialOptions.ShaderFullBright},
                 { "BlendATexDiff", SceneryMaterialOptions.AlphaBlendingBlend | SceneryMaterialOptions.Diffuse },
-                { "AddATex", SceneryMaterialOptions.AlphaBlendingAdd },
+                { "AddATex", SceneryMaterialOptions.AlphaBlendingAdd | SceneryMaterialOptions.ShaderFullBright},
                 { "AddATexDiff", SceneryMaterialOptions.AlphaBlendingAdd | SceneryMaterialOptions.Diffuse },
             };
 

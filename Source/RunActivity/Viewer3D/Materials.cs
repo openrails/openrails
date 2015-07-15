@@ -767,6 +767,7 @@ namespace ORTS.Viewer3D
                     ShaderPasses = ShaderPassesFullBright;
                     break;
                 case SceneryMaterialOptions.ShaderVegetation:
+                case SceneryMaterialOptions.ShaderVegetation | SceneryMaterialOptions.ShaderFullBright:
                     shader.CurrentTechnique = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "VegetationPS3" : "VegetationPS2"];
                     ShaderPasses = ShaderPassesVegetation;
                     break;
