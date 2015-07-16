@@ -120,8 +120,6 @@ namespace ORTS
         MonitoringDevice AWSMonitor;
 
         public bool AlerterButtonPressed { get; private set; }
-        bool IsAlerterEnabled;
-
         public bool PowerAuthorization { get; private set; }
 
         string ScriptName;
@@ -170,8 +168,6 @@ namespace ORTS
 
         public void Initialize()
         {
-            IsAlerterEnabled = Simulator.Settings.Alerter;
-
             if (!Simulator.Settings.DisableTCSScripts && ScriptName != null && ScriptName != "MSTS")
             {
                 var pathArray = new string[] { Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script") };
@@ -210,6 +206,7 @@ namespace ORTS
             Script.DistanceM = () => Locomotive.DistanceM;
 
             // TrainControlSystem
+            Script.IsTrainControlEnabled = () => Locomotive.Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING;
             Script.IsDirectionReverse = () => Locomotive.Direction == Direction.Reverse;
             Script.IsBrakeEmergency = () => Locomotive.TrainBrakeController.EmergencyBraking;
             Script.IsBrakeFullService = () => Locomotive.TrainBrakeController.TCSFullServiceBraking;
@@ -219,7 +216,14 @@ namespace ORTS
             Script.BrakePipePressureBar = () => Locomotive.BrakeSystem != null ? Bar.FromPSI(Locomotive.BrakeSystem.BrakeLine1PressurePSI) : float.MaxValue;
             Script.CurrentSignalSpeedLimitMpS = () => Locomotive.Train.allowedMaxSpeedSignalMpS;
             Script.CurrentPostSpeedLimitMpS = () => Locomotive.Train.allowedMaxSpeedLimitMpS;
-            Script.IsAlerterEnabled = () => this.IsAlerterEnabled;
+            Script.IsAlerterEnabled = () =>
+            {
+                return Simulator.Settings.Alerter
+                    & !(Simulator.Settings.AlerterDisableExternal
+                        & Simulator.Confirmer.Viewer.Camera.Style != Viewer3D.Camera.Styles.Cab
+                        & Simulator.Confirmer.Viewer.Camera.Style != Viewer3D.Camera.Styles.ThreeDimCab
+                    );
+            };
             Script.AlerterSound = () => Locomotive.AlerterSnd;
             Script.SetHorn = (value) => Locomotive.SignalEvent(value ? Event.HornOn : Event.HornOff);
             Script.SetFullBrake = (value) =>
@@ -394,24 +398,28 @@ namespace ORTS
 
         public void Update()
         {
-            // If script not loaded or not in player's locomotive = all restrictions disabled
-            if (Script == null || Locomotive != Simulator.PlayerLocomotive || !Locomotive.IsLeadLocomotive())
+            switch (Locomotive.Train.TrainType)
             {
-                DisableRestrictions();
-            }
-            else
-            {
-                ClearParams();
+                case Train.TRAINTYPE.STATIC:
+                case Train.TRAINTYPE.AI:
+                case Train.TRAINTYPE.AI_NOTSTARTED:
+                case Train.TRAINTYPE.AI_AUTOGENERATE:
+                case Train.TRAINTYPE.REMOTE:
+                case Train.TRAINTYPE.AI_INCORPORATED:
+                    DisableRestrictions();
+                    break;
 
-                IsAlerterEnabled = Simulator.Settings.Alerter
-                    & !(Simulator.Settings.AlerterDisableExternal & Simulator.Confirmer.Viewer.Camera.Style != Viewer3D.Camera.Styles.Cab & Simulator.Confirmer.Viewer.Camera.Style != Viewer3D.Camera.Styles.ThreeDimCab);
-                Script.Update();
-             }
-            // Autopiloted train
-            if (Script != null && Locomotive == Simulator.PlayerLocomotive && Locomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
-            {
-                ClearParams();
-                Script.UpdateInputs();
+                default:
+                    if (Script == null)
+                    {
+                        DisableRestrictions();
+                    }
+                    else
+                    {
+                        ClearParams();
+                        Script.Update();
+                    }
+                    break;
             }
         }
 
@@ -496,7 +504,8 @@ namespace ORTS
 
         float VigilanceAlarmTimeoutS;
         float CurrentSpeedLimitMpS;
-        
+        float NextSpeedLimitMpS;
+       
         MonitoringStatus Status;
 
         public ScriptedTrainControlSystem.MonitoringDevice VigilanceMonitor;
@@ -535,95 +544,97 @@ namespace ORTS
 
         public override void Update()
         {
-            var nextSpeedLimitMpS = UpdateInputs();
+            UpdateInputs();
 
-            if (VigilanceMonitor != null)
-                UpdateVigilance();
-            if (OverspeedMonitor != null)
-                UpdateSpeedControl();
-
-            bool EmergencyBrake = false;
-            bool FullBrake = false;
-            bool PowerCut = false;
-
-            if (VigilanceMonitor != null)
+            if (IsTrainControlEnabled())
             {
-                if (VigilanceMonitor.AppliesEmergencyBrake)
-                    EmergencyBrake |= VigilanceEmergency;
-                else if (VigilanceMonitor.AppliesFullBrake)
-                    FullBrake |= VigilanceEmergency;
+                if (VigilanceMonitor != null)
+                    UpdateVigilance();
+                if (OverspeedMonitor != null)
+                    UpdateSpeedControl();
 
-                if (VigilanceMonitor.EmergencyCutsPower)
-                    PowerCut |= VigilanceEmergency;
-            }
+                bool EmergencyBrake = false;
+                bool FullBrake = false;
+                bool PowerCut = false;
 
-            if (OverspeedMonitor != null)
-            {
-                if (OverspeedMonitor.AppliesEmergencyBrake)
-                    EmergencyBrake |= OverspeedEmergency;
-                else if (OverspeedMonitor.AppliesFullBrake)
-                    FullBrake |= OverspeedEmergency;
+                if (VigilanceMonitor != null)
+                {
+                    if (VigilanceMonitor.AppliesEmergencyBrake)
+                        EmergencyBrake |= VigilanceEmergency;
+                    else if (VigilanceMonitor.AppliesFullBrake)
+                        FullBrake |= VigilanceEmergency;
 
-                if (OverspeedMonitor.EmergencyCutsPower)
-                    PowerCut |= OverspeedEmergency;
-            }
+                    if (VigilanceMonitor.EmergencyCutsPower)
+                        PowerCut |= VigilanceEmergency;
+                }
 
-            if (EmergencyStopMonitor != null)
-            {
-                if (EmergencyStopMonitor.AppliesEmergencyBrake)
-                    EmergencyBrake |= ExternalEmergency;
-                else if (EmergencyStopMonitor.AppliesFullBrake)
-                    FullBrake |= ExternalEmergency;
+                if (OverspeedMonitor != null)
+                {
+                    if (OverspeedMonitor.AppliesEmergencyBrake)
+                        EmergencyBrake |= OverspeedEmergency;
+                    else if (OverspeedMonitor.AppliesFullBrake)
+                        FullBrake |= OverspeedEmergency;
 
-                if (EmergencyStopMonitor.EmergencyCutsPower)
-                    PowerCut |= ExternalEmergency;
-            }
+                    if (OverspeedMonitor.EmergencyCutsPower)
+                        PowerCut |= OverspeedEmergency;
+                }
 
-            SetEmergencyBrake(EmergencyBrake);
-            SetFullBrake(FullBrake);
-            SetPowerAuthorization(!PowerCut);
+                if (EmergencyStopMonitor != null)
+                {
+                    if (EmergencyStopMonitor.AppliesEmergencyBrake)
+                        EmergencyBrake |= ExternalEmergency;
+                    else if (EmergencyStopMonitor.AppliesFullBrake)
+                        FullBrake |= ExternalEmergency;
 
-            if (EmergencyCausesThrottleDown && (EmergencyBrake || FullBrake))
-                SetThrottleController(0f);
+                    if (EmergencyStopMonitor.EmergencyCutsPower)
+                        PowerCut |= ExternalEmergency;
+                }
 
-            if (EmergencyEngagesHorn)
-                SetHorn(EmergencyBrake || FullBrake);
+                SetEmergencyBrake(EmergencyBrake);
+                SetFullBrake(FullBrake);
+                SetPowerAuthorization(!PowerCut);
 
-            SetPenaltyApplicationDisplay(IsBrakeEmergency() && IsBrakeFullService());
-            
-            // Update monitoring status
-            if (SpeedMpS() > CurrentSpeedLimitMpS)
-            {
-                if (OverspeedMonitor != null && (OverspeedMonitor.AppliesEmergencyBrake || OverspeedMonitor.AppliesFullBrake))
-                    Status = MonitoringStatus.Intervention;
+                if (EmergencyCausesThrottleDown && (EmergencyBrake || FullBrake))
+                    SetThrottleController(0f);
+
+                if (EmergencyEngagesHorn)
+                    SetHorn(EmergencyBrake || FullBrake);
+
+                SetPenaltyApplicationDisplay(IsBrakeEmergency() && IsBrakeFullService());
+
+                // Update monitoring status
+                if (SpeedMpS() > CurrentSpeedLimitMpS)
+                {
+                    if (OverspeedMonitor != null && (OverspeedMonitor.AppliesEmergencyBrake || OverspeedMonitor.AppliesFullBrake))
+                        Status = MonitoringStatus.Intervention;
+                    else
+                        Status = MonitoringStatus.Warning;
+                }
+                else if (NextSpeedLimitMpS < CurrentSpeedLimitMpS && SpeedMpS() > NextSpeedLimitMpS)
+                {
+                    if (Deceleration(SpeedMpS(), NextSpeedLimitMpS, NextSignalDistanceM(0)) > 0.7f)
+                        Status = MonitoringStatus.Overspeed;
+                    else
+                        Status = MonitoringStatus.Indication;
+                }
                 else
-                    Status = MonitoringStatus.Warning;
+                    Status = MonitoringStatus.Normal;
+                SetMonitoringStatus(Status);
             }
-            else if (nextSpeedLimitMpS < CurrentSpeedLimitMpS && SpeedMpS() > nextSpeedLimitMpS)
-            {
-                if (Deceleration(SpeedMpS(), nextSpeedLimitMpS, NextSignalDistanceM(0)) > 0.7f)
-                    Status = MonitoringStatus.Overspeed;
-                else
-                    Status = MonitoringStatus.Indication;
-            }
-            else
-                Status = MonitoringStatus.Normal;
-            SetMonitoringStatus(Status);
         }
 
-        public override float UpdateInputs()
+        public void UpdateInputs()
         {
             SetNextSignalAspect(NextSignalAspect(0));
 
-            CurrentSpeedLimitMpS = CurrentSignalSpeedLimitMpS() >= 0 ? CurrentSignalSpeedLimitMpS() : TrainSpeedLimitMpS();
-            if (CurrentSpeedLimitMpS > TrainSpeedLimitMpS())
+            CurrentSpeedLimitMpS = CurrentSignalSpeedLimitMpS();
+            if (CurrentSpeedLimitMpS < 0 || CurrentSpeedLimitMpS > TrainSpeedLimitMpS())
                 CurrentSpeedLimitMpS = TrainSpeedLimitMpS();
 
-            var nextSpeedLimitMpS = NextSignalSpeedLimitMpS(0) >= 0 && NextSignalSpeedLimitMpS(0) < TrainSpeedLimitMpS() ? NextSignalSpeedLimitMpS(0) : TrainSpeedLimitMpS();
+            NextSpeedLimitMpS = NextSignalSpeedLimitMpS(0) >= 0 && NextSignalSpeedLimitMpS(0) < TrainSpeedLimitMpS() ? NextSignalSpeedLimitMpS(0) : TrainSpeedLimitMpS();
 
             SetCurrentSpeedLimitMpS(CurrentSpeedLimitMpS);
-            SetNextSpeedLimitMpS(nextSpeedLimitMpS);
-            return nextSpeedLimitMpS;
+            SetNextSpeedLimitMpS(NextSpeedLimitMpS);
         }
 
         public override void HandleEvent(TCSEvent evt, string message)

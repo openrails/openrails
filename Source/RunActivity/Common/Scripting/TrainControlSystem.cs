@@ -24,6 +24,10 @@ namespace ORTS.Scripting.Api
         public bool Activated { get; set; }
 
         /// <summary>
+        /// False if train control is switched off because the train is autopiloted.
+        /// </summary>
+        public Func<bool> IsTrainControlEnabled;
+        /// <summary>
         /// False if vigilance monitor was switched off in game options, thus requested to be auto reset.
         /// </summary>
         public Func<bool> IsAlerterEnabled;
@@ -246,10 +250,6 @@ namespace ORTS.Scripting.Api
         /// Called regularly at every simulator update cycle.
         /// </summary>
         public abstract void Update();
-        /// <summary>
-        /// Called regularly at every simulator update cycle by loco of autopiloted train.
-        /// </summary>
-        public abstract float UpdateInputs();
         /// <summary>
         /// Called when an event happens (like the alerter button pressed)
         /// </summary>
