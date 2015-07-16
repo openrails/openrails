@@ -29,18 +29,12 @@ namespace ORTS
             DebugType = "EP";
         }
 
-        public override void UpdateTripleValveState(float controlPressurePSI)
-        {
-            base.UpdateTripleValveState(controlPressurePSI);
-            if (Car.Train.BrakeLine4 >= 0 && TripleValveState == ValveState.Release)
-                TripleValveState = ValveState.Lap;
-        }
-
         public override void Update(float elapsedClockSeconds)
         {
-            base.Update(elapsedClockSeconds);
-
             var demandedAutoCylPressurePSI = Math.Min(Math.Max(Car.Train.BrakeLine4, 0), 1) * FullServPressurePSI;
+            HoldingValve = AutoCylPressurePSI <= demandedAutoCylPressurePSI ? ValveState.Lap : ValveState.Release;
+
+            base.Update(elapsedClockSeconds);
 
             if (AutoCylPressurePSI < demandedAutoCylPressurePSI)
             {

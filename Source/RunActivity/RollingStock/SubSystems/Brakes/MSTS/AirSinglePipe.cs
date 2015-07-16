@@ -48,6 +48,12 @@ namespace ORTS
         protected string RetainerDebugState = string.Empty;
         protected bool NoMRPAuxResCharging;
 
+        /// <summary>
+        /// EP brake holding valve. Needs to be closed (Lap) in case of brake application or holding.
+        /// For non-EP brake types must default to and remain in Release.
+        /// </summary>
+        protected ValveState HoldingValve = ValveState.Release;
+
         public enum ValveState
         {
             [GetString("Lap")] Lap,
@@ -93,6 +99,7 @@ namespace ORTS
             EmergAuxVolumeRatio = thiscopy.EmergAuxVolumeRatio;
             TwoPipes = thiscopy.TwoPipes;
             NoMRPAuxResCharging = thiscopy.NoMRPAuxResCharging;
+            HoldingValve = thiscopy.HoldingValve;
         }
 
         public override string GetStatus(PressureUnit unit)
@@ -179,6 +186,7 @@ namespace ORTS
             outf.Write(AngleCockAOpen);
             outf.Write(AngleCockBOpen);
             outf.Write(BleedOffValveOpen);
+            outf.Write((int)HoldingValve);
         }
 
         public override void Restore(BinaryReader inf)
@@ -198,6 +206,7 @@ namespace ORTS
             AngleCockAOpen = inf.ReadBoolean();
             AngleCockBOpen = inf.ReadBoolean();
             BleedOffValveOpen = inf.ReadBoolean();
+            HoldingValve = (ValveState)inf.ReadInt32();
         }
 
         public override void Initialize(bool handbrakeOn, float maxPressurePSI, float fullServPressurePSI, bool immediateRelease)
@@ -211,6 +220,7 @@ namespace ORTS
             FullServPressurePSI = fullServPressurePSI;
             AutoCylPressurePSI = immediateRelease ? 0 : Math.Min((maxPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio, MaxCylPressurePSI);
             TripleValveState = ValveState.Lap;
+            HoldingValve = ValveState.Release;
             HandbrakePercent = handbrakeOn & (Car as MSTSWagon).HandBrakePresent ? 100 : 0;
             SetRetainer(RetainerSetting.Exhaust);
             if (Car is MSTSLocomotive)
@@ -312,7 +322,7 @@ namespace ORTS
                     AuxResPressurePSI += dp * EmergAuxVolumeRatio;
                 }
             }
-            if (TripleValveState == ValveState.Release)
+            if (TripleValveState == ValveState.Release && HoldingValve == ValveState.Release)
             {
                 if (AutoCylPressurePSI > threshold)
                 {

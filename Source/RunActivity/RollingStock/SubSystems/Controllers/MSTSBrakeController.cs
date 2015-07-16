@@ -109,12 +109,12 @@ namespace ORTS
                             pressureBar -= x * ApplyRateBarpS() * elapsedClockSeconds;
                             break;
                         case ControllerState.EPApply:
-                            epState = x;
-                            break;
                         case ControllerState.GSelfLapH:
                         case ControllerState.Suppression:
                         case ControllerState.ContServ:
                         case ControllerState.GSelfLap:
+                            if (notch.Type == ControllerState.EPApply)
+                                epState = x;
                             x = MaxPressureBar() - MinReductionBar() * (1 - x) - FullServReductionBar() * x;
                             DecreasePressure(ref pressureBar, x, ApplyRateBarpS(), elapsedClockSeconds);
                             if (ForceControllerReleaseGraduated)
