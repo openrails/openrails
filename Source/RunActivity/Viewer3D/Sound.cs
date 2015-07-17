@@ -181,6 +181,7 @@ namespace ORTS.Viewer3D
                         return;
 
                 var CarNo = Car.Train.Cars.IndexOf(Car);
+                float trackSoundDistSquared = 0;
 
                 if (CarNo == CarLeading)
                 {
@@ -201,19 +202,21 @@ namespace ORTS.Viewer3D
                         Car.TrackSoundType = _curTType;
                 }
                 else
-                    if (Car.Train.Cars[CarNo-CarIncr].TrackSoundLocation != WorldLocation.None)
+                {
+                    var CarAhead = Car.Train.Cars[CarNo - CarIncr];
+                    if (CarAhead.TrackSoundLocation != WorldLocation.None)
                     {
-                        if (_curTType == Car.TrackSoundType && Car.TrackSoundType != Car.Train.Cars[CarNo-CarIncr].TrackSoundType)
+                        if (_curTType == Car.TrackSoundType && Car.TrackSoundType != CarAhead.TrackSoundType)
                         {
-                            Car.TrackSoundType = Car.Train.Cars[CarNo-CarIncr].TrackSoundType;
-                            Car.TrackSoundLocation = new WorldLocation(Car.Train.Cars[CarNo-CarIncr].TrackSoundLocation);
+                            Car.TrackSoundType = CarAhead.TrackSoundType;
+                            Car.TrackSoundLocation = new WorldLocation(CarAhead.TrackSoundLocation);
                             Car.TrackSoundDistSquared = WorldLocation.GetDistanceSquared(Car.WorldPosition.WorldLocation, Car.TrackSoundLocation);
                         }
 
                         if (Car.TrackSoundLocation != WorldLocation.None)
                         {
-                            var trackSoundDistSquared = WorldLocation.GetDistanceSquared(Car.WorldPosition.WorldLocation, Car.TrackSoundLocation);
-                            if (trackSoundDistSquared <= Car.TrackSoundDistSquared)
+                            trackSoundDistSquared = WorldLocation.GetDistanceSquared(Car.WorldPosition.WorldLocation, Car.TrackSoundLocation);
+                            if (trackSoundDistSquared > 9 && (trackSoundDistSquared - 2) <= Car.TrackSoundDistSquared)
                                 Car.TrackSoundDistSquared = trackSoundDistSquared;
                             else
                             {
@@ -221,6 +224,7 @@ namespace ORTS.Viewer3D
                             }
                         }
                     }
+                }
 
                 //if (_curTType != _prevTType && _curTType != int.MaxValue)
                 if (_curTType != _prevTType)
@@ -244,7 +248,7 @@ namespace ORTS.Viewer3D
                     Trace.TraceInformation("Sound region changed from {0} to {1}.", _prevTType, _curTType);
 #endif
 
-                    //Trace.TraceInformation("Train {0} Speed {1}, Car {2}: Sound Region {3} changed to {4}", Car.Train.Number, Car.Train.SpeedMpS, CarNo, _prevTType, _curTType);
+                    //Trace.TraceInformation("Train {0} Speed {1}, Car {2}: Sound Region {3} changed to {4} at distance {5}", Car.Train.Number, Car.Train.SpeedMpS, CarNo, _prevTType, _curTType, Math.Sqrt(trackSoundDistSquared));
                     if (CarNo == CarLeading)
                         Car.TrackSoundLocation = new WorldLocation(Car.WorldPosition.WorldLocation);
                     _prevTType = _curTType;
