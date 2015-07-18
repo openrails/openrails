@@ -3037,8 +3037,7 @@ namespace ORTS
         // lead locomotive (the player driven one) resides. Within this group both the main reservoir pressure and the 
         // engine brake pipe pressure will be propagated. It only identifies multiple units when coupled directly together,
         // for example a double headed steam locomotive will most often have a tender separating the two locomotives, 
-        // so the second locomotive will not be identified, nor will a lcomotive added at the rear of the train. 
-
+        // so the second locomotive will not be identified, nor will a locomotive added at the rear of the train. 
 
         public void FindLeadLocomotives(ref int first, ref int last)
         {
@@ -3051,21 +3050,27 @@ namespace ORTS
                     first = i;
             }
 
-            // If double headed tank locomotive then only apply engine brake to first locomotive for consistency
-    //        if (last != first && Cars[first] is MSTSSteamLocomotive && Cars[last] is MSTSSteamLocomotive)
-    //        {
-    //            last = first;
-   //         }
+            // If first (lead) locomotive is a steam locomotive check to see if the engine brake needs to be extended to cover the tender
             
-            // If increasing the last locomotive index will exceed the total number of cars, skip next section.
-            // This may be the case where there is a light engine or double headed tank locomotive combination.
-    //        if (last != first && last < Cars.Count)
-   //         {
-   //             if (Cars[last] is MSTSSteamLocomotive && Cars[last + 1].IsTender)
-  //              {
-  //                  last += 1;
-  //              }
-  //          }
+            if (Cars[first] is MSTSSteamLocomotive)
+            {
+                
+              // If double headed tank steam locomotive (no tender is attached) then only apply engine brake to first locomotive for consistency
+                if (last != first && Cars[first] is MSTSSteamLocomotive && Cars[last] is MSTSSteamLocomotive)
+                {
+                    last = first; // Reduce locomotive lead values to apply engine brakes only to lead locomotive, and not 2nd locomotive.
+                }
+                else // if last = first, ie only a single locomotive (can be two locomotives separated by a tender as 2nd locomotive is not counted in the first / last values.
+                {
+                  if (last < Cars.Count - 1)  // Check that there are cars after the locomotive, if not skip extending brake to tender
+                    {
+                        if (last == first && Cars[first] is MSTSSteamLocomotive && Cars[first + 1].IsTender)  
+                        {
+                            last += 1;      // If a "standard" single steam locomotive with a tender then for the purposes of braking increment last above first by one
+                        }
+                    }
+                }
+            } 
         }
 
         public TrainCar FindLeadLocomotive()
