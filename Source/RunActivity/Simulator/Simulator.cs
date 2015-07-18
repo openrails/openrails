@@ -547,13 +547,14 @@ namespace ORTS
 
         private void FinishCoupling(Train drivenTrain, Train train, bool couple_to_front)
         {
-            if (train.TrainType == Train.TRAINTYPE.AI && ((AITrain)train).UncondAttach)
+            if (train.TrainType == Train.TRAINTYPE.AI && (((AITrain)train).UncondAttach  ||
+                train.TCRoute.activeSubpath < train.TCRoute.TCRouteSubpaths.Count - 1 || train.ValidRoute[0].Count > 5))
             {
                 // if there is just here a reversal point, increment subpath in order to be in accordance with attachTrain
 
                 var ppTCSectionIndex = train.PresentPosition[0].TCSectionIndex;
                 train.IncorporatingTrain = drivenTrain;
-                ((AITrain)train).SuspendTrain();
+                ((AITrain)train).SuspendTrain(drivenTrain);
                 if (ppTCSectionIndex == train.TCRoute.TCRouteSubpaths[train.TCRoute.activeSubpath][train.TCRoute.TCRouteSubpaths[train.TCRoute.activeSubpath].Count - 1].TCSectionIndex)
                     train.IncrementSubpath(train);
                 // doubled check in case of double reverse point.

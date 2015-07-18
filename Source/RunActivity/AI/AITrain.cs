@@ -4127,7 +4127,7 @@ namespace ORTS
 
                     var ppTCSectionIndex = PresentPosition[0].TCSectionIndex;
                     this.IncorporatingTrain = attachTrain;
-                    SuspendTrain();
+                    SuspendTrain(attachTrain);
                     if (ppTCSectionIndex == TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1].TCSectionIndex)
                         IncrementSubpath(this);
                     attachTrain.IncorporatedTrainNo = this.Number;
@@ -4624,7 +4624,7 @@ namespace ORTS
         /// Suspend train because incorporated in other train
         /// <\summary>
 
-        public virtual void SuspendTrain()
+        public virtual void SuspendTrain(Train incorporatingTrain)
         {
             RemoveFromTrack();
             ClearDeadlocks();
@@ -4636,6 +4636,8 @@ namespace ORTS
             Cars.Clear();
             requiredActions.RemovePendingAIActionItems(true);
             UncondAttach = false;
+            Simulator.Confirmer.Message(ConfirmLevel.Information, Catalog.GetStringFmt("Join success: Train {0} service {1} has been incorporated into train {2} service {3}",
+                Number, Name.Substring(0, Math.Min(Name.Length, 20)), incorporatingTrain.Number, incorporatingTrain.Name.Substring(0, Math.Min(incorporatingTrain.Name.Length, 20))));
         }
 
         //================================================================================================//
