@@ -3051,26 +3051,30 @@ namespace ORTS
             }
 
             // If first (lead) locomotive is a steam locomotive check to see if the engine brake needs to be extended to cover the tender
-            
-            if (Cars[first] is MSTSSteamLocomotive)
+
+            if (first != -1) // if lead locomotive is set at initialised value, then don't attempt to process engine brake extension
             {
-                
-              // If double headed tank steam locomotive (no tender is attached) then only apply engine brake to first locomotive for consistency
-                if (last != first && Cars[first] is MSTSSteamLocomotive && Cars[last] is MSTSSteamLocomotive)
+
+                if (Cars[first] is MSTSSteamLocomotive)
                 {
-                    last = first; // Reduce locomotive lead values to apply engine brakes only to lead locomotive, and not 2nd locomotive.
-                }
-                else // if last = first, ie only a single locomotive (can be two locomotives separated by a tender as 2nd locomotive is not counted in the first / last values.
-                {
-                  if (last < Cars.Count - 1)  // Check that there are cars after the locomotive, if not skip extending brake to tender
+
+                    // If double headed tank steam locomotive (no tender is attached) then only apply engine brake to first locomotive for consistency
+                    if (last != first && Cars[first] is MSTSSteamLocomotive && Cars[last] is MSTSSteamLocomotive)
                     {
-                        if (last == first && Cars[first] is MSTSSteamLocomotive && Cars[first + 1].IsTender)  
+                        last = first; // Reduce locomotive lead values to apply engine brakes only to lead locomotive, and not 2nd locomotive.
+                    }
+                    else // if last = first, ie only a single locomotive (can be two locomotives separated by a tender as 2nd locomotive is not counted in the first / last values.
+                    {
+                        if (last < Cars.Count - 1)  // Check that there are cars after the locomotive, if not skip extending brake to tender
                         {
-                            last += 1;      // If a "standard" single steam locomotive with a tender then for the purposes of braking increment last above first by one
+                            if (last == first && Cars[first] is MSTSSteamLocomotive && Cars[first + 1].IsTender)
+                            {
+                                last += 1;      // If a "standard" single steam locomotive with a tender then for the purposes of braking increment last above first by one
+                            }
                         }
                     }
                 }
-            } 
+            }
         }
 
         public TrainCar FindLeadLocomotive()
