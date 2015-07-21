@@ -629,7 +629,9 @@ namespace ORTS
             if (TrainType == TRAINTYPE.AI_INCORPORATED || TrainType == TRAINTYPE.STATIC) return;
             // Check if at stop point and stopped
             //          if ((NextStopDistanceM < actClearance) || (SpeedMpS <= 0 && MovementState == AI_MOVEMENT_STATE.STOPPED))
-            if (MovementState == AI_MOVEMENT_STATE.STOPPED || MovementState == AI_MOVEMENT_STATE.STATION_STOP || MovementState == AI_MOVEMENT_STATE.AI_STATIC)
+            // <CSComment> TODO: next if block is in effect only a workaround due to OR braking physics not working well with AI trains
+            if (MovementState == AI_MOVEMENT_STATE.STOPPED || MovementState == AI_MOVEMENT_STATE.STATION_STOP || MovementState == AI_MOVEMENT_STATE.AI_STATIC ||
+                MovementState == AI_MOVEMENT_STATE.INIT_ACTION || MovementState == AI_MOVEMENT_STATE.HANDLE_ACTION || MovementState == AI_MOVEMENT_STATE.END_ACTION)
             {
                 SpeedMpS = 0;
                 foreach (TrainCar car in Cars)
