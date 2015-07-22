@@ -81,7 +81,7 @@
 	<li>Paul Wright</li>
 	<li>Pete Peddlesden</li>
 	<li>Peter Gulyas</li>
-	<li>Peter Newark</li>
+	<li>Peter Newell</li>
 	<li>Phil Voxland</li>
 </ul>
 </div>

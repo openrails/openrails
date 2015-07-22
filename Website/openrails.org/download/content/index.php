@@ -45,6 +45,8 @@ The Spanish websites <a href="http://viajerosaltren.es">Viajeros al Tren</a> and
 </p><p>
 <a href="http://www.dekosoft.com">Dekosoft Trains</a> have since offered GP30 locos with 3D cabs exclusively for Open Rails.
 </p><p>
+Peter Newell has just released (June 2105) the <a href="http://www.zigzag.coalstonewcastle.com.au/">Great Zig Zag Railway</a>, a steam route for Open Rails v1.0 (this 120MB download requires no other files).
+</p><p>
 Some Australian routes (New South Wales) have been packaged by Peter Newell to work just with OR:
 </p>
 <ul>

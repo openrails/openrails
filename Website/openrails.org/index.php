@@ -65,6 +65,10 @@
             <h4>News</h4>
           </div>
           <p>
+            <strong>Jun 2015</strong>
+            The Australian <a href="http://www.zigzag.coalstonewcastle.com.au/">Great Zig Zag Railway</a> released for Open Rails v1.0
+          </p>
+          <p>
             <strong>May 2015</strong>
             <a href="/discover/version-1-0/">Open Rails 1.0</a> released! <a href="/download/program/">Download it here</a>.
           </p>
