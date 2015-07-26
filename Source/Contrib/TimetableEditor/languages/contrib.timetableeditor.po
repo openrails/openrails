@@ -11,6 +11,19 @@ msgctxt "dispose.irgendwas"
 msgid "irgendas"
 msgstr ""
 
+#: sidings.rsids
+msgctxt "sidings.rsids"
+msgid "Sidings"
+msgstr ""
+
+#: sidings.savepaths1
+msgid "Do you want to save the path with filename \""
+msgstr ""
+
+#: sidings.savepaths2
+msgid "\" and description \""
+msgstr ""
+
 #: stations.irgendwas
 msgctxt "stations.irgendwas"
 msgid "irgendas"
@@ -101,6 +114,11 @@ msgstr ""
 msgid "Import another timetable"
 msgstr ""
 
+#: tform1.speedbutton16.hint
+msgctxt "TFORM1.SPEEDBUTTON16.HINT"
+msgid "Sidings"
+msgstr ""
+
 #: tform1.speedbutton2.hint
 msgid "open"
 msgstr ""
@@ -164,16 +182,12 @@ msgstr ""
 msgid "Timetable Editor"
 msgstr ""
 
+#: tform2.label2.caption
+msgid "Open Rails"
+msgstr ""
+
 #: tform2.statictext1.caption
-msgid "Version: 1.4"
-msgstr ""
-
-#: tform2.statictext2.caption
-msgid "Lutz Döllermann"
-msgstr ""
-
-#: tform2.statictext5.caption
-msgid "Lutzs_de@yahoo.de"
+msgid "Version: 1.5"
 msgstr ""
 
 #: tform3.bitbtn2.caption
@@ -183,10 +197,6 @@ msgstr ""
 
 #: tform3.caption
 msgid "Train"
-msgstr ""
-
-#: tform3.checkbox1.caption
-msgid "binary path"
 msgstr ""
 
 #: tform3.checkbox2.caption
@@ -240,6 +250,14 @@ msgstr ""
 msgid "Consistname"
 msgstr ""
 
+#: tform3.listview3.columns[0].caption
+msgid "con"
+msgstr ""
+
+#: tform3.listview3.columns[1].caption
+msgid "direction"
+msgstr ""
+
 #: tform3.speedbutton1.caption
 msgctxt "TFORM3.SPEEDBUTTON1.CAPTION"
 msgid "choose"
@@ -290,6 +308,80 @@ msgstr ""
 
 #: tform3.statictext7.caption
 msgid "Comment:"
+msgstr ""
+
+#: tform4.bitbtn2.caption
+msgctxt "TFORM4.BITBTN2.CAPTION"
+msgid "Cancel"
+msgstr ""
+
+#: tform4.bitbtn3.caption
+msgid "Create"
+msgstr ""
+
+#: tform4.caption
+msgctxt "tform4.caption"
+msgid "Sidings"
+msgstr ""
+
+#: tform4.checkbox1.caption
+msgid "Player path"
+msgstr ""
+
+#: tform4.label1.caption
+msgid "Sidings:"
+msgstr ""
+
+#: tform4.label2.caption
+msgid "SidingName:"
+msgstr ""
+
+#: tform4.label3.caption
+msgid "Individual SidingName:"
+msgstr ""
+
+#: tform4.label4.caption
+msgid "Station:"
+msgstr ""
+
+#: tform4.label5.caption
+msgid "selected Siding:"
+msgstr ""
+
+#: tform4.label6.caption
+msgid "Label6"
+msgstr ""
+
+#: tform4.label7.caption
+msgid "Pathname: sid_"
+msgstr ""
+
+#: tform4.label8.caption
+msgid "Path description:"
+msgstr ""
+
+#: tform4.listview1.columns[0].caption
+msgid "ID"
+msgstr ""
+
+#: tform4.listview1.columns[1].caption
+msgid "Name"
+msgstr ""
+
+#: tform4.listview1.columns[2].caption
+msgid "Individual name"
+msgstr ""
+
+#: tform4.listview1.columns[3].caption
+msgid "Station"
+msgstr ""
+
+#: tform4.listview1.columns[4].caption
+msgid "path"
+msgstr ""
+
+#: tform4.panel4.caption
+msgid "Panel4"
 msgstr ""
 
 #: tform5.bitbtn1.caption

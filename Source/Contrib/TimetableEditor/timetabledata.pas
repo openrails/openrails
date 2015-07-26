@@ -5,7 +5,7 @@ unit timetabledata;
 interface
 
 uses
-  Classes, SysUtils,FileUtil,charencstreams, zipper;
+  Classes, SysUtils,FileUtil,charencstreams, zipper, tteobjects;
 
 type
   timearray = array[0..2] of integer;
@@ -55,6 +55,12 @@ function extractcons(item: string): tstringlist;
 function entsorg(item: String): String;
 function getconsisttypes: tstringlist;
 function getroute(): String;
+function extractsidings(tdb: tstringlist): integer;
+function getSidings(): TSidingObjectList;
+procedure clearsidingslist();
+procedure addSidingToList(sid: TSiding);
+//function testPathToSiding(id: String): boolean;
+function testPathtoSiding(id: String): String;
 
 resourceString
   irgendwas = 'irgendas';
@@ -70,6 +76,7 @@ var
    selectedconsist, selectedpath: string;
    stationslist, stationsfiles: tstringlist;
    col: integer;
+sidingslist: TSidingObjectList;
 
 function getroute(): String;
 begin
@@ -244,6 +251,143 @@ begin
   result:=co;
 end;
 
+procedure clearsidingslist();
+begin
+  sidingslist:=TSidingobjectlist.create(true);
+end;
+
+procedure addSidingToList(sid: TSiding);
+begin
+  sidingslist.Add(sid);
+end;
+
+function extractsidings(tdb: tstringlist): integer;
+var i, L: integer;
+    siding, tmpSiding: TSiding;
+    found: boolean;
+    inSiding: boolean;
+    tmp: String;
+begin
+   clearsidingslist;
+   insiding:=false;
+   Siding:=TSiding.Create;
+   for i:=0 to tdb.count -1 do begin
+     if ( inSiding ) and  ( trim(tdb[i]) =')' ) then begin
+       insiding:=false;
+       if sidingslist.Count = 0 then begin
+         sidingslist.add(TSiding.Create);
+         sidingslist.items[sidingslist.Count -1]:=Siding;
+       end
+       else begin
+         found:=false;
+         for L:=0 to sidingslist.count -1 do begin
+           tmpSiding:=TSiding.create;
+           tmpSiding:=sidingslist.items[L];
+            if tmpSiding.Partner=Siding.ItemId then begin
+              found:=true;
+              sidingslist.Items[L].setItemRData(Siding.getRDataValue11()+' '+Siding.getRDataValue12()+' '+Siding.getRDataValue13()+' '+Siding.getRDataValue14()+' '+Siding.getRDataValue15(),2);
+              if ( tmpSiding.Name = '' )  and ( siding.Name <> '' ) then sidingslist.items[L].Name:=siding.Name;
+            end;
+         end;
+         if found = false then begin
+           if Siding.ItemId <> '' then sidingslist.add(Siding);
+         end;
+       end;
+     end;
+     if pos('SidingItem',tdb[i]) > 0 then begin
+       inSiding:=true;
+       Siding:=TSiding.Create;
+       siding.ItemId:='';
+     end;
+     if ( inSiding ) and ( pos('TrItemId',tdb[i]) > 0 ) then begin
+       tmp:=Stringreplace(tdb[i],'TrItemId','',[rfReplaceAll]);
+       tmp:=Stringreplace(tmp,'(','',[rfReplaceAll]);
+       tmp:=Stringreplace(tmp,')','',[rfReplaceAll]);
+       Siding.ItemId:=trim(tmp);
+      // form1.memo1.lines.add(Siding.itemid);
+     end;
+     if ( inSiding ) and ( pos('TrItemRData',tdb[i]) > 0 ) then begin
+       tmp:=Stringreplace(tdb[i],'TrItemRData','',[rfReplaceAll]);
+       tmp:=Stringreplace(tmp,'(','',[rfReplaceAll]);
+       tmp:=Stringreplace(tmp,')','',[rfReplaceAll]);
+       //form1.Memo1.Lines.add(trim(tmp));
+       Siding.setItemRData(trim(tmp),1);
+     end;
+     if ( inSiding ) and ( pos('SidingTrItemData',tdb[i]) > 0 ) then begin
+       tmp:=Stringreplace(tdb[i],'SidingTrItemData','',[rfReplaceAll]);
+       tmp:=Stringreplace(tmp,'(','',[rfReplaceAll]);
+       tmp:=Stringreplace(tmp,')','',[rfReplaceAll]);
+       //form1.memo1.lines.add(trim(tmp));
+       Siding.setSidingData(trim(tmp));
+     end;
+     if ( inSiding ) and ( pos('SidingName',tdb[i]) > 0 ) then begin
+       tmp:=Stringreplace(tdb[i],'SidingName','',[rfReplaceAll]);
+       tmp:=Stringreplace(tmp,'(','',[rfReplaceAll]);
+       tmp:=Stringreplace(tmp,')','',[rfReplaceAll]);
+       tmp:=Stringreplace(tmp,'"','',[rfReplaceAll]);
+       Siding.Name:=trim(tmp);
+       //form1.memo1.lines.add(Siding.Name);
+     end;
+   end;
+   result:=0;
+end;
+
+//function testPathToSiding(id: String): boolean;
+function testPathtoSiding(id: String): String;
+var i,n, t: integer;
+    paths, tmp: tstringlist;
+    fces: TCharEncStream;
+    tmps: string;
+    //found1, found2, erg: boolean;
+    found1, found2, erg: string;
+begin
+  paths:=tstringlist.create;
+  tmp:=tstringlist.create;
+  listfiledir(routepath+'paths\','sid_*.pat',paths);
+//  found1:=false;
+//  found2:=false;
+  found1:='';
+  found2:='';
+//erg:=false;
+  erg:='';
+  for i:=0 to sidingslist.count -1 do begin
+    if id = sidingslist.Items[i].ItemId then begin
+//      form1.memo1.lines.add(id + ':'+sidingslist.items[i].getRDataP1);
+//      form1.memo1.lines.add(id + ':'+sidingslist.items[i].getRDataP2);
+      for n:=0 to paths.Count -1 do begin
+        fces:=tcharencstream.create;
+        fces.reset;
+        fces.LoadFromFile(utf8tosys(routepath+'paths\'+paths[n]));
+        tmp.text:=fces.utf8text;
+        fces.free;
+        for t:=0 to tmp.count -1 do begin
+          if pos('TrackPDP (',tmp[t]) > 0 then begin
+             tmps:=Stringreplace(tmp[t],'TrackPDP (','',[rfReplaceAll]);
+             tmps:=stringreplace(tmps,')','',[rfReplaceAll]);
+             //if sidingslist.items[i].getRDataP1()=trim(tmps) then found1:=true;
+             //if sidingslist.items[i].getRDataP2()=trim(tmps) then found2:=true;
+             if sidingslist.items[i].getRDataP1()=trim(tmps) then found1:=paths[n];
+             if sidingslist.items[i].getRDataP2()=trim(tmps) then found2:=paths[n];
+          end;
+          //if found1 and found2 then break;
+          if ( found1 <> '' ) and ( found2 <> '' ) then break;
+        end;
+        //if found1 and found2 then break;
+        if ( found1 <> '' ) and ( found2 <> '' ) then break;
+      end;
+    end;
+    //if found1 and found2 then break;
+    if ( found1 <> '' ) and ( found2 <> '' ) then break;
+  end;
+  //if found1 and found2 then erg:= true;
+  if ( found1 <> '' ) and ( found2 <> '' ) then erg:=found1;
+  result:=erg;
+end;
+
+function getSidings(): TSidingObjectList;
+begin
+  result:=sidingslist;
+end;
 function loadstations(path: String): tStringlist;
 var fCES: TCharEncStream;
     tmp: tStringlist;
@@ -502,7 +646,9 @@ var zpaths, zcons, con: tstringlist;
     i, prow, n: integer;
     zips: tzipper;
     item: String;
+res: boolean;
 begin
+res:=false;
   zips:=tzipper.create;
   zpaths:=tstringlist.create;
   zcons:=tstringlist.create;
@@ -542,10 +688,11 @@ begin
       zips.Entries.addfileentry(utf8tosys(zcons[i]),utf8tosys(zcons[i]));
     end;
     zips.ZipAllFiles;
+    res:=true;
   finally
     zips.Free;
   end;
-
+  result:=res;
 end;
 
 
@@ -553,7 +700,6 @@ function extractcons(item: string): tstringlist;
 var i: integer;
     list: tstringlist;
     ins: boolean;
-    it: String;
 begin
   ins:=false;
   list:=tstringlist.create;

@@ -28,10 +28,10 @@ type
     Label1: TLabel;
     Label2: TLabel;
     Label3: TLabel;
-    ListBox3: TListBox;
     ListBox4: TListBox;
     ListView1: TListView;
     ListView2: TListView;
+    ListView3: TListView;
     MaskEdit1: TMaskEdit;
     MaskEdit2: TMaskEdit;
     SpeedButton1: TSpeedButton;
@@ -42,6 +42,7 @@ type
     SpeedButton6: TSpeedButton;
     SpeedButton7: TSpeedButton;
     SpeedButton8: TSpeedButton;
+    SpeedButton9: TSpeedButton;
     StaticText1: TStaticText;
     StaticText2: TStaticText;
     StaticText3: TStaticText;
@@ -74,9 +75,9 @@ type
     procedure SpeedButton6Click(Sender: TObject);
     procedure SpeedButton7Click(Sender: TObject);
     procedure SpeedButton8Click(Sender: TObject);
+    procedure SpeedButton9Click(Sender: TObject);
     procedure updateConsistLabel();
     procedure showConsists;
-    function pruefzeit(zeit: string): string;
     procedure fillpathview;
     procedure fillconsistsview;
     procedure loadtrains();
@@ -96,7 +97,7 @@ var
     choose = 'choose';
 
 implementation
-uses unit1;
+uses unit1, sidings;
 
 {$R *.lfm}
 
@@ -105,47 +106,183 @@ uses unit1;
 
 procedure TForm3.updateConsistLabel();
 var i: integer;
+    tmp: String;
+    li: Tlistitem;
 begin
-  label2.caption:='';
-  for i:= 0 to listbox3.items.count -1 do begin
-    label2.caption:=label2.caption+'+'+listbox3.items[i];
+  //checkbox2.checked:=false;
+  if listview3.items.count > 0 then begin
+    li:=listview3.Items[0];
+    label2.caption:=li.Caption;
+    if li.SubItems[0]='$reverse' then label2.caption:=label2.caption+' $reverse';
+    if listview3.items.count > 1 then begin
+     // checkbox2.checked:=true;
+      li:=listview3.Items[0];
+      tmp:=li.caption;
+      tmp:=trim(Stringreplace(tmp,'<','',[rfReplaceAll]));
+      tmp:=trim(Stringreplace(tmp,'>','',[rfReplaceAll]));
+      label2.caption:='<'+tmp+'>';
+      if li.SubItems[0]='$reverse' then label2.caption:=label2.caption+' $reverse';
+      for i:=1 to listview3.items.count -1 do begin
+        li:=listview3.Items[i];
+        tmp:=li.caption;
+        tmp:=trim(Stringreplace(tmp,'<','',[rfReplaceAll]));
+        tmp:=trim(Stringreplace(tmp,'>','',[rfReplaceAll]));
+        label2.caption:=label2.caption+'+'+'<'+tmp+'>';
+        if li.SubItems[0]='$reverse' then label2.caption:=label2.caption+' $reverse';
+      end;
+    end;
   end;
-  label2.caption:=copy(label2.caption,2,length(label2.caption));
+{  if listbox3.items.count > 1 then begin
+    checkbox2.checked:=true;
+    tmp:=listbox3.items[0];
+    tmp:=trim(Stringreplace(tmp,'<','',[rfReplaceAll]));
+    tmp:=trim(Stringreplace(tmp,'>','',[rfReplaceAll]));
+    label2.caption:='<'+tmp+'>';
+    for i:= 1 to listbox3.items.count -1 do begin
+      tmp:=listbox3.items[i];
+      tmp:=trim(Stringreplace(tmp,'<','',[rfReplaceAll]));
+      tmp:=trim(Stringreplace(tmp,'>','',[rfReplaceAll]));
+      label2.caption:=label2.caption+'+'+'<'+tmp+'>';
+    end;
+  end;}
 end;
 
 procedure TForm3.showConsists;
 var cell: String;
     i: integer;
     ins: boolean;
-    str: String;
+    con: string;
+    li: tlistitem;
 begin
-  listbox3.clear;
+  listview3.clear;
+  cell:=form1.grid.cells[col,getrow('#consist')];
+  if cell <> '' then begin
+    if ( pos('+',cell) < 1 ) and ( pos('<',cell) < 1 ) and ( pos('>',cell) < 1 ) then begin
+      if pos('$reverse',cell) > 0 then begin
+        cell:=trim(Stringreplace(cell,'$reverse','',[rfReplaceAll]));
+        li:=listview3.items.add;
+        li.caption:=cell;
+        li.SubItems.Add('$reverse');
+      end else begin
+        li:=listview3.items.add;
+        li.caption:=cell;
+        li.subitems.add('');
+      end;
+    end
+    else begin
+      ins:=false;
+      i:=1;
+      while i < length(cell)+1 do begin
+        if copy(cell,i,1) = '<' then ins:=true;
+        if ( copy(cell,i,1) = '+' ) and ( ins = false ) then begin
+          con:=trim(copy(cell,1,i-1));
+          if copy(con,1,1) = '+' then con:=trim(copy(con,2,length(con)));
+          con:=trim(Stringreplace(con,'<','',[rfReplaceAll]));
+          con:=trim(Stringreplace(con,'>','',[rfReplaceAll]));
+          if pos('+',con) > 0 then con:='<'+con+'>';
+          li:=listview3.items.add;
+          li.caption:=con;
+          //listbox3.items.add(con);
+          delete(cell,1,i+1);
+          cell:=trim(cell);
+          if pos('$reverse',cell) = 1 then begin
+            li.SubItems.add('$reverse');
+            cell:=trim(Stringreplace(cell,'$reverse','',[rfReplaceAll]));
+          end else li.subitems.add('');
+          i:=1;
+        end;
+        if ( copy(cell,i,1) = '>' ) or ( i= length(cell) ) then begin
+          con:=trim(copy(cell,1,i));
+          if copy(con,1,1) = '+' then con:=trim(copy(con,2,length(con)));
+          con:=trim(Stringreplace(con,'<','',[rfReplaceAll]));
+          con:=trim(Stringreplace(con,'>','',[rfReplaceAll]));
+          if pos('+',con) > 0 then con:='<'+con+'>';
+          li:=listview3.items.add;
+          li.caption:=con;
+          //listbox3.items.add(con);
+          delete(cell,1,i+1);
+          cell:=trim(cell);
+          if pos('$reverse',cell) = 1 then begin
+            li.SubItems.add('$reverse');
+            cell:=trim(Stringreplace(cell,'$reverse','',[rfReplaceAll]));
+          end else li.subitems.add('');
+          i:=1;
+        end;
+        i:=i+1;
+      end;
+        {ins:=false;
+        i:=1;
+        while i < length(cell)+1 do begin
+          if copy(cell,i,1) = '<' then ins:=true;
+          if ( copy(cell,i,1) = '+' ) and ( ins = false ) then begin
+            con:=trim(copy(cell,1,i-1));
+            if copy(con,1,1) = '+' then con:=trim(copy(con,2,length(con)));
+            con:=trim(Stringreplace(con,'<','',[rfReplaceAll]));
+            con:=trim(Stringreplace(con,'>','',[rfReplaceAll]));
+            if pos('+',con) > 0 then con:='<'+con+'>';
+            listbox3.items.add(con);
+            delete(cell,1,i+1);
+            i:=1;
+          end;
+          if ( copy(cell,i,1) = '>' ) or ( i= length(cell) ) then begin
+            con:=trim(copy(cell,1,i));
+            if copy(con,1,1) = '+' then con:=trim(copy(con,2,length(con)));
+            con:=trim(Stringreplace(con,'<','',[rfReplaceAll]));
+            con:=trim(Stringreplace(con,'>','',[rfReplaceAll]));
+            if pos('+',con) > 0 then con:='<'+con+'>';
+            listbox3.items.add(con);
+            delete(cell,1,i+1);
+            i:=1;
+          end;
+          i:=i+1;
+        end; }
+      end;
+    if listview3.items.Count > 1 then checkbox2.Checked:=true else checkbox2.checked:=false;
+  end;
+  updateconsistlabel;
+{
   cell:=form1.grid.cells[col,getRow('#consist')];
   if cell <> '' then begin
       ins:=false;
-      for i:= 1 to length(cell)-1 do begin
-        if cell[i] = '<' then ins:=true;
-        if ( cell[i] = '+' ) and ( ins = false )then begin
-          listbox3.items.add(trim(copy(cell,1,i-1)));
-          delete(cell,1,i);
-        end;
-        if cell[i] = '>' then begin
-          ins:=false;
-          listbox3.items.add(trim(copy(cell,1,i)));
+      for i:= 1 to length(cell) do begin // -1
+        if copy(cell,i,1) = '<' then ins:=true;
+        if ( copy(cell,i,1) = '+' ) and ( ins = false )then begin
+            con:=trim(copy(cell,1,i));
+            if copy(con,1,1) = '+' then con:=trim(copy(con,2,length(con)));
+            con:=trim(Stringreplace(con,'<','',[rfReplaceAll]));
+            con:=trim(Stringreplace(con,'>','',[rfReplaceAll]));
+          listbox3.items.add(con);
           delete(cell,1,i+1);
+        end;
+        if copy(cell,i,1) = '>' then begin
+          ins:=false;
+          //listbox3.items.add(trim(copy(cell,1,i)));
         end;
       end;
       listbox3.items.add(trim(cell));
       label2.caption:='';
-    for i:= 0 to listbox3.items.count -1 do begin
-      label2.caption:=label2.caption+' + '+listbox3.items[i];
+      i:=0;
+      while i<listbox3.items.count do begin
+      if listbox3.items[i]='' then begin
+        listbox3.Items.Delete(i);
+        i:=i-1;
+        end;
+        i:=i+1;
     end;
-    label2.caption:=copy(label2.caption,4,length(label2.caption));
+      if listbox3.items.count = 1 then label2.caption:=listbox3.items[0]
+      else begin
+        label2.caption:='<'+listbox3.items[0]+'>';
+        for i:= 1 to listbox3.items.count -1 do begin
+          label2.caption:=label2.caption+' + '+'<'+listbox3.items[i]+'>';
+        end;
+      end;
+    //label2.caption:=copy(label2.caption,4,length(label2.caption));
     if listbox3.items.count > 1 then checkbox2.Checked:=true;
   end else begin
     label2.caption:='';
     checkbox2.checked:=false;
   end;
+  }
 end;
 
 procedure TForm3.SpeedButton1Click(Sender: TObject);
@@ -158,47 +295,41 @@ begin
 end;
 
 procedure TForm3.SpeedButton2Click(Sender: TObject);
-var i: integer;
-    li: tlistitem;
+var li, li2: tlistitem;
 begin
-  if checkbox2.checked then begin  // multi consist Yes
-    if listview2.itemindex > -1 then begin  // List not empty
-      label2.caption:='';                   // Delete Label
-      li:=listview2.Items[listview2.itemindex];       // take item
-      if ( pos('$',li.Caption) > 0 ) or ( pos ('+',li.caption) > 0 ) then // contains $ or +
-        listbox3.items.add('<'+li.caption+'>')
-      else listbox3.items.add(li.caption);
-    end;
-    if listbox3.items.count > 1 then begin
-      for i:=0 to listbox3.items.count -1 do begin
-        label2.caption:=label2.caption+' + '+listbox3.items[i];
+  if listview2.itemindex > -1 then begin
+    li:=listview2.items[listview2.itemindex];
+    if checkbox2.checked then begin // multi consist
+      if ( pos('$',li.Caption) > 0 ) or ( pos ('+',li.caption) > 0 ) then begin// contains $ or +
+        //listbox3.items.add('<'+li.caption+'>')
+      li2:=listview3.Items.add;
+      li2.Caption:='<'+li.caption+'>';
+      li2.SubItems.add('');
+      end
+      //else listbox3.items.add(li.caption);
+      else begin
+        li2:=listview3.Items.add;
+        li2.Caption:=li.caption;
+        li2.SubItems.add('');
       end;
-      label2.caption:=copy(label2.caption,4,length(label2.caption));
-    end else label2.caption:=listbox3.items[0];
-  end else begin  // multi consist No
-    if listview2.itemindex > -1 then begin
-      li:=listview2.items[listview2.itemindex];
-      if ( pos('$',li.Caption) > 0 ) or ( pos('+',li.caption) > 0 ) then
-        label2.caption:='<'+li.caption+'>'
-      else label2.caption:=li.caption;
+    end else begin
+      //listbox3.Clear;
+      listview3.Clear;
+      if ( pos('$',li.Caption) > 0 ) or ( pos ('+',li.caption) > 0 ) then begin// contains $ or +
+        //listbox3.items.add('<'+li.caption+'>')
+      li2:=listview3.Items.add;
+      li2.Caption:='<'+li.caption+'>';
+      li2.SubItems.add('');
+      end
+      //else listbox3.items.add(li.caption);
+      else begin
+        li2:=listview3.Items.add;
+        li2.Caption:=li.caption;
+        li2.SubItems.add('');
+      end;
     end;
   end;
-{  if checkbox2.Checked then begin
-    label2.caption:='';
-    if ( pos('$',listbox2.items[listbox2.itemindex]) >0 ) or ( pos('+',listbox2.Items[listbox2.itemindex]) >0 ) then
-      listbox3.items.add('<'+listbox2.items[listbox2.itemindex]+'>')
-      else listbox3.items.add(listbox2.Items[listbox2.ItemIndex]);
-    if listbox3.items.count > 1 then begin
-      for i:=0 to listbox3.items.Count -1 do begin
-        label2.caption:=label2.caption+'+'+listbox3.items[i];
-      end;
-      label2.caption:=copy(label2.caption,2,length(label2.caption));
-    end else label2.caption:=listbox3.items[0];
-  end else begin
-      if ( pos('$',listbox2.items[listbox2.itemindex]) >0 ) or ( pos('+',listbox2.Items[listbox2.itemindex]) >0 ) then
-        label2.caption:='<'+listbox2.items[listbox2.itemindex]+'>'
-      else label2.caption:=listbox2.Items[listbox2.ItemIndex];
-  end;}
+  updateconsistlabel;
 end;
 
 procedure TForm3.SpeedButton3Click(Sender: TObject);
@@ -218,47 +349,79 @@ end;
 
 procedure TForm3.SpeedButton5Click(Sender: TObject);
 var oldindex: integer;
-    item: String;
+    item, li: tlistitem;
 begin
-  if listbox3.itemindex > 0 then begin
+  if listview3.ItemIndex > 0 then begin
+    oldindex:=listview3.itemindex;
+    listview3.Items.Move(oldindex,oldindex-1);
+    listview3.itemindex:=oldindex-1;
+    updateconsistlabel;
+  end;
+{  if listbox3.itemindex > 0 then begin
     oldindex:=listbox3.itemindex;
     item:=listbox3.items[oldindex];
     listbox3.items.delete(oldindex);
     listbox3.items.Insert(oldindex -1,item);
     listbox3.itemindex:=oldindex -1;
     updateconsistlabel;
-  end;
+  end;}
 end;
 
 procedure TForm3.SpeedButton6Click(Sender: TObject);
 var oldindex: integer;
 begin
-  if ( listbox3.itemindex < listbox3.Count -1 ) and ( listbox3.itemindex > -1) then begin
+  if ( listview3.itemindex < listview3.items.count -1 ) and ( listview3.itemindex > -1) then begin
+    oldindex:=listview3.itemindex;
+    listview3.items.move(oldindex, oldindex+1);
+    listview3.itemindex:=oldindex+1;
+    updateconsistlabel;
+  end;
+{  if ( listbox3.itemindex < listbox3.Count -1 ) and ( listbox3.itemindex > -1) then begin
     oldindex:=listbox3.itemindex;
     listbox3.items.Insert(listbox3.itemindex +2,listbox3.Items[listbox3.itemindex]);
     listbox3.items.delete(listbox3.itemindex);
     listbox3.itemindex:=oldindex +1;
     updateconsistlabel;
-  end;
+  end; }
 end;
 
 procedure TForm3.SpeedButton7Click(Sender: TObject);
 var oldindex: integer;
 begin
-  if ( listbox3.itemindex > -1 ) then begin
+  if listview3.itemindex > -1 then begin
+    oldindex:=listview3.itemindex;
+    listview3.Items.Delete(oldindex);
+    if listview3.items.count > 0 then begin
+      if oldindex < listview3.items.count -1 then listview3.itemindex:=oldindex else listview3.itemindex:=listview3.items.count -1;
+    end;
+    updateconsistlabel;
+  end;
+
+{  if ( listbox3.itemindex > -1 ) then begin
     oldindex:=listbox3.itemindex;
     listbox3.Items.Delete(listbox3.itemindex);
     if listbox3.items.count > 0 then begin
       if oldindex < listbox3.items.count -1 then listbox3.itemindex:=oldindex else listbox3.itemindex:=listbox3.items.count -1;
       updateconsistlabel;
     end else label2.caption:='';
-  end;
+  end;}
 end;
 
 procedure TForm3.SpeedButton8Click(Sender: TObject);
 var i: integer;
+    li: tlistitem;
 begin
   if checkbox2.checked then begin
+    if listview3.ItemIndex >-1 then begin
+      if listview3.items[listview3.ItemIndex].SubItems[0] = '$reverse' then listview3.Items[listview3.ItemIndex].SubItems[0]:=''
+      else listview3.items[listview3.ItemIndex].SubItems[0]:='$reverse';
+    end;
+  end else begin
+      if listview3.items[0].SubItems[0] = '$reverse' then listview3.Items[0].SubItems[0]:=''
+      else listview3.items[0].SubItems[0]:='$reverse';
+  end;
+  updateconsistlabel;
+{  if checkbox2.checked then begin
     if listbox3.itemindex >-1 then begin
       if pos('$reverse', listbox3.Items[listbox3.itemindex]) > 0 then listbox3.items[listbox3.itemindex]:=trimright(leftstr(listbox3.items[listbox3.itemindex],pos('$reverse',listbox3.items[listbox3.itemindex])-1))
       else listbox3.items[listbox3.itemindex]:=listbox3.items[listbox3.itemindex]+' $reverse';
@@ -271,7 +434,12 @@ begin
   end else begin
     if pos('$reverse',Label2.caption) > 0 then Label2.caption:=trimright(leftstr(label2.caption,pos('$reverse',label2.caption)-1))
     else label2.caption:=label2.caption+' $reverse';
-  end;
+  end; }
+end;
+
+procedure TForm3.SpeedButton9Click(Sender: TObject);
+begin
+  form4.showmodal;
 end;
 
 procedure TForm3.FormCreate(Sender: TObject);
@@ -303,15 +471,14 @@ begin
   if checkbox2.checked then begin
     speedbutton2.caption:=add;
 //    listbox3.clear;
-    listbox3.Visible:=true;
     speedbutton5.visible:=true;
     speedbutton6.visible:=true;
     speedbutton7.visible:=true;
   end
   else begin
+     listview3.clear;
+     label2.caption:='';
      speedbutton2.caption:=choose;
-     listbox3.clear;
-     listbox3.visible:=false;
      speedbutton5.visible:=false;
      speedbutton6.visible:=false;
      speedbutton7.visible:=false;
@@ -324,7 +491,6 @@ begin
 end;
 
 procedure TForm3.CheckBox4Change(Sender: TObject);
-var i: integer;
 begin
   listbox4.Enabled:=checkbox4.Checked;
   if checkbox4.Checked = false then begin
@@ -369,7 +535,7 @@ begin
 end;
 
 procedure TForm3.FormShow(Sender: TObject);
-var sta,i,p: integer;
+var i,p: integer;
     str: string;
 begin
   col:=form1.grid.col;
@@ -451,7 +617,6 @@ var i: integer;
     paths: tstringlist;
     pathnames: tstringlist;
     li: tListItem;
-    pa: string;
 begin
   listview1.clear;
   paths:=tstringlist.create;
@@ -459,7 +624,6 @@ begin
   paths:=getpaths;
   pathnames:=getpathnames;
   for i:=0 to paths.count -1 do begin
-    pa:=paths[i];
     if (( checkbox7.Checked) and ( leftstr(paths[i],4) <> 'sid_' ) ) or
        (( checkbox8.checked) and ( leftstr(paths[i],4) = 'sid_' ) ) then begin
       li:=listview1.Items.add;
@@ -493,22 +657,10 @@ begin
   end;
 end;
 
-function tform3.pruefzeit(zeit: string): string;
-var zt: string;
-begin
-  zt:=zeit;
-  if length(zeit) <> 8 then begin
-    if length(zeit) > 8 then zt:='';
-  end;
-end;
-
 procedure TForm3.ListBox1DblClick(Sender: TObject);
 begin
   speedbutton1.Click;
 end;
-
-
-
 
 procedure TForm3.ListBox2DblClick(Sender: TObject);
 begin

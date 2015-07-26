@@ -210,7 +210,7 @@ begin
        radiobutton1.Checked:=true;
        for i:=length('$forms=') to length(line) do begin
           if (i = length(line) )or (line[i] = '/') then begin
-              Label_f.caption:=trim(copy(line,length('$forms=')+1,i));
+              Label_f.caption:=trim(copy(line,length('$forms=')+1,i-length('$forms=')-1));
             break;
           end;
        end;

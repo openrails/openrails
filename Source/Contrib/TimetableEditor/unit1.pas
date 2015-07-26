@@ -37,6 +37,7 @@ type
     SpeedButton13: TSpeedButton;
     SpeedButton14: TSpeedButton;
     SpeedButton15: TSpeedButton;
+    SpeedButton16: TSpeedButton;
     SpeedButton2: TSpeedButton;
     SpeedButton3: TSpeedButton;
     SpeedButton4: TSpeedButton;
@@ -70,6 +71,7 @@ type
     procedure SpeedButton13Click(Sender: TObject);
     procedure SpeedButton14Click(Sender: TObject);
     procedure SpeedButton15Click(Sender: TObject);
+    procedure SpeedButton16Click(Sender: TObject);
     procedure SpeedButton1Click(Sender: TObject);
     procedure SpeedButton2Click(Sender: TObject);
     procedure SpeedButton3Click(Sender: TObject);
@@ -130,7 +132,7 @@ resourceString
 
 implementation
 
-uses stations, trains, dispose;
+uses stations, trains, dispose, sidings;
 
 {$R *.lfm}
 
@@ -220,6 +222,7 @@ begin
   speedbutton8.enabled:=true;
   speedbutton12.enabled:=true;
   speedbutton15.enabled:=true;
+  speedbutton16.enabled:=true;
 end;
 
 procedure tform1.autosizecol(Gridt: TStringgrid; Column: integer);
@@ -632,7 +635,6 @@ begin
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
-var shadowgrid: tstringgrid;
 begin
   grid.align:=alclient;
   grid.enabled:=false;
@@ -831,12 +833,11 @@ end;
 
 procedure TForm1.SpeedButton15Click(Sender: TObject);
 var slist: tstringlist;
-    z,s,mcols, row,col: integer;
+    z,s,mcols, col: integer;
     cols: tstringlist;
     cell: string;
 begin
   cell:=getlastCell();
-  row:=strtoint(copy(cell,1,pos(':',cell)-1));
   col:=strtoint(copy(cell,pos(':',cell)+1,length(cell)));
   slist:=tstringlist.create;
   cols:=tstringlist.create;
@@ -864,6 +865,11 @@ begin
     end;
     shadowupdate;
   end;
+end;
+
+procedure TForm1.SpeedButton16Click(Sender: TObject);
+begin
+  form4.show;
 end;
 
 end.
