@@ -358,7 +358,10 @@ namespace ORTS
             //So only the lead locomotive updates it, the others only updates the controller (actually useless)
             if (this.IsLeadLocomotive() || (!AcceptMUSignals))
             {
+                var throttleCurrentNotch = ThrottleController.CurrentNotch;
                 ThrottleController.Update(elapsedClockSeconds);
+                if (ThrottleController.CurrentNotch < throttleCurrentNotch && ThrottleController.ToZero)
+                    SignalEvent(Event.ThrottleChange);
                 ThrottlePercent = (ThrottleIntervention < 0 ? ThrottleController.CurrentValue : ThrottleIntervention) * 100.0f;
 
                 if (GearBoxController != null)

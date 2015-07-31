@@ -383,9 +383,10 @@ namespace ORTS
             SignalEvent(BrakeControllerEvent.StartIncrease, target);
         }
 
-        public void StartDecrease(float? target)
+        public void StartDecrease(float? target , bool toZero = false)
         {
-            SignalEvent(BrakeControllerEvent.StartDecrease, target);
+            if (toZero) SignalEvent(BrakeControllerEvent.StartDecreaseToZero, target);
+            else SignalEvent(BrakeControllerEvent.StartDecrease, target);
         }
 
         public float SetPercent(float percent)

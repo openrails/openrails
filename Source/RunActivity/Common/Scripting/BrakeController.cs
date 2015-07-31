@@ -178,7 +178,11 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Starts a full quick brake release.
         /// </summary>
-        FullQuickRelease
+        FullQuickRelease,
+        /// <summary>
+        /// Starts a pressure decrease to zero (may have a target value)
+        /// </summary>
+        StartDecreaseToZero
     }
 
     public enum ControllerState

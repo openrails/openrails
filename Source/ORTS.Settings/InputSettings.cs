@@ -136,10 +136,12 @@ namespace ORTS.Settings
         [GetString("Control Backwards")] ControlBackwards,
         [GetString("Control Throttle Increase")] ControlThrottleIncrease,
         [GetString("Control Throttle Decrease")] ControlThrottleDecrease,
+        [GetString("Control Throttle Zero")] ControlThrottleZero,
         [GetString("Control Gear Up")] ControlGearUp,
         [GetString("Control Gear Down")] ControlGearDown,
         [GetString("Control Train Brake Increase")] ControlTrainBrakeIncrease,
         [GetString("Control Train Brake Decrease")] ControlTrainBrakeDecrease,
+        [GetString("Control Train Brake Zero")] ControlTrainBrakeZero,
         [GetString("Control Engine Brake Increase")] ControlEngineBrakeIncrease,
         [GetString("Control Engine Brake Decrease")] ControlEngineBrakeDecrease,
         [GetString("Control Dynamic Brake Increase")] ControlDynamicBrakeIncrease,
@@ -550,8 +552,10 @@ namespace ORTS.Settings
             Commands[(int)UserCommands.ControlSanderToggle] = new UserCommandKeyInput(0x2D, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlThrottleDecrease] = new UserCommandKeyInput(0x1E);
             Commands[(int)UserCommands.ControlThrottleIncrease] = new UserCommandKeyInput(0x20);
+            Commands[(int)UserCommands.ControlThrottleZero] = new UserCommandKeyInput(0x1E, KeyModifiers.Control);
             Commands[(int)UserCommands.ControlTrainBrakeDecrease] = new UserCommandKeyInput(0x27);
             Commands[(int)UserCommands.ControlTrainBrakeIncrease] = new UserCommandKeyInput(0x28);
+            Commands[(int)UserCommands.ControlTrainBrakeZero] = new UserCommandKeyInput(0x27, KeyModifiers.Control);
             Commands[(int)UserCommands.ControlWiper] = new UserCommandKeyInput(0x2F);
 
             Commands[(int)UserCommands.DebugClockBackwards] = new UserCommandKeyInput(0x0C);

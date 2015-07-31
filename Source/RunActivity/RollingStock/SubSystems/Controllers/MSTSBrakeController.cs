@@ -233,6 +233,10 @@ namespace ORTS
                         NotchController.SetValue(newValue);
                     }
                     break;
+
+                case BrakeControllerEvent.StartDecreaseToZero:
+                    NotchController.StartDecrease(value, true);
+                    break;
             }
         }
 

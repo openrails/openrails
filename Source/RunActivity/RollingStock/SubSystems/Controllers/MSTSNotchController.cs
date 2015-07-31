@@ -121,6 +121,7 @@ namespace ORTS
         public float StepSize;
         private List<MSTSNotch> Notches = new List<MSTSNotch>();
         public int CurrentNotch { get; set; }
+        public bool ToZero = false; // true if controller zero command;
 
         private float OldValue;
 
@@ -218,9 +219,10 @@ namespace ORTS
             return Notches.Count;
         }
 
-        static float GetNotchBoost()
-        {            
-            return 5;
+        private float GetNotchBoost()
+        {
+            return (ToZero && ((CurrentNotch >= 0 && Notches[CurrentNotch].Smooth) || Notches.Count == 0 || 
+                IntermediateValue - CurrentValue > StepSize) ? 20 : 5);
         }
 
         /// <summary>
@@ -298,6 +300,7 @@ namespace ORTS
 
         public void StartIncrease( float? target ) {
             controllerTarget = target;
+            ToZero = false;
             StartIncrease();
         }
 
@@ -318,8 +321,10 @@ namespace ORTS
             UpdateValue = 0;
         }
 
-        public void StartDecrease( float? target ) {
+        public void StartDecrease( float? target, bool toZero = false)
+        {
             controllerTarget = target;
+            ToZero = toZero;
             StartDecrease();
         }
         
@@ -357,14 +362,20 @@ namespace ORTS
         /// If a target has been set, then stop once it's reached and also cancel the target.
         /// </summary>
         public void CheckControllerTargetAchieved() {
-            if( controllerTarget != null ) {
-                if( UpdateValue > 0.0 ) {
-                    if( CurrentValue >= controllerTarget ) {
+            if( controllerTarget != null )
+            {
+                if( UpdateValue > 0.0 )
+                {
+                    if( CurrentValue >= controllerTarget )
+                    {
                         StopIncrease();
                         controllerTarget = null;
                     }
-                } else {
-                    if( CurrentValue <= controllerTarget ) {
+                }
+                else
+                {
+                    if( CurrentValue <= controllerTarget )
+                    {
                         StopDecrease();
                         controllerTarget = null;
                     }

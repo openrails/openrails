@@ -906,7 +906,10 @@ namespace ORTS
             //So only the lead locomotive updates it, the others only updates the controller (actually useless)
             if (this.IsLeadLocomotive() || (!AcceptMUSignals))
             {
+                var throttleCurrentNotch = ThrottleController.CurrentNotch;
                 ThrottleController.Update(elapsedClockSeconds);
+                if (ThrottleController.CurrentNotch < throttleCurrentNotch && ThrottleController.ToZero)
+                    SignalEvent(Event.ThrottleChange); 
                 ThrottlePercent = (ThrottleIntervention < 0 ? ThrottleController.CurrentValue : ThrottleIntervention) * 100.0f;
                 ConfirmWheelslip( elapsedClockSeconds );
                 LocalThrottlePercent = ThrottlePercent;
@@ -1587,6 +1590,29 @@ namespace ORTS
         {
             ThrottleController.SetPercent(percent);
         }
+
+        public void ThrottleToZero()
+        {
+            if (CombinedControlType == CombinedControl.ThrottleDynamic && ThrottleController.CurrentValue <= 0)
+                StartDynamicBrakeIncrease(null);
+            else if (CombinedControlType == CombinedControl.ThrottleAir && ThrottleController.CurrentValue <= 0)
+                StartTrainBrakeIncrease(null);
+            else
+                StartThrottleToZero(ThrottleController.SmoothMin());
+
+        }
+
+        public void StartThrottleToZero(float? target)
+        {
+            if (ThrottleController.CurrentValue <= ThrottleController.MinimumValue)
+                return;
+
+            ThrottleController.StartDecrease(target, true);
+            if (ThrottleController.NotchCount() <= 0) SignalEvent(Event.ThrottleChange); 
+            AlerterReset(TCSEvent.ThrottleChanged);
+            CommandStartTime = Simulator.ClockTime;
+        }
+
         #endregion
 
         #region CombinedHandle
@@ -1718,10 +1744,10 @@ namespace ORTS
             new TrainBrakeCommand(Simulator.Confirmer.Viewer.Log, true, TrainBrakeController.CurrentValue, TrainBrakeController.CommandStartTime);
         }
 
-        public void StartTrainBrakeDecrease(float? target)
+        public void StartTrainBrakeDecrease(float? target, bool toZero = false)
         {
             AlerterReset(TCSEvent.TrainBrakeChanged);
-            TrainBrakeController.StartDecrease(target);
+            TrainBrakeController.StartDecrease(target, toZero);
             TrainBrakeController.CommandStartTime = Simulator.ClockTime;
             Simulator.Confirmer.Confirm(CabControl.TrainBrake, CabSetting.Decrease, GetTrainBrakeStatus());
             SignalEvent(Event.TrainBrakeChange);
