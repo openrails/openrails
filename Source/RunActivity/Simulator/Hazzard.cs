@@ -30,6 +30,7 @@ namespace ORTS
 	{
 		readonly int hornDist = 200;
 		readonly int approachDist = 160;
+        readonly int scaredDist = 147;
 		readonly Simulator Simulator;
 		public readonly Dictionary<int, Hazzard> Hazzards;
 		public readonly Dictionary<int, Hazzard> CurrentHazzards;
@@ -69,10 +70,10 @@ namespace ORTS
 						Hazzards[itemID].HazFile = hazF;
 					}
 					//based on act setting for frequency
-					if (Hazzards[itemID].animal == true && Simulator.Activity != null)
-					{
-						if (Program.Random.Next(100) > Simulator.Activity.Tr_Activity.Tr_Activity_Header.Animals) return null;
-					}
+                    if (Hazzards[itemID].animal == true && Simulator.Activity != null)
+                    {
+                        //if (Program.Random.Next(100) > Simulator.Activity.Tr_Activity.Tr_Activity_Header.Animals) return null;
+                    }
 					else if (Simulator.Activity != null)
 					{
 						if (Program.Random.Next(100) > Simulator.Activity.Tr_Activity.Tr_Activity_Header.Animals) return null;
@@ -109,7 +110,7 @@ namespace ORTS
 
 			foreach (var haz in Hazzards)
 			{
-				haz.Value.Update(playerLocation, approachDist);
+				haz.Value.Update(playerLocation, approachDist, scaredDist);
 			}
 		}
 
@@ -144,7 +145,7 @@ namespace ORTS
 			state = State.Idle1;
         }
 
-		public void Update(WorldLocation playerLocation, int approachDist)
+		public void Update(WorldLocation playerLocation, int approachDist, int scaredDist)
 		{
 			if (state == State.Idle1)
 			{
@@ -155,11 +156,17 @@ namespace ORTS
 				if (Program.Random.Next(5) == 0) state = State.Idle1;
 			}
 
-			if (WorldLocation.Within(Location, playerLocation, approachDist) && state < State.LookLeft)
-			{
-				state = State.LookRight;
-			}
-
-		}
+            if (!WorldLocation.Within(Location, playerLocation, scaredDist) && state < State.LookLeft)
+            {
+                if (WorldLocation.Within(Location, playerLocation, approachDist) && state < State.LookLeft)
+                {
+                    state = State.LookRight;
+                }
+            }
+            if (WorldLocation.Within(Location, playerLocation, scaredDist) && state == State.LookRight || state == State.LookLeft)
+            {
+                state = State.Scared;
+            }
+       }
 	}
 }
