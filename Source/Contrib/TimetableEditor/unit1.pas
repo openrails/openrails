@@ -300,7 +300,7 @@ begin
   trains:=tstringlist.create;
   for i:=0 to grid.colcount -1 do begin
     if (grid.cells[i,0]<> '') and (grid.cells[i,0] <> '#comment') then begin
-      if ( grid.cells[i,0]<> '$static' ) or ( static = true ) then trains.add(grid.cells[i,0]);
+      if (( grid.cells[i,0]<> '$static' ) or ( static = true )) and (i<> grid.Col) then trains.add(grid.cells[i,0]);
     end;
   end;
   result:=trains;

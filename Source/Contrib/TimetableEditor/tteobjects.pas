@@ -43,6 +43,9 @@ TSiding = class
     FItemRData1: TItemRData;
     FItemRData2: TItemRData;
     FPartner: String;
+    FGotItemRData: Boolean;
+    FGotSidingData: Boolean;
+    FGotItemRData2: Boolean;
     procedure setName(Name: String);
     procedure setItemId(Id: String);
   public
@@ -66,6 +69,9 @@ TSiding = class
     function getRDataValues_2(): String;
     function getRDataP1():String;
     function getRDataP2():String;
+    function hasItemRData(): boolean;
+    function hasSidingData(): boolean;
+    function hasItemRData2(): boolean;
 end;
 
 TSidingObjectList = class(TObjectList)
@@ -143,10 +149,12 @@ end;
 procedure TSiding.setItemRData(data: String; nr: integer);
 begin
   if nr = 1 then begin
+    FGotItemRData:=true;
     FItemRData1:=TItemRData.Create;
     FItemRData1.setValues(data);
   end;
   if nr = 2 then begin
+    FGotItemRData2:=true;
     FItemRData2:=TItemRData.create;
     FItemRData2.setValues(data);
   end;
@@ -155,6 +163,7 @@ end;
 procedure TSiding.setSidingData(data: String);
 var values: tstringlist;
 begin
+  FGotSidingData:=true;
   values:=tstringlist.create;
   explode(' ',data, values);
   FPartner:=values[1];
@@ -254,6 +263,20 @@ begin
   result:=tmp;
 end;
 
+function TSiding.hasItemRData():Boolean;
+begin
+  result:=FGotItemRData;
+end;
+
+function TSiding.hasItemRData2():Boolean;
+begin
+  result:=FGotItemRData;
+end;
+
+function TSiding.hasSidingData():Boolean;
+begin
+  result:=FGotSidingData;
+end;
 
 function TSidingObjectList.getItem(Index: Integer): TSiding;
 begin

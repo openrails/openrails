@@ -232,7 +232,7 @@ begin
   stationslist:=tstringlist.create;
   co:=0;
   for i:= 0 to tdb.Count -1 do begin
-      if pos('Station',tdb[i]) > 0 then begin
+      if pos('Station (',tdb[i]) > 0 then begin
         co:=co+1;
         tmp:=StringReplace(tdb[i], #9, '', [rfReplaceAll]);
         tmp:=StringReplace(tdb[i], '"','', [rfReplaceAll]);
@@ -266,6 +266,7 @@ var i, L: integer;
     siding, tmpSiding: TSiding;
     found: boolean;
     inSiding: boolean;
+    ok: boolean;
     tmp: String;
 begin
    clearsidingslist;
@@ -290,7 +291,14 @@ begin
             end;
          end;
          if found = false then begin
-           if Siding.ItemId <> '' then sidingslist.add(Siding);
+           if Siding.ItemId <> '' then begin
+             ok:=true;
+             if siding.itemid = '' then ok:=false;
+             if siding.hasItemRData = false then ok:=false;
+             if siding.hasSidingData = false then ok:=false;
+             if Siding.Name = '' then ok:=false;
+             if ok then sidingslist.add(Siding);
+           end;
          end;
        end;
      end;
@@ -329,7 +337,16 @@ begin
        //form1.memo1.lines.add(Siding.Name);
      end;
    end;
-   result:=0;
+   i:=0;
+   while i < sidingslist.count -1 do begin
+     siding:=sidingslist[i];
+     if siding.hasItemRData2() = false then begin
+       sidingslist.Delete(i);
+       i:=i-1;
+     end;
+     i:=i+1;
+   end;
+   result:=sidingslist.count;
 end;
 
 //function testPathToSiding(id: String): boolean;

@@ -207,6 +207,8 @@ begin
       edit4.text:=listview1.items[listview1.itemindex].subitems[0];
     end;
     edit4.text:=Stringreplace(edit4.text,' ','_',[rfReplaceAll]);
+    edit4.text:=Stringreplace(edit4.text,'/','_',[rfReplaceAll]);
+    edit4.text:=Stringreplace(edit4.text,'\','_',[rfReplaceAll]);
     edit5.text:='';
     bitbtn3.Enabled:=false;
   end;
@@ -250,7 +252,7 @@ procedure TForm4.SpeedButton1Click(Sender: TObject);
 var fi: TSearchrec;
     tmp: tstringlist;
     fCES: TCHarEncStream;
-    i: integer;
+    i,anz: integer;
     slist: TSidingobjectlist;
     li: TListItem;
     //tst: boolean;
@@ -263,7 +265,7 @@ begin
     FCES.reset;
     fCES.LoadFromFile(utf8tosys(getroutepath+fi.name));
     tmp.text:=fces.utf8text;
-    extractsidings(tmp);
+    anz:=extractsidings(tmp);
     slist:=getSidings;
     for i:=0 to slist.count -1 do begin
       li:=listview1.items.add;
