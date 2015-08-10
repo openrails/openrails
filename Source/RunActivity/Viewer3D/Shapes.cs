@@ -748,6 +748,7 @@ namespace ORTS.Viewer3D
 		readonly int AnimationFrames;
 		float Moved = 0f;
 		float AnimationKey;
+        float DelayHazAnimation;
 
 		public static HazzardShape CreateHazzard(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, HazardObj hObj)
 		{
@@ -776,6 +777,7 @@ namespace ORTS.Viewer3D
 			if (Hazzard == null) return;
 			Vector2 CurrentRange;
 			AnimationKey += elapsedTime.ClockSeconds* 24f;
+            DelayHazAnimation += elapsedTime.ClockSeconds;
 			switch (Hazzard.state)
 			{
 				case Hazzard.State.Idle1:
@@ -799,18 +801,43 @@ namespace ORTS.Viewer3D
 					else { Moved = 0; Hazzard.state = Hazzard.State.Idle1; }
 					break;
 			}
-			if (AnimationKey < CurrentRange.X) AnimationKey = CurrentRange.X;
-			if (AnimationKey > CurrentRange.Y)
-			{
-				AnimationKey = CurrentRange.X;
-				if (Hazzard.state == Hazzard.State.LookLeft || Hazzard.state == Hazzard.State.LookRight) Hazzard.state = Hazzard.State.Scared;
-			}
+
+            if (Hazzard.state == Hazzard.State.Idle1 || Hazzard.state == Hazzard.State.Idle2)
+            {
+                if (DelayHazAnimation > 5f)
+                {
+                    if (AnimationKey < CurrentRange.X)
+                    {
+                        AnimationKey = CurrentRange.X;
+                        DelayHazAnimation = 0;
+                    }
+
+                    if (AnimationKey > CurrentRange.Y)
+                    {
+                        AnimationKey = CurrentRange.X;
+                        DelayHazAnimation = 0;
+                    }
+                }
+            }
+
+            if (Hazzard.state == Hazzard.State.LookLeft || Hazzard.state == Hazzard.State.LookRight)
+            {
+                if (AnimationKey < CurrentRange.X) AnimationKey = CurrentRange.X;
+                if (AnimationKey > CurrentRange.Y) AnimationKey = CurrentRange.Y;
+            }
+            
+            if (Hazzard.state == Hazzard.State.Scared)
+            {
+                if (AnimationKey < CurrentRange.X) AnimationKey = CurrentRange.X;
+
+                if (AnimationKey > CurrentRange.Y) AnimationKey = CurrentRange.X;
+            }
 
 			for (var i = 0; i < SharedShape.Matrices.Length; ++i)
 				AnimateMatrix(i, AnimationKey);
 			
-			var pos = this.HazardObj.Position;
-			
+			//var pos = this.HazardObj.Position;
+            			
 			SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
 		}
 	}

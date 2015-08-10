@@ -72,7 +72,7 @@ namespace ORTS
 					//based on act setting for frequency
                     if (Hazzards[itemID].animal == true && Simulator.Activity != null)
                     {
-                        //if (Program.Random.Next(100) > Simulator.Activity.Tr_Activity.Tr_Activity_Header.Animals) return null;
+                        if (Program.Random.Next(100) > Simulator.Activity.Tr_Activity.Tr_Activity_Header.Animals) return null;
                     }
 					else if (Simulator.Activity != null)
 					{
