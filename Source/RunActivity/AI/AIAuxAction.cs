@@ -118,8 +118,8 @@ namespace ORTS
                 "Position in file: " + outf.BaseStream.Position + "\n");
 #endif
             AITrain aiTrain = ThisTrain as AITrain;
-            if (ThisTrain.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || ThisTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING ||
-                ThisTrain.TrainType == Train.TRAINTYPE.PLAYER)
+            if (ThisTrain == Program.Simulator.OriginalPlayerTrain && (ThisTrain.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN ||
+                ThisTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING || ThisTrain.TrainType == Train.TRAINTYPE.PLAYER || ThisTrain.TrainType == Train.TRAINTYPE.AI))
             {
                 if (SpecAuxActions.Count > 0 && SpecAuxActions[0] != null &&
                     specRequiredActions.First != null && specRequiredActions.First.Value is AuxActSigDelegate)
@@ -133,9 +133,11 @@ namespace ORTS
                     }
                 }
             }
-            else if (ThisTrain is AITrain && aiTrain.MovementState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION && aiTrain.nextActionInfo != null &&
+            else if (ThisTrain is AITrain && ((aiTrain.MovementState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION && aiTrain.nextActionInfo != null &&
                 aiTrain.nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.AUX_ACTION &&
-                (AuxActionWPItem)aiTrain.nextActionInfo != null)
+                (AuxActionWPItem)aiTrain.nextActionInfo != null) || ( aiTrain.AuxActionsContain.SpecAuxActions.Count > 0 &&
+                aiTrain.AuxActionsContain.SpecAuxActions[0] is AIActionWPRef && (aiTrain.AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).keepIt != null &&
+                (aiTrain.AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).keepIt.currentMvmtState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION)))
                 // WP is running
                 {
                     int remainingDelay = ((AuxActionWPItem)aiTrain.nextActionInfo).ActualDepart - currentClock;
@@ -841,7 +843,7 @@ namespace ORTS
 
     public class AIActionWPRef : AIAuxActionsRef
     {
-        AuxActionWPItem keepIt = null;
+        public AuxActionWPItem keepIt = null;
 
         public AIActionWPRef(Train thisTrain, float distance, float requiredSpeedMpS, int subrouteIdx, int routeIdx, int sectionIdx, int dir)
             : base(thisTrain, distance, requiredSpeedMpS, subrouteIdx, routeIdx, sectionIdx, dir, AuxActionRef.AUX_ACTION.WAITING_POINT)

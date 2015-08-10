@@ -304,12 +304,12 @@ namespace ORTS.MultiPlayer
 		public static bool IsClient()
 		{
 			if (!MPManager.IsMultiPlayer() || MPManager.IsServer()) return false;
-			return true;
+			return true; 
 		}
         //check if it is in the server mode && they are players && not allow autoswitch
         public static bool NoAutoSwitch()
         {
-            if (!MPManager.IsMultiPlayer()) return false;
+            if (!MPManager.IsMultiPlayer() || MPManager.IsServer()) return false;
             //if (MPManager.IsClient()) return true;
             return !MPManager.AllowedManualSwitch; //aloow manual switch or not
         }

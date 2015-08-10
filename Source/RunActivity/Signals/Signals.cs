@@ -6116,7 +6116,6 @@ namespace ORTS
 
         public void alignSwitchPins(int linkedSectionIndex)
         {
-            if (MultiPlayer.MPManager.NoAutoSwitch()) return;
             int alignDirection = -1;  // pin direction for leading section
             int alignLink = -1;       // link index for leading section
 
@@ -9148,7 +9147,7 @@ namespace ORTS
                 procstate = -1;
                 return false;
             }
-            if (HasLockForTrain(thisTrain.Train.Number, thisTrain.Train.TCRoute.activeSubpath))
+            if (thisTrain.Train.TCRoute != null && HasLockForTrain(thisTrain.Train.Number, thisTrain.Train.TCRoute.activeSubpath))
             {
                 return false;
             }

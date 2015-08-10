@@ -3040,7 +3040,10 @@ namespace ORTS
                                     {
                                         foreach (TrainCar car in Cars)
                                         {
-                                            car.SpeedMpS = car.Flipped ? -reqMinSpeedMpS : reqMinSpeedMpS;
+                                            //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
+                                            // To achieve the same result with other means, without flipping trainset physics, the line should be changed as follows:
+                                            //  car.SpeedMpS = car.Flipped ? -reqMinSpeedMpS : reqMinSpeedMpS;
+                                            car.SpeedMpS = car.Flipped ^ (car.IsDriveable && car.Train.IsActualPlayerTrain && ((MSTSLocomotive)car).UsingRearCab) ? -reqMinSpeedMpS : reqMinSpeedMpS;
                                         }
                                         SpeedMpS = reqMinSpeedMpS;
                                     }
@@ -6133,6 +6136,7 @@ namespace ORTS
                 formedTrain.OrgAINumber = nextTrainNumber;
                 formedTrain.Number = 0;
                 AI.AITrains.Insert(0, formedTrain);
+                AI.aiListChanged = true;
                 Simulator.Trains.Add(formedTrain);
 
                 formedTrain.SetFormedOccupied();

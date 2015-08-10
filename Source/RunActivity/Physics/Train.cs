@@ -177,7 +177,7 @@ namespace ORTS
         public List<int> HoldingSignals = new List<int>();// list of signals which must not be cleared (eg station stops)
         public List<StationStop> StationStops = new List<StationStop>();  //list of station stop details
         public StationStop PreviousStop = null;                           //last stop passed
-        public bool AtStation = false;                                    //set if train is in station (player train only)
+        public bool AtStation = false;                                    //set if train is in station
         public bool MayDepart = false;                                    //set if train is ready to depart
         public string DisplayMessage = "";                                //string to be displayed in station information window
         public Color DisplayColor = Color.LightGreen;                     //color for DisplayMessage
@@ -194,7 +194,7 @@ namespace ORTS
         public Dictionary<int, float> PassedSignalSpeeds = new Dictionary<int, float>();  // list of signals and related speeds pending processing (manual and explorer mode)
         public int[] LastPassedSignal = new int[2] { -1, -1 };  // index of last signal which set speed limit per direction (manual and explorer mode)
 
-        // Variables used for autopilot mode
+        // Variables used for autopilot mode and played train switching
         public bool IsActualPlayerTrain
         {
             get
@@ -214,9 +214,9 @@ namespace ORTS
             }
         }
 
+        public bool IsPlayable = false;
 
-
-        // End variables used for autopilot mode
+         // End variables used for autopilot mode and played train switching
 
 
         public TrainRouted routedForward;                 // routed train class for forward moves (used in signalling)
@@ -1327,6 +1327,10 @@ namespace ORTS
 
         public virtual void Update(float elapsedClockSeconds)
         {
+            if (IsActualPlayerTrain && Simulator.OriginalPlayerTrain != this && !CheckStations) // if player train is to check own stations
+            {
+                CheckStationTask();
+            }
             // Update train physics, position and movement
 
             physicsUpdate(elapsedClockSeconds);
@@ -1363,7 +1367,7 @@ namespace ORTS
                 UpdateSectionState(movedBackward);                                              // update track occupation //
                 ObtainRequiredActions(movedBackward);                                           // process list of actions //
 
-                if (TrainType == TRAINTYPE.PLAYER && CheckStations)                             // if player train is to check own stations
+                if (TrainType == TRAINTYPE.PLAYER && CheckStations) // if player train is to check own stations
                 {
                     CheckStationTask();
                 }
@@ -1439,7 +1443,7 @@ namespace ORTS
                 //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
                 // To achieve the same result with other means, without flipping trainset physics, the line should be changed as follows:
                 //                 if (car.Flipped)
-                if (car.Flipped ^ (car.IsDriveable && car.Train.IsPlayerDriven && ((MSTSLocomotive)car).UsingRearCab))
+                if (car.Flipped ^ (car.IsDriveable && car.Train.IsActualPlayerTrain && ((MSTSLocomotive)car).UsingRearCab))
                 {
                     car.TotalForceN = -car.TotalForceN;
                     car.SpeedMpS = -car.SpeedMpS;
@@ -1504,7 +1508,7 @@ namespace ORTS
                 //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
                 // To achieve the same result with other means, without flipping trainset physics, the line should be changed as follows:
                 //                 if (car1.Flipped)
-                if (car1.Flipped ^ (car1.IsDriveable && car1.Train.IsPlayerDriven && ((MSTSLocomotive)car1).UsingRearCab))
+                if (car1.Flipped ^ (car1.IsDriveable && car1.Train.IsActualPlayerTrain && ((MSTSLocomotive)car1).UsingRearCab))
                     car1.SpeedMpS = -car1.SpeedMpS;
             }
             SpeedMpS /= Cars.Count;
@@ -3233,12 +3237,14 @@ namespace ORTS
         {
             IsFreight = false;
             PassengerCarsNumber = 0;
+            IsPlayable = false;
             foreach (var car in Cars)
             {
                 if (car.IsFreight)
                     IsFreight = true;
                 if ((!car.IsFreight && !car.IsTender && !car.IsDriveable) || (car.IsDriveable && car.HasPassengerCapacity))
                     PassengerCarsNumber++;
+                if (car.IsDriveable && (car as MSTSLocomotive).CabViewList.Count > 0) IsPlayable = true;
             }
         } // CheckFreight
 
@@ -3358,12 +3364,12 @@ namespace ORTS
                 //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
                 // To achieve the same result with other means, without flipping trainset physics, the line should be changed as follows:
                 //                 car1.SpeedMpS = car1.Flipped ? -SpeedMpS : SpeedMpS;
-                car1.SpeedMpS = car1.Flipped ^ (car1.IsDriveable && car1.Train.IsPlayerDriven && ((MSTSLocomotive)car1).UsingRearCab) ? -SpeedMpS : SpeedMpS;
+                car1.SpeedMpS = car1.Flipped ^ (car1.IsDriveable && car1.Train.IsActualPlayerTrain && ((MSTSLocomotive)car1).UsingRearCab) ? -SpeedMpS : SpeedMpS;
             foreach (TrainCar car2 in otherTrain.Cars)
                 //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
                 // To achieve the same result with other means, without flipping trainset physics, the line should be changed as follows:
                 //                 car2.SpeedMpS = car2.Flipped ? -SpeedMpS : SpeedMpS;
-                car2.SpeedMpS = car2.Flipped ^ (car2.IsDriveable && car2.Train.IsPlayerDriven && ((MSTSLocomotive)car2).UsingRearCab) ? -SpeedMpS : SpeedMpS;
+                car2.SpeedMpS = car2.Flipped ^ (car2.IsDriveable && car2.Train.IsActualPlayerTrain && ((MSTSLocomotive)car2).UsingRearCab) ? -SpeedMpS : SpeedMpS;
         }
 
 
@@ -6713,7 +6719,7 @@ namespace ORTS
                 if (thisSection.Index == MisalignedSwitch[reqDirection, 0])
                 {
                     // align switch
-                    thisSection.alignSwitchPins(MisalignedSwitch[reqDirection, 1]);
+                    if (!MultiPlayer.MPManager.NoAutoSwitch()) thisSection.alignSwitchPins(MisalignedSwitch[reqDirection, 1]);
                     MisalignedSwitch[reqDirection, 0] = -1;
                     MisalignedSwitch[reqDirection, 1] = -1;
 
@@ -8804,7 +8810,18 @@ namespace ORTS
                                 return inPath;
                             }
                         }
-                        else break;
+                        else
+                        {
+                            if (PresentPosition[0].TCDirection != ValidRoute[0][PresentPosition[0].RouteListIndex].Direction)
+                            // Train must be reverted
+                            {
+                                ReverseFormation(false);
+                                var tempTCPosition = PresentPosition[0];
+                                PresentPosition[0] = PresentPosition[1];
+                                PresentPosition[1] = tempTCPosition;
+                            }
+                            break;
+                        }
                     }
                 }
 
@@ -9972,8 +9989,10 @@ namespace ORTS
                     beginActiveSubroute = 0;
                     activeSubrouteNodeIndex = 0;
                 }
+                DateTime arriveDT = new DateTime((long)(Math.Pow(10, 7) * thisItem.ArrivalTime));
+                DateTime departDT = new DateTime((long)(Math.Pow(10, 7) * thisItem.DepartTime));
                 bool validStop =
-                    CreateStationStop(thisItem.PlatformStartID, thisItem.ArrivalTime, thisItem.DepartTime, new DateTime(0), new DateTime(0), clearingDistanceM,
+                    CreateStationStop(thisItem.PlatformStartID, thisItem.ArrivalTime, thisItem.DepartTime, arriveDT, departDT, clearingDistanceM,
                     ref beginActiveSubroute, ref activeSubrouteNodeIndex);
                 if (!validStop)
                 {
@@ -10994,6 +11013,7 @@ namespace ORTS
             iColumn++;
             //  10, "Consist"
             statusString[iColumn] = "PLAYER";
+            if (!Simulator.TimetableMode && this != Simulator.OriginalPlayerTrain) statusString[iColumn] = Name.Substring(0, Math.Min(Name.Length, 7));
             if (TrainType == TRAINTYPE.REMOTE) statusString[iColumn] = "REMOTE";
 
             iColumn++;
@@ -11214,6 +11234,74 @@ namespace ORTS
 
         }
 #endif
+
+        //================================================================================================//
+        /// <summary>
+        /// Add restart times at stations and waiting points
+        /// Update the string for 'TextPageDispatcherInfo'.
+        /// Modifiy fields 4 and 5
+        /// <\summary>
+
+        public String[] AddRestartTime(String[] stateString)
+        {
+            String[] retString = new String[stateString.Length];
+            stateString.CopyTo(retString, 0);
+
+            string movString = "";
+            string abString = "";
+            DateTime baseDT = new DateTime();
+            if (this == Program.Simulator.OriginalPlayerTrain)
+            {
+                if (Simulator.ActivityRun != null && Simulator.ActivityRun.Current is ActivityTaskPassengerStopAt && ((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).BoardingS > 0)
+                {
+                    movString = "STA";
+                    DateTime depTime = baseDT.AddSeconds(((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).BoardingEndS);
+                    abString = depTime.ToString("HH:mm:ss");
+                }
+                else 
+                   if (SpeedMpS == 0 && AuxActionsContain.specRequiredActions.Count > 0 && AuxActionsContain.specRequiredActions.First.Value is AuxActSigDelegate &&
+                    (AuxActionsContain.specRequiredActions.First.Value as AuxActSigDelegate).currentMvmtState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION)
+                {
+                    movString = "WTS";
+                    DateTime depTime = baseDT.AddSeconds((AuxActionsContain.specRequiredActions.First.Value as AuxActSigDelegate).ActualDepart);
+                    abString = depTime.ToString("HH:mm:ss");
+                }
+            }
+            else if (StationStops.Count > 0 && AtStation)
+            {
+                movString = "STA";
+                if (StationStops[0].ActualDepart > 0)
+                {
+                    DateTime depTime = baseDT.AddSeconds(StationStops[0].ActualDepart);
+                    abString = depTime.ToString("HH:mm:ss");
+                }
+                else
+                {
+                    abString = "..:..:..";
+                }
+            }
+            else if (SpeedMpS == 0 && (this as AITrain).nextActionInfo is AuxActionWPItem &&
+                    (this as AITrain).MovementState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION)
+            {
+                movString = "WTP";
+                DateTime depTime = baseDT.AddSeconds(((this as AITrain).nextActionInfo as AuxActionWPItem).ActualDepart);
+                abString = depTime.ToString("HH:mm:ss");
+            }
+            else if (SpeedMpS == 0 && AuxActionsContain.SpecAuxActions.Count > 0 && AuxActionsContain.SpecAuxActions[0] is AIActionWPRef &&
+                (AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).keepIt != null &&
+                (AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).keepIt.currentMvmtState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION)
+            {
+                movString = "WTP";
+                DateTime depTime = baseDT.AddSeconds((AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).keepIt.ActualDepart);
+                abString = depTime.ToString("HH:mm:ss");
+            }
+            retString[4] = String.Copy(movString);
+            retString[5] = String.Copy(abString);
+
+            return (retString);
+        }
+
+
         //================================================================================================//
         /// <summary>
         /// Create TrackInfoObject for information in TrackMonitor window
@@ -11285,6 +11373,10 @@ namespace ORTS
             {
                 AddTrainReversalInfo(thisReversal, ref thisInfo);
             }
+
+            // set waiting point
+            if (this != Simulator.OriginalPlayerTrain)
+            AddWaitingPointInfo(ref thisInfo);
 
             bool maxAuthSet = false;
             // set object items - forward
@@ -11396,6 +11488,36 @@ namespace ORTS
             if (reversalDistanceM > 0)
             {
                 TrainObjectItem nextItem = new TrainObjectItem(reversalEnabled, reversalDistanceM);
+                thisInfo.ObjectInfoForward.Add(nextItem);
+            }
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Add waiting point info to TrackMonitorInfo
+        /// </summary>
+
+        public void AddWaitingPointInfo(ref TrainInfo thisInfo)
+        {
+            if (AuxActionsContain.SpecAuxActions.Count > 0 && AuxActionsContain.SpecAuxActions[0] is AIActionWPRef &&
+                (AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).SubrouteIndex == TCRoute.activeSubpath)
+            {
+                TrackCircuitSection frontSection = signalRef.TrackCircuitList[PresentPosition[0].TCSectionIndex];
+                int thisSectionIndex = PresentPosition[0].TCSectionIndex;
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisSectionIndex];
+                float leftInSectionM = thisSection.Length - PresentPosition[0].TCOffset;
+
+                // get action route index - if not found, return distances < 0
+
+                int actionIndex0 = PresentPosition[0].RouteListIndex;
+                int actionRouteIndex = ValidRoute[0].GetRouteIndex((AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).TCSectionIndex, actionIndex0);
+                var wpDistance = ValidRoute[0].GetDistanceAlongRoute(actionIndex0, leftInSectionM, actionRouteIndex, (AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).RequiredDistance, AITrainDirectionForward, signalRef);
+                bool wpEnabled = false;
+                if (SpeedMpS == 0 && (((AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).keepIt != null &&
+                    (AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).keepIt.currentMvmtState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION) ||
+                    ((this as AITrain).nextActionInfo is AuxActionWPItem && (this as AITrain).MovementState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION))) wpEnabled = true;
+
+                TrainObjectItem nextItem = new TrainObjectItem(wpDistance, wpEnabled);
                 thisInfo.ObjectInfoForward.Add(nextItem);
             }
         }
@@ -11625,7 +11747,7 @@ namespace ORTS
 
                 if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction)
                 {
-                    if (thisSection.Pins[0, 0].Link == nextSectionIndex)
+                    if (thisSection.Pins[0, 0].Link == nextSectionIndex && !MultiPlayer.MPManager.NoAutoSwitch())
                     {
                         thisSection.alignSwitchPins(prevSectionIndex);   // trailing switch
                     }
@@ -16668,7 +16790,7 @@ namespace ORTS
                 var distancePlatformTailtoTrainTail = distancePlatformHeadtoTrainHead - PlatformItem.Length + stopTrain.Length;
                 var trainPartOutsidePlatformBackward = distancePlatformTailtoTrainTail > 0 ? distancePlatformTailtoTrainTail : 0;
                 if (trainPartOutsidePlatformBackward >= stopTrain.Length) return (int)PlatformItem.MinWaitingTime; // train actually stopped before platform; should not happen
-                if (stopTrain.IsActualPlayerTrain)
+                if (stopTrain == Program.Simulator.OriginalPlayerTrain)
                 {
                     if (trainPartOutsidePlatformForward == 0 && trainPartOutsidePlatformBackward == 0) passengerCarsWithinPlatform = stopTrain.PassengerCarsNumber;
                     else
@@ -16780,7 +16902,8 @@ namespace ORTS
                 STATION,
                 AUTHORITY,
                 REVERSAL,
-                OUT_OF_CONTROL
+                OUT_OF_CONTROL,
+                WAITING_POINT
             }
 
             public TRAINOBJECTTYPE ItemType;
@@ -16878,6 +17001,17 @@ namespace ORTS
             {
                 ItemType = TRAINOBJECTTYPE.OUT_OF_CONTROL;
                 OutOfControlReason = thisReason;
+            }
+
+            // Constructor for Waiting Point
+            public TrainObjectItem(float thisDistanceM, bool enabled)
+            {
+                ItemType = TRAINOBJECTTYPE.WAITING_POINT;
+                AuthorityType = END_AUTHORITY.NO_PATH_RESERVED;
+                SignalState = TrackMonitorSignalAspect.Clear_2;
+                AllowedSpeedMpS = -1;
+                DistanceToTrainM = thisDistanceM;
+                Enabled = enabled;
             }
 
             /// no need for Restore or Save items as info is not kept in permanent variables

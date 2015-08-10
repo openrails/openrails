@@ -132,7 +132,7 @@ namespace ORTS.Viewer3D
             UpdateVolume();
         }
 
-         void SetInitialWeatherParameters()
+         public void SetInitialWeatherParameters()
         {
             // These values are defaults only; subsequent changes to the weather via debugging only change the components (weather, overcastFactor and fogDistance) individually.
             switch (Viewer.Simulator.Weather)
@@ -143,7 +143,7 @@ namespace ORTS.Viewer3D
             }
         }
 
-        void UpdateWeatherParameters()
+        public void UpdateWeatherParameters()
         {
             Viewer.SoundProcess.RemoveSoundSources(this);
             switch (Viewer.Simulator.Weather)

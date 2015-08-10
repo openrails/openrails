@@ -82,6 +82,7 @@ namespace ORTS.Viewer3D
         public TracksDebugWindow TracksDebugWindow { get; private set; } // Control-Alt-F6
         public SignallingDebugWindow SignallingDebugWindow { get; private set; } // Control-Alt-F11 window
         public ComposeMessage ComposeMessageWindow { get; private set; } // ??? window
+        public TrainListWindow TrainListWindow { get; private set; } // for switching driven train
         public static GettextResourceManager Catalog { get; private set; } // Localization dictionary
         // Route Information
         public TileManager Tiles { get; private set; }
@@ -359,6 +360,7 @@ namespace ORTS.Viewer3D
             TracksDebugWindow = new TracksDebugWindow(WindowManager);
             SignallingDebugWindow = new SignallingDebugWindow(WindowManager);
             ComposeMessageWindow = new ComposeMessage(WindowManager);
+            TrainListWindow = new TrainListWindow(WindowManager);
             WindowManager.Initialize();
 
             InfoDisplay = new InfoDisplay(this);
@@ -691,6 +693,7 @@ namespace ORTS.Viewer3D
             if (UserInput.IsPressed(UserCommands.DebugTracks)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) TracksDebugWindow.TabAction(); else TracksDebugWindow.Visible = !TracksDebugWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DebugSignalling)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) SignallingDebugWindow.TabAction(); else SignallingDebugWindow.Visible = !SignallingDebugWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DisplayBasicHUDToggle)) HUDWindow.ToggleBasicHUD();
+            if (UserInput.IsPressed(UserCommands.DisplayTrainListWindow)) TrainListWindow.Visible = !TrainListWindow.Visible;
 
 
             if (UserInput.IsPressed(UserCommands.GameChangeCab))
@@ -893,8 +896,22 @@ namespace ORTS.Viewer3D
                 if (SelectedTrain != Program.DebugViewer.PickedTrain)
                 {
                     SelectedTrain = Program.DebugViewer.PickedTrain;
+                    Simulator.AI.aiListChanged = true;
 
                     if (SelectedTrain.Cars == null || SelectedTrain.Cars.Count == 0) SelectedTrain = PlayerTrain;
+
+                    CameraActivate();
+                }
+            }
+
+            //in TrainListWindow, when one clicks a train, Viewer will jump to see that train
+            if (TrainListWindow != null && TrainListWindow.ClickedTrainFromList == true)
+            {
+                TrainListWindow.ClickedTrainFromList = false;
+                if (SelectedTrain != TrainListWindow.PickedTrainFromList && SelectedTrain.Cars != null || SelectedTrain.Cars.Count != 0)
+                {
+                    SelectedTrain = TrainListWindow.PickedTrainFromList;
+                    Simulator.AI.aiListChanged = true;
 
                     CameraActivate();
                 }
@@ -1014,6 +1031,19 @@ namespace ORTS.Viewer3D
             Simulator.Confirmer.Confirm(CabControl.ChangeCab, CabSetting.On);
         }
 
+        /// <summary>
+        /// Called when switching player train
+        /// </summary>
+        public void SetCabEnvironment()
+        {
+//            PlayerLocomotiveViewer = World.Trains.GetViewer(Simulator.PlayerLocomotive);
+            CabCamera.Activate(); // If you need anything else here the cameras should check for it.
+            SetCommandReceivers();
+            ThreeDimCabCamera.ChangeCab(Simulator.PlayerLocomotive);
+            HeadOutForwardCamera.ChangeCab(Simulator.PlayerLocomotive);
+            HeadOutBackCamera.ChangeCab(Simulator.PlayerLocomotive);
+        }
+
         // change reference to player train when switching train in Timetable mode
         public void ChangeTrain(Train oldTrain, Train newTrain)
         {
@@ -1061,6 +1091,7 @@ namespace ORTS.Viewer3D
             {
                 SelectedTrain = PlayerTrain;
             }
+            Simulator.AI.aiListChanged = true;
             CameraActivate();
         }
 

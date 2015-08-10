@@ -61,6 +61,7 @@ namespace ORTS.Settings
         [GetString("Game Reset Signal Forward")] GameResetSignalForward,
         [GetString("Game Reset Signal Backward")] GameResetSignalBackward,
         [GetString("Game Autopilot Mode")] GameAutopilotMode,
+        [GetString("Game Suspend Old Player")] GameSuspendOldPlayer,
 
         [GetString("Display Next Window Tab")] DisplayNextWindowTab,
         [GetString("Display Help Window")] DisplayHelpWindow,
@@ -73,6 +74,7 @@ namespace ORTS.Settings
         [GetString("Display Next Station Window")] DisplayNextStationWindow,
         [GetString("Display Compass Window")] DisplayCompassWindow,
         [GetString("Display Basic HUD Toggle")] DisplayBasicHUDToggle,
+        [GetString("Display Train List Window")] DisplayTrainListWindow,
 
         [GetString("Debug Speed Up")] DebugSpeedUp,
         [GetString("Debug Speed Down")] DebugSpeedDown,
@@ -459,6 +461,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommands.GameSwitchWithMouse] = new UserCommandModifierInput(KeyModifiers.Alt);
             Commands[(int)UserCommands.DisplayNextWindowTab] = new UserCommandModifierInput(KeyModifiers.Shift);
             Commands[(int)UserCommands.CameraMoveFast] = new UserCommandModifierInput(KeyModifiers.Shift);
+            Commands[(int)UserCommands.GameSuspendOldPlayer] = new UserCommandModifierInput(KeyModifiers.Shift);
             Commands[(int)UserCommands.CameraMoveSlow] = new UserCommandModifierInput(KeyModifiers.Control);
 
             // Everything else goes here, sorted alphabetically please (and grouped by first word of name).
@@ -581,6 +584,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommands.DebugTracks] = new UserCommandKeyInput(0x40, KeyModifiers.Control | KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugWeatherChange] = new UserCommandKeyInput(0x19, KeyModifiers.Alt);
 
+            Commands[(int)UserCommands.DisplayTrainListWindow] = new UserCommandKeyInput(0x43, KeyModifiers.Alt);
             Commands[(int)UserCommands.DisplayBasicHUDToggle] = new UserCommandKeyInput(0x3F, KeyModifiers.Alt);
             Commands[(int)UserCommands.DisplayCarLabels] = new UserCommandModifiableKeyInput(0x41, Commands[(int)UserCommands.DisplayNextWindowTab]);
             Commands[(int)UserCommands.DisplayCompassWindow] = new UserCommandKeyInput(0x0B);

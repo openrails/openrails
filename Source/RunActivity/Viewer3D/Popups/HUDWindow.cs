@@ -683,10 +683,12 @@ namespace ORTS.Viewer3D.Popups
             foreach (var thisTrain in Viewer.Simulator.Trains)
             {
                 if (thisTrain.TrainType == Train.TRAINTYPE.PLAYER || (thisTrain.TrainType == Train.TRAINTYPE.REMOTE && MultiPlayer.MPManager.IsServer())
-                    ||(thisTrain.Number == 0 && thisTrain.IsActualPlayerTrain))
+                    ||thisTrain.IsActualPlayerTrain)
                 {
                     var status = thisTrain.GetStatus(Viewer.MilepostUnitsMetric);
                     if (thisTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING) status = ((AITrain)thisTrain).AddMovementState(status, Viewer.MilepostUnitsMetric);
+                    else if (thisTrain == Program.Simulator.OriginalPlayerTrain && Program.Simulator.Activity != null) status = thisTrain.AddRestartTime(status);
+                    else if (thisTrain.IsActualPlayerTrain && Program.Simulator.Activity != null) status = thisTrain.AddRestartTime(status);
                     for (var iCell = 0; iCell < status.Length; iCell++)
                         TableSetCell(table, table.CurrentRow, iCell, status[iCell]);
                     TableAddLine(table);

@@ -74,6 +74,9 @@ namespace ORTS
 
         public ORTSActSoundSources ORTSActSoundSourceList; // Dictionary of activity sound sources
 
+        public bool NewMsgFromNewPlayer = false; // flag to indicate to ActivityWindow that there is a new message to be shown;
+        public string MsgFromNewPlayer; // string to be displayed in ActivityWindow
+
         private Activity(BinaryReader inf, Simulator simulator, List<EventWrapper> oldEventList)
         {
             Simulator = simulator;
@@ -328,6 +331,11 @@ namespace ORTS
                 outf.Write(true);
                 outf.Write(EventList.IndexOf(LastTriggeredEvent));
             }
+
+            // Save info for ActivityWindow coming from new player train
+            outf.Write(NewMsgFromNewPlayer);
+            if (NewMsgFromNewPlayer) outf.Write(MsgFromNewPlayer);
+
             outf.Write(IsActivityResumed);
 
             // write log details
@@ -380,6 +388,11 @@ namespace ORTS
 
             IsActivityWindowOpen = inf.ReadBoolean();
             if (inf.ReadBoolean()) LastTriggeredEvent = EventList[inf.ReadInt32()];
+
+            // Restore info for ActivityWindow coming from new player train
+            NewMsgFromNewPlayer = inf.ReadBoolean();
+            if (NewMsgFromNewPlayer) MsgFromNewPlayer = inf.ReadString();
+
             IsActivityResumed = inf.ReadBoolean();
             ReopenActivityWindow = IsActivityWindowOpen;
 
@@ -731,7 +744,7 @@ namespace ORTS
         public override void NotifyEvent(ActivityEventType EventType)
         {
 
-            MyPlayerTrain = Program.Simulator.PlayerLocomotive.Train;
+            MyPlayerTrain = Program.Simulator.OriginalPlayerTrain;
             // The train is stopped.
             if (EventType == ActivityEventType.TrainStop)
             {
@@ -858,7 +871,7 @@ namespace ORTS
                     else if (remaining < 11) DisplayColor = new Color(255, 255, 128);
                     else DisplayColor = Color.White;
 
-                    if (remaining < 120 && (Program.Simulator.PlayerLocomotive.Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING))
+                    if (remaining < 120 && (MyPlayerTrain.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING))
                     {
                         MyPlayerTrain.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId, false);
                     }
@@ -1157,7 +1170,7 @@ namespace ORTS
 
         override public Boolean Triggered(Activity activity)
         {
-            Train PlayerTrain = Simulator.PlayerLocomotive.Train;
+            Train OriginalPlayerTrain = Simulator.OriginalPlayerTrain;
             var e = this.ParsedObject as EventCategoryAction;
             if (e.WagonList != null)
             {                     // only if event involves wagons
@@ -1193,9 +1206,9 @@ namespace ORTS
                     break;
                 case EventType.DropOffWagonsAtLocation:
                     // A better name than DropOffWagonsAtLocation would be ArriveAtSidingWithWagons.
-                    if (atSiding(PlayerTrain.FrontTDBTraveller, PlayerTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2))
+                    if (atSiding(OriginalPlayerTrain.FrontTDBTraveller, OriginalPlayerTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2))
                     {
-                        triggered = includesWagons(PlayerTrain, ChangeWagonIdList);
+                        triggered = includesWagons(OriginalPlayerTrain, ChangeWagonIdList);
                     }
                     // To recognize the dropping off of the cars before the event is activated, this method is used.
                     consistTrain = matchesConsistNoOrder(ChangeWagonIdList);
@@ -1205,7 +1218,7 @@ namespace ORTS
                 case EventType.PickUpPassengers:
                     break;
                 case EventType.PickUpWagons: // PickUpWagons is independent of location or siding
-                    triggered = includesWagons(PlayerTrain, ChangeWagonIdList);
+                    triggered = includesWagons(OriginalPlayerTrain, ChangeWagonIdList);
                     break;
                 case EventType.ReachSpeed:
                     triggered = (Math.Abs(Simulator.PlayerLocomotive.SpeedMpS) >= e.SpeedMpS);

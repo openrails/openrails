@@ -113,6 +113,7 @@ namespace ORTS.Viewer3D.Popups
             this.Visible = false;
             this.Activity.IsActivityWindowOpen = this.Visible;
             this.Activity.TriggeredEvent = null;
+            Activity.NewMsgFromNewPlayer = false;
             Owner.Viewer.Simulator.Paused = false;   // Move to Viewer3D?
             this.Activity.IsActivityResumed = !Owner.Viewer.Simulator.Paused;
             if (Owner.Viewer.IsReplaying) Owner.Viewer.Simulator.Confirmer.Confirm(CabControl.Activity, CabSetting.On);
@@ -179,7 +180,7 @@ namespace ORTS.Viewer3D.Popups
                                     // Only needs updating the first time through
                                     if (!Owner.Viewer.Simulator.Paused && Visible == false)
                                     {
-                                        Owner.Viewer.Simulator.Paused = e.ParsedObject.ORTSContinue < 0? true : false;
+                                        Owner.Viewer.Simulator.Paused = e.ParsedObject.ORTSContinue < 0 ? true : false;
                                         if (e.ParsedObject.ORTSContinue != 0)
                                         {
                                             ComposeMenu(e.ParsedObject.Name, text);
@@ -203,6 +204,56 @@ namespace ORTS.Viewer3D.Popups
                             }
                         }
                     }
+                    else if (Activity.NewMsgFromNewPlayer)
+                    {
+                        // Displays messages related to actual player train, when not coincident with initial player train
+                        var text = Activity.MsgFromNewPlayer;
+                        if (!String.IsNullOrEmpty(text))
+                        {
+                            if (Activity.ReopenActivityWindow)
+                            {
+                                ComposeActualPlayerTrainMenu(Owner.Viewer.PlayerTrain.Name, text);
+                                if (Activity.IsActivityResumed)
+                                {
+                                    ResumeActivity();
+                                    CloseMenu();
+                                }
+                                else
+                                {
+                                    Owner.Viewer.Simulator.Paused = true;
+                                    ResumeMenu();
+                                    PopupTime = DateTime.Now;
+                                }
+                            }
+                            else
+                            {
+                                // Only needs updating the first time through
+                                if (!Owner.Viewer.Simulator.Paused && Visible == false)
+                                {
+                                    ComposeActualPlayerTrainMenu(Owner.Viewer.PlayerTrain.Name, text);
+                                    NoPauseMenu();
+                                    PopupTime = DateTime.Now;
+                                }
+                                else if (Owner.Viewer.Simulator.Paused)
+                                {
+                                    ResumeMenu();
+                                }
+                            }
+                            Visible = true;
+                        }
+                        else
+                        {
+                            Activity.NewMsgFromNewPlayer = false;
+                        }
+                        TimeSpan diff1 = DateTime.Now - PopupTime;
+                        if (Visible && diff1.TotalSeconds >= 10 && !Owner.Viewer.Simulator.Paused)
+                        {
+                            CloseBox();
+                            Activity.NewMsgFromNewPlayer = false;
+                        }
+                    }
+
+
                     Activity.IsActivityResumed = !Owner.Viewer.Simulator.Paused;
                     Activity.IsActivityWindowOpen = Visible;
                     Activity.ReopenActivityWindow = false;
@@ -256,6 +307,13 @@ namespace ORTS.Viewer3D.Popups
         void ComposeMenu(string eventLabel, string message)
         {
             EventNameLabel.Text = Viewer.Catalog.GetStringFmt("Event: {0}", eventLabel);
+            MessageScroller.SetScrollPosition(0);
+            Message.Text = message;
+        }
+
+        void ComposeActualPlayerTrainMenu(string trainName, string message)
+        {
+            EventNameLabel.Text = Viewer.Catalog.GetStringFmt("Train: {0}", trainName.Substring(0, Math.Min(trainName.Length, 20)));
             MessageScroller.SetScrollPosition(0);
             Message.Text = message;
         }

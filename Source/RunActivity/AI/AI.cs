@@ -53,6 +53,7 @@ namespace ORTS
         public List<AITrain> TrainsToRemove = new List<AITrain>();
         public List<AITrain> TrainsToAdd = new List<AITrain>();
         public List<AITrain> TrainsToRemoveFromAI = new List<AITrain>();
+        public bool aiListChanged = true; // To indicate to TrainListWindow that the list has changed;
 
         /// <summary>
         /// Loads AI train information from activity file.
@@ -101,6 +102,7 @@ namespace ORTS
                 {
                     train.AI = this;
                     AITrains.Add(train);
+                    aiListChanged = true;
                 }
                 else if (train.TrainType == Train.TRAINTYPE.INTENDED_PLAYER)
                 {
@@ -548,6 +550,7 @@ namespace ORTS
             }
 
             RemoveTrains();
+            RemoveFromAITrains();
             AddTrains();
         }
 
@@ -764,9 +767,11 @@ namespace ORTS
                     car.Train = train;
                     car.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
                     train.Length += car.CarLengthM;
+                    car.UiD = wagon.UiD;
                     if (isInitialPlayerTrain)
                     {
-                        car.CarID = "0 - " + wagon.UiD;
+                        if (MPManager.IsMultiPlayer()) car.CarID = MPManager.GetUserName() + " - " + car.UiD; //player's train is always named train 0.
+                        else car.CarID = "0 - " + car.UiD; //player's train is always named train 0.
                         var mstsDieselLocomotive = car as MSTSDieselLocomotive;
                         if (Simulator.Activity != null && mstsDieselLocomotive != null)
                             mstsDieselLocomotive.DieselLevelL = mstsDieselLocomotive.MaxDieselLevelL * Simulator.Activity.Tr_Activity.Tr_Activity_Header.FuelDiesel / 100.0f;
@@ -837,6 +842,7 @@ namespace ORTS
                 thisTrain.actualWaitTimeS = 0; // reset wait counter //
                 thisTrain.TrainType = Train.TRAINTYPE.AI;
                 AITrains.Add(thisTrain);
+                aiListChanged = true;
                 Simulator.Trains.Add(thisTrain);
                 if (Simulator.TrainDictionary.ContainsKey(thisTrain.Number)) Simulator.TrainDictionary.Remove(thisTrain.Number); // clear existing entry
                 Simulator.TrainDictionary.Add(thisTrain.Number, thisTrain);
@@ -926,6 +932,7 @@ namespace ORTS
                 if (!AITrains.Contains(thisTrain))
                 {
                     AITrains.Add(thisTrain);
+                    aiListChanged = true;
                 }
 
                 if (thisTrain.TrainType != Train.TRAINTYPE.INTENDED_PLAYER && thisTrain.TrainType != Train.TRAINTYPE.PLAYER) // player train allready exists
@@ -1001,7 +1008,7 @@ namespace ORTS
                 AITrains.Remove(train);
                 Simulator.Trains.Remove(train);
                 removeList.Add(train);
-
+                aiListChanged = true;
                 if (train.Cars.Count > 0 && train.Cars[0].Train == train)
                 {
                     foreach (TrainCar car in train.Cars)
@@ -1030,6 +1037,7 @@ namespace ORTS
             foreach (AITrain train in TrainsToRemoveFromAI)
             {
                 AITrains.Remove(train);
+                aiListChanged = true;
             }
 
             TrainsToRemoveFromAI.Clear();
@@ -1044,6 +1052,7 @@ namespace ORTS
                 if (Simulator.NameDictionary.ContainsKey(train.Name.ToLower())) Simulator.NameDictionary.Remove(train.Name.ToLower());
                 Simulator.NameDictionary.Add(train.Name.ToLower(), train);
                 AITrains.Add(train);
+                aiListChanged = true;
                 if (train.TrainType != Train.TRAINTYPE.INTENDED_PLAYER && train.TrainType != Train.TRAINTYPE.PLAYER) Simulator.Trains.Add(train);
             }
             TrainsToAdd.Clear();
