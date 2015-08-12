@@ -1036,7 +1036,7 @@ namespace ORTS.Viewer3D
         /// </summary>
         public void SetCabEnvironment()
         {
-//            PlayerLocomotiveViewer = World.Trains.GetViewer(Simulator.PlayerLocomotive);
+            PlayerLocomotiveViewer = World.Trains.GetViewer(Simulator.PlayerLocomotive);
             CabCamera.Activate(); // If you need anything else here the cameras should check for it.
             SetCommandReceivers();
             ThreeDimCabCamera.ChangeCab(Simulator.PlayerLocomotive);

@@ -148,6 +148,7 @@ namespace ORTS
         public bool updaterWorking = false;
         public Train selectedAsPlayer = null;
         public Train OriginalPlayerTrain = null; // Used in Activity mode
+        public bool playerSwitchOngoing = false;
 
         public Simulator(UserSettings settings, string activityPath, bool useOpenRailsDirectory)
         {
@@ -449,8 +450,15 @@ namespace ORTS
 
             // Check if there is a request to switch to another played train
 
-            if (Program.Viewer.TrainListWindow != null && Program.Viewer.TrainListWindow.ClickedSelectedAsPlayer)
-                SwitchPlayerTrain();
+            if (Program.Viewer.TrainListWindow != null && Program.Viewer.TrainListWindow.ClickedSelectedAsPlayer && !playerSwitchOngoing)
+                StartSwitchPlayerTrain();
+            if (playerSwitchOngoing)
+            {
+                var newPlayerLocoViewer = Program.Viewer.World.Trains.GetViewerAfterSwitch(PlayerLocomotive);
+                if (newPlayerLocoViewer == null) return;
+                CompleteSwitchPlayerTrain();
+            }
+
 
             // Represent conditions at the specified clock time.
             List<Train> movingTrains = new List<Train>();
@@ -1650,17 +1658,17 @@ namespace ORTS
         }
 
         /// <summary>
-        /// Performs player train switch
+        /// Performs first part of player train switch
         /// </summary>
-        private void SwitchPlayerTrain()
+        private void StartSwitchPlayerTrain()
         {
             if (Program.Viewer.TrainListWindow.SelectedAsPlayer != null && !Program.Viewer.TrainListWindow.SelectedAsPlayer.IsActualPlayerTrain)
             {
                 var selectedAsPlayer = Program.Viewer.TrainListWindow.SelectedAsPlayer;
                 var playerTrain = PlayerLocomotive.Train as AITrain;
-                if ( playerTrain != null)
+                if (playerTrain != null)
                 {
-                    if (Program.Viewer.TrainListWindow.SuspendOldPlayer && playerTrain.SpeedMpS !=0)
+                    if (Program.Viewer.TrainListWindow.SuspendOldPlayer && playerTrain.SpeedMpS != 0)
                     {
                         Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Train can't be suspended with speed not equal 0"));
                         Program.Viewer.TrainListWindow.SuspendOldPlayer = false;
@@ -1684,13 +1692,24 @@ namespace ORTS
                 }
                 playerTrain = selectedAsPlayer as AITrain;
                 PlayerLocomotive = SetPlayerLocomotive(playerTrain);
-                AI.AITrains.Remove(playerTrain);
-                playerTrain.SwitchToPlayerControl();
-                Program.Viewer.SetCabEnvironment();
+                Program.Viewer.World.Trains.LoadNewPlayerLoco();
+                playerSwitchOngoing = true;
             }
+            else
+            {
+                Program.Viewer.TrainListWindow.ClickedSelectedAsPlayer = false;
+                AI.aiListChanged = true;
+            }
+        }
+
+        private void CompleteSwitchPlayerTrain()
+        {
+            AI.AITrains.Remove(PlayerLocomotive.Train as AITrain);
+            (PlayerLocomotive.Train as AITrain).SwitchToPlayerControl();
+            Program.Viewer.SetCabEnvironment();
+            playerSwitchOngoing = false;
             Program.Viewer.TrainListWindow.ClickedSelectedAsPlayer = false;
             AI.aiListChanged = true;
-            return;
         }
 
         /// <summary>

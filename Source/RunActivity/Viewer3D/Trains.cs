@@ -112,6 +112,15 @@ namespace ORTS.Viewer3D
         }
 
         [CallOnThread("Updater")]
+        public TrainCarViewer GetViewerAfterSwitch(TrainCar car)
+        {
+            var cars = Cars;
+            if (cars.ContainsKey(car))
+                return cars[car];
+            else return null;
+        }
+
+        [CallOnThread("Updater")]
         public void LoadPrep()
         {
             var visibleCars = new List<TrainCar>();
@@ -122,6 +131,14 @@ namespace ORTS.Viewer3D
                     if (ApproximateDistance(Viewer.Camera.CameraWorldLocation, car.WorldPosition.WorldLocation) < removeDistance && car != Viewer.PlayerLocomotive)
                         visibleCars.Add(car);
             VisibleCars = visibleCars;
+            PlayerCar = Viewer.Simulator.PlayerLocomotive;
+        }
+
+        [CallOnThread("Updater")]
+        public void LoadNewPlayerLoco()
+        {
+//            if (!VisibleCars.Contains(Viewer.PlayerLocomotive))
+//            VisibleCars.Add(Viewer.PlayerLocomotive);
             PlayerCar = Viewer.Simulator.PlayerLocomotive;
         }
 
