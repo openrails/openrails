@@ -412,14 +412,19 @@ namespace ORTS
             float dt = elapsedClockSeconds / nSteps;
 
             // Propagate brake line (1) data
-            if (lead != null && lead.BrakePipeChargingRatePSIpS > 1000)
-            {   // pressure gradiant disabled
+            if (lead != null && lead.BrakePipeChargingRatePSIpS >= 1000)
+            {   // pressure gradient disabled
+                if (lead.BrakeSystem.BrakeLine1PressurePSI < train.BrakeLine1PressurePSIorInHg)
+                {
+                    var dp1 = train.BrakeLine1PressurePSIorInHg - lead.BrakeSystem.BrakeLine1PressurePSI;
+                    lead.MainResPressurePSI -= dp1 * lead.BrakeSystem.BrakePipeVolumeM3 / lead.MainResVolumeM3;
+                }
                 foreach (TrainCar car in train.Cars)
                     if (car.BrakeSystem.BrakeLine1PressurePSI >= 0)
                         car.BrakeSystem.BrakeLine1PressurePSI = train.BrakeLine1PressurePSIorInHg;
             }
             else
-            {   // approximate pressure gradiant in line1
+            {   // approximate pressure gradient in line1
                 float serviceTimeFactor = lead != null ? lead.TrainBrakeController != null && lead.TrainBrakeController.EmergencyBraking ? lead.BrakeEmergencyTimeFactorS : lead.BrakeServiceTimeFactorS : 0;
                 for (int i = 0; i < nSteps; i++)
                 {
