@@ -142,7 +142,8 @@ namespace ORTS
         public float MaxMainResPressurePSI = 130;
         public float MainResVolumeM3 = 0.3f;
         public float CompressorRestartPressurePSI = 110;
-        public float MainResChargingRatePSIpS = .4f;
+        public float CompressorChargingRateM3pS = 0.075f;
+        public float MainResChargingRatePSIpS;
         public float EngineBrakeReleaseRatePSIpS = 12.5f;
         public float EngineBrakeApplyRatePSIpS = 12.5f;
         public float BrakePipeTimeFactorS = .003f;
@@ -182,6 +183,11 @@ namespace ORTS
         public bool IsSteam;
         public bool IsDiesel;
         public bool IsElectric;
+
+        private const float DefaultCompressorRestartToMaxSysPressureDiff = 35;    // Used to check if difference between these two .eng parameters is correct, and to correct it
+        private const float DefaultMaxMainResToCompressorRestartPressureDiff = 5; // Used to check if difference between these two .eng parameters is correct, and to correct it
+        private const float DefaultMaxCompressorRestartPressure = 135; // Max value to be inserted if .eng parameters are corrected
+        private const float DefaultMainResVolume = 0.78f; // Value to be inserted if .eng parameters are corrected
 
 		public float CabRotationZ
 		{
@@ -294,6 +300,7 @@ namespace ORTS
 
             CheckCoherence();
             GetPressureUnit();
+            CorrectBrakingParams();
             IsDriveable = true;
         }
 
@@ -571,6 +578,7 @@ namespace ORTS
                 case "engine(airbrakesmainresvolume": MainResVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
                 case "engine(airbrakesmainmaxairpressure": MainResPressurePSI = MaxMainResPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(airbrakescompressorrestartpressure": CompressorRestartPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
+                case "engine(airbrakesaircompressorpowerrating": CompressorChargingRateM3pS = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
                 case "engine(ortsmainreschargingrate": MainResChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(ortsenginebrakereleaserate": EngineBrakeReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(ortsenginebrakeapplicationrate": EngineBrakeApplyRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
@@ -658,6 +666,7 @@ namespace ORTS
             MaxMainResPressurePSI = locoCopy.MaxMainResPressurePSI;
             MainResPressurePSI = MaxMainResPressurePSI;
             MainResVolumeM3 = locoCopy.MainResVolumeM3;
+            MainResChargingRatePSIpS = locoCopy.MainResChargingRatePSIpS;
 
 
             PressureUnit = locoCopy.PressureUnit;
@@ -809,6 +818,7 @@ namespace ORTS
         //================================================================================================//
         /// <summary>
         /// Set starting conditions  when initial speed > 0 
+        /// </summary>
         /// 
 
         public override void InitializeMoving()
@@ -827,6 +837,32 @@ namespace ORTS
             { 
                 TrainBrakeController.InitializeMoving();
                 BrakeSystem.LocoInitializeMoving();
+            }
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Correct braking parameters if needed or required 
+        /// </summary>
+        /// 
+        private void CorrectBrakingParams()
+        {
+            if (Simulator.Settings.CorrectQuestionableBrakingParams)
+            {
+                if (!(BrakeSystem is EPBrakeSystem) && !(BrakeSystem is VacuumSinglePipe) && !(BrakeSystem is AirTwinPipe))
+                {
+                    if (CompressorRestartPressurePSI - TrainBrakeController.MaxPressurePSI < DefaultCompressorRestartToMaxSysPressureDiff - 10)
+                    {
+                        CompressorRestartPressurePSI = Math.Max(CompressorRestartPressurePSI, Math.Min(TrainBrakeController.MaxPressurePSI + DefaultCompressorRestartToMaxSysPressureDiff, DefaultMaxCompressorRestartPressure));
+                        MainResPressurePSI = MaxMainResPressurePSI = Math.Max(MaxMainResPressurePSI, CompressorRestartPressurePSI + DefaultMaxMainResToCompressorRestartPressureDiff);
+
+                    }
+                    if (MainResVolumeM3 < 0.3f && MassKG > 20000) MainResVolumeM3 = DefaultMainResVolume;
+                }
+            }
+            if (MainResChargingRatePSIpS <= 0)
+            {
+                MainResChargingRatePSIpS = Math.Max(0.5f, (CompressorChargingRateM3pS * Bar.ToPSI(1)) / MainResVolumeM3);
             }
         }
 

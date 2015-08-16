@@ -172,6 +172,7 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.checkCorrectQuestionableBrakingParams = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -1450,6 +1451,7 @@
             // 
             // tabPageExperimental
             // 
+            this.tabPageExperimental.Controls.Add(this.checkCorrectQuestionableBrakingParams);
             this.tabPageExperimental.Controls.Add(this.label25);
             this.tabPageExperimental.Controls.Add(this.precipitationBoxLength);
             this.tabPageExperimental.Controls.Add(this.label24);
@@ -1502,7 +1504,7 @@
             // label25
             // 
             this.label25.AutoSize = true;
-            this.label25.Location = new System.Drawing.Point(70, 355);
+            this.label25.Location = new System.Drawing.Point(70, 363);
             this.label25.Margin = new System.Windows.Forms.Padding(3);
             this.label25.Name = "label25";
             this.label25.Size = new System.Drawing.Size(134, 13);
@@ -1516,7 +1518,7 @@
             0,
             0,
             0});
-            this.precipitationBoxLength.Location = new System.Drawing.Point(10, 353);
+            this.precipitationBoxLength.Location = new System.Drawing.Point(10, 361);
             this.precipitationBoxLength.Maximum = new decimal(new int[] {
             3000,
             0,
@@ -1539,7 +1541,7 @@
             // label24
             // 
             this.label24.AutoSize = true;
-            this.label24.Location = new System.Drawing.Point(70, 329);
+            this.label24.Location = new System.Drawing.Point(70, 337);
             this.label24.Margin = new System.Windows.Forms.Padding(3);
             this.label24.Name = "label24";
             this.label24.Size = new System.Drawing.Size(130, 13);
@@ -1553,7 +1555,7 @@
             0,
             0,
             0});
-            this.precipitationBoxWidth.Location = new System.Drawing.Point(10, 327);
+            this.precipitationBoxWidth.Location = new System.Drawing.Point(10, 335);
             this.precipitationBoxWidth.Maximum = new decimal(new int[] {
             1500,
             0,
@@ -1576,7 +1578,7 @@
             // label23
             // 
             this.label23.AutoSize = true;
-            this.label23.Location = new System.Drawing.Point(70, 303);
+            this.label23.Location = new System.Drawing.Point(70, 311);
             this.label23.Margin = new System.Windows.Forms.Padding(3);
             this.label23.Name = "label23";
             this.label23.Size = new System.Drawing.Size(134, 13);
@@ -1590,7 +1592,7 @@
             0,
             0,
             0});
-            this.precipitationBoxHeight.Location = new System.Drawing.Point(10, 301);
+            this.precipitationBoxHeight.Location = new System.Drawing.Point(10, 309);
             this.precipitationBoxHeight.Maximum = new decimal(new int[] {
             300,
             0,
@@ -1613,7 +1615,7 @@
             // label16
             // 
             this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(304, 324);
+            this.label16.Location = new System.Drawing.Point(301, 309);
             this.label16.Margin = new System.Windows.Forms.Padding(3);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(161, 13);
@@ -1623,7 +1625,7 @@
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(304, 250);
+            this.label9.Location = new System.Drawing.Point(301, 258);
             this.label9.Margin = new System.Windows.Forms.Padding(3);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(134, 13);
@@ -1633,7 +1635,7 @@
             // label21
             // 
             this.label21.AutoSize = true;
-            this.label21.Location = new System.Drawing.Point(6, 250);
+            this.label21.Location = new System.Drawing.Point(6, 258);
             this.label21.Margin = new System.Windows.Forms.Padding(3);
             this.label21.Name = "label21";
             this.label21.Size = new System.Drawing.Size(98, 13);
@@ -1642,7 +1644,7 @@
             // 
             // AdhesionFactorChangeValueLabel
             // 
-            this.AdhesionFactorChangeValueLabel.Location = new System.Drawing.Point(304, 324);
+            this.AdhesionFactorChangeValueLabel.Location = new System.Drawing.Point(301, 309);
             this.AdhesionFactorChangeValueLabel.Margin = new System.Windows.Forms.Padding(3);
             this.AdhesionFactorChangeValueLabel.Name = "AdhesionFactorChangeValueLabel";
             this.AdhesionFactorChangeValueLabel.Size = new System.Drawing.Size(292, 13);
@@ -1651,7 +1653,7 @@
             // 
             // AdhesionFactorValueLabel
             // 
-            this.AdhesionFactorValueLabel.Location = new System.Drawing.Point(304, 250);
+            this.AdhesionFactorValueLabel.Location = new System.Drawing.Point(301, 258);
             this.AdhesionFactorValueLabel.Margin = new System.Windows.Forms.Padding(3);
             this.AdhesionFactorValueLabel.Name = "AdhesionFactorValueLabel";
             this.AdhesionFactorValueLabel.Size = new System.Drawing.Size(292, 13);
@@ -1660,7 +1662,7 @@
             // 
             // labelLODBias
             // 
-            this.labelLODBias.Location = new System.Drawing.Point(6, 250);
+            this.labelLODBias.Location = new System.Drawing.Point(6, 258);
             this.labelLODBias.Margin = new System.Windows.Forms.Padding(3);
             this.labelLODBias.Name = "labelLODBias";
             this.labelLODBias.Size = new System.Drawing.Size(292, 13);
@@ -1670,7 +1672,7 @@
             // checkShapeWarnings
             // 
             this.checkShapeWarnings.AutoSize = true;
-            this.checkShapeWarnings.Location = new System.Drawing.Point(6, 204);
+            this.checkShapeWarnings.Location = new System.Drawing.Point(6, 189);
             this.checkShapeWarnings.Name = "checkShapeWarnings";
             this.checkShapeWarnings.Size = new System.Drawing.Size(130, 17);
             this.checkShapeWarnings.TabIndex = 36;
@@ -1682,7 +1684,7 @@
             this.trackLODBias.AutoSize = false;
             this.trackLODBias.BackColor = System.Drawing.SystemColors.Window;
             this.trackLODBias.LargeChange = 10;
-            this.trackLODBias.Location = new System.Drawing.Point(6, 269);
+            this.trackLODBias.Location = new System.Drawing.Point(6, 277);
             this.trackLODBias.Maximum = 100;
             this.trackLODBias.Minimum = -100;
             this.trackLODBias.Name = "trackLODBias";
@@ -1695,7 +1697,7 @@
             // checkAutopilot
             // 
             this.checkAutopilot.AutoSize = true;
-            this.checkAutopilot.Location = new System.Drawing.Point(304, 112);
+            this.checkAutopilot.Location = new System.Drawing.Point(304, 97);
             this.checkAutopilot.Name = "checkAutopilot";
             this.checkAutopilot.Size = new System.Drawing.Size(67, 17);
             this.checkAutopilot.TabIndex = 20;
@@ -1705,7 +1707,7 @@
             // checkExtendedAIShunting
             // 
             this.checkExtendedAIShunting.AutoSize = true;
-            this.checkExtendedAIShunting.Location = new System.Drawing.Point(304, 89);
+            this.checkExtendedAIShunting.Location = new System.Drawing.Point(304, 74);
             this.checkExtendedAIShunting.Name = "checkExtendedAIShunting";
             this.checkExtendedAIShunting.Size = new System.Drawing.Size(150, 17);
             this.checkExtendedAIShunting.TabIndex = 19;
@@ -1715,7 +1717,7 @@
             // checkConditionalLoadOfNightTextures
             // 
             this.checkConditionalLoadOfNightTextures.AutoSize = true;
-            this.checkConditionalLoadOfNightTextures.Location = new System.Drawing.Point(304, 43);
+            this.checkConditionalLoadOfNightTextures.Location = new System.Drawing.Point(304, 28);
             this.checkConditionalLoadOfNightTextures.Name = "checkConditionalLoadOfNightTextures";
             this.checkConditionalLoadOfNightTextures.Size = new System.Drawing.Size(206, 17);
             this.checkConditionalLoadOfNightTextures.TabIndex = 17;
@@ -1725,7 +1727,7 @@
             // checkForcedRedAtStationStops
             // 
             this.checkForcedRedAtStationStops.AutoSize = true;
-            this.checkForcedRedAtStationStops.Location = new System.Drawing.Point(6, 227);
+            this.checkForcedRedAtStationStops.Location = new System.Drawing.Point(6, 212);
             this.checkForcedRedAtStationStops.Name = "checkForcedRedAtStationStops";
             this.checkForcedRedAtStationStops.Size = new System.Drawing.Size(151, 17);
             this.checkForcedRedAtStationStops.TabIndex = 13;
@@ -1734,7 +1736,7 @@
             // 
             // AdhesionLevelValue
             // 
-            this.AdhesionLevelValue.Location = new System.Drawing.Point(360, 375);
+            this.AdhesionLevelValue.Location = new System.Drawing.Point(357, 360);
             this.AdhesionLevelValue.Margin = new System.Windows.Forms.Padding(3);
             this.AdhesionLevelValue.Name = "AdhesionLevelValue";
             this.AdhesionLevelValue.Size = new System.Drawing.Size(236, 13);
@@ -1742,7 +1744,7 @@
             // 
             // AdhesionLevelLabel
             // 
-            this.AdhesionLevelLabel.Location = new System.Drawing.Point(304, 375);
+            this.AdhesionLevelLabel.Location = new System.Drawing.Point(301, 360);
             this.AdhesionLevelLabel.Margin = new System.Windows.Forms.Padding(3);
             this.AdhesionLevelLabel.Name = "AdhesionLevelLabel";
             this.AdhesionLevelLabel.Size = new System.Drawing.Size(50, 13);
@@ -1754,7 +1756,7 @@
             this.trackAdhesionFactorChange.AutoSize = false;
             this.trackAdhesionFactorChange.BackColor = System.Drawing.SystemColors.Window;
             this.trackAdhesionFactorChange.LargeChange = 10;
-            this.trackAdhesionFactorChange.Location = new System.Drawing.Point(304, 343);
+            this.trackAdhesionFactorChange.Location = new System.Drawing.Point(301, 328);
             this.trackAdhesionFactorChange.Maximum = 100;
             this.trackAdhesionFactorChange.Name = "trackAdhesionFactorChange";
             this.trackAdhesionFactorChange.Size = new System.Drawing.Size(292, 26);
@@ -1769,7 +1771,7 @@
             this.trackAdhesionFactor.AutoSize = false;
             this.trackAdhesionFactor.BackColor = System.Drawing.SystemColors.Window;
             this.trackAdhesionFactor.LargeChange = 10;
-            this.trackAdhesionFactor.Location = new System.Drawing.Point(304, 269);
+            this.trackAdhesionFactor.Location = new System.Drawing.Point(301, 277);
             this.trackAdhesionFactor.Maximum = 200;
             this.trackAdhesionFactor.Minimum = 10;
             this.trackAdhesionFactor.Name = "trackAdhesionFactor";
@@ -1783,7 +1785,7 @@
             // checkAdhesionPropToWeather
             // 
             this.checkAdhesionPropToWeather.AutoSize = true;
-            this.checkAdhesionPropToWeather.Location = new System.Drawing.Point(304, 301);
+            this.checkAdhesionPropToWeather.Location = new System.Drawing.Point(304, 235);
             this.checkAdhesionPropToWeather.Name = "checkAdhesionPropToWeather";
             this.checkAdhesionPropToWeather.Size = new System.Drawing.Size(210, 17);
             this.checkAdhesionPropToWeather.TabIndex = 29;
@@ -1794,7 +1796,7 @@
             // checkCircularSpeedGauge
             // 
             this.checkCircularSpeedGauge.AutoSize = true;
-            this.checkCircularSpeedGauge.Location = new System.Drawing.Point(304, 135);
+            this.checkCircularSpeedGauge.Location = new System.Drawing.Point(304, 120);
             this.checkCircularSpeedGauge.Name = "checkCircularSpeedGauge";
             this.checkCircularSpeedGauge.Size = new System.Drawing.Size(156, 17);
             this.checkCircularSpeedGauge.TabIndex = 21;
@@ -1804,7 +1806,7 @@
             // checkSignalLightGlow
             // 
             this.checkSignalLightGlow.AutoSize = true;
-            this.checkSignalLightGlow.Location = new System.Drawing.Point(304, 66);
+            this.checkSignalLightGlow.Location = new System.Drawing.Point(304, 51);
             this.checkSignalLightGlow.Name = "checkSignalLightGlow";
             this.checkSignalLightGlow.Size = new System.Drawing.Size(102, 17);
             this.checkSignalLightGlow.TabIndex = 18;
@@ -1814,7 +1816,7 @@
             // checkUseMSTSEnv
             // 
             this.checkUseMSTSEnv.AutoSize = true;
-            this.checkUseMSTSEnv.Location = new System.Drawing.Point(304, 227);
+            this.checkUseMSTSEnv.Location = new System.Drawing.Point(304, 212);
             this.checkUseMSTSEnv.Name = "checkUseMSTSEnv";
             this.checkUseMSTSEnv.Size = new System.Drawing.Size(122, 17);
             this.checkUseMSTSEnv.TabIndex = 25;
@@ -1824,7 +1826,7 @@
             // checkUseLocationPassingPaths
             // 
             this.checkUseLocationPassingPaths.AutoSize = true;
-            this.checkUseLocationPassingPaths.Location = new System.Drawing.Point(304, 204);
+            this.checkUseLocationPassingPaths.Location = new System.Drawing.Point(304, 189);
             this.checkUseLocationPassingPaths.Name = "checkUseLocationPassingPaths";
             this.checkUseLocationPassingPaths.Size = new System.Drawing.Size(215, 17);
             this.checkUseLocationPassingPaths.TabIndex = 24;
@@ -1834,7 +1836,7 @@
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(86, 159);
+            this.label13.Location = new System.Drawing.Point(86, 144);
             this.label13.Margin = new System.Windows.Forms.Padding(3);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(88, 13);
@@ -1848,7 +1850,7 @@
             0,
             0,
             0});
-            this.numericPerformanceTunerTarget.Location = new System.Drawing.Point(26, 157);
+            this.numericPerformanceTunerTarget.Location = new System.Drawing.Point(26, 142);
             this.numericPerformanceTunerTarget.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
             this.numericPerformanceTunerTarget.Maximum = new decimal(new int[] {
             300,
@@ -1873,7 +1875,7 @@
             // checkPerformanceTuner
             // 
             this.checkPerformanceTuner.AutoSize = true;
-            this.checkPerformanceTuner.Location = new System.Drawing.Point(6, 135);
+            this.checkPerformanceTuner.Location = new System.Drawing.Point(6, 120);
             this.checkPerformanceTuner.Name = "checkPerformanceTuner";
             this.checkPerformanceTuner.Size = new System.Drawing.Size(277, 17);
             this.checkPerformanceTuner.TabIndex = 8;
@@ -1883,7 +1885,7 @@
             // checkDoubleWire
             // 
             this.checkDoubleWire.AutoSize = true;
-            this.checkDoubleWire.Location = new System.Drawing.Point(6, 181);
+            this.checkDoubleWire.Location = new System.Drawing.Point(6, 166);
             this.checkDoubleWire.Name = "checkDoubleWire";
             this.checkDoubleWire.Size = new System.Drawing.Size(135, 17);
             this.checkDoubleWire.TabIndex = 11;
@@ -1893,7 +1895,7 @@
             // checkLODViewingExtention
             // 
             this.checkLODViewingExtention.AutoSize = true;
-            this.checkLODViewingExtention.Location = new System.Drawing.Point(304, 158);
+            this.checkLODViewingExtention.Location = new System.Drawing.Point(304, 143);
             this.checkLODViewingExtention.Name = "checkLODViewingExtention";
             this.checkLODViewingExtention.Size = new System.Drawing.Size(268, 17);
             this.checkLODViewingExtention.TabIndex = 22;
@@ -1903,7 +1905,7 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(86, 111);
+            this.label8.Location = new System.Drawing.Point(86, 96);
             this.label8.Margin = new System.Windows.Forms.Padding(3);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(64, 13);
@@ -1917,7 +1919,7 @@
             0,
             0,
             0});
-            this.numericSuperElevationGauge.Location = new System.Drawing.Point(26, 109);
+            this.numericSuperElevationGauge.Location = new System.Drawing.Point(26, 94);
             this.numericSuperElevationGauge.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
             this.numericSuperElevationGauge.Maximum = new decimal(new int[] {
             1600,
@@ -1941,7 +1943,7 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(86, 85);
+            this.label7.Location = new System.Drawing.Point(86, 70);
             this.label7.Margin = new System.Windows.Forms.Padding(3);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(97, 13);
@@ -1955,7 +1957,7 @@
             0,
             0,
             0});
-            this.numericSuperElevationMinLen.Location = new System.Drawing.Point(26, 83);
+            this.numericSuperElevationMinLen.Location = new System.Drawing.Point(26, 68);
             this.numericSuperElevationMinLen.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
             this.numericSuperElevationMinLen.Maximum = new decimal(new int[] {
             1000,
@@ -1980,7 +1982,7 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(86, 59);
+            this.label6.Location = new System.Drawing.Point(86, 44);
             this.label6.Margin = new System.Windows.Forms.Padding(3);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(33, 13);
@@ -2001,7 +2003,7 @@
             // 
             // numericUseSuperElevation
             // 
-            this.numericUseSuperElevation.Location = new System.Drawing.Point(26, 57);
+            this.numericUseSuperElevation.Location = new System.Drawing.Point(26, 42);
             this.numericUseSuperElevation.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
             this.numericUseSuperElevation.Maximum = new decimal(new int[] {
             10,
@@ -2016,7 +2018,7 @@
             // ElevationText
             // 
             this.ElevationText.AutoSize = true;
-            this.ElevationText.Location = new System.Drawing.Point(6, 38);
+            this.ElevationText.Location = new System.Drawing.Point(6, 23);
             this.ElevationText.Margin = new System.Windows.Forms.Padding(3);
             this.ElevationText.Name = "ElevationText";
             this.ElevationText.Size = new System.Drawing.Size(81, 13);
@@ -2026,12 +2028,22 @@
             // checkPreferDDSTexture
             // 
             this.checkPreferDDSTexture.AutoSize = true;
-            this.checkPreferDDSTexture.Location = new System.Drawing.Point(304, 181);
+            this.checkPreferDDSTexture.Location = new System.Drawing.Point(304, 166);
             this.checkPreferDDSTexture.Name = "checkPreferDDSTexture";
             this.checkPreferDDSTexture.Size = new System.Drawing.Size(217, 17);
             this.checkPreferDDSTexture.TabIndex = 23;
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
+            // 
+            // checkCorrectQuestionableBrakingParams
+            // 
+            this.checkCorrectQuestionableBrakingParams.AutoSize = true;
+            this.checkCorrectQuestionableBrakingParams.Location = new System.Drawing.Point(6, 235);
+            this.checkCorrectQuestionableBrakingParams.Name = "checkCorrectQuestionableBrakingParams";
+            this.checkCorrectQuestionableBrakingParams.Size = new System.Drawing.Size(216, 17);
+            this.checkCorrectQuestionableBrakingParams.TabIndex = 43;
+            this.checkCorrectQuestionableBrakingParams.Text = "Correct questionable braking parameters";
+            this.checkCorrectQuestionableBrakingParams.UseVisualStyleBackColor = true;
             // 
             // OptionsForm
             // 
@@ -2242,5 +2254,6 @@
         private System.Windows.Forms.Label label24;
         private System.Windows.Forms.Label label25;
         private System.Windows.Forms.NumericUpDown precipitationBoxLength;
+        private System.Windows.Forms.CheckBox checkCorrectQuestionableBrakingParams;
     }
 }

@@ -311,6 +311,7 @@ namespace ORTS
             precipitationBoxHeight.Value = Settings.PrecipitationBoxHeight;
             precipitationBoxWidth.Value = Settings.PrecipitationBoxWidth;
             precipitationBoxLength.Value = Settings.PrecipitationBoxLength;
+            checkCorrectQuestionableBrakingParams.Checked = Settings.CorrectQuestionableBrakingParams;
         }
 
         static string ParseCategoryFrom(string name)
@@ -499,6 +500,7 @@ namespace ORTS
             Settings.PrecipitationBoxHeight = (int)precipitationBoxHeight.Value;
             Settings.PrecipitationBoxWidth = (int)precipitationBoxWidth.Value;
             Settings.PrecipitationBoxLength = (int)precipitationBoxLength.Value;
+            Settings.CorrectQuestionableBrakingParams = checkCorrectQuestionableBrakingParams.Checked;
 
             Settings.Save();
         }
