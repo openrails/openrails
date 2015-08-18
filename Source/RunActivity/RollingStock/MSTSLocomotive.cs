@@ -185,9 +185,10 @@ namespace ORTS
         public bool IsElectric;
 
         private const float DefaultCompressorRestartToMaxSysPressureDiff = 35;    // Used to check if difference between these two .eng parameters is correct, and to correct it
-        private const float DefaultMaxMainResToCompressorRestartPressureDiff = 5; // Used to check if difference between these two .eng parameters is correct, and to correct it
+        private const float DefaultMaxMainResToCompressorRestartPressureDiff = 10; // Used to check if difference between these two .eng parameters is correct, and to correct it
         private const float DefaultMaxCompressorRestartPressure = 135; // Max value to be inserted if .eng parameters are corrected
         private const float DefaultMainResVolume = 0.78f; // Value to be inserted if .eng parameters are corrected
+        private const float DefaultMaxMainResPressure = 140; // Max value to be inserted if .eng parameters are corrected
 
 		public float CabRotationZ
 		{
@@ -854,16 +855,17 @@ namespace ORTS
                     if (CompressorRestartPressurePSI - TrainBrakeController.MaxPressurePSI < DefaultCompressorRestartToMaxSysPressureDiff - 10)
                     {
                         CompressorRestartPressurePSI = Math.Max(CompressorRestartPressurePSI, Math.Min(TrainBrakeController.MaxPressurePSI + DefaultCompressorRestartToMaxSysPressureDiff, DefaultMaxCompressorRestartPressure));
-                        MainResPressurePSI = MaxMainResPressurePSI = Math.Max(MaxMainResPressurePSI, CompressorRestartPressurePSI + DefaultMaxMainResToCompressorRestartPressureDiff);
+                        MainResPressurePSI = MaxMainResPressurePSI = Math.Max(MaxMainResPressurePSI, Math.Min(CompressorRestartPressurePSI + DefaultMaxMainResToCompressorRestartPressureDiff, DefaultMaxMainResPressure));
 
                     }
                     if (MainResVolumeM3 < 0.3f && MassKG > 20000) MainResVolumeM3 = DefaultMainResVolume;
                 }
+                if (MainResChargingRatePSIpS <= 0)
+                {
+                    MainResChargingRatePSIpS = Math.Max(0.5f, (CompressorChargingRateM3pS * Bar.ToPSI(1)) / MainResVolumeM3);
+                }
             }
-            if (MainResChargingRatePSIpS <= 0)
-            {
-                MainResChargingRatePSIpS = Math.Max(0.5f, (CompressorChargingRateM3pS * Bar.ToPSI(1)) / MainResVolumeM3);
-            }
+            else if (MainResChargingRatePSIpS <= 0) MainResChargingRatePSIpS = 0.4f;
         }
 
         /// <summary>
