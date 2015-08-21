@@ -557,11 +557,27 @@ namespace ORTS.Viewer3D.Popups
             TextPageHeading(table, Viewer.Catalog.GetString("BRAKE INFORMATION"));
 
             var train = Viewer.PlayerLocomotive.Train;
-            TableAddLines(table, String.Format("{0}\t\t{1}\t{2}\t\t{3}",
+            TableAddLines(table, String.Format("{0}\t\t{1}\t\t{2}\t{3}\t\t{4}",
+                Viewer.Catalog.GetString("PlayerLoco"),
                 Viewer.Catalog.GetString("Main reservoir"),
-                FormatStrings.FormatPressure(train.BrakeLine2PressurePSI, PressureUnit.PSI, (Viewer.PlayerLocomotive as MSTSLocomotive).PressureUnit, true),
+                FormatStrings.FormatPressure((Viewer.PlayerLocomotive as MSTSLocomotive).MainResPressurePSI, PressureUnit.PSI, (Viewer.PlayerLocomotive as MSTSLocomotive).PressureUnit, true),
                 Viewer.Catalog.GetString("Compressor"),
                 (Viewer.PlayerLocomotive as MSTSLocomotive).CompressorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off")));
+            // Display data for other locomotives
+            for (var i = 0; i < train.Cars.Count; i++)
+            {
+                var car = train.Cars[i];
+                if (car is MSTSLocomotive && car != Viewer.PlayerLocomotive)
+                {
+                    TableAddLines(table, String.Format("{0}\t{1}\t{2}\t\t{3}\t{4}\t\t{5}",
+                        Viewer.Catalog.GetString("Loco"),
+                        train.Cars[i].CarID.ToString(),
+                        Viewer.Catalog.GetString("Main reservoir"),
+                        FormatStrings.FormatPressure((car as MSTSLocomotive).MainResPressurePSI, PressureUnit.PSI, (car as MSTSLocomotive).PressureUnit, true),
+                        Viewer.Catalog.GetString("Compressor"),
+                        (car as MSTSLocomotive).CompressorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off")));
+                }
+           }
             TableAddLine(table);
 
             TableSetCells(table, 0,
