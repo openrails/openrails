@@ -453,7 +453,7 @@ namespace ORTS
                         if (car == train.Cars[0] || car.BrakeSystem.FrontBrakeHoseConnected && car.BrakeSystem.AngleCockAOpen && car0.BrakeSystem.AngleCockBOpen)
                         {
                             float dp = dt * (p1 - p0) / brakePipeTimeFactorS;
-                            car.BrakeSystem.BrakeLine1PressurePSI -= dp*(car0.CarLengthM+1)/(car.CarLengthM+1);
+                            car.BrakeSystem.BrakeLine1PressurePSI -= dp;
                             car0.BrakeSystem.BrakeLine1PressurePSI += dp;
                         }
                         if (!car.BrakeSystem.FrontBrakeHoseConnected)
