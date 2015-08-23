@@ -9989,6 +9989,17 @@ namespace ORTS
                     beginActiveSubroute = 0;
                     activeSubrouteNodeIndex = 0;
                 }
+                if (thisItem.ArrivalTime < 0)
+                {
+                    thisItem.ArrivalTime = thisItem.DepartTime < 0 ? TrafficService.Time : Math.Min (thisItem.DepartTime, TrafficService.Time);
+                    Trace.TraceInformation("Train {0} Service {1} : Corrected negative arrival time within .trf or .act file", Number.ToString(), Name);
+                }
+                if (thisItem.DepartTime < 0)
+                {
+                    thisItem.DepartTime =  Math.Max (thisItem.ArrivalTime, TrafficService.Time);
+                    Trace.TraceInformation("Train {0} Service {1} : Corrected negative depart time within .trf or .act file", Number.ToString(), Name);
+                }
+
                 DateTime arriveDT = new DateTime((long)(Math.Pow(10, 7) * thisItem.ArrivalTime));
                 DateTime departDT = new DateTime((long)(Math.Pow(10, 7) * thisItem.DepartTime));
                 bool validStop =
