@@ -17,6 +17,7 @@
 
 using System;
 using System.IO;
+// using System.Diagnostics;
 using Orts.Parsers.Msts;
 using ORTS.Common;
 
@@ -66,7 +67,8 @@ namespace ORTS
         public AirSinglePipe(TrainCar car)
         {
             Car = car;
-            BrakePipeVolumeM3 = (0.032f * 0.032f * (float)Math.PI / 4f) * (1 + car.CarLengthM); // Using DN32 (1-1/4") pipe
+            // taking into account very short (fake) cars to prevent NaNs in brake line pressures
+            BrakePipeVolumeM3 = (0.032f * 0.032f * (float)Math.PI / 4f) * Math.Max ( 5.0f, (1 + car.CarLengthM)); // Using DN32 (1-1/4") pipe
             DebugType = "1P";
 
             // Force graduated releasable brakes. Workaround for MSTS with bugs preventing to set eng/wag files correctly for this.
@@ -211,6 +213,9 @@ namespace ORTS
 
         public override void Initialize(bool handbrakeOn, float maxPressurePSI, float fullServPressurePSI, bool immediateRelease)
         {
+            // reducing size of Emergency Reservoir for short (fake) cars
+            if (Program.Simulator.Settings.CorrectQuestionableBrakingParams && Car.CarLengthM <= 1)
+                EmergResVolumeM3 = Math.Min (0.02f, EmergResVolumeM3);
             BrakeLine1PressurePSI = Car.Train.BrakeLine1PressurePSIorInHg;
             BrakeLine2PressurePSI = Car.Train.BrakeLine2PressurePSI;
             BrakeLine3PressurePSI = 0;
@@ -428,6 +433,8 @@ namespace ORTS
                 float serviceTimeFactor = lead != null ? lead.TrainBrakeController != null && lead.TrainBrakeController.EmergencyBraking ? lead.BrakeEmergencyTimeFactorS : lead.BrakeServiceTimeFactorS : 0;
                 for (int i = 0; i < nSteps; i++)
                 {
+//                    Trace.TraceWarning("lead.BrakeLine1PressurePSI {0} car1.BrakeLine1PressurePSI {1} car2.BrakeLine1PressurePSI {2} lead.MainResPressurePSI {3} car1.AuxResPressure {4} i {5}",
+//                        lead.BrakeSystem.BrakeLine1PressurePSI, train.Cars[1].BrakeSystem.BrakeLine1PressurePSI, train.Cars[2].BrakeSystem.BrakeLine1PressurePSI,  lead.MainResPressurePSI, (train.Cars[1].BrakeSystem as AirSinglePipe).AuxResPressurePSI, i);
                     if (lead != null)
                     {
                         if (lead.BrakeSystem.BrakeLine1PressurePSI < train.BrakeLine1PressurePSIorInHg)
@@ -447,14 +454,15 @@ namespace ORTS
                     }
                     TrainCar car0 = train.Cars[0];
                     float p0 = car0.BrakeSystem.BrakeLine1PressurePSI;
-                    foreach (TrainCar car in train.Cars)
+                    float brakePipeVolumeM30 = car0.BrakeSystem.BrakePipeVolumeM3;
+                    foreach (TrainCar car in train.Cars)               
                     {
                         float p1 = car.BrakeSystem.BrakeLine1PressurePSI;
                         if (car == train.Cars[0] || car.BrakeSystem.FrontBrakeHoseConnected && car.BrakeSystem.AngleCockAOpen && car0.BrakeSystem.AngleCockBOpen)
                         {
-                            float dp = dt * (p1 - p0) / brakePipeTimeFactorS;
-                            car.BrakeSystem.BrakeLine1PressurePSI -= dp;
-                            car0.BrakeSystem.BrakeLine1PressurePSI += dp;
+                            float dp = Math.Min (dt * (p1 - p0) / brakePipeTimeFactorS * 2, p1 - p0);
+                            car.BrakeSystem.BrakeLine1PressurePSI -= dp * brakePipeVolumeM30 / (brakePipeVolumeM30 + car.BrakeSystem.BrakePipeVolumeM3);
+                            car0.BrakeSystem.BrakeLine1PressurePSI += dp * car.BrakeSystem.BrakePipeVolumeM3 / (brakePipeVolumeM30 + car.BrakeSystem.BrakePipeVolumeM3);
                         }
                         if (!car.BrakeSystem.FrontBrakeHoseConnected)
                         {
@@ -467,8 +475,9 @@ namespace ORTS
                         {
                             car.BrakeSystem.BrakeLine1PressurePSI -= dt * p1 / brakePipeTimeFactorS;
                         }
-                        p0 = p1;
+                        p0 = car.BrakeSystem.BrakeLine1PressurePSI;
                         car0 = car;
+                        brakePipeVolumeM30 = car0.BrakeSystem.BrakePipeVolumeM3;
                     }
                 }
             }
