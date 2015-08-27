@@ -1031,6 +1031,7 @@ namespace ORTS
                     SuperheatTempRatio = SuperheatRefTempF / SuperheatTempLbpHtoDegF[pS.TopH(TheoreticalMaxSteamOutputLBpS)];
                     SuperheatAreaM2 = Me2.FromFt2((SuperheatRefTempF * pS.TopH(TheoreticalMaxSteamOutputLBpS)) / (C.ToF(C.FromK(MaxFlueTempK)) * SuperheatKFactor)); // Back calculate Superheat area for display purposes only.
                     CylinderClearancePC = 0.09f;
+                    SteamLocoType += " + Not formally defined (assumed superheated)";
 
                 }
                 else
