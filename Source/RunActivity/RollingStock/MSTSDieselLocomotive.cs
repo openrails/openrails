@@ -663,8 +663,7 @@ namespace ORTS
 
             EngineRPMRatio = (DieselEngines[0].RealRPM - DieselEngines[0].IdleRPM) / (DieselEngines[0].MaxRPM - DieselEngines[0].IdleRPM);
 
-            if (GearBox == null) Variable1 = EngineRPMRatio; // Not gearbased, Variable1 similar to Variable2
-            else Variable1 = ThrottlePercent / 100.0f; // Gearbased, Variable1 proportional to ThrottlePercent
+            Variable1 = ThrottlePercent / 100.0f; 
             // else Variable1 = MotiveForceN / MaxForceN; // Gearbased, Variable1 proportional to motive force
             // allows for motor volume proportional to effort.
 
