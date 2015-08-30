@@ -92,6 +92,7 @@ namespace ORTS
         bool safety3IsOn = false; // Safety valve #3 is on and opertaing
         bool safety4IsOn = false; // Safety valve #4 is on and opertaing
         bool IsGearedSteamLoco = false; // Indicates that it is a geared locomotive
+        bool IsSimpleLocoAssumed = false;      // Indicates that it is an assumed simple locomotive
         bool IsSimpleLoco = false;      // Indicates that it is a simple locomotive
         bool IsCompoundLoco = false;    // Indicates that it is a compound locomotive
         bool IsFixGeared = false;
@@ -937,6 +938,7 @@ namespace ORTS
             else // Default to Simple Locomotive
             {
                 IsSimpleLoco = true;
+                IsSimpleLocoAssumed = true; // Assumed simple locomotive
                 SteamLocoType = "Not defined (assumed simple) locomotive";
                 MotiveForceGearRatio = 1.0f;  // set gear ratio to default, as not a geared locomotive
                 SteamGearRatio = 1.0f;     // set gear ratio to default, as not a geared locomotive
@@ -1031,8 +1033,24 @@ namespace ORTS
                     SuperheatTempRatio = SuperheatRefTempF / SuperheatTempLbpHtoDegF[pS.TopH(TheoreticalMaxSteamOutputLBpS)];
                     SuperheatAreaM2 = Me2.FromFt2((SuperheatRefTempF * pS.TopH(TheoreticalMaxSteamOutputLBpS)) / (C.ToF(C.FromK(MaxFlueTempK)) * SuperheatKFactor)); // Back calculate Superheat area for display purposes only.
                     CylinderClearancePC = 0.09f;
-                    SteamLocoType += " + Not formally defined (assumed superheated)";
 
+                    // Adjust indication for F5 HUD
+                    SteamLocoType = " ";
+                    if (IsSimpleLoco)
+                    {
+                        if(IsSimpleLocoAssumed)
+                        {
+                            SteamLocoType = "Not defined (assumed simple) locomotive + Not formally defined (assumed superheated)"; 
+                        }
+                        else
+                        {
+                            SteamLocoType = "Simple locomotive + Not formally defined (assumed superheated)"; 
+                        }              
+                    }
+                    else if(IsCompoundLoco)
+                    {
+                       SteamLocoType = "Compound locomotive + Not formally defined (assumed superheated)";
+                    }
                 }
                 else
                 {
