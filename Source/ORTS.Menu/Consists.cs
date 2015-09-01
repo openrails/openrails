@@ -38,7 +38,7 @@ namespace ORTS.Menu
             {
                 try
                 {
-                    var conFile = new CONFile(filePath);
+                    var conFile = new ConsistFile(filePath);
                     Name = conFile.Name.Trim();
                     Locomotive = GetLocomotive(conFile, folder);
                 }
@@ -62,7 +62,7 @@ namespace ORTS.Menu
             {
                 try
                 {
-                    var conFile = new CONFile(filePath);
+                    var conFile = new ConsistFile(filePath);
                     Name = conFile.Name.Trim();
                     Locomotive = reverseConsist ? GetLocomotiveReverse(conFile, folder) : GetLocomotive(conFile, folder);
                 }
@@ -133,7 +133,7 @@ namespace ORTS.Menu
             return consist;
         }
 
-        static Locomotive GetLocomotive(CONFile conFile, Folder folder)
+        static Locomotive GetLocomotive(ConsistFile conFile, Folder folder)
         {
             foreach (var wagon in conFile.Train.TrainCfg.WagonList.Where(w => w.IsEngine))
             {
@@ -147,7 +147,7 @@ namespace ORTS.Menu
             return null;
         }
 
-        static Locomotive GetLocomotiveReverse(CONFile conFile, Folder folder)
+        static Locomotive GetLocomotiveReverse(ConsistFile conFile, Folder folder)
         {
             Locomotive newLocomotive = null;
 
@@ -189,7 +189,7 @@ namespace ORTS.Menu
                 var showInList = true;
                 try
                 {
-                    var engFile = new ENGFile(filePath);
+                    var engFile = new EngineFile(filePath);
                     showInList = !string.IsNullOrEmpty(engFile.CabViewFile);
                     Name = engFile.Name.Trim();
                     Description = engFile.Description.Trim();

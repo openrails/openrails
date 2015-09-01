@@ -27,10 +27,10 @@ namespace Orts.Formats.Msts
 {
 
 	// TODO - this is an incomplete parse of the cvf file.
-	public class TTypeDatFile: List<TTypeDatFile.TrackType>
+	public class TrackTypesFile: List<TrackTypesFile.TrackType>
 	{
         
-        public TTypeDatFile(string filePath)
+        public TrackTypesFile(string filePath)
 		{
             using (STFReader stf = new STFReader(filePath, false))
             {

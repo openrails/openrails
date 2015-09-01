@@ -52,7 +52,7 @@ namespace ORTS.Menu
             {
                 try
                 {
-                    var patFile = new PATFile(filePath);
+                    var patFile = new PathFile(filePath);
                     this.IsPlayerPath = patFile.IsPlayerPath;
                     Name = patFile.Name.Trim();
                     Start = patFile.Start.Trim();

@@ -31,7 +31,7 @@ namespace Orts.Formats.Msts
     /// </summary>
     [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", Justification = "Keeping identifier consistent to use in MSTS")]
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Disposable only used in using statement, known FcCop bug")]
-    public class TDBFile
+    public class TrackDatabaseFile
     {
         /// <summary>
         /// Contains the Database with all the  tracks.
@@ -42,7 +42,7 @@ namespace Orts.Formats.Msts
         /// Constructor from file
         /// </summary>
         /// <param name="filenamewithpath">Full file name of the .rdb file</param>
-        public TDBFile(string filenamewithpath)
+        public TrackDatabaseFile(string filenamewithpath)
         {        
             using (STFReader stf = new STFReader(filenamewithpath, false))
                 stf.ParseFile(new STFReader.TokenProcessor[] {
@@ -488,7 +488,7 @@ namespace Orts.Formats.Msts
         /// </summary>
         /// <param name="tsectionDat">The datafile with all the track sections</param>
         /// <returns>The angle calculated</returns>
-        public double GetAngle(TSectionDatFile tsectionDat)
+        public double GetAngle(TrackSectionsFile tsectionDat)
         {
             if (AngleComputed) { return angle; }
 

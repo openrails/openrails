@@ -113,7 +113,7 @@ TrackPath (
     //  
 
     
-	public class PATFile
+	public class PathFile
     {
         #region Fields
 
@@ -152,7 +152,7 @@ TrackPath (
 		/// Open a PAT file, parse it and store it
 		/// </summary>
 		/// <param name="filePath">path to the PAT file, including full path and extension</param>
-        public PATFile(string filePath)
+        public PathFile(string filePath)
         {
             try
             {

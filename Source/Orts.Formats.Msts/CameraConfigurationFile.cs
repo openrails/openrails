@@ -31,11 +31,11 @@ namespace Orts.Formats.Msts
     /// <summary>
     /// Object used by ORTS.Cameras to set up views (3dviewer\camera.cs)
     /// </summary>
-    public class CAMCFGFile
+    public class CameraConfigurationFile
     {
         public List<Camera> Cameras = new List<Camera>();
 
-        public CAMCFGFile(string filename)
+        public CameraConfigurationFile(string filename)
         {
             using (STFReader stf = new STFReader(filename, false))
                 stf.ParseFile(new STFReader.TokenProcessor[] {

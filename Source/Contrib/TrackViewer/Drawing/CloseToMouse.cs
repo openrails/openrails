@@ -241,7 +241,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <summary>Distance (squared) between mouse and closest track location</summary>
         public override float ClosestMouseDistanceSquared { get { calcRealDistances(); return (float)sortedTrackCandidates.Last().Key; } }
 
-        private TSectionDatFile tsectionDat;
+        private TrackSectionsFile tsectionDat;
         private WorldLocation storedMouseLocation;
         private bool realDistancesAreCalculated;
 
@@ -260,7 +260,7 @@ namespace ORTS.TrackViewer.Drawing
         /// Constructor, because we need to store the TsectionDatFile
         /// </summary>
         /// <param name="tsectionDat">The track section Dat file that we can use to calculate the distance to the track</param>
-        public CloseToMouseTrack(TSectionDatFile tsectionDat)
+        public CloseToMouseTrack(TrackSectionsFile tsectionDat)
         {
             this.tsectionDat = tsectionDat;
         }
@@ -281,7 +281,7 @@ namespace ORTS.TrackViewer.Drawing
         /// </summary>
         /// <param name="tn">Tracknode that will be stored as closest item</param>
         /// <param name="tsectionDat">The track section Dat file that we can use to calculate the distance to the track</param>
-        public CloseToMouseTrack(TSectionDatFile tsectionDat, TrackNode tn)
+        public CloseToMouseTrack(TrackSectionsFile tsectionDat, TrackNode tn)
         {
             this.tsectionDat = tsectionDat;
             sortedTrackCandidates = new SortedList<double, TrackCandidate>(new ReverseDoubleComparer());

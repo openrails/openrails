@@ -86,7 +86,7 @@ namespace ORTS.TrackViewer.Editing
         #region Private members
         DrawTrackDB drawTrackDB; // We need to know what has been drawn, especially to get track closest to mouse
         TrackDB trackDB;
-        TSectionDatFile tsectionDat;
+        TrackSectionsFile tsectionDat;
 
         
         DrawPath drawPath;      // drawing of the path itself

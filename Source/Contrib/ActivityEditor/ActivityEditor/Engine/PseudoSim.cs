@@ -53,11 +53,11 @@ namespace ActivityEditor
         public AreaRoute areaRoute;
 
         //public MSTSData mstsData;
-        public TDBFile TDB { get { return mstsDataConfig.TDB; } protected set { } }
-        public TRKFile TRK { get { return mstsDataConfig.TRK; } protected set { } }
-        public TSectionDatFile TSectionDat { get { return mstsDataConfig.TSectionDat; } protected set { } }
+        public TrackDatabaseFile TDB { get { return mstsDataConfig.TDB; } protected set { } }
+        public RouteFile TRK { get { return mstsDataConfig.TRK; } protected set { } }
+        public TrackSectionsFile TSectionDat { get { return mstsDataConfig.TSectionDat; } protected set { } }
         public AESignals Signals { get { return mstsDataConfig.Signals; } protected set { } }
-        public SIGCFGFile SIGCFG { get { return mstsDataConfig.SIGCFG; } protected set { } }
+        public SignalConfigurationFile SIGCFG { get { return mstsDataConfig.SIGCFG; } protected set { } }
         public string RoutePath { get { return mstsDataConfig.RoutePath; } protected set { } }
         public string mstsPath { get { return mstsDataConfig.MstsPath; } protected set { } }
         public AETraveller traveller { get { return orRouteConfig.traveller; } protected set { } }

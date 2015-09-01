@@ -41,7 +41,7 @@ namespace Orts.Formats.OR
         /// <param name="orRouteConfig">The Open Rail configuration coming from Editor</param>
         /// <param name="trackNodes">The list of MSTS Track Nodes</param>
         /// <param name="tsectiondat">The list of MSTS Section datas</param>
-        public static List<TrackCircuitElement> GetORItemForNode(this ORRouteConfig orRouteCfg, int iNode, TrackNode[] trackNodes, TSectionDatFile tsectiondat)
+        public static List<TrackCircuitElement> GetORItemForNode(this ORRouteConfig orRouteCfg, int iNode, TrackNode[] trackNodes, TrackSectionsFile tsectiondat)
         {
             List<TrackCircuitElement> trackCircuitElements = new List<TrackCircuitElement>();
             if (orRouteCfg.AllItems.Count <= 0)

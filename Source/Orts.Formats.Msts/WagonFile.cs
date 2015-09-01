@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2013, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -23,20 +23,24 @@ using Orts.Parsers.Msts;
 namespace Orts.Formats.Msts
 {
     /// <summary>
-    /// Work with consist files
+    /// Work with wagon files
     /// </summary>
-    public class CONFile
+    public class WagonFile
     {
-        public string Name; // from the Name field or label field of the consist file
-        public Train_Config Train;
+        public string Name;
 
-        public CONFile(string filePath)
+        public WagonFile(string filePath)
         {
+            Name = Path.GetFileNameWithoutExtension(filePath);
             using (var stf = new STFReader(filePath, false))
                 stf.ParseFile(new STFReader.TokenProcessor[] {
-                    new STFReader.TokenProcessor("train", ()=>{ Train = new Train_Config(stf); }),
+                    new STFReader.TokenProcessor("wagon", ()=>{
+                        stf.ReadString();
+                        stf.ParseBlock(new STFReader.TokenProcessor[] {
+                            new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(null); }),
+                        });
+                    }),
                 });
-            Name = Train.TrainCfg.Name;
         }
 
         public override string ToString()

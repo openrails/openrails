@@ -37,7 +37,7 @@ namespace ORTS.ContentManager.Models
             Debug.Assert(content.Type == ContentType.Path);
             if (System.IO.Path.GetExtension(content.PathName).Equals(".pat", StringComparison.OrdinalIgnoreCase))
             {
-                var file = new PATFile(content.PathName);
+                var file = new PathFile(content.PathName);
                 Name = file.Name;
                 StartName = file.Start;
                 EndName = file.End;

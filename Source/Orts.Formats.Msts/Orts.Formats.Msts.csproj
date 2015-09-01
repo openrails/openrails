@@ -48,37 +48,37 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ACEFile.cs" />
-    <Compile Include="ACTFile.cs" />
-    <Compile Include="CAMCFGFile.cs" />
+    <Compile Include="AceFile.cs" />
+    <Compile Include="ActivityFile.cs" />
+    <Compile Include="CameraConfigurationFile.cs" />
     <Compile Include="CarSpawnerFile.cs" />
-    <Compile Include="CONFile.cs" />
-    <Compile Include="CVFFile.cs" />
-    <Compile Include="ENGFile.cs" />
-    <Compile Include="ENVFile.cs" />
-    <Compile Include="FFile.cs" />
-    <Compile Include="HAZFile.cs" />
-    <Compile Include="Lights.cs" />
+    <Compile Include="ConsistFile.cs" />
+    <Compile Include="CabViewFile.cs" />
+    <Compile Include="EngineFile.cs" />
+    <Compile Include="EnvironmentFile.cs" />
+    <Compile Include="TerrainFlagsFile.cs" />
+    <Compile Include="HazardFile.cs" />
+    <Compile Include="LightCollection.cs" />
     <Compile Include="MstsUtility.cs" />
-    <Compile Include="PATFile.cs" />
+    <Compile Include="PathFile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RDBFile.cs" />
-    <Compile Include="SDFile.cs" />
-    <Compile Include="SFile.cs" />
-    <Compile Include="SIGCFGFile.cs" />
+    <Compile Include="RoadDatabaseFile.cs" />
+    <Compile Include="ShapeDescriptorFile.cs" />
+    <Compile Include="ShapeFile.cs" />
+    <Compile Include="SignalConfigurationFile.cs" />
     <Compile Include="SignalEnums.cs" />
-    <Compile Include="SMSFile.cs" />
-    <Compile Include="SRVFile.cs" />
-    <Compile Include="TDBFile.cs" />
-    <Compile Include="TFile.cs" />
-    <Compile Include="TRFFile.cs" />
-    <Compile Include="TRKFile.cs" />
-    <Compile Include="TSectionDat.cs" />
-    <Compile Include="TTypeDatFile.cs" />
-    <Compile Include="WAGFile.cs" />
-    <Compile Include="WFile.cs" />
-    <Compile Include="WSFile.cs" />
-    <Compile Include="YFile.cs" />
+    <Compile Include="SoundManagmentFile.cs" />
+    <Compile Include="ServiceFile.cs" />
+    <Compile Include="TrackDatabaseFile.cs" />
+    <Compile Include="TerrainFile.cs" />
+    <Compile Include="TrafficFile.cs" />
+    <Compile Include="RouteFile.cs" />
+    <Compile Include="TrackSectionsFile.cs" />
+    <Compile Include="TrackTypesFile.cs" />
+    <Compile Include="WagonFile.cs" />
+    <Compile Include="WorldFile.cs" />
+    <Compile Include="WorldSoundFile.cs" />
+    <Compile Include="TerrainAltitudeFile.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj">

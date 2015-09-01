@@ -14759,7 +14759,7 @@ namespace ORTS
             // Convert waiting point to section no.
             //
 
-            static int ConvertWaitingPoint(AIPathNode stopPathNode, TrackDB TrackDB, TSectionDatFile TSectionDat, int direction)
+            static int ConvertWaitingPoint(AIPathNode stopPathNode, TrackDB TrackDB, TrackSectionsFile TSectionDat, int direction)
             {
                 TrackNode waitingNode = TrackDB.TrackNodes[stopPathNode.NextMainTVNIndex];
                 TrVectorSection firstSection = waitingNode.TrVectorNode.TrVectorSections[0];

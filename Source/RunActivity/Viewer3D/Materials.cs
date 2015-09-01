@@ -78,7 +78,7 @@ namespace ORTS.Viewer3D
                         }
                         else if (File.Exists(path))
                         {
-                            texture = Orts.Formats.Msts.ACEFile.Texture2DFromFile(GraphicsDevice, path);
+                            texture = Orts.Formats.Msts.AceFile.Texture2DFromFile(GraphicsDevice, path);
                         }
                         else
                             return defaultTexture;
@@ -118,7 +118,7 @@ namespace ORTS.Viewer3D
             var ext = Path.GetExtension(path);
 
             if (ext == ".ace")
-                return Orts.Formats.Msts.ACEFile.Texture2DFromFile(graphicsDevice, path);
+                return Orts.Formats.Msts.AceFile.Texture2DFromFile(graphicsDevice, path);
 
             using (var stream = File.OpenRead(path))
             {
@@ -203,7 +203,7 @@ namespace ORTS.Viewer3D
             {
                 try
                 {
-                    SceneryShader.OverlayTexture = Orts.Formats.Msts.ACEFile.Texture2DFromFile(viewer.GraphicsDevice, microtexPath);
+                    SceneryShader.OverlayTexture = Orts.Formats.Msts.AceFile.Texture2DFromFile(viewer.GraphicsDevice, microtexPath);
                 }
                 catch (InvalidDataException error)
                 {

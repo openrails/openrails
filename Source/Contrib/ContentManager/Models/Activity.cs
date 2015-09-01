@@ -38,7 +38,7 @@ namespace ORTS.ContentManager.Models
             Debug.Assert(content.Type == ContentType.Activity);
             if (System.IO.Path.GetExtension(content.PathName).Equals(".act", StringComparison.OrdinalIgnoreCase))
             {
-                var file = new ACTFile(content.PathName);
+                var file = new ActivityFile(content.PathName);
                 Name = file.Tr_Activity.Tr_Activity_Header.Name;
                 Description = file.Tr_Activity.Tr_Activity_Header.Description;
                 Briefing = file.Tr_Activity.Tr_Activity_Header.Briefing;

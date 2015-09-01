@@ -20,16 +20,16 @@ using Orts.Parsers.Msts;
 
 namespace Orts.Formats.Msts
 {
-    public class SDFile
+    public class ShapeDescriptorFile
     {
         public SDShape shape;
 
-        public SDFile()  // use for files with no SD file
+        public ShapeDescriptorFile()  // use for files with no SD file
         {
             shape = new SDShape();
         }
 
-        public SDFile(string filename)
+        public ShapeDescriptorFile(string filename)
         {
             using (STFReader stf = new STFReader(filename, false))
             {

@@ -29,7 +29,7 @@ namespace Orts.Formats.Msts
 	/// </summary>
     [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", Justification = "Keeping identifier consistent to use in MSTS")]
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Disposable only used in using statement, known FcCop bug")]
-    public class RDBFile
+    public class RoadDatabaseFile
 	{
         /// <summary>
         /// Contains the Database with all the road tracks.
@@ -41,7 +41,7 @@ namespace Orts.Formats.Msts
         /// Constructor from file
         /// </summary>
         /// <param name="filenamewithpath">Full file name of the .rdb file</param>
-		public RDBFile(string filenamewithpath)
+		public RoadDatabaseFile(string filenamewithpath)
 		{
 			using (STFReader stf = new STFReader(filenamewithpath, false))
 				stf.ParseFile(new STFReader.TokenProcessor[] {

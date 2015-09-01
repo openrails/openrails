@@ -1323,7 +1323,7 @@ namespace LibAE.Formats
         {
         }
 
-        public TrackSegment(AESegment segment, TrackNode node, int sectionID, int dir, TSectionDatFile tdf)
+        public TrackSegment(AESegment segment, TrackNode node, int sectionID, int dir, TrackSectionsFile tdf)
         {
             metaSegment = null;
             sidings = new List<SideItem>();
@@ -1356,7 +1356,7 @@ namespace LibAE.Formats
             aeCrossOver.Add(crossOver);
         }
 
-        public void CheckCurve(TSectionDatFile tdf, int flag2)
+        public void CheckCurve(TrackSectionsFile tdf, int flag2)
         {
             TrackSection ts = tdf.TrackSections.Get((uint)associateNode.TrVectorNode.TrVectorSections[associateSectionIdx].SectionIndex);
             if (ts != null)

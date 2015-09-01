@@ -35,7 +35,7 @@ namespace ORTS.ContentManager.Models
             Debug.Assert(content.Type == ContentType.Consist);
             if (System.IO.Path.GetExtension(content.PathName).Equals(".con", StringComparison.OrdinalIgnoreCase))
             {
-                var file = new CONFile(content.PathName);
+                var file = new ConsistFile(content.PathName);
                 Name = file.Name;
 
                 Cars = from car in file.Train.TrainCfg.WagonList

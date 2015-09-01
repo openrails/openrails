@@ -39,7 +39,7 @@ namespace Orts.Formats.Msts
     /// Not everythin of the representation will be used by OpenRails
     /// </summary>
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Disposable only used in using statement, known FcCop bug")]
-    public class SIGCFGFile
+    public class SignalConfigurationFile
     {
         /// <summary>Name-indexed list of available light textures</summary>
         public IDictionary<string, LightTexture> LightTextures;
@@ -58,7 +58,7 @@ namespace Orts.Formats.Msts
         /// Constructor from file
         /// </summary>
         /// <param name="filenamewithpath">Full file name of the sigcfg.dat file</param>
-        public SIGCFGFile(string filenamewithpath)
+        public SignalConfigurationFile(string filenamewithpath)
         {
             ScriptPath = Path.GetDirectoryName(filenamewithpath);
 

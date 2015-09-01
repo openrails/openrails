@@ -1207,12 +1207,12 @@ namespace ORTS.Viewer3D
         void LoadContent()
         {
             Trace.Write("S");
-            var sFile = new SFile(FilePath, Viewer.Settings.SuppressShapeWarnings);
+            var sFile = new ShapeFile(FilePath, Viewer.Settings.SuppressShapeWarnings);
 
             var textureFlags = Helpers.TextureFlags.None;
             if (File.Exists(FilePath + "d"))
             {
-                var sdFile = new SDFile(FilePath + "d");
+                var sdFile = new ShapeDescriptorFile(FilePath + "d");
                 textureFlags = (Helpers.TextureFlags)sdFile.shape.ESD_Alternative_Texture;
                 if (FilePath != null && FilePath.Contains("\\global\\")) textureFlags |= Helpers.TextureFlags.SnowTrack;//roads and tracks are in global, as MSTS will always use snow texture in snow weather
                 HasNightSubObj = sdFile.shape.ESD_SubObj;
@@ -1268,7 +1268,7 @@ namespace ORTS.Viewer3D
         {
             public DistanceLevel[] DistanceLevels;
 
-            public LodControl(lod_control MSTSlod_control, Helpers.TextureFlags textureFlags, SFile sFile, SharedShape sharedShape)
+            public LodControl(lod_control MSTSlod_control, Helpers.TextureFlags textureFlags, ShapeFile sFile, SharedShape sharedShape)
             {
 #if DEBUG_SHAPE_HIERARCHY
                 Console.WriteLine("  LOD control:");
@@ -1293,7 +1293,7 @@ namespace ORTS.Viewer3D
             public float ViewSphereRadius;
             public SubObject[] SubObjects;
 
-            public DistanceLevel(distance_level MSTSdistance_level, Helpers.TextureFlags textureFlags, SFile sFile, SharedShape sharedShape)
+            public DistanceLevel(distance_level MSTSdistance_level, Helpers.TextureFlags textureFlags, ShapeFile sFile, SharedShape sharedShape)
             {
 #if DEBUG_SHAPE_HIERARCHY
                 Console.WriteLine("    Distance level {0}: hierarchy={1}", MSTSdistance_level.distance_level_header.dlevel_selection, String.Join(" ", MSTSdistance_level.distance_level_header.hierarchy.Select(i => i.ToString()).ToArray()));
@@ -1360,7 +1360,7 @@ namespace ORTS.Viewer3D
 #if DEBUG_SHAPE_HIERARCHY
             public SubObject(sub_object sub_object, ref int totalPrimitiveIndex, int[] hierarchy, Helpers.TextureFlags textureFlags, int subObjectIndex, SFile sFile, SharedShape sharedShape)
 #else
-            public SubObject(sub_object sub_object, ref int totalPrimitiveIndex, int[] hierarchy, Helpers.TextureFlags textureFlags, SFile sFile, SharedShape sharedShape)
+            public SubObject(sub_object sub_object, ref int totalPrimitiveIndex, int[] hierarchy, Helpers.TextureFlags textureFlags, ShapeFile sFile, SharedShape sharedShape)
 #endif
             {
 #if DEBUG_SHAPE_HIERARCHY
@@ -1580,7 +1580,7 @@ namespace ORTS.Viewer3D
             }
 #endif
 
-            public VertexBufferSet(sub_object sub_object, SFile sFile, GraphicsDevice graphicsDevice)
+            public VertexBufferSet(sub_object sub_object, ShapeFile sFile, GraphicsDevice graphicsDevice)
 #if DEBUG_SHAPE_NORMALS
                 : this(CreateVertexData(sub_object, sFile.shape), CreateDebugNormalsVertexData(sub_object, sFile.shape), graphicsDevice)
 #else

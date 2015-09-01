@@ -50,8 +50,8 @@ namespace ORTS.Menu
                 var showInList = true;
                 try
                 {
-                    var actFile = new ACTFile(filePath);
-                    var srvFile = new SRVFile(System.IO.Path.Combine(System.IO.Path.Combine(route.Path, "SERVICES"), actFile.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name + ".srv"));
+                    var actFile = new ActivityFile(filePath);
+                    var srvFile = new ServiceFile(System.IO.Path.Combine(System.IO.Path.Combine(route.Path, "SERVICES"), actFile.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name + ".srv"));
                     // ITR activities are excluded.
                     showInList = actFile.Tr_Activity.Tr_Activity_Header.Mode != ActivityMode.IntroductoryTrainRide;
                     Name = actFile.Tr_Activity.Tr_Activity_Header.Name.Trim();

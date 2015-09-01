@@ -47,14 +47,14 @@ namespace ORTS.TrackViewer.Editing
         public TrainpathNode CurrentMainNode { get; private set; }
 
         private TrackDB trackDB;
-        private TSectionDatFile tsectionDat;
+        private TrackSectionsFile tsectionDat;
         internal ColorScheme colorSchemeSiding { get; set; }
         internal ColorScheme colorSchemeMain { get; set; }
 
         /// <summary>
         /// Constructor
         /// </summary>
-        public DrawPath (TrackDB trackDB, TSectionDatFile tsectionDat)
+        public DrawPath (TrackDB trackDB, TrackSectionsFile tsectionDat)
         {
             this.trackDB = trackDB;
             this.tsectionDat = tsectionDat;

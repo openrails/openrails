@@ -280,7 +280,7 @@ namespace LibAE.Formats
             return p;
         }
 
-        public void SetTraveller(TSectionDatFile TSectionDat, TDBFile TDB)
+        public void SetTraveller(TrackSectionsFile TSectionDat, TrackDatabaseFile TDB)
         {
             TrackNode[] TrackNodes = TDB.TrackDB.TrackNodes;
             traveller = new AETraveller(TSectionDat, TDB);

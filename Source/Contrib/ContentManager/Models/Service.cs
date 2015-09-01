@@ -39,14 +39,14 @@ namespace ORTS.ContentManager.Models
             Debug.Assert(content.Type == ContentType.Service);
             if (System.IO.Path.GetExtension(content.PathName).Equals(".srv", StringComparison.OrdinalIgnoreCase))
             {
-                var file = new SRVFile(content.PathName);
+                var file = new ServiceFile(content.PathName);
                 Name = file.Name;
                 Consist = file.Train_Config;
                 Path = file.PathID;
 
                 Debug.Assert(content is ContentMSTSService);
                 var msts = content as ContentMSTSService;
-                var actFile = new ACTFile(content.Parent.PathName);
+                var actFile = new ActivityFile(content.Parent.PathName);
                 if (msts.IsPlayer)
                 {
                     var activityTraffic = actFile.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Player_Traffic_Definition;
@@ -58,7 +58,7 @@ namespace ORTS.ContentManager.Models
                 }
                 else
                 {
-                    var trfFile = new TRFFile(msts.TrafficPathName);
+                    var trfFile = new TrafficFile(msts.TrafficPathName);
                     var activityService = (from service in actFile.Tr_Activity.Tr_Activity_File.Traffic_Definition.ServiceDefinitionList
                                            where service.Name == content.Name
                                            select service).First();
@@ -103,7 +103,7 @@ namespace ORTS.ContentManager.Models
         }
 
         /// <summary>
-        /// Convert <see cref="ACTFile"/> arrival and departure times in to normalized times.
+        /// Convert <see cref="ActivityFile"/> arrival and departure times in to normalized times.
         /// </summary>
         DateTime MSTSTimeToDateTime(DateTime mstsPlayerTime)
         {
@@ -111,7 +111,7 @@ namespace ORTS.ContentManager.Models
         }
 
         /// <summary>
-        /// Convert <see cref="TRFFile"/> arrival and departure times in to normalized times.
+        /// Convert <see cref="TrafficFile"/> arrival and departure times in to normalized times.
         /// </summary>
         DateTime MSTSTimeToDateTime(int mstsAITime)
         {

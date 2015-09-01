@@ -98,7 +98,7 @@ namespace LibAE.Formats
                 foreach (string consist in subdirectoryEntries)
                 {
                     string fullPathConsist = Path.GetFullPath(consist);
-                    CONFile consistName = new CONFile(fullPathConsist);
+                    ConsistFile consistName = new ConsistFile(fullPathConsist);
                     ConsistInfo conInfo = new ConsistInfo(consistName.ToString(), fullPathConsist);
                     trainConsists.Add(conInfo); 
                 }

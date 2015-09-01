@@ -34,14 +34,14 @@ namespace ORTS
 		readonly Simulator Simulator;
 		public readonly Dictionary<int, Hazzard> Hazzards;
 		public readonly Dictionary<int, Hazzard> CurrentHazzards;
-		public readonly Dictionary<string, HAZFile> HazFiles;
+		public readonly Dictionary<string, HazardFile> HazFiles;
 		List<int> InterestedHazzards;//those hazards is closed to player, needs to listen to horn
 		public HazzardManager(Simulator simulator)
 		{
 			Simulator = simulator;
 			InterestedHazzards = new List<int>();
 			CurrentHazzards = new Dictionary<int, Hazzard>();
-			HazFiles = new Dictionary<string, HAZFile>();
+			HazFiles = new Dictionary<string, HazardFile>();
 			Hazzards = simulator.TDB != null && simulator.TDB.TrackDB != null ? GetHazardsFromDB(simulator.TDB.TrackDB.TrackNodes, simulator.TDB.TrackDB.TrItemTable) : new Dictionary<int, Hazzard>();
 		}
 
@@ -65,7 +65,7 @@ namespace ORTS
 					if (HazFiles.ContainsKey(hazFileName)) Hazzards[itemID].HazFile = HazFiles[hazFileName];
 					else
 					{
-						var hazF = new HAZFile(Simulator.RoutePath + "\\" + hazFileName);
+						var hazF = new HazardFile(Simulator.RoutePath + "\\" + hazFileName);
 						HazFiles.Add(hazFileName, hazF);
 						Hazzards[itemID].HazFile = hazF;
 					}
@@ -132,8 +132,8 @@ namespace ORTS
         readonly TrackNode TrackNode;
 
         internal WorldLocation Location;
-		public HAZFile HazFile { get { return hazF; } set { hazF = value; if (hazF.Tr_HazardFile.Workers != null) animal = false; else animal = true; } }
-		public HAZFile hazF;
+		public HazardFile HazFile { get { return hazF; } set { hazF = value; if (hazF.Tr_HazardFile.Workers != null) animal = false; else animal = true; } }
+		public HazardFile hazF;
 		public enum State { Idle1, Idle2, LookLeft, LookRight, Scared };
 		public State state;
 		public bool animal = true;

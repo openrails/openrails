@@ -25,13 +25,13 @@ namespace Orts.Formats.Msts
     /// <summary>
     /// Work with engine files
     /// </summary>
-    public class ENGFile
+    public class EngineFile
     {
         public string Name;
         public string Description;
         public string CabViewFile;
 
-        public ENGFile(string filePath)
+        public EngineFile(string filePath)
         {
             Name = Path.GetFileNameWithoutExtension(filePath);
             using (var stf = new STFReader(filePath, false))

@@ -35,10 +35,10 @@ namespace ORTS.Formats
 {
     public class MSTSData
     {
-        public TDBFile TDB { get; protected set; }
-        public TRKFile TRK { get; protected set; }
-        public TSectionDatFile TSectionDat { get; protected set; }
-        public SIGCFGFile SIGCFG { get; protected set; }
+        public TrackDatabaseFile TDB { get; protected set; }
+        public RouteFile TRK { get; protected set; }
+        public TrackSectionsFile TSectionDat { get; protected set; }
+        public SignalConfigurationFile SIGCFG { get; protected set; }
         public string RoutePath { get; set; }
         public string MstsPath { get; set; }
         public AESignals Signals { get; protected set; }
@@ -47,14 +47,14 @@ namespace ORTS.Formats
         {
             MstsPath = mstsPath;
             RoutePath = Route;
-            TRK = new TRKFile(MSTS.MSTSPath.GetTRKFileName(RoutePath));
+            TRK = new RouteFile(MSTS.MSTSPath.GetTRKFileName(RoutePath));
             string routePath = Path.Combine(Route, TRK.Tr_RouteFile.FileName);
-            TDB = new TDBFile(RoutePath + @"\" + TRK.Tr_RouteFile.FileName + ".tdb");
-            SIGCFG = new SIGCFGFile(RoutePath + @"\sigcfg.dat");
+            TDB = new TrackDatabaseFile(RoutePath + @"\" + TRK.Tr_RouteFile.FileName + ".tdb");
+            SIGCFG = new SignalConfigurationFile(RoutePath + @"\sigcfg.dat");
             if (Directory.Exists(MstsPath + @"\GLOBAL") && File.Exists(MstsPath + @"\GLOBAL\TSECTION.DAT"))
-                TSectionDat = new TSectionDatFile(MstsPath + @"\GLOBAL\TSECTION.DAT");
+                TSectionDat = new TrackSectionsFile(MstsPath + @"\GLOBAL\TSECTION.DAT");
             else
-                TSectionDat = new TSectionDatFile(RoutePath + @"\GLOBAL\TSECTION.DAT");
+                TSectionDat = new TrackSectionsFile(RoutePath + @"\GLOBAL\TSECTION.DAT");
             if (File.Exists(RoutePath + @"\TSECTION.DAT"))
                 TSectionDat.AddRouteTSectionDatFile(RoutePath + @"\TSECTION.DAT");
             Signals = new AESignals (this, SIGCFG);

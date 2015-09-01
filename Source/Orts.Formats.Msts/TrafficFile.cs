@@ -26,11 +26,11 @@ namespace Orts.Formats.Msts
     /// <summary>
     /// Work with Traffic Files
     /// </summary>
-    public class TRFFile
+    public class TrafficFile
     {
         public Traffic_Traffic_Definition TrafficDefinition;
 
-        public TRFFile(string filePath)
+        public TrafficFile(string filePath)
         {
             using (var stf = new STFReader(filePath, false))
                 stf.ParseFile(new STFReader.TokenProcessor[] {

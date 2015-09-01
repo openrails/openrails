@@ -58,7 +58,7 @@ namespace LibAE
         // experimentally to match MSTS's 'capture range'.
         const float MaximumCenterlineOffset = 2.5f;
 
-        readonly TSectionDatFile TSectionDat;
+        readonly TrackSectionsFile TSectionDat;
         readonly TrackNode[] TrackNodes;
         readonly TrItem[] TrItems;
         TravellerDirection direction = TravellerDirection.Forward;
@@ -155,7 +155,7 @@ namespace LibAE
 
         public PointF getCoordinate() { return (new PointF(((TileX * 2048f) + X), ((TileZ * 2048f) + Z))); }
 
-        public AETraveller(TSectionDatFile tSectionDat, TDBFile tdb)
+        public AETraveller(TrackSectionsFile tSectionDat, TrackDatabaseFile tdb)
         {
             TrackNode[] trackNodes = tdb.TrackDB.TrackNodes;
             if (tSectionDat == null) throw new ArgumentNullException("tSectionDat");
@@ -390,7 +390,7 @@ namespace LibAE
         /// <param name="tSectionDat">Provides vector track sections.</param>
         /// <param name="trackNodes">Provides track nodes.</param>
         /// <param name="inf">Reader to read persisted data from.</param>
-        public AETraveller(TSectionDatFile tSectionDat, TDBFile tdb, BinaryReader inf)
+        public AETraveller(TrackSectionsFile tSectionDat, TrackDatabaseFile tdb, BinaryReader inf)
             : this(tSectionDat, tdb)
         {
             locationSet = lengthSet = false;
@@ -449,7 +449,7 @@ namespace LibAE
         /// <param name="TSectionDat">Database with track sections</param>
         /// <param name="TrackNodes">List of available tracknodes</param>
         /// <returns>Details on where exactly the location is on the track.</returns>
-        static TrackNodeCandidate TryTrackNode(int tni, WorldLocation loc, TSectionDatFile TSectionDat, TrackNode[] TrackNodes)
+        static TrackNodeCandidate TryTrackNode(int tni, WorldLocation loc, TrackSectionsFile TSectionDat, TrackNode[] TrackNodes)
         {
             TrackNode trackNode = TrackNodes[tni];
             if (trackNode == null || trackNode.TrVectorNode == null)
@@ -477,7 +477,7 @@ namespace LibAE
         /// <param name="TSectionDat">Database with track sections</param></param>
         /// <param name="trackNode">The parent trackNode of the vector section</param>
         /// <returns>Details on where exactly the location is on the track.</returns>
-        static TrackNodeCandidate TryTrackVectorSection(int tvsi, WorldLocation loc, TSectionDatFile TSectionDat, TrackNode trackNode)
+        static TrackNodeCandidate TryTrackVectorSection(int tvsi, WorldLocation loc, TrackSectionsFile TSectionDat, TrackNode trackNode)
         {
             TrVectorSection trackVectorSection = trackNode.TrVectorNode.TrVectorSections[tvsi];
             if (trackVectorSection == null)
@@ -499,7 +499,7 @@ namespace LibAE
         /// <param name="TSectionDat">Database with track sections</param>
         /// <param name="trackVectorSection">The parent track vector section</param>
         /// <returns>Details on where exactly the location is on the track.</returns>
-        static TrackNodeCandidate TryTrackSection(uint tsi, WorldLocation loc, TSectionDatFile TSectionDat, TrVectorSection trackVectorSection)
+        static TrackNodeCandidate TryTrackSection(uint tsi, WorldLocation loc, TrackSectionsFile TSectionDat, TrVectorSection trackVectorSection)
         {
             TrackSection trackSection = TSectionDat.TrackSections.Get(tsi);
             if (trackSection == null)

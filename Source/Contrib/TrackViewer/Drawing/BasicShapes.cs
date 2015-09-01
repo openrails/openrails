@@ -310,7 +310,7 @@ namespace ORTS.TrackViewer.Drawing
                 oldAceFiles = new List<string>();
                 if (System.IO.File.Exists(path))
                 {
-                    Texture2D texture = Orts.Formats.Msts.ACEFile.Texture2DFromFile(graphicsDevice, path);
+                    Texture2D texture = Orts.Formats.Msts.AceFile.Texture2DFromFile(graphicsDevice, path);
                     textures[textureName] = texture;
                     textureScales[textureName] = texture.Width;
                     textureOffsets[textureName] = new Vector2(texture.Width / 2, texture.Height / 2);

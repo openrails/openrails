@@ -75,7 +75,7 @@ namespace ORTS.TrackViewer.Editing.Charts
         private float MaxCurvature;
 
 
-        private TSectionDatFile tsectionDat;
+        private TrackSectionsFile tsectionDat;
         private TrackDB trackDB;
         private TrackItemManager trackItems;
         #endregion
@@ -585,7 +585,7 @@ namespace ORTS.TrackViewer.Editing.Charts
     class TrackItemManager
     {
         private TrackDB trackDB;
-        private TSectionDatFile tsectionDat;
+        private TrackSectionsFile tsectionDat;
         private Dictionary<TrackNode, IEnumerable<ChartableTrackItem>> cachedItems;
 
         private HashSet<TrItem.trItemType> supportedTrackTypes;

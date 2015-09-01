@@ -973,7 +973,7 @@ namespace ORTS.Processes
             {
                 if (Path.GetExtension(path).Equals(".act", StringComparison.OrdinalIgnoreCase) || Path.GetExtension(path).Equals(".pat", StringComparison.OrdinalIgnoreCase))
                 {
-                    var trk = new Orts.Formats.Msts.TRKFile(MSTS.MSTSPath.GetTRKFileName(Path.GetDirectoryName(Path.GetDirectoryName(path))));
+                    var trk = new Orts.Formats.Msts.RouteFile(MSTS.MSTSPath.GetTRKFileName(Path.GetDirectoryName(Path.GetDirectoryName(path))));
                     return trk.Tr_RouteFile.Name;
                 }
             }
@@ -987,7 +987,7 @@ namespace ORTS.Processes
             {
                 if (Path.GetExtension(path).Equals(".act", StringComparison.OrdinalIgnoreCase))
                 {
-                    var act = new Orts.Formats.Msts.ACTFile(path);
+                    var act = new Orts.Formats.Msts.ActivityFile(path);
                     return act.Tr_Activity.Tr_Activity_Header.Name;
                 }
             }
@@ -1001,7 +1001,7 @@ namespace ORTS.Processes
             {
                 if (Path.GetExtension(path).Equals(".pat", StringComparison.OrdinalIgnoreCase))
                 {
-                    var pat = new Orts.Formats.Msts.PATFile(path);
+                    var pat = new Orts.Formats.Msts.PathFile(path);
                     return pat.Name;
                 }
             }
@@ -1015,7 +1015,7 @@ namespace ORTS.Processes
             {
                 if (Path.GetExtension(path).Equals(".con", StringComparison.OrdinalIgnoreCase))
                 {
-                    var con = new Orts.Formats.Msts.CONFile(path);
+                    var con = new Orts.Formats.Msts.ConsistFile(path);
                     return con.Name;
                 }
             }
@@ -1279,7 +1279,7 @@ namespace ORTS.Processes
             {
                 var path = Path.Combine(Simulator.RoutePath, "load.ace");
                 if (File.Exists(path))
-                    return Orts.Formats.Msts.ACEFile.Texture2DFromFile(game.RenderProcess.GraphicsDevice, path);
+                    return Orts.Formats.Msts.AceFile.Texture2DFromFile(game.RenderProcess.GraphicsDevice, path);
                 return null;
             }
         }

@@ -40,7 +40,7 @@ namespace ORTS
     public class AIPath
     {
         public TrackDB TrackDB;
-        public TSectionDatFile TSectionDat;
+        public TrackSectionsFile TSectionDat;
 #if ACTIVITY_EDITOR
         public ORRouteConfig orRouteConfig { get; protected set; }
 #endif
@@ -55,12 +55,12 @@ namespace ORTS
         /// with optional parallel siding list.
         /// </summary>
 #if ACTIVITY_EDITOR
-        public AIPath(TDBFile TDB, TSectionDatFile tsectiondat, string filePath, ORRouteConfig orRouteConf)
+        public AIPath(TrackDatabaseFile TDB, TrackSectionsFile tsectiondat, string filePath, ORRouteConfig orRouteConf)
 #else
         public AIPath(TDBFile TDB, TSectionDatFile tsectiondat, string filePath)
 #endif
         {
-            PATFile patFile = new PATFile(filePath);
+            PathFile patFile = new PathFile(filePath);
             pathName = patFile.Name;
             TrackDB = TDB.TrackDB;
             TSectionDat = tsectiondat;
@@ -193,7 +193,7 @@ namespace ORTS
         }
 
         // restore game state
-        public AIPath(TDBFile TDB, TSectionDatFile tsectiondat, BinaryReader inf)
+        public AIPath(TrackDatabaseFile TDB, TrackSectionsFile tsectiondat, BinaryReader inf)
         {
             pathName = inf.ReadString();
             TrackDB = TDB.TrackDB;
@@ -426,7 +426,7 @@ namespace ORTS
         /// <summary>
         /// Returns the index of the vector node connection this path node to the (given) nextNode.
         /// </summary>
-        public int FindTVNIndex(AIPathNode nextNode, TDBFile TDB, TSectionDatFile tsectiondat)
+        public int FindTVNIndex(AIPathNode nextNode, TrackDatabaseFile TDB, TrackSectionsFile tsectiondat)
         {
             int junctionIndexThis = JunctionIndex;
             int junctionIndexNext = nextNode.JunctionIndex;
@@ -479,7 +479,7 @@ namespace ORTS
         /// <param name="tsectiondat"></param>
         /// <param name="node"></param>
         /// <returns>The track node index that has been found (or an exception)</returns>
-        private static int findTrackNodeIndex(TDBFile TDB, TSectionDatFile tsectiondat, AIPathNode node)
+        private static int findTrackNodeIndex(TrackDatabaseFile TDB, TrackSectionsFile tsectiondat, AIPathNode node)
         {
             Traveller traveller = new Traveller(tsectiondat, TDB.TrackDB.TrackNodes, node.Location);
             return traveller.TrackNodeIndex;

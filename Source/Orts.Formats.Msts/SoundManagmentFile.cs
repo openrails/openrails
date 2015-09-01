@@ -31,13 +31,13 @@ namespace Orts.Formats.Msts
     /// </summary>
     public class SharedSMSFileManager
     {
-        private static Dictionary<string, SMSFile> SharedSMSFiles = new Dictionary<string, SMSFile>();
+        private static Dictionary<string, SoundManagmentFile> SharedSMSFiles = new Dictionary<string, SoundManagmentFile>();
 
-        public static SMSFile Get(string path)
+        public static SoundManagmentFile Get(string path)
         {
             if (!SharedSMSFiles.ContainsKey(path))
             {
-                SMSFile smsFile = new SMSFile(path);
+                SoundManagmentFile smsFile = new SoundManagmentFile(path);
                 SharedSMSFiles.Add(path, smsFile);
                 return smsFile;
             }
@@ -51,11 +51,11 @@ namespace Orts.Formats.Msts
 	/// <summary>
 	/// Represents the hiearchical structure of the SMS File
 	/// </summary>
-	public class SMSFile
+	public class SoundManagmentFile
 	{
 		public Tr_SMS Tr_SMS;
 
-		public SMSFile( string filePath )
+		public SoundManagmentFile( string filePath )
 		{
             ReadFile(filePath);  
         }

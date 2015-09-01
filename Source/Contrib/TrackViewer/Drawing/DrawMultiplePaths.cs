@@ -29,7 +29,7 @@ namespace ORTS.TrackViewer.Drawing
         List<Trainpath> selectedTrainpaths;
     
         private TrackDB trackDB;
-        private TSectionDatFile tsectionDat;
+        private TrackSectionsFile tsectionDat;
 
         /// <summary>
         /// Constructor

@@ -84,7 +84,7 @@ namespace ORTS
             ORTSActSoundSourceList = new ORTSActSoundSources();
         }
 
-        public Activity(ACTFile actFile, Simulator simulator)
+        public Activity(ActivityFile actFile, Simulator simulator)
         {
             Simulator = simulator;  // Save for future use.
             Player_Service_Definition sd;
@@ -470,7 +470,7 @@ namespace ORTS
         /// <param name="tsectionDat">track sections containing the details of the various sections</param>
         /// <param name="trackDB">The track Database that needs to be updated</param>
         /// <param name="zones">List of speed restriction zones</param>
-        public static void AddRestrictZones(Tr_RouteFile routeFile, TSectionDatFile tsectionDat, TrackDB trackDB, ActivityRestrictedSpeedZones zones)
+        public static void AddRestrictZones(Tr_RouteFile routeFile, TrackSectionsFile tsectionDat, TrackDB trackDB, ActivityRestrictedSpeedZones zones)
         {
             if (zones.ActivityRestrictedSpeedZoneList.Count < 1) return;
 
@@ -505,7 +505,7 @@ namespace ORTS
         /// <param name="tsectionDat">track sections containing the details of the various sections</param>
         /// <param name="trackDB">track database to be modified</param>
         /// <param name="newTrItemRef">The Id of the new TrItem to add to the tracknode</param>
-        static void AddItemIdToTrackNode(Position position, TSectionDatFile tsectionDat, TrackDB trackDB, int newTrItemId)
+        static void AddItemIdToTrackNode(Position position, TrackSectionsFile tsectionDat, TrackDB trackDB, int newTrItemId)
         {
             try
             {

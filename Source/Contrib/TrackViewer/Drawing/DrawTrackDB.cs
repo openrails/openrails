@@ -36,13 +36,13 @@ namespace ORTS.TrackViewer.Drawing
         /// <summary>Name of the route</summary>
         public string RouteName { get; private set; }
         /// <summary>Track Section Data, public such that other classes have access as well</summary>
-        public TSectionDatFile TsectionDat { get; private set; }
+        public TrackSectionsFile TsectionDat { get; private set; }
         /// <summary>Track database, public such that other classes have access as well</summary>
         public TrackDB TrackDB { get; private set; }
         /// <summary>Road track database</summary>
         public RoadTrackDB RoadTrackDB { get; set; }
         /// <summary>The signal config file containing, for instance, the information to distinguish normal and non-normal signals</summary>
-        public SIGCFGFile SigcfgFile { get; set; }
+        public SignalConfigurationFile SigcfgFile { get; set; }
 
         /// <summary>
         /// Constructor. Loads all the relevant files for the route
@@ -52,19 +52,19 @@ namespace ORTS.TrackViewer.Drawing
         public RouteData(string routePath, MessageDelegate messageDelegate)
         {
             messageDelegate(TrackViewer.catalog.GetString("Loading trackfile .trk ..."));
-            TRKFile TRK = new TRKFile(MSTS.MSTSPath.GetTRKFileName(routePath));
+            RouteFile TRK = new RouteFile(MSTS.MSTSPath.GetTRKFileName(routePath));
             RouteName = TRK.Tr_RouteFile.Name;
 
             messageDelegate(TrackViewer.catalog.GetString("Loading track database .tdb ..."));
-            TDBFile TDB = new TDBFile(routePath + @"\" + TRK.Tr_RouteFile.FileName + ".tdb");
+            TrackDatabaseFile TDB = new TrackDatabaseFile(routePath + @"\" + TRK.Tr_RouteFile.FileName + ".tdb");
             this.TrackDB = TDB.TrackDB;
 
             messageDelegate(TrackViewer.catalog.GetString("Loading tsection.dat ..."));
             string BasePath = Path.GetDirectoryName(Path.GetDirectoryName(routePath));
             if (Directory.Exists(routePath + @"\GLOBAL") && File.Exists(routePath + @"\GLOBAL\TSECTION.DAT"))
-                TsectionDat = new TSectionDatFile(routePath + @"\GLOBAL\TSECTION.DAT");
+                TsectionDat = new TrackSectionsFile(routePath + @"\GLOBAL\TSECTION.DAT");
             else
-                TsectionDat = new TSectionDatFile(BasePath + @"\GLOBAL\TSECTION.DAT");
+                TsectionDat = new TrackSectionsFile(BasePath + @"\GLOBAL\TSECTION.DAT");
             if (File.Exists(routePath + @"\TSECTION.DAT"))
                 TsectionDat.AddRouteTSectionDatFile(routePath + @"\TSECTION.DAT");
 
@@ -73,7 +73,7 @@ namespace ORTS.TrackViewer.Drawing
             {
                 messageDelegate(TrackViewer.catalog.GetString("Loading road track database .rdb ..."));
 
-                RDBFile RDB = new RDBFile(roadTrackFileName);
+                RoadDatabaseFile RDB = new RoadDatabaseFile(roadTrackFileName);
                 RoadTrackDB = RDB.RoadTrackDB;
             }
             catch
@@ -83,11 +83,11 @@ namespace ORTS.TrackViewer.Drawing
             string ORfilepath = System.IO.Path.Combine(routePath, "OpenRails");
             if (File.Exists(ORfilepath + @"\sigcfg.dat"))
             {
-                SigcfgFile = new SIGCFGFile(ORfilepath + @"\sigcfg.dat");
+                SigcfgFile = new SignalConfigurationFile(ORfilepath + @"\sigcfg.dat");
             }
             else if (File.Exists(routePath + @"\sigcfg.dat"))
             {
-                SigcfgFile = new SIGCFGFile(routePath + @"\sigcfg.dat");
+                SigcfgFile = new SignalConfigurationFile(routePath + @"\sigcfg.dat");
             }
             else
             {
@@ -146,13 +146,13 @@ namespace ORTS.TrackViewer.Drawing
 
         #region private members
         /// <summary>Track Section Data</summary>
-        private TSectionDatFile tsectionDat;
+        private TrackSectionsFile tsectionDat;
         /// <summary>Track database</summary>
         private TrackDB trackDB;
         /// <summary>Road track database</summary>
         private RoadTrackDB roadTrackDB;
         /// <summary>The signal config file to distinguish normal and non-normal signals</summary>
-        private SIGCFGFile sigcfgFile;
+        private SignalConfigurationFile sigcfgFile;
 
         /// <summary>Normally highlights are based on mouse location. When searching this is overridden</summary>
         private bool IsHighlightOverridden;

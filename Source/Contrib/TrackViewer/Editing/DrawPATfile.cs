@@ -40,7 +40,7 @@ namespace ORTS.TrackViewer.Editing
     public class DrawPATfile
     {
         /// <summary>the parsed .pat file information</summary>
-        private PATFile patFile;
+        private PathFile patFile;
         /// <summary>The filename of the .pat file</summary>
         public string FileName { get; private set; }
 
@@ -64,7 +64,7 @@ namespace ORTS.TrackViewer.Editing
         public DrawPATfile (ORTS.Menu.Path path)
         {
             FileName = path.FilePath.Split('\\').Last();
-            patFile = new PATFile(path.FilePath);
+            patFile = new PathFile(path.FilePath);
         }
 
         /// <summary>

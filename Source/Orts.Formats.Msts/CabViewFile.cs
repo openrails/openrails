@@ -28,7 +28,7 @@ namespace Orts.Formats.Msts
 {
 
 	// TODO - this is an incomplete parse of the cvf file.
-	public class CVFFile
+	public class CabViewFile
 	{
         public List<Vector3> Locations = new List<Vector3>();   // Head locations for front, left and right views
         public List<Vector3> Directions = new List<Vector3>();  // Head directions for each view
@@ -37,7 +37,7 @@ namespace Orts.Formats.Msts
         public List<string> LightViews = new List<string>();    // Light CAB Views - by GeorgeS
         public CabViewControls CabViewControls;                 // Controls in CAB - by GeorgeS
 
-        public CVFFile(string filePath, string basePath)
+        public CabViewFile(string filePath, string basePath)
 		{
             using (STFReader stf = new STFReader(filePath, false))
                 stf.ParseFile(new STFReader.TokenProcessor[] {

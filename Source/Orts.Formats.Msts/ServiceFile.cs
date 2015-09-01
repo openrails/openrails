@@ -25,7 +25,7 @@ namespace Orts.Formats.Msts
 	/// <summary>
 	/// Work with Service Files
 	/// </summary>
-	public class SRVFile
+	public class ServiceFile
 	{
 		public int Serial;
 		public string Name;
@@ -41,7 +41,7 @@ namespace Orts.Formats.Msts
 		/// filePath includes full path and extension
 		/// </summary>
 		/// <param name="filePath"></param>
-		public SRVFile( string filePath )
+		public ServiceFile( string filePath )
 		{
             using (STFReader stf = new STFReader(filePath, false))
                 stf.ParseFile(new STFReader.TokenProcessor[] {

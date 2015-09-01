@@ -135,13 +135,13 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>Reference to the track database to be able to search it</summary>
         protected TrackDB TrackDB { get; private set; }
         /// <summary>Reference to the track section data to be able to search it</summary>
-        protected TSectionDatFile TsectionDat { get; private set; }
+        protected TrackSectionsFile TsectionDat { get; private set; }
 
         /// <summary>
         /// Sort of constructor. But it creates the right sub-class
         /// </summary>
         /// <returns>A sub-class object properly initialized</returns>
-        public static TrainpathNode CreatePathNode(TrPathNode tpn, TrackPDP pdp, TrackDB trackDB, TSectionDatFile tsectionDat)
+        public static TrainpathNode CreatePathNode(TrPathNode tpn, TrackPDP pdp, TrackDB trackDB, TrackSectionsFile tsectionDat)
         {
             if (pdp.IsJunction) {
                 // we do not use tpn: this means we do not interpret the flags
@@ -156,7 +156,7 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>
         /// basic constructor, in case node is not created from PAT file, and only some parts are needed
         /// </summary>
-        protected TrainpathNode(TrackDB trackDB, TSectionDatFile tsectionDat)
+        protected TrainpathNode(TrackDB trackDB, TrackSectionsFile tsectionDat)
         {
             this.TrackDB = trackDB;
             this.TsectionDat = tsectionDat;
@@ -179,7 +179,7 @@ namespace ORTS.TrackViewer.Editing
         /// Creates a single trainpathNode and initializes everything that do not depend on other nodes.
         /// The trainpath constructor will initialize the rest.
         /// </summary>
-        protected TrainpathNode(TrackPDP pdp, TrackDB trackDB, TSectionDatFile tsectionDat)
+        protected TrainpathNode(TrackPDP pdp, TrackDB trackDB, TrackSectionsFile tsectionDat)
             :this(trackDB, tsectionDat)
         {
             Location = new WorldLocation(pdp.TileX, pdp.TileZ, pdp.X, pdp.Y, pdp.Z);
@@ -337,7 +337,7 @@ namespace ORTS.TrackViewer.Editing
         /// <param name="pdp">Corresponding PDP in the .patfile</param>
         /// <param name="trackDB"></param>
         /// <param name="tsectionDat"></param>
-        public TrainpathJunctionNode(TrackPDP pdp, TrackDB trackDB, TSectionDatFile tsectionDat) 
+        public TrainpathJunctionNode(TrackPDP pdp, TrackDB trackDB, TrackSectionsFile tsectionDat) 
             : base(pdp, trackDB, tsectionDat)
         {
             JunctionIndex = FindJunctionOrEndIndex(true);
@@ -663,7 +663,7 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         /// <param name="trackDB"></param>
         /// <param name="tsectionDat"></param>
-        public TrainpathVectorNode(TrackDB trackDB, TSectionDatFile tsectionDat)
+        public TrainpathVectorNode(TrackDB trackDB, TrackSectionsFile tsectionDat)
             :base(trackDB, tsectionDat)
         {
             TvnIndex = 0;
@@ -721,7 +721,7 @@ namespace ORTS.TrackViewer.Editing
         /// <param name="pdp">TrackPDP from .pat file</param>
         /// <param name="trackDB"></param>
         /// <param name="tsectionDat"></param>
-        public TrainpathVectorNode(TrPathNode tpn, TrackPDP pdp, TrackDB trackDB, TSectionDatFile tsectionDat)
+        public TrainpathVectorNode(TrPathNode tpn, TrackPDP pdp, TrackDB trackDB, TrackSectionsFile tsectionDat)
             : base(pdp, trackDB, tsectionDat)
         {
             try

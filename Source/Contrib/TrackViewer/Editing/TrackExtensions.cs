@@ -20,7 +20,7 @@ namespace ORTS.TrackViewer.Editing
         private static uint[] sidingRouteIndex;
 
         private static TrackNode[] trackNodes;
-        private static TSectionDatFile tsectionDat;
+        private static TrackSectionsFile tsectionDat;
 
         /// <summary>
         /// Find the indices we need to use for TrPins in the various junction nodes in case we want to use either main
@@ -28,7 +28,7 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         /// <param name="trackNodesIn">The tracknodes</param>
         /// <param name="tsectionDatIn">Track section Data</param>
-        public static void Initialize(TrackNode[] trackNodesIn, TSectionDatFile tsectionDatIn)
+        public static void Initialize(TrackNode[] trackNodesIn, TrackSectionsFile tsectionDatIn)
         {
             trackNodes = trackNodesIn;
             tsectionDat = tsectionDatIn;

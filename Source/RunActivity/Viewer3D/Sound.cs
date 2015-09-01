@@ -105,7 +105,7 @@ namespace ORTS.Viewer3D
             _inSources = new List<SoundSource>();
             _outSources = new List<SoundSource>();
 
-            foreach (Orts.Formats.Msts.TTypeDatFile.TrackType ttdf in viewer.TrackTypes)
+            foreach (Orts.Formats.Msts.TrackTypesFile.TrackType ttdf in viewer.TrackTypes)
             {
                 MSTSLocomotive loco = Car as MSTSLocomotive;
 
@@ -485,7 +485,7 @@ namespace ORTS.Viewer3D
 
             SMSFolder = Path.GetDirectoryName(smsFilePath);
             SMSFileName = Path.GetFileName(smsFilePath);
-            Orts.Formats.Msts.SMSFile smsFile = Orts.Formats.Msts.SharedSMSFileManager.Get(smsFilePath);
+            Orts.Formats.Msts.SoundManagmentFile smsFile = Orts.Formats.Msts.SharedSMSFileManager.Get(smsFilePath);
 
 
             // find correct ScalabiltyGroup
@@ -2181,7 +2181,7 @@ namespace ORTS.Viewer3D
         public void AddByTile(int TileX, int TileZ)
         {
             string name = Viewer.Simulator.RoutePath + @"\WORLD\" + WorldFile.WorldFileNameFromTileCoordinates(TileX, TileZ) + "s";
-            WSFile wf = new WSFile(name);
+            WorldSoundFile wf = new WorldSoundFile(name);
             if (wf.TR_WorldSoundFile != null)
             {
                 string[] pathArray = {Viewer.Simulator.RoutePath, Viewer.Simulator.BasePath};

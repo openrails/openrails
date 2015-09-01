@@ -41,14 +41,14 @@ namespace ORTS.ContentManager.Models
             Debug.Assert(content.Type == ContentType.Car);
             if (System.IO.Path.GetExtension(content.PathName).Equals(".eng", StringComparison.OrdinalIgnoreCase))
             {
-                var file = new ENGFile(content.PathName);
+                var file = new EngineFile(content.PathName);
                 Type = CarType.Engine;
                 Name = file.Name;
                 Description = file.Description;
             }
             else if (System.IO.Path.GetExtension(content.PathName).Equals(".wag", StringComparison.OrdinalIgnoreCase))
             {
-                var file = new WAGFile(content.PathName);
+                var file = new WagonFile(content.PathName);
                 Type = CarType.Wagon;
                 Name = file.Name;
                 Description = "";

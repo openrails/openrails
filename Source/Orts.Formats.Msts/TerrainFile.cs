@@ -294,11 +294,11 @@ namespace Orts.Formats.Msts
         }
     }
 
-    public class TFile
+    public class TerrainFile
     {
         public readonly terrain terrain;
 
-        public TFile(string filename)
+        public TerrainFile(string filename)
         {
             using (var sbr = SBR.Open(filename))
             using (var block = sbr.ReadSubBlock())

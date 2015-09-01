@@ -22,11 +22,11 @@ using Orts.Parsers.Msts;
 
 namespace Orts.Formats.Msts
 {
-    public class WSFile
+    public class WorldSoundFile
     {
         public TR_WorldSoundFile TR_WorldSoundFile;
 
-        public WSFile(string wsfilename)
+        public WorldSoundFile(string wsfilename)
         {
             Read(wsfilename);
         }

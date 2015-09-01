@@ -347,9 +347,9 @@ namespace ORTS.Viewer3D
             return TFile.terrain.terrain_patchsets[0].terrain_patchset_patches[z * PatchCount + x];
         }
 
-        readonly TFile TFile;
-        readonly YFile YFile;
-        readonly FFile FFile;
+        readonly TerrainFile TFile;
+        readonly TerrainAltitudeFile YFile;
+        readonly TerrainFlagsFile FFile;
 
         public Tile(string filePath, int tileX, int tileZ, TileName.Zoom zoom, bool visible)
         {
@@ -370,7 +370,7 @@ namespace ORTS.Viewer3D
             // T and Y files are expected to exist; F files are optional.
             try
             {
-                TFile = new TFile(fileName + ".t");
+                TFile = new TerrainFile(fileName + ".t");
             }
             catch (Exception error)
             {
@@ -378,7 +378,7 @@ namespace ORTS.Viewer3D
             }
             try
             {
-                YFile = new YFile(fileName + "_y.raw", SampleCount);
+                YFile = new TerrainAltitudeFile(fileName + "_y.raw", SampleCount);
             }
             catch (Exception error)
             {
@@ -387,7 +387,7 @@ namespace ORTS.Viewer3D
             try
             {
                 if (File.Exists(fileName + "_f.raw"))
-                    FFile = new FFile(fileName + "_f.raw", SampleCount);
+                    FFile = new TerrainFlagsFile(fileName + "_f.raw", SampleCount);
             }
             catch (Exception error)
             {

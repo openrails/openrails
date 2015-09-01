@@ -446,7 +446,7 @@ namespace ORTS
             if (!File.Exists(cvfFilePath))
                 return null;
 
-            var cvfFile = new CVFFile(cvfFilePath, cvfBasePath);
+            var cvfFile = new CabViewFile(cvfFilePath, cvfBasePath);
             var viewPoint = new ViewPoint();
             if (cvfFile.Locations.Count <= 0) return null; //check for Protrain's dummy cab
             // Set up camera locations for the cab views
@@ -470,13 +470,13 @@ namespace ORTS
             var wagFolderSlash = Path.GetDirectoryName(wag.WagFilePath) + @"\";
             string shapeFilePath;
             bool boundingLimitsFound = false;
-            SDFile shapeFile = new SDFile();
+            ShapeDescriptorFile shapeFile = new ShapeDescriptorFile();
             if (wag.FreightShapeFileName != null)
             {
                 shapeFilePath = wagFolderSlash + wag.FreightShapeFileName;
                 if (shapeFilePath != null && File.Exists(shapeFilePath + "d"))
                 {
-                    shapeFile = new SDFile(shapeFilePath + "d");
+                    shapeFile = new ShapeDescriptorFile(shapeFilePath + "d");
                     if (shapeFile.shape.ESD_Bounding_Box != null) boundingLimitsFound = true;
                 }
             }
@@ -485,7 +485,7 @@ namespace ORTS
                 shapeFilePath = wagFolderSlash + wag.MainShapeFileName;
                 if (shapeFilePath != null && File.Exists(shapeFilePath + "d"))
                 {
-                    shapeFile = new SDFile(shapeFilePath + "d");
+                    shapeFile = new ShapeDescriptorFile(shapeFilePath + "d");
                     if (shapeFile.shape.ESD_Bounding_Box != null) boundingLimitsFound = true;               
                 }
             }
@@ -2761,13 +2761,13 @@ namespace ORTS
 
     public class CabView
     {
-        public CVFFile CVFFile;
+        public CabViewFile CVFFile;
         public List<ViewPoint> ViewPointList;
         public ExtendedCVF ExtendedCVF;
         public CabViewType CabViewType;
         public bool NoseAhead; // if cabview is not in front of engine; used to define how terrain tilts if there is freightanimation
 
-        public CabView(CVFFile cvfFile, List<ViewPoint> viewPointList, ExtendedCVF extendedCVF, CabViewType cabViewType, bool noseAhead)
+        public CabView(CabViewFile cvfFile, List<ViewPoint> viewPointList, ExtendedCVF extendedCVF, CabViewType cabViewType, bool noseAhead)
         {
             CVFFile = cvfFile;
             ViewPointList = viewPointList;

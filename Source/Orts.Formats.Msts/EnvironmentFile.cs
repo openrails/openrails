@@ -27,7 +27,7 @@ using Orts.Parsers.Msts;
 
 namespace Orts.Formats.Msts
 {
-    public class ENVFile
+    public class EnvironmentFile
     {
         public float WaterWaveHeight;
         public float WaterWaveSpeed;
@@ -36,7 +36,7 @@ namespace Orts.Formats.Msts
         public List<ENVFileSkyLayer> SkyLayers;
         public List<ENVFileSkySatellite> SkySatellite;
 
-        public ENVFile(string filePath)
+        public EnvironmentFile(string filePath)
         {
             using (STFReader stf = new STFReader(filePath, false))
                 stf.ParseFile(new STFReader.TokenProcessor[] {

@@ -63,8 +63,8 @@ namespace ORTS
         //================================================================================================//
 
         public TrackDB trackDB;
-        private TSectionDatFile tsectiondat;
-        private TDBFile tdbfile;
+        private TrackSectionsFile tsectiondat;
+        private TrackDatabaseFile tdbfile;
 
         private SignalObject[] signalObjects;
         private List<SignalWorldObject> SignalWorldList = new List<SignalWorldObject>();
@@ -93,7 +93,7 @@ namespace ORTS
         /// Constructor
         ///
 
-        public Signals(Simulator simulator, SIGCFGFile sigcfg, LoaderProcess loader)
+        public Signals(Simulator simulator, SignalConfigurationFile sigcfg, LoaderProcess loader)
         {
 
 #if DEBUG_REPORTS
@@ -287,7 +287,7 @@ namespace ORTS
         /// Overlay constructor for restore after saved game
         ///
 
-        public Signals(Simulator simulator, SIGCFGFile sigcfg, BinaryReader inf, LoaderProcess loader)
+        public Signals(Simulator simulator, SignalConfigurationFile sigcfg, BinaryReader inf, LoaderProcess loader)
             : this(simulator, sigcfg, loader)
         {
             int signalIndex = inf.ReadInt32();
@@ -436,7 +436,7 @@ namespace ORTS
         /// Read all world files to get signal flags
         ///
 
-        private void BuildSignalWorld(Simulator simulator, SIGCFGFile sigcfg, LoaderProcess loader)
+        private void BuildSignalWorld(Simulator simulator, SignalConfigurationFile sigcfg, LoaderProcess loader)
         {
 
             // get all filesnames in World directory
@@ -459,10 +459,10 @@ namespace ORTS
                 // read w-file, get SignalObjects only
 
                 Trace.Write("W");
-                WFile WFile;
+                WorldFile WFile;
                 try
                 {
-                    WFile = new WFile(fileName, Tokens);
+                    WFile = new WorldFile(fileName, Tokens);
                 }
                 catch (Exception error)
                 {
@@ -584,8 +584,8 @@ namespace ORTS
         /// Build signal list from TDB
         ///
 
-        private void BuildSignalList(TrItem[] TrItems, TrackNode[] trackNodes, TSectionDatFile tsectiondat,
-                TDBFile tdbfile, Dictionary<int, int> platformList)
+        private void BuildSignalList(TrItem[] TrItems, TrackNode[] trackNodes, TrackSectionsFile tsectiondat,
+                TrackDatabaseFile tdbfile, Dictionary<int, int> platformList)
         {
 
             //  Determaine the number of signals in the track Objects list
@@ -908,7 +908,7 @@ namespace ORTS
         //
 
         private void ScanSection(TrItem[] TrItems, TrackNode[] trackNodes, int index,
-                               TSectionDatFile tsectiondat, TDBFile tdbfile, Dictionary<int, int> platformList)
+                               TrackSectionsFile tsectiondat, TrackDatabaseFile tdbfile, Dictionary<int, int> platformList)
         {
             int lastSignal = -1;                // Index to last signal found in path -1 if none
 
@@ -1034,7 +1034,7 @@ namespace ORTS
         /// This method adds a new Signal to the list
         ///
 
-        private int AddSignal(int trackNode, int nodeIndx, SignalItem sigItem, int TDBRef, TSectionDatFile tsectiondat, TDBFile tdbfile, ref bool validSignal)
+        private int AddSignal(int trackNode, int nodeIndx, SignalItem sigItem, int TDBRef, TrackSectionsFile tsectiondat, TrackDatabaseFile tdbfile, ref bool validSignal)
         {
             validSignal = true;
 
@@ -1087,7 +1087,7 @@ namespace ORTS
         /// This method adds a new Speedpost to the list
         ///
 
-        private int AddSpeed(int trackNode, int nodeIndx, SpeedPostItem speedItem, int TDBRef, TSectionDatFile tsectiondat, TDBFile tdbfile)
+        private int AddSpeed(int trackNode, int nodeIndx, SpeedPostItem speedItem, int TDBRef, TrackSectionsFile tsectiondat, TrackDatabaseFile tdbfile)
         {
             signalObjects[foundSignals] = new SignalObject();
             signalObjects[foundSignals].isSignal = false;
@@ -1134,7 +1134,7 @@ namespace ORTS
         //      AddCFG : This method adds the sigcfg reference to each signal object.
         //
 
-        private void AddCFG(SIGCFGFile sigCFG)
+        private void AddCFG(SignalConfigurationFile sigCFG)
         {
             foreach (SignalObject signal in signalObjects)
             {
@@ -1539,7 +1539,7 @@ namespace ORTS
         // Create Track Circuits
         //
 #if ACTIVITY_EDITOR
-        private void CreateTrackCircuits(TrItem[] TrItems, TrackNode[] trackNodes, TSectionDatFile tsectiondat, LibAE.Formats.ORRouteConfig orRouteConfig)
+        private void CreateTrackCircuits(TrItem[] TrItems, TrackNode[] trackNodes, TrackSectionsFile tsectiondat, LibAE.Formats.ORRouteConfig orRouteConfig)
 #else
         private void CreateTrackCircuits(TrItem[] TrItems, TrackNode[] trackNodes, TSectionDatFile tsectiondat)
 #endif
@@ -1918,7 +1918,7 @@ namespace ORTS
         // ProcessNodes
         //
 
-        public void ProcessNodes(int iNode, TrItem[] TrItems, TrackNode[] trackNodes, TSectionDatFile tsectiondat)
+        public void ProcessNodes(int iNode, TrItem[] TrItems, TrackNode[] trackNodes, TrackSectionsFile tsectiondat)
         {
 
             //
@@ -2226,7 +2226,7 @@ namespace ORTS
         //
 
         private int SplitNodesCrossover(CrossOverItem CrossOver,
-                TSectionDatFile tsectiondat, int nextNode)
+                TrackSectionsFile tsectiondat, int nextNode)
         {
             bool processCrossOver = true;
             int sectionIndex0 = 0;
@@ -2583,7 +2583,7 @@ namespace ORTS
 
         private void addCrossoverJunction(int leadSectionIndex0, int trailSectionIndex0,
                         int leadSectionIndex1, int trailSectionIndex1, int JnIndex,
-                        CrossOverItem CrossOver, TSectionDatFile tsectiondat)
+                        CrossOverItem CrossOver, TrackSectionsFile tsectiondat)
         {
             TrackCircuitSection leadSection0 = TrackCircuitList[leadSectionIndex0];
             TrackCircuitSection leadSection1 = TrackCircuitList[leadSectionIndex1];
@@ -4871,7 +4871,7 @@ namespace ORTS
 
 
         public TrackCircuitSection(TrackNode thisNode, int orgINode,
-                        TSectionDatFile tsectiondat, Signals thisSignals)
+                        TrackSectionsFile tsectiondat, Signals thisSignals)
         {
 
             //
@@ -8949,7 +8949,7 @@ namespace ORTS
         // SetSignalType : Sets the signal type from the sigcfg file for each signal head.
         //
 
-        public void SetSignalType(SIGCFGFile sigCFG)
+        public void SetSignalType(SignalConfigurationFile sigCFG)
         {
             foreach (SignalHead sigHead in SignalHeads)
             {
@@ -10897,7 +10897,7 @@ namespace ORTS
         // SetSignalType : This method sets the signal type object from the CIGCFG file
         //
 
-        public void SetSignalType(TrItem[] TrItems, SIGCFGFile sigCFG)
+        public void SetSignalType(TrItem[] TrItems, SignalConfigurationFile sigCFG)
         {
             SignalItem sigItem = (SignalItem)TrItems[TDBIndex];
 
@@ -11276,7 +11276,7 @@ namespace ORTS
         // Constructor
         //
 
-        public SignalWorldObject(Orts.Formats.Msts.SignalObj SignalWorldItem, SIGCFGFile sigcfg)
+        public SignalWorldObject(Orts.Formats.Msts.SignalObj SignalWorldItem, SignalConfigurationFile sigcfg)
         {
             Orts.Formats.Msts.SignalShape thisCFGShape;
 

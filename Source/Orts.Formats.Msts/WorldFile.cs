@@ -26,17 +26,17 @@ using ORTS.Common;
 
 namespace Orts.Formats.Msts
 {
-    public class WFile
+    public class WorldFile
     {
         public readonly int TileX, TileZ;
         public readonly Tr_Worldfile Tr_Worldfile;
 
-        public WFile(string filename)
+        public WorldFile(string filename)
             : this(filename, null)
         {
         }
 
-        public WFile(string filename, List<TokenID> allowedTokens)
+        public WorldFile(string filename, List<TokenID> allowedTokens)
         {
             // Parse the tile location out of the filename.
             var p = filename.ToUpper().LastIndexOf("\\WORLD\\W");

@@ -26,7 +26,7 @@ using System.Linq;
 
 namespace Orts.Formats.Msts
 {
-    public class SFile
+    public class ShapeFile
     {
         public shape shape;
 
@@ -94,7 +94,7 @@ namespace Orts.Formats.Msts
             }
         }
 
-        public SFile(string filename, bool suppressShapeWarnings)
+        public ShapeFile(string filename, bool suppressShapeWarnings)
         {
             var file = SBR.Open(filename);
             shape = new shape(file.ReadSubBlock());

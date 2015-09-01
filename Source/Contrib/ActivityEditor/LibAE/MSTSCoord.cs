@@ -50,7 +50,7 @@ namespace LibAE
             TileX = 0;
             TileY = 0;
         }
-        public MSTSBase(TDBFile TDB)
+        public MSTSBase(TrackDatabaseFile TDB)
         {
             double minTileX = double.PositiveInfinity;
             double minTileY = double.PositiveInfinity;
@@ -102,7 +102,7 @@ namespace LibAE
             return coord;
         }
 
-        public void reduce(TDBFile TDB)
+        public void reduce(TrackDatabaseFile TDB)
         {
             TrackNode[] nodes = TDB.TrackDB.TrackNodes;
             for (int nodeIdx = 0; nodeIdx < nodes.Length; nodeIdx++)

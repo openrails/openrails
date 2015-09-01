@@ -24,9 +24,9 @@ using Orts.Parsers.Msts;
 
 namespace Orts.Formats.Msts
 {
-	public class HAZFile
+	public class HazardFile
 	{
-		public HAZFile(string filename)
+		public HazardFile(string filename)
 		{
 			try
 			{

@@ -101,7 +101,7 @@ namespace LibAE.Formats
         /// </summary>
         /// <param name="sideItem"></param>
         /// <param name="signal"></param>
-        public AESignalItem(SignalItem item, AESignalObject signal, TDBFile TDB)
+        public AESignalItem(SignalItem item, AESignalObject signal, TrackDatabaseFile TDB)
         {
             typeItem = (int)TypeItem.SIGNAL_ITEM;
             Item = item;

@@ -1316,12 +1316,12 @@ namespace ORTS
                         AITrain.tilted = false;
                     }
 
-                    CONFile conFile = null;
+                    ConsistFile conFile = null;
 
                     // try to load config file, exit if failed
                     try
                     {
-                        conFile = new CONFile(consistFile);
+                        conFile = new ConsistFile(consistFile);
                     }
                     catch (Exception e)
                     {
@@ -1412,7 +1412,7 @@ namespace ORTS
             /// <param name="simulator">Simulator</param>
             /// <returns>Generated TrainCar list</returns>
 
-            public List<TrainCar> AddWagons(Orts.Formats.Msts.CONFile consistFile, string trainsDirectory, Simulator simulator, bool consistReverse)
+            public List<TrainCar> AddWagons(Orts.Formats.Msts.ConsistFile consistFile, string trainsDirectory, Simulator simulator, bool consistReverse)
             {
                 List<TrainCar> cars = new List<TrainCar>();
 

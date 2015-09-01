@@ -85,12 +85,12 @@ namespace ORTS
         public string ActivityFileName;
         public string TimetableFileName;
         public bool TimetableMode;
-        public ACTFile Activity;
+        public ActivityFile Activity;
         public Activity ActivityRun;
-        public TDBFile TDB;
-        public TRKFile TRK;
+        public TrackDatabaseFile TDB;
+        public RouteFile TRK;
         public TRPFile TRP; // Track profile file
-        public TSectionDatFile TSectionDat;
+        public TrackSectionsFile TSectionDat;
         public TrainList Trains;
         public Dictionary<int, Train> TrainDictionary = new Dictionary<int, Train>();
         public Dictionary<string, Train> NameDictionary = new Dictionary<string, Train>();
@@ -102,14 +102,14 @@ namespace ORTS
         public RailDriverHandler RailDriver;
         public SeasonType Season;
         public WeatherType Weather;
-        SIGCFGFile SIGCFG;
+        SignalConfigurationFile SIGCFG;
         public string ExplorePathFile;
         public string ExploreConFile;
         public string patFileName;
         public string conFileName;
         public AIPath PlayerPath;
         public LevelCrossings LevelCrossings;
-        public RDBFile RDB;
+        public RoadDatabaseFile RDB;
         public CarSpawnerFile CarSpawnerFile;
         public bool UseAdvancedAdhesion;
         public bool BreakCouplers;
@@ -172,28 +172,28 @@ namespace ORTS
             Trace.Write("Loading ");
 
             Trace.Write(" TRK");
-            TRK = new TRKFile(MSTS.MSTSPath.GetTRKFileName(RoutePath));
+            TRK = new RouteFile(MSTS.MSTSPath.GetTRKFileName(RoutePath));
             RouteName = TRK.Tr_RouteFile.Name;
 
             Trace.Write(" TDB");
-            TDB = new TDBFile(RoutePath + @"\" + TRK.Tr_RouteFile.FileName + ".tdb");
+            TDB = new TrackDatabaseFile(RoutePath + @"\" + TRK.Tr_RouteFile.FileName + ".tdb");
 
             if (File.Exists(ORfilepath + @"\sigcfg.dat"))
             {
                 Trace.Write(" SIGCFG_OR");
-                SIGCFG = new SIGCFGFile(ORfilepath + @"\sigcfg.dat");
+                SIGCFG = new SignalConfigurationFile(ORfilepath + @"\sigcfg.dat");
             }
             else
             {
                 Trace.Write(" SIGCFG");
-                SIGCFG = new SIGCFGFile(RoutePath + @"\sigcfg.dat");
+                SIGCFG = new SignalConfigurationFile(RoutePath + @"\sigcfg.dat");
             }
 
             Trace.Write(" DAT");
             if (Directory.Exists(RoutePath + @"\GLOBAL") && File.Exists(RoutePath + @"\GLOBAL\TSECTION.DAT"))
-                TSectionDat = new TSectionDatFile(RoutePath + @"\GLOBAL\TSECTION.DAT");
+                TSectionDat = new TrackSectionsFile(RoutePath + @"\GLOBAL\TSECTION.DAT");
             else
-                TSectionDat = new TSectionDatFile(BasePath + @"\GLOBAL\TSECTION.DAT");
+                TSectionDat = new TrackSectionsFile(BasePath + @"\GLOBAL\TSECTION.DAT");
             if (File.Exists(RoutePath + @"\TSECTION.DAT"))
                 TSectionDat.AddRouteTSectionDatFile(RoutePath + @"\TSECTION.DAT");
 
@@ -211,7 +211,7 @@ namespace ORTS
             if (File.Exists(rdbFile))
             {
                 Trace.Write(" RDB");
-                RDB = new RDBFile(rdbFile);
+                RDB = new RoadDatabaseFile(rdbFile);
             }
 
             var carSpawnFile = RoutePath + @"\carspawn.dat";
@@ -231,7 +231,7 @@ namespace ORTS
         public void SetActivity(string activityPath)
         {
             ActivityFileName = Path.GetFileNameWithoutExtension(activityPath);
-            Activity = new ACTFile(activityPath);
+            Activity = new ActivityFile(activityPath);
             ActivityRun = new Activity(Activity, this);
             // <CSComment> There can also be an activity without events and without station stops
 //            if (ActivityRun.Current == null && ActivityRun.EventList.Count == 0)
@@ -838,7 +838,7 @@ namespace ORTS
             else
             {
                 string playerServiceFileName = Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name;
-                SRVFile srvFile = new SRVFile(RoutePath + @"\SERVICES\" + playerServiceFileName + ".SRV");
+                ServiceFile srvFile = new ServiceFile(RoutePath + @"\SERVICES\" + playerServiceFileName + ".SRV");
                 train.InitialSpeed = srvFile.TimeTable.InitialSpeed;
                 conFileName = BasePath + @"\TRAINS\CONSISTS\" + srvFile.Train_Config + ".CON";
                 patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
@@ -868,7 +868,7 @@ namespace ORTS
             // place rear of train on starting location of aiPath.
             train.RearTDBTraveller = new Traveller(TSectionDat, TDB.TrackDB.TrackNodes, aiPath);
 
-            CONFile conFile = new CONFile(conFileName);
+            ConsistFile conFile = new ConsistFile(conFileName);
 
             // add wagons
             foreach (Wagon wagon in conFile.Train.TrainCfg.WagonList)
@@ -982,7 +982,7 @@ namespace ORTS
         private AITrain InitializeAPPlayerTrain()
         {
             string playerServiceFileName = Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name;
-            SRVFile srvFile = new SRVFile(RoutePath + @"\SERVICES\" + playerServiceFileName + ".SRV");
+            ServiceFile srvFile = new ServiceFile(RoutePath + @"\SERVICES\" + playerServiceFileName + ".SRV");
             Player_Traffic_Definition player_Traffic_Definition = Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Player_Traffic_Definition;
             Traffic_Service_Definition aPPlayer_Traffic_Definition = new Traffic_Service_Definition(playerServiceFileName, player_Traffic_Definition);
             Service_Definition aPPlayer_Service_Definition = new Service_Definition(playerServiceFileName, player_Traffic_Definition);

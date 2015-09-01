@@ -147,7 +147,7 @@ namespace ORTS.TrackViewer.Editing
         #region private members
 
         Orts.Formats.Msts.TrackDB trackDB;
-        TSectionDatFile tsectionDat;
+        TrackSectionsFile tsectionDat;
 
 
         List<TrainPathData> trainPaths;
@@ -161,7 +161,7 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         /// <param name="trackDB"></param>
         /// <param name="tsectionDat"></param>
-        public Trainpath(TrackDB trackDB, TSectionDatFile tsectionDat)
+        public Trainpath(TrackDB trackDB, TrackSectionsFile tsectionDat)
         {
             this.trackDB = trackDB;
             this.tsectionDat = tsectionDat;
@@ -177,12 +177,12 @@ namespace ORTS.TrackViewer.Editing
         /// <param name="trackDB"></param>
         /// <param name="tsectionDat"></param>
         /// <param name="filePath">file name including path of the .pat file</param>
-        public Trainpath(TrackDB trackDB, TSectionDatFile tsectionDat, string filePath)
+        public Trainpath(TrackDB trackDB, TrackSectionsFile tsectionDat, string filePath)
             : this(trackDB, tsectionDat)
         {
             this.FilePath = filePath;
 
-            PATFile patFile = new PATFile(filePath);
+            PathFile patFile = new PathFile(filePath);
             if (PatFileIsIncomplete(patFile))
             {
                 MessageBox.Show("The .pat file is somehow incomplete. Cannot load the path.",
@@ -209,7 +209,7 @@ namespace ORTS.TrackViewer.Editing
         }
 
         #region Methods to parse MSTS paths
-        private static bool PatFileIsIncomplete(PATFile patFile)
+        private static bool PatFileIsIncomplete(PathFile patFile)
         {
             if (patFile.Name == null) { return true; }
             if (patFile.PathID == null) { return true; }
@@ -226,7 +226,7 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         /// <param name="patFile">Patfile object containing the various unprocessed Track Path Nodes</param>
         /// <param name="Nodes">The list that is going to be filled with as-of-yet unlinked and almost unprocessed path nodes</param>
-        private void createNodes(PATFile patFile, List<TrainpathNode> Nodes)
+        private void createNodes(PathFile patFile, List<TrainpathNode> Nodes)
         {
             foreach (TrPathNode tpn in patFile.TrPathNodes)
                 Nodes.Add(TrainpathNode.CreatePathNode(tpn, patFile.TrackPDPs[(int)tpn.fromPDP], trackDB, tsectionDat));
@@ -240,7 +240,7 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         /// <param name="patFile">Patfile object containing the various unprocessed Track Path Nodes</param>
         /// <param name="Nodes">The list of as-of-yet unlinked processed path nodes</param>
-        static private void LinkNodes(PATFile patFile, List<TrainpathNode> Nodes)
+        static private void LinkNodes(PathFile patFile, List<TrainpathNode> Nodes)
         {
             // Connect the various nodes to each other
             for (int i = 0; i < Nodes.Count; i++)

@@ -239,7 +239,7 @@ namespace ORTS.Viewer3D
             }
 
             // read the world file 
-            var WFile = new WFile(WFilePath);
+            var WFile = new Orts.Formats.Msts.WorldFile(WFilePath);
 
             // create all the individual scenery objects specified in the WFile
             foreach (var worldObject in WFile.Tr_Worldfile)
@@ -284,7 +284,7 @@ namespace ORTS.Viewer3D
 
                 if (shapeFilePath != null && File.Exists(shapeFilePath + "d"))
                 {
-                    var shape = new SDFile(shapeFilePath + "d");
+                    var shape = new ShapeDescriptorFile(shapeFilePath + "d");
                     if (shape.shape.ESD_Bounding_Box != null)
                     {
                         var min = shape.shape.ESD_Bounding_Box.Min;

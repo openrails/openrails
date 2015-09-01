@@ -38,7 +38,7 @@ namespace ORTS.Menu
 				var trkFilePath = MSTSPath.GetTRKFileName(path);
                 try
                 {
-					var trkFile = new TRKFile(trkFilePath);
+					var trkFile = new RouteFile(trkFilePath);
                     Name = trkFile.Tr_RouteFile.Name.Trim();
                     Description = trkFile.Tr_RouteFile.Description.Trim();
                 }

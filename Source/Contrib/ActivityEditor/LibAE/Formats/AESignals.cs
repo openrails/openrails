@@ -54,8 +54,8 @@ namespace LibAE.Formats
         //================================================================================================//
 
         public TrackDB trackDB;
-        private TSectionDatFile tsectiondat;
-        private TDBFile tdbfile;
+        private TrackSectionsFile tsectiondat;
+        private TrackDatabaseFile tdbfile;
 
         private AESignalObject[] signalObjects;
         private List<AESignalWorldObject> SignalWorldList = new List<AESignalWorldObject>();
@@ -80,7 +80,7 @@ namespace LibAE.Formats
         /// Constructor
         ///
 
-        public AESignals(MSTSData data, SIGCFGFile sigcfg)
+        public AESignals(MSTSData data, SignalConfigurationFile sigcfg)
         {
 
 #if DEBUG_REPORTS
@@ -273,7 +273,7 @@ namespace LibAE.Formats
         /// Read all world files to get signal flags
         ///
 
-        private void BuildSignalWorld(MSTSData data, SIGCFGFile sigcfg)
+        private void BuildSignalWorld(MSTSData data, SignalConfigurationFile sigcfg)
         {
 
             // get all filesnames in World directory
@@ -295,10 +295,10 @@ namespace LibAE.Formats
                 // read w-file, get SignalObjects only
 
                 Trace.Write("W");
-                WFile WFile;
+                WorldFile WFile;
                 try
                 {
-                    WFile = new WFile(fileName, Tokens);
+                    WFile = new WorldFile(fileName, Tokens);
                 }
                 catch (Exception error)
                 {
@@ -356,8 +356,8 @@ namespace LibAE.Formats
         /// Build signal list from TDB
         ///
 
-        private void BuildSignalList(TrItem[] TrItems, TrackNode[] trackNodes, TSectionDatFile tsectiondat,
-                TDBFile tdbfile, Dictionary<int, int> platformList)
+        private void BuildSignalList(TrItem[] TrItems, TrackNode[] trackNodes, TrackSectionsFile tsectiondat,
+                TrackDatabaseFile tdbfile, Dictionary<int, int> platformList)
         {
 
             //  Determaine the number of signals in the track Objects list
@@ -678,7 +678,7 @@ namespace LibAE.Formats
         //
 
         private void ScanSection(TrItem[] TrItems, TrackNode[] trackNodes, int index,
-                               TSectionDatFile tsectiondat, TDBFile tdbfile, Dictionary<int, int> platformList)
+                               TrackSectionsFile tsectiondat, TrackDatabaseFile tdbfile, Dictionary<int, int> platformList)
         {
             int lastSignal = -1;                // Index to last signal found in ComponentItem -1 if none
 
@@ -806,7 +806,7 @@ namespace LibAE.Formats
         /// This method adds a new Signal to the list
         ///
 
-        private int AddSignal(int trackNode, int nodeIndx, SignalItem sigItem, int TDBRef, TSectionDatFile tsectiondat, TDBFile tdbfile, ref bool validSignal)
+        private int AddSignal(int trackNode, int nodeIndx, SignalItem sigItem, int TDBRef, TrackSectionsFile tsectiondat, TrackDatabaseFile tdbfile, ref bool validSignal)
         {
             validSignal = true;
 
@@ -859,7 +859,7 @@ namespace LibAE.Formats
         /// This method adds a new Speedpost to the list
         ///
 
-        private int AddSpeed(int trackNode, int nodeIndx, SpeedPostItem speedItem, int TDBRef, TSectionDatFile tsectiondat, TDBFile tdbfile)
+        private int AddSpeed(int trackNode, int nodeIndx, SpeedPostItem speedItem, int TDBRef, TrackSectionsFile tsectiondat, TrackDatabaseFile tdbfile)
         {
             signalObjects[foundSignals] = new AESignalObject();
             signalObjects[foundSignals].isSignal = false;
@@ -889,7 +889,7 @@ namespace LibAE.Formats
         //      AddCFG : This method adds the sigcfg reference to each signal object.
         //
 
-        private void AddCFG(SIGCFGFile sigCFG)
+        private void AddCFG(SignalConfigurationFile sigCFG)
         {
             foreach (AESignalObject signal in signalObjects)
             {
@@ -1585,7 +1585,7 @@ namespace LibAE.Formats
         // SetSignalType : Sets the signal type from the sigcfg file for each signal head.
         //
 
-        public void SetSignalType(SIGCFGFile sigCFG)
+        public void SetSignalType(SignalConfigurationFile sigCFG)
         {
             foreach (AESignalHead sigHead in SignalHeads)
             {
@@ -1738,7 +1738,7 @@ namespace LibAE.Formats
         // SetSignalType : This method sets the signal type object from the CIGCFG file
         //
 
-        public void SetSignalType(TrItem[] TrItems, SIGCFGFile sigCFG)
+        public void SetSignalType(TrItem[] TrItems, SignalConfigurationFile sigCFG)
         {
             SignalItem sigItem = (SignalItem)TrItems[TDBIndex];
 
@@ -1944,7 +1944,7 @@ namespace LibAE.Formats
         // Constructor
         //
 
-        public AESignalWorldObject(SignalObj SignalWorldItem, SIGCFGFile sigcfg)
+        public AESignalWorldObject(SignalObj SignalWorldItem, SignalConfigurationFile sigcfg)
         {
             SignalShape thisCFGShape;
 

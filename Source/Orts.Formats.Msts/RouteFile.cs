@@ -23,9 +23,9 @@ using Orts.Parsers.Msts;
 
 namespace Orts.Formats.Msts
 {
-    public class TRKFile
+    public class RouteFile
     {
-        public TRKFile(string filename)
+        public RouteFile(string filename)
         {
             try
             {

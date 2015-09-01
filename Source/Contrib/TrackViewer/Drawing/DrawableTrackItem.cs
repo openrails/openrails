@@ -121,7 +121,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="tsectionDat">Database with track sections</param>
         /// <param name="trackDB">Database with tracks</param>
         /// <param name="tn">TrackNode on which the signal actually is</param>
-        public void FindAngle(TSectionDatFile tsectionDat, TrackDB trackDB, TrackNode tn)
+        public void FindAngle(TrackSectionsFile tsectionDat, TrackDB trackDB, TrackNode tn)
         {
             this.angle = 0;
             try
@@ -139,7 +139,7 @@ namespace ORTS.TrackViewer.Drawing
         /// Determine if the current signal is a normal signal (i.s.a. distance, ...)
         /// </summary>
         /// <param name="sigcfgFile">The signal configuration file</param>
-        public void DetermineIfNormal(SIGCFGFile sigcfgFile)
+        public void DetermineIfNormal(SignalConfigurationFile sigcfgFile)
         {
             this.isNormal = true; //default
             if (sigcfgFile == null)

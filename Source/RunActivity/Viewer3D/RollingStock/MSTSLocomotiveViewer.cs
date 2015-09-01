@@ -977,7 +977,7 @@ namespace ORTS.Viewer3D.RollingStock
             ControlMap = new Dictionary<int, CabViewControlRenderer>();
             int[] count = new int[256];//enough to hold all types, count the occurence of each type
             var i = 0;
-            CVFFile CVFFile = new CVFFile(filePath, "");
+            CabViewFile CVFFile = new CabViewFile(filePath, "");
 
             var controlSortIndex = 1;  // Controls are drawn atop the cabview and in order they appear in the CVF file.
             // This allows the segments of moving-scale meters to be hidden by covers (e.g. TGV-A)

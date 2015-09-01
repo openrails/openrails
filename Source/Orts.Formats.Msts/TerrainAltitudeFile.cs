@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2013 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -21,19 +21,19 @@ using System.IO;
 
 namespace Orts.Formats.Msts
 {
-    public class FFile
+    public class TerrainAltitudeFile
     {
-        readonly byte[,] Flags;
+        readonly ushort[,] Elevation;
 
-        public FFile(string fileName, int sampleCount)
+        public TerrainAltitudeFile(string fileName, int sampleCount)
         {
-            Flags = new byte[sampleCount, sampleCount];
+            Elevation = new ushort[sampleCount, sampleCount];
             try
             {
                 using (var reader = new BinaryReader(File.OpenRead(fileName)))
                     for (var z = 0; z < sampleCount; z++)
                         for (var x = 0; x < sampleCount; x++)
-                            Flags[x, z] = reader.ReadByte();
+                            Elevation[x, z] = reader.ReadUInt16();
             }
             catch (Exception error)
             {
@@ -42,14 +42,14 @@ namespace Orts.Formats.Msts
         }
 
         /// <summary>
-        /// Returns the vertex-hidden flag at a specific sample point.
+        /// Returns the elevation at a specific sample point.
         /// </summary>
         /// <param name="x">X coordinate; starts at west side, increases easterly.</param>
         /// <param name="z">Z coordinate; starts at north side, increases southerly.</param>
-        /// <returns>Vertex-hidden flag.</returns>
-        public bool IsVertexHidden(int x, int z)
+        /// <returns>Elevation relative to the tile's floor and scaled by resolution.</returns>
+        public ushort GetElevation(int x, int z)
         {
-            return (Flags[x, z] & 0x04) == 0x04;
+            return Elevation[x, z];
         }
     }
 }

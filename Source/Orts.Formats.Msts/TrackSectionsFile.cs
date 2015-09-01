@@ -266,7 +266,7 @@ namespace Orts.Formats.Msts
 		
 	}
 
-	public class TSectionDatFile
+	public class TrackSectionsFile
 	{
 		public void AddRouteTSectionDatFile( string pathNameExt )
 		{
@@ -285,7 +285,7 @@ namespace Orts.Formats.Msts
             }
 		}
 
-        public TSectionDatFile(string filePath)
+        public TrackSectionsFile(string filePath)
         {
             using (STFReader stf = new STFReader(filePath, false))
             {

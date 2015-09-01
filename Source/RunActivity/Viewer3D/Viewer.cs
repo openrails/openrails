@@ -87,9 +87,9 @@ namespace ORTS.Viewer3D
         // Route Information
         public TileManager Tiles { get; private set; }
         public TileManager LoTiles { get; private set; }
-        public ENVFile ENVFile { get; private set; }
-        public SIGCFGFile SIGCFG { get; private set; }
-        public TTypeDatFile TrackTypes { get; private set; }
+        public EnvironmentFile ENVFile { get; private set; }
+        public SignalConfigurationFile SIGCFG { get; private set; }
+        public TrackTypesFile TrackTypes { get; private set; }
         public bool MilepostUnitsMetric { get; private set; }
         // Cameras
         public Camera Camera { get; set; } // Current camera
@@ -240,22 +240,22 @@ namespace ORTS.Viewer3D
             string ORfilepath = System.IO.Path.Combine(Simulator.RoutePath, "OpenRails");
             ContentPath = Game.ContentPath;
             Trace.Write(" ENV");
-            ENVFile = new ENVFile(Simulator.RoutePath + @"\ENVFILES\" + Simulator.TRK.Tr_RouteFile.Environment.ENVFileName(Simulator.Season, Simulator.Weather));
+            ENVFile = new EnvironmentFile(Simulator.RoutePath + @"\ENVFILES\" + Simulator.TRK.Tr_RouteFile.Environment.ENVFileName(Simulator.Season, Simulator.Weather));
 
             Trace.Write(" SIGCFG");
             if (File.Exists(ORfilepath + @"\sigcfg.dat"))
             {
                 Trace.Write(" SIGCFG_OR");
-                SIGCFG = new SIGCFGFile(ORfilepath + @"\sigcfg.dat");
+                SIGCFG = new SignalConfigurationFile(ORfilepath + @"\sigcfg.dat");
             }
             else
             {
                 Trace.Write(" SIGCFG");
-                SIGCFG = new SIGCFGFile(Simulator.RoutePath + @"\sigcfg.dat");
+                SIGCFG = new SignalConfigurationFile(Simulator.RoutePath + @"\sigcfg.dat");
             }
 
             Trace.Write(" TTYPE");
-            TrackTypes = new TTypeDatFile(Simulator.RoutePath + @"\TTYPE.DAT");
+            TrackTypes = new TrackTypesFile(Simulator.RoutePath + @"\TTYPE.DAT");
 
             Tiles = new TileManager(Simulator.RoutePath + @"\TILES\", false);
             LoTiles = new TileManager(Simulator.RoutePath + @"\LO_TILES\", true);

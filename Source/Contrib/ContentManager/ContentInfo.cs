@@ -76,7 +76,7 @@ namespace ORTS.ContentManager
 
                     if (content is ContentMSTSRoute)
                     {
-                        var file = new TRKFile(System.IO.Path.Combine(content.PathName, content.Name + ".trk"));
+                        var file = new RouteFile(System.IO.Path.Combine(content.PathName, content.Name + ".trk"));
                         details.AppendFormat("Route ID:\t{1}{0}", Environment.NewLine, file.Tr_RouteFile.RouteID);
                         details.AppendFormat("Route Key:\t{1}{0}", Environment.NewLine, file.Tr_RouteFile.FileName);
                     }
@@ -195,7 +195,7 @@ namespace ORTS.ContentManager
                 }
                 else if (content is ContentMSTSCab)
                 {
-                    var file = new CVFFile(content.PathName, System.IO.Path.GetDirectoryName(content.PathName));
+                    var file = new CabViewFile(content.PathName, System.IO.Path.GetDirectoryName(content.PathName));
                     details.AppendFormat("Position:\tDimensions:\tStyle:\tType:\t{0}", Environment.NewLine);
                     foreach (var control in file.CabViewControls)
                         details.AppendFormat("{1},{2}\t{3}x{4}\t{5}\t{6}{0}", Environment.NewLine, control.PositionX, control.PositionY, control.Width, control.Height, control.ControlStyle, control.ControlType);

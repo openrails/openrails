@@ -590,7 +590,7 @@ namespace ORTS.TrackViewer.Drawing
                     messageDelegate(String.Format(TrackViewer.catalog.GetString("Loading terrain ace-files {0}-{1}"), loadedAceFilesCounter, loadedAceFilesCounter+99));
                 }
                 loadedAceFilesCounter++;
-                this[filename] = Orts.Formats.Msts.ACEFile.Texture2DFromFile(this.device, path);
+                this[filename] = Orts.Formats.Msts.AceFile.Texture2DFromFile(this.device, path);
                 return true;
             }
 

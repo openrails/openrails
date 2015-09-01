@@ -83,7 +83,7 @@ namespace DataCollector
                         {
                             try
                             {
-                                var t = new TFile(file);
+                                var t = new TerrainFile(file);
                                 if (t.terrain.terrain_patchsets.Length != 1)
                                     throw new InvalidDataException(String.Format("Tile has {0} patch sets; expected 1.", t.terrain.terrain_patchsets.Length));
                                 if (t.terrain.terrain_patchsets[0].terrain_patchset_npatches != 16)

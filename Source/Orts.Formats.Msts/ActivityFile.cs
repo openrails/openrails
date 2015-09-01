@@ -294,14 +294,14 @@ namespace Orts.Formats.Msts
     /// Parse and *.act file.
     /// Naming for classes matches the terms in the *.act file.
     /// </summary>
-    public class ACTFile {
+    public class ActivityFile {
         public Tr_Activity Tr_Activity;
 
-        public ACTFile(string filenamewithpath) {
+        public ActivityFile(string filenamewithpath) {
             Read(filenamewithpath, false);
         }
 
-        public ACTFile(string filenamewithpath, bool headerOnly) {
+        public ActivityFile(string filenamewithpath, bool headerOnly) {
             Read(filenamewithpath, headerOnly);
         }
 
@@ -611,7 +611,7 @@ namespace Orts.Formats.Msts
     /// </summary>
     public class Traffic_Definition {
         public string Name;
-        public TRFFile TrafficFile;
+        public TrafficFile TrafficFile;
         public List<Service_Definition> ServiceDefinitionList = new List<Service_Definition>();
 
         public Traffic_Definition(STFReader stf) {
@@ -621,7 +621,7 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("service_definition", ()=>{ ServiceDefinitionList.Add(new Service_Definition(stf)); }),
             });
 
-            TrafficFile = new TRFFile(Path.Combine(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(stf.FileName)), "Traffic"), Name + ".trf"));
+            TrafficFile = new TrafficFile(Path.Combine(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(stf.FileName)), "Traffic"), Name + ".trf"));
 
         }
     }
