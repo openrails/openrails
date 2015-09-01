@@ -518,7 +518,7 @@ namespace ORTS
             {
                 if (initLevel == (SettingsFlags.IdleRPM | SettingsFlags.MaxRPM | SettingsFlags.StartingRPM | SettingsFlags.StartingConfirmRPM | SettingsFlags.ChangeUpRPMpS | SettingsFlags.ChangeDownRPMpS
                     | SettingsFlags.RateOfChangeUpRPMpSS | SettingsFlags.RateOfChangeDownRPMpSS | SettingsFlags.MaximalPowerW | SettingsFlags.IdleExhaust | SettingsFlags.MaxExhaust
-                    | SettingsFlags.ExhaustDynamics | SettingsFlags.ExhaustTransientColor | SettingsFlags.DieselPowerTab | SettingsFlags.DieselConsumptionTab | SettingsFlags.ThrottleRPMTab
+                    | SettingsFlags.ExhaustDynamics | SettingsFlags.ExhaustColor | SettingsFlags.ExhaustTransientColor | SettingsFlags.DieselPowerTab | SettingsFlags.DieselConsumptionTab | SettingsFlags.ThrottleRPMTab
                     | SettingsFlags.DieselTorqueTab | SettingsFlags.MinOilPressure | SettingsFlags.MaxOilPressure | SettingsFlags.MaxTemperature | SettingsFlags.Cooling
                     | SettingsFlags.TempTimeConstant | SettingsFlags.OptTemperature | SettingsFlags.IdleTemperature))
 
@@ -740,7 +740,7 @@ namespace ORTS
                 string lowercasetoken = stf.ReadItem().ToLower();
                 switch (lowercasetoken)
                 {
-                    case "idlerpm":         IdleRPM = stf.ReadFloatBlock(STFReader.UNITS.Power, 0); initLevel |= SettingsFlags.IdleRPM; break;
+                    case "idlerpm": IdleRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.IdleRPM; break;
                     case "maxrpm":          MaxRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0);initLevel |= SettingsFlags.MaxRPM; break;
                     case "startingrpm": StartingRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.StartingRPM; break;
                     case "startingconfirmrpm": StartingConfirmationRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.StartingConfirmRPM; break;
@@ -762,7 +762,7 @@ namespace ORTS
                     case "minoilpressure": DieselMinOilPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, 40f); initLevel |= SettingsFlags.MinOilPressure; break;
                     case "maxoilpressure": DieselMaxOilPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, 120f); initLevel |= SettingsFlags.MaxOilPressure; break;
                     case "maxtemperature": DieselMaxTemperatureDeg = stf.ReadFloatBlock(STFReader.UNITS.TemperatureDifference, 100f); initLevel |= SettingsFlags.MaxTemperature; break;
-                    case "cooling": EngineCooling = (Cooling)stf.ReadInt((int)Cooling.Proportional); initLevel |= SettingsFlags.Cooling; break ;
+                    case "cooling": EngineCooling = (Cooling)stf.ReadIntBlock((int)Cooling.Proportional); initLevel |= SettingsFlags.Cooling; break ; //ReadInt changed to ReadIntBlock
                     case "temptimeconstant": DieselTempTimeConstantSec = stf.ReadFloatBlock(STFReader.UNITS.Time, 720f); initLevel |= SettingsFlags.TempTimeConstant; break;
                     case "opttemperature": DieselOptimalTemperatureDegC = stf.ReadFloatBlock(STFReader.UNITS.TemperatureDifference, 95f); initLevel |= SettingsFlags.OptTemperature; break;
                     case "idletemperature": DieselIdleTemperatureDegC = stf.ReadFloatBlock(STFReader.UNITS.TemperatureDifference, 75f); initLevel |= SettingsFlags.IdleTemperature; break;
