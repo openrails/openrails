@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2014 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -17,9 +17,9 @@
 
 using System;
 
-namespace MSTSMath
+namespace Orts.Formats.Msts
 {
-    public class M // Not Math to avoid conflict with default Math
+    public class MstsUtility
     {
         /// <summary>
         /// Consider a line starting a pX,pZ and heading away at deg from North

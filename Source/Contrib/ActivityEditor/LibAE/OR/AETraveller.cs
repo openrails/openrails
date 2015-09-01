@@ -31,7 +31,6 @@ using System.Drawing;
 using Microsoft.Xna.Framework;
 using MSTS;
 using Orts.Formats.Msts;
-using MSTSMath;
 using ORTS.Common;
 //using ActivityEditor;
 using ORTS;
@@ -601,7 +600,7 @@ namespace LibAE
 
             // Calculate distance along and away from the track centerline.
             float lat, lon;
-            M.Survey(sx, sz, trackVectorSection.AY, x, z, out lon, out lat);
+            MstsUtility.Survey(sx, sz, trackVectorSection.AY, x, z, out lon, out lat);
             if (Math.Abs(lat) > MaximumCenterlineOffset)
                 return null;
             if (lon < -InitErrorMargin || lon > GetLength(trackSection) + InitErrorMargin)

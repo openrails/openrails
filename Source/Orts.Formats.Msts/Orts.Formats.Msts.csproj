@@ -48,9 +48,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\MSTS\_math.cs">
-      <Link>_math.cs</Link>
-    </Compile>
     <Compile Include="ACEFile.cs" />
     <Compile Include="ACTFile.cs" />
     <Compile Include="CAMCFGFile.cs" />
@@ -62,6 +59,7 @@
     <Compile Include="FFile.cs" />
     <Compile Include="HAZFile.cs" />
     <Compile Include="Lights.cs" />
+    <Compile Include="MstsUtility.cs" />
     <Compile Include="PATFile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RDBFile.cs" />

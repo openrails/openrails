@@ -22,7 +22,6 @@ using System.Diagnostics;
 using System.IO;
 using Microsoft.Xna.Framework;
 using Orts.Parsers.Msts;
-using MSTSMath;
 using ORTS.Common;
 
 namespace Orts.Formats.Msts
@@ -1084,7 +1083,7 @@ namespace Orts.Formats.Msts
         public void SetBearing(float dx, float dz)
         {
             var slope = GetSlope();
-            var compassRad = M.AngleDxDz(dx, dz);
+            var compassRad = MstsUtility.AngleDxDz(dx, dz);
             SetAngles(compassRad, slope);
         }
 
@@ -1158,7 +1157,7 @@ namespace Orts.Formats.Msts
 
         public void SetSlope(float tiltRad) // +v is tilted up
         {
-            var compassAngleRad = M.AngleDxDz(DX(), DZ());
+            var compassAngleRad = MstsUtility.AngleDxDz(DX(), DZ());
             SetAngles(compassAngleRad, tiltRad);
         }
 
