@@ -402,10 +402,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Contrib\ActivityEditor\LibAE\LibAE.csproj">
-      <Project>{b79691a7-bf8c-40b4-ade0-5f30f2730414}</Project>
-      <Name>LibAE</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Orts.Formats.Msts\Orts.Formats.Msts.csproj">
       <Project>{570709FA-0C8A-4B1D-BA2D-D9455AFD9B5C}</Project>
       <Name>Orts.Formats.Msts</Name>

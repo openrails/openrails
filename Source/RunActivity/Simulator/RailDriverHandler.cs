@@ -15,18 +15,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
 using Microsoft.Win32;
 using Orts.Parsers.Msts;
 using ORTS.Common;
 using ORTS.Settings;
 using ORTS.Viewer3D;
 using PIEHidDotNet;
+using System;
+using System.Diagnostics;
+using System.IO;
 
 namespace ORTS
 {

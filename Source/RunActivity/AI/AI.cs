@@ -29,14 +29,14 @@
 // #define DEBUG_DEADLOCK
 //
 
+using Orts.Formats.Msts;
+using ORTS.MultiPlayer;
+using ORTS.Processes;
+using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using Orts.Formats.Msts;
-using ORTS.MultiPlayer;
-using ORTS.Scripting.Api;
-using ORTS.Processes;
 
 namespace ORTS
 {

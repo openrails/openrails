@@ -17,16 +17,14 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using Orts.Formats.Msts;
 using ORTS.Common;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ORTS
 {
-	public class HazzardManager
+    public class HazzardManager
 	{
 		readonly int hornDist = 200;
 		readonly int approachDist = 160;

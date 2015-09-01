@@ -17,13 +17,12 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Diagnostics;
-using System.Linq;
 using Orts.Formats.Msts;
 using ORTS.Common;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 
 namespace ORTS
 {

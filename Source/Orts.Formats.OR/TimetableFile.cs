@@ -29,13 +29,11 @@
 //    #direction : Up or Down
 //
 
+using GNU.Gettext;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using System.IO;
-using GNU.Gettext;
 
 namespace Orts.Formats.OR
 {
@@ -44,7 +42,7 @@ namespace Orts.Formats.OR
     /// provides pre-information for menu
     /// extracts only description and list of trains
     /// </summary>
-    
+
     public class TimetableFileLite
     {
         public List<TrainInformation> Trains = new List<TrainInformation>();

@@ -25,25 +25,18 @@
 // #define DEBUG_DEADLOCK
 // print details of deadlock processing
 
+using Microsoft.Xna.Framework;
+using Orts.Formats.Msts;
+using Orts.Formats.OR;
+using Orts.Parsers.Msts;
+using ORTS.Common;
+using ORTS.Processes;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Microsoft.Xna.Framework;
-using Orts.Formats.Msts;
-using Orts.Parsers.Msts;
-using ORTS.Common;
-using ORTS.Viewer3D.Popups;
-using ORTS.Processes;
-
-#if ACTIVITY_EDITOR
-using LibAE.Formats;
-using Orts.Formats.OR;
-#endif
 
 namespace ORTS
 {

@@ -17,16 +17,11 @@
 
 // This file is the responsibility of the 3D & Environment Team.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Diagnostics;
-using System.Linq;
 using Orts.Formats.Msts;
 using ORTS.Common;
 using ORTS.Viewer3D.RollingStock;
-using ORTS.Viewer3D;
-using ORTS.Settings;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ORTS
 {

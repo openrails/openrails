@@ -22,17 +22,14 @@
  * Could this be used for player trains also?
  * 
  */
+using Orts.Formats.Msts;
+using Orts.Formats.OR;
+using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Orts.Formats.Msts;
-using ORTS.Common;
-#if ACTIVITY_EDITOR
-using LibAE.Formats;
-using Orts.Formats.OR;
-#endif
 
 namespace ORTS
 {

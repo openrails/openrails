@@ -19,11 +19,8 @@ using Newtonsoft.Json;
 using Orts.Formats.Msts;
 using ORTS.Common;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 
 namespace Orts.Formats.OR
 {

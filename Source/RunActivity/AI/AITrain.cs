@@ -28,20 +28,14 @@
 // #define DEBUG_TRACEINFO
 // DEBUG flag for debug prints
 
+using Microsoft.Xna.Framework.Graphics;
+using Orts.Formats.Msts;
+using Orts.Formats.OR;
+using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Orts.Formats.Msts;
-using Orts.Parsers.Msts;
-using ORTS.Common;
-using ORTS.Viewer3D.Popups;
-using LibAE.Formats;
-using Orts.Formats.OR;
 
 namespace ORTS
 {

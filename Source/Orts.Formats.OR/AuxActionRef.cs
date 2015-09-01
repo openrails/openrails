@@ -16,16 +16,10 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Orts.Formats.Msts;
 using ORTS.Common;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace Orts.Formats.OR
 {
