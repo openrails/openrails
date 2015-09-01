@@ -17,8 +17,8 @@
 
 using GNU.Gettext;
 using GNU.Gettext.WinForms;
+using Orts.Formats.OR;
 using ORTS.Common;
-using ORTS.Formats;
 using ORTS.Menu;
 using ORTS.Settings;
 using ORTS.Updater;

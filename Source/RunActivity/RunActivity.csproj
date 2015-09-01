@@ -403,12 +403,16 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Contrib\ActivityEditor\LibAE\LibAE.csproj">
-      <Project>{B79691A7-BF8C-40B4-ADE0-5F30F2730414}</Project>
+      <Project>{b79691a7-bf8c-40b4-ade0-5f30f2730414}</Project>
       <Name>LibAE</Name>
     </ProjectReference>
     <ProjectReference Include="..\Orts.Formats.Msts\Orts.Formats.Msts.csproj">
       <Project>{570709FA-0C8A-4B1D-BA2D-D9455AFD9B5C}</Project>
       <Name>Orts.Formats.Msts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Orts.Formats.OR\Orts.Formats.OR.csproj">
+      <Project>{0d8d312b-2c02-4b77-a795-566394a9db95}</Project>
+      <Name>Orts.Formats.OR</Name>
     </ProjectReference>
     <ProjectReference Include="..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj">
       <Project>{8A84696C-3559-49B8-B27F-BB6932D8A1C6}</Project>
@@ -421,10 +425,6 @@
     <ProjectReference Include="..\ORTS.Content\ORTS.Content.csproj">
       <Project>{812685A7-2683-4102-A3CA-2A5CED2E61EE}</Project>
       <Name>ORTS.Content</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ORTS.Formats\ORTS.Formats.csproj">
-      <Project>{0D8D312B-2C02-4B77-A795-566394A9DB95}</Project>
-      <Name>ORTS.Formats</Name>
     </ProjectReference>
     <ProjectReference Include="..\Orts.Parsers.OR\Orts.Parsers.OR.csproj">
       <Project>{1cc3bd5c-06c5-4784-b067-f93945a7ca2c}</Project>

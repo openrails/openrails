@@ -72,9 +72,9 @@
       <Project>{812685A7-2683-4102-A3CA-2A5CED2E61EE}</Project>
       <Name>ORTS.Content</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ORTS.Formats\ORTS.Formats.csproj">
-      <Project>{0D8D312B-2C02-4B77-A795-566394A9DB95}</Project>
-      <Name>ORTS.Formats</Name>
+    <ProjectReference Include="..\Orts.Formats.OR\Orts.Formats.OR.csproj">
+      <Project>{0d8d312b-2c02-4b77-a795-566394a9db95}</Project>
+      <Name>Orts.Formats.OR</Name>
     </ProjectReference>
     <ProjectReference Include="..\ORTS.Settings\ORTS.Settings.csproj">
       <Project>{67F84996-8769-4FD8-819B-464AF269037B}</Project>

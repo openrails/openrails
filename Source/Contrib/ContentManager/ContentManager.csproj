@@ -102,9 +102,9 @@
       <Project>{DA94D876-7D35-46C3-AECE-AFACE72C686C}</Project>
       <Name>ORTS.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\ORTS.Formats\ORTS.Formats.csproj">
+    <ProjectReference Include="..\..\Orts.Formats.OR\Orts.Formats.OR.csproj">
       <Project>{0d8d312b-2c02-4b77-a795-566394a9db95}</Project>
-      <Name>ORTS.Formats</Name>
+      <Name>Orts.Formats.OR</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Orts.Parsers.OR\Orts.Parsers.OR.csproj">
       <Project>{1cc3bd5c-06c5-4784-b067-f93945a7ca2c}</Project>

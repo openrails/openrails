@@ -7,8 +7,8 @@
     <ProjectGuid>{0D8D312B-2C02-4B77-A795-566394A9DB95}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ORTS.Formats</RootNamespace>
-    <AssemblyName>ORTS.Formats</AssemblyName>
+    <RootNamespace>Orts.Formats.OR</RootNamespace>
+    <AssemblyName>Orts.Formats.OR</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -29,7 +29,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>..\..\Program\ORTS.Formats.xml</DocumentationFile>
+    <DocumentationFile>..\..\Program\Orts.Formats.OR.xml</DocumentationFile>
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
@@ -38,10 +38,6 @@
       <HintPath>..\3rdPartyLibs\GNU.Gettext.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Xna.Framework, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86" />
-    <Reference Include="ORTS.Common, Version=0.0.5275.20050, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Program\ORTS.Common.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -63,8 +59,12 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Contrib\ActivityEditor\LibAE\LibAE.csproj">
-      <Project>{B79691A7-BF8C-40B4-ADE0-5F30F2730414}</Project>
+      <Project>{b79691a7-bf8c-40b4-ade0-5f30f2730414}</Project>
       <Name>LibAE</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj">
+      <Project>{da94d876-7d35-46c3-aece-aface72c686c}</Project>
+      <Name>ORTS.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\Orts.Formats.Msts\Orts.Formats.Msts.csproj">
       <Project>{570709FA-0C8A-4B1D-BA2D-D9455AFD9B5C}</Project>

@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -37,7 +37,7 @@ using System.Text;
 using System.IO;
 using GNU.Gettext;
 
-namespace ORTS.Formats
+namespace Orts.Formats.OR
 {
     /// <summary>
     /// class ORTTPreInfo
@@ -262,7 +262,7 @@ namespace ORTS.Formats
             public string Path;               // path definition
             public string StartTime;          // starttime definition
 
-            GettextResourceManager Catalog = new GettextResourceManager("ORTS.Formats");
+            GettextResourceManager Catalog = new GettextResourceManager("Orts.Formats.OR");
 
             public TTTrainPreInfo(int column, string train)
             {

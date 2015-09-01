@@ -41,8 +41,8 @@ using ORTS.Viewer3D.Popups;
 using ORTS.Processes;
 
 #if ACTIVITY_EDITOR
-using ORTS.Formats;
 using LibAE.Formats;
+using Orts.Formats.OR;
 #endif
 
 namespace ORTS
