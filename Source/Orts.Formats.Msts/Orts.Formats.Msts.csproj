@@ -56,6 +56,7 @@
     <Compile Include="CabViewFile.cs" />
     <Compile Include="EngineFile.cs" />
     <Compile Include="EnvironmentFile.cs" />
+    <Compile Include="SignalScripts.cs" />
     <Compile Include="TerrainFlagsFile.cs" />
     <Compile Include="HazardFile.cs" />
     <Compile Include="LightCollection.cs" />

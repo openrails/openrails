@@ -104,7 +104,7 @@ namespace ORTS
             // read SIGSCR files
 
             Trace.Write(" SIGSCR ");
-            scrfile = new SIGSCRfile(sigcfg.ScriptPath, sigcfg.ScriptFiles, sigcfg.SignalTypes);
+            scrfile = new SIGSCRfile(new SignalScripts(sigcfg.ScriptPath, sigcfg.ScriptFiles, sigcfg.SignalTypes));
 
             // build list of signal world file information
 
