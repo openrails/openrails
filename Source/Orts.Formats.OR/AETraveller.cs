@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -15,28 +15,17 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-/// This module ...
-/// 
-/// Author: Stéfan Paitoni
-/// Updates : 
-/// 
-
-
+using Microsoft.Xna.Framework;
+using Orts.Formats.Msts;
+using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Drawing;
-using Microsoft.Xna.Framework;
-using MSTS;
-using Orts.Formats.Msts;
-using ORTS.Common;
-//using ActivityEditor;
-using ORTS;
-using LibAE.Formats;
 
-namespace LibAE
+namespace Orts.Formats.OR
 {
     /// <summary>
     /// A traveller that represents a specific location and direction on a track node databse. Think of it like a virtual truck or bogie that can travel along the track or a virtual car that can travel along the road.

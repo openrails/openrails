@@ -14,6 +14,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using LibAE;
 using LibAE.Formats;
+using Orts.Formats.OR;
 
 namespace AEWizard
 {

@@ -56,34 +56,30 @@
     <Compile Include="AEUtility.cs" />
     <Compile Include="Divers.cs" />
     <Compile Include="Formats\ActivityInfo.cs" />
-    <Compile Include="Formats\AEItems.cs" />
-    <Compile Include="Formats\AuxActionRef.cs" />
     <Compile Include="Formats\MSTSDataConfig.cs" />
-    <Compile Include="Formats\ORRouteConfig.cs" />
     <Compile Include="Formats\PathEvent.cs" />
-    <Compile Include="Formats\RouteItems.cs" />
-    <Compile Include="Formats\AESignals.cs" />
-    <Compile Include="Formats\StationPath.cs" />
     <Compile Include="Formats\TrackDef.cs" />
-    <Compile Include="MSTSCoord.cs" />
-    <Compile Include="OR\AETraveller.cs" />
-    <Compile Include="OR\MSTSData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RouteInfo.cs" />
-    <Compile Include="Utility\DrawUtility.cs" />
-    <Compile Include="Utility\TrackNodeAE.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Icon\Start.ico" />
     <EmbeddedResource Include="Icon\Stop.ico" />
     <EmbeddedResource Include="Icon\Wait.ico" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="OR\" />
+    <Folder Include="Utility\" />
+  </ItemGroup>
   <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\..\..\Orts.Formats.Msts\Orts.Formats.Msts.csproj">
       <Project>{570709fa-0c8a-4b1d-ba2d-d9455afd9b5c}</Project>
       <Name>Orts.Formats.Msts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Orts.Formats.OR\Orts.Formats.OR.csproj">
+      <Project>{0d8d312b-2c02-4b77-a795-566394a9db95}</Project>
+      <Name>Orts.Formats.OR</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj">
       <Project>{8a84696c-3559-49b8-b27f-bb6932d8a1c6}</Project>

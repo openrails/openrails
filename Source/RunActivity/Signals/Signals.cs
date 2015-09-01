@@ -1539,7 +1539,7 @@ namespace ORTS
         // Create Track Circuits
         //
 #if ACTIVITY_EDITOR
-        private void CreateTrackCircuits(TrItem[] TrItems, TrackNode[] trackNodes, TrackSectionsFile tsectiondat, LibAE.Formats.ORRouteConfig orRouteConfig)
+        private void CreateTrackCircuits(TrItem[] TrItems, TrackNode[] trackNodes, TrackSectionsFile tsectiondat, ORRouteConfig orRouteConfig)
 #else
         private void CreateTrackCircuits(TrItem[] TrItems, TrackNode[] trackNodes, TSectionDatFile tsectiondat)
 #endif

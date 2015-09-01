@@ -34,6 +34,7 @@ using LibAE.Formats;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using ORTS;
+using Orts.Formats.OR;
 
 namespace ActivityEditor.Engine
 {

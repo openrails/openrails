@@ -9,6 +9,7 @@ using System.Text;
 using System.Windows.Forms;
 using LibAE.Formats;
 using ActivityEditor.ActionProperties;
+using Orts.Formats.OR;
 
 namespace ActivityEditor.Preference
 {

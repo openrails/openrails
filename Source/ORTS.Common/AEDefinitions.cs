@@ -1,4 +1,5 @@
-﻿// 
+﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
+// 
 // This file is part of Open Rails.
 // 
 // Open Rails is free software: you can redistribute it and/or modify
@@ -14,20 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-/// This module ...
-/// 
-/// Author: Stéfan Paitoni
-/// Updates : 
-/// 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
 
-using ORTS.Common;
-
-namespace LibAE.Common
+namespace ORTS.Common
 {
     /// <summary>
     /// List of items that can be shown through the Editor.  These items can be searchable, modifiable, movable, ...

@@ -1,4 +1,5 @@
-﻿// 
+﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
+// 
 // This file is part of Open Rails.
 // 
 // Open Rails is free software: you can redistribute it and/or modify
@@ -14,26 +15,19 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-/// This module ...
-/// 
-/// Author: Stéfan Paitoni
-/// Updates : 
-
-using System;
-using System.Collections.Generic;
-using System.Collections;
-using System.Collections.Specialized;
-using System.Linq;
-using System.Text;
-using System.IO;
-using Orts.Formats.Msts;
-using Orts.Parsers.Msts;
-using ORTS.Common;
-using ORTS.Settings;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Orts.Formats.Msts;
+using ORTS.Common;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.IO;
+using System.Linq;
+using System.Text;
 
-namespace LibAE.Formats
+namespace Orts.Formats.OR
 {
     public class ActionFactory<T>
     {

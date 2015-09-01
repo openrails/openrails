@@ -17,7 +17,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\..\Program\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;ACTIVITY_EDITOR</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
@@ -26,7 +26,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\..\Program\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;ACTIVITY_EDITOR</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>..\..\Program\Orts.Formats.OR.xml</DocumentationFile>
@@ -38,6 +38,10 @@
       <HintPath>..\3rdPartyLibs\GNU.Gettext.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Xna.Framework, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86" />
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\3rdPartyLibs\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -46,32 +50,49 @@
     <Reference Include="System.Data.DataSetExtensions">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ORRouteConfigExt.cs" />
+    <Compile Include="AEItems.cs" />
+    <Compile Include="AESegment.cs" />
+    <Compile Include="AESignals.cs" />
+    <Compile Include="AEStationPath.cs" />
+    <Compile Include="AETraveller.cs" />
+    <Compile Include="AuxActionRef.cs" />
+    <Compile Include="DrawUtility.cs" />
+    <Compile Include="GlobalItem.cs" />
+    <Compile Include="MSTSCoord.cs" />
+    <Compile Include="MSTSData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RouteConfigurationFile.cs" />
+    <Compile Include="RouteItems.cs" />
     <Compile Include="TimetableFile.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="TimetableGroupFile.cs" />
     <Compile Include="TrackCircuitElement.cs" />
+    <Compile Include="TrackNodeAE.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Contrib\ActivityEditor\LibAE\LibAE.csproj">
-      <Project>{b79691a7-bf8c-40b4-ade0-5f30f2730414}</Project>
-      <Name>LibAE</Name>
-    </ProjectReference>
     <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj">
       <Project>{da94d876-7d35-46c3-aece-aface72c686c}</Project>
       <Name>ORTS.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ORTS.Content\ORTS.Content.csproj">
+      <Project>{812685a7-2683-4102-a3ca-2a5ced2e61ee}</Project>
+      <Name>ORTS.Content</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Orts.Formats.Msts\Orts.Formats.Msts.csproj">
       <Project>{570709FA-0C8A-4B1D-BA2D-D9455AFD9B5C}</Project>
       <Name>Orts.Formats.Msts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj">
+      <Project>{8a84696c-3559-49b8-b27f-bb6932d8a1c6}</Project>
+      <Name>Orts.Parsers.Msts</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

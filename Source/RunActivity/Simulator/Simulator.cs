@@ -35,7 +35,6 @@
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using ORTS.Common;
-using ORTS.Formats;
 using ORTS.MultiPlayer;
 using ORTS.Scripting;
 using ORTS.Settings;
@@ -48,8 +47,8 @@ using System.Windows.Forms;
 #if ACTIVITY_EDITOR
 using LibAE;
 using LibAE.Formats;
-using LibAE.Common;
 using ORTS.Processes;
+using Orts.Formats.OR;
 #endif
 
 namespace ORTS

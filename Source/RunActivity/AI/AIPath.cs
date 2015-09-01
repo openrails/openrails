@@ -31,6 +31,7 @@ using Orts.Formats.Msts;
 using ORTS.Common;
 #if ACTIVITY_EDITOR
 using LibAE.Formats;
+using Orts.Formats.OR;
 #endif
 
 namespace ORTS

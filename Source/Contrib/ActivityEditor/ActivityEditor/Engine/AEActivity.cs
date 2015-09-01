@@ -30,6 +30,7 @@ using AEWizard;
 using LibAE;
 using LibAE.Formats;
 using System.Xml.Serialization;
+using Orts.Formats.OR;
 
 namespace ActivityEditor.Engine
 {

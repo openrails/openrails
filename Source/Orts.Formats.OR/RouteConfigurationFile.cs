@@ -1,4 +1,5 @@
-﻿// 
+﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
+// 
 // This file is part of Open Rails.
 // 
 // Open Rails is free software: you can redistribute it and/or modify
@@ -14,30 +15,19 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-/// This module ...
-/// 
-/// Author: Stéfan Paitoni
-/// Updates : 
-/// 
-
-using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Windows.Forms;
-using ORTS.Common;
-using ORTS.Settings;
-using MSTS;
-using LibAE.Common;
 using Orts.Formats.Msts;
-using Orts.Parsers.Msts;
+using Orts.Formats.OR;
+using ORTS.Common;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text;
 
-namespace LibAE.Formats
+namespace Orts.Formats.OR
 {
     /// <summary>
     /// ORRouteConfig is the main class to access the OpenRail specific data for a route.  These data complete the MSTS one in terms of Station
@@ -369,6 +359,40 @@ namespace LibAE.Formats
                 }
             }
             return null;
+        }
+
+        /// <summary>
+        /// Scan the current orRouteConfig and search for items related to the given node
+        /// </summary>
+        /// <param name="iNode">The current node index</param>
+        /// <param name="orRouteConfig">The Open Rail configuration coming from Editor</param>
+        /// <param name="trackNodes">The list of MSTS Track Nodes</param>
+        /// <param name="tsectiondat">The list of MSTS Section datas</param>
+        public List<TrackCircuitElement> GetORItemForNode(int iNode, TrackNode[] trackNodes, TrackSectionsFile tsectiondat)
+        {
+            List<TrackCircuitElement> trackCircuitElements = new List<TrackCircuitElement>();
+            if (AllItems.Count <= 0)
+                return trackCircuitElements;
+            foreach (var item in AllItems)
+            {
+                switch (item.typeItem)
+                {
+                    case (int)TypeItem.STATION_CONNECTOR:
+                        if (item.associateNodeIdx != iNode)
+                            continue;
+                        TrackNode node = trackNodes[iNode];
+                        AETraveller travel = new AETraveller(traveller);
+                        travel.place(node);
+                        float position = travel.DistanceTo(item);
+                        TrackCircuitElement element = (TrackCircuitElement)new TrackCircuitElementConnector(item, position);
+                        trackCircuitElements.Add(element);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            return trackCircuitElements;
         }
     }
 

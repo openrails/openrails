@@ -1,4 +1,6 @@
-﻿// This file is part of Open Rails.
+﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
+// 
+// This file is part of Open Rails.
 // 
 // Open Rails is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -13,32 +15,17 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-/// This module ...
-/// 
-/// Author: Stéfan Paitoni
-/// Updates : 
-/// 
-
+using Newtonsoft.Json;
+using Orts.Formats.Msts;
+using ORTS.Common;
 using System;
 using System.Collections;
-using System.Collections.Specialized;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Diagnostics;
-using System.Threading;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using MSTS;
-using Orts.Formats.Msts;
-using Orts.Parsers.Msts;
-using ORTS.Common;
-using ORTS;
-using LibAE;
-using LibAE.Common;
-using LibAE.Formats;
 
-namespace LibAE.Formats
+namespace Orts.Formats.OR
 {
     public class Possibility : Dictionary<string, StationPath>
     {

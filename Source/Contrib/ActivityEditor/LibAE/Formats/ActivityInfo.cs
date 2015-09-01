@@ -31,6 +31,7 @@ using MSTS;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using ORTS.Common;
+using Orts.Formats.OR;
 
 namespace LibAE.Formats
 {

@@ -56,6 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AEDefinitions.cs" />
+    <Compile Include="AlmostEqual.cs" />
     <Compile Include="Conversions.cs" />
     <Compile Include="Coordinates.cs" />
     <Compile Include="DataLogger.cs" />

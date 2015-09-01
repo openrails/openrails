@@ -375,6 +375,10 @@
       <Project>{570709fa-0c8a-4b1d-ba2d-d9455afd9b5c}</Project>
       <Name>Orts.Formats.Msts</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\Orts.Formats.OR\Orts.Formats.OR.csproj">
+      <Project>{0d8d312b-2c02-4b77-a795-566394a9db95}</Project>
+      <Name>Orts.Formats.OR</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj">
       <Project>{8a84696c-3559-49b8-b27f-bb6932d8a1c6}</Project>
       <Name>Orts.Parsers.Msts</Name>

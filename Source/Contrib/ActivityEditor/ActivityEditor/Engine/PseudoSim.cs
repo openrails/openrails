@@ -24,9 +24,9 @@
 using ActivityEditor.Engine;
 using ActivityEditor.Preference;
 using LibAE;
-using LibAE.Common;
 using LibAE.Formats;
 using Orts.Formats.Msts;
+using Orts.Formats.OR;
 using Orts.Parsers.Msts;
 using ORTS;
 using ORTS.Common;
@@ -350,12 +350,12 @@ namespace ActivityEditor
             AETraveller travel = new AETraveller(traveller);
             if (item.ItemType == TrItem.trItemType.trSIDING || item.ItemType == TrItem.trItemType.trPLATFORM)
             {
-                LibAE.Formats.SideItem siding = mstsItems.AddSiding(lineSeg, item, travel);
+                SideItem siding = mstsItems.AddSiding(lineSeg, item, travel);
                 orRouteConfig.AddItem((GlobalItem)siding);
             }
             else if (item.ItemType == TrItem.trItemType.trCROSSOVER)
             {
-                LibAE.Formats.AECrossOver crossOver = mstsItems.AddCrossOver(lineSeg, item, travel);
+                AECrossOver crossOver = mstsItems.AddCrossOver(lineSeg, item, travel);
                 orRouteConfig.AddItem((GlobalItem)crossOver);
             }
         }

@@ -1,4 +1,5 @@
-﻿// 
+﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
+// 
 // This file is part of Open Rails.
 // 
 // Open Rails is free software: you can redistribute it and/or modify
@@ -14,31 +15,17 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-/// This module ...
-/// 
-/// Author: Stéfan Paitoni
-/// Updates : 
-/// 
-
+using Microsoft.Xna.Framework;
+using Orts.Formats.Msts;
+using Orts.Formats.OR;
+using ORTS.Common;
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-//using Microsoft.Xna.Framework;
-using MSTS;
-using Orts.Formats.Msts;
-using ORTS.Common;
-using LibAE;
-using LibAE.Formats;
-//using XnaGeometry;
-using Microsoft.Xna.Framework;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
-namespace LibAE
+namespace Orts.Formats.OR
 {
     public class MSTSBase
     {

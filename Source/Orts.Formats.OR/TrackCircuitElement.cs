@@ -15,13 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-#if !ACTIVITY_EDITOR
-using LibAE.Common;
-using LibAE.Formats;
 
 namespace Orts.Formats.OR
 {
@@ -55,4 +53,3 @@ namespace Orts.Formats.OR
         }
     }
 }
-#endif

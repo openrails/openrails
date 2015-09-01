@@ -35,6 +35,7 @@ using ORTS.Viewer3D.Popups;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using LibAE.Formats;
+using Orts.Formats.OR;
 
 namespace ORTS
 {

@@ -23,10 +23,10 @@
 
 using ActivityEditor.Activity;
 using LibAE;
-using LibAE.Common;
 using LibAE.Formats;
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
+using Orts.Formats.OR;
 using Orts.Parsers.Msts;
 using ORTS;
 using ORTS.Common;
@@ -791,7 +791,7 @@ namespace ActivityEditor.Engine
                     }
 #endregion
 #region crossOver
-                    foreach (LibAE.Formats.AECrossOver crossOver in aeItems.getCrossOver())
+                    foreach (AECrossOver crossOver in aeItems.getCrossOver())
                     {
                         System.Drawing.Drawing2D.Matrix matrixSA = new System.Drawing.Drawing2D.Matrix();
                         if (float.IsNaN(crossOver.Location.X) || float.IsNaN(crossOver.Location.Y))
@@ -814,7 +814,7 @@ namespace ActivityEditor.Engine
                     #endregion
 
 #region drawSiding
-                    foreach (LibAE.Formats.SideItem siding in aeItems.getSidings())
+                    foreach (SideItem siding in aeItems.getSidings())
                     {
                         System.Drawing.Drawing2D.Matrix matrixSA = new System.Drawing.Drawing2D.Matrix();
                         if (float.IsNaN(siding.Location.X) || float.IsNaN(siding.Location.Y))

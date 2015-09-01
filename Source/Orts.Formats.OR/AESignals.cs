@@ -1,4 +1,5 @@
-﻿// 
+﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
+// 
 // This file is part of Open Rails.
 // 
 // Open Rails is free software: you can redistribute it and/or modify
@@ -14,28 +15,17 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-/// This module ...
-/// 
-/// Author: Stéfan Paitoni
-/// Updates : 
-/// 
-
+using Orts.Formats.Msts;
+using Orts.Parsers.Msts;
+using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Microsoft.Xna.Framework;
-using MSTS;
-using Orts.Parsers.Msts;
-using Orts.Formats.Msts;
-using ORTS.Common;
-using ORTS.Formats;
 
-namespace LibAE.Formats
+namespace Orts.Formats.OR
 {
 
     //  All these class definition are there onbly for documentation

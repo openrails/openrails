@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using LibAE.Formats;
+using Orts.Formats.OR;
 
 namespace ActivityEditor.Route_Metadata
 {

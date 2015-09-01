@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -15,23 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-/// This module parses the sigcfg file and builds an object model based on signal details
-/// 
-/// Author: Stefan PAITONI
-/// 
+using Orts.Formats.Msts;
 using System;
-using System.IO;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
-using ORTS;
-using Orts.Formats.Msts;
-using Orts.Parsers.Msts;
-using ORTS.Common;
-using LibAE.Formats;
 
-namespace ORTS.Formats
+namespace Orts.Formats.OR
 {
     public class MSTSData
     {

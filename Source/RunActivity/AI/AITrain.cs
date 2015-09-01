@@ -41,6 +41,7 @@ using Orts.Parsers.Msts;
 using ORTS.Common;
 using ORTS.Viewer3D.Popups;
 using LibAE.Formats;
+using Orts.Formats.OR;
 
 namespace ORTS
 {

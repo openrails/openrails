@@ -29,6 +29,7 @@ using System.Xml.Serialization;
 using ORTS;
 using ORTS.Settings;
 using LibAE.Formats;
+using Orts.Formats.OR;
 
 namespace ActivityEditor.Preference
 {
