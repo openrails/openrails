@@ -26,7 +26,7 @@ namespace ORTS.Menu
 {
     public class TimetableInfo
     {
-        public readonly List<TTPreInfo> ORTTList = new List<TTPreInfo>();
+        public readonly List<TimetableFileLite> ORTTList = new List<TimetableFileLite>();
         public readonly String Description;
         public readonly String fileName;
 
@@ -46,7 +46,7 @@ namespace ORTS.Menu
             {
                 try
                 {
-                    ORTTList.Add(new TTPreInfo(filePath));
+                    ORTTList.Add(new TimetableFileLite(filePath));
                     Description = String.Copy(ORTTList[0].Description);
                     fileName = String.Copy(filePath);
                 }
@@ -67,7 +67,7 @@ namespace ORTS.Menu
             {
                 try
                 {
-                    MultiTTPreInfo multiInfo = new MultiTTPreInfo(filePath, directory);
+                    TimetableGroupFileLite multiInfo = new TimetableGroupFileLite(filePath, directory);
                     ORTTList = multiInfo.ORTTInfo;
                     Description = String.Copy(multiInfo.Description);
                     fileName = String.Copy(filePath);

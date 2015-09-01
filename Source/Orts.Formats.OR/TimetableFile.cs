@@ -40,14 +40,14 @@ using GNU.Gettext;
 namespace Orts.Formats.OR
 {
     /// <summary>
-    /// class ORTTPreInfo
+    /// class TimetableFileLite
     /// provides pre-information for menu
     /// extracts only description and list of trains
     /// </summary>
     
-    public class TTPreInfo
+    public class TimetableFileLite
     {
-        public List<TTTrainPreInfo> Trains = new List<TTTrainPreInfo>();
+        public List<TrainInformation> Trains = new List<TrainInformation>();
         public String Description;
 
         private String Separator;
@@ -57,7 +57,7 @@ namespace Orts.Formats.OR
         /// </summary>
         /// <param name="filePath"></param>
 
-        public TTPreInfo(String filePath)
+        public TimetableFileLite(String filePath)
         {
             Separator = String.Empty;
             try
@@ -112,7 +112,7 @@ namespace Orts.Formats.OR
                 }
                 else if (!String.IsNullOrEmpty(headerString) && !headerString.ToLower().Contains("$static"))
                 {
-                    Trains.Add(new TTTrainPreInfo(columnIndex, headerString));
+                    Trains.Add(new TrainInformation(columnIndex, headerString));
                 }
                 columnIndex++;
             }
@@ -147,7 +147,7 @@ namespace Orts.Formats.OR
                     if (String.Compare(Parts[0].Trim().Substring(0,5), "#path", true) == 0)
                     {
                         pathFound = true;
-                        foreach (TTTrainPreInfo train in Trains)
+                        foreach (TrainInformation train in Trains)
                         {
                             train.Path = String.Copy(Parts[train.Column]);
                         }
@@ -159,7 +159,7 @@ namespace Orts.Formats.OR
                     if (String.Compare(Parts[0], "#consist", true) == 0)
                     {
                         consistFound = true;
-                        foreach (TTTrainPreInfo train in Trains)
+                        foreach (TrainInformation train in Trains)
                         {
                             train.Consist = String.Copy(Parts[train.Column]);
                             train.LeadingConsist = ExtractConsist(train.Consist, out train.ReverseConsist);
@@ -172,7 +172,7 @@ namespace Orts.Formats.OR
                     if (String.Compare(Parts[0], "#start", true) == 0)
                     {
                         startFound = true;
-                        foreach (TTTrainPreInfo train in Trains)
+                        foreach (TrainInformation train in Trains)
                         {
                             train.StartTime = String.Copy(Parts[train.Column]);
                         }
@@ -252,7 +252,7 @@ namespace Orts.Formats.OR
             return (reqString.Trim());
         }
 
-        public class TTTrainPreInfo : IComparable<TTTrainPreInfo>
+        public class TrainInformation : IComparable<TrainInformation>
         {
             public int Column;                // column index
             public string Train;              // train definition
@@ -264,7 +264,7 @@ namespace Orts.Formats.OR
 
             GettextResourceManager Catalog = new GettextResourceManager("Orts.Formats.OR");
 
-            public TTTrainPreInfo(int column, string train)
+            public TrainInformation(int column, string train)
             {
                 Column = column;
                 Train = string.Copy(train);
@@ -273,7 +273,7 @@ namespace Orts.Formats.OR
                 Path = string.Empty;
             }
 
-            public int CompareTo(TTTrainPreInfo otherInfo)
+            public int CompareTo(TrainInformation otherInfo)
             {
                 return(String.Compare(this.Train, otherInfo.Train));
             }
@@ -293,150 +293,4 @@ namespace Orts.Formats.OR
             }
         }
     }
-
-/// <summary>
-/// class ORMultiTTPreInfo
-/// Creates pre-info for Multi TT file
-/// returns Description and list of pre-info per file
-/// </summary>
-
-    public class MultiTTPreInfo
-    {
-        public List<TTPreInfo> ORTTInfo = new List<TTPreInfo>();
-        public String Description;
-
-        public MultiTTPreInfo(String filePath, String directory)
-        {
-            Description = String.Empty;
-            try
-            {
-                using (StreamReader scrStream = new StreamReader(filePath, true))
-                {
-                    MultiTTFilePreliminaryRead(filePath, directory, scrStream);
-                    scrStream.Close();
-                    if (String.IsNullOrEmpty(Description)) Description = String.Copy(filePath);
-                }
-            }
-            catch (Exception)
-            {
-                Description = "<" + "load error:" + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
-            }
-        }
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="SingleTTInfo"></param>
-
-        public MultiTTPreInfo(TTPreInfo SingleTTInfo)
-        {
-            Description = String.Copy(SingleTTInfo.Description);
-            ORTTInfo.Add(SingleTTInfo);
-        }
-
-        /// <summary>
-        /// ORMultiTTFilePreliminaryRead
-        /// Reads MultiTTfile for preliminary info
-        /// </summary>
-        /// <param name="filePath"></param>
-        /// <param name="directory"></param>
-        /// <param name="scrStream"></param>
-
-        void MultiTTFilePreliminaryRead(String filePath, String directory, StreamReader scrStream)
-        {
-            String readLine;
-
-            // read first line - first character is separator, rest is train info
-            readLine = scrStream.ReadLine();
-
-            while (readLine != null)
-            {
-                if (!String.IsNullOrEmpty(readLine))
-                {
-                    if (String.Compare(readLine.Substring(0, 1), "#") == 0)
-                    {
-                        if (String.IsNullOrEmpty(Description)) Description = String.Copy(readLine.Substring(1));
-                    }
-                    else
-                    {
-                        String ttfile = System.IO.Path.Combine(directory, readLine);
-                        ORTTInfo.Add(new TTPreInfo(ttfile));
-                    }
-                }
-                readLine = scrStream.ReadLine();
-            }
-        }
-    }
-
-    /// <summary>
-    /// class MultiTTInfo
-    /// extracts filenames from multiTTfile, extents names to full path
-    /// </summary>
-
-    public class MultiTTInfo
-    {
-        public List<string> TTFiles = new List<string>();
-        public string Description;
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="filePath"></param>
-        /// <param name="directory"></param>
-
-        public MultiTTInfo(String filePath, String directory)
-        {
-            Description = String.Empty;
-            try
-            {
-                using (StreamReader scrStream = new StreamReader(filePath, true))
-                {
-                    MultiTTFileRead(filePath, directory, scrStream);
-                    scrStream.Close();
-                    if (String.IsNullOrEmpty(Description)) Description = String.Copy(filePath);
-                }
-            }
-            catch (Exception)
-            {
-                Description = "<" + "load error:" + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
-            }
-        }
-
-        /// <summary>
-        /// MultiTTFileRead
-        /// Reads multiTTfile and extracts filenames
-        /// </summary>
-        /// <param name="filePath"></param>
-        /// <param name="directory"></param>
-        /// <param name="scrStream"></param>
-
-        void MultiTTFileRead(String filePath, String directory, StreamReader scrStream)
-        {
-            String readLine;
-
-            // read first line - first character is separator, rest is train info
-            readLine = scrStream.ReadLine();
-
-            while (readLine != null)
-            {
-                if (!String.IsNullOrEmpty(readLine))
-                {
-                    if (String.Compare(readLine.Substring(0, 1), "#") == 0)
-                    {
-                        if (String.IsNullOrEmpty(Description)) Description = String.Copy(readLine.Substring(1));
-                    }
-                    else
-                    {
-                        String ttfile = System.IO.Path.Combine(directory, readLine);
-                        TTFiles.Add(ttfile);
-                    }
-                }
-                readLine = scrStream.ReadLine();
-            }
-        }
-    }
 }
-
-
-
-

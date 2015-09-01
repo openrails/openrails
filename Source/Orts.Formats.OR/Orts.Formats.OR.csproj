@@ -53,8 +53,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ORRouteConfigExt.cs" />
-    <Compile Include="ORTimetableFile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TimetableFile.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TimetableGroupFile.cs" />
     <Compile Include="TrackCircuitElement.cs" />
   </ItemGroup>
   <ItemGroup>

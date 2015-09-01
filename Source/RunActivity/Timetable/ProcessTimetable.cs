@@ -215,7 +215,7 @@ namespace ORTS
                     break;
 
                 case ".timetablelist_or":
-                    MultiTTInfo multiInfo = new MultiTTInfo(filePath, fileDirectory);
+                    TimetableGroupFile multiInfo = new TimetableGroupFile(filePath, fileDirectory);
                     filenames = multiInfo.TTFiles;
                     break;
 

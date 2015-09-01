@@ -93,8 +93,8 @@ namespace ORTS
 
         // Timetable mode items
         public TimetableInfo SelectedTimetableSet { get { return (TimetableInfo)comboBoxTimetableSet.SelectedItem; } }
-        public TTPreInfo SelectedTimetable { get { return (TTPreInfo)comboBoxTimetable.SelectedItem; } }
-        public TTPreInfo.TTTrainPreInfo SelectedTimetableTrain { get { return (TTPreInfo.TTTrainPreInfo)comboBoxTimetableTrain.SelectedItem; } }
+        public TimetableFileLite SelectedTimetable { get { return (TimetableFileLite)comboBoxTimetable.SelectedItem; } }
+        public TimetableFileLite.TrainInformation SelectedTimetableTrain { get { return (TimetableFileLite.TrainInformation)comboBoxTimetableTrain.SelectedItem; } }
         public int SelectedTimetableDay { get { return (comboBoxTimetableDay.SelectedItem as KeyedComboBoxItem).Key; } }
         public Consist SelectedTimetableConsist;
         public Path SelectedTimetablePath;
@@ -414,7 +414,7 @@ namespace ORTS
         #region Timetable Trains
         void comboBoxTimetableTrain_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var selectedTrain = comboBoxTimetableTrain.SelectedItem as TTPreInfo.TTTrainPreInfo;
+            var selectedTrain = comboBoxTimetableTrain.SelectedItem as TimetableFileLite.TrainInformation;
             SelectedTimetableConsist = Consist.GetConsist(SelectedFolder, selectedTrain.LeadingConsist, selectedTrain.ReverseConsist);
             SelectedTimetablePath = Path.GetPath(SelectedRoute, selectedTrain.Path, false);
             ShowDetails();
@@ -977,7 +977,7 @@ namespace ORTS
             {
                 foreach (var timetable in SelectedTimetableSet.ORTTList)
                     comboBoxTimetable.Items.Add(timetable);
-                UpdateFromMenuSelection<TTPreInfo>(comboBoxTimetable, UserSettings.Menu_SelectionIndex.Timetable, t => t.Description);
+                UpdateFromMenuSelection<TimetableFileLite>(comboBoxTimetable, UserSettings.Menu_SelectionIndex.Timetable, t => t.Description);
             }
             UpdateEnabled();
         }
@@ -993,7 +993,7 @@ namespace ORTS
                 trains.Sort();
                 foreach (var train in trains)
                     comboBoxTimetableTrain.Items.Add(train);
-                UpdateFromMenuSelection<TTPreInfo.TTTrainPreInfo>(comboBoxTimetableTrain, UserSettings.Menu_SelectionIndex.Train, t => t.Column.ToString());
+                UpdateFromMenuSelection<TimetableFileLite.TrainInformation>(comboBoxTimetableTrain, UserSettings.Menu_SelectionIndex.Train, t => t.Column.ToString());
             }
             UpdateEnabled();
         }
