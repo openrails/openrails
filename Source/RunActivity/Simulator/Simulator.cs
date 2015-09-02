@@ -573,7 +573,7 @@ namespace ORTS
                 train.TCRoute.activeSubpath < train.TCRoute.TCRouteSubpaths.Count - 1 || train.ValidRoute[0].Count > 5))
             {
                 if (((drivenTrain.TCRoute != null && drivenTrain.TCRoute.activeSubpath == drivenTrain.TCRoute.TCRouteSubpaths.Count - 1 &&
-                    drivenTrain.ValidRoute[0].Count < 5) || ((AITrain)drivenTrain).UncondAttach) && drivenTrain != OriginalPlayerTrain)
+                    drivenTrain.ValidRoute[0].Count < 5) || (drivenTrain is AITrain && ((AITrain)drivenTrain).UncondAttach)) && drivenTrain != OriginalPlayerTrain)
                 {
                     // Switch to the attached train as the one where we are now is at the end of its life
                     Program.Viewer.TrainListWindow.PickedTrainFromList = train;
