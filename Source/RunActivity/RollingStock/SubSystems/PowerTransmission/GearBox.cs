@@ -84,10 +84,10 @@ namespace ORTS
                     }
                     if (temp == "(")
                     {
+                        GearBoxMaxSpeedForGearsMpS.Clear();
                         for (int i = 0; i < GearBoxNumberOfGears; i++)
                         {
-                            GearBoxMaxSpeedForGearsMpS.Add(stf.ReadFloat(STFReader.UNITS.Speed, 10.0f));
-                            GearBoxMaxSpeedForGearsMpS[i] = MpS.FromMpH(GearBoxMaxSpeedForGearsMpS[i]);
+                            GearBoxMaxSpeedForGearsMpS.Add(stf.ReadFloat(STFReader.UNITS.SpeedDefaultMPH, 10.0f));
                         }
                         stf.SkipRestOfBlock();
                         initLevel++;
@@ -101,6 +101,7 @@ namespace ORTS
                     }
                     if (temp == "(")
                     {
+                        GearBoxMaxTractiveForceForGearsN.Clear();
                         for (int i = 0; i < GearBoxNumberOfGears; i++)
                             GearBoxMaxTractiveForceForGearsN.Add(stf.ReadFloat(STFReader.UNITS.Force, 10000.0f));
                         stf.SkipRestOfBlock();
