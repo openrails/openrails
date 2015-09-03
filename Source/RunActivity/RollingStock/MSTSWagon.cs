@@ -77,6 +77,7 @@ namespace ORTS
         public string FreightShapeFileName;
         public float FreightAnimMaxLevelM;
         public float FreightAnimMinLevelM;
+        public float FreightAnimFlag;   // if absent or >= 0 causes the freightanim to drop in tenders
         public string Cab3DShapeFileName; // 3DCab view shape file name
         public string InteriorShapeFileName; // passenger view shape file name
         public string MainSoundFileName;
@@ -251,6 +252,7 @@ namespace ORTS
                     FreightShapeFileName = stf.ReadString();
                     FreightAnimMaxLevelM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     FreightAnimMinLevelM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    FreightAnimFlag = stf.ReadFloat(STFReader.UNITS.Distance, 1.0f);
                     stf.SkipRestOfBlock();
                     break;
                 case "wagon(size":
@@ -417,6 +419,7 @@ namespace ORTS
             FreightShapeFileName = copy.FreightShapeFileName;
             FreightAnimMaxLevelM = copy.FreightAnimMaxLevelM;
             FreightAnimMinLevelM = copy.FreightAnimMinLevelM;
+            FreightAnimFlag = copy.FreightAnimFlag;
             CarWidthM = copy.CarWidthM;
             CarHeightM = copy.CarHeightM;
             CarLengthM = copy.CarLengthM;
