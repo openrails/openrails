@@ -1240,10 +1240,19 @@ namespace ORTS
             float length = (float)Math.Sqrt(dx * dx + dz * dz + dy * dy);
             float run = (float)Math.Sqrt(dx * dx + dz * dz);
             // normalize to coordinate to a length of one, ie dx is change in x for a run of 1
-            dx /= length;
-            dy /= length;   // ie if it is tilted back 5 degrees, this is sin 5 = 0.087
-            run /= length;  //                              and   this is cos 5 = 0.996
-            dz /= length;
+            if (length != 0)    // Avoid zero divide
+            {
+                dx /= length;
+                dy /= length;   // ie if it is tilted back 5 degrees, this is sin 5 = 0.087
+                run /= length;  //                              and   this is cos 5 = 0.996
+                dz /= length;
+            }
+            else
+            {                   // If length is zero all elements of its calculation are zero. Since dy is a sine and is zero,
+                run = 1f;       // run is therefore 1 since it is cosine of the same angle?  See comments above.
+            }
+
+                                
             // setup matrix values
 
             Matrix xnaTilt = new Matrix(1, 0, 0, 0,
