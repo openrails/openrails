@@ -11556,7 +11556,7 @@ namespace ORTS
             thisInfo.direction = MUDirection == Direction.Forward ? 0 : (MUDirection == Direction.Reverse ? 1 : -1);
 
             // set orientation
-            thisInfo.cabOrientation = (LeadLocomotive.Flipped ^ LeadLocomotive.GetCabFlipped()) ? 1 : 0;
+            thisInfo.cabOrientation = (Simulator.PlayerLocomotive.Flipped ^ Simulator.PlayerLocomotive.GetCabFlipped()) ? 1 : 0;
 
             // check if train is on original path
             thisInfo.isOnPath = false;
