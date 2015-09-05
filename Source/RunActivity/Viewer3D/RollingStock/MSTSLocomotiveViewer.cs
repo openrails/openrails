@@ -518,6 +518,11 @@ namespace ORTS.Viewer3D.RollingStock
         public void StartRefilling(uint type)
         {
             var controller = Locomotive.GetRefillController(type);
+            if (controller == null)
+            {
+                Viewer.Simulator.Confirmer.Message(ConfirmLevel.Error, Viewer.Catalog.GetString("Incompatible pickup type"));
+                return;
+            }
             controller.CommandStartTime = Viewer.Simulator.ClockTime;  // for Replay to use 
             controller.StartIncrease(controller.MaximumValue);
         }
