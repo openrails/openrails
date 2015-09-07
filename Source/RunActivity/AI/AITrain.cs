@@ -679,6 +679,7 @@ namespace ORTS
                 {
                     Trace.TraceInformation("Train {0} {1} is removed for out of control, reason : {2}", Number, Name, OutOfControlReason.ToString());
                     RemoveTrain();
+                    return;
                 }
             }
 
