@@ -70,7 +70,7 @@ namespace ORTS.Viewer3D.RollingStock
                 car.HasFreightAnim = true;
                 FreightShape = new AnimatedShape(viewer, wagonFolderSlash + car.FreightShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
                 // Reproducing MSTS "bug" of not allowing tender animation in case both minLevel and maxLevel are 0 or maxLevel <  minLevel 
-                if (MSTSWagon.IsTender && MSTSWagon.FreightAnimMaxLevelM != 0 && MSTSWagon.FreightAnimFlag > 0 && MSTSWagon.FreightAnimMaxLevelM > MSTSWagon.FreightAnimMinLevelM)
+                if (MSTSWagon.IsTender && MSTSWagon.FreightAnimMaxLevelM != 0 && MSTSWagon.FreightAnimFlag > 0 && MSTSWagon.FreightAnimMaxLevelM >= MSTSWagon.FreightAnimMinLevelM)
                 {
                     // Force allowing animation:
                     if (FreightShape.SharedShape.LodControls.Length > 0 && FreightShape.SharedShape.LodControls[0].DistanceLevels.Length > 0 && FreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects.Length > 0 && FreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives.Length > 0 && FreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy.Length > 0)
@@ -361,7 +361,7 @@ namespace ORTS.Viewer3D.RollingStock
                         MSTSWagon.FindTendersSteamLocomotive();
                     if (FreightShape.XNAMatrices.Length > 0 && MSTSWagon.TendersSteamLocomotive != null)
                     {
-                        if (MSTSWagon.FreightAnimFlag > 0 && MSTSWagon.FreightAnimMaxLevelM > MSTSWagon.FreightAnimMinLevelM)
+                        if (MSTSWagon.FreightAnimFlag > 0 && MSTSWagon.FreightAnimMaxLevelM >= MSTSWagon.FreightAnimMinLevelM)
                             FreightShape.XNAMatrices[0].M42 = MSTSWagon.FreightAnimMinLevelM + MSTSWagon.TendersSteamLocomotive.FuelController.CurrentValue * (MSTSWagon.FreightAnimMaxLevelM - MSTSWagon.FreightAnimMinLevelM);
                         else
                             // reproducing MSTS strange behavior; used to display loco crew
