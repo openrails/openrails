@@ -48,10 +48,7 @@ namespace ORTS.MultiPlayer
 		{
 			client = new TcpClient();
 
-			IPAddress address = Dns.GetHostEntry(serverIP)
-				 .AddressList
-				 .First(ip => ip.AddressFamily == AddressFamily.InterNetwork);
-			IPEndPoint serverEndPoint = new IPEndPoint(address, serverPort);
+			IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Parse(serverIP), serverPort);
 
 			client.Connect(serverEndPoint);
 			string[] tmp = s.Split(' ');
@@ -60,7 +57,7 @@ namespace ORTS.MultiPlayer
 			decoder = new Decoder();
 
 			listenThread = new Thread(new ParameterizedThreadStart(this.Receive));
-			listenThread.Name = "Multiplayer Client-Server";
+            listenThread.Name = "Multiplayer Client-Server";
 			listenThread.Start(client);
 
 		}
