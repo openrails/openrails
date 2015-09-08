@@ -8751,6 +8751,7 @@ namespace ORTS
                 {
                     if (TCRoute.TCRouteSubpaths != null) TCRoute.TCRouteSubpaths.Clear();
                     if (TCRoute.TCAlternativePaths != null) TCRoute.TCAlternativePaths.Clear();
+                    TCRoute.activeAltpath = -1;
                 }
                 if (ValidRoute[0] != null && ValidRoute[0].Count > 0)
                 {
