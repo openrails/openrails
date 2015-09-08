@@ -2021,7 +2021,7 @@ namespace ORTS
                 }
             }
 
-            PreviousStop = StationStops[0].CreateCopy();
+            if (StationStops.Count > 0) PreviousStop = StationStops[0].CreateCopy();
             if (removeStation)
                 StationStops.RemoveAt(0);
 
