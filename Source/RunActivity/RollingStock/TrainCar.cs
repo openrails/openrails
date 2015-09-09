@@ -1004,23 +1004,29 @@ namespace ORTS
             foreach (var axles in WheelAxles) if (offset.AlmostEqual(axles.OffsetM, 0.05f)) { offset = axles.OffsetM + 0.7f; break; }
             if (wheels.Length == 8)
             {
-                if (wheels == "WHEELS11" || wheels == "WHEELS12" || wheels == "WHEELS13" || wheels == "SPOKES11" || wheels == "SPOKES12" || wheels == "SPOKES13")
-                    WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
-                else if (wheels == "WHEELS21" || wheels == "WHEELS22" || wheels == "WHEELS23" || wheels == "SPOKES21" || wheels == "SPOKES22" || wheels == "SPOKES23")
+                if (Parts[1].iMatrix == parentMatrix)
                 {
-                    // The process would assign 2 to the id because WHEELS21 or WHEELS22 would contain the number 2.
-                    // If the shape file contained only one set of WHEELS that was labeled as WHEELS21 && WHEELS22 then BogieIndex would be 2, not 1.
-                    if (numWheels2 <= 2 && numWheels1 == 0)
+                    if (wheels == "WHEELS11" || wheels == "WHEELS12" || wheels == "WHEELS13")
+                        WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
+                }
+                else if (Parts[2].iMatrix == parentMatrix)
+                {
+                    if (wheels == "WHEELS21" || wheels == "WHEELS22" || wheels == "WHEELS23")
                     {
-                        bogieID -= 1;
-                        WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
+                        // The process would assign 2 to the id because WHEELS21 or WHEELS22 would contain the number 2.
+                        // If the shape file contained only one set of WHEELS that was labeled as WHEELS21 && WHEELS22 then BogieIndex would be 2, not 1.
+                        if (numWheels2 <= 2 && numWheels1 == 0)
+                        {
+                            bogieID -= 1;
+                            WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
+                        }
+                        else
+                            WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
                     }
-                    else
-                        WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
                 }
             }
             else
-                // Wheels can be Wheels1, Wheels2, Wheels3. 
+                // Any Wheel set not covered in the above test. 
                 WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
         } // end AddWheelSet()
 
@@ -1083,6 +1089,7 @@ namespace ORTS
                 Console.WriteLine("  part:  matrix {1,5:F0}  offset {0,10:F4}  weight {2,5:F0}", p.OffsetM, p.iMatrix, p.SumWgt);
 #endif
             WheelHasBeenSet = true;
+            Trace.TraceInformation("The number of axles is: {0}", WheelAxles.Count);
             // No parts means no bogies (always?), so make sure we've got Parts[0] for the car itself.
             if (Parts.Count == 0)
                 Parts.Add(new TrainCarPart(0, 0));
