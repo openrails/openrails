@@ -2830,7 +2830,7 @@ namespace ORTS.MultiPlayer
 	public class MSGLocoInfo : Message
 	{
 
-		float EB, DB, TT, VL, CC, BC, DC, FC, I1, I2;
+		float EB, DB, TT, VL, CC, BC, DC, FC, I1, I2, SH;
 		string user;
 		int tnum; //train number
 
@@ -2838,11 +2838,11 @@ namespace ORTS.MultiPlayer
 		public MSGLocoInfo(TrainCar c, string u)
 		{
 			MSTSLocomotive loco = (MSTSLocomotive)c;
-			EB = DB = TT = VL = CC = BC = DC = FC = I1 = I2 = 0.0f;
+			EB = DB = TT = VL = CC = BC = DC = FC = I1 = I2 = SH = 0.0f;
 			if (loco is MSTSSteamLocomotive)
 			{
 				MSTSSteamLocomotive loco1 = (MSTSSteamLocomotive)loco;
-				loco1.GetLocoInfo(ref CC, ref BC, ref DC, ref FC, ref I1, ref I2);
+				loco1.GetLocoInfo(ref CC, ref BC, ref DC, ref FC, ref I1, ref I2, ref SH);
 			}
 			if (loco.EngineBrakeController != null)
 			{
@@ -2877,6 +2877,7 @@ namespace ORTS.MultiPlayer
 			FC = float.Parse(tmp[9], CultureInfo.InvariantCulture);
 			I1 = float.Parse(tmp[10], CultureInfo.InvariantCulture);
 			I2 = float.Parse(tmp[11], CultureInfo.InvariantCulture);
+            SH = float.Parse(tmp[12], CultureInfo.InvariantCulture);
 		}
 
 		//how to handle the message?
@@ -2903,7 +2904,7 @@ namespace ORTS.MultiPlayer
 			if (loco is MSTSSteamLocomotive)
 			{
 				MSTSSteamLocomotive loco1 = (MSTSSteamLocomotive)loco;
-				loco1.GetLocoInfo(ref CC, ref BC, ref DC, ref FC, ref I1, ref I2);
+				loco1.GetLocoInfo(ref CC, ref BC, ref DC, ref FC, ref I1, ref I2, ref SH);
 			}
 			if (loco.EngineBrakeController != null)
 			{
