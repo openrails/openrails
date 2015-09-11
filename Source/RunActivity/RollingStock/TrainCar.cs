@@ -1004,25 +1004,20 @@ namespace ORTS
             foreach (var axles in WheelAxles) if (offset.AlmostEqual(axles.OffsetM, 0.05f)) { offset = axles.OffsetM + 0.7f; break; }
             if (wheels.Length == 8)
             {
-                if (Parts[1].iMatrix == parentMatrix)
+                if (wheels == "WHEELS11" || wheels == "WHEELS12" || wheels == "WHEELS13")
+                    WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
+
+                if (wheels == "WHEELS21" || wheels == "WHEELS22" || wheels == "WHEELS23")
                 {
-                    if (wheels == "WHEELS11" || wheels == "WHEELS12" || wheels == "WHEELS13")
-                        WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
-                }
-                else if (Parts[2].iMatrix == parentMatrix)
-                {
-                    if (wheels == "WHEELS21" || wheels == "WHEELS22" || wheels == "WHEELS23")
+                    // The process would assign 2 to the id because WHEELS21 or WHEELS22 would contain the number 2.
+                    // If the shape file contained only one set of WHEELS that was labeled as WHEELS21 && WHEELS22 then BogieIndex would be 2, not 1.
+                    if (numWheels2 <= 2 && numWheels1 == 0)
                     {
-                        // The process would assign 2 to the id because WHEELS21 or WHEELS22 would contain the number 2.
-                        // If the shape file contained only one set of WHEELS that was labeled as WHEELS21 && WHEELS22 then BogieIndex would be 2, not 1.
-                        if (numWheels2 <= 2 && numWheels1 == 0)
-                        {
-                            bogieID -= 1;
-                            WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
-                        }
-                        else
-                            WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
+                        bogieID -= 1;
+                        WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
                     }
+                    else
+                        WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
                 }
             }
             else
