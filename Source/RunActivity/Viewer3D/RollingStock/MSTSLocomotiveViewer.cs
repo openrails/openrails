@@ -1709,6 +1709,7 @@ namespace ORTS.Viewer3D.RollingStock
                 case CABViewControlTypes.STEAM_INJ1:
                 case CABViewControlTypes.STEAM_INJ2:
                 case CABViewControlTypes.SMALL_EJECTOR:
+                case CABViewControlTypes.GEARS_DISPLAY:
                     index = (int)data;
                     break;
             }

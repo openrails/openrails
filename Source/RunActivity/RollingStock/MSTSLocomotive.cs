@@ -2666,6 +2666,17 @@ namespace ORTS
                         data = MpS.FromMpS(TrainControlSystem.NextSpeedLimitMpS, metric);
                         break;
                     }
+                case CABViewControlTypes.GEARS_DISPLAY:
+                    {
+                        data = 0;
+                        if (this is MSTSDieselLocomotive)
+                        {
+                            var dieselLoco = this as MSTSDieselLocomotive;
+                            if (dieselLoco.DieselEngines.HasGearBox)
+                            data = dieselLoco.DieselEngines[0].GearBox.CurrentGearIndex + 1;
+                        }                   
+                        break;
+                    }
                 default:
                     {
                         data = 0;
