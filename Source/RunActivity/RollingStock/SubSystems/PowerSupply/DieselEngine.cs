@@ -319,7 +319,7 @@ namespace ORTS
 
             result.AppendFormat("\t{0}", Viewer3D.Viewer.Catalog.GetString("Oil"));
             foreach (var eng in DEList)
-                result.AppendFormat("\t{0}", FormatStrings.FormatPressure(eng.DieselOilPressurePSI, PressureUnit.PSI, Locomotive.PressureUnit, true));
+                result.AppendFormat("\t{0}", FormatStrings.FormatPressure(eng.DieselOilPressurePSI, PressureUnit.PSI, Locomotive.MainPressureUnit, true));
 
             return result.ToString();
         }

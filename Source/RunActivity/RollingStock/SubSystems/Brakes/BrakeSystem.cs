@@ -15,11 +15,23 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using System.IO;
 using ORTS.Common;
 
 namespace ORTS
 {
+    public enum BrakeSystemComponent
+    {
+        MainReservoir,
+        EqualizingReservoir,
+        AuxiliaryReservoir,
+        EmergencyReservoir,
+        MainPipe,
+        BrakePipe,
+        BrakeCylinder
+    }
+
     public abstract class BrakeSystem
     {
         public float BrakeLine1PressurePSI = 90;    // main trainline pressure at this car
@@ -50,9 +62,9 @@ namespace ORTS
 
         public abstract void AISetPercent(float percent);
 
-        public abstract string GetStatus(PressureUnit unit);
-        public abstract string GetFullStatus(BrakeSystem lastCarBrakeSystem, PressureUnit unit);
-        public abstract string[] GetDebugStatus(PressureUnit unit);
+        public abstract string GetStatus(Dictionary<BrakeSystemComponent, PressureUnit> units);
+        public abstract string GetFullStatus(BrakeSystem lastCarBrakeSystem, Dictionary<BrakeSystemComponent, PressureUnit> units);
+        public abstract string[] GetDebugStatus(Dictionary<BrakeSystemComponent, PressureUnit> units);
         public abstract float GetCylPressurePSI();
         public abstract float GetVacResPressurePSI();
 

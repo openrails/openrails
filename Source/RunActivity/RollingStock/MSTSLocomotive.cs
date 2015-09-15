@@ -45,6 +45,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
@@ -116,7 +117,18 @@ namespace ORTS
         public bool CabLightOn;
         public bool ShowCab = true;
         public bool MilepostUnitsMetric;
-        public PressureUnit PressureUnit = PressureUnit.None;
+
+        public PressureUnit MainPressureUnit = PressureUnit.None;
+        public Dictionary<BrakeSystemComponent, PressureUnit> BrakeSystemPressureUnits = new Dictionary<BrakeSystemComponent, PressureUnit>
+        {
+            { BrakeSystemComponent.MainReservoir, PressureUnit.None },
+            { BrakeSystemComponent.EqualizingReservoir, PressureUnit.None },
+            { BrakeSystemComponent.AuxiliaryReservoir, PressureUnit.None },
+            { BrakeSystemComponent.EmergencyReservoir, PressureUnit.None },
+            { BrakeSystemComponent.MainPipe, PressureUnit.None },
+            { BrakeSystemComponent.BrakePipe, PressureUnit.None },
+            { BrakeSystemComponent.BrakeCylinder, PressureUnit.None }
+        };
 
         float OdometerResetPositionM = 0;
         bool OdometerCountingUp = true;
@@ -354,85 +366,84 @@ namespace ORTS
                 case "Automatic":
                     if (CabViewList.Count > 0)
                     {
-                        List<CABViewControlTypes> correctTypes = new List<CABViewControlTypes> {
-                            CABViewControlTypes.MAIN_RES,
-                            CABViewControlTypes.EQ_RES,
-                            CABViewControlTypes.BRAKE_CYL,
-                            CABViewControlTypes.BRAKE_PIPE
+                        Dictionary<CABViewControlTypes, BrakeSystemComponent> brakeSystemComponents = new Dictionary<CABViewControlTypes, BrakeSystemComponent>
+                        {
+                            { CABViewControlTypes.MAIN_RES, BrakeSystemComponent.MainReservoir },
+                            { CABViewControlTypes.EQ_RES, BrakeSystemComponent.EqualizingReservoir },
+                            { CABViewControlTypes.BRAKE_CYL, BrakeSystemComponent.BrakeCylinder },
+                            { CABViewControlTypes.BRAKE_PIPE, BrakeSystemComponent.BrakePipe }
                         };
-                        bool coherent = true;
+
+                        Dictionary<CABViewControlUnits, PressureUnit> pressureUnits = new Dictionary<CABViewControlUnits, PressureUnit>
+                        {
+                            { CABViewControlUnits.KILOPASCALS, PressureUnit.KPa },
+                            { CABViewControlUnits.BAR, PressureUnit.Bar },
+                            { CABViewControlUnits.PSI, PressureUnit.PSI },
+                            { CABViewControlUnits.INCHES_OF_MERCURY, PressureUnit.InHg },
+                            { CABViewControlUnits.KGS_PER_SQUARE_CM, PressureUnit.KgfpCm2 }
+                       };
+                        
                         CabViewControls cvcList = CabViewList[0].CVFFile.CabViewControls;
                         foreach (CabViewControl cvc in cvcList)
                         {
-                            if (correctTypes.Contains(cvc.ControlType))
+                            if (brakeSystemComponents.ContainsKey(cvc.ControlType) && pressureUnits.ContainsKey(cvc.Units))
                             {
-                                PressureUnit unit = PressureUnit.None;
-                                switch (cvc.Units)
-                                {
-                                    case CABViewControlUnits.KILOPASCALS:
-                                        unit = PressureUnit.KPa;
-                                        break;
+                                BrakeSystemComponent component = brakeSystemComponents[cvc.ControlType];
+                                PressureUnit unit = pressureUnits[cvc.Units];
 
-                                    case CABViewControlUnits.BAR:
-                                        unit = PressureUnit.Bar;
-                                        break;
-
-                                    case CABViewControlUnits.PSI:
-                                        unit = PressureUnit.PSI;
-                                        break;
-
-                                    case CABViewControlUnits.INCHES_OF_MERCURY:
-                                        unit = PressureUnit.InHg;
-                                        break;
-
-                                    case CABViewControlUnits.KGS_PER_SQUARE_CM:
-                                        unit = PressureUnit.KgfpCm2;
-                                        break;
-
-                                    default:
-                                        coherent = false;
-                                        Trace.TraceWarning("Can't use pressure unit defined in CVF file for debug purposes.");
-                                        break;
-                                }
-
-                                // Check if found pressure unit is the same as the previous one.
-                                if (PressureUnit != PressureUnit.None && unit != PressureUnit)
-                                    coherent = false;
-                                else
-                                    PressureUnit = unit;
-                            }
-
-                            // If CVF data isn't coherent, reset pressure unit.
-                            if (!coherent)
-                            {
-                                PressureUnit = PressureUnit.None;
-                                break;
+                                BrakeSystemPressureUnits[component] = unit;
                             }
                         }
                     }
 
-                    if (PressureUnit == PressureUnit.None)
+                    // Manual rules :
+                    BrakeSystemPressureUnits[BrakeSystemComponent.MainPipe] = BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir]; // Main Pipe is supplied by Main Reservoir
+                    BrakeSystemPressureUnits[BrakeSystemComponent.AuxiliaryReservoir] = BrakeSystemPressureUnits[BrakeSystemComponent.BrakePipe]; // Auxiliary Reservoir is supplied by Brake Pipe (in single pipe brakes)
+                    BrakeSystemPressureUnits[BrakeSystemComponent.EmergencyReservoir] = BrakeSystemPressureUnits[BrakeSystemComponent.BrakePipe]; // Emergency Reservoir is supplied by Brake Pipe
+
+                    foreach (BrakeSystemComponent component in BrakeSystemPressureUnits.Keys.ToList())
                     {
-                        PressureUnit = (MilepostUnitsMetric ? PressureUnit.Bar : PressureUnit.PSI);
+                        if (BrakeSystemPressureUnits[component] == PressureUnit.None)
+                        {
+                            BrakeSystemPressureUnits[component] = (MilepostUnitsMetric ? PressureUnit.Bar : PressureUnit.PSI);
+                        }
                     }
                     break;
 
                 case "bar":
-                    PressureUnit = PressureUnit.Bar;
+                    foreach (BrakeSystemComponent component in BrakeSystemPressureUnits.Keys.ToList())
+                    {
+                        BrakeSystemPressureUnits[component] = PressureUnit.Bar;
+                    }
                     break;
 
                 case "PSI":
-                    PressureUnit = PressureUnit.PSI;
+                    foreach (BrakeSystemComponent component in BrakeSystemPressureUnits.Keys.ToList())
+                    {
+                        BrakeSystemPressureUnits[component] = PressureUnit.PSI;
+                    }
                     break;
 
                 case "inHg":
-                    PressureUnit = PressureUnit.InHg;
+                    foreach (BrakeSystemComponent component in BrakeSystemPressureUnits.Keys.ToList())
+                    {
+                        BrakeSystemPressureUnits[component] = PressureUnit.InHg;
+                    }
                     break;
 
                 case "kgf/cm^2":
-                    PressureUnit = PressureUnit.KgfpCm2;
+                    foreach (BrakeSystemComponent component in BrakeSystemPressureUnits.Keys.ToList())
+                    {
+                        BrakeSystemPressureUnits[component] = PressureUnit.KgfpCm2;
+                    }
                     break;
             }
+
+            // The main pressure unit is the one that is the most present in the brake system
+            MainPressureUnit = BrakeSystemPressureUnits.Values.ToList()
+                .GroupBy(x => x)
+                .OrderByDescending(x => x.Count())
+                .First().Key;
         }
 
         private CabView BuildCabView(string wagFilePath, string cvfFileName)
@@ -670,7 +681,8 @@ namespace ORTS
             MainResChargingRatePSIpS = locoCopy.MainResChargingRatePSIpS;
 
 
-            PressureUnit = locoCopy.PressureUnit;
+            MainPressureUnit = locoCopy.MainPressureUnit;
+            BrakeSystemPressureUnits = locoCopy.BrakeSystemPressureUnits;
             IsDriveable = copy.IsDriveable;
             //ThrottleController = MSTSEngineController.Copy(locoCopy.ThrottleController);
             ThrottleController = (MSTSNotchController)locoCopy.ThrottleController.Clone();
@@ -1827,7 +1839,7 @@ namespace ORTS
             TrainCar lastCar = Train.Cars[Train.Cars.Count - 1];
             if (lastCar == this)
                 lastCar = Train.Cars[0];
-            s += BrakeSystem.GetFullStatus(lastCar.BrakeSystem, PressureUnit);
+            s += BrakeSystem.GetFullStatus(lastCar.BrakeSystem, BrakeSystemPressureUnits);
             return s;
         }
 

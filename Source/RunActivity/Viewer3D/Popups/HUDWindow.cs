@@ -560,7 +560,7 @@ namespace ORTS.Viewer3D.Popups
             TableAddLines(table, String.Format("{0}\t\t{1}\t\t{2}\t{3}\t\t{4}",
                 Viewer.Catalog.GetString("PlayerLoco"),
                 Viewer.Catalog.GetString("Main reservoir"),
-                FormatStrings.FormatPressure((Viewer.PlayerLocomotive as MSTSLocomotive).MainResPressurePSI, PressureUnit.PSI, (Viewer.PlayerLocomotive as MSTSLocomotive).PressureUnit, true),
+                FormatStrings.FormatPressure((Viewer.PlayerLocomotive as MSTSLocomotive).MainResPressurePSI, PressureUnit.PSI, (Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir], true),
                 Viewer.Catalog.GetString("Compressor"),
                 (Viewer.PlayerLocomotive as MSTSLocomotive).CompressorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off")));
             // Display data for other locomotives
@@ -573,7 +573,7 @@ namespace ORTS.Viewer3D.Popups
                         Viewer.Catalog.GetString("Loco"),
                         train.Cars[i].CarID.ToString(),
                         Viewer.Catalog.GetString("Main reservoir"),
-                        FormatStrings.FormatPressure((car as MSTSLocomotive).MainResPressurePSI, PressureUnit.PSI, (car as MSTSLocomotive).PressureUnit, true),
+                        FormatStrings.FormatPressure((car as MSTSLocomotive).MainResPressurePSI, PressureUnit.PSI, (car as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir], true),
                         Viewer.Catalog.GetString("Compressor"),
                         (car as MSTSLocomotive).CompressorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off")));
                 }
@@ -603,7 +603,7 @@ namespace ORTS.Viewer3D.Popups
                 var j = i < 2 ? i : i * (train.Cars.Count - 1) / (n - 1);
                 var car = train.Cars[j];
                 TableSetCell(table, 0, "{0}", train.Cars[j].CarID);
-                TableSetCells(table, 1, car.BrakeSystem.GetDebugStatus((Viewer.PlayerLocomotive as MSTSLocomotive).PressureUnit));
+                TableSetCells(table, 1, car.BrakeSystem.GetDebugStatus((Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits));
                 TableAddLine(table);
             }
         }

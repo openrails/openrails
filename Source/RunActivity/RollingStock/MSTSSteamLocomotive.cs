@@ -3584,8 +3584,8 @@ namespace ORTS
                 status.AppendFormat("{0} = {2} ({1:F2})\n", Viewer.Catalog.GetString("Gear"),
                     SteamGearRatio, SteamGearPosition == 0 ? Viewer.Catalog.GetParticularString("Gear", "N") : SteamGearPosition.ToString());
 
-            status.AppendFormat("{0} = {1}/{2}\n", Viewer.Catalog.GetString("Steam usage"), FormatStrings.FormatMass(pS.TopH(Kg.FromLb(PreviousTotalSteamUsageLBpS)), PressureUnit != PressureUnit.PSI), FormatStrings.h);
-            status.AppendFormat("{0}{2} = {1}{2}\n", Viewer.Catalog.GetString("Boiler pressure"), FormatStrings.FormatPressure(BoilerPressurePSI, PressureUnit.PSI, PressureUnit, true), boilerPressureSafety);
+            status.AppendFormat("{0} = {1}/{2}\n", Viewer.Catalog.GetString("Steam usage"), FormatStrings.FormatMass(pS.TopH(Kg.FromLb(PreviousTotalSteamUsageLBpS)), MainPressureUnit != PressureUnit.PSI), FormatStrings.h);
+            status.AppendFormat("{0}{2} = {1}{2}\n", Viewer.Catalog.GetString("Boiler pressure"), FormatStrings.FormatPressure(BoilerPressurePSI, PressureUnit.PSI, MainPressureUnit, true), boilerPressureSafety);
             status.AppendFormat("{0}{2} = {1:F0}% {3}{2}\n", Viewer.Catalog.GetString("Boiler water level"), 100 * waterGlassPercent, boilerWaterSafety, FiringIsManual ? Viewer.Catalog.GetString("(safe range)") : "");
 
             if (FiringIsManual)
@@ -3708,43 +3708,43 @@ namespace ORTS
                 status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\t{17}\t{18}\n",
                 Viewer.Catalog.GetString("PressHP:"),
                 Viewer.Catalog.GetString("Chest"),
-                FormatStrings.FormatPressure(SteamChestPressurePSI, PressureUnit.PSI, PressureUnit, true),
+                FormatStrings.FormatPressure(SteamChestPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                 Viewer.Catalog.GetString("Initial"),
-                FormatStrings.FormatPressure(HPCylinderInitialPressureAtmPSI, PressureUnit.PSI, PressureUnit, true),
+                FormatStrings.FormatPressure(HPCylinderInitialPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
                 Viewer.Catalog.GetString("Cutoff"),
-                FormatStrings.FormatPressure(HPCylinderCutoffPressureAtmPSI, PressureUnit.PSI, PressureUnit, true),
+                FormatStrings.FormatPressure(HPCylinderCutoffPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
                 Viewer.Catalog.GetString("Rel"),
-                FormatStrings.FormatPressure(HPCylinderReleasePressureAtmPSI, PressureUnit.PSI, PressureUnit, true),
+                FormatStrings.FormatPressure(HPCylinderReleasePressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
                 Viewer.Catalog.GetString("RelR"),
-                FormatStrings.FormatPressure(HPCylinderReleasePressureRecvAtmPSI, PressureUnit.PSI, PressureUnit, true),
+                FormatStrings.FormatPressure(HPCylinderReleasePressureRecvAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
                 Viewer.Catalog.GetString("Exhaust"),
-                FormatStrings.FormatPressure(HPCylinderExhaustPressureAtmPSI, PressureUnit.PSI, PressureUnit, true),
+                FormatStrings.FormatPressure(HPCylinderExhaustPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
                 Viewer.Catalog.GetString("Back"),
-                FormatStrings.FormatPressure(HPCylinderBackPressureAtmPSI, PressureUnit.PSI, PressureUnit, true),
+                FormatStrings.FormatPressure(HPCylinderBackPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
                 Viewer.Catalog.GetString("PreComp"),
-                FormatStrings.FormatPressure(HPCylinderPreCompressionPressureAtmPSI, PressureUnit.PSI, PressureUnit, true),
+                FormatStrings.FormatPressure(HPCylinderPreCompressionPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
                 Viewer.Catalog.GetString("MEP"),
-                FormatStrings.FormatPressure(HPCylinderMEPAtmPSI, PressureUnit.PSI, PressureUnit, true));
+                FormatStrings.FormatPressure(HPCylinderMEPAtmPSI, PressureUnit.PSI, MainPressureUnit, true));
 
                 // Display steam indicator pressures in LP cylinder
                 status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\n",
                 Viewer.Catalog.GetString("PressLP:"),
                 Viewer.Catalog.GetString("Chest"),
-                FormatStrings.FormatPressure(SteamChestPressurePSI, PressureUnit.PSI, PressureUnit, true),
+                FormatStrings.FormatPressure(SteamChestPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                 Viewer.Catalog.GetString("Initial"),
-                FormatStrings.FormatPressure(LPCylinderInitialPressureAtmPSI, PressureUnit.PSI, PressureUnit, true),
+                FormatStrings.FormatPressure(LPCylinderInitialPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
                 Viewer.Catalog.GetString("Cutoff"),
-                FormatStrings.FormatPressure(LPCylinderPreCutoffPressureAtmPSI, PressureUnit.PSI, PressureUnit, true),
+                FormatStrings.FormatPressure(LPCylinderPreCutoffPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
                 Viewer.Catalog.GetString("Rel"),
-                FormatStrings.FormatPressure(LPCylinderReleasePressureAtmPSI, PressureUnit.PSI, PressureUnit, true),
+                FormatStrings.FormatPressure(LPCylinderReleasePressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
                 Viewer.Catalog.GetString("Back"),
-                FormatStrings.FormatPressure(LPCylinderBackPressureAtmPSI, PressureUnit.PSI, PressureUnit, true),
+                FormatStrings.FormatPressure(LPCylinderBackPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
                 Viewer.Catalog.GetString("PreComp"),
-                FormatStrings.FormatPressure(LPCylinderPreCompressionPressureAtmPSI, PressureUnit.PSI, PressureUnit, true),
+                FormatStrings.FormatPressure(LPCylinderPreCompressionPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
                 Viewer.Catalog.GetString("PreAdm"),
-                FormatStrings.FormatPressure(LPCylinderPreAdmissionPressureAtmPSI, PressureUnit.PSI, PressureUnit, true),
+                FormatStrings.FormatPressure(LPCylinderPreAdmissionPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
                 Viewer.Catalog.GetString("MEP"),
-                FormatStrings.FormatPressure(LPCylinderMEPAtmPSI, PressureUnit.PSI, PressureUnit, true));
+                FormatStrings.FormatPressure(LPCylinderMEPAtmPSI, PressureUnit.PSI, MainPressureUnit, true));
 
             }
             else  // Display Steam Indicator Information for single expansion locomotive
@@ -3760,14 +3760,14 @@ namespace ORTS
                     Viewer.Catalog.GetString("PreComp"),
                     Viewer.Catalog.GetString("PreAdm"),
                     Viewer.Catalog.GetString("MEP"),
-                    FormatStrings.FormatPressure(SteamChestPressurePSI, PressureUnit.PSI, PressureUnit, true),
-                    FormatStrings.FormatPressure(InitialPressureAtmPSI, PressureUnit.PSI, PressureUnit, true),
-                    FormatStrings.FormatPressure(CutoffPressureAtmPSI, PressureUnit.PSI, PressureUnit, true),
-                    FormatStrings.FormatPressure(CylinderReleasePressureAtmPSI, PressureUnit.PSI, PressureUnit, true),
-                    FormatStrings.FormatPressure(BackPressureAtmPSI, PressureUnit.PSI, PressureUnit, true),
-                    FormatStrings.FormatPressure(CylinderPreCompressionPressureAtmPSI, PressureUnit.PSI, PressureUnit, true),
-                    FormatStrings.FormatPressure(CylinderPreAdmissionPressureAtmPSI, PressureUnit.PSI, PressureUnit, true),
-                    FormatStrings.FormatPressure(MeanEffectivePressurePSI, PressureUnit.PSI, PressureUnit, true));
+                    FormatStrings.FormatPressure(SteamChestPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    FormatStrings.FormatPressure(InitialPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
+                    FormatStrings.FormatPressure(CutoffPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
+                    FormatStrings.FormatPressure(CylinderReleasePressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
+                    FormatStrings.FormatPressure(BackPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
+                    FormatStrings.FormatPressure(CylinderPreCompressionPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
+                    FormatStrings.FormatPressure(CylinderPreAdmissionPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
+                    FormatStrings.FormatPressure(MeanEffectivePressurePSI, PressureUnit.PSI, MainPressureUnit, true));
             }
 
             status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n",
