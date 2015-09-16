@@ -134,7 +134,8 @@ namespace ORTS
 
             // General tab
             checkAlerter.Checked = Settings.Alerter;
-            checkAlerterExternal.Checked = !Settings.AlerterDisableExternal;
+            checkAlerterExternal.Enabled = Settings.Alerter;
+            checkAlerterExternal.Checked = Settings.Alerter && !Settings.AlerterDisableExternal;
             checkConfirmations.Checked = !Settings.SuppressConfirmations;
             checkViewDispatcher.Checked = Settings.ViewDispatcher;
             checkUseLargeAddressAware.Checked = Settings.UseLargeAddressAware;
@@ -656,6 +657,20 @@ namespace ORTS
             {
                 current.Name = textBoxContentName.Text;
                 bindingSourceContent.ResetCurrentItem();
+            }
+        }
+
+        private void checkAlerter_CheckedChanged(object sender, EventArgs e)
+        {
+            //Disable checkAlerterExternal when checkAlerter is not checked
+            if (checkAlerter.Checked )
+            {
+                checkAlerterExternal.Enabled = true; 
+            }
+            else
+            {
+                checkAlerterExternal.Enabled = false;
+                checkAlerterExternal.Checked = false; 
             }
         }
     }

@@ -284,6 +284,7 @@
             this.checkAlerter.TabIndex = 0;
             this.checkAlerter.Text = "Alerter in cab";
             this.checkAlerter.UseVisualStyleBackColor = true;
+            this.checkAlerter.CheckedChanged += new System.EventHandler(this.checkAlerter_CheckedChanged);
             // 
             // checkConfirmations
             // 
