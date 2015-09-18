@@ -218,50 +218,51 @@ namespace Orts.Formats.OR
             ORRouteConfig p;
 
             fileName += ".cfg.json";
-            try
-            {
-                JsonSerializer serializer = new JsonSerializer();
-                using (StreamReader sr = new StreamReader(fileName))
-                {
-                    ORRouteConfig orRouteConfig = JsonConvert.DeserializeObject<ORRouteConfig>((string)sr.ReadToEnd(), new JsonSerializerSettings
-                    {
-                        PreserveReferencesHandling = PreserveReferencesHandling.Objects,
-                        TypeNameHandling = TypeNameHandling.Auto
-                    });
-                    p = orRouteConfig;
+            //try
+            //{
+                // TODO: This code is BROKEN. It loads and saves file formats with internal type information included, which causes breakages if the types are moved. This is not acceptable for public, shared data.
+                //JsonSerializer serializer = new JsonSerializer();
+                //using (StreamReader sr = new StreamReader(fileName))
+                //{
+                //    ORRouteConfig orRouteConfig = JsonConvert.DeserializeObject<ORRouteConfig>((string)sr.ReadToEnd(), new JsonSerializerSettings
+                //    {
+                //        PreserveReferencesHandling = PreserveReferencesHandling.Objects,
+                //        TypeNameHandling = TypeNameHandling.Auto
+                //    });
+                //    p = orRouteConfig;
                     
-                    foreach (var item in p.routeItems)
-                    {
-                        p.AllItems.Add(item);
-                        item.alignEdition(interfaceType, null);
-                        if (item.GetType() == typeof(StationItem))
-                        {
-                            if (((StationItem)item).stationArea.Count > 0)
-                            {
-                                foreach (var item2 in ((StationItem)item).stationArea)
-                                {
-                                    ((StationAreaItem)item2).alignEdition(interfaceType, item);
-                                }
-                                ((StationItem)item).areaCompleted = true;
-                            }
-                        }
-                        else if (item.GetType() == typeof(AEBufferItem))
-                        {
-                        }
-                    }
-                    //orRouteConfig.ReduceItems();
-                }
-
-            }
-            catch (IOException)
-            {
+                //    foreach (var item in p.routeItems)
+                //    {
+                //        p.AllItems.Add(item);
+                //        item.alignEdition(interfaceType, null);
+                //        if (item.GetType() == typeof(StationItem))
+                //        {
+                //            if (((StationItem)item).stationArea.Count > 0)
+                //            {
+                //                foreach (var item2 in ((StationItem)item).stationArea)
+                //                {
+                //                    ((StationAreaItem)item2).alignEdition(interfaceType, item);
+                //                }
+                //                ((StationItem)item).areaCompleted = true;
+                //            }
+                //        }
+                //        else if (item.GetType() == typeof(AEBufferItem))
+                //        {
+                //        }
+                //    }
+                //    //orRouteConfig.ReduceItems();
+                //}
+                //
+            //}
+            //catch (IOException)
+            //{
                 p = new ORRouteConfig();
                 p.FileName = Path.GetFileName(fileName);
                 p.RoutePath = Path.GetDirectoryName(fileName);
                 p.RouteName = "";
                 p.toSave = true;
 
-            }
+            //}
             return p;
         }
 
