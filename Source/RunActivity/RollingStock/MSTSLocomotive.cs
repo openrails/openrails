@@ -247,10 +247,6 @@ namespace ORTS
             LocomotiveAxle.DriveType = AxleDriveType.ForceDriven;
             LocomotiveAxle.DampingNs = MassKG / 1000.0f;
             LocomotiveAxle.FrictionN = MassKG / 100.0f;
-            LocomotiveAxle.AdhesionK = AdhesionK;
-            LocomotiveAxle.CurtiusKnifflerA = Curtius_KnifflerA;
-            LocomotiveAxle.CurtiusKnifflerB = Curtius_KnifflerB;
-            LocomotiveAxle.CurtiusKnifflerC = Curtius_KnifflerC;
             LocomotiveAxle.StabilityCorrection = true;
             LocomotiveAxle.FilterMovingAverage.Size = Simulator.Settings.AdhesionMovingAverageFilterSize;
             CurrentFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.5f), 0.001f);
@@ -315,6 +311,8 @@ namespace ORTS
             GetPressureUnit();
             CorrectBrakingParams();
             IsDriveable = true;
+
+            MoveParamsToAxle();
         }
 
         private void CheckCoherence()
@@ -690,6 +688,25 @@ namespace ORTS
             EngineBrakeController = locoCopy.EngineBrakeController != null ? locoCopy.EngineBrakeController.Clone(this) : null;
             DynamicBrakeController = locoCopy.DynamicBrakeController != null ? (MSTSNotchController)locoCopy.DynamicBrakeController.Clone() : null;
             TrainControlSystem.Copy(locoCopy.TrainControlSystem);
+
+            MoveParamsToAxle();
+
+
+        }
+
+        /// <summary>
+        /// We are moving parameters from locomotive to axle. 
+        /// </summary>
+        public void MoveParamsToAxle()
+        {
+            if (LocomotiveAxle != null)
+            {
+                LocomotiveAxle.SlipWarningTresholdPercent = SlipWarningThresholdPercent;
+                LocomotiveAxle.AdhesionK = AdhesionK;
+                LocomotiveAxle.CurtiusKnifflerA = Curtius_KnifflerA;
+                LocomotiveAxle.CurtiusKnifflerB = Curtius_KnifflerB;
+                LocomotiveAxle.CurtiusKnifflerC = Curtius_KnifflerC;
+            }
         }
 
         /// <summary>

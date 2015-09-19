@@ -364,7 +364,6 @@ namespace ORTS
                 case "wagon(ortsadhesion(ortsslipwarningthreshold":
                     stf.MustMatch("(");
                     SlipWarningThresholdPercent = stf.ReadFloat(STFReader.UNITS.None, 70.0f); if (SlipWarningThresholdPercent <= 0) SlipWarningThresholdPercent = 70.0f;
-                    stf.ReadFloat(STFReader.UNITS.None, null);
                     stf.SkipRestOfBlock();
                     break;
                 case "wagon(ortsadhesion(ortsantislip":
