@@ -3,8 +3,10 @@ Program/*
 Source/**/*.user
 Source/**/obj
 Source/*.suo
+Source/.vs
 Source/Contrib/TimetableEditor/*.lps
 Source/Contrib/TimetableEditor/*.res
 Source/Contrib/TimetableEditor/backup
 Source/Contrib/TimetableEditor/lib
+Source/Help
 Source/Locales/**/*.bak
