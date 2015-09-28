@@ -131,6 +131,7 @@ namespace ORTS.TrackViewer.UserInterface
             menuStatusShowPATfile.IsChecked = Properties.Settings.Default.statusShowPATfile;
             menuStatusShowTrainpath.IsChecked = Properties.Settings.Default.statusShowTrainpath;
             menuStatusShowTerrain.IsChecked = Properties.Settings.Default.statusShowTerrain;
+            menuStatusShowSignal.IsChecked = Properties.Settings.Default.statusShowSignal;
 
 
             menuDrawRoads.IsChecked = Properties.Settings.Default.drawRoads;
@@ -214,6 +215,7 @@ namespace ORTS.TrackViewer.UserInterface
             Properties.Settings.Default.statusShowPATfile = menuStatusShowPATfile.IsChecked && menuShowPATfile.IsChecked;
             Properties.Settings.Default.statusShowTrainpath = menuStatusShowTrainpath.IsChecked && menuShowTrainpath.IsChecked;
             Properties.Settings.Default.statusShowTerrain = menuStatusShowTerrain.IsChecked && (menuShowTerrain.IsChecked || menuShowDMTerrain.IsChecked);
+            Properties.Settings.Default.statusShowSignal = menuStatusShowSignal.IsChecked && menuShowSignals.IsChecked;
 
             Properties.Settings.Default.drawRoads = menuDrawRoads.IsChecked;
             Properties.Settings.Default.showCarSpawners = menuShowCarSpawners.IsChecked;
@@ -232,6 +234,7 @@ namespace ORTS.TrackViewer.UserInterface
             menuStatusShowPATfile.IsEnabled = menuShowPATfile.IsChecked;
             menuStatusShowTrainpath.IsEnabled = menuShowTrainpath.IsChecked;
             menuStatusShowTerrain.IsEnabled = menuShowTerrain.IsChecked || menuShowDMTerrain.IsChecked;
+            menuStatusShowSignal.IsEnabled = menuShowSignals.IsChecked;
 
 
             menuSelectPath.IsEnabled = (trackViewer.CurrentRoute != null);

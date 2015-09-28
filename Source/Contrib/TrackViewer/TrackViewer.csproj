@@ -246,6 +246,10 @@
       <Project>{1C5B0B41-2FE9-41C9-8B21-CCDCBEB3DDA5}</Project>
       <Name>ORTS.Menu</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj">
+      <Project>{8a84696c-3559-49b8-b27f-bb6932d8a1c6}</Project>
+      <Name>Orts.Parsers.Msts</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\ORTS.Settings\ORTS.Settings.csproj">
       <Project>{67F84996-8769-4FD8-819B-464AF269037B}</Project>
       <Name>ORTS.Settings</Name>

@@ -23,6 +23,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 using Orts.Formats.Msts;
+using Orts.Parsers.Msts;
 using ORTS.Common;
 
 namespace ORTS.TrackViewer.Drawing
@@ -44,6 +45,9 @@ namespace ORTS.TrackViewer.Drawing
         /// <summary>The signal config file containing, for instance, the information to distinguish normal and non-normal signals</summary>
         public SignalConfigurationFile SigcfgFile { get; set; }
 
+        private string storedRoutePath;
+        private Dictionary<uint, string> signalFileNames;
+
         /// <summary>
         /// Constructor. Loads all the relevant files for the route
         /// </summary>
@@ -51,6 +55,8 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="messageDelegate">The delegate that will deal with the message we want to send to the user</param>
         public RouteData(string routePath, MessageDelegate messageDelegate)
         {
+            this.storedRoutePath = routePath;
+
             messageDelegate(TrackViewer.catalog.GetString("Loading trackfile .trk ..."));
             RouteFile TRK = new RouteFile(MSTS.MSTSPath.GetTRKFileName(routePath));
             RouteName = TRK.Tr_RouteFile.Name;
@@ -92,6 +98,74 @@ namespace ORTS.TrackViewer.Drawing
             else
             {
                 //sigcfgFile = null; // default initialization
+            }
+        }
+
+        /// <summary>
+        /// Get the filename of the file where the signal shape is defined.
+        /// </summary>
+        /// <param name="signalIndex">The index (from the .tdb) of the signal</param>
+        public string GetSignalFilename(uint signalIndex)
+        {
+            if (signalFileNames == null)
+            {
+                signalFileNames = new Dictionary<uint, string>();
+                var WFilePath = this.storedRoutePath + @"\WORLD\";
+                
+                var Tokens = new List<TokenID>();
+                Tokens.Add(TokenID.Signal);
+
+                string[] wfiles;
+                try
+                {
+                    wfiles = Directory.GetFiles(WFilePath, "*.w");
+                }
+                catch
+                {
+                    wfiles = new string[0];
+                }
+                foreach (var fileName in wfiles)
+                {
+                    if (Path.GetFileName(fileName).Length != 17)
+                        continue;
+
+                    WorldFile WFile;
+                    try
+                    {
+                        WFile = new WorldFile(fileName, Tokens);
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+
+                    // loop through all signals
+
+                    foreach (var worldObject in WFile.Tr_Worldfile)
+                    {
+                        if (worldObject.GetType() != typeof(SignalObj)) continue;
+
+                        var thisWorldObject = worldObject as SignalObj;
+                        if (thisWorldObject.SignalUnits == null) continue; //this has no unit, will ignore it and treat it as static in scenary.cs
+
+                        foreach (var si in thisWorldObject.SignalUnits.Units)
+                        {
+                            uint trItemId = si.TrItem;
+                            this.signalFileNames[trItemId] = thisWorldObject.FileName;
+                        }
+                    }
+                }
+            }
+
+            string signalFileName;
+            signalFileNames.TryGetValue(signalIndex, out signalFileName);
+            if (String.IsNullOrEmpty(signalFileName))
+            {
+                return "unknown";
+            }
+            else
+            {
+                return signalFileName;
             }
         }
     }

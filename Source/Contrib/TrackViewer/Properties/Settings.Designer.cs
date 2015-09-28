@@ -573,5 +573,17 @@ namespace ORTS.TrackViewer.Properties {
                 this["statusShowTerrain"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool statusShowSignal {
+            get {
+                return ((bool)(this["statusShowSignal"]));
+            }
+            set {
+                this["statusShowSignal"] = value;
+            }
+        }
     }
 }

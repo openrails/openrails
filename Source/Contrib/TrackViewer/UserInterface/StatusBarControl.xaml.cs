@@ -163,6 +163,7 @@ namespace ORTS.TrackViewer.UserInterface
                 "{0,3:F3} ", closestPoint.X);
                 statusTrItemLocationZ.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
                     "{0,3:F3} ", closestPoint.Z);
+                AddSignalStatus(trackViewer, closestPoint.Description, closestPoint.Index);
             }
         }
 
@@ -313,6 +314,23 @@ namespace ORTS.TrackViewer.UserInterface
             if (Properties.Settings.Default.statusShowTerrain && (trackViewer.drawTerrain != null))
             {
                 statusAdditional.Text += trackViewer.drawTerrain.StatusInformation;
+            }
+        }
+
+        /// <summary>
+        /// Add information from signal
+        /// </summary>
+        /// <param name="trackViewer"></param>
+        private void AddSignalStatus(TrackViewer trackViewer, string description, uint index)
+        {
+            if (Properties.Settings.Default.statusShowSignal)
+            {
+                if (String.Equals(description, "signal"))
+                {
+                    statusAdditional.Text += "signal shape = ";
+                    statusAdditional.Text += trackViewer.RouteData.GetSignalFilename(index);
+                }
+
             }
         }
 
