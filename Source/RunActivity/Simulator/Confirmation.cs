@@ -96,6 +96,8 @@ namespace ORTS {
       , Replay
       , GearBox
       , SignalMode
+      // Freight Load
+      , FreightLoad
     }
 
     public enum CabSetting {
@@ -202,6 +204,9 @@ namespace ORTS {
                 , new string [] { GetString("Replay"), null, null, null, null, null, GetString("Overriding camera replay. Press Escape to resume camera replay.") } 
                 , new string [] { GetString("Gearbox"), null, null, null, GetString("down"), GetString("up"), GetString("locked. Use shaft before changing gear.") } 
                 , new string [] { GetString("Signal mode"), GetString("manual"), null, GetString("auto"), null, null, GetString("locked. Stop train, then re-try.") } 
+                // Freight Load
+                , new string [] { GetString("Wagon"), GetString("Wagon fully unloaded"), null, GetString("Wagon fully loaded"), null, GetString("Freight load") } 
+
             };
             Debug.Assert(ConfirmText.Length == Enum.GetNames(typeof(CabControl)).Length, "Number of entries indexer ConfirmText must match values in CabControl enum.");
         }

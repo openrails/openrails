@@ -847,6 +847,7 @@ namespace ORTS.Viewer3D
         readonly PickupObj FuelPickupItemObj;
         readonly FuelPickupItem FuelPickupItem;
         readonly SoundSource Sound;
+        readonly int FrameRate;
 
         readonly int AnimationFrames;
         protected float AnimationKey;
@@ -902,31 +903,41 @@ namespace ORTS.Viewer3D
                     }
                 }
             }
-             //Current wave files for coal transfer not cutting out.
-            //if (viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS != null && FuelPickupItemObj.PickupType == 6)
-            //{
-            //    var soundPath = viewer.Simulator.RoutePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS;
-            //    try
-            //    {
-            //        Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
-            //        viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-            //    }
-            //    catch
-            //    {
-            //        soundPath = viewer.Simulator.BasePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS;
-            //        try
-            //        {
-            //            Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
-            //            viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-            //        }
-            //        catch (Exception error)
-            //        {
-            //            Trace.WriteLine(new FileLoadException(soundPath, error));
-            //        }
-            //    }
-            //}
+            if (viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS != null && FuelPickupItemObj.PickupType == 6)
+            {
+                var soundPath = viewer.Simulator.RoutePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS;
+                try
+                {
+                    Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
+                    viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
+                }
+                catch
+                {
+                    soundPath = viewer.Simulator.BasePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS;
+                    try
+                    {
+                        Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
+                        viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
+                    }
+                    catch (Exception error)
+                    {
+                        Trace.WriteLine(new FileLoadException(soundPath, error));
+                    }
+                }
+            }
             FuelPickupItem = viewer.Simulator.FuelManager.CreateFuelStation(position, from tid in FuelPickupItemObj.TrItemIDList where tid.db == 0 select tid.dbID);
             AnimationFrames = 1;
+            FrameRate = 1;
+            if (SharedShape.Animations != null && SharedShape.Animations.Count > 0 && SharedShape.Animations[0].anim_nodes != null && SharedShape.Animations[0].anim_nodes.Count > 0)
+            {
+                FrameRate = (int)(SharedShape.Animations[0].FrameCount / FuelPickupItemObj.PickupAnimData.AnimationSpeed);
+                foreach (var anim_node in SharedShape.Animations[0].anim_nodes)
+                    if (anim_node.Name == "ANIMATED_PARTS")
+                    {
+                        AnimationFrames = SharedShape.Animations[0].FrameCount;
+                        break;
+                    }
+            }
         }
 
         public override void Unload()
@@ -942,23 +953,17 @@ namespace ORTS.Viewer3D
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
 
-            // A PickupObject that is not animated will always have the StaticFlags entry.
-            if (FuelPickupItem.ReFill() && FuelPickupItemObj.UID == MSTSLocomotiveViewer.RefillProcess.ActivePickupObjectUID && FuelPickupItemObj.StaticFlags != 0)
-                if (Sound != null) Sound.HandleEvent(Event.FuelTowerTransferStart);
-
-            // 0 can be used as a setting for instant animation.
-            // A PickupObject that is animated will always test as 0 since it does not have the StaticFlags entry.
-            if (FuelPickupItem.ReFill() && FuelPickupItemObj.UID == MSTSLocomotiveViewer.RefillProcess.ActivePickupObjectUID && FuelPickupItemObj.StaticFlags == 0)
+             // 0 can be used as a setting for instant animation.
+            if (FuelPickupItem.ReFill() && FuelPickupItemObj.UID == MSTSLocomotiveViewer.RefillProcess.ActivePickupObjectUID)
                 if (FuelPickupItemObj.PickupAnimData.AnimationSpeed == 0) AnimationKey = 1.0f;
-                else
-                    AnimationKey += elapsedTime.ClockSeconds / FuelPickupItemObj.PickupAnimData.AnimationSpeed;
+                else if (AnimationKey < AnimationFrames)
+                    AnimationKey += elapsedTime.ClockSeconds * FrameRate;
 
             if (!FuelPickupItem.ReFill() && AnimationKey > 0)
             {
                 if (Sound != null) Sound.HandleEvent(Event.FuelTowerTransferEnd);
-                AnimationKey -= elapsedTime.ClockSeconds / FuelPickupItemObj.PickupAnimData.AnimationSpeed;
+                AnimationKey -= elapsedTime.ClockSeconds * FrameRate;
             }
-            if (!FuelPickupItem.ReFill() && FuelPickupItemObj.StaticFlags != 0) if (Sound != null) Sound.HandleEvent(Event.FuelTowerTransferEnd);
 
             if (AnimationKey < 0)
             {
@@ -966,7 +971,7 @@ namespace ORTS.Viewer3D
             }
             if (AnimationKey > AnimationFrames)
             {
-                AnimationKey = 1.0f;
+                AnimationKey = AnimationFrames;
                 if (Sound != null) Sound.HandleEvent(Event.FuelTowerTransferStart);
             }
 

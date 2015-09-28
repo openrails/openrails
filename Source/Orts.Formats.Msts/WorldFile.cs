@@ -279,6 +279,7 @@ namespace Orts.Formats.Msts
                 block.VerifyID(TokenID.PickupAnimData);
                 PickupOptions = block.ReadFloat();
                 AnimationSpeed = block.ReadFloat();
+                if (AnimationSpeed == 0) AnimationSpeed = 1.0f;
                 block.VerifyEndOfBlock();
             }
         }

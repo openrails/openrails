@@ -20,6 +20,7 @@
 
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
+using Orts.Formats.OR;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using ORTS.Viewer3D;
@@ -83,7 +84,8 @@ namespace ORTS
         public float CarWidthM = 2.5f;
         public float CarLengthM = 40;       // derived classes must overwrite these defaults
         public float CarHeightM = 4;        // derived classes must overwrite these defaults
-        public float MassKG = 10000;
+        public float MassKG = 10000;        // Mass in KG at runtime; coincides with InitialMassKG if there is no load and no ORTS freight anim
+        public float InitialMassKG = 10000;
         public bool IsDriveable;
         public bool IsFreight;           // indication freight wagon or passenger car
         public bool IsTender;
@@ -92,6 +94,7 @@ namespace ORTS
         public bool HasInsideView = false;
 
         public LightCollection Lights;
+        public FreightAnimCollection ORTSFreightAnimData;
         public int Headlight;
 
         // instance variables set by train physics when it creates the traincar
@@ -1536,6 +1539,11 @@ namespace ORTS
         public virtual void SwitchToAutopilotControl()
         {
             return;
+        }
+
+        public virtual float GetFilledFraction(uint pickupType)
+        {
+            return 0f;
         }
     }
 

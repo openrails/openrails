@@ -76,16 +76,6 @@ namespace ORTS
     /// </summary>
     public partial class MSTSLocomotive : MSTSWagon
     {
-        /// <summary>
-        /// Supply types for locos. Could perhaps be extended to freight wagons?
-        /// </summary>
-        public enum PickupType
-        {
-            FuelWater = 5,
-            FuelCoal = 6,
-            FuelDiesel = 7,
-            FuelWood = 8    // Think this is new to OR and not recognised by MSTS
-        }
         
         public enum CombinedControl
         {
@@ -2780,7 +2770,7 @@ namespace ORTS
         /// <summary>
         /// To be overridden by MSTSSteamLocomotive and MSTSDieselLocomotive.
         /// </summary>
-        public virtual float GetFilledFraction(uint pickupType)
+        public override float GetFilledFraction(uint pickupType)
         {
             return 0f;
         }

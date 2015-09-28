@@ -60,6 +60,8 @@ namespace ORTS
         public bool DoorLeftOpen;
         public bool DoorRightOpen;
         public bool MirrorOpen;
+        public bool UnloadingPartsOpen;
+        public bool WaitForAnimationReady; // delay counter to start loading/unliading is on;
         public bool IsRollerBearing; // Has roller bearings
         public bool IsLowTorqueRollerBearing; // Has low torque roller bearings
         public bool IsFrictionBearing; //Has friction (or solid bearings)
@@ -125,6 +127,7 @@ namespace ORTS
         public bool IsPassenger;
         public bool IsEngine;
         string WagonType;
+        public MSTSNotchController WeightLoadController; // Used to control freight loading in freight cars
 
         /// <summary>
         /// True if vehicle is equipped with an additional emergency brake reservoir
@@ -149,6 +152,22 @@ namespace ORTS
         public MSTSSteamLocomotive TendersSteamLocomotive { get; private set; }
         
         public List<IntakePoint> IntakePointList = new List<IntakePoint>();
+
+        /// <summary>
+        /// Supply types for freight wagons and locos
+        /// </summary>
+        public enum PickupType
+        {
+            None = 0,
+            FreightGrain = 1,
+            FreightCoal = 2,
+            FreightGravel = 3,
+            FreightSand = 4,
+            FuelWater = 5,
+            FuelCoal = 6,
+            FuelDiesel = 7,
+            FuelWood = 8    // Think this is new to OR and not recognised by MSTS
+        }
 
         public MSTSBrakeSystem MSTSBrakeSystem { get { return (MSTSBrakeSystem)base.BrakeSystem; } }
 
@@ -209,6 +228,24 @@ namespace ORTS
             {
                 Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + InteriorShapeFileName);
                 InteriorShapeFileName = null;
+            }
+
+            MassKG = InitialMassKG;
+            if (ORTSFreightAnimData != null)
+            {
+                foreach (var ortsFreightAnim in ORTSFreightAnimData.ORTSFreightAnims)
+                {
+                    if (ortsFreightAnim.ShapeFileName != null && !File.Exists(wagonFolderSlash + ortsFreightAnim.ShapeFileName))
+                    {
+                        Trace.TraceWarning("ORTS FreightAnim in trainset {0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + ortsFreightAnim.ShapeFileName);
+                        ortsFreightAnim.ShapeFileName = null;
+                    }
+
+                }
+                if (!ORTSFreightAnimData.MSTSFreightAnimEnabled) FreightShapeFileName = null;
+                if (ORTSFreightAnimData.WagonEmptyWeight != -1) MassKG = ORTSFreightAnimData.WagonEmptyWeight + ORTSFreightAnimData.FreightWeight;
+                if (ORTSFreightAnimData.LoadedOne != null) WeightLoadController.CurrentValue = ORTSFreightAnimData.LoadedOne.LoadPerCent / 100;
+
             }
 
             if (BrakeSystem == null)
@@ -282,7 +319,7 @@ namespace ORTS
                     WheelBase2M = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
-                case "wagon(mass": MassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); if (MassKG < 0.1f) MassKG = 0.1f; break;
+                case "wagon(mass": InitialMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); if (InitialMassKG < 0.1f) InitialMassKG = 0.1f; break;
                 case "wagon(wheelradius": WheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(wheelradius": DriverWheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(sound": MainSoundFileName = stf.ReadStringBlock(null); break;
@@ -393,6 +430,9 @@ namespace ORTS
                     break;
                 case "wagon(intakepoint": IntakePointList.Add(new IntakePoint(stf)); break;
                 case "wagon(passengercapacity": HasPassengerCapacity = true;  break;
+                case "wagon(ortsfreightanims":
+                    ORTSFreightAnimData = new FreightAnimCollection(stf, this);
+                    break;
                 default:
                     if (MSTSBrakeSystem != null)
                         MSTSBrakeSystem.Parse(lowercasetoken, stf);
@@ -431,6 +471,7 @@ namespace ORTS
             WheelBase1M = copy.WheelBase1M;
             WheelBase2M = copy.WheelBase2M;
             MassKG = copy.MassKG;
+            InitialMassKG = copy.InitialMassKG;
             WheelRadiusM = copy.WheelRadiusM;
             DriverWheelRadiusM = copy.DriverWheelRadiusM;
             MainSoundFileName = copy.MainSoundFileName;
@@ -480,8 +521,23 @@ namespace ORTS
                 Couplers.Add(coupler);
 
             Pantographs.Copy(copy.Pantographs);
+            if (copy.ORTSFreightAnimData != null)
+            {
+                ORTSFreightAnimData = new FreightAnimCollection(copy.ORTSFreightAnimData, this);
+            }
+
+            if (copy.IntakePointList != null)
+            {
+                foreach (IntakePoint copyIntakePoint in copy.IntakePointList)
+                {
+                    if (copyIntakePoint.LinkedFreightAnim == null)
+                    IntakePointList.Add(new IntakePoint(copyIntakePoint));
+                }
+            }
 
             MSTSBrakeSystem.InitializeFromCopy(copy.BrakeSystem);
+            if (copy.WeightLoadController != null) WeightLoadController = new MSTSNotchController(copy.WeightLoadController);
+
         }
 
         private void ParseWagonInside(STFReader stf)
@@ -550,10 +606,21 @@ namespace ORTS
             outf.Write(DavisAN);
             outf.Write(DavisBNSpM);
             outf.Write(DavisCNSSpMM);
+            outf.Write(MassKG);
             outf.Write(Couplers.Count);
             foreach (MSTSCoupling coupler in Couplers)
                 coupler.Save(outf);
             Pantographs.Save(outf);
+            if (ORTSFreightAnimData != null)
+            {
+                ORTSFreightAnimData.Save(outf);
+                if (WeightLoadController != null)
+                {
+                    outf.Write(true);
+                    WeightLoadController.Save(outf);
+                }
+                else outf.Write(false);
+            }
             base.Save(outf);
         }
 
@@ -574,6 +641,7 @@ namespace ORTS
             DavisAN = inf.ReadSingle();
             DavisBNSpM = inf.ReadSingle();
             DavisCNSSpMM = inf.ReadSingle();
+            MassKG = inf.ReadSingle();
             int n = inf.ReadInt32();
             for (int i = 0; i < n; i++)
             {
@@ -581,6 +649,17 @@ namespace ORTS
                 Couplers[i].Restore(inf);
             }
             Pantographs.Restore(inf);
+            if (ORTSFreightAnimData != null)
+            {
+                ORTSFreightAnimData.Restore(inf);
+                var doesWeightLoadControllerExist = inf.ReadBoolean();
+                if (doesWeightLoadControllerExist)
+                {
+                    var controllerType = inf.ReadInt32();
+                    WeightLoadController.Restore(inf);
+                }
+            }
+ 
             base.Restore(inf);
 
             // always set aux power on due to error in PowerSupplyClass
@@ -802,6 +881,29 @@ namespace ORTS
             Pantographs.Update(elapsedClockSeconds);
 
             MSTSBrakeSystem.Update(elapsedClockSeconds);
+
+            if (WeightLoadController != null)
+            {
+                WeightLoadController.Update(elapsedClockSeconds);
+                if (ORTSFreightAnimData.LoadedOne != null)
+                {
+                    ORTSFreightAnimData.LoadedOne.LoadPerCent = WeightLoadController.CurrentValue * 100;
+                    ORTSFreightAnimData.FreightWeight = WeightLoadController.CurrentValue * ORTSFreightAnimData.LoadedOne.FreightWeightWhenFull;
+                    if (IsPlayerTrain)
+                    {
+                        if (WeightLoadController.UpdateValue != 0.0)
+                            Simulator.Confirmer.UpdateWithPerCent(CabControl.FreightLoad,
+                                CabSetting.Increase, WeightLoadController.CurrentValue * 100);
+                    }
+                }
+                if (ORTSFreightAnimData.WagonEmptyWeight != -1) MassKG = ORTSFreightAnimData.WagonEmptyWeight + ORTSFreightAnimData.FreightWeight;
+                if (WaitForAnimationReady && WeightLoadController.CommandStartTime + ORTSFreightAnimData.UnloadingStartDelay <= Simulator.ClockTime)
+                {
+                    WaitForAnimationReady = false;
+                    Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer.Catalog.GetString("Starting unload"));
+                    WeightLoadController.StartDecrease(WeightLoadController.MinimumValue);
+                }
+            }
         }
 
         public override void SignalEvent(Event evt)
@@ -1105,7 +1207,57 @@ namespace ORTS
             else
                 MSTSBrakeSystem.SetHandbrakePercent(0);
         }
-    }
+
+        /// <summary>
+        /// Returns the fraction of load already in wagon.
+        /// </summary>
+        /// <param name="pickupType">Pickup type</param>
+        /// <returns>0.0 to 1.0. If type is unknown, returns 0.0</returns>
+        public override float GetFilledFraction(uint pickupType)
+        {
+            var fraction = 0.0f;
+            if (ORTSFreightAnimData.LoadedOne != null) fraction = ORTSFreightAnimData.LoadedOne.LoadPerCent / 100;
+            return fraction;
+        }
+
+        /// <summary>
+        /// Starts a continuous increase in controlled value.
+        /// </summary>
+        /// <param name="type">Pickup point</param>
+        public void StartRefillingOrUnloading(uint type, IntakePoint intakePoint, float fraction, bool unload)
+        {
+            var controller = WeightLoadController;
+            if (controller == null)
+            {
+                Simulator.Confirmer.Message(ConfirmLevel.Error, Viewer.Catalog.GetString("Incompatible data"));
+                return;
+            }
+            controller.SetValue(fraction);
+            controller.CommandStartTime = Simulator.ClockTime;  // for Replay to use 
+
+            if (ORTSFreightAnimData.LoadedOne == null)
+            {
+                ORTSFreightAnimData.FreightType = (MSTSWagon.PickupType)type;
+                ORTSFreightAnimData.LoadedOne = intakePoint.LinkedFreightAnim;              
+            }
+            if (!unload)
+            {
+                Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer.Catalog.GetString("Starting refill"));
+                controller.StartIncrease(controller.MaximumValue);
+            }
+            else
+            {
+                WaitForAnimationReady = true;
+                UnloadingPartsOpen = true;
+                if (ORTSFreightAnimData.UnloadingStartDelay > 0)
+                Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer.Catalog.GetString("Preparing for unload"));
+            }
+
+        }
+
+     }
+
+
 
     /// <summary>
     /// An IntakePoint object is created for any engine or wagon having a 
@@ -1116,8 +1268,9 @@ namespace ORTS
     {
         public float OffsetM = 0f;   // distance forward? from the centre of the vehicle as defined by LengthM/2.
         public float WidthM = 10f;   // of the filling point. Is the maximum positioning error allowed equal to this or half this value? 
-        public string Type;          // 'fuelcoal', 'fuelwater', 'fueldiesel', 'fuelwood'
+        public MSTSWagon.PickupType Type;          // 'freightgrain', 'freightcoal', 'freightgravel', 'freightsand', 'fuelcoal', 'fuelwater', 'fueldiesel', 'fuelwood'
         public float? DistanceFromFrontOfTrainM;
+        public FreightAnimContinuous LinkedFreightAnim = null; 
 
         public IntakePoint()
         {
@@ -1128,9 +1281,19 @@ namespace ORTS
             stf.MustMatch("(");
             OffsetM = stf.ReadFloat(STFReader.UNITS.None, 0f);
             WidthM = stf.ReadFloat(STFReader.UNITS.None, 10f);
-            Type = stf.ReadString().ToLower();
+            Type = (MSTSWagon.PickupType)Enum.Parse(typeof(MSTSWagon.PickupType), stf.ReadString().ToLower(), true);
             stf.SkipRestOfBlock();
         }
+
+        // for copy
+        public IntakePoint(IntakePoint copy)
+        {
+            OffsetM = copy.OffsetM;
+            WidthM = copy.WidthM;
+            Type = copy.Type;
+
+        }
+
     }
 
     public class MSTSCoupling

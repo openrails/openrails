@@ -51,6 +51,7 @@ namespace ORTS.Viewer3D.RollingStock
         AnimatedPart RightDoor;
         AnimatedPart Mirrors;
         protected AnimatedPart Wipers;
+        AnimatedPart UnloadingParts;
 
         protected MSTSWagon MSTSWagon { get { return (MSTSWagon)Car; } }
 
@@ -87,6 +88,13 @@ namespace ORTS.Viewer3D.RollingStock
             RightDoor = new AnimatedPart(TrainCarShape);
             Mirrors = new AnimatedPart(TrainCarShape);
             Wipers = new AnimatedPart(TrainCarShape);
+            UnloadingParts = new AnimatedPart(TrainCarShape);
+
+            if (car.ORTSFreightAnimData != null)
+            {
+                car.ORTSFreightAnimData.CreateShapes(viewer, wagonFolderSlash, car);
+            }
+
 
             LoadCarSounds(wagonFolderSlash);
             //if (!(MSTSWagon is MSTSLocomotive))
@@ -139,6 +147,7 @@ namespace ORTS.Viewer3D.RollingStock
             LeftDoor.SetState(MSTSWagon.DoorLeftOpen);
             RightDoor.SetState(MSTSWagon.DoorRightOpen);
             Mirrors.SetState(MSTSWagon.MirrorOpen);
+            UnloadingParts.SetState(MSTSWagon.UnloadingPartsOpen);
 
             InitializeUserInputCommands();
         }
@@ -247,6 +256,10 @@ namespace ORTS.Viewer3D.RollingStock
             {
                 Mirrors.AddMatrix(matrix);
             }
+            else if (matrixName.StartsWith("UNLOADINGPARTS")) // unloading parts
+            {
+                UnloadingParts.AddMatrix(matrix);
+            }
             else if (matrixName.StartsWith("PANTO"))  // TODO, not sure why this is needed, see above!
             {
                 Trace.TraceInformation("Pantograph matrix with unusual name {1} in shape {0}", TrainCarShape.SharedShape.FilePath, matrixName);
@@ -299,6 +312,7 @@ namespace ORTS.Viewer3D.RollingStock
             LeftDoor.UpdateState(MSTSWagon.DoorLeftOpen, elapsedTime);
             RightDoor.UpdateState(MSTSWagon.DoorRightOpen, elapsedTime);
             Mirrors.UpdateState(MSTSWagon.MirrorOpen, elapsedTime);
+            UnloadingParts.UpdateState(MSTSWagon.UnloadingPartsOpen, elapsedTime);
             UpdateAnimation(frame, elapsedTime);
         }
 
@@ -372,6 +386,42 @@ namespace ORTS.Viewer3D.RollingStock
                 }
                 FreightShape.PrepareFrame(frame, elapsedTime);
             }
+
+            if (MSTSWagon.ORTSFreightAnimData != null)
+                foreach (var freightAnim in MSTSWagon.ORTSFreightAnimData.ORTSFreightAnims)
+                {
+                    if (freightAnim.FreightShape != null && !((freightAnim is FreightAnimContinuous) && (freightAnim as FreightAnimContinuous).LoadPerCent == 0))
+                    {
+                        if (Viewer.Camera == Viewer.CabCamera && Car == Viewer.CabCamera.AttachedCar)
+                        {
+                            freightAnim.FreightShape.Location.XNAMatrix = Car.GetXNAMatrix();
+                        }
+                        else freightAnim.FreightShape.Location.XNAMatrix = Car.WorldPosition.XNAMatrix;
+                        freightAnim.FreightShape.Location.TileX = Car.WorldPosition.TileX; freightAnim.FreightShape.Location.TileZ = Car.WorldPosition.TileZ;
+                        if (freightAnim.FreightShape.XNAMatrices.Length > 0)
+                        {
+                            if (freightAnim is FreightAnimContinuous)
+                            {
+                                var continuousFreightAnim = freightAnim as FreightAnimContinuous;
+                                if (MSTSWagon.ORTSFreightAnimData.IsGondola) freightAnim.FreightShape.XNAMatrices[0] = TrainCarShape.XNAMatrices[1];
+                                freightAnim.FreightShape.XNAMatrices[0].M42 = continuousFreightAnim.MinHeight +
+                                   continuousFreightAnim.LoadPerCent / 100 * (continuousFreightAnim.MaxHeight - continuousFreightAnim.MinHeight);
+                            }
+                            if (freightAnim is FreightAnimStatic)
+                            {
+                                var staticFreightAnim = freightAnim as FreightAnimStatic;
+                                freightAnim.FreightShape.XNAMatrices[0].M41 = staticFreightAnim.XOffset;
+                                freightAnim.FreightShape.XNAMatrices[0].M42 = staticFreightAnim.YOffset;
+                                freightAnim.FreightShape.XNAMatrices[0].M43 = staticFreightAnim.ZOffset;
+                            }
+
+                        }
+                        // Forcing rotation of freight shape
+                        freightAnim.FreightShape.PrepareFrame(frame, elapsedTime);
+                    }
+                }
+
+
 
             // Control visibility of passenger cabin when inside it
             if (Viewer.Camera.AttachedCar == this.MSTSWagon

@@ -157,6 +157,7 @@
     <Compile Include="RollingStock\MSTSSteamLocomotive.cs" />
     <Compile Include="RollingStock\MSTSWagon.cs" />
     <Compile Include="RollingStock\TrainCar.cs" />
+    <Compile Include="RollingStock\SubSystems\ORTSFreightAnims.cs" />
     <Compile Include="RollingStock\SubSystems\TrainControlSystem.cs" />
     <Compile Include="RollingStock\SubSystems\Brakes\BrakeSystem.cs" />
     <Compile Include="RollingStock\SubSystems\Brakes\MSTS\AirSinglePipe.cs" />
