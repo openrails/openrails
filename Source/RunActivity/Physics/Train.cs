@@ -39,6 +39,9 @@
 // #define DEBUG_DEADLOCK
 // #define DEBUG_TRACEINFO
 
+// Debug Calculation of Carriage Heat Loss
+// #define DEBUG_CARSTEAMHEAT
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -119,6 +122,14 @@ namespace ORTS
 
         public bool IsWheelSlipWarninq;
         public bool IsWheelSlip;
+
+        // Carriage Steam Heating
+        public float TrainCurrentCarriageHeatTempC;          // Set current train carriage heat
+        public float TrainInsideTempC;                  // Desired inside temperature for carriage steam heating depending upon season
+        public float TrainOutsideTempC;                 // External ambient temeprature for carriage steam heating.
+        public float TrainSteamHeatLossWpT;             // Total Steam Heat loss of train
+        public float TrainHeatVolumeM3;                 // Total Volume of train to steam heat
+        public float TrainHeatPipeAreaM2;               // Total area of heating pipe for steam heating
 
         //To investigate coupler breaks on route
         public int NumOfCouplerBreaks = 0;
@@ -1492,6 +1503,7 @@ namespace ORTS
 
             AddCouplerImpuseForces();
             ComputeCouplerForces();
+            UpdateCarSteamHeat();
             UpdateCarSpeeds(elapsedClockSeconds);
             UpdateCouplerSlack(elapsedClockSeconds);
 
@@ -1526,6 +1538,38 @@ namespace ORTS
                 Math.Max(0, ProjectedSpeedMpS) : SpeedMpS < -float.Epsilon ? Math.Min(0, ProjectedSpeedMpS) : 0;
         }
 
+
+         //================================================================================================//
+         /// <summary>
+        /// Update Steam Heating
+        /// <\summary>
+
+        public void UpdateCarSteamHeat()
+        {
+
+        // Reset Values to zero to recalculate values
+        TrainHeatVolumeM3 = 0.0f;
+        TrainHeatPipeAreaM2 = 0.0f;
+        TrainSteamHeatLossWpT = 0.0f;
+
+        // Calculate total heat loss for whole train
+        for (int i = 0; i < Cars.Count; i++)
+        {
+        TrainSteamHeatLossWpT += Cars[i].CarHeatLossWpT;
+        TrainHeatPipeAreaM2 += Cars[i].CarHeatPipeAreaM2;
+        TrainHeatVolumeM3 += Cars[i].CarHeatVolumeM3;
+        }
+
+#if DEBUG_CARSTEAMHEAT
+
+        Trace.TraceInformation("***************************************** DEBUG_CARHEAT (Train.cs) ***************************************************************");
+        Trace.TraceInformation("Inside Temp {0} Outside Temp {1}", TrainInsideTempC, TrainOutsideTempC); 
+        Trace.TraceInformation("Train heat loss {0} Train heat pipe area {1} Train heat volume {2}", TrainSteamHeatLossWpT, TrainHeatPipeAreaM2, TrainHeatVolumeM3);        
+
+#endif
+
+        }
+
         //================================================================================================//
         /// <summary>
         /// Update mininal delay
@@ -1539,8 +1583,8 @@ namespace ORTS
         //================================================================================================//
         /// <summary>
         /// ProcessTunnels : check position of each car in train wrt tunnel
-        /// <\summary>
-
+        /// <\summary>        
+        
         public void ProcessTunnels()
         {
             // start at front of train

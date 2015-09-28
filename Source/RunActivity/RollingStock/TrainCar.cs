@@ -18,6 +18,9 @@
 // Define this to log the wheel configurations on cars as they are loaded.
 //#define DEBUG_WHEELS
 
+// Debug car heat losses
+// #define DEBUG_CAR_HEATLOSS
+
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
@@ -92,6 +95,11 @@ namespace ORTS
         public bool HasFreightAnim = false;
         public bool HasPassengerCapacity = false;
         public bool HasInsideView = false;
+
+         // Used to calculate Carriage Steam Heat Loss
+        public float CarHeatLossWpT;      // Transmission loss for the wagon
+        public float CarHeatVolumeM3;     // Volume of car for heating purposes
+        public float CarHeatPipeAreaM2;  // Area of surface of car pipe
 
         public LightCollection Lights;
         public FreightAnimCollection ORTSFreightAnimData;
@@ -394,10 +402,12 @@ namespace ORTS
                 GravityForceN = -GravityForceN;
                 CurrentElevationPercent = -CurrentElevationPercent;
             }
- 
+
+            WagonType = GetWagonType();     // Determine type of wagon for use in following
             UpdateCurveSpeedLimit(); // call this first as it will provide inputs for the curve force.
             UpdateCurveForce();
             UpdateTunnelForce();
+            UpdateCarriageHeatLoss();
             
             // acceleration
             if (elapsedClockSeconds > 0.0f)
@@ -412,6 +422,78 @@ namespace ORTS
             UpdateSoundPosition();
         }
 
+
+        #region Calculate Heat loss for Passenger Cars
+
+        /// <summary>
+        /// This section calculates the heat loss in a carriage, and is used in conjunction with steam heating.
+        /// Overall heat loss is made up of the following components - heat loss due to transmission through walls, windows, doors, floors and more (W) + heat loss caused by ventilation (W) + heat loss caused by infiltration (W) 
+        /// </summary>
+
+        public virtual void UpdateCarriageHeatLoss()
+        {
+
+        // +++++++++++++++++++++++++++
+
+            if (WagonType == "Passenger") // only calculate heat loss on paasenger cars
+            {
+
+                // Transmission heat loss = exposed area * heat transmission coeff (inside temp - outside temp)
+                // Calculate the heat loss through the roof, wagon sides, and floor separately  
+
+                float CarriageHeatTempC = Train.TrainCurrentCarriageHeatTempC;     // Get current Car Heat Temp (Calculated in MSTSSteamLocomotive )
+                float CarOutsideTempC = Train.TrainOutsideTempC;  // Get Car Outside Temp from MSTSSteamLocomotive file
+
+                // Calculate the heat loss through the carriage sides, per degree of temp change
+                float HeatTransCoeffRoofWm2K = 1.7f; // 2 inch wood - uninsulation
+                float HeatTransCoeffSidesWm2K = 1.7f; // 2 inch wood - uninsulation
+                float HeatTransCoeffWindowsWm2K = 4.7f; // Single glazed glass window in wooden frame
+                float HeatTransCoeffFloorWm2K = 2.5f; // uninsulation floor
+                float WindowDeratingFactor = 0.25f;   // fraction of windows in carriage side - 25% of window space
+
+                // Calculate the heat loss through the roof, allow 15% additional heat loss through roof because of radiation to space
+
+                float RoofHeatLossFactor = 1.15f;
+                float HeatLossTransRoofWpT = RoofHeatLossFactor * (CarWidthM * CarLengthM) * HeatTransCoeffRoofWm2K * (CarriageHeatTempC - CarOutsideTempC);
+
+                // Each car will have 2 x sides + 2 x ends. Each side will be made up of solid walls, and windows. A factor has been assumed to determine the ratio of window area to wall area.
+                float HeatLossTransWindowsWpT = (WindowDeratingFactor * CarHeightM * CarLengthM) * HeatTransCoeffWindowsWm2K * (CarriageHeatTempC - CarOutsideTempC);
+                float HeatLossTransSidesWpT = ((1.0f - WindowDeratingFactor) * CarHeightM * CarLengthM) * HeatTransCoeffSidesWm2K * (CarriageHeatTempC - CarOutsideTempC);
+                float HeatLossTransEndsWpT = (CarHeightM * CarWidthM) * HeatTransCoeffSidesWm2K * (CarriageHeatTempC - CarOutsideTempC);
+                float HeatLossTransTotalSidesWpT = (2.0f * HeatLossTransWindowsWpT) + (2.0f * HeatLossTransSidesWpT) + (2.0f * HeatLossTransEndsWpT) * (CarriageHeatTempC - CarOutsideTempC);
+
+                // Calculate the heat loss through the floor
+                float HeatLossTransFloorWpT = (CarWidthM * CarLengthM) * HeatTransCoeffFloorWm2K * (CarriageHeatTempC - CarOutsideTempC);
+
+                float HeatLossTransmissionWpT = HeatLossTransRoofWpT + HeatLossTransTotalSidesWpT + HeatLossTransFloorWpT;
+
+                // ++++++++++++++++++++++++
+                // Infiltration Heat loss, per degree of temp change
+                float SpecificHeatCapacityJpKgpK = 1000.0f;   // a value of cp = 1.0 kJ/kg.K (equal to kJ/kg.oC) - is normally accurate enough
+                float AirDensityKgpM3 = 1.2041f;   // Varies with temp and pressure
+                float NumAirShiftspSec = pS.FrompH(0.5f);      // Rule of thumb 0.5 air shifts / hr
+
+                CarHeatVolumeM3 = CarWidthM * CarLengthM * CarHeightM;
+                float HeatLossInfiltrationWpT = SpecificHeatCapacityJpKgpK * AirDensityKgpM3 * NumAirShiftspSec * CarHeatVolumeM3 * (CarriageHeatTempC - CarOutsideTempC);
+
+                CarHeatLossWpT = HeatLossTransmissionWpT + HeatLossInfiltrationWpT;
+
+                // Calculate steam pipe surface area
+                float SteamPipeRadiusM = 0.05f / 2.0f;  // Assume a steam pipe diameter of 2" (50mm)???
+
+                CarHeatPipeAreaM2 = 2.0f * MathHelper.Pi * SteamPipeRadiusM * CarLengthM;
+
+#if DEBUG_CAR_HEATLOSS
+
+                Trace.TraceInformation("***************************************** DEBUG_HEATLOSS (TrainCar.cs) ***************************************************************");
+                Trace.TraceInformation("Car {0} Total CarHeat {1} CarHeatTrans {2} CarHeatInf {3} Car Volume {4}", CarID, CarHeatLossWpT, HeatLossTransmissionWpT, HeatLossInfiltrationWpT, CarHeatVolumeM3);
+                Trace.TraceInformation("Car {0} Car Vol {1} Car Pipe Area {2}", CarID, CarHeatVolumeM3, CarHeatPipeAreaM2);
+                Trace.TraceInformation("Car Temp {0} Car Outside Temp {1}", CarriageHeatTempC, CarOutsideTempC);
+#endif
+            }
+        }
+
+        #endregion
 
         #region Calculate resistance due to tunnels
         /// <summary>
@@ -671,7 +753,6 @@ namespace ORTS
                         WagonNumWheels = 0.0f;
                         RigidWheelBaseM = GetRigidWheelBaseM();
                         WagonNumWheels = GetWagonNumWheels();
-                        WagonType = GetWagonType();
                         EngineType = GetEngineType();
                         DriverWheelRadiusM = GetDriverWheelRadiusM();
                         LocoNumDrvWheels = GetLocoNumWheels();

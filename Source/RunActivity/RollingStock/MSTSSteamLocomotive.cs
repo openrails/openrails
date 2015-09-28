@@ -24,6 +24,12 @@
 // Steam usage debugging is off by default - uncomment the #define to turn on - provides visibility of steam usage related parameters on extended HUD. 
 //#define DEBUG_LOCO_STEAM_USAGE
 
+// Steam heating debugging is off by default - uncomment the #define to turn on - provides visibility of steam usage related parameters on extended HUD. 
+// #define DEBUG_LOCO_STEAM_HEAT
+
+// Steam heating debugging is off by default - uncomment the #define to turn on - provides visibility of steam usage related parameters on extended HUD. 
+// #define DEBUG_LOCO_STEAM_HEAT_HUD
+
 /* STEAM LOCOMOTIVE CLASSES
  * 
  * The Locomotive is represented by two classes:
@@ -99,6 +105,26 @@ namespace ORTS
         bool IsFixGeared = false;
         bool IsSelectGeared = false;
         bool IsLocoSlip = false; 	   // locomotive is slipping
+
+        // Carriage Steam Heating Parameters
+        float MaxSteamHeatPressurePSI;    // Maximum Steam heating pressure
+        float InsideTempC;                // Desired inside temperature for carriage steam heating
+        float OutsideTempC;               // External ambient temeprature for carriage steam heating.
+        float CurrentSteamHeatPressurePSI = 0.0f;   // Current pressure in steam heat system
+        float CurrentTrainSteamHeatW;    // Current steam heat of air in train
+        float CurrentCarriageHeatTempC;          // Set train carriage heat
+        float SteamPipeHeatW;               // Heat radiated by steam pipe
+        float CurrentSteamHeatPipeTempC;                 // Temperature of steam in steam heat system based upon pressure setting
+        float SpecificHeatCapcityAirKJpKgK = 1006.0f; // Specific Heat Capacity of Air
+        float DensityAirKgpM3 = 1.247f;   // Density of air - use a av value
+        float PipeHeatTransCoeffWpM2K = 22.0f;    // heat transmission coefficient for a steel pipe.
+        float BoltzmanConstPipeWpM2 = 0.0000000567f; // Boltzman's Constant
+        bool IsSteamInitial = true;        // To initialise steam heat
+        bool IsSteamHeatFirstTime = true;  // Flag for first pass at steam heating.
+        bool IsSteamHeatFitted = false;    // Is steam heating fitted to locomotive
+        float CalculatedCarHeaterSteamUsageLBpS;  //
+        float TotalTrainSteamHeatW;         // Total steam heat in train - based upon air volume
+        float NetSteamHeatLossWpTime;        // Net Steam loss - Loss in Cars vs Steam Pipe Heat
 
         string SteamLocoType;     // Type of steam locomotive type
 
@@ -535,6 +561,7 @@ namespace ORTS
                 case "engine(ortscylinderportopening": CylinderPortOpeningFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(boilervolume": BoilerVolumeFT3 = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null); break;
                 case "engine(maxboilerpressure": MaxBoilerPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
+                case "engine(maxsteamheatingpressure": MaxSteamHeatPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(shovelcoalmass": ShovelMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(maxtendercoalmass": MaxTenderCoalMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(maxtenderwatermass": MaxTenderWaterMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
@@ -613,6 +640,7 @@ namespace ORTS
             CylinderPortOpeningFactor = locoCopy.CylinderPortOpeningFactor;
             BoilerVolumeFT3 = locoCopy.BoilerVolumeFT3;
             MaxBoilerPressurePSI = locoCopy.MaxBoilerPressurePSI;
+            MaxSteamHeatPressurePSI = locoCopy.MaxSteamHeatPressurePSI;
             ShovelMassKG = locoCopy.ShovelMassKG;
             MaxTenderCoalMassKG = locoCopy.MaxTenderCoalMassKG;
             MaxTenderWaterMassKG = locoCopy.MaxTenderWaterMassKG;
@@ -667,6 +695,8 @@ namespace ORTS
             outf.Write(BoilerPressurePSI);
             outf.Write(WaterTempNewK);
             outf.Write(EvaporationLBpS);
+            outf.Write(CurrentCarriageHeatTempC);
+            outf.Write(CurrentTrainSteamHeatW);
             outf.Write(FireMassKG);
             outf.Write(FlueTempK);
             outf.Write(SteamGearPosition);
@@ -699,6 +729,8 @@ namespace ORTS
             WaterTempNewK = inf.ReadSingle();
             WaterFraction = inf.ReadSingle();
             EvaporationLBpS = inf.ReadSingle();
+            CurrentCarriageHeatTempC = inf.ReadSingle();
+            CurrentTrainSteamHeatW = inf.ReadSingle(); 
             FireMassKG = inf.ReadSingle();
             FlueTempK = inf.ReadSingle();
             SteamGearPosition = inf.ReadSingle();
@@ -1171,6 +1203,29 @@ namespace ORTS
 
             #region Initialise Locomotive in a Hot or Cold Start Condition
 
+              // Initialise Steam Heating in Train
+
+            // Checks to see if winter or autumn only?
+            if (Simulator.Season == SeasonType.Winter)
+            {
+                // Winter temps
+                InsideTempC = 15.5f;  // Assume a desired temperature of 60oF = 15.5oC
+                OutsideTempC = -10.0f;
+            }
+            else if (Simulator.Season == SeasonType.Autumn || Simulator.Season == SeasonType.Spring)
+            {
+                // Sping / Autumn temps
+                InsideTempC = 15.5f;  // Assume a desired temperature of 60oF = 15.5oC
+                OutsideTempC = 5.0f;
+            }
+            else
+            {
+                // Summer temps
+                InsideTempC = 15.5f;  // Assume a desired temperature of 60oF = 15.5oC
+                OutsideTempC = 15.0f;
+            }
+            //         CarriageHeatTempC = InsideTempC; //Assume starting temp based upon season
+
             if (HotStart)
             {
                 // Hot Start - set so that FlueTemp is at maximum, boilerpressure slightly below max
@@ -1181,6 +1236,8 @@ namespace ORTS
                 BoilerMassLB = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI];
                 BoilerHeatBTU = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] * WaterHeatPSItoBTUpLB[BoilerPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI] * SteamHeatPSItoBTUpLB[BoilerPressurePSI];
                 StartBoilerHeatBTU = BoilerHeatBTU;
+                // Set steam heat to a hot value
+                CurrentCarriageHeatTempC = InsideTempC;
             }
             else
             {
@@ -1191,7 +1248,26 @@ namespace ORTS
                 FlueTempK = (BoilerStartkW / (W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2 * HeatMaterialThicknessFactor)) + baseStartTempK;
                 BoilerMassLB = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI];
                 BoilerHeatBTU = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] * WaterHeatPSItoBTUpLB[BoilerPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI] * SteamHeatPSItoBTUpLB[BoilerPressurePSI];
+                // Set steam heat to a cold value
+                CurrentCarriageHeatTempC = OutsideTempC;
             }
+
+            if (MaxSteamHeatPressurePSI == 0)       // Check to see if steam heating is fitted to locomotive
+            {
+                IsSteamHeatFitted = false;
+            }
+            else
+            {
+                IsSteamHeatFitted = true;
+            }
+
+#if DEBUG_LOCO_STEAM_HEAT
+
+            Trace.TraceInformation("***************************************** DEBUG_LOCO_STEAM_HEAT (MSTSSteamLocomotive.cs)  #Initial ***************************************************************");
+            Trace.TraceInformation("Inside Temp {0} Outside Temp {1} Current Car Temp {2} Current Train Steam Heat {3}", InsideTempC, OutsideTempC, CurrentCarriageHeatTempC, CurrentTrainSteamHeatW);
+            Trace.TraceInformation("SteamHeat: Pressure {0} Fitted {1}", MaxSteamHeatPressurePSI, IsSteamHeatFitted);
+#endif
+
 
             DamperFactorManual = TheoreticalMaxSteamOutputLBpS / SpeedEquivMpS; // Calculate a factor for damper control that will vary with speed.
             BlowerSteamUsageFactor = .04f * MaxBoilerOutputLBpH / 3600 / MaxBoilerPressurePSI;
@@ -1313,6 +1389,7 @@ namespace ORTS
             UpdateWaterGauge();
             UpdateInjectors(elapsedClockSeconds);
             UpdateFiring(absSpeedMpS);
+            UpdateSteamHeat(elapsedClockSeconds);
             #endregion
         }
 
@@ -3497,6 +3574,107 @@ namespace ORTS
             }
         }
 
+        private void UpdateSteamHeat(float elapsedClockSeconds)
+        {
+        // Update Steam Heating System
+ 
+            // TO DO - Add test to see if cars are coupled, if Light Engine, disable steam heating.
+
+            if (IsSteamHeatFitted)  // Only Update steam heating if locomotive fitted with steam heating
+            {
+
+                if (IsSteamHeatFirstTime)
+                {
+                    IsSteamHeatFirstTime = false;  // TrainCar and Train have not executed during first pass of steam locomotive, so ignore steam heating the first time
+                    //                Trace.TraceInformation("IsSteamHeatFirstTime {0}", IsSteamHeatFirstTime);
+                }
+                else
+                {
+                    // After first pass continue as normal
+
+                    // Set default temperature values 
+                    Train.TrainInsideTempC = InsideTempC;
+                    Train.TrainOutsideTempC = OutsideTempC;
+                    Train.TrainCurrentCarriageHeatTempC = CurrentCarriageHeatTempC; // Temp value
+                    
+                    // Carriage temperature will be equal to heat input (from steam pipe) less heat losses through carriage walls, etc
+                    // Calculate Heat in Train
+                    TotalTrainSteamHeatW = SpecificHeatCapcityAirKJpKgK * DensityAirKgpM3 * Train.TrainHeatVolumeM3 * (InsideTempC - OutsideTempC);
+
+                    //                Trace.TraceInformation("IsSteamInitial {0}", IsSteamInitial);
+
+                    if (IsSteamInitial)
+                    {
+                        CurrentTrainSteamHeatW = TotalTrainSteamHeatW;
+                        IsSteamInitial = false;
+                        //                    Trace.TraceInformation("Temp - Current {0} Total", CurrentTrainSteamHeatW);
+                    }
+
+
+                    // Calculate steam pipe heat energy
+                    if (CurrentSteamHeatPressurePSI < MaxSteamHeatPressurePSI)      // Don't let steam heat pressure exceed the maximum value
+                    {
+                        CurrentSteamHeatPressurePSI = SteamHeatController.CurrentValue * BoilerPressurePSI;
+                    }
+                    if (CurrentSteamHeatPressurePSI == 0.0)
+                    {
+                        CurrentSteamHeatPipeTempC = 0.0f;       // Reset values to zero if steam is not turned on.
+                        SteamPipeHeatW = 0.0f;
+                    }
+                    else
+                    {
+                        CurrentSteamHeatPipeTempC = C.FromF(PressureToTemperaturePSItoF[CurrentSteamHeatPressurePSI]);
+                        SteamPipeHeatW = (PipeHeatTransCoeffWpM2K * Train.TrainHeatPipeAreaM2 * (C.ToK(CurrentSteamHeatPipeTempC - CurrentCarriageHeatTempC))) + (BoltzmanConstPipeWpM2 * (C.ToK(CurrentSteamHeatPipeTempC - CurrentCarriageHeatTempC)));   // heat generated by pipe per degree
+                    }
+
+                     // Calculate Net steam heat loss or gain
+                    NetSteamHeatLossWpTime = SteamPipeHeatW - Train.TrainSteamHeatLossWpT;
+
+
+
+                    if (NetSteamHeatLossWpTime < 0)
+                    {
+                        NetSteamHeatLossWpTime = -1.0f * NetSteamHeatLossWpTime;
+                        CurrentTrainSteamHeatW -= NetSteamHeatLossWpTime * elapsedClockSeconds;  // Losses per elapsed time
+                    }
+                    else
+                    {
+                        CurrentTrainSteamHeatW += NetSteamHeatLossWpTime * elapsedClockSeconds;  // Gains per elapsed time         
+                    }
+
+
+                    if (CurrentCarriageHeatTempC > OutsideTempC && CurrentCarriageHeatTempC <= InsideTempC && TotalTrainSteamHeatW > 0.0)
+                    {
+                        CurrentCarriageHeatTempC = (((InsideTempC - OutsideTempC) * CurrentTrainSteamHeatW) / TotalTrainSteamHeatW) + OutsideTempC;
+                    }
+
+                    float ConvertBtupLbtoKjpKg = 2.32599999962f;  // Conversion factor
+                    // Calculate steam usage
+                    // Only set up for saturated steam at this time - needs to also work for superheated steam
+                    if (SteamPipeHeatW == 0.0 || CurrentSteamHeatPressurePSI == 0.0)
+                    {
+                        CalculatedCarHeaterSteamUsageLBpS = 0.0f;       // Zero steam usage if Steam pipe heat is zero
+                    }
+                    else
+                    {
+                        CalculatedCarHeaterSteamUsageLBpS = Kg.ToLb(W.ToKW(SteamPipeHeatW) / (SteamHeatPSItoBTUpLB[CurrentSteamHeatPressurePSI] * ConvertBtupLbtoKjpKg));
+                    }
+
+#if DEBUG_LOCO_STEAM_HEAT
+
+                Trace.TraceInformation("***************************************** DEBUG_LOCO_STEAM_HEAT (MSTSSteamLocomotive.cs) #2 ***************************************************************");
+                Trace.TraceInformation("Steam Pipe Heat - Steam Heat Pressure {0} Steam Pipe Temp {1} Steam Pipe Heat {2} Train Steam Pipe Area {3}", CurrentSteamHeatPressurePSI, CurrentSteamHeatPipeTempC, SteamPipeHeatW, Train.TrainHeatPipeAreaM2);
+                Trace.TraceInformation("Steam Usage - Usage {0} latent Heat {1}", CalculatedCarHeaterSteamUsageLBpS, (SteamHeatPSItoBTUpLB[CurrentSteamHeatPressurePSI] * ConvertBtupLbtoKjpKg)); 
+                Trace.TraceInformation("Train Heat Loss {0} Net Train Heat Loss {1}", Train.TrainSteamHeatLossWpT, NetSteamHeatLossWpTime);
+                Trace.TraceInformation("Total Train Heat {0} Inside Temp {1} Outside Temp {2} Train Volume {3}", TotalTrainSteamHeatW, InsideTempC, OutsideTempC, Train.TrainHeatVolumeM3);
+                Trace.TraceInformation("Sec {0} Net Train Heat Loss {1} Current Train Steam Heat {2}", elapsedClockSeconds, NetSteamHeatLossWpTime, CurrentTrainSteamHeatW);
+
+#endif
+
+                }
+            }
+        }
+
         // +++++++++++++++ Main Simulation - End +++++++++++++++++++++
 
         public override float GetDataOf(CabViewControl cvc)
@@ -3809,6 +3987,36 @@ namespace ORTS
                 CylinderSpeedCondensationFactor);
 #endif
 
+            if (IsSteamHeatFitted)
+            {
+                // Display Steam Heat info
+             status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}/{9}\n",
+                Viewer.Catalog.GetString("StHeat:"),
+                Viewer.Catalog.GetString("Press"),
+                FormatStrings.FormatPressure(CurrentSteamHeatPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                Viewer.Catalog.GetString("TrTemp"),
+                FormatStrings.FormatTemperature(CurrentCarriageHeatTempC, IsMetric, false),             
+                Viewer.Catalog.GetString("StTemp"),
+                FormatStrings.FormatTemperature(CurrentSteamHeatPipeTempC, IsMetric, false),               
+                Viewer.Catalog.GetString("StUse"),
+                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CalculatedCarHeaterSteamUsageLBpS)), IsMetric),
+                FormatStrings.h);
+            }
+
+#if DEBUG_LOCO_STEAM_HEAT_HUD
+            status.AppendFormat("\n{0}\t{1}\t{2:N0}\t{3}\t{4:N0}\t{5}\t{6:N0}\t{7}\t{8:N0}\t{9}\t{10:N0}\n",
+                Viewer.Catalog.GetString("StHtDB:"),
+                Viewer.Catalog.GetString("TotHt"),
+                TotalTrainSteamHeatW,
+                Viewer.Catalog.GetString("NetHt"),
+                NetSteamHeatLossWpTime,
+                Viewer.Catalog.GetString("PipHt"),
+                SteamPipeHeatW,
+                Viewer.Catalog.GetString("CarHt"),
+                Train.TrainSteamHeatLossWpT,
+                Viewer.Catalog.GetString("CurrHt"),
+                CurrentTrainSteamHeatW);
+#endif
 
             status.AppendFormat("\n\t\t === {0} === \n", Viewer.Catalog.GetString("Fireman"));
             status.AppendFormat("{0}\t{1}\t{7}\t\t{2}\t{8}\t\t{3}\t{9}/{13}\t\t{4}\t{10}/{13}\t\t{5}\t{11}/{13}\t\t{6}\t{12}/{14}{13}\n",
@@ -4065,7 +4273,7 @@ namespace ORTS
 
         //Gear Box
 
-        #region Steam heating control
+        #region Steam heating controller
  
         public void StartSteamHeatIncrease(float? target)
         {
