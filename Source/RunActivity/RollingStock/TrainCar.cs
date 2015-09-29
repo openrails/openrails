@@ -21,6 +21,10 @@
 // Debug car heat losses
 // #define DEBUG_CAR_HEATLOSS
 
+// Debug curve speed
+// #define DEBUG_CURVE_SPEED
+
+
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
@@ -660,13 +664,13 @@ namespace ORTS
                     {
                         if (!IsMaxSafeCurveSpeed)
                         {
-                            IsMaxSafeCurveSpeed = true; // set flag for IsMaxEqualLoadSpeed reached
-                           
+                            IsMaxSafeCurveSpeed = true; // set flag for IsMaxSafeCurveSpeed reached
+
                           if (Train.IsPlayerDriven)   
                                 {
                                     if (Train.IsFreight)
                                         {
-                                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("You are traveling too fast for this curve. Slow down, your freight may be damaged and your train may derail."));
+                                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("You are travelling too fast for this curve. Slow down, your freight may be damaged and your train may derail."));
                                         }
                                     else
                                         {
@@ -675,12 +679,13 @@ namespace ORTS
                                 }
                           
                         }
-                        else
+
+                    }
+                    else
+                    {
+                        if (IsMaxSafeCurveSpeed)
                         {
-                            if (s < MaxSafeCurveSpeedMps)
-                            {
-                                IsMaxSafeCurveSpeed = false; // reset flag for IsMaxEqualLoadSpeed reached
-                            }
+                            IsMaxSafeCurveSpeed = false; // reset flag for IsMaxSafeCurveSpeed reached - if speed on curve decreases
                         }
                     }
 
@@ -699,32 +704,38 @@ namespace ORTS
                     {
                         if (!IsCriticalSpeed)
                         {
-                            IsCriticalSpeed = true; // set flag for IsMaxEqualLoadSpeed reached
+                            IsCriticalSpeed = true; // set flag for IsCriticalSpeed reached
                             
                             if (Train.IsPlayerDriven)
                             {
                               Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Your train has overturned."));
                             }
                         }
-                        else
-                        {
-                            if (s < CriticalSpeedMpS)
-                            {
-                                IsCriticalSpeed = false; // reset flag for IsCriticalSpeed reached
-                            }
-                        }
+ 
                     }
+                    else
+                    {
+                        if (IsCriticalSpeed)
+                        {
+                            IsCriticalSpeed = false; // reset flag for IsCriticalSpeed reached - if speed on curve decreases
+                        }
+                    }      
 
+#if DEBUG_CURVE_SPEED
+                   Trace.TraceInformation("================================== TrainCar.cs - DEBUG_CURVE_SPEED ==============================================================");
+                   Trace.TraceInformation("CarID {0} Curve Radius {1}", CarID, CurrentCurveRadius);
+                   Trace.TraceInformation("Current Speed {0} Equal Load Speed {1} Max Safe Speed {2} Critical Speed {3}", MpS.ToMpH(s), MpS.ToMpH(MaxCurveEqualLoadSpeedMps), MpS.ToMpH(MaxSafeCurveSpeedMps), MpS.ToMpH(CriticalSpeedMpS));
+                   Trace.TraceInformation("IsMaxSafeSpeed {0} IsCriticalSpeed {1}", IsMaxSafeCurveSpeed, IsCriticalSpeed);
+#endif
                 }
+                               
+              }
                 else
                 {
-                    // reset flags if train is on a straight
+                    // reset flags if train is on a straight - in preparation for next curve
                     IsCriticalSpeed = false;   // reset flag for IsCriticalSpeed reached
                     IsMaxSafeCurveSpeed = false; // reset flag for IsMaxEqualLoadSpeed reached
-                }
-                
-                }
-          
+                }      
 
             }
 
