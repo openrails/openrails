@@ -38,6 +38,7 @@ namespace ORTS
     {
         public List<ORTSFreightAnim> ORTSFreightAnims = new List<ORTSFreightAnim>();
         public float FreightWeight = 0;
+        public float StaticFreightWeight = 0;
         public MSTSWagon.PickupType FreightType = MSTSWagon.PickupType.None;
         public bool MSTSFreightAnimEnabled = true;
         public float WagonEmptyWeight = -1;
@@ -79,7 +80,11 @@ namespace ORTS
                         }
                     }
                  }),
-                new STFReader.TokenProcessor("freightanimstatic", ()=>{ ORTSFreightAnims.Add(new FreightAnimStatic(stf)); }),
+                new STFReader.TokenProcessor("freightanimstatic", ()=>
+                {
+                    ORTSFreightAnims.Add(new FreightAnimStatic(stf));
+                    StaticFreightWeight += (ORTSFreightAnims.Last() as FreightAnimStatic).FreightWeight;
+                }),
 /*                new STFReader.TokenProcessor("freightanimdiscrete", ()=>
                 {
                     ORTSFreightAnims.Add(new FreightAnimDiscrete(stf));
@@ -132,6 +137,7 @@ namespace ORTS
         {
             outf.Write(FreightWeight);
             outf.Write((int)FreightType);
+            outf.Write(StaticFreightWeight);
         }
 
         /// <summary>
@@ -160,6 +166,7 @@ namespace ORTS
                     }
                 }
             }
+            StaticFreightWeight = inf.ReadSingle();
         }
 
         public FreightAnimCollection(FreightAnimCollection copyFACollection, MSTSWagon wagon)
@@ -255,6 +262,7 @@ namespace ORTS
         public float XOffset = 0;
         public float YOffset = 0;
         public float ZOffset = 0;
+        public float FreightWeight = 0;
 
         public FreightAnimStatic(STFReader stf)
         {
@@ -271,6 +279,7 @@ namespace ORTS
 	                }
                 }),
                 new STFReader.TokenProcessor("shape", ()=>{ ShapeFileName = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("freightweight", ()=>{ FreightWeight = stf.ReadFloatBlock(STFReader.UNITS.Mass, 0); }),
                 new STFReader.TokenProcessor("offset", ()=>{
                     stf.MustMatch("(");
                     XOffset = stf.ReadFloat(STFReader.UNITS.Distance, 0);
@@ -289,6 +298,7 @@ namespace ORTS
             XOffset = freightAnimStatic.XOffset;
             YOffset = freightAnimStatic.YOffset;
             ZOffset = freightAnimStatic.ZOffset;
+            FreightWeight = freightAnimStatic.FreightWeight;
         }
     }
 

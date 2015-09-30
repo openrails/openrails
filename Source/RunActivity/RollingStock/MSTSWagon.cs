@@ -243,7 +243,7 @@ namespace ORTS
 
                 }
                 if (!ORTSFreightAnimData.MSTSFreightAnimEnabled) FreightShapeFileName = null;
-                if (ORTSFreightAnimData.WagonEmptyWeight != -1) MassKG = ORTSFreightAnimData.WagonEmptyWeight + ORTSFreightAnimData.FreightWeight;
+                if (ORTSFreightAnimData.WagonEmptyWeight != -1) MassKG = ORTSFreightAnimData.WagonEmptyWeight + ORTSFreightAnimData.FreightWeight + ORTSFreightAnimData.StaticFreightWeight;
                 if (ORTSFreightAnimData.LoadedOne != null) WeightLoadController.CurrentValue = ORTSFreightAnimData.LoadedOne.LoadPerCent / 100;
 
             }
@@ -896,7 +896,7 @@ namespace ORTS
                                 CabSetting.Increase, WeightLoadController.CurrentValue * 100);
                     }
                 }
-                if (ORTSFreightAnimData.WagonEmptyWeight != -1) MassKG = ORTSFreightAnimData.WagonEmptyWeight + ORTSFreightAnimData.FreightWeight;
+                if (ORTSFreightAnimData.WagonEmptyWeight != -1) MassKG = ORTSFreightAnimData.WagonEmptyWeight + ORTSFreightAnimData.FreightWeight + ORTSFreightAnimData.StaticFreightWeight;
                 if (WaitForAnimationReady && WeightLoadController.CommandStartTime + ORTSFreightAnimData.UnloadingStartDelay <= Simulator.ClockTime)
                 {
                     WaitForAnimationReady = false;
