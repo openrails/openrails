@@ -444,11 +444,15 @@ namespace ORTS
         float DrawBarPullLbsF;      // Drawbar pull in lbf
         float BoilerEvapRateLbspFt2;  // Sets the evaporation rate for the boiler is used to multiple boiler evaporation area by - used as a player customisation factor.
 
-        float SpeedFactor;      // Speed factor - factor to reduce TE due to speed increase - American locomotive company
+        float MaxSpeedFactor;      // Max Speed factor - factor @ critical piston speed to reduce TE due to speed increase - American locomotive company
+        float SpeedFactor;      // Current Speed factor - factor to reduce TE due to speed increase - American locomotive company
+        float DisplaySpeedFactor;  // Value displayed in HUD
 
         public float MaxTractiveEffortLbf;     // Maximum theoritical tractive effort for locomotive
         float DisplayTractiveEffortLbsF; // Value of Tractive eefort to display in HUD
-        float CriticalSpeedTractiveEffortLbf;  // Speed at which the piston speed reaches it maximum recommended value
+        float MaxCriticalSpeedTractiveEffortLbf;  // Maximum power value @ critical speed of piston
+        float CurrentCriticalSpeedTractiveEffortLbf;  // Current power value @ current speed of piston
+        float DisplayCriticalSpeedTractiveEffortLbf;  // Display power value @ speed of piston
         float StartTractiveEffortN = 0.0f;      // Record starting tractive effort
         float TractiveEffortLbsF;           // Current sim calculated tractive effort
         const float TractiveEffortFactor = 0.85f;  // factor for calculating Theoretical Tractive Effort
@@ -1140,17 +1144,20 @@ namespace ORTS
             if (HasSuperheater)
             {
                 MaxPistonSpeedFtpM = 1000.0f; // if superheated locomotive
-                SpeedFactor = SuperheatedSpeedFactorSpeedDropFtpMintoX[MaxPistonSpeedFtpM];
+                MaxSpeedFactor = SuperheatedSpeedFactorSpeedDropFtpMintoX[MaxPistonSpeedFtpM];
+                DisplaySpeedFactor = MaxSpeedFactor;
             }
             else if (IsGearedSteamLoco)
             {
                 MaxPistonSpeedFtpM = MaxSteamGearPistonRateFtpM;  // if geared locomotive
-                SpeedFactor = SaturatedSpeedFactorSpeedDropFtpMintoX[MaxPistonSpeedFtpM];   // Assume the same as saturated locomotive for time being.
+                MaxSpeedFactor = SaturatedSpeedFactorSpeedDropFtpMintoX[MaxPistonSpeedFtpM];   // Assume the same as saturated locomotive for time being.
+                DisplaySpeedFactor = MaxSpeedFactor;
             }
             else
             {
                 MaxPistonSpeedFtpM = 700.0f;  // if saturated locomotive
-                SpeedFactor = SaturatedSpeedFactorSpeedDropFtpMintoX[MaxPistonSpeedFtpM];
+                MaxSpeedFactor = SaturatedSpeedFactorSpeedDropFtpMintoX[MaxPistonSpeedFtpM];
+                DisplaySpeedFactor = MaxSpeedFactor;
             }
 
             // Calculate max velocity of the locomotive based upon above piston speed
@@ -1175,8 +1182,9 @@ namespace ORTS
 
             CalculatedFactorofAdhesion = Kg.ToLb(DrvWheelWeightKg) / MaxTractiveEffortLbf;
 
-            // Calculate "critical" speed of locomotive to determine limit of max IHP
-            CriticalSpeedTractiveEffortLbf = (MaxTractiveEffortLbf * CylinderEfficiencyRate) * SpeedFactor;
+            // Calculate "critical" power of locomotive to determine limit of max IHP
+            MaxCriticalSpeedTractiveEffortLbf = (MaxTractiveEffortLbf * CylinderEfficiencyRate) * MaxSpeedFactor;
+            DisplayCriticalSpeedTractiveEffortLbf = MaxCriticalSpeedTractiveEffortLbf;
 
             #endregion
 
@@ -2869,7 +2877,7 @@ namespace ORTS
             // This section updates the force calculations and maintains them at the current values.
 
             // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
-            MaxIndicatedHorsePowerHP = SpeedFactor * (MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;
+            MaxIndicatedHorsePowerHP = MaxSpeedFactor * (MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;
 
             //  Trace.TraceInformation("MaxIHP {0} Speed {1} TE {2} LocoSpeed {3}", MaxIndicatedHorsePowerHP, SpeedFactor, MaxTractiveEffortLbf, MaxLocoSpeedMpH);
 
@@ -3004,24 +3012,40 @@ namespace ORTS
                 {
                     IndicatedHorsePowerHP = MaxIndicatedHorsePowerHP; // Set IHP to maximum value
                 }
-                // Calculate the speed factor for the locomotive, based upon piston speed    
+                // Calculate the speed factor for the locomotive, based upon piston speed limit  
+  
+                /// TODO - Add compound locomotive  ++++++++++++
                 if (HasSuperheater)
                 {
                     SpeedFactor = SuperheatedSpeedFactorSpeedDropFtpMintoX[PistonSpeedFtpMin];
-                }
+                    // Calculate "critical" power of locomotive @ pistion speed
+                    CurrentCriticalSpeedTractiveEffortLbf = (MaxTractiveEffortLbf * CylinderEfficiencyRate) * SpeedFactor;
+                 }
                 else if (IsGearedSteamLoco)
                 {
                     SpeedFactor = SaturatedSpeedFactorSpeedDropFtpMintoX[PistonSpeedFtpMin];   // Assume the same as saturated locomotive for time being.
+                    // Calculate "critical" power of locomotive @ pistion speed
+                    CurrentCriticalSpeedTractiveEffortLbf = (MaxTractiveEffortLbf * CylinderEfficiencyRate) * SpeedFactor * MotiveForceGearRatio;
                 }
                 else
                 {
                     SpeedFactor = SaturatedSpeedFactorSpeedDropFtpMintoX[PistonSpeedFtpMin];
+                    // Calculate "critical" power of locomotive @ pistion speed
+                    CurrentCriticalSpeedTractiveEffortLbf = (MaxTractiveEffortLbf * CylinderEfficiencyRate) * SpeedFactor;
+                }
+                // Limit motive force once piston speed exceeds limit - natural limitation is achieved by MEP, however a cross check against the speed factor
+                // (determined by Alco) will also be considered. Speed factor will be used if smaller then MEP calculated tractive effort. 
+                // This allows a tapered effect as the locomotive force reaches a limit.
+                if ((TractiveEffortLbsF * CylinderEfficiencyRate) > CurrentCriticalSpeedTractiveEffortLbf)
+                {
+                    MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(CurrentCriticalSpeedTractiveEffortLbf);
                 }
 
-                if ((TractiveEffortLbsF * CylinderEfficiencyRate) > CriticalSpeedTractiveEffortLbf)
+                // Only display value changes once piston limit exceeded
+                if (PistonSpeedFtpMin > MaxPistonSpeedFtpM && CurrentCriticalSpeedTractiveEffortLbf < MaxCriticalSpeedTractiveEffortLbf)
                 {
-                    MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(CriticalSpeedTractiveEffortLbf);
-                    DisplayTractiveEffortLbsF = CriticalSpeedTractiveEffortLbf;
+                    DisplayCriticalSpeedTractiveEffortLbf = CurrentCriticalSpeedTractiveEffortLbf;
+                    DisplaySpeedFactor = SpeedFactor;
                 }
             }
 
@@ -4123,7 +4147,7 @@ namespace ORTS
                      FormatStrings.FormatForce(StartTractiveEffortN, IsMetric),
                      FormatStrings.FormatForce(N.FromLbf(DisplayTractiveEffortLbsF), IsMetric),
                      FormatStrings.FormatForce(N.FromLbf(DrawBarPullLbsF), IsMetric),
-                     FormatStrings.FormatForce(N.FromLbf(CriticalSpeedTractiveEffortLbf), IsMetric),
+                     FormatStrings.FormatForce(N.FromLbf(DisplayCriticalSpeedTractiveEffortLbf), IsMetric),
                      FormatStrings.FormatSpeedDisplay(MpS.FromMpH(MaxLocoSpeedMpH), IsMetric));
 
             status.AppendFormat("{0}\t{1}\t{5:N0} {9}/{10}\t\t{2}\t{6:N3}\t{3}\t{7:N0} {11}\t{4} {8:N2}\n",
@@ -4133,7 +4157,7 @@ namespace ORTS
                 Viewer.Catalog.GetString("DrvWhl"),
                 Viewer.Catalog.GetString("MF-Gear"),
                 IsMetric ? Me.FromFt(PistonSpeedFtpMin) : PistonSpeedFtpMin,
-                SpeedFactor,
+                DisplaySpeedFactor,
                 pS.TopM(DrvWheelRevRpS),
                 MotiveForceGearRatio,
                 IsMetric ? FormatStrings.m : FormatStrings.ft,
@@ -4195,7 +4219,7 @@ namespace ORTS
                             MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio;
 
                             // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
-                            MaxIndicatedHorsePowerHP = SpeedFactor * (MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;
+                            MaxIndicatedHorsePowerHP = MaxSpeedFactor * (MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;
                         }
                         else if (SteamGearPosition == 2.0)
                         {
@@ -4207,7 +4231,7 @@ namespace ORTS
                             MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio;
 
                             // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
-                            MaxIndicatedHorsePowerHP = SpeedFactor * (MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;
+                            MaxIndicatedHorsePowerHP = MaxSpeedFactor * (MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;
                         }
                     }
                 }
@@ -4244,7 +4268,7 @@ namespace ORTS
                             MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio;
 
                             // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
-                            MaxIndicatedHorsePowerHP = SpeedFactor * (MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;
+                            MaxIndicatedHorsePowerHP = MaxSpeedFactor * (MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;
 
                         }
                         else if (SteamGearPosition == 0.0)
