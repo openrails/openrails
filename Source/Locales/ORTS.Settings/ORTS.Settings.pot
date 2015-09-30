@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-08-21 23:03:45+0200\n"
-"PO-Revision-Date: 2015-08-21 23:03:45+0200\n"
+"POT-Creation-Date: 2015-09-30 21:27:26+0200\n"
+"PO-Revision-Date: 2015-09-30 21:27:26+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -580,65 +580,73 @@ msgid "Control Blower Decrease"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:188
-msgid "Control Damper Increase"
+msgid "Control Steam Heat Increase"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:189
-msgid "Control Damper Decrease"
+msgid "Control Steam Heat Decrease"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:190
-msgid "Control Firebox Open"
+msgid "Control Damper Increase"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:191
-msgid "Control Firebox Close"
+msgid "Control Damper Decrease"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:192
-msgid "Control Firing Rate Increase"
+msgid "Control Firebox Open"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:193
-msgid "Control Firing Rate Decrease"
+msgid "Control Firebox Close"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:194
-msgid "Control Fire Shovel Full"
+msgid "Control Firing Rate Increase"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:195
-msgid "Control Cylinder Cocks"
+msgid "Control Firing Rate Decrease"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:196
-msgid "Control Cylinder Compound"
+msgid "Control Fire Shovel Full"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:197
-msgid "Control Firing"
+msgid "Control Cylinder Cocks"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:198
+msgid "Control Cylinder Compound"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:199
+msgid "Control Firing"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:200
 msgid "Control Refill"
-msgstr ""
-
-#: ../../ORTS.Settings/InputSettings.cs:645
-#, csharp-format
-msgid "{0} requires and is modified by Shift"
-msgstr ""
-
-#: ../../ORTS.Settings/InputSettings.cs:647
-#, csharp-format
-msgid "{0} requires and is modified by Control"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:649
 #, csharp-format
+msgid "{0} requires and is modified by Shift"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:651
+#, csharp-format
+msgid "{0} requires and is modified by Control"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:653
+#, csharp-format
 msgid "{0} requires and is modified by Alt"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:680
+#: ../../ORTS.Settings/InputSettings.cs:684
 #, csharp-format
 msgid "{0} and {1} both match {2}"
 msgstr ""

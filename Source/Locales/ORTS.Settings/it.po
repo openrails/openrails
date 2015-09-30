@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
-"POT-Creation-Date: 2015-08-21 23:03:45+0200\n"
-"PO-Revision-Date: 2015-09-30 21:02+0100\n"
+"POT-Creation-Date: 2015-09-30 21:27:26+0200\n"
+"PO-Revision-Date: 2015-09-30 21:29+0100\n"
 "Last-Translator: Roberto Ceccarelli (The Strawberry Field) <strawberry."
 "field@libero.it>\n"
 "Language-Team: Open Rails Dev Team\n"
@@ -582,65 +582,73 @@ msgid "Control Blower Decrease"
 msgstr "Controllo diminuisci Blower "
 
 #: ../../ORTS.Settings/InputSettings.cs:188
+msgid "Control Steam Heat Increase"
+msgstr "Controllo Incrementa temperatura del vapore"
+
+#: ../../ORTS.Settings/InputSettings.cs:189
+msgid "Control Steam Heat Decrease"
+msgstr "Controllo diminuisci temperatura del vapore"
+
+#: ../../ORTS.Settings/InputSettings.cs:190
 msgid "Control Damper Increase"
 msgstr "Controllo aumenta Damper"
 
-#: ../../ORTS.Settings/InputSettings.cs:189
+#: ../../ORTS.Settings/InputSettings.cs:191
 msgid "Control Damper Decrease"
 msgstr "Controllo diminuisci Damper"
 
-#: ../../ORTS.Settings/InputSettings.cs:190
+#: ../../ORTS.Settings/InputSettings.cs:192
 msgid "Control Firebox Open"
 msgstr "Controllo apri la porta del forno"
 
-#: ../../ORTS.Settings/InputSettings.cs:191
+#: ../../ORTS.Settings/InputSettings.cs:193
 msgid "Control Firebox Close"
 msgstr "Controllo chiudi la porta del forno"
 
-#: ../../ORTS.Settings/InputSettings.cs:192
+#: ../../ORTS.Settings/InputSettings.cs:194
 msgid "Control Firing Rate Increase"
 msgstr "Controllo aumenta fuoco"
 
-#: ../../ORTS.Settings/InputSettings.cs:193
+#: ../../ORTS.Settings/InputSettings.cs:195
 msgid "Control Firing Rate Decrease"
 msgstr "Controllo diminuisci fuoco"
 
-#: ../../ORTS.Settings/InputSettings.cs:194
+#: ../../ORTS.Settings/InputSettings.cs:196
 msgid "Control Fire Shovel Full"
 msgstr "Controllo aggiunta carbone"
 
-#: ../../ORTS.Settings/InputSettings.cs:195
+#: ../../ORTS.Settings/InputSettings.cs:197
 msgid "Control Cylinder Cocks"
 msgstr "Controllo sfogo cilindri"
 
-#: ../../ORTS.Settings/InputSettings.cs:196
+#: ../../ORTS.Settings/InputSettings.cs:198
 msgid "Control Cylinder Compound"
 msgstr "Controllo Cylinder Compound"
 
-#: ../../ORTS.Settings/InputSettings.cs:197
+#: ../../ORTS.Settings/InputSettings.cs:199
 msgid "Control Firing"
 msgstr "Controllo fuoco"
 
-#: ../../ORTS.Settings/InputSettings.cs:198
+#: ../../ORTS.Settings/InputSettings.cs:200
 msgid "Control Refill"
 msgstr "Controllo rifornimento"
 
-#: ../../ORTS.Settings/InputSettings.cs:645
+#: ../../ORTS.Settings/InputSettings.cs:649
 #, csharp-format
 msgid "{0} requires and is modified by Shift"
 msgstr "{0} richiede ed è modificato da Shift"
 
-#: ../../ORTS.Settings/InputSettings.cs:647
+#: ../../ORTS.Settings/InputSettings.cs:651
 #, csharp-format
 msgid "{0} requires and is modified by Control"
 msgstr "{0} richiede ed è modificato da Control"
 
-#: ../../ORTS.Settings/InputSettings.cs:649
+#: ../../ORTS.Settings/InputSettings.cs:653
 #, csharp-format
 msgid "{0} requires and is modified by Alt"
 msgstr "{0} richiede ed è modificato da Alt"
 
-#: ../../ORTS.Settings/InputSettings.cs:680
+#: ../../ORTS.Settings/InputSettings.cs:684
 #, csharp-format
 msgid "{0} and {1} both match {2}"
 msgstr "{0} e {1} entrambi corrispondono a {2}"
