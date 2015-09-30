@@ -56,7 +56,8 @@ namespace ORTS.Viewer3D.RollingStock
         protected MSTSWagon MSTSWagon { get { return (MSTSWagon)Car; } }
 
         bool HasFirstPanto;
-        int numWheels1, numWheels2, numBogie1, numBogie2, numBogie = 0;
+        int numBogie1, numBogie2, numBogie, bogie1Axles, bogie2Axles = 0;
+        int bogieMatrix1, bogieMatrix2 = 0;
         public MSTSWagonViewer(Viewer viewer, MSTSWagon car)
             : base(viewer, car)
         {
@@ -112,25 +113,57 @@ namespace ORTS.Viewer3D.RollingStock
             for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
             {
                 if (TrainCarShape.SharedShape.MatrixNames[i].Equals("BOGIE1"))
+                {
+                    bogieMatrix1 = i;
                     numBogie1 += 1;
-                else if (TrainCarShape.SharedShape.MatrixNames[i].Equals("BOGIE2"))
+                }
+                if (TrainCarShape.SharedShape.MatrixNames[i].Equals("BOGIE2"))
+                {
+                    bogieMatrix2 = i;
                     numBogie2 += 1;
-                else if (TrainCarShape.SharedShape.MatrixNames[i].Equals("BOGIE"))
+                }
+                if (TrainCarShape.SharedShape.MatrixNames[i].Equals("BOGIE"))
+                {
+                    bogieMatrix1 = i;
                     numBogie += 1;
-                else if (TrainCarShape.SharedShape.MatrixNames[i].Contains("WHEELS"))
+                }
+                // For now, the total axle count consisting of axles that are part of the bogie are being counted.
+                if (TrainCarShape.SharedShape.MatrixNames[i].Contains("WHEELS"))
                     if (TrainCarShape.SharedShape.MatrixNames[i].Length == 8)
                     {
-                        if (TrainCarShape.SharedShape.MatrixNames[i].Contains("WHEELS1"))
-                            numWheels1 += 1;
-                        else if (TrainCarShape.SharedShape.MatrixNames[i].Contains("WHEELS2"))
-                            numWheels2 += 1;
+                        var tpmatrix = TrainCarShape.SharedShape.GetParentMatrix(i);
+                        if (TrainCarShape.SharedShape.MatrixNames[i].Equals("WHEELS11") && tpmatrix == bogieMatrix1)
+                            bogie1Axles += 1;
+                        if (TrainCarShape.SharedShape.MatrixNames[i].Equals("WHEELS12") && tpmatrix == bogieMatrix1)
+                            bogie1Axles += 1;
+                        if (TrainCarShape.SharedShape.MatrixNames[i].Equals("WHEELS13") && tpmatrix == bogieMatrix1)
+                            bogie1Axles += 1;
+                        if (TrainCarShape.SharedShape.MatrixNames[i].Equals("WHEELS21") && tpmatrix == bogieMatrix1)
+                            bogie1Axles += 1;
+                        if (TrainCarShape.SharedShape.MatrixNames[i].Equals("WHEELS22") && tpmatrix == bogieMatrix1)
+                            bogie1Axles += 1;
+                        if (TrainCarShape.SharedShape.MatrixNames[i].Equals("WHEELS23") && tpmatrix == bogieMatrix1)
+                            bogie1Axles += 1;
+
+                        if (TrainCarShape.SharedShape.MatrixNames[i].Equals("WHEELS11") && tpmatrix == bogieMatrix2)
+                            bogie2Axles += 1;
+                        if (TrainCarShape.SharedShape.MatrixNames[i].Equals("WHEELS12") && tpmatrix == bogieMatrix2)
+                            bogie2Axles += 1;
+                        if (TrainCarShape.SharedShape.MatrixNames[i].Equals("WHEELS13") && tpmatrix == bogieMatrix2)
+                            bogie2Axles += 1;
+                        if (TrainCarShape.SharedShape.MatrixNames[i].Equals("WHEELS21") && tpmatrix == bogieMatrix2)
+                            bogie2Axles += 1;
+                        if (TrainCarShape.SharedShape.MatrixNames[i].Equals("WHEELS21") && tpmatrix == bogieMatrix2)
+                            bogie2Axles += 1;
+                        if (TrainCarShape.SharedShape.MatrixNames[i].Equals("WHEELS23") && tpmatrix == bogieMatrix2)
+                            bogie2Axles += 1;
                     }
             }
 
             // Match up all the matrices with their parts.
             for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
                 if (TrainCarShape.Hierarchy[i] == -1)
-                    MatchMatrixToPart(car, i);
+                    MatchMatrixToPart(car, i, 0);
 
             car.SetUpWheels();
 
@@ -152,7 +185,7 @@ namespace ORTS.Viewer3D.RollingStock
             InitializeUserInputCommands();
         }
 
-        void MatchMatrixToPart(MSTSWagon car, int matrix)
+        void MatchMatrixToPart(MSTSWagon car, int matrix, int bogieMatrix)
         {
             var matrixName = TrainCarShape.SharedShape.MatrixNames[matrix].ToUpper();
             // Gate all RunningGearPartIndexes on this!
@@ -166,6 +199,11 @@ namespace ORTS.Viewer3D.RollingStock
                 if (m.M42 < 3)
                 {
                     var id = 0;
+                    // Model makers are not following the standard rules, For example, one tender uses naming convention of wheels11/12 instead of using Wheels1,2,3 when not part of a bogie.
+                    // The next 2 lines will sort out these axles.
+                    var tmatrix = TrainCarShape.SharedShape.GetParentMatrix(matrix);
+                    if (matrixName.Length == 8 && bogieMatrix == 0 && tmatrix == 0) // In this test, both tmatrix and bogieMatrix are 0 since these wheels are not part of a bogie.
+                        matrixName = TrainCarShape.SharedShape.MatrixNames[matrix].Substring(0, 7); // Changing wheel name so that it reflects its actual use since it is not p
                     if (matrixName.Length == 8 || matrixName.Length == 9)
                         Int32.TryParse(matrixName.Substring(6, 1), out id);
                     if (matrixName.Length == 8 || matrixName.Length == 9 || !matrixAnimated)
@@ -173,7 +211,7 @@ namespace ORTS.Viewer3D.RollingStock
                     else
                         RunningGear.AddMatrix(matrix);
                     var pmatrix = TrainCarShape.SharedShape.GetParentMatrix(matrix);
-                    car.AddWheelSet(m.M43, id, pmatrix, matrixName.ToString(), numWheels1, numWheels2);
+                    car.AddWheelSet(m.M43, id, pmatrix, matrixName.ToString(), bogie1Axles, bogie2Axles);
                 }
                 // Standard wheels are processed above, but wheels used as animated fans that are greater than 3m are processed here.
                 else
@@ -187,6 +225,7 @@ namespace ORTS.Viewer3D.RollingStock
                     Int32.TryParse(matrixName.Substring(5), out id);
                     var m = TrainCarShape.SharedShape.GetMatrixProduct(matrix);
                     car.AddBogie(m.M43, matrix, id, matrixName.ToString(), numBogie1, numBogie2, numBogie);
+                    bogieMatrix = matrix; // Bogie matrix needs to be saved for test with axles.
                 }
                 else
                 {
@@ -195,11 +234,12 @@ namespace ORTS.Viewer3D.RollingStock
                     var id = 1;
                     var m = TrainCarShape.SharedShape.GetMatrixProduct(matrix);
                     car.AddBogie(m.M43, matrix, id, matrixName.ToString(), numBogie1, numBogie2, numBogie);
+                    bogieMatrix = matrix; // Bogie matrix needs to be saved for test with axles.
                 }
                 // Bogies contain wheels!
                 for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
                     if (TrainCarShape.Hierarchy[i] == matrix)
-                        MatchMatrixToPart(car, i);
+                        MatchMatrixToPart(car, i, bogieMatrix);
             }
             else if (matrixName.StartsWith("WIPER")) // wipers
             {
@@ -280,7 +320,7 @@ namespace ORTS.Viewer3D.RollingStock
 
                 for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
                     if (TrainCarShape.Hierarchy[i] == matrix)
-                        MatchMatrixToPart(car, i);
+                        MatchMatrixToPart(car, i, 0);
             }
         }
 

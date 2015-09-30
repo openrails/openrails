@@ -1090,31 +1090,35 @@ namespace ORTS
             Headlight = other.Headlight;
         }
 
-        public void AddWheelSet(float offset, int bogieID, int parentMatrix, string wheels, int numWheels1, int numWheels2)
+        public void AddWheelSet(float offset, int bogieID, int parentMatrix, string wheels, int bogie1Axles, int bogie2Axles)
         {
             if (WheelAxlesLoaded || WheelHasBeenSet)
                 return;
+            // Currently looking for rolling stock that has more than 3 axles on a bogie.  This is rare, but some models are like this.
+            if (Parts.Count > 0) // 1 bogie will have a Parts.Count of 2.
+            {
+                if (Parts.Count == 2 || Parts.Count == 3)
+                    if (parentMatrix == Parts[1].iMatrix && wheels.Length == 8)
+                        if (bogie1Axles == 4 && bogieID == 2) // For the time being, the only rail-car that was having issues had 4 axles on one bogie. The second set of axles had a bogie index of 2 and both had to be dropped for the rail-car to operate under OR.
+                            return;
+                if (Parts.Count == 3)
+                    if (parentMatrix == Parts[2].iMatrix && wheels.Length == 8)
+                        if (bogie2Axles == 4 && bogieID == 1)
+                            return;
+            }
             //some old stocks have only two wheels, but defined to have four, two share the same offset, thus all computing of rotations will have problem
             //will check, if so, make the offset different a bit. 
             foreach (var axles in WheelAxles) if (offset.AlmostEqual(axles.OffsetM, 0.05f)) { offset = axles.OffsetM + 0.7f; break; }
-            if (wheels.Length == 8)
+            if (wheels.Length == 8 && Parts.Count > 0)
             {
                 if (wheels == "WHEELS11" || wheels == "WHEELS12" || wheels == "WHEELS13")
                     WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
 
                 if (wheels == "WHEELS21" || wheels == "WHEELS22" || wheels == "WHEELS23")
-                {
-                    // The process would assign 2 to the id because WHEELS21 or WHEELS22 would contain the number 2.
-                    // If the shape file contained only one set of WHEELS that was labeled as WHEELS21 && WHEELS22 then BogieIndex would be 2, not 1.
-                    if (numWheels2 <= 2 && numWheels1 == 0)
-                    {
-                        bogieID -= 1;
-                        WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
-                    }
-                    else
-                        WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
-                }
+                    WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
             }
+            else if (wheels.Length == 8 && Parts.Count == 0)
+                WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
             else
                 // Any Wheel set not covered in the above test. 
                 WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
@@ -1179,7 +1183,6 @@ namespace ORTS
                 Console.WriteLine("  part:  matrix {1,5:F0}  offset {0,10:F4}  weight {2,5:F0}", p.OffsetM, p.iMatrix, p.SumWgt);
 #endif
             WheelHasBeenSet = true;
-            Trace.TraceInformation("The number of axles is: {0}", WheelAxles.Count);
             // No parts means no bogies (always?), so make sure we've got Parts[0] for the car itself.
             if (Parts.Count == 0)
                 Parts.Add(new TrainCarPart(0, 0));
