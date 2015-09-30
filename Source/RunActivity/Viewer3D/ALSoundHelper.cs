@@ -926,15 +926,26 @@ namespace ORTS.Viewer3D
 
                 if (QueueHeader != QueueTail)
                 {
-                    SoundItem prev = SoundQueue[(QueueHeader - 1) % QUEUELENGHT];
+                    PlayMode prevMode;
+                    SoundItem prev;
 
-                    PlayMode prevMode = prev.PlayMode;
+                    for (int i = 1; i < 5; i++)
+                    {
 
-                    // Ignore repeated commands
-                    // In case we play OneShot, enable repeating same file only by defining it multiple times in sms, otherwise disable.
-                    if (prevMode == Mode && (Mode != PlayMode.OneShot || isReleasedWithJumpOrOneShotRepeated)
-                        && prev.SoundPiece != null && prev.SoundPiece.Name == Name)
-                        return;
+                       prev = SoundQueue[(QueueHeader - i) % QUEUELENGHT];
+
+                        prevMode = prev.PlayMode;
+
+                        // Ignore repeated commands
+                        // In case we play OneShot, enable repeating same file only by defining it multiple times in sms, otherwise disable.
+                        if (prevMode == Mode && (Mode != PlayMode.OneShot || isReleasedWithJumpOrOneShotRepeated)
+                            && prev.SoundPiece != null && prev.SoundPiece.Name == Name)
+                            return;
+                        if (QueueHeader - i == QueueTail) break;
+                    }
+
+                    prev = SoundQueue[(QueueHeader - 1) % QUEUELENGHT];
+                    prevMode = prev.PlayMode;
 
                     var optimized = false;
 
