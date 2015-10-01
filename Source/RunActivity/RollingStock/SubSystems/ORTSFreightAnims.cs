@@ -121,6 +121,13 @@ namespace ORTS
                     if (thisFreightShape.SharedShape.LodControls.Length > 0 && thisFreightShape.SharedShape.LodControls[0].DistanceLevels.Length > 0 && thisFreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects.Length > 0 && thisFreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives.Length > 0 
                         && thisFreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy.Length > 0 )
                         thisFreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy[0] = thisFreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy.Length;
+                    if (freightAnim.FreightShape.XNAMatrices.Length > 0 && freightAnim is FreightAnimStatic && (freightAnim as FreightAnimStatic).Flipped)
+                    {
+                        var flipper = Matrix.Identity;
+                        flipper.M11 = -1;
+                        flipper.M33 = -1;
+                        freightAnim.FreightShape.XNAMatrices[0] *= flipper;
+                    }
                 }
  
 
@@ -263,6 +270,7 @@ namespace ORTS
         public float YOffset = 0;
         public float ZOffset = 0;
         public float FreightWeight = 0;
+        public bool Flipped = false;
 
         public FreightAnimStatic(STFReader stf)
         {
@@ -287,6 +295,7 @@ namespace ORTS
                     ZOffset = stf.ReadFloat(STFReader.UNITS.Distance, 0);
                     stf.MustMatch(")");
                 }),
+                new STFReader.TokenProcessor("flip", ()=>{ Flipped = stf.ReadBoolBlock(true);}),
             });
         }
 
@@ -298,6 +307,7 @@ namespace ORTS
             XOffset = freightAnimStatic.XOffset;
             YOffset = freightAnimStatic.YOffset;
             ZOffset = freightAnimStatic.ZOffset;
+            Flipped = freightAnimStatic.Flipped;
             FreightWeight = freightAnimStatic.FreightWeight;
         }
     }
