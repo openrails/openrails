@@ -155,6 +155,12 @@ namespace ORTS
             ProcessTunnels();
 
             //
+            // Process trough information
+            //
+
+            ProcessTroughs();
+
+            //
             // Print all info (DEBUG only)
             //
 
@@ -4664,6 +4670,200 @@ namespace ORTS
 
         //================================================================================================//
         //
+        // ProcessTroughs
+        // Process trough sections and add info to TrackCircuitSections
+        //
+
+        public void ProcessTroughs()
+        {
+            // loop through tracknodes
+            foreach (TrackNode thisNode in trackDB.TrackNodes)
+            {
+                if (thisNode != null && thisNode.TrVectorNode != null)
+                {
+                    bool overTrough = false;
+                    List<float[]> troughInfo = new List<float[]>();
+                    List<int> troughPaths = new List<int>();
+                    float[] lastTrough = null;
+                    float totalLength = 0f;
+                    int numPaths = -1;
+
+                    // loop through all sections in node
+                    TrVectorNode thisVNode = thisNode.TrVectorNode;
+                    foreach (TrVectorSection thisSection in thisVNode.TrVectorSections)
+                    {
+                        if (!tsectiondat.TrackSections.ContainsKey(thisSection.SectionIndex))
+                        {
+                            continue;  // missing track section
+                        }
+
+                        float thisLength = 0f;
+                        Orts.Formats.Msts.TrackSection TS = tsectiondat.TrackSections[thisSection.SectionIndex];
+
+                        // determine length
+                        if (TS.SectionCurve != null)
+                        {
+                            thisLength =
+                                    MathHelper.ToRadians(Math.Abs(TS.SectionCurve.Angle)) * TS.SectionCurve.Radius;
+                        }
+                        else
+                        {
+                            thisLength = TS.SectionSize.Length;
+
+                        }
+
+                        // check trough shape
+
+                        bool troughShape = false;
+                        int shapePaths = 0;
+
+                        if (tsectiondat.TrackShapes.ContainsKey(thisSection.ShapeIndex))
+                        {
+                            TrackShape thisShape = tsectiondat.TrackShapes[thisSection.ShapeIndex];
+                            troughShape = thisShape.FileName.EndsWith("Wtr.s") || thisShape.FileName.EndsWith("wtr.s");
+                            shapePaths = Convert.ToInt32(thisShape.NumPaths);
+                        }
+
+                        if (troughShape)
+                        {
+                            numPaths = numPaths < 0 ? shapePaths : Math.Min(numPaths, shapePaths);
+                            if (overTrough)
+                            {
+                                lastTrough[1] += thisLength;
+                            }
+                            else
+                            {
+                                lastTrough = new float[2];
+                                lastTrough[0] = totalLength;
+                                lastTrough[1] = thisLength;
+                                overTrough = true;
+                            }
+                        }
+                        else if (overTrough)
+                        {
+                            troughInfo.Add(lastTrough);
+                            troughPaths.Add(numPaths);
+                            overTrough = false;
+                            numPaths = -1;
+                        }
+                        totalLength += thisLength;
+                    }
+
+                    // add last tunnel item
+                    if (overTrough)
+                    {
+                        troughInfo.Add(lastTrough);
+                        troughPaths.Add(numPaths);
+                    }
+
+                    // add tunnel info to TrackCircuitSections
+
+                    if (troughInfo.Count > 0)
+                    {
+                        bool TCSOverTrough = false;
+                        float[] troughData = troughInfo[0];
+                        float processedLength = 0;
+
+                        for (int iXRef = thisNode.TCCrossReference.Count - 1; iXRef >= 0; iXRef--)
+                        {
+                            TrackCircuitSectionXref TCSXRef = thisNode.TCCrossReference[iXRef];
+                            // forward direction
+                            float TCSStartOffset = TCSXRef.OffsetLength[1];
+                            float TCSLength = TCSXRef.Length;
+                            TrackCircuitSection thisTCS = TrackCircuitList[TCSXRef.Index];
+
+                            // if trough starts in TCS
+                            while (troughData != null && troughData[0] <= (TCSStartOffset + TCSLength))
+                            {
+                                TrackCircuitSection.troughInfoData[] TCSTroughData = new TrackCircuitSection.troughInfoData[2];
+                                float troughStart = 0;
+
+                                // if in trough, set start in trough and check end
+                                if (TCSOverTrough)
+                                {
+                                    TCSTroughData[1].TroughStart = -1;
+                                    TCSTroughData[1].TCSStartOffset = processedLength;
+                                }
+                                else
+                                // else start new trough
+                                {
+                                    TCSTroughData[1].TroughStart = troughData[0] - TCSStartOffset;
+                                    troughStart = TCSTroughData[1].TroughStart;
+                                    TCSTroughData[1].TCSStartOffset = -1;
+                                }
+
+                                if ((TCSStartOffset + TCSLength) >= (troughData[0] + troughData[1]))  // trough end is in this section
+                                {
+                                    TCSOverTrough = false;
+                                    TCSTroughData[1].TroughEnd = troughStart + troughData[1] - processedLength;
+
+                                    TCSTroughData[1].LengthInTCS = TCSTroughData[1].TroughEnd - troughStart;
+                                    TCSTroughData[1].TotalLength = troughData[1];
+
+                                    processedLength = 0;
+
+                                    if (thisTCS.TroughInfo == null) thisTCS.TroughInfo = new List<TrackCircuitSection.troughInfoData[]>();
+                                    thisTCS.TroughInfo.Add(TCSTroughData);
+
+                                    if (troughInfo.Count >= 2)
+                                    {
+                                        troughInfo.RemoveAt(0);
+                                        troughData = troughInfo[0];
+                                        troughPaths.RemoveAt(0);
+                                    }
+                                    else
+                                    {
+                                        troughData = null;
+                                        break;  // no more troughs to process
+                                    }
+                                }
+                                else
+                                {
+                                    TCSOverTrough = true;
+
+                                    TCSTroughData[1].TroughEnd = -1;
+                                    TCSTroughData[1].LengthInTCS = TCSLength - troughStart;
+                                    TCSTroughData[1].TotalLength = troughData[1];
+
+                                    processedLength += (TCSLength - troughStart);
+
+                                    if (thisTCS.TroughInfo == null) thisTCS.TroughInfo = new List<TrackCircuitSection.troughInfoData[]>();
+                                    thisTCS.TroughInfo.Add(TCSTroughData);
+                                    break;  // cannot add more troughs to section
+                                }
+                            }
+                            // derive trough data for other direction
+                            if (thisTCS.TroughInfo != null)
+                            {
+                                foreach (TrackCircuitSection.troughInfoData[] thisTroughInfo in thisTCS.TroughInfo)
+                                {
+                                    thisTroughInfo[0].TroughStart = thisTroughInfo[1].TroughEnd < 0 ? -1 : thisTCS.Length - thisTroughInfo[1].TroughEnd;
+                                    thisTroughInfo[0].TroughEnd = thisTroughInfo[1].TroughStart < 0 ? -1 : thisTCS.Length - thisTroughInfo[1].TroughStart;
+                                    thisTroughInfo[0].LengthInTCS = thisTroughInfo[1].LengthInTCS;
+                                    thisTroughInfo[0].TotalLength = thisTroughInfo[1].TotalLength;
+
+                                    if (thisTroughInfo[0].TroughStart >= 0)
+                                    {
+                                        thisTroughInfo[0].TCSStartOffset = -1;
+                                    }
+                                    else if (thisTroughInfo[1].TCSStartOffset < 0)
+                                    {
+                                        thisTroughInfo[0].TCSStartOffset = thisTroughInfo[0].TotalLength - thisTroughInfo[0].LengthInTCS;
+                                    }
+                                    else
+                                    {
+                                        thisTroughInfo[0].TCSStartOffset = thisTroughInfo[0].TotalLength - thisTroughInfo[1].TCSStartOffset - thisTCS.Length;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        //================================================================================================//
+        //
         // Find Train
         // Find train in list using number, to restore reference after restore
         //
@@ -4856,6 +5056,19 @@ namespace ORTS
         }
 
         public List<tunnelInfoData[]> TunnelInfo = null;          // full tunnel info data
+
+        // trough data
+
+        public struct troughInfoData
+        {
+            public float TroughStart;                             // start position of trough : -1 if start is in trough
+            public float TroughEnd;                               // end position of trough : -1 if end is in trough
+            public float LengthInTCS;                             // length of trough within this TCS
+            public float TotalLength;                             // total length of trough
+            public float TCSStartOffset;                          // offset in trough of start of this TCS : -1 if trough start in this TCS
+        }
+
+        public List<troughInfoData[]> TroughInfo = null;          // full trough info data
 
         //================================================================================================//
         //

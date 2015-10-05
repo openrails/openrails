@@ -346,7 +346,7 @@ namespace ORTS.Viewer3D.RollingStock
         public class RefillProcess
         {
             public static bool OkToRefill { get; set; }
-            public static uint ActivePickupObjectUID { get; set; }
+            public static int ActivePickupObjectUID { get; set; }
             public static bool Unload { get; set; }
         }
 
@@ -449,14 +449,6 @@ namespace ORTS.Viewer3D.RollingStock
             }
 
             float distanceToPickupM = GetDistanceToM(match) - 2.5f; // Deduct an extra 2.5 so that the tedious placement is less of an issue.
-            // Immediate refill was not possible due to detection of pickup object on the tile, even if locomotive was not close.  Now immediate refill is possible,
-            // if the distance of the locomotive is greater than 2000 meters from the pickup object.
-            if (distanceToPickupM > 2000.0 && !(loco is MSTSElectricLocomotive))
-            {
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetString("Refill: No suitable pick-up point anywhere, so refilling immediately."));
-                loco.RefillImmediately();
-                return;
-            }
             if (distanceToPickupM > match.IntakePoint.WidthM / 2)
             {
                 Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: Distance to {0} supply is {1}.",
@@ -464,7 +456,7 @@ namespace ORTS.Viewer3D.RollingStock
                 return;
             }
             if (distanceToPickupM <= match.IntakePoint.WidthM / 2)
-                RefillProcess.ActivePickupObjectUID = match.Pickup.UID;
+                RefillProcess.ActivePickupObjectUID = (int)match.Pickup.UID;
             if (loco.SpeedMpS != 0 && match.Pickup.SpeedRange.MinMpS == 0f)
             {
                 Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: Loco must be stationary to refill {0}.",
@@ -582,6 +574,7 @@ namespace ORTS.Viewer3D.RollingStock
                 controller.StopIncrease();
             else controller.StopDecrease();
         }
+
         #endregion
     } // Class LocomotiveViewer
 

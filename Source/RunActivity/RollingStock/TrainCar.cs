@@ -1626,6 +1626,82 @@ namespace ORTS
             }
         }
 
+        /// <summary>
+        /// Checks if traincar is over trough. Used to check if refill possible
+        /// </summary>
+        /// <returns> returns true if car is over trough</returns>
+
+        public bool IsOverTrough()
+        {
+            var isOverTrough = false;
+                       // start at front of train
+            int thisSectionIndex = Train.PresentPosition[0].TCSectionIndex;
+            float thisSectionOffset = Train.PresentPosition[0].TCOffset;
+            int thisSectionDirection = Train.PresentPosition[0].TCDirection;
+
+
+            float usedCarLength = CarLengthM;
+            float processedCarLength = 0;
+            bool validSections = true;
+
+            while (validSections)
+            {
+                TrackCircuitSection thisSection = Train.signalRef.TrackCircuitList[thisSectionIndex];
+                isOverTrough = false;
+
+                // car spans sections
+                if ((CarLengthM - processedCarLength) > thisSectionOffset)
+                {
+                    usedCarLength = thisSectionOffset - processedCarLength;
+                }
+
+                // section has troughs
+                if (thisSection.TroughInfo != null)
+                {
+                    foreach (TrackCircuitSection.troughInfoData[] thisTrough in thisSection.TroughInfo)
+                    {
+                        float troughStartOffset = thisTrough[thisSectionDirection].TroughStart;
+                        float troughEndOffset = thisTrough[thisSectionDirection].TroughEnd;
+
+                        if (troughStartOffset > 0 && troughStartOffset > thisSectionOffset)      // start of trough is in section beyond present position - cannot be over this trough nor any following
+                        {
+                            return isOverTrough;
+                        }
+
+                        if (troughEndOffset > 0 && troughEndOffset < (thisSectionOffset - usedCarLength)) // beyond end of trough, test next
+                        {
+                            continue;
+                        }
+
+                        if (troughStartOffset <= 0 || troughStartOffset < (thisSectionOffset - usedCarLength)) // start of trough is behind
+                        {
+                            isOverTrough = true;
+                            return isOverTrough;
+                        }
+                    }
+                }
+                // tested this section, any need to go beyond?
+
+                processedCarLength += usedCarLength;
+                {
+                    // go back one section
+                    int thisSectionRouteIndex = Train.ValidRoute[0].GetRouteIndexBackward(thisSectionIndex, Train.PresentPosition[0].RouteListIndex);
+                    if (thisSectionRouteIndex >= 0)
+                    {
+                        thisSectionIndex = thisSectionRouteIndex;
+                        thisSection = Train.signalRef.TrackCircuitList[thisSectionIndex];
+                        thisSectionOffset = thisSection.Length;  // always at end of next section
+                        thisSectionDirection = Train.ValidRoute[0][thisSectionRouteIndex].Direction;
+                    }
+                    else // ran out of train
+                    {
+                        validSections = false;
+                    }
+                }
+            }
+            return isOverTrough;
+        }
+
         public virtual void SwitchToPlayerControl()
         {
             return;

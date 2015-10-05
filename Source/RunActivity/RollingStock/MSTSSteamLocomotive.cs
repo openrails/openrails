@@ -211,6 +211,14 @@ namespace ORTS
         SmoothedData FuelRate = new SmoothedData(45); // Automatic fireman takes x seconds to fully react to changing needs.
         SmoothedData BurnRateSmoothKGpS = new SmoothedData(120); // Changes in BurnRate take x seconds to fully react to changing needs.
         float FuelRateSmooth = 0.0f;     // Smoothed Fuel Rate
+        public bool HasWaterScoop = false; // indicates whether loco + tender have a water scoop or not
+        public float ScoopMinPickupSpeedMpS = 0.0f; // Minimum scoop pickup speed
+        public float ScoopMaxPickupSpeedMpS = 200.0f; // Maximum scoop pickup speed
+        public float ScoopResistanceN = 0.0f; // Scoop resistance
+        public bool ScoopIsBroken = false; // becomes broken if activated where there is no trough
+        public bool RefillingFromTrough = false; // refilling from through is ongoing
+
+
 
         // precomputed values
         float CylinderSweptVolumeFT3pFT;     // Volume of steam Cylinder
@@ -619,6 +627,12 @@ namespace ORTS
                     IsFixGeared = String.Compare(typeString2, "Fixed") == 0;
                     IsSelectGeared = String.Compare(typeString2, "Select") == 0;
                     break;
+                case "engine(enginecontrollers(waterscoop": HasWaterScoop = true; break;
+                case "engine(steamwaterscoopminpickupspeed": ScoopMinPickupSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, 0.0f); break;
+                case "engine(steamwaterscoopmaxpickupspeed": ScoopMaxPickupSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, 0.0f); break;
+                case "engine(steamwaterscoopresistance": ScoopResistanceN = stf.ReadFloatBlock(STFReader.UNITS.Force, 0.0f); break;
+                //Not used at the moment. Default unit of measure libs/s does not exist either
+                //                case "engine(steamwaterpickuprate": ScoopPickupRateKGpS = stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null); break;
                 default: base.Parse(lowercasetoken, stf); break;
             }
         }
@@ -681,6 +695,10 @@ namespace ORTS
             HasSuperheater = locoCopy.HasSuperheater;
             IsFixGeared = locoCopy.IsFixGeared;
             IsSelectGeared = locoCopy.IsSelectGeared;
+            HasWaterScoop = locoCopy.HasWaterScoop;
+            ScoopMinPickupSpeedMpS = locoCopy.ScoopMinPickupSpeedMpS;
+            ScoopMaxPickupSpeedMpS = locoCopy.ScoopMaxPickupSpeedMpS;
+            ScoopResistanceN = locoCopy.ScoopResistanceN;
         }
 
         /// <summary>
@@ -705,6 +723,7 @@ namespace ORTS
             outf.Write(FlueTempK);
             outf.Write(SteamGearPosition);
             outf.Write(WaterFraction);
+            outf.Write(ScoopIsBroken);
             ControllerFactory.Save(CutoffController, outf);
             ControllerFactory.Save(SteamHeatController, outf);
             ControllerFactory.Save(Injector1Controller, outf);
@@ -738,6 +757,7 @@ namespace ORTS
             FireMassKG = inf.ReadSingle();
             FlueTempK = inf.ReadSingle();
             SteamGearPosition = inf.ReadSingle();
+            ScoopIsBroken = inf.ReadBoolean();
             ControllerFactory.Restore(CutoffController, inf);
             ControllerFactory.Restore(SteamHeatController, inf);
             ControllerFactory.Restore(Injector1Controller, inf);
@@ -1550,6 +1570,15 @@ namespace ORTS
             {
                 if (FuelController.UpdateValue > 0.0)
                     Simulator.Confirmer.UpdateWithPerCent(CabControl.TenderCoal, CabSetting.Increase, FuelController.CurrentValue * 100);
+            }
+
+            if (RefillingFromTrough && !IsOverTrough())
+            {
+                // Bad thing, scoop gets broken!
+               Simulator.Confirmer.Message(ConfirmLevel.Error, Viewer.Catalog.GetString("Scoop broken because activated outside through"));
+               WaterController.UpdateValue = 0.0f;
+               RefillingFromTrough = false;
+               SignalEvent(Event.WaterScoopUp);
             }
 
             WaterController.Update(elapsedClockSeconds);

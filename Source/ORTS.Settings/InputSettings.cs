@@ -198,6 +198,7 @@ namespace ORTS.Settings
         [GetString("Control Cylinder Compound")] ControlCylinderCompound,
         [GetString("Control Firing")] ControlFiring,
         [GetString("Control Refill")] ControlRefill,
+        [GetString("Control TroughRefill")] ControlTroughRefill,
     }
 
     /// <summary>
@@ -515,8 +516,8 @@ namespace ORTS.Settings
             Commands[(int)UserCommands.ControlCylinderCompound] = new UserCommandKeyInput(0x19);
             Commands[(int)UserCommands.ControlDamperDecrease] = new UserCommandKeyInput(0x32, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlDamperIncrease] = new UserCommandKeyInput(0x32);
-            Commands[(int)UserCommands.ControlDieselHelper] = new UserCommandKeyInput(0x15, KeyModifiers.Shift);
-            Commands[(int)UserCommands.ControlDieselPlayer] = new UserCommandKeyInput(0x15);
+            Commands[(int)UserCommands.ControlDieselHelper] = new UserCommandKeyInput(0x15, KeyModifiers.Control);
+            Commands[(int)UserCommands.ControlDieselPlayer] = new UserCommandKeyInput(0x15, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlDoorLeft] = new UserCommandKeyInput(0x10);
             Commands[(int)UserCommands.ControlDoorRight] = new UserCommandKeyInput(0x10, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlDynamicBrakeDecrease] = new UserCommandKeyInput(0x33);
@@ -563,6 +564,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommands.ControlTrainBrakeDecrease] = new UserCommandKeyInput(0x27);
             Commands[(int)UserCommands.ControlTrainBrakeIncrease] = new UserCommandKeyInput(0x28);
             Commands[(int)UserCommands.ControlTrainBrakeZero] = new UserCommandKeyInput(0x27, KeyModifiers.Control);
+            Commands[(int)UserCommands.ControlTroughRefill] = new UserCommandKeyInput(0x15);
             Commands[(int)UserCommands.ControlWiper] = new UserCommandKeyInput(0x2F);
 
             Commands[(int)UserCommands.DebugClockBackwards] = new UserCommandKeyInput(0x0C);
