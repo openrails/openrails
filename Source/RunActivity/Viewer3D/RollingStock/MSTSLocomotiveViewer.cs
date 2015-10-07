@@ -457,7 +457,7 @@ namespace ORTS.Viewer3D.RollingStock
             }
             if (distanceToPickupM <= match.IntakePoint.WidthM / 2)
                 RefillProcess.ActivePickupObjectUID = (int)match.Pickup.UID;
-            if (loco.SpeedMpS != 0 && match.Pickup.SpeedRange.MinMpS == 0f)
+            if (loco.SpeedMpS != 0 && match.Pickup.SpeedRange.MaxMpS == 0f)
             {
                 Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: Loco must be stationary to refill {0}.",
                     PickupTypeDictionary[(uint)match.Pickup.PickupType]));
