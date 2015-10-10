@@ -447,6 +447,11 @@ namespace ORTS.Viewer3D.RollingStock
                 loco.RefillImmediately();
                 return;
             }
+            if (match == null)
+            {
+                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetString("Refill: Electric loco and no pickup. Command rejected"));
+                return;
+            }
 
             float distanceToPickupM = GetDistanceToM(match) - 2.5f; // Deduct an extra 2.5 so that the tedious placement is less of an issue.
             if (distanceToPickupM > match.IntakePoint.WidthM / 2)
