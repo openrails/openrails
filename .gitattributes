@@ -1,0 +1,55 @@
+# https://github.com/Danimoth/gitattributes
+# Auto detect text files and perform LF normalization
+* text=auto
+
+
+# https://github.com/Danimoth/gitattributes/blob/master/Common.gitattributes
+# Documents
+*.doc diff=astextplain
+*.DOC diff=astextplain
+*.docx diff=astextplain
+*.DOCX diff=astextplain
+*.dot diff=astextplain
+*.DOT diff=astextplain
+*.pdf diff=astextplain
+*.PDF diff=astextplain
+*.rtf diff=astextplain
+*.RTF diff=astextplain
+*.md text
+*.adoc text
+*.textile text
+*.mustache text
+*.csv text
+*.tab text
+*.tsv text
+*.sql text
+
+# Graphics
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.tif binary
+*.tiff binary
+*.ico binary
+*.svg text
+*.eps binary
+
+
+# https://github.com/Danimoth/gitattributes/blob/master/VisualStudio.gitattributes
+# Custom for Visual Studio
+*.sln text eol=crlf merge=union
+*.csproj merge=union
+*.vbproj merge=union
+*.fsproj merge=union
+*.dbproj merge=union
+
+
+# https://github.com/Danimoth/gitattributes/blob/master/CSharp.gitattributes
+# Custom for C#
+*.cs diff=csharp
+
+
+# (No source)
+# Custom for Delphi
+*.pas diff=pascal
