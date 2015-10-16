@@ -4881,6 +4881,11 @@ namespace ORTS
         {
             CylinderCocksAreOpen = !CylinderCocksAreOpen;
             SignalEvent(Event.CylinderCocksToggle);
+            if (CylinderCocksAreOpen)
+                SignalEvent(Event.CylinderCocksOpen);
+            else
+                SignalEvent(Event.CylinderCocksClose);
+
             if (IsPlayerTrain)
                 Simulator.Confirmer.Confirm(CabControl.CylinderCocks, CylinderCocksAreOpen ? CabSetting.On : CabSetting.Off);
         }

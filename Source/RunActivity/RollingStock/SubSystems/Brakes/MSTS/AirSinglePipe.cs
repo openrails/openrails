@@ -50,6 +50,12 @@ namespace ORTS
         protected string RetainerDebugState = string.Empty;
         protected bool NoMRPAuxResCharging;
 
+        protected bool TrainBrakePressureChanging = false;
+        protected bool BrakePipePressureChanging = false;
+        protected int SoundTriggerCounter = 0;
+        protected float prevCylPressurePSI = 0f;
+        protected float prevBrakePipePressurePSI = 0f;
+
         /// <summary>
         /// EP brake holding valve. Needs to be closed (Lap) in case of brake application or holding.
         /// For non-EP brake types must default to and remain in Release.
@@ -274,7 +280,7 @@ namespace ORTS
 
         public override void Update(float elapsedClockSeconds)
         {
-            ValveState prevTripleValueState = TripleValveState;
+            //ValveState prevTripleValueState = TripleValveState;
 
             // Emergency reservoir's second role (in OpenRails) is to act as a control reservoir,
             // maintaining a reference control pressure for graduated release brake actions.
@@ -382,15 +388,18 @@ namespace ORTS
                 AuxResPressurePSI += dp;
                 BrakeLine2PressurePSI -= dp * AuxBrakeLineVolumeRatio;
             }
-            if (TripleValveState != prevTripleValueState)
+            /*if (TripleValveState != prevTripleValueState)
             {
                 switch (TripleValveState)
                 {
                     case ValveState.Release: Car.SignalEvent(Event.TrainBrakePressureDecrease); break;
                     case ValveState.Apply:
                     case ValveState.Emergency: Car.SignalEvent(Event.TrainBrakePressureIncrease); break;
+                    case ValveState.Lap: Car.SignalEvent(Event.TrainBrakeCylinderPressureStoppedChanging); break;
+             * this method isn't enough, as can't detect when the trainbrake pressure stops changing after release, only after apply
                 }
-            }
+            }*/
+
             if (BrakeLine3PressurePSI >= 1000)
             {
                 BrakeLine3PressurePSI -= 1000;
@@ -406,6 +415,50 @@ namespace ORTS
             if (f < MaxHandbrakeForceN * HandbrakePercent / 100)
                 f = MaxHandbrakeForceN * HandbrakePercent / 100;
             Car.BrakeForceN = f;
+
+            // sound trigger checking runs every 4th update, to avoid the problems caused by the jumping BrakeLine1PressurePSI value, and also saves cpu time :)
+            if (SoundTriggerCounter >= 4)
+            {
+                SoundTriggerCounter = 0;
+                if (AutoCylPressurePSI != prevCylPressurePSI)
+                {
+                    if (!TrainBrakePressureChanging)
+                    {
+                        if (AutoCylPressurePSI > prevCylPressurePSI)
+                            Car.SignalEvent(Event.TrainBrakePressureIncrease);
+                        else
+                            Car.SignalEvent(Event.TrainBrakePressureDecrease);
+                        TrainBrakePressureChanging = !TrainBrakePressureChanging;
+                    }
+
+                }
+                else if (TrainBrakePressureChanging)
+                {
+                    TrainBrakePressureChanging = !TrainBrakePressureChanging;
+                    Car.SignalEvent(Event.TrainBrakePressureStoppedChanging);
+                }
+
+                if ( Math.Abs(BrakeLine1PressurePSI-prevBrakePipePressurePSI)> 0.05f /*BrakeLine1PressurePSI > prevBrakePipePressurePSI*/)
+                {
+                    if (!BrakePipePressureChanging)
+                    {
+                        if (BrakeLine1PressurePSI > prevBrakePipePressurePSI)
+                            Car.SignalEvent(Event.BrakePipePressureIncrease);
+                        else
+                            Car.SignalEvent(Event.BrakePipePressureDecrease);
+                        BrakePipePressureChanging = !BrakePipePressureChanging;
+                    }
+
+                }
+                else if (BrakePipePressureChanging)
+                {
+                    BrakePipePressureChanging = !BrakePipePressureChanging;
+                    Car.SignalEvent(Event.BrakePipePressureStoppedChanging);
+                }
+                prevCylPressurePSI = AutoCylPressurePSI;
+                prevBrakePipePressurePSI = BrakeLine1PressurePSI;
+            }
+            SoundTriggerCounter++;
         }
 
         public override void PropagateBrakePressure(float elapsedClockSeconds)
@@ -563,6 +616,7 @@ namespace ORTS
                             {
                                 case ValveState.Release: lead.SignalEvent(Event.EngineBrakePressureIncrease); break;
                                 case ValveState.Apply: lead.SignalEvent(Event.EngineBrakePressureDecrease); break;
+                                case ValveState.Lap: lead.SignalEvent(Event.EngineBrakePressureStoppedChanging); break;
                             }
                         if (lead.BailOff || (lead.DynamicBrakeAutoBailOff && train.MUDynamicBrakePercent > 0))
                             p += 1000;

@@ -50,6 +50,12 @@ namespace ORTS
         float PipeTimeFactorS = .003f; // copied from air single pipe, probably not accurate
         float ReleaseTimeFactorS = 1.009f; // copied from air single pipe, but close to modern ejector data
         float ApplyChargingRatePSIpS = 4;
+        bool TrainBrakePressureChanging = false;
+        bool BrakePipePressureChanging = false;
+        int SoundTriggerCounter = 0;
+        float prevCylPressurePSIA = 0f;
+        float prevBrakePipePressurePSI = 0f;
+
 
         public VacuumSinglePipe(TrainCar car)
         {
@@ -245,6 +251,51 @@ namespace ORTS
             if (f < MaxHandbrakeForceN * HandbrakePercent / 100)
                 f = MaxHandbrakeForceN * HandbrakePercent / 100;
             Car.BrakeForceN = f;
+
+
+            // sound trigger checking runs every 4th update, to avoid the problems caused by the jumping BrakeLine1PressurePSI value, and also saves cpu time :)
+            if (SoundTriggerCounter >= 4)
+            {
+                SoundTriggerCounter = 0;
+                if (CylPressurePSIA != prevCylPressurePSIA)
+                {
+                    if (!TrainBrakePressureChanging)
+                    {
+                        if (CylPressurePSIA > prevCylPressurePSIA)
+                            Car.SignalEvent(Event.TrainBrakePressureIncrease);
+                        else
+                            Car.SignalEvent(Event.TrainBrakePressureDecrease);
+                        TrainBrakePressureChanging = !TrainBrakePressureChanging;
+                    }
+
+                }
+                else if (TrainBrakePressureChanging)
+                {
+                    TrainBrakePressureChanging = !TrainBrakePressureChanging;
+                    Car.SignalEvent(Event.TrainBrakePressureStoppedChanging);
+                }
+
+                if ( Math.Abs(BrakeLine1PressurePSI-prevBrakePipePressurePSI)> 0.05f /*BrakeLine1PressurePSI > prevBrakePipePressurePSI*/)
+                {
+                    if (!BrakePipePressureChanging)
+                    {
+                        if (BrakeLine1PressurePSI > prevBrakePipePressurePSI)
+                            Car.SignalEvent(Event.BrakePipePressureIncrease);
+                        else
+                            Car.SignalEvent(Event.BrakePipePressureDecrease);
+                        BrakePipePressureChanging = !BrakePipePressureChanging;
+                    }
+
+                }
+                else if (BrakePipePressureChanging)
+                {
+                    BrakePipePressureChanging = !BrakePipePressureChanging;
+                    Car.SignalEvent(Event.BrakePipePressureStoppedChanging);
+                }
+                prevCylPressurePSIA = CylPressurePSIA;
+                prevBrakePipePressurePSI = BrakeLine1PressurePSI;
+            }
+            SoundTriggerCounter++;
         }
 
         public override void PropagateBrakePressure(float elapsedClockSeconds)

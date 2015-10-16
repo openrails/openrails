@@ -47,7 +47,7 @@ namespace ORTS
                 BrakeLine2PressurePSI -= dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio;
                 AutoCylPressurePSI += dp;
 
-                Car.SignalEvent(Event.TrainBrakePressureIncrease);
+                //Car.SignalEvent(Event.TrainBrakePressureIncrease);
             }
         }
 

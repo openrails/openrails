@@ -131,9 +131,15 @@ namespace ORTS
         _HeadlightDim,
         _HeadlightOff,
         _HeadlightOn,
-        _ResetWheelSlip
+        _ResetWheelSlip,
 
-
+        TrainBrakePressureStoppedChanging,
+        EngineBrakePressureStoppedChanging,
+        BrakePipePressureIncrease,
+        BrakePipePressureDecrease,
+        BrakePipePressureStoppedChanging,
+        CylinderCocksOpen,
+        CylinderCocksClose
     }
 
     public static class Events
@@ -275,6 +281,15 @@ namespace ORTS
                         case 134: return Event.SteamPulse14;
                         case 135: return Event.SteamPulse15;
                         case 136: return Event.SteamPulse16;
+
+                        case 137: return Event.CylinderCocksOpen;
+                        case 138: return Event.CylinderCocksClose;
+                        case 139: return Event.TrainBrakePressureStoppedChanging;
+                        case 140: return Event.EngineBrakePressureStoppedChanging;
+                        case 141: return Event.BrakePipePressureIncrease;
+                        case 142: return Event.BrakePipePressureDecrease;
+                        case 143: return Event.BrakePipePressureStoppedChanging;
+
                         //
 
                         default: return 0;
