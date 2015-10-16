@@ -95,8 +95,10 @@ namespace ORTS
         public bool Wiper;
         public bool BailOff;
         public bool DynamicBrake;
+        public float DynamicBrakeForceN = 0f; // Raw dynamic brake force for diesel and electric sound variable3
         public float MaxPowerW;
         public float MaxForceN;
+        public float TractiveForceN=0f; // Raw tractive force for electric sound variable2
         public float MaxCurrentA = 0;
         public float MaxSpeedMpS = 1e3f;
         public float MainResPressurePSI = 130;
@@ -952,6 +954,7 @@ namespace ORTS
      //           if (DynamicBrakeController.CommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)
      //           {
                     DynamicBrake = false; // Disengage
+                    DynamicBrakeForceN = 0f; // Reset dynamic brake force
                     if (IsLeadLocomotive())
                         Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.Off);
      //           }
@@ -1045,7 +1048,14 @@ namespace ORTS
             {
                 float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, currentSpeedMpS);
                 if (f > 0)
+                {
                     MotiveForceN -= (SpeedMpS > 0 ? 1 : -1) * f;
+                    DynamicBrakeForceN = f;
+                }
+                else
+                {
+                    DynamicBrakeForceN = 0f;
+                }
             }
 
 
@@ -1133,8 +1143,10 @@ namespace ORTS
                     if (MotiveForceN < 0)
                         MotiveForceN = 0;
                 }
+                TractiveForceN = MotiveForceN;
             }
-
+            else 
+                TractiveForceN = 0f;
 
             if (MaxForceN > 0 && MaxContinuousForceN > 0)
             {

@@ -166,14 +166,14 @@ namespace ORTS
             else 
             {
                 float dV2;
-                dV2 = Math.Abs(MotiveForceN) / MaxForceN * 100f - Variable2;
+                dV2 = TractiveForceN / MaxForceN * 100f - Variable2;
                 float max = 2f;
                 if (dV2 > max) dV2 = max;
                 else if (dV2 < -max) dV2 = -max;
                 Variable2 += dV2;
             }
             if ( DynamicBrakePercent > 0)
-                Variable3 = MaxDynamicBrakeForceN == 0 ? DynamicBrakePercent / 100f : Math.Abs(MotiveForceN) / MaxDynamicBrakeForceN;
+                Variable3 = MaxDynamicBrakeForceN == 0 ? DynamicBrakePercent / 100f : DynamicBrakeForceN / MaxDynamicBrakeForceN;
             else
                 Variable3 = 0;
         }
