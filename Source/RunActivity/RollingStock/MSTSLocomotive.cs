@@ -2513,10 +2513,14 @@ namespace ORTS
                         data = (EngineBrakeController == null) ? 0.0f : EngineBrakeController.CurrentValue;
                         break;
                     }
-                case CABViewControlTypes.FRICTION_BRAKING:
                 case CABViewControlTypes.TRAIN_BRAKE:
                     {
                         data = (TrainBrakeController == null) ? 0.0f : TrainBrakeController.CurrentValue;
+                        break;
+                    }
+                case CABViewControlTypes.FRICTION_BRAKING:
+                    {
+                        data = (BrakeSystem == null) ? 0.0f : BrakeSystem.GetCylPressurePSI();
                         break;
                     }
                 case CABViewControlTypes.DYNAMIC_BRAKE:

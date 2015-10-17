@@ -139,7 +139,7 @@ namespace ORTS
 
         public override float GetCylPressurePSI()
         {
-            return 0;
+            return KPa.ToPSI(KPa.FromInHg(P2V(CylPressurePSIA)));
         }
 
         public override float GetVacResPressurePSI()
