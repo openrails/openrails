@@ -98,7 +98,7 @@ namespace ORTS
         float FrictionV2; // MSTS Friction parameters
         float FrictionC2; // MSTS Friction parameters
         float FrictionE2; // MSTS Friction parameters
-        float FrictionSpeedMpS; // Train current speed value for friction calculations
+        //float FrictionSpeedMpS; // Train current speed value for friction calculations ; this value is never used outside of this class, and FrictionSpeedMpS is always = AbsSpeedMpS
         public List<MSTSCoupling> Couplers = new List<MSTSCoupling>();
         public float Adhesion1 = .27f;   // 1st MSTS adhesion value
         public float Adhesion2 = .49f;   // 2nd MSTS adhesion value
@@ -128,6 +128,7 @@ namespace ORTS
         public bool IsEngine;
         string WagonType;
         public MSTSNotchController WeightLoadController; // Used to control freight loading in freight cars
+        public float AbsWheelSpeedMpS; // Math.Abs(WheelSpeedMpS) is used frequently in the subclasses, maybe it's more efficient to compute it once
 
         /// <summary>
         /// True if vehicle is equipped with an additional emergency brake reservoir
@@ -669,7 +670,7 @@ namespace ORTS
         public override void Update(float elapsedClockSeconds)
         {
             base.Update(elapsedClockSeconds);
-
+            AbsWheelSpeedMpS = Math.Abs(WheelSpeedMpS);
             if (IsDavisFriction == true) // test to see if OR thinks that Davis Values have been entered in WG file.
             {
                 if (DavisAN == 0 || DavisBNSpM == 0 || DavisCNSSpMM == 0) // If Davis parameters are not defined in WAG file, then set falg to use default friction values
@@ -735,26 +736,24 @@ namespace ORTS
                         Friction0N *= (float)Math.Pow(.0025 * .44704, FrictionE1);
                 }
 
-                FrictionSpeedMpS = Math.Abs(SpeedMpS);
-                if (FrictionSpeedMpS > 0.1)
+                if (AbsSpeedMpS > 0.1)
                     IsStandStill = false;
-                if (FrictionSpeedMpS == 0.0)
+                if (AbsSpeedMpS == 0.0)
                     IsStandStill = true;
 
                 if (IsStandStill)
                     FrictionForceN = Friction0N;
                 else
-                    FrictionForceN = DavisAN + FrictionSpeedMpS * (DavisBNSpM + FrictionSpeedMpS * DavisCNSSpMM);
+                    FrictionForceN = DavisAN + AbsSpeedMpS * (DavisBNSpM + AbsSpeedMpS * DavisCNSSpMM);
 
             }
 
             if (IsDavisFriction)  // If set to use next Davis friction then do so
             {
                 // Davis formulas only apply above about 5mph, so different treatment required for low speed < 5mph.
-                FrictionSpeedMpS = Math.Abs(SpeedMpS);
-                if (FrictionSpeedMpS > MpS.FromMpH(5))     // if speed above 5 mph then turn off low speed calculations
+                if (AbsSpeedMpS > MpS.FromMpH(5))     // if speed above 5 mph then turn off low speed calculations
                     IsLowSpeed = false;
-                if (FrictionSpeedMpS == 0.0)
+                if (AbsSpeedMpS == 0.0)
                     IsLowSpeed = true;
 
                if (IsLowSpeed)
@@ -857,13 +856,13 @@ namespace ORTS
                     const float speed5 = 2.2352f; // 5 mph
                     Friction5N = DavisAN + speed5 * (DavisBNSpM + speed5 * DavisCNSSpMM); // Calculate friction @ 5 mph
                     Friction0N = N.FromLbf(Kg.ToTUS(MassKG) * StaticFrictionFactorLb); // Static friction is journal or roller bearing friction x factor
-                    float FrictionLowSpeedN = ((1.0f - (FrictionSpeedMpS / speed5)) * (Friction0N - Friction5N)) + Friction5N; // Calculate friction below 5mph - decreases linearly with speed
+                    float FrictionLowSpeedN = ((1.0f - (AbsSpeedMpS / speed5)) * (Friction0N - Friction5N)) + Friction5N; // Calculate friction below 5mph - decreases linearly with speed
                     FrictionForceN = FrictionLowSpeedN; // At low speed use this value
 
                 }
                 else
                 {
-                    FrictionForceN = DavisAN + FrictionSpeedMpS * (DavisBNSpM + FrictionSpeedMpS * DavisCNSSpMM); // for normal speed operation
+                    FrictionForceN = DavisAN + AbsSpeedMpS * (DavisBNSpM + AbsSpeedMpS * DavisCNSSpMM); // for normal speed operation
                 }
             }
             

@@ -1003,14 +1003,12 @@ namespace ORTS
 #endif
             // TODO  this is a wild simplification for electric and diesel electric
             float t = ThrottlePercent / 100f;
-            float currentSpeedMpS = Math.Abs(SpeedMpS);
-            float currentWheelSpeedMpS = Math.Abs(WheelSpeedMpS);
             //Only if a power is "ON" - pantograph up or diesel is running
 
             if (!this.Simulator.UseAdvancedAdhesion)
-                currentWheelSpeedMpS = currentSpeedMpS;
+                AbsWheelSpeedMpS = AbsSpeedMpS;
 
-            UpdateMotiveForce(elapsedClockSeconds, t, currentSpeedMpS, currentWheelSpeedMpS);
+            UpdateMotiveForce(elapsedClockSeconds, t, AbsSpeedMpS, AbsWheelSpeedMpS);
 
             // Steam locomotives have their MotiveForceN already pre-inverted based on Direction
             if (!(this is MSTSSteamLocomotive))
@@ -1046,7 +1044,7 @@ namespace ORTS
 
             if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null)
             {
-                float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, currentSpeedMpS);
+                float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, AbsSpeedMpS);
                 if (f > 0)
                 {
                     MotiveForceN -= (SpeedMpS > 0 ? 1 : -1) * f;
@@ -1070,7 +1068,7 @@ namespace ORTS
                     //LimitMotiveForce(elapsedClockSeconds);    //calls the advanced physics
                     LimitMotiveForce();                         //let's call the basic physics instead for now
                     if (Train.IsActualPlayerTrain) FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
-                    WheelSpeedMpS = Flipped ? -currentSpeedMpS : currentSpeedMpS;            //make the wheels go round
+                    WheelSpeedMpS = Flipped ? -AbsSpeedMpS : AbsSpeedMpS;            //make the wheels go round
                     break;
                 case Train.TRAINTYPE.STATIC:
                 case Train.TRAINTYPE.INTENDED_PLAYER:
@@ -1116,7 +1114,7 @@ namespace ORTS
             base.Update(elapsedClockSeconds);
         } // End Method Update
 
-        protected virtual void UpdateMotiveForce(float elapsedClockSeconds, float t, float currentSpeedMpS, float currentWheelSpeedMpS)
+        protected virtual void UpdateMotiveForce(float elapsedClockSeconds, float t, float AbsSpeedMpS, float AbsWheelSpeedMpS)
         {
             // Method to set force and power info
             // An alternative method in the steam locomotive will override this and input force and power info for it.
@@ -1127,19 +1125,19 @@ namespace ORTS
                     float maxForceN = MaxForceN * t;
                     float maxPowerW = MaxPowerW * t * t;
 
-                    if (maxForceN * currentWheelSpeedMpS > maxPowerW)
-                        maxForceN = maxPowerW / currentWheelSpeedMpS;
-                    //if (currentSpeedMpS > MaxSpeedMpS)
+                    if (maxForceN * AbsWheelSpeedMpS > maxPowerW)
+                        maxForceN = maxPowerW / AbsWheelSpeedMpS;
+                    //if (AbsSpeedMpS > MaxSpeedMpS)
                     //    maxForceN = 0;
-                    if (currentSpeedMpS > MaxSpeedMpS - 0.05f)
-                        maxForceN = 20 * (MaxSpeedMpS - currentSpeedMpS) * maxForceN;
-                    if (currentSpeedMpS > (MaxSpeedMpS))
+                    if (AbsSpeedMpS > MaxSpeedMpS - 0.05f)
+                        maxForceN = 20 * (MaxSpeedMpS - AbsSpeedMpS) * maxForceN;
+                    if (AbsSpeedMpS > (MaxSpeedMpS))
                         maxForceN = 0;
                     MotiveForceN = maxForceN;
                 }
                 else
                 {
-                    MotiveForceN = TractiveForceCurves.Get(t, currentWheelSpeedMpS);
+                    MotiveForceN = TractiveForceCurves.Get(t, AbsWheelSpeedMpS);
                     if (MotiveForceN < 0)
                         MotiveForceN = 0;
                 }
@@ -1235,11 +1233,10 @@ namespace ORTS
         /// </summary>
         public void LimitMotiveForce(float elapsedClockSeconds)
         {
-            float currentSpeedMpS = Math.Abs(SpeedMpS);
 
             if (NumWheelsAdhesionFactor <= 0)
             {
-                WheelSpeedMpS = currentSpeedMpS;
+                WheelSpeedMpS = AbsSpeedMpS;
                 return;
             }
 
@@ -1266,17 +1263,17 @@ namespace ORTS
                 else
                     max0 = 1.0f;
                 //add sander
-                if (Math.Abs(SpeedMpS) < SanderSpeedOfMpS)
+                if (AbsSpeedMpS < SanderSpeedOfMpS)
                 {
                     if (SanderSpeedEffectUpToMpS > 0.0f)
                     {
-                        if ((Sander) && (Math.Abs(SpeedMpS) < SanderSpeedEffectUpToMpS))
+                        if ((Sander) && (AbsSpeedMpS < SanderSpeedEffectUpToMpS))
                         {
                             switch (Program.Simulator.Weather)
                             {
-                                case WeatherType.Clear: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * Math.Abs(SpeedMpS)) * 1.2f; break;
-                                case WeatherType.Rain: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * Math.Abs(SpeedMpS)) * 1.8f; break;
-                                case WeatherType.Snow: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * Math.Abs(SpeedMpS)) * 2.5f; break;
+                                case WeatherType.Clear: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.2f; break;
+                                case WeatherType.Rain: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.8f; break;
+                                case WeatherType.Snow: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 2.5f; break;
                             }
                         }
                     }
@@ -1361,8 +1358,7 @@ namespace ORTS
             //float max0 = MassKG * 9.8f * Adhesion3 / NumWheelsAdhesionFactor;   //Not used
 
             //Curtius-Kniffler computation
-            float currentSpeedMpS = Math.Abs(SpeedMpS);
-            float uMax = 1.3f * (7.5f / (currentSpeedMpS * 3.6f + 44.0f) + 0.161f); // Curtius - Kniffler equation
+            float uMax = 1.3f * (7.5f / (AbsSpeedMpS * 3.6f + 44.0f) + 0.161f); // Curtius - Kniffler equation
             float adhesionUtil = 0.95f;   //Adhesion utilization
 
             float max0 = MassKG * 9.81f * adhesionUtil * uMax;  //Ahesion limit in [N]
@@ -1385,17 +1381,17 @@ namespace ORTS
             //float max1 = (Sander ? .95f : Adhesion2) * max0;  //Not used this way
             max1 = MaxForceN;
             //add sander
-            if (Math.Abs(SpeedMpS) < SanderSpeedOfMpS)
+            if (AbsSpeedMpS < SanderSpeedOfMpS)
             {
                 if (SanderSpeedEffectUpToMpS > 0.0f)
                 {
-                    if ((Sander) && (Math.Abs(SpeedMpS) < SanderSpeedEffectUpToMpS))
+                    if ((Sander) && (AbsSpeedMpS < SanderSpeedEffectUpToMpS))
                     {
                         switch (Program.Simulator.Weather)
                         {
-                            case WeatherType.Clear: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * Math.Abs(SpeedMpS)) * 1.2f; break;
-                            case WeatherType.Rain: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * Math.Abs(SpeedMpS)) * 1.8f; break;
-                            case WeatherType.Snow: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * Math.Abs(SpeedMpS)) * 2.5f; break;
+                            case WeatherType.Clear: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.2f; break;
+                            case WeatherType.Rain: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.8f; break;
+                            case WeatherType.Snow: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 2.5f; break;
                         }
                     }
                 }

@@ -402,11 +402,9 @@ namespace ORTS
 			// TODO  this is a wild simplification for diesel electric
             //float e = (EngineRPM - IdleRPM) / (MaxRPM - IdleRPM); //
             float t = ThrottlePercent / 100f;
-            float currentSpeedMpS = Math.Abs(SpeedMpS);
-            float currentWheelSpeedMpS = Math.Abs(WheelSpeedMpS);
 
             if (!this.Simulator.UseAdvancedAdhesion)
-                currentWheelSpeedMpS = currentSpeedMpS;
+                AbsWheelSpeedMpS = AbsSpeedMpS;
 
             foreach (DieselEngine de in DieselEngines)
             {
@@ -420,7 +418,7 @@ namespace ORTS
 
                 if ((de.EngineStatus == DieselEngine.Status.Running) && (ThrottlePercent > 0))
                 {
-                    de.OutputPowerW = (PrevMotiveForceN > 0 ? PrevMotiveForceN * currentSpeedMpS : 0) / DieselEngines.NumOfActiveEngines;
+                    de.OutputPowerW = (PrevMotiveForceN > 0 ? PrevMotiveForceN * AbsSpeedMpS : 0) / DieselEngines.NumOfActiveEngines;
                 }
                 else
                     de.OutputPowerW = 0.0f;
@@ -471,7 +469,7 @@ namespace ORTS
             {
                 if (TractiveForceCurves == null)
                 {
-                    float maxForceN = Math.Min(t * MaxForceN, currentWheelSpeedMpS == 0.0f ? ( t * MaxForceN ) : ( t * DieselEngines.MaxOutputPowerW / currentWheelSpeedMpS));
+                    float maxForceN = Math.Min(t * MaxForceN, AbsWheelSpeedMpS == 0.0f ? ( t * MaxForceN ) : ( t * DieselEngines.MaxOutputPowerW / AbsWheelSpeedMpS));
                     //float maxForceN = MaxForceN * t;
                     float maxPowerW = 0.98f * DieselEngines.MaxOutputPowerW;      //0.98 added to let the diesel engine handle the adhesion-caused jittering
 
@@ -482,14 +480,14 @@ namespace ORTS
                     else
                     {
                         
-                        if (maxForceN * currentWheelSpeedMpS > maxPowerW)
-                            maxForceN = maxPowerW / currentWheelSpeedMpS;
+                        if (maxForceN * AbsWheelSpeedMpS > maxPowerW)
+                            maxForceN = maxPowerW / AbsWheelSpeedMpS;
 
-                        //if (currentSpeedMpS > MaxSpeedMpS)
+                        //if (AbsSpeedMps > MaxSpeedMpS)
                         //    maxForceN = 0;
-                        if (currentSpeedMpS > MaxSpeedMpS - 0.05f)
-                            maxForceN = 20 * (MaxSpeedMpS - currentSpeedMpS) * maxForceN;
-                        if (currentSpeedMpS > (MaxSpeedMpS))
+                        if (AbsSpeedMpS > MaxSpeedMpS - 0.05f)
+                            maxForceN = 20 * (MaxSpeedMpS - AbsSpeedMpS) * maxForceN;
+                        if (AbsSpeedMpS > (MaxSpeedMpS))
                             maxForceN = 0;
                         MotiveForceN = maxForceN;
                     }
@@ -498,7 +496,7 @@ namespace ORTS
                 {
                     if (t > (DieselEngines.MaxOutputPowerW / DieselEngines.MaxPowerW))
                         t = (DieselEngines.MaxOutputPowerW / DieselEngines.MaxPowerW);
-                    MotiveForceN = TractiveForceCurves.Get(t, currentWheelSpeedMpS);
+                    MotiveForceN = TractiveForceCurves.Get(t, AbsWheelSpeedMpS);
                     if (MotiveForceN < 0)
                         MotiveForceN = 0;
                 }
@@ -518,7 +516,7 @@ namespace ORTS
 
             if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null)
             {
-                float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, currentWheelSpeedMpS);
+                float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, AbsWheelSpeedMpS);
                 if (f > 0)
                 {
                     MotiveForceN -= (SpeedMpS > 0 ? 1 : -1) * f;
@@ -620,7 +618,7 @@ namespace ORTS
                     //LimitMotiveForce(elapsedClockSeconds);    //calls the advanced physics
                     LimitMotiveForce();                         //let's call the basic physics instead for now
                     if (Train.IsActualPlayerTrain) FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
-                    WheelSpeedMpS = Flipped ? -currentSpeedMpS : currentSpeedMpS;            //make the wheels go round
+                    WheelSpeedMpS = Flipped ? -AbsSpeedMpS : AbsSpeedMpS;            //make the wheels go round
                     break;
                 case Train.TRAINTYPE.STATIC:
                 case Train.TRAINTYPE.INTENDED_PLAYER:

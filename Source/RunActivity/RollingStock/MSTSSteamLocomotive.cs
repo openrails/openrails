@@ -3017,7 +3017,7 @@ namespace ORTS
 
         }
 
-        protected override void UpdateMotiveForce(float elapsedClockSeconds, float t, float currentSpeedMpS, float currentWheelSpeedMpS)
+        protected override void UpdateMotiveForce(float elapsedClockSeconds, float t, float AbsSpeedMpS, float AbsWheelSpeedMpS)
         {
             // Pass force and power information to MSTSLocomotive file by overriding corresponding method there
 

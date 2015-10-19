@@ -123,6 +123,7 @@ namespace ORTS
         public float DistanceM;  // running total of distance travelled - always positive, updated by train physics
         public float _SpeedMpS; // meters per second; updated by train physics, relative to direction of car  50mph = 22MpS
         public float _PrevSpeedMpS;
+        public float AbsSpeedMpS; // Math.Abs(SpeedMps) expression is repeated many times in the subclasses, maybe this deserves a class variable
         public float CouplerSlackM;  // extra distance between cars (calculated based on relative speeds)
         public float CouplerSlack2M;  // slack calculated using draft gear force
         public bool WheelSlip;  // true if locomotive wheels slipping
@@ -147,6 +148,8 @@ namespace ORTS
                 _SpeedMpS = value;
             }
         }
+
+
 
         public float AccelerationMpSS
         { 
@@ -396,7 +399,7 @@ namespace ORTS
             // gravity force, M32 is up component of forward vector
             GravityForceN = MassKG * GravitationalAccelerationMpS2 * WorldPosition.XNAMatrix.M32;
             CurrentElevationPercent = 100f * WorldPosition.XNAMatrix.M32;
-
+            AbsSpeedMpS = Math.Abs(_SpeedMpS);
 
             //TODO: next if block has been inserted to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
             // To achieve the same result with other means, without flipping trainset physics, the block should be deleted
@@ -575,7 +578,7 @@ namespace ORTS
 
                       float UnitAerodynamicDrag = ((TunnelAComponent * TrainLengthTunnelM) / Kg.ToTonne(TrainMassTunnelKg)) * TempTunnel2;
 
-                      TunnelForceN = UnitAerodynamicDrag * Kg.ToTonne(MassKG) * Math.Abs(SpeedMpS) * Math.Abs(SpeedMpS);
+                      TunnelForceN = UnitAerodynamicDrag * Kg.ToTonne(MassKG) * AbsSpeedMpS * AbsSpeedMpS;
                   }
                   else
                   {
@@ -597,7 +600,7 @@ namespace ORTS
         /// </summary>
         public virtual void UpdateCurveSpeedLimit()
         {
-            float s = Math.Abs(SpeedMpS); // speed of train
+            float s = AbsSpeedMpS; // speed of train
             CentreOfGravityM = GetCentreofGravityM();
             TrackGaugeM = GetTrackGaugeM();
             UnbalancedSuperElevationM = GetUnbalancedSuperElevationM();
@@ -882,7 +885,7 @@ namespace ORTS
                     // Vehicle Fixed Wheel base is the distance between the wheels, ie bogie or fixed wheels
 
                     CurveForceN = MassKG * CoefficientFriction * (TrackGaugeM + RigidWheelBaseM) / (2.0f * CurrentCurveRadius);
-                    float CurveResistanceSpeedFactor = Math.Abs((MaxCurveEqualLoadSpeedMps - Math.Abs(SpeedMpS)) / MaxCurveEqualLoadSpeedMps) * StartCurveResistanceFactor;
+                    float CurveResistanceSpeedFactor = Math.Abs((MaxCurveEqualLoadSpeedMps - AbsSpeedMpS) / MaxCurveEqualLoadSpeedMps) * StartCurveResistanceFactor;
                     CurveForceN *= CurveResistanceSpeedFactor * CurveResistanceZeroSpeedFactor;
                     CurveForceN *= GravitationalAccelerationMpS2; // to convert to Newtons
               
