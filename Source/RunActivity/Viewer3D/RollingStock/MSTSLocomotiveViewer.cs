@@ -1690,7 +1690,7 @@ namespace ORTS.Viewer3D.RollingStock
                         index = PercentToIndex(data);
                     break;
                 case CABViewControlTypes.FRICTION_BRAKING:
-                    index = data > 0 ? 1 : 0;
+                    index = data > 0.001 ? 1 : 0;
                     break;
                 case CABViewControlTypes.DYNAMIC_BRAKE:
                 case CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY:
