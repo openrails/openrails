@@ -58,7 +58,8 @@ namespace Orts.Formats.Msts
         /// Constructor from file
         /// </summary>
         /// <param name="filenamewithpath">Full file name of the sigcfg.dat file</param>
-        public SignalConfigurationFile(string filenamewithpath)
+        /// <param name="ORTSMode">Read file in ORTSMode (set NumClearAhead_ORTS only)</param>
+        public SignalConfigurationFile(string filenamewithpath, bool ORTSMode)
         {
             ScriptPath = Path.GetDirectoryName(filenamewithpath);
 
@@ -66,7 +67,7 @@ namespace Orts.Formats.Msts
                 stf.ParseFile(new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("lighttextures", ()=>{ LightTextures = ReadLightTextures(stf); }),
                     new STFReader.TokenProcessor("lightstab", ()=>{ LightsTable = ReadLightsTable(stf); }),
-                    new STFReader.TokenProcessor("signaltypes", ()=>{ SignalTypes = ReadSignalTypes(stf); }),
+                    new STFReader.TokenProcessor("signaltypes", ()=>{ SignalTypes = ReadSignalTypes(stf, ORTSMode); }),
                     new STFReader.TokenProcessor("signalshapes", ()=>{ SignalShapes = ReadSignalShapes(stf); }),
                     new STFReader.TokenProcessor("scriptfiles", ()=>{ ScriptFiles = ReadScriptFiles(stf); }),
                 });
@@ -134,7 +135,7 @@ namespace Orts.Formats.Msts
             return lightsTable;
         }
 
-        private static IDictionary<string, SignalType> ReadSignalTypes(STFReader stf)
+        private static IDictionary<string, SignalType> ReadSignalTypes(STFReader stf, bool ORTSMode)
         {
             stf.MustMatch("(");
             int count = stf.ReadInt(null);
@@ -145,7 +146,7 @@ namespace Orts.Formats.Msts
                         STFException.TraceWarning(stf, "Skipped extra SignalType");
                     else
                     {
-                        SignalType signalType = new SignalType(stf);
+                        SignalType signalType = new SignalType(stf, ORTSMode);
                         if (signalTypes.ContainsKey(signalType.Name))
                             STFException.TraceWarning(stf, "Skipped duplicate SignalType " + signalType.Name);
                         else
@@ -362,7 +363,8 @@ namespace Orts.Formats.Msts
         /// Default constructor used during file parsing.
         /// </summary>
         /// <param name="stf">The STFreader containing the file stream</param>
-        public SignalType(STFReader stf)
+        /// <param name="ORTSMode">Process SignalType for ORTS mode (always set NumClearAhead_ORTS only)</param>
+        public SignalType(STFReader stf, bool ORTSMode)
             :this()
         {
             stf.MustMatch("(");
@@ -398,8 +400,18 @@ namespace Orts.Formats.Msts
                 }),
             });
 
-            NumClearAhead_MSTS = numdefs == 1 ? numClearAhead : -2;
-            NumClearAhead_ORTS = numdefs == 2 ? numClearAhead : -2;
+            if (ORTSMode)
+            {
+                // In ORTS mode : always set value for NumClearAhead_ORTS
+                NumClearAhead_MSTS = -2;
+                NumClearAhead_ORTS = numClearAhead;
+            }
+            else
+            {
+                // In MSTS mode : if one line for SignalNumClearAhead defined, set value for NumClearAhead_MSTS, otherwise set value for NumClearAhead_ORTS
+                NumClearAhead_MSTS = numdefs == 1 ? numClearAhead : -2;
+                NumClearAhead_ORTS = numdefs == 2 ? numClearAhead : -2;
+            }
         }
 
         static FnTypes ReadFnType(STFReader stf)

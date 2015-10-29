@@ -334,16 +334,6 @@ namespace ORTS
 
         //================================================================================================//
         /// <summary>
-        /// Clone
-        /// <\summary>
-
-        public AITrain AICopyTrain()
-        {
-            return ((AITrain)this.MemberwiseClone());
-        }
-
-        //================================================================================================//
-        /// <summary>
         /// Post Init (override from Train)
         /// perform all actions required to start
         /// </summary>

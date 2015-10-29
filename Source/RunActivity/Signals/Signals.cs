@@ -12165,6 +12165,22 @@ namespace ORTS
                 DeadlockPathInfo existPathInfo = AvailablePathList[iIndex];
                 if (thisPath.EqualsPath(existPathInfo.Path))
                 {
+                    // check if path referenced from correct start position, else add reference
+                    if (PathReferences.ContainsKey(startSectionIndex))
+                    {
+                        if (!PathReferences[startSectionIndex].Contains(iIndex))
+                        {
+                            PathReferences[startSectionIndex].Add(iIndex);
+                        }
+                    }
+                    else
+                    {
+                        List<int> refSectionPaths = new List<int>();
+                        refSectionPaths.Add(iIndex);
+                        PathReferences.Add(startSectionIndex, refSectionPaths);
+                    }
+
+                    // return path
                     return (new int[2] { iIndex, 1 });
                 }
             }
@@ -12246,6 +12262,23 @@ namespace ORTS
 
                         if (!groupfound) existPathInfo.Groups.Add(String.Copy(thisGroupName));
                     }
+
+                    // check if path referenced from correct start position, else add reference
+                    if (PathReferences.ContainsKey(startSectionIndex))
+                    {
+                        if (!PathReferences[startSectionIndex].Contains(iIndex))
+                        {
+                            PathReferences[startSectionIndex].Add(iIndex);
+                        }
+                    }
+                    else
+                    {
+                        List<int> refSectionPaths = new List<int>();
+                        refSectionPaths.Add(iIndex);
+                        PathReferences.Add(startSectionIndex, refSectionPaths);
+                    }
+
+                    // return path
                     return (new int[2] { iIndex, 1 });
                 }
             }

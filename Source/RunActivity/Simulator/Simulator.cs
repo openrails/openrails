@@ -175,12 +175,12 @@ namespace ORTS
             if (File.Exists(ORfilepath + @"\sigcfg.dat"))
             {
                 Trace.Write(" SIGCFG_OR");
-                SIGCFG = new SignalConfigurationFile(ORfilepath + @"\sigcfg.dat");
+                SIGCFG = new SignalConfigurationFile(ORfilepath + @"\sigcfg.dat", true);
             }
             else
             {
                 Trace.Write(" SIGCFG");
-                SIGCFG = new SignalConfigurationFile(RoutePath + @"\sigcfg.dat");
+                SIGCFG = new SignalConfigurationFile(RoutePath + @"\sigcfg.dat", false);
             }
 
             Trace.Write(" DAT");
@@ -1215,7 +1215,7 @@ namespace ORTS
             if (AutoGenDictionary.ContainsKey(reqNumber))
             {
                 AITrain tempTrain = AutoGenDictionary[reqNumber];
-                returnTrain = tempTrain.AICopyTrain() as TTTrain;
+                returnTrain = tempTrain as TTTrain;
                 returnTrain.AI.AutoGenTrains.Remove(tempTrain);
                 AutoGenDictionary.Remove(reqNumber);
                 returnTrain.routedBackward = new Train.TrainRouted(returnTrain, 1);

@@ -37,7 +37,18 @@ namespace Orts.Formats.OR
             TRK = new RouteFile(MSTS.MSTSPath.GetTRKFileName(RoutePath));
             string routePath = Path.Combine(Route, TRK.Tr_RouteFile.FileName);
             TDB = new TrackDatabaseFile(RoutePath + @"\" + TRK.Tr_RouteFile.FileName + ".tdb");
-            SIGCFG = new SignalConfigurationFile(RoutePath + @"\sigcfg.dat");
+
+            string ORfilepath = System.IO.Path.Combine(RoutePath, "OpenRails");
+
+            if (File.Exists(ORfilepath + @"\sigcfg.dat"))
+            {
+                SIGCFG = new SignalConfigurationFile(ORfilepath + @"\sigcfg.dat", true);
+            }
+            else
+            {
+                SIGCFG = new SignalConfigurationFile(RoutePath + @"\sigcfg.dat", false);
+            }
+
             if (Directory.Exists(MstsPath + @"\GLOBAL") && File.Exists(MstsPath + @"\GLOBAL\TSECTION.DAT"))
                 TSectionDat = new TrackSectionsFile(MstsPath + @"\GLOBAL\TSECTION.DAT");
             else

@@ -246,12 +246,12 @@ namespace ORTS.Viewer3D
             if (File.Exists(ORfilepath + @"\sigcfg.dat"))
             {
                 Trace.Write(" SIGCFG_OR");
-                SIGCFG = new SignalConfigurationFile(ORfilepath + @"\sigcfg.dat");
+                SIGCFG = new SignalConfigurationFile(ORfilepath + @"\sigcfg.dat", true);
             }
             else
             {
                 Trace.Write(" SIGCFG");
-                SIGCFG = new SignalConfigurationFile(Simulator.RoutePath + @"\sigcfg.dat");
+                SIGCFG = new SignalConfigurationFile(Simulator.RoutePath + @"\sigcfg.dat", false);
             }
 
             Trace.Write(" TTYPE");

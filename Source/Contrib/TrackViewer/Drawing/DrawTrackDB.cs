@@ -89,11 +89,11 @@ namespace ORTS.TrackViewer.Drawing
             string ORfilepath = System.IO.Path.Combine(routePath, "OpenRails");
             if (File.Exists(ORfilepath + @"\sigcfg.dat"))
             {
-                SigcfgFile = new SignalConfigurationFile(ORfilepath + @"\sigcfg.dat");
+                SigcfgFile = new SignalConfigurationFile(ORfilepath + @"\sigcfg.dat", true);
             }
             else if (File.Exists(routePath + @"\sigcfg.dat"))
             {
-                SigcfgFile = new SignalConfigurationFile(routePath + @"\sigcfg.dat");
+                SigcfgFile = new SignalConfigurationFile(routePath + @"\sigcfg.dat", false);
             }
             else
             {
