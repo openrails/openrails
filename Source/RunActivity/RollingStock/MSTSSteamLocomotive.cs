@@ -1443,7 +1443,8 @@ namespace ORTS
             SmokeColor.Update(elapsedClockSeconds, MathHelper.Clamp((RadiationSteamLossLBpS + CalculatedCarHeaterSteamUsageLBpS + BlowerBurnEffect + DamperBurnEffect) / PreviousTotalSteamUsageLBpS - 0.2f, 0.25f, 1));
 
             // Variable1 is proportional to angular speed, value of 10 means 1 rotation/second.
-            Variable1 = (Simulator.UseAdvancedAdhesion && Train.IsPlayerDriven ? LocomotiveAxle.AxleSpeedMpS : SpeedMpS) / DriverWheelRadiusM / MathHelper.Pi * 5;
+            var variable1 = (Simulator.UseAdvancedAdhesion && Train.IsPlayerDriven ? LocomotiveAxle.AxleSpeedMpS : SpeedMpS) / DriverWheelRadiusM / MathHelper.Pi * 5;
+            Variable1 = ThrottlePercent == 0 ? 0 : variable1;
             Variable2 = MathHelper.Clamp((CylinderPressureAtmPSI - OneAtmospherePSI) / BoilerPressurePSI * 100f, 0, 100);
             Variable3 = FuelRateSmooth * 100;
 
