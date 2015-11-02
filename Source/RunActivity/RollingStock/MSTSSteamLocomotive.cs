@@ -3640,7 +3640,7 @@ namespace ORTS
  
             // TO DO - Add test to see if cars are coupled, if Light Engine, disable steam heating.
 
-            if (IsSteamHeatFitted)  // Only Update steam heating if locomotive fitted with steam heating
+            if (IsSteamHeatFitted && Train.TrainFittedSteamHeat)  // Only Update steam heating if train and locomotive fitted with steam heating, and is a passenger train
             {
 
                 if (IsSteamHeatFirstTime)
@@ -4092,7 +4092,7 @@ namespace ORTS
                 CylinderSpeedCondensationFactor);
 #endif
 
-            if (IsSteamHeatFitted)
+            if (IsSteamHeatFitted && Train.TrainFittedSteamHeat)  // Only show steam heating HUD if fitted to locomotive and the train
             {
                 // Display Steam Heat info
              status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}/{9}\t{10}\t{11:N0}\n",

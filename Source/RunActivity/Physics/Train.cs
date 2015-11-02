@@ -130,6 +130,7 @@ namespace ORTS
         public float TrainSteamHeatLossWpT;             // Total Steam Heat loss of train
         public float TrainHeatVolumeM3;                 // Total Volume of train to steam heat
         public float TrainHeatPipeAreaM2;               // Total area of heating pipe for steam heating
+        public bool TrainFittedSteamHeat =false;               // Flag to determine train fitted with steam heating
 
         //To investigate coupler breaks on route
         public int NumOfCouplerBreaks = 0;
@@ -1560,9 +1561,16 @@ namespace ORTS
         TrainHeatVolumeM3 += Cars[i].CarHeatVolumeM3;
         }
 
+        // Cehck to confirm that train is player driven and has passenger cars in the consist.
+        if (IsPlayerDriven && PassengerCarsNumber > 0)
+        {
+            TrainFittedSteamHeat = true;  // Use flag to turn functionon and off in Steam Locomotive Module
+        }
+
 #if DEBUG_CARSTEAMHEAT
 
         Trace.TraceInformation("***************************************** DEBUG_CARHEAT (Train.cs) ***************************************************************");
+        Trace.TraceInformation("Steam Heating Fitted {0} Player Driven {1} Passenger Cars {2}", TrainFittedSteamHeat, IsPlayerDriven, PassengerCarsNumber);       
         Trace.TraceInformation("Inside Temp {0} Outside Temp {1}", TrainInsideTempC, TrainOutsideTempC); 
         Trace.TraceInformation("Train heat loss {0} Train heat pipe area {1} Train heat volume {2}", TrainSteamHeatLossWpT, TrainHeatPipeAreaM2, TrainHeatVolumeM3);        
 
