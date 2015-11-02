@@ -295,8 +295,75 @@ namespace ORTS
                 }
             }
 
+            TrainBrakeController.Update(elapsedClockSeconds);
+            if( TrainBrakeController.UpdateValue > 0.0 ) {
+                Simulator.Confirmer.Update(CabControl.TrainBrake, CabSetting.Increase, GetTrainBrakeStatus());
+            }
+            if( TrainBrakeController.UpdateValue < 0.0 ) {
+                Simulator.Confirmer.Update(CabControl.TrainBrake, CabSetting.Decrease, GetTrainBrakeStatus());
+            }
+
+            if( EngineBrakeController != null ) {
+                EngineBrakeController.Update( elapsedClockSeconds );
+                if( EngineBrakeController.UpdateValue > 0.0 ) {
+                    Simulator.Confirmer.Update(CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus());
+                }
+                if( EngineBrakeController.UpdateValue < 0.0 ) {
+                    Simulator.Confirmer.Update(CabControl.EngineBrake, CabSetting.Decrease, GetEngineBrakeStatus());
+                }
+            }
+
+            if (DynamicBrakeController != null && (DynamicBrakePercent >= 0 || IsLeadLocomotive() && DynamicBrakeIntervention >= 0))
+            {
+                if (!DynamicBrake)
+                {
+                    if (DynamicBrakeController.CommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)
+                    {
+                        DynamicBrake = true; // Engage
+                        if (IsLeadLocomotive())
+                            Simulator.Confirmer.ConfirmWithPerCent(CabControl.DynamicBrake, DynamicBrakeController.CurrentValue * 100);
+                    }
+                    else if (IsLeadLocomotive())
+                        Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.On); // Keeping status string on screen so user knows what's happening
+                }
+                else if (this.IsLeadLocomotive())
+                {
+                    DynamicBrakeController.Update(elapsedClockSeconds);
+                    DynamicBrakePercent = (DynamicBrakeIntervention < 0 ? DynamicBrakeController.CurrentValue : DynamicBrakeIntervention) * 100.0f;
+
+                    if (DynamicBrakeIntervention < 0 && PreviousDynamicBrakeIntervention >= 0 && DynamicBrakePercent == 0)
+                        DynamicBrakePercent = -1;
+                    PreviousDynamicBrakeIntervention = DynamicBrakeIntervention;
+                }
+                else
+                    DynamicBrakeController.Update(elapsedClockSeconds);
+            }
+            else if (DynamicBrakeController != null && DynamicBrakePercent < 0 && (DynamicBrakeIntervention < 0 || !IsLeadLocomotive()) && DynamicBrake)
+            {
+                // <CScomment> accordingly to shown documentation dynamic brake delay is required only when engaging
+                //            if (DynamicBrakeController.CommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)
+                //             {
+                DynamicBrake = false; // Disengage
+                if (IsLeadLocomotive())
+                    Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.Off);
+                //           }
+                //           else if (IsLeadLocomotive())
+                //               Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.On); // Keeping status string on screen so user knows what's happening
+            }
+
+
+
+
+            //Currently the ThrottlePercent is global to the entire train
+            //So only the lead locomotive updates it, the others only updates the controller (actually useless)
             if (this.IsLeadLocomotive() || (!AcceptMUSignals))
             {
+                var throttleCurrentNotch = ThrottleController.CurrentNotch;
+                ThrottleController.Update(elapsedClockSeconds);
+                if (ThrottleController.CurrentNotch < throttleCurrentNotch && ThrottleController.ToZero)
+                    SignalEvent(Event.ThrottleChange);
+                ThrottlePercent = (ThrottleIntervention < 0 ? ThrottleController.CurrentValue : ThrottleIntervention) * 100.0f;
+
                 if (GearBoxController != null)
                 {
                     GearboxGearIndex = (int)GearBoxController.Update(elapsedClockSeconds);
@@ -304,13 +371,40 @@ namespace ORTS
             }
             else
             {
+                ThrottleController.Update(elapsedClockSeconds);
                 if (GearBoxController != null)
                 {
                     GearBoxController.Update(elapsedClockSeconds);
                 }
             }
+            LocalThrottlePercent = ThrottlePercent;
 
-            float throttleNum = ThrottlePercent / 100f;
+#if INDIVIDUAL_CONTROL
+			//this train is remote controlled, with mine as a helper, so I need to send the controlling information, but not the force.
+			if (MultiPlayer.MPManager.IsMultiPlayer() && this.Train.TrainType == Train.TRAINTYPE.REMOTE && this == Program.Simulator.PlayerLocomotive)
+			{
+				//cannot control train brake as it is the remote's job to do so
+				if ((EngineBrakeController != null && EngineBrakeController.UpdateValue != 0.0) || (DynamicBrakeController != null && DynamicBrakeController.UpdateValue != 0.0) || ThrottleController.UpdateValue != 0.0)
+				{
+					controlUpdated = true;
+				}
+				ThrottlePercent = ThrottleController.Update(elapsedClockSeconds) * 100.0f;
+				return; //done, will go back and send the message to the remote train controller
+			}
+
+			if (MultiPlayer.MPManager.IsMultiPlayer() && this.notificationReceived == true)
+			{
+				ThrottlePercent = ThrottleController.CurrentValue * 100.0f;
+				this.notificationReceived = false;
+			}
+#endif
+			
+			// TODO  this is a wild simplification for diesel electric
+            //float e = (EngineRPM - IdleRPM) / (MaxRPM - IdleRPM); //
+            float t = ThrottlePercent / 100f;
+
+            if (!this.Simulator.UseAdvancedAdhesion)
+                AbsWheelSpeedMpS = AbsSpeedMpS;
 
             foreach (DieselEngine de in DieselEngines)
             {
@@ -375,7 +469,7 @@ namespace ORTS
             {
                 if (TractiveForceCurves == null)
                 {
-                    float maxForceN = Math.Min(throttleNum * MaxForceN, AbsWheelSpeedMpS == 0.0f ? ( throttleNum * MaxForceN ) : ( throttleNum * DieselEngines.MaxOutputPowerW / AbsWheelSpeedMpS));
+                    float maxForceN = Math.Min(t * MaxForceN, AbsWheelSpeedMpS == 0.0f ? ( t * MaxForceN ) : ( t * DieselEngines.MaxOutputPowerW / AbsWheelSpeedMpS));
                     //float maxForceN = MaxForceN * t;
                     float maxPowerW = 0.98f * DieselEngines.MaxOutputPowerW;      //0.98 added to let the diesel engine handle the adhesion-caused jittering
 
@@ -389,7 +483,7 @@ namespace ORTS
                         if (maxForceN * AbsWheelSpeedMpS > maxPowerW)
                             maxForceN = maxPowerW / AbsWheelSpeedMpS;
 
-                        //if (AbsSpeedMpS > MaxSpeedMpS)
+                        //if (AbsSpeedMps > MaxSpeedMpS)
                         //    maxForceN = 0;
                         if (AbsSpeedMpS > MaxSpeedMpS - 0.05f)
                             maxForceN = 20 * (MaxSpeedMpS - AbsSpeedMpS) * maxForceN;
@@ -400,9 +494,9 @@ namespace ORTS
                 }
                 else
                 {
-                    if (throttleNum > (DieselEngines.MaxOutputPowerW / DieselEngines.MaxPowerW))
-                        throttleNum = (DieselEngines.MaxOutputPowerW / DieselEngines.MaxPowerW);
-                    MotiveForceN = TractiveForceCurves.Get(throttleNum, AbsWheelSpeedMpS);
+                    if (t > (DieselEngines.MaxOutputPowerW / DieselEngines.MaxPowerW))
+                        t = (DieselEngines.MaxOutputPowerW / DieselEngines.MaxPowerW);
+                    MotiveForceN = TractiveForceCurves.Get(t, AbsWheelSpeedMpS);
                     if (MotiveForceN < 0)
                         MotiveForceN = 0;
                 }
@@ -420,17 +514,154 @@ namespace ORTS
                 MassKG = InitialMassKg - MaxDieselLevelL * DieselWeightKgpL + DieselLevelL * DieselWeightKgpL;
             }
 
+            if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null)
+            {
+                float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, AbsWheelSpeedMpS);
+                if (f > 0)
+                {
+                    MotiveForceN -= (SpeedMpS > 0 ? 1 : -1) * f;
+                    switch (Direction)
+                    {
+                        case Direction.Forward:
+                            //MotiveForceN *= 1;     //Not necessary
+                            break;
+                        case Direction.Reverse:
+                            MotiveForceN *= -1;
+                            break;
+                        case Direction.N:
+                        default:
+                            MotiveForceN *= 0;
+                            break;
+                    }
+                }
+                //if (Flipped)
+                //    MotiveForceN *= -1f;
+            }
 
-            if (!Train.IsPlayerDriven)
+            if (MaxForceN > 0 && MaxContinuousForceN > 0)
+            {
+                MotiveForceN *= 1 - (MaxForceN - MaxContinuousForceN) / (MaxForceN * MaxContinuousForceN) * AverageForceN;
+                float w = (ContinuousForceTimeFactor - elapsedClockSeconds) / ContinuousForceTimeFactor;
+                if (w < 0)
+                    w = 0;
+                AverageForceN = w * AverageForceN + (1 - w) * MotiveForceN;
+            }
+
+            if (Train.IsPlayerDriven)
+            {
+                if (this.IsLeadLocomotive())
+                {
+                    switch (Direction)
+                    {
+                        case Direction.Forward:
+                            //MotiveForceN *= 1;     //Not necessary
+                            break;
+                        case Direction.Reverse:
+                            MotiveForceN *= -1;
+                            break;
+                        case Direction.N:
+                        default:
+                            MotiveForceN *= 0;
+                            break;
+                    }
+                    ConfirmWheelslip( elapsedClockSeconds );
+                }
+                else
+                {
+                    // When not LeadLocomotive; check if lead is in Neutral
+                    // if so this loco will have no motive force
+
+                    var LeadLocomotive = Simulator.PlayerLocomotive;
+
+                    if (LeadLocomotive == null) { }
+                    else if (LeadLocomotive.Direction == Direction.N)
+                        MotiveForceN *= 0;
+                    else
+                    {
+                        switch (Direction)
+                        {
+                            case Direction.Forward:
+                                MotiveForceN *= 1;     //Not necessary
+                                break;
+                            case Direction.Reverse:
+                                MotiveForceN *= -1;
+                                break;
+                            case Direction.N:
+                            default:
+                                MotiveForceN *= 0;
+                                break;
+                        }
+                    }
+                } // end when not lead loco
+            }// end player locomotive
+
+            else // for AI locomotives
             {
                 foreach (DieselEngine de in DieselEngines)
                     de.Start();
-            }
+                switch (Direction)
+                {
+                    case Direction.Reverse:
+                        MotiveForceN *= -1;
+                        break;
+                    default:
+                        break;
+                }
+            }// end AI locomotive
 
+            switch (this.Train.TrainType)
+            {
+                case Train.TRAINTYPE.AI:
+                case Train.TRAINTYPE.AI_PLAYERHOSTING:
+                    if (!PowerOn)
+                        PowerOn = true;
+                    //LimitMotiveForce(elapsedClockSeconds);    //calls the advanced physics
+                    LimitMotiveForce();                         //let's call the basic physics instead for now
+                    if (Train.IsActualPlayerTrain) FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
+                    WheelSpeedMpS = Flipped ? -AbsSpeedMpS : AbsSpeedMpS;            //make the wheels go round
+                    break;
+                case Train.TRAINTYPE.STATIC:
+                case Train.TRAINTYPE.INTENDED_PLAYER:
+                    break;
+                case Train.TRAINTYPE.PLAYER:
+                case Train.TRAINTYPE.AI_PLAYERDRIVEN:
+                case Train.TRAINTYPE.REMOTE:
+                    // For notched throttle controls (e.g. Dash 9 found on Marias Pass) UpdateValue is always 0.0
+                    if (ThrottleController.UpdateValue != 0.0)
+                    {
+                        Simulator.Confirmer.UpdateWithPerCent(
+                            CabControl.Throttle,
+                            ThrottleController.UpdateValue > 0 ? CabSetting.Increase : CabSetting.Decrease,
+                            ThrottleController.CurrentValue * 100);
+                    }
+                    if (DynamicBrakeController != null && DynamicBrakeController.UpdateValue != 0.0)
+                    {
+                        Simulator.Confirmer.UpdateWithPerCent(
+                            CabControl.DynamicBrake,
+                            DynamicBrakeController.UpdateValue > 0 ? CabSetting.Increase : CabSetting.Decrease,
+                            DynamicBrakeController.CurrentValue * 100);
+                    }
+
+                    //Force is filtered due to inductance
+                    if (elapsedClockSeconds > 0)
+                    {
+                        FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
+                        MotiveForceN = FilteredMotiveForceN;
+                    }
+
+                    LimitMotiveForce(elapsedClockSeconds);
+
+                    if (WheelslipCausesThrottleDown && WheelSlip)
+                        ThrottleController.SetValue(0.0f);
+                    break;
+                default:
+                    break;
+
+            }
 
             EngineRPMRatio = (DieselEngines[0].RealRPM - DieselEngines[0].IdleRPM) / (DieselEngines[0].MaxRPM - DieselEngines[0].IdleRPM);
 
-            Variable1 = ThrottlePercent / 100.0f;
+            Variable1 = ThrottlePercent / 100.0f; 
             // else Variable1 = MotiveForceN / MaxForceN; // Gearbased, Variable1 proportional to motive force
             // allows for motor volume proportional to effort.
 
@@ -446,7 +677,12 @@ namespace ORTS
             EngineRPM = Variable2 * (MaxRPM - IdleRPM) + IdleRPM;
 
             if (DynamicBrakePercent > 0)
-                Variable3 = MaxDynamicBrakeForceN == 0 ? DynamicBrakePercent / 100f : DynamicBrakeForceN / MaxDynamicBrakeForceN;
+            {
+                if (MaxDynamicBrakeForceN == 0)
+                    Variable3 = DynamicBrakePercent / 100f;
+                else
+                    Variable3 = Math.Abs(MotiveForceN) / MaxDynamicBrakeForceN;
+            }
             else
                 Variable3 = 0;
 
@@ -456,6 +692,12 @@ namespace ORTS
                 EngineRPMold = EngineRPM;
             }
 
+            if (MainResPressurePSI < CompressorRestartPressurePSI && AuxPowerOn && !CompressorIsOn)
+                SignalEvent(Event.CompressorOn);
+            else if ((MainResPressurePSI > MaxMainResPressurePSI || !AuxPowerOn) && CompressorIsOn)
+                SignalEvent(Event.CompressorOff);
+            if (CompressorIsOn)
+                MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
             
             if (Train.IsPlayerDriven && this.IsLeadLocomotive())
                 TrainControlSystem.Update();
@@ -463,7 +705,9 @@ namespace ORTS
             FuelController.Update(elapsedClockSeconds);
             if (FuelController.UpdateValue > 0.0)
                 Simulator.Confirmer.UpdateWithPerCent(CabControl.DieselFuel, CabSetting.Increase, FuelController.CurrentValue * 100);
-            base.Update(elapsedClockSeconds); // Calls the Update() method in the parent class MSTSLocomotive which calls Update() on its parent MSTSWagon which calls ...
+
+            PrevMotiveForceN = MotiveForceN;
+            base.UpdateParent(elapsedClockSeconds); // Calls the Update() method in the parent class MSTSLocomotive which calls Update() on its parent MSTSWagon which calls ...
         }
 
         public override void ChangeGearUp()
