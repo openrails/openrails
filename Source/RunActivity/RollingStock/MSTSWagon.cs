@@ -869,7 +869,7 @@ namespace ORTS
 
             foreach (MSTSCoupling coupler in Couplers)
             {
-                if (-CouplerForceU > coupler.Break1N)
+                if (-CouplerForceU > coupler.Break1N || IsCriticalSpeed == true)  // break couplers if forces exceeded onm coupler or train has "overturned" on curve
                 {
                     CouplerOverloaded = true;
                 }

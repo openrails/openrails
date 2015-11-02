@@ -269,7 +269,7 @@ namespace ORTS
         float UnbalancedSuperElevationM;  // Unbalanced superelevation, read from MSTS Wagon File
         float SuperElevationTotalM; // Total superelevation
         bool IsMaxSafeCurveSpeed = false; // Has equal loading speed around the curve been exceeded, ie are all the wheesl still on the track?
-        bool IsCriticalSpeed = true; // Has the critical speed around the curve been reached, is is the wagon about to overturn?
+        public bool IsCriticalSpeed = true; // Has the critical speed around the curve been reached, is is the wagon about to overturn?
         float MaxCurveEqualLoadSpeedMps; // Max speed that rolling stock can do whist maintaining equal load on track
         float StartCurveResistanceFactor = 2.0f; // Set curve friction at Start = 200%
         float RouteSpeedMpS; // Max Route Speed Limit
@@ -679,7 +679,7 @@ namespace ORTS
 
                   if (CurveSpeedDependent)
                   {
-                  
+                      float MaxDurableSafeCurveSpeedMpS = MaxSafeCurveSpeedMps * Simulator.CurveDurability;  // Finds user setting for durability
                     // Test current speed to see if greater then "safe" speed around the curve
                     if (s > MaxSafeCurveSpeedMps)
                     {
@@ -691,15 +691,21 @@ namespace ORTS
                                 {
                                     if (Train.IsFreight)
                                         {
-                                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("You are travelling too fast for this curve. Slow down, your freight may be damaged and your train may derail."));
+                                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("You are travelling too fast for this curve. Slow down, your freight may be damaged and your train may break a coupling or airhose."));
                                         }
                                     else
                                         {
-                                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("You are travelling too fast for this curve. Slow down, your passengers are feeling uncomfortable and your train may derail."));
+                                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("You are travelling too fast for this curve. Slow down, your passengers are feeling uncomfortable and your train may break a coupling or airhose."));
                                         }
                                 }
                           
                         }
+
+                        if (IsMaxSafeCurveSpeed && s > MaxDurableSafeCurveSpeedMpS)
+                          {
+                              BrakeSystem.FrontBrakeHoseConnected = false; // break the brake hose connection between cars if the speed is too fast
+                              Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("You were travelling too fast for this curve, and have snapped a brake hose. You will need to repair the hose and restart."));   
+                          }
 
                     }
                     else
@@ -729,7 +735,7 @@ namespace ORTS
                             
                             if (Train.IsPlayerDriven)
                             {
-                              Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Your train has overturned."));
+                                Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Your train has overturned, and this is simulated by a broken coupler."));
                             }
                         }
  

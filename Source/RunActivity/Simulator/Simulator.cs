@@ -91,6 +91,8 @@ namespace ORTS
         public Dictionary<int, AITrain> AutoGenDictionary = new Dictionary<int, AITrain>();
         public List<int> StartReference = new List<int>();
 
+        public float CurveDurability;  // Sets the durability due to curve speeds in TrainCars - read from consist file.
+
         public Signals Signals;
         public AI AI;
         public RailDriverHandler RailDriver;
@@ -863,6 +865,7 @@ namespace ORTS
             train.RearTDBTraveller = new Traveller(TSectionDat, TDB.TrackDB.TrackNodes, aiPath);
 
             ConsistFile conFile = new ConsistFile(conFileName);
+            CurveDurability = conFile.Train.TrainCfg.Durability;   // Finds curve durability of consist based upon the value in consist file
 
             // add wagons
             foreach (Wagon wagon in conFile.Train.TrainCfg.WagonList)

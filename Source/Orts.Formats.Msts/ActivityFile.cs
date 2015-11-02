@@ -1014,7 +1014,7 @@ namespace Orts.Formats.Msts
         int Serial = 1;
         public MaxVelocity MaxVelocity;
         int NextWagonUID;
-        float Durability = 1.0f;   // Value assumed if attribute not found.
+        public float Durability = 1.0f;   // Value assumed if attribute not found.
 
         public List<Wagon> WagonList = new List<Wagon>();
 
