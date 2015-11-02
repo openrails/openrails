@@ -828,26 +828,27 @@ namespace Orts.Formats.Msts
                     else
                     {
                         // Check if read Values at all
-                        if (Values.Count > 0)
+                        if (Values.Count > 0 && Values[0] <= Values[Values.Count-1])
                             // Set Min for sure
                             Values[0] = MinValue;
-                        else
+                        else if (Values.Count == 0)
                             Values.Add(MinValue);
 
                         // Fill empty Values
                         for (int i = Values.Count; i < FramesCount; i++)
-                            Values.Add(0);
+                            Values.Add(Values[Values.Count-1]);
 
                         // Add the maximums to the end, the Value will be removed
                         // We use Positions only here
-                        Values.Add(MaxValue);
+                        if (Values.Count > 0 && Values[0] <= Values[Values.Count - 1]) Values.Add(MaxValue);
+                        else if (Values.Count > 0 && Values[0] > Values[Values.Count - 1]) Values.Add(MinValue);
                         Positions.Add(FramesCount);
                     }
 
                     // OK, we have a valid size of Positions and Values
 
                     // Now it is the time for checking holes in the given data
-                    if (Positions.Count < FramesCount - 1)
+                    if (Positions.Count < FramesCount - 1 && Values[0] <= Values[Values.Count - 1])
                     {
                         int j = 1;
                         int p = 0;

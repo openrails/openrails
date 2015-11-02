@@ -1712,9 +1712,9 @@ namespace ORTS.Viewer3D.RollingStock
                 case CABViewControlTypes.CP_HANDLE:
                     if (Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleDynamic && Locomotive.DynamicBrakePercent >= 0
                         || Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleAir && Locomotive.TrainBrakeController.CurrentValue > 0)
-                        index = (int)((ControlDiscrete.FramesCount) * Locomotive.GetCombinedHandleValue(false));
+                        index = PercentToIndex(Locomotive.GetCombinedHandleValue(false));
                     else
-                        index = (int)((ControlDiscrete.FramesCount - 1) * Locomotive.GetCombinedHandleValue(false));
+                        index = PercentToIndex(Locomotive.GetCombinedHandleValue(false));
                     break;
                 case CABViewControlTypes.ALERTER_DISPLAY:
                 case CABViewControlTypes.RESET:
@@ -1829,13 +1829,15 @@ namespace ORTS.Viewer3D.RollingStock
             if (percent > 1)
                 percent /= 100f;
 
-            percent = MathHelper.Clamp(percent, (float)ControlDiscrete.MinValue, (float)ControlDiscrete.MaxValue);
+            if (ControlDiscrete.MinValue != ControlDiscrete.MaxValue && !(ControlDiscrete.MinValue == 0 && ControlDiscrete.MaxValue == 0))
+                percent = MathHelper.Clamp(percent, (float)ControlDiscrete.MinValue, (float)ControlDiscrete.MaxValue);
 
             if (ControlDiscrete.Values.Count > 1)
             {
                 try
                 {
-                    var val = ControlDiscrete.Values.Where(v => (float)v <= percent).Last();
+                    var val = ControlDiscrete.Values[0] <= ControlDiscrete.Values[ControlDiscrete.Values.Count-1] ?
+                        ControlDiscrete.Values.Where(v => (float)v <= percent).Last() : ControlDiscrete.Values.Where(v => (float)v <= percent).First();
                     index = ControlDiscrete.Values.IndexOf(val);
                 }
                 catch
