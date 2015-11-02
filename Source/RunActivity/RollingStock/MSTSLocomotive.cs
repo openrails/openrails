@@ -1002,13 +1002,13 @@ namespace ORTS
 			}
 #endif
             // TODO  this is a wild simplification for electric and diesel electric
-            float t = ThrottlePercent / 100f;
+            float throttleNum = ThrottlePercent / 100f;
             //Only if a power is "ON" - pantograph up or diesel is running
 
             if (!this.Simulator.UseAdvancedAdhesion)
                 AbsWheelSpeedMpS = AbsSpeedMpS;
 
-            UpdateMotiveForce(elapsedClockSeconds, t, AbsSpeedMpS, AbsWheelSpeedMpS);
+            UpdateMotiveForce(elapsedClockSeconds, throttleNum, AbsSpeedMpS, AbsWheelSpeedMpS);
 
             // Steam locomotives have their MotiveForceN already pre-inverted based on Direction
             if (!(this is MSTSSteamLocomotive))
@@ -1064,6 +1064,7 @@ namespace ORTS
                     if (!PowerOn)
                     {
                         Train.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
+                        PowerOn = true;
                     }
                     //LimitMotiveForce(elapsedClockSeconds);    //calls the advanced physics
                     LimitMotiveForce();                         //let's call the basic physics instead for now
