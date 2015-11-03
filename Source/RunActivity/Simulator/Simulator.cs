@@ -1391,9 +1391,14 @@ namespace ORTS
             }
             else train2.TrainType = Train.TRAINTYPE.STATIC;
             train2.LeadLocomotive = null;
-            train2.Cars[0].BrakeSystem.PropagateBrakePressure(5);
-            foreach (MSTSWagon wagon in train2.Cars)
-                wagon.MSTSBrakeSystem.Update(5);
+            if ((train.TrainType == Train.TRAINTYPE.AI || train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING) && train2.TrainType == Train.TRAINTYPE.STATIC)
+                train2.InitializeBrakes();
+            else
+            {
+                train2.Cars[0].BrakeSystem.PropagateBrakePressure(5);
+                foreach (MSTSWagon wagon in train2.Cars)
+                    wagon.MSTSBrakeSystem.Update(5);
+            }
             bool inPath;
 
             if ((train.IsActualPlayerTrain && j >= i) || !keepFront)
