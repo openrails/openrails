@@ -28,6 +28,7 @@
  */
 
 //#define ALLOW_ORTS_SPECIFIC_ENG_PARAMETERS
+//#define DEBUG_AUXTENDER
 
 using System;
 using System.Collections.Generic;
@@ -126,6 +127,7 @@ namespace ORTS
         float WheelBase2M;
         public bool IsPassenger;
         public bool IsEngine;
+        public bool IsAuxTender;
         string WagonType;
         public MSTSNotchController WeightLoadController; // Used to control freight loading in freight cars
         public float AbsWheelSpeedMpS; // Math.Abs(WheelSpeedMpS) is used frequently in the subclasses, maybe it's more efficient to compute it once
@@ -320,6 +322,7 @@ namespace ORTS
                     WheelBase2M = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
+                case "wagon(ortsauxtenderwatermass": AuxTenderWaterMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "wagon(mass": InitialMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); if (InitialMassKG < 0.1f) InitialMassKG = 0.1f; break;
                 case "wagon(wheelradius": WheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(wheelradius": DriverWheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
@@ -471,6 +474,7 @@ namespace ORTS
             UnbalancedSuperElevationM = copy.UnbalancedSuperElevationM;
             WheelBase1M = copy.WheelBase1M;
             WheelBase2M = copy.WheelBase2M;
+            AuxTenderWaterMassKG = copy.AuxTenderWaterMassKG;
             MassKG = copy.MassKG;
             InitialMassKG = copy.InitialMassKG;
             WheelRadiusM = copy.WheelRadiusM;
@@ -670,6 +674,25 @@ namespace ORTS
         public override void Update(float elapsedClockSeconds)
         {
             base.Update(elapsedClockSeconds);
+
+           // Update Aux Tender Information
+
+            if( AuxTenderWaterMassKG != 0 )   // SetStreamVolume wagon type for later use
+            {
+
+                AuxWagonType = "AuxiliaryTender";
+            }
+            else
+            {
+                AuxWagonType = WagonType;
+            }
+
+#if DEBUG_AUXTENDER
+            Trace.TraceInformation("***************************************** DEBUG_AUXTENDER (MSTSWagon.cs) ***************************************************************");
+            Trace.TraceInformation("Car ID {0} Aux Tender Water Mass {1} Wagon Type {2}", CarID, AuxTenderWaterMassKG, AuxWagonType);
+#endif
+
+
             AbsWheelSpeedMpS = Math.Abs(WheelSpeedMpS);
             if (IsDavisFriction == true) // test to see if OR thinks that Davis Values have been entered in WG file.
             {

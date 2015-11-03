@@ -30,6 +30,8 @@
 // Steam heating debugging is off by default - uncomment the #define to turn on - provides visibility of steam usage related parameters on extended HUD. 
 // #define DEBUG_LOCO_STEAM_HEAT_HUD
 
+//#define DEBUG_AUXTENDER
+
 /* STEAM LOCOMOTIVE CLASSES
  * 
  * The Locomotive is represented by two classes:
@@ -105,6 +107,16 @@ namespace ORTS
         bool IsFixGeared = false;
         bool IsSelectGeared = false;
         bool IsLocoSlip = false; 	   // locomotive is slipping
+
+        // Aux Tender Parameters
+        public bool AuxTenderMoveFlag = false; // Flag to indicate whether train has moved
+        bool SteamIsAuxTenderCoupled = false;
+        float TenderWaterChangePercent;       // Percentatge of water in tender
+        public float CurrentAuxTenderWaterMassKG;
+        float CurrentAuxTenderWaterVolumeUKG;
+        float CombinedTenderWaterVolumeUKG;     // Combined value of water in tender and aux tender
+        float PrevCombinedTenderWaterVolumeUKG;
+        float PreviousTenderWaterVolumeUKG;
 
         // Carriage Steam Heating Parameters
         float MaxSteamHeatPressurePSI;    // Maximum Steam heating pressure
@@ -1612,9 +1624,70 @@ namespace ORTS
             {
                 CoalIsExhausted = false;
             }
-            TenderWaterVolumeUKG -= InjectorBoilerInputLB / WaterLBpUKG; // Current water volume determined by injector input rate
-            TenderWaterVolumeUKG = MathHelper.Clamp(TenderWaterVolumeUKG, 0, (Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG)); // Clamp value so that it doesn't go out of bounds
-            if (TenderWaterVolumeUKG < 1.0)
+
+
+            // If aux tender is coupled then assume that both tender and aux tender will equalise at same % water level
+            // Tender water level will be monitored, and aux tender adjusted based upon this level
+            // Add the value of water in the auxiliary tender to the tender water.
+            // If Aux tender is uncoupled then assume that the % water level is the same in both the tender and the aux tender before uncoupling. Therefore calculate tender water based upon controller value and max tender water value.
+            if (Train.IsAuxTenderCoupled)
+             {
+                if(SteamIsAuxTenderCoupled == false)
+                {
+                    CurrentAuxTenderWaterVolumeUKG = (Kg.ToLb(CurrentAuxTenderWaterMassKG) / WaterLBpUKG);  // Adjust water volume due to aux tender being connected
+                    SteamIsAuxTenderCoupled = true;
+                    // If water levels are different in the tender compared to the aux tender, then equalise them
+                    float MaxTotalCombinedWaterVolumeUKG = (Kg.ToLb(Train.MaxAuxTenderWaterMassKG) / WaterLBpUKG) + (Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG);
+                    float CurrentTotalWaterVolumeUKG = CurrentAuxTenderWaterVolumeUKG + TenderWaterVolumeUKG;
+                    float CurrentTotalWaterPercent = CurrentTotalWaterVolumeUKG / MaxTotalCombinedWaterVolumeUKG;
+                    // Calculate new water volumes in both the tender and aux tender
+                    CurrentAuxTenderWaterVolumeUKG = (Kg.ToLb(Train.MaxAuxTenderWaterMassKG) / WaterLBpUKG) * CurrentTotalWaterPercent;
+                    TenderWaterVolumeUKG = (Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG) * CurrentTotalWaterPercent;
+                }
+            }
+            else
+            {
+                if (SteamIsAuxTenderCoupled == true)  // When aux tender uncoupled adjust water in tender to remaining percentage.
+                {
+                    TenderWaterVolumeUKG = (Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG) * WaterController.CurrentValue;  // Adjust water volume due to aux tender being uncoupled, adjust remaining tender water to whatever % value should be in tender
+                    TenderWaterVolumeUKG = MathHelper.Clamp(TenderWaterVolumeUKG, 0, (Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG)); // Clamp value so that it doesn't go out of bounds
+                    CurrentAuxTenderWaterVolumeUKG = 0.0f;
+                    SteamIsAuxTenderCoupled = false;
+                }
+            }
+
+            // If refilling, as determined by increasing tender water level, then adjust aux tender water level at the same rate as the tender
+            if (TenderWaterVolumeUKG > PreviousTenderWaterVolumeUKG)
+            {
+                CurrentAuxTenderWaterVolumeUKG = (Kg.ToLb(Train.MaxAuxTenderWaterMassKG * WaterController.CurrentValue) / WaterLBpUKG);  // Adjust water volume due to aux tender being connected
+                CurrentAuxTenderWaterVolumeUKG = MathHelper.Clamp(CurrentAuxTenderWaterVolumeUKG, 0, (Kg.ToLb(Train.MaxAuxTenderWaterMassKG) / WaterLBpUKG)); // Clamp value so that it doesn't go out of bounds
+            }
+
+            CombinedTenderWaterVolumeUKG = TenderWaterVolumeUKG + CurrentAuxTenderWaterVolumeUKG;
+            CombinedTenderWaterVolumeUKG = MathHelper.Clamp(CombinedTenderWaterVolumeUKG, 0, ((Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG) + (Kg.ToLb(Train.MaxAuxTenderWaterMassKG) / WaterLBpUKG)) ); // Clamp value so that it doesn't go out of bounds
+            TenderWaterChangePercent = (InjectorBoilerInputLB / WaterLBpUKG) / (Kg.ToLb(MaxTenderWaterMassKG + Train.MaxAuxTenderWaterMassKG) / WaterLBpUKG);  // Calculate the % change due to injector water usage
+            TenderWaterVolumeUKG -= CombinedTenderWaterVolumeUKG * TenderWaterChangePercent;  // Adjust water usage in tender
+            CurrentAuxTenderWaterVolumeUKG -= CombinedTenderWaterVolumeUKG * TenderWaterChangePercent; // Adjust water usage in aux tender
+            PrevCombinedTenderWaterVolumeUKG = CombinedTenderWaterVolumeUKG;   // Store value for next iteration
+            PreviousTenderWaterVolumeUKG = TenderWaterVolumeUKG;     // Store value for next iteration            
+
+
+#if DEBUG_AUXTENDER
+
+            Trace.TraceInformation("============================================= Aux Tender (MSTSSTeamLocomotive.cs) =========================================================");
+         //   Trace.TraceInformation("Water Level Is set by act {0}", Simulator.WaterInitialIsSet);
+            Trace.TraceInformation("Combined Tender Water {0}", CombinedTenderWaterVolumeUKG);
+            Trace.TraceInformation("Tender Water {0} Max Tender Water {1}  Max Aux Tender {2}", TenderWaterVolumeUKG, (Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG), (Kg.ToLb(Train.MaxAuxTenderWaterMassKG) / WaterLBpUKG));
+            Trace.TraceInformation(" Water Percent {0} AuxTenderCoupled {1} SteamAuxTenderCoupled {2}", TenderWaterChangePercent, Train.IsAuxTenderCoupled, SteamIsAuxTenderCoupled);
+            Trace.TraceInformation("Water Controller Current Value {0} Previous Value {1}", WaterController.CurrentValue, PreviousTenderWaterVolumeUKG);
+#endif
+            if (absSpeedMpS > 0.5) // Indicates train has moved, and therefore game started
+            {
+                AuxTenderMoveFlag = true;
+            }
+
+
+            if (CombinedTenderWaterVolumeUKG < 1.0)
             {
                 if (!WaterIsExhausted && IsPlayerTrain)
                 {
@@ -4186,14 +4259,32 @@ namespace ORTS
                 FormatStrings.h,
                 FormatStrings.mm);
 
-            status.AppendFormat("{0}\t{1}\t{3}\t{4:N0}%\t{2}\t{5}\t\t{6:F0}%\n",
-                Viewer.Catalog.GetString("Tender:"),
-                Viewer.Catalog.GetString("Coal"),
-                Viewer.Catalog.GetString("Water"),
-                FormatStrings.FormatMass(TenderCoalMassKG, IsMetric),
-                TenderCoalMassKG / MaxTenderCoalMassKG * 100,
-                FormatStrings.FormatFuelVolume(L.FromGUK(TenderWaterVolumeUKG), IsMetric, IsUK),
-                TenderWaterVolumeUKG / (Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG) * 100);
+            if (SteamIsAuxTenderCoupled)
+            {
+                status.AppendFormat("{0}\t{1}\t{2}\t{3:N0}%\t{4}\t{5}\t\t{6:N0}%\t{7}\t{8}\t\t{9}\t{10}\n",
+                    Viewer.Catalog.GetString("Tender:"),
+                    Viewer.Catalog.GetString("Coal"),
+                    FormatStrings.FormatMass(TenderCoalMassKG, IsMetric),
+                    TenderCoalMassKG / MaxTenderCoalMassKG * 100,
+                    Viewer.Catalog.GetString("Water(C)"),
+                    FormatStrings.FormatFuelVolume(L.FromGUK(CombinedTenderWaterVolumeUKG), IsMetric, IsUK),
+                    CombinedTenderWaterVolumeUKG / (Kg.ToLb(MaxTenderWaterMassKG + Train.MaxAuxTenderWaterMassKG) / WaterLBpUKG) * 100,
+                    Viewer.Catalog.GetString("Water(T)"),
+                    FormatStrings.FormatFuelVolume(L.FromGUK(TenderWaterVolumeUKG), IsMetric, IsUK),
+                    Viewer.Catalog.GetString("Water(A)"),
+                    FormatStrings.FormatFuelVolume(L.FromGUK(CurrentAuxTenderWaterVolumeUKG), IsMetric, IsUK));
+            }
+            else
+            {
+                status.AppendFormat("{0}\t{1}\t{3}\t{4:N0}%\t{2}\t{5}\t\t{6:N0}%\n",
+                    Viewer.Catalog.GetString("Tender:"),
+                    Viewer.Catalog.GetString("Coal"),
+                    Viewer.Catalog.GetString("Water"),
+                    FormatStrings.FormatMass(TenderCoalMassKG, IsMetric),
+                    TenderCoalMassKG / MaxTenderCoalMassKG * 100,
+                    FormatStrings.FormatFuelVolume(L.FromGUK(CombinedTenderWaterVolumeUKG), IsMetric, IsUK),
+                    CombinedTenderWaterVolumeUKG / (Kg.ToLb(MaxTenderWaterMassKG + Train.MaxAuxTenderWaterMassKG) / WaterLBpUKG) * 100);
+            }
 
             status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\n",
                 Viewer.Catalog.GetString("Status:"),

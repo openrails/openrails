@@ -105,6 +105,9 @@ namespace ORTS
         public float CarHeatVolumeM3;     // Volume of car for heating purposes
         public float CarHeatPipeAreaM2;  // Area of surface of car pipe
 
+        public float AuxTenderWaterMassKG;    // Water mass in auxiliary tender
+        public string AuxWagonType;           // Store wagon type for use with auxilary tender calculations
+
         public LightCollection Lights;
         public FreightAnimCollection ORTSFreightAnimData;
         public int Headlight;
