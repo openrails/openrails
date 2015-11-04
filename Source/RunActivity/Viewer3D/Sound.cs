@@ -1165,10 +1165,11 @@ namespace ORTS.Viewer3D
             switch (control)
             {
                 case Orts.Formats.Msts.VolumeCurve.Controls.DistanceControlled: return SoundSource.DistanceSquared;
-                case Orts.Formats.Msts.VolumeCurve.Controls.SpeedControlled: return Math.Abs(car.SpeedMpS);
+                case Orts.Formats.Msts.VolumeCurve.Controls.SpeedControlled: return car.AbsSpeedMpS;
                 case Orts.Formats.Msts.VolumeCurve.Controls.Variable1Controlled: return car.Variable1;
                 case Orts.Formats.Msts.VolumeCurve.Controls.Variable2Controlled: return car.Variable2;
                 case Orts.Formats.Msts.VolumeCurve.Controls.Variable3Controlled: return car.Variable3;
+                case Orts.Formats.Msts.VolumeCurve.Controls.BrakeCylControlled: return car.BrakeSystem.GetCylPressurePSI();
                 default: return 0;
             }
         }
@@ -1583,6 +1584,7 @@ namespace ORTS.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable2_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable3_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.BrakeCyl_Dec_Past:
                     if (newValue < SMS.Threshold)
                     {
                         Signaled = true;
@@ -1595,6 +1597,7 @@ namespace ORTS.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_Inc_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable2_Inc_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable3_Inc_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.BrakeCyl_Inc_Past:
                     if (newValue > SMS.Threshold)
                     {
                         Signaled = true;
@@ -1653,7 +1656,7 @@ namespace ORTS.Viewer3D
                     return SoundStream.SoundSource.DistanceSquared;
                 case Orts.Formats.Msts.Variable_Trigger.Events.Speed_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.Speed_Inc_Past:
-                    return Math.Abs(car.SpeedMpS);
+                    return car.AbsSpeedMpS;
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_Inc_Past:
                     return car.Variable1;
@@ -1663,6 +1666,9 @@ namespace ORTS.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable3_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable3_Inc_Past:
                     return car.Variable3;
+                case Orts.Formats.Msts.Variable_Trigger.Events.BrakeCyl_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.BrakeCyl_Inc_Past:
+                    return car.BrakeSystem.GetCylPressurePSI();
                 default:
                     return 0;
             }

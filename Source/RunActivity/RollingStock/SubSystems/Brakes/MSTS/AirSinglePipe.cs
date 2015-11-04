@@ -52,7 +52,7 @@ namespace ORTS
 
         protected bool TrainBrakePressureChanging = false;
         protected bool BrakePipePressureChanging = false;
-        protected int SoundTriggerCounter = 0;
+        protected float SoundTriggerCounter = 0;
         protected float prevCylPressurePSI = 0f;
         protected float prevBrakePipePressurePSI = 0f;
 
@@ -417,10 +417,10 @@ namespace ORTS
             Car.BrakeForceN = f;
 
             // sound trigger checking runs every 4th update, to avoid the problems caused by the jumping BrakeLine1PressurePSI value, and also saves cpu time :)
-            if (SoundTriggerCounter >= 4)
+            if (SoundTriggerCounter >= 0.5f)
             {
-                SoundTriggerCounter = 0;
-                if (AutoCylPressurePSI != prevCylPressurePSI)
+                SoundTriggerCounter = 0f;
+                if ( Math.Abs(AutoCylPressurePSI - prevCylPressurePSI) > 0.1f) //(AutoCylPressurePSI != prevCylPressurePSI)
                 {
                     if (!TrainBrakePressureChanging)
                     {
@@ -438,7 +438,7 @@ namespace ORTS
                     Car.SignalEvent(Event.TrainBrakePressureStoppedChanging);
                 }
 
-                if ( Math.Abs(BrakeLine1PressurePSI-prevBrakePipePressurePSI)> 0.05f /*BrakeLine1PressurePSI > prevBrakePipePressurePSI*/)
+                if ( Math.Abs(BrakeLine1PressurePSI - prevBrakePipePressurePSI) > 0.1f /*BrakeLine1PressurePSI > prevBrakePipePressurePSI*/)
                 {
                     if (!BrakePipePressureChanging)
                     {
@@ -458,7 +458,7 @@ namespace ORTS
                 prevCylPressurePSI = AutoCylPressurePSI;
                 prevBrakePipePressurePSI = BrakeLine1PressurePSI;
             }
-            SoundTriggerCounter++;
+            SoundTriggerCounter = SoundTriggerCounter + elapsedClockSeconds;
         }
 
         public override void PropagateBrakePressure(float elapsedClockSeconds)
