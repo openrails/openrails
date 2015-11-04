@@ -272,7 +272,7 @@ namespace ORTS
         float UnbalancedSuperElevationM;  // Unbalanced superelevation, read from MSTS Wagon File
         float SuperElevationTotalM; // Total superelevation
         bool IsMaxSafeCurveSpeed = false; // Has equal loading speed around the curve been exceeded, ie are all the wheesl still on the track?
-        public bool IsCriticalSpeed = true; // Has the critical speed around the curve been reached, is is the wagon about to overturn?
+        public bool IsCriticalSpeed = false; // Has the critical speed around the curve been reached, is is the wagon about to overturn?
         float MaxCurveEqualLoadSpeedMps; // Max speed that rolling stock can do whist maintaining equal load on track
         float StartCurveResistanceFactor = 2.0f; // Set curve friction at Start = 200%
         float RouteSpeedMpS; // Max Route Speed Limit
@@ -682,7 +682,8 @@ namespace ORTS
 
                   if (CurveSpeedDependent)
                   {
-                      float MaxDurableSafeCurveSpeedMpS = MaxSafeCurveSpeedMps * Simulator.CurveDurability;  // Finds user setting for durability
+                      float MaxDurableSafeCurveSpeedMpS = MaxSafeCurveSpeedMps * 10.0f;  // Temporary value until durability factor is read directly from consist file.
+                    //  float MaxDurableSafeCurveSpeedMpS = MaxSafeCurveSpeedMps * Simulator.CurveDurability;  // Finds user setting for durability
                     // Test current speed to see if greater then "safe" speed around the curve
                     if (s > MaxSafeCurveSpeedMps)
                     {
