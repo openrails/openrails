@@ -264,9 +264,9 @@ namespace ORTS.Viewer3D.RollingStock
             {
                 if (Locomotive.CabViewList.Count > 0)
                 {
-                    _hasCabRenderer = true;
                     if (Locomotive.CabViewList[(int)CabViewType.Front].CVFFile != null && Locomotive.CabViewList[(int)CabViewType.Front].CVFFile.TwoDViews.Count > 0)
                         _CabRenderer = new CabRenderer(Viewer, Locomotive);
+                    _hasCabRenderer = true;
                 }
             }
             if (!_has3DCabRenderer)

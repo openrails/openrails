@@ -45,6 +45,7 @@ namespace ORTS.MultiPlayer
 			else if (key == "ALIVE") return new MSGAlive(m.Substring(index + 1));
 			else if (key == "TRAIN") return new MSGTrain(m.Substring(index + 1));
 			else if (key == "PLAYER") return new MSGPlayer(m.Substring(index + 1));
+            else if (key == "PLAYERTRAINSW") return new MSGPlayerTrainSw(m.Substring(index + 1));
 			else if (key == "ORGSWITCH") return new MSGOrgSwitch(m.Substring(index + 1));
 			else if (key == "SWITCH") return new MSGSwitch(m.Substring(index + 1));
 			else if (key == "RESETSIGNAL") return new MSGResetSignal(m.Substring(index + 1));
@@ -626,6 +627,100 @@ namespace ORTS.MultiPlayer
 	}
 
 	#endregion MSGPlayer
+
+    #region MSGPlayerTrainSw
+    public class MSGPlayerTrainSw : MSGRequired
+    {
+        public string user = "";
+        public int num; //train number
+        public bool reverseFormation = false;
+        public string leadingID;
+        public MSGPlayerTrainSw() { }
+        public MSGPlayerTrainSw(string m)
+        {
+            string[] areas = m.Split('\r');
+            if (areas.Length <= 1)
+            {
+                throw new Exception("Parsing error in MSGPlayerTrainSw" + m);
+            }
+            try
+            {
+                var tmp = areas[0].Trim();
+                string[] data = tmp.Split(' ');
+                user = data[0];
+                num = int.Parse(data[1]);
+                reverseFormation = bool.Parse(data[2]);
+                leadingID = areas[1].Trim();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+
+        public MSGPlayerTrainSw(string n, Train t, int tn, bool revForm)
+        {
+            user = n;
+            if (t != null) num = tn;
+            if (t.LeadLocomotive != null) leadingID = t.LeadLocomotive.CarID;
+            else leadingID = "NA";
+            reverseFormation = revForm;
+          }
+
+        public override string ToString()
+        {
+            string tmp = "PLAYERTRAINSW " + user + " " + num + " " + reverseFormation + " " + "\r" + leadingID + "\r";
+            return " " + tmp.Length + ": " + tmp;
+        }
+
+        private object lockObjPlayer = new object();
+        public override void HandleMsg()
+        {
+            lock (lockObjPlayer)
+            {
+                MPManager.OnlineTrains.SwitchPlayerTrain(this);
+
+                if (MPManager.IsServer())
+                {
+                    MPManager.Instance().PlayerAdded = true;
+                }
+                else //client needs to handle environment
+                {
+                    if (MPManager.GetUserName() == this.user && !Program.Client.Connected) //a reply from the server, update my train number
+                    {
+                        Program.Client.Connected = true;
+                        Train t = null;
+                        if (Program.Simulator.PlayerLocomotive == null) t = Program.Simulator.Trains[0];
+                        else t = Program.Simulator.PlayerLocomotive.Train;
+                     }
+                 }
+            }
+        }
+
+        //this version only intends for the one started on server computer
+/*        public void HandleMsg(OnlinePlayer p)
+        {
+            if (!MPManager.IsServer()) return; //only intended for the server, when it gets the player message in OnlinePlayer Receive
+
+            //client connected directly to the server, thus will send the game status to the player directly (avoiding using broadcast)
+            MPManager.OnlineTrains.SwitchPlayerTrain(this);
+
+            MSGPlayerTrainSw host = new MSGPlayerTrainSw(MPManager.GetUserName(), Program.Simulator.PlayerLocomotive.Train, Program.Simulator.PlayerLocomotive.Train.Number,);
+            p.Send(host.ToString());
+   
+            //send the new player information to everyone else
+            host = new MSGPlayerTrainSw(p.Username, p.Train, p.Train.Number);
+            var players = MPManager.OnlineTrains.Players.ToArray();
+            string newPlayer = host.ToString();
+            foreach (var op in players)
+            {
+                op.Value.Send(newPlayer);
+            }
+        }*/
+    }
+
+    #endregion MSGPlayerTrainSw
 
 	#region MGSwitch
 

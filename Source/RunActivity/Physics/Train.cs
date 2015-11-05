@@ -237,6 +237,7 @@ namespace ORTS
         }
 
         public bool IsPlayable = false;
+        public bool IsPathless = false;
 
          // End variables used for autopilot mode and played train switching
 
@@ -729,6 +730,7 @@ namespace ORTS
             RestoreDeadlockInfo(inf);
 
             InitialSpeed = inf.ReadSingle();
+            IsPathless = inf.ReadBoolean();
 
             // restore leadlocomotive
             if (LeadLocomotiveIndex >= 0)
@@ -988,6 +990,7 @@ namespace ORTS
             SaveDeadlockInfo(outf);
             // Save initial speed
             outf.Write(InitialSpeed);
+            outf.Write(IsPathless);
         }
 
         private void SaveCars(BinaryWriter outf)
@@ -1387,7 +1390,7 @@ namespace ORTS
                 UpdateTrainPositionInformation();                                               // position update         //
                 int SignalObjIndex = CheckSignalPassed(0, PresentPosition[0], PreviousPosition[0]);   // check if passed signal  //
                 UpdateSectionState(movedBackward);                                              // update track occupation //
-                ObtainRequiredActions(movedBackward);                                           // process list of actions //
+                if (!(this is AITrain && (this as AITrain).MovementState == AITrain.AI_MOVEMENT_STATE.SUSPENDED)) ObtainRequiredActions(movedBackward);    // process list of actions //
 
                 if (TrainType == TRAINTYPE.PLAYER && CheckStations) // if player train is to check own stations
                 {
@@ -4459,6 +4462,7 @@ namespace ORTS
 
         public void ObtainRequiredActions(int backward)
         {
+            if (this is AITrain && (this as AITrain).MovementState == AITrain.AI_MOVEMENT_STATE.SUSPENDED) return;
             if (backward < backwardThreshold)
             {
                 List<DistanceTravelledItem> nowActions = requiredActions.GetActions(DistanceTravelledM);
@@ -7786,6 +7790,11 @@ namespace ORTS
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("You cannot enter manual mode when autopiloted"));
             }
+            if (IsPathless)
+            {
+                if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("You cannot use this command for pathless trains"));
+            }
             else if (ControlMode == TRAIN_CONTROL.MANUAL)
             {
                 // check if train is back on path
@@ -9001,59 +9010,7 @@ namespace ORTS
                     }
                 }
 
-                // reset signals etc.
-
-                SignalObjectItems.Clear();
-                NextSignalObject[0] = null;
-                NextSignalObject[1] = null;
-                LastReservedSection[0] = PresentPosition[0].TCSectionIndex;
-                LastReservedSection[1] = PresentPosition[1].TCSectionIndex;
-
-
-                InitializeSignals(true);
-
-                if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL || ControlMode == TRAIN_CONTROL.AUTO_NODE)
-                {
-                    PresentPosition[0].RouteListIndex = ValidRoute[0].GetRouteIndex(PresentPosition[0].TCSectionIndex, 0);
-                    PresentPosition[1].RouteListIndex = ValidRoute[0].GetRouteIndex(PresentPosition[1].TCSectionIndex, 0);
-
-                    CheckDeadlock(ValidRoute[0], Number);
-                    SwitchToNodeControl(PresentPosition[0].TCSectionIndex);
-                    TCRoute.SetReversalOffset(Length);
-                }
-                else if (ControlMode == TRAIN_CONTROL.MANUAL)
-                {
-                    // set track occupation
-
-                    UpdateSectionStateManual();
-
-                    // reset routes and check sections either end of train
-
-                    PresentPosition[0].RouteListIndex = -1;
-                    PresentPosition[1].RouteListIndex = -1;
-                    PreviousPosition[0].RouteListIndex = -1;
-
-                    UpdateManualMode(-1);
-                }
-                else if (ControlMode == TRAIN_CONTROL.EXPLORER)
-                {
-                    // set track occupation
-
-                    UpdateSectionStateExplorer();
-
-                    // reset routes and check sections either end of train
-
-                    PresentPosition[0].RouteListIndex = -1;
-                    PresentPosition[1].RouteListIndex = -1;
-                    PreviousPosition[0].RouteListIndex = -1;
-
-                    UpdateExplorerMode(-1);
-                }
-                else
-                {
-                    CheckDeadlock(ValidRoute[0], Number);
-                    signalRef.requestClearNode(routedForward, ValidRoute[0]);
-                }
+                Reinitialize();
             }
 
 #if DEBUG_REPORTS
@@ -9068,6 +9025,68 @@ namespace ORTS
                                 " uncouple procedure completed \n");
             }
             return inPath;
+        }
+
+        //================================================================================================//
+        //
+        // Perform various reinitializations
+        //
+
+        public void Reinitialize()
+        {
+            // reset signals etc.
+
+            SignalObjectItems.Clear();
+            NextSignalObject[0] = null;
+            NextSignalObject[1] = null;
+            LastReservedSection[0] = PresentPosition[0].TCSectionIndex;
+            LastReservedSection[1] = PresentPosition[1].TCSectionIndex;
+
+
+            InitializeSignals(true);
+
+            if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL || ControlMode == TRAIN_CONTROL.AUTO_NODE)
+            {
+                PresentPosition[0].RouteListIndex = ValidRoute[0].GetRouteIndex(PresentPosition[0].TCSectionIndex, 0);
+                PresentPosition[1].RouteListIndex = ValidRoute[0].GetRouteIndex(PresentPosition[1].TCSectionIndex, 0);
+
+                CheckDeadlock(ValidRoute[0], Number);
+                SwitchToNodeControl(PresentPosition[0].TCSectionIndex);
+                TCRoute.SetReversalOffset(Length);
+            }
+            else if (ControlMode == TRAIN_CONTROL.MANUAL)
+            {
+                // set track occupation
+
+                UpdateSectionStateManual();
+
+                // reset routes and check sections either end of train
+
+                PresentPosition[0].RouteListIndex = -1;
+                PresentPosition[1].RouteListIndex = -1;
+                PreviousPosition[0].RouteListIndex = -1;
+
+                UpdateManualMode(-1);
+            }
+            else if (ControlMode == TRAIN_CONTROL.EXPLORER)
+            {
+                // set track occupation
+
+                UpdateSectionStateExplorer();
+
+                // reset routes and check sections either end of train
+
+                PresentPosition[0].RouteListIndex = -1;
+                PresentPosition[1].RouteListIndex = -1;
+                PreviousPosition[0].RouteListIndex = -1;
+
+                UpdateExplorerMode(-1);
+            }
+            else
+            {
+                CheckDeadlock(ValidRoute[0], Number);
+                signalRef.requestClearNode(routedForward, ValidRoute[0]);
+            }
         }
 
         //================================================================================================//
@@ -10717,6 +10736,21 @@ namespace ORTS
                 }
             }
         }
+
+        /// <summary>
+        /// Create pathless player train out of static train
+        /// </summary>
+
+        public void CreatePathlessPlayerTrain()
+        {
+            ControlMode = Train.TRAIN_CONTROL.MANUAL;
+            TrainType = Train.TRAINTYPE.PLAYER;
+            IsPathless = true;
+            ReverseFormation(false);
+            CheckFreight();
+            InitializeBrakes();
+        }
+
 
         //================================================================================================//
 

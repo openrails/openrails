@@ -1053,7 +1053,7 @@ namespace ORTS
                     // construct train data
                     Train train = new Train(this);
                     train.TrainType = Train.TRAINTYPE.STATIC;
-                    train.Name = "STATIC";
+                    train.Name = "STATIC" + "-" + activityObject.ID;
                     int consistDirection;
                     switch (activityObject.Direction)  // TODO, we don't really understand this
                     {
@@ -1109,6 +1109,7 @@ namespace ORTS
 
                     train.CalculatePositionOfCars(0);
                     train.InitializeBrakes();
+                    train.CheckFreight();
 
                     bool validPosition = train.PostInit();
                     if (validPosition)
@@ -1676,35 +1677,165 @@ namespace ORTS
             if (Program.Viewer.TrainListWindow.SelectedAsPlayer != null && !Program.Viewer.TrainListWindow.SelectedAsPlayer.IsActualPlayerTrain)
             {
                 var selectedAsPlayer = Program.Viewer.TrainListWindow.SelectedAsPlayer;
-                var playerTrain = PlayerLocomotive.Train as AITrain;
-                if (playerTrain != null)
+                if (PlayerLocomotive.Train is AITrain)
                 {
-                    if (Program.Viewer.TrainListWindow.SuspendOldPlayer && playerTrain.SpeedMpS != 0)
+                    var playerTrain = PlayerLocomotive.Train as AITrain;
+                    if (playerTrain != null)
                     {
-                        Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Train can't be suspended with speed not equal 0"));
-                        Program.Viewer.TrainListWindow.SuspendOldPlayer = false;
-                        Program.Viewer.TrainListWindow.ClickedSelectedAsPlayer = false;
-                        return;
+                        if (Program.Viewer.TrainListWindow.SuspendOldPlayer && playerTrain.SpeedMpS != 0)
+                        {
+                            Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Train can't be suspended with speed not equal 0"));
+                            Program.Viewer.TrainListWindow.SuspendOldPlayer = false;
+                            Program.Viewer.TrainListWindow.ClickedSelectedAsPlayer = false;
+                            return;
+                        }
+                        if (playerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN)
+                        {
+                            // it must be autopiloted first
+                            playerTrain.SwitchToAutopilotControl();
+                        }
+                        // and now switch!
+                        playerTrain.TrainType = Train.TRAINTYPE.AI;
+                        AI.AITrains.Add(playerTrain);
+                        if (Program.Viewer.TrainListWindow.SuspendOldPlayer)
+                        {
+                            playerTrain.MovementState = AITrain.AI_MOVEMENT_STATE.SUSPENDED;
+                            playerTrain.signalRef.BreakDownRoute(playerTrain.ValidRoute[0][playerTrain.PresentPosition[0].RouteListIndex + 1].TCSectionIndex,
+                               playerTrain.routedForward);
+                            Program.Viewer.TrainListWindow.SuspendOldPlayer = false;
+                        }
+
                     }
-                    if (playerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN)
+                }
+                else if (selectedAsPlayer.TrainType == Train.TRAINTYPE.AI_INCORPORATED && selectedAsPlayer.IncorporatingTrain.IsPathless)
+                {
+                    // the former static train disappears now and becomes part of the other train. TODO; also wagons must be moved.
+                   var dyingTrain = PlayerLocomotive.Train;
+
+                    // move all cars to former incorporated train
+
+                    for (int k = 0; k < dyingTrain.Cars.Count; ++k)
                     {
-                        // it must be autopiloted first
-                        playerTrain.SwitchToAutopilotControl();
-                    }
-                    // and now switch!
-                    playerTrain.TrainType = Train.TRAINTYPE.AI;
-                    AI.AITrains.Add(playerTrain);
-                    if (Program.Viewer.TrainListWindow.SuspendOldPlayer)
-                    {
-                        playerTrain.MovementState = AITrain.AI_MOVEMENT_STATE.SUSPENDED;
-                        Program.Viewer.TrainListWindow.SuspendOldPlayer = false;
+                        TrainCar newcar = dyingTrain.Cars[k];
+                        selectedAsPlayer.Cars.Add(newcar);
+                        newcar.Train = selectedAsPlayer;
                     }
 
+                    // and drop them from the old train
+                    for (int k = dyingTrain.Cars.Count - 1; k >= 0; --k)
+                    {
+                        dyingTrain.Cars.RemoveAt(k);
+                    }
+
+                    // and fix up the travellers
+                        selectedAsPlayer.RearTDBTraveller = new Traveller(dyingTrain.RearTDBTraveller);
+                        selectedAsPlayer.FrontTDBTraveller = new Traveller(dyingTrain.FrontTDBTraveller);
+                    // are following lines needed?
+ //                       selectedAsPlayer.CalculatePositionOfCars(0);  // fix the front traveller
+ //                       selectedAsPlayer.RepositionRearTraveller();    // fix the rear traveller
+
+                    selectedAsPlayer.activityClearingDistanceM = dyingTrain.activityClearingDistanceM;
+
+                    selectedAsPlayer.SpeedMpS = dyingTrain.SpeedMpS;
+                    selectedAsPlayer.AITrainDirectionForward = dyingTrain.AITrainDirectionForward;
+
+                    selectedAsPlayer.AITrainBrakePercent = 100;
+                    selectedAsPlayer.TrainType = Train.TRAINTYPE.AI;
+                    selectedAsPlayer.MUDirection = Direction.Forward;
+
+                    selectedAsPlayer.LeadLocomotive = null;
+                    selectedAsPlayer.Cars[0].BrakeSystem.PropagateBrakePressure(5);
+                    foreach (MSTSWagon wagon in selectedAsPlayer.Cars)
+                        wagon.MSTSBrakeSystem.Update(5);
+
+                    // and now let the former static train die
+
+                    dyingTrain.RemoveFromTrack();
+                    dyingTrain.ClearDeadlocks();
+                    Trains.Remove(dyingTrain);
+                    TrainDictionary.Remove(dyingTrain.Number);
+                    NameDictionary.Remove(dyingTrain.Name.ToLower());
+
+                    bool inPath;
+
+                    inPath = selectedAsPlayer.UpdateTrackActionsUncoupling(false);
+
+                    if (!inPath && selectedAsPlayer.TrainType == Train.TRAINTYPE.AI)
+                    // Out of path, degrade to static
+                    {
+                        selectedAsPlayer.TrainType = Train.TRAINTYPE.STATIC;
+                        ((AITrain)selectedAsPlayer).AI.TrainsToRemoveFromAI.Add((AITrain)selectedAsPlayer);
+                    }
+                    if (selectedAsPlayer.TrainType == Train.TRAINTYPE.AI)
+                    {
+                        ((AITrain)selectedAsPlayer).AI.aiListChanged = true;
+                        // Move reversal point under train if there is one in the section where the train is
+                        if (selectedAsPlayer.PresentPosition[0].TCSectionIndex ==
+                                            selectedAsPlayer.TCRoute.TCRouteSubpaths[selectedAsPlayer.TCRoute.activeSubpath][selectedAsPlayer.TCRoute.TCRouteSubpaths[selectedAsPlayer.TCRoute.activeSubpath].Count - 1].TCSectionIndex &&
+                            selectedAsPlayer.TCRoute.activeSubpath < selectedAsPlayer.TCRoute.TCRouteSubpaths.Count - 1)
+                        {
+                            selectedAsPlayer.TCRoute.ReversalInfo[selectedAsPlayer.TCRoute.activeSubpath].ReverseReversalOffset = selectedAsPlayer.PresentPosition[0].TCOffset - 10f;
+                            selectedAsPlayer.AuxActionsContain.MoveAuxActionAfterReversal(selectedAsPlayer);
+                        }
+                        ((AITrain)selectedAsPlayer).ResetActions(true);
+                    }
+                    if (MPManager.IsMultiPlayer()) { selectedAsPlayer.ControlMode = Train.TRAIN_CONTROL.EXPLORER; }
+
+                    if (MPManager.IsMultiPlayer() && !MPManager.IsServer())
+                    {
+                        //add the new train to a list of uncoupled trains, handled specially
+                        if (PlayerLocomotive != null) MPManager.Instance().AddUncoupledTrains(selectedAsPlayer);
+                    }
+
+
+                    selectedAsPlayer.CheckFreight();
+
+                    selectedAsPlayer.Update(0);  // stop the wheels from moving etc
+                    Program.Viewer.TrainListWindow.PickedTrainFromList = selectedAsPlayer;
+                    Program.Viewer.TrainListWindow.ClickedTrainFromList = true;
+
+
                 }
-                playerTrain = selectedAsPlayer as AITrain;
-                PlayerLocomotive = SetPlayerLocomotive(playerTrain);
+                else
+                {
+                    // this was a static train before
+                    var playerTrain = PlayerLocomotive.Train;
+                    if (playerTrain != null)
+                    {
+                        if (playerTrain.SpeedMpS != 0)
+                        {
+                            Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("To return to static train speed must be = 0"));
+                            Program.Viewer.TrainListWindow.SuspendOldPlayer = false;
+                            Program.Viewer.TrainListWindow.ClickedSelectedAsPlayer = false;
+                            return;
+                        }
+                        if (playerTrain.ValidRoute[0] != null && playerTrain.ValidRoute[0].Count > playerTrain.PresentPosition[0].RouteListIndex + 1)
+                            playerTrain.signalRef.BreakDownRoute(playerTrain.ValidRoute[0][playerTrain.PresentPosition[0].RouteListIndex + 1].TCSectionIndex,
+                            playerTrain.routedForward);
+                        if (playerTrain.ValidRoute[1] != null && playerTrain.ValidRoute[1].Count > playerTrain.PresentPosition[1].RouteListIndex + 1)
+                            playerTrain.signalRef.BreakDownRoute(playerTrain.ValidRoute[1][playerTrain.PresentPosition[1].RouteListIndex + 1].TCSectionIndex,
+                            playerTrain.routedBackward);
+                        playerTrain.ControlMode = Train.TRAIN_CONTROL.UNDEFINED;
+                        playerTrain.TrainType = Train.TRAINTYPE.STATIC;
+                        playerTrain.ReverseFormation(false);
+                        playerTrain.CheckFreight();
+                        playerTrain.InitializeBrakes();
+                    }
+                }
+                if (selectedAsPlayer.TrainType != Train.TRAINTYPE.STATIC)
+                {
+                    var playerTrain = selectedAsPlayer as AITrain;
+                    if (!(playerTrain.TrainType == Train.TRAINTYPE.AI_INCORPORATED && playerTrain.IncorporatingTrain ==  PlayerLocomotive.Train)) PlayerLocomotive = SetPlayerLocomotive(playerTrain);
+                 }
+                else
+                {
+                    Train pathlessPlayerTrain = selectedAsPlayer;
+                    pathlessPlayerTrain.IsPathless = true;
+                    PlayerLocomotive = SetPlayerLocomotive(pathlessPlayerTrain);
+                }
                 Program.Viewer.World.Trains.LoadNewPlayerLoco();
                 playerSwitchOngoing = true;
+
             }
             else
             {
@@ -1715,13 +1846,33 @@ namespace ORTS
 
         private void CompleteSwitchPlayerTrain()
         {
-            AI.AITrains.Remove(PlayerLocomotive.Train as AITrain);
-            (PlayerLocomotive.Train as AITrain).SwitchToPlayerControl();
+//            var reverseFormation = false;
+            if (PlayerLocomotive.Train.TrainType != Train.TRAINTYPE.STATIC)
+            {
+                AI.AITrains.Remove(PlayerLocomotive.Train as AITrain);
+                if ((PlayerLocomotive.Train as AITrain).MovementState == AITrain.AI_MOVEMENT_STATE.SUSPENDED)
+                {
+                    PlayerLocomotive.Train.Reinitialize();
+                }
+                (PlayerLocomotive.Train as AITrain).SwitchToPlayerControl();
+            }
+            else  
+            {
+                PlayerLocomotive.Train.CreatePathlessPlayerTrain();
+//                reverseFormation = true;
+            }
+            if (MPManager.IsMultiPlayer())
+            {
+                // TODO: To be completed
+//                MPManager.Notify((new MultiPlayer.MSGPlayerTrainSw(MPManager.GetUserName(), PlayerLocomotive.Train, PlayerLocomotive.Train.Number, reverseFormation)).ToString());
+            }
             Program.Viewer.SetCabEnvironment();
             playerSwitchOngoing = false;
             Program.Viewer.TrainListWindow.ClickedSelectedAsPlayer = false;
             AI.aiListChanged = true;
         }
+
+  
 
         /// <summary>
         /// Derive log-file name from route path and activity name

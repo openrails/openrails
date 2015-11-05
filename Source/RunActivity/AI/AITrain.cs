@@ -246,7 +246,7 @@ namespace ORTS
                 InitializeSignals(true);
                 ResetActions(true);
                 CheckSignalObjects();
-                ObtainRequiredActions(0);
+                if (MovementState != AI_MOVEMENT_STATE.SUSPENDED) ObtainRequiredActions(0);
             }
         }
 
@@ -613,7 +613,8 @@ namespace ORTS
             }
 #endif
 
-            if (TrainType == TRAINTYPE.AI_INCORPORATED || TrainType == TRAINTYPE.STATIC || MovementState == AI_MOVEMENT_STATE.SUSPENDED) return;
+            if (TrainType == TRAINTYPE.AI_INCORPORATED || TrainType == TRAINTYPE.STATIC || MovementState == AI_MOVEMENT_STATE.SUSPENDED)
+                return;
             // Check if at stop point and stopped.
             //          if ((NextStopDistanceM < actClearance) || (SpeedMpS <= 0 && MovementState == AI_MOVEMENT_STATE.STOPPED))
             // <CSComment> TODO: next if block is in effect only a workaround due to OR braking physics not working well with AI trains
@@ -1396,11 +1397,14 @@ namespace ORTS
             base.SwitchToSignalControl(thisSignal);
             if (TrainType != TRAINTYPE.PLAYER)
             {
-                ResetActions(true);
+                if (!((this is AITrain) && (this as AITrain).MovementState == AI_MOVEMENT_STATE.SUSPENDED))
+                {
+                    ResetActions(true);
 
-                // check if any actions must be processed immediately
+                    // check if any actions must be processed immediately
 
-                ObtainRequiredActions(0);
+                    ObtainRequiredActions(0);
+                }
             }
         }
 
@@ -1414,11 +1418,14 @@ namespace ORTS
             base.SwitchToNodeControl(thisSectionIndex);
             if (TrainType != TRAINTYPE.PLAYER)
             {
-                ResetActions(true);
+                if (!((this is AITrain) && (this as AITrain).MovementState == AI_MOVEMENT_STATE.SUSPENDED))
+                {
+                    ResetActions(true);
 
-                // check if any actions must be processed immediately
+                    // check if any actions must be processed immediately
 
-                ObtainRequiredActions(0);
+                    ObtainRequiredActions(0);
+                }
             }
         }
 

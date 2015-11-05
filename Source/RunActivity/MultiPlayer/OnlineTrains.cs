@@ -244,5 +244,31 @@ namespace ORTS.MultiPlayer
 			MPManager.Instance().AddOrRemoveTrain(train, true);
 
 		}
+
+        public void SwitchPlayerTrain(MSGPlayerTrainSw player)
+        {
+            // find info about the new player train
+            // look in all trains
+
+            if (Program.Client != null && player.user == Program.Client.UserName) return; //do not add self//WARNING: may need to worry about train number here
+            OnlinePlayer p;
+            var doesPlayerExist = Players.TryGetValue(player.user, out p);
+            if (!doesPlayerExist) return;
+            p.LeadingLocomotiveID = player.leadingID;
+            Train train;
+
+            if (MPManager.IsServer()) //server needs to worry about correct train number
+            {
+                train = Program.Simulator.Trains.Find(t => t.Number == player.num);
+                train.TrainType = Train.TRAINTYPE.REMOTE;
+            }
+            else
+            {
+                train = Program.Simulator.Trains.Find(t => t.Number == player.num);
+                train.TrainType = Train.TRAINTYPE.REMOTE;
+            }
+            p.Train = train;
+            if (player.reverseFormation) p.Train.ReverseFormation(false);
+        }
 	}
 }

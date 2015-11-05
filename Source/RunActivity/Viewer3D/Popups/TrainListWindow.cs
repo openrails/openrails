@@ -84,8 +84,7 @@ namespace ORTS.Viewer3D.Popups
                 }
                 foreach (var thisTrain in Owner.Viewer.Simulator.AI.AITrains)
                 {
-                    if (thisTrain.MovementState != AITrain.AI_MOVEMENT_STATE.AI_STATIC && thisTrain.TrainType != Train.TRAINTYPE.PLAYER
-                        && thisTrain.TrainType != Train.TRAINTYPE.AI_INCORPORATED)
+                    if (thisTrain.MovementState != AITrain.AI_MOVEMENT_STATE.AI_STATIC && thisTrain.TrainType != Train.TRAINTYPE.PLAYER)
                     {
                         var line = scrollbox.AddLayoutHorizontalLineOfText();
                         TrainLabel number, name, viewed;
@@ -111,6 +110,28 @@ namespace ORTS.Viewer3D.Popups
                             number.Color = Color.Red;
                             name.Color = Color.Red;
                         }
+                    }
+                }
+
+                // Now list static trains with loco and cab
+                if (Owner.Viewer.Simulator.IsAutopilotMode)
+                {
+                    foreach (var thisTrain in Owner.Viewer.Simulator.Trains)
+                    {
+                        if (thisTrain.TrainType == Train.TRAINTYPE.STATIC && thisTrain.IsPlayable)
+                        {
+                            var line = scrollbox.AddLayoutHorizontalLineOfText();
+                            TrainLabel number, name, viewed;
+                            line.Add(number = new TrainLabel(colWidth, line.RemainingHeight, Owner.Viewer, thisTrain, thisTrain.Number.ToString(), LabelAlignment.Left));
+                            line.Add(name = new TrainLabel(colWidth * 4 - Owner.TextFontDefault.Height, line.RemainingHeight, Owner.Viewer, thisTrain, thisTrain.Name, LabelAlignment.Left));
+                            if (thisTrain == Owner.Viewer.SelectedTrain)
+                            {
+                                line.Add(viewed = new TrainLabel(Owner.TextFontDefault.Height, line.RemainingHeight, Owner.Viewer, thisTrain, "*", LabelAlignment.Right));
+                                viewed.Color = Color.Red;
+                            }
+                            number.Color = Color.Yellow;
+                            name.Color = Color.Yellow;
+                         }
                     }
                 }
             }
@@ -152,7 +173,8 @@ namespace ORTS.Viewer3D.Popups
                 Viewer.TrainListWindow.ClickedTrainFromList = true;
 
             }
-            if (PickedTrainFromList != null && PickedTrainFromList == Viewer.SelectedTrain && !PickedTrainFromList.IsActualPlayerTrain &&
+            if (PickedTrainFromList != null && !MultiPlayer.MPManager.IsMultiPlayer() && (PickedTrainFromList == Viewer.SelectedTrain || (PickedTrainFromList.TrainType == Train.TRAINTYPE.AI_INCORPORATED && 
+                (PickedTrainFromList as AITrain).IncorporatingTrain.IsPathless && (PickedTrainFromList as AITrain).IncorporatingTrain == Viewer.SelectedTrain)) && !PickedTrainFromList.IsActualPlayerTrain &&
                 Viewer.Simulator.IsAutopilotMode && PickedTrainFromList.IsPlayable)
             {
                 if (UserInput.IsDown(UserCommands.GameSuspendOldPlayer))
