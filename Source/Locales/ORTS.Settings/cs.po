@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
-"POT-Creation-Date: 2015-09-09 17:52+0200\n"
-"PO-Revision-Date: 2015-09-09 17:58+0200\n"
+"POT-Creation-Date: 2015-10-25 10:36+0100\n"
+"PO-Revision-Date: 2015-10-25 10:37+0100\n"
 "Last-Translator: Altmann <altmann@bk.ru>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: cs\n"
@@ -581,65 +581,77 @@ msgid "Control Blower Decrease"
 msgstr "Ovladač Snížit průtok"
 
 #: ../../ORTS.Settings/InputSettings.cs:188
+msgid "Control Steam Heat Increase"
+msgstr "Ovladač Zvýšit žár páry"
+
+#: ../../ORTS.Settings/InputSettings.cs:189
+msgid "Control Steam Heat Decrease"
+msgstr "Ovladač Snížit žár páry"
+
+#: ../../ORTS.Settings/InputSettings.cs:190
 msgid "Control Damper Increase"
 msgstr "Ovladač Zvýšit klapku"
 
-#: ../../ORTS.Settings/InputSettings.cs:189
+#: ../../ORTS.Settings/InputSettings.cs:191
 msgid "Control Damper Decrease"
 msgstr "Ovladač Snížit klapku"
 
-#: ../../ORTS.Settings/InputSettings.cs:190
+#: ../../ORTS.Settings/InputSettings.cs:192
 msgid "Control Firebox Open"
 msgstr "Ovladač Otevřít ohniště"
 
-#: ../../ORTS.Settings/InputSettings.cs:191
+#: ../../ORTS.Settings/InputSettings.cs:193
 msgid "Control Firebox Close"
 msgstr "Ovladač Zavřít ohniště"
 
-#: ../../ORTS.Settings/InputSettings.cs:192
+#: ../../ORTS.Settings/InputSettings.cs:194
 msgid "Control Firing Rate Increase"
 msgstr "Ovladač Zvýšit dávku paliva"
 
-#: ../../ORTS.Settings/InputSettings.cs:193
+#: ../../ORTS.Settings/InputSettings.cs:195
 msgid "Control Firing Rate Decrease"
 msgstr "Ovladač Snížit dávku palivy"
 
-#: ../../ORTS.Settings/InputSettings.cs:194
+#: ../../ORTS.Settings/InputSettings.cs:196
 msgid "Control Fire Shovel Full"
 msgstr "Ovladač Max. paliva"
 
-#: ../../ORTS.Settings/InputSettings.cs:195
+#: ../../ORTS.Settings/InputSettings.cs:197
 msgid "Control Cylinder Cocks"
 msgstr "Ovladač Kohout válce"
 
-#: ../../ORTS.Settings/InputSettings.cs:196
+#: ../../ORTS.Settings/InputSettings.cs:198
 msgid "Control Cylinder Compound"
 msgstr "Ovladač Sdružený válec"
 
-#: ../../ORTS.Settings/InputSettings.cs:197
+#: ../../ORTS.Settings/InputSettings.cs:199
 msgid "Control Firing"
 msgstr "Ovladač Spalování"
 
-#: ../../ORTS.Settings/InputSettings.cs:198
+#: ../../ORTS.Settings/InputSettings.cs:200
 msgid "Control Refill"
 msgstr "Ovladač Doplnit"
 
-#: ../../ORTS.Settings/InputSettings.cs:645
+#: ../../ORTS.Settings/InputSettings.cs:201
+msgid "Control TroughRefill"
+msgstr "Ovladač Doplnit vodu ze žlabu"
+
+#: ../../ORTS.Settings/InputSettings.cs:651
 #, csharp-format
 msgid "{0} requires and is modified by Shift"
 msgstr "{0} vyžaduje stisknutí Shift"
 
-#: ../../ORTS.Settings/InputSettings.cs:647
+#: ../../ORTS.Settings/InputSettings.cs:653
 #, csharp-format
 msgid "{0} requires and is modified by Control"
 msgstr "{0} vyžaduje stisknutí Control"
 
-#: ../../ORTS.Settings/InputSettings.cs:649
+#: ../../ORTS.Settings/InputSettings.cs:655
 #, csharp-format
 msgid "{0} requires and is modified by Alt"
 msgstr "{0} vyžaduje stisknutí Alt"
 
-#: ../../ORTS.Settings/InputSettings.cs:680
+#: ../../ORTS.Settings/InputSettings.cs:686
 #, csharp-format
 msgid "{0} and {1} both match {2}"
 msgstr "{0} a {1} jsou totožné s {2}"
