@@ -7790,7 +7790,7 @@ namespace ORTS
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("You cannot enter manual mode when autopiloted"));
             }
-            if (IsPathless)
+            if (IsPathless && ControlMode != TRAIN_CONTROL.OUT_OF_CONTROL)
             {
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("You cannot use this command for pathless trains"));

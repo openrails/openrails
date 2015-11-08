@@ -633,7 +633,8 @@ namespace ORTS.MultiPlayer
     {
         public string user = "";
         public int num; //train number
-        public bool reverseFormation = false;
+        public bool oldTrainReverseFormation = false;
+        public bool newTrainReverseFormation = false;
         public string leadingID;
         public MSGPlayerTrainSw() { }
         public MSGPlayerTrainSw(string m)
@@ -649,7 +650,8 @@ namespace ORTS.MultiPlayer
                 string[] data = tmp.Split(' ');
                 user = data[0];
                 num = int.Parse(data[1]);
-                reverseFormation = bool.Parse(data[2]);
+                oldTrainReverseFormation = bool.Parse(data[2]);
+                newTrainReverseFormation = bool.Parse(data[3]);
                 leadingID = areas[1].Trim();
             }
             catch (Exception e)
@@ -659,18 +661,19 @@ namespace ORTS.MultiPlayer
         }
 
 
-        public MSGPlayerTrainSw(string n, Train t, int tn, bool revForm)
+        public MSGPlayerTrainSw(string n, Train t, int tn, bool oldRevForm, bool newRevForm)
         {
             user = n;
             if (t != null) num = tn;
             if (t.LeadLocomotive != null) leadingID = t.LeadLocomotive.CarID;
             else leadingID = "NA";
-            reverseFormation = revForm;
+            oldTrainReverseFormation = oldRevForm;
+            newTrainReverseFormation = newRevForm;
           }
 
         public override string ToString()
         {
-            string tmp = "PLAYERTRAINSW " + user + " " + num + " " + reverseFormation + " " + "\r" + leadingID + "\r";
+            string tmp = "PLAYERTRAINSW " + user + " " + num + " " + oldTrainReverseFormation + " " + newTrainReverseFormation + " " + "\r" + leadingID + "\r";
             return " " + tmp.Length + ": " + tmp;
         }
 
@@ -2464,6 +2467,7 @@ namespace ORTS.MultiPlayer
 				}
 				if (tmpcars2.Count == 0) return;
 				train2.Cars = tmpcars2;
+                train2.Name = String.Concat(String.Copy(train.Name), Train.TotalNumber.ToString());
 				train2.LeadLocomotive = null;
                 train2.LeadNextLocomotive();
 				train2.CheckFreight();
@@ -2540,8 +2544,11 @@ namespace ORTS.MultiPlayer
 				if (MPManager.IsServer())
 				{
 					this.newTrainNumber = train2.Number;//we got a new train number, will tell others.
+                    train2.TrainType = Train.TRAINTYPE.STATIC;
 					this.oldTrainNumber = train.Number;
 					train2.LastReportedSpeed = 1;
+                    if (train2.Name.Length < 4) train2.Name = String.Concat("STATIC-", String.Copy(train2.Name));
+                    Program.Simulator.AI.aiListChanged = true;
 					MPManager.BroadCast(this.ToString());//if server receives this, will tell others, including whoever sent the information
 				}
 				else
@@ -2625,7 +2632,7 @@ namespace ORTS.MultiPlayer
 
 		}
 
-		public MSGCouple(Train t, Train oldT)
+		public MSGCouple(Train t, Train oldT, bool remove)
 		{
 			cars = new string[t.Cars.Count];
 			ids = new string[t.Cars.Count];
@@ -2670,6 +2677,7 @@ namespace ORTS.MultiPlayer
 				if (Program.Simulator.Confirmer != null)
                     Program.Simulator.Confirmer.Information(Viewer3D.Viewer.Catalog.GetString("Trains coupled, hit \\ then Shift-? to release brakes"));
 			}
+            if (!MPManager.IsServer() || !(oldT.TrainType == Train.TRAINTYPE.AI_INCORPORATED))
 			MPManager.Instance().AddOrRemoveTrain(oldT, false); //remove the old train
 		}
 

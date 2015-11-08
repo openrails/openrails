@@ -173,7 +173,7 @@ namespace ORTS.Viewer3D.Popups
                 Viewer.TrainListWindow.ClickedTrainFromList = true;
 
             }
-            if (PickedTrainFromList != null && !MultiPlayer.MPManager.IsMultiPlayer() && (PickedTrainFromList == Viewer.SelectedTrain || (PickedTrainFromList.TrainType == Train.TRAINTYPE.AI_INCORPORATED && 
+            if (PickedTrainFromList != null && (PickedTrainFromList == Viewer.SelectedTrain || (PickedTrainFromList.TrainType == Train.TRAINTYPE.AI_INCORPORATED && 
                 (PickedTrainFromList as AITrain).IncorporatingTrain.IsPathless && (PickedTrainFromList as AITrain).IncorporatingTrain == Viewer.SelectedTrain)) && !PickedTrainFromList.IsActualPlayerTrain &&
                 Viewer.Simulator.IsAutopilotMode && PickedTrainFromList.IsPlayable)
             {

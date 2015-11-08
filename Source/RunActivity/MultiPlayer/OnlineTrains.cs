@@ -254,6 +254,7 @@ namespace ORTS.MultiPlayer
             OnlinePlayer p;
             var doesPlayerExist = Players.TryGetValue(player.user, out p);
             if (!doesPlayerExist) return;
+            if (player.oldTrainReverseFormation) p.Train.ReverseFormation(false);
             p.LeadingLocomotiveID = player.leadingID;
             Train train;
 
@@ -268,7 +269,7 @@ namespace ORTS.MultiPlayer
                 train.TrainType = Train.TRAINTYPE.REMOTE;
             }
             p.Train = train;
-            if (player.reverseFormation) p.Train.ReverseFormation(false);
+            if (player.newTrainReverseFormation) p.Train.ReverseFormation(false);
         }
 	}
 }
