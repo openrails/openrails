@@ -157,6 +157,7 @@ namespace ORTS.Viewer3D.RollingStock
             UserInputCommands.Add(UserCommands.ControlHeadlightDecrease, new Action[] { Noop, () => new HeadlightCommand(Viewer.Log, false) });
             UserInputCommands.Add(UserCommands.ControlLight, new Action[] { Noop, () => new ToggleCabLightCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommands.ControlRefill, new Action[] { () => StopRefillingOrUnloading(Viewer.Log), () => AttemptToRefillOrUnload() });
+            UserInputCommands.Add(UserCommands.ControlImmediateRefill, new Action[] { () => StopRefillingOrUnloading(Viewer.Log), () => ImmediateRefill() });
             UserInputCommands.Add(UserCommands.ControlOdoMeterShowHide, new Action[] { Noop, () => new ToggleOdometerCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommands.ControlOdoMeterReset, new Action[] { Noop, () => new ResetOdometerCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommands.ControlOdoMeterDirection, new Action[] { Noop, () => new ToggleOdometerDirectionCommand(Viewer.Log) });
@@ -430,6 +431,34 @@ namespace ORTS.Viewer3D.RollingStock
             return (float)Math.Sqrt(WorldLocation.GetDistanceSquared(intakeLocation, match.Pickup.Location));
         }
 
+        // This process is tied to the Shift T key combination
+        // The purpose of is to perform immediate refueling without having to pull up alongside the fueling station.
+        public void ImmediateRefill()
+        {
+            MatchedWagonAndPickup = null;   // Ensures that releasing the Shift T key doesn't do anything unless there is something to do.
+
+            var loco = this.Locomotive;
+            var match = GetMatchingPickup(loco.Train);
+
+            if (match == null && !(loco is MSTSElectricLocomotive))
+            {
+                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetString("Refill: Immediate refill process selected, refilling immediately."));
+                loco.RefillImmediately();
+                return;
+            }
+            if (match == null)
+            {
+                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetString("Refill: Electric loco and no pickup. Command rejected"));
+                return;
+            }
+            if (match.Wagon is MSTSDieselLocomotive || match.Wagon is MSTSSteamLocomotive || (match.Wagon.IsTender && loco is MSTSSteamLocomotive))
+            {
+                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetString("Refill: Immediate refill process selected, refilling immediately."));
+                loco.RefillImmediately();
+                return;
+            }
+        }
+
         /// <summary>
         /// Prompts if cannot refill yet, else starts continuous refilling.
         /// Tries to find the nearest supply (pickup point) which can refill the locos and tenders in the train.  
@@ -442,11 +471,7 @@ namespace ORTS.Viewer3D.RollingStock
 
             var match = GetMatchingPickup(loco.Train);
             if (match == null && !(loco is MSTSElectricLocomotive))
-            {
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetString("Refill: No suitable pick-up point anywhere, so refilling immediately."));
-                loco.RefillImmediately();
                 return;
-            }
             if (match == null)
             {
                 Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetString("Refill: Electric loco and no pickup. Command rejected"));

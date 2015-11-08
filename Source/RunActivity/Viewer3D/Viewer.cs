@@ -426,6 +426,7 @@ namespace ORTS.Viewer3D
             {
                 PantographCommand.Receiver = (MSTSElectricLocomotive)PlayerLocomotive;
             }
+            ImmediateRefillCommand.Receiver = (MSTSLocomotiveViewer)PlayerLocomotiveViewer;
             RefillCommand.Receiver = (MSTSLocomotiveViewer)PlayerLocomotiveViewer;
             ToggleOdometerCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ResetOdometerCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;

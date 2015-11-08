@@ -199,6 +199,7 @@ namespace ORTS.Settings
         [GetString("Control Firing")] ControlFiring,
         [GetString("Control Refill")] ControlRefill,
         [GetString("Control TroughRefill")] ControlTroughRefill,
+        [GetString("Control ImmediateRefill")]ControlImmediateRefill,
     }
 
     /// <summary>
@@ -539,6 +540,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommands.ControlHeadlightDecrease] = new UserCommandKeyInput(0x23, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlHeadlightIncrease] = new UserCommandKeyInput(0x23);
             Commands[(int)UserCommands.ControlHorn] = new UserCommandKeyInput(0x39);
+            Commands[(int)UserCommands.ControlImmediateRefill] = new UserCommandKeyInput(0x14, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlInitializeBrakes] = new UserCommandKeyInput(0x35, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlInjector1] = new UserCommandKeyInput(0x17);
             Commands[(int)UserCommands.ControlInjector1Decrease] = new UserCommandKeyInput(0x25, KeyModifiers.Shift);
