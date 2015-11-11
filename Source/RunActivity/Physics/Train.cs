@@ -11736,7 +11736,7 @@ namespace ORTS
 
             // check if train is on original path
             thisInfo.isOnPath = false;
-            if (TCRoute != null && TCRoute.activeSubpath >= 0)
+            if (TCRoute != null && TCRoute.activeSubpath >= 0 && TCRoute.TCRouteSubpaths != null && TCRoute.TCRouteSubpaths.Count > TCRoute.activeSubpath)
             {
                 TCSubpathRoute validPath = TCRoute.TCRouteSubpaths[TCRoute.activeSubpath];
                 int routeIndex = validPath.GetRouteIndex(PresentPosition[0].TCSectionIndex, 0);
