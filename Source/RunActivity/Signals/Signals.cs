@@ -12841,6 +12841,10 @@ namespace ORTS
         public int GetEndSection(Train thisTrain)
         {
             int thisTrainAndSubpathIndex = GetTrainAndSubpathIndex(thisTrain.Number, thisTrain.TCRoute.activeSubpath);
+            if (!TrainReferences.ContainsKey(thisTrainAndSubpathIndex))
+            {
+                Trace.TraceWarning("Multiple passing paths at the same location, without common branch out, or return switch. Check the passing paths for Train name: {0} (number: {1}), and other train's paths, which have passing paths at the same locations", thisTrain.Name, thisTrain.Number);
+            }
             int pathIndex = TrainReferences[thisTrainAndSubpathIndex][0];
             DeadlockPathInfo pathInfo = AvailablePathList[pathIndex];
             return (pathInfo.EndSectionIndex);
