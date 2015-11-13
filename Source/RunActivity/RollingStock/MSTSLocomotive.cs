@@ -1118,7 +1118,7 @@ namespace ORTS
         {
             // Method to set force and power info
             // An alternative method in the steam locomotive will override this and input force and power info for it.
-            if (PowerOn)
+            if (PowerOn && Direction != Direction.N)
             {
                 if (TractiveForceCurves == null)
                 {
