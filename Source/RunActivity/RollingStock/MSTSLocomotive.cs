@@ -1663,7 +1663,7 @@ namespace ORTS
             else if (CombinedControlType == CombinedControl.ThrottleAir && ThrottleController.CurrentValue <= 0)
                 StartTrainBrakeIncrease(null);
             else
-                StartThrottleToZero(ThrottleController.SmoothMin());
+                StartThrottleToZero(0.0f);
 
         }
 
