@@ -1712,6 +1712,8 @@ namespace ORTS
                         if (Program.Viewer.TrainListWindow.SuspendOldPlayer)
                         {
                             playerTrain.MovementState = AITrain.AI_MOVEMENT_STATE.SUSPENDED;
+                            if (playerTrain.ValidRoute[0] != null && playerTrain.PresentPosition[0].RouteListIndex != -1 &&
+                                playerTrain.ValidRoute[0].Count > playerTrain.PresentPosition[0].RouteListIndex + 1)
                             playerTrain.signalRef.BreakDownRoute(playerTrain.ValidRoute[0][playerTrain.PresentPosition[0].RouteListIndex + 1].TCSectionIndex,
                                playerTrain.routedForward);
                             Program.Viewer.TrainListWindow.SuspendOldPlayer = false;
