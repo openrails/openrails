@@ -8439,6 +8439,18 @@ namespace ORTS
         }
 
         //================================================================================================//
+        /// <summary>
+        /// Remove train
+        /// <\summary>
+
+        public virtual void RemoveTrain()
+        {
+            RemoveFromTrack();
+            ClearDeadlocks();
+            Simulator.Trains.Remove(this);
+        }
+
+        //================================================================================================//
         //
         // Remove train (after coupling)
         //

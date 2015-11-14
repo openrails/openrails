@@ -3960,7 +3960,12 @@ namespace ORTS
                 File.AppendAllText(@"C:\temp\checktrain.txt", "Train " +
                      Number.ToString() + " removed\n");
             }
-            if (TrainType != TRAINTYPE.AI_PLAYERHOSTING ) RemoveTrain();
+            if (TrainType != TRAINTYPE.AI_PLAYERHOSTING)
+            {
+                if (IncorporatedTrainNo >= 0 && Simulator.TrainDictionary.Count > IncorporatedTrainNo &&
+                   Simulator.TrainDictionary[IncorporatedTrainNo] != null) Simulator.TrainDictionary[IncorporatedTrainNo].RemoveTrain();
+                RemoveTrain();
+            }
             returnValue[1] = false;
         }
 
@@ -4641,7 +4646,7 @@ namespace ORTS
         /// Remove train
         /// <\summary>
 
-        public virtual void RemoveTrain()
+        public override void RemoveTrain()
         {
             RemoveFromTrack();
             ClearDeadlocks();
