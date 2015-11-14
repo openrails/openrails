@@ -134,7 +134,9 @@ namespace ORTS
                 (aiTrain.AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).keepIt.currentMvmtState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION)))
                 // WP is running
                 {
-                    int remainingDelay = ((AuxActionWPItem)aiTrain.nextActionInfo).ActualDepart - currentClock;
+                    int remainingDelay;                  
+                    if ((AuxActionWPItem)aiTrain.nextActionInfo != null) remainingDelay = ((AuxActionWPItem)aiTrain.nextActionInfo).ActualDepart - currentClock;
+                    else remainingDelay = ((AIActionWPRef)SpecAuxActions[0]).keepIt.ActualDepart - currentClock;
                     ((AIActionWPRef)SpecAuxActions[0]).SetDelay(remainingDelay);
                 }
             foreach (var action in SpecAuxActions)
