@@ -235,6 +235,13 @@ namespace ORTS
         public float PrevMotiveForceN;
         public float GravityForceN;  // Newtons  - signed relative to direction of car - 
         public float CurveForceN;   // Resistive force due to curve, in Newtons
+        //private float _prevCurveForceN=0f;
+
+        // filter curve force for audio to prevent rapid changes.
+        //private IIRFilter CurveForceFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, 1.0f, 0.9f);
+        private SmoothedData CurveForceFilter = new SmoothedData(0.75f);
+        public float CurveForceNFiltered;
+
         public float TunnelForceN;  // Resistive force due to tunnel, in Newtons
         public float FrictionForceN; // in Newtons ( kg.m/s^2 ) unsigned, includes effects of curvature
         public float BrakeForceN;    // brake force in Newtons
@@ -309,7 +316,8 @@ namespace ORTS
             CurveResistanceSpeedDependent = Simulator.Settings.CurveResistanceSpeedDependent;
             CurveSpeedDependent = Simulator.Settings.CurveSpeedDependent;
             TunnelResistanceDependent = Simulator.Settings.TunnelResistanceDependent;
-            
+
+            //CurveForceFilter.Initialize();
             // Initialize tunnel resistance values
 
             DoubleTunnelCrossSectAreaM2 = (float)Simulator.TRK.Tr_RouteFile.DoubleTunnelAreaM2;
@@ -415,7 +423,7 @@ namespace ORTS
 
             WagonType = GetWagonType();     // Determine type of wagon for use in following
             UpdateCurveSpeedLimit(); // call this first as it will provide inputs for the curve force.
-            UpdateCurveForce();
+            UpdateCurveForce(elapsedClockSeconds);
             UpdateTunnelForce();
             UpdateCarriageHeatLoss();
             
@@ -782,7 +790,7 @@ namespace ORTS
         /// base.UpdateCurveForce();
         /// CurveForceN *= someCarSpecificCoef;     
         /// </summary>
-        public virtual void UpdateCurveForce()
+        public virtual void UpdateCurveForce(float elapsedClockSeconds)
         {
             if (CurveResistanceSpeedDependent)
             {
@@ -898,13 +906,14 @@ namespace ORTS
                     float CurveResistanceSpeedFactor = Math.Abs((MaxCurveEqualLoadSpeedMps - AbsSpeedMpS) / MaxCurveEqualLoadSpeedMps) * StartCurveResistanceFactor;
                     CurveForceN *= CurveResistanceSpeedFactor * CurveResistanceZeroSpeedFactor;
                     CurveForceN *= GravitationalAccelerationMpS2; // to convert to Newtons
-              
                 }
                 else
                 {
                     CurveForceN = 0f;
                 }
-
+                //CurveForceNFiltered = CurveForceFilter.Filter(CurveForceN, elapsedClockSeconds);
+                CurveForceFilter.Update(elapsedClockSeconds, CurveForceN);
+                CurveForceNFiltered = CurveForceFilter.SmoothedValue;
             }
         }
 

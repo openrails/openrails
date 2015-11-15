@@ -1170,6 +1170,7 @@ namespace ORTS.Viewer3D
                 case Orts.Formats.Msts.VolumeCurve.Controls.Variable2Controlled: return car.Variable2;
                 case Orts.Formats.Msts.VolumeCurve.Controls.Variable3Controlled: return car.Variable3;
                 case Orts.Formats.Msts.VolumeCurve.Controls.BrakeCylControlled: return car.BrakeSystem.GetCylPressurePSI();
+                case Orts.Formats.Msts.VolumeCurve.Controls.CurveForceControlled: return car.CurveForceNFiltered;
                 default: return 0;
             }
         }
@@ -1585,6 +1586,7 @@ namespace ORTS.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable2_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable3_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.BrakeCyl_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.CurveForce_Dec_Past:
                     if (newValue < SMS.Threshold)
                     {
                         Signaled = true;
@@ -1598,6 +1600,7 @@ namespace ORTS.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable2_Inc_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable3_Inc_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.BrakeCyl_Inc_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.CurveForce_Inc_Past:
                     if (newValue > SMS.Threshold)
                     {
                         Signaled = true;
@@ -1669,6 +1672,9 @@ namespace ORTS.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.BrakeCyl_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.BrakeCyl_Inc_Past:
                     return car.BrakeSystem.GetCylPressurePSI();
+                case Orts.Formats.Msts.Variable_Trigger.Events.CurveForce_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.CurveForce_Inc_Past:
+                    return car.CurveForceNFiltered;
                 default:
                     return 0;
             }
