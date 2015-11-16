@@ -79,6 +79,7 @@ ul {
 }
 
 .container {
+  overflow: hidden;
   background-color: #ffe;
 }
 

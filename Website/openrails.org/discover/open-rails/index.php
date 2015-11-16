@@ -15,7 +15,7 @@
 		</div>
 		<div class="row">
 			<div class="col-md-6">
-<h2>Open Rails and MSTS</h2>
+<h2>Open Rails and Microsoft Train Simulator</h2>
 <p>
   Our project provides a train simulator for the largest collection of digital content in the world - routes, rolling stock 
   and activities - initially developed for Microsoft's Train Simulator product (MSTS).
@@ -43,10 +43,10 @@
   course, an overflowing wish list.
 </p><p>
   New, untested, versions of the product are freely and immediately available, so we have many users who quickly find any issues with a  new version and maintain quality at a very high level. From its inception, Open Rails has proved much more robust and crash-proof than MSTS
-  has managed.
+  managed.
 </p><p>
   While the simplest bugs are fixed at once, we maintain a bug tracker to record more complex bugs and monitor their progress through
-  the stages <span class="tt">New > Confirmed > Triaged > Assigned > Fixed</span>.
+  the stages New, Confirmed, Triaged, Assigned, Fixed.
 </p>
 <h2>An Exciting Future</h2>
 <p>

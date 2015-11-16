@@ -17,7 +17,7 @@
 			<div class="col-md-5">
 <h2>Planning And Voluntary Projects</h2>
 <p>
-It's important to have clear goals, so our users and contributors know where we are going. However teams like ours, made up of willing volunteers, are unlikely to follow a detailed plan closely and expertise in a topic is not always available.
+It's important to have clear goals, so our users and contributors know where we are going. However, teams like ours, made up of willing volunteers, are unlikely to follow a detailed plan closely and expertise in a topic is not always available.
 </p><p>
 Volunteers, though, are constantly surprising us. Someone new comes on board and, all of a sudden, we make great leaps forward in a neglected area. Sometimes a developer pairs with a domain expert to add realism to a crude feature and the pace of progress becomes amazing.
 </p>
