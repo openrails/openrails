@@ -23,13 +23,14 @@ echo "For convenience, you can also directly <a href='$file_path'>download the m
 echo date('d-M-Y', filemtime($file_path)) . '&nbsp; &nbsp; &nbsp; Size: ' . round(filesize($file_path) / 1024) . ' KB'; 
 ?>
 				</p>
-				<h2>On-Line Manual Replacement</h2>
+				<h2>Test Environment for Models</h2>
 				<p>
-          The conventional manual (above) is being replaced by an <a href="http://www.openrails.coalstonewcastle.com.au/doku.php">on-line "wiki" version</a> which is accessible from any browser
-          and includes good search facilities.          
-				</p><p>
-          Being more convenient for the document editors than the old manual, we hope that the new version will quickly become a
-          complete and entirely accurate resource. 
+        One of our aims for Open Rails is that train performance should be as realistic as closely as possible. To help achieve this,
+        Peter Newell has developed <a href="http://www.coalstonewcastle.com.au/physics/">an environment for testing</a> the performance of locos and rolling stock. Do they perform as we expect?
+        </p><p>
+It may be the model that is not configured correctly or, as Open Rails develops, it may be that the simulator is lacking in realism.
+        </p><p>
+        In either case, a neutral, repeatable test environment helps to pin down the issue and get it fixed. 
         </p>
 			</div>
 			<div class="col-md-2">&nbsp;</div>

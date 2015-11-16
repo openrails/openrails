@@ -28,6 +28,13 @@ The model, generously donated by <a href="http://www.MakingTracks-online.co.uk" 
 </p><p>
 You can also watch a player driving the route on Open Rails in <a href="https://www.youtube.com/watch?v=aZ5aVEvbOOE&feature=youtu.be" target="_blank">this video</a>, which provides a voice-over.
 </p>
+<h2>Great Zig Zag Railway - New South Wales</h2>
+<p><br>
+<img src="zig-zag.jpg" width=300 title="Great Zig Zag Railway"><br>
+<p style="text-align: center">Great Zig Zag Railway</p>
+<p>
+As mentioned opposite, <a href="http://www.zigzag.coalstonewcastle.com.au/">this route</a> is steam-only and provides some good variety for new players to Open Rails.
+</p>
         </div>
         <div class="col-md-2"></div>
         <div class="col-md-4">
@@ -45,7 +52,7 @@ The Spanish websites <a href="http://viajerosaltren.es">Viajeros al Tren</a> and
 </p><p>
 <a href="http://www.dekosoft.com">Dekosoft Trains</a> have since offered GP30 locos with 3D cabs exclusively for Open Rails.
 </p><p>
-Peter Newell has just released (June 2105) the <a href="http://www.zigzag.coalstonewcastle.com.au/">Great Zig Zag Railway</a>, a steam route for Open Rails v1.0 (this 120MB download requires no other files).
+Peter Newell has just released (June 2015) the <a href="http://www.zigzag.coalstonewcastle.com.au/">Great Zig Zag Railway</a>, a steam route for Open Rails v1.0 (this 120MB download requires no other files).
 </p><p>
 Some Australian routes (New South Wales) have been packaged by Peter Newell to work just with OR:
 </p>
