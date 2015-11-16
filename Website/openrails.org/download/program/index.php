@@ -30,7 +30,7 @@
             </p>
           </a>
           <p style="text-align: center;">
-            <?php echo 'Date: ' . date('d-M-Y', filemtime("$file_path/$download_stable")) . '&nbsp; &nbsp; &nbsp; Size: ' . round(filesize("$file_path/$download_stable") / 1024 / 1024) . 'MB'; ?>
+            <?php echo date('d F Y', filemtime("$file_path/$download_stable")) . ', ' . round(filesize("$file_path/$download_stable") / 1024 / 1024) . 'MB'; ?>
           </p>
           <!--<p class="alert alert-info">
             We're working hard on producing the next stable version. Please check back soon.
@@ -48,7 +48,7 @@
             </p>
           </a>
           <p style="text-align: center;">
-            <?php echo 'Date: ' . date('d-M-Y', filemtime("$file_path/$download_testing")) . '&nbsp; &nbsp; &nbsp; Size: ' . round(filesize("$file_path/$download_testing") / 1024 / 1024) . 'MB'; ?>
+            <?php echo date('d F Y', filemtime("$file_path/$download_testing")) . ', ' . round(filesize("$file_path/$download_testing") / 1024 / 1024) . 'MB'; ?>
           </p>
         </div>
       </div>

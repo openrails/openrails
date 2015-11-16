@@ -19,7 +19,7 @@
       <div class="row">
         <div class="col-md-1"></div>
         <div class="col-md-4">
-          <h1>Stable Version</h1>
+          <h1>Stable Version 1.0</h1>
           <br>
           <a href='<?php echo "$file_path/$source_stable" ?>' class='btn download_button btn-lg btn-block'>
             <h2><span class='glyphicon glyphicon-download'></span> &nbsp; Download the source code</h2>
@@ -28,7 +28,7 @@
             </p>
           </a>
           <p style="text-align: center;">
-            <?php echo 'Date: ' . date('d-M-Y', filemtime("$file_path/$source_stable")) . '&nbsp; &nbsp; &nbsp; Size: ' . round(filesize("$file_path/$source_stable") / 1024 / 1024) . 'MB'; ?>
+            <?php echo date('d F Y', filemtime("$file_path/$source_stable")) . ', ' . round(filesize("$file_path/$source_stable") / 1024 / 1024) . 'MB'; ?>
           </p>
           <!--<p class="alert alert-info">
             We're working hard on producing the next stable version. Please check back soon.
@@ -45,7 +45,7 @@
             </p>
           </a>
           <p style="text-align: center;">
-            <?php echo 'Date: ' . date('d-M-Y', filemtime("$file_path/$source_testing")) . '&nbsp; &nbsp; &nbsp; Size: ' . round(filesize("$file_path/$source_testing") / 1024 / 1024) . 'MB'; ?>
+            <?php echo date('d F Y', filemtime("$file_path/$source_testing")) . ', ' . round(filesize("$file_path/$source_testing") / 1024 / 1024) . 'MB'; ?>
           </p>
         </div>
       </div>

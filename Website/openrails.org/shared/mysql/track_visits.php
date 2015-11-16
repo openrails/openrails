@@ -38,15 +38,15 @@ if (!isset($_SESSION['id']) || strlen($_SESSION['id']) < 10) {
 	}
 	// For visitors with cookies turned off, each visit to a webpage results in a new entry and several in Visit and Visitor_Attribute.
 	// Could change this so each session will be as a different individual.
-  // Not yet implemented.
-  // menu.php must be changed to add 	echo '?', htmlspecialchars(SID); as the first parameter in every relative URL.
-  // Should be detected automatically by the PHP server, but trials show this isn't the case for v5.2.8 as the setting.
+	// Not yet implemented.
+	// menu.php must be changed to add 	echo '?', htmlspecialchars(SID); as the first parameter in every relative URL.
+	// Should be detected automatically by the PHP server, but trials show this isn't the case for v5.2.8 as the setting.
 	// ini_get("session.use_only_cookies") returns 1 meaning that the SID parameter is ignored by session_start().
 
-  // Using Session variables can be dangerous.
+	// Using Session variables can be dangerous.
 	// "Please note that if you have register_globals to On, global variables associated to $_SESSION variables are references,
 	// so this may lead to some weird situations." Re-using $id and changing its value also changes $_SESSION['id']
-  $_SESSION['id'] = $id;
+	$_SESSION['id'] = $id;
 }
 
 

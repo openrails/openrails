@@ -29,7 +29,7 @@ echo date('Y', filemtime("$path/../files/OpenRailsTesting.zip"));
           </div>
 			    <div class="col-md-4 footer_column top_right_footer">
             <p>
-              Page updated on <?php echo date ("d F Y @ H:i", filemtime("index.php")) ?>
+              Page updated on <?php echo date('d M Y \\a\\t H:i', filemtime('index.php')) ?>
             </p>
             <ul>
             <li>

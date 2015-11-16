@@ -19,8 +19,8 @@
 				  Each download includes a copy of the Operating Manual. 
 <?php 
 $file_path = '../../files/Manual.pdf';
-echo "For convenience, you can also directly <a href='$file_path'>download the manual</a> - dated ";
-echo date('d-M-Y', filemtime($file_path)) . '&nbsp; &nbsp; &nbsp; Size: ' . round(filesize($file_path) / 1024) . ' KB'; 
+echo "For convenience, you can also directly <a href='$file_path'>download the manual</a>";
+echo ' (' . date('d F Y', filemtime($file_path)) . ', ' . round(filesize($file_path) / 1024) . ' KB).'; 
 ?>
 				</p>
 				<h2>Test Environment for Models</h2>
@@ -55,36 +55,36 @@ It may be the model that is not configured correctly or, as Open Rails develops,
           <li>
 <?php 
 $file_path = '../../files/Keyboard_Layout_DE_V1.3.1e.pdf';
-echo "A <a href='$file_path'>keyboard guide</a> for German keyboards - dated ";
-echo date('d-M-Y', filemtime($file_path)) . '&nbsp; &nbsp; &nbsp; Size: ' . round(filesize($file_path) / 1024) . ' KB'; 
+echo "A <a href='$file_path'>guide for German keyboards</a>";
+echo ' (' . date('d F Y', filemtime($file_path)) . ', ' . round(filesize($file_path) / 1024) . ' KB)'; 
 ?>
           </li>
           <li>
 <?php 
 $file_path = '../../files/signalling_operational.pdf';
-echo "<a href='$file_path'>signaling - Operational Changes</a> which describes signaling in OR - dated ";
-echo date('d-M-Y', filemtime($file_path)) . '&nbsp; &nbsp; &nbsp; Size: ' . round(filesize($file_path) / 1024) . ' KB'; 
+echo "<a href='$file_path'>Signaling - Operational Changes</a> which describes signaling in Open Rails";
+echo ' (' . date('d F Y', filemtime($file_path)) . ', ' . round(filesize($file_path) / 1024) . ' KB)'; 
 ?>
           </li>
           <li>
 <?php 
 $file_path = '../../files/ORTS_Trackviewer_manual.pdf';
-echo "<a href='$file_path'>OR Trackviewer</a> which maps the track and roads - dated ";
-echo date('d-M-Y', filemtime($file_path)) . '&nbsp; &nbsp; &nbsp; Size: ' . round(filesize($file_path) / 1024) . ' KB'; 
+echo "<a href='$file_path'>Open Rails Trackviewer</a> which maps the track and roads";
+echo ' (' . date('d F Y', filemtime($file_path)) . ', ' . round(filesize($file_path) / 1024) . ' KB)'; 
 ?>
           </li>
           <li>
 <?php 
 $file_path = '../../files/OR_Steam Model_03_02_2014.pdf';
-echo "<a href='$file_path'>Steam Model</a> describing the physics OR uses - dated ";
-echo date('d-M-Y', filemtime($file_path)) . '&nbsp; &nbsp; &nbsp; Size: ' . round(filesize($file_path) / 1024) . ' KB'; 
+echo "<a href='$file_path'>Steam Model</a> describing the physics in Open Rails";
+echo ' (' . date('d F Y', filemtime($file_path)) . ', ' . round(filesize($file_path) / 1024) . ' KB)'; 
 ?>
           </li>
           <li>
 <?php 
 $file_path = '../../files/superelevation_v1.pdf';
-echo "<a href='$file_path'>Speed Limits on Curves</a> - dated ";
-echo date('d-M-Y', filemtime($file_path)) . '&nbsp; &nbsp; &nbsp; Size: ' . round(filesize($file_path) / 1024) . ' KB'; 
+echo "<a href='$file_path'>Speed Limits on Curves</a>";
+echo ' (' . date('d F Y', filemtime($file_path)) . ', ' . round(filesize($file_path) / 1024) . ' KB)'; 
 ?>
           </li>
         </ul>
