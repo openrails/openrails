@@ -253,6 +253,8 @@ namespace ORTS
         public bool CurveSpeedDependent;
         public bool TunnelResistanceDependent;
 
+        float MaxDurableSafeCurveSpeedMpS; 
+
         // temporary values used to compute coupler forces
         public float CouplerForceA; // left hand side value below diagonal
         public float CouplerForceB; // left hand side value on diagonal
@@ -690,8 +692,18 @@ namespace ORTS
 
                   if (CurveSpeedDependent)
                   {
-                      float MaxDurableSafeCurveSpeedMpS = MaxSafeCurveSpeedMps * 10.0f;  // Temporary value until durability factor is read directly from consist file.
-                    //  float MaxDurableSafeCurveSpeedMpS = MaxSafeCurveSpeedMps * Simulator.CurveDurability;  // Finds user setting for durability
+                     // This section tests for the durability value of the consist. Durability value will non-zero if read from consist files. 
+                     // Timetable mode does not read consistent durability values for consists, and therefore value will be zero at this time. 
+                     // Hence a large value of durability (10.0) is assumed, thus effectively disabling it in TT mode
+                      if (Simulator.CurveDurability != 0.0)
+                      {
+                          MaxDurableSafeCurveSpeedMpS = MaxSafeCurveSpeedMps * Simulator.CurveDurability;  // Finds user setting for durability
+                      }
+                      else
+                      {
+                          MaxDurableSafeCurveSpeedMpS = MaxSafeCurveSpeedMps * 10.0f;  // Value of durability has not been set, so set to a large value
+                      }
+                  
                     // Test current speed to see if greater then "safe" speed around the curve
                     if (s > MaxSafeCurveSpeedMps)
                     {
@@ -699,7 +711,7 @@ namespace ORTS
                         {
                             IsMaxSafeCurveSpeed = true; // set flag for IsMaxSafeCurveSpeed reached
 
-                          if (Train.IsPlayerDriven)   
+                            if (Train.IsPlayerDriven && !Simulator.TimetableMode)    // Warning messages will only apply if this is player train and not running in TT mode
                                 {
                                     if (Train.IsFreight)
                                         {
@@ -713,7 +725,7 @@ namespace ORTS
                           
                         }
 
-                        if (IsMaxSafeCurveSpeed && s > MaxDurableSafeCurveSpeedMpS)
+                        if (IsMaxSafeCurveSpeed && s > MaxDurableSafeCurveSpeedMpS && Train.GetType() != typeof(AITrain) && Train.GetType() != typeof(TTTrain) ) // Breaking of brake hose will not apply to TT mode or AI trains
                           {
                               BrakeSystem.FrontBrakeHoseConnected = false; // break the brake hose connection between cars if the speed is too fast
                               Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("You were travelling too fast for this curve, and have snapped a brake hose. You will need to repair the hose and restart."));   
@@ -744,8 +756,8 @@ namespace ORTS
                         if (!IsCriticalSpeed)
                         {
                             IsCriticalSpeed = true; // set flag for IsCriticalSpeed reached
-                            
-                            if (Train.IsPlayerDriven)
+
+                            if (Train.IsPlayerDriven && !Simulator.TimetableMode)  // Warning messages will only apply if this is player train and not running in TT mode
                             {
                                 Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Your train has overturned, and this is simulated by a broken coupler."));
                             }
