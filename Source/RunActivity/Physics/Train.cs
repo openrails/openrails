@@ -209,6 +209,7 @@ namespace ORTS
         public int AttachTo = -1;                              // attach information : train to which to attach at end of run
         public int IncorporatedTrainNo = -1;                        // number of train incorporated in actual train
         public Train IncorporatingTrain;                      // train incorporating another train
+        public int IncorporatingTrainNo = -1;                   // number of train incorporating the actual train
 
         public Traffic_Service_Definition TrafficService;
         public int[,] MisalignedSwitch = new int[2, 2] { { -1, -1 }, { -1, -1 } };  // misaligned switch indication per direction:
@@ -513,7 +514,6 @@ namespace ORTS
 
             Simulator = simulator;
             RestoreCars(simulator, inf);
-            CheckFreight();
             Number = inf.ReadInt32();
             TotalNumber = Math.Max(Number + 1, TotalNumber);
             Name = inf.ReadString();
@@ -541,6 +541,26 @@ namespace ORTS
             allowedAbsoluteMaxSpeedSignalMpS = inf.ReadSingle();
             allowedAbsoluteMaxSpeedLimitMpS = inf.ReadSingle();
             IncorporatedTrainNo = inf.ReadInt32();
+            IncorporatingTrainNo = inf.ReadInt32();
+            if (IncorporatedTrainNo > -1)
+            {
+                Train train = GetOtherTrainByNumber(IncorporatedTrainNo);
+                    if (train != null)
+                    {
+                        train.IncorporatingTrain = this;
+                        train.IncorporatingTrainNo = Number;
+                    }
+            }
+            if (IncorporatingTrainNo > -1)
+            {
+                Train train = GetOtherTrainByNumber(IncorporatingTrainNo);
+                    if (train != null)
+                    {
+                        IncorporatingTrain = train;
+                    }
+            }
+            CheckFreight();
+
 
             SignalObjectItems = new List<ObjectItemInfo>();
             signalRef = simulator.Signals;
@@ -847,6 +867,7 @@ namespace ORTS
             outf.Write(allowedAbsoluteMaxSpeedSignalMpS);
             outf.Write(allowedAbsoluteMaxSpeedLimitMpS);
             outf.Write(IncorporatedTrainNo);
+            outf.Write(IncorporatingTrainNo);
 
             outf.Write((int)TrainType);
             outf.Write(tilted);
@@ -3390,6 +3411,7 @@ namespace ORTS
                     PassengerCarsNumber++;
                 if (car.IsDriveable && (car as MSTSLocomotive).CabViewList.Count > 0) IsPlayable = true;
             }
+            if (TrainType == TRAINTYPE.AI_INCORPORATED && IncorporatingTrainNo > -1) IsPlayable = true;
         } // CheckFreight
 
         //================================================================================================//

@@ -644,6 +644,7 @@ namespace ORTS
                         train.IncrementSubpath(train);
                 }
                 train.IncorporatingTrain = drivenTrain;
+                train.IncorporatingTrainNo = drivenTrain.Number;
                 ((AITrain)train).SuspendTrain(drivenTrain);
                 drivenTrain.IncorporatedTrainNo = train.Number;
                 if (MPManager.IsMultiPlayer()) MPManager.BroadCast((new MSGCouple(drivenTrain, train, false)).ToString());

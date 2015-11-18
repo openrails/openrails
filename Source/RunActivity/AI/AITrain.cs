@@ -3013,6 +3013,7 @@ namespace ORTS
                                 {
                                     MovementState = AI_MOVEMENT_STATE.STOPPED;
                                     CoupleAI(OtherTrain, thisTrainFront, otherTrainFront);
+                                    AI.aiListChanged = true;
                                     AttachTo = -1;
                                 }
                                 else if ((SpeedMpS - reqMinSpeedMpS) > 0.1f)
@@ -4168,6 +4169,7 @@ namespace ORTS
                     // if there is just here a reversal point, increment subpath in order to be in accordance with attachTrain
 
                     var ppTCSectionIndex = PresentPosition[0].TCSectionIndex;
+                    this.IncorporatingTrainNo = attachTrain.Number;
                     this.IncorporatingTrain = attachTrain;
                     SuspendTrain(attachTrain);
                     if (ppTCSectionIndex == TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1].TCSectionIndex)
