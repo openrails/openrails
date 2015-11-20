@@ -963,7 +963,10 @@ namespace ORTS
                     case PowerSupplyEvent.RaisePantograph:
                     case PowerSupplyEvent.LowerPantograph:
                         if (Pantographs != null)
+                        {
                             Pantographs.HandleEvent(evt);
+                            SignalEvent(Event.PantographToggle);
+                        }
                         break;
                 }
             }
@@ -980,7 +983,10 @@ namespace ORTS
                     case PowerSupplyEvent.RaisePantograph:
                     case PowerSupplyEvent.LowerPantograph:
                         if (Pantographs != null)
+                        {
                             Pantographs.HandleEvent(evt, id);
+                            SignalEvent(Event.PantographToggle);
+                        }
                         break;
                 }
             }

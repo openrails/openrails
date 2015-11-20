@@ -68,7 +68,7 @@ namespace ORTS
         MirrorClose, 
         MirrorOpen, 
         Pantograph1Down,
-        Pantograph1Toggle, // NOTE: Currently not used in Open Rails.
+        PantographToggle,
         Pantograph1Up,
         Pantograph2Down,
         Pantograph2Up,
@@ -124,8 +124,8 @@ namespace ORTS
         VigilanceAlarmOff,
         VigilanceAlarmOn,
         VigilanceAlarmReset,
-        WaterScoopDown, // NOTE: Currently not used in Open Rails.
-        WaterScoopUp, // NOTE: Currently not used in Open Rails.
+        WaterScoopDown,
+        WaterScoopUp,
         WiperOff,
         WiperOn,
         _HeadlightDim,
@@ -225,7 +225,7 @@ namespace ORTS
                         case 44: return Event.SteamHeatChange; // Event 44 only works first time in MSTS.
                         case 45: return Event.Pantograph1Up;
                         case 46: return Event.Pantograph1Down;
-                        case 47: return Event.Pantograph1Toggle;
+                        case 47: return Event.PantographToggle;
                         case 48: return Event.VigilanceAlarmReset;
                         // Event 49 is unused in MSTS.
                         // Event 50 is unused in MSTS.
