@@ -434,22 +434,22 @@ namespace ORTS.Viewer3D
             public void WeatherChange_Init(ORTSWeatherChange eventWeatherChange, WeatherControl weatherControl)
             {
                 var wChangeOn = false;
-                if (eventWeatherChange.ORTSOvercast >= 0 && eventWeatherChange.ORTSOvercastTransitionTimeS > 0)
+                if (eventWeatherChange.ORTSOvercast >= 0 && eventWeatherChange.ORTSOvercastTransitionTimeS >= 0)
                 {
                     ORTSOvercast = eventWeatherChange.ORTSOvercast;
                     ORTSOvercastTransitionTimeS = eventWeatherChange.ORTSOvercastTransitionTimeS;
                     overcastTimer = (float)ORTSOvercastTransitionTimeS;
-                    overcastChangeRate = (MathHelper.Clamp(ORTSOvercast, 0, 1.0f) - weatherControl.overcastFactor) / ORTSOvercastTransitionTimeS;
+                    overcastChangeRate = overcastTimer > 0 ? (MathHelper.Clamp(ORTSOvercast, 0, 1.0f) - weatherControl.overcastFactor) / ORTSOvercastTransitionTimeS : 0;
                     wChangeOn = true;
                 }
-                if (eventWeatherChange.ORTSFog >= 0 && eventWeatherChange.ORTSFogTransitionTimeS > 0)
+                if (eventWeatherChange.ORTSFog >= 0 && eventWeatherChange.ORTSFogTransitionTimeS >= 0)
                 {
                     ORTSFog = eventWeatherChange.ORTSFog;
                     ORTSFogTransitionTimeS = eventWeatherChange.ORTSFogTransitionTimeS;
                     fogTimer = (float)ORTSFogTransitionTimeS;
                     var fogFinalValue = MathHelper.Clamp(ORTSFog, 10, 100000);
                     fogDistanceIncreasing = false;
-                    fogChangeRate = (fogFinalValue - weatherControl.fogDistance) / (ORTSFogTransitionTimeS * ORTSFogTransitionTimeS);
+                    fogChangeRate = fogTimer > 0 ? (fogFinalValue - weatherControl.fogDistance) / (ORTSFogTransitionTimeS * ORTSFogTransitionTimeS) : 0;
                     if (fogFinalValue > weatherControl.fogDistance)
                     {
                         fogDistanceIncreasing = true;
@@ -458,7 +458,7 @@ namespace ORTS.Viewer3D
                     }
                     wChangeOn = true;
                 }
-                if (eventWeatherChange.ORTSPrecipitationIntensity >= 0 && eventWeatherChange.ORTSPrecipitationIntensityTransitionTimeS > 0)
+                if (eventWeatherChange.ORTSPrecipitationIntensity >= 0 && eventWeatherChange.ORTSPrecipitationIntensityTransitionTimeS >= 0)
                 {
                     ORTSPrecipitationIntensity = eventWeatherChange.ORTSPrecipitationIntensity;
                     ORTSPrecipitationIntensityTransitionTimeS = eventWeatherChange.ORTSPrecipitationIntensityTransitionTimeS;
@@ -466,20 +466,20 @@ namespace ORTS.Viewer3D
                     // Pricipitation ranges from 0 to max PrecipitationViewer.MaxIntensityPPSPM2 if 32bit.
                     // 16bit uses PrecipitationViewer.MaxIntensityPPSPM2_16
                     if (weatherControl.Viewer.GraphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF)
-                        precipitationIntensityChangeRate = (MathHelper.Clamp(ORTSPrecipitationIntensity, 0, PrecipitationViewer.MaxIntensityPPSPM2)
-                        - weatherControl.pricipitationIntensityPPSPM2) / ORTSPrecipitationIntensityTransitionTimeS;
+                        precipitationIntensityChangeRate = precipitationIntensityTimer > 0 ? (MathHelper.Clamp(ORTSPrecipitationIntensity, 0, PrecipitationViewer.MaxIntensityPPSPM2)
+                            - weatherControl.pricipitationIntensityPPSPM2) / ORTSPrecipitationIntensityTransitionTimeS : 0;
                     else
-                        precipitationIntensityChangeRate = (MathHelper.Clamp(ORTSPrecipitationIntensity, 0, PrecipitationViewer.MaxIntensityPPSPM2_16)
-                        - weatherControl.pricipitationIntensityPPSPM2) / ORTSPrecipitationIntensityTransitionTimeS;
+                        precipitationIntensityChangeRate = precipitationIntensityTimer > 0 ? (MathHelper.Clamp(ORTSPrecipitationIntensity, 0, PrecipitationViewer.MaxIntensityPPSPM2_16)
+                            - weatherControl.pricipitationIntensityPPSPM2) / ORTSPrecipitationIntensityTransitionTimeS : 0;
                     wChangeOn = true;
                 }
-                if (eventWeatherChange.ORTSPrecipitationLiquidity >= 0 && eventWeatherChange.ORTSPrecipitationLiquidityTransitionTimeS > 0)
+                if (eventWeatherChange.ORTSPrecipitationLiquidity >= 0 && eventWeatherChange.ORTSPrecipitationLiquidityTransitionTimeS >= 0)
                 {
                     ORTSPrecipitationLiquidity = eventWeatherChange.ORTSPrecipitationLiquidity;
                     ORTSPrecipitationLiquidityTransitionTimeS = eventWeatherChange.ORTSPrecipitationLiquidityTransitionTimeS;
                     precipitationLiquidityTimer = (float)ORTSPrecipitationLiquidityTransitionTimeS;
-                    precipitationLiquidityChangeRate = (MathHelper.Clamp(ORTSPrecipitationLiquidity, 0, 1.0f)
-                        - weatherControl.precipitationLiquidity) / ORTSPrecipitationLiquidityTransitionTimeS;
+                    precipitationLiquidityChangeRate = precipitationLiquidityTimer > 0 ? (MathHelper.Clamp(ORTSPrecipitationLiquidity, 0, 1.0f)
+                        - weatherControl.precipitationLiquidity) / ORTSPrecipitationLiquidityTransitionTimeS : 0;
                     wChangeOn = true;
                 }
                 weatherControl.weatherChangeOn = wChangeOn;
