@@ -1470,7 +1470,7 @@ namespace ORTS
                 MPManager.Notify((new MultiPlayer.MSGUncouple(train, train2, MultiPlayer.MPManager.GetUserName(), car.CarID, PlayerLocomotive)).ToString());
             }
             if (Confirmer !=null && Confirmer.Viewer != null && Confirmer.Viewer.IsReplaying) Confirmer.Confirm(CabControl.Uncouple, train.LastCar.CarID);
-            AI.aiListChanged = true;
+            if (AI != null) AI.aiListChanged = true;
         }
 
         //uncouple behind car in Timetable mode
