@@ -368,7 +368,8 @@ namespace ORTS
             AI = new AI(this, loader, ClockTime);
             if (playerTrain != null)
             {
-                playerTrain.PostInit();  // place player train after pre-running of AI trains
+                var validPosition = playerTrain.PostInit();  // place player train after pre-running of AI trains
+                if (validPosition && AI != null) AI.PreUpdate = false;
                 TrainDictionary.Add(playerTrain.Number, playerTrain);
                 NameDictionary.Add(playerTrain.Name, playerTrain);
             }
@@ -383,7 +384,8 @@ namespace ORTS
             playerTrain.AI = AI;
             if (playerTrain != null)
             {
-                playerTrain.PostInit();  // place player train after pre-running of AI trains
+                var validPosition = playerTrain.PostInit();  // place player train after pre-running of AI trains
+                if (validPosition && AI != null) AI.PreUpdate = false;
                 if (playerTrain.InitialSpeed > 0 && playerTrain.MovementState != AITrain.AI_MOVEMENT_STATE.STATION_STOP)
                 {
                     playerTrain.InitializeMoving();
