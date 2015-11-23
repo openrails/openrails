@@ -24,6 +24,9 @@
 // Debug curve speed
 // #define DEBUG_CURVE_SPEED
 
+//Debug Tunnel Resistance
+//   #define DEBUG_TUNNEL_RESISTANCE
+
 
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
@@ -403,7 +406,14 @@ namespace ORTS
                         DoubleTunnelCrossSectAreaM2 = 41.8f;  // Typically older slower speed designed tunnels
                         DoubleTunnelPerimeterM = 25.01f;
                     }
-                }               
+                } 
+            
+#if DEBUG_TUNNEL_RESISTANCE  
+                Trace.TraceInformation("================================== TrainCar.cs - Tunnel Resistance Initialisation ==============================================================");
+                Trace.TraceInformation("Tunnel 1 tr perimeter {0} Tunnel 1 tr area {1}", SingleTunnelPerimeterAreaM, SingleTunnelPerimeterAreaM);
+                Trace.TraceInformation("Tunnel 2 tr perimeter {0} Tunnel 2 tr area {1}", DoubleTunnelPerimeterM, DoubleTunnelCrossSectAreaM2);
+#endif
+
          }
 
         // called when it's time to update the MotiveForce and FrictionForce
@@ -641,7 +651,7 @@ namespace ORTS
                         }
                         else
                         {
-                            SuperelevationM = 0.005f;  // Assume minimal superelevation if conventional mixed route
+                            SuperelevationM = 0.0254f;  // Assume minimal superelevation if conventional mixed route
                         }
 
                     }
@@ -774,7 +784,8 @@ namespace ORTS
 
 #if DEBUG_CURVE_SPEED
                    Trace.TraceInformation("================================== TrainCar.cs - DEBUG_CURVE_SPEED ==============================================================");
-                   Trace.TraceInformation("CarID {0} Curve Radius {1}", CarID, CurrentCurveRadius);
+                   Trace.TraceInformation("CarID {0} Curve Radius {1} Super {2} Unbalanced {3} Durability {4}", CarID, CurrentCurveRadius, SuperelevationM, UnbalancedSuperElevationM, Simulator.CurveDurability);
+                   Trace.TraceInformation("CoG {0}", CentreOfGravityM);
                    Trace.TraceInformation("Current Speed {0} Equal Load Speed {1} Max Safe Speed {2} Critical Speed {3}", MpS.ToMpH(s), MpS.ToMpH(MaxCurveEqualLoadSpeedMps), MpS.ToMpH(MaxSafeCurveSpeedMps), MpS.ToMpH(CriticalSpeedMpS));
                    Trace.TraceInformation("IsMaxSafeSpeed {0} IsCriticalSpeed {1}", IsMaxSafeCurveSpeed, IsCriticalSpeed);
 #endif
