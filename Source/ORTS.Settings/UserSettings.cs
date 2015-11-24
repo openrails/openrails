@@ -234,6 +234,12 @@ namespace ORTS.Settings
         [Default(false)]
         public bool DoubleWire { get; set; }
         [Default(false)]
+        public bool TriphaseWire { get; set; }
+        [Default(100)]
+        public int DoubleWireHeight { get; set; }
+        [Default(60)]
+        public int TriphaseWidth { get; set; }
+        [Default(false)]
         public bool AuxActionEnabled { get; set; }
         [Default(false)]
         public bool CircularSpeedGauge { get; set; }

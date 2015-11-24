@@ -94,6 +94,11 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("ortssingletunnelperimeter", ()=>{ SingleTunnelPerimeterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
                 new STFReader.TokenProcessor("ortsdoubletunnelarea", ()=>{ DoubleTunnelAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, null); }),
                 new STFReader.TokenProcessor("ortsdoubletunnelperimeter", ()=>{ DoubleTunnelPerimeterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                // values for OHLE
+                new STFReader.TokenProcessor("ortsdoublewireenabled", ()=>{ DoubleWireEnabled = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("ortsdoublewireheight", ()=>{ DoubleWireHeight = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                new STFReader.TokenProcessor("ortstriphaseenabled", ()=>{ TriphaseEnabled = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("ortstriphasewidth", ()=>{ TriphaseWidth = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
 
            });
             //TODO This should be changed to STFException.TraceError() with defaults values created
@@ -125,7 +130,13 @@ namespace Orts.Formats.Msts
         public float SingleTunnelAreaM2; 
         public float SingleTunnelPerimeterM;
         public float DoubleTunnelAreaM2;
-        public float DoubleTunnelPerimeterM; 
+        public float DoubleTunnelPerimeterM;
+
+        // Values for OHLE
+        public string DoubleWireEnabled;
+        public float DoubleWireHeight;
+        public string TriphaseEnabled;
+        public float TriphaseWidth;
 
     }
 
