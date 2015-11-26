@@ -69,7 +69,7 @@ namespace ORTS.ContentManager
                 {
                     // Get all the different possible types of content from this content item.
                     var getChildren = ((ContentType[])Enum.GetValues(typeof(ContentType))).SelectMany(ct => content.Get(ct).Select(c => CreateContentNode(c)));
-                    var linkChildren = ContentLink.Matches(ContentInfo.GetText(e.Node.Tag as Content)).Cast<Match>().Select(linkMatch => CreateContentNode(content.Get(linkMatch.Groups[1].Value, (ContentType)Enum.Parse(typeof(ContentType), linkMatch.Groups[2].Value))));
+                    var linkChildren = ContentLink.Matches(ContentInfo.GetText(e.Node.Tag as Content)).Cast<Match>().Select(linkMatch => CreateContentNode(content, linkMatch.Groups[1].Value, (ContentType)Enum.Parse(typeof(ContentType), linkMatch.Groups[2].Value)));
                     Debug.Assert(!getChildren.Any() || !linkChildren.Any(), "Content item should not return items from Get(ContentType) and Get(string, ContentType)");
                     e1.Result = getChildren.Concat(linkChildren).ToArray();
 
@@ -106,6 +106,14 @@ namespace ORTS.ContentManager
                 };
                 worker.RunWorkerAsync(e.Node.Tag);
             }
+        }
+
+        static TreeNode CreateContentNode(Content content, string name, ContentType type)
+        {
+            var c = content.Get(name, type);
+            if (c != null)
+                return CreateContentNode(c);
+            return new TreeNode(String.Format("Missing: {0} ({1})", name, type));
         }
 
         static TreeNode CreateContentNode(Content c)
