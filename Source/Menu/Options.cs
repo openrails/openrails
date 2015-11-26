@@ -292,11 +292,6 @@ namespace ORTS
             checkPerformanceTuner.Checked = Settings.PerformanceTuner;
             numericPerformanceTunerTarget.Value = Settings.PerformanceTunerTarget;
             checkDoubleWire.Checked = Settings.DoubleWire;
-            checkTriphase.Checked = Settings.TriphaseWire;
-            numericTopWireOffset.Value = Settings.DoubleWireHeight;
-            numericTopWireOffset.Enabled = Settings.DoubleWire;
-            numericTriphaseWidth.Value = Settings.TriphaseWidth;
-            numericTriphaseWidth.Enabled = Settings.TriphaseWire;
             checkForcedRedAtStationStops.Checked = !Settings.NoForcedRedAtStationStops;
             trackLODBias.Value = Settings.LODBias;
             trackLODBias_ValueChanged(null, null);
@@ -488,9 +483,6 @@ namespace ORTS
             Settings.PerformanceTuner = checkPerformanceTuner.Checked;
             Settings.PerformanceTunerTarget = (int)numericPerformanceTunerTarget.Value;
             Settings.DoubleWire = checkDoubleWire.Checked;
-            Settings.TriphaseWire = checkTriphase.Checked;
-            Settings.DoubleWireHeight = (int)numericTopWireOffset.Value;
-            Settings.TriphaseWidth = (int)numericTriphaseWidth.Value;
             Settings.NoForcedRedAtStationStops = !checkForcedRedAtStationStops.Checked;
             Settings.LODBias = trackLODBias.Value;
             Settings.ConditionalLoadOfNightTextures = checkConditionalLoadOfNightTextures.Checked;
@@ -680,16 +672,6 @@ namespace ORTS
                 checkAlerterExternal.Enabled = false;
                 checkAlerterExternal.Checked = false; 
             }
-        }
-
-        private void checkDoubleWire_Click(object sender, EventArgs e)
-        {
-            numericTopWireOffset.Enabled = checkDoubleWire.Checked;
-        }
-
-        private void checkTriphase_Click(object sender, EventArgs e)
-        {
-            numericTriphaseWidth.Enabled = checkTriphase.Checked;
         }
     }
 }
