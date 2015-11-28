@@ -102,14 +102,12 @@ namespace ORTS.ContentManager
                     details.AppendFormat("Consist:\t\u0001{1}\u0002Consist\u0001{2}{0}", Environment.NewLine, data.Consist, data.Reversed ? " (reversed)" : "");
                     details.AppendFormat("Path:\t\u0001{1}\u0002Path\u0001{0}", Environment.NewLine, data.Path);
                     details.AppendLine();
-                    details.AppendFormat("Platform ID:\tDistance down path:\tArrival time:\tDeparture time:\t{0}", Environment.NewLine);
+                    details.AppendFormat("Arrival:\tDeparture:\tStation:\tDistance:\t{0}", Environment.NewLine);
                     foreach (var item in data.Stops)
-                        details.AppendFormat("{2}\t{3}\t{4}\t{5}{0}", Environment.NewLine, item.StationID, item.PlatformID, item.Distance, FormatDateTime(item.ArrivalTime), FormatDateTime(item.DepartureTime));
-
-                    //        details.AppendFormat("  Platform ID:\tDistance down path:\tSkip count:\tEfficiency:\t{0}", Environment.NewLine);
-                    //        foreach (var item in traffic.ServiceList)
-                    //            details.AppendFormat("  {1}\t{2}\t{3}\t{4}{0}", Environment.NewLine, item.PlatformStartID, item.DistanceDownPath, item.SkipCount, item.Efficiency);
-                    //details.AppendFormat("Efficiency:\t{1}{0}{0}", Environment.NewLine, file.Efficiency);
+                        if (String.IsNullOrEmpty(item.Station))
+                            details.AppendFormat("{3}\t{4}\t{1}\t{2} m{0}", Environment.NewLine, item.PlatformID, item.Distance, FormatDateTime(item.ArrivalTime), FormatDateTime(item.DepartureTime));
+                        else
+                            details.AppendFormat("{2}\t{3}\t{1}{0}", Environment.NewLine, item.Station, FormatDateTime(item.ArrivalTime), FormatDateTime(item.DepartureTime));
                 }
                 else if (content.Type == ContentType.Path)
                 {
@@ -215,7 +213,7 @@ namespace ORTS.ContentManager
 
         static string FormatDateTime(DateTime dateTime)
         {
-            return String.Format("{0} {1}", dateTime.Year - 2000, dateTime.ToLongTimeString());
+            return String.Format("{0} {1}", dateTime.Day - 1, dateTime.ToLongTimeString());
         }
     }
 }

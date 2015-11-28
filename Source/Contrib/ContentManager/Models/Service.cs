@@ -56,7 +56,7 @@ namespace ORTS.ContentManager.Models
                     ID = "0";
                     StartTime = MSTSTimeToDateTime(activityTraffic.Time);
                     Stops = from stop in activityTraffic.Player_Traffic_List
-                            select new Stop(0, stop.PlatformStartID, stop.DistanceDownPath, MSTSTimeToDateTime(stop.ArrivalTime), MSTSTimeToDateTime(stop.DepartTime));
+                            select new Stop(stop.PlatformStartID, stop.DistanceDownPath, MSTSTimeToDateTime(stop.ArrivalTime), MSTSTimeToDateTime(stop.DepartTime));
                 }
                 else
                 {
@@ -66,7 +66,7 @@ namespace ORTS.ContentManager.Models
 
                     ID = activityService.UiD.ToString();
                     StartTime = MSTSTimeToDateTime(activityService.Time);
-                    Stops = trafficService.TrafficDetails.Zip(activityService.ServiceList, (tt, stop) => new Stop(0, stop.PlatformStartID, stop.DistanceDownPath, MSTSTimeToDateTime(tt.ArrivalTime), MSTSTimeToDateTime(tt.DepartTime)));
+                    Stops = trafficService.TrafficDetails.Zip(activityService.ServiceList, (tt, stop) => new Stop(stop.PlatformStartID, stop.DistanceDownPath, MSTSTimeToDateTime(tt.ArrivalTime), MSTSTimeToDateTime(tt.DepartTime)));
                 }
             }
             else if (System.IO.Path.GetExtension(content.PathName).Equals(".timetable_or", StringComparison.OrdinalIgnoreCase))
@@ -78,7 +78,7 @@ namespace ORTS.ContentManager.Models
                 var serviceColumn = -1;
                 var consistRow = -1;
                 var pathRow = -1;
-                var timeRE = new Regex(@"^(\d\d):(\d\d)");
+                var startRow = -1;
                 for (var row = 0; row < file.Strings.Count; row++)
                 {
                     if (file.Strings[row][0] == "#consist" && consistRow == -1)
@@ -89,6 +89,10 @@ namespace ORTS.ContentManager.Models
                     {
                         pathRow = row;
                     }
+                    else if (file.Strings[row][0] == "#start" && startRow == -1)
+                    {
+                        startRow = row;
+                    }
                 }
                 for (var column = 0; column < file.Strings[0].Length; column++)
                 {
@@ -98,19 +102,33 @@ namespace ORTS.ContentManager.Models
                     }
                 }
                 ID = serviceColumn.ToString();
-                StartTime = new DateTime(2000, 1, 1, 23, 59, 59);
+                    var timeRE = new Regex(@"^(\d\d):(\d\d)(?:-(\d\d):(\d\d))?");
+                var startTimeMatch = timeRE.Match(file.Strings[startRow][serviceColumn]);
+                if (startTimeMatch.Success)
+                {
+                    StartTime = new DateTime(2000, 1, 1, int.Parse(startTimeMatch.Groups[1].Value), int.Parse(startTimeMatch.Groups[2].Value), 0);
+                }
+                var stops = new List<Stop>();
                 for (var row = 0; row < file.Strings.Count; row++)
                 {
-                    var timeMatch = timeRE.Match(file.Strings[row][serviceColumn]);
-                    if (timeMatch.Success)
+                    if (row != startRow)
                     {
-                        var time = new DateTime(2000, 1, 1, int.Parse(timeMatch.Groups[1].Value), int.Parse(timeMatch.Groups[2].Value), 0);
-                        if (StartTime > time)
+                        var timeMatch = timeRE.Match(file.Strings[row][serviceColumn]);
+                        if (timeMatch.Success)
                         {
-                            StartTime = time;
+                            var arrivalTime = new DateTime(2000, 1, 1, int.Parse(timeMatch.Groups[1].Value), int.Parse(timeMatch.Groups[2].Value), 0);
+                            var departureTime = timeMatch.Groups[3].Success ? new DateTime(2000, 1, 1, int.Parse(timeMatch.Groups[3].Value), int.Parse(timeMatch.Groups[4].Value), 0) : arrivalTime;
+                            // If the time is prior to this train's start time, assume it is rolling over in to "tomorrow".
+                            if (arrivalTime < StartTime)
+                            {
+                                arrivalTime = arrivalTime.AddDays(1);
+                                departureTime = departureTime.AddDays(1);
+                            }
+                            stops.Add(new Stop(file.Strings[row][0].Replace(" $hold", "").Replace(" $forcehold", ""), arrivalTime, departureTime));
                         }
                     }
                 }
+                Stops = stops.OrderBy(s => s.ArrivalTime);
                 Consist = file.Strings[consistRow][serviceColumn].Replace(" $reverse", "");
                 Reversed = file.Strings[consistRow][serviceColumn].Contains(" $reverse");
                 Path = file.Strings[pathRow][serviceColumn];
@@ -135,17 +153,23 @@ namespace ORTS.ContentManager.Models
 
         public class Stop
         {
-            public readonly int StationID;
+            public readonly string Station;
             public readonly int PlatformID;
             public readonly float Distance;
             public readonly DateTime ArrivalTime;
             public readonly DateTime DepartureTime;
 
-            internal Stop(int stationID, int platformID, float distance, DateTime arrivalTime, DateTime departureTime)
+            internal Stop(int platformID, float distance, DateTime arrivalTime, DateTime departureTime)
             {
-                StationID = stationID;
                 PlatformID = platformID;
                 Distance = distance;
+                ArrivalTime = arrivalTime;
+                DepartureTime = departureTime;
+            }
+
+            internal Stop(string station, DateTime arrivalTime, DateTime departureTime)
+            {
+                Station = station;
                 ArrivalTime = arrivalTime;
                 DepartureTime = departureTime;
             }
