@@ -59,12 +59,8 @@ namespace ORTS.ContentManager.Models
                 else
                 {
                     var trfFile = new TrafficFile(msts.TrafficPathName);
-                    var activityService = (from service in actFile.Tr_Activity.Tr_Activity_File.Traffic_Definition.ServiceDefinitionList
-                                           where service.Name == content.Name
-                                           select service).First();
-                    var trafficService = (from service in trfFile.TrafficDefinition.TrafficItems
-                                          where service.Service_Definition == content.Name
-                                          select service).First();
+                    var activityService = actFile.Tr_Activity.Tr_Activity_File.Traffic_Definition.ServiceDefinitionList[msts.TrafficIndex];
+                    var trafficService = trfFile.TrafficDefinition.TrafficItems[msts.TrafficIndex];
 
                     ID = activityService.UiD.ToString();
                     StartTime = MSTSTimeToDateTime(activityService.Time);

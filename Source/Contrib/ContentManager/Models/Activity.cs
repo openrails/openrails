@@ -44,8 +44,9 @@ namespace ORTS.ContentManager.Models
                 Briefing = file.Tr_Activity.Tr_Activity_Header.Briefing;
                 PlayerServices = new[] { String.Format("Player|{0}", file.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name) };
                 if (file.Tr_Activity.Tr_Activity_File.Traffic_Definition != null)
-                    Services = from service in file.Tr_Activity.Tr_Activity_File.Traffic_Definition.ServiceDefinitionList
-                               select String.Format("AI|{0}|{1}", service.Name, file.Tr_Activity.Tr_Activity_File.Traffic_Definition.Name);
+                    Services = file.Tr_Activity.Tr_Activity_File.Traffic_Definition.ServiceDefinitionList.Select((service, index) =>
+                        String.Format("AI|{0}|{1}|{2}", service.Name, file.Tr_Activity.Tr_Activity_File.Traffic_Definition.Name, index)
+                    );
                 else
                     Services = new string[0];
             }

@@ -127,8 +127,8 @@ namespace ORTS.ContentManager
                 var names = name.Split('|');
                 if (names.Length >= 2 && names[0] == "Player")
                     return new ContentMSTSService(this, GetRelatedPath("Services", names[1], ".srv"));
-                if (names.Length >= 3 && names[0] == "AI")
-                    return new ContentMSTSService(this, GetRelatedPath("Services", names[1], ".srv"), GetRelatedPath("Traffic", names[2], ".trf"));
+                if (names.Length >= 4 && names[0] == "AI")
+                    return new ContentMSTSService(this, GetRelatedPath("Services", names[1], ".srv"), GetRelatedPath("Traffic", names[2], ".trf"), int.Parse(names[3]));
             }
             return base.Get(name, type);
         }
@@ -145,6 +145,7 @@ namespace ORTS.ContentManager
         public override ContentType Type { get { return ContentType.Service; } }
         public bool IsPlayer { get; private set; }
         public string TrafficPathName { get; private set; }
+        public int TrafficIndex { get; private set; }
 
         public ContentMSTSService(Content parent, string path)
             : base(parent)
@@ -154,11 +155,12 @@ namespace ORTS.ContentManager
             IsPlayer = true;
         }
 
-        public ContentMSTSService(Content parent, string path, string traffic)
+        public ContentMSTSService(Content parent, string path, string traffic, int traffixIndex)
             : this(parent, path)
         {
             IsPlayer = false;
             TrafficPathName = traffic;
+            TrafficIndex = traffixIndex;
         }
     }
 

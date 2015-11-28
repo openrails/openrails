@@ -123,6 +123,8 @@ namespace ORTS.ContentManager
 
         void treeViewContent_AfterSelect(object sender, TreeViewEventArgs e)
         {
+            richTextBoxContent.Clear();
+
             if (e.Node.Tag == null || !(e.Node.Tag is Content))
                 return;
 
@@ -134,7 +136,6 @@ namespace ORTS.ContentManager
             };
 
             Trace.TraceInformation("Updating richTextBoxContent with content {0}", e.Node.Tag as Content);
-            richTextBoxContent.Clear();
             richTextBoxContent.Text = ContentInfo.GetText(e.Node.Tag as Content);
             var boldFont = new Font(richTextBoxContent.Font, FontStyle.Bold);
             var start = 0;
