@@ -99,7 +99,7 @@ namespace ORTS.ContentManager
                     details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, data.Name);
                     details.AppendFormat("ID:\t{1}{0}", Environment.NewLine, data.ID);
                     details.AppendFormat("Start time:\t{1}{0}", Environment.NewLine, FormatDateTime(data.StartTime));
-                    details.AppendFormat("Consist:\t\u0001{1}\u0002Consist\u0001{0}", Environment.NewLine, data.Consist);
+                    details.AppendFormat("Consist:\t\u0001{1}\u0002Consist\u0001{2}{0}", Environment.NewLine, data.Consist, data.Reversed ? " (reversed)" : "");
                     details.AppendFormat("Path:\t\u0001{1}\u0002Path\u0001{0}", Environment.NewLine, data.Path);
                     details.AppendLine();
                     details.AppendFormat("Platform ID:\tDistance down path:\tArrival time:\tDeparture time:\t{0}", Environment.NewLine);

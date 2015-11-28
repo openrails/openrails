@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace ORTS.ContentManager.Models
 {
@@ -30,6 +31,7 @@ namespace ORTS.ContentManager.Models
         public readonly string ID;
         public readonly DateTime StartTime;
         public readonly string Consist;
+        public readonly bool Reversed;
         public readonly string Path;
 
         public readonly IEnumerable<Stop> Stops;
@@ -73,8 +75,10 @@ namespace ORTS.ContentManager.Models
                 var file = new TimetableReader(content.PathName);
                 Name = content.Name;
 
+                var serviceColumn = -1;
                 var consistRow = -1;
                 var pathRow = -1;
+                var timeRE = new Regex(@"^(\d\d):(\d\d)");
                 for (var row = 0; row < file.Strings.Count; row++)
                 {
                     if (file.Strings[row][0] == "#consist" && consistRow == -1)
@@ -88,13 +92,28 @@ namespace ORTS.ContentManager.Models
                 }
                 for (var column = 0; column < file.Strings[0].Length; column++)
                 {
-                    if (file.Strings[0][column] == content.Name)
+                    if (file.Strings[0][column] == content.Name && serviceColumn == -1)
                     {
-                        Consist = file.Strings[consistRow][column];
-                        Path = file.Strings[pathRow][column];
-                        break;
+                        serviceColumn = column;
                     }
                 }
+                ID = serviceColumn.ToString();
+                StartTime = new DateTime(2000, 1, 1, 23, 59, 59);
+                for (var row = 0; row < file.Strings.Count; row++)
+                {
+                    var timeMatch = timeRE.Match(file.Strings[row][serviceColumn]);
+                    if (timeMatch.Success)
+                    {
+                        var time = new DateTime(2000, 1, 1, int.Parse(timeMatch.Groups[1].Value), int.Parse(timeMatch.Groups[2].Value), 0);
+                        if (StartTime > time)
+                        {
+                            StartTime = time;
+                        }
+                    }
+                }
+                Consist = file.Strings[consistRow][serviceColumn].Replace(" $reverse", "");
+                Reversed = file.Strings[consistRow][serviceColumn].Contains(" $reverse");
+                Path = file.Strings[pathRow][serviceColumn];
             }
         }
 
