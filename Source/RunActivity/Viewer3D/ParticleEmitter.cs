@@ -160,7 +160,6 @@ namespace Orts.Viewer3D
         readonly int MaxParticles;
         readonly ParticleVertex[] Vertices;
         readonly VertexDeclaration VertexDeclaration;
-        readonly int VertexStride;
         readonly DynamicVertexBuffer VertexBuffer;
         readonly IndexBuffer IndexBuffer;
 
@@ -176,12 +175,14 @@ namespace Orts.Viewer3D
 
             public static readonly VertexElement[] VertexElements =
             {
-                new VertexElement(0, 0, VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.Position, 0),
-                new VertexElement(0, 16, VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.Position, 1),
-                new VertexElement(0, 16 + 16, VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.Position, 2),
-                new VertexElement(0, 16 + 16 + 16, VertexElementFormat.Short4, VertexElementMethod.Default, VertexElementUsage.Position, 3),
-                new VertexElement(0, 16 + 16 + 16 + 8, VertexElementFormat.Color, VertexElementMethod.Default, VertexElementUsage.Position, 4)
+                new VertexElement(0, VertexElementFormat.Vector4, VertexElementUsage.Position, 0),
+                new VertexElement(16, VertexElementFormat.Vector4, VertexElementUsage.Position, 1),
+                new VertexElement(16 + 16, VertexElementFormat.Vector4, VertexElementUsage.Position, 2),
+                new VertexElement(16 + 16 + 16, VertexElementFormat.Short4, VertexElementUsage.Position, 3),
+                new VertexElement(16 + 16 + 16 + 8, VertexElementFormat.Color, VertexElementUsage.Position, 4)
             };
+
+            public static int VertexStride = sizeof(float) * 12 + sizeof(short) * 4 + sizeof(float) * 4;
         }
 
         internal ParticleEmitterData EmitterData;
@@ -220,9 +221,8 @@ namespace Orts.Viewer3D
 
             MaxParticles = (int)(ParticleEmitterViewer.MaxParticlesPerSecond * ParticleEmitterViewer.MaxParticleDuration);
             Vertices = new ParticleVertex[MaxParticles * VerticiesPerParticle];
-            VertexDeclaration = new VertexDeclaration(graphicsDevice, ParticleVertex.VertexElements);
-            VertexStride = Marshal.SizeOf(typeof(ParticleVertex));
-            VertexBuffer = new DynamicVertexBuffer(graphicsDevice, typeof(ParticleVertex), MaxParticles * VerticiesPerParticle, BufferUsage.WriteOnly);
+            VertexDeclaration = new VertexDeclaration(ParticleVertex.VertexStride, ParticleVertex.VertexElements);
+            VertexBuffer = new DynamicVertexBuffer(graphicsDevice, VertexDeclaration, MaxParticles * VerticiesPerParticle, BufferUsage.WriteOnly);
             VertexBuffer.ContentLost += VertexBuffer_ContentLost;
             IndexBuffer = InitIndexBuffer(graphicsDevice, MaxParticles * IndiciesPerParticle);
 
@@ -248,7 +248,7 @@ namespace Orts.Viewer3D
 
         void VertexBuffer_ContentLost(object sender, EventArgs e)
         {
-            VertexBuffer.SetData(0, Vertices, 0, Vertices.Length, VertexStride, SetDataOptions.NoOverwrite);
+            VertexBuffer.SetData(0, Vertices, 0, Vertices.Length, ParticleVertex.VertexStride, SetDataOptions.NoOverwrite);
         }
 
         static IndexBuffer InitIndexBuffer(GraphicsDevice graphicsDevice, int numIndicies)
@@ -267,7 +267,7 @@ namespace Orts.Viewer3D
 
                 index += VerticiesPerParticle;
             }
-            var indexBuffer = new IndexBuffer(graphicsDevice, sizeof(ushort) * numIndicies, BufferUsage.WriteOnly, IndexElementSize.SixteenBits);
+            var indexBuffer = new IndexBuffer(graphicsDevice, typeof(ushort), numIndicies, BufferUsage.WriteOnly);
             indexBuffer.SetData(indices);
             return indexBuffer;
         }
@@ -362,7 +362,7 @@ namespace Orts.Viewer3D
                     var particle = (FirstFreeParticle + 1) % MaxParticles;
                     var vertex = particle * VerticiesPerParticle;
                     var texture = Viewer.Random.Next(16); // Randomizes emissions.
-                    var color_Random = new Color(ParticleColor, (float)Viewer.Random.NextDouble());
+                    var color_Random = new Color(ParticleColor.R / 255f, ParticleColor.G / 255f, ParticleColor.B / 255f, (float)Viewer.Random.NextDouble());
 
                     // Initial velocity varies in X and Z only.
                     var initialVelocity = globalInitialVelocity;
@@ -403,14 +403,14 @@ namespace Orts.Viewer3D
             if (FirstNewParticle < FirstFreeParticle)
             {
                 var numParticlesToAdd = FirstFreeParticle - FirstNewParticle;
-                VertexBuffer.SetData(FirstNewParticle * VertexStride * VerticiesPerParticle, Vertices, FirstNewParticle * VerticiesPerParticle, numParticlesToAdd * VerticiesPerParticle, VertexStride, SetDataOptions.NoOverwrite);
+                VertexBuffer.SetData(FirstNewParticle * ParticleVertex.VertexStride * VerticiesPerParticle, Vertices, FirstNewParticle * VerticiesPerParticle, numParticlesToAdd * VerticiesPerParticle, ParticleVertex.VertexStride, SetDataOptions.NoOverwrite);
             }
             else
             {
                 var numParticlesToAddAtEnd = MaxParticles - FirstNewParticle;
-                VertexBuffer.SetData(FirstNewParticle * VertexStride * VerticiesPerParticle, Vertices, FirstNewParticle * VerticiesPerParticle, numParticlesToAddAtEnd * VerticiesPerParticle, VertexStride, SetDataOptions.NoOverwrite);
+                VertexBuffer.SetData(FirstNewParticle * ParticleVertex.VertexStride * VerticiesPerParticle, Vertices, FirstNewParticle * VerticiesPerParticle, numParticlesToAddAtEnd * VerticiesPerParticle, ParticleVertex.VertexStride, SetDataOptions.NoOverwrite);
                 if (FirstFreeParticle > 0)
-                    VertexBuffer.SetData(0, Vertices, 0, FirstFreeParticle * VerticiesPerParticle, VertexStride, SetDataOptions.NoOverwrite);
+                    VertexBuffer.SetData(0, Vertices, 0, FirstFreeParticle * VerticiesPerParticle, ParticleVertex.VertexStride, SetDataOptions.NoOverwrite);
             }
 
             FirstNewParticle = FirstFreeParticle;
@@ -429,8 +429,7 @@ namespace Orts.Viewer3D
             if (HasParticlesToRender())
             {
                 graphicsDevice.Indices = IndexBuffer;
-                graphicsDevice.VertexDeclaration = VertexDeclaration;
-                graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexStride);
+                graphicsDevice.SetVertexBuffer(VertexBuffer);
 
                 if (FirstActiveParticle < FirstFreeParticle)
                 {
@@ -472,11 +471,8 @@ namespace Orts.Viewer3D
             else
                 shader.LightVector = Viewer.World.MSTSSky.mstsskysolarDirection; 
 
-            var rs = graphicsDevice.RenderState;
-            rs.AlphaBlendEnable = true;
-            rs.DepthBufferWriteEnable = false;
-            rs.DestinationBlend = Blend.InverseSourceAlpha;
-            rs.SourceBlend = Blend.SourceAlpha;
+            graphicsDevice.BlendState = BlendState.NonPremultiplied;
+            graphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -484,10 +480,8 @@ namespace Orts.Viewer3D
             var shader = Viewer.MaterialManager.ParticleEmitterShader;
 
             ShaderPasses.Reset();
-            shader.Begin();
             while (ShaderPasses.MoveNext())
             {
-                ShaderPasses.Current.Begin();
                 foreach (var item in renderItems)
                 {
                     // Note: This is quite a hack. We ideally should be able to pass this through RenderItem somehow.
@@ -498,21 +492,16 @@ namespace Orts.Viewer3D
                     shader.EmitSize = emitter.EmitSize;
                     shader.Texture = Texture;
                     shader.SetMatrix(Matrix.Identity, ref XNAViewMatrix, ref XNAProjectionMatrix);
-                    shader.CommitChanges();
+                    ShaderPasses.Current.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
-                ShaderPasses.Current.End();
             }
-            shader.End();
         }
 
         public override void ResetState(GraphicsDevice graphicsDevice)
         {
-            var rs = graphicsDevice.RenderState;
-            rs.AlphaBlendEnable = false;
-            rs.DepthBufferWriteEnable = true;
-            rs.DestinationBlend = Blend.Zero;
-            rs.SourceBlend = Blend.One;
+            graphicsDevice.BlendState = BlendState.Opaque;
+            graphicsDevice.DepthStencilState = DepthStencilState.Default;
         }
 
         public override bool GetBlending()

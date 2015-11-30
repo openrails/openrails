@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Simulation.Physics;
@@ -491,7 +491,7 @@ namespace Orts.Simulation
                 newSpeedPostItems[1] = new TempSpeedPostItem(routeFile,
                     zones.ActivityRestrictedSpeedZoneList[idxZone].EndPosition, false, worldPosition2, false);
 			
-                // Add the speedposts to the track database. This will set the TrItemId's of all speedposts
+            // Add the speedposts to the track database. This will set the TrItemId's of all speedposts
             trackDB.AddTrItems(newSpeedPostItems);
 
             // And now update the various (vector) tracknodes (this needs the TrItemIds.
@@ -502,11 +502,11 @@ namespace Orts.Simulation
                 float distanceOfWarningPost = 0;
                 TrackNode trackNode = trackDB.TrackNodes[traveller.TrackNodeIndex];
                 if (startOffset != null && endOffset != null && startOffset > endOffset)
-                {
+			{
                     FlipRestrSpeedPost((TempSpeedPostItem)newSpeedPostItems[0]);
                     FlipRestrSpeedPost((TempSpeedPostItem)newSpeedPostItems[1]);
                     distanceOfWarningPost = (float)Math.Min(MaxDistanceOfWarningPost, traveller.TrackNodeLength - (double)startOffset);
-                }
+            }
                 else if (startOffset != null && endOffset != null && startOffset <= endOffset)
                     distanceOfWarningPost = (float)Math.Max(-MaxDistanceOfWarningPost, -(double)startOffset);
                 traveller.Move(distanceOfWarningPost);
@@ -517,7 +517,7 @@ namespace Orts.Simulation
                 if (startOffset != null && endOffset != null && startOffset > endOffset)
                 {
                     FlipRestrSpeedPost((TempSpeedPostItem)speedWarningPostItem);
-                }
+        }
                 ComputeTablePosition((TempSpeedPostItem)newSpeedPostItems[0]); 
                 TempSpeedPostItems.Add((TempSpeedPostItem)newSpeedPostItems[0]);
                 ComputeTablePosition((TempSpeedPostItem)newSpeedPostItems[1]); 
@@ -539,15 +539,15 @@ namespace Orts.Simulation
         {
             float? offset = 0.0f;
             traveller = new Traveller(tsectionDat, trackDB.TrackNodes, position.TileX, position.TileZ, position.X, position.Z);
-            TrackNode trackNode = trackDB.TrackNodes[traveller.TrackNodeIndex];//find the track node
-            if (trackNode.TrVectorNode != null)
-            {
+                TrackNode trackNode = trackDB.TrackNodes[traveller.TrackNodeIndex];//find the track node
+                if (trackNode.TrVectorNode != null)
+                {
                 offset = traveller.TrackNodeOffset;
                 SpeedPostPosition((TempSpeedPostItem)newTrItem, ref traveller);
                 InsertTrItemRef(tsectionDat, trackDB, trackNode.TrVectorNode, (int)newTrItem.TrItemId, (float)offset);
-            }
+                }
             return offset;
-        }
+            }
 
         /// <summary>
         /// Determine position parameters of restricted speed Post
@@ -581,7 +581,7 @@ namespace Orts.Simulation
             restrSpeedPost.WorldPosition.XNAMatrix.M13 *= -1;
             restrSpeedPost.WorldPosition.XNAMatrix.M31 *= -1;
             restrSpeedPost.WorldPosition.XNAMatrix.M33 *= -1;
-        }
+    }
 
         /// <summary>
         /// Compute position of restricted speedpost table

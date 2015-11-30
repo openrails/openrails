@@ -28,7 +28,7 @@
 // #define DEBUG_TRACEINFO
 // DEBUG flag for debug prints
 
-using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
 using Orts.Simulation.Physics;

@@ -30,7 +30,7 @@
 
 //#define ALLOW_ORTS_SPECIFIC_ENG_PARAMETERS
 
-using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using Orts.Simulation.Physics;

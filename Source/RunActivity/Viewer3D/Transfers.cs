@@ -68,7 +68,6 @@ namespace Orts.Viewer3D
 
     public class TransferPrimitive : RenderPrimitive
     {
-        readonly VertexDeclaration VertexDeclaration;
         readonly VertexBuffer VertexBuffer;
         readonly IndexBuffer IndexBuffer;
         readonly int VertexCount;
@@ -130,7 +129,6 @@ namespace Orts.Viewer3D
                 }
             }
 
-            VertexDeclaration = new VertexDeclaration(viewer.GraphicsDevice, VertexPositionTexture.VertexElements);
             VertexBuffer = new VertexBuffer(viewer.GraphicsDevice, typeof(VertexPositionTexture), verticies.Length, BufferUsage.WriteOnly);
             VertexBuffer.SetData(verticies);
             VertexCount = verticies.Length;
@@ -142,8 +140,7 @@ namespace Orts.Viewer3D
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            graphicsDevice.VertexDeclaration = VertexDeclaration;
-            graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexPositionTexture.SizeInBytes);
+            graphicsDevice.SetVertexBuffer(VertexBuffer);
             graphicsDevice.Indices = IndexBuffer;
             graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, VertexCount, 0, PrimitiveCount);
         }
@@ -168,16 +165,9 @@ namespace Orts.Viewer3D
             shader.ImageTexture = Texture;
             shader.ReferenceAlpha = 10;
 
-            var samplerState = graphicsDevice.SamplerStates[0];
-            samplerState.AddressU = TextureAddressMode.Border;
-            samplerState.AddressV = TextureAddressMode.Border;
-            samplerState.BorderColor = Color.TransparentBlack;
-
-            var rs = graphicsDevice.RenderState;
-            rs.AlphaBlendEnable = true;
-            rs.DepthBufferWriteEnable = false;
-            rs.DestinationBlend = Blend.InverseSourceAlpha;
-            rs.SourceBlend = Blend.SourceAlpha;
+            graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp; // TextureAddressMode.Border is no longer available in XNA 4.0
+            graphicsDevice.BlendState = BlendState.NonPremultiplied;
+            graphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -186,21 +176,17 @@ namespace Orts.Viewer3D
             var viewproj = XNAViewMatrix * XNAProjectionMatrix;
 
             shader.SetViewMatrix(ref XNAViewMatrix);
-            shader.Begin();
             ShaderPasses.Reset();
             while (ShaderPasses.MoveNext())
             {
-                ShaderPasses.Current.Begin();
                 foreach (var item in renderItems)
                 {
                     shader.SetMatrix(item.XNAMatrix, ref viewproj);
                     shader.ZBias = item.RenderPrimitive.ZBias;
-                    shader.CommitChanges();
+                    ShaderPasses.Current.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
-                ShaderPasses.Current.End();
             }
-            shader.End();
         }
 
         public override void ResetState(GraphicsDevice graphicsDevice)
@@ -208,11 +194,8 @@ namespace Orts.Viewer3D
             var shader = Viewer.MaterialManager.SceneryShader;
             shader.ReferenceAlpha = 0;
 
-            var rs = graphicsDevice.RenderState;
-            rs.AlphaBlendEnable = false;
-            rs.DepthBufferWriteEnable = true;
-            rs.DestinationBlend = Blend.Zero;
-            rs.SourceBlend = Blend.One;
+            graphicsDevice.BlendState = BlendState.Opaque;
+            graphicsDevice.DepthStencilState = DepthStencilState.Default;
         }
 
         public override bool GetBlending()

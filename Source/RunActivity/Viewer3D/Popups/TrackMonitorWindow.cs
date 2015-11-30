@@ -300,7 +300,7 @@ namespace Orts.Viewer3D.Popups
         {
             if (MonitorTexture == null)
             {
-                MonitorTexture = new Texture2D(spriteBatch.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
+                MonitorTexture = new Texture2D(spriteBatch.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
                 MonitorTexture.SetData(new[] { Color.White });
             }
 

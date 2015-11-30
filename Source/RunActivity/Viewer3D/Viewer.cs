@@ -346,7 +346,7 @@ namespace Orts.Viewer3D
         internal void Initialize()
         {
             GraphicsDevice = RenderProcess.GraphicsDevice;
-            UpdateAdapterInformation(GraphicsDevice.CreationParameters.Adapter);
+            UpdateAdapterInformation(GraphicsDevice.Adapter);
 
             AdjustCabHeight(DisplaySize.X, DisplaySize.Y);
 
@@ -1292,8 +1292,15 @@ namespace Orts.Viewer3D
         [CallOnThread("Render")]
         void SaveScreenshotToFile(GraphicsDevice graphicsDevice, string fileName, bool silent)
         {
-            var screenshot = new ResolveTexture2D(graphicsDevice, graphicsDevice.PresentationParameters.BackBufferWidth, graphicsDevice.PresentationParameters.BackBufferHeight, 1, SurfaceFormat.Color);
-            graphicsDevice.ResolveBackBuffer(screenshot);
+            if (graphicsDevice.GraphicsProfile != GraphicsProfile.HiDef)
+                return;
+
+            int w = graphicsDevice.PresentationParameters.BackBufferWidth;
+            int h = graphicsDevice.PresentationParameters.BackBufferHeight;
+            var screenshot = new Texture2D(graphicsDevice, w, h, false, graphicsDevice.PresentationParameters.BackBufferFormat);
+            int[] backBuffer = new int[w * h];
+            graphicsDevice.GetBackBufferData(backBuffer); // This works in HiDef profile only
+            screenshot.SetData(backBuffer);
             new Thread(() =>
             {
                 try
@@ -1309,6 +1316,10 @@ namespace Orts.Viewer3D
 
                     // Now save the modified image.
                     screenshot.Save(fileName, ImageFileFormat.Png);
+                    using (var stream = File.OpenWrite(fileName))
+                    {
+                        screenshot.SaveAsPng(stream, w, h);
+                    }
                     screenshot.Dispose();
 
                     if (!silent)

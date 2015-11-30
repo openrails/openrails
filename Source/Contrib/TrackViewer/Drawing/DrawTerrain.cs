@@ -85,7 +85,6 @@ namespace ORTS.TrackViewer.Drawing
         //basic graphics
         private GraphicsDevice device;
         private BasicEffect basicEffect;
-        private VertexDeclaration vertexDeclaration;
 
         //Managin textures
         private TerrainTextureManager textureManager;
@@ -136,12 +135,11 @@ namespace ORTS.TrackViewer.Drawing
         public void LoadContent(GraphicsDevice graphicsDevice)
         {
             this.device = graphicsDevice;
-            basicEffect = new BasicEffect(this.device, null)
+            basicEffect = new BasicEffect(this.device)
             {
                 TextureEnabled = true,
                 World = Matrix.Identity
             };
-            this.vertexDeclaration = new VertexDeclaration(device, VertexPositionTexture.VertexElements);
 
             textureManager = new TerrainTextureManager(this.terrtexPath, this.device, this.messageDelegate);
 
@@ -313,7 +311,7 @@ namespace ORTS.TrackViewer.Drawing
 
                 if (vertices.Count() > 0)
                 {
-                    VertexBuffer buffer = new VertexBuffer(this.device, VertexPositionTexture.SizeInBytes * vertices.Count(), BufferUsage.WriteOnly);
+                    VertexBuffer buffer = new VertexBuffer(device, typeof(VertexPositionTexture), vertices.Count(), BufferUsage.WriteOnly);
                     int vertexCount = vertices.Count();
                     buffer.SetData(vertices.ToArray(), 0, vertexCount);
                     vertexBuffers.Add(textureName, buffer);
@@ -369,16 +367,12 @@ namespace ORTS.TrackViewer.Drawing
             foreach (string textureName in vertexBuffers.Keys)
             {
                 basicEffect.Texture = textureManager[textureName];
-                basicEffect.Begin();
                 foreach (EffectPass pass in basicEffect.CurrentTechnique.Passes)
                 {
-                    pass.Begin();
-                    device.VertexDeclaration = this.vertexDeclaration;
-                    device.Vertices[0].SetSource(vertexBuffers[textureName], 0, VertexPositionTexture.SizeInBytes);
+                    device.SetVertexBuffer(vertexBuffers[textureName]);
+                    pass.Apply();
                     device.DrawPrimitives(PrimitiveType.TriangleList, 0, vertexBufferCounts[textureName]);
-                    pass.End();
                 }
-                basicEffect.End();
             }
 
             UpdateStatusInformation(drawArea.MouseLocation);

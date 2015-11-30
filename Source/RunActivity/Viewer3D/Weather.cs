@@ -18,6 +18,7 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.MultiPlayer;
@@ -155,7 +156,7 @@ namespace Orts.Viewer3D
 
         void UpdateVolume()
         {
-            if (Viewer.GraphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF) // 0xFFFF represents 65535 which is the max for 16bit devices.
+            if (Viewer.GraphicsDevice.Adapter.IsProfileSupported(GraphicsProfile.HiDef))
             {
                 foreach (var soundSource in RainSound) soundSource.Volume = Weather.PricipitationIntensityPPSPM2 / PrecipitationViewer.MaxIntensityPPSPM2;
                 foreach (var soundSource in SnowSound) soundSource.Volume = Weather.PricipitationIntensityPPSPM2 / PrecipitationViewer.MaxIntensityPPSPM2;
@@ -261,7 +262,7 @@ namespace Orts.Viewer3D
 
                 // Pricipitation ranges from 0 to max PrecipitationViewer.MaxIntensityPPSPM2 if 32bit.
                 // 16bit uses PrecipitationViewer.MaxIntensityPPSPM2_16
-                if (Viewer.GraphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF) // 0xFFFF represents 65535 which is the max for 16bit devices.
+                if (Viewer.GraphicsDevice.Adapter.IsProfileSupported(GraphicsProfile.HiDef))
                 {
                     if (UserInput.IsDown(UserCommands.DebugPrecipitationIncrease))
                     {
@@ -450,7 +451,7 @@ namespace Orts.Viewer3D
                     precipitationIntensityTimer = (float)ORTSPrecipitationIntensityTransitionTimeS;
                     // Pricipitation ranges from 0 to max PrecipitationViewer.MaxIntensityPPSPM2 if 32bit.
                     // 16bit uses PrecipitationViewer.MaxIntensityPPSPM2_16
-                    if (weatherControl.Viewer.GraphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF)
+                    if (weatherControl.Viewer.GraphicsDevice.Adapter.IsProfileSupported(GraphicsProfile.HiDef))
                         precipitationIntensityChangeRate = precipitationIntensityTimer > 0 ? (MathHelper.Clamp(ORTSPrecipitationIntensity, 0, PrecipitationViewer.MaxIntensityPPSPM2)
                             - weatherControl.Weather.PricipitationIntensityPPSPM2) / ORTSPrecipitationIntensityTransitionTimeS : 0;
                     else
