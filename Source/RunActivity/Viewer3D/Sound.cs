@@ -2371,7 +2371,7 @@ namespace ORTS.Viewer3D
 
         public void Update ( Viewer viewer )
         {
-            if (Program.Simulator.ActivityRun.triggeredEvent == null ) return;
+            if (Program.Simulator.ActivityRun.triggeredEvent == null || Program.Simulator.ActivityRun.triggeredEvent.ORTSActSoundFile == null ) return;
             MyViewer = viewer;
             var localEventID = Program.Simulator.ActivityRun.triggeredEvent.ID;
             var ORTSActSoundFile = Program.Simulator.ActivityRun.triggeredEvent.ORTSActSoundFile;
