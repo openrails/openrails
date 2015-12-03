@@ -2637,7 +2637,8 @@ namespace ORTS
                 return true;
             }
 
-            if (!reschedule && thisTrain.SpeedMpS == 0f && distancesM[1] < thisTrain.DistanceTravelledM)
+            if (!reschedule && distancesM[1] < thisTrain.DistanceTravelledM && (thisTrain.SpeedMpS == 0f ||
+                (thisTrain.IsPlayerDriven && ( currentMvmtState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION || currentMvmtState == AITrain.AI_MOVEMENT_STATE.END_ACTION))))
             {
                 return true;
             }
