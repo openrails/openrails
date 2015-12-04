@@ -5847,6 +5847,14 @@ namespace ORTS
                 if (car == Simulator.PlayerLocomotive) { leadLocomotiveIndex = j; }
                 j++;
             }
+            MSTSLocomotive lead = (MSTSLocomotive)Simulator.PlayerLocomotive;
+            foreach (TrainCar car in Cars)
+            {
+                if (car.BrakeSystem is AirSinglePipe)
+                {
+                    ((AirSinglePipe)car.BrakeSystem).NormalizePressures(lead.TrainBrakeController.MaxPressurePSI);
+                }
+            }
             LeadLocomotiveIndex = leadLocomotiveIndex;
             Simulator.PlayerLocomotive.SwitchToPlayerControl();
             if (MovementState == AI_MOVEMENT_STATE.HANDLE_ACTION && nextActionInfo != null && nextActionInfo.GetType().IsSubclassOf(typeof(AuxActionItem))

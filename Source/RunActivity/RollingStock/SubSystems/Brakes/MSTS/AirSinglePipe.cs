@@ -708,5 +708,13 @@ namespace ORTS
             if (percent > 100) percent = 100;
             Car.Train.BrakeLine1PressurePSIorInHg = Math.Max(EmergResPressurePSI, 90) - (Math.Max(EmergResPressurePSI, 90) - FullServPressurePSI) * percent / 100;
         }
+
+        // used when switching from autopilot to player driven mode, to move from default values to values specific for the trainset
+        public void NormalizePressures(float maxPressurePSI)
+        {
+            if (AuxResPressurePSI > maxPressurePSI) AuxResPressurePSI = maxPressurePSI;
+            if (BrakeLine1PressurePSI > maxPressurePSI) BrakeLine1PressurePSI = maxPressurePSI;
+            if (EmergResPressurePSI > maxPressurePSI) EmergResPressurePSI = maxPressurePSI;
+        }
     }
 }
