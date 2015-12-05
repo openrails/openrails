@@ -26,10 +26,9 @@
 //
 
 using Microsoft.Xna.Framework;
-using Orts.Viewer3D;
 using System;
 
-namespace Orts.Common
+namespace Orts.Viewer3D.Common
 {
     class SunMoonPos
     {

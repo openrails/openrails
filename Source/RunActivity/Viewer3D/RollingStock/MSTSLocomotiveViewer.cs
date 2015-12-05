@@ -25,6 +25,7 @@ using Orts.Simulation;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
+using Orts.Viewer3D.Common;
 using Orts.Viewer3D.Popups;
 using ORTS.Common;
 using ORTS.Scripting.Api;

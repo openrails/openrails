@@ -19,10 +19,10 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using Orts.Simulation;
+using Orts.Viewer3D.Common;
 using ORTS.Common;
 using System;
 using System.Collections;

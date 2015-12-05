@@ -85,12 +85,10 @@
     <Compile Include="Simulation\AIs\AITrain.cs" />
     <Compile Include="Common\ErrorLogger.cs" />
     <Compile Include="Common\Events.cs" />
-    <Compile Include="Common\Helpers.cs" />
     <Compile Include="Common\Interpolator.cs" />
     <Compile Include="Common\Math.cs" />
     <Compile Include="Common\ORTSPaths.cs" />
     <Compile Include="Common\SteamTable.cs" />
-    <Compile Include="Common\SunMoonPos.cs" />
     <Compile Include="Common\WorldLatLon.cs" />
     <Compile Include="Common\Scripting\BrakeController.cs" />
     <Compile Include="Common\Scripting\Common.cs" />
@@ -197,6 +195,8 @@
     <Compile Include="Viewer3D\AnimatedPart.cs" />
     <Compile Include="Viewer3D\Cameras.cs" />
     <Compile Include="Viewer3D\Commands.cs" />
+    <Compile Include="Viewer3D\Common\Helpers.cs" />
+    <Compile Include="Viewer3D\Common\SunMoonPos.cs" />
     <Compile Include="Viewer3D\DDSLib.cs" />
     <Compile Include="Viewer3D\DriverMachineInterface.cs" />
     <Compile Include="Viewer3D\DynamicTrack.cs" />
