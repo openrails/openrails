@@ -27,9 +27,7 @@
 using Orts.Parsers.Msts;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
-using Orts.Viewer3D;
 using ORTS.Common;
-using ORTS.Settings;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -149,33 +147,34 @@ namespace Orts.MultiPlayer
 			{ }
 		}
 
-        double previousSpeed;
-        double begineZeroTime;
-		/// <summary>
-		/// Update. Determines what messages to send every some seconds
-		/// 1. every one second will send train location
-		/// 2. by defaulr, every 10 seconds will send switch/signal status, this can be changed by in the menu of setting MPUpdateInterval
-		/// 3. housekeeping (remove/add trains, remove players)
-		/// 4. it will also capture key stroke of horn, panto, wiper, bell, headlight etc.
-		/// </summary>
-
-		public void Update(double newtime)
-		{
-			if (NotServer == true && Program.Server != null) //I was a server, but no longer
-			{
-				Program.Server = null;
-				if (Program.DebugViewer != null) Program.DebugViewer.firstShow = true;
-			}
-			else if (NotServer == false && Program.Server == null) //I am declared the server
-			{
+        public void PreUpdate()
+        {
+            if (NotServer == true && Program.Server != null) //I was a server, but no longer
+            {
+                Program.Server = null;
+                if (Program.DebugViewer != null) Program.DebugViewer.firstShow = true;
+            }
+            else if (NotServer == false && Program.Server == null) //I am declared the server
+            {
                 /*
 				Program.Server = new Server(Program.Client.UserName + ' ' + Program.Client.Code, Program.Client);
 				if (Program.DebugViewer != null) Program.DebugViewer.firstShow = true;*/
-			}
-			//get key strokes and determine if some messages should be sent
-			handleUserInput();
+            }
+        }
 
-			if (begineZeroTime == 0) begineZeroTime = newtime - 10;
+        double previousSpeed;
+        double begineZeroTime;
+
+        /// <summary>
+        /// Update. Determines what messages to send every some seconds
+        /// 1. every one second will send train location
+        /// 2. by defaulr, every 10 seconds will send switch/signal status, this can be changed by in the menu of setting MPUpdateInterval
+        /// 3. housekeeping (remove/add trains, remove players)
+        /// 4. it will also capture key stroke of horn, panto, wiper, bell, headlight etc.
+        /// </summary>
+        public void Update(double newtime)
+        {
+            if (begineZeroTime == 0) begineZeroTime = newtime - 10;
 
 			CheckPlayerTrainSpad();//over speed or pass a red light
 
@@ -647,59 +646,6 @@ namespace Orts.MultiPlayer
 		public static void LocoChange(Train t, TrainCar lead)
 		{
 			Notify((new MSGLocoChange(GetUserName(), lead.CarID, t)).ToString());
-		}
-		//count how many times a key has been stroked, thus know if the panto should be up or down, etc. for example, stroke 11 times means up, thus send event with id 1
-        int PantoSecondCount;
-        int PantoFirstCount;
-        int BellCount;
-        int WiperCount;
-        int HeadLightCount;
-        int DoorLeftCount;
-        int DoorRightCount;
-        int MirrorsCount;
-
-		public void handleUserInput()
-		{
-			//In Multiplayer, I maybe the helper, but I can request to be the controller
-			if (UserInput.IsPressed(UserCommands.GameRequestControl))
-			{
-				RequestControl();
-			}
-
-            if (UserInput.IsPressed(UserCommands.ControlHorn)) Notify((new MSGEvent(GetUserName(), "HORN", 1)).ToString());
-
-            if (UserInput.IsReleased(UserCommands.ControlHorn)) Notify((new MSGEvent(GetUserName(), "HORN", 0)).ToString());
-			
-			if (UserInput.IsPressed(UserCommands.ControlPantograph2)) Notify((new MSGEvent(GetUserName(), "PANTO2", (++PantoSecondCount)%2)).ToString());
-
-			if (UserInput.IsPressed(UserCommands.ControlPantograph1)) Notify((new MSGEvent(GetUserName(), "PANTO1", (++PantoFirstCount)%2)).ToString());
-
-			if (UserInput.IsPressed(UserCommands.ControlBell)) Notify((new MSGEvent(GetUserName(), "BELL", 1)).ToString());
-
-            if (UserInput.IsReleased(UserCommands.ControlBell)) Notify((new MSGEvent(GetUserName(), "BELL", 0)).ToString());
-
-            if (UserInput.IsPressed(UserCommands.ControlBellToggle)) Notify((new MSGEvent(GetUserName(), "BELL", (++BellCount) % 2)).ToString());
-
-            if (UserInput.IsPressed(UserCommands.ControlWiper)) Notify((new MSGEvent(GetUserName(), "WIPER", (++WiperCount) % 2)).ToString());
-
-            if (UserInput.IsPressed(UserCommands.ControlDoorLeft)) Notify((new MSGEvent(GetUserName(), "DOORL", (++DoorLeftCount) % 2)).ToString());
-
-            if (UserInput.IsPressed(UserCommands.ControlDoorRight)) Notify((new MSGEvent(GetUserName(), "DOORR", (++DoorRightCount) % 2)).ToString());
-
-            if (UserInput.IsPressed(UserCommands.ControlMirror)) Notify((new MSGEvent(GetUserName(), "MIRRORS", (++MirrorsCount) % 2)).ToString());
-
-			if (UserInput.IsPressed(UserCommands.ControlHeadlightIncrease))
-			{
-				HeadLightCount++; if (HeadLightCount >= 3) HeadLightCount = 2;
-				Notify((new MSGEvent(GetUserName(), "HEADLIGHT", HeadLightCount)).ToString());
-			}
-
-			if (UserInput.IsPressed(UserCommands.ControlHeadlightDecrease))
-			{
-				HeadLightCount--; if (HeadLightCount < 0) HeadLightCount = 0;
-				Notify((new MSGEvent(GetUserName(), "HEADLIGHT", HeadLightCount)).ToString());
-			}
-
 		}
 
         public TrainCar SubCar(string wagonFilePath, int length)

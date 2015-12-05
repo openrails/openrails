@@ -551,6 +551,13 @@ namespace Orts.Viewer3D
             }
 
             Simulator.Update(elapsedTime.ClockSeconds);
+            if (MPManager.IsMultiPlayer())
+            {
+                MPManager.Instance().PreUpdate();
+                //get key strokes and determine if some messages should be sent
+                MultiPlayerViewer.HandleUserInput();
+                MPManager.Instance().Update(Simulator.GameTime);
+            }
             RailDriver.Update(PlayerLocomotive);
             HandleUserInput(elapsedTime);
             UserInput.Handled();

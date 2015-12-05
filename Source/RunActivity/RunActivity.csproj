@@ -205,6 +205,7 @@
     <Compile Include="Viewer3D\Lights.cs" />
     <Compile Include="Viewer3D\Materials.cs" />
     <Compile Include="Viewer3D\MSTSSky.cs" />
+    <Compile Include="Viewer3D\MultiPlayerViewer.cs" />
     <Compile Include="Viewer3D\Noise.cs" />
     <Compile Include="Viewer3D\OpenAL.cs" />
     <Compile Include="Viewer3D\ParticleEmitter.cs" />

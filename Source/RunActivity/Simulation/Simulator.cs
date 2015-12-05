@@ -581,8 +581,6 @@ namespace Orts.Simulation
             }
 
             if (HazzardManager != null) HazzardManager.Update(elapsedClockSeconds);
-            if (MPManager.IsMultiPlayer()) MPManager.Instance().Update(GameTime);
-
         }
 
         private void FinishFrontCoupling(Train drivenTrain, Train train, TrainCar lead, bool sameDirection)
