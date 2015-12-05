@@ -18,7 +18,7 @@
 // This file is the responsibility of the 3D & Environment Team.
 
 using Orts.Formats.Msts;
-using Orts.Viewer3D.RollingStock;
+using Orts.Simulation.RollingStocks;
 using ORTS.Common;
 using System.Collections.Generic;
 using System.Linq;
@@ -70,11 +70,11 @@ namespace Orts.Simulation
 
         public bool ReFill()
         {
-            while (MSTSLocomotiveViewer.RefillProcess.OkToRefill)
+            while (MSTSWagon.RefillProcess.OkToRefill)
             {
                 return true;
             }
-            if (!MSTSLocomotiveViewer.RefillProcess.OkToRefill)
+            if (!MSTSWagon.RefillProcess.OkToRefill)
                 return false;
             return false;
         }

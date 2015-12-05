@@ -349,13 +349,6 @@ namespace Orts.Viewer3D.RollingStock
             public IntakePoint IntakePoint;
         }
 
-        public class RefillProcess
-        {
-            public static bool OkToRefill { get; set; }
-            public static int ActivePickupObjectUID { get; set; }
-            public static bool Unload { get; set; }
-        }
-
         /// <summary>
         /// Scans the train's cars for intake points and the world files for pickup refilling points of the same type.
         /// (e.g. "fuelwater").
@@ -491,7 +484,7 @@ namespace Orts.Viewer3D.RollingStock
                 return;
             }
             if (distanceToPickupM <= match.IntakePoint.WidthM / 2)
-                RefillProcess.ActivePickupObjectUID = (int)match.Pickup.UID;
+                MSTSWagon.RefillProcess.ActivePickupObjectUID = (int)match.Pickup.UID;
             if (loco.SpeedMpS != 0 && match.Pickup.SpeedRange.MaxMpS == 0f)
             {
                 Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: Loco must be stationary to refill {0}.",
@@ -523,7 +516,7 @@ namespace Orts.Viewer3D.RollingStock
                 }
                 else
                 {
-                    RefillProcess.OkToRefill = true;
+                    MSTSWagon.RefillProcess.OkToRefill = true;
                     StartRefilling(match.Pickup.PickupType, fraction);
                     MatchedWagonAndPickup = match;  // Save away for HandleUserInput() to use when key is released.
                 }
@@ -546,9 +539,9 @@ namespace Orts.Viewer3D.RollingStock
                 }
                 else
                 {
-                    RefillProcess.OkToRefill = true;
-                    RefillProcess.Unload = match.Pickup.PickupCapacity.FeedRateKGpS < 0;
-                    match.Wagon.StartRefillingOrUnloading(match.Pickup.PickupType, match.IntakePoint, fraction, RefillProcess.Unload ); 
+                    MSTSWagon.RefillProcess.OkToRefill = true;
+                    MSTSWagon.RefillProcess.Unload = match.Pickup.PickupCapacity.FeedRateKGpS < 0;
+                    match.Wagon.StartRefillingOrUnloading(match.Pickup.PickupType, match.IntakePoint, fraction, MSTSWagon.RefillProcess.Unload ); 
                     MatchedWagonAndPickup = match;  // Save away for HandleUserInput() to use when key is released.
                 }
             }
@@ -592,8 +585,8 @@ namespace Orts.Viewer3D.RollingStock
         {
             if (MatchedWagonAndPickup == null)
                 return;
-            RefillProcess.OkToRefill = false;
-            RefillProcess.ActivePickupObjectUID = 0;
+            MSTSWagon.RefillProcess.OkToRefill = false;
+            MSTSWagon.RefillProcess.ActivePickupObjectUID = 0;
             var match = MatchedWagonAndPickup;
             var controller = new MSTSNotchController();
             if (match.Wagon is MSTSDieselLocomotive || match.Wagon is MSTSSteamLocomotive || (match.Wagon.IsTender && Locomotive is MSTSSteamLocomotive))

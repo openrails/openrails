@@ -227,8 +227,8 @@ namespace Orts.Viewer3D.RollingStock
             }
             else
             {
-                RefillProcess.OkToRefill = true;
-                RefillProcess.ActivePickupObjectUID = -1;
+                MSTSWagon.RefillProcess.OkToRefill = true;
+                MSTSWagon.RefillProcess.ActivePickupObjectUID = -1;
                 SteamLocomotive.RefillingFromTrough = true;
                 SteamLocomotive.SignalEvent(Event.WaterScoopDown);
                 StartRefilling((uint)MSTSWagon.PickupType.FuelWater, fraction);
@@ -241,8 +241,8 @@ namespace Orts.Viewer3D.RollingStock
         /// </summary>
         public void StopRefillingFromTrough(CommandLog log)
         {
-            RefillProcess.OkToRefill = false;
-            RefillProcess.ActivePickupObjectUID = 0;
+            MSTSWagon.RefillProcess.OkToRefill = false;
+            MSTSWagon.RefillProcess.ActivePickupObjectUID = 0;
             SteamLocomotive.RefillingFromTrough = false;
             var controller = new MSTSNotchController();
             controller = SteamLocomotive.GetRefillController((uint)MSTSWagon.PickupType.FuelWater);

@@ -32,7 +32,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.Simulation;
-using Orts.Viewer3D.RollingStock;
+using Orts.Simulation.RollingStocks;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
@@ -958,7 +958,7 @@ namespace Orts.Viewer3D
         {
 
              // 0 can be used as a setting for instant animation.
-            if (FuelPickupItem.ReFill() && FuelPickupItemObj.UID == MSTSLocomotiveViewer.RefillProcess.ActivePickupObjectUID)
+            if (FuelPickupItem.ReFill() && FuelPickupItemObj.UID == MSTSWagon.RefillProcess.ActivePickupObjectUID)
                 if (FuelPickupItemObj.PickupAnimData.AnimationSpeed == 0) AnimationKey = 1.0f;
                 else if (AnimationKey < AnimationFrames)
                     AnimationKey += elapsedTime.ClockSeconds * FrameRate;

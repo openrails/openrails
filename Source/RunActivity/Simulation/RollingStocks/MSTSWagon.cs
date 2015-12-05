@@ -177,6 +177,13 @@ namespace Orts.Simulation.RollingStocks
             FuelWood = 8    // Think this is new to OR and not recognised by MSTS
         }
 
+        public class RefillProcess
+        {
+            public static bool OkToRefill { get; set; }
+            public static int ActivePickupObjectUID { get; set; }
+            public static bool Unload { get; set; }
+        }
+
         public MSTSBrakeSystem MSTSBrakeSystem { get { return (MSTSBrakeSystem)base.BrakeSystem; } }
 
         public MSTSWagon(Simulator simulator, string wagFilePath)
