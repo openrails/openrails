@@ -20,7 +20,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
 using Orts.Simulation.Physics;
 using Orts.Simulation.Signalling;
-using Orts.Viewer3D;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
@@ -73,8 +72,6 @@ namespace Orts.Simulation
         private bool StationStopLogActive;   // logging is active
         public Orts.Formats.Msts.Event triggeredEvent = null;        // used for exchange with Sound.cs to trigger activity sounds;
 
-        public ORTSActSoundSources ORTSActSoundSourceList; // Dictionary of activity sound sources
-
         public bool NewMsgFromNewPlayer = false; // flag to indicate to ActivityWindow that there is a new message to be shown;
         public string MsgFromNewPlayer; // string to be displayed in ActivityWindow
 
@@ -82,7 +79,6 @@ namespace Orts.Simulation
         {
             Simulator = simulator;
             RestoreThis(inf, simulator, oldEventList);
-            ORTSActSoundSourceList = new ORTSActSoundSources();
         }
 
         public Activity(ActivityFile actFile, Simulator simulator)
@@ -141,8 +137,6 @@ namespace Orts.Simulation
                 EventWrapper eventAdded = EventList.Last();
                 eventAdded.OriginalActivationLevel = i.Activation_Level;
             }
-
-            ORTSActSoundSourceList = new ORTSActSoundSources();
 
             StationStopLogActive = false;
             StationStopLogFile = null;

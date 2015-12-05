@@ -57,11 +57,14 @@ namespace Orts.Processes
         private int ASyncUpdatePending = 0;
         private const int FULLUPDATECYCLE = 4; // Number of frequent updates needed till a full update
 
+        ORTSActSoundSources ORTSActSoundSourceList; // Dictionary of activity sound sources
+
         public SoundProcess(Game game)
         {
             Game = game;
             Thread = new Thread(SoundThread);
             WatchdogToken = new WatchdogToken(Thread);
+            ORTSActSoundSourceList = new ORTSActSoundSources();
         }
 
         public void Start()
@@ -221,8 +224,8 @@ namespace Orts.Processes
                     }
 
                     //Update check for activity sounds
-                    if (Program.Simulator != null && Program.Simulator.ActivityRun != null && Program.Simulator.ActivityRun.ORTSActSoundSourceList != null)
-                    Program.Simulator.ActivityRun.ORTSActSoundSourceList.Update(viewer);
+                    if (ORTSActSoundSourceList != null)
+                        ORTSActSoundSourceList.Update();
                 }
                 //if (UpdateInterrupts > 1)
                 //    Trace.TraceInformation("Sound Source Update Interrupted more than once: {0}", UpdateInterrupts);
