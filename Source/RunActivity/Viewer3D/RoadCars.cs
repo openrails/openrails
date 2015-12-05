@@ -19,6 +19,7 @@
 
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
+using Orts.Simulation;
 using ORTS;
 using ORTS.Common;
 using System;

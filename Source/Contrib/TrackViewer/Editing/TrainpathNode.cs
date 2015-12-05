@@ -45,6 +45,7 @@ using System.Text;
 using Orts.Formats.Msts;
 using ORTS.Common;
 using ORTS.TrackViewer.Drawing;
+using Orts.Simulation;
 
 namespace ORTS.TrackViewer.Editing
 {

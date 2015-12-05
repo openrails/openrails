@@ -19,7 +19,7 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using ORTS;
+using Orts.Simulation.RollingStocks;
 using ORTS.Common;
 
 namespace Orts.Viewer3D.Popups

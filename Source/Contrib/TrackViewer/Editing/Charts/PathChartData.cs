@@ -25,6 +25,7 @@ using Newtonsoft.Json;
 
 using ORTS.Common;
 using Orts.Formats.Msts;
+using Orts.Simulation;
 
 namespace ORTS.TrackViewer.Editing.Charts
 {

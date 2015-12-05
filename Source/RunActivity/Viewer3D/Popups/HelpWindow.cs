@@ -19,7 +19,8 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using ORTS;
+using Orts.Simulation;
+using Orts.Simulation.RollingStocks;
 using ORTS.Common;
 using ORTS.Settings;
 using System;

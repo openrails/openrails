@@ -16,6 +16,10 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using Orts.Formats.Msts;
+using Orts.Simulation;
+using Orts.Simulation.Physics;
+using Orts.Simulation.RollingStocks;
+using Orts.Simulation.Signalling;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using System;

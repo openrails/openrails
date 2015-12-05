@@ -26,7 +26,8 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
-using ORTS;
+using Orts.Simulation.Physics;
+using Orts.Simulation.RollingStocks;
 using ORTS.Common;
 using ORTS.Processes;
 using System;

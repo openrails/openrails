@@ -24,6 +24,10 @@
 using GNU.Gettext.WinForms;
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
+using Orts.Simulation;
+using Orts.Simulation.Physics;
+using Orts.Simulation.RollingStocks;
+using Orts.Simulation.Signalling;
 using Orts.Viewer3D;
 using Orts.Viewer3D.Popups;
 using ORTS.Common;

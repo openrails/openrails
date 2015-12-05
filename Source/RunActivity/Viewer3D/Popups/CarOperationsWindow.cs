@@ -18,7 +18,8 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 using Microsoft.Xna.Framework;
-using ORTS;
+using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using ORTS.Common;
 using System;
 

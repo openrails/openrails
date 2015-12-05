@@ -25,6 +25,8 @@
  */
 
 using Orts.Parsers.Msts;
+using Orts.Simulation.Physics;
+using Orts.Simulation.RollingStocks;
 using Orts.Viewer3D;
 using ORTS.Common;
 using ORTS.Settings;

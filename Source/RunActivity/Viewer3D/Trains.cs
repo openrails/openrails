@@ -17,8 +17,8 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using Orts.Simulation.RollingStocks;
 using Orts.Viewer3D.RollingStock;
-using ORTS;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;

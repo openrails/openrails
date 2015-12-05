@@ -40,6 +40,10 @@
 //#define DEBUGSCR
 
 using Orts.Formats.Msts;
+using Orts.Simulation;
+using Orts.Simulation.AIs;
+using Orts.Simulation.Physics;
+using Orts.Simulation.RollingStocks;
 using ORTS;
 using ORTS.Common;
 using System;

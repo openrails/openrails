@@ -16,6 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using GNU.Gettext;
+using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using System;
 using System.Collections.Generic;
 

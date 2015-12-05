@@ -30,7 +30,7 @@
 //#define DEBUG_USER_INPUT
 
 using Microsoft.Xna.Framework.Input;
-using ORTS;
+using Orts.Simulation;
 using ORTS.Settings;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;

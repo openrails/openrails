@@ -20,6 +20,7 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Orts.Simulation;
 using Orts.Viewer3D;
 using ORTS.Common;
 using ORTS.MultiPlayer;

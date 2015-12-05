@@ -19,7 +19,7 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using ORTS;
+using Orts.Simulation;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;

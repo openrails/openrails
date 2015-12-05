@@ -19,6 +19,7 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Orts.Simulation.Physics;
 using ORTS;
 using ORTS.Common;
 using System;

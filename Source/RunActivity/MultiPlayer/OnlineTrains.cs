@@ -15,6 +15,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using Orts.Simulation;
+using Orts.Simulation.AIs;
+using Orts.Simulation.Physics;
+using Orts.Simulation.RollingStocks;
 using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;

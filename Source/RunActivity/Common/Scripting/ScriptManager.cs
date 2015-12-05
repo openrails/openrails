@@ -16,6 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using Microsoft.CSharp;
+using Orts.Simulation;
 using ORTS.Common;
 using System;
 using System.CodeDom.Compiler;

@@ -16,6 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using Orts.Formats.Msts;
+using Orts.Simulation;
 using Orts.Viewer3D;
 using System;
 using System.Collections.Generic;

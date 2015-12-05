@@ -20,6 +20,10 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
+using Orts.Simulation;
+using Orts.Simulation.Physics;
+using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Viewer3D.Popups;
 using ORTS;
 using ORTS.Common;

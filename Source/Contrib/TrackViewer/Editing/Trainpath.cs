@@ -27,6 +27,7 @@ using System.Windows.Forms;
 
 using Orts.Formats.Msts;
 using ORTS.Common;
+using Orts.Simulation;
 
 namespace ORTS.TrackViewer.Editing
 {

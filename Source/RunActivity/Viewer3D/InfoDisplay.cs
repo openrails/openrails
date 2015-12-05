@@ -29,7 +29,7 @@
 // Analyse the data using a spreadsheet and graph with an XY chart.
 
 
-using ORTS;
+using Orts.Simulation.RollingStocks;
 using ORTS.Common;
 using ORTS.Settings;
 using System;

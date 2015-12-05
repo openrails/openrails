@@ -20,6 +20,10 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Orts.Simulation.AIs;
+using Orts.Simulation.Physics;
+using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using ORTS;
 using ORTS.Common;
 using ORTS.Processes;

@@ -20,6 +20,9 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
+using Orts.Simulation;
+using Orts.Simulation.Physics;
+using Orts.Simulation.Signalling;
 using ORTS;
 using ORTS.Common;
 using System;
