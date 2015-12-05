@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Orts.Viewer3D;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -121,7 +120,7 @@ namespace ORTS.MultiPlayer
 				catch (SameNameError) //I have conflict with some one in the game, will close, and abort.
 				{
 					if (Program.Simulator.Confirmer != null)
-                        Program.Simulator.Confirmer.Error(Viewer.Catalog.GetString("Connection to the server is lost, will play as single mode"));
+                        Program.Simulator.Confirmer.Error(Program.Catalog.GetString("Connection to the server is lost, will play as single mode"));
 					Program.Client = null;
 					tcpClient.Close();
 					listenThread.Abort();
@@ -133,7 +132,7 @@ namespace ORTS.MultiPlayer
 				}
 			}
 			if (Program.Simulator.Confirmer != null)
-                Program.Simulator.Confirmer.Error(Viewer.Catalog.GetString("Connection to the server is lost, will play as single mode"));
+                Program.Simulator.Confirmer.Error(Program.Catalog.GetString("Connection to the server is lost, will play as single mode"));
 			try
 			{
 				foreach (var p in MPManager.OnlineTrains.Players)
@@ -150,7 +149,7 @@ namespace ORTS.MultiPlayer
 				Program.Simulator.PlayerLocomotive.Train.LeadLocomotive = Program.Simulator.PlayerLocomotive;
 			}
 			if (Program.Simulator.Confirmer != null)
-                Program.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Alt-E to gain control of your train"));
+                Program.Simulator.Confirmer.Information(Program.Catalog.GetString("Alt-E to gain control of your train"));
 
 			Program.Client = null;
 			tcpClient.Close();

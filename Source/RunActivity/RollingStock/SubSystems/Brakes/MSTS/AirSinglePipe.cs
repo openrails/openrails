@@ -15,9 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-// using System.Diagnostics;
 using Orts.Parsers.Msts;
-using Orts.Viewer3D;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
@@ -142,12 +140,12 @@ namespace ORTS
                 (Car as MSTSWagon).EmergencyReservoirPresent ? FormatStrings.FormatPressure(EmergResPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.EmergencyReservoir], true) : string.Empty,
                 TwoPipes ? FormatStrings.FormatPressure(BrakeLine2PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.MainPipe], true) : string.Empty,
                 (Car as MSTSWagon).RetainerPositions == 0 ? string.Empty : RetainerDebugState,
-                this is SingleTransferPipe ? string.Empty : Viewer.Catalog.GetString(GetStringAttribute.GetPrettyName(TripleValveState)),
+                this is SingleTransferPipe ? string.Empty : Program.Catalog.GetString(GetStringAttribute.GetPrettyName(TripleValveState)),
                 string.Empty, // Spacer because the state above needs 2 columns.
                 (Car as MSTSWagon).HandBrakePresent ? string.Format("{0:F0}%", HandbrakePercent) : string.Empty,
                 FrontBrakeHoseConnected ? "I" : "T",
                 string.Format("A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-"),
-                BleedOffValveOpen ? Viewer.Catalog.GetString("Open") : string.Empty,
+                BleedOffValveOpen ? Program.Catalog.GetString("Open") : string.Empty,
             };
         }
 

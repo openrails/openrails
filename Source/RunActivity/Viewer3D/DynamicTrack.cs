@@ -134,12 +134,12 @@ namespace Orts.Viewer3D
             Viewer = viewer;
             worldPosition = position;
 
-            if (viewer.Simulator.TRP == null)
+            if (viewer.TRP == null)
             {
                 // First to need a track profile creates it
                 Trace.Write(" TRP");
                 // Creates profile and loads materials into SceneryMaterials
-                TRPFile.CreateTrackProfile(viewer, viewer.Simulator.RoutePath, out viewer.Simulator.TRP);
+                TRPFile.CreateTrackProfile(viewer, viewer.Simulator.RoutePath, out viewer.TRP);
             }
 
             // Instantiate classes
@@ -1002,7 +1002,7 @@ namespace Orts.Viewer3D
 
             XNAEnd = endPosition.XNAMatrix.Translation;
 
-            TrProfile = viewer.Simulator.TRP.TrackProfile;
+            TrProfile = viewer.TRP.TrackProfile;
             // Count all of the LODItems in all the LODs
             int count = 0;
             for (int i = 0; i < TrProfile.LODs.Count; i++)

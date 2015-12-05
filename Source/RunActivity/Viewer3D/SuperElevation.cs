@@ -673,14 +673,14 @@ namespace Orts.Viewer3D
             }
             DTrackData.deltaY = 0;
 
-            if (viewer.Simulator.TRP == null)
+            if (viewer.TRP == null)
             {
                 // First to need a track profile creates it
                 Trace.Write(" TRP");
                 // Creates profile and loads materials into SceneryMaterials
-                TRPFile.CreateTrackProfile(viewer, viewer.Simulator.RoutePath, out viewer.Simulator.TRP);
+                TRPFile.CreateTrackProfile(viewer, viewer.Simulator.RoutePath, out viewer.TRP);
             }
-            TrProfile = viewer.Simulator.TRP.TrackProfile;
+            TrProfile = viewer.TRP.TrackProfile;
 
             XNAEnd = endPosition.XNAMatrix.Translation;
 

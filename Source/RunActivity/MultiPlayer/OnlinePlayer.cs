@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Orts.Viewer3D;
 using System;
 using System.Net.Sockets;
 using System.Text;
@@ -141,7 +140,7 @@ namespace ORTS.MultiPlayer
 			}
 
 			System.Console.WriteLine("{0} quit", this.Username);
-			if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information(Viewer.Catalog.GetStringFmt("{0} quit.", this.Username));
+			if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information(Program.Catalog.GetStringFmt("{0} quit.", this.Username));
 			Client.Close();
 			if (this.Train != null && this.status != Status.Removed) //remember the location of the train in case the player comes back later, if he is not removed by the dispatcher
 			{

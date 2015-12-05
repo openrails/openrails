@@ -133,7 +133,7 @@ namespace ORTS.MultiPlayer
 				{
 					train.TrainType = Train.TRAINTYPE.PLAYER; train.LeadLocomotive = Program.Simulator.PlayerLocomotive;
 					if (Program.Simulator.Confirmer != null)
-						Program.Simulator.Confirmer.Information(Viewer.Catalog.GetString("You gained back the control of your train"));
+						Program.Simulator.Confirmer.Information(Program.Catalog.GetString("You gained back the control of your train"));
 					msgctl = new MSGControl(GetUserName(), "Confirm", train);
 					BroadCast(msgctl.ToString());
 				}
@@ -383,7 +383,7 @@ namespace ORTS.MultiPlayer
 				if (count >= 2)
 				{
 					if (Program.Simulator.Confirmer != null)
-						Program.Simulator.Confirmer.Information(Viewer.Catalog.GetPluralStringFmt("Cannot decouple: train has {0} player, need to completely stop.", "Cannot decouple: train has {0} players, need to completely stop.", count));
+						Program.Simulator.Confirmer.Information(Program.Catalog.GetPluralStringFmt("Cannot decouple: train has {0} player, need to completely stop.", "Cannot decouple: train has {0} players, need to completely stop.", count));
 					return false;
 				}
 			}
@@ -713,7 +713,7 @@ namespace ORTS.MultiPlayer
 				car.CarLengthM = length;
 				car.RealWagFilePath = wagonFilePath;
 				if (Program.Simulator.Confirmer != null)
-                    Program.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Missing car, have substituted with other one."));
+                    Program.Simulator.Confirmer.Information(Program.Catalog.GetString("Missing car, have substituted with other one."));
 
 			}
 			catch (Exception error)

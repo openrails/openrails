@@ -1077,7 +1077,7 @@ namespace ORTS.Processes
              .OrderByDescending(f => f.LastWriteTime)
              .First();
             if (file == null) throw new FileNotFoundException(String.Format(
-               Viewer.Catalog.GetString("Activity Save file '*.save' not found in folder {0}"), directory));
+               Program.Catalog.GetString("Activity Save file '*.save' not found in folder {0}"), directory));
             return file.FullName;
         }
 

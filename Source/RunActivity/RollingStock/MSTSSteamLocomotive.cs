@@ -1594,7 +1594,7 @@ namespace ORTS
             if (RefillingFromTrough && !IsOverTrough())
             {
                 // Bad thing, scoop gets broken!
-               Simulator.Confirmer.Message(ConfirmLevel.Error, Viewer.Catalog.GetString("Scoop broken because activated outside through"));
+               Simulator.Confirmer.Message(ConfirmLevel.Error, Program.Catalog.GetString("Scoop broken because activated outside through"));
                WaterController.UpdateValue = 0.0f;
                RefillingFromTrough = false;
                SignalEvent(Event.WaterScoopUp);
@@ -1616,7 +1616,7 @@ namespace ORTS
             {
                 if (!CoalIsExhausted)
                 {
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Tender coal supply is empty. Your loco will fail."));
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("Tender coal supply is empty. Your loco will fail."));
                 }
                 CoalIsExhausted = true;
             }
@@ -1691,7 +1691,7 @@ namespace ORTS
             {
                 if (!WaterIsExhausted && IsPlayerTrain)
                 {
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Tender water supply is empty. Your loco will fail."));
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("Tender water supply is empty. Your loco will fail."));
                 }
                 WaterIsExhausted = true;
             }
@@ -1749,7 +1749,7 @@ namespace ORTS
                 if (!FireIsExhausted)
                 {
                     if (IsPlayerTrain)
-                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Fire has dropped too far. Your loco will fail."));
+                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("Fire has dropped too far. Your loco will fail."));
                     FireIsExhausted = true; // fire has run out of fuel.
                 }
             }
@@ -1806,7 +1806,7 @@ namespace ORTS
                             FuelBoost = true; // boost shoveling 
                             if (!StokerIsMechanical && IsPlayerTrain)  // Don't display message if stoker in operation
                             {
-                                Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("FireMass is getting low. Your fireman will shovel faster, but don't wear him out."));
+                                Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("FireMass is getting low. Your fireman will shovel faster, but don't wear him out."));
                             }
                         }
                     }
@@ -1819,7 +1819,7 @@ namespace ORTS
                         //  FuelBoostReset = false; // Reset boost timer
                         if (!StokerIsMechanical && IsPlayerTrain)  // Don't display message if stoker in operation
                         {
-                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("FireMass is back within limits. Your fireman will shovel as per normal."));
+                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("FireMass is back within limits. Your fireman will shovel as per normal."));
                         }
                     }
                 }
@@ -2187,7 +2187,7 @@ namespace ORTS
                 FireHeatTxfKW = PreviousFireHeatTxfKW; // if greater then grate limit don't allow any more heat txf
                 if (!IsGrateLimit)  // Provide message to player that grate limit has been exceeded
                 {
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Grate limit exceeded - boiler heat rate cannot increase."));
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("Grate limit exceeded - boiler heat rate cannot increase."));
                 }
                 IsGrateLimit = true;
             }
@@ -2197,7 +2197,7 @@ namespace ORTS
                 FireHeatTxfKW = FuelCalorificKJpKG * FuelBurnRateKGpS;
                 if (IsGrateLimit)  // Provide message to player that grate limit has now returned within limits
                 {
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Grate limit return to normal."));
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("Grate limit return to normal."));
                 }
                 IsGrateLimit = false;
             }
@@ -3410,20 +3410,20 @@ namespace ORTS
             if (WaterFraction < WaterMinLevel)
             {
                 if (!FusiblePlugIsBlown)
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Water level dropped too far. Plug has fused and loco has failed."));
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("Water level dropped too far. Plug has fused and loco has failed."));
                 FusiblePlugIsBlown = true; // if water level has dropped, then fusible plug will blow , see "water model"
             }
             // Check for priming            
             if (WaterFraction >= WaterMaxLevel)
             {
                 if (!BoilerIsPriming)
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Boiler overfull and priming."));
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("Boiler overfull and priming."));
                 BoilerIsPriming = true;
             }
             else if (WaterFraction < WaterMaxLevelSafe)
             {
                 if (BoilerIsPriming)
-                    Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer.Catalog.GetString("Boiler no longer priming."));
+                    Simulator.Confirmer.Message(ConfirmLevel.Information, Program.Catalog.GetString("Boiler no longer priming."));
                 BoilerIsPriming = false;
             }
         }
@@ -3793,7 +3793,7 @@ namespace ORTS
                         {
                             IsSteamHeatExceeded = true;
                             // Provide warning message if temperature is too hot
-                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Carriage temperature is too hot, the passengers are sweating."));
+                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("Carriage temperature is too hot, the passengers are sweating."));
                         }                 
                     }
                     else if (CurrentCarriageHeatTempC < InsideTempC - 1.0f)
@@ -3810,7 +3810,7 @@ namespace ORTS
                         {
                             IsSteamHeatLow = true;
                             // Provide warning message if temperature is too hot
-                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Carriage temperature is too cold, the passengers are freezing."));
+                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("Carriage temperature is too cold, the passengers are freezing."));
                         }
                     }
                     else if (CurrentCarriageHeatTempC > 13.0f)
@@ -3935,25 +3935,25 @@ namespace ORTS
             var status = new StringBuilder();
 
             if (IsFixGeared)
-                status.AppendFormat("{0} = 1 ({1:F2})\n", Viewer.Catalog.GetString("Fixed gear"), SteamGearRatio);
+                status.AppendFormat("{0} = 1 ({1:F2})\n", Program.Catalog.GetString("Fixed gear"), SteamGearRatio);
             else if (IsSelectGeared)
-                status.AppendFormat("{0} = {2} ({1:F2})\n", Viewer.Catalog.GetString("Gear"),
-                    SteamGearRatio, SteamGearPosition == 0 ? Viewer.Catalog.GetParticularString("Gear", "N") : SteamGearPosition.ToString());
+                status.AppendFormat("{0} = {2} ({1:F2})\n", Program.Catalog.GetString("Gear"),
+                    SteamGearRatio, SteamGearPosition == 0 ? Program.Catalog.GetParticularString("Gear", "N") : SteamGearPosition.ToString());
 
-            status.AppendFormat("{0} = {1}/{2}\n", Viewer.Catalog.GetString("Steam usage"), FormatStrings.FormatMass(pS.TopH(Kg.FromLb(PreviousTotalSteamUsageLBpS)), MainPressureUnit != PressureUnit.PSI), FormatStrings.h);
-            status.AppendFormat("{0}{2} = {1}{2}\n", Viewer.Catalog.GetString("Boiler pressure"), FormatStrings.FormatPressure(BoilerPressurePSI, PressureUnit.PSI, MainPressureUnit, true), boilerPressureSafety);
-            status.AppendFormat("{0}{2} = {1:F0}% {3}{2}\n", Viewer.Catalog.GetString("Boiler water level"), 100 * waterGlassPercent, boilerWaterSafety, FiringIsManual ? Viewer.Catalog.GetString("(safe range)") : "");
+            status.AppendFormat("{0} = {1}/{2}\n", Program.Catalog.GetString("Steam usage"), FormatStrings.FormatMass(pS.TopH(Kg.FromLb(PreviousTotalSteamUsageLBpS)), MainPressureUnit != PressureUnit.PSI), FormatStrings.h);
+            status.AppendFormat("{0}{2} = {1}{2}\n", Program.Catalog.GetString("Boiler pressure"), FormatStrings.FormatPressure(BoilerPressurePSI, PressureUnit.PSI, MainPressureUnit, true), boilerPressureSafety);
+            status.AppendFormat("{0}{2} = {1:F0}% {3}{2}\n", Program.Catalog.GetString("Boiler water level"), 100 * waterGlassPercent, boilerWaterSafety, FiringIsManual ? Program.Catalog.GetString("(safe range)") : "");
 
             if (FiringIsManual)
             {
-                status.AppendFormat("{0}{3} = {2:F0}% {1}{3}\n", Viewer.Catalog.GetString("Boiler water level"), Viewer.Catalog.GetString("(absolute)"), WaterFraction * 100, boilerWaterSafety);
+                status.AppendFormat("{0}{3} = {2:F0}% {1}{3}\n", Program.Catalog.GetString("Boiler water level"), Program.Catalog.GetString("(absolute)"), WaterFraction * 100, boilerWaterSafety);
                 if (IdealFireMassKG > 0)
-                    status.AppendFormat("{0} = {1:F0}%\n", Viewer.Catalog.GetString("Fire mass"), FireMassKG / IdealFireMassKG * 100);
+                    status.AppendFormat("{0} = {1:F0}%\n", Program.Catalog.GetString("Fire mass"), FireMassKG / IdealFireMassKG * 100);
                 else
-                    status.AppendFormat("{0} = {1:F0}%\n", Viewer.Catalog.GetString("Fire ratio"), FireRatio * 100);
+                    status.AppendFormat("{0} = {1:F0}%\n", Program.Catalog.GetString("Fire ratio"), FireRatio * 100);
             }
 
-            status.AppendFormat("{0}{5} = {3:F0}% {1}, {4:F0}% {2}{5}\n", Viewer.Catalog.GetString("Fuel levels"), Viewer.Catalog.GetString("coal"), Viewer.Catalog.GetString("water"), 100 * coalPercent, 100 * waterPercent, fuelSafety);
+            status.AppendFormat("{0}{5} = {3:F0}% {1}, {4:F0}% {2}{5}\n", Program.Catalog.GetString("Fuel levels"), Program.Catalog.GetString("coal"), Program.Catalog.GetString("water"), 100 * coalPercent, 100 * waterPercent, fuelSafety);
 
             return status.ToString();
         }
@@ -3962,18 +3962,18 @@ namespace ORTS
         {
             var status = new StringBuilder(base.GetDebugStatus());
 
-            status.AppendFormat("\n\n\t\t === {0} === \t\t\n", Viewer.Catalog.GetString("Key Inputs"));
+            status.AppendFormat("\n\n\t\t === {0} === \t\t\n", Program.Catalog.GetString("Key Inputs"));
 
-            status.AppendFormat("{0}\t\t{1}\n", Viewer.Catalog.GetString("Locomotive Type:"),
+            status.AppendFormat("{0}\t\t{1}\n", Program.Catalog.GetString("Locomotive Type:"),
                 SteamLocoType);
 
             status.AppendFormat("{0}\t{1}\t{6}\t{2}\t{7}\t{3}\t{8}\t{4}\t{9}\t{5}\t{10}\n",
-                Viewer.Catalog.GetString("Input:"),
-                Viewer.Catalog.GetString("Evap"),
-                Viewer.Catalog.GetString("Grate"),
-                Viewer.Catalog.GetString("Boiler"),
-                Viewer.Catalog.GetString("SuperHr"),
-                Viewer.Catalog.GetString("FuelCal"),
+                Program.Catalog.GetString("Input:"),
+                Program.Catalog.GetString("Evap"),
+                Program.Catalog.GetString("Grate"),
+                Program.Catalog.GetString("Boiler"),
+                Program.Catalog.GetString("SuperHr"),
+                Program.Catalog.GetString("FuelCal"),
                 FormatStrings.FormatArea(EvaporationAreaM2, IsMetric),
                 FormatStrings.FormatArea(GrateAreaM2, IsMetric),
                 FormatStrings.FormatVolume(Me3.FromFt3(BoilerVolumeFT3), IsMetric),
@@ -3981,25 +3981,25 @@ namespace ORTS
                 FormatStrings.FormatEnergyDensityByMass(FuelCalorificKJpKG, IsMetric));
 
             status.AppendFormat("{0}\t{1}\t{4:N1}\t{2}\t{5:N2}\t{3}\t{6:N2}\n",
-                Viewer.Catalog.GetString("Adj:"),
-                Viewer.Catalog.GetString("CylEff"),
-                Viewer.Catalog.GetString("CylExh"),
-                Viewer.Catalog.GetString("PortOpen"),
+                Program.Catalog.GetString("Adj:"),
+                Program.Catalog.GetString("CylEff"),
+                Program.Catalog.GetString("CylExh"),
+                Program.Catalog.GetString("PortOpen"),
                 CylinderEfficiencyRate,
                 CylinderExhaustOpenFactor,
                 CylinderPortOpeningFactor);
 
             status.AppendFormat("\n\t\t === {0} === \t\t{1}/{2}\n",
-                Viewer.Catalog.GetString("Steam Production"),
+                Program.Catalog.GetString("Steam Production"),
                 FormatStrings.FormatMass(pS.TopH(Kg.FromLb(EvaporationLBpS)), IsMetric),
                 FormatStrings.h);
 
             status.AppendFormat("{0}\t{1}\t{5}\t{2}\t{6}\t{3}\t{7}/{8}\t\t{4}\t{9:N2}\n",
-                Viewer.Catalog.GetString("Boiler:"),
-                Viewer.Catalog.GetParticularString("HUD", "Power"),
-                Viewer.Catalog.GetString("Mass"),
-                Viewer.Catalog.GetString("MaxOutp"),
-                Viewer.Catalog.GetString("BoilerEff"),
+                Program.Catalog.GetString("Boiler:"),
+                Program.Catalog.GetParticularString("HUD", "Power"),
+                Program.Catalog.GetString("Mass"),
+                Program.Catalog.GetString("MaxOutp"),
+                Program.Catalog.GetString("BoilerEff"),
                 FormatStrings.FormatPower(W.FromKW(BoilerKW), IsMetric, true, false),
                 FormatStrings.FormatMass(Kg.FromLb(BoilerMassLB), IsMetric),
                 FormatStrings.FormatMass(Kg.FromLb(MaxBoilerOutputLBpH), IsMetric),
@@ -4007,43 +4007,43 @@ namespace ORTS
                 BoilerEfficiencyGrateAreaLBpFT2toX[(pS.TopH(Kg.ToLb(FuelBurnRateKGpS)) / Me2.ToFt2(GrateAreaM2))]);
 
             status.AppendFormat("{0}\t{1}\t{5}\t{2}\t{6}\t{3}\t{7}\t\t{4}\t{8}\n",
-                Viewer.Catalog.GetString("Heat:"),
-                Viewer.Catalog.GetString("In"),
-                Viewer.Catalog.GetString("Out"),
-                Viewer.Catalog.GetString("Stored"),
-                Viewer.Catalog.GetString("Max"),
+                Program.Catalog.GetString("Heat:"),
+                Program.Catalog.GetString("In"),
+                Program.Catalog.GetString("Out"),
+                Program.Catalog.GetString("Stored"),
+                Program.Catalog.GetString("Max"),
                 FormatStrings.FormatPower(W.FromBTUpS(BoilerHeatInBTUpS), IsMetric, false, true),
                 FormatStrings.FormatPower(W.FromBTUpS(PreviousBoilerHeatOutBTUpS), IsMetric, false, true),
                 FormatStrings.FormatEnergy(W.FromBTUpS(BoilerHeatSmoothBTU.Value), IsMetric),
                 FormatStrings.FormatEnergy(W.FromBTUpS(MaxBoilerHeatBTU), IsMetric));
 
             status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n",
-                Viewer.Catalog.GetString("Temp:"),
-                Viewer.Catalog.GetString("Flue"),
+                Program.Catalog.GetString("Temp:"),
+                Program.Catalog.GetString("Flue"),
                 FormatStrings.FormatTemperature(C.FromK(FlueTempK), IsMetric, false),
-                Viewer.Catalog.GetString("Water"),
+                Program.Catalog.GetString("Water"),
                 FormatStrings.FormatTemperature(C.FromK(BoilerWaterTempK), IsMetric, false),
-                Viewer.Catalog.GetString("MaxSupH"),
+                Program.Catalog.GetString("MaxSupH"),
                 FormatStrings.FormatTemperature(C.FromF(SuperheatRefTempF), IsMetric, false),
-                Viewer.Catalog.GetString("CurSupH"),
+                Program.Catalog.GetString("CurSupH"),
                 FormatStrings.FormatTemperature(C.FromF(CurrentSuperheatTempF), IsMetric, false));
 
             status.AppendFormat("\n\t\t === {0} === \t\t{1}/{2}\n",
-                Viewer.Catalog.GetString("Steam Usage"),
+                Program.Catalog.GetString("Steam Usage"),
                 FormatStrings.FormatMass(pS.TopH(Kg.FromLb(PreviousTotalSteamUsageLBpS)), IsMetric),
                 FormatStrings.h);
 
             status.AppendFormat("{0}\t{1}\t{10}/{21}\t{2}\t{11}/{21}\t{3}\t{12}/{21}\t{4}\t{13}/{21}\t{5}\t{14}/{21}\t{6}\t{15}/{21}\t{7}\t{16}/{21}\t{8}\t{17}/{21}\t{9}\t{18}/{21} ({19}x{20:N1}\")\n",
-                Viewer.Catalog.GetString("Usage:"),
-                Viewer.Catalog.GetString("Cyl"),
-                Viewer.Catalog.GetString("Blower"),
-                Viewer.Catalog.GetString("Radiation"),
-                Viewer.Catalog.GetString("Comprsr"),
-                Viewer.Catalog.GetString("SafetyV"),
-                Viewer.Catalog.GetString("CylCock"),
-                Viewer.Catalog.GetString("Genertr"),
-                Viewer.Catalog.GetString("Stoker"),
-                Viewer.Catalog.GetString("MaxSafe"),
+                Program.Catalog.GetString("Usage:"),
+                Program.Catalog.GetString("Cyl"),
+                Program.Catalog.GetString("Blower"),
+                Program.Catalog.GetString("Radiation"),
+                Program.Catalog.GetString("Comprsr"),
+                Program.Catalog.GetString("SafetyV"),
+                Program.Catalog.GetString("CylCock"),
+                Program.Catalog.GetString("Genertr"),
+                Program.Catalog.GetString("Stoker"),
+                Program.Catalog.GetString("MaxSafe"),
                 FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylinderSteamUsageLBpS)), IsMetric),
                 FormatStrings.FormatMass(pS.TopH(Kg.FromLb(BlowerSteamUsageLBpS)), IsMetric),
                 FormatStrings.FormatMass(pS.TopH(Kg.FromLb(RadiationSteamLossLBpS)), IsMetric),
@@ -4062,44 +4062,44 @@ namespace ORTS
 
                 // Display steam indicator pressures in HP cylinder
                 status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\t{17}\t{18}\n",
-                Viewer.Catalog.GetString("PressHP:"),
-                Viewer.Catalog.GetString("Chest"),
+                Program.Catalog.GetString("PressHP:"),
+                Program.Catalog.GetString("Chest"),
                 FormatStrings.FormatPressure(SteamChestPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
-                Viewer.Catalog.GetString("Initial"),
+                Program.Catalog.GetString("Initial"),
                 FormatStrings.FormatPressure(HPCylinderInitialPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
-                Viewer.Catalog.GetString("Cutoff"),
+                Program.Catalog.GetString("Cutoff"),
                 FormatStrings.FormatPressure(HPCylinderCutoffPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
-                Viewer.Catalog.GetString("Rel"),
+                Program.Catalog.GetString("Rel"),
                 FormatStrings.FormatPressure(HPCylinderReleasePressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
-                Viewer.Catalog.GetString("RelR"),
+                Program.Catalog.GetString("RelR"),
                 FormatStrings.FormatPressure(HPCylinderReleasePressureRecvAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
-                Viewer.Catalog.GetString("Exhaust"),
+                Program.Catalog.GetString("Exhaust"),
                 FormatStrings.FormatPressure(HPCylinderExhaustPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
-                Viewer.Catalog.GetString("Back"),
+                Program.Catalog.GetString("Back"),
                 FormatStrings.FormatPressure(HPCylinderBackPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
-                Viewer.Catalog.GetString("PreComp"),
+                Program.Catalog.GetString("PreComp"),
                 FormatStrings.FormatPressure(HPCylinderPreCompressionPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
-                Viewer.Catalog.GetString("MEP"),
+                Program.Catalog.GetString("MEP"),
                 FormatStrings.FormatPressure(HPCylinderMEPAtmPSI, PressureUnit.PSI, MainPressureUnit, true));
 
                 // Display steam indicator pressures in LP cylinder
                 status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\n",
-                Viewer.Catalog.GetString("PressLP:"),
-                Viewer.Catalog.GetString("Chest"),
+                Program.Catalog.GetString("PressLP:"),
+                Program.Catalog.GetString("Chest"),
                 FormatStrings.FormatPressure(SteamChestPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
-                Viewer.Catalog.GetString("Initial"),
+                Program.Catalog.GetString("Initial"),
                 FormatStrings.FormatPressure(LPCylinderInitialPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
-                Viewer.Catalog.GetString("Cutoff"),
+                Program.Catalog.GetString("Cutoff"),
                 FormatStrings.FormatPressure(LPCylinderPreCutoffPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
-                Viewer.Catalog.GetString("Rel"),
+                Program.Catalog.GetString("Rel"),
                 FormatStrings.FormatPressure(LPCylinderReleasePressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
-                Viewer.Catalog.GetString("Back"),
+                Program.Catalog.GetString("Back"),
                 FormatStrings.FormatPressure(LPCylinderBackPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
-                Viewer.Catalog.GetString("PreComp"),
+                Program.Catalog.GetString("PreComp"),
                 FormatStrings.FormatPressure(LPCylinderPreCompressionPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
-                Viewer.Catalog.GetString("PreAdm"),
+                Program.Catalog.GetString("PreAdm"),
                 FormatStrings.FormatPressure(LPCylinderPreAdmissionPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
-                Viewer.Catalog.GetString("MEP"),
+                Program.Catalog.GetString("MEP"),
                 FormatStrings.FormatPressure(LPCylinderMEPAtmPSI, PressureUnit.PSI, MainPressureUnit, true));
 
             }
@@ -4107,15 +4107,15 @@ namespace ORTS
             {
 
                 status.AppendFormat("{0}\t{1}\t{9}\t{2}\t{10}\t{3}\t{11}\t{4}\t{12}\t{5}\t{13}\t{6}\t{14}\t{7}\t{15}\t{8}\t{16}\n",
-                Viewer.Catalog.GetString("Press:"),
-                    Viewer.Catalog.GetString("Chest"),
-                    Viewer.Catalog.GetString("Initial"),
-                    Viewer.Catalog.GetString("Cutoff"),
-                    Viewer.Catalog.GetString("Rel"),
-                    Viewer.Catalog.GetString("Back"),
-                    Viewer.Catalog.GetString("PreComp"),
-                    Viewer.Catalog.GetString("PreAdm"),
-                    Viewer.Catalog.GetString("MEP"),
+                Program.Catalog.GetString("Press:"),
+                    Program.Catalog.GetString("Chest"),
+                    Program.Catalog.GetString("Initial"),
+                    Program.Catalog.GetString("Cutoff"),
+                    Program.Catalog.GetString("Rel"),
+                    Program.Catalog.GetString("Back"),
+                    Program.Catalog.GetString("PreComp"),
+                    Program.Catalog.GetString("PreAdm"),
+                    Program.Catalog.GetString("MEP"),
                     FormatStrings.FormatPressure(SteamChestPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                     FormatStrings.FormatPressure(InitialPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
                     FormatStrings.FormatPressure(CutoffPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
@@ -4127,15 +4127,15 @@ namespace ORTS
             }
 
             status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n",
-                Viewer.Catalog.GetString("Status:"),
-                Viewer.Catalog.GetString("Safety"),
-                SafetyIsOn ? Viewer.Catalog.GetString("Open") : Viewer.Catalog.GetString("Closed"),
-                Viewer.Catalog.GetString("Plug"),
-                FusiblePlugIsBlown ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
-                Viewer.Catalog.GetString("Prime"),
-                BoilerIsPriming ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
-                Viewer.Catalog.GetString("Comp"),
-                CylinderCompoundOn ? Viewer.Catalog.GetString("Off") : Viewer.Catalog.GetString("On")
+                Program.Catalog.GetString("Status:"),
+                Program.Catalog.GetString("Safety"),
+                SafetyIsOn ? Program.Catalog.GetString("Open") : Program.Catalog.GetString("Closed"),
+                Program.Catalog.GetString("Plug"),
+                FusiblePlugIsBlown ? Program.Catalog.GetString("Yes") : Program.Catalog.GetString("No"),
+                Program.Catalog.GetString("Prime"),
+                BoilerIsPriming ? Program.Catalog.GetString("Yes") : Program.Catalog.GetString("No"),
+                Program.Catalog.GetString("Comp"),
+                CylinderCompoundOn ? Program.Catalog.GetString("Off") : Program.Catalog.GetString("On")
                 );
 
 #if DEBUG_LOCO_STEAM_USAGE
@@ -4169,46 +4169,46 @@ namespace ORTS
             {
                 // Display Steam Heat info
              status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}/{9}\t{10}\t{11:N0}\n",
-                Viewer.Catalog.GetString("StHeat:"),
-                Viewer.Catalog.GetString("Press"),
+                Program.Catalog.GetString("StHeat:"),
+                Program.Catalog.GetString("Press"),
                 FormatStrings.FormatPressure(CurrentSteamHeatPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
-                Viewer.Catalog.GetString("TrTemp"),
+                Program.Catalog.GetString("TrTemp"),
                 FormatStrings.FormatTemperature(CurrentCarriageHeatTempC, IsMetric, false),             
-                Viewer.Catalog.GetString("StTemp"),
+                Program.Catalog.GetString("StTemp"),
                 FormatStrings.FormatTemperature(CurrentSteamHeatPipeTempC, IsMetric, false),               
-                Viewer.Catalog.GetString("StUse"),
+                Program.Catalog.GetString("StUse"),
                 FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CalculatedCarHeaterSteamUsageLBpS)), IsMetric),
                 FormatStrings.h,
-                Viewer.Catalog.GetString("NetHt"),
+                Program.Catalog.GetString("NetHt"),
                 DisplayNetSteamHeatLossWpTime);
             }
 
 #if DEBUG_LOCO_STEAM_HEAT_HUD
             status.AppendFormat("\n{0}\t{1}\t{2:N0}\t{3}\t{4:N0}\t{5}\t{6:N0}\t{7}\t{8:N0}\t{9}\t{10:N0}\t{11}\t{12}\n",
-                Viewer.Catalog.GetString("StHtDB:"),
-                Viewer.Catalog.GetString("TotHt"),
+                Program.Catalog.GetString("StHtDB:"),
+                Program.Catalog.GetString("TotHt"),
                 TotalTrainSteamHeatW,
-                Viewer.Catalog.GetString("NetHt"),
+                Program.Catalog.GetString("NetHt"),
                 DisplayNetSteamHeatLossWpTime,
-                Viewer.Catalog.GetString("PipHt"),
+                Program.Catalog.GetString("PipHt"),
                 SteamPipeHeatW,
-                Viewer.Catalog.GetString("CarHt"),
+                Program.Catalog.GetString("CarHt"),
                 Train.TrainSteamHeatLossWpT,
-                Viewer.Catalog.GetString("CurrHt"),
+                Program.Catalog.GetString("CurrHt"),
                 CurrentTrainSteamHeatW,
-                Viewer.Catalog.GetString("Cont"),
+                Program.Catalog.GetString("Cont"),
                 SteamHeatController.CurrentValue);
 #endif
 
-            status.AppendFormat("\n\t\t === {0} === \n", Viewer.Catalog.GetString("Fireman"));
+            status.AppendFormat("\n\t\t === {0} === \n", Program.Catalog.GetString("Fireman"));
             status.AppendFormat("{0}\t{1}\t{7}\t\t{2}\t{8}\t\t{3}\t{9}/{13}\t\t{4}\t{10}/{13}\t\t{5}\t{11}/{13}\t\t{6}\t{12}/{14}{13}\n",
-                Viewer.Catalog.GetString("Fire:"),
-                Viewer.Catalog.GetString("Ideal"),
-                Viewer.Catalog.GetString("Actual"),
-                Viewer.Catalog.GetString("MaxFireR"),
-                Viewer.Catalog.GetString("FeedRate"),
-                Viewer.Catalog.GetString("BurnRate"),
-                Viewer.Catalog.GetString("Combust"),
+                Program.Catalog.GetString("Fire:"),
+                Program.Catalog.GetString("Ideal"),
+                Program.Catalog.GetString("Actual"),
+                Program.Catalog.GetString("MaxFireR"),
+                Program.Catalog.GetString("FeedRate"),
+                Program.Catalog.GetString("BurnRate"),
+                Program.Catalog.GetString("Combust"),
                 FormatStrings.FormatMass(IdealFireMassKG, IsMetric),
                 FormatStrings.FormatMass(FireMassKG, IsMetric),
                 FormatStrings.FormatMass(pS.TopH(DisplayMaxFiringRateKGpS), IsMetric),
@@ -4244,12 +4244,12 @@ namespace ORTS
 #endif
 
             status.AppendFormat("{0}\t{1}\t{6}/{12}\t\t({7:N0} {13})\t{2}\t{8}/{12}\t\t{3}\t{9}\t\t{4}\t{10}/{12}\t\t{5}\t{11}\n",
-                Viewer.Catalog.GetString("Injector:"),
-                Viewer.Catalog.GetString("Max"),
-                Viewer.Catalog.GetString("Inj1"),
-                Viewer.Catalog.GetString("Temp1"),
-                Viewer.Catalog.GetString("Inj2"),
-                Viewer.Catalog.GetString("Temp2"),
+                Program.Catalog.GetString("Injector:"),
+                Program.Catalog.GetString("Max"),
+                Program.Catalog.GetString("Inj1"),
+                Program.Catalog.GetString("Temp1"),
+                Program.Catalog.GetString("Inj2"),
+                Program.Catalog.GetString("Temp2"),
                 FormatStrings.FormatFuelVolume(pS.TopH(L.FromGUK(InjectorFlowRateLBpS / WaterLBpUKG)), IsMetric, IsUK),
                 InjectorSize,
                 FormatStrings.FormatFuelVolume(Injector1Fraction * pS.TopH(L.FromGUK(InjectorFlowRateLBpS / WaterLBpUKG)), IsMetric, IsUK),
@@ -4262,24 +4262,24 @@ namespace ORTS
             if (SteamIsAuxTenderCoupled)
             {
                 status.AppendFormat("{0}\t{1}\t{2}\t{3:N0}%\t{4}\t{5}\t\t{6:N0}%\t{7}\t{8}\t\t{9}\t{10}\n",
-                    Viewer.Catalog.GetString("Tender:"),
-                    Viewer.Catalog.GetString("Coal"),
+                    Program.Catalog.GetString("Tender:"),
+                    Program.Catalog.GetString("Coal"),
                     FormatStrings.FormatMass(TenderCoalMassKG, IsMetric),
                     TenderCoalMassKG / MaxTenderCoalMassKG * 100,
-                    Viewer.Catalog.GetString("Water(C)"),
+                    Program.Catalog.GetString("Water(C)"),
                     FormatStrings.FormatFuelVolume(L.FromGUK(CombinedTenderWaterVolumeUKG), IsMetric, IsUK),
                     CombinedTenderWaterVolumeUKG / (Kg.ToLb(MaxTenderWaterMassKG + Train.MaxAuxTenderWaterMassKG) / WaterLBpUKG) * 100,
-                    Viewer.Catalog.GetString("Water(T)"),
+                    Program.Catalog.GetString("Water(T)"),
                     FormatStrings.FormatFuelVolume(L.FromGUK(TenderWaterVolumeUKG), IsMetric, IsUK),
-                    Viewer.Catalog.GetString("Water(A)"),
+                    Program.Catalog.GetString("Water(A)"),
                     FormatStrings.FormatFuelVolume(L.FromGUK(CurrentAuxTenderWaterVolumeUKG), IsMetric, IsUK));
             }
             else
             {
                 status.AppendFormat("{0}\t{1}\t{3}\t{4:N0}%\t{2}\t{5}\t\t{6:N0}%\n",
-                    Viewer.Catalog.GetString("Tender:"),
-                    Viewer.Catalog.GetString("Coal"),
-                    Viewer.Catalog.GetString("Water"),
+                    Program.Catalog.GetString("Tender:"),
+                    Program.Catalog.GetString("Coal"),
+                    Program.Catalog.GetString("Water"),
                     FormatStrings.FormatMass(TenderCoalMassKG, IsMetric),
                     TenderCoalMassKG / MaxTenderCoalMassKG * 100,
                     FormatStrings.FormatFuelVolume(L.FromGUK(CombinedTenderWaterVolumeUKG), IsMetric, IsUK),
@@ -4287,38 +4287,38 @@ namespace ORTS
             }
 
             status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\n",
-                Viewer.Catalog.GetString("Status:"),
-                Viewer.Catalog.GetString("CoalOut"),
-                CoalIsExhausted ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
-                Viewer.Catalog.GetString("WaterOut"),
-                WaterIsExhausted ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
-                Viewer.Catalog.GetString("FireOut"),
-                FireIsExhausted ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
-                Viewer.Catalog.GetString("Stoker"),
-                StokerIsMechanical ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
-                Viewer.Catalog.GetString("Boost"),
-                FuelBoost ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
-                Viewer.Catalog.GetString("GrLimit"),
-                IsGrateLimit ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"));
+                Program.Catalog.GetString("Status:"),
+                Program.Catalog.GetString("CoalOut"),
+                CoalIsExhausted ? Program.Catalog.GetString("Yes") : Program.Catalog.GetString("No"),
+                Program.Catalog.GetString("WaterOut"),
+                WaterIsExhausted ? Program.Catalog.GetString("Yes") : Program.Catalog.GetString("No"),
+                Program.Catalog.GetString("FireOut"),
+                FireIsExhausted ? Program.Catalog.GetString("Yes") : Program.Catalog.GetString("No"),
+                Program.Catalog.GetString("Stoker"),
+                StokerIsMechanical ? Program.Catalog.GetString("Yes") : Program.Catalog.GetString("No"),
+                Program.Catalog.GetString("Boost"),
+                FuelBoost ? Program.Catalog.GetString("Yes") : Program.Catalog.GetString("No"),
+                Program.Catalog.GetString("GrLimit"),
+                IsGrateLimit ? Program.Catalog.GetString("Yes") : Program.Catalog.GetString("No"));
 
-            status.AppendFormat("\n\t\t === {0} === \n", Viewer.Catalog.GetString("Performance"));
+            status.AppendFormat("\n\t\t === {0} === \n", Program.Catalog.GetString("Performance"));
             status.AppendFormat("{0}\t{1}\t{4}\t{2}\t{5}\t{3}\t{6}\n",
-                Viewer.Catalog.GetString("Power:"),
-                Viewer.Catalog.GetString("MaxInd"),
-                Viewer.Catalog.GetString("Ind"),
-                Viewer.Catalog.GetString("Drawbar"),
+                Program.Catalog.GetString("Power:"),
+                Program.Catalog.GetString("MaxInd"),
+                Program.Catalog.GetString("Ind"),
+                Program.Catalog.GetString("Drawbar"),
                 FormatStrings.FormatPower(W.FromHp(MaxIndicatedHorsePowerHP), IsMetric, false, false),
                 FormatStrings.FormatPower(W.FromHp(IndicatedHorsePowerHP), IsMetric, false, false),
                 FormatStrings.FormatPower(W.FromHp(DrawbarHorsePowerHP), IsMetric, false, false));
 
             status.AppendFormat("{0}\t{1}\t{7}\t{2}\t{8}\t{3}\t{9}\t{4}\t{10}\t{5}\t{11}\t{6} {12}\n",
-                     Viewer.Catalog.GetString("Force:"),
-                     Viewer.Catalog.GetString("TheorTE"),
-                     Viewer.Catalog.GetString("StartTE"),
-                     Viewer.Catalog.GetString("TE"),
-                     Viewer.Catalog.GetString("Draw"),
-                     Viewer.Catalog.GetString("CritSpTE"),
-                     Viewer.Catalog.GetString("CritSpeed"),
+                     Program.Catalog.GetString("Force:"),
+                     Program.Catalog.GetString("TheorTE"),
+                     Program.Catalog.GetString("StartTE"),
+                     Program.Catalog.GetString("TE"),
+                     Program.Catalog.GetString("Draw"),
+                     Program.Catalog.GetString("CritSpTE"),
+                     Program.Catalog.GetString("CritSpeed"),
                      FormatStrings.FormatForce(N.FromLbf(MaxTractiveEffortLbf), IsMetric),
                      FormatStrings.FormatForce(StartTractiveEffortN, IsMetric),
                      FormatStrings.FormatForce(N.FromLbf(DisplayTractiveEffortLbsF), IsMetric),
@@ -4327,11 +4327,11 @@ namespace ORTS
                      FormatStrings.FormatSpeedDisplay(MpS.FromMpH(MaxLocoSpeedMpH), IsMetric));
 
             status.AppendFormat("{0}\t{1}\t{5:N0} {9}/{10}\t\t{2}\t{6:N3}\t{3}\t{7:N0} {11}\t{4} {8:N2}\n",
-                Viewer.Catalog.GetString("Move:"),
-                Viewer.Catalog.GetString("Piston"),
-                Viewer.Catalog.GetString("SpdFact"),
-                Viewer.Catalog.GetString("DrvWhl"),
-                Viewer.Catalog.GetString("MF-Gear"),
+                Program.Catalog.GetString("Move:"),
+                Program.Catalog.GetString("Piston"),
+                Program.Catalog.GetString("SpdFact"),
+                Program.Catalog.GetString("DrvWhl"),
+                Program.Catalog.GetString("MF-Gear"),
                 IsMetric ? Me.FromFt(PistonSpeedFtpMin) : PistonSpeedFtpMin,
                 DisplaySpeedFactor,
                 pS.TopM(DrvWheelRevRpS),
@@ -4340,23 +4340,23 @@ namespace ORTS
                 FormatStrings.min,
                 FormatStrings.rpm);
 
-            status.AppendFormat("\n\t\t\t === {0} - {1} === \n", Viewer.Catalog.GetString("Experimental"), Viewer.Catalog.GetString("Slip Monitor"));
+            status.AppendFormat("\n\t\t\t === {0} - {1} === \n", Program.Catalog.GetString("Experimental"), Program.Catalog.GetString("Slip Monitor"));
             status.AppendFormat("{0}\t{1}\t{9}\t{2}\t{10}\t{3}\t{11}\t{4}\t{12}\t{5}\t{13:N2}\t{6}\t{14}\t{7}\t{15}\t{8} {16:N1}\n",
-                Viewer.Catalog.GetString("Slip:"),
-                Viewer.Catalog.GetString("Piston"),
-                Viewer.Catalog.GetString("Tang(c)"),
-                Viewer.Catalog.GetString("Tang(t)"),
-                Viewer.Catalog.GetString("Static"),
-                Viewer.Catalog.GetString("Coeff"),
-                Viewer.Catalog.GetString("Slip"),
-                Viewer.Catalog.GetString("WheelM"),
-                Viewer.Catalog.GetString("FoA"),
+                Program.Catalog.GetString("Slip:"),
+                Program.Catalog.GetString("Piston"),
+                Program.Catalog.GetString("Tang(c)"),
+                Program.Catalog.GetString("Tang(t)"),
+                Program.Catalog.GetString("Static"),
+                Program.Catalog.GetString("Coeff"),
+                Program.Catalog.GetString("Slip"),
+                Program.Catalog.GetString("WheelM"),
+                Program.Catalog.GetString("FoA"),
                 FormatStrings.FormatForce(N.FromLbf(PistonForceLbf), IsMetric),
                 FormatStrings.FormatForce(N.FromLbf(TangentialCrankWheelForceLbf), IsMetric),
                 FormatStrings.FormatForce(N.FromLbf(TangentialWheelTreadForceLbf), IsMetric),
                 FormatStrings.FormatForce(N.FromLbf(StaticWheelFrictionForceLbf), IsMetric),
                 FrictionCoeff,
-                IsLocoSlip ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
+                IsLocoSlip ? Program.Catalog.GetString("Yes") : Program.Catalog.GetString("No"),
                 FormatStrings.FormatMass(Kg.FromLb(WheelWeightLbs), IsMetric),
                 CalculatedFactorofAdhesion);
 
@@ -4413,7 +4413,7 @@ namespace ORTS
                 }
                 else
                 {
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Gears can't be changed unless throttle is at zero."));
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("Gears can't be changed unless throttle is at zero."));
 
                 }
             }
@@ -4460,7 +4460,7 @@ namespace ORTS
                 }
                 else
                 {
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Gears can't be changed unless throttle is at zero."));
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("Gears can't be changed unless throttle is at zero."));
 
                 }
             }

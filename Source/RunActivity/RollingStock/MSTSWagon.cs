@@ -922,7 +922,7 @@ namespace ORTS
                 if (WaitForAnimationReady && WeightLoadController.CommandStartTime + ORTSFreightAnimData.UnloadingStartDelay <= Simulator.ClockTime)
                 {
                     WaitForAnimationReady = false;
-                    Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer.Catalog.GetString("Starting unload"));
+                    Simulator.Confirmer.Message(ConfirmLevel.Information, Program.Catalog.GetString("Starting unload"));
                     WeightLoadController.StartDecrease(WeightLoadController.MinimumValue);
                 }
             }
@@ -1257,7 +1257,7 @@ namespace ORTS
             var controller = WeightLoadController;
             if (controller == null)
             {
-                Simulator.Confirmer.Message(ConfirmLevel.Error, Viewer.Catalog.GetString("Incompatible data"));
+                Simulator.Confirmer.Message(ConfirmLevel.Error, Program.Catalog.GetString("Incompatible data"));
                 return;
             }
             controller.SetValue(fraction);
@@ -1270,7 +1270,7 @@ namespace ORTS
             }
             if (!unload)
             {
-                Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer.Catalog.GetString("Starting refill"));
+                Simulator.Confirmer.Message(ConfirmLevel.Information, Program.Catalog.GetString("Starting refill"));
                 controller.StartIncrease(controller.MaximumValue);
             }
             else
@@ -1278,7 +1278,7 @@ namespace ORTS
                 WaitForAnimationReady = true;
                 UnloadingPartsOpen = true;
                 if (ORTSFreightAnimData.UnloadingStartDelay > 0)
-                Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer.Catalog.GetString("Preparing for unload"));
+                Simulator.Confirmer.Message(ConfirmLevel.Information, Program.Catalog.GetString("Preparing for unload"));
             }
 
         }

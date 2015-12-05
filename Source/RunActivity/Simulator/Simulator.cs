@@ -35,7 +35,6 @@
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
-using Orts.Viewer3D;
 using ORTS.Common;
 using ORTS.MultiPlayer;
 using ORTS.Processes;
@@ -83,7 +82,6 @@ namespace ORTS
         public Activity ActivityRun;
         public TrackDatabaseFile TDB;
         public RouteFile TRK;
-        public TRPFile TRP; // Track profile file
         public TrackSectionsFile TSectionDat;
         public TrainList Trains;
         public Dictionary<int, Train> TrainDictionary = new Dictionary<int, Train>();
@@ -591,7 +589,7 @@ namespace ORTS
                     Program.Viewer.TrainListWindow.PickedTrainFromList = train;
                     Program.Viewer.TrainListWindow.ClickedTrainFromList = true;
                     train.TrainType = Train.TRAINTYPE.AI_PLAYERHOSTING;
-                    Confirmer.Message(ConfirmLevel.Information, Viewer.Catalog.GetStringFmt("Player train has been included into train {0} service {1}, that automatically becomes the new player train",
+                    Confirmer.Message(ConfirmLevel.Information, Program.Catalog.GetStringFmt("Player train has been included into train {0} service {1}, that automatically becomes the new player train",
                         train.Number, train.Name));
                     train.Cars.Clear();
                     if (sameDirection)
@@ -1699,7 +1697,7 @@ namespace ORTS
                     {
                         if (Program.Viewer.TrainListWindow.SuspendOldPlayer && playerTrain.SpeedMpS != 0)
                         {
-                            Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Train can't be suspended with speed not equal 0"));
+                        Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("Train can't be suspended with speed not equal 0"));
                             Program.Viewer.TrainListWindow.SuspendOldPlayer = false;
                             Program.Viewer.TrainListWindow.ClickedSelectedAsPlayer = false;
                             return;
@@ -1820,7 +1818,7 @@ namespace ORTS
                     {
                         if (playerTrain.SpeedMpS != 0)
                         {
-                            Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("To return to static train speed must be = 0"));
+                            Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("To return to static train speed must be = 0"));
                             Program.Viewer.TrainListWindow.SuspendOldPlayer = false;
                             Program.Viewer.TrainListWindow.ClickedSelectedAsPlayer = false;
                             return;

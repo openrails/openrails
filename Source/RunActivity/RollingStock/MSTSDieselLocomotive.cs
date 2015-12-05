@@ -33,7 +33,6 @@
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
-using Orts.Viewer3D;
 using ORTS.Common;
 using System;
 using System.IO;
@@ -762,12 +761,12 @@ namespace ORTS
         public override string GetStatus()
         {
             var status = new StringBuilder();
-            status.AppendFormat("{0} = {1}\n", Viewer.Catalog.GetString("Engine"),
-                Viewer.Catalog.GetParticularString("Engine", GetStringAttribute.GetPrettyName(DieselEngines[0].EngineStatus)));
+            status.AppendFormat("{0} = {1}\n", Program.Catalog.GetString("Engine"),
+                Program.Catalog.GetParticularString("Engine", GetStringAttribute.GetPrettyName(DieselEngines[0].EngineStatus)));
 
             if (DieselEngines.HasGearBox)
-                status.AppendFormat("{0} = {1}\n", Viewer.Catalog.GetString("Gear"), DieselEngines[0].GearBox.CurrentGearIndex < 0
-                    ? Viewer.Catalog.GetParticularString("Gear", "N")
+                status.AppendFormat("{0} = {1}\n", Program.Catalog.GetString("Gear"), DieselEngines[0].GearBox.CurrentGearIndex < 0
+                    ? Program.Catalog.GetParticularString("Gear", "N")
                     : (DieselEngines[0].GearBox.CurrentGearIndex + 1).ToString());
 
             return status.ToString();
@@ -778,8 +777,8 @@ namespace ORTS
             var status = new StringBuilder(base.GetDebugStatus());
 
             if (DieselEngines.HasGearBox)
-                status.AppendFormat("\t{0} {1}", Viewer.Catalog.GetString("Gear"), DieselEngines[0].GearBox.CurrentGearIndex);
-            status.AppendFormat("\t{0} {1}\t\t\t{2}", Viewer.Catalog.GetString("Fuel"), FormatStrings.FormatFuelVolume(DieselLevelL, IsMetric, IsUK), DieselEngines.GetStatus());
+                status.AppendFormat("\t{0} {1}", Program.Catalog.GetString("Gear"), DieselEngines[0].GearBox.CurrentGearIndex);
+            status.AppendFormat("\t{0} {1}\t\t\t{2}", Program.Catalog.GetString("Fuel"), FormatStrings.FormatFuelVolume(DieselLevelL, IsMetric, IsUK), DieselEngines.GetStatus());
             return status.ToString();
         }
 

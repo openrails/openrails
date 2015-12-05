@@ -136,8 +136,8 @@ namespace ORTS {
             Viewer = viewer;
             DefaultDurationS = defaultDurationS;
 
-            Func<string, string> GetString = (value) => Viewer.Catalog.GetString(value);
-            Func<string, string, string> GetParticularString = (context, value) => Viewer.Catalog.GetParticularString(context, value);
+            Func<string, string> GetString = (value) => Program.Catalog.GetString(value);
+            Func<string, string, string> GetParticularString = (context, value) => Program.Catalog.GetParticularString(context, value);
 
             ConfirmText = new string[][] {
                 new string [] { GetString("<none>") } 
@@ -215,36 +215,36 @@ namespace ORTS {
 
         public void Confirm(CabControl control, string text)
         {
-            Message(control, Viewer.Catalog.GetString("{0} {1}"), ConfirmText[(int)control][0], text);
+            Message(control, Program.Catalog.GetString("{0} {1}"), ConfirmText[(int)control][0], text);
         }
 
         public void Confirm( CabControl control, CabSetting setting ) {
-            Message(control, Viewer.Catalog.GetString("{0}"), ConfirmText[(int)control][(int)setting]);
+            Message(control, Program.Catalog.GetString("{0}"), ConfirmText[(int)control][(int)setting]);
         }
 
         public void Confirm(CabControl control, CabSetting setting, string text)
         {
-            Message(control, Viewer.Catalog.GetString("{0} {1}"), ConfirmText[(int)control][(int)setting], text);
+            Message(control, Program.Catalog.GetString("{0} {1}"), ConfirmText[(int)control][(int)setting], text);
         }
 
         public void ConfirmWithPerCent(CabControl control, CabSetting setting, float perCent)
         {
-            Message(control, Viewer.Catalog.GetString("{0} to {1:0}%"), ConfirmText[(int)control][(int)setting], perCent);
+            Message(control, Program.Catalog.GetString("{0} to {1:0}%"), ConfirmText[(int)control][(int)setting], perCent);
         }
 
         public void ConfirmWithPerCent(CabControl control, CabSetting setting1, float perCent, int setting2)
         {
-            Message(control, Viewer.Catalog.GetString("{0} {1:0}% {2}"), ConfirmText[(int)control][(int)setting1], perCent, ConfirmText[(int)control][setting2]);
+            Message(control, Program.Catalog.GetString("{0} {1:0}% {2}"), ConfirmText[(int)control][(int)setting1], perCent, ConfirmText[(int)control][setting2]);
         }
 
         public void ConfirmWithPerCent(CabControl control, float perCent, CabSetting setting)
         {
-            Message(control, Viewer.Catalog.GetString("{0:0}% {1}"), perCent, ConfirmText[(int)control][(int)setting]);
+            Message(control, Program.Catalog.GetString("{0:0}% {1}"), perCent, ConfirmText[(int)control][(int)setting]);
         }
 
         public void ConfirmWithPerCent(CabControl control, float perCent)
         {
-            Message(control, Viewer.Catalog.GetString("{0:0}%"), perCent);
+            Message(control, Program.Catalog.GetString("{0:0}%"), perCent);
         }
 
         #endregion
@@ -252,17 +252,17 @@ namespace ORTS {
 
         public void UpdateWithPerCent(CabControl control, int action, float perCent)
         {
-            Message(control, Viewer.Catalog.GetString("{0} {1:0}%"), ConfirmText[(int)control][action], perCent);
+            Message(control, Program.Catalog.GetString("{0} {1:0}%"), ConfirmText[(int)control][action], perCent);
         }
 
         public void UpdateWithPerCent(CabControl control, CabSetting setting, float perCent)
         {
-            Message(control, Viewer.Catalog.GetString("{0} {1:0}%"), ConfirmText[(int)control][(int)setting], perCent);
+            Message(control, Program.Catalog.GetString("{0} {1:0}%"), ConfirmText[(int)control][(int)setting], perCent);
         }
 
         public void Update(CabControl control, CabSetting setting, string text)
         {
-            Message(control, Viewer.Catalog.GetString("{0} {1}"), ConfirmText[(int)control][(int)setting], text);
+            Message(control, Program.Catalog.GetString("{0} {1}"), ConfirmText[(int)control][(int)setting], text);
         }
 
         #endregion
@@ -325,7 +325,7 @@ namespace ORTS {
 			var duration = DefaultDurationS;
 			if (level >= ConfirmLevel.Warning) duration *= 2;
 			if (level >= ConfirmLevel.MSG) duration *= 5;
-            Viewer.MessagesWindow.AddMessage(String.Format("{0}/{1}", control, level), String.Format(format, ConfirmText[(int)control][0], Viewer.Catalog.GetString(GetStringAttribute.GetPrettyName(level)), message), duration);
+            Viewer.MessagesWindow.AddMessage(String.Format("{0}/{1}", control, level), String.Format(format, ConfirmText[(int)control][0], Program.Catalog.GetString(GetStringAttribute.GetPrettyName(level)), message), duration);
         }
     }
 }

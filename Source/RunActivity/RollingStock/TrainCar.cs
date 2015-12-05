@@ -30,7 +30,6 @@
 
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
-using Orts.Viewer3D;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using System;
@@ -39,6 +38,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Camera = Orts.Viewer3D.Camera;
+using OpenAL = Orts.Viewer3D.OpenAL;
 
 namespace ORTS
 {
@@ -724,11 +724,11 @@ namespace ORTS
                                 {
                                     if (Train.IsFreight)
                                         {
-                                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("You are travelling too fast for this curve. Slow down, your freight may be damaged and your train may break a coupling or airhose."));
+                                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("You are travelling too fast for this curve. Slow down, your freight may be damaged and your train may break a coupling or airhose."));
                                         }
                                     else
                                         {
-                                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("You are travelling too fast for this curve. Slow down, your passengers are feeling uncomfortable and your train may break a coupling or airhose."));
+                                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("You are travelling too fast for this curve. Slow down, your passengers are feeling uncomfortable and your train may break a coupling or airhose."));
                                         }
                                 }
                           
@@ -737,7 +737,7 @@ namespace ORTS
                         if (IsMaxSafeCurveSpeed && s > MaxDurableSafeCurveSpeedMpS && Train.GetType() != typeof(AITrain) && Train.GetType() != typeof(TTTrain) ) // Breaking of brake hose will not apply to TT mode or AI trains
                           {
                               BrakeSystem.FrontBrakeHoseConnected = false; // break the brake hose connection between cars if the speed is too fast
-                              Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("You were travelling too fast for this curve, and have snapped a brake hose. You will need to repair the hose and restart."));   
+                              Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("You were travelling too fast for this curve, and have snapped a brake hose. You will need to repair the hose and restart."));   
                           }
 
                     }
@@ -768,7 +768,7 @@ namespace ORTS
 
                             if (Train.IsPlayerDriven && !Simulator.TimetableMode)  // Warning messages will only apply if this is player train and not running in TT mode
                             {
-                                Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Your train has overturned, and this is simulated by a broken coupler."));
+                                Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("Your train has overturned, and this is simulated by a broken coupler."));
                             }
                         }
  
@@ -954,9 +954,9 @@ namespace ORTS
         {
             return String.Format("Car {0}\t{2} {1}\t\t{3}\t{4:F0}%\t{5}\t\t{6}\t{7}",
                 UiD,
-                Flipped ? Viewer.Catalog.GetString("(flipped)") : "",
+                Flipped ? Program.Catalog.GetString("(flipped)") : "",
                 FormatStrings.Catalog.GetParticularString("Reverser", GetStringAttribute.GetPrettyName(Direction)),
-                AcceptMUSignals ? Viewer.Catalog.GetString("MU'd") : Viewer.Catalog.GetString("Single"),
+                AcceptMUSignals ? Program.Catalog.GetString("MU'd") : Program.Catalog.GetString("Single"),
                 ThrottlePercent,
                 String.Format("{0}{1}", FormatStrings.FormatSpeedDisplay(SpeedMpS, IsMetric), WheelSlip ? "!!!" : ""),
                 FormatStrings.FormatPower(MotiveForceN * SpeedMpS, IsMetric, false, false),
@@ -1702,6 +1702,7 @@ namespace ORTS
             foreach (var soundSourceID in soundSourceIDs)
             {
                 Simulator.updaterWorking = true;
+                // TODO This code should be inside the SoundProcess, not here.
                 if (OpenAL.alIsSource(soundSourceID))
                 {
                     OpenAL.alSourcefv(soundSourceID, OpenAL.AL_POSITION, position);
@@ -1897,40 +1898,4 @@ namespace ORTS
             }
         }
     }
-
-    public abstract class TrainCarViewer
-    {
-         // TODO add view location and limits
-        public TrainCar Car;
-        public LightViewer lightDrawer;
-
-        protected Viewer Viewer;
-
-        public TrainCarViewer( Viewer viewer, TrainCar car)
-        {
-            Car = car;
-            Viewer = viewer;
-
         }
-
-        public abstract void HandleUserInput(ElapsedTime elapsedTime);
-
-        public abstract void InitializeUserInputCommands();
-
-        /// <summary>
-        /// Called at the full frame rate
-        /// elapsedTime is time since last frame
-        /// Executes in the UpdaterThread
-        /// </summary>
-        public abstract void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime);
-
-        [CallOnThread("Loader")]
-        public virtual void Unload() { }
-
-        [CallOnThread("Loader")]
-        internal virtual void LoadForPlayer() { }
-
-        [CallOnThread("Loader")]
-        internal abstract void Mark();
-    }
-}

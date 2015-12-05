@@ -140,6 +140,8 @@ namespace Orts.Viewer3D
         public bool DebugViewerEnabled { get; set; }
         public bool SoundDebugFormEnabled { get; set; }
 
+        public TRPFile TRP; // Track profile file
+
         enum VisibilityState
         {
             Visible,
@@ -340,7 +342,7 @@ namespace Orts.Viewer3D
             MaterialManager = new SharedMaterialManager(this);
             ShapeManager = new SharedShapeManager(this);
 
-            Catalog = new GettextResourceManager("RunActivity");
+            Program.Catalog = Catalog = new GettextResourceManager("RunActivity");
 
             WindowManager = new WindowManager(this);
             MessagesWindow = new MessagesWindow(WindowManager);

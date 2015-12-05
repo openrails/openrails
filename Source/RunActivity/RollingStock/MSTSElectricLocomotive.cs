@@ -29,7 +29,6 @@
 
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
-using Orts.Viewer3D;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using System.Diagnostics;
@@ -227,9 +226,9 @@ namespace ORTS
                         if (id == 2) Simulator.Confirmer.Confirm(CabControl.Pantograph2, CabSetting.On);
 
                         if (!Simulator.TRK.Tr_RouteFile.Electrified)
-                            Simulator.Confirmer.Warning(Viewer.Catalog.GetString("No power line!"));
+                            Simulator.Confirmer.Warning(Program.Catalog.GetString("No power line!"));
                         if (Simulator.Settings.OverrideNonElectrifiedRoutes)
-                            Simulator.Confirmer.Information(Viewer.Catalog.GetString("Power line condition overridden."));
+                            Simulator.Confirmer.Information(Program.Catalog.GetString("Power line condition overridden."));
                         break;
 
                     case PowerSupplyEvent.LowerPantograph:
@@ -323,13 +322,13 @@ namespace ORTS
         public override string GetStatus()
         {
             var status = new StringBuilder();
-            status.AppendFormat("{0} = ", Viewer.Catalog.GetString("Pantographs"));
+            status.AppendFormat("{0} = ", Program.Catalog.GetString("Pantographs"));
             foreach (var pantograph in Pantographs.List)
-                status.AppendFormat("{0} ", Viewer.Catalog.GetParticularString("Pantograph", GetStringAttribute.GetPrettyName(pantograph.State)));
+                status.AppendFormat("{0} ", Program.Catalog.GetParticularString("Pantograph", GetStringAttribute.GetPrettyName(pantograph.State)));
             status.AppendLine();
             status.AppendFormat("{0}{2} = {1}{2}\n",
-                Viewer.Catalog.GetParticularString("PowerSupply", "Power"),
-                Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(PowerSupply.State)),
+                Program.Catalog.GetParticularString("PowerSupply", "Power"),
+                Program.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(PowerSupply.State)),
                 PowerSupply.State == PowerSupplyState.PowerOff ? "!!!" : "");
             return status.ToString();
         }
@@ -337,10 +336,10 @@ namespace ORTS
         public override string GetDebugStatus()
         {
             var status = new StringBuilder(base.GetDebugStatus());
-            status.AppendFormat("\t{0}\t\t{1}", Viewer.Catalog.GetString("Circuit breaker"), Viewer.Catalog.GetParticularString("CircuitBraker", GetStringAttribute.GetPrettyName(PowerSupply.CircuitBreaker.State)));
-            status.AppendFormat("\t{0}\t{1}", Viewer.Catalog.GetString("TCS"), TrainControlSystem.PowerAuthorization ? Viewer.Catalog.GetString("OK") : Viewer.Catalog.GetString("NOT OK"));
-            status.AppendFormat("\t{0}\t{1}", Viewer.Catalog.GetString("Driver"), PowerSupply.CircuitBreaker.DriverCloseAuthorization ? Viewer.Catalog.GetString("OK") : Viewer.Catalog.GetString("NOT OK"));
-            status.AppendFormat("\t{0}\t\t{1}", Viewer.Catalog.GetString("Auxiliary power"), Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(PowerSupply.AuxiliaryState)));
+            status.AppendFormat("\t{0}\t\t{1}", Program.Catalog.GetString("Circuit breaker"), Program.Catalog.GetParticularString("CircuitBraker", GetStringAttribute.GetPrettyName(PowerSupply.CircuitBreaker.State)));
+            status.AppendFormat("\t{0}\t{1}", Program.Catalog.GetString("TCS"), TrainControlSystem.PowerAuthorization ? Program.Catalog.GetString("OK") : Program.Catalog.GetString("NOT OK"));
+            status.AppendFormat("\t{0}\t{1}", Program.Catalog.GetString("Driver"), PowerSupply.CircuitBreaker.DriverCloseAuthorization ? Program.Catalog.GetString("OK") : Program.Catalog.GetString("NOT OK"));
+            status.AppendFormat("\t{0}\t\t{1}", Program.Catalog.GetString("Auxiliary power"), Program.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(PowerSupply.AuxiliaryState)));
             return status.ToString();
         }
 
