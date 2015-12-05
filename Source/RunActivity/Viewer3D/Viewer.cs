@@ -558,9 +558,15 @@ namespace Orts.Viewer3D
                 MultiPlayerViewer.HandleUserInput();
                 MPManager.Instance().Update(Simulator.GameTime);
             }
+
             RailDriver.Update(PlayerLocomotive);
             HandleUserInput(elapsedTime);
             UserInput.Handled();
+
+            // This has to be done also for stopped trains
+            var cars = World.Trains.Cars;
+            foreach (var car in cars)
+                car.Value.UpdateSoundPosition();
 
             if (Simulator.ReplayCommandList != null)
             {

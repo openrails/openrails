@@ -529,17 +529,6 @@ namespace Orts.Simulation
                     ((AITrain)train).AIUpdate(elapsedClockSeconds, ClockTime, false);
                 }
             }
-            // This has to be done also for stopped trains
-            if (MPManager.IsMultiPlayer())
-            {
-                foreach (Train train in Trains)
-                {
-                    foreach (TrainCar car in train.Cars)
-                    {
-                        car.UpdateSoundPosition();
-                    }
-                }
-            }
 
             if (!TimetableMode)
             {

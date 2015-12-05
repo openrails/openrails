@@ -43,9 +43,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Camera = Orts.Viewer3D.Camera;
 using Event = Orts.Common.Event;
-using OpenAL = Orts.Viewer3D.OpenAL;
 
 namespace Orts.Simulation.RollingStocks
 {
@@ -455,7 +453,6 @@ namespace Orts.Simulation.RollingStocks
 
                 _PrevSpeedMpS = _SpeedMpS;
             }
-            UpdateSoundPosition();
         }
 
 
@@ -1658,66 +1655,11 @@ namespace Orts.Simulation.RollingStocks
             return max / accumedAcceTime;//otherwise slowly decrease the value
         }
 
-        public float[] Velocity = new float[] { 0, 0, 0 };
-        WorldLocation SoundLocation;
+        // TODO These three fields should be in the TrainCarViewer.
         public int TrackSoundType = 0;
         public WorldLocation TrackSoundLocation = WorldLocation.None;
         public float TrackSoundDistSquared = 0;
 
-        public void UpdateSoundPosition()
-        {
-            if (SoundSourceIDs.Count == 0 || Program.Viewer == null || Program.Viewer.Camera == null)
-                return;
-            
-            if (Train != null)
-            {
-                var realSpeedMpS = SpeedMpS;
-                //TODO Following if block is needed due to physics flipping when using rear cab
-                // If such physics flipping is removed next block has to be removed.
-                if (this is MSTSLocomotive)
-                {
-                    var loco = this as MSTSLocomotive;
-                    if (loco.UsingRearCab) realSpeedMpS = -realSpeedMpS;
-                }
-                Vector3 directionVector = Vector3.Multiply(GetXNAMatrix().Forward, realSpeedMpS);
-                Velocity = new float[] { directionVector.X, directionVector.Y, -directionVector.Z };
-            }
-            else
-                Velocity = new float[] { 0, 0, 0 };
-
-            SoundLocation = new WorldLocation(WorldPosition.WorldLocation);
-            SoundLocation.NormalizeTo(Camera.SoundBaseTile.X, Camera.SoundBaseTile.Y);
-            float[] position = new float[] {
-                SoundLocation.Location.X,
-                SoundLocation.Location.Y,
-                SoundLocation.Location.Z};
-
-            // make a copy of SoundSourceIDs, but check that it didn't change during the copy; if it changed, try again up to 5 times.
-            var sSIDsFinalCount = -1;
-            var sSIDsInitCount = -2;
-            int[] soundSourceIDs = {0} ;
-            int trialCount = 0;
-            while (sSIDsInitCount != sSIDsFinalCount && trialCount < 5)
-            {
-                sSIDsInitCount = SoundSourceIDs.Count;
-                soundSourceIDs = SoundSourceIDs.ToArray();
-                sSIDsFinalCount = SoundSourceIDs.Count;
-                trialCount++;
-            }
-            if (trialCount >= 5)
-                return;
-            foreach (var soundSourceID in soundSourceIDs)
-            {
-                Simulator.updaterWorking = true;
-                // TODO This code should be inside the SoundProcess, not here.
-                if (OpenAL.alIsSource(soundSourceID))
-                {
-                    OpenAL.alSourcefv(soundSourceID, OpenAL.AL_POSITION, position);
-                    OpenAL.alSourcefv(soundSourceID, OpenAL.AL_VELOCITY, Velocity);
-                }
-                Simulator.updaterWorking = false;
-            }
-        }
 
         /// <summary>
         /// Checks if traincar is over trough. Used to check if refill possible

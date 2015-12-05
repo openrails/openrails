@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using Microsoft.Xna.Framework;
 using Orts.Simulation.RollingStocks;
 using ORTS.Common;
 
@@ -54,5 +55,65 @@ namespace Orts.Viewer3D.RollingStock
 
         [CallOnThread("Loader")]
         internal abstract void Mark();
+
+
+        public float[] Velocity = new float[] { 0, 0, 0 };
+        WorldLocation SoundLocation;
+
+        public void UpdateSoundPosition()
+        {
+            if (Car.SoundSourceIDs.Count == 0 || Program.Viewer == null || Program.Viewer.Camera == null)
+                return;
+
+            if (Car.Train != null)
+            {
+                var realSpeedMpS = Car.SpeedMpS;
+                //TODO Following if block is needed due to physics flipping when using rear cab
+                // If such physics flipping is removed next block has to be removed.
+                if (Car is MSTSLocomotive)
+                {
+                    var loco = Car as MSTSLocomotive;
+                    if (loco.UsingRearCab) realSpeedMpS = -realSpeedMpS;
+                }
+                Vector3 directionVector = Vector3.Multiply(Car.GetXNAMatrix().Forward, realSpeedMpS);
+                Velocity = new float[] { directionVector.X, directionVector.Y, -directionVector.Z };
+            }
+            else
+                Velocity = new float[] { 0, 0, 0 };
+
+            // TODO This entire block of code (down to TODO END) should be inside the SoundProcess, not here.
+            SoundLocation = new WorldLocation(Car.WorldPosition.WorldLocation);
+            SoundLocation.NormalizeTo(Camera.SoundBaseTile.X, Camera.SoundBaseTile.Y);
+            float[] position = new float[] {
+                SoundLocation.Location.X,
+                SoundLocation.Location.Y,
+                SoundLocation.Location.Z};
+
+            // make a copy of SoundSourceIDs, but check that it didn't change during the copy; if it changed, try again up to 5 times.
+            var sSIDsFinalCount = -1;
+            var sSIDsInitCount = -2;
+            int[] soundSourceIDs = { 0 };
+            int trialCount = 0;
+            while (sSIDsInitCount != sSIDsFinalCount && trialCount < 5)
+            {
+                sSIDsInitCount = Car.SoundSourceIDs.Count;
+                soundSourceIDs = Car.SoundSourceIDs.ToArray();
+                sSIDsFinalCount = Car.SoundSourceIDs.Count;
+                trialCount++;
+            }
+            if (trialCount >= 5)
+                return;
+            foreach (var soundSourceID in soundSourceIDs)
+            {
+                Viewer.Simulator.updaterWorking = true;
+                if (OpenAL.alIsSource(soundSourceID))
+                {
+                    OpenAL.alSourcefv(soundSourceID, OpenAL.AL_POSITION, position);
+                    OpenAL.alSourcefv(soundSourceID, OpenAL.AL_VELOCITY, Velocity);
+                }
+                Viewer.Simulator.updaterWorking = false;
+            }
+            // TODO END
+        }
     }
 }
