@@ -4154,8 +4154,8 @@ namespace Orts.Simulation.AIs
                 if (isActualPlayerTrain && this != Simulator.OriginalPlayerTrain)
                 {
                     // Switch to the attached train as the one where we are now will be removed
-                    Simulator.Confirmer.Viewer.TrainListWindow.PickedTrainFromList = attachTrain;
-                    Simulator.Confirmer.Viewer.TrainListWindow.ClickedTrainFromList = true;
+                    Program.Viewer.TrainListWindow.PickedTrainFromList = attachTrain;
+                    Program.Viewer.TrainListWindow.ClickedTrainFromList = true;
                     attachTrain.TrainType = TRAINTYPE.AI_PLAYERHOSTING;
                     AI.TrainsToRemoveFromAI.Add((AITrain)attachTrain);
                     Simulator.Confirmer.Message(ConfirmLevel.Information, Catalog.GetStringFmt("Player train has been included into train {0} service {1}, that automatically becomes the new player train",

@@ -6179,11 +6179,11 @@ namespace Orts.Simulation.Timetables
                 {
                     // cannot switch to new engine on new train - causes crashes in viewer
                     MessageBox.Show("Newly formed train does not contain present player locomotive, program can not continue");
-                    Simulator.Confirmer.Viewer.Game.PopState();
+                    Program.Viewer.Game.PopState();
                 }
 
                 // notify viewer of change in selected train
-                Simulator.Confirmer.Viewer.ChangeTrain(this, formedTrain);
+                Program.Viewer.ChangeTrain(this, formedTrain);
                 Simulator.PlayerLocomotive.Train = formedTrain;
 
                 // clear replay commands

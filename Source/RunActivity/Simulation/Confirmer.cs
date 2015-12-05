@@ -15,8 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Orts.Common;
-using Orts.Viewer3D;
 using ORTS.Common;
 using System;
 using System.Diagnostics;
@@ -117,6 +115,20 @@ namespace Orts.Simulation
         , Range4
     }
 
+    public class DisplayMessageEventArgs : EventArgs
+    {
+        public readonly string Key;
+        public readonly string Text;
+        public readonly double Duration;
+
+        public DisplayMessageEventArgs(string key, string text, double duration)
+        {
+            Key = key;
+            Text = text;
+            Duration = duration;
+        }
+    }
+
     /// <summary>
     /// Assembles confirmation messages in a list for MessageWindow to display.
     /// Also updates most recent message in list to show values as they changes.
@@ -130,12 +142,15 @@ namespace Orts.Simulation
         //                      control, off/reset/initialize, neutral, on/apply/switch, decrease, increase, warn
         readonly string[][] ConfirmText; 
 
-        public readonly Viewer Viewer;
+        readonly Simulator Simulator;
         readonly double DefaultDurationS;
 
-        public Confirmer(Viewer viewer, double defaultDurationS)
+        public event System.EventHandler PlayErrorSound;
+        public event EventHandler<DisplayMessageEventArgs> DisplayMessage;
+
+        public Confirmer(Simulator simulator, double defaultDurationS)
         {
-            Viewer = viewer;
+            Simulator = simulator;
             DefaultDurationS = defaultDurationS;
 
             Func<string, string> GetString = (value) => Program.Catalog.GetString(value);
@@ -277,7 +292,7 @@ namespace Orts.Simulation
 
         public void Warning(CabControl control, CabSetting setting)
         {
-            if (Viewer.World.GameSounds != null) Viewer.World.GameSounds.HandleEvent(Event.ControlError);
+            if (PlayErrorSound != null) PlayErrorSound(this, EventArgs.Empty);
             Message(control, ConfirmLevel.Warning, ConfirmText[(int)control][(int)setting]);
         }
 
@@ -315,7 +330,7 @@ namespace Orts.Simulation
         {
             // User can suppress levels None and Information but not Warning, Error and MSGs.
             // Cab control confirmations have level None.
-            if (level < ConfirmLevel.Information && Viewer.Settings.SuppressConfirmations)
+            if (level < ConfirmLevel.Information && Simulator.Settings.SuppressConfirmations)
                 return;
 
             var format = "{2}";
@@ -327,7 +342,7 @@ namespace Orts.Simulation
 			var duration = DefaultDurationS;
 			if (level >= ConfirmLevel.Warning) duration *= 2;
 			if (level >= ConfirmLevel.MSG) duration *= 5;
-            Viewer.MessagesWindow.AddMessage(String.Format("{0}/{1}", control, level), String.Format(format, ConfirmText[(int)control][0], Program.Catalog.GetString(GetStringAttribute.GetPrettyName(level)), message), duration);
+            if (DisplayMessage != null) DisplayMessage(this, new DisplayMessageEventArgs(String.Format("{0}/{1}", control, level), String.Format(format, ConfirmText[(int)control][0], Program.Catalog.GetString(GetStringAttribute.GetPrettyName(level)), message), duration));
         }
     }
 }

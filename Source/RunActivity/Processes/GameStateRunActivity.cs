@@ -18,6 +18,7 @@
 // Define this to include extra data on loading performance and progress indications.
 //#define DEBUG_LOADING
 
+using GNU.Gettext;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Common;
@@ -140,6 +141,8 @@ namespace Orts.Processes
 
             Action doAction = () =>
             {
+                Program.Catalog = new GettextResourceManager("RunActivity");
+
                 // Do the action specified or write out some help.
                 switch (action)
                 {

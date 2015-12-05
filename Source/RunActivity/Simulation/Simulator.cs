@@ -244,8 +244,8 @@ namespace Orts.Simulation
                 CarSpawnerFile = new CarSpawnerFile(RoutePath + @"\carspawn.dat", RoutePath + @"\shapes\");
             }
 
+            Confirmer = new Confirmer(this, 1.5);
             HazzardManager = new HazzardManager(this);
-
             FuelManager = new FuelManager(this);
             ScriptManager = new ScriptManager(this);
             Log = new CommandLog(this);
@@ -1491,7 +1491,7 @@ namespace Orts.Simulation
             {
                 MPManager.Notify((new Orts.MultiPlayer.MSGUncouple(train, train2, Orts.MultiPlayer.MPManager.GetUserName(), car.CarID, PlayerLocomotive)).ToString());
             }
-            if (Confirmer !=null && Confirmer.Viewer != null && IsReplaying) Confirmer.Confirm(CabControl.Uncouple, train.LastCar.CarID);
+            if (Confirmer !=null && IsReplaying) Confirmer.Confirm(CabControl.Uncouple, train.LastCar.CarID);
             if (AI != null) AI.aiListChanged = true;
         }
 

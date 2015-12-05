@@ -1120,7 +1120,7 @@ namespace Orts.Simulation.Physics
                 newLead.CopyControllerSettings(oldLead);
                 // TODO :: need to link HeadOut cameras to new lead locomotive
                 // following should do it but cannot be used due to protection level
-                // Simulator.Confirmer.Viewer.HeadOutBackCamera.SetCameraCar(Cars[LeadLocomotiveIndex]);
+                // Program.Viewer.HeadOutBackCamera.SetCameraCar(Cars[LeadLocomotiveIndex]);
                 // seems there is nothing to attach camera to car
             }
 
@@ -1960,13 +1960,13 @@ namespace Orts.Simulation.Physics
                 bool moveForward = (Math.Sign(SpeedMpS) >= 0);
                 if (DatalogTSContents[1] == 1)
                 {
-                    stringBuild.Append(MpS.FromMpS(Math.Abs(SpeedMpS), Simulator.Confirmer.Viewer.MilepostUnitsMetric).ToString("0000.0"));
+                    stringBuild.Append(MpS.FromMpS(Math.Abs(SpeedMpS), Program.Viewer.MilepostUnitsMetric).ToString("0000.0"));
                     stringBuild.Append(Separator);
                 }
 
                 if (DatalogTSContents[2] == 1)
                 {
-                    stringBuild.Append(MpS.FromMpS(AllowedMaxSpeedMpS, Simulator.Confirmer.Viewer.MilepostUnitsMetric).ToString("0000.0"));
+                    stringBuild.Append(MpS.FromMpS(AllowedMaxSpeedMpS, Program.Viewer.MilepostUnitsMetric).ToString("0000.0"));
                     stringBuild.Append(Separator);
                 }
 
@@ -8401,9 +8401,9 @@ namespace Orts.Simulation.Physics
                "Overall : " + AllowedMaxSpeedMpS.ToString() + "\n");
 
 #endif
-            if (IsActualPlayerTrain && AllowedMaxSpeedMpS > prevMaxSpeedMpS && !Simulator.Confirmer.Viewer.TrackMonitorWindow.Visible && Simulator.Confirmer != null)
+            if (IsActualPlayerTrain && AllowedMaxSpeedMpS > prevMaxSpeedMpS && !Program.Viewer.TrackMonitorWindow.Visible && Simulator.Confirmer != null)
             {
-                var message = Program.Catalog.GetStringFmt("Allowed speed raised to {0}", FormatStrings.FormatSpeedDisplay(AllowedMaxSpeedMpS, Simulator.Confirmer.Viewer.MilepostUnitsMetric));
+                var message = Program.Catalog.GetStringFmt("Allowed speed raised to {0}", FormatStrings.FormatSpeedDisplay(AllowedMaxSpeedMpS, Program.Viewer.MilepostUnitsMetric));
                 Simulator.Confirmer.Message(ConfirmLevel.Information, message);
             }
         }

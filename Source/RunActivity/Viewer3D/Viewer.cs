@@ -333,7 +333,7 @@ namespace Orts.Viewer3D
             MaterialManager = new SharedMaterialManager(this);
             ShapeManager = new SharedShapeManager(this);
 
-            Program.Catalog = Catalog = new GettextResourceManager("RunActivity");
+            Catalog = Program.Catalog;
 
             WindowManager = new WindowManager(this);
             MessagesWindow = new MessagesWindow(WindowManager);
@@ -361,7 +361,12 @@ namespace Orts.Viewer3D
 
             World = new World(this);
 
-            Simulator.Confirmer = new Confirmer(this, 1.5);
+            Simulator.Confirmer.PlayErrorSound += (s, e) =>
+            {
+                if (World.GameSounds != null)
+                    World.GameSounds.HandleEvent(Event.ControlError);
+            };
+            Simulator.Confirmer.DisplayMessage += (s, e) => MessagesWindow.AddMessage(e.Key, e.Text, e.Duration);
 
             if (Simulator.PlayerLocomotive.HasFrontCab || Simulator.PlayerLocomotive.HasRearCab) CabCamera.Activate(); 
             else CameraActivate();

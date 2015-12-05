@@ -1347,7 +1347,7 @@ namespace Orts.Viewer3D
             {
                 try
                 {
-                    if (SoundStream.SoundSource.Car.Simulator.Confirmer.Viewer.SoundProcess.IsSoundSourceOwnedBy(viewer, SoundStream.SoundSource))
+                    if (Program.Viewer.SoundProcess.IsSoundSourceOwnedBy(viewer, SoundStream.SoundSource))
                     {
                         Triggered = true;
                     }

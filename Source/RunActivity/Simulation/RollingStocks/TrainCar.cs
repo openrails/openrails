@@ -1666,7 +1666,7 @@ namespace Orts.Simulation.RollingStocks
 
         public void UpdateSoundPosition()
         {
-            if (SoundSourceIDs.Count == 0 || Program.Simulator.Confirmer.Viewer == null || Program.Simulator.Confirmer.Viewer.Camera == null)
+            if (SoundSourceIDs.Count == 0 || Program.Viewer == null || Program.Viewer.Camera == null)
                 return;
             
             if (Train != null)
