@@ -19,8 +19,9 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Orts.Viewer3D.Popups;
+using ORTS;
 using ORTS.Common;
-using ORTS.Viewer3D.Popups;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -28,7 +29,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 
-namespace ORTS.Viewer3D
+namespace Orts.Viewer3D
 {
     [CallOnThread("Loader")]
     public class SharedTextureManager

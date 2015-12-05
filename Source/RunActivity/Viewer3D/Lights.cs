@@ -26,6 +26,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
+using ORTS;
 using ORTS.Common;
 using ORTS.Processes;
 using System;
@@ -33,7 +34,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace ORTS.Viewer3D
+namespace Orts.Viewer3D
 {
     public class LightViewer
     {

@@ -20,7 +20,7 @@
 // SimplexNoise for C#
 // Author: Heikki Törmälä
 
-namespace ORTS.Viewer3D
+namespace Orts.Viewer3D
 {
     /// <summary>
     /// Implementation of the Perlin simplex noise, an improved Perlin noise algorithm.

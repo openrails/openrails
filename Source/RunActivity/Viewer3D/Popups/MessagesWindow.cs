@@ -25,7 +25,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 
-namespace ORTS.Viewer3D.Popups
+namespace Orts.Viewer3D.Popups
 {
     public class MessagesWindow : LayeredWindow
     {

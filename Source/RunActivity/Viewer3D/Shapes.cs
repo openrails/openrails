@@ -30,8 +30,9 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
+using Orts.Viewer3D.RollingStock;
+using ORTS;
 using ORTS.Common;
-using ORTS.Viewer3D.RollingStock;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -39,7 +40,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 
-namespace ORTS.Viewer3D
+namespace Orts.Viewer3D
 {
     [CallOnThread("Loader")]
     public class SharedShapeManager
@@ -658,7 +659,7 @@ namespace ORTS.Viewer3D
                     var soundPath = viewer.Simulator.RoutePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultCrossingSMS;
                     try
                     {
-                        Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSCrossing, soundPath);
+                        Sound = new SoundSource(viewer, position.WorldLocation, ORTS.Events.Source.MSTSCrossing, soundPath);
                         viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                     }
                     catch
@@ -666,7 +667,7 @@ namespace ORTS.Viewer3D
                         soundPath = viewer.Simulator.BasePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultCrossingSMS;
                         try
                         {
-                            Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSCrossing, soundPath);
+                            Sound = new SoundSource(viewer, position.WorldLocation, ORTS.Events.Source.MSTSCrossing, soundPath);
                             viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                         }
                         catch (Exception error)
@@ -716,7 +717,7 @@ namespace ORTS.Viewer3D
             if (Opening == Crossing.HasTrain)
             {
                 Opening = !Crossing.HasTrain;
-                if (Sound != null) Sound.HandleEvent(Opening ? Event.CrossingOpening : Event.CrossingClosing);
+                if (Sound != null) Sound.HandleEvent(Opening ? ORTS.Event.CrossingOpening : ORTS.Event.CrossingClosing);
             }
 
             if (Opening)
@@ -864,7 +865,7 @@ namespace ORTS.Viewer3D
                 var soundPath = viewer.Simulator.RoutePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultDieselTowerSMS;
                 try
                 {
-                    Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
+                    Sound = new SoundSource(viewer, position.WorldLocation, ORTS.Events.Source.MSTSFuelTower, soundPath);
                     viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                 }
                 catch
@@ -872,7 +873,7 @@ namespace ORTS.Viewer3D
                     soundPath = viewer.Simulator.BasePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultDieselTowerSMS;
                     try
                     {
-                        Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
+                        Sound = new SoundSource(viewer, position.WorldLocation, ORTS.Events.Source.MSTSFuelTower, soundPath);
                         viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                     }
                     catch (Exception error)
@@ -886,7 +887,7 @@ namespace ORTS.Viewer3D
                 var soundPath = viewer.Simulator.RoutePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultWaterTowerSMS;
                 try
                 {
-                    Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
+                    Sound = new SoundSource(viewer, position.WorldLocation, ORTS.Events.Source.MSTSFuelTower, soundPath);
                     viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                 }
                 catch
@@ -894,7 +895,7 @@ namespace ORTS.Viewer3D
                     soundPath = viewer.Simulator.BasePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultWaterTowerSMS;
                     try
                     {
-                        Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
+                        Sound = new SoundSource(viewer, position.WorldLocation, ORTS.Events.Source.MSTSFuelTower, soundPath);
                         viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                     }
                     catch (Exception error)
@@ -908,7 +909,7 @@ namespace ORTS.Viewer3D
                 var soundPath = viewer.Simulator.RoutePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS;
                 try
                 {
-                    Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
+                    Sound = new SoundSource(viewer, position.WorldLocation, ORTS.Events.Source.MSTSFuelTower, soundPath);
                     viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                 }
                 catch
@@ -916,7 +917,7 @@ namespace ORTS.Viewer3D
                     soundPath = viewer.Simulator.BasePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS;
                     try
                     {
-                        Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
+                        Sound = new SoundSource(viewer, position.WorldLocation, ORTS.Events.Source.MSTSFuelTower, soundPath);
                         viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                     }
                     catch (Exception error)
@@ -961,7 +962,7 @@ namespace ORTS.Viewer3D
 
             if (!FuelPickupItem.ReFill() && AnimationKey > 0)
             {
-                if (Sound != null) Sound.HandleEvent(Event.FuelTowerTransferEnd);
+                if (Sound != null) Sound.HandleEvent(ORTS.Event.FuelTowerTransferEnd);
                 AnimationKey -= elapsedTime.ClockSeconds * FrameRate;
             }
 
@@ -972,7 +973,7 @@ namespace ORTS.Viewer3D
             if (AnimationKey > AnimationFrames)
             {
                 AnimationKey = AnimationFrames;
-                if (Sound != null) Sound.HandleEvent(Event.FuelTowerTransferStart);
+                if (Sound != null) Sound.HandleEvent(ORTS.Event.FuelTowerTransferStart);
             }
 
             for (var i = 0; i < SharedShape.Matrices.Length; ++i)

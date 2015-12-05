@@ -23,13 +23,14 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
+using ORTS;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
-namespace ORTS.Viewer3D
+namespace Orts.Viewer3D
 {
     public class SignalShape : PoseableShape
     {
@@ -229,7 +230,7 @@ namespace ORTS.Viewer3D
                         var soundPath = Viewer.Simulator.RoutePath + @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultSignalSMS;
                         try
                         {
-                            Sound = new SoundSource(Viewer, SignalShape.Location.WorldLocation, Events.Source.MSTSSignal, soundPath);
+                            Sound = new SoundSource(Viewer, SignalShape.Location.WorldLocation, ORTS.Events.Source.MSTSSignal, soundPath);
                             Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                         }
                         catch (Exception error)
@@ -269,7 +270,7 @@ namespace ORTS.Viewer3D
                     {
                         SemaphoreTarget = SignalTypeData.DrawAspects[DisplayState].SemaphorePos;
                         SemaphoreSpeed = SignalTypeData.SemaphoreAnimationTime <= 0 ? 0 : (SemaphoreTarget > SemaphorePos ? +1 : -1) / SignalTypeData.SemaphoreAnimationTime;
-                        if (Sound != null) Sound.HandleEvent(Event.SemaphoreArm);
+                        if (Sound != null) Sound.HandleEvent(ORTS.Event.SemaphoreArm);
                     }
                 }
 

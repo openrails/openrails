@@ -19,13 +19,14 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using ORTS;
 using ORTS.Common;
 using ORTS.Settings;
 using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace ORTS.Viewer3D.Popups
+namespace Orts.Viewer3D.Popups
 {
     public class HelpWindow : Window
     {

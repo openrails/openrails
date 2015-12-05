@@ -47,8 +47,8 @@
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
+using Orts.Viewer3D;
 using ORTS.Common;
-using ORTS.Viewer3D;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -1616,7 +1616,7 @@ namespace ORTS
             {
                 if (!CoalIsExhausted)
                 {
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("Tender coal supply is empty. Your loco will fail."));
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Tender coal supply is empty. Your loco will fail."));
                 }
                 CoalIsExhausted = true;
             }
@@ -1691,7 +1691,7 @@ namespace ORTS
             {
                 if (!WaterIsExhausted && IsPlayerTrain)
                 {
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("Tender water supply is empty. Your loco will fail."));
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Tender water supply is empty. Your loco will fail."));
                 }
                 WaterIsExhausted = true;
             }
@@ -1749,7 +1749,7 @@ namespace ORTS
                 if (!FireIsExhausted)
                 {
                     if (IsPlayerTrain)
-                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("Fire has dropped too far. Your loco will fail."));
+                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Fire has dropped too far. Your loco will fail."));
                     FireIsExhausted = true; // fire has run out of fuel.
                 }
             }
@@ -1806,7 +1806,7 @@ namespace ORTS
                             FuelBoost = true; // boost shoveling 
                             if (!StokerIsMechanical && IsPlayerTrain)  // Don't display message if stoker in operation
                             {
-                                Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("FireMass is getting low. Your fireman will shovel faster, but don't wear him out."));
+                                Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("FireMass is getting low. Your fireman will shovel faster, but don't wear him out."));
                             }
                         }
                     }
@@ -1819,7 +1819,7 @@ namespace ORTS
                         //  FuelBoostReset = false; // Reset boost timer
                         if (!StokerIsMechanical && IsPlayerTrain)  // Don't display message if stoker in operation
                         {
-                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("FireMass is back within limits. Your fireman will shovel as per normal."));
+                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("FireMass is back within limits. Your fireman will shovel as per normal."));
                         }
                     }
                 }
@@ -2187,7 +2187,7 @@ namespace ORTS
                 FireHeatTxfKW = PreviousFireHeatTxfKW; // if greater then grate limit don't allow any more heat txf
                 if (!IsGrateLimit)  // Provide message to player that grate limit has been exceeded
                 {
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("Grate limit exceeded - boiler heat rate cannot increase."));
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Grate limit exceeded - boiler heat rate cannot increase."));
                 }
                 IsGrateLimit = true;
             }
@@ -2197,7 +2197,7 @@ namespace ORTS
                 FireHeatTxfKW = FuelCalorificKJpKG * FuelBurnRateKGpS;
                 if (IsGrateLimit)  // Provide message to player that grate limit has now returned within limits
                 {
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("Grate limit return to normal."));
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Grate limit return to normal."));
                 }
                 IsGrateLimit = false;
             }
@@ -3410,20 +3410,20 @@ namespace ORTS
             if (WaterFraction < WaterMinLevel)
             {
                 if (!FusiblePlugIsBlown)
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("Water level dropped too far. Plug has fused and loco has failed."));
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Water level dropped too far. Plug has fused and loco has failed."));
                 FusiblePlugIsBlown = true; // if water level has dropped, then fusible plug will blow , see "water model"
             }
             // Check for priming            
             if (WaterFraction >= WaterMaxLevel)
             {
                 if (!BoilerIsPriming)
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("Boiler overfull and priming."));
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Boiler overfull and priming."));
                 BoilerIsPriming = true;
             }
             else if (WaterFraction < WaterMaxLevelSafe)
             {
                 if (BoilerIsPriming)
-                    Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer3D.Viewer.Catalog.GetString("Boiler no longer priming."));
+                    Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer.Catalog.GetString("Boiler no longer priming."));
                 BoilerIsPriming = false;
             }
         }
@@ -3793,7 +3793,7 @@ namespace ORTS
                         {
                             IsSteamHeatExceeded = true;
                             // Provide warning message if temperature is too hot
-                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("Carriage temperature is too hot, the passengers are sweating."));
+                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Carriage temperature is too hot, the passengers are sweating."));
                         }                 
                     }
                     else if (CurrentCarriageHeatTempC < InsideTempC - 1.0f)
@@ -3810,7 +3810,7 @@ namespace ORTS
                         {
                             IsSteamHeatLow = true;
                             // Provide warning message if temperature is too hot
-                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("Carriage temperature is too cold, the passengers are freezing."));
+                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Carriage temperature is too cold, the passengers are freezing."));
                         }
                     }
                     else if (CurrentCarriageHeatTempC > 13.0f)
@@ -4413,7 +4413,7 @@ namespace ORTS
                 }
                 else
                 {
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("Gears can't be changed unless throttle is at zero."));
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Gears can't be changed unless throttle is at zero."));
 
                 }
             }
@@ -4460,7 +4460,7 @@ namespace ORTS
                 }
                 else
                 {
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("Gears can't be changed unless throttle is at zero."));
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Gears can't be changed unless throttle is at zero."));
 
                 }
             }

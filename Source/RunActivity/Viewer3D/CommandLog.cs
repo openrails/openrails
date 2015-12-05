@@ -17,13 +17,14 @@
 
 // This file is the responsibility of the 3D & Environment Team.
 
+using ORTS;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace ORTS.Viewer3D
+namespace Orts.Viewer3D
 {
     /// <summary>
     /// User may specify an automatic pause in the replay at a time measured from the end of the replay.

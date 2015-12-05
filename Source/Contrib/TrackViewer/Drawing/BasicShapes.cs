@@ -22,7 +22,7 @@ using System.Windows.Media.Imaging;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using ORTS.Viewer3D.Popups;
+using Orts.Viewer3D.Popups;
 
 namespace ORTS.TrackViewer.Drawing
 {

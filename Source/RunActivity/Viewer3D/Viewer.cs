@@ -22,12 +22,13 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Orts.Formats.Msts;
+using Orts.Viewer3D.Popups;
+using Orts.Viewer3D.RollingStock;
+using ORTS;
 using ORTS.Common;
 using ORTS.MultiPlayer;
 using ORTS.Processes;
 using ORTS.Settings;
-using ORTS.Viewer3D.Popups;
-using ORTS.Viewer3D.RollingStock;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -36,7 +37,7 @@ using System.Linq;
 using System.Management;
 using System.Threading;
 
-namespace ORTS.Viewer3D
+namespace Orts.Viewer3D
 {
     public class Viewer
     {
@@ -1227,7 +1228,7 @@ namespace ORTS.Viewer3D
                 // Hide MessageWindow
                 MessagesWindow.Visible = false;
                 // Audible confirmation that screenshot taken
-                if (World.GameSounds != null) World.GameSounds.HandleEvent(Event.ControlError);
+                if (World.GameSounds != null) World.GameSounds.HandleEvent(ORTS.Event.ControlError);
             }
 
             // Use IsDown() not IsPressed() so users can take multiple screenshots as fast as possible by holding down the key.

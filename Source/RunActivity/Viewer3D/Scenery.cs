@@ -44,6 +44,7 @@
 
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
+using ORTS;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
@@ -51,7 +52,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace ORTS.Viewer3D
+namespace Orts.Viewer3D
 {
     public class SceneryDrawer
     {

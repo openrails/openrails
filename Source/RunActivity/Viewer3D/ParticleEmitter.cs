@@ -23,12 +23,13 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Graphics.PackedVector;
+using ORTS;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace ORTS.Viewer3D
+namespace Orts.Viewer3D
 {
     public class ParticleEmitterViewer
     {

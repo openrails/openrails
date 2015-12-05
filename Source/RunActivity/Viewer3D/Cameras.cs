@@ -18,6 +18,7 @@
 // This file is the responsibility of the 3D & Environment Team.
 
 using Microsoft.Xna.Framework;
+using ORTS;
 using ORTS.Common;
 using ORTS.Settings;
 using System;
@@ -26,7 +27,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace ORTS.Viewer3D
+namespace Orts.Viewer3D
 {
     public abstract class Camera
     {

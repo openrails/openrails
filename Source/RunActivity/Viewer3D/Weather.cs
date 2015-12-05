@@ -19,6 +19,7 @@
 
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
+using ORTS;
 using ORTS.Common;
 using ORTS.MultiPlayer;
 using ORTS.Settings;
@@ -26,7 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace ORTS.Viewer3D
+namespace Orts.Viewer3D
 {
     public class WeatherControl
     {
@@ -84,16 +85,16 @@ namespace ORTS.Viewer3D
             };
 
             ClearSound = new List<SoundSourceBase>() {
-                new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "clear_in.sms"), false),
-                new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "clear_ex.sms"), false),
+                new SoundSource(viewer, ORTS.Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "clear_in.sms"), false),
+                new SoundSource(viewer, ORTS.Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "clear_ex.sms"), false),
             };
             RainSound = new List<SoundSourceBase>() {
-                new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "rain_in.sms"), false),
-                new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "rain_ex.sms"), false),
+                new SoundSource(viewer, ORTS.Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "rain_in.sms"), false),
+                new SoundSource(viewer, ORTS.Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "rain_ex.sms"), false),
             };
             SnowSound = new List<SoundSourceBase>() {
-                new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "snow_in.sms"), false),
-                new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "snow_ex.sms"), false),
+                new SoundSource(viewer, ORTS.Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "snow_in.sms"), false),
+                new SoundSource(viewer, ORTS.Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "snow_ex.sms"), false),
             };
 
             WeatherSounds.AddRange(ClearSound);
@@ -325,7 +326,7 @@ namespace ORTS.Viewer3D
                 UpdateWind(elapsedTime);
             }
 
-            if (!MultiPlayer.MPManager.IsMultiPlayer())
+            if (!ORTS.MultiPlayer.MPManager.IsMultiPlayer())
             {
                 // Shift the clock forwards or backwards at 1h-per-second.
                 if (UserInput.IsDown(UserCommands.DebugClockForwards)) Viewer.Simulator.ClockTime += elapsedTime.RealSeconds * 3600;

@@ -21,6 +21,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
+using ORTS;
 using ORTS.Common;
 using System;
 using System.Collections;
@@ -30,7 +31,7 @@ using System.IO;
 using System.Xml;
 using System.Xml.Schema;
 
-namespace ORTS.Viewer3D
+namespace Orts.Viewer3D
 {
     public class DynamicTrack
     {

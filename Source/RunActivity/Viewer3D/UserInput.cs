@@ -30,13 +30,14 @@
 //#define DEBUG_USER_INPUT
 
 using Microsoft.Xna.Framework.Input;
+using ORTS;
 using ORTS.Settings;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Windows;
 using Game = ORTS.Processes.Game;
 
-namespace ORTS.Viewer3D
+namespace Orts.Viewer3D
 {
     public static class UserInput
     {
@@ -56,7 +57,7 @@ namespace ORTS.Viewer3D
 
         public static void Update(Game game)
         {
-            if (MultiPlayer.MPManager.IsMultiPlayer() && MultiPlayer.MPManager.Instance().ComposingText) return;
+            if (ORTS.MultiPlayer.MPManager.IsMultiPlayer() && ORTS.MultiPlayer.MPManager.Instance().ComposingText) return;
             if (InputSettings == null) InputSettings = game.Settings.Input;
             LastKeyboardState = KeyboardState;
             LastMouseState = MouseState;

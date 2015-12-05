@@ -22,12 +22,13 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using ORTS;
 using ORTS.Common;
 using ORTS.Processes;
 using System;
 using System.IO;
 
-namespace ORTS.Viewer3D
+namespace Orts.Viewer3D
 {
     public abstract class Shader : Effect
     {

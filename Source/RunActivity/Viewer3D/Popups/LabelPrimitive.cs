@@ -21,7 +21,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
 
-namespace ORTS.Viewer3D.Popups
+namespace Orts.Viewer3D.Popups
 {
     public class LabelPrimitive : RenderPrimitive
     {

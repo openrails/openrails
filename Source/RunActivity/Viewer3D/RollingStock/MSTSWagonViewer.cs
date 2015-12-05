@@ -18,6 +18,7 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 using Microsoft.Xna.Framework;
+using ORTS;
 using ORTS.Common;
 using ORTS.Settings;
 using System;
@@ -26,7 +27,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace ORTS.Viewer3D.RollingStock
+namespace Orts.Viewer3D.RollingStock
 {
     public class MSTSWagonViewer : TrainCarViewer
     {
@@ -466,7 +467,7 @@ namespace ORTS.Viewer3D.RollingStock
             // Control visibility of passenger cabin when inside it
             if (Viewer.Camera.AttachedCar == this.MSTSWagon
                  && //( Viewer.ViewPoint == Viewer.ViewPoints.Cab ||  // TODO, restore when we complete cab views - 
-                     Viewer.Camera.Style == ORTS.Viewer3D.Camera.Styles.Passenger)
+                     Viewer.Camera.Style == Camera.Styles.Passenger)
             {
                 // We are in the passenger cabin
                 if (InteriorShape != null)
@@ -478,7 +479,7 @@ namespace ORTS.Viewer3D.RollingStock
             {
                 // Skip drawing if CAB view - draw 2D view instead - by GeorgeS
                 if (Viewer.Camera.AttachedCar == this.MSTSWagon &&
-                    Viewer.Camera.Style == ORTS.Viewer3D.Camera.Styles.Cab)
+                    Viewer.Camera.Style == Camera.Styles.Cab)
                     return;
 
                 // We are outside the passenger cabin

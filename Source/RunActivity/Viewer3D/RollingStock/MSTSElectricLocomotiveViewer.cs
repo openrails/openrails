@@ -17,9 +17,10 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using ORTS;
 using ORTS.Common;
 
-namespace ORTS.Viewer3D.RollingStock
+namespace Orts.Viewer3D.RollingStock
 {
     public class MSTSElectricLocomotiveViewer : MSTSLocomotiveViewer
     {

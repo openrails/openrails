@@ -31,7 +31,7 @@ using Font = System.Drawing.Font;
 using FontStyle = System.Drawing.FontStyle;
 using GraphicsUnit = System.Drawing.GraphicsUnit;
 
-namespace ORTS.Viewer3D.Popups
+namespace Orts.Viewer3D.Popups
 {
     public sealed class WindowTextManager
     {

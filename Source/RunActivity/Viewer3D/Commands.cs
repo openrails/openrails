@@ -17,13 +17,14 @@
 
 // This file is the responsibility of the 3D & Environment Team.
 
+using Orts.Viewer3D.Popups;
+using Orts.Viewer3D.RollingStock;
+using ORTS;
 using ORTS.Scripting.Api;
-using ORTS.Viewer3D.Popups;
-using ORTS.Viewer3D.RollingStock;
 using System;
 using System.Diagnostics;   // Used by Trace.Warnings
 
-namespace ORTS.Viewer3D
+namespace Orts.Viewer3D
 {
     /// <summary>
     /// This Command Pattern allows requests to be encapsulated as objects (http://sourcemaking.com/design_patterns/command).

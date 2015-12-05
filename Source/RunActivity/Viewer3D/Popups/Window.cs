@@ -24,7 +24,7 @@ using System;
 using System.IO;
 using System.Reflection;
 
-namespace ORTS.Viewer3D.Popups
+namespace Orts.Viewer3D.Popups
 {
     public abstract class Window : RenderPrimitive
     {

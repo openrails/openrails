@@ -17,6 +17,7 @@
 
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Parsers.Msts;
+using Orts.Viewer3D;
 using ORTS.Common;
 using System;
 using System.Collections;
@@ -293,22 +294,22 @@ namespace ORTS
         {
             var result = new StringBuilder();
 
-            result.AppendFormat(Viewer3D.Viewer.Catalog.GetString("Status"));
+            result.AppendFormat(Viewer.Catalog.GetString("Status"));
             foreach (var eng in DEList)
-                result.AppendFormat("\t{0}", Viewer3D.Viewer.Catalog.GetString(GetStringAttribute.GetPrettyName(eng.EngineStatus)));
+                result.AppendFormat("\t{0}", Viewer.Catalog.GetString(GetStringAttribute.GetPrettyName(eng.EngineStatus)));
 
-            result.AppendFormat("\t{0}\t{1}", Viewer3D.Viewer.Catalog.GetParticularString("HUD", "Power"), FormatStrings.FormatPower(MaxOutputPowerW, Locomotive.IsMetric, false, false));
+            result.AppendFormat("\t{0}\t{1}", Viewer.Catalog.GetParticularString("HUD", "Power"), FormatStrings.FormatPower(MaxOutputPowerW, Locomotive.IsMetric, false, false));
             foreach (var eng in DEList)
                 result.AppendFormat("\t{0}", FormatStrings.FormatPower(eng.MaxOutputPowerW, Locomotive.IsMetric, false, false));
 
-            result.AppendFormat("\t{0}", Viewer3D.Viewer.Catalog.GetString("Load"));
+            result.AppendFormat("\t{0}", Viewer.Catalog.GetString("Load"));
             foreach (var eng in DEList)
                 result.AppendFormat("\t{0:F1}%", eng.LoadPercent);
 
             foreach (var eng in DEList)
                 result.AppendFormat("\t{0:F0} {1}", eng.RealRPM, FormatStrings.rpm);
 
-            result.AppendFormat("\t{0}", Viewer3D.Viewer.Catalog.GetString("Flow"));
+            result.AppendFormat("\t{0}", Viewer.Catalog.GetString("Flow"));
             foreach (var eng in DEList)
                 result.AppendFormat("\t{0}/{1}", FormatStrings.FormatFuelVolume(pS.TopH(eng.DieselFlowLps), Locomotive.IsMetric, Locomotive.IsUK), FormatStrings.h);
 
@@ -316,7 +317,7 @@ namespace ORTS
             foreach (var eng in DEList)
                 result.AppendFormat("\t{0}", FormatStrings.FormatTemperature(eng.DieselTemperatureDeg, Locomotive.IsMetric, false));
 
-            result.AppendFormat("\t{0}", Viewer3D.Viewer.Catalog.GetString("Oil"));
+            result.AppendFormat("\t{0}", Viewer.Catalog.GetString("Oil"));
             foreach (var eng in DEList)
                 result.AppendFormat("\t{0}", FormatStrings.FormatPressure(eng.DieselOilPressurePSI, PressureUnit.PSI, Locomotive.MainPressureUnit, true));
 

@@ -19,12 +19,13 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using ORTS;
 using ORTS.Common;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace ORTS.Viewer3D
+namespace Orts.Viewer3D
 {
     [DebuggerDisplay("TileX = {TileX}, TileZ = {TileZ}, Size = {Size}")]
     public class WaterPrimitive : RenderPrimitive

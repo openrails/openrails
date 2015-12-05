@@ -19,12 +19,13 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using ORTS;
 using ORTS.Common;
 using ORTS.Processes;
 using System;
 using System.Collections.Generic;
 
-namespace ORTS.Viewer3D
+namespace Orts.Viewer3D
 {
     static class SkyConstants
     {

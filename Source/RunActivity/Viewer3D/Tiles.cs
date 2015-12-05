@@ -27,7 +27,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 
-namespace ORTS.Viewer3D
+namespace Orts.Viewer3D
 {
     /// <summary>
     /// Provides a MRU cache of tile data for a given resolution.

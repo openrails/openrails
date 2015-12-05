@@ -29,6 +29,7 @@
 // Analyse the data using a spreadsheet and graph with an XY chart.
 
 
+using ORTS;
 using ORTS.Common;
 using ORTS.Settings;
 using System;
@@ -37,8 +38,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-
-namespace ORTS.Viewer3D
+namespace Orts.Viewer3D
 {
     /// <summary>
     /// Displays Viewer frame rate and Viewer.Text debug messages in the upper left corner of the screen.

@@ -17,12 +17,13 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using ORTS;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace ORTS.Viewer3D
+namespace Orts.Viewer3D
 {
     public enum PlayMode
     {

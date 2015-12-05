@@ -30,15 +30,15 @@
 
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
+using Orts.Viewer3D;
 using ORTS.Common;
 using ORTS.Scripting.Api;
-using ORTS.Viewer3D;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Camera = ORTS.Viewer3D.Camera;
+using Camera = Orts.Viewer3D.Camera;
 
 namespace ORTS
 {

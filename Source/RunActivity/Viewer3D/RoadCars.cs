@@ -19,13 +19,14 @@
 
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
+using ORTS;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace ORTS.Viewer3D
+namespace Orts.Viewer3D
 {
     // TODO: Move to simulator!
     public class RoadCarSpawner

@@ -19,7 +19,7 @@
 
 using System.Threading;
 
-namespace ORTS
+namespace ORTS.Processes
 {
     public class ProcessState
     {

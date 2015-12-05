@@ -24,7 +24,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security;
 
-namespace ORTS.Viewer3D
+namespace Orts.Viewer3D
 {
     /// <summary>
     /// Wrapper class for the externals of library OpenAL

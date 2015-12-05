@@ -59,9 +59,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 using Orts.Formats.Msts;
-using ORTS.Viewer3D;
+using Orts.Viewer3D;
 using ORTS.Common;
-
 
 namespace ORTS.TrackViewer.Drawing
 {

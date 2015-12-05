@@ -19,11 +19,12 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using ORTS;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
 
-namespace ORTS.Viewer3D.Popups
+namespace Orts.Viewer3D.Popups
 {
     public class TrackMonitorWindow : Window
     {
@@ -315,7 +316,7 @@ namespace ORTS.Viewer3D.Popups
 
             drawTrack(spriteBatch, offset, validInfo.speedMpS, validInfo.allowedSpeedMpS);
 
-            if (MultiPlayer.MPManager.IsMultiPlayer())
+            if (ORTS.MultiPlayer.MPManager.IsMultiPlayer())
             {
                 drawMPInfo(spriteBatch, offset);
             }

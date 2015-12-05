@@ -23,7 +23,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 
-namespace ORTS
+namespace ORTS.Processes
 {
     public class Profiler
     {

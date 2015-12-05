@@ -35,7 +35,7 @@ using System.Diagnostics;
 using System.Linq;
 using Game = ORTS.Processes.Game;
 
-namespace ORTS.Viewer3D
+namespace Orts.Viewer3D
 {
     public enum RenderPrimitiveSequence
     {

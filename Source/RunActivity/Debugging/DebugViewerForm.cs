@@ -24,9 +24,9 @@
 using GNU.Gettext.WinForms;
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
+using Orts.Viewer3D;
+using Orts.Viewer3D.Popups;
 using ORTS.Common;
-using ORTS.Viewer3D;
-using ORTS.Viewer3D.Popups;
 using System;
 using System.Collections.Generic;
 using System.Data;

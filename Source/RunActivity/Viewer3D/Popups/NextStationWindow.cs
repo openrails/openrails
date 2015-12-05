@@ -18,10 +18,11 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 using Microsoft.Xna.Framework.Graphics;
+using ORTS;
 using ORTS.Common;
 using System;
 
-namespace ORTS.Viewer3D.Popups
+namespace Orts.Viewer3D.Popups
 {
     public class NextStationWindow : Window
     {

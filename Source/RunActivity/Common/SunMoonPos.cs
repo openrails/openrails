@@ -26,7 +26,7 @@
 //
 
 using Microsoft.Xna.Framework;
-using ORTS.Viewer3D;
+using Orts.Viewer3D;
 using System;
 
 namespace ORTS

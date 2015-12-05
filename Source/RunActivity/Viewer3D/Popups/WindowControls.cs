@@ -23,7 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ORTS.Viewer3D.Popups
+namespace Orts.Viewer3D.Popups
 {
     public abstract class Control
     {

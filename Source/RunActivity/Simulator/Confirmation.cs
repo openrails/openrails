@@ -15,8 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using Orts.Viewer3D;
 using ORTS.Common;
-using ORTS.Viewer3D;
 using System;
 using System.Diagnostics;
 

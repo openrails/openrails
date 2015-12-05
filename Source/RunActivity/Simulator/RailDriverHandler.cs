@@ -17,9 +17,9 @@
 
 using Microsoft.Win32;
 using Orts.Parsers.Msts;
+using Orts.Viewer3D;
 using ORTS.Common;
 using ORTS.Settings;
-using ORTS.Viewer3D;
 using PIEHidDotNet;
 using System;
 using System.Diagnostics;

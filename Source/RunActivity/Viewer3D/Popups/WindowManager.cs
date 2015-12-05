@@ -28,7 +28,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace ORTS.Viewer3D.Popups
+namespace Orts.Viewer3D.Popups
 {
     public class WindowManager : RenderPrimitive
 	{
