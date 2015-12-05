@@ -21,7 +21,6 @@
 using Orts.Common;
 using Orts.Parsers.Msts;
 using Orts.Simulation.Physics;
-using Orts.Viewer3D;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using System;
@@ -223,8 +222,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             {
                 return Simulator.Settings.Alerter
                     & !(Simulator.Settings.AlerterDisableExternal
-                        & Simulator.Confirmer.Viewer.Camera.Style != Camera.Styles.Cab
-                        & Simulator.Confirmer.Viewer.Camera.Style != Camera.Styles.ThreeDimCab
+                        & !Simulator.PlayerIsInCab
                     );
             };
             Script.AlerterSound = () => Locomotive.AlerterSnd;

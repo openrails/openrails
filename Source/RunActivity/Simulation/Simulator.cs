@@ -127,6 +127,7 @@ namespace Orts.Simulation
         public HazzardManager HazzardManager;
         public FuelManager FuelManager;
         public bool InControl = true;//For multiplayer, a player may not control his/her own train (as helper)
+
         /// <summary>
         /// Reference to the InterlockingSystem object, responsible for
         /// managing signalling and interlocking.
@@ -150,6 +151,8 @@ namespace Orts.Simulation
         public Train selectedAsPlayer = null;
         public Train OriginalPlayerTrain = null; // Used in Activity mode
         public bool playerSwitchOngoing = false;
+
+        public bool PlayerIsInCab = false;
 
         public Simulator(UserSettings settings, string activityPath, bool useOpenRailsDirectory)
         {

@@ -128,6 +128,7 @@ namespace Orts.Viewer3D
             ScreenChanged();
             OnActivate(Viewer.Camera == this);
             Viewer.Camera = this;
+            Viewer.Simulator.PlayerIsInCab = Style == Styles.Cab || Style == Styles.ThreeDimCab;
             Update(ElapsedTime.Zero);
             xnaView = GetCameraView();
             SoundBaseTile = new Point(cameraLocation.TileX, cameraLocation.TileZ);
