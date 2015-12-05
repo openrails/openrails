@@ -281,11 +281,11 @@ namespace Orts.Processes
             switch (acttype)
             {
                 case "timetable":
-                    Simulator.StartTimetable(args, Game.LoaderProcess);
+                    Simulator.StartTimetable(args, Game.LoaderProcess.CancellationToken);
                     break;
 
                 default:
-                    Simulator.Start(Game.LoaderProcess);
+                    Simulator.Start(Game.LoaderProcess.CancellationToken);
                     break;
             }
 
@@ -375,7 +375,7 @@ namespace Orts.Processes
                     var values = GetSavedValues(inf);
                     Acttype = values.acttype;
                     InitSimulator(settings, values.args, "Resume", values.acttype);
-                    Simulator.Restore(inf, values.initialTileX, values.initialTileZ, Game.LoaderProcess);
+                    Simulator.Restore(inf, values.initialTileX, values.initialTileZ, Game.LoaderProcess.CancellationToken);
                     Viewer = new Viewer(Simulator, Game);
                     Viewer.Restore(inf);
 
@@ -424,7 +424,7 @@ namespace Orts.Processes
                 savedValues values = GetSavedValues(inf);
                 Acttype = values.acttype;
                 InitSimulator(settings, values.args, "Replay", values.acttype);
-                Simulator.Start(Game.LoaderProcess);
+                Simulator.Start(Game.LoaderProcess.CancellationToken);
                 Viewer = new Viewer(Simulator, Game);
             }
 
@@ -494,7 +494,7 @@ namespace Orts.Processes
                     savedValues values = GetSavedValues(inf);
                     InitSimulator(settings, values.args, "Replay");
                 }
-                Simulator.Start(Game.LoaderProcess);
+                Simulator.Start(Game.LoaderProcess.CancellationToken);
                 Viewer = new Viewer(Simulator, Game);
             }
             else
@@ -506,7 +506,7 @@ namespace Orts.Processes
 
                     var values = GetSavedValues(inf);
                     InitSimulator(settings, values.args, "Resume", values.acttype);
-                    Simulator.Restore(inf, values.initialTileX, values.initialTileZ, Game.LoaderProcess);
+                    Simulator.Restore(inf, values.initialTileX, values.initialTileZ, Game.LoaderProcess.CancellationToken);
                     Viewer = new Viewer(Simulator, Game);
                     Viewer.Restore(inf);
                 }
@@ -550,7 +550,7 @@ namespace Orts.Processes
             try
             {
                 InitSimulator(settings, args, "Test");
-                Simulator.Start(Game.LoaderProcess);
+                Simulator.Start(Game.LoaderProcess.CancellationToken);
                 Viewer = new Viewer(Simulator, Game);
                 Game.ReplaceState(exitGameState);
                 Game.PushState(new GameStateViewer3D(Viewer));

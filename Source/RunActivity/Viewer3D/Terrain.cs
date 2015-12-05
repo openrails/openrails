@@ -54,6 +54,8 @@ namespace Orts.Viewer3D
 
         public void Load()
         {
+            var cancellation = Viewer.LoaderProcess.CancellationToken;
+
             if (TileX != VisibleTileX || TileZ != VisibleTileZ)
             {
                 TileX = VisibleTileX;
@@ -68,7 +70,7 @@ namespace Orts.Viewer3D
                 // First we establish the regular tiles we need to cover the current viewable area.
                 for (var x = TileX - needed; x <= TileX + needed; x++)
                     for (var z = TileZ - needed; z <= TileZ + needed; z++)
-                        if (!Viewer.LoaderProcess.Terminated)
+                        if (!cancellation.IsCancellationRequested)
                             tiles.Add(Viewer.Tiles.LoadAndGetTile(x, z, x == TileX && z == TileZ));
 
                 if (Viewer.Settings.DistantMountains)
@@ -77,9 +79,12 @@ namespace Orts.Viewer3D
                     needed = (int)Math.Ceiling((float)Viewer.Settings.DistantMountainsViewingDistance / 2048);
                     for (var x = 8 * (int)((TileX - needed) / 8); x <= 8 * (int)((TileX + needed + 7) / 8); x += 8)
                         for (var z = 8 * (int)((TileZ - needed) / 8); z <= 8 * (int)((TileZ + needed + 7) / 8); z += 8)
-                            if (!Viewer.LoaderProcess.Terminated)
+                            if (!cancellation.IsCancellationRequested)
                                 loTiles.Add(Viewer.LoTiles.LoadAndGetTile(x, z, false));
                 }
+
+                if (cancellation.IsCancellationRequested)
+                    return;
 
                 // Now we turn each unique (distinct) loaded tile in to a terrain tile.
                 newTerrainTiles = tiles

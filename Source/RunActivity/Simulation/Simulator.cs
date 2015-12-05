@@ -38,7 +38,6 @@ using Orts.Common.Scripting;
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
 using Orts.MultiPlayer;
-using Orts.Processes;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
@@ -282,9 +281,9 @@ namespace Orts.Simulation
             Weather = (WeatherType)int.Parse(weather);
         }
 
-        public void Start(LoaderProcess loader)
+        public void Start(CancellationToken cancellation)
         {
-            Signals = new Signals(this, SIGCFG, loader);
+            Signals = new Signals(this, SIGCFG, cancellation);
             LevelCrossings = new LevelCrossings(this);
             FuelManager = new FuelManager(this);
             Trains = new TrainList(this);
@@ -296,10 +295,10 @@ namespace Orts.Simulation
             switch (IsAutopilotMode)
             {
                 case true:
-                    playerTrain = InitializeAPTrains(loader);
+                    playerTrain = InitializeAPTrains(cancellation);
                     break;
                 default:
-                    playerTrain = InitializeTrains(loader);
+                    playerTrain = InitializeTrains(cancellation);
                     break;
             }
             MPManager.Instance().RememberOriginalSwitchState();
@@ -315,10 +314,10 @@ namespace Orts.Simulation
             }
         }
 
-        public void StartTimetable(string[] arguments, LoaderProcess loader)
+        public void StartTimetable(string[] arguments, CancellationToken cancellation)
         {
             TimetableMode = true;
-            Signals = new Signals(this, SIGCFG, loader);
+            Signals = new Signals(this, SIGCFG, cancellation);
             LevelCrossings = new LevelCrossings(this);
             FuelManager = new FuelManager(this);
             Trains = new TrainList(this);
@@ -327,10 +326,10 @@ namespace Orts.Simulation
             TimetableInfo TTinfo = new TimetableInfo(this);
 
             TTTrain playerTTTrain = null;
-            List<TTTrain> allTrains = TTinfo.ProcessTimetable(arguments, loader);
+            List<TTTrain> allTrains = TTinfo.ProcessTimetable(arguments, cancellation);
             playerTTTrain = allTrains[0];
 
-            AI = new AI(this, allTrains, ClockTime, playerTTTrain.FormedOf, playerTTTrain.FormedOfType, playerTTTrain, loader);
+            AI = new AI(this, allTrains, ClockTime, playerTTTrain.FormedOf, playerTTTrain.FormedOfType, playerTTTrain, cancellation);
 
             Season = (SeasonType)int.Parse(arguments[3]);
             Weather = (WeatherType)int.Parse(arguments[4]);
@@ -350,7 +349,7 @@ namespace Orts.Simulation
             if (MPManager.IsMultiPlayer()) MPManager.Stop();
         }
 
-        public void Restore(BinaryReader inf, float initialTileX, float initialTileZ, LoaderProcess loader)
+        public void Restore(BinaryReader inf, float initialTileX, float initialTileZ, CancellationToken cancellation)
         {
             ClockTime = inf.ReadDouble();
             Season = (SeasonType)inf.ReadInt32();
@@ -359,7 +358,7 @@ namespace Orts.Simulation
             InitialTileX = initialTileX;
             InitialTileZ = initialTileZ;
 
-            Signals = new Signals(this, SIGCFG, inf, loader);
+            Signals = new Signals(this, SIGCFG, inf, cancellation);
             RestoreTrains(inf);
             LevelCrossings = new LevelCrossings(this);
             AI = new AI(this, inf);
@@ -386,11 +385,11 @@ namespace Orts.Simulation
             Orts.Simulation.Activity.Save(outf, ActivityRun);
         }
 
-        Train InitializeTrains(LoaderProcess loader)
+        Train InitializeTrains(CancellationToken cancellation)
         {
             Train playerTrain = InitializePlayerTrain();
             InitializeStaticConsists();
-            AI = new AI(this, loader, ClockTime);
+            AI = new AI(this, cancellation, ClockTime);
             if (playerTrain != null)
             {
                 var validPosition = playerTrain.PostInit();  // place player train after pre-running of AI trains
@@ -401,11 +400,11 @@ namespace Orts.Simulation
             return (playerTrain);
         }
 
-        AITrain InitializeAPTrains(LoaderProcess loader)
+        AITrain InitializeAPTrains(CancellationToken cancellation)
         {
             AITrain playerTrain = InitializeAPPlayerTrain();
             InitializeStaticConsists();
-            AI = new AI(this, loader, ClockTime);
+            AI = new AI(this, cancellation, ClockTime);
             playerTrain.AI = AI;
             if (playerTrain != null)
             {

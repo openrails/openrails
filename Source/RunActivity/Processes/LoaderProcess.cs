@@ -31,6 +31,7 @@ namespace Orts.Processes
         readonly Game Game;
         readonly Thread Thread;
         readonly WatchdogToken WatchdogToken;
+        readonly CancellationTokenSource CancellationTokenSource;
 
         public LoaderProcess(Game game)
         {
@@ -38,6 +39,7 @@ namespace Orts.Processes
             Thread = new Thread(LoaderThread);
             WatchdogToken = new WatchdogToken(Thread);
             WatchdogToken.SpecialDispensationFactor = 6;
+            CancellationTokenSource = new CancellationTokenSource(WatchdogToken.Ping);
         }
 
         public void Start()
@@ -49,6 +51,7 @@ namespace Orts.Processes
         public void Stop()
         {
             Game.WatchdogProcess.Unregister(WatchdogToken);
+            CancellationTokenSource.Cancel();
             State.SignalTerminate();
         }
 
@@ -61,27 +64,25 @@ namespace Orts.Processes
         }
 
         /// <summary>
-        /// Returns whether the loading process has been terminated, i.e. all loading should stop.
+        /// Returns a token (copyable object) which can be queried for the cancellation (termination) of the loader.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// All loading code should periodically (e.g. between loading each file) check this and exit as soon as it is
-        /// seen to be true.
+        /// All loading code should periodically (e.g. between loading each file) check the token and exit as soon
+        /// as it is cancelled (<see cref="CancellationToken.IsCancellationRequested"/>).
         /// </para>
         /// <para>
-        /// Reading this property implicitly causes the <see cref="WatchdogToken"/> to be pinged, informing the
-        /// <see cref="WatchdogProcess"/> that the loader is still responsive. Therefore the remarks about the
-        /// <see cref="WatchdogToken.Ping()"/> method apply to this property regarding when it should and should not
-        /// be used.
+        /// Reading <see cref="CancellationToken.IsCancellationRequested"/> causes the <see cref="WatchdogToken"/> to
+        /// be pinged, informing the <see cref="WatchdogProcess"/> that the loader is still responsive. Therefore the
+        /// remarks about the <see cref="WatchdogToken.Ping()"/> method apply to the token regarding when it should
+        /// and should not be used.
         /// </para>
         /// </remarks>
-        public bool Terminated
+        public CancellationToken CancellationToken
         {
             get
             {
-                // Specially for the loader process: this keeps it "alive" while objects are loading, as they check Terminated periodically.
-                WatchdogToken.Ping();
-                return State.Terminated;
+                return CancellationTokenSource.Token;
             }
         }
 
@@ -138,6 +139,7 @@ namespace Orts.Processes
                 catch (Exception error)
                 {
                     // Unblock anyone waiting for us, report error and die.
+                    CancellationTokenSource.Cancel();
                     State.SignalTerminate();
                     Game.ProcessReportError(error);
                     return false;

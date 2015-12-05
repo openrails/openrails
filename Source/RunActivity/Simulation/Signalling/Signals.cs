@@ -30,7 +30,6 @@ using Orts.Formats.Msts;
 using Orts.Formats.OR;
 using Orts.MultiPlayer;
 using Orts.Parsers.Msts;
-using Orts.Processes;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.Timetables;
@@ -91,7 +90,7 @@ namespace Orts.Simulation.Signalling
         /// Constructor
         ///
 
-        public Signals(Simulator simulator, SignalConfigurationFile sigcfg, LoaderProcess loader)
+        public Signals(Simulator simulator, SignalConfigurationFile sigcfg, CancellationToken cancellation)
         {
 
 #if DEBUG_REPORTS
@@ -113,7 +112,7 @@ namespace Orts.Simulation.Signalling
 
             // build list of signal world file information
 
-            BuildSignalWorld(simulator, sigcfg, loader);
+            BuildSignalWorld(simulator, sigcfg, cancellation);
 
             // build list of signals in TDB file
 
@@ -291,8 +290,8 @@ namespace Orts.Simulation.Signalling
         /// Overlay constructor for restore after saved game
         ///
 
-        public Signals(Simulator simulator, SignalConfigurationFile sigcfg, BinaryReader inf, LoaderProcess loader)
-            : this(simulator, sigcfg, loader)
+        public Signals(Simulator simulator, SignalConfigurationFile sigcfg, BinaryReader inf, CancellationToken cancellation)
+            : this(simulator, sigcfg, cancellation)
         {
             int signalIndex = inf.ReadInt32();
             while (signalIndex >= 0)
@@ -440,7 +439,7 @@ namespace Orts.Simulation.Signalling
         /// Read all world files to get signal flags
         ///
 
-        private void BuildSignalWorld(Simulator simulator, SignalConfigurationFile sigcfg, LoaderProcess loader)
+        private void BuildSignalWorld(Simulator simulator, SignalConfigurationFile sigcfg, CancellationToken cancellation)
         {
 
             // get all filesnames in World directory
@@ -454,7 +453,7 @@ namespace Orts.Simulation.Signalling
 
             foreach (var fileName in Directory.GetFiles(WFilePath, "*.w"))
             {
-                if (loader.Terminated) return; // ping loader watchdog
+                if (cancellation.IsCancellationRequested) return; // ping loader watchdog
                 // validate file name a little bit
 
                 if (Path.GetFileName(fileName).Length != 17)

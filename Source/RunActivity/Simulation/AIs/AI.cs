@@ -31,10 +31,10 @@
 
 using Orts.Formats.Msts;
 using Orts.MultiPlayer;
-using Orts.Processes;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Timetables;
+using ORTS.Common;
 using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
@@ -63,7 +63,7 @@ namespace Orts.Simulation.AIs
         /// Creates a queue of AI trains in the order they should appear.
         /// At the moment AI trains are also created off scene so the rendering code will know about them.
         /// </summary>
-        public AI(Simulator simulator, LoaderProcess loader, double activityStartTime)
+        public AI(Simulator simulator, CancellationToken cancellation, double activityStartTime)
         {
             Simulator = simulator;
 #if WITH_PATH_DEBUG
@@ -81,13 +81,13 @@ namespace Orts.Simulation.AIs
                 {
                     AITrain train = CreateAITrain(sd,
                     simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition.TrafficFile.TrafficDefinition);
-                    if (loader.Terminated) // ping loader watchdog
+                    if (cancellation.IsCancellationRequested) // ping loader watchdog
                         return;
                 }
             }
 
             // prerun trains
-            PrerunAI(loader);
+            PrerunAI(cancellation);
 
             clockTime = Simulator.ClockTime;
             localTime = false;
@@ -95,7 +95,7 @@ namespace Orts.Simulation.AIs
 
         // constructor for Timetable trains
         // trains allready have a number - must not be changed!
-        public AI(Simulator simulator, List<TTTrain> allTrains, double ClockTime, int playerTrainOriginalTrain, TTTrain.FormCommand playerTrainFormedOfType, TTTrain playerTrain, LoaderProcess loader)
+        public AI(Simulator simulator, List<TTTrain> allTrains, double ClockTime, int playerTrainOriginalTrain, TTTrain.FormCommand playerTrainFormedOfType, TTTrain playerTrain, CancellationToken cancellation)
         {
             Simulator = simulator;
 
@@ -142,7 +142,7 @@ namespace Orts.Simulation.AIs
             Simulator.NameDictionary.Clear();
 
             // prerun trains
-            PrerunAI(playerTrainOriginalTrain, playerTrainFormedOfType, playerTrain, loader);
+            PrerunAI(playerTrainOriginalTrain, playerTrainFormedOfType, playerTrain, cancellation);
 
             clockTime = Simulator.ClockTime;
             localTime = false;
@@ -308,7 +308,7 @@ namespace Orts.Simulation.AIs
         }
 
         // prerun for activity mode
-        private void PrerunAI(LoaderProcess loader)
+        private void PrerunAI(CancellationToken cancellation)
         {
             float firstAITime = StartList.GetNextTime();
             if (firstAITime > 0 && firstAITime < Simulator.ClockTime)
@@ -329,14 +329,14 @@ namespace Orts.Simulation.AIs
                     AIUpdate((float)(runTime - clockTime), PreUpdate);
                     Simulator.Signals.Update(true);
                     clockTime = runTime;
-                    if (loader.Terminated) return; // ping watchdog process
+                    if (cancellation.IsCancellationRequested) return; // ping watchdog process
                 }
             }
         }
 
 
         // prerun for timetable mode
-        private void PrerunAI(int playerTrainOriginalTrain, TTTrain.FormCommand playerTrainFormedOfType, Train playerTrain, LoaderProcess loader)
+        private void PrerunAI(int playerTrainOriginalTrain, TTTrain.FormCommand playerTrainFormedOfType, Train playerTrain, CancellationToken cancellation)
         {
             float firstAITime = StartList.GetNextTime();
             if (firstAITime > 0 && firstAITime < Simulator.ClockTime)
@@ -362,7 +362,7 @@ namespace Orts.Simulation.AIs
                     }
 
                     clockTime = runTime;
-                    if (loader.Terminated) return; // ping watchdog process
+                    if (cancellation.IsCancellationRequested) return; // ping watchdog process
                 }
 
                 // prerun finished - check if train from which player train originates has run and is finished

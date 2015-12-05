@@ -74,6 +74,7 @@ namespace Orts.Viewer3D
         [CallOnThread("Loader")]
         public void Load()
         {
+            var cancellation = Viewer.LoaderProcess.CancellationToken;
             Viewer.DontLoadNightTextures = (Program.Simulator.Settings.ConditionalLoadOfNightTextures &&
             ((Viewer.MaterialManager.sunDirection.Y > 0.05f && Program.Simulator.ClockTime%86400 < 43200) ||
             (Viewer.MaterialManager.sunDirection.Y > 0.15f && Program.Simulator.ClockTime %86400 >= 43200))) ? true : false;            
@@ -89,7 +90,7 @@ namespace Orts.Viewer3D
                 {
                     for (var z = -needed; z <= needed; z++)
                     {
-                        if (Viewer.LoaderProcess.Terminated)
+                        if (cancellation.IsCancellationRequested)
                             break;
                         var tile = worldFiles.FirstOrDefault(t => t.TileX == TileX + x && t.TileZ == TileZ + z);
                         if (tile == null)
@@ -226,6 +227,8 @@ namespace Orts.Viewer3D
             TileX = tileX;
             TileZ = tileZ;
 
+            var cancellation = Viewer.LoaderProcess.CancellationToken;
+
             // determine file path to the WFile at the specified tile coordinates
             var WFileName = WorldFileNameFromTileCoordinates(tileX, tileZ);
             var WFilePath = viewer.Simulator.RoutePath + @"\World\" + WFileName;
@@ -248,7 +251,7 @@ namespace Orts.Viewer3D
                     continue;
 
                 // If the loader has been asked to temrinate, bail out early.
-                if (viewer.LoaderProcess.Terminated)
+                if (cancellation.IsCancellationRequested)
                     break;
 
                 // Get the position of the scenery object into ORTS coordinate space.

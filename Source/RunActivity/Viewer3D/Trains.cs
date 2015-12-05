@@ -47,6 +47,7 @@ namespace Orts.Viewer3D
         [CallOnThread("Loader")]
         public void Load()
         {
+            var cancellation = Viewer.LoaderProcess.CancellationToken;
             var visibleCars = VisibleCars;
             var cars = Cars;
             if (visibleCars.Any(c => !cars.ContainsKey(c)) || cars.Keys.Any(c => !visibleCars.Contains(c)))
@@ -54,7 +55,7 @@ namespace Orts.Viewer3D
                 var newCars = new Dictionary<TrainCar, TrainCarViewer>();
                 foreach (var car in visibleCars)
                 {
-                    if (Viewer.LoaderProcess.Terminated)
+                    if (cancellation.IsCancellationRequested)
                         break;
                     try
 					{

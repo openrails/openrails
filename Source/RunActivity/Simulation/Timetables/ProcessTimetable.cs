@@ -28,11 +28,11 @@
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
 using Orts.Parsers.OR;
-using Orts.Processes;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Signalling;
+using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -90,7 +90,7 @@ namespace Orts.Simulation.Timetables
         /// </summary>
         /// <param name="arguments"></param>
         /// <returns>List of extracted Trains</returns>
-        public List<TTTrain> ProcessTimetable(string[] arguments, LoaderProcess loader)
+        public List<TTTrain> ProcessTimetable(string[] arguments, CancellationToken cancellation)
         {
             TTTrain reqPlayerTrain;
 
@@ -124,7 +124,7 @@ namespace Orts.Simulation.Timetables
 
             Trace.Write(" TTROUTES:" + Paths.Count.ToString() + " ");
 
-            loadPathNoFailure = PreProcessRoutes(loader);
+            loadPathNoFailure = PreProcessRoutes(cancellation);
 
             Trace.Write(" TTTRAINS:" + trainInfoList.Count.ToString() + " ");
 
@@ -756,7 +756,7 @@ namespace Orts.Simulation.Timetables
         /// <summary>
         /// Pre-process all routes : read routes and convert to AIPath structure
         /// </summary>
-        public bool PreProcessRoutes(LoaderProcess loader)
+        public bool PreProcessRoutes(CancellationToken cancellation)
         {
 
             // extract names
@@ -778,7 +778,7 @@ namespace Orts.Simulation.Timetables
                 bool pathValid = true;
                 AIPath newPath = LoadPath(thisRoute, out pathValid);
                 if (!pathValid) allPathsLoaded = false;
-                if (loader.Terminated)
+                if (cancellation.IsCancellationRequested)
                     return (false);
             }
 
