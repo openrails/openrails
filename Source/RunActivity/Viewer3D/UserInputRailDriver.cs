@@ -18,7 +18,6 @@
 using Microsoft.Win32;
 using Orts.Parsers.Msts;
 using Orts.Simulation.RollingStocks;
-using Orts.Viewer3D;
 using ORTS.Common;
 using ORTS.Settings;
 using PIEHidDotNet;
@@ -26,12 +25,12 @@ using System;
 using System.Diagnostics;
 using System.IO;
 
-namespace Orts.Simulation
+namespace Orts.Viewer3D
 {
     /// <summary>
     /// Class to get data from RailDriver and translate it into something useful for UserInput
     /// </summary>
-    public class RailDriverHandler : PIEDataHandler, PIEErrorHandler
+    public class UserInputRailDriver : PIEDataHandler, PIEErrorHandler
     {
         PIEDevice Device;                   // Our RailDriver
         byte[] WriteBuffer;                 // Buffer for sending data to RailDriver
@@ -66,7 +65,7 @@ namespace Orts.Simulation
         /// Tries to find a RailDriver and initialize it
         /// </summary>
         /// <param name="basePath"></param>
-        public RailDriverHandler(string basePath)
+        public UserInputRailDriver(string basePath)
         {
             try
             {

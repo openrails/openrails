@@ -101,7 +101,6 @@ namespace Orts.Simulation
 
         public Signals Signals;
         public AI AI;
-        public RailDriverHandler RailDriver;
         public SeasonType Season;
         public WeatherType Weather;
         SignalConfigurationFile SIGCFG;
@@ -229,8 +228,6 @@ namespace Orts.Simulation
             orRouteConfig.SetTraveller(TSectionDat, TDB);
 #endif
 
-            RailDriver = new RailDriverHandler(BasePath);
-
             Trace.Write(" ACT");
 
             var rdbFile = RoutePath + @"\" + TRK.Tr_RouteFile.FileName + ".rdb";
@@ -350,8 +347,6 @@ namespace Orts.Simulation
 
         public void Stop()
         {
-            if (RailDriver != null)
-                RailDriver.Shutdown();
             if (MPManager.IsMultiPlayer()) MPManager.Stop();
         }
 
@@ -584,11 +579,6 @@ namespace Orts.Simulation
             if (ActivityRun != null)
             {
                 ActivityRun.Update();
-            }
-
-            if (RailDriver != null)
-            {
-                RailDriver.Update(PlayerLocomotive);
             }
 
             if (HazzardManager != null) HazzardManager.Update(elapsedClockSeconds);

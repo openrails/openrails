@@ -189,7 +189,6 @@
     <Compile Include="Simulation\FuelPickup.cs" />
     <Compile Include="Simulation\Hazzard.cs" />
     <Compile Include="Simulation\LevelCrossing.cs" />
-    <Compile Include="Simulation\RailDriverHandler.cs" />
     <Compile Include="Simulation\Simulator.cs" />
     <Compile Include="Simulation\Traveller.cs" />
     <Compile Include="Simulation\Timetables\ProcessTimetable.cs" />
@@ -254,6 +253,7 @@
     <Compile Include="Viewer3D\Trains.cs" />
     <Compile Include="Viewer3D\Transfers.cs" />
     <Compile Include="Viewer3D\UserInput.cs" />
+    <Compile Include="Viewer3D\UserInputRailDriver.cs" />
     <Compile Include="Viewer3D\Viewer.cs" />
     <Compile Include="Viewer3D\Water.cs" />
     <Compile Include="Viewer3D\Weather.cs" />

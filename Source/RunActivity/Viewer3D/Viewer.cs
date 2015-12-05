@@ -176,6 +176,8 @@ namespace Orts.Viewer3D
 
         public Camera SuspendedCamera { get; private set; }
 
+        UserInputRailDriver RailDriver;
+
         /// <summary>
         /// Finds time of last entry to set ReplayEndsAt and provide the Replay started message.
         /// </summary>
@@ -250,6 +252,8 @@ namespace Orts.Viewer3D
             Tiles = new TileManager(Simulator.RoutePath + @"\TILES\", false);
             LoTiles = new TileManager(Simulator.RoutePath + @"\LO_TILES\", true);
             MilepostUnitsMetric = Simulator.TRK.Tr_RouteFile.MilepostUnitsMetric;
+
+            RailDriver = new UserInputRailDriver(Simulator.BasePath);
 
             Initialize();
         }
@@ -542,6 +546,7 @@ namespace Orts.Viewer3D
             }
 
             Simulator.Update(elapsedTime.ClockSeconds);
+            RailDriver.Update(PlayerLocomotive);
             HandleUserInput(elapsedTime);
             UserInput.Handled();
 
@@ -1053,6 +1058,7 @@ namespace Orts.Viewer3D
         internal void Terminate()
         {
             InfoDisplay.Terminate();
+            RailDriver.Shutdown();
         }
 
         private int trainCount;
