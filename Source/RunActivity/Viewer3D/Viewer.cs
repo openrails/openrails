@@ -209,8 +209,8 @@ namespace Orts.Viewer3D
                     Log.ReplayEndsAt = lastTime;
                     double duration = lastTime - Simulator.ClockTime;
                     MessagesWindow.AddMessage(String.Format("Replay started: ending at {0} after {1}",
-                        InfoDisplay.FormattedApproxTime(lastTime),
-                        InfoDisplay.FormattedTime(duration)),
+                        FormatStrings.FormatApproximateTime(lastTime),
+                        FormatStrings.FormatTime(duration)),
                         3.0);
                 }
             }

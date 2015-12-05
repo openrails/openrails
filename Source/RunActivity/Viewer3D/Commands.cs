@@ -23,6 +23,7 @@ using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Viewer3D.Popups;
 using Orts.Viewer3D.RollingStock;
+using ORTS.Common;
 using ORTS.Scripting.Api;
 using System;
 using System.Diagnostics;   // Used by Trace.Warnings
@@ -95,7 +96,7 @@ namespace Orts.Viewer3D
         // Method required by ICommand
         public virtual void Report() {
             Trace.WriteLine( String.Format(
-               "Command: {0} {1}", InfoDisplay.FormattedPreciseTime( Time ), ToString() ) );
+               "Command: {0} {1}", FormatStrings.FormatPreciseTime( Time ), ToString() ) );
         }
     }
 
@@ -847,7 +848,7 @@ namespace Orts.Viewer3D
         }
 
         public override string ToString() {
-            return String.Format( "Command: {0} {1} {2}", InfoDisplay.FormattedPreciseTime( Time ), this.GetType().ToString(), Injector) 
+            return String.Format( "Command: {0} {1} {2}", FormatStrings.FormatPreciseTime( Time ), this.GetType().ToString(), Injector) 
                 + (ToState ? "open" : "close") + ", target = " + Target.ToString();
         }
     }
@@ -1471,7 +1472,7 @@ namespace Orts.Viewer3D
         }
 
         public override string ToString() {
-            return base.ToString() + " - " + String.Format( "{0}", InfoDisplay.FormattedPreciseTime( EndTime ) );
+            return base.ToString() + " - " + String.Format( "{0}", FormatStrings.FormatPreciseTime( EndTime ) );
         }
     }
 

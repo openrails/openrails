@@ -56,7 +56,6 @@ using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.Signalling;
 using Orts.Simulation.Timetables;
-using Orts.Viewer3D;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using ORTS.Settings;
@@ -1954,7 +1953,7 @@ namespace Orts.Simulation.Physics
 
                 if (DatalogTSContents[0] == 1)
                 {
-                    stringBuild.Append(InfoDisplay.FormattedTime(clockTime));
+                    stringBuild.Append(FormatStrings.FormatTime(clockTime));
                     stringBuild.Append(Separator);
                 }
 
@@ -7820,7 +7819,7 @@ namespace Orts.Simulation.Physics
             if (IsPathless && ControlMode != TRAIN_CONTROL.OUT_OF_CONTROL)
             {
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("You cannot use this command for pathless trains"));
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("You cannot use this command for pathless trains"));
             }
             else if (ControlMode == TRAIN_CONTROL.MANUAL)
             {

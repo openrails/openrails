@@ -118,7 +118,7 @@ namespace Orts.Viewer3D.Popups
 
             if (updateFull)
             {
-                CurrentTime.Text = InfoDisplay.FormattedTime(Owner.Viewer.Simulator.ClockTime);
+                CurrentTime.Text = FormatStrings.FormatTime(Owner.Viewer.Simulator.ClockTime);
                 Activity act = Owner.Viewer.Simulator.ActivityRun;
                 Train playerTrain = Owner.Viewer.Simulator.PlayerLocomotive.Train;
                 if (playerTrain.Delay.HasValue)

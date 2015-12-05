@@ -183,7 +183,7 @@ namespace Orts.Viewer3D
                     }
                     if (Viewer.Settings.DataLogPhysics)
                     {
-                        Logger.Data(FormattedPreciseTime(Viewer.Simulator.ClockTime));
+                        Logger.Data(FormatStrings.FormatPreciseTime(Viewer.Simulator.ClockTime));
                         Logger.Data(Viewer.PlayerLocomotive.Direction.ToString());
                         Logger.Data(Viewer.PlayerTrain.MUReverserPercent.ToString("F0"));
                         Logger.Data(Viewer.PlayerLocomotive.ThrottlePercent.ToString("F0"));
@@ -311,79 +311,6 @@ namespace Orts.Viewer3D
             GetProcessMemoryInfo(ProcessHandle, out ProcessMemoryCounters, ProcessMemoryCounters.cb);
             var memory = ProcessMemoryCounters.WorkingSetSize;
             return memory;
-        }
-
-        /// <summary>
-        /// Converts duration in seconds to hours, minutes and integer seconds
-        /// </summary>
-        /// <param name="clockTimeSeconds"></param>
-        /// <returns></returns>
-        public static string FormattedTime(double clockTimeSeconds) //some measure of time so it can be sorted.  Good enuf for now. Might add more later. Okay
-        {
-            int hour = (int)(clockTimeSeconds / (60.0 * 60.0));
-            clockTimeSeconds -= hour * 60.0 * 60.0;
-            int minute = (int)(clockTimeSeconds / 60.0);
-            clockTimeSeconds -= minute * 60.0;
-            int seconds = (int)clockTimeSeconds;
-            // Reset clock before and after midnight
-            if (hour >= 24)
-                hour %= 24;
-            if (hour < 0)
-                hour += 24;
-            if (minute < 0)
-                minute += 60;
-            if (seconds < 0)
-                seconds += 60;
-
-            return string.Format("{0:D2}:{1:D2}:{2:D2}", hour, minute, seconds);
-        }
-
-        /// <summary>
-        /// Converts duration in seconds to hours, minutes and seconds to 2 decimal places.
-        /// </summary>
-        /// <param name="clockTimeSeconds"></param>
-        /// <returns></returns>
-        public static string FormattedPreciseTime(double clockTimeSeconds) //some measure of time so it can be sorted.  Good enuf for now. Might add more later. Okay
-        {
-            int hour = (int)(clockTimeSeconds / (60.0 * 60.0));
-            clockTimeSeconds -= hour * 60.0 * 60.0;
-            int minute = (int)(clockTimeSeconds / 60.0);
-            clockTimeSeconds -= minute * 60.0;
-            double seconds = clockTimeSeconds;
-            // Reset clock before and after midnight
-            if (hour >= 24)
-                hour %= 24;
-            if (hour < 0)
-                hour += 24;
-            if (minute < 0)
-                minute += 60;
-            if (seconds < 0)
-                seconds += 60;
-
-            return string.Format("{0:D2}:{1:D2}:{2:00.00}", hour, minute, seconds);
-        }
-
-
-        /// <summary>
-        /// Converts duration from seconds to hours and minutes (to the nearest minute)
-        /// </summary>
-        /// <param name="clockTimeSeconds"></param>
-        /// <returns></returns>
-        public static string FormattedApproxTime(double clockTimeSeconds)
-        {
-            int hour = (int)(clockTimeSeconds / (60.0 * 60.0));
-            clockTimeSeconds -= hour * 60.0 * 60.0;
-            int minute = (int)((clockTimeSeconds / 60.0) + 0.5);    // + 0.5 to round to nearest minute
-            clockTimeSeconds -= minute * 60.0;
-            // Reset clock before and after midnight
-            if (hour >= 24)
-                hour %= 24;
-            if (hour < 0)
-                hour += 24;
-            if (minute < 0)
-                minute += 60;
-
-            return string.Format("{0:D2}:{1:D2}", hour, minute);
         }
 
         static void DataLoggerStart(UserSettings settings)

@@ -383,12 +383,12 @@ namespace Orts.Viewer3D.Popups
 
             // Client and server may have a time difference.
             if (Orts.MultiPlayer.MPManager.IsClient())
-                TableAddLabelValue(table, Viewer.Catalog.GetString("Time"), InfoDisplay.FormattedTime(Viewer.Simulator.ClockTime + Orts.MultiPlayer.MPManager.Instance().serverTimeDifference));
+                TableAddLabelValue(table, Viewer.Catalog.GetString("Time"), FormatStrings.FormatTime(Viewer.Simulator.ClockTime + Orts.MultiPlayer.MPManager.Instance().serverTimeDifference));
             else
-                TableAddLabelValue(table, Viewer.Catalog.GetString("Time"), InfoDisplay.FormattedTime(Viewer.Simulator.ClockTime));
+                TableAddLabelValue(table, Viewer.Catalog.GetString("Time"), FormatStrings.FormatTime(Viewer.Simulator.ClockTime));
 
             if (Viewer.IsReplaying)
-                TableAddLabelValue(table, Viewer.Catalog.GetString("Replay"), InfoDisplay.FormattedTime(Viewer.Log.ReplayEndsAt - Viewer.Simulator.ClockTime));
+                TableAddLabelValue(table, Viewer.Catalog.GetString("Replay"), FormatStrings.FormatTime(Viewer.Log.ReplayEndsAt - Viewer.Simulator.ClockTime));
 
             TableAddLabelValue(table, Viewer.Catalog.GetString("Speed"), FormatStrings.FormatSpeedDisplay(Viewer.PlayerLocomotive.SpeedMpS, Viewer.PlayerLocomotive.IsMetric));
             TableAddLabelValue(table, Viewer.Catalog.GetString("Gradient"), "{0:F1}%", -Viewer.PlayerLocomotive.CurrentElevationPercent);
