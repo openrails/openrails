@@ -15,14 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;   // needed for Debug
-using System.IO;
 using Microsoft.Xna.Framework;
 using Orts.Parsers.Msts;
 using ORTS.Scripting.Api;
-using ORTS.Viewer3D.Popups;  // needed for Confirmations
+using System.Collections.Generic;
+using System.IO;
 
 namespace ORTS
 {

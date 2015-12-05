@@ -30,14 +30,13 @@
 
 //#define ALLOW_ORTS_SPECIFIC_ENG_PARAMETERS
 
-using System;
-using System.IO;
-using System.Text;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using ORTS.Common;
-using ORTS.Settings;
+using System;
+using System.IO;
+using System.Text;
 
 namespace ORTS
 {

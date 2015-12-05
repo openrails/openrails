@@ -24,6 +24,10 @@
  * 
  */
 
+using Orts.Parsers.Msts;
+using ORTS.Common;
+using ORTS.Settings;
+using ORTS.Viewer3D;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -31,16 +35,11 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
-using Orts.Parsers.Msts;
-using ORTS.Common;
-using ORTS.Debugging;
-using ORTS.Settings;
-using ORTS.Viewer3D;
 
 namespace ORTS.MultiPlayer
 {
-	//a singleton class handles communication, update and stop etc.
-	class MPManager
+    //a singleton class handles communication, update and stop etc.
+    class MPManager
 	{
 		public int version = 15;
         double lastMoveTime;

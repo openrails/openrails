@@ -30,17 +30,17 @@
 //#define ALLOW_ORTS_SPECIFIC_ENG_PARAMETERS
 //#define DEBUG_AUXTENDER
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using ORTS.Viewer3D;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 
 namespace ORTS
 {

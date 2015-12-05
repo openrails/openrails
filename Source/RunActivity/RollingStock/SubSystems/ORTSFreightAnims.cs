@@ -16,15 +16,13 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using Microsoft.Xna.Framework;
-using ORTS.Common;
 using Orts.Parsers.Msts;
+using ORTS.Common;
 using ORTS.Viewer3D;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace ORTS
 {

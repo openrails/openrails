@@ -15,15 +15,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
+using System;
 
 namespace ORTS
 {
-   public static class ORTSMath
+    public static class ORTSMath
    {
       //
       // from http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToEuler/index.htm

@@ -15,8 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.IO;
 using ORTS.Scripting.Api;
 
 namespace ORTS
@@ -27,7 +25,7 @@ namespace ORTS
      * This is mainly a Notch controller, but it allows continuous input and also 
      * has specific methods to update brake status.
      * 
-     */ 
+     */
     public class MSTSBrakeController: BrakeController
     {
         public MSTSNotchController NotchController;

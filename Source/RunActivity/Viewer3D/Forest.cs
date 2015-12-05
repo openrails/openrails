@@ -17,13 +17,12 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
 using ORTS.Common;
+using System;
+using System.Collections.Generic;
 
 namespace ORTS.Viewer3D
 {

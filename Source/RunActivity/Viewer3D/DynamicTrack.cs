@@ -17,6 +17,11 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Orts.Formats.Msts;
+using Orts.Parsers.Msts;
+using ORTS.Common;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -24,12 +29,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Xml;
 using System.Xml.Schema;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Orts.Formats.Msts;
-using Orts.Parsers.Msts;
-using ORTS.Common;
-using ORTS.Processes;
 
 namespace ORTS.Viewer3D
 {

@@ -19,10 +19,8 @@
 
 using Microsoft.Xna.Framework;
 using ORTS.Common;
-using ORTS.Viewer3D;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;

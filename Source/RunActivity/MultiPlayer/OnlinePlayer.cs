@@ -16,18 +16,14 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
-using System.Diagnostics;
 
 
 namespace ORTS.MultiPlayer
 {
-	public class OnlinePlayer
+    public class OnlinePlayer
 	{
 		public Decoder decoder;
 		public OnlinePlayer(TcpClient t, Server s) { Client = t; Server = s; decoder = new Decoder(); CreatedTime = Program.Simulator.GameTime; url = "NA";}// "http://trainsimchina.com/discuz/uc_server/avatar.php?uid=72965&size=middle"; }

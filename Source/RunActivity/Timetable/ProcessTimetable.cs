@@ -25,23 +25,15 @@
 
 //
 
-using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
-using Orts.Parsers.Msts;
 using Orts.Parsers.OR;
-using ORTS;
-using ORTS.Common;
-using ORTS.MultiPlayer;
 using ORTS.Processes;
-using ORTS.Viewer3D;
-using ORTS.Viewer3D.Popups;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace ORTS
 {

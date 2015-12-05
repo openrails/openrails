@@ -21,9 +21,7 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using ORTS.Common;
-using ORTS.Viewer3D;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -32,7 +30,7 @@ using System.Linq;
 
 namespace ORTS.Viewer3D.Popups
 {
-	public class WindowManager : RenderPrimitive
+    public class WindowManager : RenderPrimitive
 	{
 		public static Texture2D WhiteTexture;
 		public static Texture2D ScrollbarTexture;

@@ -27,7 +27,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using Font = System.Drawing.Font;
 using FontStyle = System.Drawing.FontStyle;
 using GraphicsUnit = System.Drawing.GraphicsUnit;

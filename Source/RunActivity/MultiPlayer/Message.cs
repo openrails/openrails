@@ -15,23 +15,20 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using Orts.Formats.Msts;
+using ORTS.Common;
+using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Text;
-using System.Diagnostics;
-using Orts.Formats.Msts;
-using Orts.Parsers.Msts;
-using ORTS;
-using ORTS.Common;
-using ORTS.Scripting.Api;
 
 namespace ORTS.MultiPlayer
 {
-	public class Message
+    public class Message
 	{
 		public static Message Decode(string m)
 		{

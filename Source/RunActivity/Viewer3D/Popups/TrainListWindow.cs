@@ -22,8 +22,6 @@ using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
 using ORTS.Settings;
 using System;
-using System.Collections.Generic;
-using System.IO;
 
 namespace ORTS.Viewer3D.Popups
 {

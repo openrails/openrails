@@ -16,17 +16,11 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace ORTS.Debugging
 {
-   public partial class MessageViewer : Form
+    public partial class MessageViewer : Form
    {
 	   private void clearAllClick(object sender, EventArgs e)
 	   {

@@ -30,7 +30,6 @@
 
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
-using Orts.Formats.OR;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using ORTS.Viewer3D;

@@ -18,18 +18,16 @@
 // This file is the responsibility of the 3D & Environment Team. 
 #define SHOW_PHYSICS_GRAPHS     //Matej Pacha - if commented, the physics graphs are not ready for public release
 
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using ORTS.Common;
+using ORTS.Processes;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using ORTS.Common;
-using ORTS.Processes;
-using ORTS.Viewer3D;
 
 namespace ORTS.Viewer3D.Popups
 {

@@ -29,12 +29,9 @@
 // This logs every UserCommandInput change from pressed to released.
 //#define DEBUG_USER_INPUT
 
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using ORTS.Settings;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
 using Game = ORTS.Processes.Game;

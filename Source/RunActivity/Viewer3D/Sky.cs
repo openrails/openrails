@@ -21,7 +21,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
 using ORTS.Processes;
-using ORTS.Settings;
 using System;
 using System.Collections.Generic;
 

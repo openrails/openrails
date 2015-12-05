@@ -44,15 +44,15 @@
  *  LocomotiveViewer - provides basic animation for running gear, wipers, etc
  * 
  */
-using System;
-using System.Diagnostics;
-using System.IO;
-using System.Text;
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using ORTS.Common;
 using ORTS.Viewer3D;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Text;
 
 namespace ORTS
 {

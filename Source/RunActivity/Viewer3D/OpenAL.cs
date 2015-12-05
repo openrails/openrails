@@ -18,13 +18,11 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
-using System.Text;
 using System.Runtime.InteropServices;
 using System.Security;
-using System.IO;
-using System.Diagnostics;
 
 namespace ORTS.Viewer3D
 {

@@ -41,11 +41,6 @@
 
 //#define ALLOW_ORTS_SPECIFIC_ENG_PARAMETERS
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
@@ -53,7 +48,11 @@ using Orts.Parsers.Msts;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using ORTS.Viewer3D;
-using ORTS.Viewer3D.Popups;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 
 namespace ORTS
 {

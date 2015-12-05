@@ -17,12 +17,11 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using System;
-using System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using ORTS.Processes;
 using ORTS.Settings;
-using ORTS.Viewer3D;
+using System;
+using System.Windows.Forms;
 
 namespace ORTS.Viewer3D.Popups
 {

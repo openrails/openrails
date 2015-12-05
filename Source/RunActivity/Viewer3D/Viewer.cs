@@ -17,13 +17,6 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Management;
-using System.Threading;
 using GNU.Gettext;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -35,6 +28,13 @@ using ORTS.Processes;
 using ORTS.Settings;
 using ORTS.Viewer3D.Popups;
 using ORTS.Viewer3D.RollingStock;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Management;
+using System.Threading;
 
 namespace ORTS.Viewer3D
 {

@@ -15,9 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Collections.Generic;
-using System.IO;
 using ORTS.Common;
+using System.Collections.Generic;
 
 namespace ORTS
 {

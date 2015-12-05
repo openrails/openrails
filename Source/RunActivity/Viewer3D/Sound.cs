@@ -39,21 +39,20 @@
 
 //#define DEBUGSCR
 
+using Orts.Formats.Msts;
+using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Microsoft.Xna.Framework;
-using Orts.Formats.Msts;
-using ORTS.Common;
 
 namespace ORTS.Viewer3D
 {
 
-/////////////////////////////////////////////////////////
-// SOUND SOURCE
-/////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////
+    // SOUND SOURCE
+    /////////////////////////////////////////////////////////
 
     /// <summary>
     /// Represents an sms file,

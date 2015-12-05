@@ -26,7 +26,6 @@ using ORTS.Viewer3D;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 
 namespace ORTS

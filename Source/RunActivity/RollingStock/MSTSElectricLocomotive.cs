@@ -32,7 +32,6 @@ using Orts.Parsers.Msts;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using ORTS.Viewer3D;
-using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;

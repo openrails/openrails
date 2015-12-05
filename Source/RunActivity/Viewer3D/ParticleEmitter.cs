@@ -26,7 +26,6 @@ using Microsoft.Xna.Framework.Graphics.PackedVector;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace ORTS.Viewer3D

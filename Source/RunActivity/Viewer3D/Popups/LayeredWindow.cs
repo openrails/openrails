@@ -17,15 +17,11 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace ORTS.Viewer3D.Popups
 {
-	public abstract class LayeredWindow : Window
+    public abstract class LayeredWindow : Window
 	{
 		public LayeredWindow(WindowManager owner, int width, int height, string caption)
 			: base(owner, width, height, caption)

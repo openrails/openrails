@@ -16,17 +16,16 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
-using System.Diagnostics;
 
 namespace ORTS.MultiPlayer
 {
-	public class ClientComm
+    public class ClientComm
 	{
 		private Thread listenThread;
 		private TcpClient client;

@@ -18,7 +18,6 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 using ORTS.Common;
-using ORTS.Settings;
 
 namespace ORTS.Viewer3D.RollingStock
 {

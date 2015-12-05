@@ -31,13 +31,13 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
 using ORTS.Common;
+using ORTS.Viewer3D.RollingStock;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using ORTS.Viewer3D.RollingStock;
 
 namespace ORTS.Viewer3D
 {

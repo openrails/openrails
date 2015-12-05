@@ -15,42 +15,38 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-/// Principal Author:
-///     Author: Charlie Salts / Signalsoft Rail Consultancy Ltd.
-/// Contributor:
-///    Richard Plokhaar / Signalsoft Rail Consultancy Ltd.
-/// 
+// Principal Author:
+//     Author: Charlie Salts / Signalsoft Rail Consultancy Ltd.
+// Contributor:
+//    Richard Plokhaar / Signalsoft Rail Consultancy Ltd.
+// 
 
+using GNU.Gettext.WinForms;
+using Microsoft.Xna.Framework;
+using Orts.Formats.Msts;
+using ORTS.Common;
+using ORTS.Viewer3D;
+using ORTS.Viewer3D.Popups;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Windows.Forms;
-using Microsoft.Xna.Framework;
-using Orts.Formats.Msts;
-using Orts.Parsers.Msts;
-using ORTS.Common;
-using ORTS.Viewer3D;
-using ORTS.Viewer3D.Popups;
 using Control = System.Windows.Forms.Control;
 using Image = System.Drawing.Image;
-using GNU.Gettext;
-using GNU.Gettext.WinForms;
 
 namespace ORTS.Debugging
 {
 
 
-   /// <summary>
-   /// Defines an external window for use as a debugging viewer 
-   /// when using Open Rails 
-   /// </summary>
-   public partial class DispatchViewer : Form
+    /// <summary>
+    /// Defines an external window for use as a debugging viewer 
+    /// when using Open Rails 
+    /// </summary>
+    public partial class DispatchViewer : Form
    {
 
 

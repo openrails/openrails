@@ -45,23 +45,21 @@
 // Debug Calculation of Aux Tender operation
 //#define DEBUG_AUXTENDER
 
+using GNU.Gettext;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Orts.Formats.Msts;
+using ORTS.Common;
+using ORTS.MultiPlayer;
+using ORTS.Scripting.Api;
+using ORTS.Settings;
+using ORTS.Viewer3D;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Orts.Formats.Msts;
-using Orts.Parsers.Msts;
-using ORTS.Common;
-using ORTS.MultiPlayer;
-using ORTS.Scripting.Api;
-using ORTS.Viewer3D;
-using ORTS.Viewer3D.Popups;
-using ORTS.Settings;
-using GNU.Gettext;
 
 namespace ORTS
 {
