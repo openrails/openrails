@@ -25,7 +25,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace ORTS.MultiPlayer
+namespace Orts.MultiPlayer
 {
 	public class OnlineTrains
 	{

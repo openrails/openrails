@@ -22,7 +22,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 
-namespace ORTS.Processes
+namespace Orts.Processes
 {
     public class LoaderProcess
     {

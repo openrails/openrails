@@ -26,14 +26,14 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Orts.Processes;
 using ORTS.Common;
-using ORTS.Processes;
 using ORTS.Settings;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Game = ORTS.Processes.Game;
+using Game = Orts.Processes.Game;
 
 namespace Orts.Viewer3D
 {

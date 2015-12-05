@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace ORTS
+namespace Orts.Common
 {
     public interface EventHandler
     {

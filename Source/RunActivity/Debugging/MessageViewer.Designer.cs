@@ -1,4 +1,4 @@
-﻿namespace ORTS.Debugging
+﻿namespace Orts.Debugging
 {
    partial class MessageViewer
    {

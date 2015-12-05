@@ -17,12 +17,12 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using Orts.Debugging;
+using Orts.MultiPlayer;
 using Orts.Viewer3D;
-using ORTS.Debugging;
-using ORTS.MultiPlayer;
 using System;
 
-namespace ORTS.Processes
+namespace Orts.Processes
 {
     public class GameStateViewer3D : GameState
     {

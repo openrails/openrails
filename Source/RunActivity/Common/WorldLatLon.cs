@@ -32,7 +32,7 @@
 using Microsoft.Xna.Framework;
 using System;
 
-namespace ORTS
+namespace Orts.Common
 {
     public class WorldLatLon
     {      

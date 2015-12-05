@@ -16,7 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 
-namespace ORTS
+namespace Orts.Common
 {
     static class SteamTable
     {

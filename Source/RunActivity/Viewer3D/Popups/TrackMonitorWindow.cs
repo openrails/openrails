@@ -20,7 +20,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Simulation.Physics;
-using ORTS;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
@@ -317,7 +316,7 @@ namespace Orts.Viewer3D.Popups
 
             drawTrack(spriteBatch, offset, validInfo.speedMpS, validInfo.allowedSpeedMpS);
 
-            if (ORTS.MultiPlayer.MPManager.IsMultiPlayer())
+            if (Orts.MultiPlayer.MPManager.IsMultiPlayer())
             {
                 drawMPInfo(spriteBatch, offset);
             }

@@ -24,7 +24,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 
-namespace ORTS.MultiPlayer
+namespace Orts.MultiPlayer
 {
     public class ClientComm
 	{

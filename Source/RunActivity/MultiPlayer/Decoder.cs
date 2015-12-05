@@ -17,7 +17,7 @@
 
 using System;
 
-namespace ORTS.MultiPlayer
+namespace Orts.MultiPlayer
 {
     public class Decoder
 	{

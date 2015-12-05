@@ -17,7 +17,7 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-namespace ORTS.Debugging
+namespace Orts.Debugging
 {
     partial class SoundDebugForm
     {

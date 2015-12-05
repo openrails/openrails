@@ -21,7 +21,6 @@ using Orts.Formats.Msts;
 using Orts.Simulation.Physics;
 using Orts.Simulation.Signalling;
 using Orts.Viewer3D;
-using ORTS;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
@@ -29,6 +28,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Event = Orts.Common.Event;
 
 namespace Orts.Simulation
 {
@@ -897,7 +897,7 @@ namespace Orts.Simulation
                         {
                             maydepart = true;
                             DisplayMessage = Catalog.GetString("Passenger boarding completed. You may depart now.");
-                            Program.Simulator.SoundNotify = ORTS.Event.PermissionToDepart;
+                            Program.Simulator.SoundNotify = Event.PermissionToDepart;
                         }
 
                         // if last task, show closure window

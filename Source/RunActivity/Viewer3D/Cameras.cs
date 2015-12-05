@@ -18,10 +18,10 @@
 // This file is the responsibility of the 3D & Environment Team.
 
 using Microsoft.Xna.Framework;
+using Orts.Common;
 using Orts.Simulation;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
-using ORTS;
 using ORTS.Common;
 using ORTS.Settings;
 using System;

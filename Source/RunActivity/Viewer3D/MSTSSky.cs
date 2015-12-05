@@ -19,9 +19,9 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using ORTS;
+using Orts.Common;
+using Orts.Processes;
 using ORTS.Common;
-using ORTS.Processes;
 using ORTS.Settings;
 using System;
 using System.Collections.Generic;
@@ -157,25 +157,25 @@ namespace Orts.Viewer3D
                 mstsskyfogDistance = MSTSSkyViewer.World.WeatherControl.fogDistance;
             }
 
-            if (ORTS.MultiPlayer.MPManager.IsClient() && ORTS.MultiPlayer.MPManager.Instance().weatherChanged)
+            if (Orts.MultiPlayer.MPManager.IsClient() && Orts.MultiPlayer.MPManager.Instance().weatherChanged)
             {
                 //received message about weather change
-                if (ORTS.MultiPlayer.MPManager.Instance().overcastFactor >= 0)
+                if (Orts.MultiPlayer.MPManager.Instance().overcastFactor >= 0)
                 {
-                    mstsskyovercastFactor = ORTS.MultiPlayer.MPManager.Instance().overcastFactor;
+                    mstsskyovercastFactor = Orts.MultiPlayer.MPManager.Instance().overcastFactor;
                 }
                 //received message about weather change
-                if (ORTS.MultiPlayer.MPManager.Instance().fogDistance > 0)
+                if (Orts.MultiPlayer.MPManager.Instance().fogDistance > 0)
                 {
-                    mstsskyfogDistance = ORTS.MultiPlayer.MPManager.Instance().fogDistance;
+                    mstsskyfogDistance = Orts.MultiPlayer.MPManager.Instance().fogDistance;
                 }
                 try
                 {
-                    if (ORTS.MultiPlayer.MPManager.Instance().overcastFactor >= 0 || ORTS.MultiPlayer.MPManager.Instance().fogDistance > 0)
+                    if (Orts.MultiPlayer.MPManager.Instance().overcastFactor >= 0 || Orts.MultiPlayer.MPManager.Instance().fogDistance > 0)
                     {
-                        ORTS.MultiPlayer.MPManager.Instance().weatherChanged = false;
-                        ORTS.MultiPlayer.MPManager.Instance().overcastFactor = -1;
-                        ORTS.MultiPlayer.MPManager.Instance().fogDistance = -1;
+                        Orts.MultiPlayer.MPManager.Instance().weatherChanged = false;
+                        Orts.MultiPlayer.MPManager.Instance().overcastFactor = -1;
+                        Orts.MultiPlayer.MPManager.Instance().fogDistance = -1;
                     }
                 }
                 catch { }
@@ -188,7 +188,7 @@ namespace Orts.Viewer3D
             // Control- and Control+ for overcast, Shift- and Shift+ for fog and - and + for time.
 
             // Don't let multiplayer clients adjust the weather.
-            if (!ORTS.MultiPlayer.MPManager.IsClient())
+            if (!Orts.MultiPlayer.MPManager.IsClient())
             {
                 // Overcast ranges from 0 (completely clear) to 1 (completely overcast).
                 if (UserInput.IsDown(UserCommands.DebugOvercastIncrease)) mstsskyovercastFactor = MathHelper.Clamp(mstsskyovercastFactor + elapsedTime.RealSeconds / 10, 0, 1);
@@ -198,19 +198,19 @@ namespace Orts.Viewer3D
                 if (UserInput.IsDown(UserCommands.DebugFogDecrease)) mstsskyfogDistance = MathHelper.Clamp(mstsskyfogDistance + elapsedTime.RealSeconds * mstsskyfogDistance, 10, 100000);
             }
             // Don't let clock shift if multiplayer.
-            if (!ORTS.MultiPlayer.MPManager.IsMultiPlayer())
+            if (!Orts.MultiPlayer.MPManager.IsMultiPlayer())
             {
                 // Shift the clock forwards or backwards at 1h-per-second.
                 if (UserInput.IsDown(UserCommands.DebugClockForwards)) MSTSSkyViewer.Simulator.ClockTime += elapsedTime.RealSeconds * 3600;
                 if (UserInput.IsDown(UserCommands.DebugClockBackwards)) MSTSSkyViewer.Simulator.ClockTime -= elapsedTime.RealSeconds * 3600;
             }
             // Server needs to notify clients of weather changes.
-            if (ORTS.MultiPlayer.MPManager.IsServer())
+            if (Orts.MultiPlayer.MPManager.IsServer())
             {
                 if (UserInput.IsReleased(UserCommands.DebugOvercastIncrease) || UserInput.IsReleased(UserCommands.DebugOvercastDecrease) || UserInput.IsReleased(UserCommands.DebugFogIncrease) || UserInput.IsReleased(UserCommands.DebugFogDecrease))
                 {
-                    ORTS.MultiPlayer.MPManager.Instance().SetEnvInfo(mstsskyovercastFactor, mstsskyfogDistance);
-                    ORTS.MultiPlayer.MPManager.Notify((new ORTS.MultiPlayer.MSGWeather(-1, mstsskyovercastFactor, -1, mstsskyfogDistance)).ToString());
+                    Orts.MultiPlayer.MPManager.Instance().SetEnvInfo(mstsskyovercastFactor, mstsskyfogDistance);
+                    Orts.MultiPlayer.MPManager.Notify((new Orts.MultiPlayer.MSGWeather(-1, mstsskyovercastFactor, -1, mstsskyfogDistance)).ToString());
                 }
             }
 

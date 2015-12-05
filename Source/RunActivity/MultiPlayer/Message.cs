@@ -29,8 +29,9 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using Event = Orts.Common.Event;
 
-namespace ORTS.MultiPlayer
+namespace Orts.MultiPlayer
 {
     public class Message
 	{

@@ -38,7 +38,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 
-namespace ORTS.MultiPlayer
+namespace Orts.MultiPlayer
 {
     //a singleton class handles communication, update and stop etc.
     class MPManager

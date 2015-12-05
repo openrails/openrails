@@ -21,7 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Event = ORTS.Event;
+using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 {

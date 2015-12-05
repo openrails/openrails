@@ -26,7 +26,7 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace ORTS.Debugging
+namespace Orts.Debugging
 {
     public partial class SoundDebugForm : Form
     {

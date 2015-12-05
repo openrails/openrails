@@ -19,7 +19,7 @@ using System.Diagnostics;
 using System.IO;
 
 
-namespace ORTS
+namespace Orts.Common
 {
     static class ORTSPaths
     {

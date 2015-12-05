@@ -38,7 +38,6 @@ using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using Orts.Viewer3D;
-using ORTS;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using System;
@@ -46,7 +45,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Event = ORTS.Event;
+using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.RollingStocks
 {
@@ -1183,7 +1182,7 @@ namespace Orts.Simulation.RollingStocks
         }
 
         // sound sources and viewers can register themselves to get direct notification of an event
-        public List<ORTS.EventHandler> EventHandlers = new List<ORTS.EventHandler>();
+        public List<Orts.Common.EventHandler> EventHandlers = new List<Orts.Common.EventHandler>();
 
         public MSTSCoupling Coupler
         {

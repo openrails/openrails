@@ -37,7 +37,7 @@ namespace Orts.Viewer3D.Popups
         public bool InitMessage()
         {
             this.Visible = true; UserInput.ComposingMessage = true;
-            if (ORTS.MultiPlayer.MPManager.Instance().lastSender != "") Message.Text = ORTS.MultiPlayer.MPManager.Instance().lastSender + ":";
+            if (Orts.MultiPlayer.MPManager.Instance().lastSender != "") Message.Text = Orts.MultiPlayer.MPManager.Instance().lastSender + ":";
             return true;
         }
         public void AppendMessage(Keys[] newKeys, Keys[] oldKeys)
@@ -96,12 +96,12 @@ namespace Orts.Viewer3D.Popups
                 try
                 {
                     var user = "";
-                    if (ORTS.MultiPlayer.MPManager.Instance().lastSender == "")
+                    if (Orts.MultiPlayer.MPManager.Instance().lastSender == "")
                     {
                         //server will broadcast the message to everyone
-                        if (ORTS.MultiPlayer.MPManager.IsServer())
+                        if (Orts.MultiPlayer.MPManager.IsServer())
                         {
-                            foreach (var p in ORTS.MultiPlayer.MPManager.OnlineTrains.Players)
+                            foreach (var p in Orts.MultiPlayer.MPManager.OnlineTrains.Players)
                             {
                                 user += p.Key + "\r";
                             }
@@ -120,7 +120,7 @@ namespace Orts.Viewer3D.Popups
                         var first = true;
                         foreach (var n in names)
                         {
-                            if (ORTS.MultiPlayer.MPManager.OnlineTrains.Players.ContainsKey(n.Trim()))
+                            if (Orts.MultiPlayer.MPManager.OnlineTrains.Players.ContainsKey(n.Trim()))
                             {
                                 if (first) { user = ""; first = false; }
                                 user += n.Trim() + "\r";
@@ -128,7 +128,7 @@ namespace Orts.Viewer3D.Popups
                         }
                         user += "0END";
                     }
-                    ORTS.MultiPlayer.MPManager.Notify((new ORTS.MultiPlayer.MSGText(ORTS.MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
+                    Orts.MultiPlayer.MPManager.Notify((new Orts.MultiPlayer.MSGText(Orts.MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
                     this.Visible = false;
                     UserInput.ComposingMessage = false; Message.Text = "";
                 }

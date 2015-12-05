@@ -17,6 +17,7 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using Orts.Common;
 using ORTS.Common;
 using ORTS.Settings;
 using System;
@@ -27,7 +28,7 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 
-namespace ORTS.Processes
+namespace Orts.Processes
 {
     /// <summary>
     /// Provides the foundation for running the game.

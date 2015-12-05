@@ -36,7 +36,6 @@ using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.Signalling;
 using Orts.Simulation.Timetables;
-using ORTS;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using System;
@@ -45,7 +44,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Camera = Orts.Viewer3D.Camera;
-using Event = ORTS.Event;
+using Event = Orts.Common.Event;
 using OpenAL = Orts.Viewer3D.OpenAL;
 
 namespace Orts.Simulation.RollingStocks

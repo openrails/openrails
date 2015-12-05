@@ -39,18 +39,20 @@
 
 //#define DEBUGSCR
 
+using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.Simulation;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
-using ORTS;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Event = Orts.Common.Event;
+using Events = Orts.Common.Events;
 
 namespace Orts.Viewer3D
 {
@@ -339,7 +341,7 @@ namespace Orts.Viewer3D
         public SoundSource(Viewer viewer, MSTSWagon car, string smsFilePath)
         {
             Car = car;
-            Initialize(viewer, car.WorldPosition.WorldLocation, ORTS.Events.Source.MSTSCar, smsFilePath);
+            Initialize(viewer, car.WorldPosition.WorldLocation, Events.Source.MSTSCar, smsFilePath);
         }
 
         /// <summary>
@@ -348,7 +350,7 @@ namespace Orts.Viewer3D
         /// <param name="viewer"></param>
         /// <param name="eventSource"></param>
         /// <param name="smsFilePath"></param>
-        public SoundSource(Viewer viewer, ORTS.Events.Source eventSource, string smsFilePath, bool isUnattenuated)
+        public SoundSource(Viewer viewer, Events.Source eventSource, string smsFilePath, bool isUnattenuated)
         {
             IsUnattenuated = isUnattenuated;
             Initialize(viewer, WorldLocation.None, eventSource, smsFilePath);
@@ -361,7 +363,7 @@ namespace Orts.Viewer3D
         /// <param name="worldLocation"></param>
         /// <param name="eventSource"></param>
         /// <param name="smsFilePath"></param>
-        public SoundSource(Viewer viewer, WorldLocation worldLocation, ORTS.Events.Source eventSource, string smsFilePath)
+        public SoundSource(Viewer viewer, WorldLocation worldLocation, Events.Source eventSource, string smsFilePath)
         {
             IsEnvSound = true;
             Initialize(viewer, worldLocation, eventSource, smsFilePath);
@@ -375,7 +377,7 @@ namespace Orts.Viewer3D
         /// <param name="eventSource"></param>
         /// <param name="smsFilePath"></param>
         /// <param name="slowRolloff"></param>
-        public SoundSource(Viewer viewer, WorldLocation worldLocation, ORTS.Events.Source eventSource, string smsFilePath, bool slowRolloff)
+        public SoundSource(Viewer viewer, WorldLocation worldLocation, Events.Source eventSource, string smsFilePath, bool slowRolloff)
         {
             IsEnvSound = true;
             SlowRolloff = slowRolloff;
@@ -391,7 +393,7 @@ namespace Orts.Viewer3D
         public SoundSource(Viewer viewer, MSTSWagon car, string wavFilePath, int ORTSActSoundFileType,  bool preCompiled)
         {
             Car = car;
-            Initialize(viewer, car.WorldPosition.WorldLocation, ORTS.Events.Source.MSTSCar, wavFilePath, ORTSActSoundFileType, preCompiled);
+            Initialize(viewer, car.WorldPosition.WorldLocation, Events.Source.MSTSCar, wavFilePath, ORTSActSoundFileType, preCompiled);
         }
 
         /// <summary>
@@ -400,7 +402,7 @@ namespace Orts.Viewer3D
         /// <param name="viewer"></param>
         /// <param name="eventSource"></param>
         /// <param name="smsFilePath"></param>
-        public SoundSource(Viewer viewer, ORTS.Events.Source eventSource, string wavFilePath, int ORTSActSoundFileType, bool isUnattenuated, bool preCompiled)
+        public SoundSource(Viewer viewer, Events.Source eventSource, string wavFilePath, int ORTSActSoundFileType, bool isUnattenuated, bool preCompiled)
         {
             IsUnattenuated = isUnattenuated;
             Initialize(viewer, WorldLocation.None, eventSource, wavFilePath, ORTSActSoundFileType, preCompiled);
@@ -414,7 +416,7 @@ namespace Orts.Viewer3D
         /// <param name="eventSource"></param>
         /// <param name="smsFilePath"></param>
         /// <param name="slowRolloff"></param>
-        public SoundSource(Viewer viewer, WorldLocation worldLocation, ORTS.Events.Source eventSource, string wavFilePath, bool slowRolloff, int ORTSActSoundFileType, bool preCompiled)
+        public SoundSource(Viewer viewer, WorldLocation worldLocation, Events.Source eventSource, string wavFilePath, bool slowRolloff, int ORTSActSoundFileType, bool preCompiled)
         {
             IsEnvSound = true;
             SlowRolloff = slowRolloff;
@@ -479,7 +481,7 @@ namespace Orts.Viewer3D
         /// <param name="worldLocation">World location of <see cref="SoundSource"/></param>
         /// <param name="eventSource">Type of game part sms belongs to, to determine how to interpret discrete trigger numbers</param>
         /// <param name="smsFilePath">Full path for sms file</param>
-        public void Initialize(Viewer viewer, WorldLocation worldLocation, ORTS.Events.Source eventSource, string smsFilePath)
+        public void Initialize(Viewer viewer, WorldLocation worldLocation, Events.Source eventSource, string smsFilePath)
         {
             Viewer = viewer;
             WorldLocation = worldLocation;
@@ -531,7 +533,7 @@ namespace Orts.Viewer3D
         /// <param name="worldLocation">World location of <see cref="SoundSource"/></param>
         /// <param name="eventSource">Type of game part sound source belongs to, to determine how to interpret discrete trigger numbers</param>
         /// <param name="smsFilePath">Full path for sms file</param>
-        public void Initialize(Viewer viewer, WorldLocation worldLocation, ORTS.Events.Source eventSource, string wavFilePath, int ORTSActSoundFileType, bool preCompiled)
+        public void Initialize(Viewer viewer, WorldLocation worldLocation, Events.Source eventSource, string wavFilePath, int ORTSActSoundFileType, bool preCompiled)
         {
             Viewer = viewer;
             WorldLocation = worldLocation;
@@ -614,7 +616,7 @@ namespace Orts.Viewer3D
         /// Check if an event needs action from one of discrete triggers
         /// </summary>
         /// <param name="eventID">Occured event</param>
-        public void HandleEvent(ORTS.Event eventID)
+        public void HandleEvent(Event eventID)
         {
             foreach (var ss in SoundStreams)
             {
@@ -959,7 +961,7 @@ namespace Orts.Viewer3D
         /// </summary>
         IEnumerable<ORTSTrigger> TriggersList;
 
-        public SoundStream(Orts.Formats.Msts.SMSStream mstsStream, ORTS.Events.Source eventSource, SoundSource soundSource)
+        public SoundStream(Orts.Formats.Msts.SMSStream mstsStream, Events.Source eventSource, SoundSource soundSource)
         {
             SoundSource = soundSource;
             MSTSStream = mstsStream;
@@ -1010,7 +1012,7 @@ namespace Orts.Viewer3D
                                 select t).ToList();
         }
 
-        public SoundStream(string wavFileName, ORTS.Events.Source eventSource, SoundSource soundSource)
+        public SoundStream(string wavFileName, Events.Source eventSource, SoundSource soundSource)
         {
             SoundSource = soundSource;
             Volume = 1.0f;
@@ -1300,12 +1302,12 @@ namespace Orts.Viewer3D
     /// <summary>
     /// Play this sound when a discrete TrainCar event occurs in the simulator
     /// </summary>
-    public class ORTSDiscreteTrigger: ORTSTrigger, ORTS.EventHandler
+    public class ORTSDiscreteTrigger: ORTSTrigger, Common.EventHandler
     {
         /// <summary>
         /// Event this trigger listens to
         /// </summary>
-        public ORTS.Event TriggerID;
+        public Event TriggerID;
         /// <summary>
         /// Store the owning SoundStream
         /// </summary>
@@ -1315,9 +1317,9 @@ namespace Orts.Viewer3D
         /// </summary>
         private bool Triggered;
 
-        public ORTSDiscreteTrigger(SoundStream soundStream, ORTS.Events.Source eventSound, Orts.Formats.Msts.Discrete_Trigger smsData)
+        public ORTSDiscreteTrigger(SoundStream soundStream, Events.Source eventSound, Orts.Formats.Msts.Discrete_Trigger smsData)
         {
-            TriggerID = ORTS.Events.From(eventSound, smsData.TriggerID);
+            TriggerID = Events.From(eventSound, smsData.TriggerID);
             SoundCommand = ORTSSoundCommand.FromMSTS(smsData.SoundCommand, soundStream);
             SoundStream = soundStream;
         }
@@ -1326,7 +1328,7 @@ namespace Orts.Viewer3D
         /// Check if this trigger listens to an event
         /// </summary>
         /// <param name="eventID">Occured event</param>
-        public void HandleEvent(ORTS.Event eventID)
+        public void HandleEvent(Event eventID)
         {
             if (eventID == TriggerID)
             {
@@ -1339,7 +1341,7 @@ namespace Orts.Viewer3D
         /// </summary>
         /// <param name="eventID">Occured event</param>
         /// <param name="viewer">Object the event belongs to</param>
-        public void HandleEvent(ORTS.Event eventID, object viewer)
+        public void HandleEvent(Event eventID, object viewer)
         {
             if (eventID == TriggerID)
             {
@@ -2209,7 +2211,7 @@ namespace Orts.Viewer3D
                     var fullPath = ORTSPaths.GetFileFromFolders(pathArray, @"Sound\" + fss.SoundSourceFileName);
                     if (fullPath != null)
                     {
-                        ss = new SoundSource(Viewer, wl, ORTS.Events.Source.None, fullPath, true);
+                        ss = new SoundSource(Viewer, wl, Events.Source.None, fullPath, true);
                         if (ss != null)
                             ls.Add(ss);
                     }
@@ -2388,7 +2390,7 @@ namespace Orts.Viewer3D
                     switch (ORTSActSoundFileType)
                     {
                         case 0:
-                            ActivitySounds = new SoundSource(MyViewer, ORTS.Events.Source.MSTSInGame, ORTSActSoundFile, true);
+                            ActivitySounds = new SoundSource(MyViewer, Events.Source.MSTSInGame, ORTSActSoundFile, true);
                             MyViewer.SoundProcess.AddSoundSources(localEventID, new List<SoundSourceBase>() { ActivitySounds });
                             break;
                         case 1:
@@ -2407,7 +2409,7 @@ namespace Orts.Viewer3D
                         case 3:
                             var worldLocation = MyViewer.Simulator.PlayerLocomotive.WorldPosition.WorldLocation;
                             worldLocation.Location.Y = worldLocation.Location.Y + 3; // Sound does not come from earth!
-                            ActivitySounds = new SoundSource(MyViewer, worldLocation, ORTS.Events.Source.None, ORTSActSoundFile, true);
+                            ActivitySounds = new SoundSource(MyViewer, worldLocation, Events.Source.None, ORTSActSoundFile, true);
                             MyViewer.SoundProcess.AddSoundSources(localEventID, new List<SoundSourceBase>() { ActivitySounds });
                             break;
                         default:
@@ -2418,7 +2420,7 @@ namespace Orts.Viewer3D
                     switch (ORTSActSoundFileType)
                     {
                         case 0:
-                            ActivitySounds = new SoundSource(MyViewer, ORTS.Events.Source.MSTSInGame, ORTSActSoundFile, ORTSActSoundFileType, true, true);
+                            ActivitySounds = new SoundSource(MyViewer, Events.Source.MSTSInGame, ORTSActSoundFile, ORTSActSoundFileType, true, true);
                             MyViewer.SoundProcess.AddSoundSources(localEventID, new List<SoundSourceBase>() { ActivitySounds });
                             break;
                         case 1:
@@ -2437,7 +2439,7 @@ namespace Orts.Viewer3D
                         case 3:
                             var worldLocation = MyViewer.Simulator.PlayerLocomotive.WorldPosition.WorldLocation;
                             worldLocation.Location.Y = worldLocation.Location.Y + 3; // Sound does not come from earth!
-                            ActivitySounds = new SoundSource(MyViewer, worldLocation, ORTS.Events.Source.None, ORTSActSoundFile, true, ORTSActSoundFileType, true);
+                            ActivitySounds = new SoundSource(MyViewer, worldLocation, Events.Source.None, ORTSActSoundFile, true, ORTSActSoundFileType, true);
                             MyViewer.SoundProcess.AddSoundSources(localEventID, new List<SoundSourceBase>() { ActivitySounds });
                             break;
                         default:

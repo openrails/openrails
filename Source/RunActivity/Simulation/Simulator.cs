@@ -33,24 +33,24 @@
 /// </summary>
 
 using Microsoft.Xna.Framework;
+using Orts.Common.Scripting;
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
+using Orts.MultiPlayer;
+using Orts.Processes;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.Signalling;
 using Orts.Simulation.Timetables;
-using ORTS;
 using ORTS.Common;
-using ORTS.MultiPlayer;
-using ORTS.Processes;
-using ORTS.Scripting;
 using ORTS.Settings;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using Event = Orts.Common.Event;
 
 namespace Orts.Simulation
 {
@@ -138,7 +138,7 @@ namespace Orts.Simulation
         // Confirmer should be part of the Viewer, rather than the Simulator, as it is part of the user interface.
         // Perhaps an Observer design pattern would be better, so the Simulator sends messages to any observers. </CJComment>
         public Confirmer Confirmer;                 // Set by the Viewer
-        public ORTS.Event SoundNotify = ORTS.Event.None;
+        public Event SoundNotify = Event.None;
         public ScriptManager ScriptManager;
 #if ACTIVITY_EDITOR
         public ORRouteConfig orRouteConfig;
@@ -722,7 +722,7 @@ namespace Orts.Simulation
                             }
                             // couple my rear to front of train
                             //drivenTrain.SetCoupleSpeed(train, 1);
-                            drivenTrain.LastCar.SignalEvent(ORTS.Event.Couple);
+                            drivenTrain.LastCar.SignalEvent(Event.Couple);
                             foreach (TrainCar car in train.Cars)
                             {
                                 drivenTrain.Cars.Add(car);
@@ -744,7 +744,7 @@ namespace Orts.Simulation
                             }
                             // couple my rear to rear of train
                             //drivenTrain.SetCoupleSpeed(train, -1);
-                            drivenTrain.LastCar.SignalEvent(ORTS.Event.Couple);
+                            drivenTrain.LastCar.SignalEvent(Event.Couple);
                             for (int i = train.Cars.Count - 1; i >= 0; --i)
                             {
                                 TrainCar car = train.Cars[i];
@@ -782,7 +782,7 @@ namespace Orts.Simulation
                             }
                             // couple my front to rear of train
                             //drivenTrain.SetCoupleSpeed(train, 1);
-                            drivenTrain.FirstCar.SignalEvent(ORTS.Event.Couple);
+                            drivenTrain.FirstCar.SignalEvent(Event.Couple);
                             TrainCar lead = drivenTrain.LeadLocomotive;
                             for (int i = 0; i < train.Cars.Count; ++i)
                             {
@@ -807,7 +807,7 @@ namespace Orts.Simulation
                             }
                             // couple my front to front of train
                             //drivenTrain.SetCoupleSpeed(train, -1);
-                            drivenTrain.FirstCar.SignalEvent(ORTS.Event.Couple);
+                            drivenTrain.FirstCar.SignalEvent(Event.Couple);
                             TrainCar lead = drivenTrain.LeadLocomotive;
                             for (int i = 0; i < train.Cars.Count; ++i)
                             {
@@ -1468,13 +1468,13 @@ namespace Orts.Simulation
             train.Update(0);   // stop the wheels from moving etc
             train2.Update(0);  // stop the wheels from moving etc
 
-            car.SignalEvent(ORTS.Event.Uncouple);
+            car.SignalEvent(Event.Uncouple);
             // TODO which event should we fire
             //car.CreateEvent(62);  these are listed as alternate events
             //car.CreateEvent(63);
             if (MPManager.IsMultiPlayer())
             {
-                MPManager.Notify((new ORTS.MultiPlayer.MSGUncouple(train, train2, ORTS.MultiPlayer.MPManager.GetUserName(), car.CarID, PlayerLocomotive)).ToString());
+                MPManager.Notify((new Orts.MultiPlayer.MSGUncouple(train, train2, Orts.MultiPlayer.MPManager.GetUserName(), car.CarID, PlayerLocomotive)).ToString());
             }
             if (Confirmer !=null && Confirmer.Viewer != null && Confirmer.Viewer.IsReplaying) Confirmer.Confirm(CabControl.Uncouple, train.LastCar.CarID);
             if (AI != null) AI.aiListChanged = true;
@@ -1606,7 +1606,7 @@ namespace Orts.Simulation
             newTrain.MovementState = AITrain.AI_MOVEMENT_STATE.AI_STATIC; // start of as AI static
             newTrain.StartTime = null; // time will be set later
 
-            detachCar.SignalEvent(ORTS.Event.Uncouple);
+            detachCar.SignalEvent(Event.Uncouple);
 
             newTrain.TrainType = Train.TRAINTYPE.AI;
             newTrain.AI.TrainsToAdd.Add(newTrain);
@@ -1861,7 +1861,7 @@ namespace Orts.Simulation
                 if (MPManager.IsMultiPlayer())
                 {
 
-                    MPManager.Notify((new ORTS.MultiPlayer.MSGPlayerTrainSw(MPManager.GetUserName(), PlayerLocomotive.Train, PlayerLocomotive.Train.Number, oldTrainReverseFormation, newTrainReverseFormation)).ToString());
+                    MPManager.Notify((new MSGPlayerTrainSw(MPManager.GetUserName(), PlayerLocomotive.Train, PlayerLocomotive.Train.Number, oldTrainReverseFormation, newTrainReverseFormation)).ToString());
                 }
 
             }

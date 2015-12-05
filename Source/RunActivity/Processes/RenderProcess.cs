@@ -25,7 +25,7 @@ using System;
 using System.Diagnostics;
 using System.Windows.Forms;
 
-namespace ORTS.Processes
+namespace Orts.Processes
 {
     [CallOnThread("Render")]
     public class RenderProcess

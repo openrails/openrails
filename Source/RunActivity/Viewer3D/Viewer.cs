@@ -21,17 +21,17 @@ using GNU.Gettext;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Orts.Common;
 using Orts.Formats.Msts;
+using Orts.MultiPlayer;
+using Orts.Processes;
 using Orts.Simulation;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Viewer3D.Popups;
 using Orts.Viewer3D.RollingStock;
-using ORTS;
 using ORTS.Common;
-using ORTS.MultiPlayer;
-using ORTS.Processes;
 using ORTS.Settings;
 using System;
 using System.Collections.Generic;
@@ -40,6 +40,7 @@ using System.IO;
 using System.Linq;
 using System.Management;
 using System.Threading;
+using Event = Orts.Common.Event;
 
 namespace Orts.Viewer3D
 {
@@ -60,7 +61,7 @@ namespace Orts.Viewer3D
         public SharedShapeManager ShapeManager { get; private set; }
         public Point DisplaySize { get { return RenderProcess.DisplaySize; } }
         // Components
-        public ORTS.Processes.Game Game { get; private set; }
+        public Orts.Processes.Game Game { get; private set; }
         public Simulator Simulator { get; private set; }
         public World World { get; private set; }
         /// <summary>
@@ -221,7 +222,7 @@ namespace Orts.Viewer3D
         /// <param name="simulator">The <see cref="Simulator"/> with which the viewer runs.</param>
         /// <param name="game">The <see cref="Game"/> with which the viewer runs.</param>
         [CallOnThread("Loader")]
-        public Viewer(Simulator simulator, ORTS.Processes.Game game)
+        public Viewer(Simulator simulator, Orts.Processes.Game game)
         {
             Simulator = simulator;
             Game = game;
@@ -1234,7 +1235,7 @@ namespace Orts.Viewer3D
                 // Hide MessageWindow
                 MessagesWindow.Visible = false;
                 // Audible confirmation that screenshot taken
-                if (World.GameSounds != null) World.GameSounds.HandleEvent(ORTS.Event.ControlError);
+                if (World.GameSounds != null) World.GameSounds.HandleEvent(Event.ControlError);
             }
 
             // Use IsDown() not IsPressed() so users can take multiple screenshots as fast as possible by holding down the key.

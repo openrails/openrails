@@ -18,7 +18,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ORTS.MultiPlayer
+namespace Orts.MultiPlayer
 {
     public class Server
 	{

@@ -27,7 +27,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 
-namespace ORTS.Scripting
+namespace Orts.Common.Scripting
 {
     [CallOnThread("Loader")]
     public class ScriptManager

@@ -19,13 +19,13 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.Simulation;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Viewer3D.Popups;
-using ORTS;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using ORTS.Settings;
@@ -34,6 +34,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Event = Orts.Common.Event;
 
 namespace Orts.Viewer3D.RollingStock
 {
@@ -178,8 +179,8 @@ namespace Orts.Viewer3D.RollingStock
                 Locomotive.ShowCab = !Locomotive.ShowCab;
 
             // By Matej Pacha
-            if (UserInput.IsPressed(UserCommands.DebugResetWheelSlip)) { Locomotive.Train.SignalEvent(ORTS.Event._ResetWheelSlip); }
-            if (UserInput.IsPressed(UserCommands.DebugToggleAdvancedAdhesion)) { Locomotive.Train.SignalEvent(ORTS.Event._ResetWheelSlip); Locomotive.Simulator.UseAdvancedAdhesion = !Locomotive.Simulator.UseAdvancedAdhesion; }
+            if (UserInput.IsPressed(UserCommands.DebugResetWheelSlip)) { Locomotive.Train.SignalEvent(Event._ResetWheelSlip); }
+            if (UserInput.IsPressed(UserCommands.DebugToggleAdvancedAdhesion)) { Locomotive.Train.SignalEvent(Event._ResetWheelSlip); Locomotive.Simulator.UseAdvancedAdhesion = !Locomotive.Simulator.UseAdvancedAdhesion; }
 
             if (UserInput.RDState != null)
             {
@@ -207,9 +208,9 @@ namespace Orts.Viewer3D.RollingStock
                     else
                         Locomotive.SetEmergency(false);
                     if (UserInput.RDState.Wipers == 1 && Locomotive.Wiper)
-                        Locomotive.SignalEvent(ORTS.Event.WiperOff);
+                        Locomotive.SignalEvent(Event.WiperOff);
                     if (UserInput.RDState.Wipers != 1 && !Locomotive.Wiper)
-                        Locomotive.SignalEvent(ORTS.Event.WiperOn);
+                        Locomotive.SignalEvent(Event.WiperOn);
                     // changing Headlight more than one step at a time doesn't work for some reason
                     if (Locomotive.Headlight < UserInput.RDState.Lights - 1)
                         Locomotive.Headlight++;

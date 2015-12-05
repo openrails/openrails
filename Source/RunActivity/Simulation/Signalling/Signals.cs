@@ -28,21 +28,20 @@
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
+using Orts.MultiPlayer;
 using Orts.Parsers.Msts;
+using Orts.Processes;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.Timetables;
-using ORTS;
 using ORTS.Common;
-using ORTS.MultiPlayer;
-using ORTS.Processes;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Event = ORTS.Event;
+using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.Signalling
 {

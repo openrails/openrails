@@ -43,6 +43,7 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using Orts.Simulation.Physics;
@@ -52,7 +53,6 @@ using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
 using Orts.Viewer3D;
-using ORTS;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using System;
@@ -60,7 +60,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Event = ORTS.Event;
+using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.RollingStocks
 {

@@ -28,17 +28,17 @@
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
 using Orts.Parsers.OR;
+using Orts.Processes;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Signalling;
-using ORTS.Processes;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Event = ORTS.Event;
+using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.Timetables
 {

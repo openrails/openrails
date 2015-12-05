@@ -18,10 +18,10 @@
 // Define this to log the wheel configurations on cars as they are loaded.
 //#define DEBUG_WHEELS
 
+using Orts.Common;
 using Orts.Parsers.Msts;
 using Orts.Simulation.Physics;
 using Orts.Viewer3D;
-using ORTS;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using System;

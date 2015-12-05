@@ -16,17 +16,18 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using GNU.Gettext;
+using Orts.Common;
+using Orts.Debugging;
+using Orts.MultiPlayer;
+using Orts.Processes;
 using Orts.Simulation;
 using Orts.Viewer3D;
 using ORTS.Common;
-using ORTS.Debugging;
-using ORTS.MultiPlayer;
-using ORTS.Processes;
 using ORTS.Settings;
 using System;
 using System.Linq;
 
-namespace ORTS
+namespace Orts
 {
     static class Program
     {

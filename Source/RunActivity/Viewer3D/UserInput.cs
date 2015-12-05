@@ -35,7 +35,7 @@ using ORTS.Settings;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Windows;
-using Game = ORTS.Processes.Game;
+using Game = Orts.Processes.Game;
 
 namespace Orts.Viewer3D
 {
@@ -57,7 +57,7 @@ namespace Orts.Viewer3D
 
         public static void Update(Game game)
         {
-            if (ORTS.MultiPlayer.MPManager.IsMultiPlayer() && ORTS.MultiPlayer.MPManager.Instance().ComposingText) return;
+            if (Orts.MultiPlayer.MPManager.IsMultiPlayer() && Orts.MultiPlayer.MPManager.Instance().ComposingText) return;
             if (InputSettings == null) InputSettings = game.Settings.Input;
             LastKeyboardState = KeyboardState;
             LastMouseState = MouseState;

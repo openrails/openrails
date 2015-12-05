@@ -19,13 +19,13 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using ORTS;
+using Orts.Common;
 using ORTS.Common;
 using System;
 
 namespace Orts.Viewer3D.Popups
 {
-	public class CompassWindow : Window
+    public class CompassWindow : Window
 	{
 		PopupCompass Compass;
 		Label Latitude;

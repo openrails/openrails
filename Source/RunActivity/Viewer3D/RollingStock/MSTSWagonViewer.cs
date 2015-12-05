@@ -20,7 +20,6 @@
 using Microsoft.Xna.Framework;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems;
-using ORTS;
 using ORTS.Common;
 using ORTS.Settings;
 using System;

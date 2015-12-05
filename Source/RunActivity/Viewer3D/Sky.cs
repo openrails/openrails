@@ -19,9 +19,9 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using ORTS;
+using Orts.Common;
+using Orts.Processes;
 using ORTS.Common;
-using ORTS.Processes;
 using System;
 using System.Collections.Generic;
 

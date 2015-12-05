@@ -20,7 +20,7 @@
 using Orts.Viewer3D;
 using ORTS.Common;
 
-namespace ORTS.Processes
+namespace Orts.Processes
 {
     /// <summary>
     /// Represents a single state for the game to be in (e.g. loading, running, in menu).

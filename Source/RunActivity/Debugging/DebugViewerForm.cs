@@ -42,7 +42,7 @@ using System.Windows.Forms;
 using Control = System.Windows.Forms.Control;
 using Image = System.Drawing.Image;
 
-namespace ORTS.Debugging
+namespace Orts.Debugging
 {
 
 

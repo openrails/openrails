@@ -49,6 +49,7 @@ using GNU.Gettext;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
+using Orts.MultiPlayer;
 using Orts.Simulation.AIs;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
@@ -56,9 +57,7 @@ using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.Signalling;
 using Orts.Simulation.Timetables;
 using Orts.Viewer3D;
-using ORTS;
 using ORTS.Common;
-using ORTS.MultiPlayer;
 using ORTS.Scripting.Api;
 using ORTS.Settings;
 using System;
@@ -67,7 +66,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Event = ORTS.Event;
+using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.Physics
 {
@@ -1298,7 +1297,7 @@ namespace Orts.Simulation.Physics
         /// ie doors open, pantograph up, lights on etc.
         /// </summary>
 
-        public void SignalEvent(ORTS.Event evt)
+        public void SignalEvent(Event evt)
         {
             foreach (TrainCar car in Cars)
                 car.SignalEvent(evt);

@@ -20,10 +20,11 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Orts.Common;
+using Orts.MultiPlayer;
 using Orts.Simulation;
 using Orts.Viewer3D;
 using ORTS.Common;
-using ORTS.MultiPlayer;
 using ORTS.Settings;
 using System;
 using System.Collections.Generic;
@@ -36,7 +37,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
-namespace ORTS.Processes
+namespace Orts.Processes
 {
     public class GameStateRunActivity : GameState
     {

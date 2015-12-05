@@ -24,7 +24,6 @@
  */
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
-using ORTS;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;

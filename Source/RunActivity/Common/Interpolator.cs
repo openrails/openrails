@@ -20,7 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace ORTS
+namespace Orts.Common
 {
     /// <summary>
     /// Interpolated table lookup

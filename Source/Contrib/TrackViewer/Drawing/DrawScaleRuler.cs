@@ -23,6 +23,7 @@ using Microsoft.Xna.Framework.Graphics;
 using ORTS.TrackViewer.Properties;
 using ORTS;
 using ORTS.Common;
+using Orts.Common;
 
 namespace ORTS.TrackViewer.Drawing
 {
@@ -175,7 +176,7 @@ namespace ORTS.TrackViewer.Drawing
     /// </summary>
     public class DrawLongitudeLatitude
     {
-        ORTS.WorldLatLon worldLoc;
+        WorldLatLon worldLoc;
         Vector2 lowerLeft;
 
         /// <summary>

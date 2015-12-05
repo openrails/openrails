@@ -19,8 +19,8 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Orts.Common;
 using Orts.Viewer3D.Popups;
-using ORTS;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
