@@ -383,7 +383,7 @@ namespace Orts.Viewer3D.RollingStock
                                     pickup.Location = new WorldLocation(
                                         worldFile.TileX, worldFile.TileZ,
                                         pickup.Position.X, pickup.Position.Y, pickup.Position.Z);
-                                if ((wagon.ORTSFreightAnimData != null && ((uint)wagon.ORTSFreightAnimData.FreightType == pickup.PickupType || wagon.ORTSFreightAnimData.FreightType == MSTSWagon.PickupType.None) && 
+                                if ((wagon.FreightAnimations != null && ((uint)wagon.FreightAnimations.FreightType == pickup.PickupType || wagon.FreightAnimations.FreightType == MSTSWagon.PickupType.None) && 
                                     (uint)intake.Type == pickup.PickupType)
                                  ||((uint)intake.Type == pickup.PickupType && (uint)intake.Type > (uint)MSTSWagon.PickupType.FreightSand && (wagon.IsTender || wagon is MSTSLocomotive)))
                                 {

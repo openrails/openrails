@@ -21,6 +21,7 @@ using Microsoft.Xna.Framework;
 using Orts.Common;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems;
+using Orts.Viewer3D.RollingStock.SubSystems;
 using ORTS.Common;
 using ORTS.Settings;
 using System;
@@ -61,6 +62,8 @@ namespace Orts.Viewer3D.RollingStock
         bool HasFirstPanto;
         int numBogie1, numBogie2, numBogie, bogie1Axles, bogie2Axles = 0;
         int bogieMatrix1, bogieMatrix2 = 0;
+        FreightAnimationsViewer FreightAnimations;
+
         public MSTSWagonViewer(Viewer viewer, MSTSWagon car)
             : base(viewer, car)
         {
@@ -94,11 +97,8 @@ namespace Orts.Viewer3D.RollingStock
             Wipers = new AnimatedPart(TrainCarShape);
             UnloadingParts = new AnimatedPart(TrainCarShape);
 
-            if (car.ORTSFreightAnimData != null)
-            {
-                car.ORTSFreightAnimData.CreateShapes(viewer, wagonFolderSlash, car);
-            }
-
+            if (car.FreightAnimations != null)
+                FreightAnimations = new FreightAnimationsViewer(viewer, car, wagonFolderSlash);
 
             LoadCarSounds(wagonFolderSlash);
             //if (!(MSTSWagon is MSTSLocomotive))
@@ -430,10 +430,11 @@ namespace Orts.Viewer3D.RollingStock
                 FreightShape.PrepareFrame(frame, elapsedTime);
             }
 
-            if (MSTSWagon.ORTSFreightAnimData != null)
-                foreach (var freightAnim in MSTSWagon.ORTSFreightAnimData.ORTSFreightAnims)
+            if (FreightAnimations != null)
+            {
+                foreach (var freightAnim in FreightAnimations.Animations)
                 {
-                    if (freightAnim.FreightShape != null && !((freightAnim is FreightAnimContinuous) && (freightAnim as FreightAnimContinuous).LoadPerCent == 0))
+                    if (freightAnim.FreightShape != null && !((freightAnim.Animation is FreightAnimationContinuous) && (freightAnim.Animation as FreightAnimationContinuous).LoadPerCent == 0))
                     {
                         if (Viewer.Camera == Viewer.CabCamera && Car == Viewer.CabCamera.AttachedCar)
                         {
@@ -443,16 +444,16 @@ namespace Orts.Viewer3D.RollingStock
                         freightAnim.FreightShape.Location.TileX = Car.WorldPosition.TileX; freightAnim.FreightShape.Location.TileZ = Car.WorldPosition.TileZ;
                         if (freightAnim.FreightShape.XNAMatrices.Length > 0)
                         {
-                            if (freightAnim is FreightAnimContinuous)
+                            if (freightAnim.Animation is FreightAnimationContinuous)
                             {
-                                var continuousFreightAnim = freightAnim as FreightAnimContinuous;
-                                if (MSTSWagon.ORTSFreightAnimData.IsGondola) freightAnim.FreightShape.XNAMatrices[0] = TrainCarShape.XNAMatrices[1];
+                                var continuousFreightAnim = freightAnim.Animation as FreightAnimationContinuous;
+                                if (MSTSWagon.FreightAnimations.IsGondola) freightAnim.FreightShape.XNAMatrices[0] = TrainCarShape.XNAMatrices[1];
                                 freightAnim.FreightShape.XNAMatrices[0].M42 = continuousFreightAnim.MinHeight +
                                    continuousFreightAnim.LoadPerCent / 100 * (continuousFreightAnim.MaxHeight - continuousFreightAnim.MinHeight);
                             }
-                            if (freightAnim is FreightAnimStatic)
+                            if (freightAnim.Animation is FreightAnimationStatic)
                             {
-                                var staticFreightAnim = freightAnim as FreightAnimStatic;
+                                var staticFreightAnim = freightAnim.Animation as FreightAnimationStatic;
                                 freightAnim.FreightShape.XNAMatrices[0].M41 = staticFreightAnim.XOffset;
                                 freightAnim.FreightShape.XNAMatrices[0].M42 = staticFreightAnim.YOffset;
                                 freightAnim.FreightShape.XNAMatrices[0].M43 = staticFreightAnim.ZOffset;
@@ -463,6 +464,7 @@ namespace Orts.Viewer3D.RollingStock
                         freightAnim.FreightShape.PrepareFrame(frame, elapsedTime);
                     }
                 }
+            }
 
 
 

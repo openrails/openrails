@@ -118,7 +118,7 @@ namespace Orts.Simulation.RollingStocks
         public string AuxWagonType;           // Store wagon type for use with auxilary tender calculations
 
         public LightCollection Lights;
-        public FreightAnimCollection ORTSFreightAnimData;
+        public FreightAnimations FreightAnimations;
         public int Headlight;
 
         // instance variables set by train physics when it creates the traincar

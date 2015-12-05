@@ -15,11 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Microsoft.Xna.Framework;
 using Orts.Parsers.Msts;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
-using Orts.Viewer3D;
-using ORTS.Common;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -28,27 +25,27 @@ using System.Linq;
 namespace Orts.Simulation.RollingStocks.SubSystems
 {
     /// <summary>
-    /// An ORTSFreightAnim object is created for any engine or wagon having an 
+    /// An FreightAnimations object is created for any engine or wagon having an 
     /// ORTSFreightAnims block in its ENG/WAG file. It contains a collection of
-    /// ORTSFreightAnim objects.
+    /// FreightAnimation objects.
     /// Called from within the MSTSWagon class.
     /// </summary>
-    public class FreightAnimCollection
+    public class FreightAnimations
     {
-        public List<ORTSFreightAnim> ORTSFreightAnims = new List<ORTSFreightAnim>();
+        public List<FreightAnimation> Animations = new List<FreightAnimation>();
         public float FreightWeight = 0;
         public float StaticFreightWeight = 0;
         public MSTSWagon.PickupType FreightType = MSTSWagon.PickupType.None;
         public bool MSTSFreightAnimEnabled = true;
         public float WagonEmptyWeight = -1;
-        public FreightAnimContinuous LoadedOne = null;
-        public FreightAnimDiscrete DiscreteLoadedOne = null;
+        public FreightAnimationContinuous LoadedOne = null;
+        public FreightAnimationDiscrete DiscreteLoadedOne = null;
         public float LoadingStartDelay = 0;
         public float UnloadingStartDelay = 0;
         public bool IsGondola = false;
  
 
-        public FreightAnimCollection(STFReader stf, MSTSWagon wagon)
+        public FreightAnimations(STFReader stf, MSTSWagon wagon)
         {
             stf.MustMatch("(");
             bool empty = true;
@@ -60,29 +57,29 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 new STFReader.TokenProcessor("isgondola", ()=>{ IsGondola = stf.ReadBoolBlock(false);}),
                 new STFReader.TokenProcessor("freightanimcontinuous", ()=>
                 {
-                    ORTSFreightAnims.Add(new FreightAnimContinuous(stf, wagon));
+                    Animations.Add(new FreightAnimationContinuous(stf, wagon));
                     if (wagon.WeightLoadController == null) wagon.WeightLoadController = new MSTSNotchController(0, 1, 0.01f);
-                    if ((ORTSFreightAnims.Last() as FreightAnimContinuous).FullAtStart)
+                    if ((Animations.Last() as FreightAnimationContinuous).FullAtStart)
                     {
                         if (empty)
                         {
                             empty = false;
                             FreightType = wagon.IntakePointList.Last().Type;
-                            LoadedOne = ORTSFreightAnims.Last() as FreightAnimContinuous;
+                            LoadedOne = Animations.Last() as FreightAnimationContinuous;
                             FreightWeight += LoadedOne.FreightWeightWhenFull;
                             LoadedOne.LoadPerCent = 100;
                         }
                         else
                         {
-                            (ORTSFreightAnims.Last() as FreightAnimContinuous).FullAtStart = false;
+                            (Animations.Last() as FreightAnimationContinuous).FullAtStart = false;
                             Trace.TraceWarning("The wagon can't be full with two different materials, only first is retained");
                         }
                     }
                  }),
                 new STFReader.TokenProcessor("freightanimstatic", ()=>
                 {
-                    ORTSFreightAnims.Add(new FreightAnimStatic(stf));
-                    StaticFreightWeight += (ORTSFreightAnims.Last() as FreightAnimStatic).FreightWeight;
+                    Animations.Add(new FreightAnimationStatic(stf));
+                    StaticFreightWeight += (Animations.Last() as FreightAnimationStatic).FreightWeight;
                 }),
 /*                new STFReader.TokenProcessor("freightanimdiscrete", ()=>
                 {
@@ -106,39 +103,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         }
 
         /// <summary>
-        /// Initializes the ORTSFreightAnims
-        /// Called from within the MSTSWagonViewer class.
-        /// </summary>
-        public void CreateShapes(Viewer viewer, string wagonFolderSlash, MSTSWagon wagon)
-        {
-            foreach (var freightAnim in ORTSFreightAnims)
-            {
-                if (freightAnim.ShapeFileName != null)
-                {
-                    freightAnim.FreightShape = new AnimatedShape(viewer, wagonFolderSlash + freightAnim.ShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(wagon.WorldPosition), ShapeFlags.ShadowCaster);
-                    var thisFreightShape = freightAnim.FreightShape;
-                    if (thisFreightShape.SharedShape.LodControls.Length > 0 && thisFreightShape.SharedShape.LodControls[0].DistanceLevels.Length > 0 && thisFreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects.Length > 0 && thisFreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives.Length > 0 
-                        && thisFreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy.Length > 0 )
-                        thisFreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy[0] = thisFreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy.Length;
-                    if (freightAnim.FreightShape.XNAMatrices.Length > 0 && freightAnim is FreightAnimStatic && (freightAnim as FreightAnimStatic).Flipped)
-                    {
-                        var flipper = Matrix.Identity;
-                        flipper.M11 = -1;
-                        flipper.M33 = -1;
-                        freightAnim.FreightShape.XNAMatrices[0] *= flipper;
-                    }
-                }
- 
-
-            }
-
-        }
-
-        /// <summary>
         /// Saves the general variable parameters
         /// Called from within the MSTSWagon class.
         /// </summary>
-
         public void Save(BinaryWriter outf)
         {
             outf.Write(FreightWeight);
@@ -150,50 +117,47 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         /// Restores the general variable parameters
         /// Called from within the MSTSWagon class.
         /// </summary>
-
         public void Restore(BinaryReader inf)
         {
             FreightWeight = inf.ReadSingle();
             var fType = inf.ReadInt32();
             FreightType = (MSTSWagon.PickupType)fType;
             LoadedOne = null;
-            foreach (var freightAnim in ORTSFreightAnims)
+            foreach (var freightAnim in Animations)
             {
-                if (freightAnim is FreightAnimContinuous)
+                if (freightAnim is FreightAnimationContinuous)
                 {
-                    if ((freightAnim as FreightAnimContinuous).LinkedIntakePoint.Type == FreightType)
+                    if ((freightAnim as FreightAnimationContinuous).LinkedIntakePoint.Type == FreightType)
                     {
-                        LoadedOne = freightAnim as FreightAnimContinuous;
+                        LoadedOne = freightAnim as FreightAnimationContinuous;
                         LoadedOne.LoadPerCent = FreightWeight/LoadedOne.FreightWeightWhenFull*100;
                     }
                     else
                     {
-                        (freightAnim as FreightAnimContinuous).LoadPerCent = 0;
+                        (freightAnim as FreightAnimationContinuous).LoadPerCent = 0;
                     }
                 }
             }
             StaticFreightWeight = inf.ReadSingle();
         }
 
-        public FreightAnimCollection(FreightAnimCollection copyFACollection, MSTSWagon wagon)
+        public FreightAnimations(FreightAnimations copyFACollection, MSTSWagon wagon)
         {
 
-            ORTSFreightAnims.Clear();
-
-            foreach (ORTSFreightAnim freightAnim in copyFACollection.ORTSFreightAnims)
+            foreach (FreightAnimation freightAnim in copyFACollection.Animations)
             {
-                if (freightAnim is FreightAnimContinuous)
+                if (freightAnim is FreightAnimationContinuous)
                 {
-                    ORTSFreightAnims.Add(new FreightAnimContinuous(freightAnim as FreightAnimContinuous, wagon));
-                    if ((ORTSFreightAnims.Last() as FreightAnimContinuous).FullAtStart) LoadedOne = ORTSFreightAnims.Last() as FreightAnimContinuous;
+                    Animations.Add(new FreightAnimationContinuous(freightAnim as FreightAnimationContinuous, wagon));
+                    if ((Animations.Last() as FreightAnimationContinuous).FullAtStart) LoadedOne = Animations.Last() as FreightAnimationContinuous;
                 }
-                else if (freightAnim is FreightAnimStatic)
+                else if (freightAnim is FreightAnimationStatic)
                 {
-                    ORTSFreightAnims.Add(new FreightAnimStatic(freightAnim as FreightAnimStatic));
+                    Animations.Add(new FreightAnimationStatic(freightAnim as FreightAnimationStatic));
                 }
-                else if (freightAnim is FreightAnimDiscrete)
+                else if (freightAnim is FreightAnimationDiscrete)
                 {
-                    ORTSFreightAnims.Add(new FreightAnimDiscrete(freightAnim as FreightAnimDiscrete));
+                    Animations.Add(new FreightAnimationDiscrete(freightAnim as FreightAnimationDiscrete));
                 }
             }
             FreightWeight = copyFACollection.FreightWeight;
@@ -206,16 +170,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             
         }
     }
+
     /// <summary>
-    /// The 3 types of freightanims are inherited from the abstract ORTSFreightAnim class.
+    /// The 3 types of freightanims are inherited from the abstract FreightAnimation class.
     /// </summary>
-    public abstract class ORTSFreightAnim
+    public abstract class FreightAnimation
     {
         public string ShapeFileName;
-        public AnimatedShape FreightShape;
     }
 
-    public class FreightAnimContinuous : ORTSFreightAnim
+    public class FreightAnimationContinuous : FreightAnimation
     {
         public bool TriggerOnStop;  // Value assumed if property not found.
         public float MaxHeight = 0;
@@ -225,7 +189,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public float LoadPerCent = 0;
         public IntakePoint LinkedIntakePoint = null;
 
-        public FreightAnimContinuous(STFReader stf, MSTSWagon wagon)
+        public FreightAnimationContinuous(STFReader stf, MSTSWagon wagon)
         {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -244,7 +208,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         }
 
         // For copy
-        public FreightAnimContinuous(FreightAnimContinuous freightAnimContin, MSTSWagon wagon)
+        public FreightAnimationContinuous(FreightAnimationContinuous freightAnimContin, MSTSWagon wagon)
         {
             wagon.IntakePointList.Add(new IntakePoint(freightAnimContin.LinkedIntakePoint));
             wagon.IntakePointList.Last().LinkedFreightAnim = this;
@@ -258,20 +222,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         }
     }
 
-    public class FreightAnimStatic : ORTSFreightAnim
+    public class FreightAnimationStatic : FreightAnimation
     {
-        public enum FreightAnimStaticType
+        public enum Type
         {
             DEFAULT
         }
-        public FreightAnimStaticType SubType;
+        public Type SubType;
         public float XOffset = 0;
         public float YOffset = 0;
         public float ZOffset = 0;
         public float FreightWeight = 0;
         public bool Flipped = false;
 
-        public FreightAnimStatic(STFReader stf)
+        public FreightAnimationStatic(STFReader stf)
         {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -281,7 +245,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     switch (typeString)
 	                {
                         default:
-                            SubType = FreightAnimStatic.FreightAnimStaticType.DEFAULT;
+                            SubType = FreightAnimationStatic.Type.DEFAULT;
                             break;
 	                }
                 }),
@@ -299,7 +263,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         }
 
         // for copy
-        public FreightAnimStatic(FreightAnimStatic freightAnimStatic)
+        public FreightAnimationStatic(FreightAnimationStatic freightAnimStatic)
         {
             SubType = freightAnimStatic.SubType;
             ShapeFileName = freightAnimStatic.ShapeFileName;
@@ -311,20 +275,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         }
     }
 
-    public class FreightAnimDiscrete : ORTSFreightAnim
+    public class FreightAnimationDiscrete : FreightAnimation
     {
-        public enum FreightAnimDiscreteType
+        public enum Type
         {
             DEFAULT
         }
-        public FreightAnimDiscreteType SubType;
+        public Type SubType;
         public float XOffset = 0;
         public float YOffset = 0;
         public float ZOffset = 0;
         public float LoadWeight = 0;
         public bool LoadedAtStart = false;
 
-        public FreightAnimDiscrete(STFReader stf)
+        public FreightAnimationDiscrete(STFReader stf)
         {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[]
@@ -335,7 +299,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         switch (typeString)
 	                    {
                             default:
-                                SubType = FreightAnimDiscrete.FreightAnimDiscreteType.DEFAULT;
+                                SubType = FreightAnimationDiscrete.Type.DEFAULT;
                                 break;
 	                    }
                 }),
@@ -353,7 +317,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         }
 
         // for copy
-        public FreightAnimDiscrete(FreightAnimDiscrete freightAnimDiscrete)
+        public FreightAnimationDiscrete(FreightAnimationDiscrete freightAnimDiscrete)
         {
             SubType = freightAnimDiscrete.SubType;
             ShapeFileName = freightAnimDiscrete.ShapeFileName;

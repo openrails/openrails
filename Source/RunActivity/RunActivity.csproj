@@ -159,7 +159,7 @@
     <Compile Include="Simulation\RollingStocks\MSTSSteamLocomotive.cs" />
     <Compile Include="Simulation\RollingStocks\MSTSWagon.cs" />
     <Compile Include="Simulation\RollingStocks\TrainCar.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\ORTSFreightAnims.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\FreightAnimations.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\TrainControlSystem.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\BrakeSystem.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\AirSinglePipe.cs" />
@@ -241,6 +241,7 @@
     <Compile Include="Viewer3D\RollingStock\MSTSLocomotiveViewer.cs" />
     <Compile Include="Viewer3D\RollingStock\MSTSSteamLocomotiveViewer.cs" />
     <Compile Include="Viewer3D\RollingStock\MSTSWagonViewer.cs" />
+    <Compile Include="Viewer3D\RollingStock\SubSystems\FreightAnimationsViewer.cs" />
     <Compile Include="Viewer3D\RollingStock\TrainCarViewer.cs" />
     <Compile Include="Viewer3D\Scenery.cs" />
     <Compile Include="Viewer3D\Shaders.cs" />

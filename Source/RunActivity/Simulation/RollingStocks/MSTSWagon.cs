@@ -244,9 +244,9 @@ namespace Orts.Simulation.RollingStocks
             }
 
             MassKG = InitialMassKG;
-            if (ORTSFreightAnimData != null)
+            if (FreightAnimations != null)
             {
-                foreach (var ortsFreightAnim in ORTSFreightAnimData.ORTSFreightAnims)
+                foreach (var ortsFreightAnim in FreightAnimations.Animations)
                 {
                     if (ortsFreightAnim.ShapeFileName != null && !File.Exists(wagonFolderSlash + ortsFreightAnim.ShapeFileName))
                     {
@@ -255,9 +255,9 @@ namespace Orts.Simulation.RollingStocks
                     }
 
                 }
-                if (!ORTSFreightAnimData.MSTSFreightAnimEnabled) FreightShapeFileName = null;
-                if (ORTSFreightAnimData.WagonEmptyWeight != -1) MassKG = ORTSFreightAnimData.WagonEmptyWeight + ORTSFreightAnimData.FreightWeight + ORTSFreightAnimData.StaticFreightWeight;
-                if (ORTSFreightAnimData.LoadedOne != null) WeightLoadController.CurrentValue = ORTSFreightAnimData.LoadedOne.LoadPerCent / 100;
+                if (!FreightAnimations.MSTSFreightAnimEnabled) FreightShapeFileName = null;
+                if (FreightAnimations.WagonEmptyWeight != -1) MassKG = FreightAnimations.WagonEmptyWeight + FreightAnimations.FreightWeight + FreightAnimations.StaticFreightWeight;
+                if (FreightAnimations.LoadedOne != null) WeightLoadController.CurrentValue = FreightAnimations.LoadedOne.LoadPerCent / 100;
 
             }
 
@@ -445,7 +445,7 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(intakepoint": IntakePointList.Add(new IntakePoint(stf)); break;
                 case "wagon(passengercapacity": HasPassengerCapacity = true;  break;
                 case "wagon(ortsfreightanims":
-                    ORTSFreightAnimData = new FreightAnimCollection(stf, this);
+                    FreightAnimations = new FreightAnimations(stf, this);
                     break;
                 default:
                     if (MSTSBrakeSystem != null)
@@ -536,9 +536,9 @@ namespace Orts.Simulation.RollingStocks
                 Couplers.Add(coupler);
 
             Pantographs.Copy(copy.Pantographs);
-            if (copy.ORTSFreightAnimData != null)
+            if (copy.FreightAnimations != null)
             {
-                ORTSFreightAnimData = new FreightAnimCollection(copy.ORTSFreightAnimData, this);
+                FreightAnimations = new FreightAnimations(copy.FreightAnimations, this);
             }
 
             if (copy.IntakePointList != null)
@@ -626,9 +626,9 @@ namespace Orts.Simulation.RollingStocks
             foreach (MSTSCoupling coupler in Couplers)
                 coupler.Save(outf);
             Pantographs.Save(outf);
-            if (ORTSFreightAnimData != null)
+            if (FreightAnimations != null)
             {
-                ORTSFreightAnimData.Save(outf);
+                FreightAnimations.Save(outf);
                 if (WeightLoadController != null)
                 {
                     outf.Write(true);
@@ -664,9 +664,9 @@ namespace Orts.Simulation.RollingStocks
                 Couplers[i].Restore(inf);
             }
             Pantographs.Restore(inf);
-            if (ORTSFreightAnimData != null)
+            if (FreightAnimations != null)
             {
-                ORTSFreightAnimData.Restore(inf);
+                FreightAnimations.Restore(inf);
                 var doesWeightLoadControllerExist = inf.ReadBoolean();
                 if (doesWeightLoadControllerExist)
                 {
@@ -917,10 +917,10 @@ namespace Orts.Simulation.RollingStocks
             if (WeightLoadController != null)
             {
                 WeightLoadController.Update(elapsedClockSeconds);
-                if (ORTSFreightAnimData.LoadedOne != null)
+                if (FreightAnimations.LoadedOne != null)
                 {
-                    ORTSFreightAnimData.LoadedOne.LoadPerCent = WeightLoadController.CurrentValue * 100;
-                    ORTSFreightAnimData.FreightWeight = WeightLoadController.CurrentValue * ORTSFreightAnimData.LoadedOne.FreightWeightWhenFull;
+                    FreightAnimations.LoadedOne.LoadPerCent = WeightLoadController.CurrentValue * 100;
+                    FreightAnimations.FreightWeight = WeightLoadController.CurrentValue * FreightAnimations.LoadedOne.FreightWeightWhenFull;
                     if (IsPlayerTrain)
                     {
                         if (WeightLoadController.UpdateValue != 0.0)
@@ -928,8 +928,8 @@ namespace Orts.Simulation.RollingStocks
                                 CabSetting.Increase, WeightLoadController.CurrentValue * 100);
                     }
                 }
-                if (ORTSFreightAnimData.WagonEmptyWeight != -1) MassKG = ORTSFreightAnimData.WagonEmptyWeight + ORTSFreightAnimData.FreightWeight + ORTSFreightAnimData.StaticFreightWeight;
-                if (WaitForAnimationReady && WeightLoadController.CommandStartTime + ORTSFreightAnimData.UnloadingStartDelay <= Simulator.ClockTime)
+                if (FreightAnimations.WagonEmptyWeight != -1) MassKG = FreightAnimations.WagonEmptyWeight + FreightAnimations.FreightWeight + FreightAnimations.StaticFreightWeight;
+                if (WaitForAnimationReady && WeightLoadController.CommandStartTime + FreightAnimations.UnloadingStartDelay <= Simulator.ClockTime)
                 {
                     WaitForAnimationReady = false;
                     Simulator.Confirmer.Message(ConfirmLevel.Information, Program.Catalog.GetString("Starting unload"));
@@ -1254,7 +1254,7 @@ namespace Orts.Simulation.RollingStocks
         public override float GetFilledFraction(uint pickupType)
         {
             var fraction = 0.0f;
-            if (ORTSFreightAnimData.LoadedOne != null) fraction = ORTSFreightAnimData.LoadedOne.LoadPerCent / 100;
+            if (FreightAnimations.LoadedOne != null) fraction = FreightAnimations.LoadedOne.LoadPerCent / 100;
             return fraction;
         }
 
@@ -1273,10 +1273,10 @@ namespace Orts.Simulation.RollingStocks
             controller.SetValue(fraction);
             controller.CommandStartTime = Simulator.ClockTime;  // for Replay to use 
 
-            if (ORTSFreightAnimData.LoadedOne == null)
+            if (FreightAnimations.LoadedOne == null)
             {
-                ORTSFreightAnimData.FreightType = (MSTSWagon.PickupType)type;
-                ORTSFreightAnimData.LoadedOne = intakePoint.LinkedFreightAnim;              
+                FreightAnimations.FreightType = (MSTSWagon.PickupType)type;
+                FreightAnimations.LoadedOne = intakePoint.LinkedFreightAnim;              
             }
             if (!unload)
             {
@@ -1287,7 +1287,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 WaitForAnimationReady = true;
                 UnloadingPartsOpen = true;
-                if (ORTSFreightAnimData.UnloadingStartDelay > 0)
+                if (FreightAnimations.UnloadingStartDelay > 0)
                 Simulator.Confirmer.Message(ConfirmLevel.Information, Program.Catalog.GetString("Preparing for unload"));
             }
 
@@ -1308,7 +1308,7 @@ namespace Orts.Simulation.RollingStocks
         public float WidthM = 10f;   // of the filling point. Is the maximum positioning error allowed equal to this or half this value? 
         public MSTSWagon.PickupType Type;          // 'freightgrain', 'freightcoal', 'freightgravel', 'freightsand', 'fuelcoal', 'fuelwater', 'fueldiesel', 'fuelwood'
         public float? DistanceFromFrontOfTrainM;
-        public FreightAnimContinuous LinkedFreightAnim = null; 
+        public FreightAnimationContinuous LinkedFreightAnim = null; 
 
         public IntakePoint()
         {
