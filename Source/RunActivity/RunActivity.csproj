@@ -77,6 +77,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\CommandLog.cs" />
+    <Compile Include="Common\Commands.cs" />
     <Compile Include="Simulation\AIs\AI.cs" />
     <Compile Include="Simulation\AIs\AIAuxAction.cs" />
     <Compile Include="Simulation\AIs\AIPath.cs" />
@@ -194,7 +196,6 @@
     <Compile Include="Simulation\Timetables\TTTrain.cs" />
     <Compile Include="Viewer3D\ALSoundHelper.cs" />
     <Compile Include="Viewer3D\Cameras.cs" />
-    <Compile Include="Viewer3D\CommandLog.cs" />
     <Compile Include="Viewer3D\Commands.cs" />
     <Compile Include="Viewer3D\DDSLib.cs" />
     <Compile Include="Viewer3D\DriverMachineInterface.cs" />

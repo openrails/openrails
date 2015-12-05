@@ -50,7 +50,6 @@ using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
-using Orts.Viewer3D;
 using ORTS.Common;
 using System;
 using System.Diagnostics;
@@ -4491,7 +4490,7 @@ namespace Orts.Simulation.RollingStocks
         public void StopSteamHeatIncrease()
         {
             SteamHeatController.StopIncrease();
-            new ContinuousSteamHeatCommand(Simulator.Confirmer.Viewer.Log, 1, true, SteamHeatController.CurrentValue, SteamHeatController.CommandStartTime);
+            new ContinuousSteamHeatCommand(Simulator.Log, 1, true, SteamHeatController.CurrentValue, SteamHeatController.CommandStartTime);
         }
 
         public void StartSteamHeatDecrease(float? target)
@@ -4506,7 +4505,7 @@ namespace Orts.Simulation.RollingStocks
         {
             SteamHeatController.StopDecrease();
             if (IsPlayerTrain)
-            new ContinuousSteamHeatCommand(Simulator.Confirmer.Viewer.Log, 1, false, SteamHeatController.CurrentValue, SteamHeatController.CommandStartTime);
+            new ContinuousSteamHeatCommand(Simulator.Log, 1, false, SteamHeatController.CurrentValue, SteamHeatController.CommandStartTime);
         }
 
         public void SteamHeatChangeTo(bool increase, float? target)
@@ -4534,7 +4533,7 @@ namespace Orts.Simulation.RollingStocks
             var change = controller.SetValue(value);
             if (change != 0)
             {
-                new ContinuousSteamHeatCommand(Simulator.Confirmer.Viewer.Log, 1, change > 0, controller.CurrentValue, Simulator.GameTime);
+                new ContinuousSteamHeatCommand(Simulator.Log, 1, change > 0, controller.CurrentValue, Simulator.GameTime);
             }
             if (oldValue != controller.IntermediateValue)
                 Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamHeat, oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, controller.CurrentValue * 100);
@@ -4558,7 +4557,7 @@ namespace Orts.Simulation.RollingStocks
         public void StopReverseIncrease()
         {
             CutoffController.StopIncrease();
-            new ContinuousReverserCommand(Simulator.Confirmer.Viewer.Log, true, CutoffController.CurrentValue, CutoffController.CommandStartTime);
+            new ContinuousReverserCommand(Simulator.Log, true, CutoffController.CurrentValue, CutoffController.CommandStartTime);
         }
 
         public override void StartReverseDecrease(float? target)
@@ -4577,7 +4576,7 @@ namespace Orts.Simulation.RollingStocks
         public void StopReverseDecrease()
         {
             CutoffController.StopDecrease();
-            new ContinuousReverserCommand(Simulator.Confirmer.Viewer.Log, false, CutoffController.CurrentValue, CutoffController.CommandStartTime);
+            new ContinuousReverserCommand(Simulator.Log, false, CutoffController.CurrentValue, CutoffController.CommandStartTime);
         }
 
         public void ReverserChangeTo(bool isForward, float? target)
@@ -4605,7 +4604,7 @@ namespace Orts.Simulation.RollingStocks
             var change = controller.SetValue(value);
             if (change != 0)
             {
-                new ContinuousReverserCommand(Simulator.Confirmer.Viewer.Log, change > 0, controller.CurrentValue, Simulator.GameTime);
+                new ContinuousReverserCommand(Simulator.Log, change > 0, controller.CurrentValue, Simulator.GameTime);
                 SignalEvent(Event.ReverserChange);
             }
             if (oldValue != controller.IntermediateValue)
@@ -4629,7 +4628,7 @@ namespace Orts.Simulation.RollingStocks
         public void StopInjector1Increase()
         {
             Injector1Controller.StopIncrease();
-            new ContinuousInjectorCommand(Simulator.Confirmer.Viewer.Log, 1, true, Injector1Controller.CurrentValue, Injector1Controller.CommandStartTime);
+            new ContinuousInjectorCommand(Simulator.Log, 1, true, Injector1Controller.CurrentValue, Injector1Controller.CommandStartTime);
         }
 
         public void StartInjector1Decrease(float? target)
@@ -4643,7 +4642,7 @@ namespace Orts.Simulation.RollingStocks
         public void StopInjector1Decrease()
         {
             Injector1Controller.StopDecrease();
-            new ContinuousInjectorCommand(Simulator.Confirmer.Viewer.Log, 1, false, Injector1Controller.CurrentValue, Injector1Controller.CommandStartTime);
+            new ContinuousInjectorCommand(Simulator.Log, 1, false, Injector1Controller.CurrentValue, Injector1Controller.CommandStartTime);
         }
 
         public void Injector1ChangeTo(bool increase, float? target)
@@ -4671,7 +4670,7 @@ namespace Orts.Simulation.RollingStocks
             var change = controller.SetValue(value);
             if (change != 0)
             {
-                new ContinuousInjectorCommand(Simulator.Confirmer.Viewer.Log, 1, change > 0, controller.CurrentValue, Simulator.GameTime);
+                new ContinuousInjectorCommand(Simulator.Log, 1, change > 0, controller.CurrentValue, Simulator.GameTime);
             }
             if (oldValue != controller.IntermediateValue)
                 Simulator.Confirmer.UpdateWithPerCent(CabControl.Injector1, oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, controller.CurrentValue * 100);
@@ -4688,7 +4687,7 @@ namespace Orts.Simulation.RollingStocks
         public void StopInjector2Increase()
         {
             Injector2Controller.StopIncrease();
-            new ContinuousInjectorCommand(Simulator.Confirmer.Viewer.Log, 2, true, Injector2Controller.CurrentValue, Injector2Controller.CommandStartTime);
+            new ContinuousInjectorCommand(Simulator.Log, 2, true, Injector2Controller.CurrentValue, Injector2Controller.CommandStartTime);
         }
 
         public void StartInjector2Decrease(float? target)
@@ -4702,7 +4701,7 @@ namespace Orts.Simulation.RollingStocks
         public void StopInjector2Decrease()
         {
             Injector2Controller.StopDecrease();
-            new ContinuousInjectorCommand(Simulator.Confirmer.Viewer.Log, 2, false, Injector2Controller.CurrentValue, Injector2Controller.CommandStartTime);
+            new ContinuousInjectorCommand(Simulator.Log, 2, false, Injector2Controller.CurrentValue, Injector2Controller.CommandStartTime);
         }
 
         public void Injector2ChangeTo(bool increase, float? target)
@@ -4730,7 +4729,7 @@ namespace Orts.Simulation.RollingStocks
             var change = controller.SetValue(value);
             if (change != 0)
             {
-                new ContinuousInjectorCommand(Simulator.Confirmer.Viewer.Log, 2, change > 0, controller.CurrentValue, Simulator.GameTime);
+                new ContinuousInjectorCommand(Simulator.Log, 2, change > 0, controller.CurrentValue, Simulator.GameTime);
             }
             if (oldValue != controller.IntermediateValue)
                 Simulator.Confirmer.UpdateWithPerCent(CabControl.Injector2, oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, controller.CurrentValue * 100);
@@ -4748,7 +4747,7 @@ namespace Orts.Simulation.RollingStocks
         {
             BlowerController.StopIncrease();
             if (IsPlayerTrain)
-                new ContinuousBlowerCommand(Simulator.Confirmer.Viewer.Log, true, BlowerController.CurrentValue, BlowerController.CommandStartTime);
+                new ContinuousBlowerCommand(Simulator.Log, true, BlowerController.CurrentValue, BlowerController.CommandStartTime);
         }
         public void StartBlowerDecrease(float? target)
         {
@@ -4762,7 +4761,7 @@ namespace Orts.Simulation.RollingStocks
         {
             BlowerController.StopDecrease();
             if (IsPlayerTrain)
-                new ContinuousBlowerCommand(Simulator.Confirmer.Viewer.Log, false, BlowerController.CurrentValue, BlowerController.CommandStartTime);
+                new ContinuousBlowerCommand(Simulator.Log, false, BlowerController.CurrentValue, BlowerController.CommandStartTime);
         }
 
         public void BlowerChangeTo(bool increase, float? target)
@@ -4790,7 +4789,7 @@ namespace Orts.Simulation.RollingStocks
             var change = controller.SetValue(value);
             if (change != 0)
             {
-                new ContinuousBlowerCommand(Simulator.Confirmer.Viewer.Log, change > 0, controller.CurrentValue, Simulator.GameTime);
+                new ContinuousBlowerCommand(Simulator.Log, change > 0, controller.CurrentValue, Simulator.GameTime);
                 SignalEvent(Event.BlowerChange);
             }
             if (oldValue != controller.IntermediateValue)
@@ -4809,7 +4808,7 @@ namespace Orts.Simulation.RollingStocks
         {
             DamperController.StopIncrease();
             if (IsPlayerTrain)
-                new ContinuousDamperCommand(Simulator.Confirmer.Viewer.Log, true, DamperController.CurrentValue, DamperController.CommandStartTime);
+                new ContinuousDamperCommand(Simulator.Log, true, DamperController.CurrentValue, DamperController.CommandStartTime);
         }
         public void StartDamperDecrease(float? target)
         {
@@ -4823,7 +4822,7 @@ namespace Orts.Simulation.RollingStocks
         {
             DamperController.StopDecrease();
             if (IsPlayerTrain)
-                new ContinuousDamperCommand(Simulator.Confirmer.Viewer.Log, false, DamperController.CurrentValue, DamperController.CommandStartTime);
+                new ContinuousDamperCommand(Simulator.Log, false, DamperController.CurrentValue, DamperController.CommandStartTime);
         }
 
         public void DamperChangeTo(bool increase, float? target)
@@ -4851,7 +4850,7 @@ namespace Orts.Simulation.RollingStocks
             var change = controller.SetValue(value);
             if (change != 0)
             {
-                new ContinuousDamperCommand(Simulator.Confirmer.Viewer.Log, change > 0, controller.CurrentValue, Simulator.GameTime);
+                new ContinuousDamperCommand(Simulator.Log, change > 0, controller.CurrentValue, Simulator.GameTime);
                 SignalEvent(Event.DamperChange);
             }
             if (oldValue != controller.IntermediateValue)
@@ -4870,7 +4869,7 @@ namespace Orts.Simulation.RollingStocks
         {
             FireboxDoorController.StopIncrease();
             if (IsPlayerTrain)
-                new ContinuousFireboxDoorCommand(Simulator.Confirmer.Viewer.Log, true, FireboxDoorController.CurrentValue, FireboxDoorController.CommandStartTime);
+                new ContinuousFireboxDoorCommand(Simulator.Log, true, FireboxDoorController.CurrentValue, FireboxDoorController.CommandStartTime);
         }
         public void StartFireboxDoorDecrease(float? target)
         {
@@ -4884,7 +4883,7 @@ namespace Orts.Simulation.RollingStocks
         {
             FireboxDoorController.StopDecrease();
             if (IsPlayerTrain)
-                new ContinuousFireboxDoorCommand(Simulator.Confirmer.Viewer.Log, false, FireboxDoorController.CurrentValue, FireboxDoorController.CommandStartTime);
+                new ContinuousFireboxDoorCommand(Simulator.Log, false, FireboxDoorController.CurrentValue, FireboxDoorController.CommandStartTime);
         }
 
         public void FireboxDoorChangeTo(bool increase, float? target)
@@ -4912,7 +4911,7 @@ namespace Orts.Simulation.RollingStocks
             var change = controller.SetValue(value);
             if (change != 0)
             {
-                new ContinuousFireboxDoorCommand(Simulator.Confirmer.Viewer.Log, change > 0, controller.CurrentValue, Simulator.GameTime);
+                new ContinuousFireboxDoorCommand(Simulator.Log, change > 0, controller.CurrentValue, Simulator.GameTime);
                 SignalEvent(Event.FireboxDoorChange);
             }
             if (oldValue != controller.IntermediateValue)
@@ -4930,7 +4929,7 @@ namespace Orts.Simulation.RollingStocks
         {
             FiringRateController.StopIncrease();
             if (IsPlayerTrain)
-                new ContinuousFiringRateCommand(Simulator.Confirmer.Viewer.Log, true, FiringRateController.CurrentValue, FiringRateController.CommandStartTime);
+                new ContinuousFiringRateCommand(Simulator.Log, true, FiringRateController.CurrentValue, FiringRateController.CommandStartTime);
         }
         public void StartFiringRateDecrease(float? target)
         {
@@ -4943,7 +4942,7 @@ namespace Orts.Simulation.RollingStocks
         {
             FiringRateController.StopDecrease();
             if (IsPlayerTrain)
-                new ContinuousFiringRateCommand(Simulator.Confirmer.Viewer.Log, false, FiringRateController.CurrentValue, FiringRateController.CommandStartTime);
+                new ContinuousFiringRateCommand(Simulator.Log, false, FiringRateController.CurrentValue, FiringRateController.CommandStartTime);
         }
 
         public void FiringRateChangeTo(bool increase, float? target)

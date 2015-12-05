@@ -52,7 +52,6 @@ using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
-using Orts.Viewer3D;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using System;
@@ -1528,7 +1527,7 @@ namespace Orts.Simulation.RollingStocks
                 return;
             
             if (target != null) ThrottleController.StartIncrease(target);
-            else new NotchedThrottleCommand(Simulator.Confirmer.Viewer.Log, true);
+            else new NotchedThrottleCommand(Simulator.Log, true);
             
             SignalEvent(Event.ThrottleChange);
             AlerterReset(TCSEvent.ThrottleChanged);
@@ -1562,7 +1561,7 @@ namespace Orts.Simulation.RollingStocks
             else if (CombinedControlType == CombinedControl.ThrottleAir)
                 StopTrainBrakeDecrease();
             else if (ThrottleController.SmoothMax() != null)
-                new ContinuousThrottleCommand(Simulator.Confirmer.Viewer.Log, true, ThrottleController.CurrentValue, CommandStartTime);
+                new ContinuousThrottleCommand(Simulator.Log, true, ThrottleController.CurrentValue, CommandStartTime);
         }
 
         public void StartThrottleDecrease(float? target)
@@ -1571,7 +1570,7 @@ namespace Orts.Simulation.RollingStocks
                 return;
             
             if (target != null) ThrottleController.StartDecrease(target);
-            else new NotchedThrottleCommand(Simulator.Confirmer.Viewer.Log, false);
+            else new NotchedThrottleCommand(Simulator.Log, false);
             
             SignalEvent(Event.ThrottleChange);
             AlerterReset(TCSEvent.ThrottleChanged);
@@ -1598,7 +1597,7 @@ namespace Orts.Simulation.RollingStocks
             else if (CombinedControlType == CombinedControl.ThrottleAir)
                 StopTrainBrakeIncrease();
             if (ThrottleController.SmoothMin() != null)
-                new ContinuousThrottleCommand(Simulator.Confirmer.Viewer.Log, false, ThrottleController.CurrentValue, CommandStartTime);
+                new ContinuousThrottleCommand(Simulator.Log, false, ThrottleController.CurrentValue, CommandStartTime);
         }
 
         /// <summary>
@@ -1647,7 +1646,7 @@ namespace Orts.Simulation.RollingStocks
             var change = controller.SetValue(value);
             if (change != 0)
             {
-                new ContinuousThrottleCommand(Simulator.Confirmer.Viewer.Log, change > 0, controller.CurrentValue, Simulator.ClockTime);
+                new ContinuousThrottleCommand(Simulator.Log, change > 0, controller.CurrentValue, Simulator.ClockTime);
                 SignalEvent(Event.ThrottleChange);
                 AlerterReset(TCSEvent.ThrottleChanged);
             }
@@ -1787,7 +1786,7 @@ namespace Orts.Simulation.RollingStocks
             var change = controller.SetValue(value);
             if (change != 0)
             {
-                //new GarBoxCommand(Simulator.Confirmer.Viewer.Log, change > 0, controller.CurrentValue, Simulator.ClockTime);
+                //new GarBoxCommand(Simulator.Log, change > 0, controller.CurrentValue, Simulator.ClockTime);
                 SignalEvent(change > 0 ? Event.GearUp : Event.GearDown);
                 AlerterReset(TCSEvent.GearBoxChanged);
             }
@@ -1813,7 +1812,7 @@ namespace Orts.Simulation.RollingStocks
         {
             AlerterReset(TCSEvent.TrainBrakeChanged);
             TrainBrakeController.StopIncrease();
-            new TrainBrakeCommand(Simulator.Confirmer.Viewer.Log, true, TrainBrakeController.CurrentValue, TrainBrakeController.CommandStartTime);
+            new TrainBrakeCommand(Simulator.Log, true, TrainBrakeController.CurrentValue, TrainBrakeController.CommandStartTime);
         }
 
         public void StartTrainBrakeDecrease(float? target, bool toZero = false)
@@ -1829,7 +1828,7 @@ namespace Orts.Simulation.RollingStocks
         {
             AlerterReset(TCSEvent.TrainBrakeChanged);
             TrainBrakeController.StopDecrease();
-            new TrainBrakeCommand(Simulator.Confirmer.Viewer.Log, false, TrainBrakeController.CurrentValue, TrainBrakeController.CommandStartTime);
+            new TrainBrakeCommand(Simulator.Log, false, TrainBrakeController.CurrentValue, TrainBrakeController.CommandStartTime);
         }
 
         /// <summary>
@@ -1872,7 +1871,7 @@ namespace Orts.Simulation.RollingStocks
             var change = controller.SetValue(value);
             if (change != 0)
             {
-                new TrainBrakeCommand(Simulator.Confirmer.Viewer.Log, change > 0, controller.CurrentValue, Simulator.ClockTime);
+                new TrainBrakeCommand(Simulator.Log, change > 0, controller.CurrentValue, Simulator.ClockTime);
                 SignalEvent(Event.TrainBrakeChange);
                 AlerterReset(TCSEvent.TrainBrakeChanged);
             }
@@ -1912,7 +1911,7 @@ namespace Orts.Simulation.RollingStocks
 
             AlerterReset(TCSEvent.EngineBrakeChanged);
             EngineBrakeController.StopIncrease();
-            new EngineBrakeCommand(Simulator.Confirmer.Viewer.Log, true, EngineBrakeController.CurrentValue, EngineBrakeController.CommandStartTime);
+            new EngineBrakeCommand(Simulator.Log, true, EngineBrakeController.CurrentValue, EngineBrakeController.CommandStartTime);
         }
 
         public void StartEngineBrakeDecrease(float? target)
@@ -1937,7 +1936,7 @@ namespace Orts.Simulation.RollingStocks
 
             AlerterReset(TCSEvent.EngineBrakeChanged);
             EngineBrakeController.StopDecrease();
-            new EngineBrakeCommand(Simulator.Confirmer.Viewer.Log, false, EngineBrakeController.CurrentValue, EngineBrakeController.CommandStartTime);
+            new EngineBrakeCommand(Simulator.Log, false, EngineBrakeController.CurrentValue, EngineBrakeController.CommandStartTime);
         }
 
         public void EngineBrakeChangeTo(bool increase, float? target)
@@ -1965,7 +1964,7 @@ namespace Orts.Simulation.RollingStocks
             var change = controller.SetValue(value);
             if (change != 0)
             {
-                new EngineBrakeCommand(Simulator.Confirmer.Viewer.Log, change > 0, controller.CurrentValue, Simulator.ClockTime);
+                new EngineBrakeCommand(Simulator.Log, change > 0, controller.CurrentValue, Simulator.ClockTime);
                 SignalEvent(Event.EngineBrakeChange);
                 AlerterReset(TCSEvent.EngineBrakeChanged);
             }
@@ -2017,7 +2016,7 @@ namespace Orts.Simulation.RollingStocks
             if (CanUseDynamicBrake())
             {
                 DynamicBrakeController.StopIncrease();
-                new DynamicBrakeCommand(Simulator.Confirmer.Viewer.Log, true, DynamicBrakeController.CurrentValue, DynamicBrakeController.CommandStartTime);
+                new DynamicBrakeCommand(Simulator.Log, true, DynamicBrakeController.CurrentValue, DynamicBrakeController.CommandStartTime);
             }
         }
 
@@ -2049,7 +2048,7 @@ namespace Orts.Simulation.RollingStocks
             if (CanUseDynamicBrake())
             {
                 DynamicBrakeController.StopDecrease();
-                new DynamicBrakeCommand(Simulator.Confirmer.Viewer.Log, false, DynamicBrakeController.CurrentValue, DynamicBrakeController.CommandStartTime);
+                new DynamicBrakeCommand(Simulator.Log, false, DynamicBrakeController.CurrentValue, DynamicBrakeController.CommandStartTime);
             }
         }
 
@@ -2088,7 +2087,7 @@ namespace Orts.Simulation.RollingStocks
             var change = controller.SetValue(value);
             if (change != 0)
             {
-                new DynamicBrakeCommand(Simulator.Confirmer.Viewer.Log, change > 0, controller.CurrentValue, Simulator.ClockTime);
+                new DynamicBrakeCommand(Simulator.Log, change > 0, controller.CurrentValue, Simulator.ClockTime);
                 SignalEvent(Event.DynamicBrakeChange);
                 AlerterReset(TCSEvent.DynamicBrakeChanged);
             }

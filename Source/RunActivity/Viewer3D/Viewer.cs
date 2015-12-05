@@ -167,45 +167,27 @@ namespace Orts.Viewer3D
         public int CabHeightPixels { get; private set; }
         public int CabYOffsetPixels { get; set; } // Note: Always -ve. Without it, the cab view is fixed to the top of the screen. -ve values pull it up the screen.
 
-        public CommandLog Log { get; set; }
-        public List<ICommand> ReplayCommandList { get; set; }
-        public bool CameraReplaySuspended { get; private set; }
-        public Camera SuspendedCamera { get; private set; }
-
-        /// <summary>
-        /// True if a replay is in progress.
-        /// Used to show some confirmations which are only valuable during replay (e.g. uncouple or resume activity).
-        /// Also used to show the replay countdown in the HUD.
-        /// </summary>
-        public bool IsReplaying
-        {
-            get
-            {
-                if (ReplayCommandList != null)
-                {
-                    return (ReplayCommandList.Count > 0);
-                }
-                return false;
-            }
-        }
+        public CommandLog Log { get { return Simulator.Log; } }
 
         public bool DontLoadNightTextures; // Checkbox set and time of day allows not to load textures
         public bool NightTexturesNotLoaded; // At least one night texture hasn't been loaded
         public long LoadMemoryThreshold; // Above this threshold loader doesn't bulk load night textures
         public bool tryLoadingNightTextures = false;
 
+        public Camera SuspendedCamera { get; private set; }
+
         /// <summary>
         /// Finds time of last entry to set ReplayEndsAt and provide the Replay started message.
         /// </summary>
         void InitReplay()
         {
-            if (ReplayCommandList != null)
+            if (Simulator.ReplayCommandList != null)
             {
                 // Get time of last entry
-                int lastEntry = ReplayCommandList.Count - 1;
+                int lastEntry = Simulator.ReplayCommandList.Count - 1;
                 if (lastEntry >= 0)
                 {
-                    double lastTime = ReplayCommandList[lastEntry].Time;
+                    double lastTime = Simulator.ReplayCommandList[lastEntry].Time;
                     Log.ReplayEndsAt = lastTime;
                     double duration = lastTime - Simulator.ClockTime;
                     MessagesWindow.AddMessage(String.Format("Replay started: ending at {0} after {1}",
@@ -458,7 +440,6 @@ namespace Orts.Viewer3D
             ActivityCommand.Receiver = ActivityWindow;  // and therefore shared by all sub-classes
             UseCameraCommand.Receiver = this;
             MoveCameraCommand.Receiver = this;
-            SaveCommand.Receiver = this;
         }
 
         public void ChangeToPreviousFreeRoamCamera()
@@ -564,9 +545,9 @@ namespace Orts.Viewer3D
             HandleUserInput(elapsedTime);
             UserInput.Handled();
 
-            if (ReplayCommandList != null)
+            if (Simulator.ReplayCommandList != null)
             {
-                Log.Update(ReplayCommandList);
+                Log.Update(Simulator.ReplayCommandList);
 
                 if (Log.PauseState == ReplayPauseState.Due)
                 {
@@ -1003,11 +984,11 @@ namespace Orts.Viewer3D
         /// </summary>
         public void CheckReplaying()
         {
-            if (IsReplaying)
+            if (Simulator.IsReplaying)
             {
-                if (!CameraReplaySuspended)
+                if (!Log.CameraReplaySuspended)
                 {
-                    CameraReplaySuspended = true;
+                    Log.CameraReplaySuspended = true;
                     SuspendedCamera = Camera;
                     Simulator.Confirmer.Confirm(CabControl.Replay, CabSetting.Warn1);
                 }
@@ -1019,7 +1000,7 @@ namespace Orts.Viewer3D
         /// </summary>
         public void ResumeReplaying()
         {
-            CameraReplaySuspended = false;
+            Log.CameraReplaySuspended = false;
             if (SuspendedCamera != null)
                 SuspendedCamera.Activate();
         }

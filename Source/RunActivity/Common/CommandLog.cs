@@ -24,7 +24,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace Orts.Viewer3D
+namespace Orts.Common
 {
     /// <summary>
     /// User may specify an automatic pause in the replay at a time measured from the end of the replay.
@@ -39,12 +39,12 @@ namespace Orts.Viewer3D
     public class CommandLog {
 
         public List<ICommand> CommandList = new List<ICommand>();
-        public Viewer Viewer { get; set; }        // Needed so Update() can get Viewer.CameraReplaySuspended
-        public Simulator Simulator { get; set; }    // Needed so CommandAdd() and Update() can get Simulator.ClockTime and Update() can get Simulator.Settings.ReplayPauseBeforeEndS
+        public Simulator Simulator { get; set; }
         public bool ReplayComplete { get; set; }
         public double ReplayEndsAt { get; set; }
         public ReplayPauseState PauseState { get; set; }
-        
+        public bool CameraReplaySuspended { get; set; }
+
         private double completeTime;
         private DateTime? resumeTime;
         private const double completeDelayS = 2;
@@ -52,16 +52,8 @@ namespace Orts.Viewer3D
         /// <summary>
         /// Preferred constructor.
         /// </summary>
-        public CommandLog( Viewer viewer ) {
-            Viewer = viewer;
-            Simulator = viewer.Simulator;  // The Simulator is needed for its ClockTime and Settings properties.
-        }
-
-        /// <summary>
-        /// Use this version if the Simulator does not yet exist then.
-        /// Don't forget to set the Simulator property as soon as it's known.
-        /// </summary>
-        public CommandLog( ) {
+        public CommandLog(Simulator simulator) {
+            Simulator = simulator;
         }
 
         /// <summary>
@@ -81,8 +73,6 @@ namespace Orts.Viewer3D
         /// </para>
         /// </summary>
         public void Update( List<ICommand> replayCommandList ) {
-            if( Viewer == null ) return;  // Update can get called before Viewer is assigned
-
             double elapsedTime = Simulator.ClockTime;
 
             if( PauseState == ReplayPauseState.Before ) {
@@ -97,11 +87,11 @@ namespace Orts.Viewer3D
                 // so resume never happens.
                 double margin = (Simulator.Paused) ? 0.5 : 0;   // margin of 0.5 seconds
                 if( elapsedTime >= c.Time - margin ) {
-                    if( c is ActivityCommand ) {
+                    if( c is PausedCommand ) {
                         // Wait for the right duration and then action the command.
                         // ActivityCommands need dedicated code as the clock is no longer advancing.
                         if( resumeTime == null ) {
-                            var resumeCommand = (ActivityCommand)c;
+                            var resumeCommand = (PausedCommand)c;
                             resumeTime = DateTime.Now.AddSeconds(resumeCommand.PauseDurationS );
                         } else {
                             if( DateTime.Now >= resumeTime ) {
@@ -113,8 +103,8 @@ namespace Orts.Viewer3D
                         // When the player uses a camera command during replay, replay continues but any camera commands in the 
                         // replayCommandList are skipped until the player pauses and exit from the Quit Menu.
                         // This allows some editing of the camera during a replay.
-                        if(!(( c is UseCameraCommand || c is MoveCameraCommand ) && Viewer.CameraReplaySuspended )) {
-                            ReplayCommand( elapsedTime, replayCommandList, c );
+                        if (!(c is CameraCommand && CameraReplaySuspended)) {
+                            ReplayCommand(elapsedTime, replayCommandList, c);
                         }
                         completeTime = elapsedTime + completeDelayS;  // Postpone the time for "Replay complete" message
                     }

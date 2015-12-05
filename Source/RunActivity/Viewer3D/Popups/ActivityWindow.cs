@@ -105,7 +105,7 @@ namespace Orts.Viewer3D.Popups
             Owner.Viewer.Simulator.Paused = false;   // Move to Viewer3D?
             this.Activity.IsActivityResumed = !Owner.Viewer.Simulator.Paused;
             Activity.IsComplete = true;
-            if (Owner.Viewer.IsReplaying) Owner.Viewer.Simulator.Confirmer.Confirm(CabControl.Activity, CabSetting.Off);
+            if (Owner.Viewer.Simulator.IsReplaying) Owner.Viewer.Simulator.Confirmer.Confirm(CabControl.Activity, CabSetting.Off);
             Owner.Viewer.Game.PopState();
         }
 
@@ -117,7 +117,7 @@ namespace Orts.Viewer3D.Popups
             Activity.NewMsgFromNewPlayer = false;
             Owner.Viewer.Simulator.Paused = false;   // Move to Viewer3D?
             this.Activity.IsActivityResumed = !Owner.Viewer.Simulator.Paused;
-            if (Owner.Viewer.IsReplaying) Owner.Viewer.Simulator.Confirmer.Confirm(CabControl.Activity, CabSetting.On);
+            if (Owner.Viewer.Simulator.IsReplaying) Owner.Viewer.Simulator.Confirmer.Confirm(CabControl.Activity, CabSetting.On);
         }
 
         public void ResumeActivity()
@@ -125,7 +125,7 @@ namespace Orts.Viewer3D.Popups
             this.Activity.TriggeredEvent = null;
             Owner.Viewer.Simulator.Paused = false;   // Move to Viewer3D?
             Activity.IsActivityResumed = !Owner.Viewer.Simulator.Paused;
-            if (Owner.Viewer.IsReplaying) Owner.Viewer.Simulator.Confirmer.Confirm(CabControl.Activity, CabSetting.On);
+            if (Owner.Viewer.Simulator.IsReplaying) Owner.Viewer.Simulator.Confirmer.Confirm(CabControl.Activity, CabSetting.On);
             ResumeMenu();
         }
 
@@ -133,7 +133,7 @@ namespace Orts.Viewer3D.Popups
         {
             Owner.Viewer.Simulator.Paused = true;   // Move to Viewer3D?
             Activity.IsActivityResumed = !Owner.Viewer.Simulator.Paused;
-            if (Owner.Viewer.IsReplaying) Owner.Viewer.Simulator.Confirmer.Confirm(CabControl.Activity, CabSetting.On);
+            if (Owner.Viewer.Simulator.IsReplaying) Owner.Viewer.Simulator.Confirmer.Confirm(CabControl.Activity, CabSetting.On);
             ResumeMenu();
         }
 

@@ -6187,7 +6187,7 @@ namespace Orts.Simulation.Timetables
                 Simulator.PlayerLocomotive.Train = formedTrain;
 
                 // clear replay commands
-                Simulator.Confirmer.Viewer.Log.CommandList.Clear();
+                Simulator.Log.CommandList.Clear();
 
                 // display messages
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.

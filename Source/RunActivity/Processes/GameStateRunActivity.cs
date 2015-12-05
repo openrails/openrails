@@ -287,7 +287,6 @@ namespace Orts.Processes
             }
 
             Viewer = new Viewer(Simulator, Game);
-            Viewer.Log = new CommandLog(Viewer);
 
             if (Client != null)
             {
@@ -335,8 +334,8 @@ namespace Orts.Processes
                 outf.Write(Acttype);
 
                 // The Save command is the only command that doesn't take any action. It just serves as a marker.
-                new SaveCommand(Viewer.Log, fileStem);
-                Viewer.Log.SaveLog(Path.Combine(UserSettings.UserDataFolder, fileStem + ".replay"));
+                new SaveCommand(Simulator.Log, fileStem);
+                Simulator.Log.SaveLog(Path.Combine(UserSettings.UserDataFolder, fileStem + ".replay"));
 
                 // Copy the logfile to the save folder
                 CopyLog(Path.Combine(UserSettings.UserDataFolder, fileStem + ".txt"));
@@ -397,8 +396,7 @@ namespace Orts.Processes
                 }
 
                 // Reload the command log
-                Viewer.Log = new CommandLog(Viewer);
-                Viewer.Log.LoadLog(Path.ChangeExtension(saveFile, "replay"));
+                Simulator.Log.LoadLog(Path.ChangeExtension(saveFile, "replay"));
 
                 Game.ReplaceState(new GameStateViewer3D(Viewer));
             }
@@ -427,17 +425,16 @@ namespace Orts.Processes
                 Viewer = new Viewer(Simulator, Game);
             }
 
-            Viewer.Log = new CommandLog(Viewer);
             // Load command log to replay
-            Viewer.ReplayCommandList = new List<ICommand>();
+            Simulator.ReplayCommandList = new List<ICommand>();
             string replayFile = Path.ChangeExtension(saveFile, "replay");
-            Viewer.Log.LoadLog(replayFile);
-            foreach (var c in Viewer.Log.CommandList)
+            Simulator.Log.LoadLog(replayFile);
+            foreach (var c in Simulator.Log.CommandList)
             {
-                Viewer.ReplayCommandList.Add(c);
+                Simulator.ReplayCommandList.Add(c);
             }
-            Viewer.Log.CommandList.Clear();
-            CommandLog.ReportReplayCommands(Viewer.ReplayCommandList);
+            Simulator.Log.CommandList.Clear();
+            CommandLog.ReportReplayCommands(Simulator.ReplayCommandList);
 
             Game.ReplaceState(new GameStateViewer3D(Viewer));
         }
@@ -451,7 +448,7 @@ namespace Orts.Processes
             var saveFile = GetSaveFile(args);
 
             // Find previous save file and then move commands to be replayed into replay list.
-            var log = new CommandLog();
+            var log = new CommandLog(null);
             var logFile = saveFile.Replace(".save", ".replay");
             log.LoadLog(logFile);
             var replayCommandList = new List<ICommand>();
@@ -512,13 +509,11 @@ namespace Orts.Processes
                 }
             }
 
-            // Now Viewer exists, link the log to it in both directions
-            Viewer.Log = log;
-            log.Viewer = Viewer;
-            // Now Simulator exists, link the viewer to it
-            Viewer.Log.Simulator = Simulator;
-            Viewer.ReplayCommandList = replayCommandList;
-            CommandLog.ReportReplayCommands(Viewer.ReplayCommandList);
+            // Now Simulator exists, link the log to it in both directions
+            Simulator.Log = log;
+            log.Simulator = Simulator;
+            Simulator.ReplayCommandList = replayCommandList;
+            CommandLog.ReportReplayCommands(Simulator.ReplayCommandList);
 
             Game.ReplaceState(new GameStateViewer3D(Viewer));
         }
@@ -554,7 +549,6 @@ namespace Orts.Processes
                 InitSimulator(settings, args, "Test");
                 Simulator.Start(Game.LoaderProcess);
                 Viewer = new Viewer(Simulator, Game);
-                Viewer.Log = new CommandLog(Viewer);
                 Game.ReplaceState(exitGameState);
                 Game.PushState(new GameStateViewer3D(Viewer));
                 exitGameState.LoadTime = (DateTime.Now - startTime).TotalSeconds - Viewer.RealTime;

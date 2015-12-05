@@ -387,7 +387,7 @@ namespace Orts.Viewer3D.Popups
             else
                 TableAddLabelValue(table, Viewer.Catalog.GetString("Time"), FormatStrings.FormatTime(Viewer.Simulator.ClockTime));
 
-            if (Viewer.IsReplaying)
+            if (Viewer.Simulator.IsReplaying)
                 TableAddLabelValue(table, Viewer.Catalog.GetString("Replay"), FormatStrings.FormatTime(Viewer.Log.ReplayEndsAt - Viewer.Simulator.ClockTime));
 
             TableAddLabelValue(table, Viewer.Catalog.GetString("Speed"), FormatStrings.FormatSpeedDisplay(Viewer.PlayerLocomotive.SpeedMpS, Viewer.PlayerLocomotive.IsMetric));

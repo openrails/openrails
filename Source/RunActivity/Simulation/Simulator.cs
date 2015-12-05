@@ -33,6 +33,7 @@
 /// </summary>
 
 using Microsoft.Xna.Framework;
+using Orts.Common;
 using Orts.Common.Scripting;
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
@@ -154,6 +155,27 @@ namespace Orts.Simulation
 
         public bool PlayerIsInCab = false;
 
+        // Replacy functionality!
+        public CommandLog Log { get; set; }
+        public List<ICommand> ReplayCommandList { get; set; }
+
+        /// <summary>
+        /// True if a replay is in progress.
+        /// Used to show some confirmations which are only valuable during replay (e.g. uncouple or resume activity).
+        /// Also used to show the replay countdown in the HUD.
+        /// </summary>
+        public bool IsReplaying
+        {
+            get
+            {
+                if (ReplayCommandList != null)
+                {
+                    return (ReplayCommandList.Count > 0);
+                }
+                return false;
+            }
+        }
+
         public Simulator(UserSettings settings, string activityPath, bool useOpenRailsDirectory)
         {
             TimetableMode = false;
@@ -229,7 +251,7 @@ namespace Orts.Simulation
 
             FuelManager = new FuelManager(this);
             ScriptManager = new ScriptManager(this);
-
+            Log = new CommandLog(this);
         }
 
         public void SetActivity(string activityPath)
@@ -1479,7 +1501,7 @@ namespace Orts.Simulation
             {
                 MPManager.Notify((new Orts.MultiPlayer.MSGUncouple(train, train2, Orts.MultiPlayer.MPManager.GetUserName(), car.CarID, PlayerLocomotive)).ToString());
             }
-            if (Confirmer !=null && Confirmer.Viewer != null && Confirmer.Viewer.IsReplaying) Confirmer.Confirm(CabControl.Uncouple, train.LastCar.CarID);
+            if (Confirmer !=null && Confirmer.Viewer != null && IsReplaying) Confirmer.Confirm(CabControl.Uncouple, train.LastCar.CarID);
             if (AI != null) AI.aiListChanged = true;
         }
 
