@@ -25,6 +25,7 @@ using Orts.Common;
 using Orts.MultiPlayer;
 using Orts.Simulation;
 using Orts.Viewer3D;
+using Orts.Viewer3D.Debugging;
 using ORTS.Common;
 using ORTS.Settings;
 using System;
@@ -65,8 +66,8 @@ namespace Orts.Processes
             public string acttype;
         }
 
-        static Debugging.DispatchViewer DebugViewer { get { return Program.DebugViewer; } set { Program.DebugViewer = value; } }
-        static Debugging.SoundDebugForm SoundDebugForm { get { return Program.SoundDebugForm; } set { Program.SoundDebugForm = value; } }
+        static DispatchViewer DebugViewer { get { return Program.DebugViewer; } set { Program.DebugViewer = value; } }
+        static SoundDebugForm SoundDebugForm { get { return Program.SoundDebugForm; } set { Program.SoundDebugForm = value; } }
 
         LoadingPrimitive Loading;
         LoadingScreenPrimitive LoadingScreen;

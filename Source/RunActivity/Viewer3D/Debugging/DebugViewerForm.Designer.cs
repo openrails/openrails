@@ -1,6 +1,6 @@
-﻿namespace Orts.Debugging
+﻿namespace Orts.Viewer3D.Debugging
 {
-   partial class DispatchViewer
+    partial class DispatchViewer
    {
       /// <summary>
       /// Required designer variable.

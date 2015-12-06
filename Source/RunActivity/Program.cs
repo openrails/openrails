@@ -17,11 +17,11 @@
 
 using GNU.Gettext;
 using Orts.Common;
-using Orts.Debugging;
 using Orts.MultiPlayer;
 using Orts.Processes;
 using Orts.Simulation;
 using Orts.Viewer3D;
+using Orts.Viewer3D.Debugging;
 using ORTS.Common;
 using ORTS.Settings;
 using System;

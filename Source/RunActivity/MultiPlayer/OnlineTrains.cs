@@ -27,7 +27,7 @@ using System.Linq;
 
 namespace Orts.MultiPlayer
 {
-	public class OnlineTrains
+    public class OnlineTrains
 	{
 		public Dictionary<string, OnlinePlayer> Players;
 		public OnlineTrains()

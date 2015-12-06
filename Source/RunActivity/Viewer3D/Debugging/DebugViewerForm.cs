@@ -28,7 +28,6 @@ using Orts.Simulation;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Signalling;
-using Orts.Viewer3D;
 using Orts.Viewer3D.Popups;
 using ORTS.Common;
 using System;
@@ -42,7 +41,7 @@ using System.Windows.Forms;
 using Control = System.Windows.Forms.Control;
 using Image = System.Drawing.Image;
 
-namespace Orts.Debugging
+namespace Orts.Viewer3D.Debugging
 {
 
 

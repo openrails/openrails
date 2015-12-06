@@ -18,7 +18,7 @@
 using System;
 using System.Windows.Forms;
 
-namespace Orts.Debugging
+namespace Orts.Viewer3D.Debugging
 {
     public partial class MessageViewer : Form
    {
