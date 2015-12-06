@@ -405,7 +405,7 @@ namespace Orts.Simulation.RollingStocks
 			
 			// TODO  this is a wild simplification for diesel electric
             //float e = (EngineRPM - IdleRPM) / (MaxRPM - IdleRPM); //
-            float t = ThrottlePercent / 100f;
+            float throttleNum = ThrottlePercent / 100f;
 
             if (!this.Simulator.UseAdvancedAdhesion)
                 AbsWheelSpeedMpS = AbsSpeedMpS;
@@ -473,7 +473,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 if (TractiveForceCurves == null)
                 {
-                    float maxForceN = Math.Min(t * MaxForceN, AbsWheelSpeedMpS == 0.0f ? ( t * MaxForceN ) : ( t * DieselEngines.MaxOutputPowerW / AbsWheelSpeedMpS));
+                    float maxForceN = Math.Min(throttleNum * MaxForceN, AbsWheelSpeedMpS == 0.0f ? ( throttleNum * MaxForceN ) : ( throttleNum * DieselEngines.MaxOutputPowerW / AbsWheelSpeedMpS));
                     //float maxForceN = MaxForceN * t;
                     float maxPowerW = 0.98f * DieselEngines.MaxOutputPowerW;      //0.98 added to let the diesel engine handle the adhesion-caused jittering
 
@@ -498,9 +498,9 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else
                 {
-                    if (t > (DieselEngines.MaxOutputPowerW / DieselEngines.MaxPowerW))
-                        t = (DieselEngines.MaxOutputPowerW / DieselEngines.MaxPowerW);
-                    MotiveForceN = TractiveForceCurves.Get(t, AbsWheelSpeedMpS);
+                    if (throttleNum > (DieselEngines.MaxOutputPowerW / DieselEngines.MaxPowerW))
+                        throttleNum = (DieselEngines.MaxOutputPowerW / DieselEngines.MaxPowerW);
+                    MotiveForceN = TractiveForceCurves.Get(throttleNum, AbsWheelSpeedMpS);
                     if (MotiveForceN < 0)
                         MotiveForceN = 0;
                 }

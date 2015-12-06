@@ -39,6 +39,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
         public float BrakeLine3PressurePSI;         // engine brake cylinder equalization pipe pressure
         public float BrakePipeVolumeM3 = 1.4e-2f;      // volume of a single brake line
 
+        public float CylVolumeM3;
+
         /// <summary>
         /// Front brake hoses connection status
         /// </summary>
@@ -66,6 +68,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
         public abstract string GetFullStatus(BrakeSystem lastCarBrakeSystem, Dictionary<BrakeSystemComponent, PressureUnit> units);
         public abstract string[] GetDebugStatus(Dictionary<BrakeSystemComponent, PressureUnit> units);
         public abstract float GetCylPressurePSI();
+        public abstract float GetCylVolumeM3();
         public abstract float GetVacResPressurePSI();
 
         public abstract void Save(BinaryWriter outf);

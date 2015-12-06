@@ -144,6 +144,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             return KPa.ToPSI(KPa.FromInHg(P2V(CylPressurePSIA)));
         }
 
+        public override float GetCylVolumeM3()
+        {
+            return CylVol;
+        }
+
         public override float GetVacResPressurePSI()
         {
             return VacResPressureAdjPSIA();
@@ -194,6 +199,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             CylPressurePSIA = BrakeLine1PressurePSI = V2P(fullServVacuumInHg);
             VacResPressurePSIA = V2P(maxVacuumInHg);
             HandbrakePercent = handbrakeOn & (Car as MSTSWagon).HandBrakePresent ? 100 : 0;
+            //CylVolumeM3 = MaxForcePressurePSI * MaxBrakeForceN * 0.00000059733491f; //an average volume (M3) of air used in brake cylinder for 1 N brake force.
         }
 
         public override void InitializeMoving() // used when initial speed > 0

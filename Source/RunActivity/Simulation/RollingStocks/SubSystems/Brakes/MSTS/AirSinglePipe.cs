@@ -155,6 +155,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             return CylPressurePSI;
         }
 
+
+        public override float GetCylVolumeM3()
+        {
+            return CylVolumeM3;
+        }
+
         public override float GetVacResPressurePSI()
         {
             return 0;
@@ -239,13 +245,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             HoldingValve = ValveState.Release;
             HandbrakePercent = handbrakeOn & (Car as MSTSWagon).HandBrakePresent ? 100 : 0;
             SetRetainer(RetainerSetting.Exhaust);
-            if (Car is MSTSLocomotive)
-                (Car as MSTSLocomotive).MainResPressurePSI = (Car as MSTSLocomotive).MaxMainResPressurePSI;
+            MSTSLocomotive loco = Car as MSTSLocomotive;
+            if (loco != null) 
+            {
+                loco.MainResPressurePSI = loco.MaxMainResPressurePSI;
+            }
 
             if (EmergResVolumeM3 > 0 && EmergAuxVolumeRatio > 0 && BrakePipeVolumeM3 > 0)
                 AuxBrakeLineVolumeRatio = EmergResVolumeM3 / EmergAuxVolumeRatio / BrakePipeVolumeM3;
             else
                 AuxBrakeLineVolumeRatio = 3.1f;
+
+            //FullCylAirConsumedM3 = MaxCylPressurePSI * MaxBrakeForceN * 0.00000059733491f; //an average volume (M3) of air used in brake cylinder for 1 N brake force.;
+            CylVolumeM3 = EmergResVolumeM3 / EmergAuxVolumeRatio / AuxCylVolumeRatio;
         }
 
         /// <summary>
@@ -388,19 +400,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 AuxResPressurePSI += dp;
                 BrakeLine2PressurePSI -= dp * AuxBrakeLineVolumeRatio;
             }
-            /*if (TripleValveState != prevTripleValueState)
-            {
-                switch (TripleValveState)
-                {
-                    case ValveState.Release: Car.SignalEvent(Event.TrainBrakePressureDecrease); break;
-                    case ValveState.Apply:
-                    case ValveState.Emergency: Car.SignalEvent(Event.TrainBrakePressureIncrease); break;
-                    case ValveState.Lap: Car.SignalEvent(Event.TrainBrakeCylinderPressureStoppedChanging); break;
-             * this method isn't enough, as can't detect when the trainbrake pressure stops changing after release, only after apply
-                }
-            }*/
 
-            if (BrakeLine3PressurePSI >= 1000)
+            if (BrakeLine3PressurePSI >= 1000) // a really weird method: instead of getting the state of bailoff control here, the engine brake simulation signals the bailoff state with brakelinepressure3=1000
             {
                 BrakeLine3PressurePSI -= 1000;
                 AutoCylPressurePSI -= MaxReleaseRatePSIpS * elapsedClockSeconds;
@@ -416,7 +417,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 f = MaxHandbrakeForceN * HandbrakePercent / 100;
             Car.BrakeForceN = f;
 
-            // sound trigger checking runs every 4th update, to avoid the problems caused by the jumping BrakeLine1PressurePSI value, and also saves cpu time :)
+            // sound trigger checking runs every half second, to avoid the problems caused by the jumping BrakeLine1PressurePSI value, and also saves cpu time :)
             if (SoundTriggerCounter >= 0.5f)
             {
                 SoundTriggerCounter = 0f;
@@ -593,13 +594,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         if (p > 1000)
                             p -= 1000;
                         var prevState = lead.EngineBrakeState;
-                        if (p < train.BrakeLine3PressurePSI)
+                        if (p < train.BrakeLine3PressurePSI && p < lead.MainResPressurePSI )
                         {
                             float dp = elapsedClockSeconds * lead.EngineBrakeApplyRatePSIpS / (last - first + 1);
                             if (p + dp > train.BrakeLine3PressurePSI)
                                 dp = train.BrakeLine3PressurePSI - p;
                             p += dp;
                             lead.EngineBrakeState = ValveState.Apply;
+                            sumpv -= dp * brakeSystem.GetCylVolumeM3() / lead.MainResVolumeM3;
                         }
                         else if (p > train.BrakeLine3PressurePSI)
                         {
