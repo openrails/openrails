@@ -28,7 +28,7 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 
-namespace Orts.Processes
+namespace Orts.Viewer3D.Processes
 {
     /// <summary>
     /// Provides the foundation for running the game.

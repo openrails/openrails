@@ -34,7 +34,7 @@ using ORTS.Settings;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Windows;
-using Game = Orts.Processes.Game;
+using Game = Orts.Viewer3D.Processes.Game;
 
 namespace Orts.Viewer3D
 {

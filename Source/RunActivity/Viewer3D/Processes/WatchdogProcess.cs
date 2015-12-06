@@ -18,6 +18,7 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 using Orts.Common;
+using Orts.Processes;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
@@ -27,7 +28,7 @@ using System.Security;
 using System.Text;
 using System.Threading;
 
-namespace Orts.Processes
+namespace Orts.Viewer3D.Processes
 {
     /// <summary>
     /// A process which monitors other threads to check they're still running normally and reports errors if they're not.

@@ -24,7 +24,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Orts.Common;
 using Orts.MultiPlayer;
 using Orts.Simulation;
-using Orts.Viewer3D;
 using Orts.Viewer3D.Debugging;
 using ORTS.Common;
 using ORTS.Settings;
@@ -39,7 +38,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
-namespace Orts.Processes
+namespace Orts.Viewer3D.Processes
 {
     public class GameStateRunActivity : GameState
     {

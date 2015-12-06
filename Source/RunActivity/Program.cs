@@ -18,10 +18,10 @@
 using GNU.Gettext;
 using Orts.Common;
 using Orts.MultiPlayer;
-using Orts.Processes;
 using Orts.Simulation;
 using Orts.Viewer3D;
 using Orts.Viewer3D.Debugging;
+using Orts.Viewer3D.Processes;
 using ORTS.Common;
 using ORTS.Settings;
 using System;

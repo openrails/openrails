@@ -17,10 +17,9 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using Orts.Viewer3D;
 using ORTS.Common;
 
-namespace Orts.Processes
+namespace Orts.Viewer3D.Processes
 {
     /// <summary>
     /// Represents a single state for the game to be in (e.g. loading, running, in menu).

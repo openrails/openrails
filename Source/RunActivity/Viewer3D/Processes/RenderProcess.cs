@@ -19,13 +19,13 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Orts.Viewer3D;
+using Orts.Processes;
 using ORTS.Common;
 using System;
 using System.Diagnostics;
 using System.Windows.Forms;
 
-namespace Orts.Processes
+namespace Orts.Viewer3D.Processes
 {
     [CallOnThread("Render")]
     public class RenderProcess

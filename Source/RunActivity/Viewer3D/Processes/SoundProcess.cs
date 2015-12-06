@@ -21,14 +21,14 @@
 //#define DEBUG_SOURCE_SOURCES
 
 using Orts.Common;
-using Orts.Viewer3D;
+using Orts.Processes;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 
-namespace Orts.Processes
+namespace Orts.Viewer3D.Processes
 {
     public class SoundProcess
     {

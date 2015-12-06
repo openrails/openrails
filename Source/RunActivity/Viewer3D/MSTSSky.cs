@@ -20,8 +20,8 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Common;
-using Orts.Processes;
 using Orts.Viewer3D.Common;
+using Orts.Viewer3D.Processes;
 using ORTS.Common;
 using ORTS.Settings;
 using System;

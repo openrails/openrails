@@ -17,27 +17,30 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using Orts.Viewer3D;
+using Orts.Processes;
 using ORTS.Common;
 using System;
 using System.Diagnostics;
 using System.Threading;
 
-namespace Orts.Processes
+namespace Orts.Viewer3D.Processes
 {
-    public class UpdaterProcess
+    public class LoaderProcess
     {
-        public readonly Profiler Profiler = new Profiler("Updater");
-        readonly ProcessState State = new ProcessState("Updater");
+        public readonly Profiler Profiler = new Profiler("Loader");
+        readonly ProcessState State = new ProcessState("Loader");
         readonly Game Game;
         readonly Thread Thread;
         readonly WatchdogToken WatchdogToken;
+        readonly CancellationTokenSource CancellationTokenSource;
 
-        public UpdaterProcess(Game game)
+        public LoaderProcess(Game game)
         {
             Game = game;
-            Thread = new Thread(UpdaterThread);
+            Thread = new Thread(LoaderThread);
             WatchdogToken = new WatchdogToken(Thread);
+            WatchdogToken.SpecialDispensationFactor = 6;
+            CancellationTokenSource = new CancellationTokenSource(WatchdogToken.Ping);
         }
 
         public void Start()
@@ -49,7 +52,39 @@ namespace Orts.Processes
         public void Stop()
         {
             Game.WatchdogProcess.Unregister(WatchdogToken);
+            CancellationTokenSource.Cancel();
             State.SignalTerminate();
+        }
+
+        public bool Finished
+        {
+            get
+            {
+                return State.Finished;
+            }
+        }
+
+        /// <summary>
+        /// Returns a token (copyable object) which can be queried for the cancellation (termination) of the loader.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// All loading code should periodically (e.g. between loading each file) check the token and exit as soon
+        /// as it is cancelled (<see cref="CancellationToken.IsCancellationRequested"/>).
+        /// </para>
+        /// <para>
+        /// Reading <see cref="CancellationToken.IsCancellationRequested"/> causes the <see cref="WatchdogToken"/> to
+        /// be pinged, informing the <see cref="WatchdogProcess"/> that the loader is still responsive. Therefore the
+        /// remarks about the <see cref="WatchdogToken.Ping()"/> method apply to the token regarding when it should
+        /// and should not be used.
+        /// </para>
+        /// </remarks>
+        public CancellationToken CancellationToken
+        {
+            get
+            {
+                return CancellationTokenSource.Token;
+            }
         }
 
         public void WaitTillFinished()
@@ -57,8 +92,8 @@ namespace Orts.Processes
             State.WaitTillFinished();
         }
 
-        [ThreadName("Updater")]
-        void UpdaterThread()
+        [ThreadName("Loader")]
+        void LoaderThread()
         {
             Profiler.SetThread();
             Game.SetThreadLanguage();
@@ -71,7 +106,7 @@ namespace Orts.Processes
                     break;
                 try
                 {
-                    if (!DoUpdate())
+                    if (!DoLoad())
                         return;
                 }
                 finally
@@ -82,34 +117,30 @@ namespace Orts.Processes
             }
         }
 
-        RenderFrame CurrentFrame;
-        double TotalRealSeconds;
-
-        [CallOnThread("Render")]
-        internal void StartUpdate(RenderFrame frame, double totalRealSeconds)
+        [CallOnThread("Updater")]
+        internal void StartLoad()
         {
             Debug.Assert(State.Finished);
-            CurrentFrame = frame;
-            TotalRealSeconds = totalRealSeconds;
             State.SignalStart();
         }
 
-        [ThreadName("Updater")]
-        bool DoUpdate()
+        [ThreadName("Loader")]
+        bool DoLoad()
         {
             if (Debugger.IsAttached)
             {
-                Update();
+                Load();
             }
             else
             {
                 try
                 {
-                    Update();
+                    Load();
                 }
                 catch (Exception error)
                 {
                     // Unblock anyone waiting for us, report error and die.
+                    CancellationTokenSource.Cancel();
                     State.SignalTerminate();
                     Game.ProcessReportError(error);
                     return false;
@@ -118,16 +149,14 @@ namespace Orts.Processes
             return true;
         }
 
-        [CallOnThread("Updater")]
-        public void Update()
+        [CallOnThread("Loader")]
+        public void Load()
         {
             Profiler.Start();
             try
             {
                 WatchdogToken.Ping();
-                CurrentFrame.Clear();
-                Game.State.Update(CurrentFrame, TotalRealSeconds);
-                CurrentFrame.Sort();
+                Game.State.Load();
             }
             finally
             {

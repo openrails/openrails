@@ -24,12 +24,12 @@ using Microsoft.Xna.Framework.Input;
 using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.MultiPlayer;
-using Orts.Processes;
 using Orts.Simulation;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Viewer3D.Popups;
+using Orts.Viewer3D.Processes;
 using Orts.Viewer3D.RollingStock;
 using ORTS.Common;
 using ORTS.Settings;
@@ -61,7 +61,7 @@ namespace Orts.Viewer3D
         public SharedShapeManager ShapeManager { get; private set; }
         public Point DisplaySize { get { return RenderProcess.DisplaySize; } }
         // Components
-        public Orts.Processes.Game Game { get; private set; }
+        public Orts.Viewer3D.Processes.Game Game { get; private set; }
         public Simulator Simulator { get; private set; }
         public World World { get; private set; }
         /// <summary>
@@ -206,7 +206,7 @@ namespace Orts.Viewer3D
         /// <param name="simulator">The <see cref="Simulator"/> with which the viewer runs.</param>
         /// <param name="game">The <see cref="Game"/> with which the viewer runs.</param>
         [CallOnThread("Loader")]
-        public Viewer(Simulator simulator, Orts.Processes.Game game)
+        public Viewer(Simulator simulator, Orts.Viewer3D.Processes.Game game)
         {
             Simulator = simulator;
             Game = game;
