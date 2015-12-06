@@ -211,6 +211,7 @@ namespace Orts.Simulation.RollingStocks
         public Dictionary<string, List<ParticleEmitterData>> EffectData = new Dictionary<string, List<ParticleEmitterData>>();
 
         public List<CabView> CabViewList = new List<CabView>();
+        public CabView3D CabView3D;
 
         public MSTSNotchController ThrottleController;
         public ScriptedBrakeController TrainBrakeController;
@@ -298,6 +299,8 @@ namespace Orts.Simulation.RollingStocks
                         CabViewList.Add(CabViewList[0]);
                         CabViewList[0].CabViewType = CabViewType.Void;
                     }
+
+                    CabView3D = BuildCab3DView(WagFilePath, CVFFileName);
                  }
                 else
                 {
@@ -510,6 +513,31 @@ namespace Orts.Simulation.RollingStocks
             return new CabView(cvfFile, viewPointList, extendedCVF, cabViewType, noseAhead);
         }
 
+        private CabView3D BuildCab3DView(string wagFilePath, string cvfFileName)
+        {
+            if (Cab3DShapeFileName == null)
+                return null;
+
+            var viewPointList = new List<ViewPoint>();
+            var extendedCVF = new ExtendedCVF();
+            bool noseAhead = false;
+
+            var cvfBasePath = Path.Combine(Path.GetDirectoryName(wagFilePath), "CABVIEW");
+            var cvfFilePath = Path.Combine(cvfBasePath, cvfFileName);
+            if (!File.Exists(cvfFilePath))
+                return null;
+            var shapeBasePath = Path.Combine(Path.GetDirectoryName(WagFilePath), "CABVIEW3D");
+            var shapeFilePath = Path.Combine(shapeBasePath, Cab3DShapeFileName);
+            if (!File.Exists(shapeFilePath))
+                return null;
+
+            var cvfFile = new CabViewFile(cvfFilePath, cvfBasePath);
+            if (!(this is MSTSSteamLocomotive))
+                InitializeFromORTSSpecific(cvfFilePath, extendedCVF);
+
+            return new CabView3D(cvfFile, CabViewpoints, extendedCVF, CabViewType.Front, noseAhead, shapeFilePath);
+        }
+
         protected void ParseEffects(string lowercasetoken, STFReader stf)
         {
             stf.MustMatch("(");
@@ -640,6 +668,7 @@ namespace Orts.Simulation.RollingStocks
             CabSoundFileName = locoCopy.CabSoundFileName;
             CVFFileName = locoCopy.CVFFileName;
             CabViewList = locoCopy.CabViewList;
+            CabView3D = locoCopy.CabView3D;
 
             MaxPowerW = locoCopy.MaxPowerW;
             MaxForceN = locoCopy.MaxForceN;
@@ -2823,6 +2852,21 @@ namespace Orts.Simulation.RollingStocks
             CabViewType = cabViewType;
             NoseAhead = noseAhead;
         }
+    }
+
+    public class CabView3D : CabView
+    {
+        public string ShapeFilePath;
+
+        public CabView3D(CabViewFile cvfFile, List<PassengerViewPoint> cabViewpoints, ExtendedCVF extendedCVF, CabViewType cabViewType, bool noseAhead, string shapeFilePath)
+            : base(cvfFile, new List<ViewPoint>(), extendedCVF, cabViewType, noseAhead)
+        {
+            ShapeFilePath = shapeFilePath;
+            if (cabViewpoints != null)
+                foreach (var point in cabViewpoints)
+                    ViewPointList.Add(point);
+        }
+
     }
 
     /// <summary>

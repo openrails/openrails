@@ -1188,8 +1188,8 @@ namespace Orts.Simulation.Physics
             for (int i = 0; i < Cars.Count; i++)
             {
                 if (SkipOtherUsersCar(i)) continue;
-                if (Cars[i].HasFrontCab) driveableCabs++;
-                if (Cars[i].HasRearCab) driveableCabs++;
+                if (Cars[i].HasFrontCab || Cars[i].HasFront3DCab) driveableCabs++;
+                if (Cars[i].HasRearCab || Cars[i].HasRear3DCab) driveableCabs++;
             }
             if (driveableCabs < 2)
             {

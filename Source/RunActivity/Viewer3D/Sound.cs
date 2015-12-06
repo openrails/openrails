@@ -116,7 +116,7 @@ namespace Orts.Viewer3D
                 MSTSLocomotive loco = Car as MSTSLocomotive;
 
                 //if (!string.IsNullOrEmpty(Car.InteriorSoundFileName) || (loco != null && !string.IsNullOrEmpty(loco.CabSoundFileName)))
-                if (!string.IsNullOrEmpty(Car.InteriorShapeFileName) || (loco != null && (loco.HasFrontCab || loco.HasRearCab)))
+                if (!string.IsNullOrEmpty(Car.InteriorShapeFileName) || (loco != null && (loco.HasFrontCab || loco.HasRearCab || loco.HasFront3DCab || loco.HasRear3DCab)))
                     LoadTrackSound(ttdf.InsideSound, true);
 
                 LoadTrackSound(ttdf.OutsideSound, false);

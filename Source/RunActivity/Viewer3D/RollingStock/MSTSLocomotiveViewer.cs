@@ -1036,7 +1036,7 @@ namespace Orts.Viewer3D.RollingStock
 			#endregion
 		}
 
-        public CabRenderer(Viewer viewer, MSTSLocomotive car, string filePath) //used by 3D cab as a refrence, thus many can be eliminated
+        public CabRenderer(Viewer viewer, MSTSLocomotive car, CabViewFile CVFFile) //used by 3D cab as a refrence, thus many can be eliminated
         {
             _Viewer = viewer;
             _Locomotive = car;
@@ -1046,7 +1046,6 @@ namespace Orts.Viewer3D.RollingStock
             ControlMap = new Dictionary<int, CabViewControlRenderer>();
             int[] count = new int[256];//enough to hold all types, count the occurence of each type
             var i = 0;
-            CabViewFile CVFFile = new CabViewFile(filePath, "");
 
             var controlSortIndex = 1;  // Controls are drawn atop the cabview and in order they appear in the CVF file.
             // This allows the segments of moving-scale meters to be hidden by covers (e.g. TGV-A)
@@ -2163,22 +2162,13 @@ namespace Orts.Viewer3D.RollingStock
             Locomotive = car;
             _Sprite2DCabView = (SpriteBatchMaterial)viewer.MaterialManager.Load("SpriteBatch");
             LocoViewer = locoViewer;
-            string wagonFolderSlash = Path.GetDirectoryName(car.WagFilePath) + @"\CABVIEW3D\";
-            string shapePath = wagonFolderSlash + car.Cab3DShapeFileName;
-            if (!File.Exists(shapePath)) //we could not find it
+            if (car.CabView3D != null)
             {
-                shapePath = car.Cab3DShapeFileName;  //honor the name specified by the eng file (like ..\\..\\DASH9\\CABVIEW3D
-                if (!File.Exists(shapePath )) throw new Exception("Could not find the 3d cab shape file"); //still cannot find it, report error
-            }
-            TrainCarShape = new PoseableShape(viewer, shapePath + '\0' + wagonFolderSlash, car.WorldPosition, ShapeFlags.ShadowCaster);
-
-            string cvfPath = shapePath.ToUpper().Replace(".S", ".CVF");
-            if (File.Exists(cvfPath))
-            {
-                locoViewer.ThreeDimentionCabRenderer = new CabRenderer(viewer, car, cvfPath);
+                var shapePath = car.CabView3D.ShapeFilePath;
+                TrainCarShape = new PoseableShape(viewer, shapePath + '\0' + Path.GetDirectoryName(shapePath), car.WorldPosition, ShapeFlags.ShadowCaster);
+                locoViewer.ThreeDimentionCabRenderer = new CabRenderer(viewer, car, car.CabView3D.CVFFile);
             }
             else locoViewer.ThreeDimentionCabRenderer = locoViewer._CabRenderer;
-            //TrainCarShape = new PoseableShape(viewer, shapePath, car.WorldPosition, ShapeFlags.ShadowCaster);
 
             AnimateParts = new Dictionary<int, AnimatedPartMultiState>();
             //DigitParts = new Dictionary<int, DigitalDisplay>();
@@ -2187,7 +2177,7 @@ namespace Orts.Viewer3D.RollingStock
             OnDemandAnimateParts = new Dictionary<int, AnimatedPart>();
             CABViewControlTypes type;
             // Find the animated parts
-            if (TrainCarShape.SharedShape.Animations != null)
+            if (TrainCarShape != null && TrainCarShape.SharedShape.Animations != null)
             {
                 string matrixName = ""; string typeName = ""; AnimatedPartMultiState tmpPart = null;
                 for (int iMatrix = 0; iMatrix < TrainCarShape.SharedShape.MatrixNames.Count; ++iMatrix)
@@ -2333,7 +2323,8 @@ namespace Orts.Viewer3D.RollingStock
 				p.Value.PrepareFrame(frame, elapsedTime);
 			}*/ //removed with 3D digits
             
-			TrainCarShape.PrepareFrame(frame, elapsedTime);
+            if (TrainCarShape != null)
+			    TrainCarShape.PrepareFrame(frame, elapsedTime);
 		}
 
 		internal override void Mark()

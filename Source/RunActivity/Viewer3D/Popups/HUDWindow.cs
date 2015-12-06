@@ -504,7 +504,7 @@ namespace Orts.Viewer3D.Popups
                     train.IsFreight ? Viewer.Catalog.GetString("Freight") : Viewer.Catalog.GetString("Pass"),
                     FormatStrings.FormatShortDistanceDisplay(car.CarLengthM, locomotive.IsMetric),
                     FormatStrings.FormatLargeMass(car.MassKG, locomotive.IsMetric, locomotive.IsUK),
-                    (car.IsDriveable ? "D" : "") + (car.HasFrontCab ? "F" : "") + (car.HasRearCab ? "R" : ""),
+                    (car.IsDriveable ? "D" : "") + (car.HasFrontCab || car.HasFront3DCab ? "F" : "") + (car.HasRearCab || car.HasRear3DCab ? "R" : ""),
                     GetCarWhyteLikeNotation(car));
                 TableAddLine(table);
             }

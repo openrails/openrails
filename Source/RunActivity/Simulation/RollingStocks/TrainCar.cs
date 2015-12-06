@@ -1053,6 +1053,28 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
+        public bool HasFront3DCab
+        {
+            get
+            {
+                var loco = this as MSTSLocomotive;
+                var i = (int)CabViewType.Front;
+                if (loco == null || loco.CabView3D == null) return false;
+                return (loco.CabView3D.ViewPointList.Count >= i);
+            }
+        }
+
+        public bool HasRear3DCab
+        {
+            get
+            {
+                var loco = this as MSTSLocomotive;
+                var i = (int)CabViewType.Rear;
+                if (loco == null || loco.CabView3D == null) return false;
+                return (loco.CabView3D.ViewPointList.Count >= i);
+            }
+        }
+
         public virtual bool GetCabFlipped()
         {
             return false;
