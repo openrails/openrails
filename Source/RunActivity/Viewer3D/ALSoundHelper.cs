@@ -335,7 +335,8 @@ namespace Orts.Viewer3D
                 SoundPiece = new SoundPiece(name, IsExternal, isReleasedWithJump);
                 AllPieces.Add(n, SoundPiece);
             }
-            SoftLoopPoints = SoundPiece.isSingle;
+            // OpenAL soft loop points extension is disabled until a better way is found for handling smooth transitions with it.
+            //SoftLoopPoints = SoundPiece.isSingle;
         }
 
         /// <summary>
@@ -771,9 +772,6 @@ namespace Orts.Viewer3D
                                     || SoundQueue[(QueueTail + 1) % QUEUELENGHT].PlayMode == PlayMode.ReleaseWithJump))
                                 {
                                     SoundQueue[QueueTail % QUEUELENGHT].PlayMode = SoundQueue[(QueueTail + 1) % QUEUELENGHT].PlayMode;
-                                    // If we need smooth transition to the next item in queue
-                                    if (SoundQueue[(QueueTail + 2) % QUEUELENGHT].PlayState == PlayState.New)
-                                        SoundQueue[(QueueTail + 2) % QUEUELENGHT].SoftLoopPoints = false;
                                 }
 
                                 if (SoundQueue[QueueTail % QUEUELENGHT].Update(SoundSourceID, _PlaybackSpeed))
@@ -837,9 +835,6 @@ namespace Orts.Viewer3D
                                 }
                                 break;
                         }
-                        // If we need smooth transition to the next item in queue
-                        if (SoundQueue[(QueueTail + 1) % QUEUELENGHT].PlayState == PlayState.New)
-                            SoundQueue[(QueueTail + 1) % QUEUELENGHT].SoftLoopPoints = false;
                         break;
                     // Found a playable item, play it
                     case PlayState.New:

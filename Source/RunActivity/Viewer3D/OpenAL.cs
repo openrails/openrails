@@ -782,6 +782,11 @@ namespace Orts.Viewer3D
                     alLoopPointsSoft = OpenAL.alIsExtensionPresent("AL_SOFT_LOOP_POINTS") == OpenAL.AL_TRUE;
                 numCuePoints = wfi.CuePoints.Length;
             }
+            // Disable AL_SOFT_LOOP_POINTS OpenAL extension until a more sofisticated detection
+            // is implemented for sounds that never need smoothly transiting into another.
+            // For utilizing soft loop points a static buffer has to be used, without the ability of
+            // continuously buffering, and it is impossible to use it for smooth transition.
+            alLoopPointsSoft = false;
 
             if (wfi.CuePoints == null || wfi.CuePoints.Length == 1 || alLoopPointsSoft)
             {
