@@ -1095,15 +1095,18 @@ namespace Orts.Simulation.Physics
             for (int i = 0; i < Cars.Count; i++)
             {
                 if (SkipOtherUsersCar(i)) continue;
+                var cab3d = Cars[i].HasFront3DCab || Cars[i].HasRear3DCab;
+                var hasFrontCab = cab3d ? Cars[i].HasFront3DCab : Cars[i].HasFrontCab;
+                var hasRearCab = cab3d ? Cars[i].HasRear3DCab : Cars[i].HasRearCab;
                 if (Cars[i].Flipped)
                 {
-                    if (Cars[i].HasRearCab) cabList.Add(-(i + 1));
-                    if (Cars[i].HasFrontCab) cabList.Add(i + 1);
+                    if (hasRearCab) cabList.Add(-(i + 1));
+                    if (hasFrontCab) cabList.Add(i + 1);
                 }
                 else
                 {
-                    if (Cars[i].HasFrontCab) cabList.Add(i + 1);
-                    if (Cars[i].HasRearCab) cabList.Add(-(i + 1));
+                    if (hasFrontCab) cabList.Add(i + 1);
+                    if (hasRearCab) cabList.Add(-(i + 1));
                 }
             }
 

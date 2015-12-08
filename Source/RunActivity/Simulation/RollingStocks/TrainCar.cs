@@ -1064,7 +1064,7 @@ namespace Orts.Simulation.RollingStocks
                 var loco = this as MSTSLocomotive;
                 var i = (int)CabViewType.Front;
                 if (loco == null || loco.CabView3D == null) return false;
-                return (loco.CabView3D.ViewPointList.Count >= i);
+                return (loco.CabView3D.ViewPointList.Count > i);
             }
         }
 
@@ -1075,7 +1075,7 @@ namespace Orts.Simulation.RollingStocks
                 var loco = this as MSTSLocomotive;
                 var i = (int)CabViewType.Rear;
                 if (loco == null || loco.CabView3D == null) return false;
-                return (loco.CabView3D.ViewPointList.Count >= i);
+                return (loco.CabView3D.ViewPointList.Count > i);
             }
         }
 
