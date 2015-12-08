@@ -734,6 +734,10 @@ namespace Orts.Viewer3D
                 {
                     new UseCabCameraCommand(Log);
                 }
+                else if (ThreeDimCabCamera.IsAvailable)
+                {
+                    new Use3DCabCameraCommand(Log);
+                }
                 else
                 {
                     Simulator.Confirmer.Warning(Viewer.Catalog.GetString("Cab view not available"));
@@ -741,7 +745,7 @@ namespace Orts.Viewer3D
             }
             if (UserInput.IsPressed(UserCommands.CameraThreeDimensionalCab))
             {
-                if (this.ThreeDimCabCamera.IsAvailable)
+                if (ThreeDimCabCamera.IsAvailable)
                 {
                     new Use3DCabCameraCommand(Log);
                 }

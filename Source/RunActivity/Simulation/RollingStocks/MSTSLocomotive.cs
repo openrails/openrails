@@ -299,13 +299,10 @@ namespace Orts.Simulation.RollingStocks
                         CabViewList.Add(CabViewList[0]);
                         CabViewList[0].CabViewType = CabViewType.Void;
                     }
-
-                    CabView3D = BuildCab3DView(WagFilePath, CVFFileName);
-                 }
-                else
-                {
-                    Trace.TraceWarning("{0} locomotive's CabView references non-existent {1}", wagFilePath, CVFFileName);
                 }
+                CabView3D = BuildCab3DView(WagFilePath, CVFFileName);
+                if (cabView == null & CabView3D == null)
+                    Trace.TraceWarning("{0} locomotive's CabView references non-existent {1}", wagFilePath, CVFFileName);
             }
 
             CheckCoherence();
@@ -522,10 +519,15 @@ namespace Orts.Simulation.RollingStocks
             var extendedCVF = new ExtendedCVF();
             bool noseAhead = false;
 
-            var cvfBasePath = Path.Combine(Path.GetDirectoryName(wagFilePath), "CABVIEW");
+            var cvfBasePath = Path.Combine(Path.GetDirectoryName(wagFilePath), "CABVIEW3D");
             var cvfFilePath = Path.Combine(cvfBasePath, cvfFileName);
             if (!File.Exists(cvfFilePath))
-                return null;
+            {
+                cvfBasePath = Path.Combine(Path.GetDirectoryName(wagFilePath), "CABVIEW");
+                cvfFilePath = Path.Combine(cvfBasePath, cvfFileName);
+                if (!File.Exists(cvfFilePath))
+                    return null;
+            }
             var shapeBasePath = Path.Combine(Path.GetDirectoryName(WagFilePath), "CABVIEW3D");
             var shapeFilePath = Path.Combine(shapeBasePath, Cab3DShapeFileName);
             if (!File.Exists(shapeFilePath))
