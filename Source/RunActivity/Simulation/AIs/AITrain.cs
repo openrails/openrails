@@ -1494,6 +1494,15 @@ namespace Orts.Simulation.AIs
 
             }
 
+            if (SpeedMpS < 0)   // if train still running force it to stop
+            {
+                SpeedMpS = 0;
+                Update(0);   // stop the wheels from moving etc
+                AITrainThrottlePercent = 0;
+                AITrainBrakePercent = 100;
+
+            }
+
             // check if train ahead - if so, determine speed and distance
 
             if (ControlMode == TRAIN_CONTROL.AUTO_NODE &&

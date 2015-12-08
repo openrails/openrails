@@ -45,6 +45,9 @@
 // Debug Calculation of Aux Tender operation
 //#define DEBUG_AUXTENDER
 
+// Debug for calculation of speed forces
+// #define DEBUG_SPEED_FORCES
+
 using GNU.Gettext;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -1563,6 +1566,10 @@ namespace Orts.Simulation.Physics
                 if (car1.Flipped ^ (car1.IsDriveable && car1.Train.IsActualPlayerTrain && ((MSTSLocomotive)car1).UsingRearCab))
                     car1.SpeedMpS = -car1.SpeedMpS;
             }
+#if DEBUG_SPEED_FORCES
+            Trace.TraceInformation(" ========================= Train Speed #1 (Train.cs) ======================================== ");
+            Trace.TraceInformation("Total Raw Speed {0} Train Speed {1}", SpeedMpS, SpeedMpS / Cars.Count);
+#endif 
             SpeedMpS /= Cars.Count;
 
             SlipperySpotDistanceM -= SpeedMpS * elapsedClockSeconds;
@@ -3768,8 +3775,12 @@ namespace Orts.Simulation.Physics
 
         public void UpdateCarSpeeds(float elapsedTime)
         {
+       // The train speed is calculated by averaging all the car speeds. The individual car speeds are calculated from the TotalForce acting on each car. Typically the MotiveForce or Gravitational forces (though other forces like friction have a small impact as well).
+       // At stop under normal circumstances the BrakeForce exceeds the TotalForces, and therefore the wagon is "held in a stationary position". 
+       // In the case of "air_piped" wagons which have no BrakeForces acting on them, the car is not held stationary, and each car shows a small speed.
+       // To overcome this any "air_piped cars are forced to zero speed if the prcedding car is stationary.
             int n = 0;
-
+            float PrevCarSpeedMps = 0.0f;
             foreach (TrainCar car in Cars)
             {
                 if (TrainMaxSpeedMpS <= 0f)
@@ -3788,19 +3799,39 @@ namespace Orts.Simulation.Physics
                     car.SpeedMpS += car.TotalForceN / car.MassKG * elapsedTime;
                     if (car.SpeedMpS < 0)
                         car.SpeedMpS = 0;
+                     // If is "air_piped car, and preceeding car is at stop, then set speed to zero.
+                    if (n != 0 && PrevCarSpeedMps == 0 && car.CarBrakeSystemType == "air_piped")
+                    {
+                        car.SpeedMpS = 0;
+                    }
+                    PrevCarSpeedMps = car.SpeedMpS;
                 }
                 else if (car.SpeedMpS < 0)
                 {
                     car.SpeedMpS += car.TotalForceN / car.MassKG * elapsedTime;
                     if (car.SpeedMpS > 0)
                         car.SpeedMpS = 0;
+                    // If is "air_piped car, and preceeding is at stop, then set speed to zero.
+                    if (n != 0 && PrevCarSpeedMps == 0 && car.CarBrakeSystemType == "air_piped")
+                    {
+                        car.SpeedMpS = 0;
+                    }
+                    PrevCarSpeedMps = car.SpeedMpS; 
                 }
-                else
+                else // if speed equals zero
+                    PrevCarSpeedMps = car.SpeedMpS;
                     n++;
+#if DEBUG_SPEED_FORCES
+                Trace.TraceInformation(" ========================================  Train Speed #2 (Train.cs) ===========================================================");
+                Trace.TraceInformation("Car ID {0} TotalForceN {1} Mass {2} elapsedtime {3} CarSpeed {4}", car.CarID, car.TotalForceN, car.MassKG, elapsedTime, car.SpeedMpS);
+                Trace.TraceInformation("Friction {0} Brake {1} Curve {2} Tunnel {3}", car.FrictionForceN, car.BrakeForceN, car.CurveForceN, car.TunnelForceN);
+                Trace.TraceInformation("Coupler {0} Prev Car Speed {1}", car.CouplerForceU, PrevCarSpeedMps);
+                Trace.TraceInformation("Calculated Total {0}", car.FrictionForceN + car.BrakeForceN + car.CurveForceN + car.TunnelForceN);
+#endif    
             }
             if (n == 0)
                 return;
-
+            float PrevMovingCarSpeed = 0.0f;
             // start cars moving forward
 
             for (int i = 0; i < Cars.Count; i++)
@@ -3826,7 +3857,18 @@ namespace Orts.Simulation.Physics
                 if (f > 0)
                 {
                     for (int k = i; k <= j; k++)
-                        Cars[k].SpeedMpS = f / m * elapsedTime;
+                    {
+                        // If is "air_piped car, and preceeding car is at stop, then set speed to zero.
+                        if (Cars[k].CarBrakeSystemType == "air_piped" && PrevMovingCarSpeed == 0.0)
+                        {
+                            Cars[k].SpeedMpS = 0.0f;
+                        }
+                        else
+                        {
+                            Cars[k].SpeedMpS = f / m * elapsedTime;
+                        }
+                        PrevMovingCarSpeed = Cars[k].SpeedMpS;
+                    }
                     n -= j - i + 1;
                 }
             }
@@ -3856,7 +3898,18 @@ namespace Orts.Simulation.Physics
                 if (f < 0)
                 {
                     for (int k = j; k <= i; k++)
-                        Cars[k].SpeedMpS = f / m * elapsedTime;
+                    {
+                        // If is "air_piped car, and preceeding car is at stop, then set speed to zero.
+                        if (Cars[k].CarBrakeSystemType == "air_piped" && PrevMovingCarSpeed == 0.0)
+                        {
+                            Cars[k].SpeedMpS = 0.0f;
+                        }
+                        else
+                        {
+                            Cars[k].SpeedMpS = f / m * elapsedTime;
+                        }
+                        PrevMovingCarSpeed = Cars[k].SpeedMpS;
+                    }
                 }
             }
         }

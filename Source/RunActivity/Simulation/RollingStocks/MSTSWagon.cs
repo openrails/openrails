@@ -79,6 +79,7 @@ namespace Orts.Simulation.RollingStocks
         public float Variable3;
         
         // wag file data
+        string Carbrakesystemtype;
         public string MainShapeFileName;
         public string FreightShapeFileName;
         public float FreightAnimMaxLevelM;
@@ -702,6 +703,8 @@ namespace Orts.Simulation.RollingStocks
             Trace.TraceInformation("Car ID {0} Aux Tender Water Mass {1} Wagon Type {2}", CarID, AuxTenderWaterMassKG, AuxWagonType);
 #endif
 
+           // Update BrakeSystem Type
+           Carbrakesystemtype = brakeSystemType;
 
             AbsWheelSpeedMpS = Math.Abs(WheelSpeedMpS);
             if (IsDavisFriction == true) // test to see if OR thinks that Davis Values have been entered in WG file.
@@ -1113,7 +1116,11 @@ namespace Orts.Simulation.RollingStocks
            return DriverWheelRadiusM;
         }
 
-
+        // Make the car brake system type available to other classes
+        public override string GetCarBrakeSystemType()
+        {
+            return Carbrakesystemtype;
+       }
 
 
         // Make the vehicle num wheels available to other classes

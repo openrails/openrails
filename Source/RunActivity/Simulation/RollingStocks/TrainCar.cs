@@ -254,6 +254,8 @@ namespace Orts.Simulation.RollingStocks
         public float BrakeForceN;    // brake force in Newtons
         public float TotalForceN; // sum of all the forces active on car relative train direction
 
+        public string CarBrakeSystemType;
+
         public float CurrentElevationPercent;
 
         public bool CurveResistanceSpeedDependent;
@@ -442,6 +444,8 @@ namespace Orts.Simulation.RollingStocks
             UpdateCurveForce(elapsedClockSeconds);
             UpdateTunnelForce();
             UpdateCarriageHeatLoss();
+
+            CarBrakeSystemType = GetCarBrakeSystemType();
             
             // acceleration
             if (elapsedClockSeconds > 0.0f)
@@ -1080,6 +1084,13 @@ namespace Orts.Simulation.RollingStocks
             return false;
         }
 
+        // Method to get BrakeSystemType from MSTSWagon
+        public virtual string GetCarBrakeSystemType()
+        {
+
+            return CarBrakeSystemType;
+        }        
+        
         // Method to get Track Gauge from MSTSWagon
         public virtual float GetTrackGaugeM()
         {
