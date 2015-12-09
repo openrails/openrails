@@ -29,8 +29,8 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             this.buttonOK = new System.Windows.Forms.Button();
             this.numericBrakePipeChargingRate = new System.Windows.Forms.NumericUpDown();
             this.label4 = new System.Windows.Forms.Label();
@@ -63,7 +63,7 @@
             this.checkModelInstancing = new System.Windows.Forms.CheckBox();
             this.trackDayAmbientLight = new System.Windows.Forms.TrackBar();
             this.checkVerticalSync = new System.Windows.Forms.CheckBox();
-            this.label11 = new System.Windows.Forms.Label();
+            this.labelDistantMountainsViewingDistance = new System.Windows.Forms.Label();
             this.numericDistantMountainsViewingDistance = new System.Windows.Forms.NumericUpDown();
             this.checkFastFullScreenAltTab = new System.Windows.Forms.CheckBox();
             this.checkDistantMountains = new System.Windows.Forms.CheckBox();
@@ -87,7 +87,7 @@
             this.checkCurveResistanceSpeedDependent = new System.Windows.Forms.CheckBox();
             this.checkTunnelResistanceDependent = new System.Windows.Forms.CheckBox();
             this.checkOverrideNonElectrifiedRoutes = new System.Windows.Forms.CheckBox();
-            this.label12 = new System.Windows.Forms.Label();
+            this.labelAdhesionMovingAverageFilterSize = new System.Windows.Forms.Label();
             this.numericAdhesionMovingAverageFilterSize = new System.Windows.Forms.NumericUpDown();
             this.checkBreakCouplers = new System.Windows.Forms.CheckBox();
             this.checkUseAdvancedAdhesion = new System.Windows.Forms.CheckBox();
@@ -130,6 +130,7 @@
             this.tabPageUpdater = new System.Windows.Forms.TabPage();
             this.labelUpdateChannel = new System.Windows.Forms.Label();
             this.tabPageExperimental = new System.Windows.Forms.TabPage();
+            this.checkCorrectQuestionableBrakingParams = new System.Windows.Forms.CheckBox();
             this.label25 = new System.Windows.Forms.Label();
             this.precipitationBoxLength = new System.Windows.Forms.NumericUpDown();
             this.label24 = new System.Windows.Forms.Label();
@@ -157,7 +158,7 @@
             this.checkSignalLightGlow = new System.Windows.Forms.CheckBox();
             this.checkUseMSTSEnv = new System.Windows.Forms.CheckBox();
             this.checkUseLocationPassingPaths = new System.Windows.Forms.CheckBox();
-            this.label13 = new System.Windows.Forms.Label();
+            this.labelPerformanceTunerTarget = new System.Windows.Forms.Label();
             this.numericPerformanceTunerTarget = new System.Windows.Forms.NumericUpDown();
             this.checkPerformanceTuner = new System.Windows.Forms.CheckBox();
             this.checkDoubleWire = new System.Windows.Forms.CheckBox();
@@ -172,7 +173,6 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.checkCorrectQuestionableBrakingParams = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -538,7 +538,7 @@
             this.tabPageVideo.Controls.Add(this.checkModelInstancing);
             this.tabPageVideo.Controls.Add(this.trackDayAmbientLight);
             this.tabPageVideo.Controls.Add(this.checkVerticalSync);
-            this.tabPageVideo.Controls.Add(this.label11);
+            this.tabPageVideo.Controls.Add(this.labelDistantMountainsViewingDistance);
             this.tabPageVideo.Controls.Add(this.numericDistantMountainsViewingDistance);
             this.tabPageVideo.Controls.Add(this.checkFastFullScreenAltTab);
             this.tabPageVideo.Controls.Add(this.checkDistantMountains);
@@ -620,15 +620,15 @@
             this.checkVerticalSync.Text = "Vertical sync";
             this.checkVerticalSync.UseVisualStyleBackColor = true;
             // 
-            // label11
+            // labelDistantMountainsViewingDistance
             // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(86, 221);
-            this.label11.Margin = new System.Windows.Forms.Padding(3);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(110, 13);
-            this.label11.TabIndex = 12;
-            this.label11.Text = "Viewing distance (km)";
+            this.labelDistantMountainsViewingDistance.AutoSize = true;
+            this.labelDistantMountainsViewingDistance.Location = new System.Drawing.Point(86, 221);
+            this.labelDistantMountainsViewingDistance.Margin = new System.Windows.Forms.Padding(3);
+            this.labelDistantMountainsViewingDistance.Name = "labelDistantMountainsViewingDistance";
+            this.labelDistantMountainsViewingDistance.Size = new System.Drawing.Size(110, 13);
+            this.labelDistantMountainsViewingDistance.TabIndex = 12;
+            this.labelDistantMountainsViewingDistance.Text = "Viewing distance (km)";
             // 
             // numericDistantMountainsViewingDistance
             // 
@@ -678,6 +678,7 @@
             this.checkDistantMountains.TabIndex = 10;
             this.checkDistantMountains.Text = "Distant mountains";
             this.checkDistantMountains.UseVisualStyleBackColor = true;
+            this.checkDistantMountains.Click += new System.EventHandler(this.checkDistantMountains_Click);
             // 
             // label14
             // 
@@ -876,7 +877,7 @@
             this.tabPageSimulation.Controls.Add(this.checkCurveResistanceSpeedDependent);
             this.tabPageSimulation.Controls.Add(this.checkTunnelResistanceDependent);
             this.tabPageSimulation.Controls.Add(this.checkOverrideNonElectrifiedRoutes);
-            this.tabPageSimulation.Controls.Add(this.label12);
+            this.tabPageSimulation.Controls.Add(this.labelAdhesionMovingAverageFilterSize);
             this.tabPageSimulation.Controls.Add(this.numericAdhesionMovingAverageFilterSize);
             this.tabPageSimulation.Controls.Add(this.checkBreakCouplers);
             this.tabPageSimulation.Controls.Add(this.checkUseAdvancedAdhesion);
@@ -938,15 +939,15 @@
             this.checkOverrideNonElectrifiedRoutes.Text = "Override non-electrified route line-voltage";
             this.checkOverrideNonElectrifiedRoutes.UseVisualStyleBackColor = true;
             // 
-            // label12
+            // labelAdhesionMovingAverageFilterSize
             // 
-            this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(86, 31);
-            this.label12.Margin = new System.Windows.Forms.Padding(3);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(173, 13);
-            this.label12.TabIndex = 2;
-            this.label12.Text = "Adhesion moving average filter size";
+            this.labelAdhesionMovingAverageFilterSize.AutoSize = true;
+            this.labelAdhesionMovingAverageFilterSize.Location = new System.Drawing.Point(86, 31);
+            this.labelAdhesionMovingAverageFilterSize.Margin = new System.Windows.Forms.Padding(3);
+            this.labelAdhesionMovingAverageFilterSize.Name = "labelAdhesionMovingAverageFilterSize";
+            this.labelAdhesionMovingAverageFilterSize.Size = new System.Drawing.Size(173, 13);
+            this.labelAdhesionMovingAverageFilterSize.TabIndex = 2;
+            this.labelAdhesionMovingAverageFilterSize.Text = "Adhesion moving average filter size";
             // 
             // numericAdhesionMovingAverageFilterSize
             // 
@@ -985,6 +986,7 @@
             this.checkUseAdvancedAdhesion.TabIndex = 0;
             this.checkUseAdvancedAdhesion.Text = "Advanced adhesion model";
             this.checkUseAdvancedAdhesion.UseVisualStyleBackColor = true;
+            this.checkUseAdvancedAdhesion.Click += new System.EventHandler(this.checkUseAdvancedAdhesion_Click);
             // 
             // tabPageKeyboard
             // 
@@ -1237,6 +1239,7 @@
             this.checkDataLogTrainSpeed.TabIndex = 0;
             this.checkDataLogTrainSpeed.Text = "Log train speed";
             this.checkDataLogTrainSpeed.UseVisualStyleBackColor = true;
+            this.checkDataLogTrainSpeed.Click += new System.EventHandler(this.checkDataLogTrainSpeed_Click);
             // 
             // tabPageContent
             // 
@@ -1376,27 +1379,27 @@
             this.dataGridViewContent.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dataGridViewContent.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
             this.dataGridViewContent.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
             this.dataGridViewContent.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dataGridViewContent.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.nameDataGridViewTextBoxColumn,
             this.pathDataGridViewTextBoxColumn});
             this.dataGridViewContent.DataSource = this.bindingSourceContent;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle4;
             this.dataGridViewContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridViewContent.Location = new System.Drawing.Point(0, 0);
             this.dataGridViewContent.MultiSelect = false;
@@ -1480,7 +1483,7 @@
             this.tabPageExperimental.Controls.Add(this.checkSignalLightGlow);
             this.tabPageExperimental.Controls.Add(this.checkUseMSTSEnv);
             this.tabPageExperimental.Controls.Add(this.checkUseLocationPassingPaths);
-            this.tabPageExperimental.Controls.Add(this.label13);
+            this.tabPageExperimental.Controls.Add(this.labelPerformanceTunerTarget);
             this.tabPageExperimental.Controls.Add(this.numericPerformanceTunerTarget);
             this.tabPageExperimental.Controls.Add(this.checkPerformanceTuner);
             this.tabPageExperimental.Controls.Add(this.checkDoubleWire);
@@ -1501,6 +1504,16 @@
             this.tabPageExperimental.TabIndex = 3;
             this.tabPageExperimental.Text = "Experimental";
             this.tabPageExperimental.UseVisualStyleBackColor = true;
+            // 
+            // checkCorrectQuestionableBrakingParams
+            // 
+            this.checkCorrectQuestionableBrakingParams.AutoSize = true;
+            this.checkCorrectQuestionableBrakingParams.Location = new System.Drawing.Point(6, 235);
+            this.checkCorrectQuestionableBrakingParams.Name = "checkCorrectQuestionableBrakingParams";
+            this.checkCorrectQuestionableBrakingParams.Size = new System.Drawing.Size(216, 17);
+            this.checkCorrectQuestionableBrakingParams.TabIndex = 43;
+            this.checkCorrectQuestionableBrakingParams.Text = "Correct questionable braking parameters";
+            this.checkCorrectQuestionableBrakingParams.UseVisualStyleBackColor = true;
             // 
             // label25
             // 
@@ -1834,15 +1847,15 @@
             this.checkUseLocationPassingPaths.Text = "Location-linked passing path processing";
             this.checkUseLocationPassingPaths.UseVisualStyleBackColor = true;
             // 
-            // label13
+            // labelPerformanceTunerTarget
             // 
-            this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(86, 144);
-            this.label13.Margin = new System.Windows.Forms.Padding(3);
-            this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(88, 13);
-            this.label13.TabIndex = 10;
-            this.label13.Text = "Target frame rate";
+            this.labelPerformanceTunerTarget.AutoSize = true;
+            this.labelPerformanceTunerTarget.Location = new System.Drawing.Point(86, 144);
+            this.labelPerformanceTunerTarget.Margin = new System.Windows.Forms.Padding(3);
+            this.labelPerformanceTunerTarget.Name = "labelPerformanceTunerTarget";
+            this.labelPerformanceTunerTarget.Size = new System.Drawing.Size(88, 13);
+            this.labelPerformanceTunerTarget.TabIndex = 10;
+            this.labelPerformanceTunerTarget.Text = "Target frame rate";
             // 
             // numericPerformanceTunerTarget
             // 
@@ -1882,6 +1895,7 @@
             this.checkPerformanceTuner.TabIndex = 8;
             this.checkPerformanceTuner.Text = "Automatically tune settings to keep performance level";
             this.checkPerformanceTuner.UseVisualStyleBackColor = true;
+            this.checkPerformanceTuner.Click += new System.EventHandler(this.checkPerformanceTuner_Click);
             // 
             // checkDoubleWire
             // 
@@ -2036,16 +2050,6 @@
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
             // 
-            // checkCorrectQuestionableBrakingParams
-            // 
-            this.checkCorrectQuestionableBrakingParams.AutoSize = true;
-            this.checkCorrectQuestionableBrakingParams.Location = new System.Drawing.Point(6, 235);
-            this.checkCorrectQuestionableBrakingParams.Name = "checkCorrectQuestionableBrakingParams";
-            this.checkCorrectQuestionableBrakingParams.Size = new System.Drawing.Size(216, 17);
-            this.checkCorrectQuestionableBrakingParams.TabIndex = 43;
-            this.checkCorrectQuestionableBrakingParams.Text = "Correct questionable braking parameters";
-            this.checkCorrectQuestionableBrakingParams.UseVisualStyleBackColor = true;
-            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -2175,9 +2179,9 @@
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.ComboBox comboDataLogSpeedUnits;
         private System.Windows.Forms.Label label19;
-        private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.Label labelAdhesionMovingAverageFilterSize;
         private System.Windows.Forms.NumericUpDown numericAdhesionMovingAverageFilterSize;
-        private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.Label labelPerformanceTunerTarget;
         private System.Windows.Forms.NumericUpDown numericPerformanceTunerTarget;
         private System.Windows.Forms.CheckBox checkPerformanceTuner;
         private System.Windows.Forms.CheckBox checkOverrideNonElectrifiedRoutes;
@@ -2194,7 +2198,7 @@
         private System.Windows.Forms.CheckBox checkTunnelResistanceDependent;
         private System.Windows.Forms.Label labelLanguage;
         private System.Windows.Forms.ComboBox comboLanguage;
-        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Label labelDistantMountainsViewingDistance;
         private System.Windows.Forms.NumericUpDown numericDistantMountainsViewingDistance;
         private System.Windows.Forms.CheckBox checkDistantMountains;
         private System.Windows.Forms.CheckBox checkAlerterExternal;

@@ -163,6 +163,8 @@ namespace ORTS
             numericCab2DStretch.Value = Settings.Cab2DStretch;
             numericViewingDistance.Value = Settings.ViewingDistance;
             checkDistantMountains.Checked = Settings.DistantMountains;
+            labelDistantMountainsViewingDistance.Enabled = checkDistantMountains.Checked;
+            numericDistantMountainsViewingDistance.Enabled = checkDistantMountains.Checked;
             numericDistantMountainsViewingDistance.Value = Settings.DistantMountainsViewingDistance / 1000;
             numericViewingFOV.Value = Settings.ViewingFOV;
             numericWorldObjectDensity.Value = Settings.WorldObjectDensity;
@@ -172,6 +174,8 @@ namespace ORTS
 
             // Simulation tab
             checkUseAdvancedAdhesion.Checked = Settings.UseAdvancedAdhesion;
+            labelAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked;
+            numericAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked; 
             numericAdhesionMovingAverageFilterSize.Value = Settings.AdhesionMovingAverageFilterSize;
             checkBreakCouplers.Checked = Settings.BreakCouplers;
             checkCurveResistanceSpeedDependent.Checked = Settings.CurveResistanceSpeedDependent;
@@ -209,6 +213,9 @@ namespace ORTS
 
             // Evaluation tab
             checkDataLogTrainSpeed.Checked = Settings.DataLogTrainSpeed;
+            labelDataLogTSInterval.Enabled = checkDataLogTrainSpeed.Checked;
+            numericDataLogTSInterval.Enabled = checkDataLogTrainSpeed.Checked;
+            checkListDataLogTSContents.Enabled = checkDataLogTrainSpeed.Checked;  
             numericDataLogTSInterval.Value = Settings.DataLogTSInterval;
             checkListDataLogTSContents.Items.AddRange(new object[] {
                 catalog.GetString("Time"),
@@ -290,6 +297,8 @@ namespace ORTS
             numericSuperElevationMinLen.Value = Settings.SuperElevationMinLen;
             numericSuperElevationGauge.Value = Settings.SuperElevationGauge;
             checkPerformanceTuner.Checked = Settings.PerformanceTuner;
+            labelPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
+            numericPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
             numericPerformanceTunerTarget.Value = Settings.PerformanceTunerTarget;
             checkDoubleWire.Checked = Settings.DoubleWire;
             checkForcedRedAtStationStops.Checked = !Settings.NoForcedRedAtStationStops;
@@ -672,6 +681,31 @@ namespace ORTS
                 checkAlerterExternal.Enabled = false;
                 checkAlerterExternal.Checked = false; 
             }
+        }
+
+        private void checkDistantMountains_Click(object sender, EventArgs e)
+        {
+           labelDistantMountainsViewingDistance.Enabled = checkDistantMountains.Checked;
+           numericDistantMountainsViewingDistance.Enabled = checkDistantMountains.Checked;
+        }
+
+        private void checkUseAdvancedAdhesion_Click(object sender, EventArgs e)
+        {
+            labelAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked;
+            numericAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked;
+        }
+
+        private void checkDataLogTrainSpeed_Click(object sender, EventArgs e)
+        {
+            checkListDataLogTSContents.Enabled = checkDataLogTrainSpeed.Checked;
+            labelDataLogTSInterval.Enabled = checkDataLogTrainSpeed.Checked;
+            numericDataLogTSInterval.Enabled = checkDataLogTrainSpeed.Checked;
+        }
+
+        private void checkPerformanceTuner_Click(object sender, EventArgs e)
+        {
+            numericPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
+            labelPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
         }
     }
 }
