@@ -206,6 +206,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             outf.Write(AngleCockBOpen);
             outf.Write(BleedOffValveOpen);
             outf.Write((int)HoldingValve);
+            outf.Write(CylVolumeM3);
         }
 
         public override void Restore(BinaryReader inf)
@@ -226,6 +227,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             AngleCockBOpen = inf.ReadBoolean();
             BleedOffValveOpen = inf.ReadBoolean();
             HoldingValve = (ValveState)inf.ReadInt32();
+            CylVolumeM3 = inf.ReadSingle();
         }
 
         public override void Initialize(bool handbrakeOn, float maxPressurePSI, float fullServPressurePSI, bool immediateRelease)
