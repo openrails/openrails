@@ -85,7 +85,6 @@
     <Compile Include="Simulation\AIs\AITrain.cs" />
     <Compile Include="Common\ErrorLogger.cs" />
     <Compile Include="Common\Events.cs" />
-    <Compile Include="Common\Interpolator.cs" />
     <Compile Include="Common\Math.cs" />
     <Compile Include="Common\ORTSPaths.cs" />
     <Compile Include="Common\SteamTable.cs" />

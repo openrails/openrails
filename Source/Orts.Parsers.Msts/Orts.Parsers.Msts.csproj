@@ -52,6 +52,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Interpolator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SBR.cs" />
     <Compile Include="STFReader.cs" />
