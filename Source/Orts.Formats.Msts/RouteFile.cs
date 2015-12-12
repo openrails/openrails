@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Orts.Parsers.Msts;
+using System.IO;
 
 namespace Orts.Formats.Msts
 {
@@ -27,6 +28,11 @@ namespace Orts.Formats.Msts
     {
         public RouteFile(string filename)
         {
+            string dir = Path.GetDirectoryName(filename);
+            string file = Path.GetFileName(filename);
+            string orFile = dir + @"\openrails\" + file;
+            if (File.Exists(orFile))
+                filename = orFile;
             try
             {
                 using (STFReader stf = new STFReader(filename, false))
