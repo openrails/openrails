@@ -513,7 +513,7 @@ namespace ORTS.Common
         /// <param name="size">The size of the buffer pointed to by the <paramref name="value"/> parameter, in characters. The maximum profile section size is 32,767 characters.</param>
         /// <param name="fileName">The name of the initialization file. If this parameter does not contain a full path to the file, the system searches for the file in the Windows directory.</param>
         /// <returns>The return value specifies the number of characters copied to the buffer, not including the terminating null character. If the buffer is not large enough to contain all the key name and value pairs associated with the named section, the return value is equal to <paramref name="size"/> minus two.</returns>
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         public static extern int GetPrivateProfileSection(string sectionName, string value, int size, string fileName);
 
         /// <summary>
@@ -530,7 +530,7 @@ namespace ORTS.Common
         /// If neither <paramref name="sectionName"/> nor <paramref name="keyName"/> is <c>null</c> and the supplied destination buffer is too small to hold the requested string, the string is truncated and followed by a <c>null</c> character, and the return value is equal to <paramref name="size"/> minus one.
         /// If either <paramref name="sectionName"/> or <paramref name="keyName"/> is <c>null</c> and the supplied destination buffer is too small to hold all the strings, the last string is truncated and followed by two <c>null</c> characters. In this case, the return value is equal to <paramref name="size"/> minus two.
         /// In the event the initialization file specified by <paramref name="fileName"/> is not found, or contains invalid values, this function will set errorno with a value of '0x2' (File Not Found). To retrieve extended error information, call GetLastError.</returns>
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         public static extern int GetPrivateProfileString(string sectionName, string keyName, string defaultValue, string value, int size, string fileName);
 
         /// <summary>
@@ -543,7 +543,7 @@ namespace ORTS.Common
         /// If the file was created using Unicode characters, the function writes Unicode characters to the file. Otherwise, the function writes ANSI characters.</param>
         /// <returns>If the function successfully copies the string to the initialization file, the return value is nonzero.
         /// If the function fails, or if it flushes the cached version of the most recently accessed initialization file, the return value is zero. To get extended error information, call GetLastError.</returns>
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         public static extern int WritePrivateProfileString(string sectionName, string keyName, string value, string fileName);
     }
 }

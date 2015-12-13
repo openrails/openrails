@@ -40,7 +40,6 @@ namespace Orts.Formats.OR
                 using (StreamReader scrStream = new StreamReader(filePath, true))
                 {
                     MultiTTFilePreliminaryRead(filePath, directory, scrStream);
-                    scrStream.Close();
                     if (String.IsNullOrEmpty(Description)) Description = String.Copy(filePath);
                 }
             }
@@ -119,7 +118,6 @@ namespace Orts.Formats.OR
                 using (StreamReader scrStream = new StreamReader(filePath, true))
                 {
                     MultiTTFileRead(filePath, directory, scrStream);
-                    scrStream.Close();
                     if (String.IsNullOrEmpty(Description)) Description = String.Copy(filePath);
                 }
             }

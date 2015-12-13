@@ -315,7 +315,7 @@ namespace ORTS.Settings
         [DllImport("user32.dll")]
         static extern int MapVirtualKey(int code, MapVirtualKeyType type);
 
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         static extern int GetKeyNameText(int scanCode, [Out] string name, int nameLength);
         #endregion
 

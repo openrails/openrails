@@ -1119,6 +1119,7 @@ namespace Orts.Viewer3D.Processes
             readonly VertexDeclaration VertexDeclaration;
             readonly VertexBuffer VertexBuffer;
 
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
             public LoadingPrimitive(Game game)
             {
                 Material = GetMaterial(game);
@@ -1223,6 +1224,7 @@ namespace Orts.Viewer3D.Processes
             public readonly LoadingShader Shader;
             public readonly Texture2D Texture;
 
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
             public LoadingMaterial(Game game)
                 : base(null, null)
             {

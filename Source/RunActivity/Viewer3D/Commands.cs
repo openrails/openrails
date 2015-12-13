@@ -48,7 +48,7 @@ namespace Orts.Viewer3D
     /// Continuous command to automatically re-fuel and re-water locomotive or tender when 2000 meters or more from pickup object.
     /// </summary>
     [Serializable()]
-    public class ImmediateRefillCommand : ContinuousCommand
+    public sealed class ImmediateRefillCommand : ContinuousCommand
     {
         public static MSTSLocomotiveViewer Receiver { get; set; }
 
@@ -71,7 +71,7 @@ namespace Orts.Viewer3D
     /// Continuous command to re-fuel and re-water locomotive or tender.
     /// </summary>
     [Serializable()]
-    public class RefillCommand : ContinuousCommand
+    public sealed class RefillCommand : ContinuousCommand
     {
         public static MSTSLocomotiveViewer Receiver { get; set; }
 
@@ -92,7 +92,7 @@ namespace Orts.Viewer3D
 
     // Other
     [Serializable()]
-    public class ChangeCabCommand : Command
+    public sealed class ChangeCabCommand : Command
     {
         public static Viewer Receiver { get; set; }
 
@@ -110,7 +110,7 @@ namespace Orts.Viewer3D
         }
 
     [Serializable()]
-    public class ToggleSwitchAheadCommand : Command
+    public sealed class ToggleSwitchAheadCommand : Command
     {
         public static Viewer Receiver { get; set; }
 
@@ -128,7 +128,7 @@ namespace Orts.Viewer3D
         }
 
     [Serializable()]
-    public class ToggleSwitchBehindCommand : Command
+    public sealed class ToggleSwitchBehindCommand : Command
     {
         public static Viewer Receiver { get; set; }
 
@@ -146,7 +146,7 @@ namespace Orts.Viewer3D
         }
 
     [Serializable()]
-    public class ToggleAnySwitchCommand : IndexCommand
+    public sealed class ToggleAnySwitchCommand : IndexCommand
         {
         public static Viewer Receiver { get; set; }
 
@@ -164,7 +164,7 @@ namespace Orts.Viewer3D
     }
 
     [Serializable()]
-    public class UncoupleCommand : Command
+    public sealed class UncoupleCommand : Command
     {
         public static Viewer Receiver { get; set; }
         int CarPosition;    // 0 for head of train
@@ -189,7 +189,7 @@ namespace Orts.Viewer3D
     }
 
     [Serializable()]
-    public class SaveScreenshotCommand : Command
+    public sealed class SaveScreenshotCommand : Command
     {
         public static Viewer Receiver { get; set; }
 
@@ -207,7 +207,7 @@ namespace Orts.Viewer3D
     }
 
     [Serializable()]
-    public class ResumeActivityCommand : ActivityCommand
+    public sealed class ResumeActivityCommand : ActivityCommand
     {
         public ResumeActivityCommand( CommandLog log, string eventNameLabel, double pauseDurationS )
             : base(log, eventNameLabel, pauseDurationS)
@@ -223,7 +223,7 @@ namespace Orts.Viewer3D
     }
 
     [Serializable()]
-    public class CloseAndResumeActivityCommand : ActivityCommand
+    public sealed class CloseAndResumeActivityCommand : ActivityCommand
     {
         public CloseAndResumeActivityCommand( CommandLog log, string eventNameLabel, double pauseDurationS )
             : base(log, eventNameLabel, pauseDurationS)
@@ -239,7 +239,7 @@ namespace Orts.Viewer3D
     }
 
     [Serializable()]
-    public class PauseActivityCommand : ActivityCommand
+    public sealed class PauseActivityCommand : ActivityCommand
     {
         public PauseActivityCommand(CommandLog log, string eventNameLabel, double pauseDurationS)
             : base(log, eventNameLabel, pauseDurationS)
@@ -255,7 +255,7 @@ namespace Orts.Viewer3D
     }
 
     [Serializable()]
-    public class QuitActivityCommand : ActivityCommand
+    public sealed class QuitActivityCommand : ActivityCommand
     {
         public QuitActivityCommand( CommandLog log, string eventNameLabel, double pauseDurationS )
             : base(log, eventNameLabel, pauseDurationS)
@@ -282,7 +282,7 @@ namespace Orts.Viewer3D
     }
 
     [Serializable()]
-    public class UseCabCameraCommand : UseCameraCommand
+    public sealed class UseCabCameraCommand : UseCameraCommand
     {
 
         public UseCabCameraCommand( CommandLog log ) 
@@ -299,7 +299,7 @@ namespace Orts.Viewer3D
     }
 
 	[Serializable()]
-	public class Use3DCabCameraCommand : UseCameraCommand
+	public sealed class Use3DCabCameraCommand : UseCameraCommand
 	{
 
 		public Use3DCabCameraCommand(CommandLog log)
@@ -316,7 +316,7 @@ namespace Orts.Viewer3D
 	}
 	
 	[Serializable()]
-    public class UseFrontCameraCommand : UseCameraCommand
+    public sealed class UseFrontCameraCommand : UseCameraCommand
     {
 
         public UseFrontCameraCommand( CommandLog log )
@@ -333,7 +333,7 @@ namespace Orts.Viewer3D
     }
 
     [Serializable()]
-    public class UseBackCameraCommand : UseCameraCommand
+    public sealed class UseBackCameraCommand : UseCameraCommand
     {
 
         public UseBackCameraCommand( CommandLog log )
@@ -350,7 +350,7 @@ namespace Orts.Viewer3D
     }
 
     [Serializable()]
-    public class UseHeadOutForwardCameraCommand : UseCameraCommand
+    public sealed class UseHeadOutForwardCameraCommand : UseCameraCommand
     {
 
         public UseHeadOutForwardCameraCommand( CommandLog log )
@@ -367,7 +367,7 @@ namespace Orts.Viewer3D
     }
 
     [Serializable()]
-    public class UseFreeRoamCameraCommand : UseCameraCommand
+    public sealed class UseFreeRoamCameraCommand : UseCameraCommand
     {
 
         public UseFreeRoamCameraCommand(CommandLog log)
@@ -391,7 +391,7 @@ namespace Orts.Viewer3D
     }
     
     [Serializable()]
-    public class UsePreviousFreeRoamCameraCommand : UseCameraCommand
+    public sealed class UsePreviousFreeRoamCameraCommand : UseCameraCommand
     {
 
         public UsePreviousFreeRoamCameraCommand(CommandLog log)
@@ -407,7 +407,7 @@ namespace Orts.Viewer3D
     }
     
     [Serializable()]
-    public class UseHeadOutBackCameraCommand : UseCameraCommand
+    public sealed class UseHeadOutBackCameraCommand : UseCameraCommand
     {
 
         public UseHeadOutBackCameraCommand( CommandLog log )
@@ -424,7 +424,7 @@ namespace Orts.Viewer3D
     }
 
     [Serializable()]
-    public class UseBrakemanCameraCommand : UseCameraCommand
+    public sealed class UseBrakemanCameraCommand : UseCameraCommand
     {
 
         public UseBrakemanCameraCommand( CommandLog log )
@@ -441,7 +441,7 @@ namespace Orts.Viewer3D
     }
 
     [Serializable()]
-    public class UsePassengerCameraCommand : UseCameraCommand
+    public sealed class UsePassengerCameraCommand : UseCameraCommand
     {
 
         public UsePassengerCameraCommand( CommandLog log )
@@ -458,7 +458,7 @@ namespace Orts.Viewer3D
     }
 
     [Serializable()]
-    public class UseTracksideCameraCommand : UseCameraCommand
+    public sealed class UseTracksideCameraCommand : UseCameraCommand
     {
 
         public UseTracksideCameraCommand( CommandLog log )
@@ -494,7 +494,7 @@ namespace Orts.Viewer3D
     }
 
     [Serializable()]
-    public class CameraRotateUpDownCommand : MoveCameraCommand
+    public sealed class CameraRotateUpDownCommand : MoveCameraCommand
     {
         float RotationXRadians;
 
@@ -523,7 +523,7 @@ namespace Orts.Viewer3D
     }
 
     [Serializable()]
-    public class CameraRotateLeftRightCommand : MoveCameraCommand
+    public sealed class CameraRotateLeftRightCommand : MoveCameraCommand
     {
         float RotationYRadians;
 
@@ -555,7 +555,7 @@ namespace Orts.Viewer3D
     /// Records rotations made by mouse movements.
     /// </summary>
     [Serializable()]
-    public class CameraMouseRotateCommand : MoveCameraCommand
+    public sealed class CameraMouseRotateCommand : MoveCameraCommand
     {
         float RotationXRadians;
         float RotationYRadians;
@@ -587,7 +587,7 @@ namespace Orts.Viewer3D
     }
 
     [Serializable()]
-    public class CameraXCommand : MoveCameraCommand
+    public sealed class CameraXCommand : MoveCameraCommand
     {
         float XRadians;
 
@@ -616,9 +616,9 @@ namespace Orts.Viewer3D
     }
 
     [Serializable()]
-    public class CameraYCommand : MoveCameraCommand
+    public sealed class CameraYCommand : MoveCameraCommand
     {
-        protected float YRadians;
+        float YRadians;
 
         public CameraYCommand( CommandLog log, double startTime, double endTime, float yr )
             : base(log, startTime, endTime)
@@ -645,7 +645,7 @@ namespace Orts.Viewer3D
     }
 
     [Serializable()]
-    public class CameraZCommand : MoveCameraCommand
+    public sealed class CameraZCommand : MoveCameraCommand
     {
         float ZRadians;
 
@@ -673,7 +673,7 @@ namespace Orts.Viewer3D
     }
 
 	[Serializable()]
-	public class CameraMoveXYZCommand : MoveCameraCommand
+	public sealed class CameraMoveXYZCommand : MoveCameraCommand
 	{
 		float X, Y, Z;
 
@@ -702,7 +702,7 @@ namespace Orts.Viewer3D
 	}
 
 	[Serializable()]
-    public class TrackingCameraXCommand : MoveCameraCommand
+    public sealed class TrackingCameraXCommand : MoveCameraCommand
     {
         float PositionXRadians;
 
@@ -731,7 +731,7 @@ namespace Orts.Viewer3D
     }
 
     [Serializable()]
-    public class TrackingCameraYCommand : MoveCameraCommand
+    public sealed class TrackingCameraYCommand : MoveCameraCommand
     {
         float PositionYRadians;
 
@@ -760,7 +760,7 @@ namespace Orts.Viewer3D
     }
 
     [Serializable()]
-    public class TrackingCameraZCommand : MoveCameraCommand
+    public sealed class TrackingCameraZCommand : MoveCameraCommand
     {
         float PositionDistanceMetres;
 
@@ -789,7 +789,7 @@ namespace Orts.Viewer3D
     }
 
     [Serializable()]
-    public class NextCarCommand : UseCameraCommand
+    public sealed class NextCarCommand : UseCameraCommand
     {
 
         public NextCarCommand( CommandLog log )
@@ -810,7 +810,7 @@ namespace Orts.Viewer3D
     }
 
     [Serializable()]
-    public class PreviousCarCommand : UseCameraCommand
+    public sealed class PreviousCarCommand : UseCameraCommand
     {
 
         public PreviousCarCommand( CommandLog log )
@@ -831,7 +831,7 @@ namespace Orts.Viewer3D
     }
 
     [Serializable()]
-    public class FirstCarCommand : UseCameraCommand
+    public sealed class FirstCarCommand : UseCameraCommand
     {
 
         public FirstCarCommand( CommandLog log )
@@ -852,7 +852,7 @@ namespace Orts.Viewer3D
     }
 
     [Serializable()]
-    public class LastCarCommand : UseCameraCommand
+    public sealed class LastCarCommand : UseCameraCommand
     {
 
         public LastCarCommand( CommandLog log )
@@ -873,7 +873,7 @@ namespace Orts.Viewer3D
     }
 
     [Serializable]
-    public class FieldOfViewCommand : UseCameraCommand
+    public sealed class FieldOfViewCommand : UseCameraCommand
     {
         float FieldOfView;
 

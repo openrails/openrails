@@ -74,7 +74,7 @@ namespace Orts.Common
 
     [Serializable()]
     public abstract class Command : ICommand {
-        public virtual double Time { get; set; }
+        public double Time { get; set; }
 
         /// <summary>
         /// Each command adds itself to the log when it is constructed.
@@ -164,7 +164,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class SaveCommand : Command {
+    public sealed class SaveCommand : Command {
         public string FileStem;
 
         public SaveCommand( CommandLog log, string fileStem ) 
@@ -185,7 +185,7 @@ namespace Orts.Common
 
     // Direction
     [Serializable()]
-    public class ReverserCommand : BooleanCommand {
+    public sealed class ReverserCommand : BooleanCommand {
         public static MSTSLocomotive Receiver { get; set; }
 
         public ReverserCommand( CommandLog log, bool toState ) 
@@ -208,7 +208,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class ContinuousReverserCommand : ContinuousCommand {
+    public sealed class ContinuousReverserCommand : ContinuousCommand {
         public static MSTSSteamLocomotive Receiver { get; set; }
 
         public ContinuousReverserCommand( CommandLog log, bool toState, float? target, double startTime ) 
@@ -225,7 +225,7 @@ namespace Orts.Common
 
     // Power
     [Serializable()]
-    public class PantographCommand : BooleanCommand {
+    public sealed class PantographCommand : BooleanCommand {
         public static MSTSElectricLocomotive Receiver { get; set; }
         private int item;
 
@@ -249,7 +249,7 @@ namespace Orts.Common
 
     // Power
     [Serializable()]
-    public class PowerCommand : BooleanCommand
+    public sealed class PowerCommand : BooleanCommand
     {
         public static MSTSLocomotive Receiver { get; set; }
 
@@ -275,7 +275,7 @@ namespace Orts.Common
 
     // MU commands connection
     [Serializable()]
-    public class ToggleMUCommand : BooleanCommand
+    public sealed class ToggleMUCommand : BooleanCommand
     {
         public static MSTSLocomotive Receiver { get; set; }
 
@@ -300,7 +300,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class NotchedThrottleCommand : BooleanCommand {
+    public sealed class NotchedThrottleCommand : BooleanCommand {
         public static MSTSLocomotive Receiver { get; set; }
 
         public NotchedThrottleCommand( CommandLog log, bool toState ) : base( log, toState ) {
@@ -318,7 +318,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class ContinuousThrottleCommand : ContinuousCommand {
+    public sealed class ContinuousThrottleCommand : ContinuousCommand {
         public static MSTSLocomotive Receiver { get; set; }
 
         public ContinuousThrottleCommand( CommandLog log, bool toState, float? target, double startTime ) 
@@ -334,7 +334,7 @@ namespace Orts.Common
     
     // Brakes
     [Serializable()]
-    public class TrainBrakeCommand : ContinuousCommand {
+    public sealed class TrainBrakeCommand : ContinuousCommand {
         public static MSTSLocomotive Receiver { get; set; }
 
         public TrainBrakeCommand( CommandLog log, bool toState, float? target, double startTime ) 
@@ -349,7 +349,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class EngineBrakeCommand : ContinuousCommand {
+    public sealed class EngineBrakeCommand : ContinuousCommand {
         public static MSTSLocomotive Receiver { get; set; }
 
         public EngineBrakeCommand( CommandLog log, bool toState, float? target, double startTime )
@@ -364,7 +364,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class DynamicBrakeCommand : ContinuousCommand {
+    public sealed class DynamicBrakeCommand : ContinuousCommand {
         public static MSTSLocomotive Receiver { get; set; }
 
         public DynamicBrakeCommand( CommandLog log, bool toState, float? target, double startTime )
@@ -379,7 +379,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class InitializeBrakesCommand : Command {
+    public sealed class InitializeBrakesCommand : Command {
         public static Train Receiver { get; set; }
 
         public InitializeBrakesCommand( CommandLog log ) 
@@ -394,7 +394,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class EmergencyPushButtonCommand : Command
+    public sealed class EmergencyPushButtonCommand : Command
     {
         public static MSTSLocomotive Receiver { get; set; }
 
@@ -413,7 +413,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class BailOffCommand : BooleanCommand {
+    public sealed class BailOffCommand : BooleanCommand {
         public static MSTSLocomotive Receiver { get; set; }
 
         public BailOffCommand( CommandLog log, bool toState ) 
@@ -432,7 +432,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class HandbrakeCommand : BooleanCommand {
+    public sealed class HandbrakeCommand : BooleanCommand {
         public static MSTSLocomotive Receiver { get; set; }
 
         public HandbrakeCommand( CommandLog log, bool toState ) 
@@ -451,7 +451,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class WagonHandbrakeCommand : BooleanCommand
+    public sealed class WagonHandbrakeCommand : BooleanCommand
     {
         public static MSTSWagon Receiver { get; set; }
 
@@ -475,7 +475,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class RetainersCommand : BooleanCommand {
+    public sealed class RetainersCommand : BooleanCommand {
         public static MSTSLocomotive Receiver { get; set; }
 
         public RetainersCommand( CommandLog log, bool toState ) 
@@ -494,7 +494,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class BrakeHoseConnectCommand : BooleanCommand {
+    public sealed class BrakeHoseConnectCommand : BooleanCommand {
         public static MSTSLocomotive Receiver { get; set; }
 
         public BrakeHoseConnectCommand( CommandLog log, bool toState ) 
@@ -513,7 +513,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class WagonBrakeHoseConnectCommand : BooleanCommand
+    public sealed class WagonBrakeHoseConnectCommand : BooleanCommand
     {
         public static MSTSWagon Receiver { get; set; }
 
@@ -537,7 +537,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class ToggleAngleCockACommand : BooleanCommand
+    public sealed class ToggleAngleCockACommand : BooleanCommand
     {
         public static MSTSWagon Receiver { get; set; }
 
@@ -561,7 +561,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class ToggleAngleCockBCommand : BooleanCommand
+    public sealed class ToggleAngleCockBCommand : BooleanCommand
     {
         public static MSTSWagon Receiver { get; set; }
 
@@ -585,7 +585,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class ToggleBleedOffValveCommand : BooleanCommand
+    public sealed class ToggleBleedOffValveCommand : BooleanCommand
     {
         public static MSTSWagon Receiver { get; set; }
 
@@ -609,7 +609,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class SanderCommand : BooleanCommand {
+    public sealed class SanderCommand : BooleanCommand {
         public static MSTSLocomotive Receiver { get; set; }
 
         public SanderCommand( CommandLog log, bool toState ) 
@@ -633,7 +633,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class AlerterCommand : BooleanCommand {
+    public sealed class AlerterCommand : BooleanCommand {
         public static MSTSLocomotive Receiver { get; set; }
 
         public AlerterCommand( CommandLog log, bool toState ) 
@@ -649,7 +649,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class HornCommand : BooleanCommand {
+    public sealed class HornCommand : BooleanCommand {
         public static MSTSLocomotive Receiver { get; set; }
 
         public HornCommand( CommandLog log, bool toState ) 
@@ -673,7 +673,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class BellCommand : BooleanCommand {
+    public sealed class BellCommand : BooleanCommand {
         public static MSTSLocomotive Receiver { get; set; }
 
         public BellCommand( CommandLog log, bool toState ) 
@@ -700,7 +700,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class ToggleCabLightCommand : Command {
+    public sealed class ToggleCabLightCommand : Command {
         public static MSTSLocomotive Receiver { get; set; }
 
         public ToggleCabLightCommand( CommandLog log ) 
@@ -719,7 +719,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class HeadlightCommand : BooleanCommand {
+    public sealed class HeadlightCommand : BooleanCommand {
         public static MSTSLocomotive Receiver { get; set; }
 
         public HeadlightCommand( CommandLog log, bool toState ) 
@@ -746,7 +746,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class ToggleWipersCommand : Command {
+    public sealed class ToggleWipersCommand : Command {
         public static MSTSLocomotive Receiver { get; set; }
 
         public ToggleWipersCommand( CommandLog log ) 
@@ -761,7 +761,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class ToggleDoorsLeftCommand : Command {
+    public sealed class ToggleDoorsLeftCommand : Command {
         public static MSTSWagon Receiver { get; set; }
 
         public ToggleDoorsLeftCommand( CommandLog log ) 
@@ -777,7 +777,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class ToggleDoorsRightCommand : Command {
+    public sealed class ToggleDoorsRightCommand : Command {
         public static MSTSWagon Receiver { get; set; }
 
         public ToggleDoorsRightCommand( CommandLog log ) 
@@ -793,7 +793,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class ToggleMirrorsCommand : Command {
+    public sealed class ToggleMirrorsCommand : Command {
         public static MSTSWagon Receiver { get; set; }
 
         public ToggleMirrorsCommand( CommandLog log ) 
@@ -809,7 +809,7 @@ namespace Orts.Common
     
     // Steam controls
     [Serializable()]
-    public class ContinuousSteamHeatCommand : ContinuousCommand
+    public sealed class ContinuousSteamHeatCommand : ContinuousCommand
     {
         public static MSTSSteamLocomotive Receiver { get; set; }
         
@@ -830,7 +830,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class ContinuousInjectorCommand : ContinuousCommand {
+    public sealed class ContinuousInjectorCommand : ContinuousCommand {
         public static MSTSSteamLocomotive Receiver { get; set; }
         int Injector;
 
@@ -856,7 +856,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class ToggleInjectorCommand : Command {
+    public sealed class ToggleInjectorCommand : Command {
         public static MSTSSteamLocomotive Receiver { get; set; }
         private int injector;
 
@@ -881,7 +881,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class ContinuousBlowerCommand : ContinuousCommand {
+    public sealed class ContinuousBlowerCommand : ContinuousCommand {
         public static MSTSSteamLocomotive Receiver { get; set; }
 
         public ContinuousBlowerCommand( CommandLog log, bool toState, float? target, double startTime ) 
@@ -897,7 +897,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class ContinuousDamperCommand : ContinuousCommand {
+    public sealed class ContinuousDamperCommand : ContinuousCommand {
         public static MSTSSteamLocomotive Receiver { get; set; }
 
         public ContinuousDamperCommand( CommandLog log, bool toState, float? target, double startTime )
@@ -913,7 +913,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class ContinuousFireboxDoorCommand : ContinuousCommand
+    public sealed class ContinuousFireboxDoorCommand : ContinuousCommand
     {
         public static MSTSSteamLocomotive Receiver { get; set; }
 
@@ -932,7 +932,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class ContinuousFiringRateCommand : ContinuousCommand {
+    public sealed class ContinuousFiringRateCommand : ContinuousCommand {
         public static MSTSSteamLocomotive Receiver { get; set; }
 
         public ContinuousFiringRateCommand( CommandLog log, bool toState, float? target, double startTime )
@@ -948,7 +948,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class ToggleManualFiringCommand : Command {
+    public sealed class ToggleManualFiringCommand : Command {
         public static MSTSSteamLocomotive Receiver { get; set; }
 
         public ToggleManualFiringCommand( CommandLog log ) 
@@ -964,7 +964,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class FireShovelfullCommand : Command {
+    public sealed class FireShovelfullCommand : Command {
         public static MSTSSteamLocomotive Receiver { get; set; }
 
         public FireShovelfullCommand( CommandLog log ) 
@@ -980,7 +980,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class ToggleOdometerCommand : Command
+    public sealed class ToggleOdometerCommand : Command
     {
         public static MSTSLocomotive Receiver { get; set; }
 
@@ -1003,7 +1003,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class ResetOdometerCommand : Command
+    public sealed class ResetOdometerCommand : Command
     {
         public static MSTSLocomotive Receiver { get; set; }
 
@@ -1026,7 +1026,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class ToggleOdometerDirectionCommand : Command
+    public sealed class ToggleOdometerDirectionCommand : Command
     {
         public static MSTSLocomotive Receiver { get; set; }
 
@@ -1049,7 +1049,7 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public class ToggleCylinderCocksCommand : Command {
+    public sealed class ToggleCylinderCocksCommand : Command {
         public static MSTSSteamLocomotive Receiver { get; set; }
 
         public ToggleCylinderCocksCommand( CommandLog log ) 
@@ -1066,7 +1066,7 @@ namespace Orts.Common
 
     // Compound Valve command
     [Serializable()]
-    public class ToggleCylinderCompoundCommand : Command {
+    public sealed class ToggleCylinderCompoundCommand : Command {
         public static MSTSSteamLocomotive Receiver { get; set; }
 
         public ToggleCylinderCompoundCommand(CommandLog log)

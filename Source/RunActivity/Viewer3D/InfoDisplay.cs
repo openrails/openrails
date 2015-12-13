@@ -407,8 +407,6 @@ namespace Orts.Viewer3D
                 }
 #endif
                 file.WriteLine(headerLine);
-
-                file.Close();
             }
         }
 

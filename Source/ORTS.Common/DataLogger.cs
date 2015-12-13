@@ -67,7 +67,6 @@ namespace ORTS.Common
             using (StreamWriter file = File.AppendText(FilePath))
             {
                 file.Write(Cache);
-                file.Close();
             }
             Cache.Length = 0;
         }

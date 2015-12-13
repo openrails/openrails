@@ -227,7 +227,6 @@ namespace Orts.Formats.Msts
                         File.AppendAllText(din_fileLoc + @"sigscr.txt", "Reading file : " + fullName + "\n\n");
 #endif
                         sigscrRead(fullName, scrStream, SignalTypes);
-                        scrStream.Close();
                     }
                 }
                 catch (Exception ex)

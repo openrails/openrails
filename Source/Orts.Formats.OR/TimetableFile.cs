@@ -63,7 +63,6 @@ namespace Orts.Formats.OR
                 using (StreamReader scrStream = new StreamReader(filePath, true))
                 {
                     TTFilePreliminaryRead(filePath, scrStream, Separator);
-                    scrStream.Close();
                 }
             }
             catch (Exception ex)

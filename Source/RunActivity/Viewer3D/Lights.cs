@@ -307,6 +307,7 @@ namespace Orts.Viewer3D
         protected int StateCount;
         protected float StateTime;
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public LightPrimitive(Light light)
         {
             Light = light;

@@ -1386,7 +1386,7 @@ namespace Orts.Viewer3D
     /// <summary>
     /// Play this sound controlled by the distance a TrainCar has travelled
     /// </summary>
-    public class ORTSDistanceTravelledTrigger: ORTSTrigger
+    public sealed class ORTSDistanceTravelledTrigger : ORTSTrigger
     {
         Orts.Formats.Msts.Dist_Travelled_Trigger SMS;
         float triggerDistance;
@@ -1490,7 +1490,7 @@ namespace Orts.Viewer3D
     /// <summary>
     /// Play the sound at random times
     /// </summary>
-    public class ORTSRandomTrigger: ORTSTrigger
+    public sealed class ORTSRandomTrigger : ORTSTrigger
     {
         Simulator Simulator;
         Orts.Formats.Msts.Random_Trigger SMS;
@@ -1546,7 +1546,7 @@ namespace Orts.Viewer3D
     /// <summary>
     /// Control sounds based on TrainCar variables in the simulator 
     /// </summary>
-    public class ORTSVariableTrigger: ORTSTrigger
+    public sealed class ORTSVariableTrigger : ORTSTrigger
     {
         Orts.Formats.Msts.Variable_Trigger SMS;
         MSTSWagon car;
