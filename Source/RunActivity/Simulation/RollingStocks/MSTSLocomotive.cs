@@ -301,7 +301,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                 }
                 CabView3D = BuildCab3DView(WagFilePath, CVFFileName);
-                if (cabView == null & CabView3D == null)
+                if (CabViewList.Count == 0 & CabView3D == null)
                     Trace.TraceWarning("{0} locomotive's CabView references non-existent {1}", wagFilePath, CVFFileName);
             }
 
