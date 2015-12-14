@@ -102,7 +102,9 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("ortsdoubletunnelperimeter", ()=>{ DoubleTunnelPerimeterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
                 // if > 0 indicates distance from track without forest trees
 				new STFReader.TokenProcessor("ortsuserpreferenceforestcleardistance", ()=>{ ForestClearDistance = stf.ReadFloatBlock(STFReader.UNITS.Distance, 0); }),
-
+                // values for superelevation
+                new STFReader.TokenProcessor("ortstracksuperelevation", ()=>{ SuperElevationHgtpRadiusM = new Interpolator(stf); }),
+                
            });
             //TODO This should be changed to STFException.TraceError() with defaults values created
             if (RouteID == null) throw new STFException(stf, "Missing RouteID");
@@ -128,6 +130,7 @@ namespace Orts.Formats.Msts
         public string DefaultWaterTowerSMS;
         public string DefaultSignalSMS;
 		public float TempRestrictedSpeed = -1f;
+        public Interpolator SuperElevationHgtpRadiusM; // Superelevation of tracks
 
         // Values for calculating Tunnel Resistance - will override default values.
         public float SingleTunnelAreaM2; 

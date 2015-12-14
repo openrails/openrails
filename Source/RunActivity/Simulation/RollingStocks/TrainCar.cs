@@ -27,6 +27,8 @@
 //Debug Tunnel Resistance
 //   #define DEBUG_TUNNEL_RESISTANCE
 
+// Debug User SuperElevation
+//#define DEBUG_USER_SUPERELEVATION
 
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
@@ -643,63 +645,75 @@ namespace Orts.Simulation.RollingStocks
 
                 if (CurrentCurveRadius > 0)  // only check curve speed if it is a curve
                 {
-                    
-                    if (CurrentCurveRadius > 2000)
+                    if (Simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM != null)
                     {
-                        if (RouteSpeedMpS > 55.0)   // If route speed limit is greater then 200km/h, assume high speed passenger route
+                       SuperelevationM = Simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM[CurrentCurveRadius];
+//                       SuperelevationM = MathHelper.Clamp(SuperelevationM, 0.01f, 0.150f); // If superelevation is greater then 6" (150mm) then limit to this value
+#if DEBUG_USER_SUPERELEVATION
+                       Trace.TraceInformation(" ============================================= User SuperElevation (TrainCar.cs) ========================================");
+                        Trace.TraceInformation("CarID {0} TrackSuperElevation {1} Curve Radius {2}",  CarID, SuperelevationM, CurrentCurveRadius);
+#endif
+                    }
+                    else
+                    {
+                        if (CurrentCurveRadius > 2000)
                         {
-                            // Calculate superelevation based upon the route speed limit and the curve radius
-                            // SE = ((TrackGauge x Velocity^2 ) / Gravity x curve radius)
+                            if (RouteSpeedMpS > 55.0)   // If route speed limit is greater then 200km/h, assume high speed passenger route
+                            {
+                                // Calculate superelevation based upon the route speed limit and the curve radius
+                                // SE = ((TrackGauge x Velocity^2 ) / Gravity x curve radius)
 
-                            SuperelevationM = (TrackGaugeM * RouteSpeedMpS * RouteSpeedMpS) / (GravitationalAccelerationMpS2 * CurrentCurveRadius);
+                                SuperelevationM = (TrackGaugeM * RouteSpeedMpS * RouteSpeedMpS) / (GravitationalAccelerationMpS2 * CurrentCurveRadius);
 
-                            SuperelevationM = MathHelper.Clamp(SuperelevationM, 0.0f, 0.150f); // If superelevation is greater then 6" (150mm) then limit to this value
-                          
+ //                               SuperelevationM = MathHelper.Clamp(SuperelevationM, 0.01f, 0.150f); // If superelevation is greater then 6" (150mm) then limit to this value
+
+                            }
+                            else
+                            {
+                                SuperelevationM = 0.0254f;  // Assume minimal superelevation if conventional mixed route
+                            }
+
                         }
-                        else
+                        // Set Superelevation value - based upon standard figures
+                        else if (CurrentCurveRadius <= 2000 & CurrentCurveRadius > 1600)
                         {
-                            SuperelevationM = 0.0254f;  // Assume minimal superelevation if conventional mixed route
+                            SuperelevationM = 0.0254f;  // Assume 1" (or 0.0254m)
                         }
-
+                        else if (CurrentCurveRadius <= 1600 & CurrentCurveRadius > 1200)
+                        {
+                            SuperelevationM = 0.038100f;  // Assume 1.5" (or 0.038100m)
+                        }
+                        else if (CurrentCurveRadius <= 1200 & CurrentCurveRadius > 1000)
+                        {
+                            SuperelevationM = 0.050800f;  // Assume 2" (or 0.050800m)
+                        }
+                        else if (CurrentCurveRadius <= 1000 & CurrentCurveRadius > 800)
+                        {
+                            SuperelevationM = 0.063500f;  // Assume 2.5" (or 0.063500m)
+                        }
+                        else if (CurrentCurveRadius <= 800 & CurrentCurveRadius > 600)
+                        {
+                            SuperelevationM = 0.0889f;  // Assume 3.5" (or 0.0889m)
+                        }
+                        else if (CurrentCurveRadius <= 600 & CurrentCurveRadius > 500)
+                        {
+                            SuperelevationM = 0.1016f;  // Assume 4" (or 0.1016m)
+                        }
+                        // for tighter radius curves assume on branch lines and less superelevation
+                        else if (CurrentCurveRadius <= 500 & CurrentCurveRadius > 280)
+                        {
+                            SuperelevationM = 0.0889f;  // Assume 3" (or 0.0762m)
+                        }
+                        else if (CurrentCurveRadius <= 280 & CurrentCurveRadius > 0)
+                        {
+                            SuperelevationM = 0.063500f;  // Assume 2.5" (or 0.063500m)
+                        }
                     }
-                    // Set Superelevation value - based upon standard figures
-                    else if (CurrentCurveRadius <= 2000 & CurrentCurveRadius > 1600)
-                    {
-                        SuperelevationM = 0.0254f;  // Assume 1" (or 0.0254m)
-                    }
-                    else if (CurrentCurveRadius <= 1600 & CurrentCurveRadius > 1200)
-                    {
-                        SuperelevationM = 0.038100f;  // Assume 1.5" (or 0.038100m)
-                    }
-                    else if (CurrentCurveRadius <= 1200 & CurrentCurveRadius > 1000)
-                    {
-                        SuperelevationM = 0.050800f;  // Assume 2" (or 0.050800m)
-                    }
-                    else if (CurrentCurveRadius <= 1000 & CurrentCurveRadius > 800)
-                    {
-                        SuperelevationM = 0.063500f;  // Assume 2.5" (or 0.063500m)
-                    }
-                    else if (CurrentCurveRadius <= 800 & CurrentCurveRadius > 600)
-                    {
-                        SuperelevationM = 0.0889f;  // Assume 3.5" (or 0.0889m)
-                    }
-                    else if (CurrentCurveRadius <= 600 & CurrentCurveRadius > 500)
-                    {
-                        SuperelevationM = 0.1016f;  // Assume 4" (or 0.1016m)
-                    }
-                    // for tighter radius curves assume on branch lines and less superelevation
-                    else if (CurrentCurveRadius <= 500 & CurrentCurveRadius > 280)
-                    {
-                        SuperelevationM = 0.0889f;  // Assume 3" (or 0.0762m)
-                    }
-                    else if (CurrentCurveRadius <= 280 & CurrentCurveRadius > 0)
-                    {
-                        SuperelevationM = 0.063500f;  // Assume 2.5" (or 0.063500m)
-                    }
-
                     // Calulate equal wheel loading speed for current curve and superelevation - this was considered the "safe" speed to travel around a curve
                     // max equal load speed = SQRT ( (superelevation x gravity x curve radius) / track gauge)
                     // SuperElevation is made up of two components = rail superelevation + the amount of sideways force that a passenger will be comfortable with. This is expressed as a figure similar to superelevation.
+
+                    SuperelevationM = MathHelper.Clamp(SuperelevationM, 0.0001f, 0.150f); // If superelevation is greater then 6" (150mm) then limit to this value, having a value of zero causes problems with calculations
 
                     SuperElevationTotalM = SuperelevationM + UnbalancedSuperElevationM;
 
