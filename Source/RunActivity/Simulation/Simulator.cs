@@ -152,6 +152,7 @@ namespace Orts.Simulation
         public bool playerSwitchOngoing = false;
 
         public bool PlayerIsInCab = false;
+        public readonly bool MilepostUnitsMetric;
 
         // Replacy functionality!
         public CommandLog Log { get; set; }
@@ -175,6 +176,7 @@ namespace Orts.Simulation
         }
 
         public event System.EventHandler WeatherChanged;
+        public event System.EventHandler AllowedSpeedRaised;
 
         public Simulator(UserSettings settings, string activityPath, bool useOpenRailsDirectory)
         {
@@ -202,6 +204,7 @@ namespace Orts.Simulation
             Trace.Write(" TRK");
             TRK = new RouteFile(MSTS.MSTSPath.GetTRKFileName(RoutePath));
             RouteName = TRK.Tr_RouteFile.Name;
+            MilepostUnitsMetric = TRK.Tr_RouteFile.MilepostUnitsMetric;
 
             Trace.Write(" TDB");
             TDB = new TrackDatabaseFile(RoutePath + @"\" + TRK.Tr_RouteFile.FileName + ".tdb");
@@ -2050,6 +2053,13 @@ namespace Orts.Simulation
             }
 
         } // TrainList
+
+        internal void OnAllowedSpeedRaised(Train train)
+        {
+            var allowedSpeedRaised = AllowedSpeedRaised;
+            if (allowedSpeedRaised != null)
+                allowedSpeedRaised(train, EventArgs.Empty);
+        }
 
     } // Simulator
 }

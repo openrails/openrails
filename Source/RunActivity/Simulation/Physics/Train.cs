@@ -1980,13 +1980,13 @@ namespace Orts.Simulation.Physics
                 bool moveForward = (Math.Sign(SpeedMpS) >= 0);
                 if (DatalogTSContents[1] == 1)
                 {
-                    stringBuild.Append(MpS.FromMpS(Math.Abs(SpeedMpS), Program.Viewer.MilepostUnitsMetric).ToString("0000.0"));
+                    stringBuild.Append(MpS.FromMpS(Math.Abs(SpeedMpS), Simulator.MilepostUnitsMetric).ToString("0000.0"));
                     stringBuild.Append(Separator);
                 }
 
                 if (DatalogTSContents[2] == 1)
                 {
-                    stringBuild.Append(MpS.FromMpS(AllowedMaxSpeedMpS, Program.Viewer.MilepostUnitsMetric).ToString("0000.0"));
+                    stringBuild.Append(MpS.FromMpS(AllowedMaxSpeedMpS, Simulator.MilepostUnitsMetric).ToString("0000.0"));
                     stringBuild.Append(Separator);
                 }
 
@@ -8448,7 +8448,7 @@ namespace Orts.Simulation.Physics
 
             if (speedInfo.MaxSpeedMpSSignal > 0)
             {
-                allowedMaxSpeedSignalMpS = Simulator.TimetableMode? speedInfo.MaxSpeedMpSSignal : allowedAbsoluteMaxSpeedSignalMpS;
+                allowedMaxSpeedSignalMpS = Simulator.TimetableMode ? speedInfo.MaxSpeedMpSSignal : allowedAbsoluteMaxSpeedSignalMpS;
                 AllowedMaxSpeedMpS = Math.Min(speedInfo.MaxSpeedMpSSignal, allowedMaxSpeedLimitMpS);
             }
             if (speedInfo.MaxSpeedMpSLimit > 0)
@@ -8467,10 +8467,9 @@ namespace Orts.Simulation.Physics
                "Overall : " + AllowedMaxSpeedMpS.ToString() + "\n");
 
 #endif
-            if (IsActualPlayerTrain && AllowedMaxSpeedMpS > prevMaxSpeedMpS && !Program.Viewer.TrackMonitorWindow.Visible && Simulator.Confirmer != null)
+            if (IsActualPlayerTrain && AllowedMaxSpeedMpS > prevMaxSpeedMpS)
             {
-                var message = Program.Catalog.GetStringFmt("Allowed speed raised to {0}", FormatStrings.FormatSpeedDisplay(AllowedMaxSpeedMpS, Program.Viewer.MilepostUnitsMetric));
-                Simulator.Confirmer.Message(ConfirmLevel.Information, message);
+                Simulator.OnAllowedSpeedRaised(this);
             }
         }
 

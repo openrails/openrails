@@ -255,6 +255,16 @@ namespace Orts.Viewer3D
 
             RailDriver = new UserInputRailDriver(Simulator.BasePath);
 
+            Simulator.AllowedSpeedRaised += (object sender, EventArgs e) =>
+            {
+                var train = sender as Train;
+                if (!TrackMonitorWindow.Visible && Simulator.Confirmer != null && train != null)
+                {
+                    var message = Program.Catalog.GetStringFmt("Allowed speed raised to {0}", FormatStrings.FormatSpeedDisplay(train.AllowedMaxSpeedMpS, MilepostUnitsMetric));
+                    Simulator.Confirmer.Message(ConfirmLevel.Information, message);
+                }
+            };
+
             Initialize();
         }
 
