@@ -7,8 +7,8 @@
     <ProjectGuid>{333C4378-D82E-4B47-B561-6BA923B8FDFD}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ORTS.Simulator</RootNamespace>
-    <AssemblyName>ORTS.Simulator</AssemblyName>
+    <RootNamespace>Orts.Simulation</RootNamespace>
+    <AssemblyName>Orts.Simulation</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -28,7 +28,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>..\..\Program\ORTS.Simulator.xml</DocumentationFile>
+    <DocumentationFile>..\..\Program\Orts.Simulation.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RunActivity", "RunActivity\RunActivity.csproj", "{9BE44F64-417D-4AA6-AF4D-2A6A0CBC814D}"
 EndProject
@@ -37,7 +37,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibAE", "Contrib\ActivityEd
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrackViewer", "Contrib\TrackViewer\TrackViewer.csproj", "{79C3A70B-7535-40CB-8448-91AB87CBAE44}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORTS.Simulator", "ORTS.Simulator\ORTS.Simulator.csproj", "{333C4378-D82E-4B47-B561-6BA923B8FDFD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orts.Simulation", "Orts.Simulation\Orts.Simulation.csproj", "{333C4378-D82E-4B47-B561-6BA923B8FDFD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORTS.Viewer3D", "ORTS.Viewer3D\ORTS.Viewer3D.csproj", "{C09BC4DF-0451-4E56-A9C9-F1871FA5266C}"
 EndProject

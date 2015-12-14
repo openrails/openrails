@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Open Rails Simulator Library")]
+[assembly: AssemblyTitle("Open Rails Simulation Library")]
 [assembly: AssemblyDescription("Open Rails Transport Simulator")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Open Rails")]
