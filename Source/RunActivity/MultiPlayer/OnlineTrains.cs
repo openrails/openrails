@@ -62,7 +62,7 @@ namespace Orts.MultiPlayer
 			if (move == null) move = new MSGMove();
 			foreach (OnlinePlayer p in Players.Values)
 			{
-				if (p.Train != null && Program.Simulator.PlayerLocomotive != null && p.Train != Program.Simulator.PlayerLocomotive.Train)
+				if (p.Train != null && MPManager.Simulator.PlayerLocomotive != null && p.Train != MPManager.Simulator.PlayerLocomotive.Train)
 				{
 					if (Math.Abs(p.Train.SpeedMpS) > 0.001 || Math.Abs(p.Train.LastReportedSpeed) > 0)
 					{
@@ -70,9 +70,9 @@ namespace Orts.MultiPlayer
 					}
 				}
 			}
-			foreach (Train t in Program.Simulator.Trains)
+			foreach (Train t in MPManager.Simulator.Trains)
 			{
-				if (Program.Simulator.PlayerLocomotive != null && t == Program.Simulator.PlayerLocomotive.Train) continue;//player drived train
+				if (MPManager.Simulator.PlayerLocomotive != null && t == MPManager.Simulator.PlayerLocomotive.Train) continue;//player drived train
 				if (t == null || findTrain(t)) continue;//is an online player controlled train
 				if (Math.Abs(t.SpeedMpS) > 0.001 || Math.Abs(t.LastReportedSpeed) > 0)
 				{
@@ -103,7 +103,7 @@ namespace Orts.MultiPlayer
 		{
 			string tmp = "";
 			if (move == null) move = new MSGMove();
-			foreach (Train t in Program.Simulator.Trains)
+			foreach (Train t in MPManager.Simulator.Trains)
 			{
 				if (t != null && (Math.Abs(t.SpeedMpS) > 0.001 || Math.Abs(t.LastReportedSpeed) > 0))
 				{
@@ -137,9 +137,9 @@ namespace Orts.MultiPlayer
 			}
 			p.url = player.url; 
 			p.LeadingLocomotiveID = player.leadingID;
-			p.con = Program.Simulator.BasePath + "\\TRAINS\\CONSISTS\\" + player.con;
-			p.path = Program.Simulator.RoutePath + "\\PATHS\\" + player.path;
-			Train train = new Train(Program.Simulator);
+			p.con = MPManager.Simulator.BasePath + "\\TRAINS\\CONSISTS\\" + player.con;
+			p.path = MPManager.Simulator.RoutePath + "\\PATHS\\" + player.path;
+			Train train = new Train(MPManager.Simulator);
 			train.TrainType = Train.TRAINTYPE.REMOTE;
 			if (MPManager.IsServer()) //server needs to worry about correct train number
 			{
@@ -157,9 +157,9 @@ namespace Orts.MultiPlayer
 				try
 				{
 #if ACTIVITY_EDITOR
-					AIPath aiPath = new AIPath(Program.Simulator.TDB, Program.Simulator.TSectionDat, p.path, Program.Simulator.orRouteConfig);
+					AIPath aiPath = new AIPath(MPManager.Simulator.TDB, MPManager.Simulator.TSectionDat, p.path, MPManager.Simulator.TimetableMode, MPManager.Simulator.orRouteConfig);
 #else
-                    AIPath aiPath = new AIPath(Program.Simulator.TDB, Program.Simulator.TSectionDat, p.path);
+                    AIPath aiPath = new AIPath(MPManager.Simulator.TDB, MPManager.Simulator.TSectionDat, p.path);
 #endif
 				}
                 catch (Exception) { MPManager.BroadCast((new MSGMessage(player.user, "Warning", "Server does not have path file provided, signals may always be red for you.")).ToString()); }
@@ -167,7 +167,7 @@ namespace Orts.MultiPlayer
 
 			try
 			{
-				train.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, player.TileX, player.TileZ, player.X, player.Z, direction == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
+				train.RearTDBTraveller = new Traveller(MPManager.Simulator.TSectionDat, MPManager.Simulator.TDB.TrackDB.TrackNodes, player.TileX, player.TileZ, player.X, player.Z, direction == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
 			}
 			catch (Exception e)
 			{
@@ -180,11 +180,11 @@ namespace Orts.MultiPlayer
 			for (var i = 0; i < player.cars.Length; i++)// cars.Length-1; i >= 0; i--) {
 			{
 
-				string wagonFilePath = Program.Simulator.BasePath + @"\trains\trainset\" + player.cars[i];
+				string wagonFilePath = MPManager.Simulator.BasePath + @"\trains\trainset\" + player.cars[i];
 				TrainCar car = null;
 				try
 				{
-                    car = RollingStock.Load(Program.Simulator, wagonFilePath);
+                    car = RollingStock.Load(MPManager.Simulator, wagonFilePath);
 					car.CarLengthM = player.lengths[i];
 				}
 				catch (Exception error)
@@ -264,12 +264,12 @@ namespace Orts.MultiPlayer
 
             if (MPManager.IsServer()) //server needs to worry about correct train number
             {
-                train = Program.Simulator.Trains.Find(t => t.Number == player.num);
+                train = MPManager.Simulator.Trains.Find(t => t.Number == player.num);
                 train.TrainType = Train.TRAINTYPE.REMOTE;
             }
             else
             {
-                train = Program.Simulator.Trains.Find(t => t.Number == player.num);
+                train = MPManager.Simulator.Trains.Find(t => t.Number == player.num);
                 train.TrainType = Train.TRAINTYPE.REMOTE;
             }
             p.Train = train;

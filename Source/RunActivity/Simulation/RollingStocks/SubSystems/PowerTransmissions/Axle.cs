@@ -712,9 +712,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// Resets all integral values to given initial condition
         /// </summary>
         /// <param name="initValue">Initial condition</param>
-        public void Reset(float initValue)
+        public void Reset(double resetTime, float initValue)
         {
-            ResetTime = Program.Simulator.GameTime;
+            ResetTime = resetTime;
             AxleRevolutionsInt.InitialCondition = initValue;
             AxleRevolutionsInt.Reset();
             AxleRevolutionsInt.InitialCondition = 0.0f;

@@ -4523,7 +4523,7 @@ namespace Orts.Simulation.AIs
         /// 
         public void TestUncouple(ref int delay)
         {
-            if (!Program.Simulator.Settings.ExtendedAIShunting) return;
+            if (!Simulator.Settings.ExtendedAIShunting) return;
             if (delay <= 40000 || delay >= 60000) return;
             bool keepFront = true;
             int carsToKeep;
@@ -4536,8 +4536,8 @@ namespace Orts.Simulation.AIs
             delay = delay - 40000 - carsToKeep * 100;
             if (IsActualPlayerTrain && TrainType == TRAINTYPE.AI_PLAYERDRIVEN && this != Simulator.OriginalPlayerTrain)
             {
-                Program.Simulator.ActivityRun.MsgFromNewPlayer = String.Format("Uncouple and keep coupled only {0} {1} cars" , carsToKeep, keepFront? "first" : "last");
-                Program.Simulator.ActivityRun.NewMsgFromNewPlayer = true;
+                Simulator.ActivityRun.MsgFromNewPlayer = String.Format("Uncouple and keep coupled only {0} {1} cars" , carsToKeep, keepFront? "first" : "last");
+                Simulator.ActivityRun.NewMsgFromNewPlayer = true;
             }
             else UncoupleSomeWagons(carsToKeep, keepFront);
         }
@@ -4590,14 +4590,14 @@ namespace Orts.Simulation.AIs
         /// 
         public void TestUncondAttach(ref int delay)
         {
-            if (!Program.Simulator.Settings.ExtendedAIShunting) return;
+            if (!Simulator.Settings.ExtendedAIShunting) return;
             if (delay != 60001) return;
             else
             {
                 if (IsActualPlayerTrain && this != Simulator.OriginalPlayerTrain)
                 {
-                    Program.Simulator.ActivityRun.MsgFromNewPlayer = "You are involved in a join and split task; when you will couple to next train, you automatically will be switched to drive such next train";
-                    Program.Simulator.ActivityRun.NewMsgFromNewPlayer = true;
+                    Simulator.ActivityRun.MsgFromNewPlayer = "You are involved in a join and split task; when you will couple to next train, you automatically will be switched to drive such next train";
+                    Simulator.ActivityRun.NewMsgFromNewPlayer = true;
                 }
                 delay = 0;
                 UncondAttach = true;
@@ -4613,15 +4613,15 @@ namespace Orts.Simulation.AIs
         /// 
         public void TestPermission(ref int delay)
         {
-            if (!Program.Simulator.Settings.ExtendedAIShunting) return;
+            if (!Simulator.Settings.ExtendedAIShunting) return;
             if (delay != 60002) return;
             else
             {
                 delay = 20;
                 if (IsActualPlayerTrain && TrainType == TRAINTYPE.AI_PLAYERDRIVEN && this != Simulator.OriginalPlayerTrain)
                 {
-                    Program.Simulator.ActivityRun.MsgFromNewPlayer = "Ask permission to pass signal (press TAB or Shift-TAB) and proceed";
-                    Program.Simulator.ActivityRun.NewMsgFromNewPlayer = true;
+                    Simulator.ActivityRun.MsgFromNewPlayer = "Ask permission to pass signal (press TAB or Shift-TAB) and proceed";
+                    Simulator.ActivityRun.NewMsgFromNewPlayer = true;
                 }
                 else RequestSignalPermission(ValidRoute[0], 0);
             }
@@ -4989,13 +4989,13 @@ namespace Orts.Simulation.AIs
         {
             if (speedInfo.MaxSpeedMpSSignal > 0)
             {
-                allowedMaxSpeedSignalMpS = Program.Simulator.TimetableMode ? speedInfo.MaxSpeedMpSSignal : allowedAbsoluteMaxSpeedSignalMpS;
+                allowedMaxSpeedSignalMpS = Simulator.TimetableMode ? speedInfo.MaxSpeedMpSSignal : allowedAbsoluteMaxSpeedSignalMpS;
                 AllowedMaxSpeedMpS = Math.Min(allowedMaxSpeedLimitMpS, speedInfo.MaxSpeedMpSSignal);
             }
             if (speedInfo.MaxSpeedMpSLimit > 0)
             {
-                allowedMaxSpeedLimitMpS = Program.Simulator.TimetableMode ? speedInfo.MaxSpeedMpSLimit : allowedAbsoluteMaxSpeedLimitMpS;
-                if (Program.Simulator.TimetableMode)
+                allowedMaxSpeedLimitMpS = Simulator.TimetableMode ? speedInfo.MaxSpeedMpSLimit : allowedAbsoluteMaxSpeedLimitMpS;
+                if (Simulator.TimetableMode)
                     AllowedMaxSpeedMpS = speedInfo.MaxSpeedMpSLimit;
                 else
                     AllowedMaxSpeedMpS = Math.Min(speedInfo.MaxSpeedMpSLimit, allowedMaxSpeedSignalMpS);
@@ -5853,7 +5853,7 @@ namespace Orts.Simulation.AIs
                 if (car is MSTSLocomotive)
                 {
                     var loco = car as MSTSLocomotive;
-                    loco.LocomotiveAxle.Reset(SpeedMpS);
+                    loco.LocomotiveAxle.Reset(Simulator.GameTime, SpeedMpS);
                     loco.LocomotiveAxle.AxleSpeedMpS = SpeedMpS;
                     loco.LocomotiveAxle.FilterMovingAverage.Initialize(loco.AverageForceN);
                     loco.AntiSlip = false; // <CSComment> TODO Temporary patch until AntiSlip is re-implemented
@@ -6139,7 +6139,7 @@ namespace Orts.Simulation.AIs
                                 {
                                     MayDepart = true;
                                     DisplayMessage = Catalog.GetString("Passenger boarding completed. You may depart now.");
-                                    Program.Simulator.SoundNotify = Event.PermissionToDepart;
+                                    Simulator.SoundNotify = Event.PermissionToDepart;
                                 }
                             }
                         }

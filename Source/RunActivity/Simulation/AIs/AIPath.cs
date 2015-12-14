@@ -53,7 +53,7 @@ namespace Orts.Simulation.AIs
         /// with optional parallel siding list.
         /// </summary>
 #if ACTIVITY_EDITOR
-        public AIPath(TrackDatabaseFile TDB, TrackSectionsFile tsectiondat, string filePath, ORRouteConfig orRouteConf)
+        public AIPath(TrackDatabaseFile TDB, TrackSectionsFile tsectiondat, string filePath, bool isTimetableMode, ORRouteConfig orRouteConf)
 #else
         public AIPath(TDBFile TDB, TSectionDatFile tsectiondat, string filePath)
 #endif
@@ -73,7 +73,7 @@ namespace Orts.Simulation.AIs
                 return;
             }
             foreach (TrPathNode tpn in patFile.TrPathNodes)
-                Nodes.Add(new AIPathNode(tpn, patFile.TrackPDPs[(int)tpn.fromPDP], TrackDB));
+                Nodes.Add(new AIPathNode(tpn, patFile.TrackPDPs[(int)tpn.fromPDP], TrackDB, isTimetableMode));
             FirstNode = Nodes[0];
             //LastVisitedNode = FirstNode;            
 
@@ -276,10 +276,10 @@ namespace Orts.Simulation.AIs
         /// Creates a single AIPathNode and initializes everything that do not depend on other nodes.
         /// The AIPath constructor will initialize the rest.
         /// </summary>
-        public AIPathNode(TrPathNode tpn, TrackPDP pdp, TrackDB trackDB)
+        public AIPathNode(TrPathNode tpn, TrackPDP pdp, TrackDB trackDB, bool isTimetableMode)
         {
             ID = (int)tpn.fromPDP;
-            InterpretPathNodeFlags(tpn, pdp);
+            InterpretPathNodeFlags(tpn, pdp, isTimetableMode);
 
             Location = new WorldLocation(pdp.TileX, pdp.TileZ, pdp.X, pdp.Y, pdp.Z);
             if (pdp.IsJunction)
@@ -324,7 +324,7 @@ namespace Orts.Simulation.AIs
         // But the interpretation below is a bit more complicated.
         // TODO. Since this interpretation belongs to the PATfile itself, 
         // in principle it would be more logical to have it in PATfile.cs. But this leads to too much code duplication
-        private void InterpretPathNodeFlags(TrPathNode tpn, TrackPDP pdp)
+        private void InterpretPathNodeFlags(TrPathNode tpn, TrackPDP pdp, bool isTimetableMode)
         {
             if ((tpn.pathFlags & 03) == 0) return;
             // bit 0 and/or bit 1 is set.
@@ -341,7 +341,7 @@ namespace Orts.Simulation.AIs
                 //<CSComment> tests showed me that value 9 in pdp is generated  when the waiting point (or also 
                 //a path start or end point) are dragged within the path editor of the MSTS activity editor; the points are still valid;
                 // however, as a contradictory case of the past has been reported, the check is skipped only when the enhanced compatibility flag is on;
-                if (pdp.IsInvalid && (Program.Simulator.TimetableMode)) // not a valid point
+                if (pdp.IsInvalid && isTimetableMode) // not a valid point
                 {
                     Type = AIPathNodeType.Invalid;
                 }

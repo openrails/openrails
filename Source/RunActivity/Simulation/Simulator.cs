@@ -176,6 +176,8 @@ namespace Orts.Simulation
 
         public Simulator(UserSettings settings, string activityPath, bool useOpenRailsDirectory)
         {
+            MPManager.Simulator = this;
+
             TimetableMode = false;
 
             Settings = settings;
@@ -709,7 +711,7 @@ namespace Orts.Simulation
                     if (train != drivenTrain && train.TrainType != Train.TRAINTYPE.AI_INCORPORATED)
                     {
                         //avoid coupling of player train with other players train
-                        if (MPManager.IsMultiPlayer() && !MPManager.TrainOK2Couple(drivenTrain, train)) continue;
+                        if (MPManager.IsMultiPlayer() && !MPManager.TrainOK2Couple(this, drivenTrain, train)) continue;
 
                         float d1 = drivenTrain.RearTDBTraveller.OverlapDistanceM(train.FrontTDBTraveller, true);
                         if (d1 < 0)
@@ -766,7 +768,7 @@ namespace Orts.Simulation
                     if (train != drivenTrain && train.TrainType != Train.TRAINTYPE.AI_INCORPORATED)
                     {
                         //avoid coupling of player train with other players train if it is too short alived (e.g, when a train is just spawned, it may overlap with another train)
-                        if (MPManager.IsMultiPlayer() && !MPManager.TrainOK2Couple(drivenTrain, train)) continue;
+                        if (MPManager.IsMultiPlayer() && !MPManager.TrainOK2Couple(this, drivenTrain, train)) continue;
                         //	{
                         //		if ((MPManager.Instance().FindPlayerTrain(train) && drivenTrain == PlayerLocomotive.Train) || (MPManager.Instance().FindPlayerTrain(drivenTrain) && train == PlayerLocomotive.Train)) continue;
                         //		if ((MPManager.Instance().FindPlayerTrain(train) && MPManager.Instance().FindPlayerTrain(drivenTrain))) continue; //if both are player-controlled trains
@@ -865,7 +867,7 @@ namespace Orts.Simulation
             // This is the position of the back end of the train in the database.
             //PATTraveller patTraveller = new PATTraveller(patFileName);
 #if ACTIVITY_EDITOR
-            AIPath aiPath = new AIPath(TDB, TSectionDat, patFileName, orRouteConfig);
+            AIPath aiPath = new AIPath(TDB, TSectionDat, patFileName, TimetableMode, orRouteConfig);
 #else
             AIPath aiPath = new AIPath(TDB, TSectionDat, patFileName);
 #endif
@@ -999,7 +1001,7 @@ namespace Orts.Simulation
             Traffic_Service_Definition aPPlayer_Traffic_Definition = new Traffic_Service_Definition(playerServiceFileName, player_Traffic_Definition);
             Service_Definition aPPlayer_Service_Definition = new Service_Definition(playerServiceFileName, player_Traffic_Definition);
             AI AI = new AI(this);
-            AITrain train = AI.CreateAITrainDetail(aPPlayer_Service_Definition, aPPlayer_Traffic_Definition, true);
+            AITrain train = AI.CreateAITrainDetail(aPPlayer_Service_Definition, aPPlayer_Traffic_Definition, TimetableMode, true);
             AI = null;
             train.Name = "PLAYER";
             train.Cars[0].Headlight = 0;
@@ -1304,7 +1306,7 @@ namespace Orts.Simulation
 
             Train train = car.Train;
 
-            if (MPManager.IsMultiPlayer() && !MPManager.TrainOK2Decouple(train)) return;
+            if (MPManager.IsMultiPlayer() && !MPManager.TrainOK2Decouple(Confirmer, train)) return;
             int i = 0;
             while (train.Cars[i] != car) ++i;  // it can't happen that car isn't in car.Train
             if (i == train.Cars.Count - 1) return;  // can't uncouple behind last car

@@ -233,7 +233,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         public override void Initialize(bool handbrakeOn, float maxPressurePSI, float fullServPressurePSI, bool immediateRelease)
         {
             // reducing size of Emergency Reservoir for short (fake) cars
-            if (Program.Simulator.Settings.CorrectQuestionableBrakingParams && Car.CarLengthM <= 1)
+            if (Car.Simulator.Settings.CorrectQuestionableBrakingParams && Car.CarLengthM <= 1)
                 EmergResVolumeM3 = Math.Min (0.02f, EmergResVolumeM3);
             BrakeLine1PressurePSI = Car.Train.BrakeLine1PressurePSIorInHg;
             BrakeLine2PressurePSI = Car.Train.BrakeLine2PressurePSI;

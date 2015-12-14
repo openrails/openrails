@@ -105,7 +105,8 @@ namespace Orts.Simulation
                             Simulator.TDB.TrackDB.TrItemTable[Platform.LinkedPlatformItemId] as PlatformItem :
                             new PlatformItem(Simulator.TDB.TrackDB.TrItemTable[Platform.LinkedPlatformItemId] as SidingItem);
 
-                            Tasks.Add(task = new ActivityTaskPassengerStopAt(task,
+                            Tasks.Add(task = new ActivityTaskPassengerStopAt(simulator,
+                                task,
                                 i.ArrivalTime,
                                 i.DepartTime,
                                 Platform, Platform2));
@@ -352,7 +353,7 @@ namespace Orts.Simulation
             rdval = inf.ReadInt32();
             for (int i = 0; i < rdval; i++)
             {
-                task = GetTask(inf);
+                task = GetTask(inf, simulator);
                 task.Restore(inf);
                 Tasks.Add(task);
             }
@@ -413,12 +414,12 @@ namespace Orts.Simulation
             }
         }
 
-        static ActivityTask GetTask(BinaryReader inf)
+        static ActivityTask GetTask(BinaryReader inf, Simulator simulator)
         {
             Int32 rdval;
             rdval = inf.ReadInt32();
             if (rdval == 1)
-                return new ActivityTaskPassengerStopAt();
+                return new ActivityTaskPassengerStopAt(simulator);
             else
                 return null;
         }
@@ -606,6 +607,8 @@ namespace Orts.Simulation
 
     public class ActivityTaskPassengerStopAt : ActivityTask
     {
+        readonly Simulator Simulator;
+
         public DateTime SchArrive;
         public DateTime SchDepart;
         public DateTime? ActArrive;
@@ -623,9 +626,10 @@ namespace Orts.Simulation
         public float distanceToNextSignal = -1;
         public Train MyPlayerTrain; // Shortcut to player train
 
-        public ActivityTaskPassengerStopAt(ActivityTask prev, DateTime Arrive, DateTime Depart,
+        public ActivityTaskPassengerStopAt(Simulator simulator, ActivityTask prev, DateTime Arrive, DateTime Depart,
                  PlatformItem Platformend1, PlatformItem Platformend2)
         {
+            Simulator = simulator;
             SchArrive = Arrive;
             SchDepart = Depart;
             PlatformEnd1 = Platformend1;
@@ -639,8 +643,9 @@ namespace Orts.Simulation
             LogStationLogFile = null;
         }
 
-        internal ActivityTaskPassengerStopAt()
+        internal ActivityTaskPassengerStopAt(Simulator simulator)
         {
+            Simulator = simulator;
         }
 
         /// <summary>
@@ -652,7 +657,7 @@ namespace Orts.Simulation
         {
             // Front calcs
             TDBTravellerDistanceCalculatorHelper helper =
-                new TDBTravellerDistanceCalculatorHelper(Program.Simulator.PlayerLocomotive.Train.FrontTDBTraveller);
+                new TDBTravellerDistanceCalculatorHelper(Simulator.PlayerLocomotive.Train.FrontTDBTraveller);
             TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend1;
             TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend2;
             TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend3;
@@ -672,7 +677,7 @@ namespace Orts.Simulation
 
             // Rear calcs
             helper =
-                new TDBTravellerDistanceCalculatorHelper(Program.Simulator.PlayerLocomotive.Train.RearTDBTraveller);
+                new TDBTravellerDistanceCalculatorHelper(Simulator.PlayerLocomotive.Train.RearTDBTraveller);
 
             distanceend3 = helper.CalculateToPoint(PlatformEnd1.TileX,
                     PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z);
@@ -709,7 +714,7 @@ namespace Orts.Simulation
 
             // Calc all distances
             TDBTravellerDistanceCalculatorHelper helper =
-                new TDBTravellerDistanceCalculatorHelper(Program.Simulator.PlayerLocomotive.Train.FrontTDBTraveller);
+                new TDBTravellerDistanceCalculatorHelper(Simulator.PlayerLocomotive.Train.FrontTDBTraveller);
             TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend1;
             TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend2;
 
@@ -733,24 +738,24 @@ namespace Orts.Simulation
                 distanceend2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
                 distanceend3 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
                 distanceend4 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
-                Program.Simulator.PlayerLocomotive.Direction != Direction.N);
+                Simulator.PlayerLocomotive.Direction != Direction.N);
         }
 
         public override void NotifyEvent(ActivityEventType EventType)
         {
 
-            MyPlayerTrain = Program.Simulator.OriginalPlayerTrain;
+            MyPlayerTrain = Simulator.OriginalPlayerTrain;
             // The train is stopped.
             if (EventType == ActivityEventType.TrainStop)
             {
                 if (IsAtStation())
                 {
-                    if (Program.Simulator.TimetableMode || MyPlayerTrain.StationStops.Count == 0)
+                    if (Simulator.TimetableMode || MyPlayerTrain.StationStops.Count == 0)
                     {
                         // If yes, we arrived
                         if (ActArrive == null)
                         {
-                            ActArrive = new DateTime().Add(TimeSpan.FromSeconds(Program.Simulator.ClockTime));
+                            ActArrive = new DateTime().Add(TimeSpan.FromSeconds(Simulator.ClockTime));
                         }
 
                         arrived = true;
@@ -775,40 +780,40 @@ namespace Orts.Simulation
                             }
                         }
                         // ActArrive is usually same as ClockTime
-                        BoardingEndS = Program.Simulator.ClockTime + BoardingS;
+                        BoardingEndS = Simulator.ClockTime + BoardingS;
                         // But not if game starts after scheduled arrival. In which case actual arrival is assumed to be same as schedule arrival.
-                        double sinceActArriveS = (new DateTime().Add(TimeSpan.FromSeconds(Program.Simulator.ClockTime))
+                        double sinceActArriveS = (new DateTime().Add(TimeSpan.FromSeconds(Simulator.ClockTime))
                                                 - ActArrive).Value.TotalSeconds;
                         BoardingEndS -= sinceActArriveS;
                     }
                     else
                     {
                     // <CSComment> MSTS mode - player
-                        if (Program.Simulator.GameTime < 2)
+                        if (Simulator.GameTime < 2)
                         {
                             // If the simulation starts with a scheduled arrive in the past, assume the train arrived on time.
-                            if (SchArrive < new DateTime().Add(TimeSpan.FromSeconds(Program.Simulator.ClockTime)))
+                            if (SchArrive < new DateTime().Add(TimeSpan.FromSeconds(Simulator.ClockTime)))
                             {
                                 ActArrive = SchArrive;
                             }
                         }
-                        BoardingS = (double)MyPlayerTrain.StationStops[0].ComputeBoardingTime(Program.Simulator.PlayerLocomotive.Train);
+                        BoardingS = (double)MyPlayerTrain.StationStops[0].ComputeBoardingTime(Simulator.PlayerLocomotive.Train);
                         if (BoardingS > 0 || ((double)(SchDepart - SchArrive).TotalSeconds > 0 &&
                             MyPlayerTrain.PassengerCarsNumber == 1 && MyPlayerTrain.Cars.Count > 10 ))
                         {
                         // accepted station stop because either freight train or passenger train or fake passenger train with passenger car on platform or fake passenger train
                             // with Scheduled Depart > Scheduled Arrive
                                 // ActArrive is usually same as ClockTime
-                                BoardingEndS = Program.Simulator.ClockTime + BoardingS;
+                                BoardingEndS = Simulator.ClockTime + BoardingS;
 
                                 if (ActArrive == null)
                                 {
-                                    ActArrive = new DateTime().Add(TimeSpan.FromSeconds(Program.Simulator.ClockTime));
+                                    ActArrive = new DateTime().Add(TimeSpan.FromSeconds(Simulator.ClockTime));
                                 }
 
                                 arrived = true;
                                 // But not if game starts after scheduled arrival. In which case actual arrival is assumed to be same as schedule arrival.
-                                double sinceActArriveS = (new DateTime().Add(TimeSpan.FromSeconds(Program.Simulator.ClockTime))
+                                double sinceActArriveS = (new DateTime().Add(TimeSpan.FromSeconds(Simulator.ClockTime))
                                                         - ActArrive).Value.TotalSeconds;
                                 BoardingEndS -= sinceActArriveS;
                                 BoardingEndS = CompareTimes.LatestTime((int)SchDepart.TimeOfDay.TotalSeconds, (int)BoardingEndS);
@@ -825,7 +830,7 @@ namespace Orts.Simulation
                 // Train has started, we have things to do if we arrived before
                 if (arrived)
                 {
-                    ActDepart = new DateTime().Add(TimeSpan.FromSeconds(Program.Simulator.ClockTime));
+                    ActDepart = new DateTime().Add(TimeSpan.FromSeconds(Simulator.ClockTime));
                     CompletedAt = ActDepart.Value;
                     // Completeness depends on the elapsed waiting time
                     IsCompleted = maydepart;
@@ -835,7 +840,7 @@ namespace Orts.Simulation
                     if (LogStationStops)
                     {
                         StringBuilder stringBuild = new StringBuilder();
-                        char separator = (char)(DataLogger.Separators)Enum.Parse(typeof(DataLogger.Separators), Program.Simulator.Settings.DataLoggerSeparator);
+                        char separator = (char)(DataLogger.Separators)Enum.Parse(typeof(DataLogger.Separators), Simulator.Settings.DataLoggerSeparator);
                         stringBuild.Append(PlatformEnd1.Station);
                         stringBuild.Append(separator);
                         stringBuild.Append(SchArrive.ToString("HH:mm:ss"));
@@ -861,7 +866,7 @@ namespace Orts.Simulation
                 // Waiting at a station
                 if (arrived)
                 {
-                    var remaining = (int)Math.Ceiling(BoardingEndS - Program.Simulator.ClockTime);
+                    var remaining = (int)Math.Ceiling(BoardingEndS - Simulator.ClockTime);
                     if (remaining < 1) DisplayColor = Color.LightGreen;
                     else if (remaining < 11) DisplayColor = new Color(255, 255, 128);
                     else DisplayColor = Color.White;
@@ -891,7 +896,7 @@ namespace Orts.Simulation
                         {
                             maydepart = true;
                             DisplayMessage = Catalog.GetString("Passenger boarding completed. You may depart now.");
-                            Program.Simulator.SoundNotify = Event.PermissionToDepart;
+                            Simulator.SoundNotify = Event.PermissionToDepart;
                         }
 
                         // if last task, show closure window
@@ -902,7 +907,7 @@ namespace Orts.Simulation
                             if (LogStationStops)
                             {
                                 StringBuilder stringBuild = new StringBuilder();
-                                char separator = (char)(DataLogger.Separators)Enum.Parse(typeof(DataLogger.Separators), Program.Simulator.Settings.DataLoggerSeparator);
+                                char separator = (char)(DataLogger.Separators)Enum.Parse(typeof(DataLogger.Separators), Simulator.Settings.DataLoggerSeparator);
                                 stringBuild.Append(PlatformEnd1.Station);
                                 stringBuild.Append(separator);
                                 stringBuild.Append(SchArrive.ToString("HH:mm:ss"));
@@ -938,7 +943,7 @@ namespace Orts.Simulation
                 else
                 {
                     // Checking missed station
-                    int tmp = (int)(Program.Simulator.ClockTime % 10);
+                    int tmp = (int)(Simulator.ClockTime % 10);
                     if (tmp != TimerChk)
                     {
                         if (IsMissedStation() && (MyPlayerTrain.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING))
@@ -949,7 +954,7 @@ namespace Orts.Simulation
                             if (LogStationStops)
                             {
                                 StringBuilder stringBuild = new StringBuilder();
-                                char separator = (char)(DataLogger.Separators)Enum.Parse(typeof(DataLogger.Separators), Program.Simulator.Settings.DataLoggerSeparator);
+                                char separator = (char)(DataLogger.Separators)Enum.Parse(typeof(DataLogger.Separators), Simulator.Settings.DataLoggerSeparator);
                                 stringBuild.Append(PlatformEnd1.Station);
                                 stringBuild.Append(separator);
                                 stringBuild.Append(SchArrive.ToString("HH:mm:ss"));
@@ -1004,8 +1009,8 @@ namespace Orts.Simulation
             ActArrive = rdval == -1 ? (DateTime?)null : new DateTime(rdval);
             rdval = inf.ReadInt64();
             ActDepart = rdval == -1 ? (DateTime?)null : new DateTime(rdval);
-            PlatformEnd1 = Program.Simulator.TDB.TrackDB.TrItemTable[inf.ReadInt32()] as PlatformItem;
-            PlatformEnd2 = Program.Simulator.TDB.TrackDB.TrItemTable[inf.ReadInt32()] as PlatformItem;
+            PlatformEnd1 = Simulator.TDB.TrackDB.TrItemTable[inf.ReadInt32()] as PlatformItem;
+            PlatformEnd2 = Simulator.TDB.TrackDB.TrItemTable[inf.ReadInt32()] as PlatformItem;
             BoardingEndS = inf.ReadDouble();
             TimerChk = inf.ReadInt32();
             arrived = inf.ReadBoolean();

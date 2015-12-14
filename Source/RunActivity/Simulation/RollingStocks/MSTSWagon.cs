@@ -797,7 +797,7 @@ namespace Orts.Simulation.RollingStocks
                     // If weather is freezing, then starting friction will be greater until bearings have warmed up.
                     // Chwck whether weather is snowing
 
-                    int FrictionWeather = (int)Program.Simulator.Weather;
+                    int FrictionWeather = (int)Simulator.Weather;
                     bool IsSnowing = false;
 
                     if (FrictionWeather == 1)

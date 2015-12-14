@@ -120,8 +120,8 @@ namespace Orts.MultiPlayer
 				}
 				catch (SameNameError) //I have conflict with some one in the game, will close, and abort.
 				{
-					if (Program.Simulator.Confirmer != null)
-                        Program.Simulator.Confirmer.Error(Program.Catalog.GetString("Connection to the server is lost, will play as single mode"));
+					if (MPManager.Simulator.Confirmer != null)
+                        MPManager.Simulator.Confirmer.Error(Program.Catalog.GetString("Connection to the server is lost, will play as single mode"));
 					Program.Client = null;
 					tcpClient.Close();
 					listenThread.Abort();
@@ -132,8 +132,8 @@ namespace Orts.MultiPlayer
 					Trace.TraceWarning(e.Message + e.StackTrace);
 				}
 			}
-			if (Program.Simulator.Confirmer != null)
-                Program.Simulator.Confirmer.Error(Program.Catalog.GetString("Connection to the server is lost, will play as single mode"));
+			if (MPManager.Simulator.Confirmer != null)
+                MPManager.Simulator.Confirmer.Error(Program.Catalog.GetString("Connection to the server is lost, will play as single mode"));
 			try
 			{
 				foreach (var p in MPManager.OnlineTrains.Players)
@@ -144,13 +144,13 @@ namespace Orts.MultiPlayer
 			catch (Exception) { }
 			
 			//no matter what, let player gain back the control of the player train
-			if (Program.Simulator.PlayerLocomotive != null && Program.Simulator.PlayerLocomotive.Train != null)
+			if (MPManager.Simulator.PlayerLocomotive != null && MPManager.Simulator.PlayerLocomotive.Train != null)
 			{
-				Program.Simulator.PlayerLocomotive.Train.TrainType = Train.TRAINTYPE.PLAYER;
-				Program.Simulator.PlayerLocomotive.Train.LeadLocomotive = Program.Simulator.PlayerLocomotive;
+				MPManager.Simulator.PlayerLocomotive.Train.TrainType = Train.TRAINTYPE.PLAYER;
+				MPManager.Simulator.PlayerLocomotive.Train.LeadLocomotive = MPManager.Simulator.PlayerLocomotive;
 			}
-			if (Program.Simulator.Confirmer != null)
-                Program.Simulator.Confirmer.Information(Program.Catalog.GetString("Alt-E to gain control of your train"));
+			if (MPManager.Simulator.Confirmer != null)
+                MPManager.Simulator.Confirmer.Information(Program.Catalog.GetString("Alt-E to gain control of your train"));
 
 			Program.Client = null;
 			tcpClient.Close();

@@ -80,7 +80,7 @@ namespace Orts.Simulation.AIs
                 foreach (var sd in simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition.ServiceDefinitionList)
                 {
                     AITrain train = CreateAITrain(sd,
-                    simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition.TrafficFile.TrafficDefinition);
+                    simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition.TrafficFile.TrafficDefinition, simulator.TimetableMode);
                     if (cancellation.IsCancellationRequested) // ping loader watchdog
                         return;
                 }
@@ -665,7 +665,7 @@ namespace Orts.Simulation.AIs
         /// <summary>
         /// Creates an AI train
         /// </summary>
-        private AITrain CreateAITrain(Service_Definition sd, Traffic_Traffic_Definition trd)
+        private AITrain CreateAITrain(Service_Definition sd, Traffic_Traffic_Definition trd, bool isTimetableMode)
         {
             // set up a new AI train
             // first extract the service definition from the activity file
@@ -683,7 +683,7 @@ namespace Orts.Simulation.AIs
                     break;
                 }
             }
-            AITrain train = CreateAITrainDetail(sd, trfDef, false);
+            AITrain train = CreateAITrainDetail(sd, trfDef, isTimetableMode, false);
             if (train != null)
             {
                 // insert in start list
@@ -699,7 +699,7 @@ namespace Orts.Simulation.AIs
         /// Moves the models down 1000M to make them invisible.
         /// called also in case of autopilot mode
         /// </summary>
-        public AITrain CreateAITrainDetail(Service_Definition sd, Traffic_Service_Definition trfDef, bool isInitialPlayerTrain)
+        public AITrain CreateAITrainDetail(Service_Definition sd, Traffic_Service_Definition trfDef, bool isTimetableMode, bool isInitialPlayerTrain)
         {
             // read service and consist file
 
@@ -711,7 +711,7 @@ namespace Orts.Simulation.AIs
             // Patch Placingproblem - JeroenP
             // 
 #if ACTIVITY_EDITOR
-            AIPath aiPath = new AIPath(Simulator.TDB, Simulator.TSectionDat, pathFileName, Simulator.orRouteConfig);
+            AIPath aiPath = new AIPath(Simulator.TDB, Simulator.TSectionDat, pathFileName, isTimetableMode, Simulator.orRouteConfig);
 #else
             AIPath aiPath = new AIPath(Simulator.TDB, Simulator.TSectionDat, pathFileName);
 #endif

@@ -853,7 +853,7 @@ namespace Orts.Simulation.RollingStocks
 
                         // Determine whether the track is wet due to rain or snow.
 
-                        int FrictionWeather = (int)Program.Simulator.Weather;
+                        int FrictionWeather = (int)Simulator.Weather;
                         
                         if (FrictionWeather == 1 | FrictionWeather == 2)
                         {
@@ -1549,7 +1549,7 @@ namespace Orts.Simulation.RollingStocks
             WorldPosition.TileZ = tileZ;
             RealXNAMatrix = WorldPosition.XNAMatrix;
           
-                SuperElevation(speed, Program.Simulator.UseSuperElevation, traveler);
+                SuperElevation(speed, Simulator.UseSuperElevation, traveler);
          
             // calculate truck angles
             for (int i = 1; i < Parts.Count; i++)
@@ -1602,7 +1602,7 @@ namespace Orts.Simulation.RollingStocks
             CurrentCurveRadius = traveler.GetCurrentCurveRadius();
                       
            // ignore the rest of superelevation if option is not selected under menu options TAB
-          if (Program.Simulator.UseSuperElevation > 0 || Program.Simulator.CarVibrating > 0 || this.Train.tilted)
+          if (Simulator.UseSuperElevation > 0 || Simulator.CarVibrating > 0 || this.Train.tilted)
           { 
 
             if (prevElev < -30f) { prevElev += 40f; return; }//avoid the first two updates as they are not valid
@@ -1619,7 +1619,7 @@ namespace Orts.Simulation.RollingStocks
             }
             else
             {
-                timeInterval = (float)(Program.Simulator.GameTime - lastTime);
+                timeInterval = (float)(Simulator.GameTime - lastTime);
                 //sin wave of frequency 3-5 per second
                 sx += timeInterval * currentStiffness;
                 if (sx > 6.28) { sx = sx - 6.28f; currentStiffness = Stiffness + (float)(0.5 - Program.Random.NextDouble()) * speed / 20; }
@@ -1628,7 +1628,7 @@ namespace Orts.Simulation.RollingStocks
                 sz += timeInterval * currentStiffness;
                 if (sz > 6.28) { sz = sz - 6.28f; }
             }
-            lastTime = Program.Simulator.GameTime;
+            lastTime = Simulator.GameTime;
             //System.Console.WriteLine("" + x + " " + y + " " + z);
 
             //get superelevation
@@ -1651,7 +1651,7 @@ namespace Orts.Simulation.RollingStocks
             var max = 1f;
             if (speed <= MaxVibSpeed) max = speed / MaxVibSpeed;
             else max = 1 - (speed - MaxVibSpeed) / MaxVibSpeed * 2;
-            max *= Program.Simulator.CarVibrating/500f;//user may want more vibration (by Ctrl-V)
+            max *= Simulator.CarVibrating/500f;//user may want more vibration (by Ctrl-V)
             var tz = traveler.FindTiltedZ(speed);//rotation if tilted, an indication of centrifugal force
 
             

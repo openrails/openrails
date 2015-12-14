@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+
 namespace Orts.Common
 {
     public interface EventHandler
@@ -159,12 +160,12 @@ namespace Orts.Common
         // MSTS/MSTSBin behaviour whenever possible. NEVER return values for
         // non-MSTS events when passed an MSTS Source.
 
-        public static Event From(Source source, int eventID)
+        public static Event From(bool mstsBinEnabled, Source source, int eventID)
         {
             switch (source)
             {
                 case Source.MSTSCar:
-                    if (Program.Simulator.Settings.MSTSBINSound)
+                    if (mstsBinEnabled)
                     {
                         switch (eventID)
                         {

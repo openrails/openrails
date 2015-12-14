@@ -205,7 +205,7 @@ namespace Orts.Simulation.RollingStocks
 			get
 			{
 				return ((UsingRearCab == true )?
-					-totalRotationZ * Program.Simulator.CabRotating : totalRotationZ * Program.Simulator.CabRotating);
+					-totalRotationZ * Simulator.CabRotating : totalRotationZ * Simulator.CabRotating);
 			}
 		}
         public Dictionary<string, List<ParticleEmitterData>> EffectData = new Dictionary<string, List<ParticleEmitterData>>();
@@ -783,7 +783,7 @@ namespace Orts.Simulation.RollingStocks
             MainResPressurePSI = inf.ReadSingle();
             CompressorIsOn = inf.ReadBoolean();
             AverageForceN = inf.ReadSingle();
-            LocomotiveAxle.Reset(inf.ReadSingle());
+            LocomotiveAxle.Reset(Simulator.GameTime, inf.ReadSingle());
             CabLightOn = inf.ReadBoolean();
             UsingRearCab = inf.ReadBoolean();
             ControllerFactory.Restore(ThrottleController, inf);
@@ -883,7 +883,7 @@ namespace Orts.Simulation.RollingStocks
         public override void InitializeMoving()
         {
             base.InitializeMoving();
-            LocomotiveAxle.Reset(SpeedMpS);
+            LocomotiveAxle.Reset(Simulator.GameTime, SpeedMpS);
             LocomotiveAxle.AxleSpeedMpS = SpeedMpS;
             LocomotiveAxle.AdhesionConditions = (float)(Simulator.Settings.AdhesionFactor) * 0.01f;
             AdhesionFilter.Reset(0.5f);
@@ -1283,7 +1283,7 @@ namespace Orts.Simulation.RollingStocks
             if ((Simulator.UseAdvancedAdhesion) && (!Simulator.Paused) && (!AntiSlip))
             {
                 //Set the weather coeff
-                if (Program.Simulator.Weather == WeatherType.Rain || Program.Simulator.Weather == WeatherType.Snow)
+                if (Simulator.Weather == WeatherType.Rain || Simulator.Weather == WeatherType.Snow)
                 {
                     if (Train.SlipperySpotDistanceM < 0)
                     {
@@ -1292,7 +1292,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                     if (Train.SlipperySpotDistanceM < Train.SlipperySpotLengthM)
                         max0 = .8f;
-                    if (Program.Simulator.Weather == WeatherType.Rain)
+                    if (Simulator.Weather == WeatherType.Rain)
                         max0 = 0.6f;
                     else
                         max0 = 0.4f;
@@ -1306,7 +1306,7 @@ namespace Orts.Simulation.RollingStocks
                     {
                         if ((Sander) && (AbsSpeedMpS < SanderSpeedEffectUpToMpS))
                         {
-                            switch (Program.Simulator.Weather)
+                            switch (Simulator.Weather)
                             {
                                 case WeatherType.Clear: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.2f; break;
                                 case WeatherType.Rain: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.8f; break;
@@ -1317,7 +1317,7 @@ namespace Orts.Simulation.RollingStocks
                     else
                         if (Sander)
                         {
-                            switch (Program.Simulator.Weather)
+                            switch (Simulator.Weather)
                             {
                                 case WeatherType.Clear: max0 *= 1.2f; break;
                                 case WeatherType.Rain: max0 *= 1.8f; break;
@@ -1401,7 +1401,7 @@ namespace Orts.Simulation.RollingStocks
             float max0 = MassKG * 9.81f * adhesionUtil * uMax;  //Ahesion limit in [N]
             float max1;
 
-            if (Program.Simulator.Weather == WeatherType.Rain || Program.Simulator.Weather == WeatherType.Snow)
+            if (Simulator.Weather == WeatherType.Rain || Simulator.Weather == WeatherType.Snow)
             {
                 if (Train.SlipperySpotDistanceM < 0)
                 {
@@ -1410,7 +1410,7 @@ namespace Orts.Simulation.RollingStocks
                 }
                 if (Train.SlipperySpotDistanceM < Train.SlipperySpotLengthM)
                     max0 *= .8f;
-                if (Program.Simulator.Weather == WeatherType.Rain)
+                if (Simulator.Weather == WeatherType.Rain)
                     max0 *= .8f;
                 else
                     max0 *= .7f;
@@ -1424,7 +1424,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     if ((Sander) && (AbsSpeedMpS < SanderSpeedEffectUpToMpS))
                     {
-                        switch (Program.Simulator.Weather)
+                        switch (Simulator.Weather)
                         {
                             case WeatherType.Clear: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.2f; break;
                             case WeatherType.Rain: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.8f; break;
@@ -1435,7 +1435,7 @@ namespace Orts.Simulation.RollingStocks
                 else
                     if (Sander)
                     {
-                        switch (Program.Simulator.Weather)
+                        switch (Simulator.Weather)
                         {
                             case WeatherType.Clear: max0 *= 1.2f; break;
                             case WeatherType.Rain: max0 *= 1.8f; break;
@@ -2317,20 +2317,20 @@ namespace Orts.Simulation.RollingStocks
             {
                 case Event.VigilanceAlarmOn: { AlerterSnd = true; if (Simulator.Settings.Alerter) Simulator.Confirmer.Confirm(CabControl.Alerter, CabSetting.On); break; }
                 case Event.VigilanceAlarmOff: { AlerterSnd = false; if (Simulator.Settings.Alerter) Simulator.Confirmer.Confirm(CabControl.Alerter, CabSetting.Off); break; }
-                case Event.BellOn: { Bell = true; if (this == Program.Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Bell, CabSetting.On); break; }
-                case Event.BellOff: { Bell = false; if (this == Program.Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Bell, CabSetting.Off); break; }
+                case Event.BellOn: { Bell = true; if (this == Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Bell, CabSetting.On); break; }
+                case Event.BellOff: { Bell = false; if (this == Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Bell, CabSetting.Off); break; }
                 case Event.HornOn:
                 case Event.HornOff:
                     Horn = evt == Event.HornOn;
                     if (DoesHornTriggerBell && Horn)
                         SignalEvent(Event.BellOn);
-                    if (this == Program.Simulator.PlayerLocomotive)
+                    if (this == Simulator.PlayerLocomotive)
                         Simulator.Confirmer.Confirm(this is MSTSSteamLocomotive ? CabControl.Whistle : CabControl.Horn, Horn ? CabSetting.On : CabSetting.Off);
                     break;
-                case Event.SanderOn: { Sander = true; if (this.IsLeadLocomotive() && this == Program.Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Sander, CabSetting.On); break; }
-                case Event.SanderOff: { Sander = false; if (this.IsLeadLocomotive() && this == Program.Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Sander, CabSetting.Off); break; }
-                case Event.WiperOn: { Wiper = true; if (this == Program.Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Wipers, CabSetting.On); break; }
-                case Event.WiperOff: { Wiper = false; if (this == Program.Simulator.PlayerLocomotive)  Simulator.Confirmer.Confirm(CabControl.Wipers, CabSetting.Off); break; }
+                case Event.SanderOn: { Sander = true; if (this.IsLeadLocomotive() && this == Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Sander, CabSetting.On); break; }
+                case Event.SanderOff: { Sander = false; if (this.IsLeadLocomotive() && this == Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Sander, CabSetting.Off); break; }
+                case Event.WiperOn: { Wiper = true; if (this == Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Wipers, CabSetting.On); break; }
+                case Event.WiperOff: { Wiper = false; if (this == Simulator.PlayerLocomotive)  Simulator.Confirmer.Confirm(CabControl.Wipers, CabSetting.Off); break; }
 
                 // <CJComment> The "H" key doesn't call these SignalEvents yet. </CJComment>
                 case Event._HeadlightOff: { Headlight = 0; break; }
@@ -2339,7 +2339,7 @@ namespace Orts.Simulation.RollingStocks
 
                 case Event.CompressorOn: { CompressorIsOn = true; break; }
                 case Event.CompressorOff: { CompressorIsOn = false; break; }
-                case Event._ResetWheelSlip: { LocomotiveAxle.Reset(SpeedMpS); ThrottleController.SetValue(0.0f); break; }
+                case Event._ResetWheelSlip: { LocomotiveAxle.Reset(Simulator.GameTime, SpeedMpS); ThrottleController.SetValue(0.0f); break; }
             }
 
             base.SignalEvent(evt);

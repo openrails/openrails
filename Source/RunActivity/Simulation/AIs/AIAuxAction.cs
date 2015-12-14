@@ -117,7 +117,7 @@ namespace Orts.Simulation.AIs
                 "Position in file: " + outf.BaseStream.Position + "\n");
 #endif
             AITrain aiTrain = ThisTrain as AITrain;
-            if (ThisTrain == Program.Simulator.OriginalPlayerTrain && (ThisTrain.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN ||
+            if (ThisTrain == ThisTrain.Simulator.OriginalPlayerTrain && (ThisTrain.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN ||
                 ThisTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING || ThisTrain.TrainType == Train.TRAINTYPE.PLAYER || ThisTrain.TrainType == Train.TRAINTYPE.AI))
             {
                 if (SpecAuxActions.Count > 0 && SpecAuxActions[0] != null &&
@@ -230,7 +230,7 @@ namespace Orts.Simulation.AIs
             {
                 loaded = ConvertActions(thisTrain, orRouteConfig.ActionContainer);
             }
-            if (!Program.Simulator.TimetableMode && Program.Simulator.Activity.Tr_Activity.Tr_Activity_File.ORTSAIHornAtCrossings > 0 && SpecAuxActions.Count == 0)
+            if (!ThisTrain.Simulator.TimetableMode && ThisTrain.Simulator.Activity.Tr_Activity.Tr_Activity_File.ORTSAIHornAtCrossings > 0 && SpecAuxActions.Count == 0)
             {
                 AuxActionHorn auxActionHorn = new AuxActionHorn(true);
                 AIActionHornRef horn = new AIActionHornRef(thisTrain, auxActionHorn, 0);

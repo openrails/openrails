@@ -170,16 +170,16 @@ namespace Orts.MultiPlayer
 				if (m.user == MPManager.GetUserName())//about itself, check if the number of car has changed, otherwise ignore
 				{
 					//if I am a remote controlled train now
-					if (Program.Simulator.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.REMOTE)
+					if (MPManager.Simulator.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.REMOTE)
 					{
-						Program.Simulator.PlayerLocomotive.Train.ToDoUpdate(m.trackNodeIndex, m.TileX, m.TileZ, m.X, m.Z, m.travelled, m.speed, m.direction, m.tdbDir, m.Length);
+						MPManager.Simulator.PlayerLocomotive.Train.ToDoUpdate(m.trackNodeIndex, m.TileX, m.TileZ, m.X, m.Z, m.travelled, m.speed, m.direction, m.tdbDir, m.Length);
 					}
 					found = true;/*
 					try
 					{
-						if (m.count != Program.Simulator.PlayerLocomotive.Train.Cars.Count)
+						if (m.count != MPManager.Simulator.PlayerLocomotive.Train.Cars.Count)
 						{
-							if (!MPManager.IsServer() && CheckMissingTimes(Program.Simulator.PlayerLocomotive.Train.Number)) MPManager.SendToServer((new MSGGetTrain(MPManager.GetUserName(), Program.Simulator.PlayerLocomotive.Train.Number)).ToString());
+							if (!MPManager.IsServer() && CheckMissingTimes(MPManager.Simulator.PlayerLocomotive.Train.Number)) MPManager.SendToServer((new MSGGetTrain(MPManager.GetUserName(), MPManager.Simulator.PlayerLocomotive.Train.Number)).ToString());
 						}
 					}
 					catch (Exception) { }*/
@@ -187,7 +187,7 @@ namespace Orts.MultiPlayer
 				}
 				if (m.user.Contains("0xAI") || m.user.Contains("0xUC"))
 				{
-					foreach (Train t in Program.Simulator.Trains)
+					foreach (Train t in MPManager.Simulator.Trains)
 					{
 						if (t.Number == m.num)
 						{
@@ -350,7 +350,7 @@ namespace Orts.MultiPlayer
 		public MSGPlayer(string n, string cd, string c, string p, Train t, int tn, string avatar)
 		{
 			url = avatar;
-			route = Program.Simulator.RoutePathName;
+			route = MPManager.Simulator.RoutePathName;
 			int index = p.LastIndexOf("\\PATHS\\", StringComparison.OrdinalIgnoreCase);
 			if (index > 0)
 			{
@@ -367,9 +367,9 @@ namespace Orts.MultiPlayer
 				dir = (int)t.RearTDBTraveller.Direction; num = tn; TileX = t.RearTDBTraveller.TileX;
 				TileZ = t.RearTDBTraveller.TileZ; X = t.RearTDBTraveller.X; Z = t.RearTDBTraveller.Z; Travelled = t.travelled;
 			}
-			seconds = Program.Simulator.ClockTime; season = (int)Program.Simulator.Season; weather = (int)Program.Simulator.Weather;
+			seconds = MPManager.Simulator.ClockTime; season = (int)MPManager.Simulator.Season; weather = (int)MPManager.Simulator.Weather;
 			pantofirst = pantosecond = 0;
-			MSTSWagon w = (MSTSWagon)Program.Simulator.PlayerLocomotive;
+			MSTSWagon w = (MSTSWagon)MPManager.Simulator.PlayerLocomotive;
             if (w != null)
             {
                 pantofirst = w.Pantographs[1].CommandUp ? 1 : 0;
@@ -436,7 +436,7 @@ namespace Orts.MultiPlayer
 			}
             if (MPManager.IsServer() && MPManager.Instance().MD5Check!= "NA")//I am the server and have MD5 check values, client should have matching MD5, if file is accessible
 			{
-				if ((MD5 != "NA" && MD5 != MPManager.Instance().MD5Check) || route.ToLower() != Program.Simulator.RoutePathName.ToLower())
+				if ((MD5 != "NA" && MD5 != MPManager.Instance().MD5Check) || route.ToLower() != MPManager.Simulator.RoutePathName.ToLower())
 				{
 					MPManager.BroadCast((new MSGMessage(this.user, "Error", "Wrong route dir or TDB file, the dispatcher uses a different route")).ToString());//server will broadcast this error
 					throw new Exception("Player has wrong version of route");//ignore this player message
@@ -474,7 +474,7 @@ namespace Orts.MultiPlayer
 					if (cars.Length != p1.Train.Cars.Count) identical = false;
 					if (identical != false)
 					{
-						string wagonFilePath = Program.Simulator.BasePath + @"\trains\trainset\";
+						string wagonFilePath = MPManager.Simulator.BasePath + @"\trains\trainset\";
 						for (int i = 0; i < cars.Length; i++)
 						{
 							if (wagonFilePath+cars[i] != p1.Train.Cars[i].RealWagFilePath) { identical = false; break; }
@@ -485,7 +485,7 @@ namespace Orts.MultiPlayer
 					if (identical)
 					{
 						MPManager.OnlineTrains.Players.Add(user, p1);
-						p1.CreatedTime = Program.Simulator.GameTime;
+						p1.CreatedTime = MPManager.Simulator.GameTime;
 						MPManager.Instance().AddOrRemoveTrain(p1.Train, true);
 						MPManager.Instance().lostPlayer.Remove(user);
 					}
@@ -508,8 +508,8 @@ namespace Orts.MultiPlayer
 					{
 						Program.Client.Connected = true;
 						Train t = null;
-						if (Program.Simulator.PlayerLocomotive == null) t = Program.Simulator.Trains[0];
-						else t = Program.Simulator.PlayerLocomotive.Train;
+						if (MPManager.Simulator.PlayerLocomotive == null) t = MPManager.Simulator.Trains[0];
+						else t = MPManager.Simulator.PlayerLocomotive.Train;
 						t.Number = this.num;
 						if (WorldLocation.GetDistanceSquared(new WorldLocation(this.TileX, this.TileZ, this.X, 0, this.Z),
 							new WorldLocation(t.RearTDBTraveller.TileX, t.RearTDBTraveller.TileZ, t.RearTDBTraveller.X, 0, t.RearTDBTraveller.Z)) > 1000000)
@@ -519,9 +519,9 @@ namespace Orts.MultiPlayer
                             t.updateMSGReceived = true; t.expectedTravelled = t.travelled;
                         }
 					}
-					Program.Simulator.Weather = (WeatherType)this.weather;
-					Program.Simulator.ClockTime = this.seconds;
-					Program.Simulator.Season = (SeasonType)this.season;
+					MPManager.Simulator.Weather = (WeatherType)this.weather;
+					MPManager.Simulator.ClockTime = this.seconds;
+					MPManager.Simulator.Season = (SeasonType)this.season;
                     Program.Viewer.World.WeatherControl.SetInitialWeatherParameters();
                     Program.Viewer.World.WeatherControl.UpdateWeatherParameters();
 				}
@@ -538,7 +538,7 @@ namespace Orts.MultiPlayer
 				MPManager.BroadCast((new MSGMessage(this.user, "Error", reason)).ToString());
 				throw new Exception("Wrong version of protocol");
 			}
-            if ((MPManager.Instance().MD5Check != "NA" && MD5 != "NA" && MD5 != MPManager.Instance().MD5Check) || route.ToLower() != Program.Simulator.RoutePathName.ToLower())
+            if ((MPManager.Instance().MD5Check != "NA" && MD5 != "NA" && MD5 != MPManager.Instance().MD5Check) || route.ToLower() != MPManager.Simulator.RoutePathName.ToLower())
             {
                 MPManager.BroadCast((new MSGMessage(this.user, "Error", "Wrong route dir or TDB file, the dispatcher uses a different route")).ToString());//server will broadcast this error
                 throw new Exception("Player has wrong version of route");//ignore this player message
@@ -562,7 +562,7 @@ namespace Orts.MultiPlayer
 				if (cars.Length != p1.Train.Cars.Count) identical = false;
 				if (identical != false)
 				{
-					string wagonFilePath = Program.Simulator.BasePath + @"\trains\trainset\";
+					string wagonFilePath = MPManager.Simulator.BasePath + @"\trains\trainset\";
 					for (int i = 0; i < cars.Length; i++)
 					{
 						if (wagonFilePath + cars[i] != p1.Train.Cars[i].RealWagFilePath) { identical = false; break; }
@@ -574,10 +574,10 @@ namespace Orts.MultiPlayer
 				{
 					p.Train = p1.Train; p.url = this.url;
 					p.LeadingLocomotiveID = this.leadingID;
-					p.con = Program.Simulator.BasePath + "\\TRAINS\\CONSISTS\\" + this.con;
+					p.con = MPManager.Simulator.BasePath + "\\TRAINS\\CONSISTS\\" + this.con;
                     if (p.con.Contains("tilted")) p.Train.tilted = true;
 
-					p.path = Program.Simulator.RoutePath + "\\PATHS\\" + this.path;
+					p.path = MPManager.Simulator.RoutePath + "\\PATHS\\" + this.path;
 					p.Username = this.user;
 					MPManager.OnlineTrains.Players.Add(user, p);
 					MPManager.Instance().AddOrRemoveTrain(p.Train, true);
@@ -594,18 +594,18 @@ namespace Orts.MultiPlayer
 			//System.Console.WriteLine(this.ToString());
 			p.Send((new MSGOrgSwitch(user, MPManager.Instance().OriginalSwitchState)).ToString());
 
-			MPManager.Instance().lastPlayerAddedTime = Program.Simulator.GameTime;
+			MPManager.Instance().lastPlayerAddedTime = MPManager.Simulator.GameTime;
 
-			MSGPlayer host = new MSGPlayer(MPManager.GetUserName(), "1234", Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.PlayerLocomotive.Train,
-				Program.Simulator.PlayerLocomotive.Train.Number, Program.Simulator.Settings.AvatarURL);
+			MSGPlayer host = new MSGPlayer(MPManager.GetUserName(), "1234", MPManager.Simulator.conFileName, MPManager.Simulator.patFileName, MPManager.Simulator.PlayerLocomotive.Train,
+				MPManager.Simulator.PlayerLocomotive.Train.Number, MPManager.Simulator.Settings.AvatarURL);
 			p.Send(host.ToString() + MPManager.OnlineTrains.AddAllPlayerTrain());
 
 			//send the train information to the new player
-			Train[] trains = Program.Simulator.Trains.ToArray();
+			Train[] trains = MPManager.Simulator.Trains.ToArray();
 
 			foreach (Train t in trains)
 			{
-				if (Program.Simulator.PlayerLocomotive != null && t == Program.Simulator.PlayerLocomotive.Train) continue; //avoid broadcast player train
+				if (MPManager.Simulator.PlayerLocomotive != null && t == MPManager.Simulator.PlayerLocomotive.Train) continue; //avoid broadcast player train
 				if (MPManager.FindPlayerTrain(t)) continue;
 				if (MPManager.Instance().removedTrains.Contains(t)) continue;//this train is going to be removed, should avoid it.
 				p.Send((new MSGTrain(t, t.Number)).ToString());
@@ -623,7 +623,7 @@ namespace Orts.MultiPlayer
 				op.Value.Send(newPlayer);
 			}
 
-			//System.Console.WriteLine(host.ToString() + Program.Simulator.OnlineTrains.AddAllPlayerTrain());
+			//System.Console.WriteLine(host.ToString() + MPManager.Simulator.OnlineTrains.AddAllPlayerTrain());
 
 		}
 	}
@@ -696,8 +696,8 @@ namespace Orts.MultiPlayer
                     {
                         Program.Client.Connected = true;
                         Train t = null;
-                        if (Program.Simulator.PlayerLocomotive == null) t = Program.Simulator.Trains[0];
-                        else t = Program.Simulator.PlayerLocomotive.Train;
+                        if (MPManager.Simulator.PlayerLocomotive == null) t = MPManager.Simulator.Trains[0];
+                        else t = MPManager.Simulator.PlayerLocomotive.Train;
                      }
                  }
             }
@@ -711,7 +711,7 @@ namespace Orts.MultiPlayer
             //client connected directly to the server, thus will send the game status to the player directly (avoiding using broadcast)
             MPManager.OnlineTrains.SwitchPlayerTrain(this);
 
-            MSGPlayerTrainSw host = new MSGPlayerTrainSw(MPManager.GetUserName(), Program.Simulator.PlayerLocomotive.Train, Program.Simulator.PlayerLocomotive.Train.Number,);
+            MSGPlayerTrainSw host = new MSGPlayerTrainSw(MPManager.GetUserName(), MPManager.Simulator.PlayerLocomotive.Train, MPManager.Simulator.PlayerLocomotive.Train.Number,);
             p.Send(host.ToString());
    
             //send the new player information to everyone else
@@ -753,8 +753,8 @@ namespace Orts.MultiPlayer
 		{
 			if (!MPManager.Instance().AmAider && MPManager.Instance().TrySwitch == false)
 			{
-				if (handThrown && Program.Simulator.Confirmer != null)
-                    Program.Simulator.Confirmer.Information(Program.Catalog.GetString("Dispatcher does not allow hand throw at this time"));
+				if (handThrown && MPManager.Simulator.Confirmer != null)
+                    MPManager.Simulator.Confirmer.Information(Program.Catalog.GetString("Dispatcher does not allow hand throw at this time"));
 				OK = false;
 				return;
 			}
@@ -784,20 +784,20 @@ namespace Orts.MultiPlayer
 					MPManager.BroadCast((new MSGMessage(user, "SwitchWarning", "Server does not allow hand thrown of switch")).ToString());
 					return;
 				}
-				TrJunctionNode trj = Program.Simulator.TDB.GetTrJunctionNode(TileX, TileZ, WorldID);
-                bool state = Program.Simulator.Signals.RequestSetSwitch(trj.TN, this.Selection);
+				TrJunctionNode trj = MPManager.Simulator.TDB.GetTrJunctionNode(TileX, TileZ, WorldID);
+                bool state = MPManager.Simulator.Signals.RequestSetSwitch(trj.TN, this.Selection);
                 if (state == false) 
 					MPManager.BroadCast((new MSGMessage(user, "Warning", "Train on the switch, cannot throw")).ToString());
 				else MPManager.BroadCast(this.ToString()); //server will tell others
 			}
 			else
 			{
-				TrJunctionNode trj = Program.Simulator.TDB.GetTrJunctionNode(TileX, TileZ, WorldID);
+				TrJunctionNode trj = MPManager.Simulator.TDB.GetTrJunctionNode(TileX, TileZ, WorldID);
                 SetSwitch(trj.TN, Selection);
                 //trj.SelectedRoute = Selection; //although the new signal system request Signals.RequestSetSwitch, client may just change
 				if (user == MPManager.GetUserName() && HandThrown == true)//got the message with my name, will confirm with the player
 				{
-					Program.Simulator.Confirmer.Information(Program.Catalog.GetStringFmt("Switched, current route is {0}",
+					MPManager.Simulator.Confirmer.Information(Program.Catalog.GetStringFmt("Switched, current route is {0}",
                         Selection == 0 ? Program.Catalog.GetString("main route") : Program.Catalog.GetString("side route")));
 					return;
 				}
@@ -806,8 +806,8 @@ namespace Orts.MultiPlayer
 
         public static void SetSwitch(TrackNode switchNode, int desiredState)
         {
-            TrackCircuitSection switchSection = Program.Simulator.Signals.TrackCircuitList[switchNode.TCCrossReference[0].Index];
-            Program.Simulator.Signals.trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual = desiredState;
+            TrackCircuitSection switchSection = MPManager.Simulator.Signals.TrackCircuitList[switchNode.TCCrossReference[0].Index];
+            MPManager.Simulator.Signals.trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual = desiredState;
             switchSection.JunctionLastRoute = switchSection.JunctionSetManual;
         }
 
@@ -889,7 +889,7 @@ namespace Orts.MultiPlayer
 			SwitchState = new SortedList<uint, TrJunctionNode>();
 			try
 			{
-				foreach (TrackNode t in Program.Simulator.TDB.TrackDB.TrackNodes)
+				foreach (TrackNode t in MPManager.Simulator.TDB.TrackDB.TrackNodes)
 				{
 					if (t != null && t.TrJunctionNode != null)
 					{
@@ -916,8 +916,8 @@ namespace Orts.MultiPlayer
 
         public static void SetSwitch(TrackNode switchNode, int desiredState)
         {
-            TrackCircuitSection switchSection = Program.Simulator.Signals.TrackCircuitList[switchNode.TCCrossReference[0].Index];
-            Program.Simulator.Signals.trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual = desiredState;
+            TrackCircuitSection switchSection = MPManager.Simulator.Signals.TrackCircuitList[switchNode.TCCrossReference[0].Index];
+            MPManager.Simulator.Signals.trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual = desiredState;
             switchSection.JunctionLastRoute = switchSection.JunctionSetManual;
         }
 
@@ -943,7 +943,7 @@ namespace Orts.MultiPlayer
 			{
 				SwitchState = new SortedList<uint, TrJunctionNode>();
 				uint key = 0;
-				foreach (TrackNode t in Program.Simulator.TDB.TrackDB.TrackNodes)
+				foreach (TrackNode t in MPManager.Simulator.TDB.TrackDB.TrackNodes)
 				{
 					if (t != null && t.TrJunctionNode != null)
 					{
@@ -973,7 +973,7 @@ namespace Orts.MultiPlayer
 			if (OKtoSend == false)
 			{
 				//new player added, will keep sending for a while
-				if (Program.Simulator.GameTime - MPManager.Instance().lastPlayerAddedTime < 3 * MPManager.Instance().MPUpdateInterval) OKtoSend = true;
+				if (MPManager.Simulator.GameTime - MPManager.Instance().lastPlayerAddedTime < 3 * MPManager.Instance().MPUpdateInterval) OKtoSend = true;
 			}
 		}
 
@@ -985,7 +985,7 @@ namespace Orts.MultiPlayer
 				SwitchState = new SortedList<uint, TrJunctionNode>();
 				try
 				{
-					foreach (TrackNode t in Program.Simulator.TDB.TrackDB.TrackNodes)
+					foreach (TrackNode t in MPManager.Simulator.TDB.TrackDB.TrackNodes)
 					{
 						if (t != null && t.TrJunctionNode != null)
 						{
@@ -1037,15 +1037,15 @@ namespace Orts.MultiPlayer
 
         public static void SetSwitch(TrackNode switchNode, int desiredState)
         {
-            TrackCircuitSection switchSection = Program.Simulator.Signals.TrackCircuitList[switchNode.TCCrossReference[0].Index];
-            Program.Simulator.Signals.trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual = desiredState;
+            TrackCircuitSection switchSection = MPManager.Simulator.Signals.TrackCircuitList[switchNode.TCCrossReference[0].Index];
+            MPManager.Simulator.Signals.trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual = desiredState;
             switchSection.JunctionLastRoute = switchSection.JunctionSetManual;
         }
 
 		static bool SwitchOccupiedByPlayerTrain(TrJunctionNode junctionNode)
 		{
-			if (Program.Simulator.PlayerLocomotive == null) return false;
-			Train train = Program.Simulator.PlayerLocomotive.Train;
+			if (MPManager.Simulator.PlayerLocomotive == null) return false;
+			Train train = MPManager.Simulator.PlayerLocomotive.Train;
 			if (train == null) return false;
 			if (train.FrontTDBTraveller.TrackNodeIndex == train.RearTDBTraveller.TrackNodeIndex)
 				return false;
@@ -1176,22 +1176,22 @@ namespace Orts.MultiPlayer
 			//System.Console.WriteLine(this.ToString());
 			// construct train data
 			Train train = null; 
-			train = new Train(Program.Simulator);
+			train = new Train(MPManager.Simulator);
 			train.Number = this.TrainNum;
 
 			train.TrainType = Train.TRAINTYPE.REMOTE;
 			train.travelled = Travelled;
 			train.MUDirection = (Direction)this.mDirection;
-			train.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, TileX, TileZ, X, Z, direction == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
+			train.RearTDBTraveller = new Traveller(MPManager.Simulator.TSectionDat, MPManager.Simulator.TDB.TrackDB.TrackNodes, TileX, TileZ, X, Z, direction == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
 			//if (consistDirection != 1)
 			//	train.RearTDBTraveller.ReverseDirection();
 			for(var i = 0; i < cars.Length; i++)// cars.Length-1; i >= 0; i--) {
 			{
-				string wagonFilePath = Program.Simulator.BasePath + @"\trains\trainset\" + cars[i];
+				string wagonFilePath = MPManager.Simulator.BasePath + @"\trains\trainset\" + cars[i];
 				TrainCar car = null;
 				try
 				{
-                    car = RollingStock.Load(Program.Simulator, wagonFilePath);
+                    car = RollingStock.Load(MPManager.Simulator, wagonFilePath);
 					car.CarLengthM = lengths[i];
 				}
 				catch (Exception error)
@@ -1359,7 +1359,7 @@ namespace Orts.MultiPlayer
 			lock (lockObj)
 			{
 				// construct train data
-				foreach (Train t in Program.Simulator.Trains)
+				foreach (Train t in MPManager.Simulator.Trains)
 				{
 					if (t.Number == this.TrainNum) //the train exists, update information
 					{
@@ -1370,20 +1370,20 @@ namespace Orts.MultiPlayer
 				if (!found)
 				{
 					//not found, create new train
-					train1 = new Train(Program.Simulator); train1.Number = this.TrainNum; 
+					train1 = new Train(MPManager.Simulator); train1.Number = this.TrainNum; 
 				}
 			}
 			if (found)
 			{
-				Traveller traveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, TileX, TileZ, X, Z, direction == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
+				Traveller traveller = new Traveller(MPManager.Simulator.TSectionDat, MPManager.Simulator.TDB.TrackDB.TrackNodes, TileX, TileZ, X, Z, direction == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
 				List<TrainCar> tmpCars = new List<TrainCar>();
 				for (var i = 0; i < cars.Length; i++)// cars.Length-1; i >= 0; i--) {
 				{
-					string wagonFilePath = Program.Simulator.BasePath + @"\trains\trainset\" + cars[i];
+					string wagonFilePath = MPManager.Simulator.BasePath + @"\trains\trainset\" + cars[i];
 					TrainCar car = findCar(train, ids[i]);
 					try
 					{
-                        if (car == null) car = RollingStock.Load(Program.Simulator, wagonFilePath);
+                        if (car == null) car = RollingStock.Load(MPManager.Simulator, wagonFilePath);
 						car.CarLengthM = lengths[i];
 					}
 					catch (Exception error)
@@ -1413,14 +1413,14 @@ namespace Orts.MultiPlayer
 			}
 			train1.TrainType = Train.TRAINTYPE.REMOTE;
 			train1.travelled = Travelled;
-			train1.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, TileX, TileZ, X, Z, direction == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
+			train1.RearTDBTraveller = new Traveller(MPManager.Simulator.TSectionDat, MPManager.Simulator.TDB.TrackDB.TrackNodes, TileX, TileZ, X, Z, direction == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
 			for (var i = 0; i < cars.Length; i++)// cars.Length-1; i >= 0; i--) {
 			{
-				string wagonFilePath = Program.Simulator.BasePath + @"\trains\trainset\" + cars[i];
+				string wagonFilePath = MPManager.Simulator.BasePath + @"\trains\trainset\" + cars[i];
 				TrainCar car = null;
 				try
 				{
-                    car = RollingStock.Load(Program.Simulator, wagonFilePath);
+                    car = RollingStock.Load(MPManager.Simulator, wagonFilePath);
 					car.CarLengthM = lengths[i];
 				}
 				catch (Exception error)
@@ -1518,7 +1518,7 @@ namespace Orts.MultiPlayer
 		{
 			foreach (int i in trains)
 			{
-				foreach (Train train in Program.Simulator.Trains)
+				foreach (Train train in MPManager.Simulator.Trains)
 				{
 					if (i == train.Number)
 					{
@@ -1571,15 +1571,15 @@ namespace Orts.MultiPlayer
                 if (Program.DebugViewer != null) Program.DebugViewer.firstShow = true;
 				MPManager.Instance().RememberOriginalSwitchState();
                 Trace.TraceInformation("You are the new dispatcher. Enjoy!");
-				if (Program.Simulator.Confirmer != null)
-                    Program.Simulator.Confirmer.Information(Program.Catalog.GetString("You are the new dispatcher. Enjoy!"));
+				if (MPManager.Simulator.Confirmer != null)
+                    MPManager.Simulator.Confirmer.Information(Program.Catalog.GetString("You are the new dispatcher. Enjoy!"));
 				//System.Console.WriteLine(this.ToString());
 			}
 			else
 			{
 				MPManager.Instance().NotServer = true;
-				if (Program.Simulator.Confirmer != null)
-                    Program.Simulator.Confirmer.Information(Program.Catalog.GetStringFmt("New dispatcher is {0}", user));
+				if (MPManager.Simulator.Confirmer != null)
+                    MPManager.Simulator.Confirmer.Information(Program.Catalog.GetStringFmt("New dispatcher is {0}", user));
                 Trace.TraceInformation("New dispatcher is {0}", user);
 			}
 		}
@@ -1687,8 +1687,8 @@ namespace Orts.MultiPlayer
 			if (MPManager.GetUserName() == user || user == "All")
 			{
 				Console.WriteLine("{0}: {1}", level, msgx);
-				if (Program.Simulator.Confirmer != null && level == "Error")
-					Program.Simulator.Confirmer.Message(ConfirmLevel.Error, msgx);
+				if (MPManager.Simulator.Confirmer != null && level == "Error")
+					MPManager.Simulator.Confirmer.Message(ConfirmLevel.Error, msgx);
 
 				if (level == "Error" && !MPManager.IsServer())//if is a client, fatal error, will close the connection, and get into single mode
 				{
@@ -1701,8 +1701,8 @@ namespace Orts.MultiPlayer
 
 					if (MPManager.OnlineTrains.Players.Count < 1)
 					{
-						if (Program.Simulator.Confirmer != null)
-							Program.Simulator.Confirmer.Message(ConfirmLevel.Error, Program.Catalog.GetString("Name conflicted with people in the game, will play in single mode"));
+						if (MPManager.Simulator.Confirmer != null)
+							MPManager.Simulator.Confirmer.Message(ConfirmLevel.Error, Program.Catalog.GetString("Name conflicted with people in the game, will play in single mode"));
 						throw new SameNameError();//this is a fatal error, thus the client will be stopped in ClientComm
 					}
 				}
@@ -1729,11 +1729,11 @@ namespace Orts.MultiPlayer
 				else if (level == "TimeCheck" && !MPManager.IsServer())
 				{
 					var t = double.Parse(msgx, CultureInfo.InvariantCulture);
-					MPManager.Instance().serverTimeDifference = t - Program.Simulator.ClockTime;
+					MPManager.Instance().serverTimeDifference = t - MPManager.Simulator.ClockTime;
 					return;
 				}
-				if (Program.Simulator.Confirmer != null)
-					Program.Simulator.Confirmer.Message(level == "Warning" ? ConfirmLevel.Warning : level == "Info" ? ConfirmLevel.Information : ConfirmLevel.None, msgx);
+				if (MPManager.Simulator.Confirmer != null)
+					MPManager.Simulator.Confirmer.Message(level == "Warning" ? ConfirmLevel.Warning : level == "Info" ? ConfirmLevel.Information : ConfirmLevel.None, msgx);
 
 			}
 		}
@@ -1774,10 +1774,10 @@ namespace Orts.MultiPlayer
 		{
 			if (MPManager.GetUserName() == user && level == "Confirm")
 			{
-				Train train = Program.Simulator.PlayerLocomotive.Train;
-				train.TrainType = Train.TRAINTYPE.PLAYER; train.LeadLocomotive = Program.Simulator.PlayerLocomotive;
-				if (Program.Simulator.Confirmer != null)
-					Program.Simulator.Confirmer.Information(Program.Catalog.GetString("You gained back the control of your train"));
+				Train train = MPManager.Simulator.PlayerLocomotive.Train;
+				train.TrainType = Train.TRAINTYPE.PLAYER; train.LeadLocomotive = MPManager.Simulator.PlayerLocomotive;
+				if (MPManager.Simulator.Confirmer != null)
+					MPManager.Simulator.Confirmer.Information(Program.Catalog.GetString("You gained back the control of your train"));
 				MPManager.Instance().RemoveUncoupledTrains(train);
 			}
 			else if (level == "Confirm") //server inform me that a train is now remote
@@ -1785,7 +1785,7 @@ namespace Orts.MultiPlayer
 				foreach (var p in MPManager.OnlineTrains.Players)
 				{
 					if (p.Key == user) {
-						foreach (var t in Program.Simulator.Trains)
+						foreach (var t in MPManager.Simulator.Trains)
 						{
 							if (t.Number == this.num) p.Value.Train = t;
 						}
@@ -1801,7 +1801,7 @@ namespace Orts.MultiPlayer
 				{
 					if (p.Key == user)
 					{
-						foreach (var t in Program.Simulator.Trains)
+						foreach (var t in MPManager.Simulator.Trains)
 						{
 							if (t.Number == this.num) p.Value.Train = t;
 						}
@@ -1848,7 +1848,7 @@ namespace Orts.MultiPlayer
 
 		public override void HandleMsg()
 		{
-			foreach (var t in Program.Simulator.Trains)
+			foreach (var t in MPManager.Simulator.Trains)
 			{
 				foreach (var car in t.Cars)
 				{
@@ -1991,8 +1991,8 @@ namespace Orts.MultiPlayer
 			bool ServerQuit = false;
 			if (Program.Client != null && user.Contains("ServerHasToQuit")) //the server quits, will send a message with ServerHasToQuit\tServerName
 			{
-				if (Program.Simulator.Confirmer != null)
-                    Program.Simulator.Confirmer.Error(Program.Catalog.GetString("Server quits, will play as single mode"));
+				if (MPManager.Simulator.Confirmer != null)
+                    MPManager.Simulator.Confirmer.Error(Program.Catalog.GetString("Server quits, will play as single mode"));
 				user = user.Replace("ServerHasToQuit\t", ""); //get the user name of server from the message
 				ServerQuit = true;
 			}
@@ -2002,21 +2002,21 @@ namespace Orts.MultiPlayer
 				p = MPManager.OnlineTrains.Players[user];
 			}
 			if (p == null) return;
-            if (Program.Simulator.Confirmer != null)
-                Program.Simulator.Confirmer.Information(Program.Catalog.GetStringFmt("{0} quit.", this.user));
+            if (MPManager.Simulator.Confirmer != null)
+                MPManager.Simulator.Confirmer.Information(Program.Catalog.GetStringFmt("{0} quit.", this.user));
 			if (MPManager.IsServer())
 			{
 				if (p.protect == true) { p.protect = false; return; }
 				MPManager.BroadCast(this.ToString()); //if the server, will broadcast
 				//if the one quit controls my train, I will gain back the control
-				if (p.Train == Program.Simulator.PlayerLocomotive.Train)
-					Program.Simulator.PlayerLocomotive.Train.TrainType = Train.TRAINTYPE.PLAYER;
+				if (p.Train == MPManager.Simulator.PlayerLocomotive.Train)
+					MPManager.Simulator.PlayerLocomotive.Train.TrainType = Train.TRAINTYPE.PLAYER;
 				MPManager.Instance().AddRemovedPlayer(p);
 				//the client may quit because of lost connection, will remember it so it may recover in the future when the player log in again
 				if (p.Train != null && p.status != OnlinePlayer.Status.Removed) //if this player has train and is not removed by the dispatcher
 				{
 					if (!MPManager.Instance().lostPlayer.ContainsKey(p.Username)) MPManager.Instance().lostPlayer.Add(p.Username, p);
-					p.quitTime = Program.Simulator.GameTime;
+					p.quitTime = MPManager.Simulator.GameTime;
 					p.Train.SpeedMpS = 0.0f;
 					p.status = OnlinePlayer.Status.Quit;
 				}
@@ -2026,13 +2026,13 @@ namespace Orts.MultiPlayer
 			else //client will remove train
 			{
 				//if the one quit controls my train, I will gain back the control
-				if (p.Train == Program.Simulator.PlayerLocomotive.Train)
-					Program.Simulator.PlayerLocomotive.Train.TrainType = Train.TRAINTYPE.PLAYER;
+				if (p.Train == MPManager.Simulator.PlayerLocomotive.Train)
+					MPManager.Simulator.PlayerLocomotive.Train.TrainType = Train.TRAINTYPE.PLAYER;
 				MPManager.Instance().AddRemovedPlayer(p);
 				if (ServerQuit)//warning, need to remove other player trains if there are not AI, in the future
 				{
 					//no matter what, let player gain back the control of the player train
-					Program.Simulator.PlayerLocomotive.Train.TrainType = Train.TRAINTYPE.PLAYER;
+					MPManager.Simulator.PlayerLocomotive.Train.TrainType = Train.TRAINTYPE.PLAYER;
 					throw new MultiPlayerError(); //server quit, end communication by throwing this error 
 				}
 			}
@@ -2074,19 +2074,19 @@ namespace Orts.MultiPlayer
 				p = MPManager.OnlineTrains.Players[user];
 			}
 			if (p == null) return;
-			if (Program.Simulator.Confirmer != null)
-                Program.Simulator.Confirmer.Information(Program.Catalog.GetStringFmt("{0} lost.", this.user));
+			if (MPManager.Simulator.Confirmer != null)
+                MPManager.Simulator.Confirmer.Information(Program.Catalog.GetStringFmt("{0} lost.", this.user));
 			if (p.protect == true) { p.protect = false; return; }
 			MPManager.BroadCast((new MSGQuit(user)).ToString()); //if the server, will broadcast a quit to every one
 			//if the one quit controls my train, I will gain back the control
-			if (p.Train == Program.Simulator.PlayerLocomotive.Train)
-				Program.Simulator.PlayerLocomotive.Train.TrainType = Train.TRAINTYPE.PLAYER;
+			if (p.Train == MPManager.Simulator.PlayerLocomotive.Train)
+				MPManager.Simulator.PlayerLocomotive.Train.TrainType = Train.TRAINTYPE.PLAYER;
 			MPManager.Instance().AddRemovedPlayer(p);
 			//the client may quit because of lost connection, will remember it so it may recover in the future when the player log in again
 			if (p.Train != null && p.status != OnlinePlayer.Status.Removed) //if this player has train and is not removed by the dispatcher
 			{
 				if (!MPManager.Instance().lostPlayer.ContainsKey(p.Username)) MPManager.Instance().lostPlayer.Add(p.Username, p);
-				p.quitTime = Program.Simulator.GameTime;
+				p.quitTime = MPManager.Simulator.GameTime;
 				p.Train.SpeedMpS = 0.0f;
 				p.status = OnlinePlayer.Status.Quit;
 			}
@@ -2126,7 +2126,7 @@ namespace Orts.MultiPlayer
 		{
 			if (MPManager.IsServer())
 			{
-				foreach (Train t in Program.Simulator.Trains)
+				foreach (Train t in MPManager.Simulator.Trains)
 				{
 					if (t == null) continue;
 					if (t.Number == num) //found it, broadcast to everyone
@@ -2211,7 +2211,7 @@ namespace Orts.MultiPlayer
 		{
 			if (t.Cars.Count == 0 || newT.Cars.Count == 0) { user = ""; return; }//no cars in one of the train, not sure how to handle, so just return;
 			Train temp = null; int tmpNum;
-			if (!t.Cars.Contains(Program.Simulator.PlayerLocomotive))
+			if (!t.Cars.Contains(MPManager.Simulator.PlayerLocomotive))
 			{//the old train should have the player, otherwise, 
 				tmpNum = t.Number; t.Number = newT.Number; newT.Number = tmpNum;
 				temp = t; t = newT; newT = temp;
@@ -2231,7 +2231,7 @@ namespace Orts.MultiPlayer
 				newTrainNumber = 1000000 + Program.Random.Next(1000000);//client: temporary assign a train number 1000000-2000000, will change to the correct one after receiving response from the server
 				newT.TrainType = Train.TRAINTYPE.REMOTE; //by default, uncoupled train will be controlled by the server
 			}
-			if (!newT.Cars.Contains(Program.Simulator.PlayerLocomotive)) //if newT does not have player locomotive, it may be controlled remotely
+			if (!newT.Cars.Contains(MPManager.Simulator.PlayerLocomotive)) //if newT does not have player locomotive, it may be controlled remotely
 			{
 				if (newT.LeadLocomotive == null) { newT.LeadLocomotiveIndex = -1; newT.LeadNextLocomotive(); }
 
@@ -2250,7 +2250,7 @@ namespace Orts.MultiPlayer
 				}
 			}
 
-			if (!t.Cars.Contains(Program.Simulator.PlayerLocomotive)) //if t (old train) does not have player locomotive, it may be controlled remotely
+			if (!t.Cars.Contains(MPManager.Simulator.PlayerLocomotive)) //if t (old train) does not have player locomotive, it may be controlled remotely
 			{
 				if (t.LeadLocomotive == null) { t.LeadLocomotiveIndex = -1; t.LeadNextLocomotive(); }
 
@@ -2270,10 +2270,10 @@ namespace Orts.MultiPlayer
 			}
 
 
-			if (t.Cars.Contains(Program.Simulator.PlayerLocomotive) || newT.Cars.Contains(Program.Simulator.PlayerLocomotive))
+			if (t.Cars.Contains(MPManager.Simulator.PlayerLocomotive) || newT.Cars.Contains(MPManager.Simulator.PlayerLocomotive))
 			{
-				if (Program.Simulator.Confirmer != null)
-                    Program.Simulator.Confirmer.Information(Program.Catalog.GetString("Trains uncoupled, gain back control by Alt-E"));
+				if (MPManager.Simulator.Confirmer != null)
+                    MPManager.Simulator.Confirmer.Information(Program.Catalog.GetString("Trains uncoupled, gain back control by Alt-E"));
 			}
 
 			/*
@@ -2363,7 +2363,7 @@ namespace Orts.MultiPlayer
 
 			if (user == MPManager.GetUserName()) //received from the server, but it is about mine action of uncouple
 			{
-				foreach (Train t in Program.Simulator.Trains)
+				foreach (Train t in MPManager.Simulator.Trains)
 				{
 					foreach (TrainCar car in t.Cars)
 					{
@@ -2388,7 +2388,7 @@ namespace Orts.MultiPlayer
 				List<TrainCar> trainCars = null;
 				bool canPlace = true;
 				Train.TCSubpathRoute tempRoute;
-				foreach (Train t in Program.Simulator.Trains)
+				foreach (Train t in MPManager.Simulator.Trains)
 				{
 					var found = false;
 					foreach (TrainCar car in t.Cars)
@@ -2416,7 +2416,7 @@ namespace Orts.MultiPlayer
 						t.Cars = tmpcars;
 						Traveller.TravellerDirection d1 = Traveller.TravellerDirection.Forward;
 						if (trainDirection == 1) d1 = Traveller.TravellerDirection.Backward;
-						t.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, TileX1, TileZ1, X1, Z1, d1);
+						t.RearTDBTraveller = new Traveller(MPManager.Simulator.TSectionDat, MPManager.Simulator.TDB.TrackDB.TrackNodes, TileX1, TileZ1, X1, Z1, d1);
 						t.travelled = Travelled1;
 						t.SpeedMpS = Speed1;
 						t.LeadLocomotive = lead;
@@ -2438,9 +2438,9 @@ namespace Orts.MultiPlayer
 						train.CalculatePositionOfCars(0);
 						train.AITrainBrakePercent = 100;
 						//train may contain myself, and no other players, thus will make myself controlling this train
-						if (train.Cars.Contains(Program.Simulator.PlayerLocomotive))
+						if (train.Cars.Contains(MPManager.Simulator.PlayerLocomotive))
 						{
-							Program.Simulator.PlayerLocomotive.Train = train;
+							MPManager.Simulator.PlayerLocomotive.Train = train;
 							//train.TrainType = Train.TRAINTYPE.PLAYER;
 							train.InitializeBrakes();
 						}
@@ -2458,7 +2458,7 @@ namespace Orts.MultiPlayer
 
 				if (train == null || trainCars == null) return;
 
-				Train train2 = new Train(Program.Simulator);
+				Train train2 = new Train(MPManager.Simulator);
 				List<TrainCar> tmpcars2 = new List<TrainCar>();
 				for (var i = 0; i < ids2.Length; i++)
 				{
@@ -2475,7 +2475,7 @@ namespace Orts.MultiPlayer
 				train2.CheckFreight();
 
 				//train2 may contain myself, and no other players, thus will make myself controlling this train
-				/*if (train2.Cars.Contains(Program.Simulator.PlayerLocomotive))
+				/*if (train2.Cars.Contains(MPManager.Simulator.PlayerLocomotive))
 				{
 					var gainControl = true;
 					foreach (var pair in MPManager.OnlineTrains.Players)
@@ -2483,13 +2483,13 @@ namespace Orts.MultiPlayer
 						string check = pair.Key + " - 0";
 						foreach (var car1 in train2.Cars) if (car1.CarID.StartsWith(check)) { gainControl = false; break; }
 					}
-					if (gainControl == true) { train2.TrainType = Train.TRAINTYPE.PLAYER; train2.LeadLocomotive = Program.Simulator.PlayerLocomotive; }
+					if (gainControl == true) { train2.TrainType = Train.TRAINTYPE.PLAYER; train2.LeadLocomotive = MPManager.Simulator.PlayerLocomotive; }
 				}*/
 				Traveller.TravellerDirection d2 = Traveller.TravellerDirection.Forward;
 				if (train2Direction == 1) d2 = Traveller.TravellerDirection.Backward;
 
 				// and fix up the travellers
-				train2.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, TileX2, TileZ2, X2, Z2, d2);
+				train2.RearTDBTraveller = new Traveller(MPManager.Simulator.TSectionDat, MPManager.Simulator.TDB.TrackDB.TrackNodes, TileX2, TileZ2, X2, Z2, d2);
 				train2.travelled = Travelled2;
 				train2.SpeedMpS = Speed2;
 				train2.MUDirection = (Direction)mDirection2;
@@ -2509,9 +2509,9 @@ namespace Orts.MultiPlayer
 
 				train2.CalculatePositionOfCars(0);
 				train2.AITrainBrakePercent = 100;
-				if (train2.Cars.Contains(Program.Simulator.PlayerLocomotive))
+				if (train2.Cars.Contains(MPManager.Simulator.PlayerLocomotive))
 				{
-					Program.Simulator.PlayerLocomotive.Train = train2;
+					MPManager.Simulator.PlayerLocomotive.Train = train2;
 					//train2.TrainType = Train.TRAINTYPE.PLAYER;
 					train2.InitializeBrakes();
 				}
@@ -2533,10 +2533,10 @@ namespace Orts.MultiPlayer
 				train.UncoupledFrom = train2;
 				train2.UncoupledFrom = train;
 
-				if (train.Cars.Contains(Program.Simulator.PlayerLocomotive) || train2.Cars.Contains(Program.Simulator.PlayerLocomotive))
+				if (train.Cars.Contains(MPManager.Simulator.PlayerLocomotive) || train2.Cars.Contains(MPManager.Simulator.PlayerLocomotive))
 				{
-					if (Program.Simulator.Confirmer != null)
-                        Program.Simulator.Confirmer.Information(Program.Catalog.GetString("Trains uncoupled, gain back control by Alt-E"));
+					if (MPManager.Simulator.Confirmer != null)
+                        MPManager.Simulator.Confirmer.Information(Program.Catalog.GetString("Trains uncoupled, gain back control by Alt-E"));
 				}
 
 				//if (whichIsPlayer == 0 && MPManager.OnlineTrains.findTrain(user) != null) MPManager.OnlineTrains.Players[user].Train = train;
@@ -2550,7 +2550,7 @@ namespace Orts.MultiPlayer
 					this.oldTrainNumber = train.Number;
 					train2.LastReportedSpeed = 1;
                     if (train2.Name.Length < 4) train2.Name = String.Concat("STATIC-", String.Copy(train2.Name));
-                    Program.Simulator.AI.aiListChanged = true;
+                    MPManager.Simulator.AI.aiListChanged = true;
 					MPManager.BroadCast(this.ToString());//if server receives this, will tell others, including whoever sent the information
 				}
 				else
@@ -2674,10 +2674,10 @@ namespace Orts.MultiPlayer
 				if (p.Value.Train == oldT) { p.Value.Train = t; break; }
 			}
 			mDirection = (int)t.MUDirection;
-			if (t.Cars.Contains(Program.Simulator.PlayerLocomotive))
+			if (t.Cars.Contains(MPManager.Simulator.PlayerLocomotive))
 			{
-				if (Program.Simulator.Confirmer != null)
-                    Program.Simulator.Confirmer.Information(Program.Catalog.GetString("Trains coupled, hit \\ then Shift-? to release brakes"));
+				if (MPManager.Simulator.Confirmer != null)
+                    MPManager.Simulator.Confirmer.Information(Program.Catalog.GetString("Trains coupled, hit \\ then Shift-? to release brakes"));
 			}
             if (!MPManager.IsServer() || !(oldT.TrainType == Train.TRAINTYPE.AI_INCORPORATED))
 			MPManager.Instance().AddOrRemoveTrain(oldT, false); //remove the old train
@@ -2711,7 +2711,7 @@ namespace Orts.MultiPlayer
 			if (MPManager.IsServer()) return;//server will not receive this from client
 			Train train = null, train2 = null;
 
-			foreach (Train t in Program.Simulator.Trains)
+			foreach (Train t in MPManager.Simulator.Trains)
 			{
 				if (t.Number == this.TrainNum) train = t;
 				if (t.Number == this.RemovedTrainNum) train2 = t;
@@ -2720,9 +2720,9 @@ namespace Orts.MultiPlayer
 			TrainCar lead = train.LeadLocomotive;
 			if (lead == null) lead = train2.LeadLocomotive;
 
-			/*if (Program.Simulator.PlayerLocomotive != null && Program.Simulator.PlayerLocomotive.Train == train2)
+			/*if (MPManager.Simulator.PlayerLocomotive != null && MPManager.Simulator.PlayerLocomotive.Train == train2)
 			{
-				Train tmp = train2; train2 = train; train = tmp; Program.Simulator.PlayerLocomotive.Train = train;
+				Train tmp = train2; train2 = train; train = tmp; MPManager.Simulator.PlayerLocomotive.Train = train;
 			}*/
 
 			if (train == null || train2 == null) return; //did not find the trains to op on
@@ -2748,7 +2748,7 @@ namespace Orts.MultiPlayer
 			
 			train.travelled = Travelled;
 			train.MUDirection = (Direction)mDirection;
-			train.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, TileX, TileZ, X, Z, direction == 0 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
+			train.RearTDBTraveller = new Traveller(MPManager.Simulator.TSectionDat, MPManager.Simulator.TDB.TrackDB.TrackNodes, TileX, TileZ, X, Z, direction == 0 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
 			train.CheckFreight();
 			train.CalculatePositionOfCars(0);
 			train.LeadLocomotive = null; train2.LeadLocomotive = null;
@@ -2757,7 +2757,7 @@ namespace Orts.MultiPlayer
             if (train.LeadLocomotive == null) train.LeadNextLocomotive();
 
 			//mine is not the leading locomotive, thus I give up the control
-			if (train.LeadLocomotive != Program.Simulator.PlayerLocomotive)
+			if (train.LeadLocomotive != MPManager.Simulator.PlayerLocomotive)
 			{
 				train.TrainType = Train.TRAINTYPE.REMOTE; //make the train remote controlled
 			}
@@ -2781,15 +2781,15 @@ namespace Orts.MultiPlayer
 
 			//update the remote user's train
 			if (MPManager.FindPlayerTrain(whoControls) != null) MPManager.OnlineTrains.Players[whoControls].Train = train;
-			if (train.Cars.Contains(Program.Simulator.PlayerLocomotive)) Program.Simulator.PlayerLocomotive.Train = train;
+			if (train.Cars.Contains(MPManager.Simulator.PlayerLocomotive)) MPManager.Simulator.PlayerLocomotive.Train = train;
 
 			MPManager.Instance().AddOrRemoveTrain(train2, false);
 
 
-			if (train.Cars.Contains(Program.Simulator.PlayerLocomotive))
+			if (train.Cars.Contains(MPManager.Simulator.PlayerLocomotive))
 			{
-				if (Program.Simulator.Confirmer != null)
-                    Program.Simulator.Confirmer.Information(Program.Catalog.GetString("Trains coupled, hit \\ then Shift-? to release brakes"));
+				if (MPManager.Simulator.Confirmer != null)
+                    MPManager.Simulator.Confirmer.Information(Program.Catalog.GetString("Trains coupled, hit \\ then Shift-? to release brakes"));
 			}
 		}
 	}
@@ -2809,9 +2809,9 @@ namespace Orts.MultiPlayer
 			if (signals == null)
 			{
 				signals = new SortedList<long, SignalHead>();
-				if (Program.Simulator.Signals.SignalObjects != null)
+				if (MPManager.Simulator.Signals.SignalObjects != null)
 				{
-					foreach (var s in Program.Simulator.Signals.SignalObjects)
+					foreach (var s in MPManager.Simulator.Signals.SignalObjects)
 					{
 						if (s != null && s.isSignal && s.SignalHeads != null)
 							foreach (var h in s.SignalHeads)
@@ -2847,7 +2847,7 @@ namespace Orts.MultiPlayer
 			if (OKtoSend == false)
 			{
 				//new player added, will keep sending for a while
-				if (Program.Simulator.GameTime - MPManager.Instance().lastPlayerAddedTime < 3 * MPManager.Instance().MPUpdateInterval) OKtoSend = true;
+				if (MPManager.Simulator.GameTime - MPManager.Instance().lastPlayerAddedTime < 3 * MPManager.Instance().MPUpdateInterval) OKtoSend = true;
 			}
 		}
 
@@ -2859,9 +2859,9 @@ namespace Orts.MultiPlayer
 				signals = new SortedList<long, SignalHead>();
 				try
 				{
-					if (Program.Simulator.Signals.SignalObjects != null)
+					if (MPManager.Simulator.Signals.SignalObjects != null)
 					{
-						foreach (var s in Program.Simulator.Signals.SignalObjects)
+						foreach (var s in MPManager.Simulator.Signals.SignalObjects)
 						{
 							if (s != null && s.isSignal && s.SignalHeads != null)
 								foreach (var h in s.SignalHeads)
@@ -2988,7 +2988,7 @@ namespace Orts.MultiPlayer
 		//how to handle the message?
 		public override void HandleMsg() //only client will get message, thus will set states
 		{
-			foreach (Train t in Program.Simulator.Trains)
+			foreach (Train t in MPManager.Simulator.Trains)
 			{
 				if (t.TrainType != Train.TRAINTYPE.REMOTE && t.Number == tnum)
 				{
@@ -3120,8 +3120,8 @@ namespace Orts.MultiPlayer
 				{
 					System.Console.WriteLine("MSG from " + sender + ":" + msgx);
 					MPManager.Instance().lastSender = sender;
-					if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.MSG(Program.Catalog.GetStringFmt(" From {0}: {1}", sender, msgx));
-					Program.DebugViewer.addNewMessage(Program.Simulator.GameTime, sender + ": " + msgx);
+					if (MPManager.Simulator.Confirmer != null) MPManager.Simulator.Confirmer.MSG(Program.Catalog.GetStringFmt(" From {0}: {1}", sender, msgx));
+					Program.DebugViewer.addNewMessage(MPManager.Simulator.GameTime, sender + ": " + msgx);
 					break;
 				}
 			}
@@ -3233,14 +3233,14 @@ namespace Orts.MultiPlayer
 			if (MPManager.GetUserName() == this.user && add == true)
 			{
 				MPManager.Instance().AmAider = true;
-				if (Program.Simulator.Confirmer != null)
-                    Program.Simulator.Confirmer.Information(Program.Catalog.GetString("You are an assistant now, will be able to handle switches and signals."));
+				if (MPManager.Simulator.Confirmer != null)
+                    MPManager.Simulator.Confirmer.Information(Program.Catalog.GetString("You are an assistant now, will be able to handle switches and signals."));
 			}
 			if (MPManager.GetUserName() == this.user && add == false)
 			{
 				MPManager.Instance().AmAider = false;
-				if (Program.Simulator.Confirmer != null)
-                    Program.Simulator.Confirmer.Information(Program.Catalog.GetString("You are no longer an assistant."));
+				if (MPManager.Simulator.Confirmer != null)
+                    MPManager.Simulator.Confirmer.Information(Program.Catalog.GetString("You are no longer an assistant."));
 			}
 		}
 
@@ -3276,7 +3276,7 @@ namespace Orts.MultiPlayer
         {
             if (Program.Server != null && !MPManager.Instance().aiderList.Contains(sender)) return; //client will ignore it, also if not an aider, will ignore it
 
-            var signal = Program.Simulator.Signals.SignalObjects[index];
+            var signal = MPManager.Simulator.Signals.SignalObjects[index];
             switch (pick)
             {
                 case 0:

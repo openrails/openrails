@@ -179,8 +179,8 @@ namespace Orts.Simulation.Physics
         public float AllowedMaxSpeedMpS;                 // Max speed as allowed
         public float allowedMaxSpeedSignalMpS;           // Max speed as set by signal
         public float allowedMaxSpeedLimitMpS;            // Max speed as set by limit
-        public float allowedAbsoluteMaxSpeedSignalMpS = (float)Program.Simulator.TRK.Tr_RouteFile.SpeedLimit;   // Max speed as set by signal independently from train features
-        public float allowedAbsoluteMaxSpeedLimitMpS = (float)Program.Simulator.TRK.Tr_RouteFile.SpeedLimit;    // Max speed as set by limit independently from train features
+        public float allowedAbsoluteMaxSpeedSignalMpS;   // Max speed as set by signal independently from train features
+        public float allowedAbsoluteMaxSpeedLimitMpS;    // Max speed as set by limit independently from train features
         public float maxTimeS = 120;                     // check ahead for distance covered in 2 mins.
         public float minCheckDistanceM = 5000;           // minimum distance to check ahead
         public float minCheckDistanceManualM = 3000;     // minimum distance to check ahead in manual mode
@@ -414,9 +414,17 @@ namespace Orts.Simulation.Physics
         // Constructor
         //
 
-        public Train(Simulator simulator)
+        void Init(Simulator simulator)
         {
             Simulator = simulator;
+            allowedAbsoluteMaxSpeedSignalMpS = (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;
+            allowedAbsoluteMaxSpeedLimitMpS = (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;
+        }
+
+        public Train(Simulator simulator)
+        {
+            Init(simulator);
+
             if (Simulator.IsAutopilotMode && TotalNumber == 1 && Simulator.TrainDictionary.Count == 0) TotalNumber = 0; //The autopiloted train has number 0
             Number = TotalNumber;
             TotalNumber++;
@@ -435,8 +443,9 @@ namespace Orts.Simulation.Physics
         // Signals is restored before Trains, links are restored by Simulator
         //
 
-        public Train(int number)
+        public Train(Simulator simulator, int number)
         {
+            Init(simulator);
             Number = number;
             AuxActionsContain = new AuxActionsContainer(this, null);
         }
@@ -449,7 +458,7 @@ namespace Orts.Simulation.Physics
 
         public Train(Simulator simulator, Train orgTrain)
         {
-            Simulator = simulator;
+            Init(simulator);
             Number = TotalNumber;
             Name = String.Concat(String.Copy(orgTrain.Name), TotalNumber.ToString());
             TotalNumber++;
@@ -516,10 +525,11 @@ namespace Orts.Simulation.Physics
 
         public Train(Simulator simulator, BinaryReader inf)
         {
+            Init(simulator);
+
             routedForward = new TrainRouted(this, 0);
             routedBackward = new TrainRouted(this, 1);
 
-            Simulator = simulator;
             RestoreCars(simulator, inf);
             Number = inf.ReadInt32();
             TotalNumber = Math.Max(Number + 1, TotalNumber);
@@ -763,7 +773,7 @@ namespace Orts.Simulation.Physics
             if (LeadLocomotiveIndex >= 0)
             {
                 LeadLocomotive = Cars[LeadLocomotiveIndex];
-                Program.Simulator.PlayerLocomotive = LeadLocomotive;
+                Simulator.PlayerLocomotive = LeadLocomotive;
             }
 
             // restore logfile
@@ -2468,7 +2478,7 @@ namespace Orts.Simulation.Physics
                     var temp1MaxSpeedMpS = IsFreight ? firstObject.speed_freight : firstObject.speed_passenger;
                     if (firstObject.ObjectDetails.isSignal)
                     {
-                        allowedAbsoluteMaxSpeedSignalMpS = temp1MaxSpeedMpS == -1 ? (float)Program.Simulator.TRK.Tr_RouteFile.SpeedLimit : temp1MaxSpeedMpS;
+                        allowedAbsoluteMaxSpeedSignalMpS = temp1MaxSpeedMpS == -1 ? (float)Simulator.TRK.Tr_RouteFile.SpeedLimit : temp1MaxSpeedMpS;
                     }
                     else if (firstObject.speed_reset == 0)
                     {
@@ -2937,7 +2947,7 @@ namespace Orts.Simulation.Physics
 
                 if (thisObject.ObjectDetails.isSignal)
                 {
-                    if (actualSpeedMpS > 0 && (thisObject.speed_flag == 0 || !Program.Simulator.TimetableMode))
+                    if (actualSpeedMpS > 0 && (thisObject.speed_flag == 0 || !Simulator.TimetableMode))
                     {
                         validSpeedSignalMpS = actualSpeedMpS;
                         if (validSpeedSignalMpS > validSpeedLimitMpS)
@@ -2976,7 +2986,7 @@ namespace Orts.Simulation.Physics
                         validSpeedMpS = actualSpeedMpS;
                     }
                 }
-                else if (Program.Simulator.TimetableMode)
+                else if (Simulator.TimetableMode)
                 {
                     {
                         if (actualSpeedMpS > 998f)
@@ -3509,10 +3519,10 @@ namespace Orts.Simulation.Physics
                     car.WorldPosition.TileZ = traveller.TileZ;
 
 
-                    if (Program.Simulator.UseSuperElevation > 0 || Program.Simulator.CarVibrating > 0 || this.tilted)
+                    if (Simulator.UseSuperElevation > 0 || Simulator.CarVibrating > 0 || this.tilted)
                     {
                         car.RealXNAMatrix = car.WorldPosition.XNAMatrix;
-                        car.SuperElevation(SpeedMpS, Program.Simulator.UseSuperElevation, traveller);
+                        car.SuperElevation(SpeedMpS, Simulator.UseSuperElevation, traveller);
                     }
 
                     traveller.Move((car.CarLengthM - bogieSpacing) / 2.0f);  // Move to the front of the car 
@@ -6506,7 +6516,7 @@ namespace Orts.Simulation.Physics
                 {
                     if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
                         Simulator.Confirmer.Message(ConfirmLevel.Information, Program.Catalog.GetString("Request to clear signal cannot be processed"));
-                    Program.Simulator.SoundNotify = Event.PermissionDenied;
+                    Simulator.SoundNotify = Event.PermissionDenied;
                 }
             }
         }
@@ -8438,13 +8448,13 @@ namespace Orts.Simulation.Physics
 
             if (speedInfo.MaxSpeedMpSSignal > 0)
             {
-                allowedMaxSpeedSignalMpS = Program.Simulator.TimetableMode? speedInfo.MaxSpeedMpSSignal : allowedAbsoluteMaxSpeedSignalMpS;
+                allowedMaxSpeedSignalMpS = Simulator.TimetableMode? speedInfo.MaxSpeedMpSSignal : allowedAbsoluteMaxSpeedSignalMpS;
                 AllowedMaxSpeedMpS = Math.Min(speedInfo.MaxSpeedMpSSignal, allowedMaxSpeedLimitMpS);
             }
             if (speedInfo.MaxSpeedMpSLimit > 0)
             {
-                allowedMaxSpeedLimitMpS = Program.Simulator.TimetableMode ? speedInfo.MaxSpeedMpSLimit : allowedAbsoluteMaxSpeedLimitMpS;
-                if (Program.Simulator.TimetableMode)
+                allowedMaxSpeedLimitMpS = Simulator.TimetableMode ? speedInfo.MaxSpeedMpSLimit : allowedAbsoluteMaxSpeedLimitMpS;
+                if (Simulator.TimetableMode)
                     AllowedMaxSpeedMpS = speedInfo.MaxSpeedMpSLimit;
                 else
                     AllowedMaxSpeedMpS = Math.Min(speedInfo.MaxSpeedMpSLimit, allowedMaxSpeedSignalMpS);
@@ -8499,7 +8509,7 @@ namespace Orts.Simulation.Physics
             Trace.TraceInformation("Train {0} stopped for train {1} : {2}",
                     Number, otherTrainNumber, reason);
 
-            if (Program.Simulator.PlayerLocomotive != null && Program.Simulator.PlayerLocomotive.Train == this)
+            if (Simulator.PlayerLocomotive != null && Simulator.PlayerLocomotive.Train == this)
             {
                 var report = Program.Catalog.GetStringFmt("Train stopped due to problems with other train: train {0} , reason: {1}", otherTrainNumber, reason);
 
@@ -11531,7 +11541,7 @@ namespace Orts.Simulation.Physics
             string movString = "";
             string abString = "";
             DateTime baseDT = new DateTime();
-            if (this == Program.Simulator.OriginalPlayerTrain)
+            if (this == Simulator.OriginalPlayerTrain)
             {
                 if (Simulator.ActivityRun != null && Simulator.ActivityRun.Current is ActivityTaskPassengerStopAt && ((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).BoardingS > 0)
                 {
@@ -13084,7 +13094,7 @@ namespace Orts.Simulation.Physics
         /// 
         public void TestAbsDelay(ref int delay, int correctedTime)
         {
-            if (Program.Simulator.TimetableMode || !Program.Simulator.Settings.ExtendedAIShunting) return;
+            if (Simulator.TimetableMode || !Simulator.Settings.ExtendedAIShunting) return;
             if (delay < 30000 || delay >= 40000) return;
             int hour = (delay / 100) % 100;
             int minute = delay % 100;
@@ -13287,7 +13297,7 @@ namespace Orts.Simulation.Physics
                             while (reversal > 0)
                             {
                                 //<CSComment> following block can be uncommented if it is preferred to leave in the path the double reverse points
-                                //                                if (!Program.Simulator.TimetableMode && Program.Simulator.Settings.EnhancedActCompatibility && sublist > 0 &&
+                                //                                if (!Simulator.TimetableMode && Simulator.Settings.EnhancedActCompatibility && sublist > 0 &&
                                 //                                    TCRouteSubpaths[sublist].Count <= 0)
                                 //                                {
                                 //                                    // check if preceding subpath has no sections, and in such case insert the one it should have,
@@ -13457,7 +13467,7 @@ namespace Orts.Simulation.Physics
                     thisPathNode = nextPathNode;
                 }
 
-                if (!Program.Simulator.TimetableMode)
+                if (!orgSignals.Simulator.TimetableMode)
                 {
                     // insert reversals when they are in last section
                     while (reversal > 0)
@@ -14610,7 +14620,7 @@ namespace Orts.Simulation.Physics
                         thisDeadlockPathInfo.UsefullLength = mainPathUsefullValues.Value;
 
                         // only allow as public path if not in timetable mode
-                        if (Program.Simulator.TimetableMode)
+                        if (orgSignals.Simulator.TimetableMode)
                         {
                             thisDeadlockPathInfo.AllowedTrains.Add(thisDeadlock.GetTrainAndSubpathIndex(trainNumber, sublistRef));
                         }
@@ -14621,7 +14631,7 @@ namespace Orts.Simulation.Physics
 
                         // if name is main insert inverse path also as MAIN to ensure reverse path is available
 
-                        if (String.Compare(thisDeadlockPathInfo.Name, "MAIN") == 0 && !Program.Simulator.TimetableMode)
+                        if (String.Compare(thisDeadlockPathInfo.Name, "MAIN") == 0 && !orgSignals.Simulator.TimetableMode)
                         {
                             TCSubpathRoute inverseMainPath = mainPathPart.ReversePath(orgSignals);
                             int[] inverseIndex = thisDeadlock.AddPath(inverseMainPath, endSectionIndex, "MAIN", String.Empty);
@@ -16117,7 +16127,7 @@ namespace Orts.Simulation.Physics
                     firstIndex = firstCommonSection;
 
                     int endLastIndex = (prevReversalIndex > 0 && prevReversalIndex < lastCommonSection &&
-                        Program.Simulator.TimetableMode) ? prevReversalIndex : 0;
+                        orgSignals.Simulator.TimetableMode) ? prevReversalIndex : 0;
 
                     while (lastIndex >= endLastIndex && firstIndex <= (firstRoute.Count - 1) && lastRoute[lastIndex].TCSectionIndex == firstRoute[firstIndex].TCSectionIndex)
                     {
@@ -16131,7 +16141,7 @@ namespace Orts.Simulation.Physics
 
                     Valid = LastDivergeIndex >= 0; // it is a reversal
                     validDivPoint = true;
-                    if (Program.Simulator.TimetableMode)
+                    if (orgSignals.Simulator.TimetableMode)
                         validDivPoint = LastDivergeIndex > 0 && FirstDivergeIndex < (firstRoute.Count - 1); // valid reversal point
                     if (lastRoute.Count == 1 && FirstDivergeIndex < (firstRoute.Count - 1)) validDivPoint = true; // valid reversal point in first and only section
                 }
@@ -16151,7 +16161,7 @@ namespace Orts.Simulation.Physics
 
                     bool signalFound = false;
                     int startSection = 0;
-                    if (!Program.Simulator.TimetableMode)
+                    if (!orgSignals.Simulator.TimetableMode)
                     // In this case test starts only after reverse point.
                     {
                         for (int iSection = 0; iSection < firstRoute.Count; iSection++)
@@ -17021,7 +17031,7 @@ namespace Orts.Simulation.Physics
                 }
 
                 // if MSTS compatibility mode uses platform passenger number
-                if (!Program.Simulator.TimetableMode)
+                if (!stoppedTrain.Simulator.TimetableMode)
                 {
                     stopTime = ComputeBoardingTime(stoppedTrain);
                 }
@@ -17071,7 +17081,7 @@ namespace Orts.Simulation.Physics
                 var distancePlatformTailtoTrainTail = distancePlatformHeadtoTrainHead - PlatformItem.Length + stopTrain.Length;
                 var trainPartOutsidePlatformBackward = distancePlatformTailtoTrainTail > 0 ? distancePlatformTailtoTrainTail : 0;
                 if (trainPartOutsidePlatformBackward >= stopTrain.Length) return (int)PlatformItem.MinWaitingTime; // train actually stopped before platform; should not happen
-                if (stopTrain == Program.Simulator.OriginalPlayerTrain)
+                if (stopTrain == stopTrain.Simulator.OriginalPlayerTrain)
                 {
                     if (trainPartOutsidePlatformForward == 0 && trainPartOutsidePlatformBackward == 0) passengerCarsWithinPlatform = stopTrain.PassengerCarsNumber;
                     else
@@ -17130,7 +17140,7 @@ namespace Orts.Simulation.Physics
             /// <\summary>
             private bool CheckScheduleValidity(Train stopTrain)
             {
-                if (Program.Simulator.TimetableMode || stopTrain.TrainType != Train.TRAINTYPE.AI) return true;
+                if (stopTrain.Simulator.TimetableMode || stopTrain.TrainType != Train.TRAINTYPE.AI) return true;
                 if (ArrivalTime == DepartTime && Math.Abs(ArrivalTime - ActualArrival) > 14400) return false;
                 else return true;
             }

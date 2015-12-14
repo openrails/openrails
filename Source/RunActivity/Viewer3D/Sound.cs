@@ -1319,7 +1319,7 @@ namespace Orts.Viewer3D
 
         public ORTSDiscreteTrigger(SoundStream soundStream, Events.Source eventSound, Orts.Formats.Msts.Discrete_Trigger smsData)
         {
-            TriggerID = Events.From(eventSound, smsData.TriggerID);
+            TriggerID = Events.From(soundStream.SoundSource.Car.Simulator.Settings.MSTSBINSound, eventSound, smsData.TriggerID);
             SoundCommand = ORTSSoundCommand.FromMSTS(smsData.SoundCommand, soundStream);
             SoundStream = soundStream;
         }

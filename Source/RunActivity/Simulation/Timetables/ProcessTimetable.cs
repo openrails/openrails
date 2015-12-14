@@ -834,7 +834,7 @@ namespace Orts.Simulation.Timetables
                     {
                         try
                         {
-                            outPath = new AIPath(simulator.TDB, simulator.TSectionDat, formedpathFilefull, simulator.orRouteConfig);
+                            outPath = new AIPath(simulator.TDB, simulator.TSectionDat, formedpathFilefull, simulator.TimetableMode, simulator.orRouteConfig);
                         }
                         catch (Exception e)
                         {

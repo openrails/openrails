@@ -4951,7 +4951,7 @@ namespace Orts.Simulation.Timetables
             TTTrain otherTrain = GetOtherTTTrainByNumber(reqWait.waitTrainNumber);
 
             // get clock time - for AI use AI clock as simulator clock is not valid during pre-process
-            double presentTime = Program.Simulator.ClockTime;
+            double presentTime = Simulator.ClockTime;
             if (TrainType == TRAINTYPE.AI)
             {
                 AITrain aitrain = this as AITrain;
@@ -5809,7 +5809,7 @@ namespace Orts.Simulation.Timetables
                                 {
                                     MayDepart = true;
                                     DisplayMessage = Catalog.GetString("Passenger boarding completed. You may depart now.");
-                                    Program.Simulator.SoundNotify = Event.PermissionToDepart;
+                                    Simulator.SoundNotify = Event.PermissionToDepart;
                                 }
                             }
                         }

@@ -196,7 +196,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             {
                 var soundPathArray = new[] {
                     Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "SOUND"),
-                    Path.Combine(Program.Simulator.BasePath, "SOUND"),
+                    Path.Combine(Simulator.BasePath, "SOUND"),
                 };
                 var soundPath = ORTSPaths.GetFileFromFolders(soundPathArray, SoundFileName);
                 if (File.Exists(soundPath))

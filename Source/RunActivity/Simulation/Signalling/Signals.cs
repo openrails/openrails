@@ -59,6 +59,8 @@ namespace Orts.Simulation.Signalling
         // local data
         //================================================================================================//
 
+        internal readonly Simulator Simulator;
+
         public TrackDB trackDB;
         private TrackSectionsFile tsectiondat;
         private TrackDatabaseFile tdbfile;
@@ -92,6 +94,7 @@ namespace Orts.Simulation.Signalling
 
         public Signals(Simulator simulator, SignalConfigurationFile sigcfg, CancellationToken cancellation)
         {
+            Simulator = simulator;
 
 #if DEBUG_REPORTS
             File.Delete(@"C:\temp\printproc.txt");
@@ -103,7 +106,7 @@ namespace Orts.Simulation.Signalling
 
             trackDB = simulator.TDB.TrackDB;
             tsectiondat = simulator.TSectionDat;
-            tdbfile = Program.Simulator.TDB;
+            tdbfile = Simulator.TDB;
 
             // read SIGSCR files
 
@@ -297,7 +300,7 @@ namespace Orts.Simulation.Signalling
             while (signalIndex >= 0)
             {
                 SignalObject thisSignal = SignalObjects[signalIndex];
-                thisSignal.Restore(inf);
+                thisSignal.Restore(simulator, inf);
                 signalIndex = inf.ReadInt32();
             }
 
@@ -312,7 +315,7 @@ namespace Orts.Simulation.Signalling
             {
                 foreach (TrackCircuitSection thisSection in TrackCircuitList)
                 {
-                    thisSection.Restore(inf);
+                    thisSection.Restore(simulator, inf);
                 }
             }
 
@@ -1976,7 +1979,7 @@ namespace Orts.Simulation.Signalling
 
             if (thisItem.ItemType == TrItem.trItemType.trSIGNAL)
             {
-                if (!Program.Simulator.TimetableMode)
+                if (!Simulator.TimetableMode)
                 {
                     try
                     {
@@ -1993,7 +1996,7 @@ namespace Orts.Simulation.Signalling
                 if (sigItem.SigObj >= 0)
                 {
                     SignalObject thisSignal = SignalObjects[sigItem.SigObj];
-                    if (!Program.Simulator.TimetableMode && thisSignal == null)
+                    if (!Simulator.TimetableMode && thisSignal == null)
                     {
                         Trace.TraceWarning("Signal item with TrItemID = {0} not consistent with signal database", sigItem.TrItemId);
                         return newLastDistance;
@@ -3248,7 +3251,7 @@ namespace Orts.Simulation.Signalling
 
                         if (thisSection.EndSignals[thisElement.Direction] != null)
                         {
-                            if (Program.Simulator.TimetableMode || routeIndex < routePart.Count)
+                            if (Simulator.TimetableMode || routeIndex < routePart.Count)
                             {
                                 thisTrain.Train.SwitchToSignalControl(thisSection.EndSignals[thisElement.Direction]);
                             }
@@ -4096,7 +4099,7 @@ namespace Orts.Simulation.Signalling
                         if (thisSection.EndSignals[0] != null)
                         {
                             // end signal is always valid in timetable mode
-                            if (Program.Simulator.TimetableMode)
+                            if (Simulator.TimetableMode)
                             {
                                 thisDetails.EndSignals[0] = thisSection.EndSignals[0].thisRef;
                                 thisDetails.DistanceToSignals[0] = distToSignal;
@@ -4141,7 +4144,7 @@ namespace Orts.Simulation.Signalling
 
                         if (thisSection.EndSignals[1] != null)
                         {
-                            if (Program.Simulator.TimetableMode)
+                            if (Simulator.TimetableMode)
                             {
                                 thisDetails.EndSignals[1] = thisSection.EndSignals[1].thisRef;
                                 thisDetails.DistanceToSignals[1] = distToSignal;
@@ -4173,13 +4176,13 @@ namespace Orts.Simulation.Signalling
                 }
             }
 
-            if (!Program.Simulator.TimetableMode && Program.Simulator.Activity != null &&
-                Program.Simulator.Activity.Tr_Activity.Tr_Activity_File.PlatformNumPassengersWaiting != null)
+            if (!Simulator.TimetableMode && Simulator.Activity != null &&
+                Simulator.Activity.Tr_Activity.Tr_Activity_File.PlatformNumPassengersWaiting != null)
 
             // Override .tdb NumPassengersWaiting info with .act NumPassengersWaiting info if any available
             {
                 int overriddenPlatformDetailsIndex;
-                foreach (PlatformData platformData in Program.Simulator.Activity.Tr_Activity.Tr_Activity_File.PlatformNumPassengersWaiting.PlatformDataList)
+                foreach (PlatformData platformData in Simulator.Activity.Tr_Activity.Tr_Activity_File.PlatformNumPassengersWaiting.PlatformDataList)
                 {
                     overriddenPlatformDetailsIndex = PlatformDetailsList.FindIndex(platformDetails => (platformDetails.PlatformReference[0] == platformData.Id) || (platformDetails.PlatformReference[1] == platformData.Id));
                     if (overriddenPlatformDetailsIndex >= 0) PlatformDetailsList[overriddenPlatformDetailsIndex].NumPassengersWaiting = platformData.PassengerCount;
@@ -4974,7 +4977,7 @@ namespace Orts.Simulation.Signalling
                     }
                     switchSection.SignalsPassingRoutes.Clear();
                 }*/
-                var temptrains = Program.Simulator.Trains.ToArray();
+                var temptrains = Simulator.Trains.ToArray();
 
                 foreach (var t in temptrains)
                 {
@@ -5285,7 +5288,7 @@ namespace Orts.Simulation.Signalling
         // Restore
         //
 
-        public void Restore(BinaryReader inf)
+        public void Restore(Simulator simulator, BinaryReader inf)
         {
             ActivePins[0, 0].Link = inf.ReadInt32();
             ActivePins[0, 0].Direction = inf.ReadInt32();
@@ -5300,7 +5303,7 @@ namespace Orts.Simulation.Signalling
             JunctionLastRoute = inf.ReadInt32();
             AILock = inf.ReadBoolean();
 
-            CircuitState.Restore(inf);
+            CircuitState.Restore(simulator, inf);
 
             // if physical junction, throw switch
 
@@ -5513,14 +5516,14 @@ namespace Orts.Simulation.Signalling
                 return (true);
             }
 
-            if (!Program.Simulator.TimetableMode && thisTrain.Train.TrainType == Train.TRAINTYPE.AI_NOTSTARTED)
+            if (!signalRef.Simulator.TimetableMode && thisTrain.Train.TrainType == Train.TRAINTYPE.AI_NOTSTARTED)
             {
                 if (CircuitState.TrainReserved != null && CircuitState.TrainReserved.Train != thisTrain.Train)
                 {
                     ClearSectionsOfTrainBehind(CircuitState.TrainReserved, this);
                 }
             }
-            else if (!Program.Simulator.TimetableMode &&
+            else if (!signalRef.Simulator.TimetableMode &&
                 thisTrain.Train.IsPlayerDriven && thisTrain.Train.ControlMode != Train.TRAIN_CONTROL.MANUAL && thisTrain.Train.DistanceTravelledM == 0.0 &&
                 thisTrain.Train.TCRoute != null && thisTrain.Train.ValidRoute[0] != null && thisTrain.Train.TCRoute.activeSubpath == 0) // We are at initial placement
             // Check if section is under train, and therefore can be unreserved from other trains
@@ -5785,7 +5788,7 @@ namespace Orts.Simulation.Signalling
                         // no deadlock yet active - do not set deadlock if train has wait within deadlock section
                         if (thisTrain.Train.DeadlockInfo.ContainsKey(endSection.Index))
                         {
-                            if (!Program.Simulator.TimetableMode || !thisTrain.Train.HasActiveWait(Index, endSection.Index))
+                            if (!signalRef.Simulator.TimetableMode || !thisTrain.Train.HasActiveWait(Index, endSection.Index))
                             {
                                 endSection.SetDeadlockTrap(thisTrain.Train, thisTrain.Train.DeadlockInfo[endSection.Index]);
                             }
@@ -6416,7 +6419,7 @@ namespace Orts.Simulation.Signalling
         {
             bool returnValue = false;
 
-            if (Program.Simulator.TimetableMode)
+            if (signalRef.Simulator.TimetableMode)
             {
                 returnValue = getSectionState(thisTrain, elementDirection, SignalObject.InternalBlockstate.Reserved, routePart, -1) <= SignalObject.InternalBlockstate.Reservable;
             }
@@ -6683,8 +6686,8 @@ namespace Orts.Simulation.Signalling
                             // this can happen in pre-run mode due to large interval
                             if (thisTrain != null && thisTrainDistanceM < distanceTrainAheadM && thisTrainOffset < offset)
                             {
-                                if ((!Program.Simulator.TimetableMode && thisTrainOffset >= (offset - nextTrain.Train.Length)) ||
-                                    (Program.Simulator.TimetableMode && thisTrainOffset >= (offset - thisTrain.Length)))
+                                if ((!signalRef.Simulator.TimetableMode && thisTrainOffset >= (offset - nextTrain.Train.Length)) ||
+                                    (signalRef.Simulator.TimetableMode && thisTrainOffset >= (offset - thisTrain.Length)))
                                 {
                                     distanceTrainAheadM = offset;
                                     trainFound = nextTrain.Train;
@@ -7361,7 +7364,7 @@ namespace Orts.Simulation.Signalling
         // IMPORTANT : trains are restored to dummy value, will be restored to full contents later
         //
 
-        public void Restore(BinaryReader inf)
+        public void Restore(Simulator simulator, BinaryReader inf)
         {
             int noOccupy = inf.ReadInt32();
             for (int trainNo = 0; trainNo < noOccupy; trainNo++)
@@ -7369,7 +7372,7 @@ namespace Orts.Simulation.Signalling
                 int trainNumber = inf.ReadInt32();
                 int trainRouteIndex = inf.ReadInt32();
                 int trainDirection = inf.ReadInt32();
-                Train thisTrain = new Train(trainNumber);
+                Train thisTrain = new Train(simulator, trainNumber);
                 Train.TrainRouted thisRouted = new Train.TrainRouted(thisTrain, trainRouteIndex);
                 TrainOccupy.Add(thisRouted, trainDirection);
             }
@@ -7378,7 +7381,7 @@ namespace Orts.Simulation.Signalling
             if (trainReserved >= 0)
             {
                 int trainRouteIndexR = inf.ReadInt32();
-                Train thisTrain = new Train(trainReserved);
+                Train thisTrain = new Train(simulator, trainReserved);
                 Train.TrainRouted thisRouted = new Train.TrainRouted(thisTrain, trainRouteIndexR);
                 TrainReserved = thisRouted;
             }
@@ -7390,7 +7393,7 @@ namespace Orts.Simulation.Signalling
             {
                 int trainNumber = inf.ReadInt32();
                 int trainRouteIndex = inf.ReadInt32();
-                Train thisTrain = new Train(trainNumber);
+                Train thisTrain = new Train(simulator, trainNumber);
                 Train.TrainRouted thisRouted = new Train.TrainRouted(thisTrain, trainRouteIndex);
                 TrainPreReserved.Enqueue(thisRouted);
             }
@@ -7400,7 +7403,7 @@ namespace Orts.Simulation.Signalling
             {
                 int trainNumber = inf.ReadInt32();
                 int trainRouteIndex = inf.ReadInt32();
-                Train thisTrain = new Train(trainNumber);
+                Train thisTrain = new Train(simulator, trainNumber);
                 Train.TrainRouted thisRouted = new Train.TrainRouted(thisTrain, trainRouteIndex);
                 TrainClaimed.Enqueue(thisRouted);
             }
@@ -7875,7 +7878,7 @@ namespace Orts.Simulation.Signalling
         // Full restore of train link follows in RestoreTrains
         //
 
-        public void Restore(BinaryReader inf)
+        public void Restore(Simulator simulator, BinaryReader inf)
         {
             int trainNumber = inf.ReadInt32();
 
@@ -7917,7 +7920,7 @@ namespace Orts.Simulation.Signalling
             enabledTrain = null;
             if (trainNumber >= 0)
             {
-                Train thisTrain = new Train(trainNumber);
+                Train thisTrain = new Train(simulator, trainNumber);
                 Train.TrainRouted thisTrainRouted = new Train.TrainRouted(thisTrain, 0);
                 enabledTrain = thisTrainRouted;
             }
@@ -9623,18 +9626,18 @@ namespace Orts.Simulation.Signalling
             if (internalBlockState == InternalBlockstate.OccupiedSameDirection && hasPermission == Permission.Requested && !isPropagated)
             {
                 hasPermission = Permission.Granted;
-                if (sound) Program.Simulator.SoundNotify = Event.PermissionGranted;
+                if (sound) signalRef.Simulator.SoundNotify = Event.PermissionGranted;
             }
             else
             {
                 if (enabledTrain != null && enabledTrain.Train.ControlMode == Train.TRAIN_CONTROL.MANUAL &&
                     internalBlockState <= InternalBlockstate.OccupiedSameDirection && hasPermission == Permission.Requested)
                 {
-                    Program.Simulator.SoundNotify = Event.PermissionGranted;
+                    signalRef.Simulator.SoundNotify = Event.PermissionGranted;
                 }
                 else if (hasPermission == Permission.Requested)
                 {
-                    if (sound) Program.Simulator.SoundNotify = Event.PermissionDenied;
+                    if (sound) signalRef.Simulator.SoundNotify = Event.PermissionDenied;
                 }
 
                 if (enabledTrain != null && enabledTrain.Train.ControlMode == Train.TRAIN_CONTROL.MANUAL && signalState == MstsSignalAspect.STOP &&
@@ -10673,7 +10676,7 @@ namespace Orts.Simulation.Signalling
             if (enabledTrain.Train != null && signalRoute != null)
             {
                 // process in timetable mode
-                if (Program.Simulator.TimetableMode)
+                if (signalRef.Simulator.TimetableMode)
                 {
                     TTTrain enabledTTTrain = enabledTrain.Train as TTTrain;
 

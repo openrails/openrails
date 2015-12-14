@@ -26,7 +26,7 @@ namespace Orts.MultiPlayer
     public class OnlinePlayer
 	{
 		public Decoder decoder;
-		public OnlinePlayer(TcpClient t, Server s) { Client = t; Server = s; decoder = new Decoder(); CreatedTime = Program.Simulator.GameTime; url = "NA";}// "http://trainsimchina.com/discuz/uc_server/avatar.php?uid=72965&size=middle"; }
+		public OnlinePlayer(TcpClient t, Server s) { Client = t; Server = s; decoder = new Decoder(); CreatedTime = MPManager.Simulator.GameTime; url = "NA";}// "http://trainsimchina.com/discuz/uc_server/avatar.php?uid=72965&size=middle"; }
 		public TcpClient Client;
 		public Server Server;
 		public string Username = "";
@@ -122,7 +122,7 @@ namespace Orts.MultiPlayer
 				}
 				catch (Exception)
 				{
-					nowTicks = Program.Simulator.GameTime;
+					nowTicks = MPManager.Simulator.GameTime;
 					if (firstErrorTick == 0)
 					{
 						firstErrorTick = nowTicks;
@@ -141,12 +141,12 @@ namespace Orts.MultiPlayer
 			}
 
 			System.Console.WriteLine("{0} quit", this.Username);
-			if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information(Program.Catalog.GetStringFmt("{0} quit.", this.Username));
+			if (MPManager.Simulator.Confirmer != null) MPManager.Simulator.Confirmer.Information(Program.Catalog.GetStringFmt("{0} quit.", this.Username));
 			Client.Close();
 			if (this.Train != null && this.status != Status.Removed) //remember the location of the train in case the player comes back later, if he is not removed by the dispatcher
 			{
 				if (!MPManager.Instance().lostPlayer.ContainsKey(this.Username)) MPManager.Instance().lostPlayer.Add(this.Username, this);
-				this.quitTime = Program.Simulator.GameTime;
+				this.quitTime = MPManager.Simulator.GameTime;
 				this.Train.SpeedMpS = 0.0f;
 				this.status = Status.Quit;
 			}

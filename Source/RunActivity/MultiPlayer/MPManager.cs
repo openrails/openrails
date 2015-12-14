@@ -25,6 +25,7 @@
  */
 
 using Orts.Parsers.Msts;
+using Orts.Simulation;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using ORTS.Common;
@@ -41,7 +42,9 @@ namespace Orts.MultiPlayer
     //a singleton class handles communication, update and stop etc.
     class MPManager
 	{
-		public int version = 15;
+        public static Simulator Simulator { get; internal set; }
+
+        public int version = 15;
         double lastMoveTime;
         public double lastSwitchTime;
         public double lastSyncTime = 0;
@@ -117,7 +120,10 @@ namespace Orts.MultiPlayer
 		}
 		public static MPManager Instance()
 		{
-			if (localUser == null) localUser = new MPManager();
+            if (localUser == null)
+            {
+                localUser = new MPManager();
+            }
 			return localUser;
 		}
 
@@ -125,15 +131,15 @@ namespace Orts.MultiPlayer
 		{
 			try
 			{
-				Train train = Program.Simulator.PlayerLocomotive.Train;
+				Train train = Simulator.PlayerLocomotive.Train;
 				
 				MSGControl msgctl;
 				//I am the server, I have control
 				if (IsServer())
 				{
-					train.TrainType = Train.TRAINTYPE.PLAYER; train.LeadLocomotive = Program.Simulator.PlayerLocomotive;
-					if (Program.Simulator.Confirmer != null)
-						Program.Simulator.Confirmer.Information(Program.Catalog.GetString("You gained back the control of your train"));
+					train.TrainType = Train.TRAINTYPE.PLAYER; train.LeadLocomotive = Simulator.PlayerLocomotive;
+					if (Simulator.Confirmer != null)
+                        Simulator.Confirmer.Information(Program.Catalog.GetString("You gained back the control of your train"));
 					msgctl = new MSGControl(GetUserName(), "Confirm", train);
 					BroadCast(msgctl.ToString());
 				}
@@ -182,14 +188,14 @@ namespace Orts.MultiPlayer
 			if (Program.Server != null && newtime - lastMoveTime >= 1f)
 			{
 				MSGMove move = new MSGMove();
-				move.AddNewItem(GetUserName(), Program.Simulator.PlayerLocomotive.Train);
+				move.AddNewItem(GetUserName(), Simulator.PlayerLocomotive.Train);
 				Program.Server.BroadCast(OnlineTrains.MoveTrains(move));
 				lastMoveTime = lastSendTime = newtime;
 
 #if INDIVIDUAL_CONTROL
-				if (Program.Simulator.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.REMOTE)
+				if (Simulator.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.REMOTE)
 				{
-					Program.Server.BroadCast((new MSGLocoInfo(Program.Simulator.PlayerLocomotive, GetUserName())).ToString());
+					Program.Server.BroadCast((new MSGLocoInfo(Simulator.PlayerLocomotive, GetUserName())).ToString());
 				}
 #endif
 			}
@@ -209,7 +215,7 @@ namespace Orts.MultiPlayer
 			//client updates itself
 			if (Program.Client != null && Program.Server == null && newtime - lastMoveTime >= 1f)
 			{
-				Train t = Program.Simulator.PlayerLocomotive.Train;
+				Train t = Simulator.PlayerLocomotive.Train;
 				MSGMove move = new MSGMove();
 				//if I am still conrolling the train
 				if (t.TrainType != Train.TRAINTYPE.REMOTE)
@@ -236,9 +242,9 @@ namespace Orts.MultiPlayer
 
 #if INDIVIDUAL_CONTROL
 
-				if (Program.Simulator.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.REMOTE)
+				if (Simulator.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.REMOTE)
 				{
-					Program.Client.Send((new MSGLocoInfo(Program.Simulator.PlayerLocomotive, GetUserName())).ToString());
+					Program.Client.Send((new MSGLocoInfo(Simulator.PlayerLocomotive, GetUserName())).ToString());
 				}
 #endif
 			}
@@ -255,7 +261,7 @@ namespace Orts.MultiPlayer
             //need to send a keep-alive message if have not sent one to the server for the last 30 seconds
             if (IsServer() && newtime - lastSyncTime >= 60f)
             {
-                Notify((new MSGMessage("All", "TimeCheck", Program.Simulator.ClockTime.ToString(System.Globalization.CultureInfo.InvariantCulture))).ToString());
+                Notify((new MSGMessage("All", "TimeCheck", Simulator.ClockTime.ToString(System.Globalization.CultureInfo.InvariantCulture))).ToString());
                 lastSyncTime = newtime;
             }
             RemovePlayer();
@@ -270,7 +276,7 @@ namespace Orts.MultiPlayer
 
 			/* will have this in the future so that helpers can also control
 			//I am a helper, will see if I need to update throttle and dynamic brake
-			if (Program.Simulator.PlayerLocomotive.Train != null && Program.Simulator.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.REMOTE) 
+			if (Simulator.PlayerLocomotive.Train != null && Simulator.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.REMOTE) 
 			{
 
 			}
@@ -281,7 +287,7 @@ namespace Orts.MultiPlayer
 		void CheckPlayerTrainSpad()
 		{
 			if (CheckSpad == false) return;
-			var Locomotive = (MSTSLocomotive)Program.Simulator.PlayerLocomotive;
+			var Locomotive = (MSTSLocomotive)Simulator.PlayerLocomotive;
 			if (Locomotive == null) return;
 			var train = Locomotive.Train;
 			if (train == null ||train.TrainType == Train.TRAINTYPE.REMOTE) return;//no train or is remotely controlled
@@ -366,7 +372,7 @@ namespace Orts.MultiPlayer
 		}
 
 		//when two player trains connected, require decouple at speed 0.
-		public static bool TrainOK2Decouple(Train t)
+		public static bool TrainOK2Decouple(Confirmer confirmer, Train t)
 		{
 			if (t == null) return false;
 			if (Math.Abs(t.SpeedMpS) < 0.001) return true;
@@ -383,8 +389,8 @@ namespace Orts.MultiPlayer
 				}
 				if (count >= 2)
 				{
-					if (Program.Simulator.Confirmer != null)
-						Program.Simulator.Confirmer.Information(Program.Catalog.GetPluralStringFmt("Cannot decouple: train has {0} player, need to completely stop.", "Cannot decouple: train has {0} players, need to completely stop.", count));
+					if (confirmer != null)
+						confirmer.Information(Program.Catalog.GetPluralStringFmt("Cannot decouple: train has {0} player, need to completely stop.", "Cannot decouple: train has {0} players, need to completely stop.", count));
 					return false;
 				}
 			}
@@ -400,15 +406,15 @@ namespace Orts.MultiPlayer
 			if (PlayerAdded == true)
 			{
 				PlayerAdded = false;
-				MPManager.Instance().lastPlayerAddedTime = Program.Simulator.GameTime;
-				MPManager.Instance().lastSwitchTime = Program.Simulator.GameTime;
+				MPManager.Instance().lastPlayerAddedTime = Simulator.GameTime;
+				MPManager.Instance().lastSwitchTime = Simulator.GameTime;
 
-				MSGPlayer host = new MSGPlayer(MPManager.GetUserName(), "1234", Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.PlayerLocomotive.Train,
-					Program.Simulator.PlayerLocomotive.Train.Number, Program.Simulator.Settings.AvatarURL);
+				MSGPlayer host = new MSGPlayer(MPManager.GetUserName(), "1234", Simulator.conFileName, Simulator.patFileName, Simulator.PlayerLocomotive.Train,
+					Simulator.PlayerLocomotive.Train.Number, Simulator.Settings.AvatarURL);
 				MPManager.BroadCast(host.ToString() + MPManager.OnlineTrains.AddAllPlayerTrain());
-				foreach (Train t in Program.Simulator.Trains)
+				foreach (Train t in Simulator.Trains)
 				{
-					if (Program.Simulator.PlayerLocomotive != null && t == Program.Simulator.PlayerLocomotive.Train) continue; //avoid broadcast player train
+					if (Simulator.PlayerLocomotive != null && t == Simulator.PlayerLocomotive.Train) continue; //avoid broadcast player train
 					if (MPManager.FindPlayerTrain(t)) continue;
 					if (removedTrains.Contains(t)) continue;//this train is going to be removed, should avoid it.
 					MPManager.BroadCast((new MSGTrain(t, t.Number)).ToString());
@@ -435,7 +441,7 @@ namespace Orts.MultiPlayer
         }
 
         //this will be used in the server, in Simulator.cs
-		public static bool TrainOK2Couple(Train t1, Train t2)
+		public static bool TrainOK2Couple(Simulator simulator, Train t1, Train t2)
 		{
 			//if (Math.Abs(t1.SpeedMpS) > 10 || Math.Abs(t2.SpeedMpS) > 10) return false; //we do not like high speed punch in MP, will mess up a lot.
 
@@ -446,8 +452,8 @@ namespace Orts.MultiPlayer
 			{
 				foreach (var p in OnlineTrains.Players)
 				{
-					if (p.Value.Train == t1 && Program.Simulator.GameTime  - p.Value.CreatedTime < 120) { result = false; break; }
-					if (p.Value.Train == t2 && Program.Simulator.GameTime - p.Value.CreatedTime < 120) { result = false; break; }
+					if (p.Value.Train == t1 && simulator.GameTime  - p.Value.CreatedTime < 120) { result = false; break; }
+					if (p.Value.Train == t2 && simulator.GameTime - p.Value.CreatedTime < 120) { result = false; break; }
 				}
 			}
 			catch (Exception)
@@ -465,14 +471,14 @@ namespace Orts.MultiPlayer
 		{
 
 			string info = "";
-			if (Program.Simulator.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.REMOTE) info = "Your locomotive is a helper\t";
+			if (Simulator.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.REMOTE) info = "Your locomotive is a helper\t";
 			info += ("" + (OnlineTrains.Players.Count + 1)+ (OnlineTrains.Players.Count <= 0 ? " player " : "  players "));
-			info += ("" + Program.Simulator.Trains.Count + (Program.Simulator.Trains.Count <= 1 ? " train" : "  trains"));
-			TrainCar mine = Program.Simulator.PlayerLocomotive;
+			info += ("" + Simulator.Trains.Count + (Simulator.Trains.Count <= 1 ? " train" : "  trains"));
+			TrainCar mine = Simulator.PlayerLocomotive;
 			users.Clear();
 			try//the list of players may be changed during the following process
 			{
-				//foreach (var train in Program.Simulator.Trains) info += "\t" + train.Number + " " + train.Cars.Count;
+				//foreach (var train in Simulator.Trains) info += "\t" + train.Number + " " + train.Cars.Count;
 				//info += "\t" + MPManager.OnlineTrains.Players.Count;
 				//foreach (var p in MPManager.OnlineTrains.Players) info += "\t" + p.Value.Train.Number + " " + p.Key;
 				foreach (OnlinePlayer p in OnlineTrains.Players.Values)
@@ -488,8 +494,8 @@ namespace Orts.MultiPlayer
 			}
 			if (metric == "")
 			{
-				metric = Program.Simulator.TRK.Tr_RouteFile.MilepostUnitsMetric == true ? " m" : " yd";
-				metricbase = Program.Simulator.TRK.Tr_RouteFile.MilepostUnitsMetric == true ? 1.0f : 1.0936133f;
+				metric = Simulator.TRK.Tr_RouteFile.MilepostUnitsMetric == true ? " m" : " yd";
+				metricbase = Simulator.TRK.Tr_RouteFile.MilepostUnitsMetric == true ? 1.0f : 1.0936133f;
 			}
 
 			int count = 0;
@@ -521,7 +527,7 @@ namespace Orts.MultiPlayer
 				List<string> removeLost = null;
 				foreach (var x in lostPlayer)
 				{
-					if (Program.Simulator.GameTime - x.Value.quitTime > 180) //lost within 3 minutes will be held
+					if (Simulator.GameTime - x.Value.quitTime > 180) //lost within 3 minutes will be held
 					{
 						if (removeLost == null) removeLost = new List<string>();
 						removeLost.Add(x.Key);
@@ -550,7 +556,7 @@ namespace Orts.MultiPlayer
 					{
 						if (Program.Server != null) Program.Server.Players.Remove(p);
 						//player is not in this train
-						if (p.Train != null && p.Train != Program.Simulator.PlayerLocomotive.Train)
+						if (p.Train != null && p.Train != Simulator.PlayerLocomotive.Train)
 						{
 							//make sure this train has no other player on it
 							bool hasOtherPlayer = false;
@@ -560,7 +566,7 @@ namespace Orts.MultiPlayer
 								if (p1.Value.Train == p.Train) { hasOtherPlayer = true; break; }//other player has the same train
 							}
                             if (hasOtherPlayer == false) 
-                            { p.Train.RemoveFromTrack(); Program.Simulator.Trains.Remove(p.Train); }
+                            { p.Train.RemoveFromTrack(); Simulator.Trains.Remove(p.Train); }
 						}
 						OnlineTrains.Players.Remove(p.Username);
 					}
@@ -607,11 +613,11 @@ namespace Orts.MultiPlayer
 					foreach (var t in addedTrains)
 					{
 						var hasIt = false;
-						foreach (var t1 in Program.Simulator.Trains)
+						foreach (var t1 in Simulator.Trains)
 						{
 							if (t1.Number == t.Number) { hasIt = true; break; }
 						}
-						if (!hasIt) Program.Simulator.Trains.Add(t);
+						if (!hasIt) Simulator.Trains.Add(t);
 					}
 					addedTrains.Clear();
 				}
@@ -625,7 +631,7 @@ namespace Orts.MultiPlayer
 					foreach (var t in removedTrains)
 					{
                         t.RemoveFromTrack();
-						Program.Simulator.Trains.Remove(t);
+						Simulator.Trains.Remove(t);
 					}
 					removedTrains.Clear();
 				}
@@ -657,11 +663,11 @@ namespace Orts.MultiPlayer
 				char type = 'w';
 				if (wagonFilePath.ToLower().Contains(".eng")) type = 'e';
 				string newWagonFilePath = SubMissingCar(length, type);
-                car = RollingStock.Load(Program.Simulator, newWagonFilePath);
+                car = RollingStock.Load(Simulator, newWagonFilePath);
 				car.CarLengthM = length;
 				car.RealWagFilePath = wagonFilePath;
-				if (Program.Simulator.Confirmer != null)
-                    Program.Simulator.Confirmer.Information(Program.Catalog.GetString("Missing car, have substituted with other one."));
+				if (Simulator.Confirmer != null)
+                    Simulator.Confirmer.Information(Program.Catalog.GetString("Missing car, have substituted with other one."));
 
 			}
 			catch (Exception error)
@@ -682,13 +688,13 @@ namespace Orts.MultiPlayer
 			if (type == 'w')
 			{
 				if (coachList == null)
-					coachList = GetList(type);
+					coachList = GetList(Simulator, type);
 				copyList = coachList;
 			}
 			else
 			{
 				if (engList == null)
-					engList = GetList(type);
+					engList = GetList(Simulator, type);
 				copyList = engList;
 			}
 			string bestName = "Default\\default.wag"; double bestDist = 1000;
@@ -698,15 +704,15 @@ namespace Orts.MultiPlayer
 				var dist = Math.Abs(item.Key - length);
 				if (dist < bestDist) { bestDist = dist; bestName = item.Value; }
 			}
-			return Program.Simulator.BasePath + "\\trains\\trainset\\" + bestName;
+			return Simulator.BasePath + "\\trains\\trainset\\" + bestName;
 
 		}
 
-		static SortedList<double, string> GetList(char type)
+		static SortedList<double, string> GetList(Simulator simulator, char type)
 		{
 			string ending = "*.eng";
 			if (type == 'w') ending = "*.wag";
-			string[] filePaths = Directory.GetFiles(Program.Simulator.BasePath + "\\trains\\trainset", ending, SearchOption.AllDirectories);
+			string[] filePaths = Directory.GetFiles(simulator.BasePath + "\\trains\\trainset", ending, SearchOption.AllDirectories);
 			string temp;
 			List<string> allEngines = new List<string>();
 			SortedList<double, string> carList = new SortedList<double, string>();
@@ -724,7 +730,7 @@ namespace Orts.MultiPlayer
 
 				try
 				{
-					using (var stf = new STFReader(Program.Simulator.BasePath + "\\trains\\trainset\\" + name, false))
+					using (var stf = new STFReader(simulator.BasePath + "\\trains\\trainset\\" + name, false))
 						stf.ParseFile(new STFReader.TokenProcessor[] {
 							new STFReader.TokenProcessor("wagon", ()=>{
 								stf.ReadString();
@@ -747,7 +753,7 @@ namespace Orts.MultiPlayer
 		{
 			try
 			{
-				string fileName = Program.Simulator.RoutePath + @"\" + Program.Simulator.TRK.Tr_RouteFile.FileName + ".tdb";
+				string fileName = Simulator.RoutePath + @"\" + Simulator.TRK.Tr_RouteFile.FileName + ".tdb";
 				FileStream file = new FileStream(fileName, FileMode.Open);
 				MD5 md5 = new MD5CryptoServiceProvider();
 				byte[] retVal = md5.ComputeHash(file);
