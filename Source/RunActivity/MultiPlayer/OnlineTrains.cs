@@ -130,7 +130,7 @@ namespace Orts.MultiPlayer
 		public void AddPlayers(MSGPlayer player, OnlinePlayer p)
 		{
 			if (Players.ContainsKey(player.user)) return;
-			if (Program.Client != null && player.user == Program.Client.UserName) return; //do not add self//WARNING: may need to worry about train number here
+			if (MPManager.Client != null && player.user == MPManager.Client.UserName) return; //do not add self//WARNING: may need to worry about train number here
 			if (p == null)
 			{
 				p = new OnlinePlayer(null, null);
@@ -254,7 +254,7 @@ namespace Orts.MultiPlayer
             // find info about the new player train
             // look in all trains
 
-            if (Program.Client != null && player.user == Program.Client.UserName) return; //do not add self//WARNING: may need to worry about train number here
+            if (MPManager.Client != null && player.user == MPManager.Client.UserName) return; //do not add self//WARNING: may need to worry about train number here
             OnlinePlayer p;
             var doesPlayerExist = Players.TryGetValue(player.user, out p);
             if (!doesPlayerExist) return;

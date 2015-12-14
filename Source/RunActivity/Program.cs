@@ -16,7 +16,6 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using Orts.Common;
-using Orts.MultiPlayer;
 using Orts.Simulation;
 using Orts.Viewer3D;
 using Orts.Viewer3D.Debugging;
@@ -31,10 +30,6 @@ namespace Orts
     {
         public static Simulator Simulator;
         public static Viewer Viewer;
-        public static Server Server;
-        public static ClientComm Client;
-        public static string UserName;
-        public static string Code;
         public static DispatchViewer DebugViewer;
         public static SoundDebugForm SoundDebugForm;
         public static ORTraceListener ORTraceListener;

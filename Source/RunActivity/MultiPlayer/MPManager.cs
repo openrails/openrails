@@ -47,6 +47,9 @@ namespace Orts.MultiPlayer
         public static Random Random { get; private set; }
         public static Simulator Simulator { get; internal set; }
 
+        public static Server Server;
+        public static ClientComm Client;
+
         public int version = 15;
         double lastMoveTime;
         public double lastSwitchTime;
@@ -155,7 +158,7 @@ namespace Orts.MultiPlayer
 			addedTrains = new List<Train>();
 			removedTrains = new List<Train>();
 			aiderList = new List<string>();
-			if (Program.Server != null) NotServer = false;
+			if (Server != null) NotServer = false;
 			users = new SortedList<double,string>();
 			GetMD5HashFromTDBFile();
 		}
@@ -198,11 +201,11 @@ namespace Orts.MultiPlayer
 
         public void PreUpdate()
         {
-            if (NotServer == true && Program.Server != null) //I was a server, but no longer
+            if (NotServer == true && Server != null) //I was a server, but no longer
             {
-                Program.Server = null;
+                Server = null;
             }
-            else if (NotServer == false && Program.Server == null) //I am declared the server
+            else if (NotServer == false && Server == null) //I am declared the server
             {
             }
         }
@@ -224,23 +227,23 @@ namespace Orts.MultiPlayer
 			CheckPlayerTrainSpad();//over speed or pass a red light
 
 			//server update train location of all
-			if (Program.Server != null && newtime - lastMoveTime >= 1f)
+			if (Server != null && newtime - lastMoveTime >= 1f)
 			{
 				MSGMove move = new MSGMove();
 				move.AddNewItem(GetUserName(), Simulator.PlayerLocomotive.Train);
-				Program.Server.BroadCast(OnlineTrains.MoveTrains(move));
+				Server.BroadCast(OnlineTrains.MoveTrains(move));
 				lastMoveTime = lastSendTime = newtime;
 
 #if INDIVIDUAL_CONTROL
 				if (Simulator.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.REMOTE)
 				{
-					Program.Server.BroadCast((new MSGLocoInfo(Simulator.PlayerLocomotive, GetUserName())).ToString());
+					Server.BroadCast((new MSGLocoInfo(Simulator.PlayerLocomotive, GetUserName())).ToString());
 				}
 #endif
 			}
 			
 			//server updates switch
-			if (Program.Server != null && newtime - lastSwitchTime >= MPUpdateInterval)
+			if (Server != null && newtime - lastSwitchTime >= MPUpdateInterval)
 			{
 				lastSwitchTime = lastSendTime = newtime;
 				var switchStatus = new MSGSwitchStatus();
@@ -252,7 +255,7 @@ namespace Orts.MultiPlayer
 			}
 			
 			//client updates itself
-			if (Program.Client != null && Program.Server == null && newtime - lastMoveTime >= 1f)
+			if (Client != null && Server == null && newtime - lastMoveTime >= 1f)
 			{
 				Train t = Simulator.PlayerLocomotive.Train;
 				MSGMove move = new MSGMove();
@@ -274,7 +277,7 @@ namespace Orts.MultiPlayer
 				//if there are messages to send
 				if (move.OKtoSend())
 				{
-					Program.Client.Send(move.ToString());
+					Client.Send(move.ToString());
 					lastMoveTime = lastSendTime = newtime;
 				}
 				previousSpeed = t.SpeedMpS;
@@ -283,14 +286,14 @@ namespace Orts.MultiPlayer
 
 				if (Simulator.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.REMOTE)
 				{
-					Program.Client.Send((new MSGLocoInfo(Simulator.PlayerLocomotive, GetUserName())).ToString());
+					Client.Send((new MSGLocoInfo(Simulator.PlayerLocomotive, GetUserName())).ToString());
 				}
 #endif
 			}
 
 
 			//need to send a keep-alive message if have not sent one to the server for the last 30 seconds
-			if (Program.Client != null && Program.Server == null && newtime - lastSendTime >= 30f)
+			if (Client != null && Server == null && newtime - lastSendTime >= 30f)
 			{
 				Notify((new MSGAlive(GetUserName())).ToString());
 				lastSendTime = newtime;
@@ -341,7 +344,7 @@ namespace Orts.MultiPlayer
 		//check if it is in the server mode
 		public static bool IsServer()
 		{
-			if (Program.Server != null) return true;
+			if (Server != null) return true;
 			else return false;
 		}
 
@@ -361,52 +364,52 @@ namespace Orts.MultiPlayer
         //user name
 		static public string GetUserName()
 		{
-			if (Program.Server != null) return Program.Server.UserName;
-			else if (Program.Client != null) return Program.Client.UserName;
+			if (Server != null) return Server.UserName;
+			else if (Client != null) return Client.UserName;
 			else return "";
 		}
 
 		//check if it is in the multiplayer session
 		static public bool IsMultiPlayer()
 		{
-			if (Program.Server != null || Program.Client != null) return true;
+			if (Server != null || Client != null) return true;
 			else return false;
 		}
 
 		static public void BroadCast(string m)
 		{
 			if (m == null) return;
-			if (Program.Server != null) Program.Server.BroadCast(m);
+			if (Server != null) Server.BroadCast(m);
 		}
 
 		//notify others (server will broadcast, client will send msg to server)
 		static public void Notify(string m)
 		{
 			if (m == null) return;
-			if (Program.Client != null && Program.Server == null) Program.Client.Send(m); //client notify server
-			if (Program.Server != null) Program.Server.BroadCast(m); //server notify everybody else
+			if (Client != null && Server == null) Client.Send(m); //client notify server
+			if (Server != null) Server.BroadCast(m); //server notify everybody else
 		}
 
 		static public void SendToServer(string m)
 		{
-			if (m!= null && Program.Client != null) Program.Client.Send(m);
+			if (m!= null && Client != null) Client.Send(m);
 		}
 
 		//nicely shutdown listening threads, and notify the server/other player
 		static public void Stop()
 		{
-			if (Program.Client != null && Program.Server == null)
+			if (Client != null && Server == null)
 			{
-				Program.Client.Send((new MSGQuit(GetUserName())).ToString()); //client notify server
+				Client.Send((new MSGQuit(GetUserName())).ToString()); //client notify server
 				Thread.Sleep(1000);
-				Program.Client.Stop();
+				Client.Stop();
 			}
-			if (Program.Server != null)
+			if (Server != null)
 			{
-				Program.Server.BroadCast((new MSGQuit("ServerHasToQuit\t"+GetUserName())).ToString()); //server notify everybody else
+				Server.BroadCast((new MSGQuit("ServerHasToQuit\t"+GetUserName())).ToString()); //server notify everybody else
 				Thread.Sleep(1000);
-				if (Program.Server.ServerComm != null) Program.Server.Stop();
-				if (Program.Client != null) Program.Client.Stop();
+				if (Server.ServerComm != null) Server.Stop();
+				if (Client != null) Client.Stop();
 			}
 		}
 
@@ -584,7 +587,7 @@ namespace Orts.MultiPlayer
 		//only can be called by Update
 		private void RemovePlayer()
 		{
-			//if (Program.Server == null) return; //client will do it by decoding message
+			//if (Server == null) return; //client will do it by decoding message
 			if (playersRemoved.Count == 0) return;
 
 			try //do it with lock, but may still have exception
@@ -593,7 +596,7 @@ namespace Orts.MultiPlayer
 				{
 					foreach (OnlinePlayer p in playersRemoved)
 					{
-						if (Program.Server != null) Program.Server.Players.Remove(p);
+						if (Server != null) Server.Players.Remove(p);
 						//player is not in this train
 						if (p.Train != null && p.Train != Simulator.PlayerLocomotive.Train)
 						{
@@ -719,7 +722,7 @@ namespace Orts.MultiPlayer
         SortedList<double, string> coachList;
         SortedList<double, string> engList;
 
-		public string SubMissingCar(int length, char type)
+        public string SubMissingCar(int length, char type)
 		{
 
 			type = char.ToLower(type);

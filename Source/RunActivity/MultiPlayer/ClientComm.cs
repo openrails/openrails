@@ -122,7 +122,7 @@ namespace Orts.MultiPlayer
 				{
 					if (MPManager.Simulator.Confirmer != null)
                         MPManager.Simulator.Confirmer.Error(MPManager.Catalog.GetString("Connection to the server is lost, will play as single mode"));
-					Program.Client = null;
+                    MPManager.Client = null;
 					tcpClient.Close();
 					listenThread.Abort();
 				}
@@ -152,7 +152,7 @@ namespace Orts.MultiPlayer
 			if (MPManager.Simulator.Confirmer != null)
                 MPManager.Simulator.Confirmer.Information(MPManager.Catalog.GetString("Alt-E to gain control of your train"));
 
-			Program.Client = null;
+            MPManager.Client = null;
 			tcpClient.Close();
 			listenThread.Abort();
 		}

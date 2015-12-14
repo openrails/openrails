@@ -46,10 +46,10 @@ namespace Orts.Viewer3D.Processes
         static Simulator Simulator { get { return Program.Simulator; } set { Program.Simulator = value; } }
 
         //for Multiplayer
-        static Server Server { get { return Program.Server; } set { Program.Server = value; } }
-        static ClientComm Client { get { return Program.Client; } set { Program.Client = value; } }
-        static string UserName { get { return Program.UserName; } set { Program.UserName = value; } }
-        static string Code { get { return Program.Code; } set { Program.Code = value; } }
+        static Server Server { get { return MPManager.Server; } set { MPManager.Server = value; } }
+        static ClientComm Client { get { return MPManager.Client; } set { MPManager.Client = value; } }
+        string UserName;
+        string Code;
 
         static Viewer Viewer { get { return Program.Viewer; } set { Program.Viewer = value; } }
         static ORTraceListener ORTraceListener { get { return Program.ORTraceListener; } set { Program.ORTraceListener = value; } }
@@ -289,7 +289,7 @@ namespace Orts.Viewer3D.Processes
 
             if (Client != null)
             {
-                Client.Send((new MSGPlayer(Program.UserName, Program.Code, Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.Trains[0], 0, Program.Simulator.Settings.AvatarURL)).ToString());
+                Client.Send((new MSGPlayer(UserName, Code, Simulator.conFileName, Simulator.patFileName, Simulator.Trains[0], 0, Simulator.Settings.AvatarURL)).ToString());
             }
 
             Game.ReplaceState(new GameStateViewer3D(Viewer));

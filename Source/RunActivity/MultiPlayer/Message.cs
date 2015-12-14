@@ -497,16 +497,16 @@ namespace Orts.MultiPlayer
 				MPManager.OnlineTrains.AddPlayers(this, null);
 
 				//System.Console.WriteLine(this.ToString());
-				if (MPManager.IsServer())// && Program.Server.IsRemoteServer())
+				if (MPManager.IsServer())// && MPManager.Server.IsRemoteServer())
 				{
 					MPManager.BroadCast((new MSGOrgSwitch(user, MPManager.Instance().OriginalSwitchState)).ToString());
 					MPManager.Instance().PlayerAdded = true;
 				}
 				else //client needs to handle environment
 				{
-					if (MPManager.GetUserName() == this.user && !Program.Client.Connected) //a reply from the server, update my train number
+					if (MPManager.GetUserName() == this.user && !MPManager.Client.Connected) //a reply from the server, update my train number
 					{
-						Program.Client.Connected = true;
+						MPManager.Client.Connected = true;
 						Train t = null;
 						if (MPManager.Simulator.PlayerLocomotive == null) t = MPManager.Simulator.Trains[0];
 						else t = MPManager.Simulator.PlayerLocomotive.Train;
@@ -689,9 +689,9 @@ namespace Orts.MultiPlayer
                 }
                 else //client needs to handle environment
                 {
-                    if (MPManager.GetUserName() == this.user && !Program.Client.Connected) //a reply from the server, update my train number
+                    if (MPManager.GetUserName() == this.user && !MPManager.Client.Connected) //a reply from the server, update my train number
                     {
-                        Program.Client.Connected = true;
+                        MPManager.Client.Connected = true;
                         Train t = null;
                         if (MPManager.Simulator.PlayerLocomotive == null) t = MPManager.Simulator.Trains[0];
                         else t = MPManager.Simulator.PlayerLocomotive.Train;
@@ -1561,10 +1561,10 @@ namespace Orts.MultiPlayer
 
 			if (MPManager.GetUserName() == user || user == "YOU")
 			{
-				if (Program.Server != null) return; //already a server, not need to worry
-				Program.Client.Connected = true;
+				if (MPManager.Server != null) return; //already a server, not need to worry
+				MPManager.Client.Connected = true;
                 MPManager.Instance().NotServer = false;
-                Program.Server = new Server(Program.Client.UserName + ' ' + Program.Client.Code, Program.Client);
+                MPManager.Server = new Server(MPManager.Client.UserName + ' ' + MPManager.Client.Code, MPManager.Client);
                 MPManager.Instance().OnServerChanged(true);
 				MPManager.Instance().RememberOriginalSwitchState();
                 Trace.TraceInformation("You are the new dispatcher. Enjoy!");
@@ -1987,7 +1987,7 @@ namespace Orts.MultiPlayer
 			if (user == MPManager.GetUserName()) return; //avoid myself
 
 			bool ServerQuit = false;
-			if (Program.Client != null && user.Contains("ServerHasToQuit")) //the server quits, will send a message with ServerHasToQuit\tServerName
+			if (MPManager.Client != null && user.Contains("ServerHasToQuit")) //the server quits, will send a message with ServerHasToQuit\tServerName
 			{
 				if (MPManager.Simulator.Confirmer != null)
                     MPManager.Simulator.Confirmer.Error(MPManager.Catalog.GetString("Server quits, will play as single mode"));
@@ -2890,7 +2890,7 @@ namespace Orts.MultiPlayer
 		//how to handle the message?
 		public override void HandleMsg() //only client will get message, thus will set states
 		{
-			if (Program.Server != null) return; //server will ignore it
+			if (MPManager.Server != null) return; //server will ignore it
 
 			//if (signals.Count != readed/2-2) { System.Console.WriteLine("Error in synchronizing signals " + signals.Count + " " + readed); return; }
 			int i = 0;
@@ -3272,7 +3272,7 @@ namespace Orts.MultiPlayer
 		//how to handle the message?
         public override void HandleMsg() //only client will get message, thus will set states
         {
-            if (Program.Server != null && !MPManager.Instance().aiderList.Contains(sender)) return; //client will ignore it, also if not an aider, will ignore it
+            if (MPManager.Server != null && !MPManager.Instance().aiderList.Contains(sender)) return; //client will ignore it, also if not an aider, will ignore it
 
             var signal = MPManager.Simulator.Signals.SignalObjects[index];
             switch (pick)
