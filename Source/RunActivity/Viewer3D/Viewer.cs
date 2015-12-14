@@ -266,6 +266,7 @@ namespace Orts.Viewer3D
             };
 
             Simulator.PlayerLocomotiveChanged += PlayerLocomotiveChanged;
+            Simulator.PlayerTrainChanged += PlayerTrainChanged;
 
             Initialize();
         }
@@ -1079,11 +1080,11 @@ namespace Orts.Viewer3D
         }
 
         // change reference to player train when switching train in Timetable mode
-        public void ChangeTrain(Train oldTrain, Train newTrain)
+        void PlayerTrainChanged(object sender, Simulator.PlayerTrainChangedEventArgs e)
         {
-            if (SelectedTrain == oldTrain)
+            if (SelectedTrain == e.OldTrain)
             {
-                SelectedTrain = newTrain;
+                SelectedTrain = e.NewTrain;
             }
         }
 

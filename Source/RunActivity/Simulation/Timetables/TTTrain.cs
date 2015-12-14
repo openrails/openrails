@@ -6191,7 +6191,7 @@ namespace Orts.Simulation.Timetables
                 }
 
                 // notify viewer of change in selected train
-                Program.Viewer.ChangeTrain(this, formedTrain);
+                Simulator.OnPlayerTrainChanged(this, formedTrain);
                 Simulator.PlayerLocomotive.Train = formedTrain;
 
                 // clear replay commands

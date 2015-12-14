@@ -186,6 +186,18 @@ namespace Orts.Simulation
 
         public readonly TrainSwitcherData TrainSwitcher = new TrainSwitcherData();
 
+        public class PlayerTrainChangedEventArgs : EventArgs
+        {
+            public readonly Train OldTrain;
+            public readonly Train NewTrain;
+
+            public PlayerTrainChangedEventArgs(Train oldTrain, Train newTrain)
+            {
+                OldTrain = oldTrain;
+                NewTrain = newTrain;
+            }
+        }
+
         public class QueryCarViewerLoadedEventArgs : EventArgs
         {
             public readonly TrainCar Car;
@@ -200,6 +212,7 @@ namespace Orts.Simulation
         public event System.EventHandler WeatherChanged;
         public event System.EventHandler AllowedSpeedRaised;
         public event System.EventHandler PlayerLocomotiveChanged;
+        public event System.EventHandler<PlayerTrainChangedEventArgs> PlayerTrainChanged;
         public event System.EventHandler<QueryCarViewerLoadedEventArgs> QueryCarViewerLoaded;
 
         public Simulator(UserSettings settings, string activityPath, bool useOpenRailsDirectory)
@@ -2090,6 +2103,14 @@ namespace Orts.Simulation
             var playerLocomotiveChanged = PlayerLocomotiveChanged;
             if (playerLocomotiveChanged != null)
                 playerLocomotiveChanged(this, EventArgs.Empty);
+        }
+
+        internal void OnPlayerTrainChanged(Train oldTrain, Train newTrain)
+        {
+            var eventArgs = new PlayerTrainChangedEventArgs(oldTrain, newTrain);
+            var playerTrainChanged = PlayerTrainChanged;
+            if (playerTrainChanged != null)
+                playerTrainChanged(this, eventArgs);
         }
 
         bool OnQueryCarViewerLoaded(TrainCar car)
