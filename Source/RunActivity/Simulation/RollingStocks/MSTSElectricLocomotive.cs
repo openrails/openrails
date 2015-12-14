@@ -228,9 +228,9 @@ namespace Orts.Simulation.RollingStocks
                         if (id == 2) Simulator.Confirmer.Confirm(CabControl.Pantograph2, CabSetting.On);
 
                         if (!Simulator.TRK.Tr_RouteFile.Electrified)
-                            Simulator.Confirmer.Warning(Program.Catalog.GetString("No power line!"));
+                            Simulator.Confirmer.Warning(Simulator.Catalog.GetString("No power line!"));
                         if (Simulator.Settings.OverrideNonElectrifiedRoutes)
-                            Simulator.Confirmer.Information(Program.Catalog.GetString("Power line condition overridden."));
+                            Simulator.Confirmer.Information(Simulator.Catalog.GetString("Power line condition overridden."));
                         break;
 
                     case PowerSupplyEvent.LowerPantograph:
@@ -324,13 +324,13 @@ namespace Orts.Simulation.RollingStocks
         public override string GetStatus()
         {
             var status = new StringBuilder();
-            status.AppendFormat("{0} = ", Program.Catalog.GetString("Pantographs"));
+            status.AppendFormat("{0} = ", Simulator.Catalog.GetString("Pantographs"));
             foreach (var pantograph in Pantographs.List)
-                status.AppendFormat("{0} ", Program.Catalog.GetParticularString("Pantograph", GetStringAttribute.GetPrettyName(pantograph.State)));
+                status.AppendFormat("{0} ", Simulator.Catalog.GetParticularString("Pantograph", GetStringAttribute.GetPrettyName(pantograph.State)));
             status.AppendLine();
             status.AppendFormat("{0}{2} = {1}{2}\n",
-                Program.Catalog.GetParticularString("PowerSupply", "Power"),
-                Program.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(PowerSupply.State)),
+                Simulator.Catalog.GetParticularString("PowerSupply", "Power"),
+                Simulator.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(PowerSupply.State)),
                 PowerSupply.State == PowerSupplyState.PowerOff ? "!!!" : "");
             return status.ToString();
         }
@@ -338,10 +338,10 @@ namespace Orts.Simulation.RollingStocks
         public override string GetDebugStatus()
         {
             var status = new StringBuilder(base.GetDebugStatus());
-            status.AppendFormat("\t{0}\t\t{1}", Program.Catalog.GetString("Circuit breaker"), Program.Catalog.GetParticularString("CircuitBraker", GetStringAttribute.GetPrettyName(PowerSupply.CircuitBreaker.State)));
-            status.AppendFormat("\t{0}\t{1}", Program.Catalog.GetString("TCS"), TrainControlSystem.PowerAuthorization ? Program.Catalog.GetString("OK") : Program.Catalog.GetString("NOT OK"));
-            status.AppendFormat("\t{0}\t{1}", Program.Catalog.GetString("Driver"), PowerSupply.CircuitBreaker.DriverCloseAuthorization ? Program.Catalog.GetString("OK") : Program.Catalog.GetString("NOT OK"));
-            status.AppendFormat("\t{0}\t\t{1}", Program.Catalog.GetString("Auxiliary power"), Program.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(PowerSupply.AuxiliaryState)));
+            status.AppendFormat("\t{0}\t\t{1}", Simulator.Catalog.GetString("Circuit breaker"), Simulator.Catalog.GetParticularString("CircuitBraker", GetStringAttribute.GetPrettyName(PowerSupply.CircuitBreaker.State)));
+            status.AppendFormat("\t{0}\t{1}", Simulator.Catalog.GetString("TCS"), TrainControlSystem.PowerAuthorization ? Simulator.Catalog.GetString("OK") : Simulator.Catalog.GetString("NOT OK"));
+            status.AppendFormat("\t{0}\t{1}", Simulator.Catalog.GetString("Driver"), PowerSupply.CircuitBreaker.DriverCloseAuthorization ? Simulator.Catalog.GetString("OK") : Simulator.Catalog.GetString("NOT OK"));
+            status.AppendFormat("\t{0}\t\t{1}", Simulator.Catalog.GetString("Auxiliary power"), Simulator.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(PowerSupply.AuxiliaryState)));
             return status.ToString();
         }
 

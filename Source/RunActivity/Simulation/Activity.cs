@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using GNU.Gettext;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
 using Orts.Simulation.Physics;
@@ -525,8 +524,6 @@ namespace Orts.Simulation
         public string DisplayMessage { get; internal set; }
         public Color DisplayColor { get; internal set; }
 
-        protected GettextResourceManager Catalog = new GettextResourceManager("RunActivity");
-
         public virtual void NotifyEvent(ActivityEventType EventType)
         {
         }
@@ -879,7 +876,7 @@ namespace Orts.Simulation
                     // Still have to wait
                     if (remaining > 0)
                     {
-                        DisplayMessage = Catalog.GetStringFmt("Passenger boarding completes in {0:D2}:{1:D2}",
+                        DisplayMessage = Simulator.Catalog.GetStringFmt("Passenger boarding completes in {0:D2}:{1:D2}",
                             remaining / 60, remaining % 60);
                     }
                     // May depart
@@ -890,12 +887,12 @@ namespace Orts.Simulation
                             MyPlayerTrain.NextSignalObject[0].this_sig_lr(MstsSignalFunction.NORMAL) == MstsSignalAspect.STOP
                             && MyPlayerTrain.NextSignalObject[0].hasPermission != SignalObject.Permission.Granted)
                         {
-                            DisplayMessage = Catalog.GetString("Passenger boarding completed. Waiting for signal ahead to clear.");
+                            DisplayMessage = Simulator.Catalog.GetString("Passenger boarding completed. Waiting for signal ahead to clear.");
                         }
                         else
                         {
                             maydepart = true;
-                            DisplayMessage = Catalog.GetString("Passenger boarding completed. You may depart now.");
+                            DisplayMessage = Simulator.Catalog.GetString("Passenger boarding completed. You may depart now.");
                             Simulator.SoundNotify = Event.PermissionToDepart;
                         }
 

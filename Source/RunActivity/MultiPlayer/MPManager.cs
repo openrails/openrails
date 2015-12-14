@@ -24,6 +24,7 @@
  * 
  */
 
+using GNU.Gettext;
 using Orts.Parsers.Msts;
 using Orts.Simulation;
 using Orts.Simulation.Physics;
@@ -42,6 +43,7 @@ namespace Orts.MultiPlayer
     //a singleton class handles communication, update and stop etc.
     class MPManager
 	{
+        public static GettextResourceManager Catalog { get; private set; }
         public static Simulator Simulator { get; internal set; }
 
         public int version = 15;
@@ -122,6 +124,7 @@ namespace Orts.MultiPlayer
 		{
             if (localUser == null)
             {
+                Catalog = new GettextResourceManager("RunActivity");
                 localUser = new MPManager();
             }
 			return localUser;
@@ -139,7 +142,7 @@ namespace Orts.MultiPlayer
 				{
 					train.TrainType = Train.TRAINTYPE.PLAYER; train.LeadLocomotive = Simulator.PlayerLocomotive;
 					if (Simulator.Confirmer != null)
-                        Simulator.Confirmer.Information(Program.Catalog.GetString("You gained back the control of your train"));
+                        Simulator.Confirmer.Information(MPManager.Catalog.GetString("You gained back the control of your train"));
 					msgctl = new MSGControl(GetUserName(), "Confirm", train);
 					BroadCast(msgctl.ToString());
 				}
@@ -390,7 +393,7 @@ namespace Orts.MultiPlayer
 				if (count >= 2)
 				{
 					if (confirmer != null)
-						confirmer.Information(Program.Catalog.GetPluralStringFmt("Cannot decouple: train has {0} player, need to completely stop.", "Cannot decouple: train has {0} players, need to completely stop.", count));
+						confirmer.Information(MPManager.Catalog.GetPluralStringFmt("Cannot decouple: train has {0} player, need to completely stop.", "Cannot decouple: train has {0} players, need to completely stop.", count));
 					return false;
 				}
 			}
@@ -667,7 +670,7 @@ namespace Orts.MultiPlayer
 				car.CarLengthM = length;
 				car.RealWagFilePath = wagonFilePath;
 				if (Simulator.Confirmer != null)
-                    Simulator.Confirmer.Information(Program.Catalog.GetString("Missing car, have substituted with other one."));
+                    Simulator.Confirmer.Information(MPManager.Catalog.GetString("Missing car, have substituted with other one."));
 
 			}
 			catch (Exception error)

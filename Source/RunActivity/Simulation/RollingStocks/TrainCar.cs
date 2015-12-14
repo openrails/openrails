@@ -746,11 +746,11 @@ namespace Orts.Simulation.RollingStocks
                                 {
                                     if (Train.IsFreight)
                                         {
-                                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("You are travelling too fast for this curve. Slow down, your freight may be damaged and your train may break a coupling or airhose."));
+                                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You are travelling too fast for this curve. Slow down, your freight may be damaged and your train may break a coupling or airhose."));
                                         }
                                     else
                                         {
-                                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("You are travelling too fast for this curve. Slow down, your passengers are feeling uncomfortable and your train may break a coupling or airhose."));
+                                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You are travelling too fast for this curve. Slow down, your passengers are feeling uncomfortable and your train may break a coupling or airhose."));
                                         }
                                 }
                           
@@ -759,7 +759,7 @@ namespace Orts.Simulation.RollingStocks
                         if (IsMaxSafeCurveSpeed && s > MaxDurableSafeCurveSpeedMpS && Train.GetType() != typeof(AITrain) && Train.GetType() != typeof(TTTrain) ) // Breaking of brake hose will not apply to TT mode or AI trains
                           {
                               BrakeSystem.FrontBrakeHoseConnected = false; // break the brake hose connection between cars if the speed is too fast
-                              Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("You were travelling too fast for this curve, and have snapped a brake hose. You will need to repair the hose and restart."));   
+                              Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You were travelling too fast for this curve, and have snapped a brake hose. You will need to repair the hose and restart."));   
                           }
 
                     }
@@ -790,7 +790,7 @@ namespace Orts.Simulation.RollingStocks
 
                             if (Train.IsPlayerDriven && !Simulator.TimetableMode)  // Warning messages will only apply if this is player train and not running in TT mode
                             {
-                                Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("Your train has overturned, and this is simulated by a broken coupler."));
+                                Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Your train has overturned, and this is simulated by a broken coupler."));
                             }
                         }
  
@@ -976,9 +976,9 @@ namespace Orts.Simulation.RollingStocks
         {
             return String.Format("Car {0}\t{2} {1}\t\t{3}\t{4:F0}%\t{5}\t\t{6}\t{7}",
                 UiD,
-                Flipped ? Program.Catalog.GetString("(flipped)") : "",
+                Flipped ? Simulator.Catalog.GetString("(flipped)") : "",
                 FormatStrings.Catalog.GetParticularString("Reverser", GetStringAttribute.GetPrettyName(Direction)),
-                AcceptMUSignals ? Program.Catalog.GetString("MU'd") : Program.Catalog.GetString("Single"),
+                AcceptMUSignals ? Simulator.Catalog.GetString("MU'd") : Simulator.Catalog.GetString("Single"),
                 ThrottlePercent,
                 String.Format("{0}{1}", FormatStrings.FormatSpeedDisplay(SpeedMpS, IsMetric), WheelSlip ? "!!!" : ""),
                 FormatStrings.FormatPower(MotiveForceN * SpeedMpS, IsMetric, false, false),

@@ -5744,7 +5744,7 @@ namespace Orts.Simulation.Timetables
                     if (needwait >= 0)
                     {
                         TTTrain otherTrain = GetOtherTTTrainByNumber(needwait);
-                        DisplayMessage = Catalog.GetString("Held for connecting train : ");
+                        DisplayMessage = Simulator.Catalog.GetString("Held for connecting train : ");
                         DisplayMessage = String.Concat(DisplayMessage, otherTrain.Name);
                         DisplayColor = Color.Orange;
                         remaining = 999;
@@ -5802,19 +5802,19 @@ namespace Orts.Simulation.Timetables
                                 if (NextSignalObject[0] != null && NextSignalObject[0].this_sig_lr(MstsSignalFunction.NORMAL) == MstsSignalAspect.STOP
                                     && NextSignalObject[0].hasPermission != SignalObject.Permission.Granted && !StationStops[0].NoWaitSignal)
                                 {
-                                    DisplayMessage = Catalog.GetString("Passenger boarding completed. Waiting for signal ahead to clear.");
+                                    DisplayMessage = Simulator.Catalog.GetString("Passenger boarding completed. Waiting for signal ahead to clear.");
                                 }
                                 else
                                 {
                                     MayDepart = true;
-                                    DisplayMessage = Catalog.GetString("Passenger boarding completed. You may depart now.");
+                                    DisplayMessage = Simulator.Catalog.GetString("Passenger boarding completed. You may depart now.");
                                     Simulator.SoundNotify = Event.PermissionToDepart;
                                 }
                             }
                         }
                         else
                         {
-                            DisplayMessage = Catalog.GetStringFmt("Passenger boarding completes in {0:D2}:{1:D2}",
+                            DisplayMessage = Simulator.Catalog.GetStringFmt("Passenger boarding completes in {0:D2}:{1:D2}",
                                 remaining / 60, remaining % 60);
                         }
                     }

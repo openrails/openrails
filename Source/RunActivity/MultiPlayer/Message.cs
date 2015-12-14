@@ -751,7 +751,7 @@ namespace Orts.MultiPlayer
 			if (!MPManager.Instance().AmAider && MPManager.Instance().TrySwitch == false)
 			{
 				if (handThrown && MPManager.Simulator.Confirmer != null)
-                    MPManager.Simulator.Confirmer.Information(Program.Catalog.GetString("Dispatcher does not allow hand throw at this time"));
+                    MPManager.Simulator.Confirmer.Information(MPManager.Catalog.GetString("Dispatcher does not allow hand throw at this time"));
 				OK = false;
 				return;
 			}
@@ -794,8 +794,8 @@ namespace Orts.MultiPlayer
                 //trj.SelectedRoute = Selection; //although the new signal system request Signals.RequestSetSwitch, client may just change
 				if (user == MPManager.GetUserName() && HandThrown == true)//got the message with my name, will confirm with the player
 				{
-					MPManager.Simulator.Confirmer.Information(Program.Catalog.GetStringFmt("Switched, current route is {0}",
-                        Selection == 0 ? Program.Catalog.GetString("main route") : Program.Catalog.GetString("side route")));
+					MPManager.Simulator.Confirmer.Information(MPManager.Catalog.GetStringFmt("Switched, current route is {0}",
+                        Selection == 0 ? MPManager.Catalog.GetString("main route") : MPManager.Catalog.GetString("side route")));
 					return;
 				}
 			}
@@ -1569,14 +1569,14 @@ namespace Orts.MultiPlayer
 				MPManager.Instance().RememberOriginalSwitchState();
                 Trace.TraceInformation("You are the new dispatcher. Enjoy!");
 				if (MPManager.Simulator.Confirmer != null)
-                    MPManager.Simulator.Confirmer.Information(Program.Catalog.GetString("You are the new dispatcher. Enjoy!"));
+                    MPManager.Simulator.Confirmer.Information(MPManager.Catalog.GetString("You are the new dispatcher. Enjoy!"));
 				//System.Console.WriteLine(this.ToString());
 			}
 			else
 			{
 				MPManager.Instance().NotServer = true;
 				if (MPManager.Simulator.Confirmer != null)
-                    MPManager.Simulator.Confirmer.Information(Program.Catalog.GetStringFmt("New dispatcher is {0}", user));
+                    MPManager.Simulator.Confirmer.Information(MPManager.Catalog.GetStringFmt("New dispatcher is {0}", user));
                 Trace.TraceInformation("New dispatcher is {0}", user);
 			}
 		}
@@ -1699,7 +1699,7 @@ namespace Orts.MultiPlayer
 					if (MPManager.OnlineTrains.Players.Count < 1)
 					{
 						if (MPManager.Simulator.Confirmer != null)
-							MPManager.Simulator.Confirmer.Message(ConfirmLevel.Error, Program.Catalog.GetString("Name conflicted with people in the game, will play in single mode"));
+							MPManager.Simulator.Confirmer.Message(ConfirmLevel.Error, MPManager.Catalog.GetString("Name conflicted with people in the game, will play in single mode"));
 						throw new SameNameError();//this is a fatal error, thus the client will be stopped in ClientComm
 					}
 				}
@@ -1774,7 +1774,7 @@ namespace Orts.MultiPlayer
 				Train train = MPManager.Simulator.PlayerLocomotive.Train;
 				train.TrainType = Train.TRAINTYPE.PLAYER; train.LeadLocomotive = MPManager.Simulator.PlayerLocomotive;
 				if (MPManager.Simulator.Confirmer != null)
-					MPManager.Simulator.Confirmer.Information(Program.Catalog.GetString("You gained back the control of your train"));
+					MPManager.Simulator.Confirmer.Information(MPManager.Catalog.GetString("You gained back the control of your train"));
 				MPManager.Instance().RemoveUncoupledTrains(train);
 			}
 			else if (level == "Confirm") //server inform me that a train is now remote
@@ -1989,7 +1989,7 @@ namespace Orts.MultiPlayer
 			if (Program.Client != null && user.Contains("ServerHasToQuit")) //the server quits, will send a message with ServerHasToQuit\tServerName
 			{
 				if (MPManager.Simulator.Confirmer != null)
-                    MPManager.Simulator.Confirmer.Error(Program.Catalog.GetString("Server quits, will play as single mode"));
+                    MPManager.Simulator.Confirmer.Error(MPManager.Catalog.GetString("Server quits, will play as single mode"));
 				user = user.Replace("ServerHasToQuit\t", ""); //get the user name of server from the message
 				ServerQuit = true;
 			}
@@ -2000,7 +2000,7 @@ namespace Orts.MultiPlayer
 			}
 			if (p == null) return;
             if (MPManager.Simulator.Confirmer != null)
-                MPManager.Simulator.Confirmer.Information(Program.Catalog.GetStringFmt("{0} quit.", this.user));
+                MPManager.Simulator.Confirmer.Information(MPManager.Catalog.GetStringFmt("{0} quit.", this.user));
 			if (MPManager.IsServer())
 			{
 				if (p.protect == true) { p.protect = false; return; }
@@ -2072,7 +2072,7 @@ namespace Orts.MultiPlayer
 			}
 			if (p == null) return;
 			if (MPManager.Simulator.Confirmer != null)
-                MPManager.Simulator.Confirmer.Information(Program.Catalog.GetStringFmt("{0} lost.", this.user));
+                MPManager.Simulator.Confirmer.Information(MPManager.Catalog.GetStringFmt("{0} lost.", this.user));
 			if (p.protect == true) { p.protect = false; return; }
 			MPManager.BroadCast((new MSGQuit(user)).ToString()); //if the server, will broadcast a quit to every one
 			//if the one quit controls my train, I will gain back the control
@@ -2270,7 +2270,7 @@ namespace Orts.MultiPlayer
 			if (t.Cars.Contains(MPManager.Simulator.PlayerLocomotive) || newT.Cars.Contains(MPManager.Simulator.PlayerLocomotive))
 			{
 				if (MPManager.Simulator.Confirmer != null)
-                    MPManager.Simulator.Confirmer.Information(Program.Catalog.GetString("Trains uncoupled, gain back control by Alt-E"));
+                    MPManager.Simulator.Confirmer.Information(MPManager.Catalog.GetString("Trains uncoupled, gain back control by Alt-E"));
 			}
 
 			/*
@@ -2533,7 +2533,7 @@ namespace Orts.MultiPlayer
 				if (train.Cars.Contains(MPManager.Simulator.PlayerLocomotive) || train2.Cars.Contains(MPManager.Simulator.PlayerLocomotive))
 				{
 					if (MPManager.Simulator.Confirmer != null)
-                        MPManager.Simulator.Confirmer.Information(Program.Catalog.GetString("Trains uncoupled, gain back control by Alt-E"));
+                        MPManager.Simulator.Confirmer.Information(MPManager.Catalog.GetString("Trains uncoupled, gain back control by Alt-E"));
 				}
 
 				//if (whichIsPlayer == 0 && MPManager.OnlineTrains.findTrain(user) != null) MPManager.OnlineTrains.Players[user].Train = train;
@@ -2674,7 +2674,7 @@ namespace Orts.MultiPlayer
 			if (t.Cars.Contains(MPManager.Simulator.PlayerLocomotive))
 			{
 				if (MPManager.Simulator.Confirmer != null)
-                    MPManager.Simulator.Confirmer.Information(Program.Catalog.GetString("Trains coupled, hit \\ then Shift-? to release brakes"));
+                    MPManager.Simulator.Confirmer.Information(MPManager.Catalog.GetString("Trains coupled, hit \\ then Shift-? to release brakes"));
 			}
             if (!MPManager.IsServer() || !(oldT.TrainType == Train.TRAINTYPE.AI_INCORPORATED))
 			MPManager.Instance().AddOrRemoveTrain(oldT, false); //remove the old train
@@ -2786,7 +2786,7 @@ namespace Orts.MultiPlayer
 			if (train.Cars.Contains(MPManager.Simulator.PlayerLocomotive))
 			{
 				if (MPManager.Simulator.Confirmer != null)
-                    MPManager.Simulator.Confirmer.Information(Program.Catalog.GetString("Trains coupled, hit \\ then Shift-? to release brakes"));
+                    MPManager.Simulator.Confirmer.Information(MPManager.Catalog.GetString("Trains coupled, hit \\ then Shift-? to release brakes"));
 			}
 		}
 	}
@@ -3117,7 +3117,7 @@ namespace Orts.MultiPlayer
 				{
 					System.Console.WriteLine("MSG from " + sender + ":" + msgx);
 					MPManager.Instance().lastSender = sender;
-					if (MPManager.Simulator.Confirmer != null) MPManager.Simulator.Confirmer.MSG(Program.Catalog.GetStringFmt(" From {0}: {1}", sender, msgx));
+					if (MPManager.Simulator.Confirmer != null) MPManager.Simulator.Confirmer.MSG(MPManager.Catalog.GetStringFmt(" From {0}: {1}", sender, msgx));
 					Program.DebugViewer.addNewMessage(MPManager.Simulator.GameTime, sender + ": " + msgx);
 					break;
 				}
@@ -3231,13 +3231,13 @@ namespace Orts.MultiPlayer
 			{
 				MPManager.Instance().AmAider = true;
 				if (MPManager.Simulator.Confirmer != null)
-                    MPManager.Simulator.Confirmer.Information(Program.Catalog.GetString("You are an assistant now, will be able to handle switches and signals."));
+                    MPManager.Simulator.Confirmer.Information(MPManager.Catalog.GetString("You are an assistant now, will be able to handle switches and signals."));
 			}
 			if (MPManager.GetUserName() == this.user && add == false)
 			{
 				MPManager.Instance().AmAider = false;
 				if (MPManager.Simulator.Confirmer != null)
-                    MPManager.Simulator.Confirmer.Information(Program.Catalog.GetString("You are no longer an assistant."));
+                    MPManager.Simulator.Confirmer.Information(MPManager.Catalog.GetString("You are no longer an assistant."));
 			}
 		}
 

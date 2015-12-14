@@ -935,7 +935,7 @@ namespace Orts.Simulation.RollingStocks
                 if (WaitForAnimationReady && WeightLoadController.CommandStartTime + FreightAnimations.UnloadingStartDelay <= Simulator.ClockTime)
                 {
                     WaitForAnimationReady = false;
-                    Simulator.Confirmer.Message(ConfirmLevel.Information, Program.Catalog.GetString("Starting unload"));
+                    Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("Starting unload"));
                     WeightLoadController.StartDecrease(WeightLoadController.MinimumValue);
                 }
             }
@@ -1274,7 +1274,7 @@ namespace Orts.Simulation.RollingStocks
             var controller = WeightLoadController;
             if (controller == null)
             {
-                Simulator.Confirmer.Message(ConfirmLevel.Error, Program.Catalog.GetString("Incompatible data"));
+                Simulator.Confirmer.Message(ConfirmLevel.Error, Simulator.Catalog.GetString("Incompatible data"));
                 return;
             }
             controller.SetValue(fraction);
@@ -1287,7 +1287,7 @@ namespace Orts.Simulation.RollingStocks
             }
             if (!unload)
             {
-                Simulator.Confirmer.Message(ConfirmLevel.Information, Program.Catalog.GetString("Starting refill"));
+                Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("Starting refill"));
                 controller.StartIncrease(controller.MaximumValue);
             }
             else
@@ -1295,7 +1295,7 @@ namespace Orts.Simulation.RollingStocks
                 WaitForAnimationReady = true;
                 UnloadingPartsOpen = true;
                 if (FreightAnimations.UnloadingStartDelay > 0)
-                Simulator.Confirmer.Message(ConfirmLevel.Information, Program.Catalog.GetString("Preparing for unload"));
+                Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("Preparing for unload"));
             }
 
         }

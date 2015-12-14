@@ -18,7 +18,6 @@
 // Define this to include extra data on loading performance and progress indications.
 //#define DEBUG_LOADING
 
-using GNU.Gettext;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Common;
@@ -141,8 +140,6 @@ namespace Orts.Viewer3D.Processes
 
             Action doAction = () =>
             {
-                Program.Catalog = new GettextResourceManager("RunActivity");
-
                 // Do the action specified or write out some help.
                 switch (action)
                 {
@@ -1076,7 +1073,7 @@ namespace Orts.Viewer3D.Processes
              .OrderByDescending(f => f.LastWriteTime)
              .First();
             if (file == null) throw new FileNotFoundException(String.Format(
-               Program.Catalog.GetString("Activity Save file '*.save' not found in folder {0}"), directory));
+               Viewer.Catalog.GetString("Activity Save file '*.save' not found in folder {0}"), directory));
             return file.FullName;
         }
 

@@ -46,6 +46,7 @@ namespace Orts.Viewer3D
 {
     public class Viewer
     {
+        public static GettextResourceManager Catalog { get; private set; }
         // User setups.
         public UserSettings Settings { get; private set; }
         // Multi-threaded processes
@@ -89,7 +90,6 @@ namespace Orts.Viewer3D
         public SignallingDebugWindow SignallingDebugWindow { get; private set; } // Control-Alt-F11 window
         public ComposeMessage ComposeMessageWindow { get; private set; } // ??? window
         public TrainListWindow TrainListWindow { get; private set; } // for switching driven train
-        public static GettextResourceManager Catalog { get; private set; } // Localization dictionary
         // Route Information
         public TileManager Tiles { get; private set; }
         public TileManager LoTiles { get; private set; }
@@ -208,6 +208,7 @@ namespace Orts.Viewer3D
         [CallOnThread("Loader")]
         public Viewer(Simulator simulator, Orts.Viewer3D.Processes.Game game)
         {
+            Catalog = new GettextResourceManager("RunActivity");
             Simulator = simulator;
             Game = game;
             Settings = simulator.Settings;
@@ -260,7 +261,7 @@ namespace Orts.Viewer3D
                 var train = sender as Train;
                 if (!TrackMonitorWindow.Visible && Simulator.Confirmer != null && train != null)
                 {
-                    var message = Program.Catalog.GetStringFmt("Allowed speed raised to {0}", FormatStrings.FormatSpeedDisplay(train.AllowedMaxSpeedMpS, MilepostUnitsMetric));
+                    var message = Catalog.GetStringFmt("Allowed speed raised to {0}", FormatStrings.FormatSpeedDisplay(train.AllowedMaxSpeedMpS, MilepostUnitsMetric));
                     Simulator.Confirmer.Message(ConfirmLevel.Information, message);
                 }
             };
@@ -345,8 +346,6 @@ namespace Orts.Viewer3D
             TextureManager = new SharedTextureManager(this, GraphicsDevice);
             MaterialManager = new SharedMaterialManager(this);
             ShapeManager = new SharedShapeManager(this);
-
-            Catalog = Program.Catalog;
 
             WindowManager = new WindowManager(this);
             MessagesWindow = new MessagesWindow(WindowManager);

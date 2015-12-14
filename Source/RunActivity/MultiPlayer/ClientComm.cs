@@ -121,7 +121,7 @@ namespace Orts.MultiPlayer
 				catch (SameNameError) //I have conflict with some one in the game, will close, and abort.
 				{
 					if (MPManager.Simulator.Confirmer != null)
-                        MPManager.Simulator.Confirmer.Error(Program.Catalog.GetString("Connection to the server is lost, will play as single mode"));
+                        MPManager.Simulator.Confirmer.Error(MPManager.Catalog.GetString("Connection to the server is lost, will play as single mode"));
 					Program.Client = null;
 					tcpClient.Close();
 					listenThread.Abort();
@@ -133,7 +133,7 @@ namespace Orts.MultiPlayer
 				}
 			}
 			if (MPManager.Simulator.Confirmer != null)
-                MPManager.Simulator.Confirmer.Error(Program.Catalog.GetString("Connection to the server is lost, will play as single mode"));
+                MPManager.Simulator.Confirmer.Error(MPManager.Catalog.GetString("Connection to the server is lost, will play as single mode"));
 			try
 			{
 				foreach (var p in MPManager.OnlineTrains.Players)
@@ -150,7 +150,7 @@ namespace Orts.MultiPlayer
 				MPManager.Simulator.PlayerLocomotive.Train.LeadLocomotive = MPManager.Simulator.PlayerLocomotive;
 			}
 			if (MPManager.Simulator.Confirmer != null)
-                MPManager.Simulator.Confirmer.Information(Program.Catalog.GetString("Alt-E to gain control of your train"));
+                MPManager.Simulator.Confirmer.Information(MPManager.Catalog.GetString("Alt-E to gain control of your train"));
 
 			Program.Client = null;
 			tcpClient.Close();

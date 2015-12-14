@@ -48,7 +48,6 @@
 // Debug for calculation of speed forces
 // #define DEBUG_SPEED_FORCES
 
-using GNU.Gettext;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
@@ -74,8 +73,6 @@ namespace Orts.Simulation.Physics
 {
     public class Train
     {
-        protected GettextResourceManager Catalog = new GettextResourceManager("RunActivity");
-
         public List<TrainCar> Cars = new List<TrainCar>();           // listed front to back
         public int Number;
         public string Name;
@@ -1542,10 +1539,10 @@ namespace Orts.Simulation.Physics
                         {
                             Simulator.UncoupleBehind(uncoupleBehindCar, true);
                             uncoupleBehindCar.CouplerOverloaded = false;
-                            Simulator.Confirmer.Warning(Program.Catalog.GetString("Coupler broken!"));
+                            Simulator.Confirmer.Warning(Simulator.Catalog.GetString("Coupler broken!"));
                         }
                         else
-                            Simulator.Confirmer.Warning(Program.Catalog.GetString("Coupler overloaded!"));
+                            Simulator.Confirmer.Warning(Simulator.Catalog.GetString("Coupler overloaded!"));
                     }
                 }
                 else
@@ -4892,12 +4889,12 @@ namespace Orts.Simulation.Physics
                                     List<TrainRouted> trainsInSection = nextSection.CircuitState.TrainsOccupying();
                                     foreach (TrainRouted nextTrain in trainsInSection)
                                     {
-                                        nextTrain.Train.ForcedStop(Program.Catalog.GetString("Other train is blocking path"), Number);
+                                        nextTrain.Train.ForcedStop(Simulator.Catalog.GetString("Other train is blocking path"), Number);
                                     }
 
                                     if (nextSection.CircuitState.TrainReserved != null)
                                     {
-                                        nextSection.CircuitState.TrainReserved.Train.ForcedStop(Program.Catalog.GetString("Other train is blocking path"), Number);
+                                        nextSection.CircuitState.TrainReserved.Train.ForcedStop(Simulator.Catalog.GetString("Other train is blocking path"), Number);
                                     }
                                 }
                                 else
@@ -5784,7 +5781,7 @@ namespace Orts.Simulation.Physics
                 otherTrain.LastReservedSection[0] = -1;
                 if (Math.Abs(otherTrain.SpeedMpS) > 0)
                 {
-                    otherTrain.ForcedStop(Program.Catalog.GetString("Stopped due to errors in route setting"), Number);
+                    otherTrain.ForcedStop(Simulator.Catalog.GetString("Stopped due to errors in route setting"), Number);
                 }
                 otherTrain.SwitchToNodeControl(-1);
 
@@ -6446,7 +6443,7 @@ namespace Orts.Simulation.Physics
             if (lastSection.EndSignals[lastElement.Direction] == null)
             {
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
-                    Simulator.Confirmer.Message(ConfirmLevel.Information, Program.Catalog.GetString("No signal in train's path"));
+                    Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("No signal in train's path"));
                 return;
             }
 
@@ -6454,7 +6451,7 @@ namespace Orts.Simulation.Physics
             if (requestedSignal.enabledTrain != null && requestedSignal.enabledTrain.Train != this)
             {
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("Next signal already allocated to other train"));
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Next signal already allocated to other train"));
                 Simulator.SoundNotify = Event.PermissionDenied;
                 return;
             }
@@ -6515,7 +6512,7 @@ namespace Orts.Simulation.Physics
                 if (!requestValid)
                 {
                     if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
-                        Simulator.Confirmer.Message(ConfirmLevel.Information, Program.Catalog.GetString("Request to clear signal cannot be processed"));
+                        Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("Request to clear signal cannot be processed"));
                     Simulator.SoundNotify = Event.PermissionDenied;
                 }
             }
@@ -6623,7 +6620,7 @@ namespace Orts.Simulation.Physics
             else
             {
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("No switch found"));
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("No switch found"));
             }
 
             return (switchSet);
@@ -7526,7 +7523,7 @@ namespace Orts.Simulation.Physics
             if (!signalFound)
             {
                 if (Simulator.Confirmer != null && this.TrainType != TRAINTYPE.REMOTE) // As Confirmer may not be created until after a restore.
-                    Simulator.Confirmer.Message(ConfirmLevel.Information, Program.Catalog.GetString("No signal in train's path"));
+                    Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("No signal in train's path"));
                 return;
             }
 
@@ -7646,7 +7643,7 @@ namespace Orts.Simulation.Physics
             else
             {
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("No switch found"));
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("No switch found"));
             }
 
             return (switchSet);
@@ -7880,12 +7877,12 @@ namespace Orts.Simulation.Physics
             if (TrainType == TRAINTYPE.AI_PLAYERHOSTING)
             {
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("You cannot enter manual mode when autopiloted"));
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You cannot enter manual mode when autopiloted"));
             }
             if (IsPathless && ControlMode != TRAIN_CONTROL.OUT_OF_CONTROL)
             {
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("You cannot use this command for pathless trains"));
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You cannot use this command for pathless trains"));
             }
             else if (ControlMode == TRAIN_CONTROL.MANUAL)
             {
@@ -7897,7 +7894,7 @@ namespace Orts.Simulation.Physics
                 if (routeIndex < 0)
                 {
                     if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
-                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("Train is not back on original route"));
+                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Train is not back on original route"));
                 }
                 else
                 {
@@ -7906,7 +7903,7 @@ namespace Orts.Simulation.Physics
                     if (lastDirection != presentDirection && Math.Abs(SpeedMpS) > 0.1f)
                     {
                         if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
-                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("Original route is reverse from present direction, stop train before switching"));
+                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Original route is reverse from present direction, stop train before switching"));
                     }
                     else
                     {
@@ -7919,7 +7916,7 @@ namespace Orts.Simulation.Physics
             else if (ControlMode == TRAIN_CONTROL.EXPLORER)
             {
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("Cannot change to Manual Mode while in Explorer Mode"));
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Cannot change to Manual Mode while in Explorer Mode"));
             }
             else
             {
@@ -8014,7 +8011,7 @@ namespace Orts.Simulation.Physics
             if (!CheckReversal(oldRoute, ref reversal))
             {
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("Reversal required and rear of train not on required route"));
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Reversal required and rear of train not on required route"));
                 return;
             }
 
@@ -8220,7 +8217,7 @@ namespace Orts.Simulation.Physics
                 if (direction != Direction.Forward)
                 {
                     if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
-                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("Cannot clear signal behind train while in AUTO mode"));
+                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Cannot clear signal behind train while in AUTO mode"));
                     Simulator.SoundNotify = Event.PermissionDenied;
                 }
 
@@ -8510,7 +8507,7 @@ namespace Orts.Simulation.Physics
 
             if (Simulator.PlayerLocomotive != null && Simulator.PlayerLocomotive.Train == this)
             {
-                var report = Program.Catalog.GetStringFmt("Train stopped due to problems with other train: train {0} , reason: {1}", otherTrainNumber, reason);
+                var report = Simulator.Catalog.GetStringFmt("Train stopped due to problems with other train: train {0} , reason: {1}", otherTrainNumber, reason);
 
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, report);

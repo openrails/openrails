@@ -15,23 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-/// <summary>
-/// This contains all the essential code to operate trains along paths as defined
-/// in the activity.   It is meant to operate in a separate thread it handles the
-/// following:
-///    track paths
-///    switch track positions
-///    signal indications
-///    calculating positions and velocities of trains
-///    
-/// Update is called regularly to
-///     do physics calculations for train movement
-///     compute new signal indications
-///     operate ai trains
-///     
-/// All keyboard input comes from the viewer class as calls on simulator's methods.
-/// </summary>
-
+using GNU.Gettext;
 using Microsoft.Xna.Framework;
 using Orts.Common;
 using Orts.Common.Scripting;
@@ -54,8 +38,26 @@ using Event = Orts.Common.Event;
 
 namespace Orts.Simulation
 {
+    /// <summary>
+    /// This contains all the essential code to operate trains along paths as defined
+    /// in the activity.   It is meant to operate in a separate thread it handles the
+    /// following:
+    ///    track paths
+    ///    switch track positions
+    ///    signal indications
+    ///    calculating positions and velocities of trains
+    ///    
+    /// Update is called regularly to
+    ///     do physics calculations for train movement
+    ///     compute new signal indications
+    ///     operate ai trains
+    ///     
+    /// All keyboard input comes from the viewer class as calls on simulator's methods.
+    /// </summary>
     public class Simulator
     {
+        public static GettextResourceManager Catalog { get; private set; }
+
         public bool Paused = true;          // start off paused, set to true once the viewer is fully loaded and initialized
         public float GameSpeed = 1;
         /// <summary>
@@ -218,6 +220,8 @@ namespace Orts.Simulation
 
         public Simulator(UserSettings settings, string activityPath, bool useOpenRailsDirectory)
         {
+            Catalog = new GettextResourceManager("RunActivity");
+
             MPManager.Simulator = this;
 
             TimetableMode = false;
@@ -653,7 +657,7 @@ namespace Orts.Simulation
                     TrainSwitcher.PickedTrainFromList = train;
                     TrainSwitcher.ClickedTrainFromList = true;
                     train.TrainType = Train.TRAINTYPE.AI_PLAYERHOSTING;
-                    Confirmer.Message(ConfirmLevel.Information, Program.Catalog.GetStringFmt("Player train has been included into train {0} service {1}, that automatically becomes the new player train",
+                    Confirmer.Message(ConfirmLevel.Information, Catalog.GetStringFmt("Player train has been included into train {0} service {1}, that automatically becomes the new player train",
                         train.Number, train.Name));
                     train.Cars.Clear();
                     if (sameDirection)
@@ -1761,7 +1765,7 @@ namespace Orts.Simulation
                     {
                         if (TrainSwitcher.SuspendOldPlayer && playerTrain.SpeedMpS != 0)
                         {
-                        Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("Train can't be suspended with speed not equal 0"));
+                        Confirmer.Message(ConfirmLevel.Warning, Catalog.GetString("Train can't be suspended with speed not equal 0"));
                             TrainSwitcher.SuspendOldPlayer = false;
                             TrainSwitcher.ClickedSelectedAsPlayer = false;
                             return;
@@ -1882,7 +1886,7 @@ namespace Orts.Simulation
                     {
                         if (playerTrain.SpeedMpS != 0)
                         {
-                            Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("To return to static train speed must be = 0"));
+                            Confirmer.Message(ConfirmLevel.Warning, Catalog.GetString("To return to static train speed must be = 0"));
                             TrainSwitcher.SuspendOldPlayer = false;
                             TrainSwitcher.ClickedSelectedAsPlayer = false;
                             return;

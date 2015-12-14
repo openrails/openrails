@@ -141,7 +141,7 @@ namespace Orts.MultiPlayer
 			}
 
 			System.Console.WriteLine("{0} quit", this.Username);
-			if (MPManager.Simulator.Confirmer != null) MPManager.Simulator.Confirmer.Information(Program.Catalog.GetStringFmt("{0} quit.", this.Username));
+			if (MPManager.Simulator.Confirmer != null) MPManager.Simulator.Confirmer.Information(MPManager.Catalog.GetStringFmt("{0} quit.", this.Username));
 			Client.Close();
 			if (this.Train != null && this.status != Status.Removed) //remember the location of the train in case the player comes back later, if he is not removed by the dispatcher
 			{

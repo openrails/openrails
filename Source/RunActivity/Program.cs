@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using GNU.Gettext;
 using Orts.Common;
 using Orts.MultiPlayer;
 using Orts.Simulation;
@@ -31,7 +30,6 @@ namespace Orts
 {
     static class Program
     {
-        public static GettextResourceManager Catalog;
         public static Simulator Simulator;
         public static Viewer Viewer;
         public static Random Random = new Random();
