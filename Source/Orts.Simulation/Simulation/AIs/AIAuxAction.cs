@@ -230,7 +230,7 @@ namespace Orts.Simulation.AIs
             {
                 loaded = ConvertActions(thisTrain, orRouteConfig.ActionContainer);
             }
-            if (!ThisTrain.Simulator.TimetableMode && ThisTrain.Simulator.Activity.Tr_Activity.Tr_Activity_File.ORTSAIHornAtCrossings > 0 && SpecAuxActions.Count == 0)
+            if (!thisTrain.Simulator.TimetableMode && thisTrain.Simulator.Activity.Tr_Activity.Tr_Activity_File.ORTSAIHornAtCrossings > 0 && SpecAuxActions.Count == 0)
             {
                 AuxActionHorn auxActionHorn = new AuxActionHorn(true);
                 AIActionHornRef horn = new AIActionHornRef(thisTrain, auxActionHorn, 0);
