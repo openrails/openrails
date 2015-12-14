@@ -46,6 +46,7 @@ using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using ORTS.Common;
+using ORTS.Settings;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -521,7 +522,7 @@ namespace Orts.Viewer3D
 
                 foreach (Orts.Formats.Msts.SMSStream mstsStream in mstsScalabiltyGroup.Streams)
                 {
-                    SoundStreams.Add(new SoundStream(mstsStream, eventSource, this));
+                    SoundStreams.Add(new SoundStream(mstsStream, eventSource, this, Viewer.Settings));
                 }
             }
         }
@@ -961,7 +962,7 @@ namespace Orts.Viewer3D
         /// </summary>
         IEnumerable<ORTSTrigger> TriggersList;
 
-        public SoundStream(Orts.Formats.Msts.SMSStream mstsStream, Events.Source eventSource, SoundSource soundSource)
+        public SoundStream(Orts.Formats.Msts.SMSStream mstsStream, Events.Source eventSource, SoundSource soundSource, UserSettings settings)
         {
             SoundSource = soundSource;
             MSTSStream = mstsStream;
@@ -995,13 +996,13 @@ namespace Orts.Viewer3D
                     }
                     else if (trigger.GetType() == typeof(Orts.Formats.Msts.Discrete_Trigger) && soundSource.Car != null)
                     {
-                        ORTSDiscreteTrigger ortsTrigger = new ORTSDiscreteTrigger(this, eventSource, (Orts.Formats.Msts.Discrete_Trigger)trigger);
+                        ORTSDiscreteTrigger ortsTrigger = new ORTSDiscreteTrigger(this, eventSource, (Orts.Formats.Msts.Discrete_Trigger)trigger, settings);
                         Triggers.Add(ortsTrigger);  // list them here so we can enable and disable 
                         SoundSource.Car.EventHandlers.Add(ortsTrigger);  // tell the simulator to call us when the event occurs
                     }
                     else if (trigger.GetType() == typeof(Orts.Formats.Msts.Discrete_Trigger))
                     {
-                        ORTSDiscreteTrigger ortsTrigger = new ORTSDiscreteTrigger(this, eventSource, (Orts.Formats.Msts.Discrete_Trigger)trigger);
+                        ORTSDiscreteTrigger ortsTrigger = new ORTSDiscreteTrigger(this, eventSource, (Orts.Formats.Msts.Discrete_Trigger)trigger, settings);
                         Triggers.Add(ortsTrigger);  // list them here so we can enable and disable 
                     }
                     IsReleasedWithJump |= (Triggers.Last().SoundCommand is ORTSReleaseLoopReleaseWithJump);
@@ -1317,9 +1318,9 @@ namespace Orts.Viewer3D
         /// </summary>
         private bool Triggered;
 
-        public ORTSDiscreteTrigger(SoundStream soundStream, Events.Source eventSound, Orts.Formats.Msts.Discrete_Trigger smsData)
+        public ORTSDiscreteTrigger(SoundStream soundStream, Events.Source eventSound, Orts.Formats.Msts.Discrete_Trigger smsData, UserSettings settings)
         {
-            TriggerID = Events.From(soundStream.SoundSource.Car.Simulator.Settings.MSTSBINSound, eventSound, smsData.TriggerID);
+            TriggerID = Events.From(settings.MSTSBINSound, eventSound, smsData.TriggerID);
             SoundCommand = ORTSSoundCommand.FromMSTS(smsData.SoundCommand, soundStream);
             SoundStream = soundStream;
         }
