@@ -84,7 +84,45 @@ namespace Orts.MultiPlayer
 		public static bool PreferGreen = true;
 		public string MD5Check = "";
 
-		public void AddUncoupledTrains(Train t)
+        public class ServerChangedEventArgs : EventArgs
+        {
+            public readonly bool WeAreTheServer;
+
+            public ServerChangedEventArgs(bool weAreTheServer)
+            {
+                WeAreTheServer = weAreTheServer;
+            }
+        }
+
+        public class AvatarUpdatedEventArgs : EventArgs
+        {
+            public readonly string User;
+            public readonly string URL;
+
+            public AvatarUpdatedEventArgs(string user, string url)
+            {
+                User = user;
+                URL = url;
+            }
+        }
+
+        public class MessageReceivedEventArgs : EventArgs
+        {
+            public readonly double Time;
+            public readonly string Message;
+
+            public MessageReceivedEventArgs(double time, string message)
+            {
+                Time = time;
+                Message = message;
+            }
+        }
+
+        public event EventHandler<ServerChangedEventArgs> ServerChanged;
+        public event EventHandler<AvatarUpdatedEventArgs> AvatarUpdated;
+        public event EventHandler<MessageReceivedEventArgs> MessageReceived;
+
+        public void AddUncoupledTrains(Train t)
 		{
 			lock (uncoupledTrains)
 			{
@@ -163,13 +201,9 @@ namespace Orts.MultiPlayer
             if (NotServer == true && Program.Server != null) //I was a server, but no longer
             {
                 Program.Server = null;
-                if (Program.DebugViewer != null) Program.DebugViewer.firstShow = true;
             }
             else if (NotServer == false && Program.Server == null) //I am declared the server
             {
-                /*
-				Program.Server = new Server(Program.Client.UserName + ' ' + Program.Client.Code, Program.Client);
-				if (Program.DebugViewer != null) Program.DebugViewer.firstShow = true;*/
             }
         }
 
@@ -772,5 +806,29 @@ namespace Orts.MultiPlayer
 				MD5Check = "NA";
 			}
 		}
-	}
+
+        internal void OnServerChanged(bool weAreTheServer)
+        {
+            var e = new ServerChangedEventArgs(weAreTheServer);
+            var serverChanged = ServerChanged;
+            if (serverChanged != null)
+                serverChanged(this, e);
+        }
+
+        internal void OnMessageReceived(double time, string message)
+        {
+            var e = new MessageReceivedEventArgs(time, message);
+            var messageReceived = MessageReceived;
+            if (messageReceived != null)
+                messageReceived(this, e);
+        }
+
+        internal void OnAvatarUpdated(string user, string url)
+        {
+            var e = new AvatarUpdatedEventArgs(user, url);
+            var avatarUpdated = AvatarUpdated;
+            if (avatarUpdated != null)
+                avatarUpdated(this, e);
+        }
+    }
 }

@@ -121,69 +121,84 @@ namespace Orts.Viewer3D.Debugging
 	  float maxY = float.MinValue;
 
 	  Viewer Viewer;
-      /// <summary>
-      /// Creates a new DebugViewerForm.
-      /// </summary>
-      /// <param name="simulator"></param>
-      /// /// <param name="viewer"></param>
-      public DispatchViewer(Simulator simulator, Viewer viewer)
-      {
-         InitializeComponent();
+        /// <summary>
+        /// Creates a new DebugViewerForm.
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// /// <param name="viewer"></param>
+        public DispatchViewer(Simulator simulator, Viewer viewer)
+        {
+            InitializeComponent();
 
-         if (simulator == null)
-         {
-            throw new ArgumentNullException("simulator", "Simulator object cannot be null.");
-         }
+            if (simulator == null)
+            {
+                throw new ArgumentNullException("simulator", "Simulator object cannot be null.");
+            }
 
-         this.simulator = simulator;
-		 this.Viewer = viewer;
+            this.simulator = simulator;
+            this.Viewer = viewer;
 
-		 nodes = simulator.TDB.TrackDB.TrackNodes;
+            nodes = simulator.TDB.TrackDB.TrackNodes;
 
-		 trainFont = new Font("Arial", 14, FontStyle.Bold);
-		 sidingFont = new Font("Arial", 12, FontStyle.Bold);
+            trainFont = new Font("Arial", 14, FontStyle.Bold);
+            sidingFont = new Font("Arial", 12, FontStyle.Bold);
 
-		 trainBrush = new SolidBrush(Color.Red);
-		 sidingBrush = new SolidBrush(Color.Blue);
+            trainBrush = new SolidBrush(Color.Red);
+            sidingBrush = new SolidBrush(Color.Blue);
 
 
-         // initialise the timer used to handle user input
-         UITimer = new Timer();
-         UITimer.Interval = 100;
-         UITimer.Tick += new System.EventHandler(UITimer_Tick);
-         UITimer.Start();
+            // initialise the timer used to handle user input
+            UITimer = new Timer();
+            UITimer.Interval = 100;
+            UITimer.Tick += new System.EventHandler(UITimer_Tick);
+            UITimer.Start();
 
-         ViewWindow = new RectangleF(0, 0, 5000f, 5000f);
-         windowSizeUpDown.Accelerations.Add(new NumericUpDownAcceleration(1, 100));
-		 boxSetSignal.Items.Add("System Controlled");
-		 boxSetSignal.Items.Add("Stop");
-		 boxSetSignal.Items.Add("Approach");
-		 boxSetSignal.Items.Add("Proceed");
-		 chkAllowUserSwitch.Checked = false;
-		 selectedTrainList = new List<Train>();
-		 if (MultiPlayer.MPManager.IsMultiPlayer()) { MultiPlayer.MPManager.AllowedManualSwitch = false; }
-      
+            ViewWindow = new RectangleF(0, 0, 5000f, 5000f);
+            windowSizeUpDown.Accelerations.Add(new NumericUpDownAcceleration(1, 100));
+            boxSetSignal.Items.Add("System Controlled");
+            boxSetSignal.Items.Add("Stop");
+            boxSetSignal.Items.Add("Approach");
+            boxSetSignal.Items.Add("Proceed");
+            chkAllowUserSwitch.Checked = false;
+            selectedTrainList = new List<Train>();
+            if (MultiPlayer.MPManager.IsMultiPlayer()) { MultiPlayer.MPManager.AllowedManualSwitch = false; }
 
-		  InitData();
-        InitImage();
-		chkShowAvatars.Checked = Program.Simulator.Settings.ShowAvatar;
-		if (!MultiPlayer.MPManager.IsMultiPlayer())//single player mode, make those unnecessary removed
-		{
-			msgAll.Visible = false; msgSelected.Visible = false; composeMSG.Visible = false; MSG.Visible = false; messages.Visible = false;
-			AvatarView.Visible = false; composeMSG.Visible = false; reply2Selected.Visible = false; chkShowAvatars.Visible = false; chkAllowNew.Visible = false;
-			chkBoxPenalty.Visible = false; chkPreferGreen.Visible = false;
-			pictureBox1.Location = new System.Drawing.Point(pictureBox1.Location.X, label1.Location.Y + 18);
-			refreshButton.Text = "View Self";
-		}
 
-		  /*
-		if (MultiPlayer.MPManager.IsMultiPlayer())
-		{
-			MessageViewer = new MessageViewer();
-			MessageViewer.Show();
-			MessageViewer.Visible = false;
-		}*/
-      }
+            InitData();
+            InitImage();
+            chkShowAvatars.Checked = Program.Simulator.Settings.ShowAvatar;
+            if (!MultiPlayer.MPManager.IsMultiPlayer())//single player mode, make those unnecessary removed
+            {
+                msgAll.Visible = false; msgSelected.Visible = false; composeMSG.Visible = false; MSG.Visible = false; messages.Visible = false;
+                AvatarView.Visible = false; composeMSG.Visible = false; reply2Selected.Visible = false; chkShowAvatars.Visible = false; chkAllowNew.Visible = false;
+                chkBoxPenalty.Visible = false; chkPreferGreen.Visible = false;
+                pictureBox1.Location = new System.Drawing.Point(pictureBox1.Location.X, label1.Location.Y + 18);
+                refreshButton.Text = "View Self";
+            }
+
+            /*
+          if (MultiPlayer.MPManager.IsMultiPlayer())
+          {
+              MessageViewer = new MessageViewer();
+              MessageViewer.Show();
+              MessageViewer.Visible = false;
+          }*/
+
+            MultiPlayer.MPManager.Instance().ServerChanged += (sender, e) =>
+            {
+                firstShow = true;
+            };
+
+            MultiPlayer.MPManager.Instance().AvatarUpdated += (sender, e) =>
+            {
+                AddAvatar(e.User, e.URL);
+            };
+
+            MultiPlayer.MPManager.Instance().MessageReceived += (sender, e) =>
+            {
+                addNewMessage(e.Time, e.Message);
+            };
+        }
 
 
       public int RedrawCount;

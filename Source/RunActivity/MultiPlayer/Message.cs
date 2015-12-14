@@ -1565,7 +1565,7 @@ namespace Orts.MultiPlayer
 				Program.Client.Connected = true;
                 MPManager.Instance().NotServer = false;
                 Program.Server = new Server(Program.Client.UserName + ' ' + Program.Client.Code, Program.Client);
-                if (Program.DebugViewer != null) Program.DebugViewer.firstShow = true;
+                MPManager.Instance().OnServerChanged(true);
 				MPManager.Instance().RememberOriginalSwitchState();
                 Trace.TraceInformation("You are the new dispatcher. Enjoy!");
 				if (MPManager.Simulator.Confirmer != null)
@@ -1575,7 +1575,8 @@ namespace Orts.MultiPlayer
 			else
 			{
 				MPManager.Instance().NotServer = true;
-				if (MPManager.Simulator.Confirmer != null)
+                MPManager.Instance().OnServerChanged(false);
+                if (MPManager.Simulator.Confirmer != null)
                     MPManager.Simulator.Confirmer.Information(MPManager.Catalog.GetStringFmt("New dispatcher is {0}", user));
                 Trace.TraceInformation("New dispatcher is {0}", user);
 			}
@@ -3069,7 +3070,7 @@ namespace Orts.MultiPlayer
 			foreach (var p in MPManager.OnlineTrains.Players)
 			{
 				if (p.Key == user) p.Value.url = url;
-				Program.DebugViewer.AddAvatar(user, url);
+                MPManager.Instance().OnAvatarUpdated(user, url);
 			}
 
 			if (MPManager.IsServer())
@@ -3118,7 +3119,7 @@ namespace Orts.MultiPlayer
 					System.Console.WriteLine("MSG from " + sender + ":" + msgx);
 					MPManager.Instance().lastSender = sender;
 					if (MPManager.Simulator.Confirmer != null) MPManager.Simulator.Confirmer.MSG(MPManager.Catalog.GetStringFmt(" From {0}: {1}", sender, msgx));
-					Program.DebugViewer.addNewMessage(MPManager.Simulator.GameTime, sender + ": " + msgx);
+                    MPManager.Instance().OnMessageReceived(MPManager.Simulator.GameTime, sender + ": " + msgx);
 					break;
 				}
 			}
