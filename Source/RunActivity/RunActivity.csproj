@@ -151,6 +151,7 @@
     <Compile Include="Simulation\Traveller.cs" />
     <Compile Include="Simulation\Timetables\ProcessTimetable.cs" />
     <Compile Include="Simulation\Timetables\TTTrain.cs" />
+    <Compile Include="Simulation\Weather.cs" />
     <Compile Include="Viewer3D\ALSoundHelper.cs" />
     <Compile Include="Viewer3D\AnimatedPart.cs" />
     <Compile Include="Viewer3D\Cameras.cs" />

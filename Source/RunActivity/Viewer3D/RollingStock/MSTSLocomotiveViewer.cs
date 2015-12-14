@@ -1189,7 +1189,7 @@ namespace Orts.Viewer3D.RollingStock
             {
                 // TODO: Readd ability to control night time lighting.
                 if (_Viewer.Settings.UseMSTSEnv == false)
-                    _Shader.SetData(_Viewer.MaterialManager.sunDirection, _isNightTexture, false, _Viewer.World.WeatherControl.overcastFactor);
+                    _Shader.SetData(_Viewer.MaterialManager.sunDirection, _isNightTexture, false, _Viewer.Simulator.Weather.OvercastFactor);
                 else
                     _Shader.SetData(_Viewer.MaterialManager.sunDirection, _isNightTexture, false, _Viewer.World.MSTSSky.mstsskyovercastFactor);
 

@@ -853,7 +853,7 @@ namespace Orts.Simulation.RollingStocks
 
                         // Determine whether the track is wet due to rain or snow.
 
-                        int FrictionWeather = (int)Simulator.Weather;
+                        int FrictionWeather = (int)Simulator.WeatherType;
                         
                         if (FrictionWeather == 1 | FrictionWeather == 2)
                         {

@@ -493,7 +493,7 @@ namespace Orts.Viewer3D
             // Adjust Fog color for day-night conditions and overcast
             FogDay2Night(
                 Viewer.World.Sky.solarDirection.Y,
-                Viewer.World.WeatherControl.overcastFactor);
+                Viewer.Simulator.Weather.OvercastFactor);
 
             //if (Viewer.Settings.DistantMountains) SharedMaterialManager.FogCoeff *= (3 * (5 - Viewer.Settings.DistantMountainsFogValue) + 0.5f);
 
@@ -505,8 +505,8 @@ namespace Orts.Viewer3D
             SkyShader.LightVector = Viewer.World.Sky.solarDirection;
             SkyShader.Time = (float)Viewer.Simulator.ClockTime / 100000;
             SkyShader.MoonScale = SkyConstants.skyRadius / 20;
-            SkyShader.Overcast = Viewer.World.WeatherControl.overcastFactor;
-            SkyShader.SetFog(Viewer.World.WeatherControl.fogDistance, ref SharedMaterialManager.FogColor);
+            SkyShader.Overcast = Viewer.Simulator.Weather.OvercastFactor;
+            SkyShader.SetFog(Viewer.Simulator.Weather.FogDistance, ref SharedMaterialManager.FogColor);
             SkyShader.WindSpeed = Viewer.World.Sky.windSpeed;
             SkyShader.WindDirection = Viewer.World.Sky.windDirection; // Keep setting this after Time and Windspeed. Calculating displacement here.
 

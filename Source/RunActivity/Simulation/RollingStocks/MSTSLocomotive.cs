@@ -1283,7 +1283,7 @@ namespace Orts.Simulation.RollingStocks
             if ((Simulator.UseAdvancedAdhesion) && (!Simulator.Paused) && (!AntiSlip))
             {
                 //Set the weather coeff
-                if (Simulator.Weather == WeatherType.Rain || Simulator.Weather == WeatherType.Snow)
+                if (Simulator.WeatherType == WeatherType.Rain || Simulator.WeatherType == WeatherType.Snow)
                 {
                     if (Train.SlipperySpotDistanceM < 0)
                     {
@@ -1292,7 +1292,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                     if (Train.SlipperySpotDistanceM < Train.SlipperySpotLengthM)
                         max0 = .8f;
-                    if (Simulator.Weather == WeatherType.Rain)
+                    if (Simulator.WeatherType == WeatherType.Rain)
                         max0 = 0.6f;
                     else
                         max0 = 0.4f;
@@ -1306,7 +1306,7 @@ namespace Orts.Simulation.RollingStocks
                     {
                         if ((Sander) && (AbsSpeedMpS < SanderSpeedEffectUpToMpS))
                         {
-                            switch (Simulator.Weather)
+                            switch (Simulator.WeatherType)
                             {
                                 case WeatherType.Clear: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.2f; break;
                                 case WeatherType.Rain: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.8f; break;
@@ -1317,7 +1317,7 @@ namespace Orts.Simulation.RollingStocks
                     else
                         if (Sander)
                         {
-                            switch (Simulator.Weather)
+                            switch (Simulator.WeatherType)
                             {
                                 case WeatherType.Clear: max0 *= 1.2f; break;
                                 case WeatherType.Rain: max0 *= 1.8f; break;
@@ -1331,8 +1331,8 @@ namespace Orts.Simulation.RollingStocks
 
                 if (Simulator.Settings.AdhesionProportionalToWeather)
                 {
-                    float fog = Program.Viewer.World.WeatherControl.fogDistance;
-                    float pric = Program.Viewer.World.WeatherControl.pricipitationIntensityPPSPM2 * 1000;
+                    float fog = Simulator.Weather.FogDistance;
+                    float pric = Simulator.Weather.PricipitationIntensityPPSPM2 * 1000;
                     max0 *= Math.Min(Math.Max(fog * 5.1e-4f + 0.7f, 0.7f), 1.5f);
                     max0 *= Math.Min(Math.Max(1.5f - pric * 0.05f, 0.5f), 1.5f);
                 }
@@ -1401,7 +1401,7 @@ namespace Orts.Simulation.RollingStocks
             float max0 = MassKG * 9.81f * adhesionUtil * uMax;  //Ahesion limit in [N]
             float max1;
 
-            if (Simulator.Weather == WeatherType.Rain || Simulator.Weather == WeatherType.Snow)
+            if (Simulator.WeatherType == WeatherType.Rain || Simulator.WeatherType == WeatherType.Snow)
             {
                 if (Train.SlipperySpotDistanceM < 0)
                 {
@@ -1410,7 +1410,7 @@ namespace Orts.Simulation.RollingStocks
                 }
                 if (Train.SlipperySpotDistanceM < Train.SlipperySpotLengthM)
                     max0 *= .8f;
-                if (Simulator.Weather == WeatherType.Rain)
+                if (Simulator.WeatherType == WeatherType.Rain)
                     max0 *= .8f;
                 else
                     max0 *= .7f;
@@ -1424,7 +1424,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     if ((Sander) && (AbsSpeedMpS < SanderSpeedEffectUpToMpS))
                     {
-                        switch (Simulator.Weather)
+                        switch (Simulator.WeatherType)
                         {
                             case WeatherType.Clear: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.2f; break;
                             case WeatherType.Rain: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.8f; break;
@@ -1435,7 +1435,7 @@ namespace Orts.Simulation.RollingStocks
                 else
                     if (Sander)
                     {
-                        switch (Simulator.Weather)
+                        switch (Simulator.WeatherType)
                         {
                             case WeatherType.Clear: max0 *= 1.2f; break;
                             case WeatherType.Rain: max0 *= 1.8f; break;

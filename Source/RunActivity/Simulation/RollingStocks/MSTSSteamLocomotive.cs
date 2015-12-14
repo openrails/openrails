@@ -3257,7 +3257,7 @@ namespace Orts.Simulation.RollingStocks
             WheelWeightLbs = Kg.ToLb(DrvWheelWeightKg / (DrvWheelNum * 2.0f)); // Calculate the weight per wheel
 
 
-            if (Simulator.Weather == WeatherType.Rain || Simulator.Weather == WeatherType.Snow)
+            if (Simulator.WeatherType == WeatherType.Rain || Simulator.WeatherType == WeatherType.Snow)
             {
                 if (IsLocoSlip)   // If loco is slipping then coeff of friction will be decreased below static value.
                 {

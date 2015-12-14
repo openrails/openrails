@@ -95,13 +95,14 @@ namespace Orts.Simulation
         public Dictionary<string, Train> NameDictionary = new Dictionary<string, Train>();
         public Dictionary<int, AITrain> AutoGenDictionary = new Dictionary<int, AITrain>();
         public List<int> StartReference = new List<int>();
+        public Weather Weather;
 
         public float CurveDurability;  // Sets the durability due to curve speeds in TrainCars - read from consist file.
 
         public Signals Signals;
         public AI AI;
         public SeasonType Season;
-        public WeatherType Weather;
+        public WeatherType WeatherType;
         SignalConfigurationFile SIGCFG;
         public string ExplorePathFile;
         public string ExploreConFile;
@@ -307,7 +308,7 @@ namespace Orts.Simulation
             TimeSpan StartTime = new TimeSpan(st.Hour, st.Minute, st.Second);
             ClockTime = StartTime.TotalSeconds;
             Season = Activity.Tr_Activity.Tr_Activity_Header.Season;
-            Weather = Activity.Tr_Activity.Tr_Activity_Header.Weather;
+            WeatherType = Activity.Tr_Activity.Tr_Activity_Header.Weather;
             if (Activity.Tr_Activity.Tr_Activity_File.ActivityRestrictedSpeedZones != null)
             {
                 Orts.Simulation.Activity.AddRestrictZones(TRK.Tr_RouteFile, TSectionDat, TDB.TrackDB, Activity.Tr_Activity.Tr_Activity_File.ActivityRestrictedSpeedZones);
@@ -322,7 +323,7 @@ namespace Orts.Simulation
             TimeSpan StartTime = new TimeSpan(int.Parse(time[0]), time.Length > 1 ? int.Parse(time[1]) : 0, time.Length > 2 ? int.Parse(time[2]) : 0);
             ClockTime = StartTime.TotalSeconds;
             Season = (SeasonType)int.Parse(season);
-            Weather = (WeatherType)int.Parse(weather);
+            WeatherType = (WeatherType)int.Parse(weather);
         }
 
         public void Start(CancellationToken cancellation)
@@ -376,7 +377,7 @@ namespace Orts.Simulation
             AI = new AI(this, allTrains, ClockTime, playerTTTrain.FormedOf, playerTTTrain.FormedOfType, playerTTTrain, cancellation);
 
             Season = (SeasonType)int.Parse(arguments[3]);
-            Weather = (WeatherType)int.Parse(arguments[4]);
+            WeatherType = (WeatherType)int.Parse(arguments[4]);
 
 
             if (playerTTTrain != null) 
@@ -397,7 +398,7 @@ namespace Orts.Simulation
         {
             ClockTime = inf.ReadDouble();
             Season = (SeasonType)inf.ReadInt32();
-            Weather = (WeatherType)inf.ReadInt32();
+            WeatherType = (WeatherType)inf.ReadInt32();
             TimetableMode = inf.ReadBoolean();
             InitialTileX = initialTileX;
             InitialTileZ = initialTileZ;
@@ -418,7 +419,7 @@ namespace Orts.Simulation
         {
             outf.Write(ClockTime);
             outf.Write((int)Season);
-            outf.Write((int)Weather);
+            outf.Write((int)WeatherType);
             outf.Write(TimetableMode);
             Signals.Save(outf);
             SaveTrains(outf);
@@ -619,7 +620,7 @@ namespace Orts.Simulation
 
         internal void SetWeather(WeatherType weather, SeasonType season)
         {
-            Weather = weather;
+            WeatherType = weather;
             Season = season;
 
             var weatherChanged = WeatherChanged;

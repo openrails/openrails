@@ -79,17 +79,17 @@ namespace Orts.Viewer3D.Common
                     alternativePath = @"\Snow\";
                 else
                     alternativePath = @"\";
-            else if ((textureFlags & TextureFlags.Spring) != 0 && simulator.Season == SeasonType.Spring && simulator.Weather != WeatherType.Snow)
+            else if ((textureFlags & TextureFlags.Spring) != 0 && simulator.Season == SeasonType.Spring && simulator.WeatherType != WeatherType.Snow)
                 alternativePath = @"\Spring\";
-            else if ((textureFlags & TextureFlags.Autumn) != 0 && simulator.Season == SeasonType.Autumn && simulator.Weather != WeatherType.Snow)
+            else if ((textureFlags & TextureFlags.Autumn) != 0 && simulator.Season == SeasonType.Autumn && simulator.WeatherType != WeatherType.Snow)
                 alternativePath = @"\Autumn\";
-            else if ((textureFlags & TextureFlags.Winter) != 0 && simulator.Season == SeasonType.Winter && simulator.Weather != WeatherType.Snow)
+            else if ((textureFlags & TextureFlags.Winter) != 0 && simulator.Season == SeasonType.Winter && simulator.WeatherType != WeatherType.Snow)
                 alternativePath = @"\Winter\";
-            else if ((textureFlags & TextureFlags.SpringSnow) != 0 && simulator.Season == SeasonType.Spring && simulator.Weather == WeatherType.Snow)
+            else if ((textureFlags & TextureFlags.SpringSnow) != 0 && simulator.Season == SeasonType.Spring && simulator.WeatherType == WeatherType.Snow)
                 alternativePath = @"\SpringSnow\";
-            else if ((textureFlags & TextureFlags.AutumnSnow) != 0 && simulator.Season == SeasonType.Autumn && simulator.Weather == WeatherType.Snow)
+            else if ((textureFlags & TextureFlags.AutumnSnow) != 0 && simulator.Season == SeasonType.Autumn && simulator.WeatherType == WeatherType.Snow)
                 alternativePath = @"\AutumnSnow\";
-            else if ((textureFlags & TextureFlags.WinterSnow) != 0 && simulator.Season == SeasonType.Winter && simulator.Weather == WeatherType.Snow)
+            else if ((textureFlags & TextureFlags.WinterSnow) != 0 && simulator.Season == SeasonType.Winter && simulator.WeatherType == WeatherType.Snow)
                 alternativePath = @"\WinterSnow\";
 
             if (alternativePath.Length > 0) return texturePath + alternativePath + textureName;
@@ -101,7 +101,7 @@ namespace Orts.Viewer3D.Common
             // MSTS shows snow textures:
             //   - In winter, no matter what the weather is.
             //   - In spring and autumn, if the weather is snow.
-            return (simulator.Season == SeasonType.Winter) || ((simulator.Season != SeasonType.Summer) && (simulator.Weather == WeatherType.Snow));
+            return (simulator.Season == SeasonType.Winter) || ((simulator.Season != SeasonType.Summer) && (simulator.WeatherType == WeatherType.Snow));
         }
 
         static readonly Dictionary<string, SceneryMaterialOptions> TextureAddressingModeNames = new Dictionary<string, SceneryMaterialOptions> {

@@ -20,6 +20,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Graphics.PackedVector;
+using Orts.Simulation;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
@@ -38,17 +39,19 @@ namespace Orts.Viewer3D
         public const float MaxIntensityPPSPM2 = 0.020f;
                 
         readonly Viewer Viewer;
-        readonly WeatherControl Weather;
+        readonly WeatherControl WeatherControl;
+        readonly Weather Weather;
 
         readonly Material Material;
         readonly PrecipitationPrimitive Pricipitation;
 
         Vector3 Wind;
 
-        public PrecipitationViewer(Viewer viewer, WeatherControl weather)
+        public PrecipitationViewer(Viewer viewer, WeatherControl weatherControl)
         {
             Viewer = viewer;
-            Weather = weather;
+            WeatherControl = weatherControl;
+            Weather = viewer.Simulator.Weather;
 
             Material = viewer.MaterialManager.Load("Precipitation");
             Pricipitation = new PrecipitationPrimitive(Viewer.GraphicsDevice);
@@ -60,8 +63,8 @@ namespace Orts.Viewer3D
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             var gameTime = (float)Viewer.Simulator.GameTime;
-            Pricipitation.DynamicUpdate(Weather, Viewer, ref Wind);
-            Pricipitation.Update(gameTime, elapsedTime, Weather.pricipitationIntensityPPSPM2, Viewer);
+            Pricipitation.DynamicUpdate(WeatherControl, Weather, Viewer, ref Wind);
+            Pricipitation.Update(gameTime, elapsedTime, Weather.PricipitationIntensityPPSPM2, Viewer);
 
             // Note: This is quite a hack. We ideally should be able to pass this through RenderItem somehow.
             var XNAWorldLocation = Matrix.Identity;
@@ -78,12 +81,12 @@ namespace Orts.Viewer3D
             // Added random Wind.X value for rain and snow.
             Random randWind = new Random();
             // Max value used by randWind.Next is max value - 1.
-            Wind.X = Viewer.Simulator.Weather == Orts.Formats.Msts.WeatherType.Snow ? randWind.Next(2, 6) : randWind.Next(15, 21);
+            Wind.X = Viewer.Simulator.WeatherType == Orts.Formats.Msts.WeatherType.Snow ? randWind.Next(2, 6) : randWind.Next(15, 21);
                                     
             var gameTime = (float)Viewer.Simulator.GameTime;
-            Pricipitation.Initialize(Viewer.Simulator.Weather, Wind);
+            Pricipitation.Initialize(Viewer.Simulator.WeatherType, Wind);
             // Camera is null during first initialisation.
-            if (Viewer.Camera != null) Pricipitation.Update(gameTime, null, Weather.pricipitationIntensityPPSPM2, Viewer);
+            if (Viewer.Camera != null) Pricipitation.Update(gameTime, null, Weather.PricipitationIntensityPPSPM2, Viewer);
         }
 
         [CallOnThread("Loader")]
@@ -292,11 +295,11 @@ namespace Orts.Viewer3D
             DrawCounter = 0;
         }
 
-        public void DynamicUpdate(WeatherControl weatherControl, Viewer viewer, ref Vector3 wind)
+        public void DynamicUpdate(WeatherControl weatherControl, Weather weather, Viewer viewer, ref Vector3 wind)
         {
             if (!weatherControl.weatherChangeOn || weatherControl.dynamicWeather.precipitationLiquidityTimer <= 0) return;
-            ParticleDuration = ParticleBoxHeightM / ((RainVelocityMpS-SnowVelocityMpS) *  weatherControl.precipitationLiquidity + SnowVelocityMpS)/ ParticleVelocityFactor;
-            wind.X = 18 * weatherControl.precipitationLiquidity + 2;
+            ParticleDuration = ParticleBoxHeightM / ((RainVelocityMpS-SnowVelocityMpS) *  weather.PrecipitationLiquidity + SnowVelocityMpS)/ ParticleVelocityFactor;
+            wind.X = 18 * weather.PrecipitationLiquidity + 2;
             ParticleDirection = wind;
         }
 
@@ -499,10 +502,10 @@ namespace Orts.Viewer3D
             shader.LightVector.SetValue(Viewer.Settings.UseMSTSEnv ? Viewer.World.MSTSSky.mstsskysolarDirection : Viewer.World.Sky.solarDirection);
             shader.particleSize.SetValue(1);
             if (!Viewer.World.WeatherControl.weatherChangeOn)
-            shader.precipitation_Tex.SetValue(Viewer.Simulator.Weather == Orts.Formats.Msts.WeatherType.Snow ? SnowTexture : RainTexture);
+            shader.precipitation_Tex.SetValue(Viewer.Simulator.WeatherType == Orts.Formats.Msts.WeatherType.Snow ? SnowTexture : RainTexture);
             else
             {
-                var precipitation_TexIndex = (int)(Viewer.World.WeatherControl.precipitationLiquidity * 11);
+                var precipitation_TexIndex = (int)(Viewer.Simulator.Weather.PrecipitationLiquidity * 11);
                 shader.precipitation_Tex.SetValue(DynamicPrecipitationTexture[precipitation_TexIndex]);
             }
 

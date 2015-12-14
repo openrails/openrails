@@ -235,7 +235,7 @@ namespace Orts.Viewer3D
             else
                 newIsDay = Viewer.World.MSTSSky.mstsskysolarDirection.Y > 0;
             // Weather
-            var newWeather = Viewer.Simulator.Weather;
+            var newWeather = Viewer.Simulator.WeatherType;
             // Coupling
             var newCarCoupledFront = Car.Train != null && (Car.Train.Cars.Count > 1) && ((Car.Flipped ? Car.Train.LastCar : Car.Train.FirstCar) != Car);
             var newCarCoupledRear = Car.Train != null && (Car.Train.Cars.Count > 1) && ((Car.Flipped ? Car.Train.FirstCar : Car.Train.LastCar) != Car);

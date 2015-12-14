@@ -367,7 +367,7 @@ namespace Orts.MultiPlayer
 				dir = (int)t.RearTDBTraveller.Direction; num = tn; TileX = t.RearTDBTraveller.TileX;
 				TileZ = t.RearTDBTraveller.TileZ; X = t.RearTDBTraveller.X; Z = t.RearTDBTraveller.Z; Travelled = t.travelled;
 			}
-			seconds = MPManager.Simulator.ClockTime; season = (int)MPManager.Simulator.Season; weather = (int)MPManager.Simulator.Weather;
+			seconds = MPManager.Simulator.ClockTime; season = (int)MPManager.Simulator.Season; weather = (int)MPManager.Simulator.WeatherType;
 			pantofirst = pantosecond = 0;
 			MSTSWagon w = (MSTSWagon)MPManager.Simulator.PlayerLocomotive;
             if (w != null)
