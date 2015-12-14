@@ -1416,7 +1416,7 @@ namespace Orts.Viewer3D
                 {
                     SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
                     SoundCommand.Run();
-                    float volume = (float)Program.Random.NextDouble() * (SMS.Volume_Max - SMS.Volume_Min) + SMS.Volume_Min;
+                    float volume = (float)Viewer.Random.NextDouble() * (SMS.Volume_Max - SMS.Volume_Min) + SMS.Volume_Min;
                     SoundStream.Volume = volume;
                     SoundStream.LastTriggered = this;
                 }
@@ -1439,11 +1439,11 @@ namespace Orts.Viewer3D
         {
             if (SMS.Dist_Max != SMS.Dist_Min)
             {
-                triggerDistance = car.DistanceM + ((float)Program.Random.NextDouble() * (SMS.Dist_Max - SMS.Dist_Min) + SMS.Dist_Min);
+                triggerDistance = car.DistanceM + ((float)Viewer.Random.NextDouble() * (SMS.Dist_Max - SMS.Dist_Min) + SMS.Dist_Min);
             }
             else
             {
-                triggerDistance = car.DistanceM + ((float)Program.Random.NextDouble() * (SMS.Dist_Min) + SMS.Dist_Min);
+                triggerDistance = car.DistanceM + ((float)Viewer.Random.NextDouble() * (SMS.Dist_Min) + SMS.Dist_Min);
             }
         }
 
@@ -1520,7 +1520,7 @@ namespace Orts.Viewer3D
                 {
                     SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
                     SoundCommand.Run();
-                    float volume = (float)Program.Random.NextDouble() * (SMS.Volume_Max - SMS.Volume_Min) + SMS.Volume_Min;
+                    float volume = (float)Viewer.Random.NextDouble() * (SMS.Volume_Max - SMS.Volume_Min) + SMS.Volume_Min;
                     SoundStream.Volume = volume;
                     SoundStream.LastTriggered = this;
                 }
@@ -1537,7 +1537,7 @@ namespace Orts.Viewer3D
         /// </summary>
         private void UpdateTriggerAtSeconds()
         {
-            double interval = Program.Random.NextDouble() * (SMS.Delay_Max - SMS.Delay_Min) + SMS.Delay_Min;
+            double interval = Viewer.Random.NextDouble() * (SMS.Delay_Max - SMS.Delay_Min) + SMS.Delay_Min;
             triggerAtSeconds = Simulator.ClockTime + interval;
         }
 
@@ -2004,7 +2004,7 @@ namespace Orts.Viewer3D
             }
             else if (SelectionMethod == Orts.Formats.Msts.SoundCommand.SelectionMethods.RandomSelection)
             {
-                iFile = Program.Random.Next(Files.Length);
+                iFile = Viewer.Random.Next(Files.Length);
             }
 
             //<CJComment>SMSFolder is often same as BasePath, which means this searches the more general folder 

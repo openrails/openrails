@@ -47,6 +47,7 @@ namespace Orts.Viewer3D
     public class Viewer
     {
         public static GettextResourceManager Catalog { get; private set; }
+        public static Random Random { get; private set; }
         // User setups.
         public UserSettings Settings { get; private set; }
         // Multi-threaded processes
@@ -209,6 +210,7 @@ namespace Orts.Viewer3D
         public Viewer(Simulator simulator, Orts.Viewer3D.Processes.Game game)
         {
             Catalog = new GettextResourceManager("RunActivity");
+            Random = new Random();
             Simulator = simulator;
             Game = game;
             Settings = simulator.Settings;
@@ -1110,7 +1112,7 @@ namespace Orts.Viewer3D
                 {
                     if (t == null || t.Cars == null || t.Cars.Count == 0) continue;
                     var d = WorldLocation.GetDistanceSquared(t.RearTDBTraveller.WorldLocation, PlayerTrain.RearTDBTraveller.WorldLocation);
-                    users.Add(d + Program.Random.NextDouble(), t);
+                    users.Add(d + Viewer.Random.NextDouble(), t);
                 }
                 trainCount++;
                 if (trainCount >= users.Count) trainCount = 0;

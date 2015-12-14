@@ -149,8 +149,7 @@ namespace Orts.Viewer3D
                     mstsskylunarPosArray[i] = SunMoonPos.LunarAngle(mstsskylatitude, mstsskylongitude, ((float)i / maxSteps), date);
                 }
                 // Phase of the moon is generated at random
-                Random random = new Random();
-                mstsskymoonPhase = random.Next(8);
+                mstsskymoonPhase = Viewer.Random.Next(8);
                 if (mstsskymoonPhase == 6 && date.ordinalDate > 45 && date.ordinalDate < 330)
                     mstsskymoonPhase = 3; // Moon dog only occurs in winter
                 // Overcast factor: 0.0=almost no clouds; 0.1=wispy clouds; 1.0=total overcast

@@ -2225,7 +2225,7 @@ namespace Orts.MultiPlayer
 			if (MPManager.IsServer()) newTrainNumber = newT.Number;//serer will use the correct number
 			else
 			{
-				newTrainNumber = 1000000 + Program.Random.Next(1000000);//client: temporary assign a train number 1000000-2000000, will change to the correct one after receiving response from the server
+				newTrainNumber = 1000000 + MPManager.Random.Next(1000000);//client: temporary assign a train number 1000000-2000000, will change to the correct one after receiving response from the server
 				newT.TrainType = Train.TRAINTYPE.REMOTE; //by default, uncoupled train will be controlled by the server
 			}
 			if (!newT.Cars.Contains(MPManager.Simulator.PlayerLocomotive)) //if newT does not have player locomotive, it may be controlled remotely

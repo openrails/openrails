@@ -57,6 +57,7 @@ namespace Orts.Simulation
     public class Simulator
     {
         public static GettextResourceManager Catalog { get; private set; }
+        public static Random Random { get; private set; }
 
         public bool Paused = true;          // start off paused, set to true once the viewer is fully loaded and initialized
         public float GameSpeed = 1;
@@ -221,6 +222,7 @@ namespace Orts.Simulation
         public Simulator(UserSettings settings, string activityPath, bool useOpenRailsDirectory)
         {
             Catalog = new GettextResourceManager("RunActivity");
+            Random = new Random();
 
             MPManager.Simulator = this;
 

@@ -133,8 +133,7 @@ namespace Orts.Viewer3D
                     lunarPosArray[i] = SunMoonPos.LunarAngle(latitude, longitude, ((float)i / maxSteps), date);
                 }
                 // Phase of the moon is generated at random
-                Random random = new Random();
-                moonPhase = random.Next(8);
+                moonPhase = Viewer.Random.Next(8);
                 if (moonPhase == 6 && date.ordinalDate > 45 && date.ordinalDate < 330)
                     moonPhase = 3; // Moon dog only occurs in winter
             }

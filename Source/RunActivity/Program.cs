@@ -23,7 +23,6 @@ using Orts.Viewer3D.Debugging;
 using Orts.Viewer3D.Processes;
 using ORTS.Common;
 using ORTS.Settings;
-using System;
 using System.Linq;
 
 namespace Orts
@@ -32,7 +31,6 @@ namespace Orts
     {
         public static Simulator Simulator;
         public static Viewer Viewer;
-        public static Random Random = new Random();
         public static Server Server;
         public static ClientComm Client;
         public static string UserName;

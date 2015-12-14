@@ -43,7 +43,6 @@ namespace Orts.Viewer3D.Processes
     {
         static string[] Arguments;
         static string Acttype;
-        static Random Random { get { return Program.Random; } set { Program.Random = value; } }  // primary random number generator used throughout the program
         static Simulator Simulator { get { return Program.Simulator; } set { Program.Simulator = value; } }
 
         //for Multiplayer

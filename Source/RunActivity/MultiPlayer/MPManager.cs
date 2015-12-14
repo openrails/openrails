@@ -44,6 +44,7 @@ namespace Orts.MultiPlayer
     class MPManager
 	{
         public static GettextResourceManager Catalog { get; private set; }
+        public static Random Random { get; private set; }
         public static Simulator Simulator { get; internal set; }
 
         public int version = 15;
@@ -125,6 +126,7 @@ namespace Orts.MultiPlayer
             if (localUser == null)
             {
                 Catalog = new GettextResourceManager("RunActivity");
+                Random = new Random();
                 localUser = new MPManager();
             }
 			return localUser;
@@ -489,7 +491,7 @@ namespace Orts.MultiPlayer
 					if (p.Train == null) continue;
 					if (p.Train.Cars.Count <= 0) continue;
 					var d = WorldLocation.GetDistanceSquared(p.Train.RearTDBTraveller.WorldLocation, mine.Train.RearTDBTraveller.WorldLocation);
-					users.Add(Math.Sqrt(d)+Program.Random.NextDouble(), p.Username);
+					users.Add(Math.Sqrt(d)+MPManager.Random.NextDouble(), p.Username);
 				}
 			}
 			catch (Exception)
@@ -744,7 +746,7 @@ namespace Orts.MultiPlayer
 						});
 
 					len = def.Z;
-					carList.Add(len + Program.Random.NextDouble() / 10.0f, name);
+					carList.Add(len + MPManager.Random.NextDouble() / 10.0f, name);
 				}
 				catch { }
 			}

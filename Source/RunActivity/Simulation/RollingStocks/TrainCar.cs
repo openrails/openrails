@@ -999,7 +999,7 @@ namespace Orts.Simulation.RollingStocks
             Simulator = simulator;
             WagFilePath = wagFile;
             RealWagFilePath = wagFile;
-            Stiffness = (float)Program.Random.NextDouble() * 2f + 3f;//stiffness range from 4-8 (i.e. vibrating frequency)
+            Stiffness = (float)Simulator.Random.NextDouble() * 2f + 3f;//stiffness range from 4-8 (i.e. vibrating frequency)
             MaxVibSpeed = 15f + Stiffness * 2;//about 50km/h
         }
 
@@ -1611,9 +1611,9 @@ namespace Orts.Simulation.RollingStocks
             float timeInterval = 0f;
             if (lastTime <= 0.0)
             {
-                sx = (float)Program.Random.NextDouble()*3.13f;
-                sy = (float)Program.Random.NextDouble()*3.13f;
-                sz = (float)Program.Random.NextDouble()*3.13f;
+                sx = (float)Simulator.Random.NextDouble()*3.13f;
+                sy = (float)Simulator.Random.NextDouble()*3.13f;
+                sz = (float)Simulator.Random.NextDouble()*3.13f;
                 currentStiffness = Stiffness;
                 prevY = prevY2 = WorldPosition.XNAMatrix.Translation.Y;//remember Y values for acceleration compute
             }
@@ -1622,7 +1622,7 @@ namespace Orts.Simulation.RollingStocks
                 timeInterval = (float)(Simulator.GameTime - lastTime);
                 //sin wave of frequency 3-5 per second
                 sx += timeInterval * currentStiffness;
-                if (sx > 6.28) { sx = sx - 6.28f; currentStiffness = Stiffness + (float)(0.5 - Program.Random.NextDouble()) * speed / 20; }
+                if (sx > 6.28) { sx = sx - 6.28f; currentStiffness = Stiffness + (float)(0.5 - Simulator.Random.NextDouble()) * speed / 20; }
                 sy += timeInterval * currentStiffness;
                 if (sy > 6.28) { sy = sy - 6.28f; }
                 sz += timeInterval * currentStiffness;

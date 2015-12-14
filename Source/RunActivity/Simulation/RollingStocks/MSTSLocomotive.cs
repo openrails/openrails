@@ -1287,8 +1287,8 @@ namespace Orts.Simulation.RollingStocks
                 {
                     if (Train.SlipperySpotDistanceM < 0)
                     {
-                        Train.SlipperySpotLengthM = 10 + 40 * (float)Program.Random.NextDouble();
-                        Train.SlipperySpotDistanceM = Train.SlipperySpotLengthM + 2000 * (float)Program.Random.NextDouble();
+                        Train.SlipperySpotLengthM = 10 + 40 * (float)Simulator.Random.NextDouble();
+                        Train.SlipperySpotDistanceM = Train.SlipperySpotLengthM + 2000 * (float)Simulator.Random.NextDouble();
                     }
                     if (Train.SlipperySpotDistanceM < Train.SlipperySpotLengthM)
                         max0 = .8f;
@@ -1337,7 +1337,7 @@ namespace Orts.Simulation.RollingStocks
                     max0 *= Math.Min(Math.Max(1.5f - pric * 0.05f, 0.5f), 1.5f);
                 }
                     if (elapsedClockSeconds > 0) LocomotiveAxle.AdhesionConditions = (float)(Simulator.Settings.AdhesionFactor) * 0.01f *
-                        AdhesionFilter.Filter(max0 + (float)((float)(Simulator.Settings.AdhesionFactorChange) * 0.01f * 2f * (Program.Random.NextDouble() - 0.5f)), elapsedClockSeconds);
+                        AdhesionFilter.Filter(max0 + (float)((float)(Simulator.Settings.AdhesionFactorChange) * 0.01f * 2f * (Simulator.Random.NextDouble() - 0.5f)), elapsedClockSeconds);
                     LocomotiveAxle.AdhesionConditions = MathHelper.Clamp(0.05f, LocomotiveAxle.AdhesionConditions, 2.5f); // Avoids NaNs in axle speed computing                      
 
                 //Compute axle inertia from parameters if possible
@@ -1405,8 +1405,8 @@ namespace Orts.Simulation.RollingStocks
             {
                 if (Train.SlipperySpotDistanceM < 0)
                 {
-                    Train.SlipperySpotLengthM = 10 + 40 * (float)Program.Random.NextDouble();
-                    Train.SlipperySpotDistanceM = Train.SlipperySpotLengthM + 2000 * (float)Program.Random.NextDouble();
+                    Train.SlipperySpotLengthM = 10 + 40 * (float)Simulator.Random.NextDouble();
+                    Train.SlipperySpotDistanceM = Train.SlipperySpotLengthM + 2000 * (float)Simulator.Random.NextDouble();
                 }
                 if (Train.SlipperySpotDistanceM < Train.SlipperySpotLengthM)
                     max0 *= .8f;

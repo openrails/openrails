@@ -79,9 +79,8 @@ namespace Orts.Viewer3D
         {
             // This procedure is only called once at the start of an activity.
             // Added random Wind.X value for rain and snow.
-            Random randWind = new Random();
             // Max value used by randWind.Next is max value - 1.
-            Wind.X = Viewer.Simulator.WeatherType == Orts.Formats.Msts.WeatherType.Snow ? randWind.Next(2, 6) : randWind.Next(15, 21);
+            Wind.X = Viewer.Simulator.WeatherType == Orts.Formats.Msts.WeatherType.Snow ? Viewer.Random.Next(2, 6) : Viewer.Random.Next(15, 21);
                                     
             var gameTime = (float)Viewer.Simulator.GameTime;
             Pricipitation.Initialize(Viewer.Simulator.WeatherType, Wind);
@@ -329,7 +328,7 @@ namespace Orts.Viewer3D
 
             for (var i = 0; i < numToEmit; i++)
             {
-                var temp = new WorldLocation(worldLocation.TileX, worldLocation.TileZ, worldLocation.Location.X + (float)((Program.Random.NextDouble() - 0.5) * ParticleBoxLengthM), 0, worldLocation.Location.Z + (float)((Program.Random.NextDouble() - 0.5) * ParticleBoxWidthM));
+                var temp = new WorldLocation(worldLocation.TileX, worldLocation.TileZ, worldLocation.Location.X + (float)((Viewer.Random.NextDouble() - 0.5) * ParticleBoxLengthM), 0, worldLocation.Location.Z + (float)((Viewer.Random.NextDouble() - 0.5) * ParticleBoxWidthM));
                 temp.Location.Y = Heights.GetHeight(temp, tiles, scenery);
                 var position = new WorldPosition(temp);
 

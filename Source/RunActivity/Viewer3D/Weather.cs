@@ -173,8 +173,8 @@ namespace Orts.Viewer3D
             WindSpeedInternalMpS = Vector2.Zero;
             for (var i = 0; i < windSpeedMpS.Length; i++)
             {
-                windSpeedMpS[i].X += ((float)Program.Random.NextDouble() * 2 - 1) * WindChangeMpSS[i] * elapsedTime.ClockSeconds;
-                windSpeedMpS[i].Y += ((float)Program.Random.NextDouble() * 2 - 1) * WindChangeMpSS[i] * elapsedTime.ClockSeconds;
+                windSpeedMpS[i].X += ((float)Viewer.Random.NextDouble() * 2 - 1) * WindChangeMpSS[i] * elapsedTime.ClockSeconds;
+                windSpeedMpS[i].Y += ((float)Viewer.Random.NextDouble() * 2 - 1) * WindChangeMpSS[i] * elapsedTime.ClockSeconds;
 
                 var windMagnitude = windSpeedMpS[i].Length() / (i == 0 ? Weather.WindSpeedMpS.Length() * 0.4f : WindSpeedMaxMpS);
                 if (windMagnitude > 1)

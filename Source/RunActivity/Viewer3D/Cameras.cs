@@ -1694,7 +1694,6 @@ namespace Orts.Viewer3D
         public override string Name { get { return Viewer.Catalog.GetString("Trackside"); } }
 
         protected TrainCar LastCheckCar;
-        protected readonly Random Random;
         protected WorldLocation TrackCameraLocation;
         protected float CameraAltitudeOffset;
 
@@ -1716,7 +1715,6 @@ namespace Orts.Viewer3D
         public TracksideCamera(Viewer viewer)
             : base(viewer)
         {
-            Random = new Random();
         }
 
         public override void Reset()
@@ -1816,7 +1814,7 @@ namespace Orts.Viewer3D
                 var newLocation = tdb.WorldLocation;
                 TrackCameraLocation = new WorldLocation(newLocation);
                 var directionForward = WorldLocation.GetDistance((trainForwards ? train.FirstCar : train.LastCar).WorldPosition.WorldLocation, newLocation);
-                if (Random.Next(2) == 0)
+                if (Viewer.Random.Next(2) == 0)
                 {
                     newLocation.Location.X += -directionForward.Z / SidewaysScale; // Use swapped -X and Z to move to the left of the track.
                     newLocation.Location.Z += directionForward.X / SidewaysScale;

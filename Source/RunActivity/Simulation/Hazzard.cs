@@ -70,16 +70,16 @@ namespace Orts.Simulation
 					//based on act setting for frequency
                     if (Hazzards[itemID].animal == true && Simulator.Activity != null)
                     {
-                        if (Program.Random.Next(100) > Simulator.Activity.Tr_Activity.Tr_Activity_Header.Animals) return null;
+                        if (Simulator.Random.Next(100) > Simulator.Activity.Tr_Activity.Tr_Activity_Header.Animals) return null;
                     }
 					else if (Simulator.Activity != null)
 					{
-						if (Program.Random.Next(100) > Simulator.Activity.Tr_Activity.Tr_Activity_Header.Animals) return null;
+						if (Simulator.Random.Next(100) > Simulator.Activity.Tr_Activity.Tr_Activity_Header.Animals) return null;
 					}
 					else //in explore mode
 					{
 						if (Hazzards[itemID].animal == false) return null;//not show worker in explore mode
-						if (Program.Random.Next(100) > 20) return null;//show 10% animals
+						if (Simulator.Random.Next(100) > 20) return null;//show 10% animals
 					}
 					CurrentHazzards.Add(itemID, Hazzards[itemID]);
 					return Hazzards[itemID];//successfully added the hazard with associated haz file
@@ -147,11 +147,11 @@ namespace Orts.Simulation
 		{
 			if (state == State.Idle1)
 			{
-				if (Program.Random.Next(10) == 0) state = State.Idle2;
+				if (Simulator.Random.Next(10) == 0) state = State.Idle2;
 			}
 			else if (state == State.Idle2)
 			{
-				if (Program.Random.Next(5) == 0) state = State.Idle1;
+				if (Simulator.Random.Next(5) == 0) state = State.Idle1;
 			}
 
             if (!WorldLocation.Within(Location, playerLocation, scaredDist) && state < State.LookLeft)

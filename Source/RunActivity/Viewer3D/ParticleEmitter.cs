@@ -63,7 +63,7 @@ namespace Orts.Viewer3D
             Emitter = new ParticleEmitterPrimitive(viewer, data, worldPosition);
 #if DEBUG_EMITTER_INPUT
             EmitterID = ++EmitterIDIndex;
-            InputCycle = Program.Random.Next(InputCycleLimit);
+            InputCycle = Viewer.Random.Next(InputCycleLimit);
 #endif
         }
 
@@ -237,10 +237,10 @@ namespace Orts.Viewer3D
             TimeParticlesLastEmitted = (float)viewer.Simulator.GameTime;
 
             PerlinStart = new float[] {
-                (float)Program.Random.NextDouble() * 30000f,
-                (float)Program.Random.NextDouble() * 30000f,
-                (float)Program.Random.NextDouble() * 30000f,
-                (float)Program.Random.NextDouble() * 30000f,
+                (float)Viewer.Random.NextDouble() * 30000f,
+                (float)Viewer.Random.NextDouble() * 30000f,
+                (float)Viewer.Random.NextDouble() * 30000f,
+                (float)Viewer.Random.NextDouble() * 30000f,
             };
         }
 
@@ -359,13 +359,13 @@ namespace Orts.Viewer3D
 
                     var particle = (FirstFreeParticle + 1) % MaxParticles;
                     var vertex = particle * VerticiesPerParticle;
-                    var texture = Program.Random.Next(16); // Randomizes emissions.
-                    var color_Random = new Color(ParticleColor, (float)Program.Random.NextDouble());
+                    var texture = Viewer.Random.Next(16); // Randomizes emissions.
+                    var color_Random = new Color(ParticleColor, (float)Viewer.Random.NextDouble());
 
                     // Initial velocity varies in X and Z only.
                     var initialVelocity = globalInitialVelocity;
-                    initialVelocity.X += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterViewer.InitialSpreadRate;
-                    initialVelocity.Z += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterViewer.InitialSpreadRate;
+                    initialVelocity.X += (float)(Viewer.Random.NextDouble() - 0.5f) * ParticleEmitterViewer.InitialSpreadRate;
+                    initialVelocity.Z += (float)(Viewer.Random.NextDouble() - 0.5f) * ParticleEmitterViewer.InitialSpreadRate;
 
                     // Target/final velocity vaies in X, Y and Z.
                     var targetVelocity = globalTargetVelocity;
