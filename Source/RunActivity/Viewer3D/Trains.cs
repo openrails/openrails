@@ -17,6 +17,7 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using Orts.Simulation;
 using Orts.Simulation.RollingStocks;
 using Orts.Viewer3D.RollingStock;
 using ORTS.Common;
@@ -42,6 +43,14 @@ namespace Orts.Viewer3D
         public TrainDrawer(Viewer viewer)
         {
             Viewer = viewer;
+            Viewer.Simulator.QueryCarViewerLoaded += Simulator_QueryCarViewerLoaded;
+        }
+
+        void Simulator_QueryCarViewerLoaded(object sender, Simulator.QueryCarViewerLoadedEventArgs e)
+        {
+            var cars = Cars;
+            if (cars.ContainsKey(e.Car))
+                e.Loaded = true;
         }
 
         [CallOnThread("Loader")]
@@ -114,15 +123,6 @@ namespace Orts.Viewer3D
         }
 
         [CallOnThread("Updater")]
-        public TrainCarViewer GetViewerAfterSwitch(TrainCar car)
-        {
-            var cars = Cars;
-            if (cars.ContainsKey(car))
-                return cars[car];
-            else return null;
-        }
-
-        [CallOnThread("Updater")]
         public void LoadPrep()
         {
             var visibleCars = new List<TrainCar>();
@@ -133,14 +133,6 @@ namespace Orts.Viewer3D
                     if (ApproximateDistance(Viewer.Camera.CameraWorldLocation, car.WorldPosition.WorldLocation) < removeDistance && car != Viewer.PlayerLocomotive)
                         visibleCars.Add(car);
             VisibleCars = visibleCars;
-            PlayerCar = Viewer.Simulator.PlayerLocomotive;
-        }
-
-        [CallOnThread("Updater")]
-        public void LoadNewPlayerLoco()
-        {
-//            if (!VisibleCars.Contains(Viewer.PlayerLocomotive))
-//            VisibleCars.Add(Viewer.PlayerLocomotive);
             PlayerCar = Viewer.Simulator.PlayerLocomotive;
         }
 

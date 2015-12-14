@@ -265,6 +265,8 @@ namespace Orts.Viewer3D
                 }
             };
 
+            Simulator.PlayerLocomotiveChanged += PlayerLocomotiveChanged;
+
             Initialize();
         }
 
@@ -936,13 +938,13 @@ namespace Orts.Viewer3D
                 }
             }
 
-            //in TrainListWindow, when one clicks a train, Viewer will jump to see that train
-            if (TrainListWindow != null && TrainListWindow.ClickedTrainFromList == true)
+            //in TrainSwitcher, when one clicks a train, Viewer will jump to see that train
+            if (Simulator.TrainSwitcher.ClickedTrainFromList == true)
             {
-                TrainListWindow.ClickedTrainFromList = false;
-                if (SelectedTrain != TrainListWindow.PickedTrainFromList && SelectedTrain.Cars != null || SelectedTrain.Cars.Count != 0)
+                Simulator.TrainSwitcher.ClickedTrainFromList = false;
+                if (SelectedTrain != Simulator.TrainSwitcher.PickedTrainFromList && SelectedTrain.Cars != null || SelectedTrain.Cars.Count != 0)
                 {
-                    SelectedTrain = TrainListWindow.PickedTrainFromList;
+                    SelectedTrain = Simulator.TrainSwitcher.PickedTrainFromList;
                     Simulator.AI.aiListChanged = true;
 
                     CameraActivate();
@@ -1066,7 +1068,7 @@ namespace Orts.Viewer3D
         /// <summary>
         /// Called when switching player train
         /// </summary>
-        public void SetCabEnvironment()
+        void PlayerLocomotiveChanged(object sender, EventArgs e)
         {
             PlayerLocomotiveViewer = World.Trains.GetViewer(Simulator.PlayerLocomotive);
             CabCamera.Activate(); // If you need anything else here the cameras should check for it.

@@ -175,8 +175,32 @@ namespace Orts.Simulation
             }
         }
 
+        public class TrainSwitcherData
+        {
+            public Train PickedTrainFromList;
+            public bool ClickedTrainFromList;
+            public Train SelectedAsPlayer;
+            public bool ClickedSelectedAsPlayer;
+            public bool SuspendOldPlayer;
+        }
+
+        public readonly TrainSwitcherData TrainSwitcher = new TrainSwitcherData();
+
+        public class QueryCarViewerLoadedEventArgs : EventArgs
+        {
+            public readonly TrainCar Car;
+            public bool Loaded;
+
+            public QueryCarViewerLoadedEventArgs(TrainCar car)
+            {
+                Car = car;
+            }
+        }
+
         public event System.EventHandler WeatherChanged;
         public event System.EventHandler AllowedSpeedRaised;
+        public event System.EventHandler PlayerLocomotiveChanged;
+        public event System.EventHandler<QueryCarViewerLoadedEventArgs> QueryCarViewerLoaded;
 
         public Simulator(UserSettings settings, string activityPath, bool useOpenRailsDirectory)
         {
@@ -480,12 +504,13 @@ namespace Orts.Simulation
 
             // Check if there is a request to switch to another played train
 
-            if (Program.Viewer.TrainListWindow != null && Program.Viewer.TrainListWindow.ClickedSelectedAsPlayer && !playerSwitchOngoing)
+            if (TrainSwitcher.ClickedSelectedAsPlayer && !playerSwitchOngoing)
                 StartSwitchPlayerTrain();
             if (playerSwitchOngoing)
             {
-                var newPlayerLocoViewer = Program.Viewer.World.Trains.GetViewerAfterSwitch(PlayerLocomotive);
-                if (newPlayerLocoViewer == null) return;
+                // We need to check whether the player locomotive has loaded before we complete the train switch.
+                if (!OnQueryCarViewerLoaded(PlayerLocomotive))
+                    return;
                 CompleteSwitchPlayerTrain();
             }
 
@@ -611,8 +636,8 @@ namespace Orts.Simulation
                     drivenTrain.ValidRoute[0].Count < 5) || (drivenTrain is AITrain && ((AITrain)drivenTrain).UncondAttach)) && drivenTrain != OriginalPlayerTrain)
                 {
                     // Switch to the attached train as the one where we are now is at the end of its life
-                    Program.Viewer.TrainListWindow.PickedTrainFromList = train;
-                    Program.Viewer.TrainListWindow.ClickedTrainFromList = true;
+                    TrainSwitcher.PickedTrainFromList = train;
+                    TrainSwitcher.ClickedTrainFromList = true;
                     train.TrainType = Train.TRAINTYPE.AI_PLAYERHOSTING;
                     Confirmer.Message(ConfirmLevel.Information, Program.Catalog.GetStringFmt("Player train has been included into train {0} service {1}, that automatically becomes the new player train",
                         train.Number, train.Name));
@@ -640,7 +665,7 @@ namespace Orts.Simulation
                     AI.TrainsToRemoveFromAI.Add((AITrain)train);
                     PlayerLocomotive = SetPlayerLocomotive(train);
                     (train as AITrain).SwitchToPlayerControl();
-                    Program.Viewer.SetCabEnvironment();
+                    OnPlayerLocomotiveChanged();
                     if (drivenTrain.TCRoute.activeSubpath == drivenTrain.TCRoute.TCRouteSubpaths.Count - 1 && drivenTrain.ValidRoute[0].Count < 5)
                     {
                         (drivenTrain as AITrain).RemoveTrain();
@@ -1710,9 +1735,9 @@ namespace Orts.Simulation
         /// </summary>
         private void StartSwitchPlayerTrain()
         {
-            if (Program.Viewer.TrainListWindow.SelectedAsPlayer != null && !Program.Viewer.TrainListWindow.SelectedAsPlayer.IsActualPlayerTrain)
+            if (TrainSwitcher.SelectedAsPlayer != null && !TrainSwitcher.SelectedAsPlayer.IsActualPlayerTrain)
             {
-                var selectedAsPlayer = Program.Viewer.TrainListWindow.SelectedAsPlayer;
+                var selectedAsPlayer = TrainSwitcher.SelectedAsPlayer;
                 var oldTrainReverseFormation = false;
                 var newTrainReverseFormation = false;
                 if (PlayerLocomotive.Train is AITrain)
@@ -1720,11 +1745,11 @@ namespace Orts.Simulation
                     var playerTrain = PlayerLocomotive.Train as AITrain;
                     if (playerTrain != null)
                     {
-                        if (Program.Viewer.TrainListWindow.SuspendOldPlayer && playerTrain.SpeedMpS != 0)
+                        if (TrainSwitcher.SuspendOldPlayer && playerTrain.SpeedMpS != 0)
                         {
                         Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("Train can't be suspended with speed not equal 0"));
-                            Program.Viewer.TrainListWindow.SuspendOldPlayer = false;
-                            Program.Viewer.TrainListWindow.ClickedSelectedAsPlayer = false;
+                            TrainSwitcher.SuspendOldPlayer = false;
+                            TrainSwitcher.ClickedSelectedAsPlayer = false;
                             return;
                         }
                         if (playerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN)
@@ -1735,14 +1760,14 @@ namespace Orts.Simulation
                         // and now switch!
                         playerTrain.TrainType = Train.TRAINTYPE.AI;
                         AI.AITrains.Add(playerTrain);
-                        if (Program.Viewer.TrainListWindow.SuspendOldPlayer)
+                        if (TrainSwitcher.SuspendOldPlayer)
                         {
                             playerTrain.MovementState = AITrain.AI_MOVEMENT_STATE.SUSPENDED;
                             if (playerTrain.ValidRoute[0] != null && playerTrain.PresentPosition[0].RouteListIndex != -1 &&
                                 playerTrain.ValidRoute[0].Count > playerTrain.PresentPosition[0].RouteListIndex + 1)
                             playerTrain.signalRef.BreakDownRoute(playerTrain.ValidRoute[0][playerTrain.PresentPosition[0].RouteListIndex + 1].TCSectionIndex,
                                playerTrain.routedForward);
-                            Program.Viewer.TrainListWindow.SuspendOldPlayer = false;
+                            TrainSwitcher.SuspendOldPlayer = false;
                         }
 
                     }
@@ -1830,8 +1855,8 @@ namespace Orts.Simulation
                     selectedAsPlayer.CheckFreight();
 
                     selectedAsPlayer.Update(0);  // stop the wheels from moving etc
-                    Program.Viewer.TrainListWindow.PickedTrainFromList = selectedAsPlayer;
-                    Program.Viewer.TrainListWindow.ClickedTrainFromList = true;
+                    TrainSwitcher.PickedTrainFromList = selectedAsPlayer;
+                    TrainSwitcher.ClickedTrainFromList = true;
 
 
                 }
@@ -1844,8 +1869,8 @@ namespace Orts.Simulation
                         if (playerTrain.SpeedMpS != 0)
                         {
                             Confirmer.Message(ConfirmLevel.Warning, Program.Catalog.GetString("To return to static train speed must be = 0"));
-                            Program.Viewer.TrainListWindow.SuspendOldPlayer = false;
-                            Program.Viewer.TrainListWindow.ClickedSelectedAsPlayer = false;
+                            TrainSwitcher.SuspendOldPlayer = false;
+                            TrainSwitcher.ClickedSelectedAsPlayer = false;
                             return;
                         }
                         if (playerTrain.ValidRoute[0] != null && playerTrain.ValidRoute[0].Count > playerTrain.PresentPosition[0].RouteListIndex + 1)
@@ -1874,7 +1899,6 @@ namespace Orts.Simulation
                     PlayerLocomotive = SetPlayerLocomotive(pathlessPlayerTrain);
                     newTrainReverseFormation = true;
                 }
-                Program.Viewer.World.Trains.LoadNewPlayerLoco();
                 playerSwitchOngoing = true;
                 if (MPManager.IsMultiPlayer())
                 {
@@ -1885,7 +1909,7 @@ namespace Orts.Simulation
             }
             else
             {
-                Program.Viewer.TrainListWindow.ClickedSelectedAsPlayer = false;
+                TrainSwitcher.ClickedSelectedAsPlayer = false;
                 AI.aiListChanged = true;
             }
         }
@@ -1905,9 +1929,9 @@ namespace Orts.Simulation
             {
                 PlayerLocomotive.Train.CreatePathlessPlayerTrain();
             }
-            Program.Viewer.SetCabEnvironment();
+            OnPlayerLocomotiveChanged();
             playerSwitchOngoing = false;
-            Program.Viewer.TrainListWindow.ClickedSelectedAsPlayer = false;
+            TrainSwitcher.ClickedSelectedAsPlayer = false;
             AI.aiListChanged = true;
         }
 
@@ -2059,6 +2083,22 @@ namespace Orts.Simulation
             var allowedSpeedRaised = AllowedSpeedRaised;
             if (allowedSpeedRaised != null)
                 allowedSpeedRaised(train, EventArgs.Empty);
+        }
+
+        internal void OnPlayerLocomotiveChanged()
+        {
+            var playerLocomotiveChanged = PlayerLocomotiveChanged;
+            if (playerLocomotiveChanged != null)
+                playerLocomotiveChanged(this, EventArgs.Empty);
+        }
+
+        bool OnQueryCarViewerLoaded(TrainCar car)
+        {
+            var query = new QueryCarViewerLoadedEventArgs(car);
+            var queryCarViewerLoaded = QueryCarViewerLoaded;
+            if (queryCarViewerLoaded != null)
+                queryCarViewerLoaded(this, query);
+            return query.Loaded;
         }
 
     } // Simulator

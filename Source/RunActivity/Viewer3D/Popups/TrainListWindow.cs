@@ -29,16 +29,11 @@ namespace Orts.Viewer3D.Popups
 {
     public class TrainListWindow : Window
     {
-        public Train PickedTrainFromList;
-        public bool ClickedTrainFromList;
-        public Train SelectedAsPlayer;
-        public bool ClickedSelectedAsPlayer;
-        public bool SuspendOldPlayer;
- 
         public TrainListWindow(WindowManager owner)
             : base(owner, Window.DecorationSize.X + owner.TextFontDefault.Height * 20, Window.DecorationSize.Y + owner.TextFontDefault.Height * 30, Viewer.Catalog.GetString("Train List"))
         {
         }
+
         protected override ControlLayout Layout(ControlLayout layout)
         {
             var vbox = base.Layout(layout).AddLayoutVertical();
@@ -166,12 +161,12 @@ namespace Orts.Viewer3D.Popups
 
         void TrainListLabel_Click(Control arg1, Point arg2)
         {
-            Viewer.TrainListWindow.SuspendOldPlayer = false;
+            Viewer.Simulator.TrainSwitcher.SuspendOldPlayer = false;
             if (PickedTrainFromList != null && PickedTrainFromList != Viewer.SelectedTrain)
             {
                 //Ask for change of viewed train
-                Viewer.TrainListWindow.PickedTrainFromList = PickedTrainFromList;
-                Viewer.TrainListWindow.ClickedTrainFromList = true;
+                Viewer.Simulator.TrainSwitcher.PickedTrainFromList = PickedTrainFromList;
+                Viewer.Simulator.TrainSwitcher.ClickedTrainFromList = true;
 
             }
             if (PickedTrainFromList != null && (PickedTrainFromList == Viewer.SelectedTrain || (PickedTrainFromList.TrainType == Train.TRAINTYPE.AI_INCORPORATED && 
@@ -179,16 +174,16 @@ namespace Orts.Viewer3D.Popups
                 Viewer.Simulator.IsAutopilotMode && PickedTrainFromList.IsPlayable)
             {
                 if (UserInput.IsDown(UserCommands.GameSuspendOldPlayer))
-                    Viewer.TrainListWindow.SuspendOldPlayer = true;
+                    Viewer.Simulator.TrainSwitcher.SuspendOldPlayer = true;
                 //Ask for change of driven train
-                Viewer.TrainListWindow.SelectedAsPlayer = PickedTrainFromList;
-                Viewer.TrainListWindow.ClickedSelectedAsPlayer = true;
+                Viewer.Simulator.TrainSwitcher.SelectedAsPlayer = PickedTrainFromList;
+                Viewer.Simulator.TrainSwitcher.ClickedSelectedAsPlayer = true;
             }
             else if (PickedTrainFromList != null && PickedTrainFromList != Viewer.SelectedTrain)
             {
                 //Ask for change of viewed train
-                Viewer.TrainListWindow.PickedTrainFromList = PickedTrainFromList;
-                Viewer.TrainListWindow.ClickedTrainFromList = true;
+                Viewer.Simulator.TrainSwitcher.PickedTrainFromList = PickedTrainFromList;
+                Viewer.Simulator.TrainSwitcher.ClickedTrainFromList = true;
 
             }
         }

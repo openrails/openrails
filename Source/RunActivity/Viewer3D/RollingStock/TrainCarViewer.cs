@@ -62,7 +62,7 @@ namespace Orts.Viewer3D.RollingStock
 
         public void UpdateSoundPosition()
         {
-            if (Car.SoundSourceIDs.Count == 0 || Program.Viewer == null || Program.Viewer.Camera == null)
+            if (Car.SoundSourceIDs.Count == 0 || Viewer.Camera == null)
                 return;
 
             if (Car.Train != null)
