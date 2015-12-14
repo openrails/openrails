@@ -519,13 +519,10 @@ namespace Orts.MultiPlayer
                             t.updateMSGReceived = true; t.expectedTravelled = t.travelled;
                         }
 					}
-					MPManager.Simulator.Weather = (WeatherType)this.weather;
-					MPManager.Simulator.ClockTime = this.seconds;
-					MPManager.Simulator.Season = (SeasonType)this.season;
-                    Program.Viewer.World.WeatherControl.SetInitialWeatherParameters();
-                    Program.Viewer.World.WeatherControl.UpdateWeatherParameters();
-				}
-			}
+                    MPManager.Simulator.ClockTime = this.seconds;
+                    MPManager.Simulator.SetWeather((WeatherType)weather, (SeasonType)season);
+                }
+            }
 		}
 
 		//this version only intends for the one started on server computer

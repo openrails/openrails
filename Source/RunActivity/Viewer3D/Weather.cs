@@ -104,6 +104,12 @@ namespace Orts.Viewer3D
 
             SetInitialWeatherParameters();
             UpdateWeatherParameters();
+
+            Viewer.Simulator.WeatherChanged += (object sender, EventArgs e) =>
+            {
+                SetInitialWeatherParameters();
+                UpdateWeatherParameters();
+            };
         }
 
         public void SaveWeatherParameters(BinaryWriter outf)
@@ -134,7 +140,7 @@ namespace Orts.Viewer3D
             UpdateVolume();
         }
 
-         public void SetInitialWeatherParameters()
+        public void SetInitialWeatherParameters()
         {
             // These values are defaults only; subsequent changes to the weather via debugging only change the components (weather, overcastFactor and fogDistance) individually.
             switch (Viewer.Simulator.Weather)

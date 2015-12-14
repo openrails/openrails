@@ -174,6 +174,8 @@ namespace Orts.Simulation
             }
         }
 
+        public event System.EventHandler WeatherChanged;
+
         public Simulator(UserSettings settings, string activityPath, bool useOpenRailsDirectory)
         {
             MPManager.Simulator = this;
@@ -572,6 +574,16 @@ namespace Orts.Simulation
             }
 
             if (HazzardManager != null) HazzardManager.Update(elapsedClockSeconds);
+        }
+
+        internal void SetWeather(WeatherType weather, SeasonType season)
+        {
+            Weather = weather;
+            Season = season;
+
+            var weatherChanged = WeatherChanged;
+            if (weatherChanged != null)
+                weatherChanged(this, EventArgs.Empty);
         }
 
         private void FinishFrontCoupling(Train drivenTrain, Train train, TrainCar lead, bool sameDirection)
