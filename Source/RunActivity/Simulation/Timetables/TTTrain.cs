@@ -42,7 +42,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Windows.Forms;
 using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.Timetables
@@ -6167,6 +6166,7 @@ namespace Orts.Simulation.Timetables
                 signalRef.ReallocateDeadlockPathReferences(nextTrainNumber, 0);
 
                 bool foundPlayerLocomotive = false;
+                TrainCar newPlayerLocomotive = null;
 
                 // search for player locomotive
                 for (int icar = 0; icar < formedTrain.Cars.Count; icar++)
@@ -6180,14 +6180,19 @@ namespace Orts.Simulation.Timetables
                             formedTrain.LeadLocomotiveIndex = icar;
                             break;
                         }
+                        else if (newPlayerLocomotive == null)
+                        {
+                            newPlayerLocomotive = car;
+                            formedTrain.LeadLocomotiveIndex = icar;
+                        }
                     }
                 }
 
                 if (!foundPlayerLocomotive)
                 {
-                    // cannot switch to new engine on new train - causes crashes in viewer
-                    MessageBox.Show("Newly formed train does not contain present player locomotive, program can not continue");
-                    Program.Viewer.Game.PopState();
+                    // TODO Apparently player locomotive causes a crash in the viewer. If it does, let's fix the viewer.
+                    Simulator.PlayerLocomotive = newPlayerLocomotive;
+                    Simulator.OnPlayerLocomotiveChanged();
                 }
 
                 // notify viewer of change in selected train
