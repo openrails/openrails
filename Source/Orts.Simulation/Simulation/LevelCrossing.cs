@@ -184,8 +184,8 @@ namespace Orts.Simulation
         //   All accesses must be done in local variables. No modifications to the objects are allowed except by
         //   assignment of a new instance (possibly cloned and then modified).
         internal List<Train> Trains = new List<Train>();
-        internal WorldLocation Location;
-        internal LevelCrossing CrossingGroup;
+        public readonly WorldLocation Location;
+        public LevelCrossing CrossingGroup { get; internal set; }
         public uint TrackIndex { get { return TrackNode.Index; } }
 
         public LevelCrossing Crossing { get { return CrossingGroup; } }

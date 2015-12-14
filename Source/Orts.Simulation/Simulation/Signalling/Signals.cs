@@ -429,7 +429,7 @@ namespace Orts.Simulation.Signalling
         /// Gets an array of all the SignalObjects.
         ///
 
-        internal SignalObject[] SignalObjects
+        public SignalObject[] SignalObjects
         {
             get
             {

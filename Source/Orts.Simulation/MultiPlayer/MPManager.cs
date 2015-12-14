@@ -41,7 +41,7 @@ using System.Threading;
 namespace Orts.MultiPlayer
 {
     //a singleton class handles communication, update and stop etc.
-    class MPManager
+    public class MPManager
 	{
         public static GettextResourceManager Catalog { get; private set; }
         public static Random Random { get; private set; }

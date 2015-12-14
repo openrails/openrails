@@ -12,25 +12,35 @@
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\..\Program\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;ACTIVITY_EDITOR</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\..\Program\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;ACTIVITY_EDITOR</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>..\..\Program\Orts.Simulation.xml</DocumentationFile>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="GNU.Gettext">
+      <HintPath>..\3rdPartyLibs\GNU.Gettext.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Xna.Framework, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86" />
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\3rdPartyLibs\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -39,7 +49,108 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\CommandLog.cs" />
+    <Compile Include="Common\Commands.cs" />
+    <Compile Include="Common\ErrorLogger.cs" />
+    <Compile Include="Common\Events.cs" />
+    <Compile Include="Common\Math.cs" />
+    <Compile Include="Common\ORTSPaths.cs" />
+    <Compile Include="Common\Scripting\BrakeController.cs" />
+    <Compile Include="Common\Scripting\Common.cs" />
+    <Compile Include="Common\Scripting\PowerSupply\AbstractPowerSupply.cs" />
+    <Compile Include="Common\Scripting\PowerSupply\CircuitBreaker.cs" />
+    <Compile Include="Common\Scripting\PowerSupply\ElectricPowerSupply.cs" />
+    <Compile Include="Common\Scripting\ScriptManager.cs" />
+    <Compile Include="Common\Scripting\TrainControlSystem.cs" />
+    <Compile Include="Common\SteamTable.cs" />
+    <Compile Include="Common\WorldLatLon.cs" />
+    <Compile Include="MultiPlayer\ClientComm.cs" />
+    <Compile Include="MultiPlayer\Decoder.cs" />
+    <Compile Include="MultiPlayer\Message.cs" />
+    <Compile Include="MultiPlayer\MPManager.cs" />
+    <Compile Include="MultiPlayer\OnlinePlayer.cs" />
+    <Compile Include="MultiPlayer\OnlineTrains.cs" />
+    <Compile Include="MultiPlayer\Server.cs" />
+    <Compile Include="MultiPlayer\ServerComm.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Simulation\Activity.cs" />
+    <Compile Include="Simulation\AIs\AI.cs" />
+    <Compile Include="Simulation\AIs\AIAuxAction.cs" />
+    <Compile Include="Simulation\AIs\AIPath.cs" />
+    <Compile Include="Simulation\AIs\AITrain.cs" />
+    <Compile Include="Simulation\Confirmer.cs" />
+    <Compile Include="Simulation\FuelPickup.cs" />
+    <Compile Include="Simulation\Hazzard.cs" />
+    <Compile Include="Simulation\LevelCrossing.cs" />
+    <Compile Include="Simulation\Physics\Train.cs" />
+    <Compile Include="Simulation\RollingStocks\LocomotiveAttributes.cs" />
+    <Compile Include="Simulation\RollingStocks\MSTSDieselLocomotive.cs" />
+    <Compile Include="Simulation\RollingStocks\MSTSElectricLocomotive.cs" />
+    <Compile Include="Simulation\RollingStocks\MSTSLocomotive.cs" />
+    <Compile Include="Simulation\RollingStocks\MSTSSteamLocomotive.cs" />
+    <Compile Include="Simulation\RollingStocks\MSTSWagon.cs" />
+    <Compile Include="Simulation\RollingStocks\RollingStock.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\BrakeSystem.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\AirSinglePipe.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\AirTwinPipe.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\EPBrakeSystem.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\MSTSBrakeSystem.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\SingleTransferPipe.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\VacuumSinglePipe.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\Controllers\BrakeController.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\Controllers\ControllerFactory.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\Controllers\IController.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\Controllers\MSTSBrakeController.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\Controllers\MSTSNotchController.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\FreightAnimations.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\AbstractPowerSupply.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\CircuitBreaker.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\DieselEngine.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\ElectricPowerSupply.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\Pantograph.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\PowerTransmissions\Axle.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\PowerTransmissions\ElectricMotor.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\PowerTransmissions\GearBox.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\PowerTransmissions\SeriesMotor.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\TrainControlSystem.cs" />
+    <Compile Include="Simulation\RollingStocks\TrainCar.cs" />
+    <Compile Include="Simulation\Signalling\Signals.cs" />
+    <Compile Include="Simulation\Signalling\SIGSCRfile.cs" />
+    <Compile Include="Simulation\Simulator.cs" />
+    <Compile Include="Simulation\Timetables\ProcessTimetable.cs" />
+    <Compile Include="Simulation\Timetables\TTTrain.cs" />
+    <Compile Include="Simulation\Traveller.cs" />
+    <Compile Include="Simulation\Weather.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj">
+      <Project>{da94d876-7d35-46c3-aece-aface72c686c}</Project>
+      <Name>ORTS.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ORTS.Content\ORTS.Content.csproj">
+      <Project>{812685a7-2683-4102-a3ca-2a5ced2e61ee}</Project>
+      <Name>ORTS.Content</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Orts.Formats.Msts\Orts.Formats.Msts.csproj">
+      <Project>{570709fa-0c8a-4b1d-ba2d-d9455afd9b5c}</Project>
+      <Name>Orts.Formats.Msts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Orts.Formats.OR\Orts.Formats.OR.csproj">
+      <Project>{0d8d312b-2c02-4b77-a795-566394a9db95}</Project>
+      <Name>Orts.Formats.OR</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj">
+      <Project>{8a84696c-3559-49b8-b27f-bb6932d8a1c6}</Project>
+      <Name>Orts.Parsers.Msts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Orts.Parsers.OR\Orts.Parsers.OR.csproj">
+      <Project>{1cc3bd5c-06c5-4784-b067-f93945a7ca2c}</Project>
+      <Name>Orts.Parsers.OR</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ORTS.Settings\ORTS.Settings.csproj">
+      <Project>{67f84996-8769-4fd8-819b-464af269037b}</Project>
+      <Name>ORTS.Settings</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

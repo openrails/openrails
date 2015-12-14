@@ -254,6 +254,10 @@
       <Project>{67F84996-8769-4FD8-819B-464AF269037B}</Project>
       <Name>ORTS.Settings</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Orts.Simulation\Orts.Simulation.csproj">
+      <Project>{333c4378-d82e-4b47-b561-6ba923b8fdfd}</Project>
+      <Name>Orts.Simulation</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\RunActivity\RunActivity.csproj">
       <Project>{9BE44F64-417D-4AA6-AF4D-2A6A0CBC814D}</Project>
       <Name>RunActivity</Name>
