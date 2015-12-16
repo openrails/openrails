@@ -77,7 +77,7 @@ The built-in updater checks this website for new updates once per day. The testi
 </p>
 <h2>Unstable Version</h2>
 <p>
-To support development, the <a href='http://james-ross.co.uk/projects/or'>latest unstable version</a> is also available, which is updated as and when we <a href='http://james-ross.co.uk/projects/or/log'>make changes to it</a>. <a href='http://james-ross.co.uk/projects/or/builds'>Previous unstable versions are available</a>. The unstable versions are more <strong>likely to contain serious bugs</strong> and are only recommended for users wishing to help with Open Rails development.
+To support development, the <a href='http://james-ross.co.uk/projects/or?utm_campaign=unstable-version&utm_source=openrails.org&utm_medium=referral'>latest unstable version</a> is also available, which is updated as and when we <a href='http://james-ross.co.uk/projects/or/log?utm_campaign=unstable-version&utm_source=openrails.org&utm_medium=referral'>make changes to it</a>. <a href='http://james-ross.co.uk/projects/or/builds?utm_campaign=unstable-version&utm_source=openrails.org&utm_medium=referral'>Previous unstable versions are available</a>. The unstable versions are more <strong>likely to contain serious bugs</strong> and are only recommended for users wishing to help with Open Rails development.
 </p>
         </div>
       </div>
