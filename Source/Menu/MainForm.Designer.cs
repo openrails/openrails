@@ -55,6 +55,7 @@ namespace ORTS
             this.panelDetails = new System.Windows.Forms.Panel();
             this.pictureBoxLogo = new System.Windows.Forms.PictureBox();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.buttonDocuments = new System.Windows.Forms.Button();
             this.label25 = new System.Windows.Forms.Label();
             this.radioButtonModeActivity = new System.Windows.Forms.RadioButton();
             this.radioButtonModeTimetable = new System.Windows.Forms.RadioButton();
@@ -96,6 +97,7 @@ namespace ORTS
             this.testingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStripTools = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.linkLabelChangeLog = new System.Windows.Forms.LinkLabel();
+            this.contextMenuStripDocuments = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.groupBox1.SuspendLayout();
             this.groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxLogo)).BeginInit();
@@ -110,7 +112,7 @@ namespace ORTS
             this.checkBoxWindowed.AutoSize = true;
             this.checkBoxWindowed.Checked = true;
             this.checkBoxWindowed.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxWindowed.Location = new System.Drawing.Point(84, 71);
+            this.checkBoxWindowed.Location = new System.Drawing.Point(106, 71);
             this.checkBoxWindowed.Name = "checkBoxWindowed";
             this.checkBoxWindowed.Size = new System.Drawing.Size(77, 17);
             this.checkBoxWindowed.TabIndex = 2;
@@ -134,7 +136,7 @@ namespace ORTS
             this.labelLogo.ForeColor = System.Drawing.Color.Gray;
             this.labelLogo.Location = new System.Drawing.Point(82, 472);
             this.labelLogo.Name = "labelLogo";
-            this.labelLogo.Size = new System.Drawing.Size(248, 64);
+            this.labelLogo.Size = new System.Drawing.Size(224, 64);
             this.labelLogo.TabIndex = 11;
             this.labelLogo.Text = "Open Rails";
             this.labelLogo.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -150,7 +152,7 @@ namespace ORTS
             this.checkBoxWarnings.AutoSize = true;
             this.checkBoxWarnings.Checked = true;
             this.checkBoxWarnings.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxWarnings.Location = new System.Drawing.Point(84, 48);
+            this.checkBoxWarnings.Location = new System.Drawing.Point(108, 48);
             this.checkBoxWarnings.Name = "checkBoxWarnings";
             this.checkBoxWarnings.Size = new System.Drawing.Size(64, 17);
             this.checkBoxWarnings.TabIndex = 1;
@@ -159,7 +161,7 @@ namespace ORTS
             // 
             // buttonOptions
             // 
-            this.buttonOptions.Location = new System.Drawing.Point(84, 19);
+            this.buttonOptions.Location = new System.Drawing.Point(108, 19);
             this.buttonOptions.Name = "buttonOptions";
             this.buttonOptions.Size = new System.Drawing.Size(75, 23);
             this.buttonOptions.TabIndex = 0;
@@ -345,14 +347,25 @@ namespace ORTS
             // panel1
             // 
             this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.panel1.Controls.Add(this.buttonDocuments);
             this.panel1.Controls.Add(this.buttonOptions);
             this.panel1.Controls.Add(this.checkBoxWarnings);
             this.panel1.Controls.Add(this.checkBoxWindowed);
             this.panel1.Controls.Add(this.buttonTools);
-            this.panel1.Location = new System.Drawing.Point(336, 436);
+            this.panel1.Location = new System.Drawing.Point(312, 436);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(162, 100);
+            this.panel1.Size = new System.Drawing.Size(186, 100);
             this.panel1.TabIndex = 13;
+            // 
+            // buttonDocuments
+            // 
+            this.buttonDocuments.Location = new System.Drawing.Point(3, 48);
+            this.buttonDocuments.Name = "buttonDocuments";
+            this.buttonDocuments.Size = new System.Drawing.Size(85, 23);
+            this.buttonDocuments.TabIndex = 22;
+            this.buttonDocuments.Text = "Documents ▼";
+            this.buttonDocuments.UseVisualStyleBackColor = true;
+            this.buttonDocuments.Click += new System.EventHandler(this.buttonDocuments_Click);
             // 
             // label25
             // 
@@ -845,6 +858,11 @@ namespace ORTS
             this.linkLabelChangeLog.Visible = false;
             this.linkLabelChangeLog.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelChangeLog_LinkClicked);
             // 
+            // contextMenuStripDocuments
+            // 
+            this.contextMenuStripDocuments.Name = "contextMenuStripDocuments";
+            this.contextMenuStripDocuments.Size = new System.Drawing.Size(61, 4);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -957,5 +975,7 @@ namespace ORTS
         private System.Windows.Forms.ToolStripMenuItem testingToolStripMenuItem;
         private System.Windows.Forms.ContextMenuStrip contextMenuStripTools;
         private System.Windows.Forms.LinkLabel linkLabelChangeLog;
+        private System.Windows.Forms.Button buttonDocuments;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStripDocuments;
     }
 }

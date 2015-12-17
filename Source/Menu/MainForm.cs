@@ -217,6 +217,45 @@ namespace ORTS
                 contextMenuStripTools.Items.AddRange((from tool in tools
                                                       orderby tool.Text
                                                       select tool).ToArray());
+
+                // Just like above, buttonDocuments is a button that is treated like a menu.  The result is a button that acts like a combobox.
+                // Populate buttonDocuments.
+                // There are 2 conditions for disabling buttonDocuments.
+                // First is if Documentation folder is not present and the second is if the Documentation is present, but is empty.
+                var docs = new List<ToolStripItem>();
+                var dir = Directory.GetCurrentDirectory();
+                var path = dir + @"\Documentation\";
+                if (Directory.Exists(path))
+                {
+                    string[] s1 = null;
+                    s1 = Directory.GetFiles(path);
+                    var cnt = s1.Count();
+                    if(cnt == 0 )
+                        buttonDocuments.Enabled = false;
+                    if(cnt > 0)
+                    {
+                        foreach (string entry in s1)
+                        {
+                            // These are the following formats that can be selected.
+                            if (entry.Contains(".pdf") || entry.Contains(".doc") || entry.Contains(".docx") || entry.Contains(".pptx") || entry.Contains(".txt"))
+                            {
+                                var i = entry.LastIndexOf("\\");
+                                docs.Add(new ToolStripMenuItem(entry.Substring(i + 1), null, (Object sender2, EventArgs e2) =>
+                                {
+                                    var docPath = (sender2 as ToolStripItem).Tag as string;
+                                    Process.Start(docPath);
+                                })
+                                { Tag = entry }
+                                );
+                            }
+                        }
+                        contextMenuStripDocuments.Items.AddRange((from tool in docs
+                                                                  orderby tool.Text
+                                                                  select tool).ToArray());
+                    }
+                }
+                else
+                    buttonDocuments.Enabled = false;
             }
 
             ShowEnvironment();
@@ -483,6 +522,11 @@ namespace ORTS
         void buttonTools_Click(object sender, EventArgs e)
         {
             contextMenuStripTools.Show(buttonTools, new Point(0, buttonTools.ClientSize.Height), ToolStripDropDownDirection.Default);
+        }
+
+        void buttonDocuments_Click(object sender, EventArgs e)
+        {
+            contextMenuStripDocuments.Show(buttonDocuments, new Point(0, buttonDocuments.ClientSize.Height), ToolStripDropDownDirection.Default);
         }
 
         void testingToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1269,6 +1313,13 @@ namespace ORTS
         }
         #endregion
 
+        #region Documentation
+        void CheckForDocumentation()
+        {
+
+        }
+        #endregion
+
         #region Executable utils
         enum ImageSubsystem
         {
@@ -1321,5 +1372,6 @@ namespace ORTS
             }
         }
         #endregion
+
     }
 }
