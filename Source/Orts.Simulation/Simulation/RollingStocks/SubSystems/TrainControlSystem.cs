@@ -703,10 +703,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     HandleEvent(TCSEvent.AlerterPressed, String.Empty);
                     return;
                 }
-                if (!VigilanceEmergencyTimer.Started)
-                    VigilanceEmergencyTimer.Start();
-                if (!AlerterSound())
-                    SetVigilanceAlarm(true);
+                if (IsAlerterEnabled())
+                {
+                    if (!VigilanceEmergencyTimer.Started)
+                        VigilanceEmergencyTimer.Start();
+                    if (!AlerterSound())
+                        SetVigilanceAlarm(true);
+                }
             }
             else
             {
