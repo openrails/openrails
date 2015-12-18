@@ -22,9 +22,13 @@ namespace ORTS.Scripting.Api
     public abstract class AbstractScriptClass
     {
         /// <summary>
-        /// Clock value (in seconds) for the simulation. Starts at activity start time.
+        /// Clock value (in seconds) for the simulation. Starts with a value = session start time.
         /// </summary>
         public Func<float> ClockTime;
+        /// <summary>
+        /// Clock value (in seconds) for the simulation. Starts with a value = 0.
+        /// </summary>
+        public Func<float> GameTime;
         /// <summary>
         /// Running total of distance travelled - always positive, updated by train physics.
         /// </summary>
@@ -52,7 +56,7 @@ namespace ORTS.Scripting.Api
     {
         public Timer(AbstractScriptClass asc)
         {
-            CurrentValue = asc.ClockTime;
+            CurrentValue = asc.GameTime;
         }
     }
 

@@ -205,6 +205,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
             // AbstractScriptClass
             Script.ClockTime = () => (float)Simulator.ClockTime;
+            Script.GameTime = () => (float)Simulator.GameTime;
             Script.DistanceM = () => Locomotive.DistanceM;
 
             // TrainControlSystem

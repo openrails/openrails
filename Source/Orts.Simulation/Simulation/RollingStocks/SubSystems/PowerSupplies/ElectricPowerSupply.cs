@@ -108,6 +108,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 }
 
                 Script.ClockTime = () => (float)Simulator.ClockTime;
+                Script.GameTime = () => (float)Simulator.GameTime;
                 Script.DistanceM = () => Locomotive.DistanceM;
                 Script.CurrentState = () => State;
                 Script.CurrentAuxiliaryState = () => AuxiliaryState;
