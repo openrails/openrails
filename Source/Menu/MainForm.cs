@@ -220,34 +220,23 @@ namespace ORTS
 
                 // Just like above, buttonDocuments is a button that is treated like a menu.  The result is a button that acts like a combobox.
                 // Populate buttonDocuments.
-                // There are 2 conditions for disabling buttonDocuments.
-                // First is if Documentation folder is not present and the second is if the Documentation is present, but is empty.
+                // Documents button will be disabled if Documentation folder is not present.
                 var docs = new List<ToolStripItem>();
                 var dir = Directory.GetCurrentDirectory();
                 var path = dir + @"\Documentation\";
                 if (Directory.Exists(path))
                 {
-                    string[] s1 = null;
-                    s1 = Directory.GetFiles(path);
-                    var cnt = s1.Count();
-                    if(cnt == 0 )
-                        buttonDocuments.Enabled = false;
-                    if(cnt > 0)
+                    foreach (string entry in Directory.GetFiles(path))
                     {
-                        foreach (string entry in s1)
+                        // These are the following formats that can be selected.
+                        if (entry.Contains(".pdf") || entry.Contains(".doc") || entry.Contains(".docx") || entry.Contains(".pptx") || entry.Contains(".txt"))
                         {
-                            // These are the following formats that can be selected.
-                            if (entry.Contains(".pdf") || entry.Contains(".doc") || entry.Contains(".docx") || entry.Contains(".pptx") || entry.Contains(".txt"))
+                            var i = entry.LastIndexOf("\\");
+                            docs.Add(new ToolStripMenuItem(entry.Substring(i + 1), null, (Object sender2, EventArgs e2) =>
                             {
-                                var i = entry.LastIndexOf("\\");
-                                docs.Add(new ToolStripMenuItem(entry.Substring(i + 1), null, (Object sender2, EventArgs e2) =>
-                                {
-                                    var docPath = (sender2 as ToolStripItem).Tag as string;
-                                    Process.Start(docPath);
-                                })
-                                { Tag = entry }
-                                );
-                            }
+                                var docPath = (sender2 as ToolStripItem).Tag as string;
+                                Process.Start(docPath);
+                             }) { Tag = entry });
                         }
                         contextMenuStripDocuments.Items.AddRange((from tool in docs
                                                                   orderby tool.Text
