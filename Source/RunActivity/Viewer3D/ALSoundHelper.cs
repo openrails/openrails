@@ -60,7 +60,7 @@ namespace Orts.Viewer3D
         private int[] BufferIDs;
         private int[] BufferLens;
 
-        private float CheckPointS = 0.15f; // In seconds. Should not be set to less than total Thread.Sleep() / 1000
+        private float CheckPointS = 0.2f; // In seconds. Should not be set to less than total Thread.Sleep() / 1000
         private float CheckFactor; // In bytes, without considering pitch
 
         private bool _isValid;

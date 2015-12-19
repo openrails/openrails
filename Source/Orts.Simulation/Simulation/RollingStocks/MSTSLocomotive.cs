@@ -300,7 +300,7 @@ namespace Orts.Simulation.RollingStocks
                         CabViewList[0].CabViewType = CabViewType.Void;
                     }
                 }
-                CabView3D = BuildCab3DView(WagFilePath, CVFFileName);
+                CabView3D = BuildCab3DView();
                 if (CabViewList.Count == 0 & CabView3D == null)
                     Trace.TraceWarning("{0} locomotive's CabView references non-existent {1}", wagFilePath, CVFFileName);
             }
@@ -510,29 +510,32 @@ namespace Orts.Simulation.RollingStocks
             return new CabView(cvfFile, viewPointList, extendedCVF, cabViewType, noseAhead);
         }
 
-        private CabView3D BuildCab3DView(string wagFilePath, string cvfFileName)
+        private CabView3D BuildCab3DView()
         {
             if (Cab3DShapeFileName == null)
                 return null;
 
-            var viewPointList = new List<ViewPoint>();
             var extendedCVF = new ExtendedCVF();
             bool noseAhead = false;
 
-            var cvfBasePath = Path.Combine(Path.GetDirectoryName(wagFilePath), "CABVIEW3D");
-            var cvfFilePath = Path.Combine(cvfBasePath, cvfFileName);
-            if (!File.Exists(cvfFilePath))
-            {
-                cvfBasePath = Path.Combine(Path.GetDirectoryName(wagFilePath), "CABVIEW");
-                cvfFilePath = Path.Combine(cvfBasePath, cvfFileName);
-                if (!File.Exists(cvfFilePath))
-                    return null;
-            }
-            var shapeBasePath = Path.Combine(Path.GetDirectoryName(WagFilePath), "CABVIEW3D");
-            var shapeFilePath = Path.Combine(shapeBasePath, Cab3DShapeFileName);
+            var cab3dBasePath = Path.Combine(Path.GetDirectoryName(WagFilePath), "CABVIEW3D");
+            var shapeFilePath = Path.Combine(cab3dBasePath, Cab3DShapeFileName);
             if (!File.Exists(shapeFilePath))
                 return null;
 
+            var cvfBasePath = cab3dBasePath;
+            var cvfFilePath = Path.Combine(cvfBasePath, Path.ChangeExtension(Cab3DShapeFileName, "cvf"));
+            if (!File.Exists(cvfFilePath))
+            {
+                cvfFilePath = Path.Combine(cvfBasePath, CVFFileName);
+                if (!File.Exists(cvfFilePath))
+                {
+                    cvfBasePath = Path.Combine(Path.GetDirectoryName(WagFilePath), "CABVIEW");
+                    cvfFilePath = Path.Combine(cvfBasePath, CVFFileName);
+                    if (!File.Exists(cvfFilePath))
+                        return null;
+                }
+            }
             var cvfFile = new CabViewFile(cvfFilePath, cvfBasePath);
             if (!(this is MSTSSteamLocomotive))
                 InitializeFromORTSSpecific(cvfFilePath, extendedCVF);
