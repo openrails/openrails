@@ -424,7 +424,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 return 0;
             MSTSNotch notch = Notches[CurrentNotch];
             if (!notch.Smooth)
-                return 1;
+                // Respect British 3-wire EP brake configurations
+                return notch.Type == ControllerState.EPApply ? CurrentValue : 1;
             float x = 1;
             if (CurrentNotch + 1 < Notches.Count)
                 x = Notches[CurrentNotch + 1].Value;

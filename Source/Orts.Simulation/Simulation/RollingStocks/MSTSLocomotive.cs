@@ -1570,11 +1570,14 @@ namespace Orts.Simulation.RollingStocks
 
         public void StartThrottleIncrease()
         {
-            if (CombinedControlType != CombinedControl.ThrottleDynamic && DynamicBrakePercent >= 0
-                || !(DynamicBrakePercent == -1 && !DynamicBrake || DynamicBrakePercent >= 0 && DynamicBrake))
+            if (DynamicBrakePercent >= 0 || !(DynamicBrakePercent == -1 && !DynamicBrake || DynamicBrakePercent >= 0 && DynamicBrake))
             {
-                Simulator.Confirmer.Warning(CabControl.Throttle, CabSetting.Warn1);
-                return;
+                if (!(CombinedControlType == CombinedControl.ThrottleDynamic
+                    || CombinedControlType == CombinedControl.ThrottleAir && TrainBrakeController.CurrentValue > 0))
+                {
+                    Simulator.Confirmer.Warning(CabControl.Throttle, CabSetting.Warn1);
+                    return;
+                }
             }
 
             if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrake)
