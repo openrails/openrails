@@ -296,6 +296,8 @@ namespace ORTS.Updater
         string PathUpdateTest { get { return Path.Combine(BasePath, "UpdateTest"); } }
         string PathUpdateDirty { get { return Path.Combine(BasePath, "UpdateDirty"); } }
         string PathUpdateStage { get { return Path.Combine(BasePath, "UpdateStage"); } }
+        string PathDocumentation { get { return Path.Combine(BasePath, "Documentation"); } }
+        string PathUpdateDocumentation { get { return Path.Combine(PathUpdateStage, "Documentation"); } }
         string FileUpdateStage { get { return Path.Combine(PathUpdateStage, "Update.zip"); } }
         string FileUpdateStageIsReady { get { return GetMainExecutable(PathUpdateStage, ProductName); } }
         string FileSettings { get { return Path.Combine(BasePath, "OpenRails.ini"); } }
@@ -440,6 +442,8 @@ namespace ORTS.Updater
             var basePathFiles = Directory.GetFiles(BasePath, "*", SearchOption.AllDirectories).Where(file =>
                 !file.StartsWith(PathUpdateDirty, StringComparison.OrdinalIgnoreCase) &&
                 !file.StartsWith(PathUpdateStage, StringComparison.OrdinalIgnoreCase) &&
+                // Skip deleting the Documentation directory unless a new one is included in the update.
+                (!file.StartsWith(PathDocumentation, StringComparison.OrdinalIgnoreCase) || Directory.Exists(PathUpdateDocumentation)) &&
                 !file.Equals(FileSettings, StringComparison.OrdinalIgnoreCase)).ToArray();
             var updateStageFiles = Directory.GetFiles(PathUpdateStage, "*", SearchOption.AllDirectories);
 
