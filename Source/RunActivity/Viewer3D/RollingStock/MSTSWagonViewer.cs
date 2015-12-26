@@ -427,8 +427,7 @@ namespace Orts.Viewer3D.RollingStock
                         }
                     }
                 }
-                if (!(Viewer.Camera.AttachedCar == this.MSTSWagon && Viewer.Camera.Style == Camera.Styles.Passenger && InteriorShape != null))
-                    FreightShape.PrepareFrame(frame, elapsedTime);
+                FreightShape.PrepareFrame(frame, elapsedTime);
             }
 
             if (FreightAnimations != null)
