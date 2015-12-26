@@ -226,7 +226,7 @@ namespace Orts.Viewer3D
 
         public Vector3 ViewerPos { set { viewerPos.SetValue(value); } }
 
-        public bool ImageTextureIsNight { set { _imageTextureIsNight = value; imageTextureIsNight.SetValue(value); } }
+        public bool ImageTextureIsNight { set { _imageTextureIsNight = value; imageTextureIsNight.SetValue(value ? 1f : 0f); } }
 
         public Texture2D ImageTexture { set { imageTexture.SetValue(value); } }
 
@@ -603,13 +603,13 @@ namespace Orts.Viewer3D
             {
                 screenTexture.SetValue(value);
                 if (value == null)
-                    screenSize.SetValue(new[] { 0, 0 });
+                    screenSize.SetValue(new Vector2(0, 0));
                 else
-                    screenSize.SetValue(new[] { value.Width, value.Height });
+                    screenSize.SetValue(new Vector2(value.Width, value.Height));
             }
         }
 
-        public Color GlassColor { set { glassColor.SetValue(new float[] { value.R / 255, value.G / 255, value.B / 255 }); } }
+        public Color GlassColor { set { glassColor.SetValue(new Vector3(value.R / 255f, value.G / 255f, value.B / 255f)); } }
 
         public void SetMatrix(Matrix w, ref Matrix wvp)
         {

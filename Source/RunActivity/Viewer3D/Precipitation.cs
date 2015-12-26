@@ -501,7 +501,7 @@ namespace Orts.Viewer3D
             if (ShaderPasses == null) ShaderPasses = shader.Techniques["Pricipitation"].Passes.GetEnumerator();
 
             shader.LightVector.SetValue(Viewer.Settings.UseMSTSEnv ? Viewer.World.MSTSSky.mstsskysolarDirection : Viewer.World.Sky.solarDirection);
-            shader.particleSize.SetValue(1);
+            shader.particleSize.SetValue(1f);
             if (!Viewer.World.WeatherControl.weatherChangeOn)
             shader.precipitation_Tex.SetValue(Viewer.Simulator.WeatherType == Orts.Formats.Msts.WeatherType.Snow ? SnowTexture : RainTexture);
             else

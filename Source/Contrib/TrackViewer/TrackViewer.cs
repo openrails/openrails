@@ -24,11 +24,11 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
-using Color = Microsoft.Xna.Framework.Color;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
+using Color = Microsoft.Xna.Framework.Color;
+using MessageBox = System.Windows.Forms.MessageBox;
 
 using System.Windows.Forms;
 using System.Drawing;

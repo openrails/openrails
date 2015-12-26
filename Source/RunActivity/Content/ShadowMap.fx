@@ -55,6 +55,12 @@ struct VERTEX_INPUT
 	float4x4 Instance : TEXCOORD1;
 };
 
+struct VERTEX_INPUT_BLUR
+{
+	float4 Position : POSITION;
+	float2 TexCoord : TEXCOORD0;
+};
+
 ////////////////////    V E R T E X   O U T P U T S    /////////////////////////
 
 struct VERTEX_OUTPUT
@@ -110,7 +116,7 @@ VERTEX_OUTPUT VSShadowMapForest(in VERTEX_INPUT In)
 	return Out;
 }
 
-VERTEX_OUTPUT_BLUR VSShadowMapHorzBlur(in VERTEX_INPUT In)
+VERTEX_OUTPUT_BLUR VSShadowMapHorzBlur(in VERTEX_INPUT_BLUR In)
 {
 	VERTEX_OUTPUT_BLUR Out;
 	
@@ -124,7 +130,7 @@ VERTEX_OUTPUT_BLUR VSShadowMapHorzBlur(in VERTEX_INPUT In)
 	return Out;
 }
 
-VERTEX_OUTPUT_BLUR VSShadowMapVertBlur(in VERTEX_INPUT In)
+VERTEX_OUTPUT_BLUR VSShadowMapVertBlur(in VERTEX_INPUT_BLUR In)
 {
 	VERTEX_OUTPUT_BLUR Out;
 	
