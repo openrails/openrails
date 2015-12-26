@@ -1001,7 +1001,6 @@ namespace Orts.Viewer3D.Popups
         public HUDGraphMesh(Viewer viewer, Color color, int height)
         {
             VertexBuffer = new DynamicVertexBuffer(viewer.GraphicsDevice, typeof(VertexPositionColor), VertexCount, BufferUsage.WriteOnly);
-            VertexBuffer.ContentLost += VertexBuffer_ContentLost;
             BorderVertexBuffer = new VertexBuffer(viewer.GraphicsDevice, typeof(VertexPositionColor), 10, BufferUsage.WriteOnly);
             var borderOffset = new Vector2(1f / SampleCount, 1f / height);
             var borderColor = new Color(1f, 1f, 1f, 0f);
@@ -1029,7 +1028,7 @@ namespace Orts.Viewer3D.Popups
             Sample.Y = SampleCount;
         }
 
-        void VertexBuffer_ContentLost(object sender, EventArgs e)
+        void VertexBuffer_ContentLost()
         {
             VertexBuffer.SetData(0, Samples, 0, Samples.Length, VertexPositionColor.VertexDeclaration.VertexStride, SetDataOptions.NoOverwrite);
         }
@@ -1053,6 +1052,9 @@ namespace Orts.Viewer3D.Popups
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
+            if (VertexBuffer.IsContentLost)
+                VertexBuffer_ContentLost();
+
             // Draw border
             graphicsDevice.SetVertexBuffer(BorderVertexBuffer);
             graphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 8);

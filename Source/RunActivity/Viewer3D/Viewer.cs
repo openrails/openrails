@@ -542,7 +542,8 @@ namespace Orts.Viewer3D
         [CallOnThread("Updater")]
         internal void UpdateAdapterInformation(GraphicsAdapter graphicsAdapter)
         {
-            adapterDescription = graphicsAdapter.Description;
+            // FIXME: MonoGame fails with the following:
+            //adapterDescription = graphicsAdapter.Description;
             try
             {
                 // Note that we might find multiple adapters with the same
@@ -1297,10 +1298,17 @@ namespace Orts.Viewer3D
 
             int w = graphicsDevice.PresentationParameters.BackBufferWidth;
             int h = graphicsDevice.PresentationParameters.BackBufferHeight;
-            var screenshot = new Texture2D(graphicsDevice, w, h, false, graphicsDevice.PresentationParameters.BackBufferFormat);
+            var screenshot = new RenderTarget2D(graphicsDevice, w, h, false, graphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.None);
             int[] backBuffer = new int[w * h];
-            graphicsDevice.GetBackBufferData(backBuffer); // This works in HiDef profile only
-            screenshot.SetData(backBuffer);
+
+            //FIXME: MonoGame has it unimplemented:
+            //graphicsDevice.GetBackBufferData(backBuffer);
+            //screenshot.SetData(backBuffer);
+            graphicsDevice.SetRenderTarget(screenshot);
+            RenderProcess.Draw();
+            graphicsDevice.Present();
+            graphicsDevice.SetRenderTarget(null);
+
             new Thread(() =>
             {
                 try
@@ -1315,7 +1323,6 @@ namespace Orts.Viewer3D
                     screenshot.SetData(data);
 
                     // Now save the modified image.
-                    screenshot.Save(fileName, ImageFileFormat.Png);
                     using (var stream = File.OpenWrite(fileName))
                     {
                         screenshot.SaveAsPng(stream, w, h);

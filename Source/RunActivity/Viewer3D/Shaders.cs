@@ -100,7 +100,10 @@ namespace Orts.Viewer3D
     {
         public override void LogMessage(string message, params object[] messageArgs) { Console.WriteLine(message, messageArgs); }
         public override void LogImportantMessage(string message, params object[] messageArgs) { Console.WriteLine(message, messageArgs); }
-        public override void LogWarning(string helpLink, ContentIdentity contentIdentity, string message, params object[] messageArgs) { Console.WriteLine(message, messageArgs); }
+        public override void LogWarning(string helpLink, ContentIdentity contentIdentity, string message, params object[] messageArgs)
+        {
+            Console.WriteLine("{0}({1}): {2} {3}", Path.GetFileName(contentIdentity.SourceFilename), contentIdentity.FragmentIdentifier, message, messageArgs?[0]);
+        }
     }
 
     [CallOnThread("Render")]
@@ -194,7 +197,17 @@ namespace Orts.Viewer3D
 
         public float ZBias { get { return _zBias_Lighting.X; } set { _zBias_Lighting.X = value; zBias_Lighting.SetValue(_zBias_Lighting); } }
         public float LightingDiffuse { get { return _zBias_Lighting.Y; } set { _zBias_Lighting.Y = value; zBias_Lighting.SetValue(_zBias_Lighting); } }
-        public float LightingSpecular { get { return _zBias_Lighting.Z; } set { _zBias_Lighting.Z = value; _zBias_Lighting.W = value >= 1 ? 1 : 0; zBias_Lighting.SetValue(_zBias_Lighting); } }
+        public float LightingSpecular
+        {
+            get { return _zBias_Lighting.Z; }
+            set
+            {
+                // Setting this exponent of HLSL pow() function to 0 in DX11 leads to undefined result. (HLSL bug?)
+                _zBias_Lighting.Z = value >= 1 ? value : 1;
+                _zBias_Lighting.W = value >= 1 ? 1 : 0;
+                zBias_Lighting.SetValue(_zBias_Lighting);
+            }
+        }
 
         public void SetFog(float depth, ref Color color)
         {

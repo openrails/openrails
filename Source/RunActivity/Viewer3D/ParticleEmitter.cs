@@ -170,19 +170,19 @@ namespace Orts.Viewer3D
             public Vector4 StartPosition_StartTime;
             public Vector4 InitialVelocity_EndTime;
             public Vector4 TargetVelocity_TargetTime;
-            public Short4 TileXY_Vertex_ID;
-            public Color Color_Random;
+            public Vector4 TileXY_Vertex_ID;
+            public Vector4 Color_Random;
 
             public static readonly VertexElement[] VertexElements =
             {
                 new VertexElement(0, VertexElementFormat.Vector4, VertexElementUsage.Position, 0),
                 new VertexElement(16, VertexElementFormat.Vector4, VertexElementUsage.Position, 1),
                 new VertexElement(16 + 16, VertexElementFormat.Vector4, VertexElementUsage.Position, 2),
-                new VertexElement(16 + 16 + 16, VertexElementFormat.Short4, VertexElementUsage.Position, 3),
-                new VertexElement(16 + 16 + 16 + 8, VertexElementFormat.Color, VertexElementUsage.Position, 4)
+                new VertexElement(16 + 16 + 16, VertexElementFormat.Vector4, VertexElementUsage.Position, 3),
+                new VertexElement(16 + 16 + 16 + 16, VertexElementFormat.Color, VertexElementUsage.Position, 4)
             };
 
-            public static int VertexStride = sizeof(float) * 12 + sizeof(short) * 4 + sizeof(float) * 4;
+            public static int VertexStride = sizeof(float) * 12 + sizeof(float) * 4 + sizeof(float) * 4;
         }
 
         internal ParticleEmitterData EmitterData;
@@ -223,7 +223,6 @@ namespace Orts.Viewer3D
             Vertices = new ParticleVertex[MaxParticles * VerticiesPerParticle];
             VertexDeclaration = new VertexDeclaration(ParticleVertex.VertexStride, ParticleVertex.VertexElements);
             VertexBuffer = new DynamicVertexBuffer(graphicsDevice, VertexDeclaration, MaxParticles * VerticiesPerParticle, BufferUsage.WriteOnly);
-            VertexBuffer.ContentLost += VertexBuffer_ContentLost;
             IndexBuffer = InitIndexBuffer(graphicsDevice, MaxParticles * IndiciesPerParticle);
 
             EmitterData = data;
@@ -246,7 +245,7 @@ namespace Orts.Viewer3D
             };
         }
 
-        void VertexBuffer_ContentLost(object sender, EventArgs e)
+        void VertexBuffer_ContentLost()
         {
             VertexBuffer.SetData(0, Vertices, 0, Vertices.Length, ParticleVertex.VertexStride, SetDataOptions.NoOverwrite);
         }
@@ -362,7 +361,7 @@ namespace Orts.Viewer3D
                     var particle = (FirstFreeParticle + 1) % MaxParticles;
                     var vertex = particle * VerticiesPerParticle;
                     var texture = Viewer.Random.Next(16); // Randomizes emissions.
-                    var color_Random = new Color(ParticleColor.R / 255f, ParticleColor.G / 255f, ParticleColor.B / 255f, (float)Viewer.Random.NextDouble());
+                    var color_Random = new Vector4((float)ParticleColor.R / 255f, (float)ParticleColor.G / 255f, (float)ParticleColor.B / 255f, (float)Viewer.Random.NextDouble());
 
                     // Initial velocity varies in X and Z only.
                     var initialVelocity = globalInitialVelocity;
@@ -387,7 +386,7 @@ namespace Orts.Viewer3D
                         Vertices[vertex + j].StartPosition_StartTime = new Vector4(position, time);
                         Vertices[vertex + j].InitialVelocity_EndTime = new Vector4(initialVelocity, time + duration);
                         Vertices[vertex + j].TargetVelocity_TargetTime = new Vector4(targetVelocity, ParticleEmitterViewer.DecelerationTime);
-                        Vertices[vertex + j].TileXY_Vertex_ID = new Short4(WorldPosition.TileX, WorldPosition.TileZ, j, texture);
+                        Vertices[vertex + j].TileXY_Vertex_ID = new Vector4(WorldPosition.TileX, WorldPosition.TileZ, j, texture);
                         Vertices[vertex + j].Color_Random = color_Random;
                     }
 
@@ -423,6 +422,9 @@ namespace Orts.Viewer3D
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
+            if (VertexBuffer.IsContentLost)
+                VertexBuffer_ContentLost();
+
             if (FirstNewParticle != FirstFreeParticle)
                 AddNewParticlesToVertexBuffer();
 

@@ -163,7 +163,7 @@ void _PSApplyDay2Night(inout float3 Color)
 	Color.rgb *= adjustment;
 }
 
-float4 PSParticles(in PIXEL_INPUT In) : COLOR0
+float4 PSParticles(in VERTEX_OUTPUT In) : COLOR0
 {
 	clip(In.Color_Age.a);
 	
@@ -181,7 +181,7 @@ technique ParticleEmitterTechnique
 {
 	pass Pass_0
 	{
-		VertexShader = compile vs_2_0 VSParticles();
-		PixelShader = compile ps_2_0 PSParticles();
+		VertexShader = compile vs_4_0_level_9_1 VSParticles();
+		PixelShader = compile ps_4_0_level_9_1 PSParticles();
 	}
 }

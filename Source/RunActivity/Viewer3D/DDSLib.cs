@@ -1693,7 +1693,8 @@ namespace Orts.Viewer3D
 
                 if (texture is TextureCube)
                 {
-                    (texture as TextureCube).GetData<byte>(face, i, null, data, 0, size);
+                    // FIXME: MonoGame fails with the following:
+                    //(texture as TextureCube).GetData<byte>(face, i, null, data, 0, size);
                 }
                 if (texture is Texture2D)
                 {
@@ -1737,7 +1738,8 @@ namespace Orts.Viewer3D
 
             if (texture is TextureCube)
             {
-                (texture as TextureCube).GetData<byte>(face, mipLevel, null, data, 0, size);
+                // FIXME: MonoGame fails with the following:
+                //(texture as TextureCube).GetData<byte>(face, mipLevel, null, data, 0, size);
             }
             if (texture is Texture2D)
             {

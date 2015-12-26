@@ -950,7 +950,7 @@ namespace Orts.Viewer3D
             }
         }
 
-        public Texture2D ApplyBlur(GraphicsDevice graphicsDevice, Texture2D shadowMap, RenderTarget2D renderTarget)
+        public RenderTarget2D ApplyBlur(GraphicsDevice graphicsDevice, RenderTarget2D shadowMap, RenderTarget2D renderTarget)
         {
             var wvp = Matrix.Identity;
 
@@ -966,13 +966,12 @@ namespace Orts.Viewer3D
             ShaderPassesBlur.Reset();
             while (ShaderPassesBlur.MoveNext())
             {
-                shader.SetBlurData(shadowMap);
+                shader.SetBlurData(renderTarget);
                 ShaderPassesBlur.Current.Apply();
-                graphicsDevice.SetRenderTarget(renderTarget);
+                graphicsDevice.SetRenderTarget(shadowMap);
                 graphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
 
                 graphicsDevice.SetRenderTarget(null);
-                shadowMap = renderTarget;
             }
 
             graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
@@ -1005,7 +1004,8 @@ namespace Orts.Viewer3D
             if (ShaderPassesPopupWindow == null) ShaderPassesPopupWindow = shader.Techniques["PopupWindow"].Passes.GetEnumerator();
             if (ShaderPassesPopupWindowGlass == null) ShaderPassesPopupWindowGlass = shader.Techniques["PopupWindowGlass"].Passes.GetEnumerator();
             ShaderPasses = screen == null ? ShaderPassesPopupWindow : ShaderPassesPopupWindowGlass;
-            shader.Screen = screen;
+            // FIXME: MonoGame cannot read backbuffer contents
+            //shader.Screen = screen;
             shader.GlassColor = Color.Black;
 
 			graphicsDevice.BlendState = BlendState.NonPremultiplied;

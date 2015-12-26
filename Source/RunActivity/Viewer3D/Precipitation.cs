@@ -129,16 +129,16 @@ namespace Orts.Viewer3D
         {
             public Vector4 StartPosition_StartTime;
             public Vector4 EndPosition_EndTime;
-            public Short4 TileXZ_Vertex;
+            public Vector4 TileXZ_Vertex;
 
             public static readonly VertexElement[] VertexElements =
             {
                 new VertexElement(0, VertexElementFormat.Vector4, VertexElementUsage.Position, 0),
                 new VertexElement(16, VertexElementFormat.Vector4, VertexElementUsage.Position, 1),
-                new VertexElement(16 + 16, VertexElementFormat.Short4, VertexElementUsage.Position, 2),
+                new VertexElement(16 + 16, VertexElementFormat.Vector4, VertexElementUsage.Position, 2),
             };
 
-            public static int SizeInBytes = sizeof(float) * (4 + 4) + sizeof(short) * 4;
+            public static int SizeInBytes = sizeof(float) * (4 + 4) + sizeof(float) * 4;
         }
 
         float ParticleDuration;
@@ -163,8 +163,7 @@ namespace Orts.Viewer3D
         {
             // Snow is the slower particle, hence longer duration, hence more particles in total.
             // Setting the precipitaton box size based on GraphicsDeviceCapabilities.
-            //if (graphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF) // As an integer, 0xFFFF is 65535.
-            if (graphicsDevice.Adapter.IsProfileSupported(GraphicsProfile.HiDef))
+            if (graphicsDevice.GraphicsProfile == GraphicsProfile.HiDef)
             {
                 ParticleBoxLengthM = (float)Program.Simulator.Settings.PrecipitationBoxLength;
                 ParticleBoxWidthM = (float)Program.Simulator.Settings.PrecipitationBoxWidth;
@@ -176,30 +175,29 @@ namespace Orts.Viewer3D
                 ParticleBoxWidthM = ParticleBoxWidthM_16;
                 ParticleBoxHeightM = ParticleBoxHeightM_16;
             }
-            if (graphicsDevice.Adapter.IsProfileSupported(GraphicsProfile.HiDef))
+            if (graphicsDevice.GraphicsProfile == GraphicsProfile.HiDef)
                 MaxParticles = (int)(PrecipitationViewer.MaxIntensityPPSPM2 * ParticleBoxLengthM * ParticleBoxWidthM * ParticleBoxHeightM / SnowVelocityMpS / ParticleVelocityFactor);
             // Processing 16bit device
             else
                 MaxParticles = (int)(PrecipitationViewer.MaxIntensityPPSPM2_16 * ParticleBoxLengthM * ParticleBoxWidthM * ParticleBoxHeightM / SnowVelocityMpS / ParticleVelocityFactor);
             // Checking if graphics device is 16bit.
-            if (!graphicsDevice.Adapter.IsProfileSupported(GraphicsProfile.HiDef))
+            if (graphicsDevice.GraphicsProfile != GraphicsProfile.HiDef)
                 Debug.Assert(MaxParticles * VerticiesPerParticle < ushort.MaxValue, "The maximum number of precipitation verticies must be able to fit in a ushort (16bit unsigned) index buffer.");
             Vertices = new ParticleVertex[MaxParticles * VerticiesPerParticle];
             VertexDeclaration = new VertexDeclaration(ParticleVertex.SizeInBytes, ParticleVertex.VertexElements);
             VertexStride = Marshal.SizeOf(typeof(ParticleVertex));
             VertexBuffer = new DynamicVertexBuffer(graphicsDevice, VertexDeclaration, MaxParticles * VerticiesPerParticle, BufferUsage.WriteOnly);
-            VertexBuffer.ContentLost += VertexBuffer_ContentLost;
             // Processing either 32bit or 16bit InitIndexBuffer depending on GraphicsDeviceCapabilities.
-            if (graphicsDevice.Adapter.IsProfileSupported(GraphicsProfile.HiDef))
+            if (graphicsDevice.GraphicsProfile == GraphicsProfile.HiDef)
                 IndexBuffer = InitIndexBuffer(graphicsDevice, MaxParticles * IndiciesPerParticle);
             else
                 IndexBuffer = InitIndexBuffer16(graphicsDevice, MaxParticles * IndiciesPerParticle);
             Heights = new HeightCache(8);
             // This Trace command is used to show how much memory is used.
-            Trace.TraceInformation(String.Format("Allocation for {0:N0} particles:\n\n  {1,13:N0} B RAM vertex data\n  {2,13:N0} B RAM index data (temporary)\n  {1,13:N0} B VRAM DynamicVertexBuffer\n  {2,13:N0} B VRAM IndexBuffer", MaxParticles, Marshal.SizeOf(typeof(ParticleVertex)) * MaxParticles * VerticiesPerParticle, (graphicsDevice.Adapter.IsProfileSupported(GraphicsProfile.HiDef) ? sizeof(uint) : sizeof(ushort)) * MaxParticles * IndiciesPerParticle));
+            Trace.TraceInformation(String.Format("Allocation for {0:N0} particles:\n\n  {1,13:N0} B RAM vertex data\n  {2,13:N0} B RAM index data (temporary)\n  {1,13:N0} B VRAM DynamicVertexBuffer\n  {2,13:N0} B VRAM IndexBuffer", MaxParticles, Marshal.SizeOf(typeof(ParticleVertex)) * MaxParticles * VerticiesPerParticle, sizeof(uint) * MaxParticles * IndiciesPerParticle));
         }
 
-        void VertexBuffer_ContentLost(object sender, EventArgs e)
+        void VertexBuffer_ContentLost()
         {
             VertexBuffer.SetData(0, Vertices, 0, Vertices.Length, VertexStride, SetDataOptions.NoOverwrite);
         }
@@ -344,7 +342,7 @@ namespace Orts.Viewer3D
                     Vertices[vertex + j].StartPosition_StartTime = new Vector4(position.XNAMatrix.Translation - ParticleDirection * ParticleDuration, time);
                     Vertices[vertex + j].StartPosition_StartTime.Y += ParticleBoxHeightM;
                     Vertices[vertex + j].EndPosition_EndTime = new Vector4(position.XNAMatrix.Translation, time + ParticleDuration);
-                    Vertices[vertex + j].TileXZ_Vertex = new Short4(position.TileX, position.TileZ, j, 0);
+                    Vertices[vertex + j].TileXZ_Vertex = new Vector4(position.TileX, position.TileZ, j, 0);
                 }
 
                 FirstFreeParticle = particle;
@@ -383,6 +381,9 @@ namespace Orts.Viewer3D
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
+            if (VertexBuffer.IsContentLost)
+                VertexBuffer_ContentLost();
+
             if (FirstNewParticle != FirstFreeParticle)
                 AddNewParticlesToVertexBuffer();
 
@@ -510,7 +511,7 @@ namespace Orts.Viewer3D
                 shader.precipitation_Tex.SetValue(DynamicPrecipitationTexture[precipitation_TexIndex]);
             }
 
-            graphicsDevice.BlendState = BlendState.NonPremultiplied;
+            graphicsDevice.BlendState = BlendState.AlphaBlend;
             graphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
         }
 

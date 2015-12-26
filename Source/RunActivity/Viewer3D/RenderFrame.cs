@@ -354,7 +354,7 @@ namespace Orts.Viewer3D
         readonly Game Game;
 
         // Shared shadow map data.
-        static Texture2D[] ShadowMap;
+        static RenderTarget2D[] ShadowMap;
         static RenderTarget2D[] ShadowMapRenderTarget;
         static Vector3 SteppedSolarDirection = Vector3.UnitX;
 
@@ -396,10 +396,13 @@ namespace Orts.Viewer3D
                 if (ShadowMap == null)
                 {
                     var shadowMapSize = Game.Settings.ShadowMapResolution;
-                    ShadowMap = new Texture2D[RenderProcess.ShadowMapCount];
+                    ShadowMap = new RenderTarget2D[RenderProcess.ShadowMapCount];
                     ShadowMapRenderTarget = new RenderTarget2D[RenderProcess.ShadowMapCount];
                     for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
+                    {
                         ShadowMapRenderTarget[shadowMapIndex] = new RenderTarget2D(Game.RenderProcess.GraphicsDevice, shadowMapSize, shadowMapSize, false, SurfaceFormat.Rg32, DepthFormat.Depth16, 0, RenderTargetUsage.PreserveContents);
+                        ShadowMap[shadowMapIndex] = new RenderTarget2D(Game.RenderProcess.GraphicsDevice, shadowMapSize, shadowMapSize, false, SurfaceFormat.Rg32, DepthFormat.Depth16, 0, RenderTargetUsage.PreserveContents);
+                    }
                 }
 
                 ShadowMapLightView = new Matrix[RenderProcess.ShadowMapCount];
@@ -700,7 +703,7 @@ namespace Orts.Viewer3D
 
             // Prepare renderer for drawing the shadow map.
             graphicsDevice.SetRenderTarget(ShadowMapRenderTarget[shadowMapIndex]);
-            graphicsDevice.Clear(ClearOptions.DepthBuffer, Color.Transparent, 1, 0);
+            graphicsDevice.Clear(ClearOptions.DepthBuffer | ClearOptions.Target, Color.White, 1, 0);
 
             // Prepare for normal (non-blocking) rendering of scenery.
             ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.Normal);
@@ -737,7 +740,6 @@ namespace Orts.Viewer3D
             DebugRenderState(graphicsDevice, ShadowMapMaterial.ToString());
 #endif
             graphicsDevice.SetRenderTarget(null);
-            ShadowMap[shadowMapIndex] = ShadowMapRenderTarget[shadowMapIndex];
 
             // Blur the shadow map.
             if (Game.Settings.ShadowMapBlur)
@@ -747,6 +749,8 @@ namespace Orts.Viewer3D
                 DebugRenderState(graphicsDevice, ShadowMapMaterial.ToString() + " ApplyBlur()");
 #endif
             }
+            else
+                ShadowMap[shadowMapIndex] = ShadowMapRenderTarget[shadowMapIndex];
 
             if (logging) Console.WriteLine("    }");
         }

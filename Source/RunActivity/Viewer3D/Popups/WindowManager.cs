@@ -227,17 +227,22 @@ namespace Orts.Viewer3D.Popups
 			// Project into a flat view of the same size as the viewport.
 			XNAProjection = Matrix.CreateOrthographic(ScreenSize.X, ScreenSize.Y, 0, 100);
 
-            SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied);
 			foreach (var window in VisibleWindows)
 			{
 				var xnaWorld = window.XNAWorld;
+
+                // FIXME: MonoGame cannot read backbuffer
+                //if (Screen != null)
+                //    graphicsDevice.ResolveBackBuffer(Screen);
                 PopupWindowMaterial.SetState(graphicsDevice, Screen);
                 PopupWindowMaterial.Render(graphicsDevice, window, ref xnaWorld, ref XNAView, ref XNAProjection);
+                PopupWindowMaterial.ResetState(graphicsDevice);
+                SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied);
                 window.Draw(SpriteBatch);
+                SpriteBatch.End();
             }
-            SpriteBatch.End();
-
-            PopupWindowMaterial.ResetState(graphicsDevice);
+            // For performance, we call SpriteBatch.Begin() with SaveStateMode.None above, but we now need to restore
+            // the state ourselves.
             graphicsDevice.BlendState = BlendState.Opaque;
             graphicsDevice.DepthStencilState = DepthStencilState.Default;
         }

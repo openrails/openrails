@@ -74,7 +74,7 @@ float4 PSLightCone(in VERTEX_OUTPUT In) : COLOR0
 
 technique LightCone {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSLightCone();
-		PixelShader = compile ps_2_0 PSLightCone();
+		VertexShader = compile vs_4_0_level_9_1 VSLightCone();
+		PixelShader = compile ps_4_0_level_9_1 PSLightCone();
 	}
 }
