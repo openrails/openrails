@@ -45,6 +45,7 @@
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using ORTS.Common;
+using Orts.Simulation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -408,6 +409,21 @@ namespace Orts.Viewer3D
                 catch (Exception error)
                 {
                     Trace.WriteLine(new FileLoadException(String.Format("{0} scenery object {1} failed to load", worldMatrix, worldObject.UID), error));
+                }
+            }
+
+            // Check if there are activity restricted speedposts to be loaded
+
+            if (Viewer.Simulator.ActivityRun != null && Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_File.ActivityRestrictedSpeedZones != null)
+            {
+                foreach (TempSpeedPostItem tempSpeedItem in Viewer.Simulator.ActivityRun.TempSpeedPostItems)
+                {
+                    if (tempSpeedItem.WorldPosition.TileX == TileX && tempSpeedItem.WorldPosition.TileZ == TileZ)
+                    {
+                        sceneryObjects.Add(new StaticShape(viewer,
+                            tempSpeedItem.IsWarning ? Viewer.SpeedpostDatFile.TempSpeedShapeNames[0] : (tempSpeedItem.IsResume? Viewer.SpeedpostDatFile.TempSpeedShapeNames[2] : Viewer.SpeedpostDatFile.TempSpeedShapeNames[1]),
+                            tempSpeedItem.WorldPosition, ShapeFlags.None));
+                    }
                 }
             }
 

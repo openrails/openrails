@@ -718,7 +718,8 @@ namespace Orts.Viewer3D.Popups
 
                 var labelPoint = new Point(offset.X + speedTextOffset, offset.Y + newLabelPosition + textOffset[forward ? 0 : 1]);
                 var speedString = FormatStrings.FormatSpeedLimit(allowedSpeed, metric);
-                Font.Draw(spriteBatch, labelPoint, speedString, Color.White);
+                Font.Draw(spriteBatch, labelPoint, speedString, thisItem.SpeedObjectType == Train.TrainObjectItem.SpeedItemType.Standard ? Color.White :
+                    (thisItem.SpeedObjectType == Train.TrainObjectItem.SpeedItemType.TempRestrictedStart ? Color.Red : Color.LightGreen));
 
                 if (itemOffset < firstLabelPosition && !firstLabelShown)
                 {

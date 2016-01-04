@@ -8464,7 +8464,7 @@ namespace Orts.Simulation.Signalling
         public ObjectSpeedInfo this_sig_speed(MstsSignalFunction fn_type)
         {
             var sigAsp = MstsSignalAspect.STOP;
-            var set_speed = new ObjectSpeedInfo(-1, -1, false, false, false);
+            var set_speed = new ObjectSpeedInfo(-1, -1, false, false, 0);
 
             foreach (SignalHead sigHead in SignalHeads)
             {
@@ -8495,7 +8495,7 @@ namespace Orts.Simulation.Signalling
                     sigAsp = sigHead.state;
                     if (sigAsp <= MstsSignalAspect.RESTRICTING && sigHead.speed_info != null && sigHead.speed_info[(int)sigAsp] != null)
                     {
-                        setNoReduction = sigHead.speed_info[(int)sigAsp].speed_noSpeedReduction == 1;
+                        setNoReduction = sigHead.speed_info[(int)sigAsp].speed_noSpeedReductionOrIsTempSpeedReduction == 1;
                     }
                     else
                     {
@@ -8508,12 +8508,33 @@ namespace Orts.Simulation.Signalling
 
         //================================================================================================//
         //
+        // isRestrictedSpeedPost : Returns TRUE if it is a restricted (temp) speedpost
+        //
+
+        public int SpeedPostType()
+        {
+            var sigAsp = MstsSignalAspect.CLEAR_2;
+            int speedPostType = 0; // default = standard speedpost
+
+            SignalHead sigHead = SignalHeads.First();
+
+            if (sigHead.speed_info != null && sigHead.speed_info[(int)sigAsp] != null)
+            {
+                speedPostType = sigHead.speed_info[(int)sigAsp].speed_noSpeedReductionOrIsTempSpeedReduction;
+
+            }
+            return speedPostType;
+
+        }//isRestrictedSpeedPost
+
+        //================================================================================================//
+        //
         // this_lim_speed : Returns the lowest allowed speed (for speedpost and speed signal)
         //
 
         public ObjectSpeedInfo this_lim_speed(MstsSignalFunction fn_type)
         {
-            var set_speed = new ObjectSpeedInfo(9E9f, 9E9f, false, false, false);
+            var set_speed = new ObjectSpeedInfo(9E9f, 9E9f, false, false, 0);
 
             foreach (SignalHead sigHead in SignalHeads)
             {
@@ -8527,6 +8548,7 @@ namespace Orts.Simulation.Signalling
                             set_speed.speed_pass = this_speed.speed_pass;
                             set_speed.speed_flag = 0;
                             set_speed.speed_reset = 0;
+                            if (!isSignal) set_speed.speed_noSpeedReductionOrIsTempSpeedReduction = this_speed.speed_noSpeedReductionOrIsTempSpeedReduction;
                         }
 
                         if (this_speed.speed_freight > 0 && this_speed.speed_freight < set_speed.speed_freight)
@@ -8534,6 +8556,7 @@ namespace Orts.Simulation.Signalling
                             set_speed.speed_freight = this_speed.speed_freight;
                             set_speed.speed_flag = 0;
                             set_speed.speed_reset = 0;
+                            if (!isSignal) set_speed.speed_noSpeedReductionOrIsTempSpeedReduction = this_speed.speed_noSpeedReductionOrIsTempSpeedReduction;
                         }
                     }
 
@@ -11101,7 +11124,7 @@ namespace Orts.Simulation.Signalling
 
             float passSpeed = speedItem.IsPassenger ? speedMpS : -1;
             float freightSpeed = speedItem.IsFreight ? speedMpS : -1;
-            ObjectSpeedInfo speedinfo = new ObjectSpeedInfo(passSpeed, freightSpeed, false, false, false);
+            ObjectSpeedInfo speedinfo = new ObjectSpeedInfo(passSpeed, freightSpeed, false, false, speedItem is TempSpeedPostItem? (speedMpS == 999f? 2 : 1) : 0);
             speed_info[(int)state] = speedinfo;
         }
 
@@ -11123,7 +11146,7 @@ namespace Orts.Simulation.Signalling
                 foreach (SignalAspect thisAspect in signalType.Aspects)
                 {
                     int arrindex = (int)thisAspect.Aspect;
-                    speed_info[arrindex] = new ObjectSpeedInfo(thisAspect.SpeedMpS, thisAspect.SpeedMpS, thisAspect.Asap, thisAspect.Reset, thisAspect.NoSpeedReduction);
+                    speed_info[arrindex] = new ObjectSpeedInfo(thisAspect.SpeedMpS, thisAspect.SpeedMpS, thisAspect.Asap, thisAspect.Reset, thisAspect.NoSpeedReduction? 1 : 0);
                 }
 
                 // update overall SignalNumClearAhead
@@ -11633,7 +11656,8 @@ namespace Orts.Simulation.Signalling
         public float speed_freight;                  // -1 if not set
         public int speed_flag;
         public int speed_reset;
-        public int speed_noSpeedReduction;
+        // for signals: if = 1 no speed reduction; for speedposts: if = 0 standard; = 1 start of temp speedreduction post; = 2 end of temp speed reduction post
+        public int speed_noSpeedReductionOrIsTempSpeedReduction; 
         public float actual_speed;                   // set active by TRAIN
 
         public bool processed;                       // for AI trains, set active by TRAIN
@@ -11660,7 +11684,7 @@ namespace Orts.Simulation.Signalling
                 speed_freight = -1;                      // set active by TRAIN
                 speed_flag = 0;                       // set active by TRAIN
                 speed_reset = 0;                      // set active by TRAIN
-                speed_noSpeedReduction = 0;
+                speed_noSpeedReductionOrIsTempSpeedReduction = 0;
             }
             else
             {
@@ -11671,7 +11695,7 @@ namespace Orts.Simulation.Signalling
                 speed_freight = speed_info.speed_freight;
                 speed_flag = speed_info.speed_flag;
                 speed_reset = speed_info.speed_reset;
-                speed_noSpeedReduction = speed_info.speed_noSpeedReduction;
+                speed_noSpeedReductionOrIsTempSpeedReduction = speed_info.speed_noSpeedReductionOrIsTempSpeedReduction;
             }
         }
 
@@ -11697,20 +11721,20 @@ namespace Orts.Simulation.Signalling
         public float speed_freight;
         public int speed_flag;
         public int speed_reset;
-        public int speed_noSpeedReduction;
+        public int speed_noSpeedReductionOrIsTempSpeedReduction;
 
         //================================================================================================//
         //
         // Constructor
         //
 
-        public ObjectSpeedInfo(float pass, float freight, bool asap, bool reset, bool nospeedreduction)
+        public ObjectSpeedInfo(float pass, float freight, bool asap, bool reset, int nospeedreductionOristempspeedreduction)
         {
             speed_pass = pass;
             speed_freight = freight;
             speed_flag = asap ? 1 : 0;
             speed_reset = reset ? 1 : 0;
-            speed_noSpeedReduction = nospeedreduction ? 1 : 0;
+            speed_noSpeedReductionOrIsTempSpeedReduction = nospeedreductionOristempspeedreduction;
         }
     }
 

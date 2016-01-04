@@ -97,6 +97,7 @@ namespace Orts.Viewer3D
         public EnvironmentFile ENVFile { get; private set; }
         public SignalConfigurationFile SIGCFG { get; private set; }
         public TrackTypesFile TrackTypes { get; private set; }
+        public SpeedpostDatFile SpeedpostDatFile;
         public bool MilepostUnitsMetric { get; private set; }
         // Cameras
         public Camera Camera { get; set; } // Current camera
@@ -270,6 +271,18 @@ namespace Orts.Viewer3D
 
             Simulator.PlayerLocomotiveChanged += PlayerLocomotiveChanged;
             Simulator.PlayerTrainChanged += PlayerTrainChanged;
+
+            // The speedpost.dat file is needed only to derive the shape names for the temporary speed restriction zones,
+            // so it is opened only in activity mode
+            if (Simulator.ActivityRun != null && Simulator.Activity.Tr_Activity.Tr_Activity_File.ActivityRestrictedSpeedZones != null)
+            {
+                var speedpostDatFile = Simulator.RoutePath + @"\speedpost.dat";
+                if (File.Exists(speedpostDatFile))
+                {
+                    Trace.Write(" SPEEDPOST");
+                    SpeedpostDatFile = new SpeedpostDatFile(Simulator.RoutePath + @"\speedpost.dat", Simulator.RoutePath + @"\shapes\");
+                }
+            }
 
             Initialize();
         }

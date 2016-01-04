@@ -38,6 +38,11 @@ using Orts.Formats.Msts;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+#if DEBUG_PRINT_PROCESS
+using System.Linq;
+using System.IO;
+using System.Text;
+#endif
 
 namespace Orts.Simulation.Signalling
 {
@@ -52,7 +57,7 @@ namespace Orts.Simulation.Signalling
     {
 
 #if DEBUG_PRINT_PROCESS
-        public static int[] TDB_debug_ref;                 /* signal TDB idents         */
+        public static int[] TDB_debug_ref = {105, 106};                 /* signal TDB idents         */
         public static string dpr_fileLoc = @"C:\temp\";     /* file path for debug files */
 #endif
 
@@ -817,7 +822,7 @@ namespace Orts.Simulation.Signalling
 #if DEBUG_PRINT_PROCESS
                     if (TDB_debug_ref.Contains(thisHead.TDBIndex))
                     {
-                        File.AppendAllText(dpe_fileLoc + @"printproc.txt",
+                        File.AppendAllText(dpr_fileLoc + @"printproc.txt",
                                 " HASHEAD : required head : " + parameter1_value + " ; state :  " + return_value  + "\n");
                     }
 #endif

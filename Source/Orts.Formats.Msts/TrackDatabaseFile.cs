@@ -21,6 +21,7 @@ using System.IO;
 using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
 using Orts.Parsers.Msts;
+using ORTS.Common;
 using Microsoft.Xna.Framework;
 
 namespace Orts.Formats.Msts
@@ -1087,35 +1088,47 @@ namespace Orts.Formats.Msts
                 }),
             });
         }
-      
+
+        // used as base for TempSpeedPostItem
+        public SpeedPostItem()
+        { }
+    }
+
+    public class TempSpeedPostItem : SpeedPostItem
+    {      
         /// <summary>
-        /// Constructor for creating a speedpost from activity restriction zone
+        /// Constructor for creating a speedpost from activity speed restriction zone
         /// </summary>
         /// <param name="routeFile">The routeFile with relevant data about speeds</param>
         /// <param name="position">Position/location of the speedposts</param>
         /// <param name="isStart">Is this the start of a speed zone?</param>
-        public SpeedPostItem(Tr_RouteFile routeFile, Position position,  bool isStart)
+        /// 
+        public WorldPosition WorldPosition;
+
+        public TempSpeedPostItem(Tr_RouteFile routeFile, Position position,  bool isStart, WorldPosition worldPosition, bool isWarning)
         {
             // TrItemId needs to be set later
             ItemType = trItemType.trSPEEDPOST;
+            WorldPosition = worldPosition;
             CreateRPData(position);
 
             IsMilePost = false;
             IsLimit = true;
             IsFreight = IsPassenger = true;
+            IsWarning = isWarning;
 
             if (!isStart) { IsLimit = true; IsResume = true; }//end zone
             float speed = routeFile.TempRestrictedSpeed;
-            if (speed < 0) speed = ORTS.Common.MpS.FromKpH(25); //todo. Value is not used. Should it be used below instead of TempRestrictedSpeed? And if so, is the +1 then still needed?
+            if (speed < 0) speed = ORTS.Common.MpS.FromKpH(25); //todo. Value is not used. Should it be used below instead of TempRestrictedSpeed? And if so, is the +0.01 then still needed?
             if (routeFile.MilepostUnitsMetric == true)
             {
                 this.IsMPH = false;
-                SpeedInd = (int)ORTS.Common.MpS.ToKpH(routeFile.TempRestrictedSpeed) + 1; 
+                SpeedInd = (int)(ORTS.Common.MpS.ToKpH(routeFile.TempRestrictedSpeed) + 0.1f); 
             }
             else
             {
                 this.IsMPH = true;
-                SpeedInd = (int)ORTS.Common.MpS.ToMpH(routeFile.TempRestrictedSpeed) + 1;
+                SpeedInd = (int)(ORTS.Common.MpS.ToMpH(routeFile.TempRestrictedSpeed) + 0.1f);
             }
 
             Angle = 0;
@@ -1129,7 +1142,7 @@ namespace Orts.Formats.Msts
         {
             X = PX = position.X;
             Z = PZ = position.Z;
-            Y = 0;
+            Y = position.Y;
             TileX = TilePX = position.TileX;
             TileZ = TilePZ = position.TileZ;
         }

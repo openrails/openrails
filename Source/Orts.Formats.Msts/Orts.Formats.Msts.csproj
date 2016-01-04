@@ -68,6 +68,7 @@
     <Compile Include="ShapeFile.cs" />
     <Compile Include="SignalConfigurationFile.cs" />
     <Compile Include="SignalEnums.cs" />
+    <Compile Include="SpeedpostDatFile.cs" />
     <Compile Include="SoundManagmentFile.cs" />
     <Compile Include="ServiceFile.cs" />
     <Compile Include="TrackDatabaseFile.cs" />

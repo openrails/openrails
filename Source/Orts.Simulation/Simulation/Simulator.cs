@@ -317,7 +317,7 @@ namespace Orts.Simulation
             WeatherType = Activity.Tr_Activity.Tr_Activity_Header.Weather;
             if (Activity.Tr_Activity.Tr_Activity_File.ActivityRestrictedSpeedZones != null)
             {
-                Orts.Simulation.Activity.AddRestrictZones(TRK.Tr_RouteFile, TSectionDat, TDB.TrackDB, Activity.Tr_Activity.Tr_Activity_File.ActivityRestrictedSpeedZones);
+                ActivityRun.AddRestrictZones(TRK.Tr_RouteFile, TSectionDat, TDB.TrackDB, Activity.Tr_Activity.Tr_Activity_File.ActivityRestrictedSpeedZones);
             }
             IsAutopilotMode = Settings.Autopilot;
         }

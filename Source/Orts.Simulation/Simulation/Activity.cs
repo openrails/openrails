@@ -16,6 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Simulation.Physics;
 using Orts.Simulation.Signalling;
@@ -23,6 +24,7 @@ using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -74,8 +76,11 @@ namespace Orts.Simulation
         public bool NewMsgFromNewPlayer = false; // flag to indicate to ActivityWindow that there is a new message to be shown;
         public string MsgFromNewPlayer; // string to be displayed in ActivityWindow
 
-        private Activity(BinaryReader inf, Simulator simulator, List<EventWrapper> oldEventList)
+        public List<TempSpeedPostItem> TempSpeedPostItems;
+
+        private Activity(BinaryReader inf, Simulator simulator, List<EventWrapper> oldEventList, List<TempSpeedPostItem> tempSpeedPostItems)
         {
+            TempSpeedPostItems = tempSpeedPostItems;
             Simulator = simulator;
             RestoreThis(inf, simulator, oldEventList);
         }
@@ -280,7 +285,7 @@ namespace Orts.Simulation
             else
             {
                 // Retain the old EventList. It's full of static data so save and restore is a waste of effort
-                Activity act = new Activity(inf, simulator, oldActivity.EventList);
+                Activity act = new Activity(inf, simulator, oldActivity.EventList, oldActivity.TempSpeedPostItems);
                 return act;
             }
         }
@@ -459,38 +464,67 @@ namespace Orts.Simulation
         }
 
         /// <summary>
-        /// Add speedposts to the track database for each Speed Restriction zone
+        /// Add speedposts to the track database for each Temporary Speed Restriction zone
         /// </summary>
         /// <param name="routeFile"></param>
         /// <param name="tsectionDat">track sections containing the details of the various sections</param>
         /// <param name="trackDB">The track Database that needs to be updated</param>
         /// <param name="zones">List of speed restriction zones</param>
-        public static void AddRestrictZones(Tr_RouteFile routeFile, TrackSectionsFile tsectionDat, TrackDB trackDB, ActivityRestrictedSpeedZones zones)
+        public void AddRestrictZones(Tr_RouteFile routeFile, TrackSectionsFile tsectionDat, TrackDB trackDB, ActivityRestrictedSpeedZones zones)
         {
             if (zones.ActivityRestrictedSpeedZoneList.Count < 1) return;
 
-            TrItem[] newSpeedPostItems = new SpeedPostItem[zones.ActivityRestrictedSpeedZoneList.Count * 2];
+            TempSpeedPostItems = new List<TempSpeedPostItem>();
+
+            TrItem[] newSpeedPostItems = new TempSpeedPostItem[2];
+
+            Traveller traveller;
+
+            const float MaxDistanceOfWarningPost = 2000;
 
             for (int idxZone = 0; idxZone < zones.ActivityRestrictedSpeedZoneList.Count; idxZone++)
 			{
-                newSpeedPostItems[2*idxZone]   = new SpeedPostItem(routeFile,
-                    zones.ActivityRestrictedSpeedZoneList[idxZone].StartPosition, true);
-                newSpeedPostItems[2*idxZone+1] = new SpeedPostItem(routeFile,
-                    zones.ActivityRestrictedSpeedZoneList[idxZone].EndPosition, false);
-			}
-
-            // Add the speedposts to the track database. This will set the TrItemId's of all speedposts
+               var worldPosition1 = new WorldPosition();
+                newSpeedPostItems[0]   = new TempSpeedPostItem(routeFile,
+                    zones.ActivityRestrictedSpeedZoneList[idxZone].StartPosition, true, worldPosition1, false);
+                var worldPosition2 = new WorldPosition();
+                newSpeedPostItems[1] = new TempSpeedPostItem(routeFile,
+                    zones.ActivityRestrictedSpeedZoneList[idxZone].EndPosition, false, worldPosition2, false);
+			
+                // Add the speedposts to the track database. This will set the TrItemId's of all speedposts
             trackDB.AddTrItems(newSpeedPostItems);
 
             // And now update the various (vector) tracknodes (this needs the TrItemIds.
-            for (int idxZone = 0; idxZone < zones.ActivityRestrictedSpeedZoneList.Count; idxZone++)
-			{
-                Activity.AddItemIdToTrackNode(zones.ActivityRestrictedSpeedZoneList[idxZone].StartPosition,
-                    tsectionDat, trackDB, (int)newSpeedPostItems[2 * idxZone    ].TrItemId);
-                Activity.AddItemIdToTrackNode(zones.ActivityRestrictedSpeedZoneList[idxZone].EndPosition,
-                    tsectionDat, trackDB, (int)newSpeedPostItems[2 * idxZone + 1].TrItemId);
+                var endOffset = AddItemIdToTrackNode(ref zones.ActivityRestrictedSpeedZoneList[idxZone].EndPosition,
+                    tsectionDat, trackDB, newSpeedPostItems[1], out traveller);
+                var startOffset = AddItemIdToTrackNode(ref zones.ActivityRestrictedSpeedZoneList[idxZone].StartPosition,
+                    tsectionDat, trackDB, newSpeedPostItems[0], out traveller);
+                float distanceOfWarningPost = 0;
+                TrackNode trackNode = trackDB.TrackNodes[traveller.TrackNodeIndex];
+                if (startOffset != null && endOffset != null && startOffset > endOffset)
+                {
+                    FlipRestrSpeedPost((TempSpeedPostItem)newSpeedPostItems[0]);
+                    FlipRestrSpeedPost((TempSpeedPostItem)newSpeedPostItems[1]);
+                    distanceOfWarningPost = (float)Math.Min(MaxDistanceOfWarningPost, traveller.TrackNodeLength - (double)startOffset);
+                }
+                else if (startOffset != null && endOffset != null && startOffset <= endOffset)
+                    distanceOfWarningPost = (float)Math.Max(-MaxDistanceOfWarningPost, -(double)startOffset);
+                traveller.Move(distanceOfWarningPost);
+                var worldPosition3 = new WorldPosition();
+                var speedWarningPostItem = new TempSpeedPostItem(routeFile,
+                    zones.ActivityRestrictedSpeedZoneList[idxZone].StartPosition, false, worldPosition3, true);
+                SpeedPostPosition(speedWarningPostItem, ref traveller);
+                if (startOffset != null && endOffset != null && startOffset > endOffset)
+                {
+                    FlipRestrSpeedPost((TempSpeedPostItem)speedWarningPostItem);
+                }
+                ComputeTablePosition((TempSpeedPostItem)newSpeedPostItems[0]); 
+                TempSpeedPostItems.Add((TempSpeedPostItem)newSpeedPostItems[0]);
+                ComputeTablePosition((TempSpeedPostItem)newSpeedPostItems[1]); 
+                TempSpeedPostItems.Add((TempSpeedPostItem)newSpeedPostItems[1]);
+                ComputeTablePosition((TempSpeedPostItem)speedWarningPostItem); 
+                TempSpeedPostItems.Add((TempSpeedPostItem)speedWarningPostItem);
             }
-        
         }
         
         /// <summary>
@@ -500,18 +534,96 @@ namespace Orts.Simulation
         /// <param name="tsectionDat">track sections containing the details of the various sections</param>
         /// <param name="trackDB">track database to be modified</param>
         /// <param name="newTrItemRef">The Id of the new TrItem to add to the tracknode</param>
-        static void AddItemIdToTrackNode(Position position, TrackSectionsFile tsectionDat, TrackDB trackDB, int newTrItemId)
+        /// <param name="traveller">The computed traveller to the speedPost position</param>
+        static float? AddItemIdToTrackNode(ref Position position, TrackSectionsFile tsectionDat, TrackDB trackDB, TrItem newTrItem, out Traveller traveller)
         {
-            try
+            float? offset = 0.0f;
+            traveller = new Traveller(tsectionDat, trackDB.TrackNodes, position.TileX, position.TileZ, position.X, position.Z);
+            TrackNode trackNode = trackDB.TrackNodes[traveller.TrackNodeIndex];//find the track node
+            if (trackNode.TrVectorNode != null)
             {
-                Traveller traveller = new Traveller(tsectionDat, trackDB.TrackNodes, position.TileX, position.TileZ, position.X, position.Z);
-                TrackNode trackNode = trackDB.TrackNodes[traveller.TrackNodeIndex];//find the track node
-                if (trackNode.TrVectorNode != null)
-                {
-                    trackNode.TrVectorNode.AddTrItemRef(newTrItemId);
-                }
+                offset = traveller.TrackNodeOffset;
+                SpeedPostPosition((TempSpeedPostItem)newTrItem, ref traveller);
+                InsertTrItemRef(tsectionDat, trackDB, trackNode.TrVectorNode, (int)newTrItem.TrItemId, (float)offset);
             }
-            catch { }
+            return offset;
+        }
+
+        /// <summary>
+        /// Determine position parameters of restricted speed Post
+        /// </summary>
+        /// <param name="restrSpeedPost">The Id of the new restricted speed post to position</param>
+        /// <param name="traveller">The traveller to the speedPost position</param>
+        /// 
+        static void SpeedPostPosition(TempSpeedPostItem restrSpeedPost, ref Traveller traveller)
+        {
+            restrSpeedPost.Y = traveller.Y;
+            restrSpeedPost.Angle = -traveller.RotY + (float)Math.PI / 2;
+            restrSpeedPost.WorldPosition.XNAMatrix = Matrix.CreateFromYawPitchRoll(-traveller.RotY, 0, 0);
+            restrSpeedPost.WorldPosition.XNAMatrix.M41 = traveller.X;
+            restrSpeedPost.WorldPosition.XNAMatrix.M42 = traveller.Y;
+            restrSpeedPost.WorldPosition.XNAMatrix.M43 = traveller.Z;
+            restrSpeedPost.WorldPosition.TileX = traveller.TileX;
+            restrSpeedPost.WorldPosition.TileZ = traveller.TileZ;
+            //                    restrSpeedPost.WorldPosition.Normalize();
+            restrSpeedPost.WorldPosition.XNAMatrix.M43 *= -1;
+        }
+
+        /// <summary>
+        /// Flip restricted speedpost 
+        /// </summary>
+        /// <param name="restrSpeedPost">The Id of the restricted speedpost to flip</param>
+        /// 
+        static void FlipRestrSpeedPost(TempSpeedPostItem restrSpeedPost)
+        {
+            restrSpeedPost.Angle += (float)Math.PI;
+            restrSpeedPost.WorldPosition.XNAMatrix.M11 *= -1;
+            restrSpeedPost.WorldPosition.XNAMatrix.M13 *= -1;
+            restrSpeedPost.WorldPosition.XNAMatrix.M31 *= -1;
+            restrSpeedPost.WorldPosition.XNAMatrix.M33 *= -1;
+        }
+
+        /// <summary>
+        /// Compute position of restricted speedpost table
+        /// </summary>
+        /// <param name="restrSpeedPost">The Id of the restricted speed post to flip</param>
+        /// 
+        static void ComputeTablePosition(TempSpeedPostItem restrSpeedPost)
+        {
+            var speedPostTablePosition = new Vector3(2.2f, 0, 0);
+            Vector3.Transform(ref speedPostTablePosition, ref restrSpeedPost.WorldPosition.XNAMatrix, out speedPostTablePosition);
+            restrSpeedPost.WorldPosition.XNAMatrix.Translation = speedPostTablePosition;
+            restrSpeedPost.WorldPosition.XNAMatrix.M43 *= -1;
+            restrSpeedPost.WorldPosition.Normalize();
+            restrSpeedPost.WorldPosition.XNAMatrix.M43 *= -1;
+        }
+
+
+        /// <summary>
+        /// Insert a reference to a new TrItem to the already existing TrItemRefs basing on its offset within the track node.
+        /// </summary>
+        /// 
+        [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", Justification = "Keeping identifier consistent to use in MSTS")]
+        static void InsertTrItemRef(TrackSectionsFile tsectionDat, TrackDB trackDB, TrVectorNode thisVectorNode, int newTrItemId, float offset)
+        {
+            int[] newTrItemRefs = new int[thisVectorNode.NoItemRefs + 1];
+            thisVectorNode.TrItemRefs.CopyTo(newTrItemRefs, 0);
+            // insert the new TrItemRef accordingly to its offset
+            for (int iTrItems = thisVectorNode.NoItemRefs-1; iTrItems >= 0; iTrItems--)
+            {
+                var currTrItemID = newTrItemRefs[iTrItems];
+                var currTrItem = trackDB.TrItemTable[currTrItemID];
+                Traveller traveller = new Traveller(tsectionDat, trackDB.TrackNodes, currTrItem.TileX, currTrItem.TileZ, currTrItem.X, currTrItem.Z);
+                if (offset >= traveller.TrackNodeOffset)
+                {
+                    newTrItemRefs[iTrItems + 1] = newTrItemId;
+                    break;
+                }
+                else newTrItemRefs[iTrItems + 1] = currTrItemID;
+                if (iTrItems == 0) newTrItemRefs[0] = newTrItemId;
+            }
+            thisVectorNode.TrItemRefs = newTrItemRefs; //use the new item lists for the track node
+            thisVectorNode.NoItemRefs++;
         }
     }
 

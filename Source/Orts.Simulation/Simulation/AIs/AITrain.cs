@@ -4990,7 +4990,7 @@ namespace Orts.Simulation.AIs
             if (speedInfo.MaxSpeedMpSSignal > 0)
             {
                 allowedMaxSpeedSignalMpS = Simulator.TimetableMode ? speedInfo.MaxSpeedMpSSignal : allowedAbsoluteMaxSpeedSignalMpS;
-                AllowedMaxSpeedMpS = Math.Min(allowedMaxSpeedLimitMpS, speedInfo.MaxSpeedMpSSignal);
+                AllowedMaxSpeedMpS = Math.Min(speedInfo.MaxSpeedMpSSignal, Math.Min(allowedMaxSpeedLimitMpS, allowedMaxTempSpeedLimitMpS));
             }
             if (speedInfo.MaxSpeedMpSLimit > 0)
             {
@@ -4998,7 +4998,12 @@ namespace Orts.Simulation.AIs
                 if (Simulator.TimetableMode)
                     AllowedMaxSpeedMpS = speedInfo.MaxSpeedMpSLimit;
                 else
-                    AllowedMaxSpeedMpS = Math.Min(speedInfo.MaxSpeedMpSLimit, allowedMaxSpeedSignalMpS);
+                    AllowedMaxSpeedMpS = Math.Min(speedInfo.MaxSpeedMpSLimit, Math.Min(allowedMaxSpeedSignalMpS, allowedMaxTempSpeedLimitMpS));
+            }
+            if (speedInfo.MaxTempSpeedMpSLimit > 0 && !Simulator.TimetableMode)
+            {
+                allowedMaxTempSpeedLimitMpS = allowedAbsoluteMaxTempSpeedLimitMpS;
+                AllowedMaxSpeedMpS = Math.Min(speedInfo.MaxTempSpeedMpSLimit, Math.Min(allowedMaxSpeedSignalMpS, allowedMaxSpeedLimitMpS));
             }
             // <CScomment> following statement should be valid in general, as it seems there was a bug here in the original SW
             AllowedMaxSpeedMpS = Math.Min(AllowedMaxSpeedMpS, TrainMaxSpeedMpS);

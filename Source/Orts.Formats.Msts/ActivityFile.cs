@@ -1128,6 +1128,7 @@ namespace Orts.Formats.Msts
         public int TileZ;
         public float X;
         public float Z;
+        public float Y;
 
         public Position(int tileX, int tileZ, int x, int z) {
             TileX = tileX;
