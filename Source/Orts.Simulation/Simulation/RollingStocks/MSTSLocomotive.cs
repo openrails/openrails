@@ -170,7 +170,14 @@ namespace Orts.Simulation.RollingStocks
         public float DynamicBrakeDelayS;
         public bool DynamicBrakeAutoBailOff;
         public bool UsingRearCab;
-        
+
+        protected bool DynamicBrakeBlended; // dynamic brake blending is currently active
+        protected bool DynamicBrakeBlendingEnabled; // dynamic brake blending is configured
+        AirSinglePipe airPipeSystem;
+        protected double DynamicBrakeCommandStartTime;
+        protected bool DynamicBrakeBlendingOverride; // true when DB lever >0% should always override the blending. When false, the bigger command is applied.
+        protected bool DynamicBrakeBlendingForceMatch; // if true, dynamic brake blending tries to achieve the same braking force as the airbrake would have.
+
         public CombinedControl CombinedControlType;
         public float CombinedControlSplitPosition;
         public bool HasSmoothStruc;
@@ -653,9 +660,17 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case "engine(sanding": SanderSpeedOfMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, 30.0f); break;
                 case "engine(doeshorntriggerbell": DoesHornTriggerBell = stf.ReadBoolBlock(false); break;
-
-
-
+                case "engine(brakesenginecontrollers":
+                    foreach (var brakesenginecontrollers in stf.ReadStringBlock("").ToLower().Replace(" ", "").Split(','))
+                    {
+                        switch (brakesenginecontrollers)
+                        {
+                            case "blended": if (IsElectric || IsDiesel) DynamicBrakeBlendingEnabled = true; break;                       
+                        }
+                    }
+                    break;
+                case "engine(ortsdynamicblendingoverride": DynamicBrakeBlendingOverride = stf.ReadBoolBlock(false); break;
+                case "engine(ortsdynamicblendingforcematch": DynamicBrakeBlendingForceMatch = stf.ReadBoolBlock(false); break;
                 default: base.Parse(lowercasetoken, stf); break;
             }
         }
@@ -875,6 +890,8 @@ namespace Orts.Simulation.RollingStocks
             TrainControlSystem.Initialize();
 
             base.Initialize();
+            if (DynamicBrakeBlendingEnabled) airPipeSystem = BrakeSystem as AirSinglePipe;
+
         }
 
         //================================================================================================//
@@ -930,6 +947,45 @@ namespace Orts.Simulation.RollingStocks
         }
 
         /// <summary>
+        /// Dynamic brake blending 
+        /// </summary>
+        public void DynamicBrakeBlending(float elapsedClockSeconds)
+        {
+            if (airPipeSystem != null && ((airPipeSystem is EPBrakeSystem && Train.BrakeLine4 > 0f) || airPipeSystem.BrakeLine1PressurePSI < TrainBrakeController.MaxPressurePSI - 1f )
+                && ThrottleController.CurrentValue == 0f && !(DynamicBrakeController != null && DynamicBrakeBlendingOverride && DynamicBrakeController.CurrentValue > 0f)
+                /* && (!DynamicBrakeBlendingLeverOverride && DynamicBrakeController != null && DynamicBrakeIntervention < DynamicBrakeController.CurrentValue)*/)
+            {
+                float threshold = DynamicBrakeBlendingForceMatch ? 100f : 0.01f;
+                float maxCylPressurePSI = airPipeSystem.GetMaxCylPressurePSI();
+                float targetDynamicBrakePercent = airPipeSystem is EPBrakeSystem ? Train.BrakeLine4 : Math.Min(((TrainBrakeController.MaxPressurePSI - airPipeSystem.BrakeLine1PressurePSI) * airPipeSystem.GetAuxCylVolumeRatio()) / maxCylPressurePSI, 1f);
+                //DynamicBrakeIntervention = Math.Min(((TrainBrakeController.CurrentValue - DynamicBrakeBlendingStart) / (DynamicBrakeBlendingStop - DynamicBrakeBlendingStart)), 1f);
+
+                if (!DynamicBrakeBlended) {
+                    DynamicBrakeBlended = true;
+                    if (DynamicBrakeController != null)
+                        DynamicBrakeIntervention = DynamicBrakeController.CurrentValue;
+                    else
+                        DynamicBrakeIntervention = 0;
+                    DynamicBrakeCommandStartTime= Simulator.ClockTime;
+                }
+                if (DynamicBrake) {
+                        float diff = DynamicBrakeBlendingForceMatch ? targetDynamicBrakePercent * airPipeSystem.GetMaxBrakeForceN() - DynamicBrakeForceN : targetDynamicBrakePercent - DynamicBrakeIntervention;
+                        if (diff > threshold && DynamicBrakeIntervention <= 1)
+                            DynamicBrakeIntervention += elapsedClockSeconds * (airPipeSystem.GetMaxApplicationRatePSIpS() / maxCylPressurePSI);
+                        else if (diff < -threshold)
+                            DynamicBrakeIntervention -= elapsedClockSeconds * (airPipeSystem.GetMaxReleaseRatePSIpS() / maxCylPressurePSI);
+                }
+                if (DynamicBrakeController != null)
+                    DynamicBrakeIntervention = Math.Max(DynamicBrakeIntervention, DynamicBrakeController.CurrentValue);
+            }
+            else if (DynamicBrakeBlended)
+            {
+                DynamicBrakeIntervention = -1;
+                DynamicBrakeBlended = false;
+            }
+        }
+
+        /// <summary>
         /// This is a periodic update to calculate physics 
         /// parameters and update the base class's MotiveForceN 
         /// and FrictionForceN values based on throttle settings
@@ -938,7 +994,6 @@ namespace Orts.Simulation.RollingStocks
         public override void Update(float elapsedClockSeconds)
         {
             TrainControlSystem.Update();
-            
             TrainBrakeController.Update(elapsedClockSeconds);
             if (TrainBrakeController.UpdateValue > 0.0)
             {
@@ -963,14 +1018,18 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
-            if (DynamicBrakeController != null && (DynamicBrakePercent >= 0 || IsLeadLocomotive() && DynamicBrakeIntervention >= 0))
+            DynamicBrakeBlending(elapsedClockSeconds);
+            if (DynamicBrakeController != null && DynamicBrakeController.CommandStartTime > DynamicBrakeCommandStartTime) // use the latest command time
+                DynamicBrakeCommandStartTime = DynamicBrakeController.CommandStartTime;
+
+            if ((DynamicBrakeController != null || DynamicBrakeBlendingEnabled)  && (DynamicBrakePercent >= 0 || IsLeadLocomotive() && DynamicBrakeIntervention >= 0))
             {
                 if (!DynamicBrake)
                 {
-                    if (DynamicBrakeController.CommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)
+                    if (DynamicBrakeCommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime /*|| (DynamicBrakeController != null && DynamicBrakeController.CommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)*/)
                     {
                         DynamicBrake = true; // Engage
-                        if (IsLeadLocomotive())
+                        if (IsLeadLocomotive() && DynamicBrakeController != null)
                             Simulator.Confirmer.ConfirmWithPerCent(CabControl.DynamicBrake, DynamicBrakeController.CurrentValue * 100);
                     }
                     else if (IsLeadLocomotive())
@@ -978,17 +1037,22 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else if (this.IsLeadLocomotive())
                 {
-                    DynamicBrakeController.Update(elapsedClockSeconds);
-                    DynamicBrakePercent = (DynamicBrakeIntervention < 0 ? DynamicBrakeController.CurrentValue : DynamicBrakeIntervention) * 100.0f;
+                    if (DynamicBrakeController != null)
+                    {
+                        DynamicBrakeController.Update(elapsedClockSeconds);
+                        DynamicBrakePercent = (DynamicBrakeIntervention < 0 ? DynamicBrakeController.CurrentValue : DynamicBrakeIntervention) * 100f;
+                    }
+                    else 
+                        DynamicBrakePercent = Math.Max(DynamicBrakeIntervention * 100f, 0f);
 
                     if (DynamicBrakeIntervention < 0 && PreviousDynamicBrakeIntervention >= 0 && DynamicBrakePercent == 0)
                         DynamicBrakePercent = -1;
                     PreviousDynamicBrakeIntervention = DynamicBrakeIntervention;
                 }
-                else
+                else if (DynamicBrakeController != null)
                     DynamicBrakeController.Update(elapsedClockSeconds);
             }
-            else if (DynamicBrakeController != null && DynamicBrakePercent < 0 && (DynamicBrakeIntervention < 0 || !IsLeadLocomotive()) && DynamicBrake)
+            else if ((DynamicBrakeController != null || DynamicBrakeBlendingEnabled) && DynamicBrakePercent < 0 && (DynamicBrakeIntervention < 0 || !IsLeadLocomotive()) && DynamicBrake)
             {
      // <CScomment> accordingly to shown documentation dynamic brake delay is required only when engaging
      //           if (DynamicBrakeController.CommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)

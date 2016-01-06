@@ -49,6 +49,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected string DebugType = string.Empty;
         protected string RetainerDebugState = string.Empty;
         protected bool NoMRPAuxResCharging;
+        protected float CylVolumeM3;
 
         protected bool TrainBrakePressureChanging = false;
         protected bool BrakePipePressureChanging = false;
@@ -155,10 +156,39 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             return CylPressurePSI;
         }
 
-
         public override float GetCylVolumeM3()
         {
             return CylVolumeM3;
+        }
+
+        public float GetFullServPressurePSI()
+        {
+            return FullServPressurePSI;
+        }
+
+        public float GetMaxCylPressurePSI()
+        {
+            return MaxCylPressurePSI;
+        }
+
+        public float GetAuxCylVolumeRatio()
+        {
+            return AuxCylVolumeRatio;
+        }
+
+        public float GetMaxReleaseRatePSIpS()
+        {
+            return MaxReleaseRatePSIpS;
+        }
+
+        public float GetMaxApplicationRatePSIpS()
+        {
+            return MaxApplicationRatePSIpS;
+        }
+
+        public float GetMaxBrakeForceN()
+        {
+            return MaxBrakeForceN;
         }
 
         public override float GetVacResPressurePSI()
@@ -360,6 +390,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     if (AutoCylPressurePSI < threshold)
                         AutoCylPressurePSI = threshold;
                 }
+
                 if ((Car as MSTSWagon).EmergencyReservoirPresent)
 				{
                     if (!(Car as MSTSWagon).DistributorPresent && AuxResPressurePSI < EmergResPressurePSI && AuxResPressurePSI < BrakeLine1PressurePSI)
@@ -418,6 +449,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (f < MaxHandbrakeForceN * HandbrakePercent / 100)
                 f = MaxHandbrakeForceN * HandbrakePercent / 100;
             Car.BrakeForceN = f;
+
 
             // sound trigger checking runs every half second, to avoid the problems caused by the jumping BrakeLine1PressurePSI value, and also saves cpu time :)
             if (SoundTriggerCounter >= 0.5f)
