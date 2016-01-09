@@ -216,7 +216,7 @@ namespace Orts.Viewer3D
         /// <param name="soundSourceID"></param>
         public void Queue3(int soundSourceID)
         {
-            if (isValid && BufferIDs[BufferIDs.Length - 1] != 0)
+            if (isValid && !isSingle && BufferIDs[BufferIDs.Length - 1] != 0)
                 OpenAL.alSourceQueueBuffers(soundSourceID, 1, ref BufferIDs[BufferIDs.Length - 1]);
             NextBuffer = 0;
         }
