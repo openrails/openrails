@@ -10919,8 +10919,21 @@ namespace Orts.Simulation.Physics
             ReverseFormation(false);
             CheckFreight();
             InitializeBrakes();
+            InitializeSpeeds();
         }
 
+        /// <summary>
+        /// Initializes speeds for pathless player train
+        /// </summary>
+        ///
+
+        public void InitializeSpeeds()
+        {
+            allowedMaxSpeedSignalMpS = allowedAbsoluteMaxSpeedSignalMpS;
+            allowedMaxSpeedLimitMpS = allowedAbsoluteMaxSpeedLimitMpS;
+            allowedMaxTempSpeedLimitMpS = allowedAbsoluteMaxTempSpeedLimitMpS;
+            TrainMaxSpeedMpS = Math.Min((float)Simulator.TRK.Tr_RouteFile.SpeedLimit, ((MSTSLocomotive)Simulator.PlayerLocomotive).MaxSpeedMpS);
+        }
 
         //================================================================================================//
 

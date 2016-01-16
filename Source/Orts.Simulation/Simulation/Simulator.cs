@@ -1765,6 +1765,7 @@ namespace Orts.Simulation
                     var playerTrain = PlayerLocomotive.Train as AITrain;
                     if (playerTrain != null)
                     {
+                        if (playerTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL) TrainSwitcher.SuspendOldPlayer = true; // force suspend state to avoid disappearing of train;
                         if (TrainSwitcher.SuspendOldPlayer && playerTrain.SpeedMpS != 0)
                         {
                         Confirmer.Message(ConfirmLevel.Warning, Catalog.GetString("Train can't be suspended with speed not equal 0"));
@@ -1907,22 +1908,28 @@ namespace Orts.Simulation
                         playerTrain.InitializeBrakes();
                     }
                 }
+                var oldPlayerTrain = PlayerLocomotive.Train;
                 if (selectedAsPlayer.TrainType != Train.TRAINTYPE.STATIC)
                 {
                     var playerTrain = selectedAsPlayer as AITrain;
-                    if (!(playerTrain.TrainType == Train.TRAINTYPE.AI_INCORPORATED && playerTrain.IncorporatingTrain ==  PlayerLocomotive.Train)) PlayerLocomotive = SetPlayerLocomotive(playerTrain);
+                    if (!(playerTrain.TrainType == Train.TRAINTYPE.AI_INCORPORATED && playerTrain.IncorporatingTrain == PlayerLocomotive.Train))
+                    {
+                        PlayerLocomotive = SetPlayerLocomotive(playerTrain);
+                        if (oldPlayerTrain != null) oldPlayerTrain.LeadLocomotiveIndex = -1;
+                    }
+
                  }
                 else
                 {
                     Train pathlessPlayerTrain = selectedAsPlayer;
                     pathlessPlayerTrain.IsPathless = true;
                     PlayerLocomotive = SetPlayerLocomotive(pathlessPlayerTrain);
+                    if (oldPlayerTrain != null) oldPlayerTrain.LeadLocomotiveIndex = -1;
                     newTrainReverseFormation = true;
                 }
                 playerSwitchOngoing = true;
                 if (MPManager.IsMultiPlayer())
                 {
-
                     MPManager.Notify((new MSGPlayerTrainSw(MPManager.GetUserName(), PlayerLocomotive.Train, PlayerLocomotive.Train.Number, oldTrainReverseFormation, newTrainReverseFormation)).ToString());
                 }
 
