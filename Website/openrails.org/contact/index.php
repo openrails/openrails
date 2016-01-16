@@ -14,9 +14,11 @@
 		<div class="row">
 			<div class="col-md-3">
         <p>
-          To contact the Open Rails Development Team, use this form to send us a message.
+          To contact the Open Rails Development Team, please <a href="http://www.trainsim.com/vbts/forumdisplay.php?104-Open-Rails-Discussion">post on the Open Rails forum</a> at TrainSim.
         </p><p>
           To report issues with the product or feature requests, please use <a href="../contribute/reporting-bugs/">our Bug Tracker</a>.
+        </p><p>
+          To contact the Open Rails Management Team, use this form to send us a message.
         </p>
       </div>
 			<div class="col-md-6">

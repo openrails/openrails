@@ -40,6 +40,7 @@ These boards have forums and files dedicated to Open Rails:</p>
   <li><a href="http://www.elvastower.com" target="_blank">Elvas Tower</a> - International and American</li>
   <li><a href="http://www.trainsim.com" target="_blank">TrainSim</a> - International and American</li>
   <li><a href="http://www.activitysimulatorworld.net" target="_blank">Activity Simulator World</a> - French</li>
+  <li><a href="http://www.openrails.cn" target="_blank">China Open Rails Forum</a> - Chinese</li>
   <li><a href="http://open-rails.forumczech.com" target="_blank">Czech Open Rails Forum</a> - Czech</li>
   <li><a href="http://www.msts.fora.pl" target="_blank">Polish MSTS Forum</a> - Polish</li>
   <li><a href="http://www.railpage.com.au" target="_blank">Rail Page</a> - Australian</li>

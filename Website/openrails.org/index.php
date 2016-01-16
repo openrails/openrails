@@ -65,6 +65,12 @@
             <h4>News</h4>
           </div>
           <p>
+            <strong>Dec 2015</strong>
+            The Elvas Tower forum plays a major role in developing Open Rails but has been closed to non-members following a dispute.
+            We can now report that some of the <a href="http://www.elvastower.com/forums/">Open Rails sub-forums</a> 
+            are open again.
+          </p>
+          <p>
             <strong>Jun 2015</strong>
             The Australian <a href="http://www.zigzag.coalstonewcastle.com.au/">Great Zig Zag Railway</a> released for Open Rails v1.0
           </p>
@@ -80,13 +86,6 @@
             <strong>Dec 2014</strong>
             <a href="http://www.dekosoft.com">Dekosoft Trains</a> has added locos exclusively for Open Rails to its range.
             These are GP30 diesels taking advantage of our 3D cab feature.
-          </p>
-          <p>
-            <strong>July 2014</strong>
-            The legacy graphics-heavy web site has been replaced by one based on Bootstrap which is both easier to maintain and
-            suitable for phones and tablets as well as PCs.
-          </p><p>
-          You can still <a href="/web1/index.html">see an archive of the old site</a>.
           </p>
         </div>
         <div class="col-md-4 divider">

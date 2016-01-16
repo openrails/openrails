@@ -15,6 +15,13 @@
 		<div class="row">
 			<div class="col-md-1"></div>
 			<div class="col-md-5">
+          <h2>Dec 2015 - More Access to Elvas Tower</h2>
+          <p>
+            The Elvas Tower forum plays a major role in developing Open Rails but has been closed to non-members following a dispute.
+            We can now report that some of the <a href="http://www.elvastower.com/forums/">Open Rails sub-forums</a> 
+            are open again.
+          </p>
+          <hr />
           <h2>Jun 2015 - Great Zig Zag Railway</h2>
           <p>
             Peter Newell has just released (June 2105) the <a href="http://www.zigzag.coalstonewcastle.com.au/">Great Zig Zag Railway</a>,
