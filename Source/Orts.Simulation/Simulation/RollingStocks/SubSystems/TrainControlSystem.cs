@@ -209,7 +209,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             Script.DistanceM = () => Locomotive.DistanceM;
 
             // TrainControlSystem
-            Script.IsTrainControlEnabled = () => Locomotive.Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING;
+            Script.IsTrainControlEnabled = () => Locomotive == Locomotive.Train.LeadLocomotive && Locomotive.Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING;
             Script.IsDirectionReverse = () => Locomotive.Direction == Direction.Reverse;
             Script.IsBrakeEmergency = () => Locomotive.TrainBrakeController.EmergencyBraking;
             Script.IsBrakeFullService = () => Locomotive.TrainBrakeController.TCSFullServiceBraking;

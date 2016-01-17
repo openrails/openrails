@@ -24,7 +24,7 @@ namespace ORTS.Scripting.Api
         public bool Activated { get; set; }
 
         /// <summary>
-        /// False if train control is switched off because the train is autopiloted.
+        /// True if train control is switched on (the locomotive is the lead locomotive and the train is not autopiloted).
         /// </summary>
         public Func<bool> IsTrainControlEnabled;
         /// <summary>
