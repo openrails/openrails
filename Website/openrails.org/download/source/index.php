@@ -7,8 +7,8 @@
 <?php include "../../shared/banners/show_banner.php" ?>
 <?php include "../../shared/menu.php" ?>
 <?php
-  $source_stable = 'OpenRailsSource.zip';
-  $source_testing = 'OpenRailsTestingSource.zip';
+  $source_stable = 'OpenRails-1.0-Source.zip';
+  $source_testing = 'OpenRails-Testing-Source.zip';
   $file_path = "../../files";
 ?>
       <div class="row">

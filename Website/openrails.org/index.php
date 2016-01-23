@@ -22,7 +22,7 @@
       </div>
 <?php include "shared/menu.php" ?>
 <?php
-  $download_stable = 'OpenRailsSetup.exe';
+  $download_stable = 'OpenRails-1.0-Setup.exe';
   $file_path = "files";
 ?>
       <div class="row">

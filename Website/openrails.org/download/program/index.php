@@ -8,8 +8,8 @@
 <?php include "../../shared/banners/show_banner.php" ?>
 <?php include "../../shared/menu.php" ?>
 <?php
-  $download_stable = 'OpenRailsSetup.exe';
-  $download_testing = 'OpenRailsTesting.zip';
+  $download_stable = 'OpenRails-1.0-Setup.exe';
+  $download_testing = 'OpenRails-Testing.zip';
   $file_path = "../../files";
 ?>
       <div class="row">
