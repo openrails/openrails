@@ -725,6 +725,12 @@ namespace Orts.Simulation.RollingStocks
             MainResVolumeM3 = locoCopy.MainResVolumeM3;
             MainResChargingRatePSIpS = locoCopy.MainResChargingRatePSIpS;
 
+            DynamicBrakeBlended=locoCopy.DynamicBrakeBlended;
+            DynamicBrakeBlendingEnabled = locoCopy.DynamicBrakeBlendingEnabled;
+            airPipeSystem= locoCopy.airPipeSystem;
+            DynamicBrakeCommandStartTime = locoCopy.DynamicBrakeCommandStartTime;
+            DynamicBrakeBlendingOverride = locoCopy.DynamicBrakeBlendingOverride;
+            DynamicBrakeBlendingForceMatch = locoCopy.DynamicBrakeBlendingForceMatch;
 
             MainPressureUnit = locoCopy.MainPressureUnit;
             BrakeSystemPressureUnits = locoCopy.BrakeSystemPressureUnits;
