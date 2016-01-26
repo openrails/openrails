@@ -489,7 +489,7 @@ namespace Orts.Simulation.Signalling
                         uint? BadSignal = null;
                         foreach (var si in thisWorldObject.SignalUnits.Units)
                         {
-                            if (si.TrItem >= this.trackDB.TrItemTable.Count())
+                            if (this.trackDB.TrItemTable == null || si.TrItem >= this.trackDB.TrItemTable.Count())
                             {
                                 BadSignal = si.TrItem;
                                 break;
