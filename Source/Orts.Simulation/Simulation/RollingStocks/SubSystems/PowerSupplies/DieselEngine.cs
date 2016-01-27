@@ -881,15 +881,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 if (DieselConsumptionTab != null)
                 {
-                    if ((ThrottlePercent == 0) && (dRPM <= 0))
-                    {
-                        if(RealRPM > IdleRPM)
-                            DieselFlowLps = DieselConsumptionTab[RealRPM] / 3600.0f * 0.1f;
-                        else
-                            DieselFlowLps = DieselUsedPerHourAtIdleL / 3600.0f;
-                    }
-                    else
-                        DieselFlowLps = DieselConsumptionTab[RealRPM] * (MaxOutputPowerW) * 0.000001f / 3600.0f ;
+                         DieselFlowLps = DieselConsumptionTab[RealRPM] / 3600.0f;
                 }
                 else
                 {

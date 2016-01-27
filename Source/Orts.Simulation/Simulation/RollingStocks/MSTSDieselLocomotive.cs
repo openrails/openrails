@@ -100,6 +100,12 @@ namespace Orts.Simulation.RollingStocks
 
         public GearBox GearBox = new GearBox();
 
+        /// <summary>
+        /// Used to accumulate a quantity that is not lost because of lack of precision when added to the Fuel level
+        /// </summary>        
+        float partialFuelConsumption = 0;
+
+
         public MSTSDieselLocomotive(Simulator simulator, string wagFile)
             : base(simulator, wagFile)
         {
@@ -518,7 +524,12 @@ namespace Orts.Simulation.RollingStocks
                 //else
                 //    DieselFlowLps = ((DieselUsedPerHourAtMaxPowerL - DieselUsedPerHourAtIdleL) * t + DieselUsedPerHourAtIdleL) / 3600.0f;
                 DieselFlowLps = DieselEngines.DieselFlowLps;
-                DieselLevelL -= DieselEngines.DieselFlowLps * elapsedClockSeconds;
+                partialFuelConsumption += DieselEngines.DieselFlowLps * elapsedClockSeconds;
+                if (partialFuelConsumption >= 0.1)
+                {
+                    DieselLevelL -= partialFuelConsumption;
+                    partialFuelConsumption = 0;
+                }
                 if (DieselLevelL <= 0.0f)
                 {
                     PowerOn = false;
