@@ -72,6 +72,9 @@ namespace Orts.Viewer3D.Debugging
             UpdateContent();
         }
 
+        /// <summary>
+        /// Updates the form content. Warning: Creates garbage
+        /// </summary>
         void UpdateContent()
         {
             var soundSources = Viewer.SoundProcess.GetSoundSources();
@@ -116,13 +119,18 @@ namespace Orts.Viewer3D.Debugging
                         }
                         node.Tag = ss;
 
+                        var activeSS = 0;
                         foreach (var soundStream in ss.SoundStreams)
                         {
-                            var streamString = String.Format("{0} {1} (cue: {2}) {3}", soundStream.ALSoundSource.GetPlayingData());
+                            var playingData = soundStream.ALSoundSource.GetPlayingData();
+                            if (playingData[0] != "-1")
+                                activeSS++;
+                            var streamString = String.Format("{0} {1} (cue: {2}) {3}", playingData);
                             var streamKey = streamString + soundStream.GetHashCode().ToString();
                             node.Nodes.Add(streamKey, streamString);
                             node.Nodes[streamKey].Tag = soundStream;
                         }
+                        node.Text = string.Format("{0}({1}{2}", node.Text.Split('(')[0], activeSS, @"@");
                     }
                     else
                     {
@@ -150,7 +158,7 @@ namespace Orts.Viewer3D.Debugging
                     while (++i < selectedSoundSource.SoundStreams.Count)
                     {
                         soundSourceID = selectedSoundSource.SoundStreams[i].ALSoundSource.SoundSourceID;
-                        if (!selectedSoundSource.SoundStreams[i].ALSoundSource.GetPlayingData().Contains("Stopped"))
+                        if (soundSourceID != -1)
                             break;
                     }
 
@@ -216,7 +224,8 @@ namespace Orts.Viewer3D.Debugging
             activeSoundList.EndUpdate();
             inactiveSoundList.EndUpdate();
 
-            cache.Text = SoundItem.AllPieces.Count.ToString();
+            waves.Text = SoundItem.AllPieces.Count.ToString();
+            alSources.Text = ALSoundSource.ActiveCount.ToString();
         }
 
         private void CleanUp(TreeNodeCollection nodes)
@@ -226,7 +235,7 @@ namespace Orts.Viewer3D.Debugging
                 if (nodes[i].Nodes.Count == 0)
                     nodes[i].Remove();
                 else
-                    nodes[i].Text = String.Format("{0}({1})", nodes[i].Text.Split('(')[0], nodes[i].Nodes.Count.ToString());
+                    nodes[i].Text = String.Format("{0}{1})", nodes[i].Text.Split('/')[0], nodes[i].Nodes.Count);
             }
         }
 

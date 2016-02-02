@@ -257,9 +257,16 @@ namespace Orts.Viewer3D.Processes
             }
         }
 
+        /// <summary>
+        /// Used by Sound Debug Form. Warning: Creates garbage.
+        /// </summary>
+        /// <returns></returns>
         internal Dictionary<object, List<SoundSourceBase>> GetSoundSources()
         {
-            return SoundSources;
+            lock (SoundSources)
+            {
+                return new Dictionary<object, List<SoundSourceBase>>(SoundSources);
+            }
         }
 
         /// <summary>

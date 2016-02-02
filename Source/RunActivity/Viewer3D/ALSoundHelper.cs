@@ -585,7 +585,7 @@ namespace Orts.Viewer3D
         /// </summary>
         private void TryActivate()
         {
-            if (!MustActivate || SoundSourceID != -1)
+            if (!MustActivate || SoundSourceID != -1 || !Active)
                 return;
 
             OpenAL.alGenSources(1, out SoundSourceID);
@@ -657,7 +657,6 @@ namespace Orts.Viewer3D
             Ignore3D = ignore3D;
             Car = car;
             MustActivate = true;
-            TryActivate();
 
             if (SoundSourceID == -1)
                 HardCleanQueue();
@@ -727,6 +726,8 @@ namespace Orts.Viewer3D
         /// Get predicted playing state, not just the copy of OpenAL's
         /// </summary>
         public bool isPlaying { get; private set; }
+        private bool WasPlaying { get; set; }
+        private double StoppedAt = double.MaxValue;
 
         /// <summary>
         /// Updates Items state and Queue
@@ -735,32 +736,34 @@ namespace Orts.Viewer3D
         {
             lock (SoundQueue)
             {
-                if (SoundSourceID == -1)
-                {
-                    TryActivate();
-                    NeedsFrequentUpdate = false;
-                    return;
-                }
+                if (!WasPlaying && isPlaying)
+                    WasPlaying = true;
 
                 SkipProcessed();
 
                 if (QueueHeader == QueueTail)
                 {
                     NeedsFrequentUpdate = false;
+                    XCheckVolumeAndState();
                     return;
                 }
 
-                int p;
-                OpenAL.alGetSourcei(SoundSourceID, OpenAL.AL_BUFFERS_PROCESSED, out p);
-                while (p > 0)
+                if (SoundSourceID != -1)
                 {
-                    OpenAL.alSourceUnqueueBuffer(SoundSourceID);
-                    p--;
+                    int p;
+                    OpenAL.alGetSourcei(SoundSourceID, OpenAL.AL_BUFFERS_PROCESSED, out p);
+                    while (p > 0)
+                    {
+                        OpenAL.alSourceUnqueueBuffer(SoundSourceID);
+                        p--;
+                    }
                 }
 
                 switch (SoundQueue[QueueTail % QUEUELENGHT].PlayState)
                 {
                     case PlayState.Playing:
+                        if (Active && SoundSourceID == -1)
+                            TryActivate();
                         switch (SoundQueue[QueueTail % QUEUELENGHT].PlayMode)
                         {
                             // Determine next action if available
@@ -842,6 +845,8 @@ namespace Orts.Viewer3D
                         if (SoundQueue[QueueTail % QUEUELENGHT].PlayMode != PlayMode.Release
                             && SoundQueue[QueueTail % QUEUELENGHT].PlayMode != PlayMode.ReleaseWithJump)
                         {
+                            if (Active && SoundSourceID == -1)
+                                TryActivate();
                             int bufferID;
                             OpenAL.alGetSourcei(SoundSourceID, OpenAL.AL_BUFFER, out bufferID);
                             // Wait with initialization of a sound piece similar to the previous one, while that is still in queue.
@@ -899,6 +904,24 @@ namespace Orts.Viewer3D
                 SoundQueue[QueueTail % QUEUELENGHT].PlayState = PlayState.NOP;
                 NeedsFrequentUpdate = false;
             }
+
+            if (WasPlaying && !isPlaying || !Active)
+            {
+                int state;
+                OpenAL.alGetSourcei(SoundSourceID, OpenAL.AL_SOURCE_STATE, out state);
+                if (state != OpenAL.AL_PLAYING)
+                {
+                    if (StoppedAt > Program.Simulator.ClockTime)
+                        StoppedAt = Program.Simulator.GameTime;
+                    else if (StoppedAt < Program.Simulator.GameTime - 1)
+                    {
+                        StoppedAt = double.MaxValue;
+                        HardDeactivate();
+                        WasPlaying = false;
+                        MustActivate = true;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -920,7 +943,7 @@ namespace Orts.Viewer3D
                         QueueHeader = QueueTail;
                         SoundQueue[QueueHeader % QUEUELENGHT].PlayState = PlayState.NOP;
                     }
-                    else if (Mode == PlayMode.Loop || Mode == PlayMode.LoopRelease)
+                    else
                     {
                         // Cannot optimize, put into Queue
                         SoundQueue[QueueHeader % QUEUELENGHT].SetPiece(Name, isExternal, isReleasedWithJumpOrOneShotRepeated);
@@ -1184,7 +1207,11 @@ namespace Orts.Viewer3D
 
         public void Dispose()
         {
-            if (SoundSourceID != -1) OpenAL.alDeleteSources(1, ref SoundSourceID);
+            if (SoundSourceID != -1)
+            {
+                OpenAL.alDeleteSources(1, ref SoundSourceID);
+                ActiveCount--;
+            }
         }
     }
 }

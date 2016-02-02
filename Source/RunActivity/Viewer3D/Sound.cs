@@ -311,11 +311,11 @@ namespace Orts.Viewer3D
         /// <summary>
         /// Squeared cutoff distance. No sound is audible above that
         /// </summary>
-        private const int CUTOFFDISTANCE = 250000;
+        private const int CUTOFFDISTANCE = 4000000;
         /// <summary>
         /// Max distance for OpenAL inverse distance model. Equals to Math.Sqrt(CUTOFFDISTANCE)
         /// </summary>
-        public const float MaxDistanceM = 500f;
+        public const float MaxDistanceM = 2000f;
         /// <summary>
         /// Desired max gain at max distance for OpenAL inverse distance model
         /// </summary>
@@ -513,12 +513,7 @@ namespace Orts.Viewer3D
                 Ignore3D = mstsScalabiltyGroup.Ignore3D | mstsScalabiltyGroup.Stereo;
                 IsExternal = ActivationConditions.ExternalCam;
 
-                var deactivationDistance = DeactivationConditions != null && DeactivationConditions.Distance != 0 ? DeactivationConditions.Distance : MaxDistanceM;
-                var maxDistanceM = Math.Min(MaxDistanceM, deactivationDistance);
-
-                // OpenAL inverse distance model is based on formula
-                // Gain = AL_REFERENCE_DISTANCE / ( AL_REFERENCE_DISTANCE + AL_ROLLOFF_FACTOR * ( Distance - AL_REFERENCE_DISTANCE ) )
-                RolloffFactor = SlowRolloff ? 0.4f : ReferenceDistanceM * (1f / GainAtMaxDistance - 1f) / (maxDistanceM - ReferenceDistanceM);
+                SetRolloffFactor();
 
                 foreach (Orts.Formats.Msts.SMSStream mstsStream in mstsScalabiltyGroup.Streams)
                 {
@@ -601,16 +596,21 @@ namespace Orts.Viewer3D
                         break;
                 }
                 Volume = 1.0f;
-                var deactivationDistance = DeactivationConditions != null && DeactivationConditions.Distance != 0 ? DeactivationConditions.Distance : MaxDistanceM;
-                var maxDistanceM = Math.Min(MaxDistanceM, deactivationDistance);
-
-                 RolloffFactor = SlowRolloff ? 0.4f : ReferenceDistanceM * (1f / GainAtMaxDistance - 1f) / (maxDistanceM - ReferenceDistanceM);
+                SetRolloffFactor();
 
                 // initialization of the only one sound stream
                 SoundStreams.Add(new SoundStream(WavFileName, eventSource, this)); 
             }
+        }
 
+        private void SetRolloffFactor()
+        {
+            var deactivationDistance = DeactivationConditions != null && DeactivationConditions.Distance != 0 ? DeactivationConditions.Distance : MaxDistanceM;
+            var maxDistanceM = Math.Min(MaxDistanceM, deactivationDistance);
 
+            // OpenAL inverse distance model is based on formula
+            // Gain = AL_REFERENCE_DISTANCE / ( AL_REFERENCE_DISTANCE + AL_ROLLOFF_FACTOR * ( Distance - AL_REFERENCE_DISTANCE ) )
+            RolloffFactor = SlowRolloff ? 0.4f : ReferenceDistanceM * (1f / GainAtMaxDistance - 1f) / (maxDistanceM - ReferenceDistanceM);
         }
 
         /// <summary>
@@ -1214,6 +1214,7 @@ namespace Orts.Viewer3D
             if (ALSoundSource != null)
             {
                 ALSoundSource.Active = false;
+                ALSoundSource.HardDeactivate();
             }
         }
 
