@@ -456,6 +456,11 @@ namespace Orts.Viewer3D
         public bool IsEnvSound;
         public bool IsExternal = true;
         public bool Ignore3D;
+        /// <summary>
+        /// MSTS treats Stereo() tagged mono wav files specially. This is a flag
+        /// indicating if this treatment should be applied here
+        /// </summary>
+        public bool MstsMonoTreatment;
 
         /// <summary>
         /// Current distance to camera, squared meter. Is used for comparision to <see cref="CUTOFFDISTANCE"/>, to determine if is out-of-scope
@@ -511,6 +516,7 @@ namespace Orts.Viewer3D
                 DeactivationConditions = mstsScalabiltyGroup.Deactivation;
                 Volume = mstsScalabiltyGroup.Volume;
                 Ignore3D = mstsScalabiltyGroup.Ignore3D | mstsScalabiltyGroup.Stereo;
+                MstsMonoTreatment = mstsScalabiltyGroup.Stereo;
                 IsExternal = ActivationConditions.ExternalCam;
 
                 SetRolloffFactor();
@@ -852,7 +858,7 @@ namespace Orts.Viewer3D
             get
             {
                 return (!IsEnvSound && !IsExternal && (Viewer.Camera.Style == Camera.Styles.Cab || Viewer.Camera.Style == Camera.Styles.ThreeDimCab)
-                    && Car != null && Viewer.Camera.AttachedCar != null && !(Car is MSTSLocomotive) 
+                    && Car != null && Viewer.Camera.AttachedCar != null && !(Car is MSTSLocomotive) && !Car.HasInsideView && Car.PassengerViewpoints.Count == 0
                     && (Car.Train == Viewer.Camera.AttachedCar.Train || Car.Train.TrainType == Train.TRAINTYPE.STATIC || Car.Train.TrainType == Train.TRAINTYPE.AI_NOTSTARTED));
             }
         }
@@ -869,6 +875,7 @@ namespace Orts.Viewer3D
                 return false;
 
             Camera.Styles viewpoint = Viewer.Camera.Style;
+            Console.WriteLine("___{0} {1} {2} {3}", conditions.CabCam, conditions.PassengerCam, conditions.ExternalCam, viewpoint);
 
             if (IsEnvSound || !IsEnvSound && IsntThisCabView && !IsInvisibleSoundCar && !WeatherSound)
             {
@@ -1102,6 +1109,8 @@ namespace Orts.Viewer3D
                     else if (SoundSource.Viewer.Camera.AttachedCar != null)
                         x = ReadValue(MSTSStream.FrequencyCurve.Control, (MSTSWagon)SoundSource.Viewer.Camera.AttachedCar);
                     float y = Interpolate(x, MSTSStream.FrequencyCurve);
+                    if (SoundSource.MstsMonoTreatment && ALSoundSource.MstsMonoTreatment)
+                        y *= 2;
 
                     ALSoundSource.PlaybackSpeed = y / ALSoundSource.SampleRate;
                     NeedsFrequentUpdate = x != 0;

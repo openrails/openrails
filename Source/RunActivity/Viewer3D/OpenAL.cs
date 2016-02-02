@@ -74,6 +74,11 @@ namespace Orts.Viewer3D
         public const int AL_STREAMING = 0x1029;
         public const int AL_UNDETERMINED = 0x1030;
 
+        public const int AL_FORMAT_MONO8 = 0x1100;
+        public const int AL_FORMAT_MONO16 = 0x1101;
+        public const int AL_FORMAT_STEREO8 = 0x1102;
+        public const int AL_FORMAT_STEREO16 = 0x1103;
+
         public const int ALC_DEFAULT_DEVICE_SPECIFIER = 0x1004;
         public const int ALC_DEVICE_SPECIFIER = 0x1005;
 
@@ -84,6 +89,65 @@ namespace Orts.Viewer3D
         public const int AL_INVALID_VALUE = 0xa003; // 40963
         public const int AL_INVALID_OPERATION = 0xa004; // 40964
         public const int AL_OUT_OF_MEMORY = 0xa005; // 40965
+
+        public const int AL_AUXILIARY_SEND_FILTER = 0x20006;
+
+        public const int AL_FILTER_NULL = 0x0000;
+
+        public const int AL_EFFECTSLOT_NULL = 0x0000;
+        public const int AL_EFFECTSLOT_EFFECT = 0x0001;
+        public const int AL_EFFECTSLOT_GAIN = 0x0002;
+        public const int AL_EFFECTSLOT_AUXILIARY_SEND_AUTO = 0x0003;
+
+        public const int AL_EFFECT_TYPE = 0x8001;
+        public const int AL_EFFECT_REVERB = 0x0001;
+        public const int AL_EFFECT_ECHO = 0x0004;
+        public const int AL_EFFECT_PITCH_SHIFTER = 0x0008;
+        public const int AL_EFFECT_EAXREVERB = 0x8000;
+
+        public const int AL_ECHO_DELAY = 0x0001;
+        public const int AL_ECHO_LRDELAY = 0x0002;
+        public const int AL_ECHO_DAMPING = 0x0003;
+        public const int AL_ECHO_FEEDBACK = 0x0004;
+        public const int AL_ECHO_SPREAD = 0x0005;
+
+        public const int AL_REVERB_DENSITY = 0x0001;
+        public const int AL_REVERB_DIFFUSION = 0x0002;
+        public const int AL_REVERB_GAIN = 0x0003;
+        public const int AL_REVERB_GAINHF = 0x0004;
+        public const int AL_REVERB_DECAY_TIME = 0x0005;
+        public const int AL_REVERB_DECAY_HFRATIO = 0x0006;
+        public const int AL_REVERB_REFLECTIONS_GAIN = 0x0007;
+        public const int AL_REVERB_REFLECTIONS_DELAY = 0x0008;
+        public const int AL_REVERB_LATE_REVERB_GAIN = 0x0009;
+        public const int AL_REVERB_LATE_REVERB_DELAY = 0x000a;
+        public const int AL_REVERB_AIR_ABSORPTION_GAINHF = 0x000b;
+        public const int AL_REVERB_ROOM_ROLLOFF_FACTOR = 0x000c;
+        public const int AL_REVERB_DECAY_HFLIMIT = 0x000d;
+
+        public const int AL_EAXREVERB_DENSITY = 0x0001;
+        public const int AL_EAXREVERB_DIFFUSION = 0x0002;
+        public const int AL_EAXREVERB_GAIN = 0x0003;
+        public const int AL_EAXREVERB_GAINHF = 0x0004;
+        public const int AL_EAXREVERB_GAINLF = 0x0005;
+        public const int AL_EAXREVERB_DECAY_TIME = 0x0006;
+        public const int AL_EAXREVERB_DECAY_HFRATIO = 0x0007;
+        public const int AL_EAXREVERB_DECAY_LFRATIO = 0x0008;
+        public const int AL_EAXREVERB_REFLECTIONS_GAIN = 0x0009;
+        public const int AL_EAXREVERB_REFLECTIONS_DELAY = 0x000a;
+        public const int AL_EAXREVERB_REFLECTIONS_PAN = 0x000b;
+        public const int AL_EAXREVERB_LATE_REVERB_GAIN = 0x000c;
+        public const int AL_EAXREVERB_LATE_REVERB_DELAY = 0x000d;
+        public const int AL_EAXREVERB_LATE_REVERB_PAN = 0x000e;
+        public const int AL_EAXREVERB_ECHO_TIME = 0x000f;
+        public const int AL_EAXREVERB_ECHO_DEPTH = 0x0010;
+        public const int AL_EAXREVERB_MODULATION_TIME = 0x0011;
+        public const int AL_EAXREVERB_MODULATION_DEPTH = 0x0012;
+        public const int AL_EAXREVERB_AIR_ABSORPTION_GAINHF = 0x0013;
+        public const int AL_EAXREVERB_HFREFERENCE = 0x0014;
+        public const int AL_EAXREVERB_LFREFERENCE = 0x0015;
+        public const int AL_EAXREVERB_ROOM_ROLLOFF_FACTOR = 0x0016;
+        public const int AL_EAXREVERB_DECAY_HFLIMIT = 0x0017;
 
         [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr alcOpenDevice(string deviceName);
@@ -141,6 +205,8 @@ namespace Orts.Viewer3D
         [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alSourcei(int source, int attribute, int val);
         [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void alSource3i(int source, int attribute, int value1, int value2, int value3);
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alSourcef(int source, int attribute, float val);
         [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alSource3f(int source, int attribute, float value1, float value2, float value3);
@@ -162,6 +228,157 @@ namespace Orts.Viewer3D
         public static extern void alBufferiv(int buffer, int attribute, [In] int[] values);
         [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern bool alIsSource(int source);
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void alGenAuxiliaryEffectSlots(int number, out int effectslot);
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void alAuxiliaryEffectSloti(int effectslot, int attribute, int val);
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void alGenEffects(int number, out int effect);
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void alEffecti(int effect, int attribute, int val);
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void alEffectf(int effect, int attribute, float val);
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void alEffectfv(int effect, int attribute, [In] float[] values);
+
+        public struct EFXEAXREVERBPROPERTIES
+        {
+            public float flDensity;
+            public float flDiffusion;
+            public float flGain;
+            public float flGainHF;
+            public float flGainLF;
+            public float flDecayTime;
+            public float flDecayHFRatio;
+            public float flDecayLFRatio;
+            public float flReflectionsGain;
+            public float flReflectionsDelay;
+            public float[] flReflectionsPan;
+            public float flLateReverbGain;
+            public float flLateReverbDelay;
+            public float[] flLateReverbPan;
+            public float flEchoTime;
+            public float flEchoDepth;
+            public float flModulationTime;
+            public float flModulationDepth;
+            public float flAirAbsorptionGainHF;
+            public float flHFReference;
+            public float flLFReference;
+            public float flRoomRolloffFactor;
+            public int iDecayHFLimit;
+
+            public EFXEAXREVERBPROPERTIES(float density, float diffusion, float gain, float gainHF, float gainLF, float decayTime, float decayHFRatio, float decayLFratio,
+                float reflectionsGain, float reflectionsDelay, float[] reflectionsPan, float lateReverbGain, float lateReverbDelay, float[] lateReverbPan, float echoTime,
+                float echoDepth, float modulationTime, float modulationDepth, float airAbsorptionGainHF, float hfReference, float lfReference, float roomRolloffFactor, int decayHFLimit)
+            {
+                flDensity = density;
+                flDiffusion = diffusion;
+                flGain = gain;
+                flGainHF = gainHF;
+                flGainLF = gainLF;
+                flDecayTime = decayTime;
+                flDecayHFRatio = decayHFRatio;
+                flDecayLFRatio = decayLFratio;
+                flReflectionsGain = reflectionsGain;
+                flReflectionsDelay = reflectionsDelay;
+                flReflectionsPan = reflectionsPan;
+                flLateReverbGain = lateReverbGain;
+                flLateReverbDelay = lateReverbDelay;
+                flLateReverbPan = lateReverbPan;
+                flEchoTime = echoTime;
+                flEchoDepth = echoDepth;
+                flModulationTime = modulationTime;
+                flModulationDepth = modulationDepth;
+                flAirAbsorptionGainHF = airAbsorptionGainHF;
+                flHFReference = hfReference;
+                flLFReference = lfReference;
+                flRoomRolloffFactor = roomRolloffFactor;
+                iDecayHFLimit = decayHFLimit;
+            }
+        }
+
+        public static EFXEAXREVERBPROPERTIES EFX_REVERB_PRESET_GENERIC = new EFXEAXREVERBPROPERTIES(1.0000f, 1.0000f, 0.3162f, 0.8913f, 1.0000f, 1.4900f, 0.8300f, 1.0000f, 0.0500f, 0.0070f, new float[] { 0.0000f, 0.0000f, 0.0000f }, 1.2589f, 0.0110f, new float[] { 0.0000f, 0.0000f, 0.0000f }, 0.2500f, 0.0000f, 0.2500f, 0.0000f, 0.9943f, 5000.0000f, 250.0000f, 0.0000f, 0x1);
+        public static EFXEAXREVERBPROPERTIES EFX_REVERB_PRESET_MOUNTAINS = new EFXEAXREVERBPROPERTIES(1.0000f, 0.2700f, 0.3162f, 0.0562f, 1.0000f, 1.4900f, 0.2100f, 1.0000f, 0.0407f, 0.3000f, new float[] { 0.0000f, 0.0000f, 0.0000f }, 0.1919f, 0.1000f, new float[] { 0.0000f, 0.0000f, 0.0000f }, 0.2500f, 1.0000f, 0.2500f, 0.0000f, 0.9943f, 5000.0000f, 250.0000f, 0.0000f, 0x0);
+        public static EFXEAXREVERBPROPERTIES EFX_REVERB_PRESET_HANGAR = new EFXEAXREVERBPROPERTIES(1.0000f, 1.0000f, 0.3162f, 0.3162f, 1.0000f, 10.0500f, 0.2300f, 1.0000f, 0.5000f, 0.0200f, new float[] { 0.0000f, 0.0000f, 0.0000f }, 1.2560f, 0.0300f, new float[] { 0.0000f, 0.0000f, 0.0000f }, 0.2500f, 0.0000f, 0.2500f, 0.0000f, 0.9943f, 5000.0000f, 250.0000f, 0.0000f, 0x1);
+        public static EFXEAXREVERBPROPERTIES EFX_REVERB_PRESET_QUARRY = new EFXEAXREVERBPROPERTIES(1.0000f, 1.0000f, 0.3162f, 0.3162f, 1.0000f, 1.4900f, 0.8300f, 1.0000f, 0.0000f, 0.0610f, new float[] { 0.0000f, 0.0000f, 0.0000f }, 1.7783f, 0.0250f, new float[] { 0.0000f, 0.0000f, 0.0000f }, 0.1250f, 0.7000f, 0.2500f, 0.0000f, 0.9943f, 5000.0000f, 250.0000f, 0.0000f, 0x1);
+        public static EFXEAXREVERBPROPERTIES EFX_REVERB_PRESET_OUTDOORS_VALLEY = new EFXEAXREVERBPROPERTIES(1.0000f, 0.2800f, 0.3162f, 0.0282f, 0.1585f, 2.8800f, 0.2600f, 0.3500f, 0.1413f, 0.2630f, new float[] { 0.0000f, 0.0000f, -0.0000f }, 0.3981f, 0.1000f, new float[] { 0.0000f, 0.0000f, 0.0000f }, 0.2500f, 0.3400f, 0.2500f, 0.0000f, 0.9943f, 2854.3999f, 107.5000f, 0.0000f, 0x0);
+        public static EFXEAXREVERBPROPERTIES EFX_REVERB_PRESET_OUTDOORS_DEEPCANYON = new EFXEAXREVERBPROPERTIES(1.0000f, 0.7400f, 0.3162f, 0.1778f, 0.6310f, 3.8900f, 0.2100f, 0.4600f, 0.3162f, 0.2230f, new float[] { 0.0000f, 0.0000f, -0.0000f }, 0.3548f, 0.0190f, new float[] { 0.0000f, 0.0000f, 0.0000f }, 0.2500f, 1.0000f, 0.2500f, 0.0000f, 0.9943f, 4399.1001f, 242.9000f, 0.0000f, 0x0);
+
+        public static void CreateHornEffect()
+        {
+            alGenEffects(1, out HornEffectID);
+            //LoadReverbEffect(ref EFX_REVERB_PRESET_OUTDOORS_DEEPCANYON, HornEffectID);
+            LoadEchoEffect(HornEffectID);
+
+            alGenAuxiliaryEffectSlots(1, out HornEffectSlotID);
+            alAuxiliaryEffectSloti(HornEffectSlotID, AL_EFFECTSLOT_EFFECT, HornEffectID);
+        }
+
+        public static bool LoadEchoEffect(int effectID)
+        {
+            alGetError();
+            alEffecti(effectID, AL_EFFECT_TYPE, AL_EFFECT_ECHO);
+
+            alEffectf(effectID, AL_ECHO_DELAY, 0.1f);
+            alEffectf(effectID, AL_ECHO_LRDELAY, 0.4f);
+            alEffectf(effectID, AL_ECHO_DAMPING, 0.5f);
+            alEffectf(effectID, AL_ECHO_FEEDBACK, 0.2f);
+            alEffectf(effectID, AL_ECHO_SPREAD, -1.0f);
+
+            return alGetError() == AL_NO_ERROR;
+        }
+
+        public static bool LoadReverbEffect(ref EFXEAXREVERBPROPERTIES reverb, int effectID)
+        {
+            alGetError();
+            if (alGetEnumValue("AL_EFFECT_EAXREVERB") != 0)
+            {
+                alEffecti(effectID, AL_EFFECT_TYPE, AL_EFFECT_EAXREVERB);
+
+                alEffectf(effectID, AL_EAXREVERB_DENSITY, reverb.flDensity);
+                alEffectf(effectID, AL_EAXREVERB_DIFFUSION, reverb.flDiffusion);
+                alEffectf(effectID, AL_EAXREVERB_GAIN, reverb.flGain);
+                alEffectf(effectID, AL_EAXREVERB_GAINHF, reverb.flGainHF);
+                alEffectf(effectID, AL_EAXREVERB_GAINLF, reverb.flGainLF);
+                alEffectf(effectID, AL_EAXREVERB_DECAY_TIME, reverb.flDecayTime);
+                alEffectf(effectID, AL_EAXREVERB_DECAY_HFRATIO, reverb.flDecayHFRatio);
+                alEffectf(effectID, AL_EAXREVERB_DECAY_LFRATIO, reverb.flDecayLFRatio);
+                alEffectf(effectID, AL_EAXREVERB_REFLECTIONS_GAIN, reverb.flReflectionsGain);
+                alEffectf(effectID, AL_EAXREVERB_REFLECTIONS_DELAY, reverb.flReflectionsDelay);
+                alEffectfv(effectID, AL_EAXREVERB_REFLECTIONS_PAN, reverb.flReflectionsPan);
+                alEffectf(effectID, AL_EAXREVERB_LATE_REVERB_GAIN, reverb.flLateReverbGain);
+                alEffectf(effectID, AL_EAXREVERB_LATE_REVERB_DELAY, reverb.flLateReverbDelay);
+                alEffectfv(effectID, AL_EAXREVERB_LATE_REVERB_PAN, reverb.flLateReverbPan);
+                alEffectf(effectID, AL_EAXREVERB_ECHO_TIME, reverb.flEchoTime);
+                alEffectf(effectID, AL_EAXREVERB_ECHO_DEPTH, reverb.flEchoDepth);
+                alEffectf(effectID, AL_EAXREVERB_MODULATION_TIME, reverb.flModulationTime);
+                alEffectf(effectID, AL_EAXREVERB_MODULATION_DEPTH, reverb.flModulationDepth);
+                alEffectf(effectID, AL_EAXREVERB_AIR_ABSORPTION_GAINHF, reverb.flAirAbsorptionGainHF);
+                alEffectf(effectID, AL_EAXREVERB_HFREFERENCE, reverb.flHFReference);
+                alEffectf(effectID, AL_EAXREVERB_LFREFERENCE, reverb.flLFReference);
+                alEffectf(effectID, AL_EAXREVERB_ROOM_ROLLOFF_FACTOR, reverb.flRoomRolloffFactor);
+                alEffecti(effectID, AL_EAXREVERB_DECAY_HFLIMIT, reverb.iDecayHFLimit);
+            }
+            else
+            {
+                alEffecti(effectID, AL_EFFECT_TYPE, AL_EFFECT_REVERB);
+
+                alEffectf(effectID, AL_REVERB_DENSITY, reverb.flDensity);
+                alEffectf(effectID, AL_REVERB_DIFFUSION, reverb.flDiffusion);
+                alEffectf(effectID, AL_REVERB_GAIN, reverb.flGain);
+                alEffectf(effectID, AL_REVERB_GAINHF, reverb.flGainHF);
+                alEffectf(effectID, AL_REVERB_DECAY_TIME, reverb.flDecayTime);
+                alEffectf(effectID, AL_REVERB_DECAY_HFRATIO, reverb.flDecayHFRatio);
+                alEffectf(effectID, AL_REVERB_REFLECTIONS_GAIN, reverb.flReflectionsGain);
+                alEffectf(effectID, AL_REVERB_REFLECTIONS_DELAY, reverb.flReflectionsDelay);
+                alEffectf(effectID, AL_REVERB_LATE_REVERB_GAIN, reverb.flLateReverbGain);
+                alEffectf(effectID, AL_REVERB_LATE_REVERB_DELAY, reverb.flLateReverbDelay);
+                alEffectf(effectID, AL_REVERB_AIR_ABSORPTION_GAINHF, reverb.flAirAbsorptionGainHF);
+                alEffectf(effectID, AL_REVERB_ROOM_ROLLOFF_FACTOR, reverb.flRoomRolloffFactor);
+                alEffecti(effectID, AL_REVERB_DECAY_HFLIMIT, reverb.iDecayHFLimit);
+            }
+            return alGetError() == AL_NO_ERROR;
+        }
 
         public static int alSourceUnqueueBuffer(int SoundSourceID)
         {
@@ -188,6 +405,8 @@ namespace Orts.Viewer3D
             return "";
         }
 
+        public static int HornEffectSlotID;
+        public static int HornEffectID;
         public static void Initialize()
         {
             //if (alcIsExtensionPresent(IntPtr.Zero, "ALC_ENUMERATION_EXT") == AL_TRUE)
@@ -547,7 +766,7 @@ namespace Orts.Viewer3D
         /// </summary>
         /// <param name="pulFormat">Place to put the format number</param>
         /// <returns>True if success</returns>
-        private bool GetALFormat(ref int pulFormat)
+        private bool GetALFormat(ref int pulFormat, ref bool mstsMonoTreatment)
         {
             pulFormat = 0;
 
@@ -561,10 +780,11 @@ namespace Orts.Viewer3D
                             pulFormat = OpenAL.alGetEnumValue("AL_FORMAT_MONO_IMA4");
                             break;
                         case 8:
-                            pulFormat = OpenAL.alGetEnumValue("AL_FORMAT_MONO8");
+                            pulFormat = OpenAL.AL_FORMAT_MONO8;
                             break;
                         case 16:
-                            pulFormat = OpenAL.alGetEnumValue("AL_FORMAT_MONO16");
+                            pulFormat = OpenAL.AL_FORMAT_MONO16;
+                            mstsMonoTreatment = true;
                             break;
                     }
                 }
@@ -576,10 +796,10 @@ namespace Orts.Viewer3D
                             pulFormat = OpenAL.alGetEnumValue("AL_FORMAT_STEREO_IMA4");
                             break;
                         case 8:
-                            pulFormat = OpenAL.alGetEnumValue("AL_FORMAT_STEREO8");
+                            pulFormat = OpenAL.AL_FORMAT_STEREO8;
                             break;
                         case 16:
-                            pulFormat = OpenAL.alGetEnumValue("AL_FORMAT_STEREO16");
+                            pulFormat = OpenAL.AL_FORMAT_STEREO16;
                             break;
                     }
                 }
@@ -596,10 +816,11 @@ namespace Orts.Viewer3D
                             pulFormat = OpenAL.alGetEnumValue("AL_FORMAT_MONO_IMA4");
                             break;
                         case 8:
-                            pulFormat = OpenAL.alGetEnumValue("AL_FORMAT_MONO8");
+                            pulFormat = OpenAL.AL_FORMAT_MONO8;
                             break;
                         case 16:
-                            pulFormat = OpenAL.alGetEnumValue("AL_FORMAT_MONO16");
+                            pulFormat = OpenAL.AL_FORMAT_MONO16;
+                            mstsMonoTreatment = true;
                             break;
                     }
                 }
@@ -611,10 +832,10 @@ namespace Orts.Viewer3D
                             pulFormat = OpenAL.alGetEnumValue("AL_FORMAT_STEREO_IMA4");
                             break;
                         case 8:
-                            pulFormat = OpenAL.alGetEnumValue("AL_FORMAT_STEREO8");
+                            pulFormat = OpenAL.AL_FORMAT_STEREO8;
                             break;
                         case 16:
-                            pulFormat = OpenAL.alGetEnumValue("AL_FORMAT_STEREO16");
+                            pulFormat = OpenAL.AL_FORMAT_STEREO16;
                             break;
                     }
                 }
@@ -739,7 +960,7 @@ namespace Orts.Viewer3D
         /// <param name="ToMono">Indicates if the wave must be converted to mono</param>
         /// <param name="isReleasedWithJump">True if sound possibly be released with jump</param>
         /// <returns>True if success</returns>
-        public static bool OpenWavFile(string Name, ref int[] BufferIDs, ref int[] BufferLens, bool ToMono, bool isReleasedWithJump, ref int numCuePoints)
+        public static bool OpenWavFile(string Name, ref int[] BufferIDs, ref int[] BufferLens, bool ToMono, bool isReleasedWithJump, ref int numCuePoints, ref bool mstsMonoTreatment)
         {
             WaveFileData wfi = new WaveFileData();
             int fmt = -1;
@@ -761,7 +982,7 @@ namespace Orts.Viewer3D
                 return false;
             }
 
-            if (!wfi.GetALFormat(ref fmt))
+            if (!wfi.GetALFormat(ref fmt, ref mstsMonoTreatment))
             {
                 return false;
             }

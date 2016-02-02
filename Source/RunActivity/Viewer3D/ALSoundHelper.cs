@@ -52,6 +52,7 @@ namespace Orts.Viewer3D
         public int Channels { get; private set; }
         public bool IsExternal { get; private set; }
         public bool IsReleasedWithJump { get; private set; }
+        public readonly bool MstsMonoTreatment;
         /// <summary>
         /// How many SoundItems use this. When it falls back to 0, SoundPiece can be disposed
         /// </summary>
@@ -87,7 +88,7 @@ namespace Orts.Viewer3D
             Name = name;
             IsExternal = isExternal;
             IsReleasedWithJump = isReleasedWithJump;
-            if (!WaveFileData.OpenWavFile(Name, ref BufferIDs, ref BufferLens, IsExternal, isReleasedWithJump, ref NumCuePoints))
+            if (!WaveFileData.OpenWavFile(Name, ref BufferIDs, ref BufferLens, IsExternal, isReleasedWithJump, ref NumCuePoints, ref MstsMonoTreatment))
             {
                 BufferIDs = new int[1];
                 BufferIDs[0] = 0;
@@ -608,17 +609,21 @@ namespace Orts.Viewer3D
             OpenAL.alSourcef(SoundSourceID, OpenAL.AL_REFERENCE_DISTANCE, SoundSource.ReferenceDistanceM);
             OpenAL.alSourcef(SoundSourceID, OpenAL.AL_MAX_GAIN, 1f);
             OpenAL.alSourcef(SoundSourceID, OpenAL.AL_ROLLOFF_FACTOR, RolloffFactor);
-            OpenAL.alSourcef(SoundSourceID, OpenAL.AL_PITCH, _PlaybackSpeed);
+            OpenAL.alSourcef(SoundSourceID, OpenAL.AL_PITCH, PlaybackSpeed);
             OpenAL.alSourcei(SoundSourceID, OpenAL.AL_LOOPING, Looping ? OpenAL.AL_TRUE : OpenAL.AL_FALSE);
 
             InitPosition();
             SetVolume();
+
+            //if (OpenAL.HornEffectSlotID <= 0)
+            //    OpenAL.CreateHornEffect();
+            //
+            //OpenAL.alSource3i(SoundSourceID, OpenAL.AL_AUXILIARY_SEND_FILTER, OpenAL.HornEffectSlotID, 0, OpenAL.AL_FILTER_NULL);
         }
 
         /// <summary>
         /// Set OpenAL gain
         /// </summary>
-        /// <param name="volume"></param>
         private void SetVolume()
         {
             OpenAL.alSourcef(SoundSourceID, OpenAL.AL_GAIN, Active ? Volume : 0);
@@ -627,7 +632,6 @@ namespace Orts.Viewer3D
         /// <summary>
         /// Set whether to ignore 3D position of sound source
         /// </summary>
-        /// <param name="sound2D"></param>
         public void InitPosition()
         {
             if (Ignore3D)
@@ -650,8 +654,6 @@ namespace Orts.Viewer3D
         /// <summary>
         /// Queries a new <see cref="SoundSourceID"/> from OpenAL, if one is not allocated yet.
         /// </summary>
-        /// <param name="ignore3D"></param>
-        /// <param name="car"></param>
         public void HardActivate(bool ignore3D, TrainCar car)
         {
             Ignore3D = ignore3D;
@@ -715,10 +717,12 @@ namespace Orts.Viewer3D
                     if (!float.IsNaN(value) && value != 0 && !float.IsInfinity(value))
                     {
                         _PlaybackSpeed = value;
-                        OpenAL.alSourcef(SoundSourceID, OpenAL.AL_PITCH, _PlaybackSpeed);
+                        if (SoundSourceID != -1)
+                            OpenAL.alSourcef(SoundSourceID, OpenAL.AL_PITCH, _PlaybackSpeed);
                     }
                 }
             }
+            get { return _PlaybackSpeed; }
         }
 
         public float SampleRate { get; private set; }
@@ -762,8 +766,7 @@ namespace Orts.Viewer3D
                 switch (SoundQueue[QueueTail % QUEUELENGHT].PlayState)
                 {
                     case PlayState.Playing:
-                        if (Active && SoundSourceID == -1)
-                            TryActivate();
+                        TryActivate();
                         switch (SoundQueue[QueueTail % QUEUELENGHT].PlayMode)
                         {
                             // Determine next action if available
@@ -845,8 +848,7 @@ namespace Orts.Viewer3D
                         if (SoundQueue[QueueTail % QUEUELENGHT].PlayMode != PlayMode.Release
                             && SoundQueue[QueueTail % QUEUELENGHT].PlayMode != PlayMode.ReleaseWithJump)
                         {
-                            if (Active && SoundSourceID == -1)
-                                TryActivate();
+                            TryActivate();
                             int bufferID;
                             OpenAL.alGetSourcei(SoundSourceID, OpenAL.AL_BUFFER, out bufferID);
                             // Wait with initialization of a sound piece similar to the previous one, while that is still in queue.
@@ -854,7 +856,10 @@ namespace Orts.Viewer3D
                             if (!isPlaying || !SoundQueue[QueueTail % QUEUELENGHT].SoundPiece.isMine(bufferID))
                             {
                                 NeedsFrequentUpdate = SoundQueue[QueueTail % QUEUELENGHT].InitItemPlay(SoundSourceID);
+                                var sampleRate = SampleRate;
                                 SampleRate = SoundQueue[QueueTail % QUEUELENGHT].SoundPiece.Frequency;
+                                if (sampleRate != SampleRate && SampleRate != 0)
+                                    PlaybackSpeed *= sampleRate / SampleRate;
 
                                 Start();
                                 NeedsFrequentUpdate |= SoundQueue[QueueTail % QUEUELENGHT].SoundPiece.IsReleasedWithJump;
@@ -943,12 +948,21 @@ namespace Orts.Viewer3D
                         QueueHeader = QueueTail;
                         SoundQueue[QueueHeader % QUEUELENGHT].PlayState = PlayState.NOP;
                     }
+                    else if (QueueHeader != QueueTail
+                        && SoundQueue[(QueueHeader - 1) % QUEUELENGHT].SoundPiece.Name == Name
+                        && SoundQueue[(QueueHeader - 1) % QUEUELENGHT].PlayMode == PlayMode.Loop
+                        && Mode == PlayMode.Loop)
+                    {
+                        // Don't put into queue repeatedly
+                    }
                     else
                     {
                         // Cannot optimize, put into Queue
                         SoundQueue[QueueHeader % QUEUELENGHT].SetPiece(Name, isExternal, isReleasedWithJumpOrOneShotRepeated);
                         SoundQueue[QueueHeader % QUEUELENGHT].PlayState = PlayState.New;
                         SoundQueue[QueueHeader % QUEUELENGHT].PlayMode = Mode;
+                        if (QueueHeader == QueueTail && SoundQueue[QueueTail % QUEUELENGHT].SoundPiece != null)
+                            SampleRate = SoundQueue[QueueTail % QUEUELENGHT].SoundPiece.Frequency;
 
                         QueueHeader++;
                     }
@@ -1034,6 +1048,9 @@ namespace Orts.Viewer3D
                 SoundQueue[QueueHeader % QUEUELENGHT].SetPiece(Name, isExternal, Mode == PlayMode.LoopRelease && isReleasedWithJumpOrOneShotRepeated);
                 SoundQueue[QueueHeader % QUEUELENGHT].PlayState = PlayState.New;
                 SoundQueue[QueueHeader % QUEUELENGHT].PlayMode = Mode;
+                // Need an initial sample rate value for frequency curve calculation
+                if (QueueHeader == QueueTail && SoundQueue[QueueTail % QUEUELENGHT].SoundPiece != null)
+                    SampleRate = SoundQueue[QueueTail % QUEUELENGHT].SoundPiece.Frequency;
 
                 QueueHeader++;
             }
@@ -1141,6 +1158,18 @@ namespace Orts.Viewer3D
         {
             OpenAL.alSourcei(SoundSourceID, OpenAL.AL_LOOPING, OpenAL.AL_FALSE);
             Looping = false;
+        }
+
+        private bool _MstsMonoTreatment;
+        public bool MstsMonoTreatment
+        {
+            get
+            {
+                var soundPiece = SoundQueue[QueueTail % QUEUELENGHT].SoundPiece;
+                if (soundPiece != null)
+                    _MstsMonoTreatment = soundPiece.MstsMonoTreatment;
+                return _MstsMonoTreatment;
+            }
         }
 
         private static bool _Muted;
