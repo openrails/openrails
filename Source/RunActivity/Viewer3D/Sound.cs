@@ -875,7 +875,6 @@ namespace Orts.Viewer3D
                 return false;
 
             Camera.Styles viewpoint = Viewer.Camera.Style;
-            Console.WriteLine("___{0} {1} {2} {3}", conditions.CabCam, conditions.PassengerCam, conditions.ExternalCam, viewpoint);
 
             if (IsEnvSound || !IsEnvSound && IsntThisCabView && !IsInvisibleSoundCar && !WeatherSound)
             {
