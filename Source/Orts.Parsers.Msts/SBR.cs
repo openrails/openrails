@@ -458,7 +458,13 @@ namespace Orts.Parsers.Msts
         {
             if (RemainingBytes > 0)
             {
+                if (RemainingBytes > Int32.MaxValue)
+                {
+                    TraceWarning("Remaining Bytes overflow");
+                    RemainingBytes = Int32.MaxValue;
+                }
                 InputStream.ReadBytes((int)RemainingBytes);
+
                 RemainingBytes = 0;
             }
         }
