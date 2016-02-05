@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-10-24 20:41:58+0200\n"
-"PO-Revision-Date: 2015-10-24 20:41:58+0200\n"
+"POT-Creation-Date: 2016-02-05 01:40:29+0100\n"
+"PO-Revision-Date: 2016-02-05 01:40:29+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -635,22 +635,26 @@ msgstr ""
 msgid "Control TroughRefill"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:651
-#, csharp-format
-msgid "{0} requires and is modified by Shift"
+#: ../../ORTS.Settings/InputSettings.cs:202
+msgid "Control ImmediateRefill"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:653
 #, csharp-format
-msgid "{0} requires and is modified by Control"
+msgid "{0} requires and is modified by Shift"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:655
 #, csharp-format
+msgid "{0} requires and is modified by Control"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:657
+#, csharp-format
 msgid "{0} requires and is modified by Alt"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:686
+#: ../../ORTS.Settings/InputSettings.cs:688
 #, csharp-format
 msgid "{0} and {1} both match {2}"
 msgstr ""

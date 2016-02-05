@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-08-21 23:03:35+0200\n"
-"PO-Revision-Date: 2015-08-21 23:03:42+0200\n"
+"POT-Creation-Date: 2016-02-05 01:40:24+0100\n"
+"PO-Revision-Date: 2016-02-05 01:40:27+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -193,7 +193,7 @@ msgstr ""
 msgid "WaitActivity"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.cs:529
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.cs:530
 msgid "NoMoreAct"
 msgstr ""
 
@@ -261,7 +261,7 @@ msgid "Import"
 msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:229
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:138
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:140
 msgid "Help"
 msgstr ""
 
@@ -483,9 +483,9 @@ msgstr ""
 msgid "Configuration for Generic Auxiliary Actions"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.cs:33
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.cs:57
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.cs:28
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.cs:34
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.cs:58
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.cs:29
 msgid "Please, give a name"
 msgstr ""
 
@@ -506,7 +506,7 @@ msgstr ""
 msgid "BufferInterface"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.cs:48
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.cs:49
 msgid "Not yet implemented"
 msgstr ""
 
@@ -522,19 +522,19 @@ msgstr ""
 msgid "Station Route Interface"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:38
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:39
 msgid "Please Load Paths:"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:42
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:43
 msgid "List of Paths seems OK:"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:119
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:120
 msgid "###"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:161
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:162
 msgid "Loaded:"
 msgstr ""
 
@@ -592,9 +592,9 @@ msgid "Activity Name"
 msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:124
-#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/SelectRoute.cs:68
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/SelectRoute.cs:69
 #: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:124
-#: ../../Contrib/ActivityEditor/AEWizard/SelectRoute.cs:68
+#: ../../Contrib/ActivityEditor/AEWizard/SelectRoute.cs:69
 msgid "Route Path"
 msgstr ""
 
@@ -603,8 +603,8 @@ msgstr ""
 msgid "Activity Editor: Create new activity"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/SelectRoute.cs:47
-#: ../../Contrib/ActivityEditor/AEWizard/SelectRoute.cs:47
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/SelectRoute.cs:48
+#: ../../Contrib/ActivityEditor/AEWizard/SelectRoute.cs:48
 msgid "Route Configuration: Select Route"
 msgstr ""
 
@@ -623,24 +623,24 @@ msgstr ""
 msgid "Train Name (Opt.)"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:191
-#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:191
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:192
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:192
 msgid "< &Back"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:200
-#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:200
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:201
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:201
 msgid "&Next >"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:210
-#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:210
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:211
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:211
 #: ../../Contrib/TrackViewer/UserInterface/SearchControl.xaml:12
 msgid "Cancel"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:219
-#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:219
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:220
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:220
 msgid "&Finish"
 msgstr ""
 
@@ -793,28 +793,28 @@ msgstr ""
 msgid "Select other-paths color"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:590
+#: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:589
 #, csharp-format
 msgid "Loading terrain ace-files {0}-{1}"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:54
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:60
 msgid "Loading trackfile .trk ..."
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:58
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:64
 msgid "Loading track database .tdb ..."
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:62
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:68
 msgid "Loading tsection.dat ..."
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:74
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:80
 msgid "Loading road track database .rdb ..."
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:189
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:263
 msgid "Finding the angles to draw signals, endnodes, ..."
 msgstr ""
 
@@ -953,23 +953,23 @@ msgstr ""
 msgid "Reopening it in TrackViewer, however, is likely to work."
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:269
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:270
 msgid "Set as invalid in .pat file"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:271
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:272
 msgid "Closest junction is too far away"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:273
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:274
 msgid "Not able to place node on track"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:275
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:276
 msgid "Dangling siding node"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:277
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:278
 msgid "Unknown"
 msgstr ""
 
@@ -996,100 +996,100 @@ msgstr ""
 msgid "Please restart TrackViewer in order to load the new language."
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:375
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:378
 msgid "<Select path>"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:389
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:392
 msgid "<Select station>"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:402
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:405
 msgid "<Select platform>"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:415
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:418
 msgid "<Select siding>"
-msgstr ""
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:509
-msgid ""
-"left  arrow:  Shift left\n"
-msgstr ""
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:510
-msgid ""
-"down  arrow:  Shift down\n"
-msgstr ""
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:511
-msgid ""
-"right arrow:  Shift right\n"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:512
 msgid ""
-"up    arrow:  Shift up\n"
+"left  arrow:  Shift left\n"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:513
 msgid ""
-"C:  Shift to center of current path node\n"
+"down  arrow:  Shift down\n"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:514
 msgid ""
-"shift-C:  Shift to center of current mouse location\n"
+"right arrow:  Shift right\n"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:515
 msgid ""
-"PgUp:  Show more of the path\n"
+"up    arrow:  Shift up\n"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:516
 msgid ""
-"PgDn:  Show less of the path\n"
+"C:  Shift to center of current path node\n"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:517
 msgid ""
-"shift-PgUp:  Show the full path\n"
+"shift-C:  Shift to center of current mouse location\n"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:518
 msgid ""
-"shift-PgDn:  Show only start point of path\n"
+"PgUp:  Show more of the path\n"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:519
 msgid ""
-"ctrl-Z: Undo in path editor\n"
+"PgDn:  Show less of the path\n"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:520
 msgid ""
+"shift-PgUp:  Show the full path\n"
+msgstr ""
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:521
+msgid ""
+"shift-PgDn:  Show only start point of path\n"
+msgstr ""
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:522
+msgid ""
+"ctrl-Z: Undo in path editor\n"
+msgstr ""
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:523
+msgid ""
 "ctrl-Y: Redo in path editor\n"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:527
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:530
 msgid "This is ORTS TrackViewer, version "
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:530
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:533
 msgid ""
 "It is a 'Contribution' to ORTS, and as such\n"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:531
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:534
 msgid "not an integral part of ORTS."
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:538
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:541
 msgid "Documentation is available"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:539
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:542
 msgid "Right column → OR_Trackviewer"
 msgstr ""
 
@@ -1509,91 +1509,95 @@ msgstr ""
 msgid "Show terrain info"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:105
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:104
+msgid "Show signal info"
+msgstr ""
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:107
 msgid "Preferences"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:106
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:108
 msgid "Zooming is centered on mouse (m)"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:108
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:110
 msgid "Use miles i.s.o. meters"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:109
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:111
 msgid "Select language"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:114
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:116
 msgid "Path-Editor"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:115
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:117
 msgid "==Supporting MSTS paths only=="
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:116
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:118
 msgid "Load path"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:120
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:122
 msgid "Show other paths"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:122
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:124
 msgid "Save path"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:123
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:125
 msgid "Save visited stations"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:124
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:126
 msgid "Show chart (in development)"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:126
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:128
 msgid "Enable editing"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:127
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:129
 msgid "New path"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:129
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:131
 msgid "Edit path metadata"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:130
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:132
 msgid "Reverse path"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:132
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:134
 msgid "Terrain"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:133
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:135
 msgid "Show terrain textures (F6)"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:134
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:136
 msgid "Show DM terrain textures (ctrl-F6)"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:135
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:137
 msgid "Show patch lines (shift-F6)"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:139
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:141
 msgid "Shortcuts"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:140
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:142
 msgid "Documentation"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:141
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:143
 msgid "About"
 msgstr ""
 

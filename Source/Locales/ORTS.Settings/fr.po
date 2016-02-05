@@ -1,15 +1,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
-"POT-Creation-Date: 2015-08-22 01:12+0200\n"
-"PO-Revision-Date: 2015-08-22 01:46+0200\n"
+"POT-Creation-Date: 2016-02-05 01:44+0100\n"
+"PO-Revision-Date: 2016-02-05 01:52+0100\n"
 "Last-Translator: GNIEWEK Cédric <gniewek.cedric@free.fr>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.8.4\n"
+"X-Generator: Poedit 1.8.6\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: ../../ORTS.Settings/InputSettings.cs:42
@@ -581,65 +581,81 @@ msgid "Control Blower Decrease"
 msgstr "Contrôle Diminution de la soufflerie"
 
 #: ../../ORTS.Settings/InputSettings.cs:188
+msgid "Control Steam Heat Increase"
+msgstr "Contrôle Augmentation du chauffage du train"
+
+#: ../../ORTS.Settings/InputSettings.cs:189
+msgid "Control Steam Heat Decrease"
+msgstr "Contrôle Réduction du chauffage du train"
+
+#: ../../ORTS.Settings/InputSettings.cs:190
 msgid "Control Damper Increase"
 msgstr "Contrôle Augmentation du coupe-feu"
 
-#: ../../ORTS.Settings/InputSettings.cs:189
+#: ../../ORTS.Settings/InputSettings.cs:191
 msgid "Control Damper Decrease"
 msgstr "Contrôle Diminution du coupe-feu"
 
-#: ../../ORTS.Settings/InputSettings.cs:190
+#: ../../ORTS.Settings/InputSettings.cs:192
 msgid "Control Firebox Open"
 msgstr "Contrôle Ouverture du foyer"
 
-#: ../../ORTS.Settings/InputSettings.cs:191
+#: ../../ORTS.Settings/InputSettings.cs:193
 msgid "Control Firebox Close"
 msgstr "Contrôle Fermeture du foyer"
 
-#: ../../ORTS.Settings/InputSettings.cs:192
+#: ../../ORTS.Settings/InputSettings.cs:194
 msgid "Control Firing Rate Increase"
 msgstr "Contrôle Augmentation du taux d'allumage"
 
-#: ../../ORTS.Settings/InputSettings.cs:193
+#: ../../ORTS.Settings/InputSettings.cs:195
 msgid "Control Firing Rate Decrease"
 msgstr "Contrôle Diminution du taux d'allumage"
 
-#: ../../ORTS.Settings/InputSettings.cs:194
+#: ../../ORTS.Settings/InputSettings.cs:196
 msgid "Control Fire Shovel Full"
 msgstr "Contrôle Ajout d'une pelle de combustible"
 
-#: ../../ORTS.Settings/InputSettings.cs:195
+#: ../../ORTS.Settings/InputSettings.cs:197
 msgid "Control Cylinder Cocks"
 msgstr "Contrôle Purge des cylindres"
 
-#: ../../ORTS.Settings/InputSettings.cs:196
+#: ../../ORTS.Settings/InputSettings.cs:198
 msgid "Control Cylinder Compound"
 msgstr "Contrôle Cylindre composé"
 
-#: ../../ORTS.Settings/InputSettings.cs:197
+#: ../../ORTS.Settings/InputSettings.cs:199
 msgid "Control Firing"
 msgstr "Contrôle Activation/désactivation du chauffage automatique"
 
-#: ../../ORTS.Settings/InputSettings.cs:198
+#: ../../ORTS.Settings/InputSettings.cs:200
 msgid "Control Refill"
-msgstr "Contrôle Remplissage des réservoirs"
+msgstr "Contrôle Rechargement"
 
-#: ../../ORTS.Settings/InputSettings.cs:645
+#: ../../ORTS.Settings/InputSettings.cs:201
+msgid "Control TroughRefill"
+msgstr "Contrôle Rechargement par écopage"
+
+#: ../../ORTS.Settings/InputSettings.cs:202
+msgid "Control ImmediateRefill"
+msgstr "Contrôle Rechargement immédiat"
+
+#: ../../ORTS.Settings/InputSettings.cs:653
 #, csharp-format
 msgid "{0} requires and is modified by Shift"
 msgstr "{0} nécessite d'appuyer sur Shift"
 
-#: ../../ORTS.Settings/InputSettings.cs:647
+#: ../../ORTS.Settings/InputSettings.cs:655
 #, csharp-format
 msgid "{0} requires and is modified by Control"
 msgstr "{0} nécessite d'appuyer sur Ctrl"
 
-#: ../../ORTS.Settings/InputSettings.cs:649
+#: ../../ORTS.Settings/InputSettings.cs:657
 #, csharp-format
 msgid "{0} requires and is modified by Alt"
 msgstr "{0} nécessite d'appuyer sur Alt"
 
-#: ../../ORTS.Settings/InputSettings.cs:680
+#: ../../ORTS.Settings/InputSettings.cs:688
 #, csharp-format
 msgid "{0} and {1} both match {2}"
 msgstr "{0} et {1} correspondent tous les deux à la touche {2}"
