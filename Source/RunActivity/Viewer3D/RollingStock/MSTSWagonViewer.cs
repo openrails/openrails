@@ -174,10 +174,6 @@ namespace Orts.Viewer3D.RollingStock
             if (!car.Flipped && !Pantograph1.Empty() && !Pantograph2.Empty())
                 AnimatedPart.Swap(ref Pantograph1, ref Pantograph2);
 
-            // If the car is flipped, the doors should be corrected to match the rest of the train.
-            if (car.Flipped)
-                AnimatedPart.Swap(ref RightDoor, ref LeftDoor);
-
             Pantograph1.SetState(MSTSWagon.Pantographs[1].CommandUp);
             Pantograph2.SetState(MSTSWagon.Pantographs[2].CommandUp);
             LeftDoor.SetState(MSTSWagon.DoorLeftOpen);

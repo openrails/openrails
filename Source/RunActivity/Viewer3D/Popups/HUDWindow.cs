@@ -439,9 +439,9 @@ namespace Orts.Viewer3D.Popups
                 var color = Math.Abs(Viewer.PlayerLocomotive.SpeedMpS) > 0.1f ? "!!!" : "???";
                 var status = "";
                 if ((Viewer.PlayerLocomotive as MSTSWagon).DoorLeftOpen)
-                    status += Viewer.Catalog.GetString("Left");
+                    status += Viewer.Catalog.GetString((Viewer.PlayerLocomotive as MSTSLocomotive).GetCabFlipped()? "Right" : "Left");
                 if ((Viewer.PlayerLocomotive as MSTSWagon).DoorRightOpen)
-                    status += string.Format(status == "" ? "{0}" : " {0}", Viewer.Catalog.GetString("Right"));
+                    status += string.Format(status == "" ? "{0}" : " {0}", Viewer.Catalog.GetString((Viewer.PlayerLocomotive as MSTSLocomotive).GetCabFlipped() ? "Left" : "Right"));
                 status += color;
 
                 TableAddLabelValue(table, Viewer.Catalog.GetString("Doors open") + color, status);

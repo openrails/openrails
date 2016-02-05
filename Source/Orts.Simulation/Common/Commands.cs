@@ -770,7 +770,7 @@ namespace Orts.Common
         }
 
         public override void Redo() {
-            if (Receiver.Flipped ^ Receiver.GetCabFlipped())  Receiver.ToggleDoorsRight();
+            if (Receiver.GetCabFlipped())  Receiver.ToggleDoorsRight();
             else Receiver.ToggleDoorsLeft();
             // Report();
         }
@@ -786,7 +786,7 @@ namespace Orts.Common
         }
 
         public override void Redo() {
-            if (Receiver.Flipped ^ Receiver.GetCabFlipped()) Receiver.ToggleDoorsLeft();
+            if (Receiver.GetCabFlipped()) Receiver.ToggleDoorsLeft();
             else Receiver.ToggleDoorsRight();
             // Report();
         }
