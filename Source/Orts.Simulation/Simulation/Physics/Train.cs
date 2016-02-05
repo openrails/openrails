@@ -7945,7 +7945,7 @@ namespace Orts.Simulation.Physics
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You cannot enter manual mode when autopiloted"));
             }
-            if (IsPathless && ControlMode != TRAIN_CONTROL.OUT_OF_CONTROL)
+            else if (IsPathless && ControlMode != TRAIN_CONTROL.OUT_OF_CONTROL)
             {
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You cannot use this command for pathless trains"));
@@ -7986,16 +7986,8 @@ namespace Orts.Simulation.Physics
             }
             else
             {
-                if (Math.Abs(SpeedMpS) > 0.1f)
-                {
-                    if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
-                        Simulator.Confirmer.Confirm(CabControl.SignalMode, CabSetting.Warn1);
-                }
-                else
-                {
-                    ToggleToManualMode();
-                    Simulator.Confirmer.Confirm(CabControl.SignalMode, CabSetting.Off);
-                }
+                ToggleToManualMode();
+                Simulator.Confirmer.Confirm(CabControl.SignalMode, CabSetting.Off);
             }
         }
 
