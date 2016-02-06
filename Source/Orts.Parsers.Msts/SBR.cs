@@ -461,7 +461,7 @@ namespace Orts.Parsers.Msts
                 if (RemainingBytes > Int32.MaxValue)
                 {
                     TraceWarning("Remaining Bytes overflow");
-                    RemainingBytes = Int32.MaxValue;
+                    RemainingBytes = 1000;
                 }
                 InputStream.ReadBytes((int)RemainingBytes);
 
