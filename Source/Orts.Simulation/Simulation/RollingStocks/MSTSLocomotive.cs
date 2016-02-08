@@ -2441,6 +2441,18 @@ namespace Orts.Simulation.RollingStocks
                         data = Math.Abs(data);
                         break;
                     }
+                case CABViewControlTypes.SPEED_PROJECTED:
+                    {
+                        if (Train != null)
+                            data = Train.ProjectedSpeedMpS;
+                        else data = 0;
+                        if (cvc.Units == CABViewControlUnits.KM_PER_HOUR)
+                            data *= 3.6f;
+                        else // MPH
+                            data *= 2.2369f;
+                        data = Math.Abs(data);
+                        break;
+                    }
                 case CABViewControlTypes.ACCELEROMETER:
                     {
                         switch (cvc.Units)
