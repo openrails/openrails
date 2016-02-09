@@ -96,6 +96,7 @@ namespace Orts.Simulation.RollingStocks
         bool StokerIsMechanical = false;
         bool HotStart; // Determine whether locomotive is started in hot or cold state - selectable option in Options TAB
         bool BoilerHeat = false;    // Boiler heat has exceeded total max possible heat in boiler
+        bool ShovelAnyway = false; // Predicts when the AI fireman should be increasing the fire burn rate despite the heat in the boiler
         bool IsGrateLimit = false; // Grate limit of locomotive exceeded
         bool HasSuperheater = false;  // Flag to indicate whether locomotive is superheated steam type
         bool IsSuperSet = false;    // Flag to indicate whether superheating is reducing cylinder condenstation
@@ -1736,8 +1737,17 @@ namespace Orts.Simulation.RollingStocks
                 {
                     FiringSteamUsageRateLBpS = PreviousTotalSteamUsageLBpS;
                 }
-                // burnrate will be the radiation loss @ rest & then related to heat usage as a factor of the maximum boiler output
-                BurnRateRawKGpS = pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH((BlowerBurnEffect + HeatRatio * FiringSteamUsageRateLBpS * PressureRatio * BoilerHeatRatio * MaxBoilerHeatRatio))]));
+
+                if ( ShovelAnyway) 
+                {
+                    // burnrate will be the radiation loss @ rest & then related to heat usage as a factor of the maximum boiler output - ignores total bolier heat to allow burn rate to increase if boiler heat usage is exceeding input
+                    BurnRateRawKGpS = pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH((BlowerBurnEffect + HeatRatio * FiringSteamUsageRateLBpS * PressureRatio))]));
+                }
+                else
+                {
+                    // burnrate will be the radiation loss @ rest & then related to heat usage as a factor of the maximum boiler output - normal operation - reduces burn rate if boiler heat is excessive.
+                    BurnRateRawKGpS = pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH((BlowerBurnEffect + HeatRatio * FiringSteamUsageRateLBpS * PressureRatio * BoilerHeatRatio * MaxBoilerHeatRatio))]));
+                }
 
                 //  Limit burn rate in AI fireman to within acceptable range of Fireman firing rate
                 //        BurnRateRawKGpS = MathHelper.Clamp(BurnRateRawKGpS, 0.05f, MaxTheoreticalFiringRateKgpS); // Allow burnrate to max out at MaxTheoreticalFiringRateKgpS
@@ -3678,9 +3688,24 @@ namespace Orts.Simulation.RollingStocks
             }
             DamperBurnEffect = MathHelper.Clamp(DamperBurnEffect, 0.0f, TheoreticalMaxSteamOutputLBpS); // set damper maximum to the max generation rate
 
+            float BoilerHeatCheck = BoilerHeatOutBTUpS / BoilerHeatInBTUpS;
+            float BoilerHeatExcess = BoilerHeatBTU / MaxBoilerHeatBTU;
+            
+            // Determine if AI fireman should shovel coal despite the fact that boiler heat has exceeded max boiler heat - provides a crude "look ahead" capability. 
+            // Example - boiler heat excessive, and train faces heavy climb up grade, fire burn rate still needs to increase, despite the fact that AI code normally will try and reduce burn rate.
+            if (throttle > 0.98 && CurrentElevationPercent < -0.3 && BoilerHeatCheck > 1.25 && BoilerHeatExcess < 1.1)
+            {
+                ShovelAnyway = true; // Fireman should be increasing fire burn rate despite high boiler heat
+            }
+            else
+            {
+                ShovelAnyway = false; // Fireman should not be increasing fire burn rate if high boiler heat
+            }
+
+
             // Determine Heat Ratio - for calculating burn rate
 
-            if (BoilerHeat) // If heat in boiler is going too high
+            if (BoilerHeat && !ShovelAnyway) // If heat in boiler is going too high
             {
                 if (EvaporationLBpS > TotalSteamUsageLBpS)
                 {
@@ -4222,7 +4247,7 @@ namespace Orts.Simulation.RollingStocks
                 IsMetric ? FormatStrings.m2 : FormatStrings.ft2);
 
 #if DEBUG_LOCO_BURN
-            status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4:N2}\t{5}\t{6:N2}\t{7}\t{8:N2}\t{9}\t{10:N2}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\t{17}\t{18}\t{19}\t{20}\n",
+            status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4:N2}\t{5}\t{6:N2}\t{7}\t{8:N2}\t{9}\t{10:N2}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\t{17}\t{18}\t{19}\t{20}\t{21}\t{22}\n",
                 "DbgBurn:",
                 "BoilHeat",
                 BoilerHeat ? "Yes" : "No",
@@ -4243,7 +4268,9 @@ namespace Orts.Simulation.RollingStocks
                 "MaxFuel",
                 FormatStrings.FormatMass(pS.TopH(MaxFuelBurnGrateKGpS), IsMetric),
                 "BstReset",
-                FuelBoostReset ? "Yes" : "No");
+                FuelBoostReset ? "Yes" : "No",
+                "ShAny",
+                ShovelAnyway);
 #endif
 
             status.AppendFormat("{0}\t{1}\t{6}/{12}\t\t({7:N0} {13})\t{2}\t{8}/{12}\t\t{3}\t{9}\t\t{4}\t{10}/{12}\t\t{5}\t{11}\n",
