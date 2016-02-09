@@ -614,7 +614,10 @@ namespace Orts.Simulation
                 }
             }
 
-            LevelCrossings.Update(elapsedClockSeconds);
+            if (LevelCrossings != null)
+            {
+                LevelCrossings.Update(elapsedClockSeconds);
+            }
 
             if (ActivityRun != null)
             {
