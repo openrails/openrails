@@ -104,6 +104,14 @@ namespace Orts.Viewer3D
         private List<SoundSource> _inSources;
         private List<SoundSource> _outSources;
 
+        // data to evaluate if ttype selection is needed or not
+        private float nextDist = -1; // initial distance to sound region forward
+        private float prevDist = -1; // initial distance to sond region backward
+        private float initDist = -1; // initial distance run when last ttype selected
+        private int initTrackSection = -1; // track section when last ttype selected
+        private MSTSWagon initCar = null; // initial leading car (to accommodate in case of change of direction)
+
+
         public TrackSoundSource(MSTSWagon car, Viewer viewer)
         {
             TrackSound = true;
@@ -167,7 +175,9 @@ namespace Orts.Viewer3D
         public void UpdateTType()
         {
             if (_prevTType == -1)
+            {
                 InitInitials();
+            }
 
             if (Car != null && Car.Train != null)
             {
@@ -192,21 +202,45 @@ namespace Orts.Viewer3D
 
                 if (CarNo == CarLeading)
                 {
-                    //_curTType = Viewer.WorldSounds.GetTType(_tdbObjs);
-                    Car.TrackSoundType = Viewer.World.Sounds.GetTType(Car.Train);
-                    if (Car.TrackSoundType != int.MaxValue)
-                        if (Car.TrackSoundType < Viewer.TrackTypes.Count)
-                            _curTType = Car.TrackSoundType;
+                    bool reSelect = false;
+                    if (nextDist == -1 || initCar != Car.Train.Cars[CarLeading])
+                    {
+                        reSelect = true;
+                    }
+                    else if ((CarLeading == 0 && Car.Train.PresentPosition[0].TCSectionIndex != initTrackSection) || (CarLeading != 0 && Car.Train.PresentPosition[1].TCSectionIndex != initTrackSection))
+                    {
+                        reSelect = true;
+                    }
+                    else if (CarLeading == 0 && (Car.Train.DistanceTravelledM - initDist > nextDist || initDist - Car.Train.DistanceTravelledM > prevDist))
+                    {
+                        reSelect = true;
+                    }
+                    else if (CarLeading != 0 && (Car.Train.DistanceTravelledM - Car.Train.Length - initDist > nextDist || initDist - Car.Train.DistanceTravelledM + Car.Train.Length > prevDist))
+                    {
+                        reSelect = true;
+                    }
+                    if (reSelect)
+                    {
+                        //_curTType = Viewer.WorldSounds.GetTType(_tdbObjs);
+                        initCar = Car;
+                        initTrackSection = CarLeading == 0 ? Car.Train.PresentPosition[0].TCSectionIndex : Car.Train.PresentPosition[1].TCSectionIndex;
+                        initDist = CarLeading == 0 ? Car.Train.DistanceTravelledM : Car.Train.DistanceTravelledM - Car.Train.Length;
+                        Car.TrackSoundType = Viewer.World.Sounds.GetTType(Car.Train, out prevDist, out nextDist);
+                        if (Car.TrackSoundType != int.MaxValue)
+                            if (Car.TrackSoundType < Viewer.TrackTypes.Count)
+                                _curTType = Car.TrackSoundType;
+                            else
+                            {
+                                // Track type out of range
+                                _curTType = 0;
+                                Trace.TraceWarning("Sound region {0} out of range in tile {1} {2}", Car.TrackSoundType,
+                                    Car.WorldPosition.WorldLocation.TileX, Car.WorldPosition.WorldLocation.TileZ);
+                                Car.TrackSoundType = 0;
+                            }
                         else
-                        {
-                            // Track type out of range
-                            _curTType = 0;
-                            Trace.TraceWarning("Sound region {0} out of range in tile {1} {2}", Car.TrackSoundType,
-                                Car.WorldPosition.WorldLocation.TileX, Car.WorldPosition.WorldLocation.TileZ);
-                            Car.TrackSoundType = 0;
-                        }
-                    else
-                        Car.TrackSoundType = _curTType;
+                            Car.TrackSoundType = _curTType;
+                    }
+                    else Car.TrackSoundType = _curTType;
                 }
                 else
                 {
@@ -2085,11 +2119,13 @@ namespace Orts.Viewer3D
             return retval;
         }
 
-        public int GetTType(Train train)
+        public int GetTType(Train train, out float outPrevDist, out float outNextDist)
         {
             int retval = 0;
             Traveller traveller;
             Traveller tmp;
+            outPrevDist = -1;
+            outNextDist = -1;
 
             if (train.SpeedMpS >= 0)
             {
@@ -2190,6 +2226,8 @@ namespace Orts.Viewer3D
                 {
                     // return one of those, doesn't matter which.
                     retval = prevItem.SoundRegionTrackType;
+                    outPrevDist = prevDist;
+                    outNextDist = nextDist;
                 }
                 else if (nextDist < 10)
                 {
