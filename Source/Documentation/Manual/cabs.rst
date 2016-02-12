@@ -1,0 +1,251 @@
+.. _cabs:
+
+***************
+Open Rails Cabs
+***************
+
+OR supports both MSTS-compatible 2D cabs as well as native 3D cabs, even on 
+the same locomotive.
+
+2D Cabs
+=======
+
+OR supports with a high degree of compatibility all functions available in 
+MSTS for 2D cabs, and provides some significant enhancements described in the 
+next paragraphs.
+
+OR adds support for the ETCS circular speed gauge, as described 
+:ref:`here <options-etcs>`.
+
+High-resolution Cab Backgrounds and Controls
+============================================
+
+In MSTS the resolution of the cab background image is limited to 1024x1024; 
+this limitation does not apply in OR as a result of OR's better handling of 
+large textures.
+
+2D cab backgrounds can reach at least to 3072x3072; however very fine results 
+can be obtained with a resolution of 2560x1600. The image does not have to be 
+square.
+
+2D cab animations have also been greatly improved; you are reminded here that 
+there are two types of animated rotary gauges, i.e. normal gauges and general 
+animations using multiple frames. In this second case in MSTS all of the 
+frames had to be present in a single texture with a max resolution of 
+640x480. In OR these frames can be as large as desired and OR will scale them 
+to the correct size. In general it is not necessary to use a resolution 
+greater than 200x200 for every frame. 
+
+The syntax to be used in the .cvf file is the standard one as defined by MSTS.
+
+To clarify this, the position parameters of a sample needle block are 
+described here.
+
+In the ``Position`` statement, the first 2 numbers are the position of the top 
+left-hand side of the needle texture in cabview units with the needle in the 
+vertical position. In the ``Dial`` type the last 2 numbers are the size of the 
+needle texture. The last number (50 in the example) controls the scaling of 
+the needle texture, i.e. changing this changes the size of the needle that OR 
+displays.
+
+::
+
+    Dial (
+        Type ( SPEEDOMETER DIAL )
+        Position ( 549 156 10 50 )
+        Graphic ( Speed_recorder_needle_2.01.ace )
+        Style ( NEEDLE )
+        ScaleRange ( 0 140 )
+        ScalePos ( 243 115 )
+        Units ( KM_PER_HOUR )
+        Pivot ( 38 )
+        DirIncrease ( 0 ) 
+    )
+
+Next is an example of a control animation, this one is a simple 3 frame 
+animation. The examples shown in the following images are the two rotary 
+switches to the right of the two lower brake gauges, both being 3 position. 
+(The left most switch is for the headlights). For these animations the 
+graphic was done at 1600x1600; when each frame was finished it was scaled 
+down to 200x200 and placed into the animation texture. Note the extreme 
+sharpness of these controls in the inset image.
+
+Adding a slight amount of 2x2 pixel blur helps the animation blend into the 
+background better ( this has been done to the gauge needles).
+
+Below is the appropriate part of the CVF. The scaling is controlled by the 
+last two digits of the ``Position`` statement::
+
+    TriState (
+        Type ( DIRECTION TRI_STATE )
+        Position ( 445 397 35 35 )
+        Graphic ( Switch_nob_3.0_Transmission.ace )
+        NumFrames ( 3 3 1 )
+        Style ( NONE )
+        MouseControl ( 1 )
+        Orientation ( 0 )
+        DirIncrease ( 0 )
+    )
+
+Note that the "Airbrake On" light (on the panel upper left) has also been 
+animated. This is a simple 2 frame animation. 
+
+.. image:: images/cabs-hires-full.png
+.. image:: images/cabs-hires-detail.png
+
+Shown above are two pictures of one hi-res 2D cabview, one showing the whole 
+cab, and the other one showing the detail of some controls. In this example 
+the cab background image used was cut down to 2560x1600. The texture for the 
+Speed Recorder needle is 183x39 and for the brake gauge needles is 181x29, 
+Note the odd number for the width. This is required as OR (and MSTS) assume 
+the needle is in the center of the image. The Reversing and Headlight switch 
+animation frames are 116x116.
+
+There are as yet no specific tools to create these cabviews; a standard image 
+manipulation program to do all textures is required, and to create any new 
+items, e.g. the gauge faces, a standard drawing program can be used. To 
+actual set up the cabview and to position the animations the .cvf file is 
+modified with a standard text editor, and OR is used as a viewer, using a 
+straight section of track on a quick loading route. Through successive 
+iterations one arrives quite quickly at a satisfactory result. 
+
+Configurable Fonts
+------------------
+
+OR supports a configurable font family, with font size selection, and a 
+choice of regular or bold style. More than one font or size can be used in 
+the same cabview.
+
+An optional line of the form ``ORTSfont ( fontsize  fontstyle  "fontfamily" )`` 
+must be inserted into the .cvf block of the digital control or digital clock, 
+where *fontsize* is a float (default value 10), *fontstyle* an integer having 
+the value 0 (default) for regular and 1 for bold, and *fontfamily* is a 
+string with the font family name (ex. "Times New Roman"). The default is 
+"Courier New".
+
+Here is an example that displays a 12 pt. bold font using the Sans Serif font 
+family::
+
+    DigitalClock (
+        Type ( CLOCK DIGITAL_CLOCK )
+        Position ( 40 350 56 11 )
+        Style ( 12HOUR )
+        Accuracy ( 1 )
+        ControlColour ( 255 255 255 )
+        ORTSFont ( 12 1 "Sans Serif" )
+    )
+
+Only the first parameter of ORTSFont can be present, or only the first two, 
+or all three.
+
+Note that you cannot use the MS Cabview editor on the .cvf file after having 
+inserted these optional lines, because the editor will delete these added 
+lines when the file is saved.
+
+3D cabs
+=======
+
+The key to enter into a 3D cab (provided the player locomotive has one) is 
+``<Alt+1>``, in case locomotive has both 2D and 3D cabs provided. 
+Key ``<1>`` can also be used to enter to 3D-cab-only locomotives.
+
+Development Rules
+-----------------
+
+- The 3D cab is described by an .s file, the associated .ace or .dds files; 
+  and a .cvf file having the same name as the .s file. All these files reside 
+  in a folder named ``CABVIEW3D`` created within the main folder of the 
+  locomotive.
+- If the .cvf file cannot be found in the ``CABVIEW3D`` folder, the 3D cab is 
+  associated with the .cvf file of the 2D cab.
+- Instruments are named with the same conventions as 2D cabs, i.e. 
+  ``FRONT_HLIGHT``, ``SPEEDOMETER``, etc.
+- A cab can have multiple instances of the same instruments, for example 
+  multiple clocks or speedometers.
+- Instruments are sorted based on the order of their appearance in the .cvf 
+  file, for example ``SPEEDOMETER:0`` corresponds to the first speedometer in 
+  the .cvf file, ``SPEEDOMETER:1`` corresponds to the second one.
+- An instrument can have multiple subgroups to make the animation realistic, 
+  for example, ``TRAIN_BRAKE:0:0`` and ``TRAIN_BRAKE:0:1`` belong to the 
+  instrument ``TRAIN_BRAKE:0``. However, if the instrument is a digital 
+  device, the second number will be used to indicate the font size used, for 
+  example ``SPEEDOMETER:1:14`` means the second speedometer (which is digital 
+  as defined in .cvf) will be rendered with 14pt font. This may be changed 
+  in future OR releases. The important information for a digital device is 
+  its location, thus it can be defined as an object with a small single face 
+  in the 3D model.
+- Animation ranges must be in agreement with the .cvf file 
+- Within the Wagon section of the .eng file a block like the following one 
+  has to be generated::
+  
+    ORTS3DCab(
+        ORTS3DCabFile ( Cab.s )
+        ORTS3DCabHeadPos ( -0.9 2.4 5.2 )
+        RotationLimit ( 40 60 0 )
+        StartDirection ( 12 0 0 )
+    )
+
+- It is also possible to animate the wipers, by inserting into the .s file an 
+  animation named ``EXTERNALWIPERS:0:0``
+- Gauges of solid type have to be named ``AMMETER:1:10:100``; where the three 
+  numbers indicate that this is the second ammeter, that it has a width 10 mm, 
+  and a maximum length of 100 mm. The color and direction/orientation follow 
+  those defined in .cvf files.
+- Digits for 3D cabs can now use custom ACE files; e.g. name the part as 
+  ``CLOCK:1:15:CLOCKS``. This will draw the second clock with 15mm font 
+  dimension, with the ``CLOCKS.ACE`` file in ``CABVIEW3D`` containing the 
+  font. If no ace is specified, the default will be used.
+- Mirrors and doors can be operated from 3D cabs. Names to be used are 
+  ``LEFTDOOR``, ``RIGHTDOOR`` and ``MIRRORS``.
+
+A demo trainset with a 3Dcab, that may be useful for developers, can be 
+downloaded from: `<http://www.tsimserver.com/Download/Df11G3DCab.zip>`_.  
+
+A Practical Development Example For a Digital Speedometer
+---------------------------------------------------------
+
+Let's suppose you have to create a digital speedometer using a font with size 
+14.
+
+To explain it in *gmax* speak, you must have an object called ``SPEEDOMETER`` 
+in the cab view and it must be comprised of at least one face.
+
+As the sample cab has only one digital speedometer, it can be named 
+``SPEEDOMETER_0_14``.
+
+The number 0 indicates that this is the first speedometer gauge in the cab 
+and the number 14 indicates the size of the font to display. Note that an 
+underscore is used to separate the numbers as the LOD export tool does not 
+support the use of colons in object names when exporting. More on this later.
+
+The speed does not display where the face for the ``SPEEDOMETER`` object is 
+located but where the *pivot point* for the ``SPEEDOMETER`` object is located. 
+Normally you would place the ``SPEEDOMETER`` object somewhere in the cab where 
+it will not be seen. 
+
+With the ``SPEEDOMETER_0_14`` object selected in gmax, go to the *Hierarchy* 
+tab, select *Affect Pivot Only* and click *Align to World* to reset the 
+orientation to world coordinates. Then use the *Select and Move* tool to move 
+the pivot to where in the cab you wish the numerals to appear. As you have 
+aligned the pivot point to World coordinates the numerals will display 
+vertically. As most locomotive primary displays are normally angled you may 
+have to rotate the pivot point so that it aligns with the angle of the 
+*display screen*.
+
+Export the .S file for the cab as per normal.
+
+You will then have to uncompress the .s file for the cab using Shape File 
+Manager or the .S file decompression tool of your choice.
+
+Then open the .S file with a text editor and search for the letters "speed" 
+until you find the first instance of ``SPEEDOMETER_0_14`` and change it to be 
+``SPEEDOMETER:0:14``. Search again and find the second instance of 
+``SPEEDOMETER_0_14`` and change that also to ``SPEEDOMETER:0:14``. Save the 
+.S file in the text editor.
+
+Now just one more thing. Download the ``DF11G3DCab`` demo trainset. In the 
+``CABVIEW3D`` folder of that download you will find an ace file called 
+``SPEED.ACE``. Copy that file and paste it into the ``CABVIEW3D`` folder 
+for your model.
+
+Now, open OR and test your speedometer.
