@@ -604,6 +604,13 @@ namespace Orts.Viewer3D
             ActiveCount++;
             MustActivate = false;
             MustWarn = true;
+            WasPlaying = false;
+            StoppedAt = double.MaxValue;
+            // Unlike LoopRelease, which is being updated continuously, 
+            // unattended Loop must be restarted explicitly.
+            if (SoundQueue[QueueTail % QUEUELENGHT].PlayState == PlayState.Playing
+                && SoundQueue[QueueTail % QUEUELENGHT].PlayMode == PlayMode.Loop)
+                SoundQueue[QueueTail % QUEUELENGHT].PlayState = PlayState.New;
 
             OpenAL.alSourcef(SoundSourceID, OpenAL.AL_MAX_DISTANCE, SoundSource.MaxDistanceM);
             OpenAL.alSourcef(SoundSourceID, OpenAL.AL_REFERENCE_DISTANCE, SoundSource.ReferenceDistanceM);
@@ -918,7 +925,7 @@ namespace Orts.Viewer3D
                 {
                     if (StoppedAt > Program.Simulator.ClockTime)
                         StoppedAt = Program.Simulator.GameTime;
-                    else if (StoppedAt < Program.Simulator.GameTime - 1)
+                    else if (StoppedAt < Program.Simulator.GameTime - 0.2)
                     {
                         StoppedAt = double.MaxValue;
                         HardDeactivate();
