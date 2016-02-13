@@ -420,9 +420,17 @@ namespace Orts.Viewer3D
                 {
                     if (tempSpeedItem.WorldPosition.TileX == TileX && tempSpeedItem.WorldPosition.TileZ == TileZ)
                     {
-                        sceneryObjects.Add(new StaticShape(viewer,
-                            tempSpeedItem.IsWarning ? Viewer.SpeedpostDatFile.TempSpeedShapeNames[0] : (tempSpeedItem.IsResume? Viewer.SpeedpostDatFile.TempSpeedShapeNames[2] : Viewer.SpeedpostDatFile.TempSpeedShapeNames[1]),
-                            tempSpeedItem.WorldPosition, ShapeFlags.None));
+                        if (Viewer.SpeedpostDatFile == null)
+                        {
+                            Trace.TraceWarning(String.Format("{0} missing; speed posts for temporary speed restrictions in tile {1} {2} will not be visible.", Viewer.Simulator.RoutePath + @"\speedpost.dat", TileX, TileZ));
+                            break;
+                        }
+                        else
+                        {
+                            sceneryObjects.Add(new StaticShape(viewer,
+                                tempSpeedItem.IsWarning ? Viewer.SpeedpostDatFile.TempSpeedShapeNames[0] : (tempSpeedItem.IsResume ? Viewer.SpeedpostDatFile.TempSpeedShapeNames[2] : Viewer.SpeedpostDatFile.TempSpeedShapeNames[1]),
+                                tempSpeedItem.WorldPosition, ShapeFlags.None));
+                        }
                     }
                 }
             }
