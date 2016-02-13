@@ -1,5 +1,6 @@
-.. include:: <isonum.txt>
-.. include:: <isogrk1.txt>
+.. |deg|  unicode:: U+000B0 .. DEGREE SIGN
+.. |mgr|  unicode:: U+003BC .. GREEK SMALL LETTER MU
+.. |rgr|  unicode:: U+003C1 .. GREEK SMALL LETTER RHO
 .. _physics:
 
 ******************
@@ -278,8 +279,8 @@ according to its speed curve parameters. The engine is considered as fully
 stopped when RPM is zero. The engine can be restarted even while it is 
 stopping (RPM is not zero).
 
-Starting or Stopping *Helper* Diesel Engines
-''''''''''''''''''''''''''''''''''''''''''''
+Starting or Stopping Helper Diesel Engines
+''''''''''''''''''''''''''''''''''''''''''
 
 By pressing the Diesel helper START/STOP key (``<Ctrl+Y>`` on English 
 keyboards), the diesel engines of helper locomotives can be started or 
@@ -329,7 +330,7 @@ simulation falls back to use MSTS parameters.
 +---------------------------------+------------------------------------+
 |::                               |::                                  |
 |                                 |                                    |
-| Engine(                         | Engine                             |
+| Engine(                         | Engine section in eng file         |
 | ...                             |                                    |
 | ORTSDieselEngines ( 2           | Number of engines                  |
 |   Diesel (                      |                                    |
@@ -597,15 +598,15 @@ The main resistive forces are as follows (the first two values of
 resistance are modelled through the Davis formulas, and only apply on 
 straight level track):
 
-    - Journal or Bearing resistance (or friction)
-    - Air resistance
-    - Gradient resistance -- trains travelling up hills will experience 
-      greater resistive forces then those operating on level track.
-    - :ref:`Curve resistance <physics-curve-resistance>` -- applies when 
-      the train is traveling around a curve, and will be impacted by the 
-      curve radius, speed, and fixed wheel base of the rolling stock. 
-    - :ref:`Tunnel resistance <physics-tunnel-friction>` -- applies when 
-      a train is travelling through a tunnel.
+- Journal or Bearing resistance (or friction)
+- Air resistance
+- Gradient resistance -- trains travelling up hills will experience 
+  greater resistive forces then those operating on level track.
+- :ref:`Curve resistance <physics-curve-resistance>` -- applies when 
+  the train is traveling around a curve, and will be impacted by the 
+  curve radius, speed, and fixed wheel base of the rolling stock. 
+- :ref:`Tunnel resistance <physics-tunnel-friction>` -- applies when 
+  a train is travelling through a tunnel.
 
 Tractive Effort
 ...............
@@ -621,12 +622,13 @@ Geared and compound locomotives will have slightly different formula::
     TE = Cyl/2 x (M.E.P. x d2 x s) / D
 
 Where:
-    - Cyl = number of cylinders
-    - TE = Tractive Effort (lbf)
-    - M.E.P. = mean effective pressure of cylinder (psi)
-    - D = diameter of cylinder (in)
-    - S = stroke of cylinder piston (in)
-    - D = diameter of drive wheels (in)
+
+- Cyl = number of cylinders
+- TE = Tractive Effort (lbf)
+- M.E.P. = mean effective pressure of cylinder (psi)
+- D = diameter of cylinder (in)
+- S = stroke of cylinder piston (in)
+- D = diameter of drive wheels (in)
 
 Theoretical Tractive Effort
 ...........................
@@ -641,10 +643,11 @@ Thus our formula from above becomes::
     TE = Cyl/2 x (0.85 x BP x d2 x s) / D
 
 Where:
-    - BP = Boiler Pressure (gauge pressure - psi)
-    - 0.85 -- factor to account for losses in the engine, typically values 
-      between 0.7 and 0.85 were used by different manufacturers and railway 
-      companies.
+
+- BP = Boiler Pressure (gauge pressure - psi)
+- 0.85 -- factor to account for losses in the engine, typically values 
+  between 0.7 and 0.85 were used by different manufacturers and railway 
+  companies.
 
 Factor of Adhesion
 ..................
@@ -657,9 +660,10 @@ locomotive::
     FoA = Wd / TE
 
 Where:
-    - FoA = Factor of Adhesion
-    - TE = Tractive Effort (lbs)
-    - Wd = Weight on Driving Wheels (lbs)
+
+- FoA = Factor of Adhesion
+- TE = Tractive Effort (lbs)
+- Wd = Weight on Driving Wheels (lbs)
 
 Typically the Factor of Adhesion should ideally be between 4.0 & 5.0 for 
 steam locomotives. Values below this range will typically result in 
@@ -674,13 +678,14 @@ locomotive. The generally accepted formula for Indicated Horsepower is::
     I.H.P. = Cyl/2 x (M.E.P. x L x A x N) / 33000
 
 Where:
-    - IHP = Indicated Horsepower (hp) 
-    - Cyl = number of cylinders
-    - M.E.P. = mean effective pressure of cylinder (psi)
-    - L = stroke of cylinder piston (ft)
-    - A = area of cylinder (sq in)
-    - N = number of cylinder piston strokes per min (NB: two piston 
-      strokes for every wheel revolution)
+
+- IHP = Indicated Horsepower (hp) 
+- Cyl = number of cylinders
+- M.E.P. = mean effective pressure of cylinder (psi)
+- L = stroke of cylinder piston (ft)
+- A = area of cylinder (sq in)
+- N = number of cylinder piston strokes per min (NB: two piston 
+  strokes for every wheel revolution)
 
 As shown in the diagram below, IHP increases with speed, until it reaches 
 a maximum value. This value is determined by the cylinder's ability to 
@@ -738,8 +743,8 @@ driving the pistons to turn the wheels. The operation of a steam
 locomotive can be thought of in terms of the following broadly defined 
 components:
 
-    - Boiler and Fire (Heat conversion)
-    - Cylinder (Work done)
+- Boiler and Fire (Heat conversion)
+- Cylinder (Work done)
 
 Boiler and Fire (Heat conversion)
 .................................
@@ -750,25 +755,25 @@ amount of steam that can be produced (evaporated) by the boiler.
 Boiler steam production is typically dependent upon the Grate Area, and 
 the Boiler Evaporation Area.
 
-    - *Grate Area* -- the amount of heat energy released by the burning of 
-      the fuel is dependent upon the size of the grate area, draught of air 
-      flowing across the grate to support fuel combustion, fuel calorific 
-      value, and the amount of fuel that can be fed to the fire (a human 
-      fireman can only shovel so much coal in an hour). Some locomotives may 
-      have had good sized grate areas, but were 'poor steamers' because they 
-      had small draught capabilities.
-    - *Boiler Evaporation Area* -- consisted of the part of the firebox in 
-      contact with the boiler and the heat tubes running through the boiler. 
-      This area determined the amount of heat that could be transferred to 
-      the water in the boiler. As a rule of thumb a boiler could produce 
-      approximately 12-15 lbs/h of steam per ft\ :sup:`2` of evaporation area.
-    - *Boiler Superheater Area* -- Typically modern steam locomotives are 
-      superheated, whereas older locomotives used only saturated steam. 
-      Superheating is the process of putting more heat into the steam 
-      without changing the pressure. This provided more energy in the steam 
-      and allowed the locomotive to produce more work, but with a reduction 
-      in steam and fuel usage. In other words a superheated locomotive 
-      tended to be more efficient then a saturated locomotive.
+- *Grate Area* -- the amount of heat energy released by the burning of 
+  the fuel is dependent upon the size of the grate area, draught of air 
+  flowing across the grate to support fuel combustion, fuel calorific 
+  value, and the amount of fuel that can be fed to the fire (a human 
+  fireman can only shovel so much coal in an hour). Some locomotives may 
+  have had good sized grate areas, but were 'poor steamers' because they 
+  had small draught capabilities.
+- *Boiler Evaporation Area* -- consisted of the part of the firebox in 
+  contact with the boiler and the heat tubes running through the boiler. 
+  This area determined the amount of heat that could be transferred to 
+  the water in the boiler. As a rule of thumb a boiler could produce 
+  approximately 12-15 lbs/h of steam per ft\ :sup:`2` of evaporation area.
+- *Boiler Superheater Area* -- Typically modern steam locomotives are 
+  superheated, whereas older locomotives used only saturated steam. 
+  Superheating is the process of putting more heat into the steam 
+  without changing the pressure. This provided more energy in the steam 
+  and allowed the locomotive to produce more work, but with a reduction 
+  in steam and fuel usage. In other words a superheated locomotive 
+  tended to be more efficient then a saturated locomotive.
 
 Cylinder (Work done)
 ....................
@@ -793,17 +798,17 @@ During the course of their development, many different types of
 locomotives were developed, some of the more common categories are as 
 follows:
 
-    - Simple -- simple locomotives had only a single expansion cycle in 
-      the cylinder
-    - Compound -- locomotives had multiple steam expansion cycles and 
-      typically had a high and low pressure cylinder.
-    - Saturated -- steam was heated to only just above the boiling point 
-      of water.
-    - Superheated -- steam was heated well above the boiling point of 
-      water, and therefore was able to generate more work in the locomotive.
-    - Geared -- locomotives were geared to increase the tractive effort 
-      produced by the locomotive, this however reduced the speed of 
-      operation of the locomotive.
+- Simple -- simple locomotives had only a single expansion cycle in 
+  the cylinder
+- Compound -- locomotives had multiple steam expansion cycles and 
+  typically had a high and low pressure cylinder.
+- Saturated -- steam was heated to only just above the boiling point 
+  of water.
+- Superheated -- steam was heated well above the boiling point of 
+  water, and therefore was able to generate more work in the locomotive.
+- Geared -- locomotives were geared to increase the tractive effort 
+  produced by the locomotive, this however reduced the speed of 
+  operation of the locomotive.
 
 Superheated Locomotives
 .......................
@@ -847,9 +852,10 @@ track conditions. As these types of lines were lightly laid, excessive
 speeds could result in derailments, etc.
 
 The three principal types of geared locomotives used were:
-    - Shay Locomotives
-    - Climax
-    - Heisler
+
+- Shay Locomotives
+- Climax
+- Heisler
 
 Steam Locomotive Operation
 --------------------------
@@ -857,19 +863,20 @@ Steam Locomotive Operation
 To successfully drive a steam locomotive it is necessary to consider the 
 performance of the following elements:
 
-    - Boiler and Fire (Heat conversion )
-    - Cylinder (Work done)
+- Boiler and Fire (Heat conversion )
+- Cylinder (Work done)
 
 For more details on these elements, refer to the "Elements of Steam 
 Locomotive Operation"
 
 Summary of Driving Tips
-    - Wherever possible, when running normally, have the regulator at 
-      100%, and use the reverser to adjust steam usage and speed.
-    - Avoid jerky movements when starting or running the locomotive, thus 
-      reducing the chances of breaking couplers.
-    - When starting always have the reverser fully wound up, and open the 
-      regulator slowly and smoothly, without slipping the wheels.
+
+- Wherever possible, when running normally, have the regulator at 
+  100%, and use the reverser to adjust steam usage and speed.
+- Avoid jerky movements when starting or running the locomotive, thus 
+  reducing the chances of breaking couplers.
+- When starting always have the reverser fully wound up, and open the 
+  regulator slowly and smoothly, without slipping the wheels.
 
 .. _physics-steam-firing:
 
@@ -879,17 +886,17 @@ Open Rails Steam Functionality (Fireman)
 The Open Rails Steam locomotive functionality provides two operational 
 options:
 
-    1. Automatic Fireman (Computer Controlled):
-       In Automatic or Computer Controlled Fireman mode all locomotive 
-       firing and boiler management is done by Open Rails, leaving the 
-       player to concentrate on driving the locomotive. Only the basic 
-       controls such as the regulator and throttle are available to the 
-       player.
-    2. Manual Fireman:
-       In Manual Fireman mode all locomotive firing and boiler management 
-       must be done by the player. All of the boiler management and firing 
-       controls, such as blower, injector, fuel rate, are available to the 
-       player, and can be adjusted accordingly.
+- Automatic Fireman (Computer Controlled):
+  In Automatic or Computer Controlled Fireman mode all locomotive 
+  firing and boiler management is done by Open Rails, leaving the 
+  player to concentrate on driving the locomotive. Only the basic 
+  controls such as the regulator and throttle are available to the 
+  player.
+- Manual Fireman:
+  In Manual Fireman mode all locomotive firing and boiler management 
+  must be done by the player. All of the boiler management and firing 
+  controls, such as blower, injector, fuel rate, are available to the 
+  player, and can be adjusted accordingly.
 
 A full listing of the keyboard controls for use when in manual mode is 
 provided on the *Keyboard* tab of the Open Rails :ref:`Options <options>` 
@@ -919,19 +926,19 @@ locomotive based upon the assumption that the Automatic fireman is
 engaged. The following controls are those typically used by the driver in 
 this mode of operation:
 
-    - Cylinder Cocks -- allows water condensation to be exhausted from the 
-      cylinders.
-      (Open Rails Keys: toggle C)
-    - Regulator -- controls the pressure of the steam injected into the 
-      cylinders.
-      (Open Rails Keys: D = increase, A = decrease)
-    - Reverser -- controls the valve gear and when the steam is "cutoff". 
-      Typically it is expressed as a fraction of the cylinder stroke.
-      (Open Rails Keys: W = increase, S = decrease). Continued operation 
-      of the W or S key will eventually reverse the direction of travel 
-      for the locomotive.
-    - Brake -- controls the operation of the brakes. 
-      (Open Rails Keys: ' = increase, ; = decrease)
+- Cylinder Cocks -- allows water condensation to be exhausted from the 
+  cylinders.
+  (Open Rails Keys: toggle C)
+- Regulator -- controls the pressure of the steam injected into the 
+  cylinders.
+  (Open Rails Keys: D = increase, A = decrease)
+- Reverser -- controls the valve gear and when the steam is "cutoff". 
+  Typically it is expressed as a fraction of the cylinder stroke.
+  (Open Rails Keys: W = increase, S = decrease). Continued operation 
+  of the W or S key will eventually reverse the direction of travel 
+  for the locomotive.
+- Brake -- controls the operation of the brakes. 
+  (Open Rails Keys: ' = increase, ; = decrease)
 
 Recommended Option Settings
 ...........................
@@ -940,11 +947,11 @@ For added realism of the performance of the steam locomotive, it is
 suggested that the following settings be considered for selection in the 
 Open Rails options menu:
 
-    - Break couplers
-    - Curve speed dependent
-    - Curve resistance speed
-    - Hot start
-    - Tunnel resistance dependent
+- Break couplers
+- Curve speed dependent
+- Curve resistance speed
+- Hot start
+- Tunnel resistance dependent
 
 NB: Refer to the relevant sections of the manual for more detailed 
 description of these functions.
@@ -1052,19 +1059,19 @@ as follows:
     
     Heat Model for Passenger Car
 
-i.   Internal heat mass -- the air mass in the carriage (represented 
+i.   *Internal heat mass* -- the air mass in the carriage (represented 
      by cloud) is heated to temperature that is comfortable to the 
      passengers. The energy required to maintain the temperature will 
      be determined the volume of the air in the carriage
-ii.  Heat Loss -- Transmission -- over time heat will be lost through 
+ii.  *Heat Loss -- Transmission* -- over time heat will be lost through 
      the walls, roof, and floors of the carriage (represented by 
      outgoing orange arrows), this heat loss will reduce the 
      temperature of the internal air mass.
-iii. Heat Loss -- Infiltration -- also over time as carriage doors are 
+iii. *Heat Loss -- Infiltration* -- also over time as carriage doors are 
      opened and closed at station stops, some cooler air will enter the 
      carriage (represented by ingoing blue arrows), and reduce the 
      temperature of the internal air mass.
-iv.  Steam Heating -- to offset the above heat losses, steam was piped 
+iv.  *Steam Heating* -- to offset the above heat losses, steam was piped 
      through each of the carriages (represented by circular red arrows). 
      Depending upon the heat input from the steam pipe, the temperature 
      would be balanced by offsetting the steam heating against the heat 
@@ -1095,10 +1102,8 @@ goes outside of the limits of 10--15.5\ |deg|\ C.
 The player can control the train temperature by using the following 
 controls:
 
-    - ``<Alt+U>`` -- increase steam pipe pressure (and hence train 
-      temperature)
-    - ``<Alt+D>`` -- decrease steam pipe pressure (and hence train 
-      temperature)
+- ``<Alt+U>`` -- increase steam pipe pressure (and hence train temperature)
+- ``<Alt+D>`` -- decrease steam pipe pressure (and hence train temperature)
 
 It should be noted that the impact of steam heating will vary depending 
 upon the season, length of train, etc.
@@ -1133,18 +1138,20 @@ well as some suggested test tools, go to `this site
 develop.**
 
 Notes:
-    - New -- parameter names starting with *ORTS* means added as part of 
-      OpenRails development
-    - Existing -- parameter names not starting with *ORTS* are original 
-      in MSTS or added through MSTS BIN
+
+- New -- parameter names starting with *ORTS* means added as part of 
+  OpenRails development
+- Existing -- parameter names not starting with *ORTS* are original 
+  in MSTS or added through MSTS BIN
 
 Possible Locomotive Reference Info:
-    i.   `Steam Locomotive Data 
-         <http://orion.math.iastate.edu/jdhsmith/term/slindex.htm>`_
-    ii.  `Example Wiki Locomotive Data 
-         <http://en.wikipedia.org/wiki/SR_Merchant_Navy_class>`_
-    iii. `Testing Resources for Open Rails Steam Locomotives 
-         <http://coalstonewcastle.com.au/physics/>`_
+
+i.   `Steam Locomotive Data 
+     <http://orion.math.iastate.edu/jdhsmith/term/slindex.htm>`_
+ii.  `Example Wiki Locomotive Data 
+     <http://en.wikipedia.org/wiki/SR_Merchant_Navy_class>`_
+iii. `Testing Resources for Open Rails Steam Locomotives 
+     <http://coalstonewcastle.com.au/physics/>`_
 
 +-------------------------------------+-------------------+------------+-------------------+
 |Parameter                            |Description        |Recom'd     |Typical Examples   |
@@ -2218,8 +2225,8 @@ unbalancedsuperelevation information to the relevant rolling stock files.
 
 .. _physics-tunnel-friction:
 
-Tunnel Friction -Theory
-=======================
+Tunnel Friction -- Theory
+=========================
 
 Introduction
 ------------
@@ -2420,7 +2427,7 @@ For the contents of this new file there are two possibilities, either:
   does not apply to the ``Name()`` statement and the Loco Description 
   Information, where in any case the data in the base .eng file is retained.
 
-An example of an OR-specific bc13ge70tonner.eng file to be placed into the 
+An example of an OR-specific ``bc13ge70tonner.eng`` file to be placed into the 
 OpenRails subfolder that uses the second possibility is as follows::
 
     include ( ..\bc13ge70tonner.eng )
