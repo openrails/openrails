@@ -113,6 +113,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     DEList.Add(new DieselEngine());
 
                     DEList[i].Parse(stf, loco);
+                    DEList[i].Initialize(true);
                 }
                 
                 if ((!DEList[i].IsInitialized))
