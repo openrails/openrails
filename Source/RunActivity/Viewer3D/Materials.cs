@@ -630,6 +630,7 @@ namespace Orts.Viewer3D
             DepthBufferWriteEnable = false,
             DepthBufferFunction = CompareFunction.Less,
         };
+        private static readonly Dictionary<TextureAddressMode, Dictionary<float, SamplerState>> SamplerStates = new Dictionary<TextureAddressMode, Dictionary<float, SamplerState>>();
 
         public SceneryMaterial(Viewer viewer, string texturePath, SceneryMaterialOptions options, float mipMapBias)
             : base(viewer, String.Format("{0}:{1:X}:{2}", texturePath, options, mipMapBias))
@@ -788,13 +789,6 @@ namespace Orts.Viewer3D
                 shader.ImageTexture = Texture;
                 shader.ImageTextureIsNight = false;
             }
-
-/* TODO: XNA 4.0 handles it differently:
-            if (MipMapBias < -1)
-                graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = -1;   // clamp to -1 max
-            else
-                graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = MipMapBias;
-*/
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -857,17 +851,34 @@ namespace Orts.Viewer3D
 
         public override SamplerState GetShadowTextureAddressMode()
         {
+            var mipMapBias = MipMapBias < -1 ? -1 : MipMapBias;
+            TextureAddressMode textureAddressMode;
             switch (Options & SceneryMaterialOptions.TextureAddressModeMask)
             {
                 case SceneryMaterialOptions.TextureAddressModeWrap:
-                    return SamplerState.LinearWrap;
+                    textureAddressMode = TextureAddressMode.Wrap; break;
                 case SceneryMaterialOptions.TextureAddressModeMirror:
-                    return SamplerState.LinearWrap; //TODO: XNA 4.0 handles it differently
+                    textureAddressMode = TextureAddressMode.Mirror; break;
                 case SceneryMaterialOptions.TextureAddressModeClamp:
-                    return SamplerState.LinearClamp;
+                    textureAddressMode = TextureAddressMode.Clamp; break;
                 default:
                     throw new InvalidDataException("Options has unexpected SceneryMaterialOptions.TextureAddressModeMask value.");
             }
+
+            if (!SamplerStates.ContainsKey(textureAddressMode))
+                SamplerStates.Add(textureAddressMode, new Dictionary<float, SamplerState>());
+
+            if (!SamplerStates[textureAddressMode].ContainsKey(mipMapBias))
+                SamplerStates[textureAddressMode].Add(mipMapBias, new SamplerState {
+                    AddressU = textureAddressMode,
+                    AddressV = textureAddressMode,
+                    Filter = TextureFilter.Anisotropic,
+                    MaxAnisotropy = 16,
+                    MipMapLevelOfDetailBias = mipMapBias
+                });
+
+            return SamplerStates[textureAddressMode][mipMapBias];
+
         }
 
         public override void Mark()

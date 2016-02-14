@@ -150,11 +150,19 @@ namespace Orts.Viewer3D
     {
         readonly Texture2D Texture;
         IEnumerator<EffectPass> ShaderPasses;
+        readonly SamplerState TransferSamplerState;
 
         public TransferMaterial(Viewer viewer, string textureName)
             : base(viewer, textureName)
         {
             Texture = Viewer.TextureManager.Get(textureName);
+            TransferSamplerState = new SamplerState {
+                AddressU = TextureAddressMode.Border,
+                AddressV = TextureAddressMode.Border,
+                BorderColor = Color.Transparent,
+                Filter = TextureFilter.Anisotropic,
+                MaxAnisotropy = 16,
+            };
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
@@ -165,7 +173,7 @@ namespace Orts.Viewer3D
             shader.ImageTexture = Texture;
             shader.ReferenceAlpha = 10;
 
-            graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp; // TextureAddressMode.Border is no longer available in XNA 4.0
+            graphicsDevice.SamplerStates[0] = TransferSamplerState;
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
             graphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
         }
