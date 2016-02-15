@@ -1684,7 +1684,7 @@ Dynamically Evolving Tractive Force
 
 The Open Rails development team has been experimenting with 
 max/continuous tractive force, where it can be dynamically altered during 
-game play using the ORTSMaxTractiveForceCurves parameter as shown 
+game play using the ``ORTSMaxTractiveForceCurves`` parameter as shown 
 earlier. The parameters were based on the Handbook of Railway Vehicle 
 Dynamics. This says the increased traction motor heat increase resistance 
 which decreases current and tractive force. We used a moving average of 
@@ -1692,7 +1692,7 @@ the actual tractive force to approximate the heat in the motors. Tractive
 force is allowed to be at the maximum per the ENG file, if the average 
 heat calculation is near zero. If the average is near the continuous 
 rating than the tractive force is de-rated to the continuous rating. 
-There is a parameter called ContinuousForceTimeFactor that roughly 
+There is a parameter called ``ORTSContinuousForceTimeFactor`` that roughly 
 controls the time over which the tractive force is averaged. The default 
 is 1800 seconds.
 

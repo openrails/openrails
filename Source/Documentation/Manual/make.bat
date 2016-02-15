@@ -5,8 +5,12 @@ REM Command file for Sphinx documentation
 if "%SPHINXBUILD%" == "" (
 	set SPHINXBUILD=sphinx-build
 )
+if "%SPHINXAUTOBUILD%" == "" (
+	set SPHINXAUTOBUILD=sphinx-autobuild
+)
 set BUILDDIR=_build
 set ALLSPHINXOPTS=-d %BUILDDIR%/doctrees %SPHINXOPTS% .
+set SPHINXAUTOBUILDOPTS=--open-browser --delay 5 
 set I18NSPHINXOPTS=%SPHINXOPTS% .
 if NOT "%PAPER%" == "" (
 	set ALLSPHINXOPTS=-D latex_paper_size=%PAPER% %ALLSPHINXOPTS%
@@ -20,6 +24,7 @@ if "%1" == "help" (
 	echo.Please use `make ^<target^>` where ^<target^> is one of
 	echo.  html       to make standalone HTML files
 	echo.  dirhtml    to make HTML files named index.html in directories
+	echo.  livehtml   to make standalone HTML files rebuilt automatically upon mod
 	echo.  singlehtml to make a single large HTML file
 	echo.  pickle     to make pickle files
 	echo.  json       to make JSON files
@@ -93,6 +98,14 @@ if "%1" == "singlehtml" (
 	if errorlevel 1 exit /b 1
 	echo.
 	echo.Build finished. The HTML pages are in %BUILDDIR%/singlehtml.
+	goto end
+)
+
+if "%1" == "livehtml" (
+	%SPHINXAUTOBUILD% -b html %ALLSPHINXOPTS% %SPHINXAUTOBUILDOPTS% %BUILDDIR%/html
+	if errorlevel 1 exit /b 1
+	echo.
+	echo.Build finished. The HTML pages are in %BUILDDIR%/html.
 	goto end
 )
 
