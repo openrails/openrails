@@ -449,10 +449,9 @@ namespace Orts.Viewer3D
                 ToggleCylinderCompoundCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
                 FireShovelfullCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
             }
-            if (PlayerLocomotive is MSTSElectricLocomotive)
-            {
-                PantographCommand.Receiver = (MSTSElectricLocomotive)PlayerLocomotive;
-            }
+
+            PantographCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+
             ImmediateRefillCommand.Receiver = (MSTSLocomotiveViewer)PlayerLocomotiveViewer;
             RefillCommand.Receiver = (MSTSLocomotiveViewer)PlayerLocomotiveViewer;
             ToggleOdometerCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;

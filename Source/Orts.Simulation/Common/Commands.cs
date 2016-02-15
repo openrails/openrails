@@ -226,7 +226,7 @@ namespace Orts.Common
     // Power
     [Serializable()]
     public sealed class PantographCommand : BooleanCommand {
-        public static MSTSElectricLocomotive Receiver { get; set; }
+        public static MSTSLocomotive Receiver { get; set; }
         private int item;
 
         public PantographCommand( CommandLog log, int item, bool toState ) 
