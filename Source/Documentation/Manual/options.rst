@@ -158,6 +158,12 @@ The F5 HUD uses the abbreviations *stn* for short tons (2000 lb) and
 Note that the units displayed by the F4 Track Monitor (e.g. velocity and 
 distance) are always based on data read from the route files.
 
+Disable TCS scripts
+-------------------
+
+This option disables the train control system scripts for locomotives where 
+these have been implemented.
+
 Audio Options
 =============
 
@@ -427,8 +433,8 @@ not always available.
 Click on the *Add* button, and locate the desired installation. OR will 
 automatically enter a proposed name in the *Name:* window that will 
 appear in the *Installation set:* window on the main menu form. Modify 
-the name if desired, then Click *Save* to add the new path and name to 
-Open Rails. Then click *OK* to return to Open Rails.
+the name if desired, then Click *OK* to add the new path and name to 
+Open Rails. 
 
 To remove an entry (note that this does not remove the installation 
 itself!) select the entry in the window, and click *Delete*, then *OK* 

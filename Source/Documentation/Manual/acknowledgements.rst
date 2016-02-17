@@ -31,9 +31,9 @@ Péter Gulyás        Peter Newark        Phil Voxland
 Remus Iancu         Richard Plokhaar    Rick Grout 
 Rick Hargraves      Riemer Grootjans    Rob Lane 
 Robert Hodgson      Robert Murphy       Roberto Ceccarelli
-Robert Roeterdink   Samuel Kelly        Scott Miller 
-Sid Penstone        Tim Muir            Walter Niehoff 
-Wes Card
+Robert Roeterdink   Samuel Kelly        Sándor Tarcsi
+Scott Miller        Sid Penstone        Tim Muir
+Walter Niehoff      Wes Card
 =================== ==================  ===================
 
 and ...

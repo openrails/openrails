@@ -44,6 +44,11 @@ train sound can profit from the many more triggers active for AI trains in
 ORTS. For instance, Variable2 trigger is not active in MSTS for AI trains, 
 while it is in ORTS.
 
+If a ``Stereo()`` line is present within a ``ScalabiltyGroup``, and a mono .wav 
+sound is called, MSTS will play the sound at double speed. In order to have it 
+play at the correct speed, a frequency curve halving the speed has to be 
+inserted. OR behaves the same as MSTS in this case.
+
 Discrete Triggers
 =================
 
@@ -86,15 +91,15 @@ Trigger       Function
     34        CylinderCocksToggle
     36        FireboxDoorChange
     37        LightSwitchToggle
-    38        WaterScoopDown  (currently not managed)
-    39        WaterScoopUp (currently not managed)
+    38        WaterScoopDown
+    39        WaterScoopUp
     41        FireboxDoorClose
     42        SteamSafetyValveOn
     43        SteamSafetyValveOff
     44        SteamHeatChange (currently not managed)
     45        Pantograph1Up
     46        Pantograph1Down
-    47        Pantograph1Toggle (currently not managed)
+    47        Pantograph1Toggle
     48        VigilanceAlarmReset
     54        TrainBrakePressureDecrease 
     56        VigilanceAlarmOn
@@ -181,13 +186,13 @@ OR manages all of the variable triggers managed by MSTS. There can be some
 difference in the relationship between physical locomotive variables (e.g. 
 Force) and the related variable. This applies to Variable2 and Variable3. 
 
-New variables:
+New variables introduced by OR:
 
 - BrakeCyl, which contains the brake cylinder pressure in PSI. Like the 
   traditional MSTS variables, it can be used to control volume or frequency 
   curves (``BrakeCylControlled``) and within variable triggers 
   (``BrakeCyl_Inc_Past`` and ``BrakeCyl_Dec_Past``).
-- CurveForce in Newtons when the rolling stock is in curve. Can be used for 
+- CurveForce, in Newtons when the rolling stock is in a curve. Can be used for 
   curve flange sounds, with two volume curves: one is ``SpeedControlled``, 
   which makes the sound speed dependent too, and ``CurveForceControlled``. 
   Of course ``CurveForce_Inc_Past``, and ``CurveForce_Dec_Past`` are also 

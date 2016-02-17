@@ -5,9 +5,6 @@
 
 OpenRails Reference Manual
 ==========================
-Version |release|
-
-Contents:
 
 .. toctree::
     :maxdepth: 3

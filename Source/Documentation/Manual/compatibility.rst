@@ -1,55 +1,65 @@
 .. _compatibility:
 
-******************************
-MSTS File Format Compatibility
-******************************
+*******************************
+Use of MSTS Files by Open Rails
+*******************************
 
-Open Rails software supports the MSTS file formats detailed below. The 
-software uses a file parser to read the MSTS file information for use by 
-the Open Rails software. Testing of the parser software indicates that it 
-will locate many errors or malformation in these files that are not 
-highlighted by the MSTS train sim software or by other utilities. In most 
-cases, the Open Rails software will ignore the error in the file and run 
-properly. Open Rails software logs these errors in a log file on the 
-user's desktop. This log file may be used to correct problems identified 
-by the Open Rails software.
-
-Trainset
+Overview
 ========
 
-The software currently supports Shape (.s), Shape Definition (.sd), Sound 
-(.sms), Cab (.cvf), and texture Ace (.ace) files; including displaying the 
-correct LOD, alpha and transparency attributes. Moreover it supports the 
-file types: Engine (.eng); Wagon (.wag). It substitutes MSTS-style physics 
-to enable the user to operate trains.
+Your MSTS Installation and Custom Installations for Open Rails
+--------------------------------------------------------------
 
-Consists
-========
+Open Rails reads only the content folders in each of the MSTS installations 
+you choose to identify for it and will do so without modifying any of those 
+files. None of the MSTS program folders are used and no changes to the MSTS 
+directory tree are required.  
 
-Open Rails software reads and displays Consist files (.con) used for 
-Player Train, AI Train, and Loose Consists in activities. 
+Open Rails may also be used to read a non-MSTS directory structure that you 
+create.
 
-Services
-========
+This document uses the term Root Folder to designate the parent folder of any 
+MSTS or OR-Specific directory tree (.e.g, ``\Train Simulator`` is the 
+*Root Folder* for MSTS).
 
-Open Rails software supports MSTS Service files (.srv) for the creation of 
-both Player and AI services.
+MSTS Directories Used by Open Rails
+===================================
 
-Paths
-=====
+Open Rails software reads and uses all of the data found in many MSTS 
+directories::
 
-Open Rails software supports MSTS Path files (.pat) for determining the 
-path of both Player and AI Trains.
+    \Consists
+    \Paths
+    \Services
+    \Shapes
+    \Sounds
+    \Textures
+    \Terrtex
+    \Tiles
+    \Traffic
+    \Trainset
+    \World
 
-Routes
-======
+Open Rails uses a file parser to read the MSTS files and will locate many 
+errors that are missed or unreported by the MSTS software or by other 
+utilities. In most cases, the Open Rails software will ignore the error in the 
+file and run properly. Open Rails software logs these errors in a log file on 
+the user's desktop. This log file may be used to correct problems identified 
+by the Open Rails software. The parser will also correct some of the problems 
+that stumped MSTS.  For example, if a texture is missing Open Rails will 
+substitute a neutral gray texture and continue.
 
-Open Rails software supports the following MSTS Route files with the 
-limitations noted.
+MSTS Files Used in Whole or Part by Open Rails
+==============================================
+
+Route Files
+-----------
+
+Open Rails software uses some of the data in several MSTS Route files, 
+depending on the MSTS features supported by Open Rails:
 
 - Route Database file (.rdb) -- CarSpawner is supported.
-- Reference File (.ref) -- Open Rails does not provide a Route Editor in 
-  the current release.
+- Reference File (.ref) -- Open Rails does not yet provide a Route Editor.
 - Track Database file (.tdb) -- supported
 - Route File (.trk) -- Level Crossings and overhead wires are supported.
 - Sigcfg (.dat) file -- Signal & scripting capabilities are supported.
@@ -62,93 +72,118 @@ limitations noted.
 - Ttype (.dat)  file -- Supported
 - Hazards (.haz) file -- Supported
 
-Environment
-===========
+Environment .env files
+----------------------
 
-Open Rails software does not support advanced water dynamic effects at 
-this time, while it supports first-level, player-driven dynamic weather 
-effects.
+Open Rails software does not support advanced water dynamic effects.
 
-Open Rails provides two types of environment representation that can be 
-selected by the player at game start: a MSTS compatible one and a native 
-one.
+OR Defined Weather
+''''''''''''''''''
 
-In the native version Open Rails software uses its own sky, cloud, sun, 
-moon and precipitation effects developed exclusively for it. In activity 
-mode the starting parameters for time of day and weather are read from the 
-activity file to determine the starting display in Open Rails software.
+Open Rails uses its own sky, cloud, sun, moon and precipitation effects 
+developed exclusively for it. When using the *Explore Route* feature you may 
+choose season, weather, and time of day. When using the *Run Activity* feature 
+they are read from the activity file.
+
+OR Weather using MSTS Compatibility
+'''''''''''''''''''''''''''''''''''
+
+Open Rails can replace MSTS Environmental displays by its own (e.g., Kosmos) 
 
 Activities
-==========
+----------
 
-Open Rails software runs without problems a great percentage of the 
-passenger and freight activities created using the MSTS activity editor. 
-It also offers some OR_specific options to add interesting features to 
-existing activities.
+Many passenger and freight activities created using the MSTS activity editor 
+run without problems in Open Rails.
 
-Folder Structure
-================
+Some Activities created using the MSTS activity editor will have slightly 
+different behavior as compared to running in MSTS. This is often due to 
+slightly different train performance resulting from differences in how each 
+simulator handles train physics.
+
+A few activities fail to run at all. This appears to be due to the creativity 
+of Activity Designers who have found ways to do things wholly unanticipated by 
+the Open Rails Team.  As these are discovered the Open Rails team will record 
+the bug for future correction.
+
+.. _compatibility-folders:
+
+Using a Non-MSTS Folder Structure
+=================================
 
 Open Rails uses a subset of the MSTS folder structure to run.
-The following folders, together with their related sub-folders, are needed 
-at root level:
-- GLOBAL
-- ROUTES
-- TRAINS
-- SOUND
+You must create a root folder of any suitable name and it must contain four 
+folders, together with their related sub-folders::
 
-At root level no files are needed.
+    \GLOBAL
+    \ROUTES
+    \TRAINS
+    \SOUND
 
-Within the GLOBAL folder the following sub-folders are needed if global 
-(shared among more than one route) shapes and textures are used:
-- SHAPES
-- TEXTURES
+No other files or folders are required in the root folder.
+Within the ``\GLOBAL`` folder two sub-folders are required::
 
-Within the GLOBAL folder only the file tsection.dat is absolutely needed. 
+    \SHAPES
+    \TEXTURES
+
+Within the ``\TRAINS`` folder two subfolders are required::
+
+    \CONSISTS
+    \TRAINSETS
+
+Original MSTS Files Usually Needed for Added MSTS-Compatible Content
+====================================================================
+
+Original MSTS Files Usually Needed for a Non-MSTS-Folder Structure
+------------------------------------------------------------------
+
+A number of MSTS folders and files must be placed into any OR-Specific 
+installation you have created. These may be obtained from your own MSTS 
+Installation or, as noted below, from Train Sim Forums
+
+``\GLOBAL``
+'''''''''''
+
+Within the ``\GLOBAL`` folder only the file tsection.dat is required. The most 
+current version is best and it can be downloaded from many Train Sim forums. 
 Files sigcfg.dat and sigscr.dat are needed if there are routes that don't 
 have their own specific files with the same names in their root folder.
 
-Which Original MSTS Content Files Are Usually Needed To Run MSTS-Compatible Content Generated by Third Parties?
-===============================================================================================================
+``\GLOBAL\SHAPES``
+''''''''''''''''''
 
-A general summary of which original MSTS content files within the Train 
-Simulator root folders are usually used by MSTS-compatible content follows.
-
-- **GLOBAL** root folder:
+Many routes use specific track sets, like XTRACK, UK-finescale etc.
   
-  Many routes use specific track sets, like XTRACK, UK-finescale etc.
-  
-  Routes which solely use such sets do not need any of the original MSTS 
-  files from GLOBAL, as all required files come from the relevant track set. 
-  There are however also many routes using original MSTS track sets. These 
-  routes will need part or all the files contained in the SHAPES and 
-  TEXTURES subfolders within the GLOBAL folder.
+Routes which solely use such sets do not need any of the original MSTS 
+files from GLOBAL, as all required files come from the relevant track set. 
+These sets can be downloaded from many Train Sim forums. There are also many 
+routes using super-sets of the original MSTS track sets. These routes will 
+need some or all the files contained in the ``SHAPES`` and ``TEXTURES`` 
+subfolders within the ``GLOBAL`` folder of your MSTS installation.
 
-- **ROUTES** root folder:
+``\TRAINS``
+'''''''''''
   
-  In principle, to run a route only that specific route folder is required.
+Requirements are similar to routes. Again, only the folders for the 
+trainsets which are actually used are required, but many third-party 
+trainsets refer to original MSTS files like cabviews and, in particular, 
+sound files. Many consists refer to engines or wagons from the original 
+MSTS routes but those can be easily replaced with other engines or wagons.
+
+``\SOUND``
+''''''''''
   
-  However, many routes - in particular freeware routes - use much material 
-  from the original MSTS routes, and therefore the original MSTS routes need 
-  to be available in order to properly install these routes.
+Only very few routes provide a full new sound set, so the original files 
+included in this folder are usually needed.
 
-- **TRAINS** root folder:
-  
-  Requirements are similar to routes. Again, only the folders for the 
-  trainsets which are actually used are required, but many third-party 
-  trainsets refer to original MSTS files like cabviews and, in particular, 
-  sound files. Many consists refer to engines or wagons from the original 
-  MSTS routes but those can be easily replaced with other engines or wagons.
+``\ROUTES``
+'''''''''''
 
-- **SOUND** root folder:
-  
-  Only very few routes provide a full new sound set, so the original files 
-  included in this folder are usually needed.
+Once all the above directories are populated with files you need only the 
+specific route folder placed into ``\Routes`` to run Open Rails from a 
+non-MSTS directory.
 
-RailDriver Support
-==================
-
-Open Rails offers native support for the RailDriver Desktop Train Cab 
-Controller. Instructions for setting up RailDriver for Open Rails are 
-included in the Installation Manual that is included with the Open Rails 
-Installer, or it can be downloaded separately from the Open Rails website.
+Note that many routes -- in particular freeware routes -- use content from the 
+original MSTS routes, and therefore when installing new routes you may find 
+their installation requires files from the original MSTS routes in order to be 
+properly installed.

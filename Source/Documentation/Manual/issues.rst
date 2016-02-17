@@ -1,7 +1,7 @@
 .. _issues:
 
 ************************
-Version 1.0 Known Issues
+Version 1.1 Known Issues
 ************************
 
 Empty Effects Section in .eng File

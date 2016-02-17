@@ -62,27 +62,24 @@ improve the capabilities of Open Rails software.
 Open Rails is published under the GPL license which is "copyleft"  to ensure 
 that the source code always remains publicly available.
 
-Does Open Rails Need MSTS to Run?
-=================================
+Does Open Rails Require You to Have MSTS Installed?
+===================================================
 
-This is not a correctly set question. Open Rails is able to run a vast 
-majority of MSTS content (routes, trains, activities). Open Rails does 
-not need MSTS executable files (e.g. .exe or .dll files), neither does 
-it need .ini files.
+No, it is not required by the Open Rails software itself. However. a great deal 
+of the content accessed by OR includes files originally delivered with MSTS 
+(e.g., tracks or general sounds). These files must be obtained from a properly 
+licensed installation of MSTS.
 
-However, if the MSTS content uses content files originally delivered with 
-MSTS, such as tracks or general sounds (this applies in particular to 
-routes), obviously to run such content OR needs such files.
+There are examples where no MSTS content is used (often payware) and in such 
+cases Open Rails does not require MSTS to be installed. Read :ref:`here 
+<compatibility-folders>` for further 
+detail.
 
-If instead (and there are examples of this) the MSTS content does not use 
-such original content files, again obviously OR does not need original 
-MSTS files. Read here for further detail.
-
-In both cases, MSTS content files (original and not) must be organized in an 
-MSTS-compatible folder structure. Such a structure is described here. In 
-this manual such a folder structure will be called an *MSTS 
-installation* for clarity, even if this wording is not completely 
-correct. 
+In all cases, all content files (original or MSTS) must be organized in an 
+MSTS-compatible folder structure. Such a structure is described :ref:`here 
+<compatibility-folders>`. In this manual such a folder structure will be 
+called an *MSTS installation* for clarity, even if this wording is not 
+completely correct. 
 
 A proof that Open Rails itself does not need an MSTS installation at all to 
 run is e.g. this route.
@@ -90,9 +87,9 @@ run is e.g. this route.
 Community
 =========
 
-At the present time, Open Rails software is offered without technical 
-support. Therefore, users are encouraged to use their favorite train 
-simulation forums to get support from the community.
+Open Rails software is offered without technical support. Users are encouraged 
+to use their favorite train simulation forums to get support from the community. 
+We suggest:
 
 - `Train-Sim.Com <http://forums.flightsim.com/vbts/>`_
 - `UK Train Sim <http://forums.uktrainsim.com/index.php>`_
@@ -106,6 +103,14 @@ website. We believe that the best solution is for the current train
 simulation forum sites to remain the destination for users who want to 
 discuss topics relating to Open Rails software. The Open Rails team 
 monitors and actively participates in these forums.
+
+Raildriver Support
+==================
+
+Open Rails offers native support for the RailDriver Desktop Train Cab 
+Controller. Instructions for setting up RailDriver for Open Rails are included 
+in the Installation Manual that is included with the Open Rails Installer, or it 
+can be downloaded separately from the Open Rails website.
 
 Highlights of the Current Version
 =================================
@@ -123,13 +128,13 @@ system which is faster and more robust than MSTS.
 Focus on Operations
 -------------------
 
-Release 1.0 clears the way to improving on MSTS in many ways which can be 
+Release 1.1 clears the way to improving on MSTS in many ways which can be 
 summed up as moving from Foundation to Realism and eventually to 
 Independence, and already includes features that are beyond MSTS. 
-Non-player trains can already have a first release movement orders (i.e. 
-pickups, drop offs) based on files in MSTS format. Deadlocks between 
-player and non-player trains, that are frequent in MSTS, have been 
-practically eliminated.
+Non-player trains can have movement orders (i.e. pickups, drop offs) based 
+on files in MSTS format. The player can change driven train. 
+
+.. _intro-reality:
 
 Focus on Realistic Content
 --------------------------
@@ -138,18 +143,15 @@ The physics underlying adhesion, traction, engine components and their
 performance are based on a world-class simulation model that takes into 
 account all of the major components of diesel, electric and steam 
 engines. This includes elements like friction resistance in curves and 
-tunnels, a very sophisticated steam locomotive physics modeling, many 
+tunnels, a very sophisticated steam locomotive physics model, many 
 optional curves to define precise locomotive physics, coupler forces and 
-much more. It is foreseen that beyond release 1.0 Open Rails will 
-approach the level of physics realism only available in professional 
-simulators.
+much more. 
 
 Existing models that do not have the upgraded Open Rails capabilities 
 continue, of course, to perform well.
 
-In the package of this version also ancillary programs (*tools*) are 
+In the package of this version ancillary programs (*tools*) are also 
 delivered, including:
 
 - Track Viewer: a complete track viewer and path editor
-- Activity Editor: a draft new activity editor to move beyond MSTS
 - Timetable Editor: a tool for preparing Timetables

@@ -9,7 +9,7 @@ Manual), to run the game you must double-click on the Open Rails icon on
 the desktop, or on the OpenRails.exe file.
 
 The OpenRails main window will appear. This displays your available MSTS 
-installations.
+installation profiles.
 
 .. image:: images/start-activity.png
 
@@ -49,16 +49,32 @@ Clicking the link ``What's new?`` in the upper centre part of the main menu
 window will connect to a website that summarizes the most recent changes 
 to the OR program.
 
-Preliminary Selections
-======================
+Further General Buttons
+=======================
 
-Firstly, under ``Route:`` select the route on which you wish to play.
+Tools
+-----
+
+By clicking this button you get access to the ancillary tools (see :ref:`here 
+<intro-reality>`).
+
+Documents
+---------
+
+This button becomes selectable only if you have at least once updated to a 
+testing version or to a stable version greater than 1.0. By clicking this 
+button you get immediate access to the OR documentation.
+
+Preliminary Selections
+----------------------
+
+Firstly, under ``Route:`` select the route on which you wish to run.
 
 If you check the ``Logging`` checkbox, Open Rails will generate a log file 
 named ``OpenRailsLog.txt`` that resides on your desktop. This log file is very 
 useful to document and investigate malfunctions.
 
-At every restart of the game (that is after clicking ``Start`` or ``Server`` 
+At every restart of the game (that is, after clicking ``Start`` or ``Server`` 
 or ``Client``) the log file is cleared and a new one is generated.
 
 If the ``Windowed`` checkbox is checked, Open Rails will run in a window 

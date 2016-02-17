@@ -166,7 +166,8 @@ Train Details
 -------------
 
 The train name as defined in the first row must be unique for each train in a 
-timetable file.
+timetable file. This name is also used when referencing this train in a train 
+command; see details below.
 
 This name is also used when referencing this train in a train command, see 
 details below.

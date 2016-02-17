@@ -114,17 +114,18 @@ Configurable Fonts
 
 OR supports a configurable font family, with font size selection, and a 
 choice of regular or bold style. More than one font or size can be used in 
-the same cabview.
+the same cabview. This does not affect the display in MSTS.
 
 An optional line of the form ``ORTSfont ( fontsize  fontstyle  "fontfamily" )`` 
 must be inserted into the .cvf block of the digital control or digital clock, 
 where *fontsize* is a float (default value 10), *fontstyle* an integer having 
 the value 0 (default) for regular and 1 for bold, and *fontfamily* is a 
 string with the font family name (ex. "Times New Roman"). The default is 
-"Courier New".
+"Courier New". A convenient font, if available, is "Quartz MS" or "Quartz", 
+which models a 7-segment display.
 
-Here is an example that displays a 12 pt. bold font using the Sans Serif font 
-family::
+Here is an example that displays the digital clock with a 12 pt. bold font 
+using the Sans Serif font family::
 
     DigitalClock (
         Type ( CLOCK DIGITAL_CLOCK )
@@ -135,9 +136,8 @@ family::
         ORTSFont ( 12 1 "Sans Serif" )
     )
 
-Only the first parameter of ORTSFont can be present, or only the first two, 
-or all three.
-
+It is acceptable if only the first parameter of ORTSFont is present, or only 
+the first two, or all three. 
 Note that you cannot use the MS Cabview editor on the .cvf file after having 
 inserted these optional lines, because the editor will delete these added 
 lines when the file is saved.
@@ -145,7 +145,7 @@ lines when the file is saved.
 3D cabs
 =======
 
-The key to enter into a 3D cab (provided the player locomotive has one) is 
+The key to enter into a 3D cab (if the player locomotive has one) is 
 ``<Alt+1>``, in case locomotive has both 2D and 3D cabs provided. 
 Key ``<1>`` can also be used to enter to 3D-cab-only locomotives.
 
@@ -195,7 +195,7 @@ Development Rules
   ``CLOCK:1:15:CLOCKS``. This will draw the second clock with 15mm font 
   dimension, with the ``CLOCKS.ACE`` file in ``CABVIEW3D`` containing the 
   font. If no ace is specified, the default will be used.
-- Mirrors and doors can be operated from 3D cabs. Names to be used are 
+- Mirrors and doors can be operated from 3D cabs. The names used are 
   ``LEFTDOOR``, ``RIGHTDOOR`` and ``MIRRORS``.
 
 A demo trainset with a 3Dcab, that may be useful for developers, can be 
@@ -204,8 +204,7 @@ downloaded from: `<http://www.tsimserver.com/Download/Df11G3DCab.zip>`_.
 A Practical Development Example For a Digital Speedometer
 ---------------------------------------------------------
 
-Let's suppose you have to create a digital speedometer using a font with size 
-14.
+Let's suppose you wish to create a digital speedometer using a size 14 font.
 
 To explain it in *gmax* speak, you must have an object called ``SPEEDOMETER`` 
 in the cab view and it must be comprised of at least one face.

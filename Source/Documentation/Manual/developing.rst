@@ -92,7 +92,7 @@ number of texture files as is practical.
 Support
 =======
 
-Support can be requested on the OR forum on `<www.elvastower.com/forums>`_.
+Support can be requested on the OR forum on `<http://www.elvastower.com/forums>`_.
 
 The OR development team, within the limits of its possibilities, is willing 
 to support contents developers.

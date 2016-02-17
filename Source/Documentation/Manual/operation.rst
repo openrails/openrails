@@ -37,14 +37,14 @@ Open Rails AI
 
 Basic AI Functionality
 
-- OR supports AI trains. In time, the AI system will become more advanced with 
+- OR supports AI trains. The AI system is becoming more and more advanced with 
   new features.
 - OR supports two distinct ways of controlling trains: it supports traditional 
   activities in compatibility with MSTS, and it also supports 
   :ref:`Timetable <timetable>` mode. Note that various options and settings 
   are sometimes limited to either activity or Timetable mode.
 - AI trains can meet if both paths have passing sections defined at the same 
-  place.
+  place, or if their paths lead them to different tracks at the meet station.
 - Waiting points and reverse points work. Reverse points can be used in both 
   Activity and Timetable modes, while waiting points can only be used in Activity 
   mode.
@@ -228,8 +228,9 @@ in Manual Mode could jeopardise the stability of the deadlock processing. So
 care should be taken when using Manual Mode in an area with AI traffic, 
 specifically on single track sections.
 
-The only requirement to switch from Auto Mode to Manual Mode is that the train 
-be at a standstill. The Ctrl+M key toggles between Auto Mode and Manual Mode. 
+Switching from Auto Mode to Manual Mode can be performed with the train at a 
+standstill or with the train moving. The ``<Ctrl+M>`` key toggles between 
+Auto Mode and Manual Mode. 
 When switching from Auto Mode to Manual Mode, all signals already cleared will 
 be reset, and new routes are cleared ahead of and behind the train for the 
 maximum distance if possible, or up to the first signal.
@@ -388,15 +389,15 @@ reserved path, except when the WP is followed by a signal in the same track
 section (no nodes -- that is switches -- in between).
 
 WPs set in a path used by a player train have no influence on the train run, 
-except -- again when the WP is followed by a signal in the same track section. In 
+except -- again -- when the WP is followed by a signal in the same track section. In 
 such cases, for both AI trains and player train, the signal is set to red when 
 the train approaches the WP.
 
 For AI trains the signal returns to green (if the block conditions after the 
 signal allow this) one second after expiration of the WP.
 
-Player trains must stop BEFORE the WP (or else they get an emergency stop). In 
-this case the signal returns to green 5 seconds after expiration of the WP.
+Player trains must stop BEFORE the WP For player trains the signal returns 
+to green 5 seconds after expiration of the WP.
 
 If there are more WPs in the track section where the signal resides, only the 
 last one influences the signal.
@@ -425,10 +426,13 @@ the two events will be considered).
 Absolute waiting points are a comfortable way of synchronizing and scheduling 
 train operation.
 
+.. _operation-signals:
+
 Signals at Station Stops
 ========================
 
-If the signal at the end of a platform protects a route which contains switches, 
+If the Experimental Option *Forced red at station stops* has been selected, 
+and if there is a signal at the end of a platform, 
 that signal will be held at danger up to 2 minutes before the booked departure. 
 If the station stop is less than 2 minutes, the signal will clear as the train 
 comes to a stand. This applies to both AI train and player trains.
@@ -439,14 +443,10 @@ position itself along the platform. Signals which only protect plain track will
 also not be held.
 
 In some railway control systems trains do not get a red at the station starting 
-signal when they have to stop in that station.
+signal when they have to stop in that station. In these cases the above option 
+must be disabled.
 
-To achieve this, you can select the Experimental Option :ref:`Forced red at 
-station stops <options-forced-red>` to disable this signal behavior.
-
-Signals at waiting points for player trains will be held at danger until the 
-train has stopped and the waiting point has expired. For signals at waiting 
-points for AI trains, see the preceding paragraph.
+For signals at waiting points trains, see the preceding paragraph.
 
 Speedposts and Speed Limits Set by Signals
 ==========================================
@@ -462,10 +462,13 @@ speedpost, the limit defined by the speedpost will be maintained. If a lower
 speed limit was in force due to a limit set by another signal, the allowed limit 
 is set to that as defined by the speedpost.
 
-If a speedpost sets a limit which is higher than that set by the last signal, 
+In timetable mode a speedpost sets a limit which is higher than that set by the last signal, 
 the limit set by the signal is overruled and the allowed limit is set to that as 
 defined by the speedpost. Instead, the valid speed limit is always the lower of 
 that of the last signal and that of the last speedpost.
+
+In activity mode in the preceding case the lower of the two limits becomes 
+valid.
 
 Further Features of AI Train Control
 ====================================
@@ -476,17 +479,16 @@ Further Features of AI Train Control
 - AI trains will stop at stations and will adhere to the booked station 
   departure times if possible. 
 - AI trains will stop at a platform such that the middle of the train is in the 
-  middle of the platform. If the train is longer than the platform, it means that 
+  middle of the platform. If the train is longer than the platform, 
   both the front and rear of the train will extend outside the platform. If the 
-  platform has a signal at the end, and this signal is held at danger (see above), 
+  platform has a signal at the end, and this signal is held at danger (see 
+  further :ref:`above <operation-signals>`), 
   and the train is too long for the platform, it will stop at the signal. But if 
   the train length is more than double the platform length, the signal will not be 
   held. 
 - AI trains will adhere to the speed limits. 
 - AI trains will stop at a signal approximately 30 m. short of a signal at 
   danger. 
-- At waiting points, the AI trains will stop at the waiting point. Any signal 
-  beyond the waiting point is kept at danger until the required departure time. 
 - Where AI trains are allowed to follow other trains in the same section passing 
   permissive signals, the train will adjust its speed to that of the train ahead, 
   and follow at a distance of approx. 300 m. If the train ahead has stopped, the 
@@ -644,8 +646,6 @@ boarding time is added to the real arrival time, giving a new departure time;
 this new departure time is compared with the scheduled departure time and the 
 higher value is selected as the real departure time. 
 
-AI freight trains stop for 20 seconds at stations.
-
 A train is considered to be a passenger train if at least one wagon (or engine) 
 carries passengers.
 
@@ -666,6 +666,14 @@ All this is compatible with MSTS operation; only the fact that the scheduled
 departure time is considered for AI trains differs, as it is considered an 
 improvement.
 
+Restricted speed zones defined in activities
+--------------------------------------------
+
+OR manages restricted speed zones defined in activities as MSTS. Start of a 
+restricted speed zone can be recognized on the Track Monitor Window because 
+the maxspeed is shown in red; the maxspeed at an end of a restricted speed 
+zone is shown in green.
+
 .. _operation-ai-shunting:
 
 Extended AI Train Shunting
@@ -681,7 +689,7 @@ The following additional shunting functions are available:
 
 - AI train couples to a static consist and restarts with it.
 - AI train couples to a player or AI train and becomes part of it; the coupled 
-  AI train continues on its path.
+  train continues on its path.
 - AI train couples to a player or AI train and leaves to it its cars; the 
   coupled and coupling train continue on their path.
 - AI train couples to a player or AI train and *steals* its cars; the coupled 
@@ -708,21 +716,24 @@ need post-processing of the created files.
 Extended AI Functions 1 to 4 (these all involve coupling)
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-It is not always desired that AI trains couple to other trains because of timing 
-problems, for instance, in case they were designed to run separately. So 
-coupling is activated only if certain conditions are met.
+It is not always desired that AI trains couple to other trains.; e.g. the 
+activity could have been designed so that the trains proceed separately, but 
+then, at runtime, they could be at the same place at the same moment because 
+of timing problems. In such a case it would be undesirable that the 
+trains couple. So coupling is activated only if certain conditions are met.
 
 In general the signal protection rules apply, that is, an AI train will find a 
 red signal if its path leads it directly to another train. So in general these 
 functions can be used only if there are no signals between the coupling train 
-and the coupled train. However, at least in some cases, this can be overcome in 
-two modes:
+and the coupled train. However, this can be overcome in two modes:
 
 - by the activity developer, by inserting a double reversal point between the 
   signal and the coupled train (this works only if the double reversal point is 
-  not in the track section occupied by the coupled train) or:
+  not in the track section occupied by the coupled train).
 - by the player, forcing the signal to the clear state by using the 
   :ref:`dispatcher window <driving-dispatcher>`. 
+- or even better, by using extended AI shunting function #7, which is 
+  described further below, that allows the train AI to pass a signal at danger.
 
 Coupling with a static consist is not subject to other conditions, since if the 
 activity designer decided that the path would lead an AI train up to against a 
@@ -753,9 +764,9 @@ In the case where the coupled train is static:
 
 In case the coupled train is a player train or an AI train:
 
-- if there is at least one reverse point further in the path of the coupling 
-  train, the coupling train couples with the coupled train; at that point there 
-  are two possibilities:
+- if there is at least one reverse point under the coupled train or further 
+  in the same track section, the coupling train couples with the coupled 
+  train; at that point there are two possibilities:
 
     1.  The trainset coupling to the coupled train is a wagon: in this case the 
         coupling train leaves to the coupled train all the cars between its 
@@ -775,7 +786,8 @@ In case the coupled train is a player train or an AI train:
 Now on how to design paths:
 
 - If one wants, the coupling train to be absorbed by the coupled train: simply 
-  put the end point of the path of the coupling train below the coupled train.
+  put the end point of the path of the coupling train below the coupled train
+  or further, but in the same track section.
 - If one wants the coupling train to move further on in its path after having 
   coupled with the coupled train: put in the path of the coupling train a reverse 
   point below the coupled train. If one also wants that the coupling train does 
@@ -862,74 +874,75 @@ Application 2:
 - the train reaches an intermediate station and the two sections decouple;
 - one section takes the main line, while the other one takes a branch line (this 
   can happen in any direction for both trains).
-- While the joining train (the one that moves and couples to the other train - 
-  the joined train) must be an AI train at the moment, the joined train may be 
-  either an AI train or a player train (autopiloted or not).
+- Both the joining train (the one that moves and couples to the other train -- 
+  the joined train) and the joined train may be an AI train or a player train.
 
 Activity development:
 
-    1)  The two trains start as separate trains, couple together and decouple 
-        later in the game . After that of course such trains can couple to other 
-        trains, and so on.
-    2)  The coupling train becomes an "Incorporated" train after coupling, that 
-        is it has no more cars or locomotives (they all become part of the coupled 
-        train) and is a sort of virtual train. In this phase it is not shown in the 
-        Consist information HUD. It will return to life when an uncoupling command 
-        (automatic or manual) is issued.
-    3)  To become an "Incorporated" train, the coupling train before coupling 
-        must pass in its path a Waiting Point with value 60001 (the effective 
-        waiting time is 0 seconds).
-    4)  For the coupling train to couple to the rear of the coupled train there 
-        are no particular requirements; if however you want to have very short runs 
-        from coupling train start to coupling moment, it could be necessary to 
-        insert a couple of reversal points in between, or else the train could stop 
-        and avoid coupling. Please don't disdain double reversals: they are 
-        sometimes the only way to limit the authority range of a train. 
-    5)  If the coupling train has to couple to the front of the coupled train, 
-        obviously a reversal point is needed for the coupling train: to be laid 
-        somewhere under the coupled train, or even farther down in the same track 
-        section; also in this case there can be a problem of authority, that 
-        requires that the coupled train has a couple of reversal points after the 
-        point where it waits to be coupled.
-    6)  The incorporated train has its own path, but from coupling to decoupling 
-        point it must pass over the same track sections. The incorporated train must 
-        not have waiting points nor station stops in the common path part (the 
-        coupled train instead may have them). If there are reversals within the 
-        common path part, they must be present in both paths.
-    7)  At the point of decoupling the number of cars and locomotives to be 
-        decoupled from the train can be different from the number of the original 
-        train.
-    8)  The whole train part to be decoupled must lie on the same track section. 
-        After decoupling, the "incorporated" train returns to being a standard AI 
-        train.
-    9)  Manual decoupling (for player trains) occurs using the F9 window; 
-        automatic decoupling occurs with the 4NNSS and 5NNSS commands (see previous 
-        paragraph); the first one has to be used when the part to be decoupled is at 
-        the rear of the train, and the second one where the part is at the front of 
-        the train.
-    10) In the standard case where the main part of the train continues in the 
-        same direction, the following cases can occur: 
+1)  The two trains start as separate trains, couple together and decouple 
+    later in the game . After that of course such trains can couple to other 
+    trains, and so on.
+2)  The coupling train becomes an "Incorporated" train after coupling, that 
+    is it has no more cars or locomotives (they all become part of the coupled 
+    train) and is a sort of virtual train. In this phase it is not shown in the 
+    Dispatcher information HUD. It will return to life when an uncoupling command 
+    (automatic or manual) is issued.
+3)  To become an "Incorporated" train, the coupling train if of AI type, 
+    must pass in its path before coupling over a Waiting Point with value 
+    60001 (the effective waiting time is 0 seconds); such WP is not necessary 
+    if the coupling train is the player train.
+4)  For the coupling train to couple to the rear of the coupled train there 
+    are no particular requirements; if however you want to have very short runs 
+    from coupling train start to coupling moment, it could be necessary to 
+    insert a couple of reversal points in between, or else the train could stop 
+    and avoid coupling. Please don't disdain double reversals: they are 
+    sometimes the only way to limit the authority range of a train. 
+5)  If the coupling train has to couple to the front of the coupled train, 
+    obviously a reversal point is needed for the coupling train: it must be laid 
+    somewhere under the coupled train, or even farther down in the same track 
+    section; also in this case there can be a problem of authority, that 
+    requires that the coupled train has a couple of reversal points after the 
+    point where it waits to be coupled.
+6)  The incorporated train has its own path, but from coupling to decoupling 
+    point it must pass over the same track sections of the path 
+    of the incorporating train. The incorporated train must 
+    not have waiting points nor station stops in the common path part (the 
+    coupled train instead may have them). If there are reversals within the 
+    common path part, they must be present in both paths.
+7)  At the point of decoupling the number of cars and locomotives to be 
+    decoupled from the train can be different from the number of the original 
+    train.
+8)  The whole train part to be decoupled must lie on the same track section. 
+    After decoupling, the "incorporated" train returns to being a standard AI 
+    train.
+9)  Manual decoupling (for player trains) occurs using the F9 window; 
+    automatic decoupling occurs with the 4NNSS and 5NNSS commands (see previous 
+    paragraph); the first one has to be used when the part to be decoupled is at 
+    the rear of the train, and the second one where the part is at the front of 
+    the train.
+10) In the standard case where the main part of the train continues in the 
+    same direction, the following cases can occur: 
 
-        - If the decoupled part is on the front, this decoupled part can only 
-          proceed further in the same direction (ahead of the main part of the 
-          train). To avoid it starting immediately after decoupling, it is wise to 
-          set a WP of some tens of seconds in the path of the decoupled train. 
-          This WP can be set at the beginning of the section where decoupling 
-          occurs; OR will move it under the decoupled part, so you don't need to 
-          be precise in positioning it.
-        - If the decoupled part is on the rear, two cases are possible: either 
-          the decoupled part reverses or the decoupled part continues in the same 
-          direction. In the first case a reversal point has to be put anywhere in 
-          the section where the decoupling occurs (better towards the end of the 
-          section), and OR will move it to the right place so that the train 
-          reverses at the point where decoupling occurred; moreover it is also 
-          advised to put a WP of some tens of seconds, so that the train does not 
-          restart immediately. This WP must be located logically after the 
-          reversal point, and in the same track section; OR will move it under the 
-          decoupled train.
-        - If the decoupled part continues in the same direction, neither WP nor 
-          RP are needed. This train part will wait that the part ahead will clear 
-          the path before starting.
+    - If the decoupled part is on the front, this decoupled part can only 
+      proceed further in the same direction (ahead of the main part of the 
+      train). To avoid it starting immediately after decoupling, it is wise to 
+      set a WP of some tens of seconds in the path of the decoupled train. 
+      This WP can be set at the beginning of the section where decoupling 
+      occurs; OR will move it under the decoupled part, so you don't need to 
+      be precise in positioning it.
+    - If the decoupled part is on the rear, two cases are possible: either 
+      the decoupled part reverses or the decoupled part continues in the same 
+      direction. In the first case a reversal point has to be put anywhere in 
+      the section where the decoupling occurs (better towards the end of the 
+      section), and OR will move it to the right place so that the train 
+      reverses at the point where decoupling occurred; moreover it is also 
+      advised to put a WP of some tens of seconds, so that the train does not 
+      restart immediately. This WP must be located logically after the 
+      reversal point, and in the same track section; OR will move it under the 
+      decoupled train.
+    - If the decoupled part continues in the same direction, neither WP nor 
+      RP are needed. This train part will wait that the part ahead will clear 
+      the path before starting.
         
 Activity run hints:
 
@@ -958,7 +971,11 @@ Signal related files
 ====================
 
 OR manages signals as defined in the files ``sigcfg.dat`` and ``sigscr.dat`` in 
-a way that is highly compatible to MSTS.
+a way that is highly compatible to MSTS. A description of their contents and 
+how to modify these two files is contained in the Word document 
+``How_to_make_Signal_config_and_Script_files.doc`` that is found in the 
+``TECH DOCS`` folder of an MSTS installation. Note that these files must be 
+edited with a Unicode text editor.
 
 SignalNumClearAhead
 -------------------
@@ -970,7 +987,7 @@ In this paragraph the standard case is discussed, where sigcfg.dat and
 sigscr.dat are located in the root of of the route.
 
 If for a SignalType only one SignalNumClearAhead () is defined (as is standard 
-in MSTS files), such a parameter defines the number of NORMAL signal heads (not 
+in MSTS files), then this parameter defines the number of NORMAL signal heads (not 
 signals!) that are cleared down the route, including the signal heads of the 
 signal where the SignalType resides. This is not exactly as in MSTS, where quite 
 complex and strange calculations are perfomed, and in some cases could lead to 
@@ -991,7 +1008,7 @@ Location of OR-specific sigcfg and sigscr files
 
 By simply copying the original sigscr.dat and sigcfg.dat into a subfolder named 
 ``OpenRails`` created within the main folder of the route, OR will no longer 
-consider the couple of files located in the route's root folder, and will 
+consider the pair of files located in the route's root folder, and will 
 interpret the (single) SignalNumClearAhead () line as defining the number of 
 signals cleared. So OR interprets sigscr.dat in a different way, depending 
 whether there is a copy of this file in the ``OpenRails`` subfolder or not. In 
@@ -1448,7 +1465,7 @@ It is a Boolean function and returns state as follows:
     - Returns true if :
         - Route from signal is not leading into a platform.
         - Route from signal is leading into a platform and the train has a 
-          booked stop in that platform, and either of the following states is 
+          booked stop in that platform, and any of the following states is 
           true:
           
             - Train has ``$CallOn`` command set for this station.
@@ -1684,25 +1701,28 @@ is inserted into the activity file following the line::
 
 (note that the number in the brackets may be different), then AI trains will 
 blow their horn at level crossings for a random time between 2 and 5 
-seconds.The level crossing must be defined as such in the route editor. 
+seconds.The level crossing must be defined as such in the MSTS route editor. 
 *Simple* road crossings, not defined as level crossings, may also be present in 
 the route. The AI train will not blow the horn at these crossings. Examining 
 the route with TrackViewer allows identification of the true level crossings. 
 If a horn blow is also desired for a *simple* road crossing, the feature *AI 
 Train Horn Blow* described above must be used.
 
-Activity Location Sound File
-----------------------------
+Location Event and Time Event Sound File
+----------------------------------------
 
 An activity file can be modified so that a sound file is played when the train 
-reaches a location specified in an EventTypeLocation event in the .act file. 
-Add the line::
+reaches a location specified in an EventTypeLocation event in the .act file, 
+or when a certain time interval specified in an EventTypeTime event has 
+elapsed since the start of the activity. Add the line::
 
     ORTSActSoundFile ( Filename SoundType )
 
-to the ``EventCategoryLocation`` event, where:
+to the ``EventCategoryLocation`` or ``EventCategoryTime`` event, where:
     - *Filename* = name, in quotations, of a .wav file located in the SOUND 
-      folder of the route.
+      folder of the route. (If the .wav file is located elsewhere in the 
+      computer, the string must contain also the path from the ``SOUND`` 
+      folder to the location where the sound is located.)
     - *Soundtype* = any one of the strings:
     
         - ``Everywhere`` -- sound is played in all views at the same volume 
@@ -1731,8 +1751,7 @@ For example::
     )
 
 Including the ``ORTSContinue`` line (explained above) inhibits the normal halting 
-of the activity by the location event and suppresses the display of the event 
-message. Also, if the value of 0 is inserted in the line as in the example 
+of the activity by the event. Also, if the value of 0 is inserted in the line as in the example 
 above, the display of the event message is completely suppressed. Only one 
 sound file per event is allowed.
 
@@ -1781,8 +1800,14 @@ The weather type will change accordingly to the following rules:
   Snow.
 
 The parameter ``ORTSPrecipitationLiquidity`` allows for a smooth transition 
-from rain (ORTSPrecipitationLiquidity = 0) to snow (ORTSPrecipitationLiquidity 
-= 1) and vice-versa.
+from rain (ORTSPrecipitationLiquidity = 1) to snow (ORTSPrecipitationLiquidity 
+= 0) and vice-versa.
+
+The xx_transitionTime is expressed in seconds, and indicates the time needed 
+to pass from the initial weather feature value (overcastFactor, fogDistance 
+and so on) to the final weather feature value. If such xx_transitionTime is 
+set to 0, the weather feature takes immediately the final value. This is 
+useful to start activities with weather features in intermediate states.
 
 The event can also include an ORTSContinue ( 0 ) line, therefore not displaying 
 messages and not suspending activity execution.

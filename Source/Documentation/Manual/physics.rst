@@ -2367,7 +2367,8 @@ standard default values used by Open Rails:
   tunnel -- units distance
 
 To insert these values in the .trk file, it is suggested that you add them 
-just prior to the last parenthesis.
+just prior to the last parenthesis. You may also use an *Include file* 
+method, described :ref:`here <physics-inclusions>`.
 
 OR Defaults
 -----------
@@ -2403,8 +2404,11 @@ values included in the TRK file.
  
 .. _physics-inclusions:
  
-OR-Specific File Inclusions for MSTS .eng and .wag Files
-========================================================
+OR-Specific *Include Files* for Modifying MSTS File Parameters
+==============================================================
+
+Modifications to .eng and .wag Files
+------------------------------------
 
 In the preceding paragraphs many references have been made to OR-specific 
 parameters and tables to be included in .eng and .wag files. MSTS is in 
@@ -2414,16 +2418,17 @@ way of operating is not encouraged by the OR team. Instead, a cleaner
 approach, as described here, has been implemented.
 
 Within the trainset folder containing the .eng and .wag files to be 
-upgraded, create a subfolder named ``OpenRails``. Within this subfolder a 
+upgraded, create a subfolder named ``OpenRails``. Only OR will read 
+files from this folder. Within this subfolder a 
 text file named xxxx.eng or xxxx.wag, where xxxx.eng or xxxx.wag is the 
 name of the original file, must be created. 
 
-For the contents of this new file there are two possibilities, either:
+This new file may contain either:
 
-- the file contains all of the information included in the original file 
-  (except for modified parts of course) plus the OR-specific parts if any, or:
-- this new file contains at its beginning only an *include* reference to 
-  the original file, plus the modified parts and the OR-specific parts. This 
+- all of the information included in the original file (using (modified parts 
+  where desired) plus the OR-specific parts if any, or:
+- at its beginning only an *include* reference to the original file, 
+  followed by the modified parts and the OR-specific parts. This 
   does not apply to the ``Name()`` statement and the Loco Description 
   Information, where in any case the data in the base .eng file is retained.
 
@@ -2522,8 +2527,42 @@ at the top of each block. For intermediate values of the speed an
 interpolated value is computed to get the tractive force, and the same 
 method applies for intermediate values of the throttle. 
 
-It is not possible to replace only a part of the ``Lights()`` block. It must be 
-replaced in its entirety.
+If the parameter that is modified for OR is located within a named (i.e. 
+bracketed) block in the original file, then in the OpenRails file it must be 
+included in a matching bracketed block. For instance, it is not possible to 
+replace only a part of the ``Lights()`` block. It must be replaced in its 
+entirety. For example, to use a different ``Cabview()``, it must be enclosed 
+in an ``Engine`` block::
+
+    Engine ( BNSF4773
+        CabView ( dash9OR.cvf )
+    )
+
+This is also required in the case of certain Brake parameters; to correctly 
+manage reinitialization of brake parameters, the entire block containing them 
+must be present in the .eng file in the OpenRails folder.
+
+This use of the ``Include`` command can be extended to apply to sections of 
+groups of .wag or .eng files that the user wishes to replace by a specific 
+block of data -- the parameters can be provided by a text file located 
+outside the usual MSTS folders; e.g. brake parameters.
+
+Modifications to .trk Files
+---------------------------
+
+This *Include* method is also applicable to the .trk file in the root folder 
+of a route. For example, OR and MSTS process the position of trees close to 
+the track differently for certain routes. This may result in trees appearing 
+in the path of trains in OR. An OR-specifc parameter can be added to the .trk 
+file of the route to eliminate this. Alternatively, the original .trk file 
+can be left unmodified, and a new .trk file inserted into an ``OpenRails`` 
+folder in the root folder of the route. This .trk file will contain::
+
+    include ( ../Surfliner2.trk )
+        ORTSUserPreferenceForestClearDistance ( 2 )
+
+Where the parameter represents a minimum distance in metres from the track 
+for placement of forests. Only OR will look in the ``Openrails`` folder.
 
 Train Control System
 ====================

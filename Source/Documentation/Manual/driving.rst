@@ -814,16 +814,19 @@ checked.
 
 This function can be called more than once. A new information window has 
 been created to support this function: the ``Train List`` window (opened 
-with Alt+F9). It contains a list of all of the AI trains plus the player 
-train. 
+with Alt+F9). It contains a list of all of the AI trains and of the static 
+trains equipped with a locomotive with cab, plus the player train. 
 
 Here an example of an initial situation:
 
 The current player train is shown in red. The star at the end of the line 
-indicates that the cameras are currently linked to that train.
+indicates that the cameras (cab camera is managed differently) are currently 
+linked to that train.
 
 AI trains whose loco(s) have at least a cab are shown in green. They are 
 eligible for player train switching.
+
+Static trains with loco and cab are shown in yellow.
 
 Other AI trains are shown in white.
 
@@ -840,8 +843,8 @@ Here is the intermediate situation:
 
 By left-clicking a second time on the AI train (usually when it has 
 completely appeared on the screen - if it is far away from the player train 
-this can require several seconds to load tiles etc.) the switch of control 
-occurs. 
+this can require several seconds to load the *world* around the train) the 
+switch of control occurs. 
 
 The AI train string now becomes red and is moved to the first position.The 
 train can be driven, or set to autopilot mode. The former player train 
@@ -850,12 +853,19 @@ becomes an AI train.
 .. image:: images/driving-train-list-3.png
     :align: right
 
-If this second left-click is performed with the Shift key down, the former 
+If the second left-click was performed with the Shift key down, the former 
 player train still becomes an AI train, but it is put in a suspended mode 
 (only if its speed is 0). It won't move until it becomes a player train 
 again. A suspended train is shown in orange color on the Train List window.
 
 Here is the final situation: 
+
+The new player train can can be switched to manual mode, can also request to 
+pass signals at danger with the ``<Tab>`` command, and can be moved outside 
+of its original path. However before switching control to still another train, 
+the new player train must be returned to the original path or put in suspend 
+mode; or else it will disappear, as occurs for AI trains running outside their 
+path.
 
 The sequence may be restarted to switch to a new train or to switch back to 
 the initial player train.
@@ -879,7 +889,7 @@ that have at least an engine provided with a cab) are also listed (in
 yellow color).
 
 To ease recognition static consists are named STATIC plus the ID number 
-(e.g. STATIC - 32768).
+as present in the .act file (e.g. STATIC - 32768).
 
 The procedure to select a static consist in order to drive it is similar to 
 that used to drive another non-static train train: with the first click on 
@@ -892,7 +902,8 @@ along its path).
 
 The static consist becomes a standard train without a path - a pathless 
 train. It runs in manual mode, and so it can be managed with all the 
-thrills and frills available for manual mode. Signals can be cleared or 
+thrills and frills available for manual mode. Signals can be cleared 
+in the dispatcher window or 
 alternatively requests for permission can be issued, switches can be moved, 
 direction can be changed, cars can be coupled and uncoupled. If the train 
 goes out of control (e.g. because of SPAD), CTRL+M has to be pressed first 
@@ -914,12 +925,13 @@ pathless train, but now more possibilities are available:
 - Once the pathless train has coupled to the AI train, an uncouple 
   operation can be performed with the F9 window (between any couple of cars). 
   The pathless train can be driven further (with modified composition) and 
-  also the AI train can run further.
+  also the AI train can run further, provided both retain at least one 
+  locomotive.
 
 Waiting point considerations
 ----------------------------
 
-A waiting point icon has been added for the :ref:`Track Monitor 
+A waiting point icon showing a hand has been added for the :ref:`Track Monitor 
 <driving-track-monitor>`, that is shown when WPs (waiting points) for new 
 player trains are met in the path. This because the player should know that 
 his train (when run as AI train) would stop at a point for a certain time. 
@@ -940,18 +952,6 @@ disappear due to an Extended AI Shunting function, as e.g. when it merges
 into another train or when it is part of a join-and-split function and is 
 incorporated within another train. In these cases, when the coupling 
 occurs, the player is automatically moved to the train that remains alive.
-
-The new player train can also request to pass signals at danger with the 
-TAB command, and can be switched to manual mode, and moved outside its 
-original path. However before switching to a further train, the new player 
-train must be returned to the original path or put in suspend mode; or else 
-it will disappear, as occurs for AI trains running outside their path.
-
-The Train List window is also available in :ref:`Timetable mode 
-<timetable>`. In this case the names of all trains except the player train 
-are shown in white (i.e. they can't be driven), however with a single click 
-on a train in the window the external view cameras become linked to that 
-train, as occurs with the ``<Alt+9>`` command described below. 
 
 .. _driving-changing-view:
 
@@ -1599,7 +1599,7 @@ the three coordinates within the tile.
 At the bottom of the picture, some moving graphs are displayed that show 
 the actual load of the computer.
 
-Referring to memory occupation, about at least 400 MB must remain free to 
+Referring to memory use, about at least 400 MB must remain free to 
 avoid out-of-memory exceptions
 
 Viewing Interactive Track Items
