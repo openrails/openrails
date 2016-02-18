@@ -28,6 +28,9 @@ namespace Orts.Viewer3D.Popups
 {
     public class ActivityWindow : Window
     {
+        int WindowHeightMin = 0;
+        int WindowHeightMax = 0;
+
         Activity Activity;
         ControlLayoutScrollbox MessageScroller;
         TextFlow Message;
@@ -39,27 +42,37 @@ namespace Orts.Viewer3D.Popups
         DateTime PopupTime;
 
         public ActivityWindow(WindowManager owner)
-            : base(owner, Window.DecorationSize.X + owner.TextFontDefault.Height * 25, Window.DecorationSize.Y + owner.TextFontDefault.Height * 8 + ControlLayout.SeparatorSize * 2, Viewer.Catalog.GetString("Activity Events"))
+            : base(owner, Window.DecorationSize.X + owner.TextFontDefault.Height * 40, Window.DecorationSize.Y + owner.TextFontDefault.Height * 12 /* 10 lines + 2 lines of controls */ + ControlLayout.SeparatorSize * 2, Viewer.Catalog.GetString("Activity Events"))
         {
+            WindowHeightMin = Location.Height;
+            WindowHeightMax = Location.Height + owner.TextFontDefault.Height * 10; // Add another 10 lines for longer messages.
             Activity = Owner.Viewer.Simulator.ActivityRun;
         }
 
         protected override ControlLayout Layout(ControlLayout layout)
         {
+            var originalMessage = Message == null ? null : Message.Text;
+            var originalResumeLabel = ResumeLabel == null ? null : ResumeLabel.Text;
+            var originalCloseLabel = CloseLabel == null ? null : CloseLabel.Text;
+            var originalQuitLabel = QuitLabel == null ? null : QuitLabel.Text;
+            var originalEventNameLabel = EventNameLabel == null ? null : EventNameLabel.Text;
+            var originalStatusLabel = StatusLabel == null ? null : StatusLabel.Text;
+            var originalStatusLabelColor = StatusLabel == null ? null : new Color?(StatusLabel.Color);
+
             var vbox = base.Layout(layout).AddLayoutVertical();
             {
-                var hbox = vbox.AddLayoutHorizontal(Owner.TextFontDefault.Height * 6);
+                var hbox = vbox.AddLayoutHorizontal(vbox.RemainingHeight - (ControlLayout.SeparatorSize + vbox.TextHeight) * 2);
                 var scrollbox = hbox.AddLayoutScrollboxVertical(hbox.RemainingWidth);
-                scrollbox.Add(Message = new TextFlow(scrollbox.RemainingWidth - scrollbox.TextHeight, ""));
+                scrollbox.Add(Message = new TextFlow(scrollbox.RemainingWidth - scrollbox.TextHeight, originalMessage));
                 MessageScroller = (ControlLayoutScrollbox)hbox.Controls.Last();
             }
             vbox.AddHorizontalSeparator();
             {
                 var hbox = vbox.AddLayoutHorizontalLineOfText();
                 var boxWidth = hbox.RemainingWidth / 3;
-                hbox.Add(ResumeLabel = new Label(boxWidth, hbox.RemainingHeight, "", LabelAlignment.Center));
-                hbox.Add(CloseLabel = new Label(boxWidth, hbox.RemainingHeight, "", LabelAlignment.Center));
-                hbox.Add(QuitLabel = new Label(boxWidth, hbox.RemainingHeight, "", LabelAlignment.Center));
+                hbox.Add(ResumeLabel = new Label(boxWidth, hbox.RemainingHeight, originalResumeLabel, LabelAlignment.Center));
+                hbox.Add(CloseLabel = new Label(boxWidth, hbox.RemainingHeight, originalCloseLabel, LabelAlignment.Center));
+                hbox.Add(QuitLabel = new Label(boxWidth, hbox.RemainingHeight, originalQuitLabel, LabelAlignment.Center));
                 ResumeLabel.Click += new Action<Control, Point>(ResumeActivity_Click);
                 CloseLabel.Click += new Action<Control, Point>(CloseBox_Click);
                 QuitLabel.Click += new Action<Control, Point>(QuitActivity_Click);
@@ -68,9 +81,9 @@ namespace Orts.Viewer3D.Popups
             {
                 var hbox = vbox.AddLayoutHorizontalLineOfText();
                 var boxWidth = hbox.RemainingWidth / 2;
-                hbox.Add(EventNameLabel = new Label(boxWidth, hbox.RemainingHeight, "", LabelAlignment.Left));
-                hbox.Add(StatusLabel = new Label(boxWidth, hbox.RemainingHeight, "", LabelAlignment.Left));
-                StatusLabel.Color = Color.LightSalmon;
+                hbox.Add(EventNameLabel = new Label(boxWidth, hbox.RemainingHeight, originalEventNameLabel, LabelAlignment.Left));
+                hbox.Add(StatusLabel = new Label(boxWidth, hbox.RemainingHeight, originalStatusLabel, LabelAlignment.Left));
+                StatusLabel.Color = originalStatusLabelColor.HasValue ? originalStatusLabelColor.Value : Color.LightSalmon;
             }
             return vbox;
         }
@@ -310,6 +323,7 @@ namespace Orts.Viewer3D.Popups
             EventNameLabel.Text = Viewer.Catalog.GetStringFmt("Event: {0}", eventLabel);
             MessageScroller.SetScrollPosition(0);
             Message.Text = message;
+            ResizeDialog();
         }
 
         void ComposeActualPlayerTrainMenu(string trainName, string message)
@@ -317,6 +331,17 @@ namespace Orts.Viewer3D.Popups
             EventNameLabel.Text = Viewer.Catalog.GetStringFmt("Train: {0}", trainName.Substring(0, Math.Min(trainName.Length, 20)));
             MessageScroller.SetScrollPosition(0);
             Message.Text = message;
+            ResizeDialog();
+        }
+
+        void ResizeDialog()
+        {
+            var desiredHeight = Location.Height + Message.Position.Height - MessageScroller.Position.Height;
+            var newHeight = (int)MathHelper.Clamp(desiredHeight, WindowHeightMin, WindowHeightMax);
+            // Move the dialog up if we're expanding it, or down if not; this keeps the center in the same place.
+            var newTop = Location.Y + (Location.Height - newHeight) / 2;
+            SizeTo(Location.Width, newHeight);
+            MoveTo(Location.X, newTop);
         }
     }
 }

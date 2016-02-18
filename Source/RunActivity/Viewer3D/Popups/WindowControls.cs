@@ -207,7 +207,7 @@ namespace Orts.Viewer3D.Popups
         public TextFlow(int x, int y, int width, string text)
             : base(x, y, width, 0)
         {
-            _text = text.Replace('\t', ' ');
+            _text = text == null ? "" : text.Replace('\t', ' ');
             Color = Color.White;
         }
 
