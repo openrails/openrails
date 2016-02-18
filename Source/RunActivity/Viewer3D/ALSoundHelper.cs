@@ -582,12 +582,13 @@ namespace Orts.Viewer3D
         public static int ActiveCount;
         private static bool MustWarn = true;
         /// <summary>
-        /// Tries allocating a new OpenAL SoundSourceID, warns if failed, and sets OpenAL attenuation parameters
+        /// Tries allocating a new OpenAL SoundSourceID, warns if failed, and sets OpenAL attenuation parameters.
+        /// Returns 1 if activation was successful, otherwise 0.
         /// </summary>
-        private void TryActivate()
+        private int TryActivate()
         {
             if (!MustActivate || SoundSourceID != -1 || !Active)
-                return;
+                return 0;
 
             OpenAL.alGenSources(1, out SoundSourceID);
 
@@ -598,7 +599,7 @@ namespace Orts.Viewer3D
                     Trace.TraceWarning("Sound stream activation failed at number {0}", ActiveCount);
                     MustWarn = false;
                 }
-                return;
+                return 0;
             }
 
             ActiveCount++;
@@ -606,11 +607,6 @@ namespace Orts.Viewer3D
             MustWarn = true;
             WasPlaying = false;
             StoppedAt = double.MaxValue;
-            // Unlike LoopRelease, which is being updated continuously, 
-            // unattended Loop must be restarted explicitly.
-            if (SoundQueue[QueueTail % QUEUELENGHT].PlayState == PlayState.Playing
-                && SoundQueue[QueueTail % QUEUELENGHT].PlayMode == PlayMode.Loop)
-                SoundQueue[QueueTail % QUEUELENGHT].PlayState = PlayState.New;
 
             OpenAL.alSourcef(SoundSourceID, OpenAL.AL_MAX_DISTANCE, SoundSource.MaxDistanceM);
             OpenAL.alSourcef(SoundSourceID, OpenAL.AL_REFERENCE_DISTANCE, SoundSource.ReferenceDistanceM);
@@ -626,6 +622,8 @@ namespace Orts.Viewer3D
             //    OpenAL.CreateHornEffect();
             //
             //OpenAL.alSource3i(SoundSourceID, OpenAL.AL_AUXILIARY_SEND_FILTER, OpenAL.HornEffectSlotID, 0, OpenAL.AL_FILTER_NULL);
+
+            return 1;
         }
 
         /// <summary>
@@ -773,7 +771,7 @@ namespace Orts.Viewer3D
                 switch (SoundQueue[QueueTail % QUEUELENGHT].PlayState)
                 {
                     case PlayState.Playing:
-                        TryActivate();
+                        var justActivated = TryActivate();
                         switch (SoundQueue[QueueTail % QUEUELENGHT].PlayMode)
                         {
                             // Determine next action if available
@@ -815,6 +813,11 @@ namespace Orts.Viewer3D
                                 }
                                 else if (SoundQueue[QueueTail % QUEUELENGHT].PlayMode == PlayMode.Loop)
                                 {
+                                    // Unlike LoopRelease, which is being updated continuously, 
+                                    // unattended Loop must be restarted explicitly after a reactivation.
+                                    if (justActivated == 1)
+                                        SoundQueue[QueueTail % QUEUELENGHT].PlayState = PlayState.New;
+
                                     // The reason of the following is that at Loop type of playing we mustn't EnterLoop() immediately after
                                     // InitItemPlay(), because an other buffer might be playing at that time, and we don't want to loop
                                     // that one. We have to be sure the current loop's buffer is being played already, and all the previous
@@ -855,12 +858,19 @@ namespace Orts.Viewer3D
                         if (SoundQueue[QueueTail % QUEUELENGHT].PlayMode != PlayMode.Release
                             && SoundQueue[QueueTail % QUEUELENGHT].PlayMode != PlayMode.ReleaseWithJump)
                         {
-                            TryActivate();
+                            var justActivated_ = TryActivate();
                             int bufferID;
                             OpenAL.alGetSourcei(SoundSourceID, OpenAL.AL_BUFFER, out bufferID);
+
+                            // If reactivated LoopRelease sound is already playing, then we are at a wrong place, 
+                            // no need for reinitialization, just continue after 1st cue point
+                            if (isPlaying && justActivated_ == 1 && SoundQueue[QueueTail % QUEUELENGHT].PlayMode == PlayMode.LoopRelease)
+                            {
+                                SoundQueue[QueueTail % QUEUELENGHT].PlayState = PlayState.Playing;
+                            }
                             // Wait with initialization of a sound piece similar to the previous one, while that is still in queue.
                             // Otherwise we might end up with queueing the same buffers hundreds of times.
-                            if (!isPlaying || !SoundQueue[QueueTail % QUEUELENGHT].SoundPiece.isMine(bufferID))
+                            else if (!isPlaying || !SoundQueue[QueueTail % QUEUELENGHT].SoundPiece.isMine(bufferID))
                             {
                                 NeedsFrequentUpdate = SoundQueue[QueueTail % QUEUELENGHT].InitItemPlay(SoundSourceID);
                                 var sampleRate = SampleRate;
