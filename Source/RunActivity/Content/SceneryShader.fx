@@ -130,6 +130,12 @@ struct VERTEX_INPUT_SIGNAL
 	float4 Color     : COLOR0;
 };
 
+struct VERTEX_INPUT_TRANSFER
+{
+	float4 Position  : POSITION;
+	float2 TexCoords : TEXCOORD0;
+};
+
 ////////////////////    V E R T E X   O U T P U T S    /////////////////////////
 
 struct VERTEX_OUTPUT
@@ -183,7 +189,7 @@ void _VSSignalProjection(uniform bool Glow, in VERTEX_INPUT_SIGNAL In, inout VER
 	Out.Color = In.Color;
 }
 
-void _VSTransferProjection(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
+void _VSTransferProjection(in VERTEX_INPUT_TRANSFER In, inout VERTEX_OUTPUT Out)
 {
 	// Project position, normal and copy texture coords
 	Out.Position = mul(In.Position, WorldViewProjection);
@@ -239,7 +245,7 @@ VERTEX_OUTPUT VSGeneral2(in VERTEX_INPUT In)
     return VSGeneral(false, In);
 }
 
-VERTEX_OUTPUT VSTransfer(uniform bool ShaderModel3, in VERTEX_INPUT In)
+VERTEX_OUTPUT VSTransfer(uniform bool ShaderModel3, in VERTEX_INPUT_TRANSFER In)
 {
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
 	_VSTransferProjection(In, Out);
@@ -251,12 +257,12 @@ VERTEX_OUTPUT VSTransfer(uniform bool ShaderModel3, in VERTEX_INPUT In)
 	return Out;
 }
 
-VERTEX_OUTPUT VSTransfer3(in VERTEX_INPUT In)
+VERTEX_OUTPUT VSTransfer3(in VERTEX_INPUT_TRANSFER In)
 {
     return VSTransfer(true, In);
 }
 
-VERTEX_OUTPUT VSTransfer2(in VERTEX_INPUT In)
+VERTEX_OUTPUT VSTransfer2(in VERTEX_INPUT_TRANSFER In)
 {
     return VSTransfer(false, In);
 }
