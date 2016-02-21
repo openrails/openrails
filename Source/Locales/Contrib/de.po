@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Contrib\n"
-"POT-Creation-Date: 2015-06-05 19:48:00+0200\n"
-"PO-Revision-Date: 2015-06-05 22:39+0100\n"
-"Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
+"POT-Creation-Date: 2016-02-05 01:40:24+0100\n"
+"PO-Revision-Date: 2016-02-21 18:11+0100\n"
+"Last-Translator: Markus Gelbman <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
@@ -263,7 +263,7 @@ msgid "WaitActivity"
 msgstr ""
 
 # AE
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.cs:529
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.cs:530
 msgid "NoMoreAct"
 msgstr ""
 
@@ -667,9 +667,9 @@ msgid "Configuration for Generic Auxiliary Actions"
 msgstr ""
 
 # AE
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.cs:33
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.cs:57
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.cs:28
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.cs:34
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.cs:58
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.cs:29
 #, fuzzy
 msgid "Please, give a name"
 msgstr "Bitte Namen hinzufügen"
@@ -698,7 +698,7 @@ msgid "BufferInterface"
 msgstr ""
 
 # AE
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.cs:48
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.cs:49
 #, fuzzy
 msgid "Not yet implemented"
 msgstr "Feature noch nicht verfügbar"
@@ -721,25 +721,25 @@ msgid "Station Route Interface"
 msgstr ""
 
 # AE
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:38
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:39
 #, fuzzy
 msgid "Please Load Paths:"
 msgstr "Bitte Fahrstraßen laden:"
 
 # AE
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:42
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:43
 #, fuzzy
 msgid "List of Paths seems OK:"
 msgstr "Liste der Fahrstraßen scheint in Ordnung:"
 
 # AE
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:119
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:120
 #, fuzzy
 msgid "###"
 msgstr "###"
 
 # AE
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:161
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:162
 #, fuzzy
 msgid "Loaded:"
 msgstr "Geladen:"
@@ -822,9 +822,9 @@ msgstr "Name der Aufgabe"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:124
-#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/SelectRoute.cs:68
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/SelectRoute.cs:69
 #: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:124
-#: ../../Contrib/ActivityEditor/AEWizard/SelectRoute.cs:68
+#: ../../Contrib/ActivityEditor/AEWizard/SelectRoute.cs:69
 #, fuzzy
 msgid "Route Path"
 msgstr "Route"
@@ -837,8 +837,8 @@ msgid "Activity Editor: Create new activity"
 msgstr "Aufgabeneditor: Neue Aufgabe erstellen"
 
 # AE
-#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/SelectRoute.cs:47
-#: ../../Contrib/ActivityEditor/AEWizard/SelectRoute.cs:47
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/SelectRoute.cs:48
+#: ../../Contrib/ActivityEditor/AEWizard/SelectRoute.cs:48
 #, fuzzy
 msgid "Route Configuration: Select Route"
 msgstr "Routenkonfiguration: Route auswählen"
@@ -865,30 +865,30 @@ msgid "Train Name (Opt.)"
 msgstr "Name des Zuges (optional)"
 
 # AE
-#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:191
-#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:191
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:192
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:192
 #, fuzzy
 msgid "< &Back"
 msgstr "< &Zurück"
 
 # AE
-#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:200
-#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:200
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:201
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:201
 #, fuzzy
 msgid "&Next >"
 msgstr "&Weiter >"
 
 # AE
-#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:210
-#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:210
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:211
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:211
 #: ../../Contrib/TrackViewer/UserInterface/SearchControl.xaml:12
 #, fuzzy
 msgid "Cancel"
 msgstr "Abbrechen"
 
 # AE
-#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:219
-#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:219
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:220
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:220
 #, fuzzy
 msgid "&Finish"
 msgstr "&Fertig"
@@ -915,23 +915,23 @@ msgstr ""
 "Der Untertitel des Sample-Headers soll dem Benutzer durch Beschreibung einer "
 "Aufgabe helfen, diese im Sample-Wizard auszuführen."
 
-#: ../../Contrib/ContentManager/ContentManagerGUI.cs:61
+#: ../../Contrib/ContentManager/ContentManagerGUI.cs:65
 msgid "Loading..."
 msgstr "Laden ..."
 
-#: ../../Contrib/ContentManager/ContentManagerGUI.Designer.cs:70
+#: ../../Contrib/ContentManager/ContentManagerGUI.Designer.cs:91
 msgid "Open Rails Content Manager"
 msgstr "Open Rails Content Manager"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:546
+#: ../../Contrib/TrackViewer/TrackViewer.cs:561
 msgid "The path you are working on has un-saved changes.\n"
 msgstr "Die gerade bearbeitete Fahrstraße wurde nicht gespeichert. \n"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:548
+#: ../../Contrib/TrackViewer/TrackViewer.cs:563
 msgid "Do you really want to Quit?"
 msgstr "Wollen Sie das Programm wirklich beenden?"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:634
+#: ../../Contrib/TrackViewer/TrackViewer.cs:649
 msgid ""
 "Directory is not a valid install directory.\n"
 "The install directory needs to contain ROUTES, GLOBAL, ..."
@@ -939,34 +939,34 @@ msgstr ""
 "Der ausgewählte Ordner ist kein gültiges MSTS-Installationsverzeichnis.\n"
 "Der Ordner muss die Unterordner ROUTES, GLOBAL, etc. enthalten."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:708
+#: ../../Contrib/TrackViewer/TrackViewer.cs:723
 msgid "Loading route..."
 msgstr "Lade Route ..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:730
+#: ../../Contrib/TrackViewer/TrackViewer.cs:745
 msgid "Route cannot be loaded. Sorry"
 msgstr "Die Route konnte leider nicht geladen werden."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:801
+#: ../../Contrib/TrackViewer/TrackViewer.cs:816
 msgid "Loading .pat file ..."
 msgstr "Lade Fahrstraßendatei (*.pat) ..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:804
+#: ../../Contrib/TrackViewer/TrackViewer.cs:819
 msgid "Processing .pat file ..."
 msgstr "Lese .pat Datei..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:832
+#: ../../Contrib/TrackViewer/TrackViewer.cs:847
 msgid "Path has been modified. Loading a new path will discard changes."
 msgstr ""
 "Fahrstraße wurde geändert. Laden einer neuen Farstraße verwirft die "
 "Änderungen."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:833
+#: ../../Contrib/TrackViewer/TrackViewer.cs:848
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:88
 msgid "Do you want to continue?"
 msgstr "Wollen Sie fortfahren?"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:834
+#: ../../Contrib/TrackViewer/TrackViewer.cs:849
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:74
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:91
 msgid "Trackviewer Path Editor"
@@ -1053,120 +1053,121 @@ msgstr "Geschwindigkeitsbegrezungsfarbe auswählen"
 msgid "Select other-paths color"
 msgstr "Farbe für andere Fahrstraßen auswählen"
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:586
-msgid "Loading terrain data: "
-msgstr "Lade Geländedaten:"
+#: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:589
+#, csharp-format
+msgid "Loading terrain ace-files {0}-{1}"
+msgstr "Lade Geländetexturen (*.ACE) {0}-{1}"
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:54
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:60
 msgid "Loading trackfile .trk ..."
 msgstr "Lade Schienendatei (*.trk) ..."
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:58
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:64
 msgid "Loading track database .tdb ..."
 msgstr "Lade Schienendatenbank (*.tdb) ..."
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:62
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:68
 msgid "Loading tsection.dat ..."
 msgstr "Lade tsection.dat Datei ..."
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:74
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:80
 msgid "Loading road track database .rdb ..."
 msgstr "Lade Straßendatenbank (*.rdb) ..."
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:189
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:263
 msgid "Finding the angles to draw signals, endnodes, ..."
 msgstr "Symbole für Signale, Prellböcke, etc. zur Strecke ausrichten ..."
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:171
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:168
 msgid "Place start point"
 msgstr "Startpunkt platzieren"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:203
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:200
 msgid "Remove start point"
 msgstr "Startpunkt entfernen"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:230
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:227
 msgid "Clear path (keep tail)"
 msgstr "Fahrstraße löschen (Ende behalten)"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:254
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:251
 msgid "Change start direction"
 msgstr "Startrichtung umschalten"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:282
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:279
 msgid "Place end point"
 msgstr "Endpunkt platzieren"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:320
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:317
 msgid "Remove end point"
 msgstr "Endpunkt entfernen"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:346
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:343
 msgid "Place reversal point"
 msgstr "Umkehrpunkt platzieren"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:382
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:379
 msgid "Remove reversal point"
 msgstr "Umkehrpunkt entfernen"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:436
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:433
 msgid "Place wait point"
 msgstr "Wartepunkt platzieren"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:463
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:460
 msgid "Edit wait point"
 msgstr "Wartepunkt bearbeiten"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:487
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:484
 msgid "Remove wait point"
 msgstr "Wartepunkt entfernen"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:690
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1260
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:687
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1257
 msgid "Take other exit"
 msgstr "Anderes Gleis nehmen"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:737
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:734
 msgid "Add passing path"
 msgstr "Ausweichstrecke hinzufügen"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:777
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:774
 msgid "Start passing path"
 msgstr "Ausweichstrecke beginnen"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:842
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:839
 msgid "Remove passing path"
 msgstr "Ausweichstrecke entfernen"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:882
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:879
 msgid "Fix invalid point"
 msgstr "Ungültigen Punkt Punkt reparieren"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:906
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:903
 msgid "Delete rest of path"
 msgstr "Rest der Farhstraße löschen"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:935
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:932
 msgid "Cut path here and store its tail"
 msgstr "Fahrstraße hier teilen, Rest speichern"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:989
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:986
 msgid "Auto-fix broken points"
 msgstr "Ungültige Punkte automatisch reparieren"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1097
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1094
 msgid "Reconnect to tail"
 msgstr "Zum Rest verbinden"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1158
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1155
 msgid "Reconnect passing path"
 msgstr "Ausweichstrecke zu Hauptstrecke verbinden"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1930
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1927
 msgid "Draw path until here"
 msgstr "Fahrstraße bis hier anzeigen"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1961
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1958
 msgid "Draw path until next broken point"
 msgstr "Fahrstraße bis zum nächsten ungültigen Punkt anzeigen"
 
@@ -1218,23 +1219,23 @@ msgstr ""
 msgid "Reopening it in TrackViewer, however, is likely to work."
 msgstr "Neu-öffnen mit TrackViewer funktioniert aber wahrscheinlich."
 
-#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:269
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:270
 msgid "Set as invalid in .pat file"
 msgstr "In .PAT-Datei als ungültig markiert"
 
-#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:271
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:272
 msgid "Closest junction is too far away"
 msgstr "Nächste Weiche ist zu weit entfernt"
 
-#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:273
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:274
 msgid "Not able to place node on track"
 msgstr "Punkt konnte nicht auf Gleis platziert werden"
 
-#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:275
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:276
 msgid "Dangling siding node"
 msgstr "Nicht zurückverbundener Nebengleis-Punkt"
 
-#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:277
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:278
 msgid "Unknown"
 msgstr "Unbekannt"
 
@@ -1245,138 +1246,105 @@ msgstr "Unbekannt"
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:56
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:57
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:58
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:134
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:143
 msgid "1"
 msgstr "1"
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:139
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:148
 msgid "10"
 msgstr "1"
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:260
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:269
 msgid "99"
 msgstr "99"
-
-#: ../../Contrib/TrackViewer/Editing/Charts/DrawPathChart.cs:145
-msgid "For broken paths charting is not supported"
-msgstr "Diagramme von unterbrochenen Fahrstraßen werden nicht unterstützt."
 
 #: ../../Contrib/TrackViewer/UserInterface/Languages.cs:75
 msgid "Please restart TrackViewer in order to load the new language."
 msgstr "Bitte starten Sie Track Viewer erneut, um die neue Sprache zu laden."
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:373
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:378
 msgid "<Select path>"
 msgstr "<Fahrstraße auswählen>"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:387
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:392
 msgid "<Select station>"
 msgstr "<Bahnhof auswählen>"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:400
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:405
 msgid "<Select platform>"
 msgstr "<Bahnsteig auswählen>"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:413
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:418
 msgid "<Select siding>"
 msgstr "<Nebengleis auswählen>"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:507
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:512
 msgid "left  arrow:  Shift left\n"
 msgstr "Pfeiltaste links: Nach links verschieben\n"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:508
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:513
 msgid "down  arrow:  Shift down\n"
 msgstr "Pfeiltaste unten: Nach unten verschieben\n"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:509
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:514
 msgid "right arrow:  Shift right\n"
 msgstr "Pfeiltaste rechts: Nach rechts verschieben\n"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:510
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:515
 msgid "up    arrow:  Shift up\n"
 msgstr "Pfeiltaste oben: Nach oben verschieben\n"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:511
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:516
 msgid "C:  Shift to center of current path node\n"
 msgstr "C: Ansicht auf ausgewählten Fahrstraßen-Node zentrieren\n"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:512
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:517
 msgid "shift-C:  Shift to center of current mouse location\n"
 msgstr "Umschalt C: Ansicht auf Mauszeigerposition zentrieren\n"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:513
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:518
 msgid "PgUp:  Show more of the path\n"
 msgstr "BildAuf: Mehr Teile der Fahrstraße anzeigen\n"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:514
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:519
 msgid "PgDn:  Show less of the path\n"
 msgstr "BildAb: Weniger Teile der Fahrstraße anzeigen\n"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:515
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:520
 msgid "shift-PgUp:  Show the full path\n"
 msgstr "Umschalt BildAuf: Komplette Fahrstraße anzeigen\n"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:516
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:521
 msgid "shift-PgDn:  Show only start point of path\n"
 msgstr "Umschalt BildAb: Nur Startpunkt der Fahrstraße anzeigen\n"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:517
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:522
 msgid "ctrl-Z: Undo in path editor\n"
 msgstr "Strg Z: Rückgängig\n"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:518
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:523
 msgid "ctrl-Y: Redo in path editor\n"
 msgstr "Strg Y: Wiederholen\n"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:525
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:530
 msgid "This is ORTS TrackViewer, version "
 msgstr "Open Rails Trackviewer Version"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:528
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:533
 msgid "It is a 'Contribution' to ORTS, and as such\n"
 msgstr "Ein 'Zusatzprogramm' zu Open Rails und\n"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:529
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:534
 msgid "not an integral part of ORTS."
 msgstr "damit kein direkter Teil von Open Rails."
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:536
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:876
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:541
 msgid "Documentation is available"
 msgstr "Eine Beschreibung der Features ist verfügbar"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:537
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:877
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:542
 msgid "Right column → OR_Trackviewer"
 msgstr "Rechte Spalte → OR_Trackviewer"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:874
-msgid ""
-"Currently all intended and planned editor features have been implemented."
-msgstr "Derzeit sind alle vorgesehenen und geplanten Features umgesetzt."
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:879
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:132
-msgid "Known limitations"
-msgstr "Bekannte Einschränkungen"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:881
-msgid "* The saved-paths have not been tested with MSTS or ORTS."
-msgstr ""
-"* Die gespeicherten Pfade wurden weder mit MSTS noch mit Open Rails getestet."
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:883
-msgid ""
-"* Possibly non-standard junctions (> 1 incoming or > 2 outgoing tracks) "
-"might not work."
-msgstr ""
-"* Weichen, die nicht dem Standard entsprechen (< 1 Einfahrts- bzw < 2 "
-"Ausfahrtswege), bereiten eventuell Probleme."
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:885
-msgid "Feedback is appreciated."
-msgstr "Feedback ist gerne erwünscht."
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:4
 msgid "Path metadata"
@@ -1404,13 +1372,13 @@ msgstr "Spielbare Fahrstraße"
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:24
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:15
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:53
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:57
 msgid " OK "
 msgstr " OK "
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:25
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:16
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:54
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:58
 msgid " Cancel "
 msgstr "Abbrechen"
 
@@ -1472,7 +1440,7 @@ msgid " cars, and wait"
 msgstr "Waggns, warte"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:31
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:42
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:46
 msgid "seconds. "
 msgstr "Sekunden"
 
@@ -1485,22 +1453,27 @@ msgid "Join and split"
 msgstr "Verbdn & abkup.Verbinden und tr"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:40
+#, fuzzy
+msgid "AI train request to pass red signal"
+msgstr "KI-Anfrage, Stopp-Signal zu passieren"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:44
 msgid "Blow horn for"
 msgstr "Horn betätigen:"
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:46
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:50
 msgid "Wait time code as decimal ="
 msgstr "Wartezeitcode Dezimal ="
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:47
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:51
 msgid "00000"
 msgstr "00000"
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:48
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:52
 msgid "hexadecimal ="
 msgstr "Hexadezimal ="
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:49
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:53
 msgid "0000"
 msgstr "0000"
 
@@ -1508,13 +1481,30 @@ msgstr "0000"
 msgid "Charting the path"
 msgstr "Diagramm der Fahstraße wird erstellt ..."
 
-#: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:21
-msgid "+"
-msgstr "+"
+#: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:62
+#, fuzzy
+msgid ""
+"Save the data of the chart in json format into a .js file.The saved data can "
+"then be used to show the chart on an HTML5 canvas."
+msgstr ""
+"Diagrammdaten im Json-Format speichern (*.js). Die gespeicherten Daten "
+"können später auf einer HTML5-Seite angezeigt werden."
 
-#: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:22
-msgid "-"
-msgstr "-"
+# AE
+#: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:62
+#, fuzzy
+msgid "Save json"
+msgstr "Speichern unter ..."
+
+#: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:66
+#, fuzzy
+msgid "Save the data of the chart in json format into a .js file."
+msgstr "Diagrammdaten im Json-Format speichern (*.js)."
+
+#: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:67
+msgid "The saved data can then be used to show the chart on an HTML5 canvas."
+msgstr ""
+"Die gespeicherten Daten können später auf einer HTML5-Seite angezeigt werden."
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:8
 msgid "(Re)load route"
@@ -1780,63 +1770,67 @@ msgstr "Fahrstraßeninfo anzeigen"
 msgid "Show terrain info"
 msgstr "Geländeinfo anzeigen"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:105
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:104
+msgid "Show signal info"
+msgstr "Signalinfo anzeigen"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:107
 msgid "Preferences"
 msgstr "Einstellungen"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:106
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:108
 msgid "Zooming is centered on mouse (m)"
 msgstr "Auf Mauszeiger zentriert zoomen (m)"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:108
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:110
 msgid "Use miles i.s.o. meters"
 msgstr "Meilen statt Metern verwenden"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:109
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:111
 msgid "Select language"
 msgstr "Sprache auswählen"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:114
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:116
 msgid "Path-Editor"
 msgstr "Farstraßen-Editor"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:115
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:117
 msgid "==Supporting MSTS paths only=="
 msgstr "==Unterstützt nur MSTS-Fahrstraßen=="
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:116
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:118
 msgid "Load path"
 msgstr "Fahrstraße laden"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:120
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:122
 msgid "Show other paths"
 msgstr "Andere Fahrstraßen anzeigen"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:122
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:124
 msgid "Save path"
 msgstr "Fahrstraße speichern"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:123
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:125
 msgid "Save visited stations"
 msgstr "Bahnhöfe entlang Fahrstraße speichern"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:124
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:126
 msgid "Show chart (in development)"
 msgstr "Streckendiagramm anzeigen (in Entwicklung)"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:126
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:128
 msgid "Enable editing"
 msgstr "Bearbeitung aktivieren"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:127
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:129
 msgid "New path"
 msgstr "Neue Fahrstraße"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:129
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:131
 msgid "Edit path metadata"
 msgstr "Fahrstraßenbeschreibung bearbeiten"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:130
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:132
 msgid "Reverse path"
 msgstr "Fahrstraße umkehren"
 
@@ -1909,6 +1903,37 @@ msgstr "Element"
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:99
 msgid "Any other relevant information. Make your choice via Statusbar menu"
 msgstr "Andere relevante Infos, bitte im Menüpunkt \"Statusleiste\" auswählen"
+
+#~ msgid "For broken paths charting is not supported"
+#~ msgstr "Diagramme von unterbrochenen Fahrstraßen werden nicht unterstützt."
+
+#~ msgid ""
+#~ "Currently all intended and planned editor features have been implemented."
+#~ msgstr "Derzeit sind alle vorgesehenen und geplanten Features umgesetzt."
+
+#~ msgid "Known limitations"
+#~ msgstr "Bekannte Einschränkungen"
+
+#~ msgid "* The saved-paths have not been tested with MSTS or ORTS."
+#~ msgstr ""
+#~ "* Die gespeicherten Pfade wurden weder mit MSTS noch mit Open Rails "
+#~ "getestet."
+
+#~ msgid ""
+#~ "* Possibly non-standard junctions (> 1 incoming or > 2 outgoing tracks) "
+#~ "might not work."
+#~ msgstr ""
+#~ "* Weichen, die nicht dem Standard entsprechen (< 1 Einfahrts- bzw < 2 "
+#~ "Ausfahrtswege), bereiten eventuell Probleme."
+
+#~ msgid "Feedback is appreciated."
+#~ msgstr "Feedback ist gerne erwünscht."
+
+#~ msgid "+"
+#~ msgstr "+"
+
+#~ msgid "-"
+#~ msgstr "-"
 
 # Used where and for what?
 #, fuzzy
