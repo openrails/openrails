@@ -508,7 +508,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// <summary>
         /// Parent locomotive
         /// </summary>
-        public MSTSLocomotive locomotive;
+        public MSTSDieselLocomotive locomotive;
 
         SettingsFlags initLevel;          //level of initialization
         /// <summary>
@@ -732,7 +732,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// </summary>
         /// <param name="stf">Reference to the stf reader</param>
         /// <param name="loco">Reference to the locomotive</param>
-        public virtual void Parse(STFReader stf, MSTSLocomotive loco)
+        public virtual void Parse(STFReader stf, MSTSDieselLocomotive loco)
         {
             locomotive = loco;
             stf.MustMatch("(");
@@ -792,7 +792,24 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void Update(float elapsedClockSeconds)
         {
-            if ((ThrottleRPMTab != null)&&(EngineStatus == Status.Running))
+            if (EngineStatus == DieselEngine.Status.Running)
+                DemandedThrottlePercent = locomotive.ThrottlePercent;
+            else
+                DemandedThrottlePercent = 0f;
+
+            if (locomotive.Direction == Direction.Reverse)
+                locomotive.PrevMotiveForceN *= -1f;
+
+            if ((EngineStatus == DieselEngine.Status.Running) && (locomotive.ThrottlePercent > 0))
+            {
+                OutputPowerW = (locomotive.PrevMotiveForceN > 0 ? locomotive.PrevMotiveForceN * locomotive.AbsSpeedMpS : 0) / locomotive.DieselEngines.NumOfActiveEngines;
+            }
+            else
+            {
+                OutputPowerW = 0.0f;
+            }
+
+            if ((ThrottleRPMTab != null) && (EngineStatus == Status.Running))
             {
                 DemandedRPM = ThrottleRPMTab[demandedThrottlePercent];
             }
@@ -938,7 +955,33 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             if(DieselTemperatureDeg < 40f)
                 DieselTemperatureDeg = 40f;
 
-            return;
+            if (GearBox != null)
+            {
+                if ((locomotive.IsLeadLocomotive()))
+                {
+                    if (GearBox.GearBoxOperation == GearBoxOperation.Manual)
+                    {
+                        if (locomotive.GearBoxController.CurrentNotch > 0)
+                            GearBox.NextGear = GearBox.Gears[locomotive.GearBoxController.CurrentNotch - 1];
+                        else
+                            GearBox.NextGear = null;
+                    }
+                }
+                else
+                {
+                    if (GearBox.GearBoxOperation == GearBoxOperation.Manual)
+                    {
+                        if (locomotive.GearboxGearIndex > 0)
+                            GearBox.NextGear = GearBox.Gears[locomotive.GearboxGearIndex - 1];
+                        else
+                            GearBox.NextGear = null;
+                    }
+                }
+                if (GearBox.CurrentGear == null)
+                    OutputPowerW = 0f;
+
+                GearBox.Update(elapsedClockSeconds);
+            }
         }
 
         public Status Start()

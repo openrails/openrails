@@ -144,26 +144,22 @@ namespace Orts.Simulation.RollingStocks
             PowerSupply.InitializeMoving();
         }
 
-
-
         /// <summary>
-        /// This is a periodic update to calculate physics 
-        /// parameters and update the base class's MotiveForceN 
-        /// and FrictionForceN values based on throttle settings
-        /// etc for the locomotive.
+        /// This function updates periodically the states and physical variables of the locomotive's power supply.
         /// </summary>
-
-        public override void Update(float elapsedClockSeconds)
+        protected override void UpdatePowerSupply(float elapsedClockSeconds)
         {
             PowerSupply.Update(elapsedClockSeconds);
+        }
 
-            base.Update(elapsedClockSeconds);
-            //Variable2 = Variable1 * 100F ;
-            //Variable2 = Math.Abs(MotiveForceN) / MaxForceN * 100F ;
-
+        /// <summary>
+        /// This function updates periodically the locomotive's sound variables.
+        /// </summary>
+        protected override void UpdateSoundVariables(float elapsedClockSeconds)
+        {
             Variable1 = ThrottlePercent;
-            if ( ThrottlePercent == 0f ) Variable2 = 0;
-            else 
+            if (ThrottlePercent == 0f) Variable2 = 0;
+            else
             {
                 float dV2;
                 dV2 = TractiveForceN / MaxForceN * 100f - Variable2;
@@ -172,7 +168,7 @@ namespace Orts.Simulation.RollingStocks
                 else if (dV2 < -max) dV2 = -max;
                 Variable2 += dV2;
             }
-            if ( DynamicBrakePercent > 0)
+            if (DynamicBrakePercent > 0)
                 Variable3 = MaxDynamicBrakeForceN == 0 ? DynamicBrakePercent / 100f : DynamicBrakeForceN / MaxDynamicBrakeForceN;
             else
                 Variable3 = 0;

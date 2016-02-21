@@ -51,6 +51,7 @@ using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
+using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
 using ORTS.Common;
 using ORTS.Scripting.Api;
@@ -207,14 +208,14 @@ namespace Orts.Simulation.RollingStocks
         private const float DefaultMainResVolume = 0.78f; // Value to be inserted if .eng parameters are corrected
         private const float DefaultMaxMainResPressure = 140; // Max value to be inserted if .eng parameters are corrected
 
-		public float CabRotationZ
-		{
-			get
-			{
-				return ((UsingRearCab == true )?
-					-totalRotationZ * Simulator.CabRotating : totalRotationZ * Simulator.CabRotating);
-			}
-		}
+        public float CabRotationZ
+        {
+            get
+            {
+                return ((UsingRearCab == true )?
+                    -totalRotationZ * Simulator.CabRotating : totalRotationZ * Simulator.CabRotating);
+            }
+        }
         public Dictionary<string, List<ParticleEmitterData>> EffectData = new Dictionary<string, List<ParticleEmitterData>>();
 
         public List<CabView> CabViewList = new List<CabView>();
@@ -992,165 +993,25 @@ namespace Orts.Simulation.RollingStocks
         }
 
         /// <summary>
-        /// This is a periodic update to calculate physics 
-        /// parameters and update the base class's MotiveForceN 
-        /// and FrictionForceN values based on throttle settings
-        /// etc for the locomotive.
+        /// This function updates periodically the states and physical variables of the locomotive's subsystems.
         /// </summary>
         public override void Update(float elapsedClockSeconds)
         {
             TrainControlSystem.Update();
-            TrainBrakeController.Update(elapsedClockSeconds);
-            if (TrainBrakeController.UpdateValue > 0.0)
-            {
-                Simulator.Confirmer.Update(CabControl.TrainBrake, CabSetting.Increase, GetTrainBrakeStatus());
-            }
 
-            if (TrainBrakeController.UpdateValue < 0.0)
-            {
-                Simulator.Confirmer.Update(CabControl.TrainBrake, CabSetting.Decrease, GetTrainBrakeStatus());
-            }
+            UpdatePowerSupply(elapsedClockSeconds);
 
-            if (EngineBrakeController != null)
-            {
-                EngineBrakeController.Update(elapsedClockSeconds);
-                if (EngineBrakeController.UpdateValue > 0.0)
-                {
-                    Simulator.Confirmer.Update(CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus());
-                }
-                if (EngineBrakeController.UpdateValue < 0.0)
-                {
-                    Simulator.Confirmer.Update(CabControl.EngineBrake, CabSetting.Decrease, GetEngineBrakeStatus());
-                }
-            }
+            UpdateControllers(elapsedClockSeconds);
 
-            DynamicBrakeBlending(elapsedClockSeconds);
-            if (DynamicBrakeController != null && DynamicBrakeController.CommandStartTime > DynamicBrakeCommandStartTime) // use the latest command time
-                DynamicBrakeCommandStartTime = DynamicBrakeController.CommandStartTime;
-
-            if ((DynamicBrakeController != null || DynamicBrakeBlendingEnabled)  && (DynamicBrakePercent >= 0 || IsLeadLocomotive() && DynamicBrakeIntervention >= 0))
-            {
-                if (!DynamicBrake)
-                {
-                    if (DynamicBrakeCommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime /*|| (DynamicBrakeController != null && DynamicBrakeController.CommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)*/)
-                    {
-                        DynamicBrake = true; // Engage
-                        if (IsLeadLocomotive() && DynamicBrakeController != null)
-                            Simulator.Confirmer.ConfirmWithPerCent(CabControl.DynamicBrake, DynamicBrakeController.CurrentValue * 100);
-                    }
-                    else if (IsLeadLocomotive())
-                        Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.On); // Keeping status string on screen so user knows what's happening
-                }
-                else if (this.IsLeadLocomotive())
-                {
-                    if (DynamicBrakeController != null)
-                    {
-                        DynamicBrakeController.Update(elapsedClockSeconds);
-                        DynamicBrakePercent = (DynamicBrakeIntervention < 0 ? DynamicBrakeController.CurrentValue : DynamicBrakeIntervention) * 100f;
-                    }
-                    else 
-                        DynamicBrakePercent = Math.Max(DynamicBrakeIntervention * 100f, 0f);
-
-                    if (DynamicBrakeIntervention < 0 && PreviousDynamicBrakeIntervention >= 0 && DynamicBrakePercent == 0)
-                        DynamicBrakePercent = -1;
-                    PreviousDynamicBrakeIntervention = DynamicBrakeIntervention;
-                }
-                else if (DynamicBrakeController != null)
-                    DynamicBrakeController.Update(elapsedClockSeconds);
-            }
-            else if ((DynamicBrakeController != null || DynamicBrakeBlendingEnabled) && DynamicBrakePercent < 0 && (DynamicBrakeIntervention < 0 || !IsLeadLocomotive()) && DynamicBrake)
-            {
-     // <CScomment> accordingly to shown documentation dynamic brake delay is required only when engaging
-     //           if (DynamicBrakeController.CommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)
-     //           {
-                    DynamicBrake = false; // Disengage
-                    DynamicBrakeForceN = 0f; // Reset dynamic brake force
-                    if (IsLeadLocomotive())
-                        Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.Off);
-     //           }
-     //            else if (IsLeadLocomotive())
-     //               Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.On); // Keeping status string on screen so user knows what's happening
-            }
-
-            //Currently the ThrottlePercent is global to the entire train
-            //So only the lead locomotive updates it, the others only updates the controller (actually useless)
-            if (this.IsLeadLocomotive() || (!AcceptMUSignals))
-            {
-                var throttleCurrentNotch = ThrottleController.CurrentNotch;
-                ThrottleController.Update(elapsedClockSeconds);
-                if (ThrottleController.CurrentNotch < throttleCurrentNotch && ThrottleController.ToZero)
-                    SignalEvent(Event.ThrottleChange); 
-                ThrottlePercent = (ThrottleIntervention < 0 ? ThrottleController.CurrentValue : ThrottleIntervention) * 100.0f;
-                ConfirmWheelslip( elapsedClockSeconds );
-                LocalThrottlePercent = ThrottlePercent;
-            }
-            else
-            {
-                ThrottleController.Update(elapsedClockSeconds);
-            }
-
-
-#if INDIVIDUAL_CONTROL
-
-			//this train is remote controlled, with mine as a helper, so I need to send the controlling information, but not the force.
-			if (MultiPlayer.MPManager.IsMultiPlayer() && this.Train.TrainType == Train.TRAINTYPE.REMOTE && this == Program.Simulator.PlayerLocomotive)
-			{
-				//cannot control train brake as it is the remote's job to do so
-				if ((EngineBrakeController != null && EngineBrakeController.UpdateValue != 0.0) || (DynamicBrakeController != null && DynamicBrakeController.UpdateValue != 0.0) || ThrottleController.UpdateValue != 0.0)
-				{
-					controlUpdated = true;
-				}
-				ThrottlePercent = ThrottleController.Update(elapsedClockSeconds) * 100.0f;
-				if ((DynamicBrakeController != null) && (DynamicBrakePercent >= 0)) DynamicBrakePercent = DynamicBrakeController.Update(elapsedClockSeconds) * 100.0f;
-				return; //done, will go back and send the message to the remote train controller
-			}
-
-			if (MultiPlayer.MPManager.IsMultiPlayer() && this.notificationReceived == true)
-			{
-				ThrottlePercent = ThrottleController.CurrentValue * 100.0f;
-				this.notificationReceived = false;
-			}
-#endif
             // TODO  this is a wild simplification for electric and diesel electric
             float t = ThrottlePercent / 100f;
-            //Only if a power is "ON" - pantograph up or diesel is running
 
             if (!this.Simulator.UseAdvancedAdhesion)
                 AbsWheelSpeedMpS = AbsSpeedMpS;
 
             UpdateMotiveForce(elapsedClockSeconds, t, AbsSpeedMpS, AbsWheelSpeedMpS);
 
-            // Steam locomotives have their MotiveForceN already pre-inverted based on Direction
-            if (!(this is MSTSSteamLocomotive))
-            {
-                if (Train.IsPlayerDriven)
-                {
-                    switch (Direction)
-                    {
-                        case Direction.Forward:
-                            //MotiveForceN *= 1;     //Not necessary
-                            break;
-                        case Direction.Reverse:
-                            MotiveForceN *= -1;
-                            break;
-                        case Direction.N:
-                        default:
-                            MotiveForceN *= 0;
-                            break;
-                    }
-                }
-                else // for AI locomotives
-                {
-                    switch (Direction)
-                    {
-                        case Direction.Reverse:
-                            MotiveForceN *= -1;
-                            break;
-                        default:
-                            break;
-                    }
-                }// end AI locomotive
-            }
+            ApplyDirectionToMotiveForce();
 
             if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null)
             {
@@ -1174,6 +1035,17 @@ namespace Orts.Simulation.RollingStocks
                     if (!PowerOn)
                     {
                         Train.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
+
+                        if (this is MSTSDieselLocomotive)
+                        {
+                            foreach (DieselEngine de in (this as MSTSDieselLocomotive).DieselEngines)
+                            {
+                                if (de.EngineStatus != DieselEngine.Status.Running)
+                                    de.Initialize(true);
+                                if (de.GearBox != null)
+                                    de.GearBox.GearBoxOperation = GearBoxOperation.Automatic;
+                            }
+                        }
                     }
                     //LimitMotiveForce(elapsedClockSeconds);    //calls the advanced physics
                     LimitMotiveForce();                         //let's call the basic physics instead for now
@@ -1213,17 +1085,141 @@ namespace Orts.Simulation.RollingStocks
                     break;
 
             }
-            if (MainResPressurePSI < CompressorRestartPressurePSI && AuxPowerOn && !CompressorIsOn)
-                SignalEvent(Event.CompressorOn);
-            else if ((MainResPressurePSI > MaxMainResPressurePSI || !AuxPowerOn) && CompressorIsOn)
-                SignalEvent(Event.CompressorOff);
-            if (CompressorIsOn)
-                MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
+
+            UpdateCompressor(elapsedClockSeconds);
+
+            UpdateSoundVariables(elapsedClockSeconds);
 
             PrevMotiveForceN = MotiveForceN;
             base.Update(elapsedClockSeconds);
         } // End Method Update
 
+        /// <summary>
+        /// This function updates periodically the states and physical variables of the locomotive's power supply.
+        /// </summary>
+        protected virtual void UpdatePowerSupply(float elapsedClockSeconds)
+        {
+        }
+
+        /// <summary>
+        /// This function updates periodically the states and physical variables of the locomotive's controllers.
+        /// </summary>
+        protected virtual void UpdateControllers(float elapsedClockSeconds)
+        {
+            TrainBrakeController.Update(elapsedClockSeconds);
+            if (TrainBrakeController.UpdateValue > 0.0)
+            {
+                Simulator.Confirmer.Update(CabControl.TrainBrake, CabSetting.Increase, GetTrainBrakeStatus());
+            }
+
+            if (TrainBrakeController.UpdateValue < 0.0)
+            {
+                Simulator.Confirmer.Update(CabControl.TrainBrake, CabSetting.Decrease, GetTrainBrakeStatus());
+            }
+
+            if (EngineBrakeController != null)
+            {
+                EngineBrakeController.Update(elapsedClockSeconds);
+                if (EngineBrakeController.UpdateValue > 0.0)
+                {
+                    Simulator.Confirmer.Update(CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus());
+                }
+                if (EngineBrakeController.UpdateValue < 0.0)
+                {
+                    Simulator.Confirmer.Update(CabControl.EngineBrake, CabSetting.Decrease, GetEngineBrakeStatus());
+                }
+            }
+
+            DynamicBrakeBlending(elapsedClockSeconds);
+            if (DynamicBrakeController != null && DynamicBrakeController.CommandStartTime > DynamicBrakeCommandStartTime) // use the latest command time
+                DynamicBrakeCommandStartTime = DynamicBrakeController.CommandStartTime;
+
+            if ((DynamicBrakeController != null || DynamicBrakeBlendingEnabled) && (DynamicBrakePercent >= 0 || IsLeadLocomotive() && DynamicBrakeIntervention >= 0))
+            {
+                if (!DynamicBrake)
+                {
+                    if (DynamicBrakeCommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime /*|| (DynamicBrakeController != null && DynamicBrakeController.CommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)*/)
+                    {
+                        DynamicBrake = true; // Engage
+                        if (IsLeadLocomotive() && DynamicBrakeController != null)
+                            Simulator.Confirmer.ConfirmWithPerCent(CabControl.DynamicBrake, DynamicBrakeController.CurrentValue * 100);
+                    }
+                    else if (IsLeadLocomotive())
+                        Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.On); // Keeping status string on screen so user knows what's happening
+                }
+                else if (this.IsLeadLocomotive())
+                {
+                    if (DynamicBrakeController != null)
+                    {
+                        DynamicBrakeController.Update(elapsedClockSeconds);
+                        DynamicBrakePercent = (DynamicBrakeIntervention < 0 ? DynamicBrakeController.CurrentValue : DynamicBrakeIntervention) * 100f;
+                    }
+                    else
+                        DynamicBrakePercent = Math.Max(DynamicBrakeIntervention * 100f, 0f);
+
+                    if (DynamicBrakeIntervention < 0 && PreviousDynamicBrakeIntervention >= 0 && DynamicBrakePercent == 0)
+                        DynamicBrakePercent = -1;
+                    PreviousDynamicBrakeIntervention = DynamicBrakeIntervention;
+                }
+                else if (DynamicBrakeController != null)
+                    DynamicBrakeController.Update(elapsedClockSeconds);
+            }
+            else if ((DynamicBrakeController != null || DynamicBrakeBlendingEnabled) && DynamicBrakePercent < 0 && (DynamicBrakeIntervention < 0 || !IsLeadLocomotive()) && DynamicBrake)
+            {
+                // <CScomment> accordingly to shown documentation dynamic brake delay is required only when engaging
+                //           if (DynamicBrakeController.CommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)
+                //           {
+                DynamicBrake = false; // Disengage
+                DynamicBrakeForceN = 0f; // Reset dynamic brake force
+                if (IsLeadLocomotive())
+                    Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.Off);
+                //           }
+                //            else if (IsLeadLocomotive())
+                //               Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.On); // Keeping status string on screen so user knows what's happening
+            }
+
+            //Currently the ThrottlePercent is global to the entire train
+            //So only the lead locomotive updates it, the others only updates the controller (actually useless)
+            if (this.IsLeadLocomotive() || (!AcceptMUSignals))
+            {
+                var throttleCurrentNotch = ThrottleController.CurrentNotch;
+                ThrottleController.Update(elapsedClockSeconds);
+                if (ThrottleController.CurrentNotch < throttleCurrentNotch && ThrottleController.ToZero)
+                    SignalEvent(Event.ThrottleChange);
+                ThrottlePercent = (ThrottleIntervention < 0 ? ThrottleController.CurrentValue : ThrottleIntervention) * 100.0f;
+                ConfirmWheelslip(elapsedClockSeconds);
+                LocalThrottlePercent = ThrottlePercent;
+            }
+            else
+            {
+                ThrottleController.Update(elapsedClockSeconds);
+            }
+
+#if INDIVIDUAL_CONTROL
+            //this train is remote controlled, with mine as a helper, so I need to send the controlling information, but not the force.
+            if (MultiPlayer.MPManager.IsMultiPlayer() && this.Train.TrainType == Train.TRAINTYPE.REMOTE && this == Program.Simulator.PlayerLocomotive)
+            {
+                //cannot control train brake as it is the remote's job to do so
+                if ((EngineBrakeController != null && EngineBrakeController.UpdateValue != 0.0) || (DynamicBrakeController != null && DynamicBrakeController.UpdateValue != 0.0) || ThrottleController.UpdateValue != 0.0)
+                {
+                    controlUpdated = true;
+                }
+                ThrottlePercent = ThrottleController.Update(elapsedClockSeconds) * 100.0f;
+                if ((DynamicBrakeController != null) && (DynamicBrakePercent >= 0)) DynamicBrakePercent = DynamicBrakeController.Update(elapsedClockSeconds) * 100.0f;
+                return; //done, will go back and send the message to the remote train controller
+            }
+
+            if (MultiPlayer.MPManager.IsMultiPlayer() && this.notificationReceived == true)
+            {
+                ThrottlePercent = ThrottleController.CurrentValue * 100.0f;
+                this.notificationReceived = false;
+            }
+#endif
+        }
+
+        /// <summary>
+        /// This function updates periodically the locomotive's motive force.
+        /// </summary>
         protected virtual void UpdateMotiveForce(float elapsedClockSeconds, float t, float AbsSpeedMpS, float AbsWheelSpeedMpS)
         {
             // Method to set force and power info
@@ -1266,6 +1262,44 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
+        /// <summary>
+        /// This function applies a sign to the motive force as a function of the direction of the train.
+        /// </summary>
+        protected virtual void ApplyDirectionToMotiveForce()
+        {
+            // Steam locomotives have their MotiveForceN already pre-inverted based on Direction
+            if (!(this is MSTSSteamLocomotive))
+            {
+                if (Train.IsPlayerDriven)
+                {
+                    switch (Direction)
+                    {
+                        case Direction.Forward:
+                            //MotiveForceN *= 1;     //Not necessary
+                            break;
+                        case Direction.Reverse:
+                            MotiveForceN *= -1;
+                            break;
+                        case Direction.N:
+                        default:
+                            MotiveForceN *= 0;
+                            break;
+                    }
+                }
+                else // for AI locomotives
+                {
+                    switch (Direction)
+                    {
+                        case Direction.Reverse:
+                            MotiveForceN *= -1;
+                            break;
+                        default:
+                            break;
+                    }
+                }// end AI locomotive
+            }
+        }
+
         enum Wheelslip
         {
             None,
@@ -1275,7 +1309,7 @@ namespace Orts.Simulation.RollingStocks
 
         Wheelslip WheelslipState = Wheelslip.None;
 
-        public void ConfirmWheelslip( float elapsedClockSeconds )
+        public void ConfirmWheelslip(float elapsedClockSeconds)
         {
             if (elapsedClockSeconds > 0 && Simulator.GameTime -LocomotiveAxle.ResetTime> 5)
             { 
@@ -1324,6 +1358,27 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
             }
+        }
+
+        /// <summary>
+        /// This function updates periodically the state of the compressor and charges the main reservoir if the compressor is active.
+        /// </summary>
+        protected virtual void UpdateCompressor(float elapsedClockSeconds)
+        {
+            if (MainResPressurePSI < CompressorRestartPressurePSI && AuxPowerOn && !CompressorIsOn)
+                SignalEvent(Event.CompressorOn);
+            else if ((MainResPressurePSI > MaxMainResPressurePSI || !AuxPowerOn) && CompressorIsOn)
+                SignalEvent(Event.CompressorOff);
+
+            if (CompressorIsOn)
+                MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
+        }
+
+        /// <summary>
+        /// This function updates periodically the locomotive's sound variables.
+        /// </summary>
+        protected virtual void UpdateSoundVariables(float elapsedClockSeconds)
+        {
         }
 
         /// <summary>
