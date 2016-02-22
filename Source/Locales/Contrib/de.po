@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Contrib\n"
 "POT-Creation-Date: 2016-02-05 01:40:24+0100\n"
-"PO-Revision-Date: 2016-02-21 18:11+0100\n"
+"PO-Revision-Date: 2016-02-22 21:28+0100\n"
 "Last-Translator: Markus Gelbman <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -1202,7 +1202,7 @@ msgstr ""
 
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:86
 msgid "The current path is not finished:"
-msgstr "Diese Farstraße ist nicht fertiggestellt:"
+msgstr "Diese Fahrstraße ist nicht fertiggestellt:"
 
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:99
 msgid "Saving broken paths might not always work correctly."
@@ -1792,7 +1792,7 @@ msgstr "Sprache auswählen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:116
 msgid "Path-Editor"
-msgstr "Farstraßen-Editor"
+msgstr "Fahrstraßen-Editor"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:117
 msgid "==Supporting MSTS paths only=="
