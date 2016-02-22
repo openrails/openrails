@@ -3122,7 +3122,7 @@ namespace Orts.Simulation.Physics
         /// <\summary>
         public void UnconditionalInitializeBrakes()
         {
-            if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
+            if (Simulator.Confirmer != null && IsActualPlayerTrain) // As Confirmer may not be created until after a restore.
                 Simulator.Confirmer.Confirm(CabControl.InitializeBrakes, CabSetting.Off);
 
             float maxPressurePSI = 90;
