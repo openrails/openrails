@@ -1164,7 +1164,7 @@ namespace Orts.Viewer3D
         {
             var scaling = (float)graphicsDevice.PresentationParameters.BackBufferHeight / Viewer.RenderProcess.GraphicsDeviceManager.PreferredBackBufferHeight;
             Vector3 screenScaling = new Vector3(scaling);
-            SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, null, null, null, Matrix.CreateScale(scaling));
+            SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied, null, null, null, null, Matrix.CreateScale(scaling));
             SpriteBatch.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
         }
 
