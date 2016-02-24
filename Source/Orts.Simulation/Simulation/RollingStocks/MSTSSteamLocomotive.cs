@@ -30,7 +30,11 @@
 // Steam heating debugging is off by default - uncomment the #define to turn on - provides visibility of steam usage related parameters on extended HUD. 
 // #define DEBUG_LOCO_STEAM_HEAT_HUD
 
+// Debug for Auxiliary Tender
 //#define DEBUG_AUXTENDER
+
+// Debug for Steam Effects
+//#define DEBUG_STEAM_EFFECTS
 
 /* STEAM LOCOMOTIVE CLASSES
  * 
@@ -524,9 +528,40 @@ namespace Orts.Simulation.RollingStocks
 
         public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
         public float StackSteamVolumeM3pS;
-        public float CylindersSteamVelocityMpS;
-        public float CylindersSteamVolumeM3pS;
+        public float Cylinders1SteamVelocityMpS;
+        public float Cylinders1SteamVolumeM3pS;
+        public float Cylinders2SteamVelocityMpS;
+        public float Cylinders2SteamVolumeM3pS;
+        public float SafetyValvesSteamVelocityMpS;
         public float SafetyValvesSteamVolumeM3pS;
+ 
+        public float DrainpipeSteamVolumeM3pS;
+        public float DrainpipeSteamVelocityMpS;
+        public float Injector1SteamVolumeM3pS;
+        public float Injector1SteamVelocityMpS;
+        public float Injector2SteamVolumeM3pS;
+        public float Injector2SteamVelocityMpS;
+        public float CompressorSteamVolumeM3pS;
+        public float CompressorSteamVelocityMpS;
+        public float GeneratorSteamVolumeM3pS;
+        public float GeneratorSteamVelocityMpS;
+        public float WhistleSteamVolumeM3pS;
+        public float WhistleSteamVelocityMpS;
+        float CylinderCockTimerS = 0.0f;
+        float CylinderCockOpenTimeS = 0.0f;
+        bool CylinderCock1On = true;
+        bool CylinderCock2On = false;
+        public bool Cylinder2SteamEffects = false;
+        public bool GeneratorSteamEffects = false;
+        public float CompressorParticleDurationS = 3.0f;
+        public float Cylinder1ParticleDurationS = 3.0f;
+        public float Cylinder2ParticleDurationS = 3.0f;
+        public float WhistleParticleDurationS = 3.0f;
+        public float SafetyValvesParticleDurationS = 3.0f;
+        public float DrainpipeParticleDurationS = 3.0f;
+        public float Injector1ParticleDurationS = 3.0f;
+        public float Injector2ParticleDurationS = 3.0f;
+        public float GeneratorParticleDurationS = 3.0f;
 
         #endregion
 
@@ -1448,14 +1483,96 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         private void UpdateFX(float elapsedClockSeconds)
         {
-            // Bernoulli equations
-            StackSteamVelocityMpS.Update(elapsedClockSeconds, (float)Math.Sqrt(KPa.FromPSI(CylinderReleasePressureAtmPSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3));
-            CylindersSteamVelocityMpS = (float)Math.Sqrt(KPa.FromPSI(CylinderPressureAtmPSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3);
+      // This section updates the various steam effects for the steam locomotive. It uses the particle drawer which has the following inputs.
+      // Stack - steam velocity, steam volume, particle duration, colour, whislts all other effects use these inputs only, non-Stack - steam velocity, steam volume, particle duration
+      // The steam effects have been adjust based upon their "look and feel", as the particle drawer has a number of different multipliers in it.
+      // Steam Velocity - increasing this value increases how far the steam jets out of the orifice, steam volume adjust volume, particle duration adjusts the "decay' time of the steam
+      // The duration time is reduced with speed to reduce the steam trail behind the locomotive when running at speed.
+      // Any of the steam effects can be disabled by not defining them in the ENG file, and thus they will not be displayed in the viewer.
+     
+            // Cylinder steam cock effects
+            if (Cylinder2SteamEffects) // For MSTS locomotives with one cyldinder cock ignore calculation of cock opening times.
+            {
+                CylinderCockOpenTimeS = 0.5f * 1.0f / DrvWheelRevRpS;  // Calculate how long cylinder cocks open  @ speed = Time (sec) / (Drv Wheel RpS ) - assume two cylinder strokes per rev, ie each cock will only be open for 1/2 rev
+                CylinderCockTimerS += elapsedClockSeconds;
+                if (CylinderCockTimerS > CylinderCockOpenTimeS)
+                {
+                    if (CylinderCock1On)
+                    {
+                        CylinderCock1On = false;
+                        CylinderCock2On = true;
+                        CylinderCockTimerS = 0.0f;  // Reset timer
+                    }
+                    else if (CylinderCock2On)
+                    {
+                        CylinderCock1On = true;
+                        CylinderCock2On = false;
+                        CylinderCockTimerS = 0.0f;  // Reset timer
 
-            StackSteamVolumeM3pS = Kg.FromLb(CylinderSteamUsageLBpS + BlowerSteamUsageLBpS + RadiationSteamLossLBpS + CompSteamUsageLBpS + GeneratorSteamUsageLBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG;
-            CylindersSteamVolumeM3pS = (CylinderCocksAreOpen ? Kg.FromLb(CylCockSteamUsageLBpS) / NumCylinders * SteamVaporSpecVolumeAt100DegC1BarM3pKG : 0);
+                    }
+
+                }
+            }
+
+            float SteamEffectsFactor = MathHelper.Clamp(BoilerPressurePSI / MaxBoilerPressurePSI, 0.1f, 1.0f);  // Factor to allow for drops in boiler pressure reducing steam effects
+
+            // Bernoulli formula for future reference - steam velocity = SQRT ( 2 * dynamic pressure (pascals) / fluid density)
+            Cylinders1SteamVelocityMpS = 100.0f;
+            Cylinders2SteamVelocityMpS = 100.0f;
+            Cylinders1SteamVolumeM3pS = (CylinderCock1On && CylinderCocksAreOpen ? (10.0f * SteamEffectsFactor) : 0.0f);
+            Cylinders2SteamVolumeM3pS = (CylinderCock2On && CylinderCocksAreOpen ? (10.0f * SteamEffectsFactor) : 0.0f);
+            Cylinder1ParticleDurationS = 1.0f;
+            Cylinder2ParticleDurationS = 1.0f;
+
+       // Drainpipe Steam Effects
+
+            DrainpipeSteamVolumeM3pS = 0.0f;  // Turn Drainpipe permanently "off"
+            DrainpipeSteamVelocityMpS = 0.0f;
+            DrainpipeParticleDurationS = 1.0f;
+
+      // Generator Steam Effects
+
+            GeneratorSteamVelocityMpS = 50.0f;
+            GeneratorSteamVolumeM3pS = 4.0f * SteamEffectsFactor;
+            GeneratorParticleDurationS = 1.0f;
+            GeneratorParticleDurationS = MathHelper.Clamp(GeneratorParticleDurationS / (absSpeedMpS / 4.0f), 0.1f, 1.0f);
+
+
+       // Injector Steam Effects
+            
+            Injector1SteamVolumeM3pS = ( Injector1IsOn ? (5.0f * SteamEffectsFactor) : 0);
+            Injector1SteamVelocityMpS = 10.0f;
+            Injector1ParticleDurationS = 1.0f;
+            Injector1ParticleDurationS = MathHelper.Clamp(Injector1ParticleDurationS / (absSpeedMpS / 4.0f), 0.1f, 1.0f);
+
+            Injector2SteamVolumeM3pS = (Injector2IsOn ? (5.0f * SteamEffectsFactor) : 0);
+            Injector2SteamVelocityMpS = 10.0f;
+            Injector2ParticleDurationS = 1.0f;
+            Injector2ParticleDurationS = MathHelper.Clamp(Injector2ParticleDurationS / (absSpeedMpS / 4.0f), 0.1f, 1.0f);
+
+      // Compressor Steam Effects
+
+            CompressorSteamVelocityMpS = 10.0f;
+            CompressorSteamVolumeM3pS = (CompressorIsOn ? (1.5f * SteamEffectsFactor) : 0);
+            CompressorParticleDurationS = 1.0f;
+            CompressorParticleDurationS = MathHelper.Clamp(CompressorParticleDurationS / (absSpeedMpS / 4.0f), 0.1f, 1.0f);
+
+      // Whistle Steam Effects
+
+            WhistleSteamVelocityMpS = 10.0f;
+            WhistleSteamVolumeM3pS = (Horn ? (5.0f * SteamEffectsFactor) : 0);
+            WhistleParticleDurationS = 3.0f;
+            WhistleParticleDurationS = MathHelper.Clamp(WhistleParticleDurationS / (absSpeedMpS / 4.0f), 1.0f, 3.0f);
+
+        // Safety Valves Steam Effects
+
+            SafetyValvesSteamVelocityMpS = (float)Math.Sqrt(KPa.FromPSI(CylinderPressureAtmPSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3);
             SafetyValvesSteamVolumeM3pS = SafetyIsOn ? Kg.FromLb(SafetyValveUsageLBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG : 0;
+ 
+        // Smoke Stack Smoke Effects
 
+            StackSteamVelocityMpS.Update(elapsedClockSeconds, (float)Math.Sqrt(KPa.FromPSI(CylinderReleasePressureAtmPSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3));
+            StackSteamVolumeM3pS = Kg.FromLb(CylinderSteamUsageLBpS + BlowerSteamUsageLBpS + RadiationSteamLossLBpS + CompSteamUsageLBpS + GeneratorSteamUsageLBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG;
             SmokeColor.Update(elapsedClockSeconds, MathHelper.Clamp((RadiationSteamLossLBpS + CalculatedCarHeaterSteamUsageLBpS + BlowerBurnEffect + DamperBurnEffect) / PreviousTotalSteamUsageLBpS - 0.2f, 0.25f, 1));
 
             // Variable1 is proportional to angular speed, value of 10 means 1 rotation/second.
@@ -3388,10 +3505,10 @@ namespace Orts.Simulation.RollingStocks
             {
                 CylCockSteamUsageLBpS = 0.0f;       // set steam usage to zero if turned off
             }
-            //<CJComment> What if there is no electricity generator? </CJComment>
+
             // Calculate Generator steam Usage if turned on
             // Assume generator kW = 350W for D50 Class locomotive
-            if (absSpeedMpS > 2.0f) //  Turn generator on if moving
+            if (GeneratorSteamEffects) // If Generator steam effects not present then assume no generator is fitted to locomotive
             {
                 GeneratorSteamUsageLBpS = 0.0291666f; // Assume 105lb/hr steam usage for 500W generator
                 //   GeneratorSteamUsageLbpS = (GeneratorSizekW * SteamkwToBTUpS) / steamHeatCurrentBTUpLb; // calculate Generator steam usage
@@ -3402,7 +3519,7 @@ namespace Orts.Simulation.RollingStocks
             }
             else
             {
-                GeneratorSteamUsageLBpS = 0.0f;
+                GeneratorSteamUsageLBpS = 0.0f; // No generator fitted to locomotive
             }
             if (StokerIsMechanical)
             {
@@ -4389,6 +4506,43 @@ namespace Orts.Simulation.RollingStocks
                 IsLocoSlip ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
                 FormatStrings.FormatMass(Kg.FromLb(WheelWeightLbs), IsMetric),
                 CalculatedFactorofAdhesion);
+
+#if DEBUG_STEAM_EFFECTS
+            status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:N2}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12:N2}\t{13}\t{14:N2}\n",
+                "StEff#1:",
+                "Cyl1Vel",
+                Cylinders1SteamVelocityMpS,
+                "Cyl1Vol",
+                Cylinders1SteamVolumeM3pS,
+                "Cyl1Dur",
+                Cylinder1ParticleDurationS,
+                "Cyl2Vel",
+                Cylinders2SteamVelocityMpS,
+                "Cyl2Vol",
+                Cylinders2SteamVolumeM3pS,
+                "Cyl2Dur",
+                Cylinder2ParticleDurationS,
+                "CockTime",
+                CylinderCockOpenTimeS
+                );
+
+            status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:N2}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12:N2}\n",
+                "StEff#2:",
+                "CompVel",
+                CompressorSteamVelocityMpS,
+                "CompVol",
+                CompressorSteamVolumeM3pS,
+                "CompDur",
+                CompressorParticleDurationS,
+                "Inj1Vel",
+                Injector1SteamVelocityMpS,
+                "Inj1Vol",
+                Injector1SteamVolumeM3pS,
+                "Inj1Dur",
+                Injector1ParticleDurationS
+                );
+
+#endif
 
             return status.ToString();
         }

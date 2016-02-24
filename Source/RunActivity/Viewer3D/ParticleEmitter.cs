@@ -98,10 +98,11 @@ namespace Orts.Viewer3D
         }
 
         // Called for steam locomotive emissions (non-main stack)
-        public void SetOutput(float initialVelocityMpS, float volumeM3pS)
+        public void SetOutput(float initialVelocityMpS, float volumeM3pS, float durationS)
         {
             Emitter.XNAInitialVelocity = Emitter.EmitterData.XNADirection * initialVelocityMpS / 10; // FIXME: Temporary hack until we can improve the particle emitter's ability to cope with high-velocity, quick-deceleration emissions.
             Emitter.ParticlesPerSecond = volumeM3pS / Rate * 0.2f;
+            Emitter.ParticleDuration = durationS;
 
 #if DEBUG_EMITTER_INPUT
             if (InputCycle == 0)
@@ -112,7 +113,8 @@ namespace Orts.Viewer3D
         // Called for steam locomotive emissions (main stack)
         public void SetOutput(float initialVelocityMpS, float volumeM3pS, float durationS, Color color)
         {
-            SetOutput(initialVelocityMpS, volumeM3pS);
+            Emitter.XNAInitialVelocity = Emitter.EmitterData.XNADirection * initialVelocityMpS / 10; // FIXME: Temporary hack until we can improve the particle emitter's ability to cope with high-velocity, quick-deceleration emissions.
+            Emitter.ParticlesPerSecond = volumeM3pS / Rate * 0.2f;
             Emitter.ParticleDuration = durationS;
             Emitter.ParticleColor = color;
 

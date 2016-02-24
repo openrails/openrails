@@ -36,7 +36,12 @@ namespace Orts.Viewer3D.RollingStock
 
         MSTSSteamLocomotive SteamLocomotive { get { return (MSTSSteamLocomotive)Car; } }
         List<ParticleEmitterViewer> Cylinders = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> Cylinders2 = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> Drainpipe = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> Injectors1 = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> Injectors2 = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> Compressor = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> Generator = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> SafetyValves = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> Stack = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> Whistle = new List<ParticleEmitterViewer>();
@@ -52,8 +57,25 @@ namespace Orts.Viewer3D.RollingStock
             {
                 if (emitter.Key.ToLowerInvariant() == "cylindersfx")
                     Cylinders.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "drainpipefx")
+                else if (emitter.Key.ToLowerInvariant() == "cylinders2fx")
+                {
+                    Cylinders2.AddRange(emitter.Value);
+                    car.Cylinder2SteamEffects = true;
+                }
+//          Not used in either MSTS or OR
+                else if (emitter.Key.ToLowerInvariant() == "drainpipefx")        // Drainpipe was not used in MSTS, and has no control
                     Drainpipe.AddRange(emitter.Value);
+                else if (emitter.Key.ToLowerInvariant() == "injectors1fx")
+                    Injectors1.AddRange(emitter.Value);
+                else if (emitter.Key.ToLowerInvariant() == "injectors2fx")
+                    Injectors2.AddRange(emitter.Value);
+                else if (emitter.Key.ToLowerInvariant() == "compressorfx")
+                    Compressor.AddRange(emitter.Value);
+                else if (emitter.Key.ToLowerInvariant() == "generatorfx")
+                {
+                    Generator.AddRange(emitter.Value);
+                    car.GeneratorSteamEffects = true;
+                }
                 else if (emitter.Key.ToLowerInvariant() == "safetyvalvesfx")
                     SafetyValves.AddRange(emitter.Value);
                 else if (emitter.Key.ToLowerInvariant() == "stackfx")
@@ -263,13 +285,29 @@ namespace Orts.Viewer3D.RollingStock
             var car = Car as MSTSSteamLocomotive;
 
             foreach (var drawer in Cylinders)
-                drawer.SetOutput(5, car.CylindersSteamVolumeM3pS * 10);
+                drawer.SetOutput(car.Cylinders1SteamVelocityMpS, car.Cylinders1SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
 
-            foreach (var drawer in Drainpipe)
-                drawer.SetOutput(0, 0);
+             foreach (var drawer in Cylinders2)
+                drawer.SetOutput(car.Cylinders2SteamVelocityMpS, car.Cylinders2SteamVolumeM3pS, car.Cylinder2ParticleDurationS);
 
+            // TODO: Not used in either MSTS or OR - currently disabled by zero values set in SteamLocomotive file
+             foreach (var drawer in Drainpipe)
+                drawer.SetOutput(car.DrainpipeSteamVelocityMpS, car.DrainpipeSteamVolumeM3pS, car.DrainpipeParticleDurationS);
+
+             foreach (var drawer in Injectors1)
+                drawer.SetOutput(car.Injector1SteamVelocityMpS, car.Injector1SteamVolumeM3pS, car.Injector1ParticleDurationS);
+
+             foreach (var drawer in Injectors2)
+                 drawer.SetOutput(car.Injector2SteamVelocityMpS, car.Injector2SteamVolumeM3pS, car.Injector2ParticleDurationS);
+
+             foreach (var drawer in Compressor)
+                drawer.SetOutput(car.CompressorSteamVelocityMpS, car.CompressorSteamVolumeM3pS, car.CompressorParticleDurationS );
+
+            foreach (var drawer in Generator)
+                drawer.SetOutput(car.GeneratorSteamVelocityMpS, car.GeneratorSteamVolumeM3pS, car.GeneratorParticleDurationS);
+            
             foreach (var drawer in SafetyValves)
-                drawer.SetOutput(car.CylindersSteamVelocityMpS, car.SafetyValvesSteamVolumeM3pS);
+                drawer.SetOutput(car.SafetyValvesSteamVelocityMpS, car.SafetyValvesSteamVolumeM3pS, car.SafetyValvesParticleDurationS);
 
             Throttlepercent = car.ThrottlePercent > 0 ? car.ThrottlePercent / 10f : 0f;
 
@@ -280,7 +318,7 @@ namespace Orts.Viewer3D.RollingStock
             }
 
             foreach (var drawer in Whistle)
-                drawer.SetOutput(5, (car.Horn ? 5 : 0));
+                drawer.SetOutput(car.WhistleSteamVelocityMpS, car.WhistleSteamVolumeM3pS, car.WhistleParticleDurationS);
 
             base.PrepareFrame(frame, elapsedTime);
         }
