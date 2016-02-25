@@ -4443,11 +4443,13 @@ namespace Orts.Simulation.AIs
             {
                 CalculatePositionOfCars(0);
                 DistanceTravelledM -= passedLength;
+                Cars[0].BrakeSystem.AngleCockAOpen = false;
             }
             else // coupled to rear so front position is still valid
             {
                 RepositionRearTraveller();    // fix the rear traveller
                 CalculatePositionOfCars(0);
+                Cars[Cars.Count - 1].BrakeSystem.AngleCockBOpen = false;
             }
 
             // recalculate position of coupled train
@@ -4455,11 +4457,13 @@ namespace Orts.Simulation.AIs
             {
                 attachTrain.CalculatePositionOfCars(0);
                 attachTrain.DistanceTravelledM += passedLength;
+                attachTrain.Cars[0].BrakeSystem.AngleCockAOpen = false;
             }
             else // coupled to rear so front position is still valid
             {
                 attachTrain.RepositionRearTraveller();    // fix the rear traveller
                 attachTrain.CalculatePositionOfCars(0);
+                attachTrain.Cars[attachTrain.Cars.Count - 1].BrakeSystem.AngleCockBOpen = false;
             }
 
 
