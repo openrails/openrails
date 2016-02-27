@@ -1,0 +1,1830 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Orts.Simulation\n"
+"POT-Creation-Date: 2016-02-27 12:19+0100\n"
+"PO-Revision-Date: \n"
+"Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
+"Language-Team: Open Rails Dev Team\n"
+"Language: hu\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.8.7\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:222
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:70
+msgid "Release"
+msgstr "Töltés/Oldás"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:223
+msgid "Quick Release"
+msgstr "Gyorsoldás"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:225
+msgid "Neutral"
+msgstr "Semleges állás"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:226
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:69
+msgid "Apply"
+msgstr "Működtetés"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:227
+msgid "EPApply"
+msgstr "EP alkalmazása"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:228
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:71
+msgid "Emergency"
+msgstr "Gyorsfék"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:229
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:232
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:68
+msgid "Lap"
+msgstr "Fékhatárolás"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:230
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:231
+msgid "Service"
+msgstr "Üzemben"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:233
+msgid "Suppression"
+msgstr "Elnyomás"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:234
+msgid "Cont. Service"
+msgstr "Folyamatos üzem"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:235
+msgid "Full Service"
+msgstr "Teljes üzem"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:236
+msgid "Overcharge"
+msgstr "Túltöltés"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:237
+msgid "Emergency Braking Push Button"
+msgstr "Vészfék ütőgomb"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:238
+msgid "TCS Emergency Braking"
+msgstr "Vészfékbeavatkozás"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:239
+msgid "TCS Full Service Braking"
+msgstr "Vészfékbeavatkozás 1. szint - Teljes üzem"
+
+#. Context: Brake Controller
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:224
+msgctxt "Brake Controller"
+msgid "Running"
+msgstr "Szabadonfutó"
+
+#. Context: PowerSupply
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:79
+msgctxt "PowerSupply"
+msgid "Off"
+msgstr "Nincs"
+
+#. Context: PowerSupply
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:80
+msgctxt "PowerSupply"
+msgid "On ongoing"
+msgstr "(Be)"
+
+#. Context: PowerSupply
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:81
+msgctxt "PowerSupply"
+msgid "On"
+msgstr "Van"
+
+#. Context: Pantograph
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:86
+msgctxt "Pantograph"
+msgid "Down"
+msgstr "Lent"
+
+#. Context: Pantograph
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:87
+msgctxt "Pantograph"
+msgid "Lowering"
+msgstr "Le"
+
+#. Context: Pantograph
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:88
+msgctxt "Pantograph"
+msgid "Raising"
+msgstr "Fel"
+
+#. Context: Pantograph
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:89
+msgctxt "Pantograph"
+msgid "Up"
+msgstr "Fent"
+
+#. Context: CircuitBraker
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/CircuitBreaker.cs:79
+msgctxt "CircuitBraker"
+msgid "Open"
+msgstr "Nyitva"
+
+#. Context: CircuitBraker
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/CircuitBreaker.cs:80
+msgctxt "CircuitBraker"
+msgid "Closing"
+msgstr "Zárás folyamatban"
+
+#. Context: CircuitBraker
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/CircuitBreaker.cs:81
+msgctxt "CircuitBraker"
+msgid "Closed"
+msgstr "Zárva"
+
+#: ../../Orts.Simulation/MultiPlayer/ClientComm.cs:124
+#: ../../Orts.Simulation/MultiPlayer/ClientComm.cs:136
+msgid "Connection to the server is lost, will play as single mode"
+msgstr ""
+"A kiszolgálóval való kapcsolat megszakadt, egyrésztvevős módban folytatódik "
+"a játék"
+
+#: ../../Orts.Simulation/MultiPlayer/ClientComm.cs:153
+msgid "Alt-E to gain control of your train"
+msgstr "Alt+E -vel lehet visszavenni a vezérlést a vonat fölött"
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:728
+msgid "Dispatcher does not allow hand throw at this time"
+msgstr "A forgalomirányító nem engedi a váltó kézi állítását pillanatnyilag"
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:772
+msgid "main route"
+msgstr "fővágány"
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:772
+msgid "side route"
+msgstr "mellékvágány"
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:1546
+msgid "You are the new dispatcher. Enjoy!"
+msgstr "Te vagy az új forgalomirányító. Élvezd!"
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:1677
+msgid "Name conflicted with people in the game, will play in single mode"
+msgstr ""
+"A név ütközik másik játékoséval, ezért egyrésztvevős módban folytatódik a "
+"játék."
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:1752
+#: ../../Orts.Simulation/MultiPlayer/MPManager.cs:181
+msgid "You gained back the control of your train"
+msgstr "Visszakaptad a vezérlést a vonatod fölött."
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:1967
+msgid "Server quits, will play as single mode"
+msgstr "A szerver kilépett, egyrésztvevő üzemmódban folytatódik a játék."
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:2248
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:2495
+msgid "Trains uncoupled, gain back control by Alt-E"
+msgstr "A vonatok szétcsatolva, Alt+E -vel lehet visszavenni a vezérlést"
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:2636
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:2745
+msgid "Trains coupled, hit \\ then Shift-? to release brakes"
+msgstr ""
+"A vonatok összecsatolva, nyomd meg a \\-t, majd a Shift+? -t a fékek "
+"oldásához."
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:3190
+msgid "You are an assistant now, will be able to handle switches and signals."
+msgstr ""
+"Mostantól alirányító vagy, képes leszel kezelni a váltókat és jelzőket."
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:3196
+msgid "You are no longer an assistant."
+msgstr "Nem vagy többé alirányító"
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:771
+#, csharp-format
+msgid "Switched, current route is {0}"
+msgstr "Átváltva, a beállított vágány a {0}"
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:1554
+#, csharp-format
+msgid "New dispatcher is {0}"
+msgstr "Az új irányító {0}"
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:1978
+#: ../../Orts.Simulation/MultiPlayer/OnlinePlayer.cs:144
+#, csharp-format
+msgid "{0} quit."
+msgstr "{0} kilépett."
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:2050
+#, csharp-format
+msgid "{0} lost."
+msgstr "{0} elveszett."
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:3076
+#, csharp-format
+msgid " From {0}: {1}"
+msgstr " Feladó {0}: {1}"
+
+#: ../../Orts.Simulation/MultiPlayer/MPManager.cs:699
+msgid "Missing car, have substituted with other one."
+msgstr "Hiányzó kocsi, helyettesítve egy másikkal."
+
+#: ../../Orts.Simulation/MultiPlayer/MPManager.cs:422
+#, csharp-format
+msgid "Cannot decouple: train has {0} player, need to completely stop."
+msgid_plural "Cannot decouple: train has {0} players, need to completely stop."
+msgstr[0] ""
+"Nem lehet szétcsatolni: a vonatnak {0} vezetője van, teljesen meg kell "
+"állítani."
+msgstr[1] ""
+"Nem lehet szétcsatolni: a vonatnak {0} vezetője van, teljesen meg kell "
+"állítani."
+
+#: ../../Orts.Simulation/Simulation/Activity.cs:1006
+#: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:6135
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:5801
+msgid "Passenger boarding completed. Waiting for signal ahead to clear."
+msgstr "Az utasok le- és felszállása befejeződött. Várakozás szabad kijáratra."
+
+#: ../../Orts.Simulation/Simulation/Activity.cs:1011
+#: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:6141
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:5806
+msgid "Passenger boarding completed. You may depart now."
+msgstr "Az utasok le- és felszállása befejeződött. A vonat indítható."
+
+#: ../../Orts.Simulation/Simulation/Activity.cs:995
+#: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:6148
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:5813
+#, csharp-format
+msgid "Passenger boarding completes in {0:D2}:{1:D2}"
+msgstr ""
+"Az utasok le- és felszállása {0:D2}:{1:D2} másodpercen belül befejeződik."
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:26
+msgid "None"
+msgstr "Nincs"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:27
+msgid "Information"
+msgstr "Tájékoztatás"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:28
+msgid "Warning"
+msgstr "Figyelmeztetés"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:29
+msgid "Error"
+msgstr "Hiba"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:30
+msgid "MSG"
+msgstr "Üzenet"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:160
+msgid "<none>"
+msgstr "<nincs>"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:162
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:174
+msgid "reverse"
+msgstr "hátramenet"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:162
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:174
+msgid "neutral"
+msgstr "semleges állás"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:162
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:174
+msgid "forward"
+msgstr "előremenet"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:162
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:174
+msgid "locked. Close throttle, stop train then re-try."
+msgstr "letiltva. Előbb zárd le a menetszabályzót és állítsd meg a vonatot."
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:163
+msgid "Throttle"
+msgstr "Menetszabályzó"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:163
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:175
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:176
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:177
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:180
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:181
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:185
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:186
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:211
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:212
+msgid "close"
+msgstr "zárás"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:163
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:175
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:176
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:177
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:180
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:181
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:185
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:186
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:211
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:212
+msgid "open"
+msgstr "nyitás"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:163
+msgid "locked. Release dynamic brake then re-try."
+msgstr "letiltva. Előbb kapcsold ki a dinamikus féket."
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:164
+msgid "Wheel-slip"
+msgstr "Kerékmegperdülés"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:164
+msgid "over"
+msgstr "vége"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:164
+msgid "occurring. Tractive power greatly reduced."
+msgstr "folyamatban. A vonóerő nagymértékben lecsökkent."
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:164
+msgid "warning"
+msgstr "figyelmeztetőjel"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:166
+msgid "Power"
+msgstr "Főmegszakító"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:166
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:170
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:171
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:176
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:177
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:183
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:192
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:197
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:200
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:202
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:203
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:204
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:205
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:206
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:207
+msgid "off"
+msgstr "ki"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:166
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:170
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:171
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:176
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:177
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:183
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:197
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:200
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:206
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:207
+msgid "on"
+msgstr "be"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:167
+msgid "Pantograph 1"
+msgstr "1-es áramszedő"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:167
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:168
+msgid "lower"
+msgstr "le"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:167
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:168
+msgid "raise"
+msgstr "fel"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:168
+msgid "Pantograph 2"
+msgstr "2-es áramszedő"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:170
+msgid "Player Diesel Power"
+msgstr "Vonógép dízelmotor"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:170
+msgid "locked. Close throttle then re-try."
+msgstr "indítás/leállítás letiltva. Előbb zárd le a menetszabályzót."
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:171
+msgid "Helper Diesel Power"
+msgstr "Segédgép dízelmotor"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:172
+msgid "Diesel Tank"
+msgstr "Dízel üzemanyagtartály"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:172
+msgid "re-fueled"
+msgstr "újratöltve"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:172
+msgid "level"
+msgstr "szintje"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:175
+msgid "Regulator"
+msgstr "Töltésszabályzó"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:176
+msgid "Injector 1"
+msgstr "Baloldali gőzsugárszivattyú"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:177
+msgid "Injector 2"
+msgstr "Jobboldali gőzsugárszivattyú"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:178
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4173
+msgid "Blower"
+msgstr "Segédfúvó"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:178
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:179
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:182
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:192
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:218
+msgid "decrease"
+msgstr "csökkentés"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:178
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:179
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:182
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:192
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:218
+msgid "increase"
+msgstr "növelés"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:179
+msgid "SteamHeat"
+msgstr "Gőzfűtés"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:180
+msgid "Damper"
+msgstr "Légcsappantyú"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:181
+msgid "Firebox Door"
+msgstr "Tűzszekrényajtó"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:182
+msgid "Firing Rate"
+msgstr "Tüzelőanyag-adagolás"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:183
+msgid "Manual Firing"
+msgstr "Kézi tüzelés"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:184
+msgid "Fire"
+msgstr "Tűz"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:184
+msgid "add shovel-full"
+msgstr "egy egész lapát szén rádobása"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:185
+msgid "Cylinder Cocks"
+msgstr "Hengercsapok"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:186
+msgid "Cylinder Compound"
+msgstr "Gőzhenger Kompaund"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:187
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:188
+msgid "Tender"
+msgstr "Szerkocsi"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:187
+msgid "Coal re-filled"
+msgstr "szénkészlet újratöltve"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:187
+msgid "Coal level"
+msgstr "szénmennyiség"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:188
+msgid "Water re-filled"
+msgstr "vízkészlet újratöltve"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:188
+msgid "Water level"
+msgstr "vízszint"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:190
+msgid "Train Brake"
+msgstr "Átmenőfék"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:190
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:191
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:193
+msgid "release"
+msgstr "oldás"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:190
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:191
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:193
+msgid "apply"
+msgstr "alkalmazás"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:191
+msgid "Engine Brake"
+msgstr "Kiegészítő fék"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:192
+msgid "Dynamic Brake"
+msgstr "Dinamikus fék"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:192
+msgid "setup"
+msgstr "beállítás"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:193
+msgid "Emergency Brake"
+msgstr "Gyorsfék"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:194
+msgid "Bail Off"
+msgstr "Fékoldás"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:194
+msgid "disengage"
+msgstr "befejezve"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:194
+msgid "engage"
+msgstr "folyamatban"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:195
+msgid "Brakes"
+msgstr "Fékek"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:195
+msgid "initialize"
+msgstr "üzembe helyezés"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:195
+msgid "cannot initialize. Stop train then re-try."
+msgstr "nem üzembehelyezhetők. Előbb állítsd meg a vonatot."
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:196
+msgid "Handbrake"
+msgstr "Kézifék"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:196
+msgid "none"
+msgstr "ki"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:196
+msgid "full"
+msgstr "teljes üzem"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:197
+msgid "Retainers"
+msgstr "Visszatartó szelepek"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:197
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4210
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/BrakeSystem.cs:96
+msgid "Exhaust"
+msgstr "Kiiktatva"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:197
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/BrakeSystem.cs:97
+msgid "High Pressure"
+msgstr "Magas nyomáson tartás"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:197
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/BrakeSystem.cs:98
+msgid "Low Pressure"
+msgstr "Alacsony nyomáson tartás"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:197
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/BrakeSystem.cs:99
+msgid "Slow Direct"
+msgstr "Elnyújtott kiömlés"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:198
+msgid "Brake Hose"
+msgstr "Légvezetékek"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:198
+msgid "disconnect"
+msgstr "szétkötés"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:198
+msgid "connect"
+msgstr "csatlakoztatás"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:200
+msgid "Sander"
+msgstr "Homokoló"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:201
+msgid "Alerter"
+msgstr "Éberségjelzés"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:201
+msgid "acknowledge"
+msgstr "törölve"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:202
+msgid "Horn"
+msgstr "Kürt"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:203
+msgid "Whistle"
+msgstr "Mozdonysíp"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:203
+msgid "blow"
+msgstr "megszólaltatás"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:204
+msgid "Bell"
+msgstr "Harang"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:204
+msgid "ring"
+msgstr "megszólaltatás"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:205
+msgid "Headlight"
+msgstr "Homlokfény"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:205
+msgid "dim"
+msgstr "tompított"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:205
+msgid "bright"
+msgstr "távolsági"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:206
+msgid "Cab Light"
+msgstr "Vezérállás világítása"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:207
+msgid "Wipers"
+msgstr "Ablaktörlő"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:208
+msgid "Cab"
+msgstr "Vezérállás"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:208
+msgid "changing is not available"
+msgstr "váltás nem lehetséges"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:208
+msgid ""
+"changing disabled. Close throttle, set reverser to neutral, stop train then "
+"re-try."
+msgstr ""
+"váltás letiltva. Előbb zárd le a menetszabályzót, az irányváltót tedd üresbe "
+"és állítsd meg a vonatot."
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:209
+msgid "Odometer"
+msgstr "Útmérő"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:211
+msgid "Doors Left"
+msgstr "Baloldali ajtók"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:212
+msgid "Doors Right"
+msgstr "Jobboldali ajtók"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:213
+msgid "Mirror"
+msgstr "Tükrök"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:213
+msgid "retract"
+msgstr "behajtás"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:213
+msgid "extend"
+msgstr "kihajtás"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:215
+msgid "Switch Ahead"
+msgstr "Vágányútállítás a vonat előtt"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:215
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:216
+msgid "locked. Use Control+M to change signals to manual mode then re-try."
+msgstr ""
+"letiltva. Előbb nyomj <Ctrl+M>-et a kézi forgalomirányításra váltáshoz."
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:216
+msgid "Switch Behind"
+msgstr "Vágányútállítás a vonat mögött"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:218
+msgid "Simulation Speed"
+msgstr "Időgyorsítás"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:218
+msgid "reset"
+msgstr "alaphelyzetbe állítás"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:219
+msgid "Uncouple After"
+msgstr "Szétcsatolás hátul"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:220
+msgid "Activity"
+msgstr "Szolgálat"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:220
+msgid "quit"
+msgstr "befejezés"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:220
+msgid "resume"
+msgstr "folytatás"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:221
+msgid "Replay"
+msgstr "Visszajátszás"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:221
+msgid "Overriding camera replay. Press Escape to resume camera replay."
+msgstr ""
+"Kameranézet visszajátszásának felülbírálása. Nyomd meg az <Escape>-et a "
+"visszatéréshez."
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:222
+msgid "Gearbox"
+msgstr "Sebességváltó"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:222
+msgid "down"
+msgstr "le"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:222
+msgid "up"
+msgstr "fel"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:222
+msgid "locked. Use shaft before changing gear."
+msgstr "lezárva. Használd a tengelykapcsolót sebességváltás előtt."
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:223
+msgid "Signal mode"
+msgstr "Forgalomirányítás"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:223
+msgid "manual"
+msgstr "kézi"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:223
+msgid "auto"
+msgstr "központi"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:223
+msgid "locked. Stop train, then re-try."
+msgstr "váltás letiltva. Előbb állítsd meg a vonatot."
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:225
+msgid "Wagon"
+msgstr "Vagon"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:225
+msgid "Wagon fully unloaded"
+msgstr "A vagon teljesen kirakodva"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:225
+msgid "Wagon fully loaded"
+msgstr "A vagon teljesen berakodva"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:225
+msgid "Freight load"
+msgstr "Árurakodás"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:235
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:244
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:282
+#, csharp-format
+msgid "{0} {1}"
+msgstr "{0} {1}"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:239
+#, csharp-format
+msgid "{0}"
+msgstr "{0}"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:249
+#, csharp-format
+msgid "{0} to {1:0}%"
+msgstr "{0} {1:0}%-ra"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:254
+#, csharp-format
+msgid "{0} {1:0}% {2}"
+msgstr "{0} {1:0}% {2}"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:259
+#, csharp-format
+msgid "{0:0}% {1}"
+msgstr "{0:0}% {1}"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:264
+#, csharp-format
+msgid "{0:0}%"
+msgstr "{0:0}%"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:272
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:277
+#, csharp-format
+msgid "{0} {1:0}%"
+msgstr "{0} {1:0}%"
+
+#. Context: NonSteam
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:162
+msgctxt "NonSteam"
+msgid "Reverser"
+msgstr "Irányváltó"
+
+#. Context: Steam
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:174
+msgctxt "Steam"
+msgid "Reverser"
+msgstr "Vezérmű"
+
+#. Context: Alerter
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:201
+msgctxt "Alerter"
+msgid "sound"
+msgstr "megszólalt"
+
+#. Context: Horn
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:202
+msgctxt "Horn"
+msgid "sound"
+msgstr "meszólaltatás"
+
+#. Context: Cab
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:208
+msgctxt "Cab"
+msgid "change"
+msgstr "váltás megtörtént"
+
+#. Context: Odometer
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:209
+msgctxt "Odometer"
+msgid "reset"
+msgstr "nullázva"
+
+#. Context: Odometer
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:209
+msgctxt "Odometer"
+msgid "counting down"
+msgstr "előre számlálás"
+
+#. Context: Odometer
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:209
+msgctxt "Odometer"
+msgid "counting up"
+msgstr "visszafelé számlálás"
+
+#. Context: Switch
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:215
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:216
+msgctxt "Switch"
+msgid "change"
+msgstr " "
+
+#: ../../Orts.Simulation/Simulation/Simulator.cs:1774
+msgid "Train can't be suspended with speed not equal 0"
+msgstr "A vonat nem hagyható el nullánál nagyobb sebességnél"
+
+#: ../../Orts.Simulation/Simulation/Simulator.cs:1895
+msgid "To return to static train speed must be = 0"
+msgstr ""
+"Statikus vonattá való visszaalakításhoz a sebességnek nullának kell lennie"
+
+#: ../../Orts.Simulation/Simulation/Simulator.cs:665
+#: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:4161
+#, csharp-format
+msgid ""
+"Player train has been included into train {0} service {1}, that "
+"automatically becomes the new player train"
+msgstr ""
+"A vezetett vonat hozzá lett csatolva ehhez a {0}. sz. vonat {1} szervízhez. "
+"Ez lesz automatikusan az új vezetett vonat"
+
+#: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:4707
+#, csharp-format
+msgid ""
+"Join success: Train {0} service {1} has been incorporated into train {2} "
+"service {3}"
+msgstr ""
+"Sikeres összecsatolás: {0}. sz. vonat {1} szerviz hozzá lett csatolva a {2}. "
+"sz. vonat {3} szervízhez"
+
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:1533
+msgid "Coupler broken!"
+msgstr "Vonatszakadás!"
+
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:1536
+msgid "Coupler overloaded!"
+msgstr "A kapcsoló túlterhelt!"
+
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:4921
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:4926
+msgid "Other train is blocking path"
+msgstr "Másik vonat foglalja a vágányt"
+
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:5813
+msgid "Stopped due to errors in route setting"
+msgstr "Pályával kapcsolatos hiba miatt megállítva"
+
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:6475
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:7576
+msgid "No signal in train's path"
+msgstr "Nincs jelző a vonat vágányútján"
+
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:6483
+msgid "Next signal already allocated to other train"
+msgstr "A következő jelző már másik vonatnak lett beállítve"
+
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:6544
+msgid "Request to clear signal cannot be processed"
+msgstr "A kérelem a jelző szabaddá tételére nem értelmezhető"
+
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:6652
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:7696
+msgid "No switch found"
+msgstr "Nem található váltó"
+
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:7930
+msgid "You cannot enter manual mode when autopiloted"
+msgstr "Nem lehet helyi forgalomirányításra váltani robotpilótával."
+
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:7935
+msgid "You cannot use this command for pathless trains"
+msgstr "Ez a parancs nem használható útvonal nélküli vonatokhoz"
+
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:7947
+msgid "Train is not back on original route"
+msgstr "A vonat még nem tért vissza az eredeti útvonalára"
+
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:7956
+msgid ""
+"Original route is reverse from present direction, stop train before switching"
+msgstr ""
+"Az eredeti útvonal az ellenkező irányba vezet, állítsd meg a vonatot a "
+"váltás előtt"
+
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:7969
+msgid "Cannot change to Manual Mode while in Explorer Mode"
+msgstr "Nem lehet helyi forgalomirányításra váltani vonalbejárás közben"
+
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8056
+msgid "Reversal required and rear of train not on required route"
+msgstr ""
+"Visszafogás lenne szükséges, de a vonat vége nincs a megfelelő vágányúton"
+
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8262
+msgid "Cannot clear signal behind train while in AUTO mode"
+msgstr ""
+"Nem lehet a vonat mögötti jelzőt szabaddá tenni központi forgalomirányítás "
+"felügyelete alatt"
+
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8556
+#, csharp-format
+msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
+msgstr ""
+"A vonat a {0}. sz. vonattal kapcsolatos probléma miatt lett megállítva, oka: "
+"{1}"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:509
+msgid "Engine"
+msgstr "Gép"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:513
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:525
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4074
+msgid "Gear"
+msgstr "Seb.fokozat"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:526
+msgid "Fuel"
+msgstr "Üzemanyag"
+
+#. Context: Gear
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:514
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4075
+msgctxt "Gear"
+msgid "N"
+msgstr "Üres"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:217
+msgid "No power line!"
+msgstr "Nincs felsővezeték!"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:219
+msgid "Power line condition overridden."
+msgstr "Felsővezeték hiánya felülbírálva."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:313
+msgid "Pantographs"
+msgstr "Áramszedők"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:327
+msgid "Circuit breaker"
+msgstr "Főmegszakító"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:328
+msgid "TCS"
+msgstr "VB"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:328
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:329
+msgid "OK"
+msgstr "rendben"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:328
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:329
+msgid "NOT OK"
+msgstr "letiltva"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:329
+msgid "Driver"
+msgstr "Vezető"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:330
+msgid "Auxiliary power"
+msgstr "Segédáram"
+
+#. Context: PowerSupply
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:318
+msgctxt "PowerSupply"
+msgid "Power"
+msgstr "Feszültség"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:1707
+msgid "Scoop broken because activated outside through"
+msgstr "A merítő eltörött, mert a vályún kívül lett alkalmazva"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:1729
+msgid "Tender coal supply is empty. Your loco will fail."
+msgstr "A szerkocsi szénkészlete kifogyott. A mozdony meg fog állni."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:1804
+msgid "Tender water supply is empty. Your loco will fail."
+msgstr "A szerkocsi vízkészlete kifogyott. A mozdony meg fog állni."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:1871
+msgid "Fire has dropped too far. Your loco will fail."
+msgstr "A tűz túl kicsire esett össze. A mozdony meg fog állni."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:1928
+msgid ""
+"FireMass is getting low. Your fireman will shovel faster, but don't wear him "
+"out."
+msgstr "A tűz túl kicsi. A fűtő gyorsabban fog lapátolni, de ne fáraszd ki őt!"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:1941
+msgid "FireMass is back within limits. Your fireman will shovel as per normal."
+msgstr ""
+"A tűz mérete újra megfelelő határok között van. A fűtő normál tempóban fog "
+"lapátolni."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:2309
+msgid "Grate limit exceeded - boiler heat rate cannot increase."
+msgstr "A rostély elérte a határait - kazánfűtés nem növelhető"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:2319
+msgid "Grate limit return to normal."
+msgstr "Újra a rostély határain belül"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:3532
+msgid "Water level dropped too far. Plug has fused and loco has failed."
+msgstr ""
+"A vízszint túl alacsonyra esett vissza. A kazán kilágyult, és a mozdony "
+"meghibásodott."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:3539
+msgid "Boiler overfull and priming."
+msgstr "A kazán túltöltődött, és a hengertérbe víz került."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:3545
+msgid "Boiler no longer priming."
+msgstr "A vízszint ismét megfelelő."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:3930
+msgid "Carriage temperature is too hot, the passengers are sweating."
+msgstr "A kocsikban lévő hőmérséklet túl magas, az utasok izzadnak."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:3947
+msgid "Carriage temperature is too cold, the passengers are freezing."
+msgstr "A kocsikban lévő hőmérséklet túl alacsony, az utasok megfagynak."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4072
+msgid "Fixed gear"
+msgstr "Rögzített seb.fokozat"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4077
+msgid "Steam usage"
+msgstr "Gőzfelhasználás"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4078
+msgid "Boiler pressure"
+msgstr "Kazánnyomás"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4079
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4083
+msgid "Boiler water level"
+msgstr "Kazánvízszint"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4079
+msgid "(safe range)"
+msgstr "(biztonságos)"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4083
+msgid "(absolute)"
+msgstr "(abszolút)"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4085
+msgid "Fire mass"
+msgstr "Tűztömeg"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4087
+msgid "Fire ratio"
+msgstr "Tüzelési arány"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4090
+msgid "Fuel levels"
+msgstr "Készletszintek"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4090
+msgid "coal"
+msgstr "szén"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4090
+msgid "water"
+msgstr "víz"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4099
+msgid "Key Inputs"
+msgstr "Fő bemenetek"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4101
+msgid "Locomotive Type:"
+msgstr "Mozdonytípus:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4105
+msgid "Input:"
+msgstr "Bemenet:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4106
+msgid "Evap"
+msgstr "Elgőz"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4107
+msgid "Grate"
+msgstr "Rostély"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4108
+msgid "Boiler"
+msgstr "Kazán"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4109
+msgid "SuperHr"
+msgstr "Túlhev"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4110
+msgid "FuelCal"
+msgstr "Fűtőért"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4118
+msgid "Adj:"
+msgstr "Továbbá:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4119
+msgid "CylEff"
+msgstr "HengHatF"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4120
+msgid "CylExh"
+msgstr "HengNy"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4121
+msgid "PortOpen"
+msgstr "HBeöml"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4127
+msgid "Steam Production"
+msgstr "Gőzfejlesztés"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4132
+msgid "Boiler:"
+msgstr "Kazán:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4134
+msgid "Mass"
+msgstr "Tömeg"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4135
+msgid "MaxOutp"
+msgstr "MaxTerm"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4136
+msgid "BoilerEff"
+msgstr "KazHatF"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4144
+msgid "Heat:"
+msgstr "Hő:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4145
+msgid "In"
+msgstr "Be"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4146
+msgid "Out"
+msgstr "Ki"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4147
+msgid "Stored"
+msgstr "Tárolt"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4148
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4384
+msgid "Max"
+msgstr "Max"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4155
+msgid "Temp:"
+msgstr "Hőmérs:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4156
+msgid "Flue"
+msgstr "Füstgáz"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4158
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4418
+msgid "Water"
+msgstr "Víz"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4160
+msgid "MaxSupH"
+msgstr "TúlhMax"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4162
+msgid "CurSupH"
+msgstr "TúlhPill"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4166
+msgid "Steam Usage"
+msgstr "Gőzfelhasználás"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4171
+msgid "Usage:"
+msgstr "Felhaszn:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4172
+msgid "Cyl"
+msgstr "Henger"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4174
+msgid "Radiation"
+msgstr "Sugárz"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4175
+msgid "Comprsr"
+msgstr "Légsűrítő"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4176
+msgid "SafetyV"
+msgstr "BiztSz"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4177
+msgid "CylCock"
+msgstr "HCsap"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4178
+msgid "Genertr"
+msgstr "Genertr"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4179
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4433
+msgid "Stoker"
+msgstr "Stoker"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4180
+msgid "MaxSafe"
+msgstr "MaxBizt"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4199
+msgid "PressHP:"
+msgstr "NyomHP:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4200
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4222
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4245
+msgid "Chest"
+msgstr "Kamra"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4202
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4224
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4246
+msgid "Initial"
+msgstr "Belép"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4204
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4226
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4247
+msgid "Cutoff"
+msgstr "Töltés"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4206
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4228
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4248
+msgid "Rel"
+msgstr ""
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4208
+msgid "RelR"
+msgstr ""
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4212
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4230
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4249
+msgid "Back"
+msgstr "EllenNy"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4214
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4232
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4250
+msgid "PreComp"
+msgstr "PreKomp"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4216
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4236
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4252
+msgid "MEP"
+msgstr "PEffKöz"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4221
+msgid "PressLP:"
+msgstr "NyomLP:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4234
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4251
+msgid "PreAdm"
+msgstr "PreBeöm"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4244
+msgid "Press:"
+msgstr "Nyomás:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4264
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4426
+msgid "Status:"
+msgstr "Állapot:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4265
+msgid "Safety"
+msgstr "BiztSz"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4266
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:150
+msgid "Open"
+msgstr "Nyitva"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4266
+msgid "Closed"
+msgstr "Zárva"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4267
+msgid "Plug"
+msgstr "OlvBizt"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4268
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4270
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4428
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4430
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4432
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4434
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4436
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4438
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4495
+msgid "Yes"
+msgstr "Igen"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4268
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4270
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4428
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4430
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4432
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4434
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4436
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4438
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4495
+msgid "No"
+msgstr "Nem"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4269
+msgid "Prime"
+msgstr "Áradás"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4271
+msgid "Comp"
+msgstr "Komp"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4272
+msgid "Off"
+msgstr "Ki"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4272
+msgid "On"
+msgstr "Be"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4306
+msgid "StHeat:"
+msgstr "GőzFűt:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4307
+msgid "Press"
+msgstr "Nyom"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4309
+msgid "TrTemp"
+msgstr "Tátv"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4311
+msgid "StTemp"
+msgstr "Tgőz"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4313
+msgid "StUse"
+msgstr "GőzHasz"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4316
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4325
+msgid "NetHt"
+msgstr "Nettó"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4322
+msgid "StHtDB:"
+msgstr "GőzFűtDB:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4323
+msgid "TotHt"
+msgstr "Össz"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4327
+msgid "PipHt"
+msgstr "Cső"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4329
+msgid "CarHt"
+msgstr "Kocsi"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4331
+msgid "CurrHt"
+msgstr "Akt"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4333
+msgid "Cont"
+msgstr "Szab"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4337
+msgid "Fireman"
+msgstr "Fűtő"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4339
+msgid "Fire:"
+msgstr "Tűz:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4340
+msgid "Ideal"
+msgstr "Ideális"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4341
+msgid "Actual"
+msgstr "Tényleges"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4342
+msgid "MaxFireR"
+msgstr "MaxTüz"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4343
+msgid "FeedRate"
+msgstr "Táplálás"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4344
+msgid "BurnRate"
+msgstr "Égés"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4345
+msgid "Combust"
+msgstr "Tüzelés"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4383
+msgid "Injector:"
+msgstr "Gőzsugár:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4385
+msgid "Inj1"
+msgstr "Gőzsug1"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4386
+msgid "Temp1"
+msgstr "Hőm1"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4387
+msgid "Inj2"
+msgstr "Gőzsug2"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4388
+msgid "Temp2"
+msgstr "Hőm2"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4401
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4416
+msgid "Tender:"
+msgstr "Szerkocsi:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4402
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4417
+msgid "Coal"
+msgstr "Szén"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4405
+msgid "Water(C)"
+msgstr "Víz(Komb)"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4408
+msgid "Water(T)"
+msgstr "Víz(SzK)"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4410
+msgid "Water(A)"
+msgstr "Víz(SSzK)"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4427
+msgid "CoalOut"
+msgstr "NincsSzn"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4429
+msgid "WaterOut"
+msgstr "NincsVíz"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4431
+msgid "FireOut"
+msgstr "NincsTűz"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4435
+msgid "Boost"
+msgstr "GyLapát"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4437
+msgid "GrLimit"
+msgstr "RostHat"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4440
+msgid "Performance"
+msgstr "Teljesítmény"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4442
+msgid "Power:"
+msgstr "Teljesítm:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4443
+msgid "MaxInd"
+msgstr "MaxMért"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4444
+msgid "Ind"
+msgstr "Mért"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4445
+msgid "Drawbar"
+msgstr "VonóRúd"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4451
+msgid "Force:"
+msgstr "Erők:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4452
+msgid "TheorTE"
+msgstr "ElmVont"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4453
+msgid "StartTE"
+msgstr "KezdVnt"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4454
+msgid "TE"
+msgstr "Vontat"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4455
+msgid "Draw"
+msgstr "Húz"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4456
+msgid "CritSpTE"
+msgstr "KritSVT"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4457
+msgid "CritSpeed"
+msgstr "KritSeb"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4466
+msgid "Move:"
+msgstr "Mozgás:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4467
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4482
+msgid "Piston"
+msgstr "Dugattyú"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4468
+msgid "SpdFact"
+msgstr "SebTény"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4469
+msgid "DrvWhl"
+msgstr "HajtKer"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4470
+msgid "MF-Gear"
+msgstr "Erő/SFok"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4479
+msgid "Experimental"
+msgstr "Kísérleti"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4479
+msgid "Slip Monitor"
+msgstr "Csúszásfigyelés"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4481
+msgid "Slip:"
+msgstr "Csúszás:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4483
+msgid "Tang(c)"
+msgstr "TanForg"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4484
+msgid "Tang(t)"
+msgstr "TanFutó"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4485
+msgid "Static"
+msgstr "Statikus"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4486
+msgid "Coeff"
+msgstr "Együtth"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4487
+msgid "Slip"
+msgstr "Csúszás"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4488
+msgid "WheelM"
+msgstr "KerékTm"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4489
+msgid "FoA"
+msgstr "SúrlTény"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4589
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4636
+msgid "Gears can't be changed unless throttle is at zero."
+msgstr ""
+"Nem lehet sebességfokozatot váltani, csak ha a menetszabályzó le van zárva."
+
+#. Context: HUD
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4133
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/DieselEngine.cs:303
+msgctxt "HUD"
+msgid "Power"
+msgstr "Teljstm"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:928
+msgid "Starting unload"
+msgstr "A kirakodás megkezdődött"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:1291
+msgid "Incompatible data"
+msgstr "Inkompatibilis adat"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:1304
+msgid "Starting refill"
+msgstr "A feltöltés megkezdődött"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:1312
+msgid "Preparing for unload"
+msgstr "Kirakodás előkészítése"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:748
+msgid ""
+"You are travelling too fast for this curve. Slow down, your freight may be "
+"damaged and your train may break a coupling or airhose."
+msgstr ""
+"Ehhez az ívhez túl nagy a sebesség. Lassíts, a rakomány megsérülhet, vagy a "
+"vonat szétszakadhat."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:752
+msgid ""
+"You are travelling too fast for this curve. Slow down, your passengers are "
+"feeling uncomfortable and your train may break a coupling or airhose."
+msgstr ""
+"Ehhez az ívhez túl nagy a sebesség. Lassíts, az utasok kellemetlenül érzik "
+"magukat, és a vonat szétszakadhat."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:761
+msgid ""
+"You were travelling too fast for this curve, and have snapped a brake hose. "
+"You will need to repair the hose and restart."
+msgstr ""
+"Túl nagy volt a sebesség ehhez az ívhez, és a fékvezeték szétszakadt. Meg "
+"kell javítani a tömlőt, és újraindulni."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:792
+msgid "Your train has overturned, and this is simulated by a broken coupler."
+msgstr ""
+"A vonat kiborult a sínről, és ez szétszakadt csatlással van szimulálva."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:978
+msgid "(flipped)"
+msgstr "(ford.)"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:980
+msgid "MU'd"
+msgstr "Távvez"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:980
+msgid "Single"
+msgstr "Önálló"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/DieselEngine.cs:299
+msgid "Status"
+msgstr "Állapot"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/DieselEngine.cs:307
+msgid "Load"
+msgstr "Terhelés"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/DieselEngine.cs:314
+msgid "Flow"
+msgstr "Fogyaszt."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/DieselEngine.cs:322
+msgid "Oil"
+msgstr "Olaj"
+
+#. Context: Engine
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/DieselEngine.cs:397
+msgctxt "Engine"
+msgid "Stopped"
+msgstr "Leállítva"
+
+#. Context: Engine
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/DieselEngine.cs:398
+msgctxt "Engine"
+msgid "Starting"
+msgstr "Indul"
+
+#. Context: Engine
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/DieselEngine.cs:399
+msgctxt "Engine"
+msgid "Running"
+msgstr "Üzemben"
+
+#. Context: Engine
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/DieselEngine.cs:400
+msgctxt "Engine"
+msgid "Stopping"
+msgstr "Leáll"
+
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:5743
+msgid "Held for connecting train : "
+msgstr "Várakoztatás csatlakozó vonat miatt: "

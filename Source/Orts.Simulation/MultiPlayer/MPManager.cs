@@ -166,7 +166,7 @@ namespace Orts.MultiPlayer
 		{
             if (localUser == null)
             {
-                Catalog = new GettextResourceManager("RunActivity");
+                Catalog = new GettextResourceManager("Orts.Simulation");
                 Random = new Random();
                 localUser = new MPManager();
             }

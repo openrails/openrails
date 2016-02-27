@@ -107,7 +107,7 @@ namespace Orts.Viewer3D
         [CallOnThread("Updater")]
         public string GetStatus()
         {
-            return Viewer.Catalog.GetStringFmt("{0:F0} shapes", Shapes.Keys.Count);
+            return Viewer.Catalog.GetPluralStringFmt("{0:F0} shape", "{0:F0} shapes", Shapes.Keys.Count);
         }
     }
 

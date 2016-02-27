@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2016-02-05 01:40:29+0100\n"
-"PO-Revision-Date: 2016-02-05 01:40:31+0100\n"
+"POT-Creation-Date: 2016-02-27 12:39:53+0100\n"
+"PO-Revision-Date: 2016-02-27 12:39:54+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -49,54 +49,62 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/Materials.cs:166
 #, csharp-format
-msgid "{0:F0} textures"
-msgstr ""
+msgid "{0:F0} texture"
+msgid_plural "{0:F0} textures"
+msgstr[0] ""
+msgstr[1] ""
 
 #: ../../RunActivity/Viewer3D/Materials.cs:392
 #, csharp-format
-msgid "{0:F0} materials"
-msgstr ""
+msgid "{0:F0} material"
+msgid_plural "{0:F0} materials"
+msgstr[0] ""
+msgstr[1] ""
 
 #: ../../RunActivity/Viewer3D/Shapes.cs:110
 #, csharp-format
-msgid "{0:F0} shapes"
-msgstr ""
+msgid "{0:F0} shape"
+msgid_plural "{0:F0} shapes"
+msgstr[0] ""
+msgstr[1] ""
 
 #: ../../RunActivity/Viewer3D/Terrain.cs:127
 #, csharp-format
-msgid "{0:F0} tiles"
-msgstr ""
+msgid "{0:F0} tile"
+msgid_plural "{0:F0} tiles"
+msgstr[0] ""
+msgstr[1] ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:647
-#: ../../RunActivity/Viewer3D/Viewer.cs:770
+#: ../../RunActivity/Viewer3D/Viewer.cs:646
+#: ../../RunActivity/Viewer3D/Viewer.cs:769
 msgid "Cab view not available"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:709
+#: ../../RunActivity/Viewer3D/Viewer.cs:708
 msgid "In MP, use Alt-F4 to quit directly"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:781
+#: ../../RunActivity/Viewer3D/Viewer.cs:780
 msgid "3D Cab view not available"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:808
+#: ../../RunActivity/Viewer3D/Viewer.cs:807
 msgid "Will not rotate cab and land"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:916
+#: ../../RunActivity/Viewer3D/Viewer.cs:915
 msgid "Switched to player control"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:921
+#: ../../RunActivity/Viewer3D/Viewer.cs:920
 msgid "You can't switch from manual to autopilot mode"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:925
+#: ../../RunActivity/Viewer3D/Viewer.cs:924
 msgid "Switched to autopilot"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1295
+#: ../../RunActivity/Viewer3D/Viewer.cs:1294
 msgid "Game saved"
 msgstr ""
 
@@ -105,27 +113,27 @@ msgstr ""
 msgid "Allowed speed raised to {0}"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:799
+#: ../../RunActivity/Viewer3D/Viewer.cs:798
 #, csharp-format
 msgid "Vibrating at level {0}"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:807
+#: ../../RunActivity/Viewer3D/Viewer.cs:806
 #, csharp-format
 msgid "Rotating cab {0}/4, rotating land {1}/4"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:934
+#: ../../RunActivity/Viewer3D/Viewer.cs:933
 #, csharp-format
 msgid "Keyboard map list saved to '{0}'."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:938
+#: ../../RunActivity/Viewer3D/Viewer.cs:937
 #, csharp-format
 msgid "Keyboard map image saved to '{0}'."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:836
+#: ../../RunActivity/Viewer3D/Viewer.cs:835
 #, csharp-format
 msgid "{0} viewpoint stored. Use Shift+8 to restore viewpoints."
 msgid_plural "{0} viewpoints stored. Use Shift+8 to restore viewpoints."
@@ -314,71 +322,71 @@ msgstr ""
 msgid "Sound Debug"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:42
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:45
 msgid "Activity Events"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:156
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:169
 msgid "without success"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:271
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:284
 msgid "Resume"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:271
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:301
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:284
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:314
 msgid "Pause"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:272
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:293
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:285
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:306
 msgid "Resume and close box"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:272
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:284
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:302
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:285
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:297
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:315
 msgid "Close box"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:273
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:285
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:303
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:286
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:298
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:316
 msgid "Quit activity"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:274
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:295
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:287
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:308
 msgid "Status: Activity paused"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:274
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:286
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:287
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:299
 msgid "Status: Activity resumed"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:294
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:307
 msgid "End Activity"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:304
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:317
 msgid "Status: Activity running"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:155
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:168
 #, csharp-format
 msgid ""
 "This activity has ended {0}.\n"
 "For a detailed evaluation, see the Help Window (F1)."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:310
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:323
 #, csharp-format
 msgid "Event: {0}"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:317
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:331
 #, csharp-format
 msgid "Train: {0}"
 msgstr ""
@@ -708,14 +716,6 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:434
 msgid "Sander on"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:442
-msgid "Left"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:444
-msgid "Right"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:447
@@ -1351,20 +1351,20 @@ msgid "Refill: Loco must be stationary to refill {0}."
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:497
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:211
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:233
 #, csharp-format
 msgid "Refill: Loco speed must exceed {0}."
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:504
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:217
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:239
 #, csharp-format
 msgid "Refill: Loco speed must not exceed {0}."
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:514
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:531
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:224
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:246
 #, csharp-format
 msgid "Refill: {0} supply now replenished."
 msgstr ""
@@ -1381,15 +1381,15 @@ msgid_plural "{0} meters"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:195
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:217
 msgid "No scoop in this loco"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:200
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:222
 msgid "Scoop is broken, can't refill"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:206
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:228
 msgid "Scoop broken because activated outside through"
 msgstr ""
 

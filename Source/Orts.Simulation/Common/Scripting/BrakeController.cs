@@ -214,7 +214,7 @@ namespace ORTS.Scripting.Api
 
     public static class ControllerStateDictionary
     {
-        private static readonly GettextResourceManager Catalog = new GettextResourceManager("RunActivity");
+        private static readonly GettextResourceManager Catalog = new GettextResourceManager("Orts.Simulation");
 
         public static readonly Dictionary<ControllerState, string> Dict = new Dictionary<ControllerState, string>
         {
