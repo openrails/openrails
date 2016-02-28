@@ -4604,6 +4604,10 @@ namespace Orts.Simulation.Physics
                 {
                     PerformActions(nowActions);
                 }
+            }
+            if (backward < backwardThreshold || SpeedMpS > -0.01)
+            {
+                List<DistanceTravelledItem> nowActions = requiredActions.GetActions(DistanceTravelledM);
                 nowActions = AuxActionsContain.specRequiredActions.GetAuxActions(this, DistanceTravelledM);
 
                 if (nowActions.Count > 0)
@@ -11621,7 +11625,7 @@ namespace Orts.Simulation.Physics
                     abString = depTime.ToString("HH:mm:ss");
                 }
                 else 
-                   if (SpeedMpS == 0 && AuxActionsContain.specRequiredActions.Count > 0 && AuxActionsContain.specRequiredActions.First.Value is AuxActSigDelegate &&
+                   if (Math.Abs(SpeedMpS) <= 0.01 && AuxActionsContain.specRequiredActions.Count > 0 && AuxActionsContain.specRequiredActions.First.Value is AuxActSigDelegate &&
                     (AuxActionsContain.specRequiredActions.First.Value as AuxActSigDelegate).currentMvmtState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION)
                 {
                     movString = "WTS";
@@ -11642,14 +11646,14 @@ namespace Orts.Simulation.Physics
                     abString = "..:..:..";
                 }
             }
-            else if (SpeedMpS == 0 && (this as AITrain).nextActionInfo is AuxActionWPItem &&
+            else if (Math.Abs(SpeedMpS) <= 0.01 && (this as AITrain).nextActionInfo is AuxActionWPItem &&
                     (this as AITrain).MovementState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION)
             {
                 movString = "WTP";
                 DateTime depTime = baseDT.AddSeconds(((this as AITrain).nextActionInfo as AuxActionWPItem).ActualDepart);
                 abString = depTime.ToString("HH:mm:ss");
             }
-            else if (SpeedMpS == 0 && AuxActionsContain.SpecAuxActions.Count > 0 && AuxActionsContain.SpecAuxActions[0] is AIActionWPRef &&
+            else if (Math.Abs(SpeedMpS) <= 0.01 && AuxActionsContain.SpecAuxActions.Count > 0 && AuxActionsContain.SpecAuxActions[0] is AIActionWPRef &&
                 (AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).keepIt != null &&
                 (AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).keepIt.currentMvmtState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION)
             {
