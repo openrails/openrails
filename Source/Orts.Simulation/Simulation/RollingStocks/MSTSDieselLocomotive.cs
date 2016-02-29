@@ -453,7 +453,7 @@ namespace Orts.Simulation.RollingStocks
                 if (MaxDynamicBrakeForceN == 0)
                     Variable3 = DynamicBrakePercent / 100f;
                 else
-                    Variable3 = Math.Abs(MotiveForceN) / MaxDynamicBrakeForceN;
+                    Variable3 = DynamicBrakeForceN / MaxDynamicBrakeForceN;
             }
             else
                 Variable3 = 0;
