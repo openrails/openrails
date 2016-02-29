@@ -28,7 +28,7 @@
 // #define DEBUG_LOCO_STEAM_HEAT
 
 // Steam heating debugging is off by default - uncomment the #define to turn on - provides visibility of steam usage related parameters on extended HUD. 
-// #define DEBUG_LOCO_STEAM_HEAT_HUD
+//#define DEBUG_LOCO_STEAM_HEAT_HUD
 
 // Debug for Auxiliary Tender
 //#define DEBUG_AUXTENDER
@@ -218,6 +218,7 @@ namespace Orts.Simulation.RollingStocks
         float ORTSMaxFiringRateKGpS;          // OR equivalent of above
         float DisplayMaxFiringRateKGpS;     // Display value of MaxFiringRate
         public float SafetyValveUsageLBpS;
+        float BoilerHeatOutSVAIBTUpS;
         float SafetyValveDropPSI = 4.0f;      // Pressure drop before Safety valve turns off, normally around 4 psi - First safety valve normally operates between MaxBoilerPressure, and MaxBoilerPressure - 4, ie Max Boiler = 200, cutoff = 196.
         float EvaporationAreaM2;
         float SuperheatAreaM2 = 0.0f;      // Heating area of superheater
@@ -251,7 +252,8 @@ namespace Orts.Simulation.RollingStocks
         float CylinderCondensationFactor;  // Cylinder compensation factor for condensation in cylinder due to cutoff
         float CylinderSpeedCondensationFactor;  // Cylinder compensation factor for condensation in cylinder due to speed
         float BlowerSteamUsageFactor;
-        float InjectorFlowRateLBpS;
+        float InjectorFlowRateLBpS;    // Current injector flow rate - based upon current boiler pressure
+        float MaxInjectorFlowRateLBpS = 0.0f;      // Maximum possible injector flow rate - based upon maximum boiler pressure
         Interpolator BackPressureIHPtoAtmPSI;             // back pressure in cylinders given usage
         Interpolator CylinderSteamDensityPSItoLBpFT3;   // steam density in cylinders given pressure (could be super heated)
         Interpolator SteamDensityPSItoLBpFT3;   // saturated steam density given pressure
@@ -358,6 +360,7 @@ namespace Orts.Simulation.RollingStocks
         float WaterVolL;                // Actual volume of water in bolier (litres)
         float BoilerHeatOutBTUpS = 0.0f;// heat out of boiler in BTU
         float BoilerHeatInBTUpS = 0.0f; // heat into boiler in BTU
+        float BoilerHeatExcess;         // Vlaue of excess boiler heat
         float InjCylEquivSizeIN;        // Calculate the equivalent cylinder size for purpose of sizing the injector.
         float InjectorSize;             // size of injector installed on boiler
 
@@ -466,7 +469,9 @@ namespace Orts.Simulation.RollingStocks
 
         const int CylStrokesPerCycle = 2;  // each cylinder does 2 strokes for every wheel rotation, within each stroke
         float CylinderEfficiencyRate = 1.0f; // Factor to vary the output power of the cylinder without changing steam usage - used as a player customisation factor.
-        public float CylCockSteamUsageLBpS = 0.0f; // Cylinder Cock Steam Usage
+        public float CylCockSteamUsageLBpS = 0.0f; // Cylinder Cock Steam Usage if locomotive moving
+        public float CylCockSteamUsageStatLBpS = 0.0f; // Cylinder Cock Steam Usage if locomotive stationary
+        public float CylCockSteamUsageDisplayLBpS = 0.0f; // Cylinder Cock Steam Usage for display and effects
         float CylCockDiaIN = 0.5f;          // Steam Cylinder Cock orifice size
         float CylCockPressReduceFactor;     // Factor to reduce cylinder pressure by if cocks open
 
@@ -1519,8 +1524,8 @@ namespace Orts.Simulation.RollingStocks
             // Bernoulli formula for future reference - steam velocity = SQRT ( 2 * dynamic pressure (pascals) / fluid density)
             Cylinders1SteamVelocityMpS = 100.0f;
             Cylinders2SteamVelocityMpS = 100.0f;
-            Cylinders1SteamVolumeM3pS = (CylinderCock1On && CylinderCocksAreOpen ? (10.0f * SteamEffectsFactor) : 0.0f);
-            Cylinders2SteamVolumeM3pS = (CylinderCock2On && CylinderCocksAreOpen ? (10.0f * SteamEffectsFactor) : 0.0f);
+            Cylinders1SteamVolumeM3pS = (CylinderCock1On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (10.0f * SteamEffectsFactor) : 0.0f);
+            Cylinders2SteamVolumeM3pS = (CylinderCock2On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (10.0f * SteamEffectsFactor) : 0.0f);
             Cylinder1ParticleDurationS = 1.0f;
             Cylinder2ParticleDurationS = 1.0f;
 
@@ -1562,12 +1567,15 @@ namespace Orts.Simulation.RollingStocks
             WhistleSteamVelocityMpS = 10.0f;
             WhistleSteamVolumeM3pS = (Horn ? (5.0f * SteamEffectsFactor) : 0);
             WhistleParticleDurationS = 3.0f;
-            WhistleParticleDurationS = MathHelper.Clamp(WhistleParticleDurationS / (absSpeedMpS / 4.0f), 1.0f, 3.0f);
+            WhistleParticleDurationS = MathHelper.Clamp(WhistleParticleDurationS / (absSpeedMpS / 4.0f), 0.1f, 3.0f);
 
         // Safety Valves Steam Effects
 
-            SafetyValvesSteamVelocityMpS = (float)Math.Sqrt(KPa.FromPSI(CylinderPressureAtmPSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3);
-            SafetyValvesSteamVolumeM3pS = SafetyIsOn ? Kg.FromLb(SafetyValveUsageLBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG : 0;
+            SafetyValvesSteamVelocityMpS = (float)Math.Sqrt(KPa.FromPSI(MaxBoilerPressurePSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3);
+            //SafetyValvesSteamVolumeM3pS = SafetyIsOn ? Kg.FromLb(SafetyValveUsageLBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG : 0;
+            SafetyValvesSteamVolumeM3pS = SafetyIsOn ? 5.0f : 0;
+            SafetyValvesParticleDurationS = 3.0f;
+            SafetyValvesParticleDurationS = MathHelper.Clamp(SafetyValvesParticleDurationS / (absSpeedMpS / 4.0f), 0.1f, 3.0f);
  
         // Smoke Stack Smoke Effects
 
@@ -1746,6 +1754,7 @@ namespace Orts.Simulation.RollingStocks
                 CoalIsExhausted = false;
             }
 
+            #region Auxiliary Tender Operation
 
             // If aux tender is coupled then assume that both tender and aux tender will equalise at same % water level
             // Tender water level will be monitored, and aux tender adjusted based upon this level
@@ -1807,6 +1816,7 @@ namespace Orts.Simulation.RollingStocks
                 AuxTenderMoveFlag = true;
             }
 
+            #endregion
 
             if (CombinedTenderWaterVolumeUKG < 1.0)
             {
@@ -1855,7 +1865,7 @@ namespace Orts.Simulation.RollingStocks
                     FiringSteamUsageRateLBpS = PreviousTotalSteamUsageLBpS;
                 }
 
-                if ( ShovelAnyway) 
+                if ( ShovelAnyway) // will force fire burn rate to increase even though boiler heat seems excessive - activated at full throttle, and on rising gradient
                 {
                     // burnrate will be the radiation loss @ rest & then related to heat usage as a factor of the maximum boiler output - ignores total bolier heat to allow burn rate to increase if boiler heat usage is exceeding input
                     BurnRateRawKGpS = pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH((BlowerBurnEffect + HeatRatio * FiringSteamUsageRateLBpS * PressureRatio))]));
@@ -1986,6 +1996,8 @@ namespace Orts.Simulation.RollingStocks
         private void UpdateBoiler(float elapsedClockSeconds)
         {
             absSpeedMpS = Math.Abs(Train.SpeedMpS);
+
+            #region Safety valves - determine number and size
 
             // Determine number and size of safety valves
             // Reference: Ashton's POP Safety valves catalogue
@@ -2121,6 +2133,13 @@ namespace Orts.Simulation.RollingStocks
             float SafetyValveOpen4Psi = MaxBoilerPressurePSI + 6.0f;
             float SafetyValveClose4Psi = MaxBoilerPressurePSI - 1.0f;
 
+            #endregion
+
+            if (FiringIsManual)
+            {     
+
+            #region Safety Valve - Manual Firing
+
             // Safety Valve
             if (BoilerPressurePSI > MaxBoilerPressurePSI + SafetyValveStartPSI)
             {
@@ -2238,6 +2257,45 @@ namespace Orts.Simulation.RollingStocks
                 SafetyValveUsageLBpS = 0.0f;
             }
 
+            #endregion
+           
+            }
+           
+            else
+            {
+
+                #region Safety Valve - AI Firing
+
+            if (BoilerHeatExcess > 1.075 && !ShovelAnyway)  // turn safety valves on if boiler heat is excessive, and fireman is not trying to raise steam for rising gradient
+            {
+                SignalEvent(Event.SteamSafetyValveOn);
+                SafetyIsOn = true;
+            }
+
+            else if (BoilerHeatExcess < 1.02 || ShovelAnyway)  // turn safety vales off if boiler heat has returned to "normal", or fireman is trying to raise steam for rising gradient.
+            {
+                SignalEvent(Event.SteamSafetyValveOff);
+                SafetyIsOn = false;                
+            }
+
+                if (SafetyIsOn)
+                {
+                    SafetyValveUsageLBpS = MaxSafetyValveDischargeLbspS;   // For the AI fireman use the maximum possible safety valve steam volume
+                    BoilerMassLB -= elapsedClockSeconds * SafetyValveUsageLBpS;
+                    BoilerHeatBTU -= elapsedClockSeconds * SafetyValveUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to safety valve
+                    TotalSteamUsageLBpS += SafetyValveUsageLBpS;
+                    BoilerHeatOutBTUpS += SafetyValveUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to safety valve
+                    BoilerHeatOutSVAIBTUpS = SafetyValveUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Use this value to adjust the burn rate in AI mode if safety valves operate, main usage value used for display values
+                }
+                else
+                {
+                    SafetyValveUsageLBpS = 0.0f; // if safety valve closed, then zero discharge rate
+                }
+
+                #endregion
+
+            }
+            
             // Adjust blower impacts on heat and boiler mass
             if (BlowerIsOn)
             {
@@ -2665,8 +2723,6 @@ namespace Orts.Simulation.RollingStocks
                     // Calculate work between h) - k) - HP Cylinder only
                     float HPCylinderLengthPreCompExpansionIn = Me.ToIn(CylinderStrokeM) * (HPCylinderVolumePoint_d - HPCylinderVolumePoint_b); // This volume is equivalent to the volume from LP cutoff to release
                     float HPCylinderPreCompExpansionWorkInLbs = HPMeanPressurePreCompAtmPSI * HPCylinderLengthPreCompExpansionIn;
-
-                    //    Trace.TraceInformation("h-k Log: log {0}, log para {1}", ((float)Math.Log(HPCylinderCompressionRatioPreCompression / (HPCylinderCompressionRatioPreCompression - 1.0f))), (HPCylinderCompressionRatioPreCompression / (HPCylinderCompressionRatioPreCompression - 1.0f)));
 
                     // Find negative pressures in HP Cylinder
                     // Mean pressure & work between k) - a) - Admission Expansion
@@ -3097,7 +3153,7 @@ namespace Orts.Simulation.RollingStocks
 
             if (throttle < 0.01 && absSpeedMpS > 0.1) // If locomotive moving and throttle set to close, then reduce steam usage.
             {
-                CalculatedCylinderSteamUsageLBpS = 0.3f; // Set steam usage to a small value if throttle is closed
+                CalculatedCylinderSteamUsageLBpS = 0.0001f; // Set steam usage to a small value if throttle is closed
             }
 
             // usage calculated as moving average to minimize chance of oscillation.
@@ -3117,8 +3173,6 @@ namespace Orts.Simulation.RollingStocks
 
             // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
             MaxIndicatedHorsePowerHP = MaxSpeedFactor * (MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;
-
-            //  Trace.TraceInformation("MaxIHP {0} Speed {1} TE {2} LocoSpeed {3}", MaxIndicatedHorsePowerHP, SpeedFactor, MaxTractiveEffortLbf, MaxLocoSpeedMpH);
 
             // Caculate the current piston speed - purely for display purposes at the moment 
             // Piston Speed (Ft p Min) = (Stroke length x 2) x (Ft in Mile x Train Speed (mph) / ( Circum of Drv Wheel x 60))
@@ -3476,7 +3530,6 @@ namespace Orts.Simulation.RollingStocks
                 BoilerMassLB -= elapsedClockSeconds * CompSteamUsageLBpS; // Reduce boiler mass to reflect steam usage by compressor
                 BoilerHeatBTU -= elapsedClockSeconds * CompSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by compressor
                 BoilerHeatOutBTUpS += CompSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by compressor
-
                 TotalSteamUsageLBpS += CompSteamUsageLBpS;
             }
             else
@@ -3488,22 +3541,30 @@ namespace Orts.Simulation.RollingStocks
             // Steam Flow (lb/hr) = 24.24 x Press(Cylinder + Atmosphere(psi)) x CockDia^2 (in) - this needs to be multiplied by Num Cyls
             if (CylinderCocksAreOpen == true)
             {
-                if (throttle > 0.02) // if regulator open
+                if (throttle > 0.00 && absSpeedMpS > 0.1 ) // if regulator open & train moving
                 {
                     CylCockSteamUsageLBpS = pS.FrompH(NumCylinders * (24.24f * (CylinderPressureAtmPSI) * CylCockDiaIN * CylCockDiaIN));
                     BoilerMassLB -= elapsedClockSeconds * CylCockSteamUsageLBpS; // Reduce boiler mass to reflect steam usage by cylinder steam cocks  
                     BoilerHeatBTU -= elapsedClockSeconds * CylCockSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by cylinder steam cocks
                     BoilerHeatOutBTUpS += CylCockSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by cylinder steam cocks                
                     TotalSteamUsageLBpS += CylCockSteamUsageLBpS;
+                    CylCockSteamUsageDisplayLBpS = CylCockSteamUsageLBpS;
                 }
-                else
+                else if ( throttle > 0.00 && absSpeedMpS <= 0.1 ) // if regulator open and train stationary
                 {
                     CylCockSteamUsageLBpS = 0.0f; // set usage to zero if regulator closed
+                    CylCockSteamUsageStatLBpS = pS.FrompH(NumCylinders * (24.24f * (CutoffPressureAtmPSI) * CylCockDiaIN * CylCockDiaIN));
+                    BoilerMassLB -= elapsedClockSeconds * CylCockSteamUsageStatLBpS; // Reduce boiler mass to reflect steam usage by cylinder steam cocks  
+                    BoilerHeatBTU -= elapsedClockSeconds * CylCockSteamUsageStatLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by cylinder steam cocks
+                    BoilerHeatOutBTUpS += CylCockSteamUsageStatLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by cylinder steam cocks                
+                    TotalSteamUsageLBpS += CylCockSteamUsageStatLBpS;
+                    CylCockSteamUsageDisplayLBpS = CylCockSteamUsageStatLBpS;
                 }
             }
             else
             {
                 CylCockSteamUsageLBpS = 0.0f;       // set steam usage to zero if turned off
+                CylCockSteamUsageDisplayLBpS = CylCockSteamUsageLBpS;
             }
 
             // Calculate Generator steam Usage if turned on
@@ -3528,6 +3589,10 @@ namespace Orts.Simulation.RollingStocks
                 BoilerHeatBTU -= elapsedClockSeconds * StokerSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by mechanical stoker
                 BoilerHeatOutBTUpS += StokerSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by mecahnical stoker
                 TotalSteamUsageLBpS += StokerSteamUsageLBpS;
+            }
+            else
+            {
+                StokerSteamUsageLBpS = 0.0f;
             }
             // Other Aux device usage??
         }
@@ -3560,40 +3625,50 @@ namespace Orts.Simulation.RollingStocks
 
         private void UpdateInjectors(float elapsedClockSeconds)
         {
+            #region Calculate Injector size
+
             // Calculate size of injectors to suit cylinder size.
             InjCylEquivSizeIN = (NumCylinders / 2.0f) * Me.ToIn(CylinderDiameterM);
 
             // Based on equiv cyl size determine correct size injector
             if (InjCylEquivSizeIN <= 19.0)
             {
+                MaxInjectorFlowRateLBpS = pS.FrompM(Injector09FlowratePSItoUKGpM[MaxBoilerPressurePSI]) * WaterLBpUKG; // 9mm Injector maximum flow rate @ maximm boiler pressure
                 InjectorFlowRateLBpS = pS.FrompM(Injector09FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 9mm Injector Flow rate 
                 InjectorSize = 09.0f; // store size for display in HUD
             }
             else if (InjCylEquivSizeIN <= 24.0)
             {
+                MaxInjectorFlowRateLBpS = pS.FrompM(Injector10FlowratePSItoUKGpM[MaxBoilerPressurePSI]) * WaterLBpUKG; // 10mm Injector maximum flow rate @ maximm boiler pressure
                 InjectorFlowRateLBpS = pS.FrompM(Injector10FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 10 mm Injector Flow rate 
                 InjectorSize = 10.0f; // store size for display in HUD                
             }
             else if (InjCylEquivSizeIN <= 26.0)
             {
+                MaxInjectorFlowRateLBpS = pS.FrompM(Injector11FlowratePSItoUKGpM[MaxBoilerPressurePSI]) * WaterLBpUKG; // 11mm Injector maximum flow rate @ maximm boiler pressure
                 InjectorFlowRateLBpS = pS.FrompM(Injector11FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 11 mm Injector Flow rate 
                 InjectorSize = 11.0f; // store size for display in HUD                
             }
             else if (InjCylEquivSizeIN <= 28.0)
             {
+                MaxInjectorFlowRateLBpS = pS.FrompM(Injector13FlowratePSItoUKGpM[MaxBoilerPressurePSI]) * WaterLBpUKG; // 13mm Injector maximum flow rate @ maximm boiler pressure
                 InjectorFlowRateLBpS = pS.FrompM(Injector13FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 13 mm Injector Flow rate 
                 InjectorSize = 13.0f; // store size for display in HUD                
             }
             else if (InjCylEquivSizeIN <= 30.0)
             {
+                MaxInjectorFlowRateLBpS = pS.FrompM(Injector14FlowratePSItoUKGpM[MaxBoilerPressurePSI]) * WaterLBpUKG; // 14mm Injector maximum flow rate @ maximm boiler pressure
                 InjectorFlowRateLBpS = pS.FrompM(Injector14FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 14 mm Injector Flow rate 
                 InjectorSize = 14.0f; // store size for display in HUD                
             }
             else
             {
+                MaxInjectorFlowRateLBpS = pS.FrompM(Injector15FlowratePSItoUKGpM[MaxBoilerPressurePSI]) * WaterLBpUKG; // 15mm Injector maximum flow rate @ maximm boiler pressure
                 InjectorFlowRateLBpS = pS.FrompM(Injector15FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 15 mm Injector Flow rate 
                 InjectorSize = 15.0f; // store size for display in HUD                
             }
+            #endregion
+
             if (WaterIsExhausted)
             {
                 InjectorFlowRateLBpS = 0.0f; // If the tender water is empty, stop flow into boiler
@@ -3624,7 +3699,7 @@ namespace Orts.Simulation.RollingStocks
                     Injector1WaterTempPressurePSI = WaterTempFtoPSI[Injector1WaterDelTempF]; // calculate the pressure of the delivery water
 
                     // Calculate amount of steam used to inject water
-                    MaxInject1SteamUsedLbpS = InjWaterFedSteamPressureFtoPSI[BoilerPressurePSI];  // Maximum amount of steam used at boiler pressure
+                    MaxInject1SteamUsedLbpS = InjWaterFedSteamPressureFtoPSI[BoilerPressurePSI];  // Maximum amount of steam used at actual boiler pressure
                     ActInject1SteamUsedLbpS = (Injector1Fraction * InjectorFlowRateLBpS) / MaxInject1SteamUsedLbpS; // Lbs of steam injected into boiler to inject water.
 
                     // Calculate heat loss for steam injection
@@ -3675,8 +3750,13 @@ namespace Orts.Simulation.RollingStocks
 
         private void UpdateFiring(float absSpeedMpS)
         {
+
             if (FiringIsManual)
+
+            #region Manual Fireman
             {
+                
+
                 // Test to see if blower has been manually activiated.
                 if (BlowerController.CurrentValue > 0.0f)
                 {
@@ -3698,7 +3778,20 @@ namespace Orts.Simulation.RollingStocks
                 {
                     Injector2Fraction = Injector2Controller.CurrentValue;
                 }
+
+                // Damper - need to be calculated in AI fireman case too, to determine smoke color
+                if (absSpeedMpS < 1.0f)    // locomotive is stationary then damper will have no effect
+                {
+                    DamperBurnEffect = 0.0f;
+                }
+                else
+                {
+                    DamperBurnEffect = DamperController.CurrentValue * absSpeedMpS * DamperFactorManual; // Damper value for manual firing - related to damper setting and increased speed
+                }
+                DamperBurnEffect = MathHelper.Clamp(DamperBurnEffect, 0.0f, TheoreticalMaxSteamOutputLBpS); // set damper maximum to the max generation rate
             }
+            #endregion
+
             else
 
             #region AI Fireman
@@ -3791,65 +3884,54 @@ namespace Orts.Simulation.RollingStocks
                 SignalEvent(Injector1IsOn ? Event.SteamEjector1On : Event.SteamEjector1Off); // hook for sound trigger
                 SignalEvent(Injector2IsOn ? Event.SteamEjector2On : Event.SteamEjector2Off); // hook for sound trigger
 
-            }
-            #endregion
+                float BoilerHeatCheck = BoilerHeatOutBTUpS / BoilerHeatInBTUpS;
+                BoilerHeatExcess = BoilerHeatBTU / MaxBoilerHeatBTU;
 
-            // Damper - need to be calculated in AI fireman case too, to determine smoke color
-            if (absSpeedMpS < 1.0f)    // locomotive is stationary then damper will have no effect
-            {
-                DamperBurnEffect = 0.0f;
-            }
-            else
-            {
-                DamperBurnEffect = DamperController.CurrentValue * absSpeedMpS * DamperFactorManual; // Damper value for manual firing - related to damper setting and increased speed
-            }
-            DamperBurnEffect = MathHelper.Clamp(DamperBurnEffect, 0.0f, TheoreticalMaxSteamOutputLBpS); // set damper maximum to the max generation rate
-
-            float BoilerHeatCheck = BoilerHeatOutBTUpS / BoilerHeatInBTUpS;
-            float BoilerHeatExcess = BoilerHeatBTU / MaxBoilerHeatBTU;
-            
-            // Determine if AI fireman should shovel coal despite the fact that boiler heat has exceeded max boiler heat - provides a crude "look ahead" capability. 
-            // Example - boiler heat excessive, and train faces heavy climb up grade, fire burn rate still needs to increase, despite the fact that AI code normally will try and reduce burn rate.
-            if (throttle > 0.98 && CurrentElevationPercent < -0.3 && BoilerHeatCheck > 1.25 && BoilerHeatExcess < 1.1)
-            {
-                ShovelAnyway = true; // Fireman should be increasing fire burn rate despite high boiler heat
-            }
-            else
-            {
-                ShovelAnyway = false; // Fireman should not be increasing fire burn rate if high boiler heat
-            }
-
-
-            // Determine Heat Ratio - for calculating burn rate
-
-            if (BoilerHeat && !ShovelAnyway) // If heat in boiler is going too high
-            {
-                if (EvaporationLBpS > TotalSteamUsageLBpS)
+                // Determine if AI fireman should shovel coal despite the fact that boiler heat has exceeded max boiler heat - provides a crude "look ahead" capability. 
+                // Example - boiler heat excessive, and train faces heavy climb up grade, fire burn rate still needs to increase, despite the fact that AI code normally will try and reduce burn rate.
+                if (throttle > 0.98 && CurrentElevationPercent < -0.3 && BoilerHeatCheck > 1.25 && BoilerHeatExcess < 1.07)
                 {
-                    HeatRatio = MathHelper.Clamp(((BoilerHeatOutBTUpS / BoilerHeatInBTUpS) * (TotalSteamUsageLBpS / EvaporationLBpS)), 0.001f, 1.0f);  // Factor to determine how hard to drive burn rate, based on steam gen & usage rate, in AI mode only, clamp < 1 if max boiler heat reached.
+                    ShovelAnyway = true; // Fireman should be increasing fire burn rate despite high boiler heat
                 }
                 else
                 {
-                    HeatRatio = MathHelper.Clamp(((BoilerHeatOutBTUpS / BoilerHeatInBTUpS) * (EvaporationLBpS / TotalSteamUsageLBpS)), 0.001f, 1.0f);  // Factor to determine how hard to drive burn rate, based on steam gen & usage rate, in AI mode only, clamp < 1 if max boiler heat reached.
+                    ShovelAnyway = false; // Fireman should not be increasing fire burn rate if high boiler heat
                 }
-            }
-            else  // If heat in boiler is normal or low
-            {
-                if (PressureRatio > 1.1) // If pressure drops by more then 10%, increase firing rate
+
+                // Determine Heat Ratio - for calculating burn rate
+
+                if (BoilerHeat && !ShovelAnyway) // If heat in boiler is going too high
                 {
-                    float HeatFactor = (BoilerHeatOutBTUpS - BoilerHeatInBTUpS);
-                    if (HeatFactor < 0)
+                    if (EvaporationLBpS > TotalSteamUsageLBpS)
                     {
-                        HeatFactor *= -1.0f; // If negative convert to positive number
+                        HeatRatio = MathHelper.Clamp((((BoilerHeatOutBTUpS - BoilerHeatOutSVAIBTUpS) / BoilerHeatInBTUpS) * (TotalSteamUsageLBpS / EvaporationLBpS)), 0.001f, 1.0f);  // Factor to determine how hard to drive burn rate, based on steam gen & usage rate, in AI mode only, clamp < 1 if max boiler heat reached.
                     }
-                    HeatRatio = MathHelper.Clamp(((BoilerHeatOutBTUpS * HeatFactor) / BoilerHeatInBTUpS), 0.001f, 1.6f);  // Factor to determine how hard to drive burn rate, based on steam gen & usage rate, in AI mode only
+                    else
+                    {
+                        HeatRatio = MathHelper.Clamp((((BoilerHeatOutBTUpS - BoilerHeatOutSVAIBTUpS) / BoilerHeatInBTUpS) * (EvaporationLBpS / TotalSteamUsageLBpS)), 0.001f, 1.0f);  // Factor to determine how hard to drive burn rate, based on steam gen & usage rate, in AI mode only, clamp < 1 if max boiler heat reached.
+                    }
                 }
-                else // if boiler pressure is "normal"
+                else  // If heat in boiler is normal or low
                 {
-                    HeatRatio = MathHelper.Clamp((BoilerHeatOutBTUpS / BoilerHeatInBTUpS), 0.001f, 1.6f);  // Factor to determine how hard to drive burn rate, based on steam gen & usage rate, in AI mode only
+                    if (PressureRatio > 1.1) // If pressure drops by more then 10%, increase firing rate
+                    {
+                        float HeatFactor = (BoilerHeatOutBTUpS - BoilerHeatInBTUpS);
+                        if (HeatFactor < 0)
+                        {
+                            HeatFactor *= -1.0f; // If negative convert to positive number
+                        }
+                        HeatRatio = MathHelper.Clamp((((BoilerHeatOutBTUpS - BoilerHeatOutSVAIBTUpS) * HeatFactor) / BoilerHeatInBTUpS), 0.001f, 1.6f);  // Factor to determine how hard to drive burn rate, based on steam gen & usage rate, in AI mode only
+                    }
+                    else // if boiler pressure is "normal"
+                    {
+                        HeatRatio = MathHelper.Clamp(((BoilerHeatOutBTUpS - BoilerHeatOutSVAIBTUpS) / BoilerHeatInBTUpS), 0.001f, 1.6f);  // Factor to determine how hard to drive burn rate, based on steam gen & usage rate, in AI mode only
+                    }
+
                 }
 
             }
+            #endregion
+
         }
 
         private void UpdateSteamHeat(float elapsedClockSeconds)
@@ -3993,7 +4075,6 @@ namespace Orts.Simulation.RollingStocks
                     BoilerHeatBTU -= elapsedClockSeconds * CalculatedCarHeaterSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to steam heat usage
                     TotalSteamUsageLBpS += CalculatedCarHeaterSteamUsageLBpS;
                     BoilerHeatOutBTUpS += CalculatedCarHeaterSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to safety valve                
-                
                 }
             }
         }
@@ -4194,7 +4275,7 @@ namespace Orts.Simulation.RollingStocks
                 FormatStrings.FormatMass(pS.TopH(Kg.FromLb(RadiationSteamLossLBpS)), IsMetric),
                 FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CompSteamUsageLBpS)), IsMetric),
                 FormatStrings.FormatMass(pS.TopH(Kg.FromLb(SafetyValveUsageLBpS)), IsMetric),
-                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylCockSteamUsageLBpS)), IsMetric),
+                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylCockSteamUsageDisplayLBpS)), IsMetric),
                 FormatStrings.FormatMass(pS.TopH(Kg.FromLb(GeneratorSteamUsageLBpS)), IsMetric),
                 FormatStrings.FormatMass(pS.TopH(Kg.FromLb(StokerSteamUsageLBpS)), IsMetric),
                 FormatStrings.FormatMass(pS.TopH(Kg.FromLb(MaxSafetyValveDischargeLbspS)), IsMetric),
@@ -4397,7 +4478,7 @@ namespace Orts.Simulation.RollingStocks
                 Simulator.Catalog.GetString("Temp1"),
                 Simulator.Catalog.GetString("Inj2"),
                 Simulator.Catalog.GetString("Temp2"),
-                FormatStrings.FormatFuelVolume(pS.TopH(L.FromGUK(InjectorFlowRateLBpS / WaterLBpUKG)), IsMetric, IsUK),
+                FormatStrings.FormatFuelVolume(pS.TopH(L.FromGUK(MaxInjectorFlowRateLBpS / WaterLBpUKG)), IsMetric, IsUK),
                 InjectorSize,
                 FormatStrings.FormatFuelVolume(Injector1Fraction * pS.TopH(L.FromGUK(InjectorFlowRateLBpS / WaterLBpUKG)), IsMetric, IsUK),
                 FormatStrings.FormatTemperature(C.FromF(Injector1WaterDelTempF), IsMetric, false),
@@ -4508,7 +4589,7 @@ namespace Orts.Simulation.RollingStocks
                 CalculatedFactorofAdhesion);
 
 #if DEBUG_STEAM_EFFECTS
-            status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:N2}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12:N2}\t{13}\t{14:N2}\n",
+            status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:N2}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12:N2}\t{13}\t{14:N2}\t{15}\t{16:N2}\t{17}\t{18:N2}\t{19}\t{20:N2}\n",
                 "StEff#1:",
                 "Cyl1Vel",
                 Cylinders1SteamVelocityMpS,
@@ -4523,7 +4604,13 @@ namespace Orts.Simulation.RollingStocks
                 "Cyl2Dur",
                 Cylinder2ParticleDurationS,
                 "CockTime",
-                CylinderCockOpenTimeS
+                CylinderCockOpenTimeS,
+                "SVVel",
+                SafetyValvesSteamVelocityMpS,
+                "SVVol",
+                SafetyValvesSteamVolumeM3pS,
+                "SVDur",
+                SafetyValvesParticleDurationS
                 );
 
             status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:N2}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12:N2}\n",
