@@ -4607,8 +4607,7 @@ namespace Orts.Simulation.Physics
             }
             if (backward < backwardThreshold || SpeedMpS > -0.01)
             {
-                List<DistanceTravelledItem> nowActions = requiredActions.GetActions(DistanceTravelledM);
-                nowActions = AuxActionsContain.specRequiredActions.GetAuxActions(this, DistanceTravelledM);
+                List<DistanceTravelledItem> nowActions = AuxActionsContain.specRequiredActions.GetAuxActions(this, DistanceTravelledM);
 
                 if (nowActions.Count > 0)
                 {
