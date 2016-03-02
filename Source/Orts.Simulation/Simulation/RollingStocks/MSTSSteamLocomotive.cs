@@ -1360,7 +1360,7 @@ namespace Orts.Simulation.RollingStocks
 
 
             DamperFactorManual = TheoreticalMaxSteamOutputLBpS / SpeedEquivMpS; // Calculate a factor for damper control that will vary with speed.
-            BlowerSteamUsageFactor = .04f * MaxBoilerOutputLBpH / 3600 / MaxBoilerPressurePSI;
+            BlowerSteamUsageFactor = 0.04f * MaxBoilerOutputLBpH / 3600 / MaxBoilerPressurePSI;
             WaterTempNewK = C.ToK(C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI])); // Initialise new boiler pressure
             FireMassKG = IdealFireMassKG;
             if (MaxFiringRateKGpS == 0)
@@ -1576,12 +1576,36 @@ namespace Orts.Simulation.RollingStocks
             SafetyValvesSteamVolumeM3pS = SafetyIsOn ? 5.0f : 0;
             SafetyValvesParticleDurationS = 3.0f;
             SafetyValvesParticleDurationS = MathHelper.Clamp(SafetyValvesParticleDurationS / (absSpeedMpS / 4.0f), 0.1f, 3.0f);
- 
-        // Smoke Stack Smoke Effects
+
+
+            // Smoke Stack Smoke Effects
+            // Colur for smoke is determined by the amount of air flowing through the fire (ie damper ).
+
+            // Damper - to determine smoke color
+            float SmokeColorDamper = 0.0f;
+            if (FiringIsManual)
+            {
+                SmokeColorDamper = DamperBurnEffect; // set to the damper burn effect as set for manual firing
+            }
+            else
+            {
+                SmokeColorDamper = absSpeedMpS * DamperFactorManual; // Damper value for manual firing - related to increased speed, and airflow through fire
+            }
+
+            SmokeColorDamper = MathHelper.Clamp(SmokeColorDamper, 0.0f, TheoreticalMaxSteamOutputLBpS); // set damper maximum to the max generation rate
+
+            // Fire mass
+            //TODO - Review and check
+            float SmokeColorFireMass = (FireMassKG / IdealFireMassKG); // As firemass exceeds the ideal mass the fire becomes 'blocked', when firemass is < ideal then fire burns more freely.
+            SmokeColorFireMass = (1.0f / SmokeColorFireMass) * (1.0f / SmokeColorFireMass) * (1.0f / SmokeColorFireMass); // Inverse the firemass value, then cube it to make it a bit more significant
+
 
             StackSteamVelocityMpS.Update(elapsedClockSeconds, (float)Math.Sqrt(KPa.FromPSI(CylinderReleasePressureAtmPSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3));
             StackSteamVolumeM3pS = Kg.FromLb(CylinderSteamUsageLBpS + BlowerSteamUsageLBpS + RadiationSteamLossLBpS + CompSteamUsageLBpS + GeneratorSteamUsageLBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG;
-            SmokeColor.Update(elapsedClockSeconds, MathHelper.Clamp((RadiationSteamLossLBpS + CalculatedCarHeaterSteamUsageLBpS + BlowerBurnEffect + DamperBurnEffect) / PreviousTotalSteamUsageLBpS - 0.2f, 0.25f, 1));
+            float SmokeColorUnits = (RadiationSteamLossLBpS + CalculatedCarHeaterSteamUsageLBpS + BlowerBurnEffect + (SmokeColorDamper * SmokeColorFireMass)) / PreviousTotalSteamUsageLBpS - 0.2f;
+            SmokeColor.Update(elapsedClockSeconds, MathHelper.Clamp(SmokeColorUnits, 0.25f, 1));
+
+          //  Trace.TraceInformation("Smoke: Rad {0} CarHeat {1} Blower {2} Damper {3} Fire Mass {4} Prev {5} Total {6}", RadiationSteamLossLBpS, CalculatedCarHeaterSteamUsageLBpS, BlowerBurnEffect, SmokeColorDamper, SmokeColorFireMass, PreviousTotalSteamUsageLBpS, SmokeColorUnits);
 
             // Variable1 is proportional to angular speed, value of 10 means 1 rotation/second.
             var variable1 = (Simulator.UseAdvancedAdhesion && Train.IsPlayerDriven ? LocomotiveAxle.AxleSpeedMpS : SpeedMpS) / DriverWheelRadiusM / MathHelper.Pi * 5;
