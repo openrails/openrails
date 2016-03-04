@@ -1528,12 +1528,59 @@ namespace Orts.Simulation.RollingStocks
             if (Simulator.Settings.UseSuperElevation == 0 && !Train.IsTilting)
                 return;
 
-            // TODO: Implementation of super-elevation.
+            // Because the traveler is at the FRONT of the TrainCar, smooth the super-elevation out with the rear.
+            var z = traveler.GetSuperElevation(-CarLengthM);
+            if (Flipped)
+                z *= -1;
+
+            WorldPosition.XNAMatrix = Matrix.CreateRotationZ(z) * WorldPosition.XNAMatrix;
         }
         #endregion
 
         #region Vibration
         public Matrix VibrationInverseMatrix = Matrix.Identity;
+
+        // https://en.wikipedia.org/wiki/Newton%27s_laws_of_motion#Newton.27s_2nd_Law
+        //   Let F be the force in N
+        //   Let m be the mass in kg
+        //   Let a be the acceleration in m/s/s
+        //   Then F = m * a
+        // https://en.wikipedia.org/wiki/Hooke%27s_law
+        //   Let F be the force in N
+        //   Let k be the spring constant in N/m or kg/s/s
+        //   Let x be the displacement in m
+        //   Then F = k * x
+        // If we assume that gravity is 9.8m/s/s, then the force needed to support the train car is:
+        //   F = m * 9.8
+        // If we assume that the train car suspension allows for 0.2m (20cm) of travel, then substitute Hooke's law:
+        //   m * 9.8 = k * 0.2
+        //   k = m * 9.8 / 0.2
+        // Finally, we assume a mass (m) of 1kg to calculate a mass-independent value:
+        //   k' = 9.8 / 0.2
+        const float VibrationSpringConstantPrimepSpS = 9.8f / 0.2f; // 1/s/s
+
+        // 
+        const float VibratioDampingCoefficient = 0.01f;
+
+        // This is multiplied by the CarVibratingLevel (which goes up to 3).
+        const float VibrationIntroductionStrength = 0.03f;
+
+        // The tightest curve we care about has a radius of 100m. This is used as the basis for the most violent vibrations.
+        const float VibrationMaximumCurvaturepM = 1f / 100;
+
+        const float VibrationFactorDistance = 1;
+        const float VibrationFactorTrackVectorSection = 2;
+        const float VibrationFactorTrackNode = 4;
+
+        Vector3 VibrationOffsetM;
+        Vector3 VibrationRotationRad;
+        Vector3 VibrationRotationVelocityRadpS;
+        Vector2 VibrationTranslationM;
+        Vector2 VibrationTranslationVelocityMpS;
+
+        int VibrationTrackNode;
+        int VibrationTrackVectorSection;
+        float VibrationTrackCurvaturepM;
 
         internal void UpdateVibration(Traveller traveler, float elapsedTimeS, float distanceM, float speedMpS)
         {
@@ -1542,7 +1589,96 @@ namespace Orts.Simulation.RollingStocks
             if (Simulator.Settings.CarVibratingLevel == 0)
                 return;
 
-            // TODO: Implementation of super-elevation.
+            //var elapsedTimeS = Math.Abs(speedMpS) > 0.001f ? distanceM / speedMpS : 0;
+            if (VibrationOffsetM.X == 0)
+            {
+                // Initialize three different offsets (0 - 1 meters) so that the different components of the vibration motion don't align.
+                VibrationOffsetM.X = (float)Simulator.Random.NextDouble();
+                VibrationOffsetM.Y = (float)Simulator.Random.NextDouble();
+                VibrationOffsetM.Z = (float)Simulator.Random.NextDouble();
+            }
+
+            if (VibrationTrackVectorSection == 0)
+                VibrationTrackVectorSection = traveler.TrackVectorSectionIndex;
+            if (VibrationTrackNode == 0)
+                VibrationTrackNode = traveler.TrackNodeIndex;
+
+            // Apply suspension/spring and damping.
+            // https://en.wikipedia.org/wiki/Simple_harmonic_motion
+            //   Let F be the force in N
+            //   Let k be the spring constant in N/m or kg/s/s
+            //   Let x be the displacement in m
+            //   Then F = -k * x
+            // Given F = m * a, solve for a:
+            //   a = F / m
+            // Substitute F:
+            //   a = -k * x / m
+            // Because our spring constant was never multiplied by m, we can cancel that out:
+            //   a = -k' * x
+            var rotationAccelerationRadpSpS = -VibrationSpringConstantPrimepSpS * VibrationRotationRad;
+            var translationAccelerationMpSpS = -VibrationSpringConstantPrimepSpS * VibrationTranslationM;
+            // https://en.wikipedia.org/wiki/Damping
+            //   Let F be the force in N
+            //   Let c be the damping coefficient in N*s/m
+            //   Let v be the velocity in m/s
+            //   Then F = -c * v
+            // We apply the acceleration (let t be time in s, then dv/dt = a * t) and damping (-c * v) to the velocities:
+            VibrationRotationVelocityRadpS += rotationAccelerationRadpSpS * elapsedTimeS - VibratioDampingCoefficient * VibrationRotationVelocityRadpS;
+            VibrationTranslationVelocityMpS += translationAccelerationMpSpS * elapsedTimeS - VibratioDampingCoefficient * VibrationTranslationVelocityMpS;
+            // Now apply the velocities (dx/dt = v * t):
+            VibrationRotationRad += VibrationRotationVelocityRadpS * elapsedTimeS;
+            VibrationTranslationM += VibrationTranslationVelocityMpS * elapsedTimeS;
+
+            // Add new vibrations every CarLengthM in either direction.
+            if (Math.Round((VibrationOffsetM.X + DistanceM) / CarLengthM) != Math.Round((VibrationOffsetM.X + DistanceM + distanceM) / CarLengthM))
+            {
+                AddVibrations(VibrationFactorDistance);
+            }
+
+            // Add new vibrations every track vector section which changes the curve radius.
+            if (VibrationTrackVectorSection != traveler.TrackVectorSectionIndex)
+            {
+                var curvaturepM = MathHelper.Clamp(traveler.GetCurvature(), -VibrationMaximumCurvaturepM, VibrationMaximumCurvaturepM);
+                if (VibrationTrackCurvaturepM != curvaturepM)
+                {
+                    // Use the difference in curvature to determine the strength of the vibration caused.
+                    AddVibrations(VibrationFactorTrackVectorSection * Math.Abs(VibrationTrackCurvaturepM - curvaturepM) / VibrationMaximumCurvaturepM);
+                    VibrationTrackCurvaturepM = curvaturepM;
+                }
+                VibrationTrackVectorSection = traveler.TrackVectorSectionIndex;
+            }
+
+            // Add new vibrations every track node.
+            if (VibrationTrackNode != traveler.TrackNodeIndex)
+            {
+                AddVibrations(VibrationFactorTrackNode);
+                VibrationTrackNode = traveler.TrackNodeIndex;
+            }
+
+            var rotation = Matrix.CreateFromYawPitchRoll(VibrationRotationRad.Y, VibrationRotationRad.X, VibrationRotationRad.Z);
+            var translation = Matrix.CreateTranslation(VibrationTranslationM.X, VibrationTranslationM.Y, 0);
+            WorldPosition.XNAMatrix = rotation * translation * WorldPosition.XNAMatrix;
+            VibrationInverseMatrix = Matrix.Invert(rotation * translation);
+        }
+
+        private void AddVibrations(float factor)
+        {
+            // NOTE: For low angles (as our vibration rotations are), sin(angle) ~= angle, and since the displacement at the end of the car is sin(angle) = displacement/half-length, sin(displacement/half-length) * half-length ~= displacement.
+            switch (Simulator.Random.Next(4))
+            {
+                case 0:
+                    VibrationRotationVelocityRadpS.Y += factor * Simulator.Settings.CarVibratingLevel * VibrationIntroductionStrength * 2 / CarLengthM;
+                    break;
+                case 1:
+                    VibrationRotationVelocityRadpS.Z += factor * Simulator.Settings.CarVibratingLevel * VibrationIntroductionStrength * 2 / CarLengthM;
+                    break;
+                case 2:
+                    VibrationTranslationVelocityMpS.X += factor * Simulator.Settings.CarVibratingLevel * VibrationIntroductionStrength;
+                    break;
+                case 3:
+                    VibrationTranslationVelocityMpS.Y += factor * Simulator.Settings.CarVibratingLevel * VibrationIntroductionStrength;
+                    break;
+            }
         }
         #endregion
 

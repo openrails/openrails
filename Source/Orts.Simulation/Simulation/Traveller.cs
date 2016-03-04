@@ -948,6 +948,14 @@ namespace Orts.Simulation
             return trackSection.SectionCurve != null ? trackSection.SectionCurve.Radius : 0;
         }
 
+        public float GetCurvature()
+        {
+            if (trackSection == null)
+                return 0;
+
+            return trackSection.SectionCurve != null ? Math.Sign(trackSection.SectionCurve.Angle) / trackSection.SectionCurve.Radius : 0;
+        }
+
         public float GetSuperElevation()
         {
             if (trackSection == null)
