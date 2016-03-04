@@ -902,6 +902,40 @@ namespace Orts.Simulation
                 location.NormalizeTo(trackVectorSection.TileX, trackVectorSection.TileZ);
         }
 
+        void SetLength()
+        {
+            if (lengthSet)
+                return;
+            lengthSet = true;
+            trackNodeLength = 0;
+            trackNodeOffset = 0;
+            if (trackNode == null || trackNode.TrVectorNode == null || trackNode.TrVectorNode.TrVectorSections == null)
+                return;
+            var tvs = trackNode.TrVectorNode.TrVectorSections;
+            for (var i = 0; i < tvs.Length; i++)
+            {
+                var ts = TSectionDat.TrackSections.Get(tvs[i].SectionIndex);
+                if (ts == null)
+                    continue; // This is bad and we'll have potentially bogus data in the Traveller when the code reads the length!
+                var length = GetLength(ts);
+                trackNodeLength += length;
+                if (i < TrackVectorSectionIndex)
+                    trackNodeOffset += length;
+                if (i == TrackVectorSectionIndex)
+                    trackNodeOffset += trackOffset * (ts.SectionCurve != null ? ts.SectionCurve.Radius : 1);
+            }
+            if (Direction == TravellerDirection.Backward)
+                trackNodeOffset = trackNodeLength - trackNodeOffset;
+        }
+
+        static float GetLength(TrackSection trackSection)
+        {
+            if (trackSection == null)
+                return 0;
+
+            return trackSection.SectionCurve != null ? trackSection.SectionCurve.Radius * Math.Abs(MathHelper.ToRadians(trackSection.SectionCurve.Angle)) : trackSection.SectionSize != null ? trackSection.SectionSize.Length : 0;
+        }
+
         /// <summary>
         /// Current Curve Radius value. Zero if not a curve
         /// </summary>
@@ -1013,40 +1047,6 @@ namespace Orts.Simulation
             }
             else desiredZ = 0f;
             return desiredZ;
-        }
-
-        void SetLength()
-        {
-            if (lengthSet)
-                return;
-            lengthSet = true;
-            trackNodeLength = 0;
-            trackNodeOffset = 0;
-            if (trackNode == null || trackNode.TrVectorNode == null || trackNode.TrVectorNode.TrVectorSections == null)
-                return;
-            var tvs = trackNode.TrVectorNode.TrVectorSections;
-            for (var i = 0; i < tvs.Length; i++)
-            {
-                var ts = TSectionDat.TrackSections.Get(tvs[i].SectionIndex);
-                if (ts == null)
-                    continue; // This is bad and we'll have potentially bogus data in the Traveller when the code reads the length!
-                var length = GetLength(ts);
-                trackNodeLength += length;
-                if (i < TrackVectorSectionIndex)
-                    trackNodeOffset += length;
-                if (i == TrackVectorSectionIndex)
-                    trackNodeOffset += trackOffset * (ts.SectionCurve != null ? ts.SectionCurve.Radius : 1);
-            }
-            if (Direction == TravellerDirection.Backward)
-                trackNodeOffset = trackNodeLength - trackNodeOffset;
-        }
-
-        static float GetLength(TrackSection trackSection)
-        {
-            if (trackSection == null)
-                return 0;
-
-            return trackSection.SectionCurve != null ? trackSection.SectionCurve.Radius * Math.Abs(MathHelper.ToRadians(trackSection.SectionCurve.Angle)) : trackSection.SectionSize != null ? trackSection.SectionSize.Length : 0;
         }
 
         /// <summary>
