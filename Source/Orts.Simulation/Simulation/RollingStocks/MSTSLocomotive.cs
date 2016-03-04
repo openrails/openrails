@@ -202,14 +202,6 @@ namespace Orts.Simulation.RollingStocks
         protected const float DefaultMainResVolume = 0.78f; // Value to be inserted if .eng parameters are corrected
         protected const float DefaultMaxMainResPressure = 140; // Max value to be inserted if .eng parameters are corrected
 
-        public float CabRotationZ
-        {
-            get
-            {
-                return ((UsingRearCab == true) ?
-                    -totalRotationZ * Simulator.CabRotating : totalRotationZ * Simulator.CabRotating);
-            }
-        }
         public Dictionary<string, List<ParticleEmitterData>> EffectData = new Dictionary<string, List<ParticleEmitterData>>();
 
         public List<CabView> CabViewList = new List<CabView>();

@@ -782,7 +782,7 @@ namespace Orts.Simulation
                             {
                                 if (drivenTrain.SpeedMpS < train.SpeedMpS)
                                     drivenTrain.SetCoupleSpeed(train, 1);
-                                drivenTrain.CalculatePositionOfCars(-d1);
+                                drivenTrain.CalculatePositionOfCars(elapsedClockSeconds, -d1);
                                 return;
                             }
                             // couple my rear to front of train
@@ -792,7 +792,6 @@ namespace Orts.Simulation
                             {
                                 drivenTrain.Cars.Add(car);
                                 car.Train = drivenTrain;
-                                car.prevElev = -60f;
                             }
                             FinishRearCoupling(drivenTrain, train, true);
                             return;
@@ -804,7 +803,7 @@ namespace Orts.Simulation
                             {
                                 if (drivenTrain.SpeedMpS < -train.SpeedMpS)
                                     drivenTrain.SetCoupleSpeed(train, 11);
-                                drivenTrain.CalculatePositionOfCars(-d2);
+                                drivenTrain.CalculatePositionOfCars(elapsedClockSeconds, -d2);
                                 return;
                             }
                             // couple my rear to rear of train
@@ -816,7 +815,6 @@ namespace Orts.Simulation
                                 drivenTrain.Cars.Add(car);
                                 car.Train = drivenTrain;
                                 car.Flipped = !car.Flipped;
-                                car.prevElev = -60f;
                             }
                             FinishRearCoupling(drivenTrain, train, false);
                             return;
@@ -842,7 +840,7 @@ namespace Orts.Simulation
                             {
                                 if (drivenTrain.SpeedMpS > train.SpeedMpS)
                                     drivenTrain.SetCoupleSpeed(train, 1);
-                                drivenTrain.CalculatePositionOfCars(d1);
+                                drivenTrain.CalculatePositionOfCars(elapsedClockSeconds, d1);
                                 return;
                             }
                             // couple my front to rear of train
@@ -854,7 +852,6 @@ namespace Orts.Simulation
                                 TrainCar car = train.Cars[i];
                                 drivenTrain.Cars.Insert(i, car);
                                 car.Train = drivenTrain;
-                                car.prevElev = -60f;
                             }
                             if (drivenTrain.LeadLocomotiveIndex >= 0) drivenTrain.LeadLocomotiveIndex += train.Cars.Count;
                             FinishFrontCoupling(drivenTrain, train, lead, true);
@@ -867,7 +864,7 @@ namespace Orts.Simulation
                             {
                                 if (drivenTrain.SpeedMpS > -train.SpeedMpS)
                                     drivenTrain.SetCoupleSpeed(train, -1);
-                                drivenTrain.CalculatePositionOfCars(d2);
+                                drivenTrain.CalculatePositionOfCars(elapsedClockSeconds, d2);
                                 return;
                             }
                             // couple my front to front of train
@@ -880,7 +877,6 @@ namespace Orts.Simulation
                                 drivenTrain.Cars.Insert(0, car);
                                 car.Train = drivenTrain;
                                 car.Flipped = !car.Flipped;
-                                car.prevElev = -60f;
                             }
                             if (drivenTrain.LeadLocomotiveIndex >= 0) drivenTrain.LeadLocomotiveIndex += train.Cars.Count;
                             FinishFrontCoupling(drivenTrain, train, lead, false);

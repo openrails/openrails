@@ -1270,7 +1270,7 @@ namespace Orts.Simulation.Timetables
                 }
             }
 
-            CalculatePositionOfCars(distanceM);
+            CalculatePositionOfCars(elapsedClockSeconds, distanceM);
 
             DistanceTravelledM += distanceM;
 

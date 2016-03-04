@@ -940,87 +940,59 @@ namespace Orts.Simulation
         /// Current Curve Radius value. Zero if not a curve
         /// </summary>
         /// <returns>Current Curve Radius in meters</returns>
-        public float GetCurrentCurveRadius()
+        public float GetCurveRadius()
         {
-            var tn = trackNode;
-            if (tn.TrVectorNode == null) return 0f;
-            var ts = trackSection;
-            var tvs = trackVectorSection;
+            if (trackSection == null)
+                return 0;
 
-            if (tvs == null)
-            {
-                return 0f;
-            }
-            else
-            {
-                if (ts.SectionCurve != null)
-                    return ts.SectionCurve.Radius;
-                else
-                    return 0.0f;
-            }
+            return trackSection.SectionCurve != null ? trackSection.SectionCurve.Radius : 0;
         }
 
-        public float SuperElevationValue(float speed, float timeInterval, bool computed) //will test 1 second ahead, computed will return desired elev. only
+        public float GetSuperElevation()
         {
-            var tn = trackNode;
-            if (tn.TrVectorNode == null) return 0f;
-            var tvs = trackVectorSection;
-            var ts = trackSection;
-            var to = trackOffset;
-            var desiredZ = 0f;
-            if (tvs == null)
+            if (trackSection == null)
+                return 0;
+
+            if (trackSection.SectionCurve == null)
+                return 0;
+
+            if (trackVectorSection == null)
+                return 0;
+
+            var trackLength = Math.Abs(MathHelper.ToRadians(trackSection.SectionCurve.Angle));
+            var sign = Math.Sign(trackSection.SectionCurve.Angle) > 0 ^ direction == TravellerDirection.Backward ? -1 : 1;
+            var trackOffsetReverse = trackLength - trackOffset;
+
+            var startingElevation = trackVectorSection.StartElev;
+            var endingElevation = trackVectorSection.EndElev;
+            var elevation = trackVectorSection.MaxElev * sign;
+
+            // Check if there is no super-elevation at all.
+            if (elevation.AlmostEqual(0f, 0.001f))
+                return 0;
+
+            if (trackOffset < trackLength / 2)
             {
-                desiredZ = 0f;
+                // Start of the curve; if there is starting super-elevation, use max super-elevation.
+                if (startingElevation.AlmostEqual(0f, 0.001f))
+                    return elevation * trackOffset * 2 / trackLength;
+
+                return elevation;
             }
-            else if (ts.SectionCurve != null)
-            {
-                float startv = tvs.StartElev, endv = tvs.EndElev, maxv = tvs.MaxElev;
-                //Trace.TraceWarning("" + tvs.SectionIndex + " " + startv + " " + endv + " " + maxv);
-                int whichCase = 0; //0: no elevation (maxv=0), 1: start (startE = 0, Max!=end), 
-                //2: end (end=0, max!=start), 3: middle (start>0, end>0), 4: start and finish in one
-                if (startv.AlmostEqual(0f, 0.001f) && maxv.AlmostEqual(0f, 0.001f) && endv.AlmostEqual(0f, 0.001f)) whichCase = 0;//no elev
-                else if (startv.AlmostEqual(0f, 0.001f) && endv.AlmostEqual(0f, 0.001f)) whichCase = 4;//finish/start in one
-                else if (startv.AlmostEqual(0f, 0.001f)) whichCase = 1;//start
-                else if (endv.AlmostEqual(0f, 0.001f)) whichCase = 2;//finish
-                else whichCase = 3;//in middle
 
-                var sign = -Math.Sign(ts.SectionCurve.Angle);
-                if ((this.direction == TravellerDirection.Forward ? 1 : -1) * sign > 0) desiredZ = 1f;
-                else desiredZ = -1f;
-                float rAngle = (float)Math.Abs(ts.SectionCurve.Angle) * 0.0174f; // 0.0174=3.14/180
+            // End of the curve; if there is ending super-elevation, use max super-elevation.
+            if (endingElevation.AlmostEqual(0f, 0.001f))
+                return elevation * trackOffsetReverse * 2 / trackLength;
 
-                switch (whichCase)
-                {
-                    case 0: desiredZ = 0f; break;
-                    case 3: desiredZ *= maxv; break;
-                    case 1:
-                        if (to < rAngle / 2) desiredZ *= (to / rAngle * maxv);//increase to max in the first half
-                        else desiredZ *= maxv;
-                        break;
-                    case 2:
-                        if (to > rAngle / 2) desiredZ *= ((rAngle - to) / rAngle * maxv);//decrease to 0 in the second half
-                        else desiredZ *= maxv;
-                        break;
-                    case 4:
-                        if (to < rAngle / 2) desiredZ *= (to / rAngle * maxv);
-                        else desiredZ *= ((rAngle - to) / rAngle * maxv);
-                        break;
-                }
-            }
-            else desiredZ = 0f;
-
-            if (computed == true) return desiredZ;//
-
-            //try to avoid abrupt change
-            Traveller t = new Traveller(this);
-            if (speed < 5) timeInterval = 1;
-            t.Move(speed / 3);//test forward 10m and determine if I need to change;
-            var preZ = t.SuperElevationValue(speed, timeInterval, true);
-            desiredZ = desiredZ + (preZ - desiredZ) / 2;
-            return desiredZ;
-
+            return elevation;
         }
 
+        public float GetSuperElevation(float smoothingOffset)
+        {
+            var offset = new Traveller(this);
+            offset.Move(smoothingOffset);
+            return (GetSuperElevation() + offset.GetSuperElevation()) / 2;
+        }
 
         public float FindTiltedZ(float speed) //will test 1 second ahead, computed will return desired elev. only
         {

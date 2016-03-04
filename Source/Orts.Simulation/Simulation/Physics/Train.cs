@@ -1591,7 +1591,7 @@ namespace Orts.Simulation.Physics
 
             SlipperySpotDistanceM -= SpeedMpS * elapsedClockSeconds;
 
-            CalculatePositionOfCars(distanceM);
+            CalculatePositionOfCars(elapsedClockSeconds, distanceM);
 
             // calculate projected speed
             if (elapsedClockSeconds < AccelerationMpSpS.SmoothPeriodS)
@@ -3393,7 +3393,7 @@ namespace Orts.Simulation.Physics
                 var car = Cars[i];
                 if (car.WheelAxlesLoaded)
                 {
-                    car.ComputePosition(traveller, false, SpeedMpS);
+                    car.ComputePosition(traveller, false, 0, 0, SpeedMpS);
                 }
                 else
                 {
@@ -3482,7 +3482,7 @@ namespace Orts.Simulation.Physics
 
         public void CalculatePositionOfCars()
         {
-            CalculatePositionOfCars(0);
+            CalculatePositionOfCars(0, 0);
         }
 
         //================================================================================================//
@@ -3491,7 +3491,7 @@ namespace Orts.Simulation.Physics
         /// </summary>
         /// <param name="distance"></param>
 
-        public void CalculatePositionOfCars(float distance)
+        public void CalculatePositionOfCars(float elapsedTime, float distance)
         {
             if (float.IsNaN(distance)) distance = 0;//sanity check
 
@@ -3514,7 +3514,7 @@ namespace Orts.Simulation.Physics
                 }
                 if (car.WheelAxlesLoaded)
                 {
-                    car.ComputePosition(traveller, true, SpeedMpS);
+                    car.ComputePosition(traveller, true, elapsedTime, distance, SpeedMpS);
                 }
                 else
                 {
@@ -3565,13 +3565,9 @@ namespace Orts.Simulation.Physics
                     car.WorldPosition.TileX = traveller.TileX;
                     car.WorldPosition.TileZ = traveller.TileZ;
 
-
-                    if (Simulator.UseSuperElevation > 0 || Simulator.CarVibrating > 0 || this.IsTilting)
-                    {
-                        car.SuperElevation(SpeedMpS, Simulator.UseSuperElevation, traveller);
-                    }
-
                     traveller.Move((car.CarLengthM - bogieSpacing) / 2.0f);  // Move to the front of the car 
+
+                    car.UpdatedTraveler(traveller, elapsedTime, distance, SpeedMpS);
                 }
                 length += car.CarLengthM;
             }
@@ -17469,7 +17465,7 @@ namespace Orts.Simulation.Physics
 
                     if (Math.Abs(x - expectedTravelled) < 1 || Math.Abs(x - expectedTravelled) > 20)
                     {
-                        CalculatePositionOfCars(expectedTravelled - travelled);
+                        CalculatePositionOfCars(elapsedClockSeconds, expectedTravelled - travelled);
                         newDistanceTravelledM = DistanceTravelledM + expectedTravelled - travelled;
 
                         //if something wrong with the switch
@@ -17494,7 +17490,7 @@ namespace Orts.Simulation.Physics
                     else//if the predicted location and reported location are similar, will try to increase/decrease the speed to bridge the gap in 1 second
                     {
                         SpeedMpS += (expectedTravelled - x) / 1;
-                        CalculatePositionOfCars(SpeedMpS * elapsedClockSeconds);
+                        CalculatePositionOfCars(elapsedClockSeconds, SpeedMpS * elapsedClockSeconds);
                         newDistanceTravelledM = DistanceTravelledM + (SpeedMpS * elapsedClockSeconds);
                     }
                 }
@@ -17507,7 +17503,7 @@ namespace Orts.Simulation.Physics
             }
             else//no message received, will move at the previous speed
             {
-                CalculatePositionOfCars(SpeedMpS * elapsedClockSeconds);
+                CalculatePositionOfCars(elapsedClockSeconds, SpeedMpS * elapsedClockSeconds);
                 newDistanceTravelledM = DistanceTravelledM + (SpeedMpS * elapsedClockSeconds);
             }
 

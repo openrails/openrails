@@ -993,7 +993,7 @@ namespace Orts.Simulation.AIs
                 }
             }
 
-            CalculatePositionOfCars(distanceM);
+            CalculatePositionOfCars(elapsedClockSeconds, distanceM);
 
             DistanceTravelledM += distanceM;
 

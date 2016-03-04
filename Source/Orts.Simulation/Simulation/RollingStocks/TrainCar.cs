@@ -40,6 +40,7 @@ using Orts.Simulation.Signalling;
 using Orts.Simulation.Timetables;
 using ORTS.Common;
 using ORTS.Scripting.Api;
+using ORTS.Settings;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -138,8 +139,6 @@ namespace Orts.Simulation.RollingStocks
         public bool WheelSlip;  // true if locomotive wheels slipping
         public bool WheelSlipWarning;
         public float _AccelerationMpSS;
-        protected float Stiffness = 3.0f; //used by vibrating cars
-        protected float MaxVibSpeed = 15.0f;//the speed when max shaking happens
         protected IIRFilter AccelerationFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, 1.0f, 0.1f);
 
         public bool AcceptMUSignals = true; //indicates if the car accepts multiple unit signals
@@ -164,8 +163,6 @@ namespace Orts.Simulation.RollingStocks
         {
             get { return _AccelerationMpSS; }
         }
-
-        public Matrix SuperElevationMatrix = Matrix.Identity;
 
         public float LocalThrottlePercent;
         // represents the MU line travelling through the train.  Uncontrolled locos respond to these commands.
@@ -995,8 +992,6 @@ namespace Orts.Simulation.RollingStocks
             Simulator = simulator;
             WagFilePath = wagFile;
             RealWagFilePath = wagFile;
-            Stiffness = (float)Simulator.Random.NextDouble() * 2f + 3f;//stiffness range from 4-8 (i.e. vibrating frequency)
-            MaxVibSpeed = 15f + Stiffness * 2;//about 50km/h
         }
 
         // Game save
@@ -1405,7 +1400,7 @@ namespace Orts.Simulation.RollingStocks
 #endif
         } // end SetUpWheelsArticulation()
 
-        public void ComputePosition(Traveller traveler, bool backToFront, float speed)
+        public void ComputePosition(Traveller traveler, bool backToFront, float elapsedTimeS, float distance, float speed)
         {
             for (int j = 0; j < Parts.Count; j++)
                 Parts[j].InitLineFit();
@@ -1478,7 +1473,7 @@ namespace Orts.Simulation.RollingStocks
             WorldPosition.TileX = tileX;
             WorldPosition.TileZ = tileZ;
 
-            SuperElevation(speed, Simulator.UseSuperElevation, traveler);
+            UpdatedTraveler(traveler, elapsedTimeS, distance, speed);
 
             // calculate truck angles
             for (int i = 1; i < Parts.Count; i++)
@@ -1516,120 +1511,40 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
-        public float sx = 0.0f, sy = 0.0f, sz = 0.0f, prevElev = -100f, prevTilted;//time series from 0-3.14
-        public float currentStiffness = 1.0f;
-        public double lastTime = -1.0;
-        public float totalRotationZ;
-        public float totalRotationX;
-        public float prevY2 = -1000f;
-        public float prevY = -1000f;
+        #region Traveller-based updates
+        protected float CurrentCurveRadius;
 
-        public float CurrentCurveRadius;
-
-        public void SuperElevation(float speed, int superEV, Traveller traveler)
+        internal void UpdatedTraveler(Traveller traveler, float elapsedTimeS, float distanceM, float speedMpS)
         {
-            CurrentCurveRadius = traveler.GetCurrentCurveRadius();
-
-            // ignore the rest of superelevation if option is not selected under menu options TAB
-            if (Simulator.UseSuperElevation > 0 || Simulator.CarVibrating > 0 || this.Train.IsTilting)
-            {
-
-                if (prevElev < -30f) { prevElev += 40f; return; }//avoid the first two updates as they are not valid
-                speed = (float)Math.Abs(speed);//will make computation easier later, as we only deal with abs value
-                if (speed > 40) speed = 40; //vib will not increase after 120km
-                float timeInterval = 0f;
-                if (lastTime <= 0.0)
-                {
-                    sx = (float)Simulator.Random.NextDouble() * 3.13f;
-                    sy = (float)Simulator.Random.NextDouble() * 3.13f;
-                    sz = (float)Simulator.Random.NextDouble() * 3.13f;
-                    currentStiffness = Stiffness;
-                    prevY = prevY2 = WorldPosition.XNAMatrix.Translation.Y;//remember Y values for acceleration compute
-                }
-                else
-                {
-                    timeInterval = (float)(Simulator.GameTime - lastTime);
-                    //sin wave of frequency 3-5 per second
-                    sx += timeInterval * currentStiffness;
-                    if (sx > 6.28) { sx = sx - 6.28f; currentStiffness = Stiffness + (float)(0.5 - Simulator.Random.NextDouble()) * speed / 20; }
-                    sy += timeInterval * currentStiffness;
-                    if (sy > 6.28) { sy = sy - 6.28f; }
-                    sz += timeInterval * currentStiffness;
-                    if (sz > 6.28) { sz = sz - 6.28f; }
-                }
-                lastTime = Simulator.GameTime;
-                //System.Console.WriteLine("" + x + " " + y + " " + z);
-
-                //get superelevation
-                float z = 0.0f;
-                if (superEV > 0)
-                {
-                    z = traveler.SuperElevationValue(speed, timeInterval, true);
-                    if (this.Flipped) z *= -1f;
-
-                    if (prevElev < -10f) prevElev = z;//initial, will jump to the desired value
-                                                      //else if (Math.Abs(z) > 0.0001 && Math.Sign(prevElev) >0.0001 && Math.Sign(z) != Math.Sign(prevElev)) { z = prevElev; }//changing signs indicating something wrong
-                    else
-                    {
-                        z = prevElev + (z - prevElev) * timeInterval;//smooth rotation
-                        prevElev = z;
-                    }
-                }
-
-                //compute max shaking (rotation value), will peak at MaxVibSpeed, then decrease with half the value
-                var max = 1f;
-                if (speed <= MaxVibSpeed) max = speed / MaxVibSpeed;
-                else max = 1 - (speed - MaxVibSpeed) / MaxVibSpeed * 2;
-                max *= Simulator.CarVibrating / 500f;//user may want more vibration (by Ctrl-V)
-                var tz = traveler.FindTiltedZ(speed);//rotation if tilted, an indication of centrifugal force
-
-
-
-                max = ComputeMaxXZ(timeInterval, max, tz);//add a damping, also based on acceleration
-                                                          //small vibration (rotation to add on x,y,z axis)
-                var sx1 = (float)Math.Sin(sx) * max; var sz1 = (float)Math.Sin(sz) * max;
-
-                //check for tilted train, add more to the body
-                if (this.Train != null && this.Train.IsTilting == true)
-                {
-                    tz = prevTilted + (tz - prevTilted) * timeInterval;//smooth rotation
-                    prevTilted = tz;
-                    if (this.Flipped) tz *= -1f;
-                    sz1 += tz;
-                }
-
-                totalRotationZ = -(sz1 + z) / 4;
-                totalRotationX = sx1 / 2;
-                //this matrix is for the body, bogie will do an inverse to keep on track
-                SuperElevationMatrix = Matrix.CreateRotationX(sx1) /* * Matrix.CreateRotationY(sy1)*/ * Matrix.CreateRotationZ(sz1);
-                //SuperElevationMatrix.Translation += new Vector3(sx1, sy1, sz1);
-                WorldPosition.XNAMatrix = Matrix.CreateRotationZ(z) * SuperElevationMatrix * WorldPosition.XNAMatrix;
-                try
-                {
-                    SuperElevationMatrix = Matrix.Invert(SuperElevationMatrix);
-                }
-                catch { SuperElevationMatrix = Matrix.Identity; }
-            }
+            CurrentCurveRadius = traveler.GetCurveRadius();
+            UpdateVibration(traveler, elapsedTimeS, distanceM, speedMpS);
+            UpdateSuperElevation(traveler);
         }
+        #endregion
 
-        public float accumedAcceTime = 4f;
-        //compute the max shaking around x and z based on accelation on Y and centrifugal values
-        public float ComputeMaxXZ(float interval, float max, float tz)
+        #region Super-elevation
+        void UpdateSuperElevation(Traveller traveler)
         {
-            if (interval < 0.001f) return max;
+            if (Simulator.Settings.UseSuperElevation == 0 && !Train.IsTilting)
+                return;
 
-            float maxV = 0f;
-            var newY = WorldPosition.XNAMatrix.Translation.Y;
-            //compute acceleration on Y
-            var acce = (newY - 2 * prevY + prevY2) / (interval * interval);
-            prevY2 = prevY; prevY = newY;
-            maxV = Math.Abs(acce);
-
-            //if has big acceleration, will resume vibration
-            if (maxV > 1 || Math.Abs(tz) > 0.02 || Math.Abs(AccelerationMpSS) > 0.5) { accumedAcceTime = 1f; return max; }
-            accumedAcceTime += interval / 5;
-            return max / accumedAcceTime;//otherwise slowly decrease the value
+            // TODO: Implementation of super-elevation.
         }
+        #endregion
+
+        #region Vibration
+        public Matrix VibrationInverseMatrix = Matrix.Identity;
+
+        internal void UpdateVibration(Traveller traveler, float elapsedTimeS, float distanceM, float speedMpS)
+        {
+            // NOTE: Traveller is at the FRONT of the TrainCar!
+
+            if (Simulator.Settings.CarVibratingLevel == 0)
+                return;
+
+            // TODO: Implementation of super-elevation.
+        }
+        #endregion
 
         // TODO These three fields should be in the TrainCarViewer.
         public int TrackSoundType = 0;
