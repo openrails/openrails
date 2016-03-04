@@ -1205,7 +1205,7 @@ namespace Orts.Simulation.Timetables
                     FrontTDBTraveller = new Traveller(otherTrain.FrontTDBTraveller);
                     RearTDBTraveller = new Traveller(otherTrain.RearTDBTraveller);
                 }
-                CalculatePositionOfCars(0);
+                CalculatePositionOfCars();
             }
 
             // set state
@@ -3943,13 +3943,13 @@ namespace Orts.Simulation.Timetables
             // recalculate position of formed train
             if (attachTrainFront)  // coupled to front, so rear position is still valid
             {
-                attachTrain.CalculatePositionOfCars(0);
+                attachTrain.CalculatePositionOfCars();
                 DistanceTravelledM += Length;
             }
             else // coupled to rear so front position is still valid
             {
                 attachTrain.RepositionRearTraveller();    // fix the rear traveller
-                attachTrain.CalculatePositionOfCars(0);
+                attachTrain.CalculatePositionOfCars();
             }
 
             // update positions train

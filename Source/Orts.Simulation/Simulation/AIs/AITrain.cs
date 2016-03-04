@@ -4124,13 +4124,13 @@ namespace Orts.Simulation.AIs
                 // recalculate position of formed train
                 if (attachTrainFront)  // coupled to front, so rear position is still valid
                 {
-                    attachTrain.CalculatePositionOfCars(0);
+                    attachTrain.CalculatePositionOfCars();
                     attachTrain.DistanceTravelledM += Length;
                 }
                 else // coupled to rear so front position is still valid
                 {
                     attachTrain.RepositionRearTraveller();    // fix the rear traveller
-                    attachTrain.CalculatePositionOfCars(0);
+                    attachTrain.CalculatePositionOfCars();
                 }
 
                 // update positions train
@@ -4236,13 +4236,13 @@ namespace Orts.Simulation.AIs
             // recalculate position of formed train
             if (thisTrainFront)  // coupled to front, so rear position is still valid
             {
-                CalculatePositionOfCars(0);
+                CalculatePositionOfCars();
                 DistanceTravelledM += Length;
             }
             else // coupled to rear so front position is still valid
             {
                 RepositionRearTraveller();    // fix the rear traveller
-                CalculatePositionOfCars(0);
+                CalculatePositionOfCars();
             }
 
             // update positions train
@@ -4441,28 +4441,28 @@ namespace Orts.Simulation.AIs
             // recalculate position of coupling train
             if (thisTrainFront)  // coupled to front, so rear position is still valid
             {
-                CalculatePositionOfCars(0);
+                CalculatePositionOfCars();
                 DistanceTravelledM -= passedLength;
                 Cars[0].BrakeSystem.AngleCockAOpen = false;
             }
             else // coupled to rear so front position is still valid
             {
                 RepositionRearTraveller();    // fix the rear traveller
-                CalculatePositionOfCars(0);
+                CalculatePositionOfCars();
                 Cars[Cars.Count - 1].BrakeSystem.AngleCockBOpen = false;
             }
 
             // recalculate position of coupled train
             if (attachTrainFront)  // coupled to front, so rear position is still valid
             {
-                attachTrain.CalculatePositionOfCars(0);
+                attachTrain.CalculatePositionOfCars();
                 attachTrain.DistanceTravelledM += passedLength;
                 attachTrain.Cars[0].BrakeSystem.AngleCockAOpen = false;
             }
             else // coupled to rear so front position is still valid
             {
                 attachTrain.RepositionRearTraveller();    // fix the rear traveller
-                attachTrain.CalculatePositionOfCars(0);
+                attachTrain.CalculatePositionOfCars();
                 attachTrain.Cars[attachTrain.Cars.Count - 1].BrakeSystem.AngleCockBOpen = false;
             }
 

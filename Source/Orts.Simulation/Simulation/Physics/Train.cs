@@ -711,7 +711,7 @@ namespace Orts.Simulation.Physics
 
             if (TrainType != TRAINTYPE.AI_NOTSTARTED && TrainType != TRAINTYPE.AI_AUTOGENERATE)
             {
-                CalculatePositionOfCars(0);
+                CalculatePositionOfCars();
 
                 DistanceTravelledM = inf.ReadSingle();
                 PresentPosition[0] = new TCPosition();
@@ -3479,6 +3479,11 @@ namespace Orts.Simulation.Physics
             }
             if (TrainType == TRAINTYPE.AI_INCORPORATED && IncorporatingTrainNo > -1) IsPlayable = true;
         } // CheckFreight
+
+        public void CalculatePositionOfCars()
+        {
+            CalculatePositionOfCars(0);
+        }
 
         //================================================================================================//
         /// <summary>
@@ -17483,7 +17488,7 @@ namespace Orts.Simulation.Physics
                             //move = SpeedMpS > 0 ? 0.001f : -0.001f;
                             this.travelled = expectedTravelled;
                             this.RearTDBTraveller = t;
-                            CalculatePositionOfCars(0);
+                            CalculatePositionOfCars();
 
                         }
                     }

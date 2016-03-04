@@ -1215,10 +1215,10 @@ namespace Orts.MultiPlayer
             Train.TCSubpathRoute tempRoute = train.CalculateInitialTrainPosition(ref canPlace);
 
             train.SetInitialTrainRoute(tempRoute);
-            train.CalculatePositionOfCars(0);
+            train.CalculatePositionOfCars();
             train.ResetInitialTrainRoute(tempRoute);
 
-            train.CalculatePositionOfCars(0);
+            train.CalculatePositionOfCars();
             train.AITrainBrakePercent = 100;
 
             if (train.Cars[0] is MSTSLocomotive) train.LeadLocomotive = train.Cars[0];
@@ -1403,7 +1403,7 @@ namespace Orts.MultiPlayer
                 train.Cars = tmpCars;
                 train.MUDirection = (Direction)mDirection;
                 train.RearTDBTraveller = traveller;
-                train.CalculatePositionOfCars(0);
+                train.CalculatePositionOfCars();
                 train.travelled = Travelled;
                 train.CheckFreight();
                 return;
@@ -1444,10 +1444,10 @@ namespace Orts.MultiPlayer
             Train.TCSubpathRoute tempRoute = train1.CalculateInitialTrainPosition(ref canPlace);
 
             train1.SetInitialTrainRoute(tempRoute);
-            train1.CalculatePositionOfCars(0);
+            train1.CalculatePositionOfCars();
             train1.ResetInitialTrainRoute(tempRoute);
 
-            train1.CalculatePositionOfCars(0);
+            train1.CalculatePositionOfCars();
             train1.AITrainBrakePercent = 100;
 
             if (train1.Cars[0] is MSTSLocomotive) train1.LeadLocomotive = train1.Cars[0];
@@ -2431,10 +2431,10 @@ namespace Orts.MultiPlayer
                         }
 
                         train.SetInitialTrainRoute(tempRoute);
-                        train.CalculatePositionOfCars(0);
+                        train.CalculatePositionOfCars();
                         train.ResetInitialTrainRoute(tempRoute);
 
-                        train.CalculatePositionOfCars(0);
+                        train.CalculatePositionOfCars();
                         train.AITrainBrakePercent = 100;
                         //train may contain myself, and no other players, thus will make myself controlling this train
                         if (train.Cars.Contains(MPManager.Simulator.PlayerLocomotive))
@@ -2503,10 +2503,10 @@ namespace Orts.MultiPlayer
                 }
 
                 train2.SetInitialTrainRoute(tempRoute);
-                train2.CalculatePositionOfCars(0);
+                train2.CalculatePositionOfCars();
                 train2.ResetInitialTrainRoute(tempRoute);
 
-                train2.CalculatePositionOfCars(0);
+                train2.CalculatePositionOfCars();
                 train2.AITrainBrakePercent = 100;
                 if (train2.Cars.Contains(MPManager.Simulator.PlayerLocomotive))
                 {
@@ -2750,7 +2750,7 @@ namespace Orts.MultiPlayer
             train.MUDirection = (Direction)mDirection;
             train.RearTDBTraveller = new Traveller(MPManager.Simulator.TSectionDat, MPManager.Simulator.TDB.TrackDB.TrackNodes, TileX, TileZ, X, Z, direction == 0 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
             train.CheckFreight();
-            train.CalculatePositionOfCars(0);
+            train.CalculatePositionOfCars();
             train.LeadLocomotive = null; train2.LeadLocomotive = null;
             if (Lead != -1 && Lead < train.Cars.Count) train.LeadLocomotive = train.Cars[Lead];
 

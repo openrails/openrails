@@ -388,7 +388,7 @@ namespace Orts.Simulation
 
             if (playerTTTrain != null)
             {
-                playerTTTrain.CalculatePositionOfCars(0); // calculate position of player train cars
+                playerTTTrain.CalculatePositionOfCars(); // calculate position of player train cars
                 playerTTTrain.PostInit();               // place player train after pre-running of AI trains
                 if (!TrainDictionary.ContainsKey(playerTTTrain.Number)) TrainDictionary.Add(playerTTTrain.Number, playerTTTrain);
                 if (!NameDictionary.ContainsKey(playerTTTrain.Name.ToLower())) NameDictionary.Add(playerTTTrain.Name.ToLower(), playerTTTrain);
@@ -640,7 +640,7 @@ namespace Orts.Simulation
         private void FinishFrontCoupling(Train drivenTrain, Train train, TrainCar lead, bool sameDirection)
         {
             drivenTrain.LeadLocomotive = lead;
-            drivenTrain.CalculatePositionOfCars(0);
+            drivenTrain.CalculatePositionOfCars();
             FinishCoupling(drivenTrain, train, true, sameDirection);
         }
 
@@ -1027,10 +1027,10 @@ namespace Orts.Simulation
             }
 
             train.SetInitialTrainRoute(tempRoute);
-            train.CalculatePositionOfCars(0);
+            train.CalculatePositionOfCars();
             train.ResetInitialTrainRoute(tempRoute);
 
-            train.CalculatePositionOfCars(0);
+            train.CalculatePositionOfCars();
             Trains.Add(train);
 
             // Note the initial position to be stored by a Save and used in Menu.exe to calculate DistanceFromStartM 
@@ -1077,10 +1077,10 @@ namespace Orts.Simulation
                 throw new InvalidDataException("Player train original position not clear");
             }
             train.SetInitialTrainRoute(tempRoute);
-            train.CalculatePositionOfCars(0);
+            train.CalculatePositionOfCars();
             train.ResetInitialTrainRoute(tempRoute);
 
-            train.CalculatePositionOfCars(0);
+            train.CalculatePositionOfCars();
             train.TrainType = Train.TRAINTYPE.AI_PLAYERDRIVEN;
             Trains.Add(train);
 
@@ -1187,7 +1187,7 @@ namespace Orts.Simulation
                     train.RearTDBTraveller.Move(lastCar.CarLengthM / 2f);
                     train.RearTDBTraveller.ReverseDirection();
 
-                    train.CalculatePositionOfCars(0);
+                    train.CalculatePositionOfCars();
                     train.InitializeBrakes();
                     train.CheckFreight();
 
@@ -1437,15 +1437,15 @@ namespace Orts.Simulation
             if (train.IsActualPlayerTrain && j >= i || !keepFront)
             {
                 train2.FrontTDBTraveller = new Traveller(train.FrontTDBTraveller);
-                train.CalculatePositionOfCars(0);
+                train.CalculatePositionOfCars();
                 train2.RearTDBTraveller = new Traveller(train.FrontTDBTraveller);
-                train2.CalculatePositionOfCars(0);  // fix the front traveller
+                train2.CalculatePositionOfCars();  // fix the front traveller
                 train.DistanceTravelledM -= train2.Length;
             }
             else
             {
                 train2.RearTDBTraveller = new Traveller(train.RearTDBTraveller);
-                train2.CalculatePositionOfCars(0);  // fix the front traveller
+                train2.CalculatePositionOfCars();  // fix the front traveller
                 train.RepositionRearTraveller();    // fix the rear traveller
             }
 
@@ -1642,14 +1642,14 @@ namespace Orts.Simulation
             // and fix up the travellers
             if (frontportion)
             {
-                train.CalculatePositionOfCars(0);
+                train.CalculatePositionOfCars();
                 newTrain.RearTDBTraveller = new Traveller(train.FrontTDBTraveller);
-                newTrain.CalculatePositionOfCars(0);
+                newTrain.CalculatePositionOfCars();
             }
             else
             {
                 newTrain.RearTDBTraveller = new Traveller(train.RearTDBTraveller);
-                newTrain.CalculatePositionOfCars(0);
+                newTrain.CalculatePositionOfCars();
                 train.RepositionRearTraveller();    // fix the rear traveller
             }
 

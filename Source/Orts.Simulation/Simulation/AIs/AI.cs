@@ -833,7 +833,7 @@ namespace Orts.Simulation.AIs
             if (validPosition)
             {
                 thisTrain.SetInitialTrainRoute(tempRoute);
-                thisTrain.CalculatePositionOfCars(0);
+                thisTrain.CalculatePositionOfCars();
                 for (int i = 0; i < thisTrain.Cars.Count; i++)
                     thisTrain.Cars[i].WorldPosition.XNAMatrix.M42 -= 1000;
                 thisTrain.ResetInitialTrainRoute(tempRoute);
@@ -915,7 +915,7 @@ namespace Orts.Simulation.AIs
             if (validPosition)
             {
                 thisTrain.SetInitialTrainRoute(tempRoute);
-                thisTrain.CalculatePositionOfCars(0);
+                thisTrain.CalculatePositionOfCars();
                 for (int i = 0; i < thisTrain.Cars.Count; i++)
                     thisTrain.Cars[i].WorldPosition.XNAMatrix.M42 -= 1000;
                 thisTrain.ResetInitialTrainRoute(tempRoute);

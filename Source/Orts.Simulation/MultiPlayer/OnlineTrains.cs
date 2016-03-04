@@ -226,10 +226,10 @@ namespace Orts.MultiPlayer
             }
 
             train.SetInitialTrainRoute(tempRoute);
-            train.CalculatePositionOfCars(0);
+            train.CalculatePositionOfCars();
             train.ResetInitialTrainRoute(tempRoute);
 
-            train.CalculatePositionOfCars(0);
+            train.CalculatePositionOfCars();
             train.AITrainBrakePercent = 100;
 
             //if (MPManager.Instance().AllowedManualSwitch) train.InitializeSignals(false);
