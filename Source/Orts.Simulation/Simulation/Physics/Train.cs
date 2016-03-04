@@ -3568,7 +3568,6 @@ namespace Orts.Simulation.Physics
 
                     if (Simulator.UseSuperElevation > 0 || Simulator.CarVibrating > 0 || this.IsTilting)
                     {
-                        car.RealXNAMatrix = car.WorldPosition.XNAMatrix;
                         car.SuperElevation(SpeedMpS, Simulator.UseSuperElevation, traveller);
                     }
 

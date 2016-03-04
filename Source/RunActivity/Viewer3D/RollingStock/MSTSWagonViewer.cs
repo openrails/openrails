@@ -401,11 +401,7 @@ namespace Orts.Viewer3D.RollingStock
 
             if (FreightShape != null)
             {
-                if (Viewer.Camera == Viewer.CabCamera && Car == Viewer.CabCamera.AttachedCar)
-                {
-                    FreightShape.Location.XNAMatrix = Car.GetXNAMatrix();
-                }
-                else FreightShape.Location.XNAMatrix = Car.WorldPosition.XNAMatrix;
+                FreightShape.Location.XNAMatrix = Car.WorldPosition.XNAMatrix;
                 FreightShape.Location.TileX = Car.WorldPosition.TileX; FreightShape.Location.TileZ = Car.WorldPosition.TileZ;
 
                 if (MSTSWagon.WagonType == TrainCar.WagonTypes.Tender)
@@ -432,11 +428,7 @@ namespace Orts.Viewer3D.RollingStock
                 {
                     if (freightAnim.FreightShape != null && !((freightAnim.Animation is FreightAnimationContinuous) && (freightAnim.Animation as FreightAnimationContinuous).LoadPerCent == 0))
                     {
-                        if (Viewer.Camera == Viewer.CabCamera && Car == Viewer.CabCamera.AttachedCar)
-                        {
-                            freightAnim.FreightShape.Location.XNAMatrix = Car.GetXNAMatrix();
-                        }
-                        else freightAnim.FreightShape.Location.XNAMatrix = Car.WorldPosition.XNAMatrix;
+                        freightAnim.FreightShape.Location.XNAMatrix = Car.WorldPosition.XNAMatrix;
                         freightAnim.FreightShape.Location.TileX = Car.WorldPosition.TileX; freightAnim.FreightShape.Location.TileZ = Car.WorldPosition.TileZ;
                         if (freightAnim.FreightShape.XNAMatrices.Length > 0)
                         {

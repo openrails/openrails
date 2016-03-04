@@ -386,7 +386,7 @@ namespace Orts.Viewer3D.RollingStock
                                         pickup.Position.X, pickup.Position.Y, pickup.Position.Z);
                                 if ((wagon.FreightAnimations != null && ((uint)wagon.FreightAnimations.FreightType == pickup.PickupType || wagon.FreightAnimations.FreightType == MSTSWagon.PickupType.None) &&
                                     (uint)intake.Type == pickup.PickupType)
-                                 ||((uint)intake.Type == pickup.PickupType && (uint)intake.Type > (uint)MSTSWagon.PickupType.FreightSand && (wagon.WagonType == TrainCar.WagonTypes.Tender || wagon is MSTSLocomotive)))
+                                 || ((uint)intake.Type == pickup.PickupType && (uint)intake.Type > (uint)MSTSWagon.PickupType.FreightSand && (wagon.WagonType == TrainCar.WagonTypes.Tender || wagon is MSTSLocomotive)))
                                 {
                                     var intakePosition = car.WorldPosition; //TODO Convert this into the position of the intake.
 
@@ -1205,7 +1205,7 @@ namespace Orts.Viewer3D.RollingStock
                     var scale = new Vector2((float)_CabRect.Width / _CabTexture.Width, (float)_CabRect.Height / _CabTexture.Height);
                     var place = new Vector2(_CabRect.Width / 2 - 50 * scale.X, _CabRect.Height / 2 + _Viewer.CabYOffsetPixels - 40 * scale.Y);
                     var place2 = new Vector2(_CabTexture.Width / 2, _CabTexture.Height / 2);
-                    _Sprite2DCabView.SpriteBatch.Draw(_CabTexture, place, stretchedCab, Color.White, _Locomotive.CabRotationZ, place2, scale, SpriteEffects.None, 0f);
+                    _Sprite2DCabView.SpriteBatch.Draw(_CabTexture, place, stretchedCab, Color.White, 0, place2, scale, SpriteEffects.None, 0f);
                 }
                 else
                 {
@@ -1352,12 +1352,6 @@ namespace Orts.Viewer3D.RollingStock
             while (rangeDegrees <= 0)
                 rangeDegrees += 360;
             Rotation = MathHelper.WrapAngle(MathHelper.ToRadians(ControlDial.FromDegree + direction * rangeDegrees * rangeFraction));
-            if (Viewer.Simulator.UseSuperElevation > 0 || Viewer.Simulator.CarVibrating > 0 || Locomotive.Train.IsTilting)
-            {
-                Position.X -= Viewer.DisplaySize.X / 2; Position.Y -= (Viewer.CabHeightPixels / 2 + Viewer.CabYOffsetPixels);
-                Position = Vector2.Transform(Position, Matrix.CreateRotationZ(Locomotive.CabRotationZ));
-                Position.X += Viewer.DisplaySize.X / 2; Position.Y += (Viewer.CabHeightPixels / 2 + Viewer.CabYOffsetPixels);
-            }
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
@@ -1368,10 +1362,7 @@ namespace Orts.Viewer3D.RollingStock
                 Shader.Begin();
                 Shader.CurrentTechnique.Passes[0].Begin();
             }
-            if (Viewer.Simulator.UseSuperElevation > 0 || Viewer.Simulator.CarVibrating > 0 || Locomotive.Train.IsTilting)
-                ControlView.SpriteBatch.Draw(Texture, Position, null, Color.White, Rotation + Locomotive.CabRotationZ, Origin, ScaleToScreen, SpriteEffects.None, 0);
-            else
-                ControlView.SpriteBatch.Draw(Texture, Position, null, Color.White, Rotation, Origin, ScaleToScreen, SpriteEffects.None, 0);
+            ControlView.SpriteBatch.Draw(Texture, Position, null, Color.White, Rotation, Origin, ScaleToScreen, SpriteEffects.None, 0);
             if (Shader != null)
             {
                 Shader.CurrentTechnique.Passes[0].End();
@@ -1529,13 +1520,6 @@ namespace Orts.Viewer3D.RollingStock
                 if (Gauge is CVCFirebox)
                     DestinationRectangle.Height = Math.Min(DestinationRectangle.Height, (int)(yratio * (Control.PositionY + 0.5 * Gauge.Area.Height)) - DestinationRectangle.Y);
             }
-            if (Viewer.Simulator.UseSuperElevation > 0 || Viewer.Simulator.CarVibrating > 0 || Locomotive.Train.IsTilting)
-            {
-                var Position = new Vector2(DestinationRectangle.X - Viewer.DisplaySize.X / 2, DestinationRectangle.Y - Viewer.CabYOffsetPixels - Viewer.CabHeightPixels / 2);
-                Position = Vector2.Transform(Position, Matrix.CreateRotationZ(Locomotive.CabRotationZ));
-                Position.X += Viewer.DisplaySize.X / 2; Position.Y += (Viewer.CabHeightPixels / 2 + Viewer.CabYOffsetPixels);
-                DestinationRectangle.X = (int)(Position.X + 0.5f); DestinationRectangle.Y = (int)(Position.Y + 0.5f);
-            }
             if (Control.MinValue < 0 && Control.ControlType != CABViewControlTypes.REVERSER_PLATE && Gauge.ControlStyle != CABViewControlStyles.POINTER)
             {
                 if (Num < 0 && Gauge.NegativeColor.A != 0)
@@ -1561,12 +1545,7 @@ namespace Orts.Viewer3D.RollingStock
                 Shader.Begin();
                 Shader.CurrentTechnique.Passes[0].Begin();
             }
-            if (Viewer.Simulator.UseSuperElevation > 0 || Viewer.Simulator.CarVibrating > 0 || Locomotive.Train.IsTilting)
-            {
-                ControlView.SpriteBatch.Draw(Texture, DestinationRectangle, SourceRectangle, DrawColor, Locomotive.CabRotationZ, Vector2.Zero, SpriteEffects.None, 0f);
-            }
-            else
-                ControlView.SpriteBatch.Draw(Texture, DestinationRectangle, SourceRectangle, DrawColor);
+            ControlView.SpriteBatch.Draw(Texture, DestinationRectangle, SourceRectangle, DrawColor);
             if (Shader != null)
             {
                 Shader.CurrentTechnique.Passes[0].End();
@@ -1582,7 +1561,6 @@ namespace Orts.Viewer3D.RollingStock
     {
         readonly CVCWithFrames ControlDiscrete;
         readonly Rectangle SourceRectangle;
-        Vector2 DrawPosition = new Vector2();
         Rectangle DestinationRectangle = new Rectangle();
         public readonly float CVCFlashTimeOn = 0.75f;
         public readonly float CVCFlashTimeTotal = 1.5f;
@@ -1653,16 +1631,6 @@ namespace Orts.Viewer3D.RollingStock
             DestinationRectangle.Y = (int)(yratio * Control.PositionY * 1.0001) + Viewer.CabYOffsetPixels;
             DestinationRectangle.Width = (int)(xratio * Math.Min(Control.Width, Texture.Width));  // Allow only downscaling of the texture, and not upscaling
             DestinationRectangle.Height = (int)(yratio * Math.Min(Control.Height, Texture.Height));  // Allow only downscaling of the texture, and not upscaling
-
-            if (Viewer.Simulator.UseSuperElevation > 0 || Viewer.Simulator.CarVibrating > 0 || Locomotive.Train.IsTilting)
-            {
-                var Position = new Vector2(DestinationRectangle.X - Viewer.DisplaySize.X / 2, DestinationRectangle.Y - Viewer.CabHeightPixels / 2 - Viewer.CabYOffsetPixels);
-
-                Position = Vector2.Transform(Position, Matrix.CreateRotationZ(Locomotive.CabRotationZ));
-                Position.X += Viewer.DisplaySize.X / 2 + 0.5f; Position.Y += Viewer.CabHeightPixels / 2 + Viewer.CabYOffsetPixels + 0.5f;
-                DestinationRectangle.X = (int)Position.X; DestinationRectangle.Y = (int)Position.Y;
-                DrawPosition.X = Position.X; DrawPosition.Y = Position.Y;
-            }
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
@@ -1673,11 +1641,7 @@ namespace Orts.Viewer3D.RollingStock
                 Shader.Begin();
                 Shader.CurrentTechnique.Passes[0].Begin();
             }
-            if (Viewer.Simulator.UseSuperElevation > 0 || Viewer.Simulator.CarVibrating > 0 || Locomotive.Train.IsTilting)
-                ControlView.SpriteBatch.Draw(Texture, DrawPosition, SourceRectangle, Color.White, Locomotive.CabRotationZ, Vector2.Zero, new Vector2((float)Viewer.DisplaySize.X / 640 * Scale,
-                    (float)Viewer.CabHeightPixels / 480 * Scale), SpriteEffects.None, 0f);
-            else
-                ControlView.SpriteBatch.Draw(Texture, DestinationRectangle, SourceRectangle, Color.White);
+            ControlView.SpriteBatch.Draw(Texture, DestinationRectangle, SourceRectangle, Color.White);
             if (Shader != null)
             {
                 Shader.CurrentTechnique.Passes[0].End();
@@ -1929,14 +1893,6 @@ namespace Orts.Viewer3D.RollingStock
             DrawPosition.Width = (int)(Control.Width * Viewer.DisplaySize.X / 640);
             DrawPosition.Height = (int)(Control.Height * Viewer.DisplaySize.Y / 480);
 
-            if (Viewer.Simulator.CarVibrating > 0 || Viewer.Simulator.UseSuperElevation > 0 || Locomotive.Train.IsTilting)
-            {
-                var position = new Vector2(DrawPosition.X - Viewer.DisplaySize.X / 2, DrawPosition.Y - Viewer.CabHeightPixels / 2 - Viewer.CabYOffsetPixels);
-                position = Vector2.Transform(position, Matrix.CreateRotationZ(Locomotive.CabRotationZ));
-                DrawPosition.X = (int)Math.Round(position.X + Viewer.DisplaySize.X / 2);
-                DrawPosition.Y = (int)Math.Round(position.Y + Viewer.CabHeightPixels / 2 + Viewer.CabYOffsetPixels);
-            }
-
             if (Control.ControlType == CABViewControlTypes.CLOCK)
             {
                 // Clock is drawn specially.
@@ -1992,10 +1948,7 @@ namespace Orts.Viewer3D.RollingStock
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            if (Viewer.Simulator.CarVibrating > 0 || Viewer.Simulator.UseSuperElevation > 0 || Locomotive.Train.IsTilting)
-                DrawFont.Draw(ControlView.SpriteBatch, DrawPosition, Point.Zero, DrawText, Alignment, DrawColor, Locomotive.CabRotationZ);
-            else
-                DrawFont.Draw(ControlView.SpriteBatch, DrawPosition, Point.Zero, DrawText, Alignment, DrawColor);
+            DrawFont.Draw(ControlView.SpriteBatch, DrawPosition, Point.Zero, DrawText, Alignment, DrawColor);
         }
 
         public string GetDigits(out Color DrawColor)

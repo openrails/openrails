@@ -886,7 +886,7 @@ namespace Orts.Viewer3D
                     cameraLocation.Location.Z = attachedLocation.Z;
                 }
                 cameraLocation.Location.Z *= -1;
-                cameraLocation.Location = Vector3.Transform(cameraLocation.Location, attachedCar.GetXNAMatrix());
+                cameraLocation.Location = Vector3.Transform(cameraLocation.Location, attachedCar.WorldPosition.XNAMatrix);
                 cameraLocation.Location.Z *= -1;
             }
         }
@@ -910,28 +910,12 @@ namespace Orts.Viewer3D
                 lookAtPosition.Z += attachedLocation.Z;
             }
             lookAtPosition.Z *= -1;
-            lookAtPosition = Vector3.Transform(lookAtPosition, attachedCar.GetXNAMatrix());
-            if (tiltingLand && Program.Simulator.CabRotating > 0)
-            {
-                var loco = attachedCar as MSTSLocomotive;
-                // TODO this is a hack to prevent problems viewing freightanims from the cab; however the problem should be solved from the root up
-                if (attachedCar.HasFreightAnim && !attachedCar.HasInsideView && !attachedCar.HasPassengerCapacity && loco.CabViewList != null &&
-                    ((loco.CabViewList[0] != null && loco.CabViewList[0].NoseAhead && !loco.UsingRearCab) ||
-                    (loco.CabViewList.Count > 1 && loco.CabViewList[1] != null && loco.CabViewList[1].NoseAhead && loco.UsingRearCab)))
-                //cars with freight animation  will rotate only camera (except passenger motor units), the land will rotate with the camera, so the FA can follow
-                {
-                    var up = (Matrix.CreateRotationZ(Program.Simulator.CabRotating * attachedCar.totalRotationZ) * attachedCar.GetXNAMatrix()).Up;
-                    return Matrix.CreateLookAt(XnaLocation(cameraLocation), lookAtPosition, up);//Vector3.Transform(Vector3.Up, Matrix.CreateRotationZ(3 * attachedCar.totalRotationZ)));
-                }
-                else
-                // end of hack
-                {
-                    var up = (Matrix.CreateRotationZ((Program.Simulator.CabRotating - 4) * attachedCar.totalRotationZ) * attachedCar.GetXNAMatrix()).Up;
-                    return Matrix.CreateLookAt(XnaLocation(cameraLocation), lookAtPosition, up);//Vector3.Transform(Vector3.Up, Matrix.CreateRotationZ(3 * attachedCar.totalRotationZ)));
-                }
-            }
-            else
-                return Matrix.CreateLookAt(XnaLocation(cameraLocation), lookAtPosition, Vector3.Up);
+            lookAtPosition = Vector3.Transform(lookAtPosition, attachedCar.WorldPosition.XNAMatrix);
+            // Don't forget to rotate the up vector so the camera rotates with us.
+            var upRotation = attachedCar.WorldPosition.XNAMatrix;
+            upRotation.Translation = Vector3.Zero;
+            var up = Vector3.Transform(Vector3.Up, upRotation);
+            return Matrix.CreateLookAt(XnaLocation(cameraLocation), lookAtPosition, up);
         }
 
         public override void Update(ElapsedTime elapsedTime)
@@ -953,7 +937,7 @@ namespace Orts.Viewer3D
                     cameraLocation.Location.Z = attachedLocation.Z;
                 }
                 cameraLocation.Location.Z *= -1;
-                cameraLocation.Location = Vector3.Transform(cameraLocation.Location, attachedCar.GetXNAMatrix());
+                cameraLocation.Location = Vector3.Transform(cameraLocation.Location, attachedCar.WorldPosition.XNAMatrix);
                 cameraLocation.Location.Z *= -1;
             }
             UpdateRotation(elapsedTime);

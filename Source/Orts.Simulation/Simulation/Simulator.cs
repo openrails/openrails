@@ -119,7 +119,6 @@ namespace Orts.Simulation
         public bool BreakCouplers;
         public int DayAmbientLight;
         public int CarVibrating;
-        public int CabRotating = 1;
         public int UseSuperElevation; //amount of superelevation
         public int SuperElevationMinLen = 50;
         public float SuperElevationGauge = 1.435f;//1.435 guage

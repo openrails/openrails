@@ -75,7 +75,7 @@ namespace Orts.Viewer3D.RollingStock
                     var loco = Car as MSTSLocomotive;
                     if (loco.UsingRearCab) realSpeedMpS = -realSpeedMpS;
                 }
-                Vector3 directionVector = Vector3.Multiply(Car.GetXNAMatrix().Forward, realSpeedMpS);
+                Vector3 directionVector = Vector3.Multiply(Car.WorldPosition.XNAMatrix.Forward, realSpeedMpS);
                 Velocity = new float[] { directionVector.X, directionVector.Y, -directionVector.Z };
             }
             else

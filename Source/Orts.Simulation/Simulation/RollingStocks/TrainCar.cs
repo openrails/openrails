@@ -129,7 +129,6 @@ namespace Orts.Simulation.RollingStocks
 
         // status of the traincar - set by the train physics after it calls TrainCar.Update()
         public WorldPosition WorldPosition = new WorldPosition();  // current position of the car
-        public Matrix RealXNAMatrix = Matrix.Identity;
         public float DistanceM;  // running total of distance travelled - always positive, updated by train physics
         public float _SpeedMpS; // meters per second; updated by train physics, relative to direction of car  50mph = 22MpS
         public float _PrevSpeedMpS;
@@ -164,11 +163,6 @@ namespace Orts.Simulation.RollingStocks
         public float AccelerationMpSS
         {
             get { return _AccelerationMpSS; }
-        }
-        public Matrix GetXNAMatrix() //in case of train car vibrating, the camera needs to stay stable
-        {
-            if (RealXNAMatrix == Matrix.Identity) return WorldPosition.XNAMatrix;
-            return RealXNAMatrix;
         }
 
         public Matrix SuperElevationMatrix = Matrix.Identity;
@@ -1483,7 +1477,6 @@ namespace Orts.Simulation.RollingStocks
             WorldPosition.XNAMatrix = m;
             WorldPosition.TileX = tileX;
             WorldPosition.TileZ = tileZ;
-            RealXNAMatrix = WorldPosition.XNAMatrix;
 
             SuperElevation(speed, Simulator.UseSuperElevation, traveler);
 
