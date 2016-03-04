@@ -47,7 +47,7 @@ namespace Orts.Simulation.RollingStocks
     /// <summary>
     /// Adds pantograph control to the basic LocomotiveSimulator functionality
     /// </summary>
-    public class MSTSElectricLocomotive: MSTSLocomotive
+    public class MSTSElectricLocomotive : MSTSLocomotive
     {
         public ScriptedElectricPowerSupply PowerSupply;
 
@@ -91,7 +91,7 @@ namespace Orts.Simulation.RollingStocks
             // for example
             //CabSoundFileName = locoCopy.CabSoundFileName;
             //CVFFileName = locoCopy.CVFFileName;
-            MSTSElectricLocomotive locoCopy = (MSTSElectricLocomotive) copy;
+            MSTSElectricLocomotive locoCopy = (MSTSElectricLocomotive)copy;
 
             PowerSupply.Copy(locoCopy.PowerSupply);
         }

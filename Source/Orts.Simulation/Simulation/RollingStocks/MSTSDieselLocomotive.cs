@@ -270,17 +270,17 @@ namespace Orts.Simulation.RollingStocks
             base.InitializeMoving();
             WheelSpeedMpS = SpeedMpS;
             DynamicBrakePercent = -1;
-            if (DieselEngines[0].GearBox != null && GearBoxController != null) 
+            if (DieselEngines[0].GearBox != null && GearBoxController != null)
             {
                 DieselEngines[0].GearBox.InitializeMoving();
                 DieselEngines[0].InitializeMoving();
                 if (IsLeadLocomotive())
                 {
-                    Train.MUGearboxGearIndex = DieselEngines[0].GearBox.CurrentGearIndex+1;
-                    Train.AITrainGearboxGearIndex = DieselEngines[0].GearBox.CurrentGearIndex+1;
+                    Train.MUGearboxGearIndex = DieselEngines[0].GearBox.CurrentGearIndex + 1;
+                    Train.AITrainGearboxGearIndex = DieselEngines[0].GearBox.CurrentGearIndex + 1;
                 }
                 GearBoxController.CurrentNotch = Train.MUGearboxGearIndex;
-                GearboxGearIndex = DieselEngines[0].GearBox.CurrentGearIndex+1;
+                GearboxGearIndex = DieselEngines[0].GearBox.CurrentGearIndex + 1;
                 GearBoxController.SetValue((float)GearBoxController.CurrentNotch);
             }
             ThrottleController.SetValue(Train.MUThrottlePercent / 100);
@@ -479,17 +479,17 @@ namespace Orts.Simulation.RollingStocks
 
         public override void ChangeGearDown()
         {
-            
-                if (DieselEngines[0].GearBox != null)
+
+            if (DieselEngines[0].GearBox != null)
+            {
+                if (DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Semiautomatic)
                 {
-                    if (DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Semiautomatic)
-                    {
-                        DieselEngines[0].GearBox.AutoGearDown();
-                        GearBoxController.SetValue((float)DieselEngines[0].GearBox.NextGearIndex);
-                    }
+                    DieselEngines[0].GearBox.AutoGearDown();
+                    GearBoxController.SetValue((float)DieselEngines[0].GearBox.NextGearIndex);
                 }
+            }
         }
-       
+
         public override float GetDataOf(CabViewControl cvc)
         {
             float data = 0;
@@ -600,7 +600,7 @@ namespace Orts.Simulation.RollingStocks
             return 0f;
         }
 
-       /// <summary>
+        /// <summary>
         /// Restores the type of gearbox, that was forced to
         /// automatic for AI trains
         /// </summary>
@@ -621,4 +621,3 @@ namespace Orts.Simulation.RollingStocks
         }
     } // class DieselLocomotive
 }
-

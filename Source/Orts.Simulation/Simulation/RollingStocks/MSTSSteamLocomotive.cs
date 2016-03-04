@@ -539,7 +539,7 @@ namespace Orts.Simulation.RollingStocks
         public float Cylinders2SteamVolumeM3pS;
         public float SafetyValvesSteamVelocityMpS;
         public float SafetyValvesSteamVolumeM3pS;
- 
+
         public float DrainpipeSteamVolumeM3pS;
         public float DrainpipeSteamVelocityMpS;
         public float Injector1SteamVolumeM3pS;
@@ -814,7 +814,7 @@ namespace Orts.Simulation.RollingStocks
             WaterFraction = inf.ReadSingle();
             EvaporationLBpS = inf.ReadSingle();
             CurrentCarriageHeatTempC = inf.ReadSingle();
-            CurrentTrainSteamHeatW = inf.ReadSingle(); 
+            CurrentTrainSteamHeatW = inf.ReadSingle();
             FireMassKG = inf.ReadSingle();
             FlueTempK = inf.ReadSingle();
             SteamGearPosition = inf.ReadSingle();
@@ -1099,9 +1099,9 @@ namespace Orts.Simulation.RollingStocks
             }
             else
                 if (LocoIsOilBurner)
-                    IdealFireMassKG = GrateAreaM2 * 720.0f * 0.08333f * 0.02382f * 1.293f;  // Check this formula as conversion factors maybe incorrect, also grate area is now in SqM
-                else
-                    IdealFireMassKG = GrateAreaM2 * Me.FromIn(IdealFireDepthIN) * FuelDensityKGpM3;
+                IdealFireMassKG = GrateAreaM2 * 720.0f * 0.08333f * 0.02382f * 1.293f;  // Check this formula as conversion factors maybe incorrect, also grate area is now in SqM
+            else
+                IdealFireMassKG = GrateAreaM2 * Me.FromIn(IdealFireDepthIN) * FuelDensityKGpM3;
 
             // Calculate the maximum fuel burn rate based upon grate area and limit
             float GrateLimitLBpFt2add = 162.0f;     // Alow burn rate to slightly exceed grate limit
@@ -1160,18 +1160,18 @@ namespace Orts.Simulation.RollingStocks
                     SteamLocoType = " ";
                     if (IsSimpleLoco)
                     {
-                        if(IsSimpleLocoAssumed)
+                        if (IsSimpleLocoAssumed)
                         {
-                            SteamLocoType = "Not defined (assumed simple) locomotive + Not formally defined (assumed superheated)"; 
+                            SteamLocoType = "Not defined (assumed simple) locomotive + Not formally defined (assumed superheated)";
                         }
                         else
                         {
-                            SteamLocoType = "Simple locomotive + Not formally defined (assumed superheated)"; 
-                        }              
+                            SteamLocoType = "Simple locomotive + Not formally defined (assumed superheated)";
+                        }
                     }
-                    else if(IsCompoundLoco)
+                    else if (IsCompoundLoco)
                     {
-                       SteamLocoType = "Compound locomotive + Not formally defined (assumed superheated)";
+                        SteamLocoType = "Compound locomotive + Not formally defined (assumed superheated)";
                     }
                 }
                 else
@@ -1292,14 +1292,14 @@ namespace Orts.Simulation.RollingStocks
 
             #region Initialise Locomotive in a Hot or Cold Start Condition
 
-              // Initialise Steam Heating in Train
+            // Initialise Steam Heating in Train
 
             // Checks to see if winter or autumn only?
             if (Simulator.Season == SeasonType.Winter)
             {
                 // Winter temps
                 InsideTempC = 15.5f;  // Assume a desired temperature of 60oF = 15.5oC
-                OutsideTempC = -10.0f; 
+                OutsideTempC = -10.0f;
             }
             else if (Simulator.Season == SeasonType.Autumn || Simulator.Season == SeasonType.Spring)
             {
@@ -1424,29 +1424,29 @@ namespace Orts.Simulation.RollingStocks
             UpdateFX(elapsedClockSeconds);
 
 #if INDIVIDUAL_CONTROL
-			//this train is remote controlled, with mine as a helper, so I need to send the controlling information, but not the force.
-			if (MultiPlayer.MPManager.IsMultiPlayer() && this.Train.TrainType == Train.TRAINTYPE.REMOTE && this == Program.Simulator.PlayerLocomotive)
-			{
-				if (CutoffController.UpdateValue != 0.0 || BlowerController.UpdateValue != 0.0 || DamperController.UpdateValue != 0.0 || FiringRateController.UpdateValue != 0.0 || Injector1Controller.UpdateValue != 0.0 || Injector2Controller.UpdateValue != 0.0)
-				{
-					controlUpdated = true;
-				}
-				Train.MUReverserPercent = CutoffController.Update(elapsedClockSeconds) * 100.0f;
-				if (Train.MUReverserPercent >= 0)
-					Train.MUDirection = Direction.Forward;
-				else
-					Train.MUDirection = Direction.Reverse;
-				return; //done, will go back and send the message to the remote train controller
-			}
+            //this train is remote controlled, with mine as a helper, so I need to send the controlling information, but not the force.
+            if (MultiPlayer.MPManager.IsMultiPlayer() && this.Train.TrainType == Train.TRAINTYPE.REMOTE && this == Program.Simulator.PlayerLocomotive)
+            {
+                if (CutoffController.UpdateValue != 0.0 || BlowerController.UpdateValue != 0.0 || DamperController.UpdateValue != 0.0 || FiringRateController.UpdateValue != 0.0 || Injector1Controller.UpdateValue != 0.0 || Injector2Controller.UpdateValue != 0.0)
+                {
+                    controlUpdated = true;
+                }
+                Train.MUReverserPercent = CutoffController.Update(elapsedClockSeconds) * 100.0f;
+                if (Train.MUReverserPercent >= 0)
+                    Train.MUDirection = Direction.Forward;
+                else
+                    Train.MUDirection = Direction.Reverse;
+                return; //done, will go back and send the message to the remote train controller
+            }
 
-			if (MultiPlayer.MPManager.IsMultiPlayer() && this.notificationReceived == true)
-			{
-				Train.MUReverserPercent = CutoffController.CurrentValue * 100.0f;
-				if (Train.MUReverserPercent >= 0)
-					Train.MUDirection = Direction.Forward;
-				else
-					Train.MUDirection = Direction.Reverse;
-			}
+            if (MultiPlayer.MPManager.IsMultiPlayer() && this.notificationReceived == true)
+            {
+                Train.MUReverserPercent = CutoffController.CurrentValue * 100.0f;
+                if (Train.MUReverserPercent >= 0)
+                    Train.MUDirection = Direction.Forward;
+                else
+                    Train.MUDirection = Direction.Reverse;
+            }
 #endif
             throttle = ThrottlePercent / 100;
             cutoff = Math.Abs(Train.MUReverserPercent / 100);
@@ -1488,13 +1488,13 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         private void UpdateFX(float elapsedClockSeconds)
         {
-      // This section updates the various steam effects for the steam locomotive. It uses the particle drawer which has the following inputs.
-      // Stack - steam velocity, steam volume, particle duration, colour, whislts all other effects use these inputs only, non-Stack - steam velocity, steam volume, particle duration
-      // The steam effects have been adjust based upon their "look and feel", as the particle drawer has a number of different multipliers in it.
-      // Steam Velocity - increasing this value increases how far the steam jets out of the orifice, steam volume adjust volume, particle duration adjusts the "decay' time of the steam
-      // The duration time is reduced with speed to reduce the steam trail behind the locomotive when running at speed.
-      // Any of the steam effects can be disabled by not defining them in the ENG file, and thus they will not be displayed in the viewer.
-     
+            // This section updates the various steam effects for the steam locomotive. It uses the particle drawer which has the following inputs.
+            // Stack - steam velocity, steam volume, particle duration, colour, whislts all other effects use these inputs only, non-Stack - steam velocity, steam volume, particle duration
+            // The steam effects have been adjust based upon their "look and feel", as the particle drawer has a number of different multipliers in it.
+            // Steam Velocity - increasing this value increases how far the steam jets out of the orifice, steam volume adjust volume, particle duration adjusts the "decay' time of the steam
+            // The duration time is reduced with speed to reduce the steam trail behind the locomotive when running at speed.
+            // Any of the steam effects can be disabled by not defining them in the ENG file, and thus they will not be displayed in the viewer.
+
             // Cylinder steam cock effects
             if (Cylinder2SteamEffects) // For MSTS locomotives with one cyldinder cock ignore calculation of cock opening times.
             {
@@ -1529,13 +1529,13 @@ namespace Orts.Simulation.RollingStocks
             Cylinder1ParticleDurationS = 1.0f;
             Cylinder2ParticleDurationS = 1.0f;
 
-       // Drainpipe Steam Effects
+            // Drainpipe Steam Effects
 
             DrainpipeSteamVolumeM3pS = 0.0f;  // Turn Drainpipe permanently "off"
             DrainpipeSteamVelocityMpS = 0.0f;
             DrainpipeParticleDurationS = 1.0f;
 
-      // Generator Steam Effects
+            // Generator Steam Effects
 
             GeneratorSteamVelocityMpS = 50.0f;
             GeneratorSteamVolumeM3pS = 4.0f * SteamEffectsFactor;
@@ -1543,9 +1543,9 @@ namespace Orts.Simulation.RollingStocks
             GeneratorParticleDurationS = MathHelper.Clamp(GeneratorParticleDurationS / (absSpeedMpS / 4.0f), 0.1f, 1.0f);
 
 
-       // Injector Steam Effects
-            
-            Injector1SteamVolumeM3pS = ( Injector1IsOn ? (5.0f * SteamEffectsFactor) : 0);
+            // Injector Steam Effects
+
+            Injector1SteamVolumeM3pS = (Injector1IsOn ? (5.0f * SteamEffectsFactor) : 0);
             Injector1SteamVelocityMpS = 10.0f;
             Injector1ParticleDurationS = 1.0f;
             Injector1ParticleDurationS = MathHelper.Clamp(Injector1ParticleDurationS / (absSpeedMpS / 4.0f), 0.1f, 1.0f);
@@ -1555,21 +1555,21 @@ namespace Orts.Simulation.RollingStocks
             Injector2ParticleDurationS = 1.0f;
             Injector2ParticleDurationS = MathHelper.Clamp(Injector2ParticleDurationS / (absSpeedMpS / 4.0f), 0.1f, 1.0f);
 
-      // Compressor Steam Effects
+            // Compressor Steam Effects
 
             CompressorSteamVelocityMpS = 10.0f;
             CompressorSteamVolumeM3pS = (CompressorIsOn ? (1.5f * SteamEffectsFactor) : 0);
             CompressorParticleDurationS = 1.0f;
             CompressorParticleDurationS = MathHelper.Clamp(CompressorParticleDurationS / (absSpeedMpS / 4.0f), 0.1f, 1.0f);
 
-      // Whistle Steam Effects
+            // Whistle Steam Effects
 
             WhistleSteamVelocityMpS = 10.0f;
             WhistleSteamVolumeM3pS = (Horn ? (5.0f * SteamEffectsFactor) : 0);
             WhistleParticleDurationS = 3.0f;
             WhistleParticleDurationS = MathHelper.Clamp(WhistleParticleDurationS / (absSpeedMpS / 4.0f), 0.1f, 3.0f);
 
-        // Safety Valves Steam Effects
+            // Safety Valves Steam Effects
 
             SafetyValvesSteamVelocityMpS = (float)Math.Sqrt(KPa.FromPSI(MaxBoilerPressurePSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3);
             //SafetyValvesSteamVolumeM3pS = SafetyIsOn ? Kg.FromLb(SafetyValveUsageLBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG : 0;
@@ -1605,7 +1605,7 @@ namespace Orts.Simulation.RollingStocks
             float SmokeColorUnits = (RadiationSteamLossLBpS + CalculatedCarHeaterSteamUsageLBpS + BlowerBurnEffect + (SmokeColorDamper * SmokeColorFireMass)) / PreviousTotalSteamUsageLBpS - 0.2f;
             SmokeColor.Update(elapsedClockSeconds, MathHelper.Clamp(SmokeColorUnits, 0.25f, 1));
 
-          //  Trace.TraceInformation("Smoke: Rad {0} CarHeat {1} Blower {2} Damper {3} Fire Mass {4} Prev {5} Total {6}", RadiationSteamLossLBpS, CalculatedCarHeaterSteamUsageLBpS, BlowerBurnEffect, SmokeColorDamper, SmokeColorFireMass, PreviousTotalSteamUsageLBpS, SmokeColorUnits);
+            //  Trace.TraceInformation("Smoke: Rad {0} CarHeat {1} Blower {2} Damper {3} Fire Mass {4} Prev {5} Total {6}", RadiationSteamLossLBpS, CalculatedCarHeaterSteamUsageLBpS, BlowerBurnEffect, SmokeColorDamper, SmokeColorFireMass, PreviousTotalSteamUsageLBpS, SmokeColorUnits);
 
             // Variable1 is proportional to angular speed, value of 10 means 1 rotation/second.
             var variable1 = (Simulator.UseAdvancedAdhesion && Train.IsPlayerDriven ? LocomotiveAxle.AxleSpeedMpS : SpeedMpS) / DriverWheelRadiusM / MathHelper.Pi * 5;
@@ -1679,7 +1679,7 @@ namespace Orts.Simulation.RollingStocks
                 if (SteamHeatController.UpdateValue < 0.0)
                     Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamHeat, CabSetting.Decrease, SteamHeatController.CurrentValue * 100);
             }
-            
+
             Injector1Controller.Update(elapsedClockSeconds);
             if (IsPlayerTrain)
             {
@@ -1747,10 +1747,10 @@ namespace Orts.Simulation.RollingStocks
             if (RefillingFromTrough && !IsOverTrough())
             {
                 // Bad thing, scoop gets broken!
-               Simulator.Confirmer.Message(ConfirmLevel.Error, Simulator.Catalog.GetString("Scoop broken because activated outside through"));
-               WaterController.UpdateValue = 0.0f;
-               RefillingFromTrough = false;
-               SignalEvent(Event.WaterScoopUp);
+                Simulator.Confirmer.Message(ConfirmLevel.Error, Simulator.Catalog.GetString("Scoop broken because activated outside through"));
+                WaterController.UpdateValue = 0.0f;
+                RefillingFromTrough = false;
+                SignalEvent(Event.WaterScoopUp);
             }
 
             WaterController.Update(elapsedClockSeconds);
@@ -1785,8 +1785,8 @@ namespace Orts.Simulation.RollingStocks
             // Add the value of water in the auxiliary tender to the tender water.
             // If Aux tender is uncoupled then assume that the % water level is the same in both the tender and the aux tender before uncoupling. Therefore calculate tender water based upon controller value and max tender water value.
             if (Train.IsAuxTenderCoupled)
-             {
-                if(SteamIsAuxTenderCoupled == false)
+            {
+                if (SteamIsAuxTenderCoupled == false)
                 {
                     CurrentAuxTenderWaterVolumeUKG = (Kg.ToLb(CurrentAuxTenderWaterMassKG) / WaterLBpUKG);  // Adjust water volume due to aux tender being connected
                     SteamIsAuxTenderCoupled = true;
@@ -1818,7 +1818,7 @@ namespace Orts.Simulation.RollingStocks
             }
 
             CombinedTenderWaterVolumeUKG = TenderWaterVolumeUKG + CurrentAuxTenderWaterVolumeUKG;
-            CombinedTenderWaterVolumeUKG = MathHelper.Clamp(CombinedTenderWaterVolumeUKG, 0, ((Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG) + (Kg.ToLb(Train.MaxAuxTenderWaterMassKG) / WaterLBpUKG)) ); // Clamp value so that it doesn't go out of bounds
+            CombinedTenderWaterVolumeUKG = MathHelper.Clamp(CombinedTenderWaterVolumeUKG, 0, ((Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG) + (Kg.ToLb(Train.MaxAuxTenderWaterMassKG) / WaterLBpUKG))); // Clamp value so that it doesn't go out of bounds
             TenderWaterChangePercent = (InjectorBoilerInputLB / WaterLBpUKG) / (Kg.ToLb(MaxTenderWaterMassKG + Train.MaxAuxTenderWaterMassKG) / WaterLBpUKG);  // Calculate the % change due to injector water usage
             TenderWaterVolumeUKG -= CombinedTenderWaterVolumeUKG * TenderWaterChangePercent;  // Adjust water usage in tender
             CurrentAuxTenderWaterVolumeUKG -= CombinedTenderWaterVolumeUKG * TenderWaterChangePercent; // Adjust water usage in aux tender
@@ -1889,7 +1889,7 @@ namespace Orts.Simulation.RollingStocks
                     FiringSteamUsageRateLBpS = PreviousTotalSteamUsageLBpS;
                 }
 
-                if ( ShovelAnyway) // will force fire burn rate to increase even though boiler heat seems excessive - activated at full throttle, and on rising gradient
+                if (ShovelAnyway) // will force fire burn rate to increase even though boiler heat seems excessive - activated at full throttle, and on rising gradient
                 {
                     // burnrate will be the radiation loss @ rest & then related to heat usage as a factor of the maximum boiler output - ignores total bolier heat to allow burn rate to increase if boiler heat usage is exceeding input
                     BurnRateRawKGpS = pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH((BlowerBurnEffect + HeatRatio * FiringSteamUsageRateLBpS * PressureRatio))]));
@@ -2160,147 +2160,147 @@ namespace Orts.Simulation.RollingStocks
             #endregion
 
             if (FiringIsManual)
-            {     
-
-            #region Safety Valve - Manual Firing
-
-            // Safety Valve
-            if (BoilerPressurePSI > MaxBoilerPressurePSI + SafetyValveStartPSI)
             {
-                if (!SafetyIsOn)
+
+                #region Safety Valve - Manual Firing
+
+                // Safety Valve
+                if (BoilerPressurePSI > MaxBoilerPressurePSI + SafetyValveStartPSI)
                 {
-                    SignalEvent(Event.SteamSafetyValveOn);
-                    SafetyIsOn = true;
+                    if (!SafetyIsOn)
+                    {
+                        SignalEvent(Event.SteamSafetyValveOn);
+                        SafetyIsOn = true;
+                    }
                 }
-            }
-            else if (BoilerPressurePSI < MaxBoilerPressurePSI - SafetyValveDropPSI)
-            {
+                else if (BoilerPressurePSI < MaxBoilerPressurePSI - SafetyValveDropPSI)
+                {
+                    if (SafetyIsOn)
+                    {
+                        SignalEvent(Event.SteamSafetyValveOff);
+                        SafetyIsOn = false;
+                        SafetyValveUsage1LBpS = 0.0f; // if safety valve closed, then zero discharge rate
+                    }
+                }
                 if (SafetyIsOn)
                 {
-                    SignalEvent(Event.SteamSafetyValveOff);
-                    SafetyIsOn = false;
-                    SafetyValveUsage1LBpS = 0.0f; // if safety valve closed, then zero discharge rate
-                }
-            }
-            if (SafetyIsOn)
-            {
-                // Determine how many safety valves are in operation and set Safety Valve discharge rate
-                SafetyValveUsageLBpS = 0.0f;  // Set to zero initially
+                    // Determine how many safety valves are in operation and set Safety Valve discharge rate
+                    SafetyValveUsageLBpS = 0.0f;  // Set to zero initially
 
-                // Calculate rate for safety valve 1
-                SafetyValveUsage1LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is above open value then set rate
+                    // Calculate rate for safety valve 1
+                    SafetyValveUsage1LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is above open value then set rate
 
-                // Calculate rate for safety valve 2
-                if (BoilerPressurePSI > SafetyValveOpen2Psi)
-                {
-                    safety2IsOn = true; // turn safey 2 on
-                    SafetyValveUsage2LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is above open value then set rate
-                }
-                else
-                {
-                    if (BoilerPressurePSI < SafetyValveClose1Psi)
+                    // Calculate rate for safety valve 2
+                    if (BoilerPressurePSI > SafetyValveOpen2Psi)
                     {
-                        safety2IsOn = false; // turn safey 2 off
-                        SafetyValveUsage2LBpS = 0.0f; // if safety valve closed, then zero discharge rate
+                        safety2IsOn = true; // turn safey 2 on
+                        SafetyValveUsage2LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is above open value then set rate
                     }
                     else
                     {
-                        if (safety2IsOn)
+                        if (BoilerPressurePSI < SafetyValveClose1Psi)
                         {
-                            SafetyValveUsage2LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is between open and close values, set rate
-                        }
-                        else
-                        {
+                            safety2IsOn = false; // turn safey 2 off
                             SafetyValveUsage2LBpS = 0.0f; // if safety valve closed, then zero discharge rate
                         }
+                        else
+                        {
+                            if (safety2IsOn)
+                            {
+                                SafetyValveUsage2LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is between open and close values, set rate
+                            }
+                            else
+                            {
+                                SafetyValveUsage2LBpS = 0.0f; // if safety valve closed, then zero discharge rate
+                            }
+                        }
                     }
-                }
 
-                // Calculate rate for safety valve 3
-                if (BoilerPressurePSI > SafetyValveOpen3Psi)
-                {
-                    safety3IsOn = true; // turn safey 3 on
-                    SafetyValveUsage3LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is above open value then set rate
-                }
-                else
-                {
-                    if (BoilerPressurePSI < SafetyValveClose3Psi)
+                    // Calculate rate for safety valve 3
+                    if (BoilerPressurePSI > SafetyValveOpen3Psi)
                     {
-                        safety3IsOn = false; // turn safey 3 off
-                        SafetyValveUsage3LBpS = 0.0f; // if safety valve closed, then zero discharge rate
+                        safety3IsOn = true; // turn safey 3 on
+                        SafetyValveUsage3LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is above open value then set rate
                     }
                     else
                     {
-                        if (safety3IsOn)
+                        if (BoilerPressurePSI < SafetyValveClose3Psi)
                         {
-                            SafetyValveUsage3LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is between open and close values, set rate
-                        }
-                        else
-                        {
+                            safety3IsOn = false; // turn safey 3 off
                             SafetyValveUsage3LBpS = 0.0f; // if safety valve closed, then zero discharge rate
                         }
+                        else
+                        {
+                            if (safety3IsOn)
+                            {
+                                SafetyValveUsage3LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is between open and close values, set rate
+                            }
+                            else
+                            {
+                                SafetyValveUsage3LBpS = 0.0f; // if safety valve closed, then zero discharge rate
+                            }
+                        }
                     }
-                }
 
 
-                // Calculate rate for safety valve 4
-                if (BoilerPressurePSI > SafetyValveOpen4Psi)
-                {
-                    safety4IsOn = true; // turn safey 4 on
-                    SafetyValveUsage4LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is above open value then set rate
-                }
-                else
-                {
-                    if (BoilerPressurePSI < SafetyValveClose4Psi)
+                    // Calculate rate for safety valve 4
+                    if (BoilerPressurePSI > SafetyValveOpen4Psi)
                     {
-                        safety4IsOn = false; // turn safey 4 off
-                        SafetyValveUsage4LBpS = 0.0f; // if safety valve closed, then zero discharge rate
+                        safety4IsOn = true; // turn safey 4 on
+                        SafetyValveUsage4LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is above open value then set rate
                     }
                     else
                     {
-                        if (safety4IsOn)
+                        if (BoilerPressurePSI < SafetyValveClose4Psi)
                         {
-                            SafetyValveUsage4LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is between open and close values, set rate
+                            safety4IsOn = false; // turn safey 4 off
+                            SafetyValveUsage4LBpS = 0.0f; // if safety valve closed, then zero discharge rate
                         }
                         else
                         {
-                            SafetyValveUsage4LBpS = 0.0f; // if safety valve closed, then zero discharge rate
+                            if (safety4IsOn)
+                            {
+                                SafetyValveUsage4LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is between open and close values, set rate
+                            }
+                            else
+                            {
+                                SafetyValveUsage4LBpS = 0.0f; // if safety valve closed, then zero discharge rate
+                            }
                         }
                     }
+
+
+                    SafetyValveUsageLBpS = SafetyValveUsage1LBpS + SafetyValveUsage2LBpS + SafetyValveUsage3LBpS + SafetyValveUsage4LBpS;   // Sum all the safety valve discharge rates together
+                    BoilerMassLB -= elapsedClockSeconds * SafetyValveUsageLBpS;
+                    BoilerHeatBTU -= elapsedClockSeconds * SafetyValveUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to safety valve
+                    TotalSteamUsageLBpS += SafetyValveUsageLBpS;
+                    BoilerHeatOutBTUpS += SafetyValveUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to safety valve
+                }
+                else
+                {
+                    SafetyValveUsageLBpS = 0.0f;
                 }
 
+                #endregion
 
-                SafetyValveUsageLBpS = SafetyValveUsage1LBpS + SafetyValveUsage2LBpS + SafetyValveUsage3LBpS + SafetyValveUsage4LBpS;   // Sum all the safety valve discharge rates together
-                BoilerMassLB -= elapsedClockSeconds * SafetyValveUsageLBpS;
-                BoilerHeatBTU -= elapsedClockSeconds * SafetyValveUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to safety valve
-                TotalSteamUsageLBpS += SafetyValveUsageLBpS;
-                BoilerHeatOutBTUpS += SafetyValveUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to safety valve
-            }
-            else
-            {
-                SafetyValveUsageLBpS = 0.0f;
             }
 
-            #endregion
-           
-            }
-           
             else
             {
 
                 #region Safety Valve - AI Firing
 
-            if (BoilerHeatExcess > 1.075 && !ShovelAnyway)  // turn safety valves on if boiler heat is excessive, and fireman is not trying to raise steam for rising gradient
-            {
-                SignalEvent(Event.SteamSafetyValveOn);
-                SafetyIsOn = true;
-            }
+                if (BoilerHeatExcess > 1.075 && !ShovelAnyway)  // turn safety valves on if boiler heat is excessive, and fireman is not trying to raise steam for rising gradient
+                {
+                    SignalEvent(Event.SteamSafetyValveOn);
+                    SafetyIsOn = true;
+                }
 
-            else if (BoilerHeatExcess < 1.02 || ShovelAnyway)  // turn safety vales off if boiler heat has returned to "normal", or fireman is trying to raise steam for rising gradient.
-            {
-                SignalEvent(Event.SteamSafetyValveOff);
-                SafetyIsOn = false;                
-            }
+                else if (BoilerHeatExcess < 1.02 || ShovelAnyway)  // turn safety vales off if boiler heat has returned to "normal", or fireman is trying to raise steam for rising gradient.
+                {
+                    SignalEvent(Event.SteamSafetyValveOff);
+                    SafetyIsOn = false;
+                }
 
                 if (SafetyIsOn)
                 {
@@ -2319,7 +2319,7 @@ namespace Orts.Simulation.RollingStocks
                 #endregion
 
             }
-            
+
             // Adjust blower impacts on heat and boiler mass
             if (BlowerIsOn)
             {
@@ -3330,14 +3330,14 @@ namespace Orts.Simulation.RollingStocks
                     IndicatedHorsePowerHP = MaxIndicatedHorsePowerHP; // Set IHP to maximum value
                 }
                 // Calculate the speed factor for the locomotive, based upon piston speed limit  
-  
+
                 /// TODO - Add compound locomotive  ++++++++++++
                 if (HasSuperheater)
                 {
                     SpeedFactor = SuperheatedSpeedFactorSpeedDropFtpMintoX[PistonSpeedFtpMin];
                     // Calculate "critical" power of locomotive @ pistion speed
                     CurrentCriticalSpeedTractiveEffortLbf = (MaxTractiveEffortLbf * CylinderEfficiencyRate) * SpeedFactor;
-                 }
+                }
                 else if (IsGearedSteamLoco)
                 {
                     SpeedFactor = SaturatedSpeedFactorSpeedDropFtpMintoX[PistonSpeedFtpMin];   // Assume the same as saturated locomotive for time being.
@@ -3545,7 +3545,7 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
-         private void UpdateAuxiliaries(float elapsedClockSeconds, float absSpeedMpS)
+        private void UpdateAuxiliaries(float elapsedClockSeconds, float absSpeedMpS)
         {
             // Calculate Air Compressor steam Usage if turned on
             if (CompressorIsOn)
@@ -3565,7 +3565,7 @@ namespace Orts.Simulation.RollingStocks
             // Steam Flow (lb/hr) = 24.24 x Press(Cylinder + Atmosphere(psi)) x CockDia^2 (in) - this needs to be multiplied by Num Cyls
             if (CylinderCocksAreOpen == true)
             {
-                if (throttle > 0.00 && absSpeedMpS > 0.1 ) // if regulator open & train moving
+                if (throttle > 0.00 && absSpeedMpS > 0.1) // if regulator open & train moving
                 {
                     CylCockSteamUsageLBpS = pS.FrompH(NumCylinders * (24.24f * (CylinderPressureAtmPSI) * CylCockDiaIN * CylCockDiaIN));
                     BoilerMassLB -= elapsedClockSeconds * CylCockSteamUsageLBpS; // Reduce boiler mass to reflect steam usage by cylinder steam cocks  
@@ -3574,7 +3574,7 @@ namespace Orts.Simulation.RollingStocks
                     TotalSteamUsageLBpS += CylCockSteamUsageLBpS;
                     CylCockSteamUsageDisplayLBpS = CylCockSteamUsageLBpS;
                 }
-                else if ( throttle > 0.00 && absSpeedMpS <= 0.1 ) // if regulator open and train stationary
+                else if (throttle > 0.00 && absSpeedMpS <= 0.1) // if regulator open and train stationary
                 {
                     CylCockSteamUsageLBpS = 0.0f; // set usage to zero if regulator closed
                     CylCockSteamUsageStatLBpS = pS.FrompH(NumCylinders * (24.24f * (CutoffPressureAtmPSI) * CylCockDiaIN * CylCockDiaIN));
@@ -3779,7 +3779,7 @@ namespace Orts.Simulation.RollingStocks
 
             #region Manual Fireman
             {
-                
+
 
                 // Test to see if blower has been manually activiated.
                 if (BlowerController.CurrentValue > 0.0f)
@@ -3960,8 +3960,8 @@ namespace Orts.Simulation.RollingStocks
 
         private void UpdateSteamHeat(float elapsedClockSeconds)
         {
-        // Update Steam Heating System
- 
+            // Update Steam Heating System
+
             // TO DO - Add test to see if cars are coupled, if Light Engine, disable steam heating.
 
             if (IsSteamHeatFitted && Train.TrainFittedSteamHeat)  // Only Update steam heating if train and locomotive fitted with steam heating, and is a passenger train
@@ -3979,7 +3979,7 @@ namespace Orts.Simulation.RollingStocks
                     Train.TrainInsideTempC = InsideTempC;
                     Train.TrainOutsideTempC = OutsideTempC;
                     Train.TrainCurrentCarriageHeatTempC = CurrentCarriageHeatTempC; // Temp value
-                    
+
                     // Carriage temperature will be equal to heat input (from steam pipe) less heat losses through carriage walls, etc
                     // Calculate Heat in Train
                     TotalTrainSteamHeatW = SpecificHeatCapcityAirKJpKgK * DensityAirKgpM3 * Train.TrainHeatVolumeM3 * (InsideTempC - OutsideTempC);
@@ -4014,7 +4014,7 @@ namespace Orts.Simulation.RollingStocks
                         SteamPipeHeatW = SteamPipeHeatConvW + SteamHeatPipeRadW;   // heat generated by pipe per degree
                     }
 
-                     // Calculate Net steam heat loss or gain
+                    // Calculate Net steam heat loss or gain
                     NetSteamHeatLossWpTime = SteamPipeHeatW - Train.TrainSteamHeatLossWpT;
                     DisplayNetSteamHeatLossWpTime = NetSteamHeatLossWpTime;
 
@@ -4036,8 +4036,8 @@ namespace Orts.Simulation.RollingStocks
                         CurrentCarriageHeatTempC = (((InsideTempC - OutsideTempC) * CurrentTrainSteamHeatW) / TotalTrainSteamHeatW) + OutsideTempC;
                     }
 
-                   // Test to see if steam heating temp has exceeded the comfortable heating value.
-                    
+                    // Test to see if steam heating temp has exceeded the comfortable heating value.
+
                     if (CurrentCarriageHeatTempC > InsideTempC)
                     {
                         if (!IsSteamHeatExceeded)
@@ -4045,7 +4045,7 @@ namespace Orts.Simulation.RollingStocks
                             IsSteamHeatExceeded = true;
                             // Provide warning message if temperature is too hot
                             Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Carriage temperature is too hot, the passengers are sweating."));
-                        }                 
+                        }
                     }
                     else if (CurrentCarriageHeatTempC < InsideTempC - 1.0f)
                     {
@@ -4418,19 +4418,19 @@ namespace Orts.Simulation.RollingStocks
             if (IsSteamHeatFitted && Train.TrainFittedSteamHeat)  // Only show steam heating HUD if fitted to locomotive and the train
             {
                 // Display Steam Heat info
-             status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}/{9}\t{10}\t{11:N0}\n",
-                Simulator.Catalog.GetString("StHeat:"),
-                Simulator.Catalog.GetString("Press"),
-                FormatStrings.FormatPressure(CurrentSteamHeatPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
-                Simulator.Catalog.GetString("TrTemp"),
-                FormatStrings.FormatTemperature(CurrentCarriageHeatTempC, IsMetric, false),             
-                Simulator.Catalog.GetString("StTemp"),
-                FormatStrings.FormatTemperature(CurrentSteamHeatPipeTempC, IsMetric, false),               
-                Simulator.Catalog.GetString("StUse"),
-                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CalculatedCarHeaterSteamUsageLBpS)), IsMetric),
-                FormatStrings.h,
-                Simulator.Catalog.GetString("NetHt"),
-                DisplayNetSteamHeatLossWpTime);
+                status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}/{9}\t{10}\t{11:N0}\n",
+                   Simulator.Catalog.GetString("StHeat:"),
+                   Simulator.Catalog.GetString("Press"),
+                   FormatStrings.FormatPressure(CurrentSteamHeatPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                   Simulator.Catalog.GetString("TrTemp"),
+                   FormatStrings.FormatTemperature(CurrentCarriageHeatTempC, IsMetric, false),
+                   Simulator.Catalog.GetString("StTemp"),
+                   FormatStrings.FormatTemperature(CurrentSteamHeatPipeTempC, IsMetric, false),
+                   Simulator.Catalog.GetString("StUse"),
+                   FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CalculatedCarHeaterSteamUsageLBpS)), IsMetric),
+                   FormatStrings.h,
+                   Simulator.Catalog.GetString("NetHt"),
+                   DisplayNetSteamHeatLossWpTime);
             }
 
 #if DEBUG_LOCO_STEAM_HEAT_HUD
@@ -4769,7 +4769,7 @@ namespace Orts.Simulation.RollingStocks
         //Steam Heat Controller
 
         #region Steam heating controller
- 
+
         public void StartSteamHeatIncrease(float? target)
         {
             SteamHeatController.CommandStartTime = Simulator.ClockTime;
@@ -4797,7 +4797,7 @@ namespace Orts.Simulation.RollingStocks
         {
             SteamHeatController.StopDecrease();
             if (IsPlayerTrain)
-            new ContinuousSteamHeatCommand(Simulator.Log, 1, false, SteamHeatController.CurrentValue, SteamHeatController.CommandStartTime);
+                new ContinuousSteamHeatCommand(Simulator.Log, 1, false, SteamHeatController.CurrentValue, SteamHeatController.CommandStartTime);
         }
 
         public void SteamHeatChangeTo(bool increase, float? target)

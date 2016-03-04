@@ -213,8 +213,8 @@ namespace Orts.Simulation
             }
 
             // find the best one.
-	    TrackNodeCandidate bestCandidate = candidates.OrderBy(cand => cand.distanceToTrack).First() ;
-            
+            TrackNodeCandidate bestCandidate = candidates.OrderBy(cand => cand.distanceToTrack).First();
+
             InitFromCandidate(bestCandidate);
         }
 
@@ -389,7 +389,7 @@ namespace Orts.Simulation
             InitFromCandidate(candidate);
             return true;
         }
-        
+
         /// <summary>
         /// Try whether the given location is indeed on (or at least close to) the tracknode given by its index.
         /// If it is, we return a TrackNodeCandidate object. 
@@ -408,7 +408,7 @@ namespace Orts.Simulation
             for (var tvsi = 0; tvsi < trackNode.TrVectorNode.TrVectorSections.Length; tvsi++)
             {
                 TrackNodeCandidate candidate = TryTrackVectorSection(tvsi, loc, TSectionDat, trackNode);
-                if (candidate != null) 
+                if (candidate != null)
                 {
                     candidate.TrackNodeIndex = tni;
                     candidate.trackNode = trackNode;
@@ -514,7 +514,7 @@ namespace Orts.Simulation
             if (l.Z > trackSection.SectionCurve.Radius)
                 radiansAlongCurve = MathHelper.PiOver2;
             else
-                radiansAlongCurve = (float)Math.Asin(l.Z / trackSection.SectionCurve.Radius); 
+                radiansAlongCurve = (float)Math.Asin(l.Z / trackSection.SectionCurve.Radius);
             var lon = radiansAlongCurve * trackSection.SectionCurve.Radius;
             var trackSectionLength = GetLength(trackSection);
             if (lon < -InitErrorMargin || lon > trackSectionLength + InitErrorMargin)
@@ -523,7 +523,7 @@ namespace Orts.Simulation
             return new TrackNodeCandidate(Math.Abs(lat), lon, true);
         }
 
-        
+
         /// <summary>
         /// Try whether the given location is indeed on (or at least close to) the given straight tracksection.
         /// If it is, we return a TrackNodeCandidate object 
@@ -573,7 +573,7 @@ namespace Orts.Simulation
         private static bool InitTrackSectionSucceeded(Traveller traveller, WorldLocation location)
         {
             TrackNodeCandidate candidate = (traveller.IsTrackCurved)
-                ? TryTrackSectionCurved  (location, traveller.trackVectorSection, traveller.trackSection)
+                ? TryTrackSectionCurved(location, traveller.trackVectorSection, traveller.trackSection)
                 : TryTrackSectionStraight(location, traveller.trackVectorSection, traveller.trackSection);
 
             if (candidate == null) return false;
@@ -622,7 +622,7 @@ namespace Orts.Simulation
         /// <returns>f the target is found, the distance from the traveller's current location, along the track nodes, to the specified location. If the target is not found, <c>-1</c>.</returns>
         public float DistanceTo(WorldLocation location)
         {
-            return DistanceTo(location.TileX, location.TileZ, 
+            return DistanceTo(location.TileX, location.TileZ,
                 location.Location.X, location.Location.Y, location.Location.Z);
         }
 
@@ -980,7 +980,7 @@ namespace Orts.Simulation
             //try to avoid abrupt change
             Traveller t = new Traveller(this);
             if (speed < 5) timeInterval = 1;
-            t.Move(speed/3);//test forward 10m and determine if I need to change;
+            t.Move(speed / 3);//test forward 10m and determine if I need to change;
             var preZ = t.SuperElevationValue(speed, timeInterval, true);
             desiredZ = desiredZ + (preZ - desiredZ) / 2;
             return desiredZ;
@@ -1014,7 +1014,7 @@ namespace Orts.Simulation
             else desiredZ = 0f;
             return desiredZ;
         }
-        
+
         void SetLength()
         {
             if (lengthSet)
@@ -1224,7 +1224,7 @@ namespace Orts.Simulation
             var dy = Y - other.Y;
             if (dx * dx + dz * dz > 1)
                 return 1;
-            if ( Math.Abs(dy) > 1 )
+            if (Math.Abs(dy) > 1)
                 return 1;
             var dot = dx * (float)Math.Sin(directionVector.Y) + dz * (float)Math.Cos(directionVector.Y);
             return rear ? dot : -dot;
@@ -1250,7 +1250,7 @@ namespace Orts.Simulation
             if (candidate.trackVectorSection != null) trackVectorSection = candidate.trackVectorSection;
             if (candidate.TrackVectorSectionIndex >= 0) TrackVectorSectionIndex = candidate.TrackVectorSectionIndex;
             if (candidate.trackSection != null) trackSection = candidate.trackSection;
-            
+
             // these are always set:
             direction = TravellerDirection.Forward;
             trackOffset = 0;
@@ -1323,7 +1323,7 @@ namespace Orts.Simulation
             ErrorLimit = errorLimit;
         }
     }
- 
+
     public class TravellerOutsideBoundingAreaException : TravellerInitializationException
     {
         public readonly float DistanceX;

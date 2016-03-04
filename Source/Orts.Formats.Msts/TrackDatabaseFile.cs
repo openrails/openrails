@@ -1271,7 +1271,8 @@ namespace Orts.Formats.Msts
     /// <summary>
     /// Represents either start or end of a platform (a place where trains can stop).
     /// </summary>
-    public class PlatformItem : TrItem {
+    public class PlatformItem : TrItem
+    {
 
         /// <summary>Name of the station where the platform is</summary>
         public string Station { get; set; }

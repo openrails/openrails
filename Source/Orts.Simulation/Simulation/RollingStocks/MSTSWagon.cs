@@ -57,7 +57,7 @@ namespace Orts.Simulation.RollingStocks
     /// Represents the physical motion and behaviour of the car.
     /// </summary>
 
-    public class MSTSWagon: TrainCar
+    public class MSTSWagon : TrainCar
     {
         public Pantographs Pantographs;
         public bool AuxPowerOn;
@@ -72,12 +72,12 @@ namespace Orts.Simulation.RollingStocks
         public bool IsStandStill = true;  // Used for MSTS type friction
         public bool IsDavisFriction = true; // Default to new Davis type friction
         public bool IsLowSpeed = true; // set indicator for low speed operation  0 - 5mph
-       
+
         // simulation parameters
         public float Variable1;  // used to convey status to soundsource
         public float Variable2;
         public float Variable3;
-        
+
         // wag file data
         string Carbrakesystemtype;
         public string MainShapeFileName;
@@ -152,12 +152,12 @@ namespace Orts.Simulation.RollingStocks
         /// Number of available retainer positions. (Used on freight cars, mostly.) Might be 0, 3 or 4.
         /// </summary>
         public int RetainerPositions;
-        
+
         /// <summary>
         /// Attached steam locomotive in case this wagon is a tender
         /// </summary>
         public MSTSSteamLocomotive TendersSteamLocomotive { get; private set; }
-        
+
         public List<IntakePoint> IntakePointList = new List<IntakePoint>();
 
         /// <summary>
@@ -293,8 +293,8 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(type":
                     stf.MustMatch("(");
                     string typeString = stf.ReadString();
-                    IsFreight = String.Compare(typeString,"Freight") == 0;
-                    IsTender = String.Compare(typeString,"Tender") == 0;
+                    IsFreight = String.Compare(typeString, "Freight") == 0;
+                    IsTender = String.Compare(typeString, "Tender") == 0;
                     IsPassenger = String.Compare(typeString, "Carriage") == 0;
                     IsEngine = String.Compare(typeString, "Engine") == 0;
                     break;
@@ -327,7 +327,7 @@ namespace Orts.Simulation.RollingStocks
                     stf.SkipRestOfBlock();
                     break;
                 case "wagon(ortsunbalancedsuperelevation": UnbalancedSuperElevationM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
-                case "wagon(ortsrigidwheelbase":  
+                case "wagon(ortsrigidwheelbase":
                     stf.MustMatch("(");
                     WheelBase1M = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     WheelBase2M = stf.ReadFloat(STFReader.UNITS.Distance, null);
@@ -344,7 +344,7 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortsbearingtype":
                     stf.MustMatch("(");
                     string typeString2 = stf.ReadString();
-                    IsRollerBearing = String.Compare(typeString2,"Roller") == 0;
+                    IsRollerBearing = String.Compare(typeString2, "Roller") == 0;
                     IsLowTorqueRollerBearing = String.Compare(typeString2, "Low") == 0;
                     IsFrictionBearing = String.Compare(typeString2, "Friction") == 0;
                     break;
@@ -424,7 +424,7 @@ namespace Orts.Simulation.RollingStocks
                     stf.SkipRestOfBlock();
                     break;
                 case "wagon(ortsadhesion(wheelset(axle(ortsinertia":
-                    stf.MustMatch("(");                    
+                    stf.MustMatch("(");
                     AxleInertiaKgm2 = stf.ReadFloat(STFReader.UNITS.RotationalInertia, null);
                     stf.SkipRestOfBlock();
                     break;
@@ -437,14 +437,14 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(lights":
                     Lights = new LightCollection(stf);
                     break;
-                case "wagon(inside": HasInsideView = true;  ParseWagonInside(stf); break;
+                case "wagon(inside": HasInsideView = true; ParseWagonInside(stf); break;
                 case "wagon(orts3dcab": Parse3DCab(stf); break;
                 case "wagon(numwheels": NumWheelsBrakingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); break;
                 case "wagon(ortspantographs":
                     Pantographs.Parse(lowercasetoken, stf);
                     break;
                 case "wagon(intakepoint": IntakePointList.Add(new IntakePoint(stf)); break;
-                case "wagon(passengercapacity": HasPassengerCapacity = true;  break;
+                case "wagon(passengercapacity": HasPassengerCapacity = true; break;
                 case "wagon(ortsfreightanims":
                     FreightAnimations = new FreightAnimations(stf, this);
                     break;
@@ -531,7 +531,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 CabViewpoints = new List<PassengerViewPoint>();
                 foreach (PassengerViewPoint cabViewPoint in copy.CabViewpoints)
-                CabViewpoints.Add(cabViewPoint);
+                    CabViewpoints.Add(cabViewPoint);
             }
             foreach (MSTSCoupling coupler in copy.Couplers)
                 Couplers.Add(coupler);
@@ -547,7 +547,7 @@ namespace Orts.Simulation.RollingStocks
                 foreach (IntakePoint copyIntakePoint in copy.IntakePointList)
                 {
                     if (copyIntakePoint.LinkedFreightAnim == null)
-                    IntakePointList.Add(new IntakePoint(copyIntakePoint));
+                        IntakePointList.Add(new IntakePoint(copyIntakePoint));
                 }
             }
 
@@ -675,7 +675,7 @@ namespace Orts.Simulation.RollingStocks
                     WeightLoadController.Restore(inf);
                 }
             }
- 
+
             base.Restore(inf);
 
             // always set aux power on due to error in PowerSupplyClass
@@ -686,9 +686,9 @@ namespace Orts.Simulation.RollingStocks
         {
             base.Update(elapsedClockSeconds);
 
-           // Update Aux Tender Information
+            // Update Aux Tender Information
 
-            if( AuxTenderWaterMassKG != 0 )   // SetStreamVolume wagon type for later use
+            if (AuxTenderWaterMassKG != 0)   // SetStreamVolume wagon type for later use
             {
 
                 AuxWagonType = "AuxiliaryTender";
@@ -703,8 +703,8 @@ namespace Orts.Simulation.RollingStocks
             Trace.TraceInformation("Car ID {0} Aux Tender Water Mass {1} Wagon Type {2}", CarID, AuxTenderWaterMassKG, AuxWagonType);
 #endif
 
-           // Update BrakeSystem Type
-           Carbrakesystemtype = brakeSystemType;
+            // Update BrakeSystem Type
+            Carbrakesystemtype = brakeSystemType;
 
             AbsWheelSpeedMpS = Math.Abs(WheelSpeedMpS);
             if (IsDavisFriction == true) // test to see if OR thinks that Davis Values have been entered in WG file.
@@ -792,7 +792,7 @@ namespace Orts.Simulation.RollingStocks
                 if (AbsSpeedMpS == 0.0)
                     IsLowSpeed = true;
 
-               if (IsLowSpeed)
+                if (IsLowSpeed)
                 {
                     // If weather is freezing, then starting friction will be greater until bearings have warmed up.
                     // Chwck whether weather is snowing
@@ -873,8 +873,8 @@ namespace Orts.Simulation.RollingStocks
                             StartFrictionLow = 15.0f; // Starting friction for a < 10 ton(US) car with friction (journal) bearings - ton (US)
                             StartFrictionHigh = 35.0f; // Starting friction for a > 100 ton(US) car with friction (journal) bearings - ton (US)
                         }
-                        
-                         if (Kg.ToTUS(MassKG) < 10.0)
+
+                        if (Kg.ToTUS(MassKG) < 10.0)
                         {
                             StaticFrictionFactorLb = StartFrictionLow;  // Starting friction for a < 10 ton(US) car with friction (journal) bearings
                         }
@@ -886,7 +886,7 @@ namespace Orts.Simulation.RollingStocks
                         {
                             StaticFrictionFactorLb = (((Kg.ToTUS(MassKG) - 10.0f) / 90.0f) * (StartFrictionHigh - StartFrictionLow)) + StartFrictionLow;
                         }
-                                                                       
+
                     }
 
                     const float speed5 = 2.2352f; // 5 mph
@@ -901,7 +901,7 @@ namespace Orts.Simulation.RollingStocks
                     FrictionForceN = DavisAN + AbsSpeedMpS * (DavisBNSpM + AbsSpeedMpS * DavisCNSSpMM); // for normal speed operation
                 }
             }
-            
+
 
             foreach (MSTSCoupling coupler in Couplers)
             {
@@ -1107,7 +1107,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 TrackGaugeM = 1.435f;       // If track gauge value not found then assume standard gauge - 4' 8.5" or 1.435m
             }
-            
+
             return TrackGaugeM;
         }
 
@@ -1127,9 +1127,9 @@ namespace Orts.Simulation.RollingStocks
         {
 
             // Calculate the default Rigid Wheelbase if not in WAG File
-            
+
             RigidWheelBaseM = WheelBase1M + WheelBase2M;
-            
+
             return RigidWheelBaseM;
         }
 
@@ -1137,14 +1137,14 @@ namespace Orts.Simulation.RollingStocks
         public override float GetDriverWheelRadiusM()
         {
 
-           return DriverWheelRadiusM;
+            return DriverWheelRadiusM;
         }
 
         // Make the car brake system type available to other classes
         public override string GetCarBrakeSystemType()
         {
             return Carbrakesystemtype;
-       }
+        }
 
 
         // Make the vehicle num wheels available to other classes
@@ -1159,27 +1159,27 @@ namespace Orts.Simulation.RollingStocks
         // Pass the string wagon type to other classes
         public override string GetWagonType()
         {
-          WagonType ="";  // set default
-          
-          if (IsFreight)
-          {
-          WagonType ="Freight";  // set as freight wagon
-          }
-          
-          if (IsPassenger)
-          {
-          WagonType ="Passenger";  // set as passenger car
-          }
-          
-          if (IsEngine)
-          {
-          WagonType ="Engine";  // set as engine
-          }
+            WagonType = "";  // set default
 
-          if (IsTender)
-          {
-          WagonType ="Tender";  // set as tender
-          }
+            if (IsFreight)
+            {
+                WagonType = "Freight";  // set as freight wagon
+            }
+
+            if (IsPassenger)
+            {
+                WagonType = "Passenger";  // set as passenger car
+            }
+
+            if (IsEngine)
+            {
+                WagonType = "Engine";  // set as engine
+            }
+
+            if (IsTender)
+            {
+                WagonType = "Tender";  // set as tender
+            }
             return WagonType;
         }
 
@@ -1264,7 +1264,7 @@ namespace Orts.Simulation.RollingStocks
             if (Couplers.Count == 0)
                 Couplers.Add(coupler);
             else
-                Couplers[0]= coupler;
+                Couplers[0] = coupler;
             if (Couplers.Count > 1)
                 Couplers.RemoveAt(1);
         }
@@ -1307,7 +1307,7 @@ namespace Orts.Simulation.RollingStocks
             if (FreightAnimations.LoadedOne == null)
             {
                 FreightAnimations.FreightType = (MSTSWagon.PickupType)type;
-                FreightAnimations.LoadedOne = intakePoint.LinkedFreightAnim;              
+                FreightAnimations.LoadedOne = intakePoint.LinkedFreightAnim;
             }
             if (!unload)
             {
@@ -1319,12 +1319,12 @@ namespace Orts.Simulation.RollingStocks
                 WaitForAnimationReady = true;
                 UnloadingPartsOpen = true;
                 if (FreightAnimations.UnloadingStartDelay > 0)
-                Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("Preparing for unload"));
+                    Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("Preparing for unload"));
             }
 
         }
 
-     }
+    }
 
 
 
@@ -1339,12 +1339,12 @@ namespace Orts.Simulation.RollingStocks
         public float WidthM = 10f;   // of the filling point. Is the maximum positioning error allowed equal to this or half this value? 
         public MSTSWagon.PickupType Type;          // 'freightgrain', 'freightcoal', 'freightgravel', 'freightsand', 'fuelcoal', 'fuelwater', 'fueldiesel', 'fuelwood'
         public float? DistanceFromFrontOfTrainM;
-        public FreightAnimationContinuous LinkedFreightAnim = null; 
+        public FreightAnimationContinuous LinkedFreightAnim = null;
 
         public IntakePoint()
         {
         }
-        
+
         public IntakePoint(STFReader stf)
         {
             stf.MustMatch("(");
@@ -1452,4 +1452,4 @@ namespace Orts.Simulation.RollingStocks
     {
         public static Dictionary<string, MSTSWagon> LoadedCars = new Dictionary<string, MSTSWagon>();
     }
-} // namespace ORTS
+}

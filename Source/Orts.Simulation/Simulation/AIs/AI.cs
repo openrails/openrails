@@ -620,7 +620,7 @@ namespace Orts.Simulation.AIs
                         foreach (var train in AITrains)
                         {
                             if (train.TrainType != Train.TRAINTYPE.PLAYER && train.TrainType != Train.TRAINTYPE.INTENDED_PLAYER)
-                                {
+                            {
                                 if (train.Cars.Count == 0 || train.Cars[0].Train != train)
                                 {
                                     TrainsToRemove.Add(train);

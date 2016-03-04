@@ -1434,18 +1434,18 @@ namespace Orts.Simulation.Timetables
 
                     //try
                     //{
-                        car = RollingStock.Load(simulator, wagonFilePath);
-                        car.Flipped = wagon.Flip;
+                    car = RollingStock.Load(simulator, wagonFilePath);
+                    car.Flipped = wagon.Flip;
 
-                        if (consistReverse)
-                        {
-                            car.Flipped = !car.Flipped;
-                            cars.Insert(0, car);
-                        }
-                        else
-                        {
-                            cars.Add(car);
-                        }
+                    if (consistReverse)
+                    {
+                        car.Flipped = !car.Flipped;
+                        cars.Insert(0, car);
+                    }
+                    else
+                    {
+                        cars.Add(car);
+                    }
                     //}
                     //catch (Exception error)
                     //{
@@ -2546,4 +2546,3 @@ namespace Orts.Simulation.Timetables
         } // end class TTTrainComQualifiers
     } // end class TTTrainCommands
 }
-

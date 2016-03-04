@@ -30,9 +30,9 @@ namespace Orts.Simulation.RollingStocks
     {
         public static TrainCar Load(Simulator simulator, string wagFilePath, bool initialize = true)
         {
-            GenericWAGFile wagFile = SharedGenericWAGFileManager.Get(wagFilePath);  
+            GenericWAGFile wagFile = SharedGenericWAGFileManager.Get(wagFilePath);
             TrainCar car;
-            if( wagFile.OpenRails != null 
+            if (wagFile.OpenRails != null
                && wagFile.OpenRails.DLL != null)
             {  // wag file specifies an external DLL
                 try
@@ -52,19 +52,19 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
             if (!wagFile.IsEngine)
-            {   
+            {
                 // its an ordinary MSTS wagon
                 car = new MSTSWagon(simulator, wagFilePath);
             }
             else
-            {   
+            {
                 // its an ordinary MSTS engine of some type.
                 if (wagFile.Engine.Type == null)
                     throw new InvalidDataException(wagFilePath + "\r\n\r\nEngine type missing");
 
                 switch (wagFile.Engine.Type.ToLower())
                 {
-                        // TODO complete parsing of proper car types
+                    // TODO complete parsing of proper car types
                     case "electric": car = new MSTSElectricLocomotive(simulator, wagFilePath); break;
                     case "steam": car = new MSTSSteamLocomotive(simulator, wagFilePath); break;
                     case "diesel": car = new MSTSDieselLocomotive(simulator, wagFilePath); break;
@@ -161,7 +161,7 @@ namespace Orts.Simulation.RollingStocks
                 }
             } // class WAGFile.Engine
 
-			public class OpenRailsData
+            public class OpenRailsData
             {
                 public string DLL;
 

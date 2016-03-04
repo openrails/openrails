@@ -307,8 +307,8 @@ namespace Orts.Simulation
             Activity = new ActivityFile(activityPath);
             ActivityRun = new Activity(Activity, this);
             // <CSComment> There can also be an activity without events and without station stops
-//            if (ActivityRun.Current == null && ActivityRun.EventList.Count == 0)
-//                ActivityRun = null;
+            //            if (ActivityRun.Current == null && ActivityRun.EventList.Count == 0)
+            //                ActivityRun = null;
 
             StartTime st = Activity.Tr_Activity.Tr_Activity_Header.StartTime;
             TimeSpan StartTime = new TimeSpan(st.Hour, st.Minute, st.Second);
@@ -386,7 +386,7 @@ namespace Orts.Simulation
             WeatherType = (WeatherType)int.Parse(arguments[4]);
 
 
-            if (playerTTTrain != null) 
+            if (playerTTTrain != null)
             {
                 playerTTTrain.CalculatePositionOfCars(0); // calculate position of player train cars
                 playerTTTrain.PostInit();               // place player train after pre-running of AI trains
@@ -483,7 +483,7 @@ namespace Orts.Simulation
             return PlayerLocomotive;
         }
 
-        public TrainCar SetPlayerLocomotive( Train playerTrain)
+        public TrainCar SetPlayerLocomotive(Train playerTrain)
         {
             TrainCar PlayerLocomotive = null;
             foreach (TrainCar car in playerTrain.Cars)
@@ -567,7 +567,7 @@ namespace Orts.Simulation
                     try
                     {
                         if (train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
-                        train.Update(elapsedClockSeconds);
+                            train.Update(elapsedClockSeconds);
                         else ((AITrain)train).AIUpdate(elapsedClockSeconds, ClockTime, false);
                     }
                     catch (Exception e) { Trace.TraceWarning(e.Message); }
@@ -652,7 +652,7 @@ namespace Orts.Simulation
 
         private void FinishCoupling(Train drivenTrain, Train train, bool couple_to_front, bool sameDirection)
         {
-            if (train.TrainType == Train.TRAINTYPE.AI && (((AITrain)train).UncondAttach  ||
+            if (train.TrainType == Train.TRAINTYPE.AI && (((AITrain)train).UncondAttach ||
                 train.TCRoute.activeSubpath < train.TCRoute.TCRouteSubpaths.Count - 1 || train.ValidRoute[0].Count > 5))
             {
                 if (((drivenTrain.TCRoute != null && drivenTrain.TCRoute.activeSubpath == drivenTrain.TCRoute.TCRouteSubpaths.Count - 1 &&
@@ -682,7 +682,7 @@ namespace Orts.Simulation
                             car.Train = train;
                             car.Flipped = !car.Flipped;
                         }
-                        if (drivenTrain.LeadLocomotiveIndex != -1) train.LeadLocomotiveIndex = train.Cars.Count - drivenTrain.LeadLocomotiveIndex -1;
+                        if (drivenTrain.LeadLocomotiveIndex != -1) train.LeadLocomotiveIndex = train.Cars.Count - drivenTrain.LeadLocomotiveIndex - 1;
                     }
                     drivenTrain.Cars.Clear();
                     AI.TrainsToRemoveFromAI.Add((AITrain)train);
@@ -1336,7 +1336,7 @@ namespace Orts.Simulation
                 run = 1f;       // run is therefore 1 since it is cosine of the same angle?  See comments above.
             }
 
-                                
+
             // setup matrix values
 
             Matrix xnaTilt = new Matrix(1, 0, 0, 0,
@@ -1384,7 +1384,7 @@ namespace Orts.Simulation
             }
             else
             {
-                train2 = TrainDictionary [train.IncorporatedTrainNo];
+                train2 = TrainDictionary[train.IncorporatedTrainNo];
             }
 
             if (MPManager.IsMultiPlayer() && !(train2 is AITrain)) train2.ControlMode = Train.TRAIN_CONTROL.EXPLORER;
@@ -1393,7 +1393,7 @@ namespace Orts.Simulation
             while (train.Cars[j] != PlayerLocomotive && j < i) j++;
 
             // This is necessary, because else we had to create an AI train and not a train when in autopilot mode
-            if ((train.IsActualPlayerTrain && j >= i )|| !keepFront)
+            if ((train.IsActualPlayerTrain && j >= i) || !keepFront)
             {
                 // Player locomotive in second part of train, move first part of cars to the new train
                 for (int k = 0; k < i; ++k)
@@ -1494,7 +1494,7 @@ namespace Orts.Simulation
                 inPath = train2.UpdateTrackActionsUncoupling(false);
             }
             if (!inPath && train2.TrainType == Train.TRAINTYPE.AI)
-                // Out of path, degrade to static
+            // Out of path, degrade to static
             {
                 train2.TrainType = Train.TRAINTYPE.STATIC;
                 ((AITrain)train2).AI.TrainsToRemoveFromAI.Add((AITrain)train2);
@@ -1509,13 +1509,13 @@ namespace Orts.Simulation
                     train2.TCRoute.ReversalInfo[train2.TCRoute.activeSubpath].ReverseReversalOffset = train2.PresentPosition[0].TCOffset - 10f;
                     train2.AuxActionsContain.MoveAuxActionAfterReversal(train2);
                 }
-                else if((train.IsActualPlayerTrain && j >= i ) || !keepFront)
+                else if ((train.IsActualPlayerTrain && j >= i) || !keepFront)
                 {
                     train2.AuxActionsContain.MoveAuxAction(train2);
                 }
                 ((AITrain)train2).ResetActions(true);
             }
-            if (MPManager.IsMultiPlayer()) 
+            if (MPManager.IsMultiPlayer())
             {
                 if (!(train is AITrain)) train.ControlMode = Train.TRAIN_CONTROL.EXPLORER;
                 if (!(train2 is AITrain)) train2.ControlMode = Train.TRAIN_CONTROL.EXPLORER;
@@ -1542,7 +1542,7 @@ namespace Orts.Simulation
             {
                 MPManager.Notify((new Orts.MultiPlayer.MSGUncouple(train, train2, Orts.MultiPlayer.MPManager.GetUserName(), car.CarID, PlayerLocomotive)).ToString());
             }
-            if (Confirmer !=null && IsReplaying) Confirmer.Confirm(CabControl.Uncouple, train.LastCar.CarID);
+            if (Confirmer != null && IsReplaying) Confirmer.Confirm(CabControl.Uncouple, train.LastCar.CarID);
             if (AI != null) AI.aiListChanged = true;
         }
 
@@ -1771,7 +1771,7 @@ namespace Orts.Simulation
                         if (playerTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL) TrainSwitcher.SuspendOldPlayer = true; // force suspend state to avoid disappearing of train;
                         if (TrainSwitcher.SuspendOldPlayer && playerTrain.SpeedMpS != 0)
                         {
-                        Confirmer.Message(ConfirmLevel.Warning, Catalog.GetString("Train can't be suspended with speed not equal 0"));
+                            Confirmer.Message(ConfirmLevel.Warning, Catalog.GetString("Train can't be suspended with speed not equal 0"));
                             TrainSwitcher.SuspendOldPlayer = false;
                             TrainSwitcher.ClickedSelectedAsPlayer = false;
                             return;
@@ -1789,8 +1789,8 @@ namespace Orts.Simulation
                             playerTrain.MovementState = AITrain.AI_MOVEMENT_STATE.SUSPENDED;
                             if (playerTrain.ValidRoute[0] != null && playerTrain.PresentPosition[0].RouteListIndex != -1 &&
                                 playerTrain.ValidRoute[0].Count > playerTrain.PresentPosition[0].RouteListIndex + 1)
-                            playerTrain.signalRef.BreakDownRoute(playerTrain.ValidRoute[0][playerTrain.PresentPosition[0].RouteListIndex + 1].TCSectionIndex,
-                               playerTrain.routedForward);
+                                playerTrain.signalRef.BreakDownRoute(playerTrain.ValidRoute[0][playerTrain.PresentPosition[0].RouteListIndex + 1].TCSectionIndex,
+                                   playerTrain.routedForward);
                             TrainSwitcher.SuspendOldPlayer = false;
                         }
 
@@ -1799,7 +1799,7 @@ namespace Orts.Simulation
                 else if (selectedAsPlayer.TrainType == Train.TRAINTYPE.AI_INCORPORATED && selectedAsPlayer.IncorporatingTrain.IsPathless)
                 {
                     // the former static train disappears now and becomes part of the other train. TODO; also wagons must be moved.
-                   var dyingTrain = PlayerLocomotive.Train;
+                    var dyingTrain = PlayerLocomotive.Train;
 
                     // move all cars to former incorporated train
 
@@ -1817,11 +1817,11 @@ namespace Orts.Simulation
                     }
 
                     // and fix up the travellers
-                        selectedAsPlayer.RearTDBTraveller = new Traveller(dyingTrain.RearTDBTraveller);
-                        selectedAsPlayer.FrontTDBTraveller = new Traveller(dyingTrain.FrontTDBTraveller);
+                    selectedAsPlayer.RearTDBTraveller = new Traveller(dyingTrain.RearTDBTraveller);
+                    selectedAsPlayer.FrontTDBTraveller = new Traveller(dyingTrain.FrontTDBTraveller);
                     // are following lines needed?
- //                       selectedAsPlayer.CalculatePositionOfCars(0);  // fix the front traveller
- //                       selectedAsPlayer.RepositionRearTraveller();    // fix the rear traveller
+                    //                       selectedAsPlayer.CalculatePositionOfCars(0);  // fix the front traveller
+                    //                       selectedAsPlayer.RepositionRearTraveller();    // fix the rear traveller
 
                     selectedAsPlayer.activityClearingDistanceM = dyingTrain.activityClearingDistanceM;
 
@@ -1921,7 +1921,7 @@ namespace Orts.Simulation
                         if (oldPlayerTrain != null) oldPlayerTrain.LeadLocomotiveIndex = -1;
                     }
 
-                 }
+                }
                 else
                 {
                     Train pathlessPlayerTrain = selectedAsPlayer;
@@ -1955,7 +1955,7 @@ namespace Orts.Simulation
                 }
                 (PlayerLocomotive.Train as AITrain).SwitchToPlayerControl();
             }
-            else  
+            else
             {
                 PlayerLocomotive.Train.CreatePathlessPlayerTrain();
             }
@@ -1965,7 +1965,7 @@ namespace Orts.Simulation
             AI.aiListChanged = true;
         }
 
-  
+
 
         /// <summary>
         /// Derive log-file name from route path and activity name

@@ -954,16 +954,16 @@ namespace Orts.Viewer3D
                 case 0: desiredZ = 0f; break;
                 case 3: desiredZ *= maxv; break;
                 case 1:
-                    if (offSet < NumSections / 2) desiredZ *= (2*to  * maxv);//increase to max in the first half
+                    if (offSet < NumSections / 2) desiredZ *= (2 * to * maxv);//increase to max in the first half
                     else desiredZ *= maxv;
                     break;
                 case 2:
-                    if (offSet >= NumSections / 2) desiredZ *= (2*(1 - to)  * maxv);//decrease to 0 in the second half
+                    if (offSet >= NumSections / 2) desiredZ *= (2 * (1 - to) * maxv);//decrease to 0 in the second half
                     else desiredZ *= maxv;
                     break;
                 case 4:
-                    if (offSet < NumSections / 2) desiredZ *= (2*to  * maxv);
-                    else desiredZ *= (2*(1 - to)  * maxv);
+                    if (offSet < NumSections / 2) desiredZ *= (2 * to * maxv);
+                    else desiredZ *= (2 * (1 - to) * maxv);
                     break;
             }
 

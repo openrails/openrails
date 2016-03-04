@@ -45,7 +45,6 @@
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using ORTS.Common;
-using Orts.Simulation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -77,8 +76,8 @@ namespace Orts.Viewer3D
         {
             var cancellation = Viewer.LoaderProcess.CancellationToken;
             Viewer.DontLoadNightTextures = (Program.Simulator.Settings.ConditionalLoadOfNightTextures &&
-            ((Viewer.MaterialManager.sunDirection.Y > 0.05f && Program.Simulator.ClockTime%86400 < 43200) ||
-            (Viewer.MaterialManager.sunDirection.Y > 0.15f && Program.Simulator.ClockTime %86400 >= 43200))) ? true : false;            
+            ((Viewer.MaterialManager.sunDirection.Y > 0.05f && Program.Simulator.ClockTime % 86400 < 43200) ||
+            (Viewer.MaterialManager.sunDirection.Y > 0.15f && Program.Simulator.ClockTime % 86400 >= 43200))) ? true : false;
             if (TileX != VisibleTileX || TileZ != VisibleTileZ)
             {
                 TileX = VisibleTileX;
@@ -105,7 +104,7 @@ namespace Orts.Viewer3D
                 WorldFiles = newWorldFiles;
                 Viewer.tryLoadingNightTextures = true; // when Tiles loaded change you can try
             }
-            else if (Viewer.NightTexturesNotLoaded && Program.Simulator.ClockTime%86400 >= 43200 && Viewer.tryLoadingNightTextures)
+            else if (Viewer.NightTexturesNotLoaded && Program.Simulator.ClockTime % 86400 >= 43200 && Viewer.tryLoadingNightTextures)
             {
                 var sunHeight = Viewer.MaterialManager.sunDirection.Y;
                 if (sunHeight < 0.10f && sunHeight > 0.01)
@@ -366,10 +365,10 @@ namespace Orts.Viewer3D
                         sceneryObjects.Add(new LevelCrossingShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (LevelCrossingObj)worldObject));
                     }
                     else if (worldObject.GetType() == typeof(HazardObj))
-					{
-						var h = HazzardShape.CreateHazzard(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (HazardObj)worldObject);
-						if (h != null) sceneryObjects.Add(h);
-					}
+                    {
+                        var h = HazzardShape.CreateHazzard(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (HazardObj)worldObject);
+                        if (h != null) sceneryObjects.Add(h);
+                    }
                     else if (worldObject.GetType() == typeof(SpeedPostObj))
                     {
                         sceneryObjects.Add(new SpeedPostShape(viewer, shapeFilePath, worldMatrix, (SpeedPostObj)worldObject));

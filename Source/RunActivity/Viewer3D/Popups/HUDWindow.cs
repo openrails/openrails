@@ -51,7 +51,7 @@ namespace Orts.Viewer3D.Popups
         readonly Viewer Viewer;
         readonly Action<TableData>[] TextPages;
         readonly WindowTextFont TextFont;
-		readonly HUDGraphMaterial HUDGraphMaterial;
+        readonly HUDGraphMaterial HUDGraphMaterial;
 
         int TextPage;
         int LocomotivePage = 2;
@@ -121,19 +121,19 @@ namespace Orts.Viewer3D.Popups
             TextFont = owner.TextFontDefaultOutlined;
             ColumnWidth *= TextFont.Height;
 
-			HUDGraphMaterial = (HUDGraphMaterial)Viewer.MaterialManager.Load("Debug");
+            HUDGraphMaterial = (HUDGraphMaterial)Viewer.MaterialManager.Load("Debug");
 
-			LocomotiveGraphs = new HUDGraphSet(Viewer, HUDGraphMaterial);
+            LocomotiveGraphs = new HUDGraphSet(Viewer, HUDGraphMaterial);
             LocomotiveGraphsThrottle = LocomotiveGraphs.Add(Viewer.Catalog.GetString("Throttle"), "0", "100%", Color.Blue, 50);
             LocomotiveGraphsInputPower = LocomotiveGraphs.Add(Viewer.Catalog.GetString("Power In/Out"), "0", "100%", Color.Yellow, 50);
             LocomotiveGraphsOutputPower = LocomotiveGraphs.AddOverlapped(Color.Green, 50);
 
-			ForceGraphs = new HUDGraphSet(Viewer, HUDGraphMaterial);
+            ForceGraphs = new HUDGraphSet(Viewer, HUDGraphMaterial);
             ForceGraphMotiveForce = ForceGraphs.Add(Viewer.Catalog.GetString("Motive force"), "0%", "100%", Color.Green, 75);
             ForceGraphDynamicForce = ForceGraphs.AddOverlapped(Color.Red, 75);
             ForceGraphNumOfSubsteps = ForceGraphs.Add(Viewer.Catalog.GetString("Num of substeps"), "0", "300", Color.Blue, 25);
 
-			DebugGraphs = new HUDGraphSet(Viewer, HUDGraphMaterial);
+            DebugGraphs = new HUDGraphSet(Viewer, HUDGraphMaterial);
             DebugGraphMemory = DebugGraphs.Add(Viewer.Catalog.GetString("Memory"), "0GB", String.Format("{0:F0}GB", (float)ProcessVirtualAddressLimit / 1024 / 1024 / 1024), Color.Orange, 50);
             DebugGraphGCs = DebugGraphs.Add(Viewer.Catalog.GetString("GCs"), "0", "2", Color.Magenta, 20); // Multiple of 4
             DebugGraphFrameTime = DebugGraphs.Add(Viewer.Catalog.GetString("Frame time"), "0.0s", "0.1s", Color.LightGreen, 50);
@@ -165,11 +165,11 @@ namespace Orts.Viewer3D.Popups
             else LastTextPage = LocomotivePage;
         }
 
-		public override void Mark()
-		{
-			base.Mark();
-			HUDGraphMaterial.Mark();
-		}
+        public override void Mark()
+        {
+            base.Mark();
+            HUDGraphMaterial.Mark();
+        }
 
         public override bool Interactive
         {
@@ -185,9 +185,9 @@ namespace Orts.Viewer3D.Popups
             if (TextPage != 0) LastTextPage = TextPage;
         }
 
-        public  void ToggleBasicHUD()
+        public void ToggleBasicHUD()
         {
-            TextPage = TextPage == 0? LastTextPage : 0;
+            TextPage = TextPage == 0 ? LastTextPage : 0;
         }
 
         int[] lastGCCounts = new int[3];
@@ -332,7 +332,7 @@ namespace Orts.Viewer3D.Popups
         {
             table.CurrentRow++;
         }
-        
+
         static void TableAddLine(TableData table, string format, params object[] args)
         {
             TableSetCell(table, table.CurrentRow, 0, format, args);
@@ -579,7 +579,7 @@ namespace Orts.Viewer3D.Popups
                         Viewer.Catalog.GetString("Compressor"),
                         (car as MSTSLocomotive).CompressorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off")));
                 }
-           }
+            }
             TableAddLine(table);
 
             TableSetCells(table, 0,
@@ -616,7 +616,7 @@ namespace Orts.Viewer3D.Popups
 
             var train = Viewer.PlayerLocomotive.Train;
             var mstsLocomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
-            
+
             if (mstsLocomotive != null)
             {
                 if ((mstsLocomotive.Simulator.UseAdvancedAdhesion) && (!mstsLocomotive.AntiSlip))
@@ -701,7 +701,7 @@ namespace Orts.Viewer3D.Popups
             foreach (var thisTrain in Viewer.Simulator.Trains)
             {
                 if (thisTrain.TrainType == Train.TRAINTYPE.PLAYER || (thisTrain.TrainType == Train.TRAINTYPE.REMOTE && Orts.MultiPlayer.MPManager.IsServer())
-                    ||thisTrain.IsActualPlayerTrain)
+                    || thisTrain.IsActualPlayerTrain)
                 {
                     var status = thisTrain.GetStatus(Viewer.MilepostUnitsMetric);
                     if (thisTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING) status = ((AITrain)thisTrain).AddMovementState(status, Viewer.MilepostUnitsMetric);
@@ -941,7 +941,7 @@ namespace Orts.Viewer3D.Popups
         public void PrepareFrame(RenderFrame frame)
         {
             var matrix = Matrix.Identity;
-            for (var i = 0; i < Graphs.Count ; i++)
+            for (var i = 0; i < Graphs.Count; i++)
             {
                 Graphs[i].Mesh.GraphPos.X = Viewer.DisplaySize.X - Margin.X - Graphs[i].Mesh.GraphPos.Z;
                 Graphs[i].Mesh.GraphPos.Y = Margin.Y + Graphs[i].YOffset;

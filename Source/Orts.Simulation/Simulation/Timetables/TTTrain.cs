@@ -1652,7 +1652,7 @@ namespace Orts.Simulation.Timetables
 
             }
 
-     // Other node mode : check distance ahead (path may have cleared)
+            // Other node mode : check distance ahead (path may have cleared)
 
             else if (ControlMode == TRAIN_CONTROL.AUTO_NODE)
             {
@@ -1672,7 +1672,7 @@ namespace Orts.Simulation.Timetables
                 }
             }
 
-    // signal node : check state of signal
+            // signal node : check state of signal
 
             else if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL)
             {
@@ -2171,7 +2171,7 @@ namespace Orts.Simulation.Timetables
 
             }
 
-                // check if speedlimit on signal is cleared
+            // check if speedlimit on signal is cleared
 
             else if (nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.SPEED_SIGNAL)
             {
@@ -2227,7 +2227,7 @@ namespace Orts.Simulation.Timetables
                 }
             }
 
-        // check if STOP signal cleared
+            // check if STOP signal cleared
 
             else if (nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_STOP)
             {
@@ -2281,7 +2281,7 @@ namespace Orts.Simulation.Timetables
                 }
             }
 
-        // check if RESTRICTED signal cleared
+            // check if RESTRICTED signal cleared
 
             else if (nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_RESTRICTED)
             {
@@ -2309,7 +2309,7 @@ namespace Orts.Simulation.Timetables
                 }
             }
 
-    // check if END_AUTHORITY extended
+            // check if END_AUTHORITY extended
 
             else if (nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.END_OF_AUTHORITY)
             {
@@ -2502,7 +2502,7 @@ namespace Orts.Simulation.Timetables
                     }
                 }
 
-        // check if approaching reversal point
+                // check if approaching reversal point
 
                 else if (nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.REVERSAL)
                 {
@@ -3890,7 +3890,7 @@ namespace Orts.Simulation.Timetables
             {
                 car.SpeedMpS = 0;
             }
- 
+
             AdjustControlsThrottleOff();
             physicsUpdate(0);
 
@@ -6947,7 +6947,7 @@ namespace Orts.Simulation.Timetables
             {
                 File.AppendAllText(@"C:\temp\checktrain.txt", "Detaching from : " + train.Number + " ; units : " + iunits + " ; from front position : " + frontpos.ToString() + "\n");
             }
-            
+
             // check if anything to detach and anything left on train
             if (iunits > 0 && iunits < train.Cars.Count)
             {
@@ -6991,4 +6991,3 @@ namespace Orts.Simulation.Timetables
         }
     }
 }
-

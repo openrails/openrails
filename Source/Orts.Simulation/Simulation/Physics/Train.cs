@@ -137,7 +137,7 @@ namespace Orts.Simulation.Physics
         public float TrainSteamHeatLossWpT;             // Total Steam Heat loss of train
         public float TrainHeatVolumeM3;                 // Total Volume of train to steam heat
         public float TrainHeatPipeAreaM2;               // Total area of heating pipe for steam heating
-        public bool TrainFittedSteamHeat =false;               // Flag to determine train fitted with steam heating
+        public bool TrainFittedSteamHeat = false;               // Flag to determine train fitted with steam heating
 
         // Auxiliary Water Tenders
         public float MaxAuxTenderWaterMassKG;
@@ -246,7 +246,7 @@ namespace Orts.Simulation.Physics
         public bool IsPlayable = false;
         public bool IsPathless = false;
 
-         // End variables used for autopilot mode and played train switching
+        // End variables used for autopilot mode and played train switching
 
 
         public TrainRouted routedForward;                 // routed train class for forward moves (used in signalling)
@@ -564,19 +564,19 @@ namespace Orts.Simulation.Physics
             if (IncorporatedTrainNo > -1)
             {
                 Train train = GetOtherTrainByNumber(IncorporatedTrainNo);
-                    if (train != null)
-                    {
-                        train.IncorporatingTrain = this;
-                        train.IncorporatingTrainNo = Number;
-                    }
+                if (train != null)
+                {
+                    train.IncorporatingTrain = this;
+                    train.IncorporatingTrainNo = Number;
+                }
             }
             if (IncorporatingTrainNo > -1)
             {
                 Train train = GetOtherTrainByNumber(IncorporatingTrainNo);
-                    if (train != null)
-                    {
-                        IncorporatingTrain = train;
-                    }
+                if (train != null)
+                {
+                    IncorporatingTrain = train;
+                }
             }
             CheckFreight();
 
@@ -1602,11 +1602,11 @@ namespace Orts.Simulation.Physics
                 Math.Max(0, ProjectedSpeedMpS) : SpeedMpS < -float.Epsilon ? Math.Min(0, ProjectedSpeedMpS) : 0;
         }
 
-           //================================================================================================//
-          /// <summary>
-         /// Update Auxiliary Tenders added to train
-         /// <\summary>
- 
+        //================================================================================================//
+        /// <summary>
+        /// Update Auxiliary Tenders added to train
+        /// <\summary>
+
         public void UpdateAuxTender()
         {
 
@@ -1649,8 +1649,8 @@ namespace Orts.Simulation.Physics
                                 AuxTenderFound = true;      // Auxililary tender found in consist.
 
                             }
-                            
-                            
+
+
                         }
                         else // Aux tender not found in consist
                         {
@@ -1676,37 +1676,37 @@ namespace Orts.Simulation.Physics
                 }
             }
 
-          //  Trace.TraceInformation("Tender uncouple - Tender Coupled {0} Water Mass {1}", IsAuxTenderCoupled, MaxAuxTenderWaterMassKG);
+            //  Trace.TraceInformation("Tender uncouple - Tender Coupled {0} Water Mass {1}", IsAuxTenderCoupled, MaxAuxTenderWaterMassKG);
 
         }
 
 
-         //================================================================================================//
-         /// <summary>
+        //================================================================================================//
+        /// <summary>
         /// Update Steam Heating
         /// <\summary>
 
         public void UpdateCarSteamHeat()
         {
 
-        // Reset Values to zero to recalculate values
-        TrainHeatVolumeM3 = 0.0f;
-        TrainHeatPipeAreaM2 = 0.0f;
-        TrainSteamHeatLossWpT = 0.0f;
+            // Reset Values to zero to recalculate values
+            TrainHeatVolumeM3 = 0.0f;
+            TrainHeatPipeAreaM2 = 0.0f;
+            TrainSteamHeatLossWpT = 0.0f;
 
-        // Calculate total heat loss for whole train
-        for (int i = 0; i < Cars.Count; i++)
-        {
-        TrainSteamHeatLossWpT += Cars[i].CarHeatLossWpT;
-        TrainHeatPipeAreaM2 += Cars[i].CarHeatPipeAreaM2;
-        TrainHeatVolumeM3 += Cars[i].CarHeatVolumeM3;
-        }
+            // Calculate total heat loss for whole train
+            for (int i = 0; i < Cars.Count; i++)
+            {
+                TrainSteamHeatLossWpT += Cars[i].CarHeatLossWpT;
+                TrainHeatPipeAreaM2 += Cars[i].CarHeatPipeAreaM2;
+                TrainHeatVolumeM3 += Cars[i].CarHeatVolumeM3;
+            }
 
-        // Cehck to confirm that train is player driven and has passenger cars in the consist.
-        if (IsPlayerDriven && PassengerCarsNumber > 0)
-        {
-            TrainFittedSteamHeat = true;  // Use flag to turn functionon and off in Steam Locomotive Module
-        }
+            // Cehck to confirm that train is player driven and has passenger cars in the consist.
+            if (IsPlayerDriven && PassengerCarsNumber > 0)
+            {
+                TrainFittedSteamHeat = true;  // Use flag to turn functionon and off in Steam Locomotive Module
+            }
 
 #if DEBUG_CARSTEAMHEAT
 
@@ -1733,7 +1733,7 @@ namespace Orts.Simulation.Physics
         /// <summary>
         /// ProcessTunnels : check position of each car in train wrt tunnel
         /// <\summary>        
-        
+
         public void ProcessTunnels()
         {
             // start at front of train
@@ -2992,7 +2992,7 @@ namespace Orts.Simulation.Physics
                     else
                     {
                         validSpeedSignalMpS = TrainMaxSpeedMpS;
-                        float newSpeedMpS = Math.Min(validSpeedSignalMpS, Math.Min (validSpeedLimitMpS,  validTempSpeedLimitMpS));
+                        float newSpeedMpS = Math.Min(validSpeedSignalMpS, Math.Min(validSpeedLimitMpS, validTempSpeedLimitMpS));
 
                         if (newSpeedMpS != validSpeedMpS)
                         {
@@ -3075,7 +3075,7 @@ namespace Orts.Simulation.Physics
                     }
                     else if (actualSpeedMpS < 0 && thisObject.speed_reset == 0)
                     {
-                        float newSpeedMpS1 = Math.Min(validSpeedSignalMpS, Math.Min (validSpeedLimitMpS, validTempSpeedLimitMpS));
+                        float newSpeedMpS1 = Math.Min(validSpeedSignalMpS, Math.Min(validSpeedLimitMpS, validTempSpeedLimitMpS));
 
                         if (newSpeedMpS1 != validSpeedMpS)
                         {
@@ -3830,10 +3830,10 @@ namespace Orts.Simulation.Physics
 
         public void UpdateCarSpeeds(float elapsedTime)
         {
-       // The train speed is calculated by averaging all the car speeds. The individual car speeds are calculated from the TotalForce acting on each car. Typically the MotiveForce or Gravitational forces (though other forces like friction have a small impact as well).
-       // At stop under normal circumstances the BrakeForce exceeds the TotalForces, and therefore the wagon is "held in a stationary position". 
-       // In the case of "air_piped" wagons which have no BrakeForces acting on them, the car is not held stationary, and each car shows a small speed.
-       // To overcome this any "air_piped cars are forced to zero speed if the prcedding car is stationary.
+            // The train speed is calculated by averaging all the car speeds. The individual car speeds are calculated from the TotalForce acting on each car. Typically the MotiveForce or Gravitational forces (though other forces like friction have a small impact as well).
+            // At stop under normal circumstances the BrakeForce exceeds the TotalForces, and therefore the wagon is "held in a stationary position". 
+            // In the case of "air_piped" wagons which have no BrakeForces acting on them, the car is not held stationary, and each car shows a small speed.
+            // To overcome this any "air_piped cars are forced to zero speed if the prcedding car is stationary.
             int n = 0;
             float PrevCarSpeedMps = 0.0f;
             foreach (TrainCar car in Cars)
@@ -3854,7 +3854,7 @@ namespace Orts.Simulation.Physics
                     car.SpeedMpS += car.TotalForceN / car.MassKG * elapsedTime;
                     if (car.SpeedMpS < 0)
                         car.SpeedMpS = 0;
-                     // If is "air_piped car, and preceeding car is at stop, then set speed to zero.
+                    // If is "air_piped car, and preceeding car is at stop, then set speed to zero.
                     if (n != 0 && PrevCarSpeedMps == 0 && car.CarBrakeSystemType == "air_piped")
                     {
                         car.SpeedMpS = 0;
@@ -3871,11 +3871,11 @@ namespace Orts.Simulation.Physics
                     {
                         car.SpeedMpS = 0;
                     }
-                    PrevCarSpeedMps = car.SpeedMpS; 
+                    PrevCarSpeedMps = car.SpeedMpS;
                 }
                 else // if speed equals zero
                     PrevCarSpeedMps = car.SpeedMpS;
-                    n++;
+                n++;
 #if DEBUG_SPEED_FORCES
                 Trace.TraceInformation(" ========================================  Train Speed #2 (Train.cs) ===========================================================");
                 Trace.TraceInformation("Car ID {0} TotalForceN {1} Mass {2} elapsedtime {3} CarSpeed {4}", car.CarID, car.TotalForceN, car.MassKG, elapsedTime, car.SpeedMpS);
@@ -3897,7 +3897,7 @@ namespace Orts.Simulation.Physics
                 int j = i;
                 float f = 0;
                 float m = 0;
-                for (; ; )
+                for (;;)
                 {
                     if (car.IsDriveable)
                         f += car.TotalForceN - (car.FrictionForceN + car.CurveForceN + car.TunnelForceN);
@@ -3938,7 +3938,7 @@ namespace Orts.Simulation.Physics
                 int j = i;
                 float f = 0;
                 float m = 0;
-                for (; ; )
+                for (;;)
                 {
                     if (car.IsDriveable)
                         f += car.TotalForceN + car.FrictionForceN + car.CurveForceN + car.TunnelForceN;
@@ -4549,7 +4549,7 @@ namespace Orts.Simulation.Physics
             if (PresentPosition[0].RouteListIndex == -1)
             {
                 Trace.TraceWarning("Train {0} service {1} off path; distance to reversal point set to -1", Number, Name);
-                return -1; 
+                return -1;
             }
             int reversalRouteIndex = ValidRoute[0].GetRouteIndex(TCRoute.ReversalInfo[TCRoute.activeSubpath].ReversalSectionIndex, PresentPosition[0].RouteListIndex);
             if (reversalRouteIndex == -1)
@@ -4673,7 +4673,7 @@ namespace Orts.Simulation.Physics
                 }
             }
 
-        // train moves forward
+            // train moves forward
 
             else
             {
@@ -5645,7 +5645,7 @@ namespace Orts.Simulation.Physics
             }
 
 
-     // check if waiting for signal
+            // check if waiting for signal
 
             else if (SpeedMpS < Math.Abs(0.1) &&
              NextSignalObject[0] != null &&
@@ -6271,7 +6271,7 @@ namespace Orts.Simulation.Physics
                 }
             }
 
-                // if route is too long, remove sections at end
+            // if route is too long, remove sections at end
 
             else if (totalLengthM > minCheckDistanceManualM)
             {
@@ -6360,7 +6360,7 @@ namespace Orts.Simulation.Physics
                         endAuthorityDistanceM = totalLengthM;
                     }
 
-                // sections not clear - check if end has signal
+                    // sections not clear - check if end has signal
 
                     else
                     {
@@ -6650,7 +6650,7 @@ namespace Orts.Simulation.Physics
                     signalRef.BreakDownRouteList(ValidRoute[reqRouteIndex], routeIndex, reqSwitch.CircuitState.TrainReserved);
                     if (routeIndex >= 0 && ValidRoute[reqRouteIndex].Count > routeIndex)
                         ValidRoute[reqRouteIndex].RemoveRange(routeIndex, ValidRoute[reqRouteIndex].Count - routeIndex);
-                    else Trace.TraceWarning ("Switch index {0} could not be found in ValidRoute[{1}]; routeDirectionIndex = {2}",
+                    else Trace.TraceWarning("Switch index {0} could not be found in ValidRoute[{1}]; routeDirectionIndex = {2}",
                             reqSwitch.Index, reqRouteIndex, routeDirectionIndex);
                     reqSwitch.deAlignSwitchPins();
                     reqSwitch.JunctionSetManual = reqSwitch.JunctionLastRoute == 0 ? 1 : 0;
@@ -6840,7 +6840,7 @@ namespace Orts.Simulation.Physics
                                        allowedMaxSpeedSignalMpS == -1 ? 999 : allowedMaxSpeedSignalMpS));
                 }
             }
-                // No speed limits behind us, initialize allowedMaxSpeedLimitMpS.
+            // No speed limits behind us, initialize allowedMaxSpeedLimitMpS.
             else if (!Simulator.TimetableMode)
             {
                 AllowedMaxSpeedMpS = allowedMaxSpeedLimitMpS;
@@ -6951,7 +6951,7 @@ namespace Orts.Simulation.Physics
                                 AllowedMaxSpeedMpS = Math.Min(allowedMaxSpeedLimitMpS, Math.Min(allowedMaxTempSpeedLimitMpS,
                                     allowedMaxSpeedSignalMpS == -1 ? 999 : allowedMaxSpeedSignalMpS));
                             }
-                         }
+                        }
                     }
 
                     remLength -= (thisObject.TCOffset - offsetStart);
@@ -7322,7 +7322,7 @@ namespace Orts.Simulation.Physics
                 }
             }
 
-                // if route is too long, remove sections at end
+            // if route is too long, remove sections at end
 
             else if (totalLengthM > minCheckDistanceM)
             {
@@ -7433,7 +7433,7 @@ namespace Orts.Simulation.Physics
                         endAuthorityDistanceM = totalLengthM;
                     }
 
-                // sections not clear - check if end has signal
+                    // sections not clear - check if end has signal
 
                     else
                     {
@@ -8080,7 +8080,7 @@ namespace Orts.Simulation.Physics
             signalRef.BreakDownRouteList(ValidRoute[0], 0, routedForward);
             signalRef.BreakDownRouteList(ValidRoute[1], 0, routedBackward);
 
-            
+
             // clear occupied sections
 
             for (int iSection = OccupiedTrack.Count - 1; iSection >= 0; iSection--)
@@ -9053,7 +9053,7 @@ namespace Orts.Simulation.Physics
 
             TrackCircuitSection thisSection;
 
-  
+
             // static train
 
             if (TrainType == TRAINTYPE.STATIC)
@@ -9640,7 +9640,7 @@ namespace Orts.Simulation.Physics
                     }
                 }
 
-               // if section is a deadlock boundary, check available paths for both trains
+                // if section is a deadlock boundary, check available paths for both trains
 
                 else
                 {
@@ -10317,12 +10317,12 @@ namespace Orts.Simulation.Physics
                 }
                 if (thisItem.ArrivalTime < 0)
                 {
-                    thisItem.ArrivalTime = thisItem.DepartTime < 0 ? TrafficService.Time : Math.Min (thisItem.DepartTime, TrafficService.Time);
+                    thisItem.ArrivalTime = thisItem.DepartTime < 0 ? TrafficService.Time : Math.Min(thisItem.DepartTime, TrafficService.Time);
                     Trace.TraceInformation("Train {0} Service {1} : Corrected negative arrival time within .trf or .act file", Number.ToString(), Name);
                 }
                 if (thisItem.DepartTime < 0)
                 {
-                    thisItem.DepartTime =  Math.Max (thisItem.ArrivalTime, TrafficService.Time);
+                    thisItem.DepartTime = Math.Max(thisItem.ArrivalTime, TrafficService.Time);
                     Trace.TraceInformation("Train {0} Service {1} : Corrected negative depart time within .trf or .act file", Number.ToString(), Name);
                 }
 
@@ -11623,7 +11623,7 @@ namespace Orts.Simulation.Physics
                     DateTime depTime = baseDT.AddSeconds(((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).BoardingEndS);
                     abString = depTime.ToString("HH:mm:ss");
                 }
-                else 
+                else
                    if (Math.Abs(SpeedMpS) <= 0.01 && AuxActionsContain.specRequiredActions.Count > 0 && AuxActionsContain.specRequiredActions.First.Value is AuxActSigDelegate &&
                     (AuxActionsContain.specRequiredActions.First.Value as AuxActSigDelegate).currentMvmtState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION)
                 {
@@ -11741,7 +11741,7 @@ namespace Orts.Simulation.Physics
 
             // set waiting point
             if (this != Simulator.OriginalPlayerTrain)
-            AddWaitingPointInfo(ref thisInfo);
+                AddWaitingPointInfo(ref thisInfo);
 
             bool maxAuthSet = false;
             // set object items - forward
@@ -15586,7 +15586,7 @@ namespace Orts.Simulation.Physics
             public float GetDistanceAlongRoute(int startSectionIndex, float startOffset,
                int endSectionIndex, float endOffset, bool forward, Signals signals)
 
-        // startSectionIndex and endSectionIndex are indices in route list
+            // startSectionIndex and endSectionIndex are indices in route list
             // startOffset is remaining length of startSection in required direction
             // endOffset is length along endSection in required direction
             {
@@ -17123,9 +17123,9 @@ namespace Orts.Simulation.Physics
                 else
                     // use minimun station dwell time
                     if (stopTime <= 0 || stopTime > PlatformItem.MinWaitingTime)
-                    {
-                        stopTime = (int)PlatformItem.MinWaitingTime;
-                    }
+                {
+                    stopTime = (int)PlatformItem.MinWaitingTime;
+                }
 
                 // correct departure time for stop around midnight
                 int correctedTime = ActualArrival + stopTime;
@@ -17519,10 +17519,10 @@ namespace Orts.Simulation.Physics
 
 
 #if INDIVIDUAL_CONTROL
-        		if (car is MSTSLocomotive && car.CarID.StartsWith(MPManager.GetUserName()))
-						{
-							car.Update(elapsedClockSeconds);
-						}
+                if (car is MSTSLocomotive && car.CarID.StartsWith(MPManager.GetUserName()))
+                        {
+                            car.Update(elapsedClockSeconds);
+                        }
 #endif
                 }
             }
@@ -17535,5 +17535,3 @@ namespace Orts.Simulation.Physics
         }
     }// class Train
 }
-
-
