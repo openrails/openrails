@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2013, 2014 by the Open Rails project.
+﻿// COPYRIGHT 2013, 2014, 2015, 2016 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -17,12 +17,6 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-/* OVERHEAD SuperElevation
- * 
- * Overhead SuperElevation is generated procedurally from data in the track database.
- * 
- */
-
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
@@ -34,11 +28,8 @@ using System.Diagnostics;
 
 namespace Orts.Viewer3D
 {
-    public class SuperElevation
+    public class SuperElevationManager
     {
-        public static List<List<TrVectorSection>> allCurves;
-        public static Dictionary<int, List<TrVectorSection>> SectionMapTiles;
-        public static bool HasCheckedElevation;
         /// <summary>
         /// Decompose and add a SuperElevation on top of MSTS track section
         /// </summary>
@@ -51,12 +42,6 @@ namespace Orts.Viewer3D
         /// <param name="shapeFilePath">Path to the shape file.</param>
         public static bool DecomposeStaticSuperElevation(Viewer viewer, List<DynamicTrackViewer> trackList, TrackObj trackObj, WorldPosition worldMatrixInput, int TileX, int TileZ, string shapeFilePath)
         {
-            if (SuperElevation.HasCheckedElevation == false)
-            {
-                SuperElevation.CheckElevation(Program.Simulator);
-                SuperElevation.HasCheckedElevation = true;
-            }
-
             TrackShape shape = null;
             try
             {
@@ -106,25 +91,25 @@ namespace Orts.Viewer3D
 
             if (drawn <= count || isTunnel)//tunnel or not every section is in SE, will remove all sections in the shape out
             {
-                if (sectionsinShape.Count > 0) RemoveTracks(sectionsinShape);
+                if (sectionsinShape.Count > 0) RemoveTracks(viewer.Simulator, sectionsinShape);
                 return false;
             }
             return true;
         }
 
         //remove sections from future consideration
-        static void RemoveTracks(List<TrVectorSection> sectionsinShape)
+        static void RemoveTracks(Simulator simulator, List<TrVectorSection> sectionsinShape)
         {
             foreach (var tmpSec in sectionsinShape)
             {
                 List<TrVectorSection> curve = null;
                 var pos = -1;
-                foreach (var c in allCurves) { if (c.Contains(tmpSec)) { curve = c; break; } }//find which curve has the section
+                foreach (var c in simulator.SuperElevation.Curves) { if (c.Contains(tmpSec)) { curve = c; break; } }//find which curve has the section
                 if (curve != null)
                 {
                     pos = curve.IndexOf(tmpSec);
                     if (pos >= 1) curve[pos - 1].EndElev = 0; if (pos < curve.Count - 1) curve[pos + 1].StartElev = 0;
-                    RemoveSectionsFromMap(tmpSec);//remove all sections in the curve from future consideration
+                    RemoveSectionsFromMap(simulator, tmpSec);//remove all sections in the curve from future consideration
                     curve.Remove(tmpSec);
                 }
             }
@@ -135,11 +120,6 @@ namespace Orts.Viewer3D
         public static int DecomposeStaticSuperElevationOneSection(Viewer viewer, List<DynamicTrackViewer> dTrackList, int TileX, int TileZ, TrVectorSection ts)
         {
             if (ts == null) return 0;
-            if (SuperElevation.HasCheckedElevation == false)
-            {
-                SuperElevation.CheckElevation(Program.Simulator);
-                SuperElevation.HasCheckedElevation = true;
-            }
 
             WorldLocation location = new WorldLocation();
             Vector3 directionVector = new Vector3();
@@ -183,15 +163,9 @@ namespace Orts.Viewer3D
         //no use anymore
         public static int DecomposeStaticSuperElevation(Viewer viewer, List<DynamicTrackViewer> dTrackList, int TileX, int TileZ)
         {
-            if (SuperElevation.HasCheckedElevation == false)
-            {
-                SuperElevation.CheckElevation(Program.Simulator);
-                SuperElevation.HasCheckedElevation = true;
-            }
-
             var key = (int)(Math.Abs(TileX) + Math.Abs(TileZ));
-            if (!SectionMapTiles.ContainsKey(key)) return 0;//cannot find sections associated with this tile
-            var sections = SectionMapTiles[key];
+            if (!viewer.Simulator.SuperElevation.Sections.ContainsKey(key)) return 0;//cannot find sections associated with this tile
+            var sections = viewer.Simulator.SuperElevation.Sections[key];
             if (sections == null) return 0;
 
             WorldLocation location = new WorldLocation();
@@ -242,8 +216,8 @@ namespace Orts.Viewer3D
             if (section.SectionCurve == null) return null;
             sv = ev = mv = 0f; dir = 1f;
             var key = (int)(Math.Abs(TileX) + Math.Abs(TileZ));
-            if (!SectionMapTiles.ContainsKey(key)) return null;//we do not have the maps of sections on the given tile, will not bother to search
-            var tileSections = SectionMapTiles[key];
+            if (!simulator.SuperElevation.Sections.ContainsKey(key)) return null;//we do not have the maps of sections on the given tile, will not bother to search
+            var tileSections = simulator.SuperElevation.Sections[key];
             foreach (var s in tileSections)
             {
                 if (s.WFNameX == TileX && s.WFNameZ == TileZ && s.WorldFileUiD == UID && section.SectionIndex == s.SectionIndex)
@@ -265,130 +239,11 @@ namespace Orts.Viewer3D
             return null;
         }
 
-        static float MaxAllowElev;
-
-        //check TDB for long curves and determine each section's position/elev in the curve
-        public static void CheckElevation(Simulator simulator)
-        {
-            allCurves = new List<List<TrVectorSection>>();
-            SectionMapTiles = new Dictionary<int, List<TrVectorSection>>();
-
-            MaxAllowElev = 0.07f + simulator.UseSuperElevation / 100f;//max allowed elevation controlled by user setting
-
-            var SectionList = new List<TrVectorSection>();
-            foreach (var node in simulator.TDB.TrackDB.TrackNodes)
-            {
-                if (node == null || node.TrJunctionNode != null || node.TrEndNode == true) continue;
-                var StartCurve = false; var CurveDir = 0; var Len = 0.0f;
-                SectionList.Clear();
-                SectionCurve theCurve = null;
-                int i = 0; int count = node.TrVectorNode.TrVectorSections.Length;
-                foreach (var section in node.TrVectorNode.TrVectorSections)//loop all curves
-                {
-                    i++;
-                    var sec = simulator.TSectionDat.TrackSections.Get(section.SectionIndex);
-                    if (sec == null) continue;
-                    theCurve = sec.SectionCurve;
-                    if (sec.SectionSize != null && Math.Abs(sec.SectionSize.Width - simulator.SuperElevationGauge) > 0.2) continue;//the main route has a gauge different than mine
-
-                    if (theCurve != null && !theCurve.Angle.AlmostEqual(0f, 0.01f)) //a good curve
-                    {
-                        if (i == 1 || i == count)
-                        {
-                            //if (theCurve.Radius * (float)Math.Abs(theCurve.Angle * 0.0174) < 15f) continue; 
-                        } //do not want the first and last piece of short curved track to be in the curve (they connected to switches)
-                        if (StartCurve == false) //we are beginning a curve
-                        {
-                            StartCurve = true; CurveDir = Math.Sign(sec.SectionCurve.Angle);
-                            Len = 0f;
-                        }
-                        else if (CurveDir != Math.Sign(sec.SectionCurve.Angle)) //we are in curve, but bending different dir
-                        {
-                            MarkSections(simulator, SectionList, Len); //treat the sections encountered so far, then restart with other dir
-                            CurveDir = Math.Sign(sec.SectionCurve.Angle);
-                            SectionList.Clear();
-                            Len = 0f; //StartCurve remains true as we are still in a curve
-                        }
-                        Len += theCurve.Radius * (float)Math.Abs(theCurve.Angle * 0.0174);//0.0174=3.14/180
-                        SectionList.Add(section);
-                    }
-                    else //meet a straight line
-                    {
-                        if (StartCurve == true) //we are in a curve, need to finish
-                        {
-                            MarkSections(simulator, SectionList, Len);
-                            Len = 0f;
-                            SectionList.Clear();
-                        }
-                        StartCurve = false;
-                    }
-                }
-                if (StartCurve == true) // we are in a curve after looking at every section
-                {
-                    MarkSections(simulator, SectionList, Len);
-                }
-                Len = 0f; StartCurve = false;
-                SectionList.Clear();
-            }
-        }
-
-
-        public static void MarkSections(Simulator simulator, List<TrVectorSection> SectionList, float Len)
-        {
-            if (Len < Program.Simulator.SuperElevationMinLen || SectionList.Count == 0) return;//too short a curve or the list is empty
-            var tSection = simulator.TSectionDat.TrackSections;
-            var sectionData = tSection.Get(SectionList[0].SectionIndex);
-            if (sectionData == null) return;
-            //loop all section to determine the max elevation for the whole track
-            double Curvature = sectionData.SectionCurve.Angle * SectionList.Count * 33 / Len;//average radius in degree/100feet
-            var Max = (float)(Math.Pow(simulator.TRK.Tr_RouteFile.SpeedLimit * 2.25, 2) * 0.0007 * Math.Abs(Curvature) - 3); //in inch
-            Max = Max * 2.5f;//change to cm
-            Max = (float)Math.Round(Max * 2, MidpointRounding.AwayFromZero) / 200f;//closest to 5 mm increase;
-            if (Max < 0.01f) return;
-            if (Max > MaxAllowElev) Max = MaxAllowElev;//max
-            Max = (float)Math.Atan(Max / 1.44f); //now change to rotation in radius by quick estimation as the angle is small
-
-            allCurves.Add(new List<TrVectorSection>(SectionList)); //add the curve
-            MapWFiles2Sections(SectionList);//map these sections to tiles, so we can compute it quicker later
-            if (SectionList.Count == 1)//only one section in the curve
-            {
-                SectionList[0].StartElev = SectionList[0].EndElev = 0f; SectionList[0].MaxElev = Max;
-            }
-            else//more than one section in the curve
-            {
-                var count = 0;
-
-                foreach (var section in SectionList)
-                {
-                    if (count == 0) { section.StartElev = 0f; section.MaxElev = Max; section.EndElev = Max; }
-                    else if (count == SectionList.Count - 1) { section.StartElev = Max; section.MaxElev = Max; section.EndElev = 0f; }
-                    else { section.StartElev = section.EndElev = section.MaxElev = Max; }
-                    count++;
-                }
-            }
-        }
-
-        //find all sections in a tile, save the info to a look-up table
-        public static void MapWFiles2Sections(List<TrVectorSection> sections)
-        {
-            foreach (var section in sections)
-            {
-                var key = (int)(Math.Abs(section.WFNameX) + Math.Abs(section.WFNameZ));
-                if (SectionMapTiles.ContainsKey(key)) SectionMapTiles[key].Add(section);
-                else
-                {
-                    List<TrVectorSection> tmpSections = new List<TrVectorSection>();
-                    tmpSections.Add(section);
-                    SectionMapTiles.Add(key, tmpSections);
-                }
-            }
-        }
-
         //remove a section from the tile-section map
-        public static void RemoveSectionsFromMap(TrVectorSection section)
+        public static void RemoveSectionsFromMap(Simulator simulator, TrVectorSection section)
         {
             var key = (int)(Math.Abs(section.WFNameX) + Math.Abs(section.WFNameZ));
-            if (SectionMapTiles.ContainsKey(key)) SectionMapTiles[key].Remove(section);
+            if (simulator.SuperElevation.Sections.ContainsKey(key)) simulator.SuperElevation.Sections[key].Remove(section);
         }
 
         //get how much elevation is needed, starting at 8cm of max, but actual max will be 8mm+Simulator.UseSuperElevation
@@ -400,7 +255,7 @@ namespace Orts.Viewer3D
             Max = Max * 2.5f;//change to cm
             Max = (float)Math.Round(Max * 2, MidpointRounding.AwayFromZero) / 200f;//closest to 5 mm increase;
             if (Max < 0.01f) return 0f;
-            if (Max > MaxAllowElev) Max = MaxAllowElev;//max 16 cm
+            if (Max > simulator.SuperElevation.MaximumAllowedM) Max = simulator.SuperElevation.MaximumAllowedM;//max 16 cm
             Max /= 1.44f; //now change to rotation in radius by quick estimation as the angle is small
 
             return Max;
@@ -629,7 +484,6 @@ namespace Orts.Viewer3D
 
     public class SuperElevationViewer : DynamicTrackViewer
     {
-
         public SuperElevationViewer(Viewer viewer, WorldPosition position, WorldPosition endPosition, float radius, float angle,
             float s, float e, float m, float dir)//values for start, end and max elevation
             : base(viewer, position, endPosition)

@@ -120,6 +120,7 @@ namespace Orts.Simulation
         public int DayAmbientLight;
         public int CarVibrating;
         public int UseSuperElevation; //amount of superelevation
+        public SuperElevation SuperElevation;
         public int SuperElevationMinLen = 50;
         public float SuperElevationGauge = 1.435f;//1.435 guage
         // Used in save and restore form
@@ -270,6 +271,8 @@ namespace Orts.Simulation
                 TSectionDat = new TrackSectionsFile(BasePath + @"\GLOBAL\TSECTION.DAT");
             if (File.Exists(RoutePath + @"\TSECTION.DAT"))
                 TSectionDat.AddRouteTSectionDatFile(RoutePath + @"\TSECTION.DAT");
+
+            SuperElevation = new SuperElevation(this);
 
 #if ACTIVITY_EDITOR
             //  Where we try to load OR's specific data description (Station, connectors, etc...)
