@@ -922,7 +922,7 @@ namespace Orts.Simulation
             }
 
 
-            if (conFileName.Contains("tilted")) train.tilted = true;
+            if (conFileName.Contains("tilted")) train.IsTilting = true;
 
 
             //PATFile patFile = new PATFile(patFileName);
@@ -1110,7 +1110,7 @@ namespace Orts.Simulation
 
             conFileName = BasePath + @"\TRAINS\CONSISTS\" + srvFile.Train_Config + ".CON";
             patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
-            if (conFileName.Contains("tilted")) train.tilted = true;
+            if (conFileName.Contains("tilted")) train.IsTilting = true;
 
             return train;
         }

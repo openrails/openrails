@@ -1295,7 +1295,7 @@ namespace Orts.Simulation.Timetables
 
             public bool BuildConsist(List<consistInfo> consistSets, string trainsetDirectory, string consistDirectory, Simulator simulator)
             {
-                AITrain.tilted = true;
+                AITrain.IsTilting = true;
 
                 float? confMaxSpeed = null;
 
@@ -1310,7 +1310,7 @@ namespace Orts.Simulation.Timetables
 
                     if (!consistFile.Contains("tilted"))
                     {
-                        AITrain.tilted = false;
+                        AITrain.IsTilting = false;
                     }
 
                     ConsistFile conFile = null;

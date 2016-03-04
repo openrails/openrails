@@ -572,7 +572,7 @@ namespace Orts.MultiPlayer
                     p.Train = p1.Train; p.url = this.url;
                     p.LeadingLocomotiveID = this.leadingID;
                     p.con = MPManager.Simulator.BasePath + "\\TRAINS\\CONSISTS\\" + this.con;
-                    if (p.con.Contains("tilted")) p.Train.tilted = true;
+                    if (p.con.Contains("tilted")) p.Train.IsTilting = true;
 
                     p.path = MPManager.Simulator.RoutePath + "\\PATHS\\" + this.path;
                     p.Username = this.user;

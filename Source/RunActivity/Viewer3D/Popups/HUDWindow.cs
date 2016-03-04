@@ -479,7 +479,7 @@ namespace Orts.Viewer3D.Popups
                 Viewer.Catalog.GetString("Cab Aspect"));
             TableAddLine(table);
             TableSetCells(table, 0, locomotive.UiD + " " + (mstsLocomotive == null ? "" : mstsLocomotive.UsingRearCab ? Viewer.Catalog.GetString("R") : Viewer.Catalog.GetString("F")),
-                train.tilted ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
+                train.IsTilting ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
                 train.IsFreight ? Viewer.Catalog.GetString("Freight") : Viewer.Catalog.GetString("Pass"),
                 FormatStrings.FormatShortDistanceDisplay(train.Length, locomotive.IsMetric),
                 FormatStrings.FormatLargeMass(train.MassKg, locomotive.IsMetric, locomotive.IsUK), "",

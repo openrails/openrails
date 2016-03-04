@@ -297,7 +297,7 @@ namespace Orts.Simulation.Physics
 
         public float ClearanceAtRearM = -1;              // save distance behind train (when moving backward)
         public SignalObject RearSignalObject;            // direct reference to signal at rear (when moving backward)
-        public bool tilted;
+        public bool IsTilting;
 
         public float InitialSpeed = 0;                 // initial speed of train in activity as set in .srv file
         public float InitialThrottlepercent = 25; // initial value of throttle when train starts activity at speed > 0
@@ -585,7 +585,7 @@ namespace Orts.Simulation.Physics
             signalRef = simulator.Signals;
 
             TrainType = (TRAINTYPE)inf.ReadInt32();
-            tilted = inf.ReadBoolean();
+            IsTilting = inf.ReadBoolean();
             ClaimState = inf.ReadBoolean();
             DatalogTrainSpeed = inf.ReadBoolean();
             DatalogTSInterval = inf.ReadInt32();
@@ -891,7 +891,7 @@ namespace Orts.Simulation.Physics
             outf.Write(IncorporatingTrainNo);
 
             outf.Write((int)TrainType);
-            outf.Write(tilted);
+            outf.Write(IsTilting);
             outf.Write(ClaimState);
             outf.Write(DatalogTrainSpeed);
             outf.Write(DatalogTSInterval);
@@ -3561,7 +3561,7 @@ namespace Orts.Simulation.Physics
                     car.WorldPosition.TileZ = traveller.TileZ;
 
 
-                    if (Simulator.UseSuperElevation > 0 || Simulator.CarVibrating > 0 || this.tilted)
+                    if (Simulator.UseSuperElevation > 0 || Simulator.CarVibrating > 0 || this.IsTilting)
                     {
                         car.RealXNAMatrix = car.WorldPosition.XNAMatrix;
                         car.SuperElevation(SpeedMpS, Simulator.UseSuperElevation, traveller);

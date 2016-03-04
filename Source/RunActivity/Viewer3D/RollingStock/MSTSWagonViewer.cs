@@ -395,7 +395,7 @@ namespace Orts.Viewer3D.RollingStock
                 m.M33 = p.Cos;
 
                 //if car vibrate, the bogie will stay on track, thus reverse it back (Car.SuperElevationMatrix holds the inverse)
-                if ((Program.Simulator.CarVibrating > 0 || (this.Car.Train != null && this.Car.Train.tilted)) && p.bogie) TrainCarShape.XNAMatrices[p.iMatrix] = Car.SuperElevationMatrix * m;
+                if ((Program.Simulator.CarVibrating > 0 || (this.Car.Train != null && this.Car.Train.IsTilting)) && p.bogie) TrainCarShape.XNAMatrices[p.iMatrix] = Car.SuperElevationMatrix * m;
                 else TrainCarShape.XNAMatrices[p.iMatrix] = m;
             }
 

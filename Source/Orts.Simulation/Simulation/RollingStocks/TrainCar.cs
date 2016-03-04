@@ -1538,7 +1538,7 @@ namespace Orts.Simulation.RollingStocks
             CurrentCurveRadius = traveler.GetCurrentCurveRadius();
 
             // ignore the rest of superelevation if option is not selected under menu options TAB
-            if (Simulator.UseSuperElevation > 0 || Simulator.CarVibrating > 0 || this.Train.tilted)
+            if (Simulator.UseSuperElevation > 0 || Simulator.CarVibrating > 0 || this.Train.IsTilting)
             {
 
                 if (prevElev < -30f) { prevElev += 40f; return; }//avoid the first two updates as they are not valid
@@ -1597,7 +1597,7 @@ namespace Orts.Simulation.RollingStocks
                 var sx1 = (float)Math.Sin(sx) * max; var sz1 = (float)Math.Sin(sz) * max;
 
                 //check for tilted train, add more to the body
-                if (this.Train != null && this.Train.tilted == true)
+                if (this.Train != null && this.Train.IsTilting == true)
                 {
                     tz = prevTilted + (tz - prevTilted) * timeInterval;//smooth rotation
                     prevTilted = tz;
