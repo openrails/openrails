@@ -4028,7 +4028,7 @@ namespace Orts.Simulation.Timetables
                 {
                     foreach (TrainCar car in attachTrain.Cars)
                     {
-                        if (car.GetWagonType().Equals("Engine"))
+                        if (car.WagonType == TrainCar.WagonTypes.Engine)
                         {
                             MSTSLocomotive loco = car as MSTSLocomotive;
                             loco.AntiSlip = attachTrain.leadLocoAntiSlip;
@@ -5355,7 +5355,7 @@ namespace Orts.Simulation.Timetables
                             {
                                 foreach (TrainCar car in formedTrain.Cars)
                                 {
-                                    if (car.GetWagonType().Equals("Engine"))
+                                    if (car.WagonType == TrainCar.WagonTypes.Engine)
                                     {
                                         MSTSLocomotive loco = car as MSTSLocomotive;
                                         loco.AntiSlip = formedTrain.leadLocoAntiSlip;

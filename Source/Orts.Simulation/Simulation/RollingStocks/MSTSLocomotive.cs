@@ -129,9 +129,9 @@ namespace Orts.Simulation.RollingStocks
             { BrakeSystemComponent.BrakeCylinder, PressureUnit.None }
         };
 
-        float OdometerResetPositionM = 0;
-        bool OdometerCountingUp = true;
-        bool OdometerCountingForwards = true;
+        protected float OdometerResetPositionM = 0;
+        protected bool OdometerCountingUp = true;
+        protected bool OdometerCountingForwards = true;
 
         public bool OdometerVisible { get; private set; }
         public float OdometerM
@@ -145,7 +145,7 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
-        bool DoesHornTriggerBell;
+        protected bool DoesHornTriggerBell;
 
         // wag file data
         public string CabSoundFileName;
@@ -185,7 +185,6 @@ namespace Orts.Simulation.RollingStocks
 
         public float MaxContinuousForceN;
         public float ContinuousForceTimeFactor = 1800;
-        public float NumWheelsAdhesionFactor = 4;   // MSTS adhesion factor loosely based on the number of driven axles
         public bool AntiSlip;
         public float SanderSpeedEffectUpToMpS;
         public float SanderSpeedOfMpS = 30.0f;
@@ -197,16 +196,11 @@ namespace Orts.Simulation.RollingStocks
         public bool EmergencyButtonPressed;
         public bool WheelslipCausesThrottleDown;
 
-        public string EngineType;
-        public bool IsSteam;
-        public bool IsDiesel;
-        public bool IsElectric;
-
-        private const float DefaultCompressorRestartToMaxSysPressureDiff = 35;    // Used to check if difference between these two .eng parameters is correct, and to correct it
-        private const float DefaultMaxMainResToCompressorRestartPressureDiff = 10; // Used to check if difference between these two .eng parameters is correct, and to correct it
-        private const float DefaultMaxCompressorRestartPressure = 135; // Max value to be inserted if .eng parameters are corrected
-        private const float DefaultMainResVolume = 0.78f; // Value to be inserted if .eng parameters are corrected
-        private const float DefaultMaxMainResPressure = 140; // Max value to be inserted if .eng parameters are corrected
+        protected const float DefaultCompressorRestartToMaxSysPressureDiff = 35;    // Used to check if difference between these two .eng parameters is correct, and to correct it
+        protected const float DefaultMaxMainResToCompressorRestartPressureDiff = 10; // Used to check if difference between these two .eng parameters is correct, and to correct it
+        protected const float DefaultMaxCompressorRestartPressure = 135; // Max value to be inserted if .eng parameters are corrected
+        protected const float DefaultMainResVolume = 0.78f; // Value to be inserted if .eng parameters are corrected
+        protected const float DefaultMaxMainResPressure = 140; // Max value to be inserted if .eng parameters are corrected
 
         public float CabRotationZ
         {
@@ -321,7 +315,7 @@ namespace Orts.Simulation.RollingStocks
             MoveParamsToAxle();
         }
 
-        private void CheckCoherence()
+        protected void CheckCoherence()
         {
             if (!TrainBrakeController.IsValid())
                 TrainBrakeController = new ScriptedBrakeController(this); //create a blank one
@@ -362,7 +356,7 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
-        private void GetPressureUnit()
+        protected void GetPressureUnit()
         {
             switch (Simulator.Settings.PressureUnit)
             {
@@ -450,7 +444,7 @@ namespace Orts.Simulation.RollingStocks
                 .First().Key;
         }
 
-        private CabView BuildCabView(string wagFilePath, string cvfFileName)
+        protected CabView BuildCabView(string wagFilePath, string cvfFileName)
         {
             var viewPointList = new List<ViewPoint>();
             var extendedCVF = new ExtendedCVF();
@@ -518,7 +512,7 @@ namespace Orts.Simulation.RollingStocks
             return new CabView(cvfFile, viewPointList, extendedCVF, cabViewType, noseAhead);
         }
 
-        private CabView3D BuildCab3DView()
+        protected CabView3D BuildCab3DView()
         {
             if (Cab3DShapeFileName == null)
                 return null;
@@ -582,10 +576,15 @@ namespace Orts.Simulation.RollingStocks
 
                 case "engine(type":
                     stf.MustMatch("(");
-                    string typeString = stf.ReadString();
-                    IsSteam = String.Compare(typeString, "Steam") == 0 ? true : false;
-                    IsDiesel = String.Compare(typeString, "Diesel") == 0 ? true : false;
-                    IsElectric = String.Compare(typeString, "Electric") == 0 ? true : false;
+                    var engineType = stf.ReadString();
+                    try
+                    {
+                        EngineType = (EngineTypes)Enum.Parse(typeof(EngineTypes), engineType);
+                    }
+                    catch
+                    {
+                        STFException.TraceWarning(stf, "Skipped unknown engine type " + engineType);
+                    }
                     break;
 
                 case "engine(enginecontrollers(throttle": ThrottleController = new MSTSNotchController(stf); break;
@@ -652,7 +651,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(dynamicbrakehasautobailoff":
                 case "engine(ortsdynamicbrakeshasautobailoff": DynamicBrakeAutoBailOff = stf.ReadBoolBlock(true); break;
                 case "engine(dynamicbrakesdelaytimebeforeengaging": DynamicBrakeDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
-                case "engine(numwheels": NumWheelsAdhesionFactor = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); if (NumWheelsAdhesionFactor < 1) STFException.TraceWarning(stf, "Engine:NumWheels is less than 1, parts of the simulation may not function correctly"); break;
+                case "engine(numwheels": LocoNumDrvWheels = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); if (LocoNumDrvWheels < 1) STFException.TraceWarning(stf, "Engine:NumWheels is less than 1, parts of the simulation may not function correctly"); break;
                 case "engine(antislip": AntiSlip = stf.ReadBoolBlock(false); break;
                 case "engine(engineoperatingprocedures": EngineOperatingProcedures = stf.ReadStringBlock(""); break;
                 case "engine(headout":
@@ -666,7 +665,10 @@ namespace Orts.Simulation.RollingStocks
                     {
                         switch (brakesenginecontrollers)
                         {
-                            case "blended": if (IsElectric || IsDiesel) DynamicBrakeBlendingEnabled = true; break;
+                            case "blended":
+                                if (EngineType == EngineTypes.Electric || EngineType == EngineTypes.Diesel)
+                                    DynamicBrakeBlendingEnabled = true;
+                                break;
                         }
                     }
                     break;
@@ -695,7 +697,6 @@ namespace Orts.Simulation.RollingStocks
             MaxForceN = locoCopy.MaxForceN;
             MaxCurrentA = locoCopy.MaxCurrentA;
             MaxSpeedMpS = locoCopy.MaxSpeedMpS;
-            IsSteam = locoCopy.IsSteam;
             TractiveForceCurves = locoCopy.TractiveForceCurves;
             MaxContinuousForceN = locoCopy.MaxContinuousForceN;
             ContinuousForceTimeFactor = locoCopy.ContinuousForceTimeFactor;
@@ -706,7 +707,7 @@ namespace Orts.Simulation.RollingStocks
             DynamicBrakeDelayS = locoCopy.DynamicBrakeDelayS;
             MaxDynamicBrakeForceN = locoCopy.MaxDynamicBrakeForceN;
             HasSmoothStruc = locoCopy.HasSmoothStruc;
-            NumWheelsAdhesionFactor = locoCopy.NumWheelsAdhesionFactor;
+            LocoNumDrvWheels = locoCopy.LocoNumDrvWheels;
             AntiSlip = locoCopy.AntiSlip;
             EffectData = locoCopy.EffectData;
             SanderSpeedEffectUpToMpS = locoCopy.SanderSpeedEffectUpToMpS;
@@ -826,7 +827,7 @@ namespace Orts.Simulation.RollingStocks
             return Train.LeadLocomotive == this;
         }
 
-        private void ParseCombData(string lowercasetoken, STFReader stf)
+        protected void ParseCombData(string lowercasetoken, STFReader stf)
         {
             var throttle = false;
             var train = false;
@@ -931,7 +932,7 @@ namespace Orts.Simulation.RollingStocks
         /// Correct braking parameters if needed or required 
         /// </summary>
         /// 
-        private void CorrectBrakingParams()
+        protected void CorrectBrakingParams()
         {
             if (Simulator.Settings.CorrectQuestionableBrakingParams)
             {
@@ -1302,14 +1303,14 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
-        enum Wheelslip
+        protected enum Wheelslip
         {
             None,
             Warning,
             Occurring
         };
 
-        Wheelslip WheelslipState = Wheelslip.None;
+        protected Wheelslip WheelslipState = Wheelslip.None;
 
         public void ConfirmWheelslip(float elapsedClockSeconds)
         {
@@ -1401,7 +1402,7 @@ namespace Orts.Simulation.RollingStocks
         public void LimitMotiveForce(float elapsedClockSeconds)
         {
 
-            if (NumWheelsAdhesionFactor <= 0)
+            if (LocoNumDrvWheels <= 0)
             {
                 WheelSpeedMpS = AbsSpeedMpS;
                 return;
@@ -1520,7 +1521,7 @@ namespace Orts.Simulation.RollingStocks
 
         public void LimitMotiveForce()
         {
-            if (NumWheelsAdhesionFactor <= 0)
+            if (LocoNumDrvWheels <= 0)
                 return;
             //float max0 = MassKG * 9.8f * Adhesion3 / NumWheelsAdhesionFactor;   //Not used
 
@@ -2284,7 +2285,7 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
-        private bool CanUseDynamicBrake()
+        protected bool CanUseDynamicBrake()
         {
             return (DynamicBrakeController != null
                 && ThrottlePercent == 0);
@@ -2925,40 +2926,6 @@ namespace Orts.Simulation.RollingStocks
         public virtual MSTSNotchController GetRefillController(uint type)
         {
             return null;
-        }
-
-        // Make the vehicle num wheels available to other classes
-        public override float GetLocoNumWheels()
-        {
-
-            float LocoNumDrvWheels = NumWheelsAdhesionFactor;
-
-            //    Trace.TraceInformation("Trace Locom {0}", LocoNumDrvWheels);
-
-            return LocoNumDrvWheels;
-        }
-
-        // Pass the string wagon type to other classes
-        public override string GetEngineType()
-        {
-            EngineType = "";  // set default
-
-            if (IsSteam)
-            {
-                EngineType = "Steam";  // set as steam locomotive
-            }
-
-            if (IsElectric)
-            {
-                EngineType = "Electric";  // set as Electric locomotive
-            }
-
-            if (IsDiesel)
-            {
-                EngineType = "Diesel";  // set as diesel locomotive
-            }
-
-            return EngineType;
         }
 
         /// <summary>

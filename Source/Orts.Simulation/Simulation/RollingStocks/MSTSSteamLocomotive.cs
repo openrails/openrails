@@ -3458,8 +3458,7 @@ namespace Orts.Simulation.RollingStocks
             // Damp or frosty rails   == 0.20
             //
             // Dynamic (kinetic) friction = 0.242  // dynamic friction at slow speed
-            float DrvWheelNum = GetLocoNumWheels();
-            WheelWeightLbs = Kg.ToLb(DrvWheelWeightKg / (DrvWheelNum * 2.0f)); // Calculate the weight per wheel
+            WheelWeightLbs = Kg.ToLb(DrvWheelWeightKg / (LocoNumDrvWheels * 2.0f)); // Calculate the weight per wheel
 
 
             if (Simulator.WeatherType == WeatherType.Rain || Simulator.WeatherType == WeatherType.Snow)

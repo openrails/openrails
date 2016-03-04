@@ -79,7 +79,6 @@ namespace Orts.Simulation.RollingStocks
         public float Variable3;
 
         // wag file data
-        string Carbrakesystemtype;
         public string MainShapeFileName;
         public string FreightShapeFileName;
         public float FreightAnimMaxLevelM;
@@ -91,19 +90,18 @@ namespace Orts.Simulation.RollingStocks
         public string InteriorSoundFileName;
         public string Cab3DSoundFileName;
         public float WheelRadiusM = 1;          // provide some defaults in case it's missing from the wag
-        public float DriverWheelRadiusM = 1.5f;    // provide some defaults in case i'ts missing from the wag
-        float StaticFrictionFactorLb;    // factor to multiply friction by to determine static or starting friction - will vary depending upon whether roller or friction bearing
+        protected float StaticFrictionFactorLb;    // factor to multiply friction by to determine static or starting friction - will vary depending upon whether roller or friction bearing
         public float Friction0N;        // static friction
-        float Friction5N;               // Friction at 5mph
+        protected float Friction5N;               // Friction at 5mph
         public float DavisAN;           // davis equation constant
         public float DavisBNSpM;        // davis equation constant for speed
         public float DavisCNSSpMM;      // davis equation constant for speed squared
-        float FrictionC1; // MSTS Friction parameters
-        float FrictionE1; // MSTS Friction parameters
-        float FrictionV2; // MSTS Friction parameters
-        float FrictionC2; // MSTS Friction parameters
-        float FrictionE2; // MSTS Friction parameters
-        //float FrictionSpeedMpS; // Train current speed value for friction calculations ; this value is never used outside of this class, and FrictionSpeedMpS is always = AbsSpeedMpS
+        protected float FrictionC1; // MSTS Friction parameters
+        protected float FrictionE1; // MSTS Friction parameters
+        protected float FrictionV2; // MSTS Friction parameters
+        protected float FrictionC2; // MSTS Friction parameters
+        protected float FrictionE2; // MSTS Friction parameters
+        //protected float FrictionSpeedMpS; // Train current speed value for friction calculations ; this value is never used outside of this class, and FrictionSpeedMpS is always = AbsSpeedMpS
         public List<MSTSCoupling> Couplers = new List<MSTSCoupling>();
         public float Adhesion1 = .27f;   // 1st MSTS adhesion value
         public float Adhesion2 = .49f;   // 2nd MSTS adhesion value
@@ -117,22 +115,6 @@ namespace Orts.Simulation.RollingStocks
         public float WheelSpeedMpS;
         public float SlipWarningThresholdPercent = 70;
         public float NumWheelsBrakingFactor = 4;   // MSTS braking factor loosely based on the number of braked wheels. Not used yet.
-        float CentreOfGravityM; // Lateral Centre of gravity
-        float Gauge1M; // temporary variable for the track gauge
-        float Gauge2M; // temporary variable for the track gauge
-        float TrackGaugeM = 1435.0f; // Gauge of track
-        float XCoGM; // Centre of Gravity - X value
-        float YCoGM; // Centre of Gravity - Y value
-        float ZCoGM; // Centre of Gravity - Z value
-        float UnbalancedSuperElevationM; // Unbalanced Superelevation
-        float RigidWheelBaseM;
-        float WagonNumWheels;
-        float WheelBase1M;
-        float WheelBase2M;
-        public bool IsPassenger;
-        public bool IsEngine;
-        public bool IsAuxTender;
-        string WagonType;
         public MSTSNotchController WeightLoadController; // Used to control freight loading in freight cars
         public float AbsWheelSpeedMpS; // Math.Abs(WheelSpeedMpS) is used frequently in the subclasses, maybe it's more efficient to compute it once
 
@@ -263,7 +245,7 @@ namespace Orts.Simulation.RollingStocks
             }
 
             if (BrakeSystem == null)
-                BrakeSystem = MSTSBrakeSystem.Create(brakeSystemType, this);
+                BrakeSystem = MSTSBrakeSystem.Create(CarBrakeSystemType, this);
         }
 
         public void GetMeasurementUnits()
@@ -278,9 +260,29 @@ namespace Orts.Simulation.RollingStocks
             Pantographs.Initialize();
 
             base.Initialize();
-        }
 
-        string brakeSystemType;
+            if (UnbalancedSuperElevationM == 0 || UnbalancedSuperElevationM > 0.5) // If UnbalancedSuperElevationM > 12", or equal to zero, then set a default value
+            {
+                switch (WagonType)
+                {
+                    case WagonTypes.Freight:
+                        UnbalancedSuperElevationM = Me.FromIn(0.0f);  // Unbalanced superelevation has a maximum value of 0"
+                        break;
+                    case WagonTypes.Passenger:
+                        UnbalancedSuperElevationM = Me.FromIn(3.0f);  // Unbalanced superelevation has a maximum value of 6"
+                        break;
+                    case WagonTypes.Engine:
+                        UnbalancedSuperElevationM = Me.FromIn(6.0f);  // Unbalanced superelevation has a maximum value of 6"
+                        break;
+                    case WagonTypes.Tender:
+                        UnbalancedSuperElevationM = Me.FromIn(6.0f);  // Unbalanced superelevation has a maximum value of 6"
+                        break;
+                    default:
+                        UnbalancedSuperElevationM = Me.FromIn(0.01f);  // if no value in wag file or is outside of bounds then set to a default value
+                        break;
+                }
+            }
+        }
 
         /// <summary>
         /// Parse the wag file parameters required for the simulator and viewer classes
@@ -292,11 +294,15 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(wagonshape": MainShapeFileName = stf.ReadStringBlock(null); break;
                 case "wagon(type":
                     stf.MustMatch("(");
-                    string typeString = stf.ReadString();
-                    IsFreight = String.Compare(typeString, "Freight") == 0;
-                    IsTender = String.Compare(typeString, "Tender") == 0;
-                    IsPassenger = String.Compare(typeString, "Carriage") == 0;
-                    IsEngine = String.Compare(typeString, "Engine") == 0;
+                    var wagonType = stf.ReadString();
+                    try
+                    {
+                        WagonType = (WagonTypes)Enum.Parse(typeof(WagonTypes), wagonType.Replace("Carriage", "Passenger"));
+                    }
+                    catch
+                    {
+                        STFException.TraceWarning(stf, "Skipped unknown wagon type " + wagonType);
+                    }
                     break;
                 case "wagon(freightanim":
                     stf.MustMatch("(");
@@ -315,22 +321,22 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case "wagon(ortstrackgauge":
                     stf.MustMatch("(");
-                    Gauge1M = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    Gauge2M = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    TrackGaugeM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    TrackGaugeM += stf.ReadFloat(STFReader.UNITS.Distance, 0);
                     stf.SkipRestOfBlock();
                     break;
                 case "wagon(centreofgravity":
                     stf.MustMatch("(");
-                    XCoGM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    YCoGM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    ZCoGM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    CentreOfGravityM.X = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    CentreOfGravityM.Y = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    CentreOfGravityM.Z = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
                 case "wagon(ortsunbalancedsuperelevation": UnbalancedSuperElevationM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortsrigidwheelbase":
                     stf.MustMatch("(");
-                    WheelBase1M = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    WheelBase2M = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    RigidWheelBaseM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    RigidWheelBaseM += stf.ReadFloat(STFReader.UNITS.Distance, 0);
                     stf.SkipRestOfBlock();
                     break;
                 case "wagon(ortsauxtenderwatermass": AuxTenderWaterMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
@@ -358,8 +364,8 @@ namespace Orts.Simulation.RollingStocks
                     stf.SkipRestOfBlock();
                     ; break;
                 case "wagon(brakesystemtype":
-                    brakeSystemType = stf.ReadStringBlock(null).ToLower();
-                    BrakeSystem = MSTSBrakeSystem.Create(brakeSystemType, this);
+                    CarBrakeSystemType = stf.ReadStringBlock(null).ToLower();
+                    BrakeSystem = MSTSBrakeSystem.Create(CarBrakeSystemType, this);
                     break;
                 case "wagon(brakeequipmenttype":
                     foreach (var equipment in stf.ReadStringBlock("").ToLower().Replace(" ", "").Split(','))
@@ -466,10 +472,6 @@ namespace Orts.Simulation.RollingStocks
         {
             MainShapeFileName = copy.MainShapeFileName;
             HasPassengerCapacity = copy.HasPassengerCapacity;
-            IsFreight = copy.IsFreight;
-            IsTender = copy.IsTender;
-            IsPassenger = copy.IsPassenger;
-            IsEngine = copy.IsEngine;
             FreightShapeFileName = copy.FreightShapeFileName;
             FreightAnimMaxLevelM = copy.FreightAnimMaxLevelM;
             FreightAnimMinLevelM = copy.FreightAnimMinLevelM;
@@ -477,14 +479,10 @@ namespace Orts.Simulation.RollingStocks
             CarWidthM = copy.CarWidthM;
             CarHeightM = copy.CarHeightM;
             CarLengthM = copy.CarLengthM;
-            Gauge1M = copy.Gauge1M;
-            Gauge2M = copy.Gauge2M;
-            XCoGM = copy.XCoGM;
-            YCoGM = copy.YCoGM;
-            ZCoGM = copy.ZCoGM;
+            TrackGaugeM = copy.TrackGaugeM;
+            CentreOfGravityM = copy.CentreOfGravityM;
             UnbalancedSuperElevationM = copy.UnbalancedSuperElevationM;
-            WheelBase1M = copy.WheelBase1M;
-            WheelBase2M = copy.WheelBase2M;
+            RigidWheelBaseM = copy.RigidWheelBaseM;
             AuxTenderWaterMassKG = copy.AuxTenderWaterMassKG;
             MassKG = copy.MassKG;
             InitialMassKG = copy.InitialMassKG;
@@ -503,8 +501,8 @@ namespace Orts.Simulation.RollingStocks
             IsRollerBearing = copy.IsRollerBearing;
             IsLowTorqueRollerBearing = copy.IsLowTorqueRollerBearing;
             IsFrictionBearing = copy.IsFrictionBearing;
-            brakeSystemType = copy.brakeSystemType;
-            BrakeSystem = MSTSBrakeSystem.Create(brakeSystemType, this);
+            CarBrakeSystemType = copy.CarBrakeSystemType;
+            BrakeSystem = MSTSBrakeSystem.Create(CarBrakeSystemType, this);
             EmergencyReservoirPresent = copy.EmergencyReservoirPresent;
             DistributorPresent = copy.DistributorPresent;
             HandBrakePresent = copy.HandBrakePresent;
@@ -556,7 +554,7 @@ namespace Orts.Simulation.RollingStocks
 
         }
 
-        private void ParseWagonInside(STFReader stf)
+        protected void ParseWagonInside(STFReader stf)
         {
             PassengerViewPoint passengerViewPoint = new PassengerViewPoint();
             stf.MustMatch("(");
@@ -572,7 +570,7 @@ namespace Orts.Simulation.RollingStocks
             passengerViewPoint.RotationYRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.Y);
             PassengerViewpoints.Add(passengerViewPoint);
         }
-        private void Parse3DCab(STFReader stf)
+        protected void Parse3DCab(STFReader stf)
         {
             PassengerViewPoint passengerViewPoint = new PassengerViewPoint();
             stf.MustMatch("(");
@@ -688,6 +686,7 @@ namespace Orts.Simulation.RollingStocks
 
             // Update Aux Tender Information
 
+            // TODO: Replace AuxWagonType with new values of WagonType or similar. It's a bad idea having two fields that are nearly the same but not quite.
             if (AuxTenderWaterMassKG != 0)   // SetStreamVolume wagon type for later use
             {
 
@@ -695,16 +694,13 @@ namespace Orts.Simulation.RollingStocks
             }
             else
             {
-                AuxWagonType = WagonType;
+                AuxWagonType = WagonType.ToString();
             }
 
 #if DEBUG_AUXTENDER
             Trace.TraceInformation("***************************************** DEBUG_AUXTENDER (MSTSWagon.cs) ***************************************************************");
             Trace.TraceInformation("Car ID {0} Aux Tender Water Mass {1} Wagon Type {2}", CarID, AuxTenderWaterMassKG, AuxWagonType);
 #endif
-
-            // Update BrakeSystem Type
-            Carbrakesystemtype = brakeSystemType;
 
             AbsWheelSpeedMpS = Math.Abs(WheelSpeedMpS);
             if (IsDavisFriction == true) // test to see if OR thinks that Davis Values have been entered in WG file.
@@ -1097,119 +1093,6 @@ namespace Orts.Simulation.RollingStocks
                 TendersSteamLocomotive = Train.Cars[tenderIndex - 1] as MSTSSteamLocomotive;
             if (tenderIndex < Train.Cars.Count - 1 && Train.Cars[tenderIndex + 1] is MSTSSteamLocomotive)
                 TendersSteamLocomotive = Train.Cars[tenderIndex + 1] as MSTSSteamLocomotive;
-        }
-
-        // Make the Track Gauge available to other classes
-        public override float GetTrackGaugeM()
-        {
-            TrackGaugeM = Gauge1M + Gauge2M;    // Calculate track gauge - it can be entered in ft in or M.
-            if (TrackGaugeM == 0)
-            {
-                TrackGaugeM = 1.435f;       // If track gauge value not found then assume standard gauge - 4' 8.5" or 1.435m
-            }
-
-            return TrackGaugeM;
-        }
-
-        // Make the Centre of Gravity available to other classes
-        public override float GetCentreofGravityM()
-        {
-            CentreOfGravityM = YCoGM;
-            if (CentreOfGravityM == 0 || CentreOfGravityM > 3)
-            {
-                CentreOfGravityM = 1.8f; // if no value in wag file or is outside of bounds then set to a default value
-            }
-            return CentreOfGravityM;
-        }
-
-        // Make the vehicle rigid wheelbase is available to other classes
-        public override float GetRigidWheelBaseM()
-        {
-
-            // Calculate the default Rigid Wheelbase if not in WAG File
-
-            RigidWheelBaseM = WheelBase1M + WheelBase2M;
-
-            return RigidWheelBaseM;
-        }
-
-        // Make the Locomotive Drive wheel Radius available to other classes
-        public override float GetDriverWheelRadiusM()
-        {
-
-            return DriverWheelRadiusM;
-        }
-
-        // Make the car brake system type available to other classes
-        public override string GetCarBrakeSystemType()
-        {
-            return Carbrakesystemtype;
-        }
-
-
-        // Make the vehicle num wheels available to other classes
-        public override float GetWagonNumWheels()
-        {
-
-            WagonNumWheels = NumWheelsBrakingFactor;
-
-            return WagonNumWheels;
-        }
-
-        // Pass the string wagon type to other classes
-        public override string GetWagonType()
-        {
-            WagonType = "";  // set default
-
-            if (IsFreight)
-            {
-                WagonType = "Freight";  // set as freight wagon
-            }
-
-            if (IsPassenger)
-            {
-                WagonType = "Passenger";  // set as passenger car
-            }
-
-            if (IsEngine)
-            {
-                WagonType = "Engine";  // set as engine
-            }
-
-            if (IsTender)
-            {
-                WagonType = "Tender";  // set as tender
-            }
-            return WagonType;
-        }
-
-        // Make the Unbalanced SuperElevation available to other classes
-        public override float GetUnbalancedSuperElevationM()
-        {
-            if (UnbalancedSuperElevationM == 0 || UnbalancedSuperElevationM > 0.5) // If UnbalancedSuperElevationM > 12", or equal to zero, then set a default value
-            {
-                if (IsFreight)
-                {
-                    UnbalancedSuperElevationM = Me.FromIn(0.0f);  // Unbalanced superelevation has a maximum value of 0"
-                }
-                else if (IsPassenger)
-                {
-                    UnbalancedSuperElevationM = Me.FromIn(3.0f);  // Unbalanced superelevation has a maximum value of 6"
-                }
-                else if (IsEngine)
-                {
-                    UnbalancedSuperElevationM = Me.FromIn(6.0f);  // Unbalanced superelevation has a maximum value of 6"
-                }
-                else if (IsTender)
-                {
-                    UnbalancedSuperElevationM = Me.FromIn(6.0f);  // Unbalanced superelevation has a maximum value of 6"
-                }
-                else
-                {
-                    UnbalancedSuperElevationM = Me.FromIn(0.01f);  // if no value in wag file or is outside of bounds then set to a default value
-                }
-            }
-            return UnbalancedSuperElevationM;
         }
 
         public bool GetTrainHandbrakeStatus()

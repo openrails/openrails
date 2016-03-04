@@ -78,7 +78,7 @@ namespace Orts.Viewer3D.RollingStock
                 car.HasFreightAnim = true;
                 FreightShape = new AnimatedShape(viewer, wagonFolderSlash + car.FreightShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
                 // Reproducing MSTS "bug" of not allowing tender animation in case both minLevel and maxLevel are 0 or maxLevel <  minLevel 
-                if (MSTSWagon.IsTender && MSTSWagon.FreightAnimMaxLevelM != 0 && MSTSWagon.FreightAnimFlag > 0 && MSTSWagon.FreightAnimMaxLevelM > MSTSWagon.FreightAnimMinLevelM)
+                if (MSTSWagon.WagonType == TrainCar.WagonTypes.Tender && MSTSWagon.FreightAnimMaxLevelM != 0 && MSTSWagon.FreightAnimFlag > 0 && MSTSWagon.FreightAnimMaxLevelM > MSTSWagon.FreightAnimMinLevelM)
                 {
                     // Force allowing animation:
                     if (FreightShape.SharedShape.LodControls.Length > 0 && FreightShape.SharedShape.LodControls[0].DistanceLevels.Length > 0 && FreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects.Length > 0 && FreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives.Length > 0 && FreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy.Length > 0)
@@ -408,7 +408,7 @@ namespace Orts.Viewer3D.RollingStock
                 else FreightShape.Location.XNAMatrix = Car.WorldPosition.XNAMatrix;
                 FreightShape.Location.TileX = Car.WorldPosition.TileX; FreightShape.Location.TileZ = Car.WorldPosition.TileZ;
 
-                if (MSTSWagon.IsTender)
+                if (MSTSWagon.WagonType == TrainCar.WagonTypes.Tender)
                 {
                     if (MSTSWagon.TendersSteamLocomotive == null)
                         MSTSWagon.FindTendersSteamLocomotive();

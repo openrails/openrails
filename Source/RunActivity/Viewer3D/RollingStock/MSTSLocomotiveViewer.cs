@@ -386,7 +386,7 @@ namespace Orts.Viewer3D.RollingStock
                                         pickup.Position.X, pickup.Position.Y, pickup.Position.Z);
                                 if ((wagon.FreightAnimations != null && ((uint)wagon.FreightAnimations.FreightType == pickup.PickupType || wagon.FreightAnimations.FreightType == MSTSWagon.PickupType.None) &&
                                     (uint)intake.Type == pickup.PickupType)
-                                 || ((uint)intake.Type == pickup.PickupType && (uint)intake.Type > (uint)MSTSWagon.PickupType.FreightSand && (wagon.IsTender || wagon is MSTSLocomotive)))
+                                 ||((uint)intake.Type == pickup.PickupType && (uint)intake.Type > (uint)MSTSWagon.PickupType.FreightSand && (wagon.WagonType == TrainCar.WagonTypes.Tender || wagon is MSTSLocomotive)))
                                 {
                                     var intakePosition = car.WorldPosition; //TODO Convert this into the position of the intake.
 
@@ -450,7 +450,7 @@ namespace Orts.Viewer3D.RollingStock
                 Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetString("Refill: Electric loco and no pickup. Command rejected"));
                 return;
             }
-            if (match.Wagon is MSTSDieselLocomotive || match.Wagon is MSTSSteamLocomotive || (match.Wagon.IsTender && loco is MSTSSteamLocomotive))
+            if (match.Wagon is MSTSDieselLocomotive || match.Wagon is MSTSSteamLocomotive || (match.Wagon.WagonType == TrainCar.WagonTypes.Tender && loco is MSTSSteamLocomotive))
             {
                 Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetString("Refill: Immediate refill process selected, refilling immediately."));
                 loco.RefillImmediately();
@@ -505,7 +505,7 @@ namespace Orts.Viewer3D.RollingStock
                     FormatStrings.FormatSpeedLimit(match.Pickup.SpeedRange.MaxMpS, Viewer.MilepostUnitsMetric)));
                 return;
             }
-            if (match.Wagon is MSTSDieselLocomotive || match.Wagon is MSTSSteamLocomotive || (match.Wagon.IsTender && loco is MSTSSteamLocomotive))
+            if (match.Wagon is MSTSDieselLocomotive || match.Wagon is MSTSSteamLocomotive || (match.Wagon.WagonType == TrainCar.WagonTypes.Tender && loco is MSTSSteamLocomotive))
             {
                 // classical MSTS Freightanim, handled as usual
                 var fraction = loco.GetFilledFraction(match.Pickup.PickupType);
@@ -590,7 +590,7 @@ namespace Orts.Viewer3D.RollingStock
             MSTSWagon.RefillProcess.ActivePickupObjectUID = 0;
             var match = MatchedWagonAndPickup;
             var controller = new MSTSNotchController();
-            if (match.Wagon is MSTSDieselLocomotive || match.Wagon is MSTSSteamLocomotive || (match.Wagon.IsTender && Locomotive is MSTSSteamLocomotive))
+            if (match.Wagon is MSTSDieselLocomotive || match.Wagon is MSTSSteamLocomotive || (match.Wagon.WagonType == TrainCar.WagonTypes.Tender && Locomotive is MSTSSteamLocomotive))
                 controller = Locomotive.GetRefillController(MatchedWagonAndPickup.Pickup.PickupType);
             else
             {

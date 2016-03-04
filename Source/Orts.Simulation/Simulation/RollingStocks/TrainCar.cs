@@ -103,8 +103,6 @@ namespace Orts.Simulation.RollingStocks
         public float MassKG = 10000;        // Mass in KG at runtime; coincides with InitialMassKG if there is no load and no ORTS freight anim
         public float InitialMassKG = 10000;
         public bool IsDriveable;
-        public bool IsFreight;           // indication freight wagon or passenger car
-        public bool IsTender;
         public bool HasFreightAnim = false;
         public bool HasPassengerCapacity = false;
         public bool HasInsideView = false;
@@ -141,9 +139,9 @@ namespace Orts.Simulation.RollingStocks
         public bool WheelSlip;  // true if locomotive wheels slipping
         public bool WheelSlipWarning;
         public float _AccelerationMpSS;
-        private float Stiffness = 3.0f; //used by vibrating cars
-        private float MaxVibSpeed = 15.0f;//the speed when max shaking happens
-        private IIRFilter AccelerationFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, 1.0f, 0.1f);
+        protected float Stiffness = 3.0f; //used by vibrating cars
+        protected float MaxVibSpeed = 15.0f;//the speed when max shaking happens
+        protected IIRFilter AccelerationFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, 1.0f, 0.1f);
 
         public bool AcceptMUSignals = true; //indicates if the car accepts multiple unit signals
         public bool IsMetric;
@@ -248,7 +246,7 @@ namespace Orts.Simulation.RollingStocks
 
         // filter curve force for audio to prevent rapid changes.
         //private IIRFilter CurveForceFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, 1.0f, 0.9f);
-        private SmoothedData CurveForceFilter = new SmoothedData(0.75f);
+        protected SmoothedData CurveForceFilter = new SmoothedData(0.75f);
         public float CurveForceNFiltered;
 
         public float TunnelForceN;  // Resistive force due to tunnel, in Newtons
@@ -264,7 +262,7 @@ namespace Orts.Simulation.RollingStocks
         public bool CurveSpeedDependent;
         public bool TunnelResistanceDependent;
 
-        float MaxDurableSafeCurveSpeedMpS;
+        protected float MaxDurableSafeCurveSpeedMpS;
 
         // temporary values used to compute coupler forces
         public float CouplerForceA; // left hand side value below diagonal
@@ -286,32 +284,49 @@ namespace Orts.Simulation.RollingStocks
         public List<ViewPoint> HeadOutViewpoints = new List<ViewPoint>();
 
         // Used by Curve Speed Method
-        float TrackGaugeM;  // Track gauge - read in MSTSWagon
-        float CentreOfGravityM; // get centre of gravity - read in MSTSWagon
-        float SuperelevationM; // Super elevation on the curve
-        float UnbalancedSuperElevationM;  // Unbalanced superelevation, read from MSTS Wagon File
-        float SuperElevationTotalM; // Total superelevation
-        bool IsMaxSafeCurveSpeed = false; // Has equal loading speed around the curve been exceeded, ie are all the wheesl still on the track?
+        protected float TrackGaugeM = 1.435f;  // Track gauge - read in MSTSWagon
+        protected Vector3 CentreOfGravityM = new Vector3(0, 1.8f, 0); // get centre of gravity - read in MSTSWagon
+        protected float SuperelevationM; // Super elevation on the curve
+        protected float UnbalancedSuperElevationM;  // Unbalanced superelevation, read from MSTS Wagon File
+        protected float SuperElevationTotalM; // Total superelevation
+        protected bool IsMaxSafeCurveSpeed = false; // Has equal loading speed around the curve been exceeded, ie are all the wheesl still on the track?
         public bool IsCriticalSpeed = false; // Has the critical speed around the curve been reached, is is the wagon about to overturn?
-        float MaxCurveEqualLoadSpeedMps; // Max speed that rolling stock can do whist maintaining equal load on track
-        float StartCurveResistanceFactor = 2.0f; // Set curve friction at Start = 200%
-        float RouteSpeedMpS; // Max Route Speed Limit
-        const float GravitationalAccelerationMpS2 = 9.80665f; // Acceleration due to gravity 9.80665 m/s2
-        float WagonNumWheels; // Number of wheels on a wagon
-        float LocoNumDrvWheels;    // Number of drive wheels on locomotive
-        float DriverWheelRadiusM; // Drive wheel radius of locomotive wheels
-        string WagonType;
-        string EngineType;
-        float CurveResistanceZeroSpeedFactor = 0.5f; // Based upon research (Russian experiments - 1960) the older formula might be about 2x actual value
-        float CoefficientFriction = 0.5f; // Initialise coefficient of Friction - 0.5 for dry rails, 0.1 - 0.3 for wet rails
-        float RigidWheelBaseM;   // Vehicle rigid wheelbase, read from MSTS Wagon file
-        float TrainCrossSectionAreaM2; // Cross sectional area of the train
-        float DoubleTunnelCrossSectAreaM2;
-        float SingleTunnelCrossSectAreaM2;
-        float DoubleTunnelPerimeterM;
-        float SingleTunnelPerimeterAreaM;
-        float TunnelCrossSectionAreaM2 = 0.0f;
-        float TunnelPerimeterM = 0.0f;
+        protected float MaxCurveEqualLoadSpeedMps; // Max speed that rolling stock can do whist maintaining equal load on track
+        protected float StartCurveResistanceFactor = 2.0f; // Set curve friction at Start = 200%
+        protected float RouteSpeedMpS; // Max Route Speed Limit
+        protected const float GravitationalAccelerationMpS2 = 9.80665f; // Acceleration due to gravity 9.80665 m/s2
+        protected float WagonNumWheels; // Number of wheels on a wagon
+        protected float LocoNumDrvWheels;    // Number of drive wheels on locomotive
+        public float DriverWheelRadiusM = 1.5f; // Drive wheel radius of locomotive wheels
+
+        public enum WagonTypes
+        {
+            Unknown,
+            Engine,
+            Tender,
+            Passenger,
+            Freight,
+        }
+        public WagonTypes WagonType;
+
+        public enum EngineTypes
+        {
+            Steam,
+            Diesel,
+            Electric,
+        }
+        public EngineTypes EngineType;
+
+        protected float CurveResistanceZeroSpeedFactor = 0.5f; // Based upon research (Russian experiments - 1960) the older formula might be about 2x actual value
+        protected float CoefficientFriction = 0.5f; // Initialise coefficient of Friction - 0.5 for dry rails, 0.1 - 0.3 for wet rails
+        protected float RigidWheelBaseM;   // Vehicle rigid wheelbase, read from MSTS Wagon file
+        protected float TrainCrossSectionAreaM2; // Cross sectional area of the train
+        protected float DoubleTunnelCrossSectAreaM2;
+        protected float SingleTunnelCrossSectAreaM2;
+        protected float DoubleTunnelPerimeterM;
+        protected float SingleTunnelPerimeterAreaM;
+        protected float TunnelCrossSectionAreaM2 = 0.0f;
+        protected float TunnelPerimeterM = 0.0f;
 
         // used by tunnel processing
         public struct CarTunnelInfoData
@@ -441,13 +456,10 @@ namespace Orts.Simulation.RollingStocks
                 CurrentElevationPercent = -CurrentElevationPercent;
             }
 
-            WagonType = GetWagonType();     // Determine type of wagon for use in following
             UpdateCurveSpeedLimit(); // call this first as it will provide inputs for the curve force.
             UpdateCurveForce(elapsedClockSeconds);
             UpdateTunnelForce();
             UpdateCarriageHeatLoss();
-
-            CarBrakeSystemType = GetCarBrakeSystemType();
 
             // acceleration
             if (elapsedClockSeconds > 0.0f)
@@ -474,7 +486,7 @@ namespace Orts.Simulation.RollingStocks
 
             // +++++++++++++++++++++++++++
 
-            if (WagonType == "Passenger") // only calculate heat loss on paasenger cars
+            if (WagonType == WagonTypes.Passenger) // only calculate heat loss on paasenger cars
             {
 
                 // Transmission heat loss = exposed area * heat transmission coeff (inside temp - outside temp)
@@ -633,9 +645,6 @@ namespace Orts.Simulation.RollingStocks
         public virtual void UpdateCurveSpeedLimit()
         {
             float s = AbsSpeedMpS; // speed of train
-            CentreOfGravityM = GetCentreofGravityM();
-            TrackGaugeM = GetTrackGaugeM();
-            UnbalancedSuperElevationM = GetUnbalancedSuperElevationM();
 
             // get curve radius
 
@@ -775,10 +784,10 @@ namespace Orts.Simulation.RollingStocks
                         // critical speed = SQRT ( (centrifrugal force x gravity x curve radius) / Vehicle weight)
                         // centrifrugal force = Stock Weight x factor for movement of resultant force due to superelevation.
 
-                        float EJ = (SuperElevationTotalM * CentreOfGravityM) / TrackGaugeM;
+                        float EJ = (SuperElevationTotalM * CentreOfGravityM.Y) / TrackGaugeM;
                         float KC = (TrackGaugeM / 2.0f) + EJ;
                         const float KgtoTonne = 0.001f;
-                        float CentrifrugalForceN = MassKG * KgtoTonne * (KC / CentreOfGravityM);
+                        float CentrifrugalForceN = MassKG * KgtoTonne * (KC / CentreOfGravityM.Y);
 
                         float CriticalSpeedMpS = (float)Math.Sqrt((CentrifrugalForceN * GravitationalAccelerationMpS2 * CurrentCurveRadius) / (MassKG * KgtoTonne));
 
@@ -844,13 +853,6 @@ namespace Orts.Simulation.RollingStocks
 
                     if (RigidWheelBaseM == 0)   // Calculate default values if no value in Wag File
                     {
-                        WagonNumWheels = 0.0f;
-                        RigidWheelBaseM = GetRigidWheelBaseM();
-                        WagonNumWheels = GetWagonNumWheels();
-                        EngineType = GetEngineType();
-                        DriverWheelRadiusM = GetDriverWheelRadiusM();
-                        LocoNumDrvWheels = GetLocoNumWheels();
-
                         // Determine whether the track is wet due to rain or snow.
 
                         int FrictionWeather = (int)Simulator.WeatherType;
@@ -874,7 +876,7 @@ namespace Orts.Simulation.RollingStocks
 
                         // Calculate the number of axles in a car
 
-                        if (WagonType != "Engine")   // if car is not a locomotive then determine wheelbase
+                        if (WagonType != WagonTypes.Engine)   // if car is not a locomotive then determine wheelbase
                         {
 
                             if (Bogies < 2)  // if less then two bogies assume that it is a fixed wheelbase wagon
@@ -892,7 +894,7 @@ namespace Orts.Simulation.RollingStocks
                             {
                                 if (Axles == 2)
                                 {
-                                    if (WagonType == "Passenger")
+                                    if (WagonType == WagonTypes.Passenger)
                                     {
 
                                         RigidWheelBaseM = 2.4384f;       // Assume a standard 4 wheel passenger bogie (2 axle) wagon - wheel base - 8' (2.4384m)
@@ -909,9 +911,9 @@ namespace Orts.Simulation.RollingStocks
                             }
 
                         }
-                        if (WagonType == "Engine")   // if car is a locomotive and either a diesel or electric then determine wheelbase
+                        if (WagonType == WagonTypes.Engine)   // if car is a locomotive and either a diesel or electric then determine wheelbase
                         {
-                            if (EngineType != "Steam")  // Assume that it is a diesel or electric locomotive
+                            if (EngineType != EngineTypes.Steam)  // Assume that it is a diesel or electric locomotive
                             {
                                 if (Axles == 2)
                                 {
@@ -988,7 +990,7 @@ namespace Orts.Simulation.RollingStocks
         public virtual string GetEngineBrakeStatus() { return null; }
         public virtual string GetDynamicBrakeStatus() { return null; }
         public virtual bool GetSanderOn() { return false; }
-        bool WheelHasBeenSet = false; //indicating that the car shape has been loaded, thus no need to reset the wheels
+        protected bool WheelHasBeenSet = false; //indicating that the car shape has been loaded, thus no need to reset the wheels
 
         public TrainCar()
         {
@@ -1100,75 +1102,6 @@ namespace Orts.Simulation.RollingStocks
         public virtual bool GetCabFlipped()
         {
             return false;
-        }
-
-        // Method to get BrakeSystemType from MSTSWagon
-        public virtual string GetCarBrakeSystemType()
-        {
-
-            return CarBrakeSystemType;
-        }
-
-        // Method to get Track Gauge from MSTSWagon
-        public virtual float GetTrackGaugeM()
-        {
-
-            return TrackGaugeM;
-        }
-
-        // Method to get Centre of Gravity from MSTSWagon
-        public virtual float GetCentreofGravityM()
-        {
-
-            return CentreOfGravityM;
-        }
-
-        // Method to get Unbalanced SuperElevation from MSTSWagon
-        public virtual float GetUnbalancedSuperElevationM()
-        {
-
-            return UnbalancedSuperElevationM;
-        }
-
-        // Method to get rigid wheelbase from MSTSWagon file
-        public virtual float GetRigidWheelBaseM()
-        {
-
-            return RigidWheelBaseM;
-        }
-
-        // Method to get rigid wheelbase from MSTSWagon file
-        public virtual float GetLocoNumWheels()
-        {
-
-            return LocoNumDrvWheels;
-        }
-        // Method to get Driver Wheel radius from MSTSWagon file
-        public virtual float GetDriverWheelRadiusM()
-        {
-
-            return DriverWheelRadiusM;
-        }
-
-        // Method to get Wagon type from MSTSWagon file
-        public virtual string GetWagonType()
-        {
-
-            return WagonType;
-        }
-
-        // Method to get Engine type from MSTSLocomotive file
-        public virtual string GetEngineType()
-        {
-
-            return EngineType;
-        }
-
-        // Method to get wagon num wheels from MSTSWagon file
-        public virtual float GetWagonNumWheels()
-        {
-
-            return WagonNumWheels;
         }
 
         public virtual float GetCouplerZeroLengthM()
@@ -1436,17 +1369,16 @@ namespace Orts.Simulation.RollingStocks
             bool articulatedRear = !WheelAxles.Any(a => a.OffsetM > 0);
             var carIndex = Train.Cars.IndexOf(this);
             //Certain locomotives are testing as articulated wagons for some reason.
-            this.WagonType = GetWagonType();
-            if (this.WagonType != "Engine")
-                if (this.WheelAxles.Count >= 2)
+            if (WagonType != WagonTypes.Engine)
+                if (WheelAxles.Count >= 2)
                     if (articulatedFront || articulatedRear)
                     {
                         WheelAxlesLoaded = true;
-                        this.SetUpWheelsArticulation(carIndex);
+                        SetUpWheelsArticulation(carIndex);
                     }
         } // end SetUpWheels()
 
-        void SetUpWheelsArticulation(int carIndex)
+        protected void SetUpWheelsArticulation(int carIndex)
         {
             // If there are no forward wheels, this car is articulated (joined
             // to the car in front) at the front. Likewise for the rear.

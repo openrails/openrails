@@ -3302,7 +3302,7 @@ namespace Orts.Simulation.Physics
                     {
                         if (last < Cars.Count - 1)  // Check that there are cars after the locomotive, if not skip extending brake to tender
                         {
-                            if (last == first && Cars[first] is MSTSSteamLocomotive && Cars[first + 1].IsTender)
+                            if (last == first && Cars[first] is MSTSSteamLocomotive && Cars[first + 1].WagonType == TrainCar.WagonTypes.Tender)
                             {
                                 last += 1;      // If a "standard" single steam locomotive with a tender then for the purposes of braking increment last above first by one
                             }
@@ -3471,9 +3471,9 @@ namespace Orts.Simulation.Physics
             IsPlayable = false;
             foreach (var car in Cars)
             {
-                if (car.IsFreight)
+                if (car.WagonType == TrainCar.WagonTypes.Freight)
                     IsFreight = true;
-                if ((!car.IsFreight && !car.IsTender && !car.IsDriveable) || (car.IsDriveable && car.HasPassengerCapacity))
+                if ((car.WagonType == TrainCar.WagonTypes.Freight && car.WagonType != TrainCar.WagonTypes.Tender && !car.IsDriveable) || (car.IsDriveable && car.HasPassengerCapacity))
                     PassengerCarsNumber++;
                 if (car.IsDriveable && (car as MSTSLocomotive).CabViewList.Count > 0) IsPlayable = true;
             }
@@ -17176,7 +17176,7 @@ namespace Orts.Simulation.Physics
                             while (walkingDistance <= trainPartOutsidePlatformForward && passengerCarsWithinPlatform > 0 && trainCarIndex < stopTrain.Cars.Count - 1)
                             {
                                 var walkingDistanceBehind = walkingDistance + stopTrain.Cars[trainCarIndex].CarLengthM;
-                                if ((!stopTrain.Cars[trainCarIndex].IsFreight && !stopTrain.Cars[trainCarIndex].IsTender && !stopTrain.Cars[trainCarIndex].IsDriveable) ||
+                                if ((stopTrain.Cars[trainCarIndex].WagonType != TrainCar.WagonTypes.Freight && stopTrain.Cars[trainCarIndex].WagonType != TrainCar.WagonTypes.Tender && !stopTrain.Cars[trainCarIndex].IsDriveable) ||
                                    (stopTrain.Cars[trainCarIndex].IsDriveable && stopTrain.Cars[trainCarIndex].HasPassengerCapacity))
                                 {
                                     if ((trainPartOutsidePlatformForward - walkingDistance) > 0.67 * stopTrain.Cars[trainCarIndex].CarLengthM) passengerCarsWithinPlatform--;
@@ -17192,7 +17192,7 @@ namespace Orts.Simulation.Physics
                             while (walkingDistance <= trainPartOutsidePlatformBackward && passengerCarsWithinPlatform > 0 && trainCarIndex >= 0)
                             {
                                 var walkingDistanceBehind = walkingDistance + stopTrain.Cars[trainCarIndex].CarLengthM;
-                                if ((!stopTrain.Cars[trainCarIndex].IsFreight && !stopTrain.Cars[trainCarIndex].IsTender && !stopTrain.Cars[trainCarIndex].IsDriveable) ||
+                                if ((stopTrain.Cars[trainCarIndex].WagonType != TrainCar.WagonTypes.Freight && stopTrain.Cars[trainCarIndex].WagonType != TrainCar.WagonTypes.Tender && !stopTrain.Cars[trainCarIndex].IsDriveable) ||
                                    (stopTrain.Cars[trainCarIndex].IsDriveable && stopTrain.Cars[trainCarIndex].HasPassengerCapacity))
                                 {
                                     if ((trainPartOutsidePlatformBackward - walkingDistance) > 0.67 * stopTrain.Cars[trainCarIndex].CarLengthM) passengerCarsWithinPlatform--;
