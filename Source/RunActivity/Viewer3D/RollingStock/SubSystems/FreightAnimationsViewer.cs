@@ -46,13 +46,23 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
         {
             Animation = animation;
             FreightShape = new AnimatedShape(viewer, wagonFolderSlash + animation.ShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(wagon.WorldPosition), ShapeFlags.ShadowCaster);
-            if (FreightShape.SharedShape.LodControls.Length > 0
-                && FreightShape.SharedShape.LodControls[0].DistanceLevels.Length > 0
-                && FreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects.Length > 0
-                && FreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives.Length > 0
-                && FreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy.Length > 0)
+            if (FreightShape.SharedShape.LodControls.Length > 0)
             {
-                FreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy[0] = FreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy.Length;
+                foreach (var lodControl in FreightShape.SharedShape.LodControls)
+                {
+                    if ( lodControl.DistanceLevels.Length > 0)
+                    {
+                        foreach ( var distanceLevel in lodControl.DistanceLevels)
+                        {
+                            if (distanceLevel.SubObjects.Length > 0
+                                && distanceLevel.SubObjects[0].ShapePrimitives.Length > 0
+                                && distanceLevel.SubObjects[0].ShapePrimitives[0].Hierarchy.Length > 0)
+                    {
+                        distanceLevel.SubObjects[0].ShapePrimitives[0].Hierarchy[0] = distanceLevel.SubObjects[0].ShapePrimitives[0].Hierarchy.Length;
+                    }
+                        }
+                    }
+                }
             }
             if (FreightShape.XNAMatrices.Length > 0 && animation is FreightAnimationStatic && (animation as FreightAnimationStatic).Flipped)
             {
