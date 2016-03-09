@@ -1516,6 +1516,10 @@ namespace Orts.Simulation.RollingStocks
 
         internal void UpdatedTraveler(Traveller traveler, float elapsedTimeS, float distanceM, float speedMpS)
         {
+            // We need to avoid introducing any unbounded effects, so cap the elapsed time to 0.25 seconds (4FPS).
+            if (elapsedTimeS > 0.25f)
+                return;
+
             CurrentCurveRadius = traveler.GetCurveRadius();
             UpdateVibration(traveler, elapsedTimeS, distanceM, speedMpS);
             UpdateSuperElevation(traveler);
