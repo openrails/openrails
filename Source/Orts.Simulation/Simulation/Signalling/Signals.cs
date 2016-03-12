@@ -1018,6 +1018,12 @@ namespace Orts.Simulation.Signalling
                             else
                             {
                                 SignalObject AddSignal = SignalHeadList[thisReference.Key];
+                                if (MainSignal.trackNode != AddSignal.trackNode)
+                                {
+                                    Trace.TraceWarning("Signal head {0}  in different track node than signal head {1} of same signal", MainSignal.trItem, thisReference.Key);
+                                    MainSignal = null;
+                                    break;
+                                }
                                 foreach (SignalHead thisHead in AddSignal.SignalHeads)
                                 {
                                     MainSignal.SignalHeads.Add(thisHead);
