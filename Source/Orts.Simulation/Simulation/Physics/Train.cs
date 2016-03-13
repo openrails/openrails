@@ -3473,7 +3473,7 @@ namespace Orts.Simulation.Physics
             {
                 if (car.WagonType == TrainCar.WagonTypes.Freight)
                     IsFreight = true;
-                if ((car.WagonType == TrainCar.WagonTypes.Freight && car.WagonType != TrainCar.WagonTypes.Tender && !car.IsDriveable) || (car.IsDriveable && car.HasPassengerCapacity))
+                if ((car.WagonType == TrainCar.WagonTypes.Passenger) || (car.IsDriveable && car.HasPassengerCapacity))
                     PassengerCarsNumber++;
                 if (car.IsDriveable && (car as MSTSLocomotive).CabViewList.Count > 0) IsPlayable = true;
             }

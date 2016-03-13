@@ -472,6 +472,7 @@ namespace Orts.Simulation.RollingStocks
         {
             MainShapeFileName = copy.MainShapeFileName;
             HasPassengerCapacity = copy.HasPassengerCapacity;
+            WagonType = copy.WagonType;
             FreightShapeFileName = copy.FreightShapeFileName;
             FreightAnimMaxLevelM = copy.FreightAnimMaxLevelM;
             FreightAnimMinLevelM = copy.FreightAnimMinLevelM;
