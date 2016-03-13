@@ -19,12 +19,15 @@ using Ionic.Zip;
 using Newtonsoft.Json;
 using ORTS.Settings;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Text;
@@ -408,11 +411,11 @@ namespace ORTS.Updater
         {
             var files = Directory.GetFiles(PathUpdateStage, "*", SearchOption.AllDirectories);
 
-            var expectedSubject = "";
+            var expectedSubjects = new HashSet<string>();
             try
             {
-                var currentCertificate = new X509Certificate2(FileUpdater);
-                expectedSubject = currentCertificate.Subject;
+                foreach (var cert in GetCertificatesFromFile(FileUpdater))
+                    expectedSubjects.Add(cert.Subject);
             }
             catch (CryptographicException)
             {
@@ -428,9 +431,9 @@ namespace ORTS.Updater
                     files[i].EndsWith(".ocx", StringComparison.OrdinalIgnoreCase) ||
                     files[i].EndsWith(".sys", StringComparison.OrdinalIgnoreCase))
                 {
-                    var certificate = new X509Certificate2(files[i]);
-                    if (certificate.Subject != expectedSubject)
-                        throw new InvalidDataException("Cryptographic signatures don't match. Expected " + expectedSubject + "; got " + certificate.Subject);
+                    var certificates = GetCertificatesFromFile(files[i]);
+                    if (!certificates.Any(c => expectedSubjects.Contains(c.Subject)))
+                        throw new InvalidDataException("Cryptographic signatures don't match. Expected a common subject in old subjects:\n\n" + FormatCertificateSubjectList(expectedSubjects) + "\n\nAnd new subjects:\n\n" + FormatCertificateSubjectList(certificates) + "\n");
                 }
             }
 
@@ -489,6 +492,62 @@ namespace ORTS.Updater
             Debug.Assert(directory.Length > basePath.Length);
             Debug.Assert(directory[basePath.Length] == Path.DirectorySeparatorChar);
             return directory.Substring(basePath.Length + 1);
+        }
+
+        static string FormatCertificateSubjectList(IEnumerable<string> subjects)
+        {
+            return string.Join("\n", subjects.Select(s => "- " + s).ToArray());
+        }
+
+        static string FormatCertificateSubjectList(IEnumerable<X509Certificate2> certificates)
+        {
+            return FormatCertificateSubjectList(certificates.Select(c => c.Subject));
+        }
+
+        static List<X509Certificate2> GetCertificatesFromFile(string filename)
+        {
+            IntPtr cryptMsg = IntPtr.Zero;
+            if (!NativeMethods.CryptQueryObject(NativeMethods.CERT_QUERY_OBJECT_FILE, filename, NativeMethods.CERT_QUERY_CONTENT_FLAG_PKCS7_SIGNED_EMBED, NativeMethods.CERT_QUERY_FORMAT_FLAG_ALL, 0, 0, 0, 0, 0, ref cryptMsg, 0))
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+
+            // Get size of the encoded message.
+            int dataSize = 0;
+            if (!NativeMethods.CryptMsgGetParam(cryptMsg, NativeMethods.CMSG_ENCODED_MESSAGE, 0, IntPtr.Zero, ref dataSize))
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+
+            // Get the encoded message.
+            var data = new byte[dataSize];
+            if (!NativeMethods.CryptMsgGetParam(cryptMsg, NativeMethods.CMSG_ENCODED_MESSAGE, 0, data, ref dataSize))
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+
+            return GetCertificatesFromEncodedData(data);
+        }
+
+        static List<X509Certificate2> GetCertificatesFromEncodedData(byte[] data)
+        {
+            var certs = new List<X509Certificate2>();
+
+            var signedCms = new SignedCms();
+            signedCms.Decode(data);
+
+            foreach (var signerInfo in signedCms.SignerInfos)
+            {
+                // Record this signer info's certificate if it has one.
+                if (signerInfo.Certificate != null)
+                    certs.Add(signerInfo.Certificate);
+
+                foreach (var unsignedAttribute in signerInfo.UnsignedAttributes)
+                {
+                    // This attribute Oid is for "code signatures" and is used to attach multiple signatures to a single item.
+                    if (unsignedAttribute.Oid.Value == "1.3.6.1.4.1.311.2.4.1")
+                    {
+                        foreach (var value in unsignedAttribute.Values)
+                            certs.AddRange(GetCertificatesFromEncodedData(value.RawData));
+                    }
+                }
+            }
+
+            return certs;
         }
     }
 
