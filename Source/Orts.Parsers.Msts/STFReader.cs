@@ -223,6 +223,8 @@ namespace Orts.Parsers.Msts
             {
                 if (!IsEof(PeekPastWhitespace()))
                     STFException.TraceWarning(this, "Expected end of file");
+                else if (block_depth != 0)
+                    STFException.TraceWarning(this, string.Format("Expected depth 0; got depth {0} at end of file (missing ')'?)", block_depth));
                 streamSTF.Close(); streamSTF = null;
                 if (includeReader != null)
                     includeReader.Dispose();
@@ -1758,7 +1760,10 @@ namespace Orts.Parsers.Msts
                             filename = ReadItem(skip_mode, string_mode);
                             SkipRestOfBlock();
                         }
-                        includeReader = new STFReader(Path.GetDirectoryName(FileName) + @"\" + filename, false);
+                        var includeFileName = Path.GetDirectoryName(FileName) + @"\" + filename;
+                        if (!File.Exists(includeFileName))
+                            STFException.TraceWarning(this, string.Format("'{0}' not found", includeFileName));
+                        includeReader = new STFReader(includeFileName, false);
                         return ReadItem(skip_mode, string_mode); // Which will recurse down when includeReader is tested
                     #endregion
                     #region Process special token - skip and comment
