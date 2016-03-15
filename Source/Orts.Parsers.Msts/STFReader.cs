@@ -431,6 +431,7 @@ namespace Orts.Parsers.Msts
             if (includeReader != null)
             {
                 var eob = includeReader.EndOfBlock();
+                if (eob) UpdateTreeAndStepBack(")");
                 if (includeReader.Eof)
                 {
                     includeReader.Dispose();
@@ -438,7 +439,6 @@ namespace Orts.Parsers.Msts
                 }
                 else
                 {
-                    if (eob) UpdateTreeAndStepBack(")");
                     return eob;
                 }
             }
