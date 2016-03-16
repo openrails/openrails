@@ -1951,6 +1951,15 @@
             which stretches across all screens.
             </summary>
         </member>
+        <member name="P:Microsoft.Xna.Framework.GameWindow.Title">
+            <summary>
+            Gets or sets the title of the game window.
+            </summary>
+            <remarks>
+            For Windows 8 and Windows 10 UWP this has no effect. For these platforms the title should be
+            set by using the DisplayName property found in the app manifest file.
+            </remarks>
+        </member>
         <member name="P:Microsoft.Xna.Framework.GameWindow.IsBorderless">
             <summary>
             Determines whether the border of the window is visible. Currently only supported on the WinDX and WinGL/Linux platforms.
@@ -7545,6 +7554,11 @@
             Cubic texture type.
             </summary>
         </member>
+        <member name="T:Microsoft.Xna.Framework.Graphics.EffectResource">
+            <summary>
+            Internal helper for accessing the bytecode for stock effects.
+            </summary>
+        </member>
         <member name="T:Microsoft.Xna.Framework.Graphics.EnvironmentMapEffect">
             <summary>
             Built-in effect that supports environment mapping.
@@ -9083,6 +9097,165 @@
             <para>The value is an implementation detail and may change between application launches or MonoGame versions.
             It is only guaranteed to stay consistent during application lifetime.</para>
             </remarks>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Graphics.Texture2D.#ctor(Microsoft.Xna.Framework.Graphics.GraphicsDevice,System.Int32,System.Int32)">
+            <summary>
+            Creates a new texture of the given size
+            </summary>
+            <param name="graphicsDevice"></param>
+            <param name="width"></param>
+            <param name="height"></param>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Graphics.Texture2D.#ctor(Microsoft.Xna.Framework.Graphics.GraphicsDevice,System.Int32,System.Int32,System.Boolean,Microsoft.Xna.Framework.Graphics.SurfaceFormat)">
+            <summary>
+            Creates a new texture of a given size with a surface format and optional mipmaps 
+            </summary>
+            <param name="graphicsDevice"></param>
+            <param name="width"></param>
+            <param name="height"></param>
+            <param name="mipmap"></param>
+            <param name="format"></param>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Graphics.Texture2D.#ctor(Microsoft.Xna.Framework.Graphics.GraphicsDevice,System.Int32,System.Int32,System.Boolean,Microsoft.Xna.Framework.Graphics.SurfaceFormat,System.Int32)">
+            <summary>
+            Creates a new texture array of a given size with a surface format and optional mipmaps.
+            Throws ArgumentException if the current GraphicsDevice can't work with texture arrays
+            </summary>
+            <param name="graphicsDevice"></param>
+            <param name="width"></param>
+            <param name="height"></param>
+            <param name="mipmap"></param>
+            <param name="format"></param>
+            <param name="arraySize"></param>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Graphics.Texture2D.#ctor(Microsoft.Xna.Framework.Graphics.GraphicsDevice,System.Int32,System.Int32,System.Boolean,Microsoft.Xna.Framework.Graphics.SurfaceFormat,Microsoft.Xna.Framework.Graphics.Texture2D.SurfaceType)">
+            <summary>
+             Creates a new texture of a given size with a surface format and optional mipmaps.
+            </summary>
+            <param name="graphicsDevice"></param>
+            <param name="width"></param>
+            <param name="height"></param>
+            <param name="mipmap"></param>
+            <param name="format"></param>
+            <param name="type"></param>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Graphics.Texture2D.SetData``1(System.Int32,System.Int32,System.Nullable{Microsoft.Xna.Framework.Rectangle},``0[],System.Int32,System.Int32)">
+            <summary>
+            Changes the pixels of the texture
+            Throws ArgumentNullException if data is null
+            Throws ArgumentException if arraySlice is greater than 0, and the GraphicsDevice does not support texture arrays
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="level">Layer of the texture to modify</param>
+            <param name="arraySlice">Index inside the texture array</param>
+            <param name="rect">Area to modify</param>
+            <param name="data">New data for the texture</param>
+            <param name="startIndex">Start position of data</param>
+            <param name="elementCount"></param>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Graphics.Texture2D.SetData``1(System.Int32,System.Nullable{Microsoft.Xna.Framework.Rectangle},``0[],System.Int32,System.Int32)">
+            <summary>
+            Changes the pixels of the texture
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="level">Layer of the texture to modify</param>
+            <param name="rect">Area to modify</param>
+            <param name="data">New data for the texture</param>
+            <param name="startIndex">Start position of data</param>
+            <param name="elementCount"></param>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Graphics.Texture2D.SetData``1(``0[],System.Int32,System.Int32)">
+            <summary>
+            Changes the texture's pixels
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="data">New data for the texture</param>
+            <param name="startIndex">Start position of data</param>
+            <param name="elementCount"></param>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Graphics.Texture2D.SetData``1(``0[])">
+            <summary>
+            Changes the texture's pixels
+            </summary>
+            <typeparam name="T">New data for the texture</typeparam>
+            <param name="data"></param>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Graphics.Texture2D.GetData``1(System.Int32,System.Int32,System.Nullable{Microsoft.Xna.Framework.Rectangle},``0[],System.Int32,System.Int32)">
+            <summary>
+            Retrieves the contents of the texture
+            Throws ArgumentException if data is null, data.length is too short or
+            if arraySlice is greater than 0 and the GraphicsDevice doesn't support texture arrays
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="level">Layer of the texture</param>
+            <param name="arraySlice">Index inside the texture array</param>
+            <param name="rect">Area of the texture to retrieve</param>
+            <param name="data">Destination array for the data</param>
+            <param name="startIndex">Starting index of data where to write the pixel data</param>
+            <param name="elementCount">Number of pixels to read</param>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Graphics.Texture2D.GetData``1(System.Int32,System.Nullable{Microsoft.Xna.Framework.Rectangle},``0[],System.Int32,System.Int32)">
+            <summary>
+            Retrieves the contents of the texture
+            Throws ArgumentException if data is null, data.length is too short or
+            if arraySlice is greater than 0 and the GraphicsDevice doesn't support texture arrays
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="level">Layer of the texture</param>
+            <param name="rect">Area of the texture</param>
+            <param name="data">Destination array for the texture data</param>
+            <param name="startIndex">First position in data where to write the pixel data</param>
+            <param name="elementCount">Number of pixels to read</param>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Graphics.Texture2D.GetData``1(``0[],System.Int32,System.Int32)">
+            <summary>
+            Retrieves the contents of the texture
+            Throws ArgumentException if data is null, data.length is too short or
+            if arraySlice is greater than 0 and the GraphicsDevice doesn't support texture arrays
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="data">Destination array for the texture data</param>
+            <param name="startIndex">First position in data where to write the pixel data</param>
+            <param name="elementCount">Number of pixels to read</param>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Graphics.Texture2D.GetData``1(``0[])">
+            <summary>
+            Retrieves the contents of the texture
+            Throws ArgumentException if data is null, data.length is too short or
+            if arraySlice is greater than 0 and the GraphicsDevice doesn't support texture arrays
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="data">Destination array for the texture data</param>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Graphics.Texture2D.FromStream(Microsoft.Xna.Framework.Graphics.GraphicsDevice,System.IO.Stream)">
+            <summary>
+            Creates a Texture2D from a stream, supported formats bmp, gif, jpg, png, tif and dds (only for simple textures).
+            May work with other formats, but will not work with tga files.
+            </summary>
+            <param name="graphicsDevice"></param>
+            <param name="stream"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Graphics.Texture2D.SaveAsJpeg(System.IO.Stream,System.Int32,System.Int32)">
+            <summary>
+            Converts the texture to a JPG image
+            </summary>
+            <param name="stream">Destination for the image</param>
+            <param name="width"></param>
+            <param name="height"></param>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Graphics.Texture2D.SaveAsPng(System.IO.Stream,System.Int32,System.Int32)">
+            <summary>
+            Converts the texture to a PNG image
+            </summary>
+            <param name="stream">Destination for the image</param>
+            <param name="width"></param>
+            <param name="height"></param>
+        </member>
+        <member name="P:Microsoft.Xna.Framework.Graphics.Texture2D.Bounds">
+            <summary>
+            Gets the dimensions of the texture
+            </summary>
         </member>
         <member name="M:Microsoft.Xna.Framework.Graphics.RenderTarget2D.#ctor(Microsoft.Xna.Framework.Graphics.GraphicsDevice,System.Int32,System.Int32,System.Boolean,Microsoft.Xna.Framework.Graphics.SurfaceFormat,Microsoft.Xna.Framework.Graphics.DepthFormat,System.Int32,Microsoft.Xna.Framework.Graphics.RenderTargetUsage,Microsoft.Xna.Framework.Graphics.Texture2D.SurfaceType)">
             <summary>
@@ -11355,6 +11528,13 @@
             <param name="leftMotor">The speed of the left motor, between 0.0 and 1.0. This motor is a low-frequency motor.</param>
             <param name="rightMotor">The speed of the right motor, between 0.0 and 1.0. This motor is a high-frequency motor.</param>
             <returns>Returns true if the vibration motors were set.</returns>
+        </member>
+        <member name="P:Microsoft.Xna.Framework.Input.GamePad.MaximumGamePadCount">
+            <summary>
+            The maximum number of game pads supported on this system.  Attempting to
+            access a gamepad index higher than this number will result in an <see cref="T:System.InvalidOperationException"/>
+            being thrown by the API.
+            </summary>
         </member>
         <member name="M:Microsoft.Xna.Framework.Input.GamePadButtons.op_Equality(Microsoft.Xna.Framework.Input.GamePadButtons,Microsoft.Xna.Framework.Input.GamePadButtons)">
             <summary>
