@@ -394,28 +394,6 @@ namespace Orts.Simulation.RollingStocks
                 MassKG = InitialMassKg - MaxDieselLevelL * DieselWeightKgpL + DieselLevelL * DieselWeightKgpL;
             }
 
-            if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null)
-            {
-                float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, AbsWheelSpeedMpS);
-                if (f > 0)
-                {
-                    MotiveForceN -= (SpeedMpS > 0 ? 1 : -1) * f;
-                    switch (Direction)
-                    {
-                        case Direction.Forward:
-                            //MotiveForceN *= 1;     //Not necessary
-                            break;
-                        case Direction.Reverse:
-                            MotiveForceN *= -1;
-                            break;
-                        case Direction.N:
-                        default:
-                            MotiveForceN *= 0;
-                            break;
-                    }
-                }
-            }
-
             if (MaxForceN > 0 && MaxContinuousForceN > 0)
             {
                 MotiveForceN *= 1 - (MaxForceN - MaxContinuousForceN) / (MaxForceN * MaxContinuousForceN) * AverageForceN;
