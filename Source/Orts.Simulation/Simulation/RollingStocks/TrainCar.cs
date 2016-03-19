@@ -759,7 +759,8 @@ namespace Orts.Simulation.RollingStocks
                             if (IsMaxSafeCurveSpeed && s > MaxDurableSafeCurveSpeedMpS && Train.GetType() != typeof(AITrain) && Train.GetType() != typeof(TTTrain)) // Breaking of brake hose will not apply to TT mode or AI trains
                             {
                                 BrakeSystem.FrontBrakeHoseConnected = false; // break the brake hose connection between cars if the speed is too fast
-                                Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You were travelling too fast for this curve, and have snapped a brake hose. You will need to repair the hose and restart."));
+                                var message = "You were travelling too fast for this curve, and have snapped a brake hose on Car" + CarID + ". You will need to repair the hose and restart.";
+                                Simulator.Confirmer.Message(ConfirmLevel.Warning, message);
                             }
 
                         }
