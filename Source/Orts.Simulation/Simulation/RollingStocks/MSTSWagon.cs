@@ -261,15 +261,15 @@ namespace Orts.Simulation.RollingStocks
 
             base.Initialize();
 
-            if (UnbalancedSuperElevationM == 0 || UnbalancedSuperElevationM > 0.5) // If UnbalancedSuperElevationM > 12", or equal to zero, then set a default value
+            if (UnbalancedSuperElevationM == 0 || UnbalancedSuperElevationM > 0.5) // If UnbalancedSuperElevationM > 18", or equal to zero, then set a default value
             {
                 switch (WagonType)
                 {
                     case WagonTypes.Freight:
-                        UnbalancedSuperElevationM = Me.FromIn(0.0f);  // Unbalanced superelevation has a maximum value of 0"
+                        UnbalancedSuperElevationM = Me.FromIn(3.0f);  // Unbalanced superelevation has a maximum value of 3"
                         break;
                     case WagonTypes.Passenger:
-                        UnbalancedSuperElevationM = Me.FromIn(3.0f);  // Unbalanced superelevation has a maximum value of 6"
+                        UnbalancedSuperElevationM = Me.FromIn(3.0f);  // Unbalanced superelevation has a maximum value of 3"
                         break;
                     case WagonTypes.Engine:
                         UnbalancedSuperElevationM = Me.FromIn(6.0f);  // Unbalanced superelevation has a maximum value of 6"
