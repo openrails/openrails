@@ -421,11 +421,12 @@ namespace Orts.Viewer3D.RollingStock
         /// <returns></returns>
         float GetDistanceToM(WagonAndMatchingPickup match)
         {
-            var intakePosition = match.Wagon.WorldPosition; //TODO Convert this into the position of the intake.
+            var intakePosition = new Vector3(0, 0, -match.IntakePoint.OffsetM);
+            Vector3.Transform(ref intakePosition, ref match.Wagon.WorldPosition.XNAMatrix, out intakePosition);
 
             var intakeLocation = new WorldLocation(
                 match.Wagon.WorldPosition.TileX, match.Wagon.WorldPosition.TileZ,
-                match.Wagon.WorldPosition.Location.X, match.Wagon.WorldPosition.Location.Y, match.Wagon.WorldPosition.Location.Z);
+                intakePosition.X, intakePosition.Y, -intakePosition.Z);
 
             return (float)Math.Sqrt(WorldLocation.GetDistanceSquared(intakeLocation, match.Pickup.Location));
         }
