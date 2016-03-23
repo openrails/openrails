@@ -112,7 +112,7 @@ namespace ORTS
             this.checkBoxWindowed.AutoSize = true;
             this.checkBoxWindowed.Checked = true;
             this.checkBoxWindowed.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxWindowed.Location = new System.Drawing.Point(106, 71);
+            this.checkBoxWindowed.Location = new System.Drawing.Point(109, 71);
             this.checkBoxWindowed.Name = "checkBoxWindowed";
             this.checkBoxWindowed.Size = new System.Drawing.Size(77, 17);
             this.checkBoxWindowed.TabIndex = 2;
@@ -152,7 +152,7 @@ namespace ORTS
             this.checkBoxWarnings.AutoSize = true;
             this.checkBoxWarnings.Checked = true;
             this.checkBoxWarnings.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxWarnings.Location = new System.Drawing.Point(108, 48);
+            this.checkBoxWarnings.Location = new System.Drawing.Point(109, 48);
             this.checkBoxWarnings.Name = "checkBoxWarnings";
             this.checkBoxWarnings.Size = new System.Drawing.Size(64, 17);
             this.checkBoxWarnings.TabIndex = 1;
@@ -161,7 +161,7 @@ namespace ORTS
             // 
             // buttonOptions
             // 
-            this.buttonOptions.Location = new System.Drawing.Point(108, 19);
+            this.buttonOptions.Location = new System.Drawing.Point(109, 19);
             this.buttonOptions.Name = "buttonOptions";
             this.buttonOptions.Size = new System.Drawing.Size(75, 23);
             this.buttonOptions.TabIndex = 0;
@@ -182,7 +182,7 @@ namespace ORTS
             // 
             this.buttonTools.Location = new System.Drawing.Point(3, 19);
             this.buttonTools.Name = "buttonTools";
-            this.buttonTools.Size = new System.Drawing.Size(75, 23);
+            this.buttonTools.Size = new System.Drawing.Size(100, 23);
             this.buttonTools.TabIndex = 19;
             this.buttonTools.Text = "Tools ▼";
             this.buttonTools.Click += new System.EventHandler(this.buttonTools_Click);
@@ -352,16 +352,16 @@ namespace ORTS
             this.panel1.Controls.Add(this.checkBoxWarnings);
             this.panel1.Controls.Add(this.checkBoxWindowed);
             this.panel1.Controls.Add(this.buttonTools);
-            this.panel1.Location = new System.Drawing.Point(312, 436);
+            this.panel1.Location = new System.Drawing.Point(311, 436);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(186, 100);
+            this.panel1.Size = new System.Drawing.Size(187, 100);
             this.panel1.TabIndex = 13;
             // 
             // buttonDocuments
             // 
             this.buttonDocuments.Location = new System.Drawing.Point(3, 48);
             this.buttonDocuments.Name = "buttonDocuments";
-            this.buttonDocuments.Size = new System.Drawing.Size(85, 23);
+            this.buttonDocuments.Size = new System.Drawing.Size(100, 23);
             this.buttonDocuments.TabIndex = 22;
             this.buttonDocuments.Text = "Documents ▼";
             this.buttonDocuments.UseVisualStyleBackColor = true;
@@ -835,7 +835,7 @@ namespace ORTS
             // testingToolStripMenuItem
             // 
             this.testingToolStripMenuItem.Name = "testingToolStripMenuItem";
-            this.testingToolStripMenuItem.Size = new System.Drawing.Size(113, 22);
+            this.testingToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
             this.testingToolStripMenuItem.Text = "Testing";
             this.testingToolStripMenuItem.Click += new System.EventHandler(this.testingToolStripMenuItem_Click);
             // 
@@ -844,7 +844,7 @@ namespace ORTS
             this.contextMenuStripTools.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.testingToolStripMenuItem});
             this.contextMenuStripTools.Name = "contextMenuStrip1";
-            this.contextMenuStripTools.Size = new System.Drawing.Size(114, 26);
+            this.contextMenuStripTools.Size = new System.Drawing.Size(113, 26);
             // 
             // linkLabelChangeLog
             // 
