@@ -301,7 +301,10 @@ namespace Orts.Viewer3D.Popups
 
                 if (signalDistance > 0)
                 {
+                    var oldDistance = distance;
                     distance += signalDistance;
+                    if (oldDistance == distance || distance >= 10000)
+                        break;
                     trackNode.Move(signalDistance);
                     if (trackNode.TrackNodeIndex != nodeIndex)
                         break;
