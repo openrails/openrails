@@ -1192,6 +1192,7 @@ namespace Orts.Simulation
                     bool validPosition = train.PostInit();
                     if (validPosition)
                         Trains.Add(train);
+                    if (Settings.Autopilot) train.ReverseFormation(false); // When using autopilot mode this is needed for correct working of train switching
                 }
                 catch (Exception error)
                 {
@@ -1903,8 +1904,6 @@ namespace Orts.Simulation
                             playerTrain.routedBackward);
                         playerTrain.ControlMode = Train.TRAIN_CONTROL.UNDEFINED;
                         playerTrain.TrainType = Train.TRAINTYPE.STATIC;
-                        playerTrain.ReverseFormation(false);
-                        oldTrainReverseFormation = true;
                         playerTrain.CheckFreight();
                         playerTrain.InitializeBrakes();
                     }
@@ -1926,7 +1925,6 @@ namespace Orts.Simulation
                     pathlessPlayerTrain.IsPathless = true;
                     PlayerLocomotive = SetPlayerLocomotive(pathlessPlayerTrain);
                     if (oldPlayerTrain != null) oldPlayerTrain.LeadLocomotiveIndex = -1;
-                    newTrainReverseFormation = true;
                 }
                 playerSwitchOngoing = true;
                 if (MPManager.IsMultiPlayer())

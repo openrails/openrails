@@ -10911,7 +10911,6 @@ namespace Orts.Simulation.Physics
             ControlMode = Train.TRAIN_CONTROL.MANUAL;
             TrainType = Train.TRAINTYPE.PLAYER;
             IsPathless = true;
-            ReverseFormation(false);
             CheckFreight();
             InitializeBrakes();
             InitializeSpeeds();
