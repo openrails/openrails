@@ -15,6 +15,11 @@
 		<div class="row">
 			<div class="col-md-1"></div>
 			<div class="col-md-5">
+          <h2>Mar 2016 - Version 1.1</h2>
+          <p>
+            <a href="/discover/version-1-1/">Open Rails 1.1</a> released! <a href="/download/program/">Download it here</a>.
+          </p>
+          <hr />
           <h2>Dec 2015 - More Access to Elvas Tower</h2>
           <p>
             The Elvas Tower forum plays a major role in developing Open Rails but has been closed to non-members following a dispute.

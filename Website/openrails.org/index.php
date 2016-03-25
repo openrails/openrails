@@ -22,7 +22,7 @@
       </div>
 <?php include "shared/menu.php" ?>
 <?php
-  $download_stable = 'OpenRails-1.0-Setup.exe';
+  $download_stable = 'OpenRails-1.1-Setup.exe';
   $file_path = "files";
 ?>
       <div class="row">
@@ -65,6 +65,10 @@
             <h4>News</h4>
           </div>
           <p>
+            <strong>Mar 2016</strong>
+            <a href="/discover/version-1-1/">Open Rails 1.1</a> released! <a href="/download/program/">Download it here</a>.
+          </p>
+          <p>
             <strong>Dec 2015</strong>
             The Elvas Tower forum plays a major role in developing Open Rails but has been closed to non-members following a dispute.
             We can now report that some of the <a href="http://www.elvastower.com/forums/">Open Rails sub-forums</a> 
@@ -73,19 +77,6 @@
           <p>
             <strong>Jun 2015</strong>
             The Australian <a href="http://www.zigzag.coalstonewcastle.com.au/">Great Zig Zag Railway</a> released for Open Rails v1.0
-          </p>
-          <p>
-            <strong>May 2015</strong>
-            <a href="/discover/version-1-0/">Open Rails 1.0</a> released! <a href="/download/program/">Download it here</a>.
-          </p>
-          <p>
-            <strong>Apr 2015</strong>
-            Open Rails first demonstration route <a href="/download/content">Demo Model 1</a> has been published.
-          </p>
-          <p>
-            <strong>Dec 2014</strong>
-            <a href="http://www.dekosoft.com">Dekosoft Trains</a> has added locos exclusively for Open Rails to its range.
-            These are GP30 diesels taking advantage of our 3D cab feature.
           </p>
         </div>
         <div class="col-md-4 divider">
