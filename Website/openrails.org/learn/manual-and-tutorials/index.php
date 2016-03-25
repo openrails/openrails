@@ -18,9 +18,9 @@
 				<p>
 				  Each download includes a copy of the Operating Manual. 
 <?php 
-$file_path = '../../files/Manual.pdf';
+$file_path = '../../files/OpenRails-Testing-Manual.pdf';
 echo "For convenience, you can also directly <a href='$file_path'>download the manual</a>";
-echo ' (' . date('d F Y', filemtime($file_path)) . ', ' . round(filesize($file_path) / 1024) . ' KB).'; 
+echo ' (' . date('d F Y', filemtime($file_path)) . ', ' . round(filesize($file_path) / 1024 / 1024) . 'MB).'; 
 ?>
 				</p>
 				<h2>Test Environment for Models</h2>
