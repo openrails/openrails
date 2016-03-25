@@ -1,6 +1,6 @@
 <h3>Which platforms does OR run on?</h3>
 <p>
-Open Rails is working well on Windows PCs from Windows XP* onwards. It does not work on Windows XBox, Windows Phone or non-Windows platforms.
+Open Rails works well on Windows PCs from Windows XP* onwards (including Windows 10). It does not work on Windows XBox, Windows Phone or non-Windows platforms.
 </p><p>
 * <small>Windows XP requires Service Pack 2 (SP2).</small>
 </p>
