@@ -1158,33 +1158,22 @@ namespace Orts.Simulation.RollingStocks
             }
 
             //some old stocks have only two wheels, but defined to have four, two share the same offset, thus all computing of rotations will have problem
-            //will check, if so, make the offset different a bit. 
+            //will check, if so, make the offset different a bit.
             foreach (var axles in WheelAxles)
-                if (!offset.Equals(0))
-                    if (offset.AlmostEqual(axles.OffsetM, 0.05f)) { offset = axles.OffsetM + 0.7f; break; }
+                if (offset.AlmostEqual(axles.OffsetM, 0.05f)) { offset = axles.OffsetM + 0.7f; break; }
 
             // Came across a model where the axle offset that is part of a bogie would become 0 during the initial process.  This is something we must test for.
-            if (offset != 0)
+            if (wheels.Length == 8 && Parts.Count > 0)
             {
-                if (wheels.Length == 8 && Parts.Count > 0)
-                {
-                    if (wheels == "WHEELS11" || wheels == "WHEELS12" || wheels == "WHEELS13")
-                        WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
+                if (wheels == "WHEELS11" || wheels == "WHEELS12" || wheels == "WHEELS13")
+                    WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
 
-                    if (wheels == "WHEELS21" || wheels == "WHEELS22" || wheels == "WHEELS23")
-                        WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
-                }
-                else
+                if (wheels == "WHEELS21" || wheels == "WHEELS22" || wheels == "WHEELS23")
                     WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
             }
-            // Process below will install axles with 0 offset when part of a bogie.  This is not the norm and hopefully is a rare occurrence.
             else
-            {
-                if (wheels.Length == 8 && Parts.Count > 0)
-                    for (var i = 1; i < Parts.Count; i++)
-                        if (parentMatrix == Parts[i].iMatrix)
-                            WheelAxles.Add(new WheelAxle(Parts[i].OffsetM, Parts[i].iMatrix, 0));
-            }
+                WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
+
         } // end AddWheelSet()
 
         public void AddBogie(float offset, int matrix, int id, string bogie, int numBogie1, int numBogie2, int numBogie)
@@ -1473,7 +1462,7 @@ namespace Orts.Simulation.RollingStocks
             WorldPosition.XNAMatrix = m;
             WorldPosition.TileX = tileX;
             WorldPosition.TileZ = tileZ;
-
+            
             UpdatedTraveler(traveler, elapsedTimeS, distance, speed);
 
             // calculate truck angles
