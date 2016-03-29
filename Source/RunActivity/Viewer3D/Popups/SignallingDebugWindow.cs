@@ -26,6 +26,7 @@ using Orts.Simulation.Signalling;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Orts.Viewer3D.Popups
@@ -309,6 +310,14 @@ namespace Orts.Viewer3D.Popups
                     if (trackNode.TrackNodeIndex != nodeIndex)
                         break;
                     rv.Objects.Add(new TrackSectionSignal() { Distance = distance, Signal = signal });
+                }
+                else
+                {
+                    if ((rv.Objects.Last() as TrackSectionSignal).Signal == signal)
+                    {
+                        Trace.TraceInformation("Exit from signal search loop");
+                        break;
+                    }
                 }
             }
             rv.Objects = rv.Objects.OrderBy(tso => tso.Distance).ToList();
