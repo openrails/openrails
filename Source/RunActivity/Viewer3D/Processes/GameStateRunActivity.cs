@@ -1272,12 +1272,63 @@ namespace Orts.Viewer3D.Processes
             {
             }
 
+            private bool isWideScreen(Game game)
+            {
+                float x = game.RenderProcess.DisplaySize.X;
+                float y = game.RenderProcess.DisplaySize.Y;
+
+                return (x / y > 1.5);
+            }
+
             protected override Texture2D GetTexture(Game game)
             {
-                var path = Path.Combine(Simulator.RoutePath, "load.ace");
-                if (File.Exists(path))
-                    return Orts.Formats.Msts.AceFile.Texture2DFromFile(game.RenderProcess.GraphicsDevice, path);
-                return null;
+                Texture2D texture;
+                GraphicsDevice gd = game.RenderProcess.GraphicsDevice;
+                string defaultScreen = "load.ace";
+
+                string loadingScreen = Simulator.TRK.Tr_RouteFile.LoadingScreen;
+                if (isWideScreen(game))
+                {
+                    string loadingScreenWide = Simulator.TRK.Tr_RouteFile.LoadingScreenWide;
+                    loadingScreen = loadingScreenWide == null ? loadingScreen : loadingScreenWide;
+                }
+                loadingScreen = loadingScreen == null ? defaultScreen : loadingScreen;
+                var path = Path.Combine(Simulator.RoutePath, loadingScreen);
+                if (Path.GetExtension(path) == ".dds" && File.Exists(path))
+                {
+                    DDSLib.DDSFromFile(path, gd, true, out texture);
+                }
+                else if (Path.GetExtension(path) == ".ace")
+                {
+                    var alternativeTexture = Path.ChangeExtension(path, ".dds");
+
+                    if (File.Exists(alternativeTexture) && game.Settings.PreferDDSTexture)
+                    {
+                        DDSLib.DDSFromFile(alternativeTexture, gd, true, out texture);
+                    }
+                    else if (File.Exists(path))
+                    {
+                        texture = Orts.Formats.Msts.AceFile.Texture2DFromFile(gd, path);
+                    }
+                    else
+                    {
+                        path = Path.Combine(Simulator.RoutePath, defaultScreen);
+                        if (File.Exists(path))
+                        {
+                            texture = Orts.Formats.Msts.AceFile.Texture2DFromFile(gd, path);
+                        }
+                        else
+                        {
+                            texture = null;
+                        }
+                    }
+
+                }
+                else
+                {
+                    texture = null;
+                }
+                return texture;
             }
         }
 

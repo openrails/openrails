@@ -104,7 +104,11 @@ namespace Orts.Formats.Msts
 				new STFReader.TokenProcessor("ortsuserpreferenceforestcleardistance", ()=>{ ForestClearDistance = stf.ReadFloatBlock(STFReader.UNITS.Distance, 0); }),
                 // values for superelevation
                 new STFReader.TokenProcessor("ortstracksuperelevation", ()=>{ SuperElevationHgtpRadiusM = new Interpolator(stf); }),
-                
+                // images
+                new STFReader.TokenProcessor("graphic", ()=>{ Thumbnail = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("loadingscreen", ()=>{ LoadingScreen = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("ortsloadingscreenwide", ()=>{ LoadingScreenWide = stf.ReadStringBlock(null); }),
+
            });
             //TODO This should be changed to STFException.TraceError() with defaults values created
             if (RouteID == null) throw new STFException(stf, "Missing RouteID");
@@ -139,6 +143,11 @@ namespace Orts.Formats.Msts
         public float DoubleTunnelPerimeterM; 
 
         public float ForestClearDistance = 0;
+
+        // images
+        public string Thumbnail;
+        public string LoadingScreen;
+        public string LoadingScreenWide;
 
     }
 
