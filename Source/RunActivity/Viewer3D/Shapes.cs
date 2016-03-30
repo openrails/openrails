@@ -643,8 +643,8 @@ namespace Orts.Viewer3D
     public class LevelCrossingShape : PoseableShape
     {
         readonly LevelCrossingObj CrossingObj;
-		readonly SoundSource Sound;
-		readonly LevelCrossing Crossing;
+        readonly SoundSource Sound;
+        readonly LevelCrossing Crossing;
 
         readonly float AnimationFrames;
         readonly float AnimationSpeed;
@@ -744,67 +744,67 @@ namespace Orts.Viewer3D
         }
     }
 
-	public class HazzardShape : PoseableShape
-	{
-		readonly HazardObj HazardObj;
-		readonly Hazzard Hazzard;
+    public class HazzardShape : PoseableShape
+    {
+        readonly HazardObj HazardObj;
+        readonly Hazzard Hazzard;
 
-		readonly int AnimationFrames;
-		float Moved = 0f;
-		float AnimationKey;
+        readonly int AnimationFrames;
+        float Moved = 0f;
+        float AnimationKey;
         float DelayHazAnimation;
 
-		public static HazzardShape CreateHazzard(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, HazardObj hObj)
-		{
-			var h = viewer.Simulator.HazzardManager.AddHazzardIntoGame(hObj.itemId, hObj.FileName);
-			if (h == null) return null;
-			return new HazzardShape(viewer, viewer.Simulator.BasePath + @"\Global\Shapes\" + h.HazFile.Tr_HazardFile.FileName + "\0" + viewer.Simulator.BasePath + @"\Global\Textures", position, shapeFlags, hObj, h);
+        public static HazzardShape CreateHazzard(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, HazardObj hObj)
+        {
+            var h = viewer.Simulator.HazzardManager.AddHazzardIntoGame(hObj.itemId, hObj.FileName);
+            if (h == null) return null;
+            return new HazzardShape(viewer, viewer.Simulator.BasePath + @"\Global\Shapes\" + h.HazFile.Tr_HazardFile.FileName + "\0" + viewer.Simulator.BasePath + @"\Global\Textures", position, shapeFlags, hObj, h);
 
-		}
+        }
 
-		public HazzardShape(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, HazardObj hObj, Hazzard h)
-			: base(viewer, path, position, shapeFlags)
-		{
-			HazardObj = hObj;
-			Hazzard = h;
-			AnimationFrames = SharedShape.Animations[0].FrameCount;
-		}
+        public HazzardShape(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, HazardObj hObj, Hazzard h)
+            : base(viewer, path, position, shapeFlags)
+        {
+            HazardObj = hObj;
+            Hazzard = h;
+            AnimationFrames = SharedShape.Animations[0].FrameCount;
+        }
 
-		public override void Unload()
-		{
-			Viewer.Simulator.HazzardManager.RemoveHazzardFromGame(HazardObj.itemId);
+        public override void Unload()
+        {
+            Viewer.Simulator.HazzardManager.RemoveHazzardFromGame(HazardObj.itemId);
             base.Unload();
-		}
+        }
 
-		public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
-		{
-			if (Hazzard == null) return;
-			Vector2 CurrentRange;
-			AnimationKey += elapsedTime.ClockSeconds* 24f;
+        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+        {
+            if (Hazzard == null) return;
+            Vector2 CurrentRange;
+            AnimationKey += elapsedTime.ClockSeconds* 24f;
             DelayHazAnimation += elapsedTime.ClockSeconds;
-			switch (Hazzard.state)
-			{
-				case Hazzard.State.Idle1:
-					CurrentRange = Hazzard.HazFile.Tr_HazardFile.Idle_Key; break;
-				case Hazzard.State.Idle2:
-					CurrentRange = Hazzard.HazFile.Tr_HazardFile.Idle_Key2; break;
-				case Hazzard.State.LookLeft:
-					CurrentRange = Hazzard.HazFile.Tr_HazardFile.Surprise_Key_Left; break;
-				case Hazzard.State.LookRight:
-					CurrentRange = Hazzard.HazFile.Tr_HazardFile.Surprise_Key_Right; break;
-				case Hazzard.State.Scared:
-				default:
-					CurrentRange = Hazzard.HazFile.Tr_HazardFile.Success_Scarper_Key;
-					if (Moved < Hazzard.HazFile.Tr_HazardFile.Distance)
-					{
-						var m = Hazzard.HazFile.Tr_HazardFile.Speed * elapsedTime.ClockSeconds;
-						Moved += m;
-						this.HazardObj.Position.Move(this.HazardObj.QDirection, m);
-						Location.Location = new Vector3(this.HazardObj.Position.X, this.HazardObj.Position.Y, this.HazardObj.Position.Z);
-					}
-					else { Moved = 0; Hazzard.state = Hazzard.State.Idle1; }
-					break;
-			}
+            switch (Hazzard.state)
+            {
+                case Hazzard.State.Idle1:
+                    CurrentRange = Hazzard.HazFile.Tr_HazardFile.Idle_Key; break;
+                case Hazzard.State.Idle2:
+                    CurrentRange = Hazzard.HazFile.Tr_HazardFile.Idle_Key2; break;
+                case Hazzard.State.LookLeft:
+                    CurrentRange = Hazzard.HazFile.Tr_HazardFile.Surprise_Key_Left; break;
+                case Hazzard.State.LookRight:
+                    CurrentRange = Hazzard.HazFile.Tr_HazardFile.Surprise_Key_Right; break;
+                case Hazzard.State.Scared:
+                default:
+                    CurrentRange = Hazzard.HazFile.Tr_HazardFile.Success_Scarper_Key;
+                    if (Moved < Hazzard.HazFile.Tr_HazardFile.Distance)
+                    {
+                        var m = Hazzard.HazFile.Tr_HazardFile.Speed * elapsedTime.ClockSeconds;
+                        Moved += m;
+                        this.HazardObj.Position.Move(this.HazardObj.QDirection, m);
+                        Location.Location = new Vector3(this.HazardObj.Position.X, this.HazardObj.Position.Y, this.HazardObj.Position.Z);
+                    }
+                    else { Moved = 0; Hazzard.state = Hazzard.State.Idle1; }
+                    break;
+            }
 
             if (Hazzard.state == Hazzard.State.Idle1 || Hazzard.state == Hazzard.State.Idle2)
             {
@@ -837,14 +837,14 @@ namespace Orts.Viewer3D
                 if (AnimationKey > CurrentRange.Y) AnimationKey = CurrentRange.X;
             }
 
-			for (var i = 0; i < SharedShape.Matrices.Length; ++i)
-				AnimateMatrix(i, AnimationKey);
-			
-			//var pos = this.HazardObj.Position;
-            			
-			SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
-		}
-	}
+            for (var i = 0; i < SharedShape.Matrices.Length; ++i)
+                AnimateMatrix(i, AnimationKey);
+            
+            //var pos = this.HazardObj.Position;
+                        
+            SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
+        }
+    }
 
     public class FuelPickupItemShape : PoseableShape
     {
@@ -1239,21 +1239,21 @@ namespace Orts.Viewer3D
             Animations = sFile.shape.animations;
 
 #if DEBUG_SHAPE_HIERARCHY
-			var debugShapeHierarchy = new StringBuilder();
-			debugShapeHierarchy.AppendFormat("Shape {0}:\n", Path.GetFileNameWithoutExtension(FilePath).ToUpper());
-			for (var i = 0; i < MatrixNames.Count; ++i)
-				debugShapeHierarchy.AppendFormat("  Matrix {0,-2}: {1}\n", i, MatrixNames[i]);
-			for (var i = 0; i < sFile.shape.prim_states.Count; ++i)
-				debugShapeHierarchy.AppendFormat("  PState {0,-2}: flags={1,-8:X8} shader={2,-15} alpha={3,-2} vstate={4,-2} lstate={5,-2} zbias={6,-5:F3} zbuffer={7,-2} name={8}\n", i, sFile.shape.prim_states[i].flags, sFile.shape.shader_names[sFile.shape.prim_states[i].ishader], sFile.shape.prim_states[i].alphatestmode, sFile.shape.prim_states[i].ivtx_state, sFile.shape.prim_states[i].LightCfgIdx, sFile.shape.prim_states[i].ZBias, sFile.shape.prim_states[i].ZBufMode, sFile.shape.prim_states[i].Name);
-			for (var i = 0; i < sFile.shape.vtx_states.Count; ++i)
-				debugShapeHierarchy.AppendFormat("  VState {0,-2}: flags={1,-8:X8} lflags={2,-8:X8} lstate={3,-2} material={4,-3} matrix2={5,-2}\n", i, sFile.shape.vtx_states[i].flags, sFile.shape.vtx_states[i].LightFlags, sFile.shape.vtx_states[i].LightCfgIdx, sFile.shape.vtx_states[i].LightMatIdx, sFile.shape.vtx_states[i].Matrix2);
-			for (var i = 0; i < sFile.shape.light_model_cfgs.Count; ++i)
-			{
-				debugShapeHierarchy.AppendFormat("  LState {0,-2}: flags={1,-8:X8} uv_ops={2,-2}\n", i, sFile.shape.light_model_cfgs[i].flags, sFile.shape.light_model_cfgs[i].uv_ops.Count);
-				for (var j = 0; j < sFile.shape.light_model_cfgs[i].uv_ops.Count; ++j)
-					debugShapeHierarchy.AppendFormat("    UV OP {0,-2}: texture_address_mode={1,-2}\n", j, sFile.shape.light_model_cfgs[i].uv_ops[j].TexAddrMode);
-			}
-			Console.Write(debugShapeHierarchy.ToString());
+            var debugShapeHierarchy = new StringBuilder();
+            debugShapeHierarchy.AppendFormat("Shape {0}:\n", Path.GetFileNameWithoutExtension(FilePath).ToUpper());
+            for (var i = 0; i < MatrixNames.Count; ++i)
+                debugShapeHierarchy.AppendFormat("  Matrix {0,-2}: {1}\n", i, MatrixNames[i]);
+            for (var i = 0; i < sFile.shape.prim_states.Count; ++i)
+                debugShapeHierarchy.AppendFormat("  PState {0,-2}: flags={1,-8:X8} shader={2,-15} alpha={3,-2} vstate={4,-2} lstate={5,-2} zbias={6,-5:F3} zbuffer={7,-2} name={8}\n", i, sFile.shape.prim_states[i].flags, sFile.shape.shader_names[sFile.shape.prim_states[i].ishader], sFile.shape.prim_states[i].alphatestmode, sFile.shape.prim_states[i].ivtx_state, sFile.shape.prim_states[i].LightCfgIdx, sFile.shape.prim_states[i].ZBias, sFile.shape.prim_states[i].ZBufMode, sFile.shape.prim_states[i].Name);
+            for (var i = 0; i < sFile.shape.vtx_states.Count; ++i)
+                debugShapeHierarchy.AppendFormat("  VState {0,-2}: flags={1,-8:X8} lflags={2,-8:X8} lstate={3,-2} material={4,-3} matrix2={5,-2}\n", i, sFile.shape.vtx_states[i].flags, sFile.shape.vtx_states[i].LightFlags, sFile.shape.vtx_states[i].LightCfgIdx, sFile.shape.vtx_states[i].LightMatIdx, sFile.shape.vtx_states[i].Matrix2);
+            for (var i = 0; i < sFile.shape.light_model_cfgs.Count; ++i)
+            {
+                debugShapeHierarchy.AppendFormat("  LState {0,-2}: flags={1,-8:X8} uv_ops={2,-2}\n", i, sFile.shape.light_model_cfgs[i].flags, sFile.shape.light_model_cfgs[i].uv_ops.Count);
+                for (var j = 0; j < sFile.shape.light_model_cfgs[i].uv_ops.Count; ++j)
+                    debugShapeHierarchy.AppendFormat("    UV OP {0,-2}: texture_address_mode={1,-2}\n", j, sFile.shape.light_model_cfgs[i].uv_ops[j].TexAddrMode);
+            }
+            Console.Write(debugShapeHierarchy.ToString());
 #endif
             LodControls = (from lod_control lod in sFile.shape.lod_controls
                            select new LodControl(lod, textureFlags, sFile, this)).ToArray();
@@ -1379,8 +1379,8 @@ namespace Orts.Viewer3D
 #endif
             {
 #if DEBUG_SHAPE_HIERARCHY
-				var debugShapeHierarchy = new StringBuilder();
-				debugShapeHierarchy.AppendFormat("      Sub object {0}:\n", subObjectIndex);
+                var debugShapeHierarchy = new StringBuilder();
+                debugShapeHierarchy.AppendFormat("      Sub object {0}:\n", subObjectIndex);
 #endif
                 var vertexBufferSet = new VertexBufferSet(sub_object, sFile, sharedShape.Viewer.GraphicsDevice);
 #if DEBUG_SHAPE_NORMALS
@@ -1471,14 +1471,14 @@ namespace Orts.Viewer3D
                     }
 
 #if DEBUG_SHAPE_HIERARCHY
-					debugShapeHierarchy.AppendFormat("        Primitive {0,-2}: pstate={1,-2} vstate={2,-2} lstate={3,-2} matrix={4,-2}", primitiveIndex, primitive.prim_state_idx, primitiveState.ivtx_state, vertexState.LightCfgIdx, vertexState.imatrix);
+                    debugShapeHierarchy.AppendFormat("        Primitive {0,-2}: pstate={1,-2} vstate={2,-2} lstate={3,-2} matrix={4,-2}", primitiveIndex, primitive.prim_state_idx, primitiveState.ivtx_state, vertexState.LightCfgIdx, vertexState.imatrix);
                     var debugMatrix = vertexState.imatrix;
                     while (debugMatrix >= 0)
                     {
-						debugShapeHierarchy.AppendFormat(" {0}", sharedShape.MatrixNames[debugMatrix]);
+                        debugShapeHierarchy.AppendFormat(" {0}", sharedShape.MatrixNames[debugMatrix]);
                         debugMatrix = hierarchy[debugMatrix];
                     }
-					debugShapeHierarchy.Append("\n");
+                    debugShapeHierarchy.Append("\n");
 #endif
 
 #if OPTIMIZE_SHAPES_ON_LOAD
@@ -1551,9 +1551,9 @@ namespace Orts.Viewer3D
 #endif
 
 #if DEBUG_SHAPE_HIERARCHY
-				Console.Write(debugShapeHierarchy.ToString());
+                Console.Write(debugShapeHierarchy.ToString());
 #endif
-			}
+            }
 
             [CallOnThread("Loader")]
             internal void Mark()
@@ -1742,23 +1742,23 @@ namespace Orts.Viewer3D
                     distanceDetail.ViewingDistance = float.MaxValue;
 
                 for (var i = 0; i < displayDetail.SubObjects.Length; i++)
-				{
+                {
                     var subObject = displayDetail.SubObjects[i];
                    
                     // The 1st subobject (note that index 0 is the main object itself) is hidden during the day if HasNightSubObj is true.
-					if ((subObjVisible != null && !subObjVisible[i]) || (i == 1 && HasNightSubObj && Viewer.MaterialManager.sunDirection.Y >= 0))
-						continue;
+                    if ((subObjVisible != null && !subObjVisible[i]) || (i == 1 && HasNightSubObj && Viewer.MaterialManager.sunDirection.Y >= 0))
+                        continue;
 
-					foreach (var shapePrimitive in subObject.ShapePrimitives)
-					{
-						var xnaMatrix = Matrix.Identity;
-						var hi = shapePrimitive.HierarchyIndex;
-						while (hi >= 0 && hi < shapePrimitive.Hierarchy.Length && shapePrimitive.Hierarchy[hi] != -1)
-						{
-							Matrix.Multiply(ref xnaMatrix, ref animatedXNAMatrices[hi], out xnaMatrix);
-							hi = shapePrimitive.Hierarchy[hi];
-						}
-						Matrix.Multiply(ref xnaMatrix, ref xnaDTileTranslation, out xnaMatrix);
+                    foreach (var shapePrimitive in subObject.ShapePrimitives)
+                    {
+                        var xnaMatrix = Matrix.Identity;
+                        var hi = shapePrimitive.HierarchyIndex;
+                        while (hi >= 0 && hi < shapePrimitive.Hierarchy.Length && shapePrimitive.Hierarchy[hi] != -1)
+                        {
+                            Matrix.Multiply(ref xnaMatrix, ref animatedXNAMatrices[hi], out xnaMatrix);
+                            hi = shapePrimitive.Hierarchy[hi];
+                        }
+                        Matrix.Multiply(ref xnaMatrix, ref xnaDTileTranslation, out xnaMatrix);
 
                         // TODO make shadows depend on shape overrides
 
