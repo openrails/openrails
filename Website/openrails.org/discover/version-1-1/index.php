@@ -32,7 +32,7 @@
         <div class="col-md-4">
           <h3>System Additions</h3>
           <p>
-            The menu now provides quick access to included documentation. New options have been added for limiting the safe speed through curves, which include penalties, and for automatically correcting faulty parmaters in locomotives.
+            The menu now provides quick access to included documentation. New options have been added for limiting the safe speed through curves, which include penalties, and for automatically correcting faulty parameters in locomotives.
           </p>
           <p>
             New keyboard commands can be used to cut off all power or all brakes on a locomotive, while multiplayer can now connect directly to domain names.

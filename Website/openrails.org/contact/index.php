@@ -36,7 +36,7 @@
 			    <input type = "hidden" name="success_url"    value="http://openrails.org/contact/success.php"> 
           <div class="form-group">
             <label for="emailMessage">Message</label>
-            <textarea class="form-control" rows="10" id="emailMessage" name="body" placeholder="Enter your message" required></textarea>
+            <textarea class="form-control" rows="10" id="emailMessage" name="body" placeholder="Enter your message" required title="Please follow the guidance to the left about reporting problems."></textarea>
           </div>
           <button type="submit" class="btn btn-default">Send</button>
         </form>
