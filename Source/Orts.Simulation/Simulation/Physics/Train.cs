@@ -2230,6 +2230,7 @@ namespace Orts.Simulation.Physics
                     var speed_info = thisSpeedpost.this_lim_speed(MstsSignalFunction.SPEED);
 
                     AllowedMaxSpeedMpS = Math.Min(AllowedMaxSpeedMpS, IsFreight ? speed_info.speed_freight : speed_info.speed_pass);
+                    allowedAbsoluteMaxSpeedLimitMpS =  Math.Min(allowedAbsoluteMaxSpeedLimitMpS , IsFreight ? speed_info.speed_freight : speed_info.speed_pass);
                 }
 
                 float validSpeedMpS = AllowedMaxSpeedMpS;
@@ -2275,6 +2276,7 @@ namespace Orts.Simulation.Physics
                                 requiredActions.UpdatePendingSpeedlimits(newSpeedMpS);  // update any older pending speed limits
                             }
 
+                            if (newSpeedMpS < allowedAbsoluteMaxSpeedLimitMpS) allowedAbsoluteMaxSpeedLimitMpS = newSpeedMpS;
                             thisSectionIndex = thisSpeedpost.TCReference;
                             thisSectionOffset = thisSpeedpost.TCOffset;
                             thisDirection = thisSpeedpost.TCDirection;

@@ -3645,8 +3645,12 @@ namespace Orts.Simulation.AIs
 
         public void RecalculateAllowedMaxSpeed()
         {
-            var allowedMaxSpeedPathMpS = Math.Min(allowedMaxSpeedSignalMpS, allowedMaxSpeedLimitMpS);
+            var allowedMaxSpeedPathMpS = Math.Min(allowedAbsoluteMaxSpeedSignalMpS, allowedAbsoluteMaxSpeedLimitMpS);
+            allowedMaxSpeedPathMpS = Math.Min(allowedMaxSpeedPathMpS, allowedAbsoluteMaxTempSpeedLimitMpS);
             AllowedMaxSpeedMpS = Math.Min(allowedMaxSpeedPathMpS, TrainMaxSpeedMpS);
+            allowedMaxSpeedSignalMpS = (Math.Min(allowedAbsoluteMaxSpeedSignalMpS, TrainMaxSpeedMpS));
+            allowedMaxSpeedLimitMpS = (Math.Min(allowedAbsoluteMaxSpeedLimitMpS, TrainMaxSpeedMpS));
+            allowedMaxTempSpeedLimitMpS = (Math.Min(allowedAbsoluteMaxTempSpeedLimitMpS, TrainMaxSpeedMpS));
         }
 
         //================================================================================================//
