@@ -331,26 +331,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             mstsParams = new MSTSGearBoxParams(copy.mstsParams);
             DieselEngine = de;
 
-            if (mstsParams != null)
-            {
-                if ((!mstsParams.IsInitialized) && (mstsParams.AtLeastOneParamFound))
-                    Trace.TraceWarning("Some of the gearbox parameters are missing! Default physics will be used.");
-                for (int i = 0; i < mstsParams.GearBoxNumberOfGears; i++)
-                {
-                    Gears.Add(new Gear(this));
-                    Gears[i].BackLoadForceN = mstsParams.GearBoxBackLoadForceN;
-                    Gears[i].CoastingForceN = mstsParams.GearBoxCoastingForceN;
-                    Gears[i].DownGearProportion = mstsParams.GearBoxDownGearProportion;
-                    Gears[i].IsDirectDriveGear = (mstsParams.GearBoxDirectDriveGear == mstsParams.GearBoxNumberOfGears);
-                    Gears[i].MaxSpeedMpS = mstsParams.GearBoxMaxSpeedForGearsMpS[i];
-                    Gears[i].MaxTractiveForceN = mstsParams.GearBoxMaxTractiveForceForGearsN[i];
-                    Gears[i].OverspeedPercentage = mstsParams.GearBoxOverspeedPercentageForFailure;
-                    Gears[i].UpGearProportion = mstsParams.GearBoxUpGearProportion;
-                    Gears[i].Ratio = mstsParams.GearBoxMaxSpeedForGearsMpS[i] / DieselEngine.MaxRPM;
-                }
-                GearBoxOperation = mstsParams.GearBoxOperation;
-                OriginalGearBoxOperation = mstsParams.GearBoxOperation;
-            }
+            CopyFromMSTSParams(DieselEngine);
 
         }      
 
@@ -370,6 +351,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             gearedUp = inf.ReadBoolean();
             gearedDown = inf.ReadBoolean();
             clutchOn = inf.ReadBoolean();
+            clutch = inf.ReadSingle();
             IsRestored = true;
         }
 
@@ -380,6 +362,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             outf.Write(gearedUp);
             outf.Write(gearedDown);
             outf.Write(clutchOn);
+            outf.Write(clutch);
         }
 
         public void InitializeMoving ()
@@ -399,6 +382,35 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         }
 
         public bool IsInitialized { get { return mstsParams.IsInitialized; } }
+
+        public void UseLocoGearBox (DieselEngine dieselEngine)
+        {
+            DieselEngine = dieselEngine;
+        }
+
+        public void CopyFromMSTSParams(DieselEngine dieselEngine)
+        {
+            if (mstsParams != null)
+            {
+                if ((!mstsParams.IsInitialized) && (mstsParams.AtLeastOneParamFound))
+                    Trace.TraceWarning("Some of the gearbox parameters are missing! Default physics will be used.");
+                for (int i = 0; i < mstsParams.GearBoxNumberOfGears; i++)
+                {
+                    Gears.Add(new Gear(this));
+                    Gears[i].BackLoadForceN = mstsParams.GearBoxBackLoadForceN;
+                    Gears[i].CoastingForceN = mstsParams.GearBoxCoastingForceN;
+                    Gears[i].DownGearProportion = mstsParams.GearBoxDownGearProportion;
+                    Gears[i].IsDirectDriveGear = (mstsParams.GearBoxDirectDriveGear == mstsParams.GearBoxNumberOfGears);
+                    Gears[i].MaxSpeedMpS = mstsParams.GearBoxMaxSpeedForGearsMpS[i];
+                    Gears[i].MaxTractiveForceN = mstsParams.GearBoxMaxTractiveForceForGearsN[i];
+                    Gears[i].OverspeedPercentage = mstsParams.GearBoxOverspeedPercentageForFailure;
+                    Gears[i].UpGearProportion = mstsParams.GearBoxUpGearProportion;
+                    Gears[i].Ratio = mstsParams.GearBoxMaxSpeedForGearsMpS[i] / dieselEngine.MaxRPM;
+                }
+                GearBoxOperation = mstsParams.GearBoxOperation;
+                OriginalGearBoxOperation = mstsParams.GearBoxOperation;
+            }
+        }
 
         public void Update(float elapsedClockSeconds)
         {

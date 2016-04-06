@@ -98,7 +98,7 @@ namespace Orts.Simulation.RollingStocks
 
         public DieselEngines DieselEngines;
 
-        public GearBox GearBox = new GearBox();
+        public GearBox GearBox = new GearBox(); // this is the same instance present in the first engine of the locomotive; instead instances in other engines, if any, are copies
 
         /// <summary>
         /// Used to accumulate a quantity that is not lost because of lack of precision when added to the Fuel level
@@ -164,6 +164,26 @@ namespace Orts.Simulation.RollingStocks
                 DieselEngines[0].Initialize(true);
             }
 
+            if (GearBox != null && GearBox.IsInitialized)
+            {
+                GearBox.CopyFromMSTSParams(DieselEngines[0]);
+                if (DieselEngines[0].GearBox == null)
+                {
+                    DieselEngines[0].GearBox = GearBox;
+                    DieselEngines[0].GearBox.UseLocoGearBox(DieselEngines[0]);
+                }
+                for (int i = 1; i < DieselEngines.Count; i++)
+                {
+                    if (DieselEngines[i].GearBox == null)
+                        DieselEngines[i].GearBox = new GearBox(GearBox, DieselEngines[i]);
+                }
+
+                if (GearBoxController == null)
+                {
+                    GearBoxController = new MSTSNotchController(GearBox.NumOfGears + 1);
+                }
+            }
+
             InitialMassKg = MassKG;
         }
 
@@ -204,6 +224,12 @@ namespace Orts.Simulation.RollingStocks
                 GearBoxController = new MSTSNotchController(locoCopy.GearBoxController);
 
             DieselEngines = new DieselEngines(locoCopy.DieselEngines, this);
+            if (DieselEngines[0].GearBox != null) GearBox = DieselEngines[0].GearBox;
+            for (int i = 1; i < DieselEngines.Count; i++)
+            {
+                if (DieselEngines[i].GearBox == null)
+                    DieselEngines[i].GearBox = new GearBox(GearBox, DieselEngines[i]);
+            }
             foreach (DieselEngine de in DieselEngines)
             {
                 de.Initialize(true);
@@ -212,21 +238,9 @@ namespace Orts.Simulation.RollingStocks
 
         public override void Initialize()
         {
-            if ((GearBox != null) && (GearBoxController == null))
+            if (GearBox != null && !GearBox.IsInitialized)
             {
-                if (!GearBox.IsInitialized)
-                    GearBox = null;
-                else
-                {
-                    foreach (DieselEngine de in DieselEngines)
-                    {
-                        if (de.GearBox == null)
-                            de.GearBox = new GearBox(GearBox, de);
-                        //if (this.Train.TrainType == Train.TRAINTYPE.AI)
-                        //    de.GearBox.GearBoxOperation = GearBoxOperation.Automatic;
-                    }
-                    GearBoxController = new MSTSNotchController(DieselEngines[0].GearBox.NumOfGears + 1);
-                }
+                GearBox = null;
             }
 
             DieselEngines.Initialize(false);
@@ -244,8 +258,8 @@ namespace Orts.Simulation.RollingStocks
             // outf.Write(Pan);
             base.Save(outf);
             outf.Write(DieselLevelL);
-            ControllerFactory.Save(GearBoxController, outf);
             DieselEngines.Save(outf);
+            ControllerFactory.Save(GearBoxController, outf);
         }
 
         /// <summary>
@@ -256,8 +270,8 @@ namespace Orts.Simulation.RollingStocks
         {
             base.Restore(inf);
             DieselLevelL = inf.ReadSingle();
-            ControllerFactory.Restore(GearBoxController, inf);
             DieselEngines.Restore(inf);
+            ControllerFactory.Restore(GearBoxController, inf);
         }
 
         //================================================================================================//
