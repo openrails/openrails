@@ -108,10 +108,6 @@ namespace Orts.Simulation.RollingStocks
         bool safety2IsOn = false; // Safety valve #2 is on and opertaing
         bool safety3IsOn = false; // Safety valve #3 is on and opertaing
         bool safety4IsOn = false; // Safety valve #4 is on and opertaing
-        bool IsGearedSteamLoco = false; // Indicates that it is a geared locomotive
-        bool IsSimpleLocoAssumed = false;      // Indicates that it is an assumed simple locomotive
-        bool IsSimpleLoco = false;      // Indicates that it is a simple locomotive
-        bool IsCompoundLoco = false;    // Indicates that it is a compound locomotive
         bool IsFixGeared = false;
         bool IsSelectGeared = false;
         bool IsLocoSlip = false; 	   // locomotive is slipping
@@ -671,10 +667,15 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortssteammaxgearpistonrate": MaxSteamGearPistonRateFtpM = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortssteamlocomotivetype":
                     stf.MustMatch("(");
-                    string typeString = stf.ReadString();
-                    IsSimpleLoco = String.Compare(typeString, "Simple") == 0;
-                    IsGearedSteamLoco = String.Compare(typeString, "Geared") == 0;
-                    IsCompoundLoco = String.Compare(typeString, "Compound") == 0;
+                    var steamengineType = stf.ReadString();
+                    try
+                    {
+                        SteamEngineType = (SteamEngineTypes)Enum.Parse(typeof(SteamEngineTypes), steamengineType);                        
+                    }
+                    catch
+                    {
+                        STFException.TraceWarning(stf, "Assumed unknown engine type " + steamengineType);
+                    }
                     break;
                 case "engine(ortssteamboilertype":
                     stf.MustMatch("(");
@@ -749,9 +750,7 @@ namespace Orts.Simulation.RollingStocks
             SteamGearRatioLow = locoCopy.SteamGearRatioLow;
             SteamGearRatioHigh = locoCopy.SteamGearRatioHigh;
             MaxSteamGearPistonRateFtpM = locoCopy.MaxSteamGearPistonRateFtpM;
-            IsSimpleLoco = locoCopy.IsSimpleLoco;
-            IsGearedSteamLoco = locoCopy.IsGearedSteamLoco;
-            IsCompoundLoco = locoCopy.IsCompoundLoco;
+            SteamEngineType = locoCopy.SteamEngineType;
             IsSaturated = locoCopy.IsSaturated;
             HasSuperheater = locoCopy.HasSuperheater;
             IsFixGeared = locoCopy.IsFixGeared;
@@ -943,20 +942,18 @@ namespace Orts.Simulation.RollingStocks
 
             // Test to see if gear type set
             bool IsGearAssumed = false;
-            if (IsFixGeared || IsSelectGeared)
+            if (IsFixGeared || IsSelectGeared) // If a gear type has been selected, but gear type not set in steamenginetype, then set assumption
             {
-                if (!IsGearedSteamLoco)
+                if (SteamEngineType != SteamEngineTypes.Geared)
                 {
-                    IsGearedSteamLoco = true;    // set flag for geared locomotive
                     IsGearAssumed = true;
                     Trace.TraceWarning("Geared locomotive parameter not defined. Geared locomotive has been assumed");
                 }
             }
 
             // ******************  Test Locomotive and Gearing type *********************** 
-            // Default to simple type locomotive
-
-            if (IsCompoundLoco)
+           
+            if (SteamEngineType == SteamEngineTypes.Compound)
             {
                 //  Initialise Compound locomotive
                 SteamLocoType = "Compound locomotive";
@@ -969,14 +966,14 @@ namespace Orts.Simulation.RollingStocks
                 MaxTractiveEffortLbf = CylinderEfficiencyRate * (1.6f * MaxBoilerPressurePSI * Me.ToIn(LPCylinderDiameterM) * Me.ToIn(LPCylinderDiameterM) * Me.ToIn(LPCylinderStrokeM)) / ((CompoundCylinderRatio + 1.0f) * (Me.ToIn(DriverWheelRadiusM * 2.0f)));
 
             }
-            else if (IsGearedSteamLoco)
+            else if (SteamEngineType == SteamEngineTypes.Geared)
             {
                 if (IsFixGeared)
                 {
                     // Advise if gearing is assumed
                     if (IsGearAssumed)
                     {
-                        SteamLocoType = "Not Defined (assumed Fixed Geared) locomotive";
+                        SteamLocoType = "Not formally defined (assumed Fixed Geared) locomotive";
                     }
                     else
                     {
@@ -1006,7 +1003,7 @@ namespace Orts.Simulation.RollingStocks
                     // Advise if gearing is assumed
                     if (IsGearAssumed)
                     {
-                        SteamLocoType = "Not Defined (assumed Selectable Geared) locomotive";
+                        SteamLocoType = "Not formally defined (assumed Selectable Geared) locomotive";
                     }
                     else
                     {
@@ -1043,25 +1040,22 @@ namespace Orts.Simulation.RollingStocks
                 {
                     SteamLocoType = "Unknown Geared locomotive (default to non-gear)";
                     // Default to non-geared locomotive
-                    IsGearedSteamLoco = false;    // set flag for non-geared locomotive
-                    IsSimpleLoco = true;            // treat as simple locomotive
                     MotiveForceGearRatio = 1.0f;  // set gear ratio to default, as not a geared locomotive
                     SteamGearRatio = 1.0f;     // set gear ratio to default, as not a geared locomotive
                     MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio * CylinderEfficiencyRate;
                 }
             }
-            else if (IsSimpleLoco)    // Simple locomotive
+            else if (SteamEngineType == SteamEngineTypes.Simple)    // Simple locomotive
             {
                 SteamLocoType = "Simple locomotive";
                 MotiveForceGearRatio = 1.0f;  // set gear ratio to default, as not a geared locomotive
                 SteamGearRatio = 1.0f;     // set gear ratio to default, as not a geared locomotive
                 MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio * CylinderEfficiencyRate;
             }
-            else // Default to Simple Locomotive
+            else // Default to Simple Locomotive (Assumed Simple)
             {
-                IsSimpleLoco = true;
-                IsSimpleLocoAssumed = true; // Assumed simple locomotive
-                SteamLocoType = "Not defined (assumed simple) locomotive";
+                Trace.TraceWarning("Steam engine type parameter not formally defined. Simple locomotive has been assumed");
+                SteamLocoType = "Not formally defined (assumed simple) locomotive.";
                 MotiveForceGearRatio = 1.0f;  // set gear ratio to default, as not a geared locomotive
                 SteamGearRatio = 1.0f;     // set gear ratio to default, as not a geared locomotive
                 MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio * CylinderEfficiencyRate;
@@ -1070,20 +1064,6 @@ namespace Orts.Simulation.RollingStocks
 
 
             // ******************  Test Boiler Type *********************  
-            // Default to saturated type of locomotive
-            if (HasSuperheater)
-            {
-                SteamLocoType += " + Superheater";
-            }
-            else if (IsSaturated)
-            {
-                SteamLocoType += " + Saturated";
-            }
-            else
-            {
-                SteamLocoType += " + Not defined (assumed saturated)";
-            }
-
             InitializeTenderWithCoal();
             InitializeTenderWithWater();
 
@@ -1146,44 +1126,10 @@ namespace Orts.Simulation.RollingStocks
             MaxFlueTempK = (MaxBoilerKW / (W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2 * HeatMaterialThicknessFactor)) + baseTempK;
 
             // Determine if Superheater in use
-            if (SuperheatAreaM2 == 0) // If super heating area not specified
-            {
-                if (SuperheaterFactor > 1.0) // check if MSTS value, then set superheating
-                {
-                    HasSuperheater = true;
-                    SuperheatRefTempF = 200.0f; // Assume a superheating temp of 250degF
-                    SuperheatTempRatio = SuperheatRefTempF / SuperheatTempLbpHtoDegF[pS.TopH(TheoreticalMaxSteamOutputLBpS)];
-                    SuperheatAreaM2 = Me2.FromFt2((SuperheatRefTempF * pS.TopH(TheoreticalMaxSteamOutputLBpS)) / (C.ToF(C.FromK(MaxFlueTempK)) * SuperheatKFactor)); // Back calculate Superheat area for display purposes only.
-                    CylinderClearancePC = 0.09f;
 
-                    // Adjust indication for F5 HUD
-                    SteamLocoType = " ";
-                    if (IsSimpleLoco)
-                    {
-                        if (IsSimpleLocoAssumed)
-                        {
-                            SteamLocoType = "Not defined (assumed simple) locomotive + Not formally defined (assumed superheated)";
-                        }
-                        else
-                        {
-                            SteamLocoType = "Simple locomotive + Not formally defined (assumed superheated)";
-                        }
-                    }
-                    else if (IsCompoundLoco)
-                    {
-                        SteamLocoType = "Compound locomotive + Not formally defined (assumed superheated)";
-                    }
-                }
-                else
-                {
-                    HasSuperheater = false;
-                    SuperheatRefTempF = 0.0f;
-                }
-            }
-            else  // if OR value implies a superheater is present then calculate
+            if (HasSuperheater)
             {
-
-                HasSuperheater = true;
+                SteamLocoType += " + Superheater";
 
                 // Calculate superheat steam reference temperature based upon heating area of superheater
                 // SuperTemp = (SuperHeatArea x HeatTransmissionCoeff * (MeanGasTemp - MeanSteamTemp)) / (SteamQuantity * MeanSpecificSteamHeat)
@@ -1193,10 +1139,28 @@ namespace Orts.Simulation.RollingStocks
                 SuperheatTempRatio = SuperheatRefTempF / SuperheatTempLbpHtoDegF[pS.TopH(TheoreticalMaxSteamOutputLBpS)];    // calculate a ratio figure for known value against reference curve. 
                 CylinderClearancePC = 0.09f;
             }
+            else if (IsSaturated)
+            {
+                SteamLocoType += " + Saturated";
+            }
+            else if (SuperheatAreaM2 == 0 && SuperheaterFactor > 1.0) // check if MSTS value, then set superheating
+            {
+                SteamLocoType += " + Not formally defined (assumed superheated)";
+                Trace.TraceWarning("Steam boiler type parameter not formally defined. Superheated locomotive has been assumed.");
 
+                HasSuperheater = true;
+                SuperheatRefTempF = 200.0f; // Assume a superheating temp of 250degF
+                SuperheatTempRatio = SuperheatRefTempF / SuperheatTempLbpHtoDegF[pS.TopH(TheoreticalMaxSteamOutputLBpS)];
+                SuperheatAreaM2 = Me2.FromFt2((SuperheatRefTempF * pS.TopH(TheoreticalMaxSteamOutputLBpS)) / (C.ToF(C.FromK(MaxFlueTempK)) * SuperheatKFactor)); // Back calculate Superheat area for display purposes only.
+                CylinderClearancePC = 0.09f;
+            }
+            else // Default to saturated type of locomotive
+            {
+                SteamLocoType += " + Not formally defined (assumed saturated)";
+                SuperheatRefTempF = 0.0f;
+            }
 
             MaxBoilerOutputLBpH = pS.TopH(TheoreticalMaxSteamOutputLBpS);
-
 
             // Assign default steam table values if table not in ENG file 
             // Back pressure increases with the speed of the locomotive, as cylinder finds it harder to exhaust all the steam.
@@ -1228,7 +1192,7 @@ namespace Orts.Simulation.RollingStocks
                 MaxSpeedFactor = SuperheatedSpeedFactorSpeedDropFtpMintoX[MaxPistonSpeedFtpM];
                 DisplaySpeedFactor = MaxSpeedFactor;
             }
-            else if (IsGearedSteamLoco)
+            else if (SteamEngineType == SteamEngineTypes.Geared)
             {
                 MaxPistonSpeedFtpM = MaxSteamGearPistonRateFtpM;  // if geared locomotive
                 MaxSpeedFactor = SaturatedSpeedFactorSpeedDropFtpMintoX[MaxPistonSpeedFtpM];   // Assume the same as saturated locomotive for time being.
@@ -1275,7 +1239,6 @@ namespace Orts.Simulation.RollingStocks
             // "pi"s cancel out
             // Cylinder Steam Usage	= SweptVolumeToTravelRatioFT3pFT x cutoff x {(speed x (SteamDensity (CylPress) - SteamDensity (CylBackPress)) 
             // lbs/s                = ft3/ft                                  x   ft/s  x  lbs/ft3
-
 
             // Cylinder piston shaft volume needs to be calculated and deducted from sweptvolume - assume diameter of the cylinder minus one-half of the piston-rod area. Let us assume that the latter is 3 square inches
             CylinderPistonShaftFt3 = Me2.ToFt2(Me2.FromIn2(((float)Math.PI * (CylinderPistonShaftDiaIn / 2.0f) * (CylinderPistonShaftDiaIn / 2.0f)) / 2.0f));
@@ -2515,7 +2478,7 @@ namespace Orts.Simulation.RollingStocks
 
             #region Calculation of Mean Effective Pressure of Cylinder using an Indicator Diagram type approach - Compound Locomotive - No receiver
 
-            if (IsCompoundLoco)
+            if (SteamEngineType == SteamEngineTypes.Compound)
             {
 
                 // Define volume of cylinder at different points on cycle - the points align with points on indicator curve
@@ -2908,7 +2871,7 @@ namespace Orts.Simulation.RollingStocks
 
             #region Calculation of Mean Effective Pressure of Cylinder using an Indicator Diagram type approach - Single Expansion
 
-            if (!IsCompoundLoco)
+            if (SteamEngineType != SteamEngineTypes.Compound)
             {
 
                 // Calculate apparent volumes at various points in cylinder
@@ -3111,7 +3074,7 @@ namespace Orts.Simulation.RollingStocks
 
 
 
-            if (IsCompoundLoco)
+            if (SteamEngineType == SteamEngineTypes.Compound)
             {
 
                 if (!CylinderCompoundOn) // compound mode
@@ -3202,7 +3165,7 @@ namespace Orts.Simulation.RollingStocks
             // Piston Speed (Ft p Min) = (Stroke length x 2) x (Ft in Mile x Train Speed (mph) / ( Circum of Drv Wheel x 60))
             PistonSpeedFtpMin = Me.ToFt(pS.TopM(CylinderStrokeM * 2.0f * DrvWheelRevRpS)) * SteamGearRatio;
 
-            if (IsCompoundLoco)
+            if (SteamEngineType == SteamEngineTypes.Compound)
             {
                 if (!CylinderCompoundOn)
                 {
@@ -3338,7 +3301,7 @@ namespace Orts.Simulation.RollingStocks
                     // Calculate "critical" power of locomotive @ pistion speed
                     CurrentCriticalSpeedTractiveEffortLbf = (MaxTractiveEffortLbf * CylinderEfficiencyRate) * SpeedFactor;
                 }
-                else if (IsGearedSteamLoco)
+                else if (SteamEngineType == SteamEngineTypes.Geared)
                 {
                     SpeedFactor = SaturatedSpeedFactorSpeedDropFtpMintoX[PistonSpeedFtpMin];   // Assume the same as saturated locomotive for time being.
                     // Calculate "critical" power of locomotive @ pistion speed
@@ -3381,7 +3344,7 @@ namespace Orts.Simulation.RollingStocks
             float ConnectRodLengthFt = 10.8f;
 
             // Starting tangential force - at starting piston force is based upon cutoff pressure  & interia = 0
-            if (IsCompoundLoco)
+            if (SteamEngineType == SteamEngineTypes.Compound)
             {
                 if (!CylinderCompoundOn) // Compound Mode
                 {
@@ -4289,7 +4252,7 @@ namespace Orts.Simulation.RollingStocks
                 SafetyValveSizeIn,
                 FormatStrings.h);
 
-            if (IsCompoundLoco)  // Display Steam Indicator Information for compound locomotive
+            if (SteamEngineType == SteamEngineTypes.Compound)  // Display Steam Indicator Information for compound locomotive
             {
 
                 // Display steam indicator pressures in HP cylinder
@@ -5262,7 +5225,7 @@ namespace Orts.Simulation.RollingStocks
         public void ToggleCylinderCompound()
         {
 
-            if (IsCompoundLoco)  // only use this control if a compound locomotive
+            if (SteamEngineType == SteamEngineTypes.Compound)  // only use this control if a compound locomotive
             {
                 CylinderCompoundOn = !CylinderCompoundOn;
                 SignalEvent(Event.CylinderCompoundToggle);

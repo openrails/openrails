@@ -290,6 +290,16 @@ namespace Orts.Simulation.RollingStocks
         protected float LocoNumDrvWheels = 4; // Number of drive wheels on locomotive
         public float DriverWheelRadiusM = 1.5f; // Drive wheel radius of locomotive wheels
 
+        public enum SteamEngineTypes
+        {
+            Unknown,
+            Simple,
+            Geared,
+            Compound,
+        }
+
+        public SteamEngineTypes SteamEngineType;
+
         public enum WagonTypes
         {
             Unknown,
