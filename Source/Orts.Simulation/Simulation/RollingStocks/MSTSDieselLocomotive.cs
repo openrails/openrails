@@ -404,6 +404,11 @@ namespace Orts.Simulation.RollingStocks
                 {
                     PowerOn = false;
                     SignalEvent(Event.EnginePowerOff);
+                    foreach (DieselEngine de in DieselEngines)
+                    {
+                        if (de.EngineStatus != DieselEngine.Status.Stopping || de.EngineStatus != DieselEngine.Status.Stopped)
+                            de.Stop();
+                    }
                 }
                 MassKG = InitialMassKg - MaxDieselLevelL * DieselWeightKgpL + DieselLevelL * DieselWeightKgpL;
             }
