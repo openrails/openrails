@@ -654,7 +654,8 @@ namespace Orts.Viewer3D.Popups
                 Viewer.Catalog.GetString("Tunnel"),
                 Viewer.Catalog.GetString("Coupler"),
                 Viewer.Catalog.GetString("Mass"),
-                Viewer.Catalog.GetString("Gradient"));
+                Viewer.Catalog.GetString("Gradient"),
+                Viewer.Catalog.GetString("Curve"));
             TableAddLine(table);
 
             var n = Math.Min(10, train.Cars.Count);
@@ -673,7 +674,8 @@ namespace Orts.Viewer3D.Popups
                 TableSetCell(table, 8, "{0}{1}", FormatStrings.FormatForce(car.CouplerForceU, car.IsMetric), car.CouplerOverloaded ? "???" : "");
                 TableSetCell(table, 9, "{0}", FormatStrings.FormatLargeMass(car.MassKG, car.IsMetric, car.IsUK));
                 TableSetCell(table, 10, "{0:F2}%", -car.CurrentElevationPercent);
-                TableSetCell(table, 11, car.Flipped ? Viewer.Catalog.GetString("Flipped") : "");
+                TableSetCell(table, 11, "{0}", FormatStrings.FormatDistance(car.CurrentCurveRadius, car.IsMetric));
+                TableSetCell(table, 12, car.Flipped ? Viewer.Catalog.GetString("Flipped") : "");
                 TableAddLine(table);
             }
         }

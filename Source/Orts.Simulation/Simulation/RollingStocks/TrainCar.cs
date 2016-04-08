@@ -309,7 +309,7 @@ namespace Orts.Simulation.RollingStocks
         public EngineTypes EngineType;
 
         protected float CurveResistanceZeroSpeedFactor = 0.5f; // Based upon research (Russian experiments - 1960) the older formula might be about 2x actual value
-        protected float CoefficientFriction = 0.5f; // Initialise coefficient of Friction - 0.5 for dry rails, 0.1 - 0.3 for wet rails
+        public float CoefficientFriction = 0.5f; // Initialise coefficient of Friction - 0.5 for dry rails, 0.1 - 0.3 for wet rails
         protected float RigidWheelBaseM;   // Vehicle rigid wheelbase, read from MSTS Wagon file
         protected float TrainCrossSectionAreaM2; // Cross sectional area of the train
         protected float DoubleTunnelCrossSectAreaM2;
@@ -447,6 +447,7 @@ namespace Orts.Simulation.RollingStocks
                 CurrentElevationPercent = -CurrentElevationPercent;
             }
 
+            UpdateFrictionCoefficient(); // Find the current coefficient of friction depending upon the weather
             UpdateCurveSpeedLimit(); // call this first as it will provide inputs for the curve force.
             UpdateCurveForce(elapsedClockSeconds);
             UpdateTunnelForce();
@@ -828,6 +829,47 @@ namespace Orts.Simulation.RollingStocks
 
         #endregion
 
+        #region Calculate Friction Coefficient
+        /// <summary>
+        /// Calculates the current coefficient of friction based upon the current weather 
+        /// The calculation of Coefficient of Friction appears to provide a wide range of 
+        /// variations depending upon a number of factors including the wheel and track 
+        /// composition, and whether the track is dry, wet (or lubricated), icy, covered 
+        /// in leaf litter, etc.
+        /// For the purposes of simulating frcition the following values have been used. 
+        /// Some reference documents have suggested that friction can vary between 0.07 
+        /// for lubricated or icy track to 0.78 for dry track.
+        /// The following values have been used as an "appropriate common" standard.
+        /// Dry track = 0.35
+        /// Wet track = 0.2
+        /// Icy track = 0.15 (to be confirmed - values to less then 0.1 have been described in lterature)
+        /// 
+        /// Note Heavy rain will actually wash track clean, and will give a higher value of adhesion then light drizzling rain
+        /// </summary>
+        public virtual void UpdateFrictionCoefficient()
+        {
+           //TODO - Set up advanced weather model - eg for precipitation see note above
+            float  WagonWheelWeightKG = Kg.ToLb(MassKG / (WagonNumWheels * 2.0f)); // Calculate the weight per wheel
+
+            if (Simulator.WeatherType == WeatherType.Rain )
+            {
+
+                CoefficientFriction = 0.20f;  // Wet weather
+
+            }
+            else if (Simulator.WeatherType == WeatherType.Snow)
+            {
+                CoefficientFriction = 0.1f;  // Icy weather
+            }
+            else
+            {
+                CoefficientFriction = 0.35f;  // Dry weather
+            }
+           
+        }
+
+        #endregion
+
         #region Calculate friction force in curves
 
         /// <summary>
@@ -845,19 +887,8 @@ namespace Orts.Simulation.RollingStocks
 
                     if (RigidWheelBaseM == 0)   // Calculate default values if no value in Wag File
                     {
-                        // Determine whether the track is wet due to rain or snow.
 
-                        int FrictionWeather = (int)Simulator.WeatherType;
-
-                        if (FrictionWeather == 1 | FrictionWeather == 2)
-                        {
-                            CoefficientFriction = 0.25f;  // Weather snowing or raining
-                        }
-                        else
-                        {
-                            CoefficientFriction = 0.5f;  // Clear
-                        }
-
+                        
                         float Axles = WheelAxles.Count;
                         float Bogies = Parts.Count - 1;
                         float BogieSize = Axles / Bogies;
@@ -1502,7 +1533,7 @@ namespace Orts.Simulation.RollingStocks
         }
 
         #region Traveller-based updates
-        protected float CurrentCurveRadius;
+        public float CurrentCurveRadius;
 
         internal void UpdatedTraveler(Traveller traveler, float elapsedTimeS, float distanceM, float speedMpS)
         {

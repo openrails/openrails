@@ -523,7 +523,7 @@ namespace Orts.Simulation.RollingStocks
         float TangentialCrankWheelForceLbf; 		// Tangential force on wheel
         float StaticWheelFrictionForceLbf; 		// Static force on wheel due to adhesion	
         float PistonForceLbf;    // Max force exerted by piston.
-        float FrictionCoeff; // Co-efficient of friction
+        float LocoFrictionCoeff; // Co-efficient of friction
         float TangentialWheelTreadForceLbf; // Tangential force at the wheel tread.
         float WheelWeightLbs; // Weight per locomotive drive wheel
 
@@ -3451,59 +3451,42 @@ namespace Orts.Simulation.RollingStocks
             float VerticalThrustForceRight = PistonForceLbf * VerticalThrustFactorRight;
 
             // Determine weather conditions and friction coeff
-            // Typical coefficients of friction
-            // Sand ----  40% increase of friction coeff., sand on wet railes, tends to make adhesion as good as dry rails.
-            // Normal, wght per wheel > 10,000lbs   == 0.35
-            // Normal, wght per wheel < 10,000lbs   == 0.25
-            // Damp or frosty rails   == 0.20
+            // Typical coefficients of friction taken from TrainCar Coefficients of friction as base, and altered as appropriate for steam locomotives.
+            // Sand ----  40% increase of friction coeff., sand on wet rails, tends to make adhesion as good as dry rails.
+            // Dry, wght per wheel > 10,000lbs   == 0.35
+            // Dry, wght per wheel < 10,000lbs   == 0.25
+            // 
             //
-            // Dynamic (kinetic) friction = 0.242  // dynamic friction at slow speed
+
             WheelWeightLbs = Kg.ToLb(DrvWheelWeightKg / (LocoNumDrvWheels * 2.0f)); // Calculate the weight per wheel
 
+            LocoFrictionCoeff = CoefficientFriction;  // Get train co-efficient of friction
 
-            if (Simulator.WeatherType == WeatherType.Rain || Simulator.WeatherType == WeatherType.Snow)
+            if (WheelWeightLbs < 10000 && Simulator.WeatherType == WeatherType.Clear)
             {
-                if (IsLocoSlip)   // If loco is slipping then coeff of friction will be decreased below static value.
-                {
-                    FrictionCoeff = 0.20f;  // Wet track - dynamic friction
-                }
-                else
-                {
-                    FrictionCoeff = 0.20f;  // Wet track - static friction
-                }
+                LocoFrictionCoeff = 0.25f;  // Dry track - static friction for vehicles with wheel weights less then 10,000lbs
             }
-            else
+
+            if (IsLocoSlip)   // If loco is slipping then coeff of friction will be decreased below static value.
             {
-                if (IsLocoSlip)    // If loco is slipping then coeff of friction will be decreased below static value.
-                {
-                    FrictionCoeff = 0.242f;  // Dry track - dynamic friction
-                }
-                else
-                {
-                    if (WheelWeightLbs < 10000)
-                    {
-                        FrictionCoeff = 0.25f;  // Dry track - static friction for vehicles with wheel weights less then 10,000lbs
-                    }
-                    else
-                    {
-                        FrictionCoeff = 0.35f;  // Dry track - static friction for vehicles with wheel weights greater then 10,000lbs
-                    }
-                }
+                LocoFrictionCoeff = 0.08f;  // Icy track - dynamic friction
+
             }
+
             if (Sander)
             {
-                FrictionCoeff = 0.4f;  // Sand track
+                LocoFrictionCoeff *= 1.4f;  // Sand track
             }
 
             // Static Friction Force - adhesive factor increased by vertical thrust when travelling forward, and reduced by vertical thrust when travelling backwards
 
             if (Direction == Direction.Forward)
             {
-                StaticWheelFrictionForceLbf = (Kg.ToLb(DrvWheelWeightKg) + Math.Abs(VerticalThrustForceLeft) + Math.Abs(VerticalThrustForceRight)) * FrictionCoeff;
+                StaticWheelFrictionForceLbf = (Kg.ToLb(DrvWheelWeightKg) + Math.Abs(VerticalThrustForceLeft) + Math.Abs(VerticalThrustForceRight)) * LocoFrictionCoeff;
             }
             else
             {
-                StaticWheelFrictionForceLbf = (Kg.ToLb(DrvWheelWeightKg) - Math.Abs(VerticalThrustForceLeft) - Math.Abs(VerticalThrustForceRight)) * FrictionCoeff;
+                StaticWheelFrictionForceLbf = (Kg.ToLb(DrvWheelWeightKg) - Math.Abs(VerticalThrustForceLeft) - Math.Abs(VerticalThrustForceRight)) * LocoFrictionCoeff;
             }
 
             if (absSpeedMpS < 1.0)  // Test only when the locomotive is starting
@@ -4606,7 +4589,7 @@ namespace Orts.Simulation.RollingStocks
                 FormatStrings.FormatForce(N.FromLbf(TangentialCrankWheelForceLbf), IsMetric),
                 FormatStrings.FormatForce(N.FromLbf(TangentialWheelTreadForceLbf), IsMetric),
                 FormatStrings.FormatForce(N.FromLbf(StaticWheelFrictionForceLbf), IsMetric),
-                FrictionCoeff,
+                LocoFrictionCoeff,
                 IsLocoSlip ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
                 FormatStrings.FormatMass(Kg.FromLb(WheelWeightLbs), IsMetric),
                 CalculatedFactorofAdhesion);
