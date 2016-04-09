@@ -3436,9 +3436,9 @@ namespace Orts.Simulation.RollingStocks
 
             }
 
-            if (Sander)
+            if (Sander && absSpeedMpS < SanderSpeedOfMpS && TrackSandBoxCapacityFt3 > 0.0 && MainResPressurePSI > 80.0) // Sander to impact on slip if train speed is not too fast for sander, provide sand available, and air pressure available
             {
-                LocoFrictionCoeff *= 1.4f;  // Sand track
+                LocoFrictionCoeff *= 1.5f;  // Sanding track adds approx 150% adhesion (best case)
             }
 
             // Static Friction Force - adhesive factor increased by vertical thrust when travelling forward, and reduced by vertical thrust when travelling backwards
@@ -3452,7 +3452,7 @@ namespace Orts.Simulation.RollingStocks
                 StaticWheelFrictionForceLbf = (Kg.ToLb(DrvWheelWeightKg) - Math.Abs(VerticalThrustForceLeft) - Math.Abs(VerticalThrustForceRight)) * LocoFrictionCoeff;
             }
 
-            if (absSpeedMpS < 1.0)  // Test only when the locomotive is starting
+            if (absSpeedMpS < 2.5)  // Test only when the locomotive is starting
             {
                 if (!IsLocoSlip)
                 {
@@ -3465,14 +3465,40 @@ namespace Orts.Simulation.RollingStocks
                 {
                     if (TangentialWheelTreadForceLbf < StaticWheelFrictionForceLbf)
                     {
-                        IsLocoSlip = false; 	// locomotive is slipping
+                        IsLocoSlip = false; 	// locomotive is not slipping
                     }
                 }
             }
             else
             {
-                IsLocoSlip = false; 	// locomotive is slipping
+                IsLocoSlip = false; 	// locomotive is not slipping
 
+            }
+
+            if (Simulator.UseAdvancedAdhesion) // only set slip when advanced adhesion is set
+            {
+                if (IsLocoSlip)
+                {
+                    float FrictionWheelSpeedMpS = Train.ProjectedSpeedMpS;
+                    WheelSlip = true;  // Set wheel slip if locomotive is slipping
+                    if (absSpeedMpS < 2.0)
+                    {
+                        WheelSpeedMpS = 2.0f * (TangentialWheelTreadForceLbf / StaticWheelFrictionForceLbf);
+                    }
+                    else
+                    {
+                        WheelSpeedMpS = FrictionWheelSpeedMpS;
+                        //     WheelSpeedMpS = absSpeedMpS * 20.0f * (TangentialWheelTreadForceLbf / StaticWheelFrictionForceLbf);
+                    }
+
+                    MotiveForceN *= LocoFrictionCoeff;  // Reduce locomotive tractive force to stop it moving forward
+               //Trace.TraceInformation("WheelSlip")
+                }
+                else
+                {
+                    WheelSlip = false;
+                    WheelSpeedMpS = absSpeedMpS;
+                }
             }
 
             #endregion
@@ -4537,25 +4563,40 @@ namespace Orts.Simulation.RollingStocks
                 FormatStrings.min,
                 FormatStrings.rpm);
 
-            status.AppendFormat("\n\t\t\t === {0} - {1} === \n", Simulator.Catalog.GetString("Experimental"), Simulator.Catalog.GetString("Slip Monitor"));
-            status.AppendFormat("{0}\t{1}\t{9}\t{2}\t{10}\t{3}\t{11}\t{4}\t{12}\t{5}\t{13:N2}\t{6}\t{14}\t{7}\t{15}\t{8} {16:N1}\n",
-                Simulator.Catalog.GetString("Slip:"),
-                Simulator.Catalog.GetString("Piston"),
-                Simulator.Catalog.GetString("Tang(c)"),
-                Simulator.Catalog.GetString("Tang(t)"),
-                Simulator.Catalog.GetString("Static"),
-                Simulator.Catalog.GetString("Coeff"),
-                Simulator.Catalog.GetString("Slip"),
-                Simulator.Catalog.GetString("WheelM"),
-                Simulator.Catalog.GetString("FoA"),
-                FormatStrings.FormatForce(N.FromLbf(PistonForceLbf), IsMetric),
-                FormatStrings.FormatForce(N.FromLbf(TangentialCrankWheelForceLbf), IsMetric),
-                FormatStrings.FormatForce(N.FromLbf(TangentialWheelTreadForceLbf), IsMetric),
-                FormatStrings.FormatForce(N.FromLbf(StaticWheelFrictionForceLbf), IsMetric),
-                LocoFrictionCoeff,
-                IsLocoSlip ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
-                FormatStrings.FormatMass(Kg.FromLb(WheelWeightLbs), IsMetric),
-                CalculatedFactorofAdhesion);
+            status.AppendFormat("\n{0}\t{1}\t{2}\t{3}\t{4:N2}\t{5}\t{6:N2}\n",
+                Simulator.Catalog.GetString("Sand:"),
+                Simulator.Catalog.GetString("S/Use"),
+                TrackSanderSandConsumptionFt3pH,
+                Simulator.Catalog.GetString("S/Box"),
+                TrackSandBoxCapacityFt3,
+                Simulator.Catalog.GetString("M/Press"),
+                MainResPressurePSI
+                );
+
+            if (Simulator.UseAdvancedAdhesion && SteamEngineType != SteamEngineTypes.Geared) // Only display slip monitor if advanced adhesion used
+            {
+                status.AppendFormat("\n\t\t === {0} === \n", Simulator.Catalog.GetString("Slip Monitor"));
+                status.AppendFormat("{0}\t{1}\t{2:N0}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15:N2}\t{16}\t{17}\t{18:N1}\n",
+                    Simulator.Catalog.GetString("Slip:"),
+                    Simulator.Catalog.GetString("MForceN"),
+                    FormatStrings.FormatForce(MotiveForceN, IsMetric),
+                    Simulator.Catalog.GetString("Piston"),
+                    FormatStrings.FormatForce(N.FromLbf(PistonForceLbf), IsMetric),
+                    Simulator.Catalog.GetString("Tang(c)"),
+                    FormatStrings.FormatForce(N.FromLbf(TangentialCrankWheelForceLbf), IsMetric),
+                    Simulator.Catalog.GetString("Tang(t)"),
+                    FormatStrings.FormatForce(N.FromLbf(TangentialWheelTreadForceLbf), IsMetric),
+                    Simulator.Catalog.GetString("Static"),
+                    FormatStrings.FormatForce(N.FromLbf(StaticWheelFrictionForceLbf), IsMetric),
+                    Simulator.Catalog.GetString("Coeff"),
+                    LocoFrictionCoeff,
+                    Simulator.Catalog.GetString("Slip"),
+                    IsLocoSlip ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                    Simulator.Catalog.GetString("WheelM"),
+                    FormatStrings.FormatMass(Kg.FromLb(WheelWeightLbs), IsMetric),
+                    Simulator.Catalog.GetString("FoA"),
+                    CalculatedFactorofAdhesion);
+            }
 
 #if DEBUG_STEAM_EFFECTS
             status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:N2}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12:N2}\t{13}\t{14:N2}\t{15}\t{16:N2}\t{17}\t{18:N2}\t{19}\t{20:N2}\n",
