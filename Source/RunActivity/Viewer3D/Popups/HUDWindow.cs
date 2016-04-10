@@ -623,8 +623,8 @@ namespace Orts.Viewer3D.Popups
                 {
                     var HUDSteamEngineType = mstsLocomotive.SteamEngineType;
                     var HUDEngineType = mstsLocomotive.EngineType;
-                                      
-                    if ( HUDEngineType == TrainCar.EngineTypes.Steam && (HUDSteamEngineType == TrainCar.SteamEngineTypes.Compound || HUDSteamEngineType == TrainCar.SteamEngineTypes.Simple)) // For display of steam locomotive adhesion info
+
+                    if (HUDEngineType == TrainCar.EngineTypes.Steam && (HUDSteamEngineType == TrainCar.SteamEngineTypes.Compound || HUDSteamEngineType == TrainCar.SteamEngineTypes.Simple || HUDSteamEngineType == TrainCar.SteamEngineTypes.Unknown)) // For display of steam locomotive adhesion info
                     {
                         TableAddLine(table, Viewer.Catalog.GetString("(Advanced adhesion model enabled)"));
                         TableAddLabelValue(table, Viewer.Catalog.GetString("Friction Conditions"), "{0:F0}%", mstsLocomotive.CoefficientFriction * 100.0f);

@@ -1052,10 +1052,11 @@ namespace Orts.Simulation.RollingStocks
                 SteamGearRatio = 1.0f;     // set gear ratio to default, as not a geared locomotive
                 MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio * CylinderEfficiencyRate;
             }
-            else // Default to Simple Locomotive (Assumed Simple)
+            else // Default to Simple Locomotive (Assumed Simple) shows up as "Unknown"
             {
                 Trace.TraceWarning("Steam engine type parameter not formally defined. Simple locomotive has been assumed");
                 SteamLocoType = "Not formally defined (assumed simple) locomotive.";
+              //  SteamEngineType += "Simple";
                 MotiveForceGearRatio = 1.0f;  // set gear ratio to default, as not a geared locomotive
                 SteamGearRatio = 1.0f;     // set gear ratio to default, as not a geared locomotive
                 MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio * CylinderEfficiencyRate;
