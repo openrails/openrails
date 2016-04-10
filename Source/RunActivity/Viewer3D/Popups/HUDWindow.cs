@@ -621,17 +621,29 @@ namespace Orts.Viewer3D.Popups
             {
                 if ((mstsLocomotive.Simulator.UseAdvancedAdhesion) && (!mstsLocomotive.AntiSlip))
                 {
-                    TableAddLabelValue(table, Viewer.Catalog.GetString("Wheel slip"), "{0:F0}% ({1:F0}%/{2})", mstsLocomotive.LocomotiveAxle.SlipSpeedPercent, mstsLocomotive.LocomotiveAxle.SlipDerivationPercentpS, FormatStrings.s);
-                    TableAddLabelValue(table, Viewer.Catalog.GetString("Conditions"), "{0:F0}%", mstsLocomotive.LocomotiveAxle.AdhesionConditions * 10f);
-                    TableAddLabelValue(table, Viewer.Catalog.GetString("Axle drive force"), "{0}", FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.DriveForceN, mstsLocomotive.IsMetric));
-                    TableAddLabelValue(table, Viewer.Catalog.GetString("Axle brake force"), "{0}", FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.BrakeForceN, mstsLocomotive.IsMetric));
-                    TableAddLabelValue(table, Viewer.Catalog.GetString("Number of substeps"), "{0:F0} ({1})", mstsLocomotive.LocomotiveAxle.AxleRevolutionsInt.NumOfSubstepsPS,
-                                                                                                Viewer.Catalog.GetStringFmt("filtered by {0:F0}", mstsLocomotive.LocomotiveAxle.FilterMovingAverage.Size));
-                    TableAddLabelValue(table, Viewer.Catalog.GetString("Solver"), "{0}", mstsLocomotive.LocomotiveAxle.AxleRevolutionsInt.Method.ToString());
-                    TableAddLabelValue(table, Viewer.Catalog.GetString("Stability correction"), "{0:F0}", mstsLocomotive.LocomotiveAxle.AdhesionK);
-                    TableAddLabelValue(table, Viewer.Catalog.GetString("Axle out force"), "{0} ({1})",
-                        FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.AxleForceN, mstsLocomotive.IsMetric),
-                        FormatStrings.FormatPower(mstsLocomotive.LocomotiveAxle.AxleForceN * mstsLocomotive.WheelSpeedMpS, mstsLocomotive.IsMetric, false, false));
+                    var HUDSteamEngineType = mstsLocomotive.SteamEngineType;
+                    var HUDEngineType = mstsLocomotive.EngineType;
+                                      
+                    if ( HUDEngineType == TrainCar.EngineTypes.Steam && (HUDSteamEngineType == TrainCar.SteamEngineTypes.Compound || HUDSteamEngineType == TrainCar.SteamEngineTypes.Simple)) // For display of steam locomotive adhesion info
+                    {
+                        TableAddLine(table, Viewer.Catalog.GetString("(Advanced adhesion model enabled)"));
+                        TableAddLabelValue(table, Viewer.Catalog.GetString("Friction Conditions"), "{0:F0}%", mstsLocomotive.CoefficientFriction * 100.0f);
+                    }
+                    else  // Advanced adhesion non steam locomotives HUD display
+                    {
+                        TableAddLine(table, Viewer.Catalog.GetString("(Advanced adhesion model enabled)"));
+                        TableAddLabelValue(table, Viewer.Catalog.GetString("Wheel slip"), "{0:F0}% ({1:F0}%/{2})", mstsLocomotive.LocomotiveAxle.SlipSpeedPercent, mstsLocomotive.LocomotiveAxle.SlipDerivationPercentpS, FormatStrings.s);
+                        TableAddLabelValue(table, Viewer.Catalog.GetString("Conditions"), "{0:F0}%", mstsLocomotive.LocomotiveAxle.AdhesionConditions * 10f);
+                        TableAddLabelValue(table, Viewer.Catalog.GetString("Axle drive force"), "{0}", FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.DriveForceN, mstsLocomotive.IsMetric));
+                        TableAddLabelValue(table, Viewer.Catalog.GetString("Axle brake force"), "{0}", FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.BrakeForceN, mstsLocomotive.IsMetric));
+                        TableAddLabelValue(table, Viewer.Catalog.GetString("Number of substeps"), "{0:F0} ({1})", mstsLocomotive.LocomotiveAxle.AxleRevolutionsInt.NumOfSubstepsPS,
+                                                                                                    Viewer.Catalog.GetStringFmt("filtered by {0:F0}", mstsLocomotive.LocomotiveAxle.FilterMovingAverage.Size));
+                        TableAddLabelValue(table, Viewer.Catalog.GetString("Solver"), "{0}", mstsLocomotive.LocomotiveAxle.AxleRevolutionsInt.Method.ToString());
+                        TableAddLabelValue(table, Viewer.Catalog.GetString("Stability correction"), "{0:F0}", mstsLocomotive.LocomotiveAxle.AdhesionK);
+                        TableAddLabelValue(table, Viewer.Catalog.GetString("Axle out force"), "{0} ({1})",
+                            FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.AxleForceN, mstsLocomotive.IsMetric),
+                            FormatStrings.FormatPower(mstsLocomotive.LocomotiveAxle.AxleForceN * mstsLocomotive.WheelSpeedMpS, mstsLocomotive.IsMetric, false, false));
+                    }
                 }
                 else
                 {
