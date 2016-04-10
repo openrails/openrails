@@ -882,6 +882,7 @@ object Form4: TForm4
         Height = 23
         Top = 88
         Width = 240
+	OnChange = Edit5Change
         TabOrder = 2
       end
       object Label8: TLabel

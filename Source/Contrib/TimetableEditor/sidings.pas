@@ -48,6 +48,7 @@ type
     procedure BitBtn2Click(Sender: TObject);
     procedure BitBtn3Click(Sender: TObject);
     procedure Edit4Change(Sender: TObject);
+    procedure Edit5Change(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -367,6 +368,7 @@ end;
 procedure TForm4.SpeedButton4Click(Sender: TObject);
 begin
   edit5.text:=edit4.text;
+  bitbtn3.enabled:=true;
 end;
 
 procedure TForm4.FormShow(Sender: TObject);
@@ -429,6 +431,11 @@ end;
 procedure TForm4.Edit4Change(Sender: TObject);
 begin
   if edit4.text <> '' then bitbtn3.enabled:=true;
+end;
+
+procedure TForm4.Edit5Change(Sender: TObject);
+begin
+  if edit5.text <> '' then bitbtn3.enabled:=true;
 end;
 
 procedure TForm4.FormCloseQuery(Sender: TObject; var CanClose: boolean);
