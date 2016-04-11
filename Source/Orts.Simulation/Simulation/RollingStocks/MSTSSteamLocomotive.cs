@@ -1572,7 +1572,8 @@ namespace Orts.Simulation.RollingStocks
             //  Trace.TraceInformation("Smoke: Rad {0} CarHeat {1} Blower {2} Damper {3} Fire Mass {4} Prev {5} Total {6}", RadiationSteamLossLBpS, CalculatedCarHeaterSteamUsageLBpS, BlowerBurnEffect, SmokeColorDamper, SmokeColorFireMass, PreviousTotalSteamUsageLBpS, SmokeColorUnits);
 
             // Variable1 is proportional to angular speed, value of 10 means 1 rotation/second.
-            var variable1 = (Simulator.UseAdvancedAdhesion && Train.IsPlayerDriven ? LocomotiveAxle.AxleSpeedMpS : SpeedMpS) / DriverWheelRadiusM / MathHelper.Pi * 5;
+         //   var variable1 = (Simulator.UseAdvancedAdhesion && Train.IsPlayerDriven ? LocomotiveAxle.AxleSpeedMpS : SpeedMpS) / DriverWheelRadiusM / MathHelper.Pi * 5;
+            var variable1 = SpeedMpS / DriverWheelRadiusM / MathHelper.Pi * 5;
             Variable1 = ThrottlePercent == 0 ? 0 : variable1;
             Variable2 = MathHelper.Clamp((CylinderPressureAtmPSI - OneAtmospherePSI) / BoilerPressurePSI * 100f, 0, 100);
             Variable3 = FuelRateSmooth * 100;
@@ -4598,6 +4599,11 @@ namespace Orts.Simulation.RollingStocks
                     Simulator.Catalog.GetString("FoA"),
                     CalculatedFactorofAdhesion);
             }
+
+//            status.AppendFormat("\n\t\t === {0} === \n", Simulator.Catalog.GetString("Sound"));
+//            status.AppendFormat("{0}\t{1}\n",
+//                Simulator.Catalog.GetString("Var1:"),
+//                Variable1);
 
 #if DEBUG_STEAM_EFFECTS
             status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:N2}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12:N2}\t{13}\t{14:N2}\t{15}\t{16:N2}\t{17}\t{18:N2}\t{19}\t{20:N2}\n",
