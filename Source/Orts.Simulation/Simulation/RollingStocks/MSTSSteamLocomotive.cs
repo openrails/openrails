@@ -3485,11 +3485,11 @@ namespace Orts.Simulation.RollingStocks
                     WheelSlip = true;  // Set wheel slip if locomotive is slipping
                     if (absSpeedMpS < 2.0)
                     {
-                        WheelSpeedMpS = 2.0f * (TangentialWheelTreadForceLbf / StaticWheelFrictionForceLbf);
+                        WheelSpeedMpS = (Direction == Direction.Forward ? 1 : -1) * 2.0f * (TangentialWheelTreadForceLbf / StaticWheelFrictionForceLbf);
                     }
                     else
                     {
-                        WheelSpeedMpS = FrictionWheelSpeedMpS;
+                        WheelSpeedMpS = (Direction == Direction.Forward ? 1 : -1) * FrictionWheelSpeedMpS;
                         //     WheelSpeedMpS = absSpeedMpS * 20.0f * (TangentialWheelTreadForceLbf / StaticWheelFrictionForceLbf);
                     }
 
@@ -3499,7 +3499,7 @@ namespace Orts.Simulation.RollingStocks
                 else
                 {
                     WheelSlip = false;
-                    WheelSpeedMpS = absSpeedMpS;
+                    WheelSpeedMpS = (Direction == Direction.Forward ? 1 : -1) * absSpeedMpS;
                 }
             }
 
