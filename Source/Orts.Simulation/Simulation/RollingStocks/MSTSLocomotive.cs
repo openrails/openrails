@@ -117,6 +117,11 @@ namespace Orts.Simulation.RollingStocks
         public bool ShowCab = true;
         public bool MilepostUnitsMetric;
 
+        // Adhesion parameters
+        float BaseFrictionCoefficientFactor;  // Factor used to adjust Curtius formula depending upon weather conditions
+        public float SteamStaticWheelForce;
+        public float SteamTangentialWheelForce;
+        public float SteamDrvWheelWeightLbs;
         // parameters for Track Sander
         public float MaxTrackSandBoxCapacityFt3 = 5.0f;  // Capacity of sandbox - assume 3.5 cu ft
         public float TrackSandBoxCapacityFt3 = 5.0f;   // This value needs to be initialised to the value above.
@@ -1090,7 +1095,7 @@ namespace Orts.Simulation.RollingStocks
             }
 
             UpdateCompressor(elapsedClockSeconds);
-
+            UpdateFrictionCoefficient(elapsedClockSeconds); // Find the current coefficient of friction depending upon the weather
             UpdateSoundVariables(elapsedClockSeconds);
 
             PrevMotiveForceN = MotiveForceN;
@@ -1614,6 +1619,113 @@ namespace Orts.Simulation.RollingStocks
                 WheelSlip = false;
             }
         }
+
+#region Calculate Friction Coefficient
+        /// <summary>
+        /// Calculates the current coefficient of friction based upon the current weather 
+        /// The calculation of Coefficient of Friction appears to provide a wide range of 
+        /// variations depending upon a number of factors including the wheel and track 
+        /// composition, and whether the track is dry, wet (or lubricated), icy, covered 
+        /// in leaf litter, etc.
+        /// For the purposes of simulating frcition the following values have been used. 
+        /// Some reference documents have suggested that friction can vary between 0.07 
+        /// for lubricated or icy track to 0.78 for dry track.
+        /// The following values have been used as an "appropriate common" standard.
+        /// Dry track = 0.35
+        /// Wet track = 0.2
+        /// Icy track = 0.15 (to be confirmed - values to less then 0.1 have been described in lterature)
+        /// 
+        /// Note Heavy rain will actually wash track clean, and will give a higher value of adhesion then light drizzling rain
+        /// </summary>
+        public virtual void UpdateFrictionCoefficient(float elapsedClockSeconds)
+        {
+            float BaseuMax = (7.5f / (MpS.ToKpH(AbsSpeedMpS) + 44.0f) + 0.161f); // Base Curtius - Kniffler equation - u = 0.33, all other values are scaled off this formula
+
+            //Set the friction coeff due to weather
+            if (Simulator.WeatherType == WeatherType.Rain || Simulator.WeatherType == WeatherType.Snow)
+            {
+                if (Train.SlipperySpotDistanceM < 0)
+                {
+                    Train.SlipperySpotLengthM = 10 + 40 * (float)Simulator.Random.NextDouble();
+                    Train.SlipperySpotDistanceM = Train.SlipperySpotLengthM + 2000 * (float)Simulator.Random.NextDouble();
+                }
+                if (Train.SlipperySpotDistanceM < Train.SlipperySpotLengthM)
+                {
+                    BaseFrictionCoefficientFactor = 0.8f;
+                }
+                if (Simulator.WeatherType == WeatherType.Rain) // Wet weather
+                {
+                    BaseFrictionCoefficientFactor = 0.6f;
+//                    if (Simulator.Settings.AdhesionProportionalToWeather)  // Adjust clear weather for fog presence
+//                    {
+ //                       float pric = Simulator.Weather.PricipitationIntensityPPSPM2 * 1000;
+ //                       BaseFrictionCoefficientFactor *= Math.Min(Math.Max(1.5f - pric * 0.05f, 0.5f), 1.5f);
+ //                   }
+                }
+                else     // Snow weather
+                {
+                    BaseFrictionCoefficientFactor = 0.4f;
+                }
+            }
+            else // Default to Dry (Clear) weather
+            {
+                BaseFrictionCoefficientFactor = 1.0f;
+//                if (Simulator.Settings.AdhesionProportionalToWeather)  // Adjust clear weather for fog presence
+//                {
+//                    float fog = Simulator.Weather.FogDistance;
+//                    BaseFrictionCoefficientFactor *= Math.Min(Math.Max(fog * 5.1e-4f + 0.7f, 0.7f), 1.5f);
+//                }
+
+            }
+
+            WagonCoefficientFriction = BaseuMax * BaseFrictionCoefficientFactor;  // Find friction coefficient factor for wagons
+
+            if (SteamDrvWheelWeightLbs < 10000 && Simulator.WeatherType == WeatherType.Clear)
+            {
+                BaseFrictionCoefficientFactor *= 0.75f;  // Dry track - static friction for vehicles with wheel weights less then 10,000lbs - u = 0.25
+
+            }
+
+            if (WheelSlip)   // If loco is slipping then coeff of friction will be decreased below static value.
+            {
+                BaseFrictionCoefficientFactor *= 0.24f;  // Icy track - dynamic friction U = 0.08
+
+            }
+
+            //add sander
+            if (AbsSpeedMpS < SanderSpeedOfMpS && TrackSandBoxCapacityFt3 > 0.0 && MainResPressurePSI > 80.0)
+            {
+                if (SanderSpeedEffectUpToMpS > 0.0f)
+                {
+                    if ((Sander) && (AbsSpeedMpS < SanderSpeedEffectUpToMpS))
+                    {
+                         BaseFrictionCoefficientFactor *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.5f;  
+                    }
+                }
+                else
+                    if (Sander)
+                    {
+                        BaseFrictionCoefficientFactor *= 1.5f; // Sanding track adds approx 150% adhesion (best case)
+                    }
+            }
+
+            var AdhesionMultiplier = Simulator.Settings.AdhesionFactor / 100.0f; // Convert to a factor where 100% = no change to adhesion
+            var AdhesionRandom = (float)((float)(Simulator.Settings.AdhesionFactorChange) * 0.01f * 2f * (Simulator.Random.NextDouble() - 0.5f));
+
+            LocomotiveCoefficientFriction = BaseuMax * BaseFrictionCoefficientFactor * AdhesionMultiplier;  // Find friction coefficient factor for locomotive
+            LocomotiveCoefficientFriction = MathHelper.Clamp(LocomotiveCoefficientFriction, 0.05f, 0.8f); // Ensure friction coefficient never exceeds a "reasonable" value
+
+            if (elapsedClockSeconds > 0)
+            {
+
+//                Trace.TraceInformation("Adhesison Multiplier {0}  Random Change {1}", AdhesionMultiplier, AdhesionRandom);
+//                BaseFrictionCoefficientFactor = (float)(Simulator.Settings.AdhesionFactor) * 0.01f + (float)((float)(Simulator.Settings.AdhesionFactorChange) * 0.01f * 2f * (Simulator.Random.NextDouble() - 0.5f)), elapsedClockSeconds);
+ //               LocomotiveAxle.AdhesionConditions = MathHelper.Clamp(0.05f, LocomotiveAxle.AdhesionConditions, 2.5f); // Avoids NaNs in axle speed computing
+            }
+        }
+
+        #endregion
+
 
         public void UpdateTrackSander(float elapsedClockSeconds)
         {

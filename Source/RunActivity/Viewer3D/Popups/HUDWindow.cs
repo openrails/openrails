@@ -627,7 +627,10 @@ namespace Orts.Viewer3D.Popups
                     if (HUDEngineType == TrainCar.EngineTypes.Steam && (HUDSteamEngineType == TrainCar.SteamEngineTypes.Compound || HUDSteamEngineType == TrainCar.SteamEngineTypes.Simple || HUDSteamEngineType == TrainCar.SteamEngineTypes.Unknown)) // For display of steam locomotive adhesion info
                     {
                         TableAddLine(table, Viewer.Catalog.GetString("(Advanced adhesion model enabled)"));
-                        TableAddLabelValue(table, Viewer.Catalog.GetString("Friction Conditions"), "{0:F0}%", mstsLocomotive.CoefficientFriction * 100.0f);
+                        TableAddLabelValue(table, Viewer.Catalog.GetString("Wag Adhesion"), "{0:F0}%", mstsLocomotive.WagonCoefficientFriction * 100.0f);
+                        TableAddLabelValue(table, Viewer.Catalog.GetString("Loco Adhesion"), "{0:F0}%", mstsLocomotive.LocomotiveCoefficientFriction * 100.0f);
+                        TableAddLabelValue(table, Viewer.Catalog.GetString("Tang. Force"), "{0:F0}", FormatStrings.FormatForce(N.FromLbf(mstsLocomotive.SteamTangentialWheelForce), mstsLocomotive.IsMetric));
+                        TableAddLabelValue(table, Viewer.Catalog.GetString("Static Force"), "{0:F0}", FormatStrings.FormatForce(N.FromLbf(mstsLocomotive.SteamStaticWheelForce), mstsLocomotive.IsMetric));
                     }
                     else  // Advanced adhesion non steam locomotives HUD display
                     {

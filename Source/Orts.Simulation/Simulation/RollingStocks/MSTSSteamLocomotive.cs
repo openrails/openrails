@@ -519,9 +519,8 @@ namespace Orts.Simulation.RollingStocks
         float TangentialCrankWheelForceLbf; 		// Tangential force on wheel
         float StaticWheelFrictionForceLbf; 		// Static force on wheel due to adhesion	
         float PistonForceLbf;    // Max force exerted by piston.
-        float LocoFrictionCoeff; // Co-efficient of friction
         float TangentialWheelTreadForceLbf; // Tangential force at the wheel tread.
-        float WheelWeightLbs; // Weight per locomotive drive wheel
+
 
         #endregion
 
@@ -1573,7 +1572,7 @@ namespace Orts.Simulation.RollingStocks
 
             // Variable1 is proportional to angular speed, value of 10 means 1 rotation/second.
          //   var variable1 = (Simulator.UseAdvancedAdhesion && Train.IsPlayerDriven ? LocomotiveAxle.AxleSpeedMpS : SpeedMpS) / DriverWheelRadiusM / MathHelper.Pi * 5;
-            var variable1 = SpeedMpS / DriverWheelRadiusM / MathHelper.Pi * 5;
+            var variable1 = WheelSpeedMpS / DriverWheelRadiusM / MathHelper.Pi * 5;
             Variable1 = ThrottlePercent == 0 ? 0 : variable1;
             Variable2 = MathHelper.Clamp((CylinderPressureAtmPSI - OneAtmospherePSI) / BoilerPressurePSI * 100f, 0, 100);
             Variable3 = FuelRateSmooth * 100;
@@ -3423,36 +3422,21 @@ namespace Orts.Simulation.RollingStocks
             // 
             //
 
-            WheelWeightLbs = Kg.ToLb(DrvWheelWeightKg / (LocoNumDrvWheels * 2.0f)); // Calculate the weight per wheel
-
-            LocoFrictionCoeff = CoefficientFriction;  // Get train co-efficient of friction
-
-            if (WheelWeightLbs < 10000 && Simulator.WeatherType == WeatherType.Clear)
-            {
-                LocoFrictionCoeff = 0.25f;  // Dry track - static friction for vehicles with wheel weights less then 10,000lbs
-            }
-
-            if (IsLocoSlip)   // If loco is slipping then coeff of friction will be decreased below static value.
-            {
-                LocoFrictionCoeff = 0.08f;  // Icy track - dynamic friction
-
-            }
-
-            if (Sander && absSpeedMpS < SanderSpeedOfMpS && TrackSandBoxCapacityFt3 > 0.0 && MainResPressurePSI > 80.0) // Sander to impact on slip if train speed is not too fast for sander, provide sand available, and air pressure available
-            {
-                LocoFrictionCoeff *= 1.5f;  // Sanding track adds approx 150% adhesion (best case)
-            }
+            SteamDrvWheelWeightLbs = Kg.ToLb(DrvWheelWeightKg / (LocoNumDrvWheels * 2.0f)); // Calculate the weight per wheel
 
             // Static Friction Force - adhesive factor increased by vertical thrust when travelling forward, and reduced by vertical thrust when travelling backwards
 
             if (Direction == Direction.Forward)
             {
-                StaticWheelFrictionForceLbf = (Kg.ToLb(DrvWheelWeightKg) + Math.Abs(VerticalThrustForceLeft) + Math.Abs(VerticalThrustForceRight)) * LocoFrictionCoeff;
+                StaticWheelFrictionForceLbf = (Kg.ToLb(DrvWheelWeightKg) + Math.Abs(VerticalThrustForceLeft) + Math.Abs(VerticalThrustForceRight)) * LocomotiveCoefficientFriction;
             }
             else
             {
-                StaticWheelFrictionForceLbf = (Kg.ToLb(DrvWheelWeightKg) - Math.Abs(VerticalThrustForceLeft) - Math.Abs(VerticalThrustForceRight)) * LocoFrictionCoeff;
+                StaticWheelFrictionForceLbf = (Kg.ToLb(DrvWheelWeightKg) - Math.Abs(VerticalThrustForceLeft) - Math.Abs(VerticalThrustForceRight)) * LocomotiveCoefficientFriction;
             }
+
+            SteamStaticWheelForce = StaticWheelFrictionForceLbf;
+            SteamTangentialWheelForce = TangentialWheelTreadForceLbf;
 
             if (absSpeedMpS < 2.5)  // Test only when the locomotive is starting
             {
@@ -3493,7 +3477,7 @@ namespace Orts.Simulation.RollingStocks
                         //     WheelSpeedMpS = absSpeedMpS * 20.0f * (TangentialWheelTreadForceLbf / StaticWheelFrictionForceLbf);
                     }
 
-                    MotiveForceN *= LocoFrictionCoeff;  // Reduce locomotive tractive force to stop it moving forward
+                    MotiveForceN *= LocomotiveCoefficientFriction;  // Reduce locomotive tractive force to stop it moving forward
                //Trace.TraceInformation("WheelSlip")
                 }
                 else
@@ -4578,7 +4562,7 @@ namespace Orts.Simulation.RollingStocks
             if (Simulator.UseAdvancedAdhesion && SteamEngineType != SteamEngineTypes.Geared) // Only display slip monitor if advanced adhesion used
             {
                 status.AppendFormat("\n\t\t === {0} === \n", Simulator.Catalog.GetString("Slip Monitor"));
-                status.AppendFormat("{0}\t{1}\t{2:N0}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15:N2}\t{16}\t{17}\t{18:N1}\n",
+                status.AppendFormat("{0}\t{1}\t{2:N0}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12:N2}\t{13}\t{14}\t{15:N2}\t{16}\t{17}\t{18:N1}\n",
                     Simulator.Catalog.GetString("Slip:"),
                     Simulator.Catalog.GetString("MForceN"),
                     FormatStrings.FormatForce(MotiveForceN, IsMetric),
@@ -4591,11 +4575,11 @@ namespace Orts.Simulation.RollingStocks
                     Simulator.Catalog.GetString("Static"),
                     FormatStrings.FormatForce(N.FromLbf(StaticWheelFrictionForceLbf), IsMetric),
                     Simulator.Catalog.GetString("Coeff"),
-                    LocoFrictionCoeff,
+                    LocomotiveCoefficientFriction,
                     Simulator.Catalog.GetString("Slip"),
                     IsLocoSlip ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
                     Simulator.Catalog.GetString("WheelM"),
-                    FormatStrings.FormatMass(Kg.FromLb(WheelWeightLbs), IsMetric),
+                    FormatStrings.FormatMass(Kg.FromLb(SteamDrvWheelWeightLbs), IsMetric),
                     Simulator.Catalog.GetString("FoA"),
                     CalculatedFactorofAdhesion);
             }

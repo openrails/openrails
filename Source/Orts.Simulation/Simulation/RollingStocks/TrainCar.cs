@@ -318,8 +318,10 @@ namespace Orts.Simulation.RollingStocks
         }
         public EngineTypes EngineType;
 
+        public float WagonCoefficientFriction = 0.5f; // Initialise coefficient of Friction for wagons - 0.5 for dry rails, 0.1 - 0.3 for wet rails
+        public float LocomotiveCoefficientFriction = 0.5f; // Initialise coefficient of Friction for locomotives - 0.5 for dry rails, 0.1 - 0.3 for wet rails
+
         protected float CurveResistanceZeroSpeedFactor = 0.5f; // Based upon research (Russian experiments - 1960) the older formula might be about 2x actual value
-        public float CoefficientFriction = 0.5f; // Initialise coefficient of Friction - 0.5 for dry rails, 0.1 - 0.3 for wet rails
         protected float RigidWheelBaseM;   // Vehicle rigid wheelbase, read from MSTS Wagon file
         protected float TrainCrossSectionAreaM2; // Cross sectional area of the train
         protected float DoubleTunnelCrossSectAreaM2;
@@ -457,7 +459,6 @@ namespace Orts.Simulation.RollingStocks
                 CurrentElevationPercent = -CurrentElevationPercent;
             }
 
-            UpdateFrictionCoefficient(); // Find the current coefficient of friction depending upon the weather
             UpdateCurveSpeedLimit(); // call this first as it will provide inputs for the curve force.
             UpdateCurveForce(elapsedClockSeconds);
             UpdateTunnelForce();
@@ -839,47 +840,7 @@ namespace Orts.Simulation.RollingStocks
 
         #endregion
 
-        #region Calculate Friction Coefficient
-        /// <summary>
-        /// Calculates the current coefficient of friction based upon the current weather 
-        /// The calculation of Coefficient of Friction appears to provide a wide range of 
-        /// variations depending upon a number of factors including the wheel and track 
-        /// composition, and whether the track is dry, wet (or lubricated), icy, covered 
-        /// in leaf litter, etc.
-        /// For the purposes of simulating frcition the following values have been used. 
-        /// Some reference documents have suggested that friction can vary between 0.07 
-        /// for lubricated or icy track to 0.78 for dry track.
-        /// The following values have been used as an "appropriate common" standard.
-        /// Dry track = 0.35
-        /// Wet track = 0.2
-        /// Icy track = 0.15 (to be confirmed - values to less then 0.1 have been described in lterature)
-        /// 
-        /// Note Heavy rain will actually wash track clean, and will give a higher value of adhesion then light drizzling rain
-        /// </summary>
-        public virtual void UpdateFrictionCoefficient()
-        {
-           //TODO - Set up advanced weather model - eg for precipitation see note above
-            float  WagonWheelWeightKG = Kg.ToLb(MassKG / (WagonNumWheels * 2.0f)); // Calculate the weight per wheel
-
-            if (Simulator.WeatherType == WeatherType.Rain )
-            {
-
-                CoefficientFriction = 0.20f;  // Wet weather
-
-            }
-            else if (Simulator.WeatherType == WeatherType.Snow)
-            {
-                CoefficientFriction = 0.1f;  // Icy weather
-            }
-            else
-            {
-                CoefficientFriction = 0.35f;  // Dry weather
-            }
-           
-        }
-
-        #endregion
-
+    
         #region Calculate friction force in curves
 
         /// <summary>
@@ -981,7 +942,7 @@ namespace Orts.Simulation.RollingStocks
                     // Curve Resistance = (Vehicle mass x Coeff Friction) * (Track Gauge + Vehicle Fixed Wheelbase) / (2 * curve radius)
                     // Vehicle Fixed Wheel base is the distance between the wheels, ie bogie or fixed wheels
 
-                    CurveForceN = MassKG * CoefficientFriction * (TrackGaugeM + RigidWheelBaseM) / (2.0f * CurrentCurveRadius);
+                    CurveForceN = MassKG * WagonCoefficientFriction * (TrackGaugeM + RigidWheelBaseM) / (2.0f * CurrentCurveRadius);
                     float CurveResistanceSpeedFactor = Math.Abs((MaxCurveEqualLoadSpeedMps - AbsSpeedMpS) / MaxCurveEqualLoadSpeedMps) * StartCurveResistanceFactor;
                     CurveForceN *= CurveResistanceSpeedFactor * CurveResistanceZeroSpeedFactor;
                     CurveForceN *= GravitationalAccelerationMpS2; // to convert to Newtons
