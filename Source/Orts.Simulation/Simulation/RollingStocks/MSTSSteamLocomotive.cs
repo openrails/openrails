@@ -3483,7 +3483,8 @@ namespace Orts.Simulation.RollingStocks
                 else
                 {
                     WheelSlip = false;
-                    WheelSpeedMpS = (Direction == Direction.Forward ? 1 : -1) * absSpeedMpS;
+                 //   WheelSpeedMpS = (Direction == Direction.Forward ? 1 : -1) * absSpeedMpS;
+                    WheelSpeedMpS = SpeedMpS;
                 }
             }
 
