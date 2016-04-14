@@ -86,6 +86,7 @@ namespace Orts.Simulation.AIs
             HANDLE_ACTION,
             END_ACTION, //  SPA: used by new AIActionItem as Auxiliary
             SUSPENDED,
+            FROZEN,
             UNKNOWN
         }
 
@@ -618,7 +619,7 @@ namespace Orts.Simulation.AIs
             }
 #endif
 
-            if (TrainType == TRAINTYPE.AI_INCORPORATED || TrainType == TRAINTYPE.STATIC || MovementState == AI_MOVEMENT_STATE.SUSPENDED)
+            if (TrainType == TRAINTYPE.AI_INCORPORATED || TrainType == TRAINTYPE.STATIC || MovementState == AI_MOVEMENT_STATE.SUSPENDED || MovementState == AI_MOVEMENT_STATE.FROZEN)
                 return;
             // Check if at stop point and stopped.
             //          if ((NextStopDistanceM < actClearance) || (SpeedMpS <= 0 && MovementState == AI_MOVEMENT_STATE.STOPPED))
@@ -3979,7 +3980,25 @@ namespace Orts.Simulation.AIs
                 File.AppendAllText(@"C:\temp\checktrain.txt", "Train " +
                      Number.ToString() + " removed\n");
             }
-            if (TrainType != TRAINTYPE.AI_PLAYERHOSTING)
+            var removeIt = true;
+            if (Simulator.TimetableMode) removeIt = true;
+            else if (TrainType == TRAINTYPE.AI_PLAYERHOSTING) removeIt = false;
+            else if (NextSignalObject[0] != null && NextSignalObject[0].isSignal && distanceToSignal < 25 && distanceToSignal >= 0 && PresentPosition[1].DistanceTravelledM < 2)
+            {
+                removeIt = false;
+                MovementState = AI_MOVEMENT_STATE.FROZEN;
+            }
+            else if (PresentPosition[1].DistanceTravelledM < 2 && FrontTDBTraveller.TrackNodeOffset + 25 > FrontTDBTraveller.TrackNodeLength)
+            {
+                var tempTraveller = new Traveller(FrontTDBTraveller);
+                if (tempTraveller.NextTrackNode() && tempTraveller.IsEnd)
+                {
+                    removeIt = false;
+                    MovementState = AI_MOVEMENT_STATE.FROZEN;
+                }
+            }
+            
+            if (removeIt)
             {
                 if (IncorporatedTrainNo >= 0 && Simulator.TrainDictionary.Count > IncorporatedTrainNo &&
                    Simulator.TrainDictionary[IncorporatedTrainNo] != null) Simulator.TrainDictionary[IncorporatedTrainNo].RemoveTrain();
@@ -5718,6 +5737,10 @@ namespace Orts.Simulation.AIs
                 case AI_MOVEMENT_STATE.SUSPENDED:
                     movString = "SUS ";
                     break;
+                case AI_MOVEMENT_STATE.FROZEN:
+                    movString = "FRO ";
+                    break;
+
             }
 
             string abString = AITrainThrottlePercent.ToString("000");
