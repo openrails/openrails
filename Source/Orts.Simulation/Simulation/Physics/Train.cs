@@ -13553,14 +13553,14 @@ namespace Orts.Simulation.Physics
                         {
                             for (int iTC = 0; iTC < thisNode.TCCrossReference.Count; iTC++)
                             {
+                                TCRouteElement thisElement =
+                                  new TCRouteElement(thisNode, iTC, currentDir, orgSignals);
+                                thisSubpath.Add(thisElement);
+                                //  SPA:    Station:    A adapter, 
+                                SetStationReference(TCRouteSubpaths, thisElement.TCSectionIndex, orgSignals);
                                 if (thisNode.TCCrossReference[iTC].Index == RoughReversalInfos[sublist].ReversalSectionIndex)
                                 {
-                                    TCRouteElement thisElement =
-                                         new TCRouteElement(thisNode, iTC, currentDir, orgSignals);
-                                    thisSubpath.Add(thisElement);
-                                    //  SPA:    Station:    A adapter, 
-                                    SetStationReference(TCRouteSubpaths, thisElement.TCSectionIndex, orgSignals);
-                                    break;
+                                     break;
                                 }
                             }
                             newDir = thisNode.TrPins[currentDir].Direction;
@@ -13570,13 +13570,13 @@ namespace Orts.Simulation.Physics
                         {
                             for (int iTC = thisNode.TCCrossReference.Count - 1; iTC >= 0; iTC--)
                             {
+                                TCRouteElement thisElement =
+                                    new TCRouteElement(thisNode, iTC, currentDir, orgSignals);
+                                thisSubpath.Add(thisElement);
+                                SetStationReference(TCRouteSubpaths, thisElement.TCSectionIndex, orgSignals);
                                 if (thisNode.TCCrossReference[iTC].Index == RoughReversalInfos[sublist].ReversalSectionIndex)
                                 {
-                                    TCRouteElement thisElement =
-                                       new TCRouteElement(thisNode, iTC, currentDir, orgSignals);
-                                    thisSubpath.Add(thisElement);
-                                    SetStationReference(TCRouteSubpaths, thisElement.TCSectionIndex, orgSignals);
-                                    break;
+                                     break;
                                 }
                             }
                             newDir = thisNode.TrPins[currentDir].Direction;
