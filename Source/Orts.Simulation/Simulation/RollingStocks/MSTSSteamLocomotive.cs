@@ -1382,7 +1382,6 @@ namespace Orts.Simulation.RollingStocks
         public override void Update(float elapsedClockSeconds)
         {
             PowerOn = true;
-            UpdateControllers(elapsedClockSeconds);
             base.Update(elapsedClockSeconds);
             UpdateFX(elapsedClockSeconds);
 
@@ -1593,8 +1592,10 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
-        private void UpdateControllers(float elapsedClockSeconds)
+        protected override void UpdateControllers(float elapsedClockSeconds)
         {
+            base.UpdateControllers(elapsedClockSeconds);
+
             if (this.IsLeadLocomotive())
             {
                 Train.MUReverserPercent = CutoffController.Update(elapsedClockSeconds) * 100.0f;
