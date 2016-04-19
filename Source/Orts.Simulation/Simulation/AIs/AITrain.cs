@@ -1683,8 +1683,10 @@ namespace Orts.Simulation.AIs
 
                 else if (nextAspect == MstsSignalAspect.STOP)
                 {
-                    // if stop but train is well away from signal allow to close
-                    if (distanceToSignal > 5 * signalApproachDistanceM)
+                    // if stop but train is well away from signal allow to close; also if at end of path.
+                    if (distanceToSignal > 5 * signalApproachDistanceM ||
+                        (TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1 == PresentPosition[0].RouteListIndex &&
+                        TCRoute.TCRouteSubpaths.Count -1 == TCRoute.activeSubpath))
                     {
                         MovementState = AI_MOVEMENT_STATE.ACCELERATING;
                         StartMoving(AI_START_MOVEMENT.PATH_ACTION);
@@ -1953,7 +1955,9 @@ namespace Orts.Simulation.AIs
             else if (thisStation.ExitSignal >= 0 && NextSignalObject[0] != null && NextSignalObject[0].thisRef == thisStation.ExitSignal)
             {
                 MstsSignalAspect nextAspect = GetNextSignalAspect(0);
-                if (nextAspect == MstsSignalAspect.STOP && !NextSignalObject[0].HasLockForTrain(Number, TCRoute.activeSubpath))
+                if (nextAspect == MstsSignalAspect.STOP && !NextSignalObject[0].HasLockForTrain(Number, TCRoute.activeSubpath) && 
+                    !(TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1 == PresentPosition[0].RouteListIndex &&
+                        TCRoute.TCRouteSubpaths.Count -1 == TCRoute.activeSubpath))
                 {
                     return;  // do not depart if exit signal at danger
                 }
@@ -5750,14 +5754,14 @@ namespace Orts.Simulation.AIs
             if (MovementState == AI_MOVEMENT_STATE.STATION_STOP)
             {
                 DateTime baseDT = new DateTime();
-                if (StationStops[0].DepartTime > 0)
-                {
-                    DateTime depTime = baseDT.AddSeconds(StationStops[0].DepartTime);
-                    abString = depTime.ToString("HH:mm:ss");
-                }
-                else if (StationStops[0].ActualDepart > 0)
+                if (StationStops[0].ActualDepart > 0)
                 {
                     DateTime depTime = baseDT.AddSeconds(StationStops[0].ActualDepart);
+                    abString = depTime.ToString("HH:mm:ss");
+                }
+                else if (StationStops[0].DepartTime > 0)
+                {
+                    DateTime depTime = baseDT.AddSeconds(StationStops[0].DepartTime);
                     abString = depTime.ToString("HH:mm:ss");
                 }
                 else
