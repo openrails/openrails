@@ -1685,8 +1685,7 @@ namespace Orts.Simulation.AIs
                 {
                     // if stop but train is well away from signal allow to close; also if at end of path.
                     if (distanceToSignal > 5 * signalApproachDistanceM ||
-                        (TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1 == PresentPosition[0].RouteListIndex &&
-                        TCRoute.TCRouteSubpaths.Count -1 == TCRoute.activeSubpath))
+                        (TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1 == PresentPosition[0].RouteListIndex))
                     {
                         MovementState = AI_MOVEMENT_STATE.ACCELERATING;
                         StartMoving(AI_START_MOVEMENT.PATH_ACTION);
@@ -3702,6 +3701,7 @@ namespace Orts.Simulation.AIs
                 if (thisSection.EndSignals[direction] != null)
                 {
                     endSectionFound = true;
+                    if (routeIndex < thisRoute.Count - 1)
                     endSignalIndex = thisSection.EndSignals[direction].thisRef;
                 }
 
@@ -3724,6 +3724,7 @@ namespace Orts.Simulation.AIs
                     {
                         endSectionFound = true;
                         lastIndex = nextIndex;
+                        if (lastIndex < thisRoute.Count - 1)
                         endSignalIndex = nextSection.EndSignals[direction].thisRef;
                     }
                     else if (nextSection.CircuitType != TrackCircuitSection.TrackCircuitType.Normal)

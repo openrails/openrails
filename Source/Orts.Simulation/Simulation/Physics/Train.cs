@@ -10787,6 +10787,7 @@ namespace Orts.Simulation.Physics
                 if (thisSection.EndSignals[direction] != null)
                 {
                     endSectionFound = true;
+                    if (routeIndex < thisRoute.Count - 1)
                     endSignalIndex = thisSection.EndSignals[direction].thisRef;
                 }
 
@@ -10809,6 +10810,7 @@ namespace Orts.Simulation.Physics
                     {
                         endSectionFound = true;
                         lastIndex = nextIndex;
+                        if (lastIndex < thisRoute.Count - 1)
                         endSignalIndex = nextSection.EndSignals[direction].thisRef;
                     }
                     else if (nextSection.CircuitType != TrackCircuitSection.TrackCircuitType.Normal)
