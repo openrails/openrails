@@ -5349,6 +5349,10 @@ namespace Orts.Simulation.Physics
                                     junctionFound = true;
                                     if (thisSection.CircuitState.ThisTrainOccupying(this))
                                     {
+                                        // Before deciding that route is not yet ready check if the new train head is off path because at end of new route
+                                        var thisElement = nextRoute[nextRoute.Count - 1];
+                                        thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                                        if (thisSection.CircuitState.ThisTrainOccupying(this)) break;
                                         junctionOccupied = true;
                                     }
                                 }
@@ -16215,6 +16219,13 @@ namespace Orts.Simulation.Physics
 
                         lastIndex--;
                         firstIndex++;
+                    }
+
+                    // if next route ends within last one, last diverge index can be set to endLastIndex
+                    if (firstIndex > firstRoute.Count -1)
+                    {
+                        LastDivergeIndex = endLastIndex;
+                        DivergeSectorIndex = lastRoute[endLastIndex].TCSectionIndex;
                     }
 
                     Valid = LastDivergeIndex >= 0; // it is a reversal
