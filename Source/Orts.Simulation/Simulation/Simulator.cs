@@ -1188,11 +1188,10 @@ namespace Orts.Simulation
                     train.CalculatePositionOfCars();
                     train.InitializeBrakes();
                     train.CheckFreight();
-
+                    if (Settings.Autopilot) train.ReverseFormation(false); // When using autopilot mode this is needed for correct working of train switching
                     bool validPosition = train.PostInit();
                     if (validPosition)
                         Trains.Add(train);
-                    if (Settings.Autopilot) train.ReverseFormation(false); // When using autopilot mode this is needed for correct working of train switching
                 }
                 catch (Exception error)
                 {
