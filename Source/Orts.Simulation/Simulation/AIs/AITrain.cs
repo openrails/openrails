@@ -3987,7 +3987,7 @@ namespace Orts.Simulation.AIs
             }
             var removeIt = true;
             if (Simulator.TimetableMode) removeIt = true;
-            else if (TrainType == TRAINTYPE.AI_PLAYERHOSTING) removeIt = false;
+            else if (TrainType == TRAINTYPE.AI_PLAYERHOSTING || Simulator.OriginalPlayerTrain == this) removeIt = false;
             else if (TCRoute.TCRouteSubpaths.Count == 1 || TCRoute.activeSubpath != TCRoute.TCRouteSubpaths.Count - 1) removeIt = true;
             else if (NextSignalObject[0] != null && NextSignalObject[0].isSignal && distanceToSignal < 25 && distanceToSignal >= 0 && PresentPosition[1].DistanceTravelledM < 2)
             {
