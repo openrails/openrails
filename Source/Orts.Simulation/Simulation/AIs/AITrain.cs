@@ -4003,6 +4003,20 @@ namespace Orts.Simulation.AIs
                     MovementState = AI_MOVEMENT_STATE.FROZEN;
                 }
             }
+            else 
+            {
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[PresentPosition[1].TCSectionIndex];
+                if (TCRoute.ReversalInfo[TCRoute.activeSubpath - 1].Valid && PresentPosition[1].DistanceTravelledM < 2 && PresentPosition[1].TCOffset < 25)
+                {
+                    var tempTraveller = new Traveller(RearTDBTraveller);
+                    tempTraveller.ReverseDirection();
+                    if (tempTraveller.NextTrackNode() && tempTraveller.IsEnd)
+                    {
+                        removeIt = false;
+                        MovementState = AI_MOVEMENT_STATE.FROZEN;
+                    }
+                }
+            }
             
             if (removeIt)
             {
