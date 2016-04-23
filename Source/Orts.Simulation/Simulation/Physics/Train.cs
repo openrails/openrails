@@ -321,6 +321,8 @@ namespace Orts.Simulation.Physics
         public float[] DistanceToEndNodeAuthorityM = new float[2];      // distance to end of authority
         public int LoopSection = -1;                                    // section where route loops back onto itself
 
+        public bool nextRouteReady = false;                             // indication to activity.cs that a reversal has taken place
+
         // Deadlock Info : 
         // list of sections where deadlock begins
         // per section : list with trainno and end section
@@ -5048,6 +5050,7 @@ namespace Orts.Simulation.Physics
         {
             bool endOfRoute = false;
             bool[] returnState = new bool[2] { false, false };
+            nextRouteReady = false;
 
             // obtain reversal section index
 
@@ -5296,7 +5299,6 @@ namespace Orts.Simulation.Physics
             // if next subpath available : check if it can be activated
 
             bool nextRouteAvailable = false;
-            bool nextRouteReady = false;
 
             TCSubpathRoute nextRoute = null;
 

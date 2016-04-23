@@ -1483,13 +1483,14 @@ namespace Orts.Simulation
             if (e.TriggerOnStop)
             {
                 // Is train still moving?
-                if (Simulator.PlayerLocomotive.SpeedMpS != 0)
+                if (Math.Abs(Simulator.PlayerLocomotive.SpeedMpS) > 0.012f)
                 {
                     return triggered;
                 }
             }
-
-            var trainFrontPosition = new Traveller(Simulator.PlayerLocomotive.Train.FrontTDBTraveller);
+            var playerTrain = Simulator.PlayerLocomotive.Train;
+            var trainFrontPosition = new Traveller(playerTrain.nextRouteReady && playerTrain.TCRoute.activeSubpath > 0 && playerTrain.TCRoute.ReversalInfo[playerTrain.TCRoute.activeSubpath - 1].Valid ?
+                playerTrain.RearTDBTraveller : playerTrain.FrontTDBTraveller); // just after reversal the old train front position must be considered
             var distance = trainFrontPosition.DistanceTo(e.TileX, e.TileZ, e.X, trainFrontPosition.Y, e.Z, e.RadiusM);
             if (distance == -1)
             {
