@@ -16683,6 +16683,22 @@ namespace Orts.Simulation.Physics
 
             }
 
+
+            //================================================================================================//
+            /// <summary>
+            /// Modifies required distance of actions after a train coupling
+            /// <\summary>
+
+            public void ModifyRequiredDistance(float Length)
+            {
+                foreach (var thisAction in this)
+                {
+                    if (thisAction is DistanceTravelledItem)
+                    {
+                        (thisAction as DistanceTravelledItem).RequiredDistance += Length;
+                    }
+                }
+            }
         }
 
         //================================================================================================//

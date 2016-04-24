@@ -4281,12 +4281,15 @@ namespace Orts.Simulation.AIs
             if (thisTrainFront)  // coupled to front, so rear position is still valid
             {
                 CalculatePositionOfCars();
-                DistanceTravelledM += Length;
+                DistanceTravelledM += attachTrain.Length;
+                PresentPosition[0].DistanceTravelledM = DistanceTravelledM;
+                requiredActions.ModifyRequiredDistance(attachTrain.Length);
             }
             else // coupled to rear so front position is still valid
             {
                 RepositionRearTraveller();    // fix the rear traveller
                 CalculatePositionOfCars();
+                PresentPosition[1].DistanceTravelledM = DistanceTravelledM - Length;
             }
 
             // update positions train
@@ -4307,8 +4310,6 @@ namespace Orts.Simulation.AIs
             activityClearingDistanceM = Cars.Count < standardTrainMinCarNo ? shortClearingDistanceM : standardClearingDistanceM;
             attachCar.SignalEvent(Event.Couple);
 
-            physicsUpdate(0);   // stop the wheels from moving etc
-
             // remove attached train
             if (attachTrain.TrainType == TRAINTYPE.AI)
                 ((AITrain)attachTrain).RemoveTrain();
@@ -4319,6 +4320,10 @@ namespace Orts.Simulation.AIs
                 Simulator.TrainDictionary.Remove(attachTrain.Number);
                 Simulator.NameDictionary.Remove(attachTrain.Name.ToLower());
             }
+
+            ResetActions(true);
+            physicsUpdate(0);
+
         }
 
         //================================================================================================//
