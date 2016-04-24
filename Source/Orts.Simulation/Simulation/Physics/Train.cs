@@ -8783,6 +8783,7 @@ namespace Orts.Simulation.Physics
             foreach (TCRouteElement thisElement in TrainRoute)
             {
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                thisSection.Reserve(routedForward, TrainRoute);
                 thisSection.SetOccupied(routedForward);
             }
 
