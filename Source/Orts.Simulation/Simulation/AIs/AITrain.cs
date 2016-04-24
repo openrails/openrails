@@ -3986,15 +3986,16 @@ namespace Orts.Simulation.AIs
                      Number.ToString() + " removed\n");
             }
             var removeIt = true;
+            var distanceThreshold = PreUpdate ? 5.0f : 2.0f;
             if (Simulator.TimetableMode) removeIt = true;
             else if (TrainType == TRAINTYPE.AI_PLAYERHOSTING || Simulator.OriginalPlayerTrain == this) removeIt = false;
             else if (TCRoute.TCRouteSubpaths.Count == 1 || TCRoute.activeSubpath != TCRoute.TCRouteSubpaths.Count - 1) removeIt = true;
-            else if (NextSignalObject[0] != null && NextSignalObject[0].isSignal && distanceToSignal < 25 && distanceToSignal >= 0 && PresentPosition[1].DistanceTravelledM < 2)
+            else if (NextSignalObject[0] != null && NextSignalObject[0].isSignal && distanceToSignal < 25 && distanceToSignal >= 0 && PresentPosition[1].DistanceTravelledM < distanceThreshold)
             {
                 removeIt = false;
                 MovementState = AI_MOVEMENT_STATE.FROZEN;
             }
-            else if (PresentPosition[1].DistanceTravelledM < 2 && FrontTDBTraveller.TrackNodeOffset + 25 > FrontTDBTraveller.TrackNodeLength)
+            else if (PresentPosition[1].DistanceTravelledM < distanceThreshold && FrontTDBTraveller.TrackNodeOffset + 25 > FrontTDBTraveller.TrackNodeLength)
             {
                 var tempTraveller = new Traveller(FrontTDBTraveller);
                 if (tempTraveller.NextTrackNode() && tempTraveller.IsEnd)
@@ -4006,7 +4007,7 @@ namespace Orts.Simulation.AIs
             else 
             {
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[PresentPosition[1].TCSectionIndex];
-                if (TCRoute.ReversalInfo[TCRoute.activeSubpath - 1].Valid && PresentPosition[1].DistanceTravelledM < 2 && PresentPosition[1].TCOffset < 25)
+                if (TCRoute.ReversalInfo[TCRoute.activeSubpath - 1].Valid && PresentPosition[1].DistanceTravelledM < distanceThreshold && PresentPosition[1].TCOffset < 25)
                 {
                     var tempTraveller = new Traveller(RearTDBTraveller);
                     tempTraveller.ReverseDirection();
