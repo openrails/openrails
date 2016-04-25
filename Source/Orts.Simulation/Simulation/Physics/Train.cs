@@ -112,6 +112,9 @@ namespace Orts.Simulation.Physics
         public float SlipperySpotDistanceM;              // distance to extra slippery part of track
         public float SlipperySpotLengthM;
 
+        public float WagonCoefficientFriction = 0.35f; // Initialise coefficient of Friction for wagons - 0.35 for dry rails, 0.1 - 0.25 for wet rails
+        public float LocomotiveCoefficientFriction = 0.35f; // Initialise coefficient of Friction for locomotives - 0.5 for dry rails, 0.1 - 0.25 for wet rails
+
         // These signals pass through to all cars and locomotives on the train
         public Direction MUDirection = Direction.N;      // set by player locomotive to control MU'd locomotives
         public float MUThrottlePercent;                  // set by player locomotive to control MU'd locomotives

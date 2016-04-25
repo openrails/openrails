@@ -3612,7 +3612,7 @@ namespace Orts.Simulation.RollingStocks
                 ExcessBalanceForceMiddle = 0.0f;
             }
 
-            SpeedStaticWheelFrictionForceLbf = (Kg.ToLb(DrvWheelWeightKg) + (SpeedVerticalThrustForceLeft + ExcessBalanceForceLeft) + (SpeedVerticalThrustForceMiddle + ExcessBalanceForceMiddle) + (SpeedVerticalThrustForceRight + ExcessBalanceForceRight)) * LocomotiveCoefficientFriction;
+            SpeedStaticWheelFrictionForceLbf = (Kg.ToLb(DrvWheelWeightKg) + (SpeedVerticalThrustForceLeft + ExcessBalanceForceLeft) + (SpeedVerticalThrustForceMiddle + ExcessBalanceForceMiddle) + (SpeedVerticalThrustForceRight + ExcessBalanceForceRight)) * Train.LocomotiveCoefficientFriction;
 
             // Calculate internal resistance - IR = 3.8 * diameter of cylinder^2 * stroke * dia of drivers (all in inches)
             float InternalResistance = 3.8f * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (Me.ToIn(DrvWheelDiaM));
@@ -3636,11 +3636,11 @@ namespace Orts.Simulation.RollingStocks
 
             if (Direction == Direction.Forward)
             {
-                StartStaticWheelFrictionForceLbf = (Kg.ToLb(DrvWheelWeightKg) + StartVerticalThrustForceLeft + StartVerticalThrustForceRight + StartVerticalThrustForceMiddle) * LocomotiveCoefficientFriction;
+                StartStaticWheelFrictionForceLbf = (Kg.ToLb(DrvWheelWeightKg) + StartVerticalThrustForceLeft + StartVerticalThrustForceRight + StartVerticalThrustForceMiddle) * Train.LocomotiveCoefficientFriction;
             }
             else
             {
-                StartStaticWheelFrictionForceLbf = (Kg.ToLb(DrvWheelWeightKg) - StartVerticalThrustForceLeft - StartVerticalThrustForceMiddle - StartVerticalThrustForceRight) * LocomotiveCoefficientFriction;
+                StartStaticWheelFrictionForceLbf = (Kg.ToLb(DrvWheelWeightKg) - StartVerticalThrustForceLeft - StartVerticalThrustForceMiddle - StartVerticalThrustForceRight) * Train.LocomotiveCoefficientFriction;
             }
 
             if (absSpeedMpS < 1.0)  // Test only when the locomotive is starting
@@ -3691,7 +3691,7 @@ namespace Orts.Simulation.RollingStocks
                         //     WheelSpeedMpS = absSpeedMpS * 20.0f * (TangentialWheelTreadForceLbf / StaticWheelFrictionForceLbf);
                     }
 
-                    MotiveForceN *= LocomotiveCoefficientFriction;  // Reduce locomotive tractive force to stop it moving forward
+                    MotiveForceN *= Train.LocomotiveCoefficientFriction;  // Reduce locomotive tractive force to stop it moving forward
                //Trace.TraceInformation("WheelSlip")
                 }
                 else
@@ -3726,7 +3726,7 @@ namespace Orts.Simulation.RollingStocks
 
                 Trace.TraceInformation("==== Adhesive Force ====");
 
-                Trace.TraceInformation("ExcessBalance {0} Adhesive Wt {1}, Loco Friction {2}", ExcessBalanceWeightLb, Kg.ToLb(DrvWheelWeightKg), LocomotiveCoefficientFriction);
+                Trace.TraceInformation("ExcessBalance {0} Adhesive Wt {1}, Loco Friction {2}", ExcessBalanceWeightLb, Kg.ToLb(DrvWheelWeightKg), Train.LocomotiveCoefficientFriction);
 
                 Trace.TraceInformation("Vert Thrust (speed): Left {0} Middle {1} Right {2}", SpeedVerticalThrustForceLeft, SpeedVerticalThrustForceMiddle, SpeedVerticalThrustForceRight);
 
@@ -4827,7 +4827,7 @@ namespace Orts.Simulation.RollingStocks
                     Simulator.Catalog.GetString("Static"),
                     FormatStrings.FormatForce(N.FromLbf(SteamStaticWheelForce), IsMetric),
                     Simulator.Catalog.GetString("Coeff"),
-                    LocomotiveCoefficientFriction,
+                    Train.LocomotiveCoefficientFriction,
                     Simulator.Catalog.GetString("Slip"),
                     IsLocoSlip ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
                     Simulator.Catalog.GetString("WheelM"),

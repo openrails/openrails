@@ -73,6 +73,8 @@ namespace Orts.Simulation.RollingStocks
         public bool IsDavisFriction = true; // Default to new Davis type friction
         public bool IsLowSpeed = true; // set indicator for low speed operation  0 - 5mph
 
+        Interpolator BrakeShoeFrictionFactor;  // Factor of friction for wagon brake shoes
+
         // simulation parameters
         public float Variable1;  // used to convey status to soundsource
         public float Variable2;
@@ -344,6 +346,7 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(wheelradius": WheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(wheelradius": DriverWheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(sound": MainSoundFileName = stf.ReadStringBlock(null); break;
+                case "wagon(ortsbrakeshoefriction": BrakeShoeFrictionFactor = new Interpolator(stf); break;
                 case "wagon(ortsdavis_a": DavisAN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(ortsdavis_b": DavisBNSpM = stf.ReadFloatBlock(STFReader.UNITS.Resistance, null); break;
                 case "wagon(ortsdavis_c": DavisCNSSpMM = stf.ReadFloatBlock(STFReader.UNITS.ResistanceDavisC, null); break;
@@ -490,6 +493,7 @@ namespace Orts.Simulation.RollingStocks
             WheelRadiusM = copy.WheelRadiusM;
             DriverWheelRadiusM = copy.DriverWheelRadiusM;
             MainSoundFileName = copy.MainSoundFileName;
+            BrakeShoeFrictionFactor = copy.BrakeShoeFrictionFactor;
             DavisAN = copy.DavisAN;
             DavisBNSpM = copy.DavisBNSpM;
             DavisCNSSpMM = copy.DavisCNSSpMM;
@@ -1173,6 +1177,46 @@ namespace Orts.Simulation.RollingStocks
             return fraction;
         }
 
+        /// <summary>
+        /// Returns the Brake shoe coefficient.
+        /// </summary>
+
+        public override float GetUserBrakeShoeFrictionFactor()
+        {
+            var frictionfraction = 0.0f;
+            if ( BrakeShoeFrictionFactor == null)
+            {
+                frictionfraction = 0.0f;
+            }
+            else
+            {
+                frictionfraction = BrakeShoeFrictionFactor[MpS.ToKpH(SpeedMpS)];
+            }
+            
+            return frictionfraction;
+        }
+
+        /// <summary>
+        /// Returns the Brake shoe coefficient at zero speed.
+        /// </summary>
+
+        public override float GetZeroUserBrakeShoeFrictionFactor()
+        {
+            var frictionfraction = 0.0f;
+            if (BrakeShoeFrictionFactor == null)
+            {
+                frictionfraction = 0.0f;
+            }
+            else
+            {
+                frictionfraction = BrakeShoeFrictionFactor[0.0f];
+            }
+
+            return frictionfraction;
+        }       
+      
+        
+        
         /// <summary>
         /// Starts a continuous increase in controlled value.
         /// </summary>

@@ -30,6 +30,9 @@
 // Debug User SuperElevation
 //#define DEBUG_USER_SUPERELEVATION
 
+// Debug Brake Slide Calculations
+//#define DEBUG_BRAKE_SLIDE
+
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Simulation.AIs;
@@ -112,6 +115,14 @@ namespace Orts.Simulation.RollingStocks
         public float CarHeatLossWpT;      // Transmission loss for the wagon
         public float CarHeatVolumeM3;     // Volume of car for heating purposes
         public float CarHeatPipeAreaM2;  // Area of surface of car pipe
+
+        // Used to calculate wheel sliding for locked brake
+        public bool IsBrakeSlide = false;
+        public float BrakeShoeCoefficientFriction = 1.0f; // Brake Shoe coefficient - for simple adhesion model set to 1
+        public float BrakeShoeCoefficientFrictionAdjFactor = 1.0f; // Factor to adjust Brake force by - based upon changing friction coefficient with speed
+        float DefaultBrakeShoeCoefficientFriction;  // A default value of brake shoe friction is no user settings are present.
+        float BrakeWheelTreadForceN; // The retarding force apparent on the tread of the wheel
+        float WagonBrakeAdhesiveForceN; // The adhesive force existing on the wheels of the wagon
 
         public float AuxTenderWaterMassKG;    // Water mass in auxiliary tender
         public string AuxWagonType;           // Store wagon type for use with auxilary tender calculations
@@ -318,8 +329,7 @@ namespace Orts.Simulation.RollingStocks
         }
         public EngineTypes EngineType;
 
-        public float WagonCoefficientFriction = 0.5f; // Initialise coefficient of Friction for wagons - 0.5 for dry rails, 0.1 - 0.3 for wet rails
-        public float LocomotiveCoefficientFriction = 0.5f; // Initialise coefficient of Friction for locomotives - 0.5 for dry rails, 0.1 - 0.3 for wet rails
+
 
         protected float CurveResistanceZeroSpeedFactor = 0.5f; // Based upon research (Russian experiments - 1960) the older formula might be about 2x actual value
         protected float RigidWheelBaseM;   // Vehicle rigid wheelbase, read from MSTS Wagon file
@@ -463,6 +473,7 @@ namespace Orts.Simulation.RollingStocks
             UpdateCurveForce(elapsedClockSeconds);
             UpdateTunnelForce();
             UpdateCarriageHeatLoss();
+            UpdateBrakeSlideCalculation();
 
             // acceleration
             if (elapsedClockSeconds > 0.0f)
@@ -476,6 +487,78 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
+
+ #region Calculate Brake Slide
+
+        /// <summary>
+        /// This section calculates:
+        /// i) Changing brake shoe friction coefficient due to changes in speed
+        /// ii) force on the wheel due to braking, and whether sliding will occur.
+        /// 
+        /// </summary>
+
+        public virtual void UpdateBrakeSlideCalculation()
+        {
+            // Only apply slide, and advanced brake friction, if advanced adhesion is selected, and it is not an AI train
+            if (Simulator.UseAdvancedAdhesion && Train.GetType() != typeof(AITrain))
+            {
+
+                // Get user defined brake shoe coefficient if defined in WAG file
+                float UserFriction = GetUserBrakeShoeFrictionFactor();
+                float ZeroUserFriction = GetZeroUserBrakeShoeFrictionFactor();
+                float AdhesionMultiplier = Simulator.Settings.AdhesionFactor / 100.0f; // User set adjustment factor - convert to a factor where 100% = no change to adhesion
+                
+                // This section calculates an adjustment factor for the brake force dependent upon the "base" (zero speed) friction value. 
+                //For a user defined case the base value is the zero speed value from the curve entered by the user.
+                // For a "default" case where no user data has been added to the WAG file, the base friction value has been assumed to be 0.2.
+
+                if (UserFriction != 0)  // User defined friction has been applied in WAG file - Assume MaxBrakeForce is correctly set in the WAG, so no adjustment required 
+                {
+                    BrakeShoeCoefficientFrictionAdjFactor = UserFriction / ZeroUserFriction * AdhesionMultiplier;
+                    BrakeShoeCoefficientFriction = UserFriction * AdhesionMultiplier;
+                }
+                else
+                // User defined friction NOT applied in WAG file - Assume MaxBrakeForce is incorrectly set in the WAG, so adjustment is required 
+                {
+                    DefaultBrakeShoeCoefficientFriction = (7.6f / (MpS.ToKpH(SpeedMpS) + 17.5f) + 0.07f) * AdhesionMultiplier; // Base Curtius - Kniffler equation - u = 0.50, all other values are scaled off this formula
+                    BrakeShoeCoefficientFrictionAdjFactor = DefaultBrakeShoeCoefficientFriction / 0.2f * AdhesionMultiplier;  // Assuming that current MaxBrakeForce has been set with an existing Friction Coff of 0.2f, an adjustment factor needs to be developed to reduce the MAxBrakeForce by a relative amount
+                    BrakeShoeCoefficientFriction = DefaultBrakeShoeCoefficientFriction * AdhesionMultiplier;
+                    }
+
+                // Clamp adjustment factor to a value of 1.0 - i.e. the brakeforce can never exceed the Brake Force value defined in the WAG file
+                BrakeShoeCoefficientFrictionAdjFactor = MathHelper.Clamp(BrakeShoeCoefficientFrictionAdjFactor, 0.01f, 1.0f);
+
+                // Calculate tread force on wheel
+                BrakeWheelTreadForceN = BrakeForceN;
+
+                // Calculate adhesive force
+                WagonBrakeAdhesiveForceN = MassKG * GravitationalAccelerationMpS2 * Train.WagonCoefficientFriction;
+
+                if (BrakeWheelTreadForceN > WagonBrakeAdhesiveForceN)
+                {
+                    IsBrakeSlide = true;
+                }
+            }
+            else  // set default values if simple adhesion model is used.
+            {
+                BrakeShoeCoefficientFrictionAdjFactor = 1.0f;  // Default value set to leave existing brakeforce constant regardless of changing speed
+                BrakeShoeCoefficientFriction = 1.0f;  // Default value for display purposes
+
+            }
+
+#if DEBUG_BRAKE_SLIDE
+
+            Trace.TraceInformation("================================== Brake Force Slide (TrainCar.cs) ===================================");
+            Trace.TraceInformation("Brake Shoe Friction- Car: {0} Speed: {1} Brake Force: {2} Advanced Adhesion: {3}", CarID, MpS.ToMpH(SpeedMpS), BrakeForceN, Simulator.UseAdvancedAdhesion);
+            Trace.TraceInformation("Brake Shoe Friction- Coeff: {0} Adjust: {1}", BrakeShoeCoefficientFriction, BrakeShoeCoefficientFrictionAdjFactor);
+            Trace.TraceInformation("Tread: {0} Adhesive: {1}", BrakeWheelTreadForceN, WagonBrakeAdhesiveForceN);
+            Trace.TraceInformation("Mass: {0} Rail Friction: {1}", MassKG, Train.WagonCoefficientFriction);
+#endif
+
+        }
+
+
+#endregion
 
         #region Calculate Heat loss for Passenger Cars
 
@@ -942,7 +1025,7 @@ namespace Orts.Simulation.RollingStocks
                     // Curve Resistance = (Vehicle mass x Coeff Friction) * (Track Gauge + Vehicle Fixed Wheelbase) / (2 * curve radius)
                     // Vehicle Fixed Wheel base is the distance between the wheels, ie bogie or fixed wheels
 
-                    CurveForceN = MassKG * WagonCoefficientFriction * (TrackGaugeM + RigidWheelBaseM) / (2.0f * CurrentCurveRadius);
+                    CurveForceN = MassKG * Train.WagonCoefficientFriction * (TrackGaugeM + RigidWheelBaseM) / (2.0f * CurrentCurveRadius);
                     float CurveResistanceSpeedFactor = Math.Abs((MaxCurveEqualLoadSpeedMps - AbsSpeedMpS) / MaxCurveEqualLoadSpeedMps) * StartCurveResistanceFactor;
                     CurveForceN *= CurveResistanceSpeedFactor * CurveResistanceZeroSpeedFactor;
                     CurveForceN *= GravitationalAccelerationMpS2; // to convert to Newtons
@@ -1775,6 +1858,17 @@ namespace Orts.Simulation.RollingStocks
         {
             return 0f;
         }
+
+        public virtual float GetUserBrakeShoeFrictionFactor()
+        {
+            return 0f;
+        }
+
+        public virtual float GetZeroUserBrakeShoeFrictionFactor()
+        {
+            return 0f;
+        }
+
     }
 
     public class WheelAxle : IComparer<WheelAxle>

@@ -71,7 +71,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         public override void Update(float elapsedClockSeconds)
         {
             BleedOffValveOpen = false;
-            Car.BrakeForceN = MaxHandbrakeForceN * HandbrakePercent / 100;
+            Car.BrakeForceN = (MaxHandbrakeForceN * HandbrakePercent / 100) * Car.BrakeShoeCoefficientFrictionAdjFactor;
         }
     }
 }

@@ -129,6 +129,10 @@ namespace Orts.Simulation.RollingStocks
         public float TrackSanderAirPressurePSI = 80.0f;
         public float TrackSanderSandConsumptionFt3pH = 1.01f;
 
+        // Set values for display in HUD
+        public float WagonCoefficientFrictionHUD;
+        public float LocomotiveCoefficientFrictionHUD;
+
         public PressureUnit MainPressureUnit = PressureUnit.None;
         public Dictionary<BrakeSystemComponent, PressureUnit> BrakeSystemPressureUnits = new Dictionary<BrakeSystemComponent, PressureUnit>
         {
@@ -1678,7 +1682,8 @@ namespace Orts.Simulation.RollingStocks
 
             }
 
-            WagonCoefficientFriction = BaseuMax * BaseFrictionCoefficientFactor;  // Find friction coefficient factor for wagons
+            Train.WagonCoefficientFriction = BaseuMax * BaseFrictionCoefficientFactor;  // Find friction coefficient factor for wagons
+            WagonCoefficientFrictionHUD = Train.WagonCoefficientFriction; // Save value for HUD display
 
             if (SteamDrvWheelWeightLbs < 10000 && Simulator.WeatherType == WeatherType.Clear)
             {
@@ -1712,8 +1717,10 @@ namespace Orts.Simulation.RollingStocks
             var AdhesionMultiplier = Simulator.Settings.AdhesionFactor / 100.0f; // Convert to a factor where 100% = no change to adhesion
             var AdhesionRandom = (float)((float)(Simulator.Settings.AdhesionFactorChange) * 0.01f * 2f * (Simulator.Random.NextDouble() - 0.5f));
 
-            LocomotiveCoefficientFriction = BaseuMax * BaseFrictionCoefficientFactor * AdhesionMultiplier;  // Find friction coefficient factor for locomotive
-            LocomotiveCoefficientFriction = MathHelper.Clamp(LocomotiveCoefficientFriction, 0.05f, 0.8f); // Ensure friction coefficient never exceeds a "reasonable" value
+            Train.LocomotiveCoefficientFriction = BaseuMax * BaseFrictionCoefficientFactor * AdhesionMultiplier;  // Find friction coefficient factor for locomotive
+            Train.LocomotiveCoefficientFriction = MathHelper.Clamp(Train.LocomotiveCoefficientFriction, 0.05f, 0.8f); // Ensure friction coefficient never exceeds a "reasonable" value
+            LocomotiveCoefficientFrictionHUD = Train.LocomotiveCoefficientFriction; // Set display value for HUD
+
 
             if (elapsedClockSeconds > 0)
             {
