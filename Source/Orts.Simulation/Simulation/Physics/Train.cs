@@ -8108,6 +8108,10 @@ namespace Orts.Simulation.Physics
             // restore train placement
             RestoreTrainPlacement(ref newRoute, oldRoute, routeIndex, reversal);
 
+            // restore distance travelled in Present Position
+            PresentPosition[0].DistanceTravelledM = DistanceTravelledM;
+            PresentPosition[1].DistanceTravelledM = DistanceTravelledM - Length;
+
             // set track occupation (using present route)
             // This procedure is also needed for clearing track occupation.
             UpdateSectionStateManual();
@@ -8124,6 +8128,8 @@ namespace Orts.Simulation.Physics
 
             LastReservedSection[0] = PresentPosition[0].TCSectionIndex;
             LastReservedSection[1] = PresentPosition[1].TCSectionIndex;
+
+            if (!Simulator.TimetableMode) AuxActionsContain.ResetAuxAction(this);
             SwitchToNodeControl(PresentPosition[0].TCSectionIndex);
             TCRoute.SetReversalOffset(Length);
         }
