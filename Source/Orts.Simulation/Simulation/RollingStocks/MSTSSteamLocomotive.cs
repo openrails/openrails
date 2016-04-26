@@ -3401,6 +3401,8 @@ namespace Orts.Simulation.RollingStocks
             // Typically tangential force will be greater at starting then when the locomotive is at speed, as interia and reduce steam pressure will decrease the value. 
             // Thus we will only consider slip impacts at start of the locomotive
 
+            if (Simulator.UseAdvancedAdhesion) // only set slip when advanced adhesion is set
+            {
             float SlipCutoffPressureAtmPSI;
             float SlipCylinderReleasePressureAtmPSI;
             float SlipInitialPressureAtmPSI;
@@ -3675,8 +3677,6 @@ namespace Orts.Simulation.RollingStocks
 
             }
 
-            if (Simulator.UseAdvancedAdhesion) // only set slip when advanced adhesion is set
-            {
                 if (IsLocoSlip)
                 {
                     float FrictionWheelSpeedMpS = Train.ProjectedSpeedMpS;
@@ -3737,6 +3737,10 @@ namespace Orts.Simulation.RollingStocks
 
 #endif
 
+            }
+            else // Set wheel speed if "simple" friction is used
+            {
+                WheelSpeedMpS = SpeedMpS;
             }
 
             #endregion
