@@ -5181,7 +5181,9 @@ namespace Orts.Simulation.Physics
 
                 // if waiting for next signal and section beyond signal is last in route and there is no valid reversal index - end of route reached
                 if (NextSignalObject[0] != null && PresentPosition[0].TCSectionIndex == NextSignalObject[0].TCReference &&
-                     NextSignalObject[0].TCNextTC == ValidRoute[0][lastValidRouteIndex].TCSectionIndex && reversalSectionIndex < 0)
+                     NextSignalObject[0].TCNextTC == ValidRoute[0][lastValidRouteIndex].TCSectionIndex && reversalSectionIndex < 0 &&
+                     (Simulator.TimetableMode ||
+                     (NextSignalObject[0].this_sig_lr(MstsSignalFunction.NORMAL) == MstsSignalAspect.STOP && TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid)))
                 {
                     endOfRoute = true;
                 }
