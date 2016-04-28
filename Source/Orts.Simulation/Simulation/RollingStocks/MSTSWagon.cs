@@ -1190,7 +1190,7 @@ namespace Orts.Simulation.RollingStocks
             }
             else
             {
-                frictionfraction = BrakeShoeFrictionFactor[MpS.ToKpH(SpeedMpS)];
+                frictionfraction = BrakeShoeFrictionFactor[MpS.ToKpH(AbsSpeedMpS)];
             }
             
             return frictionfraction;
