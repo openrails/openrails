@@ -358,6 +358,8 @@ namespace Orts.Viewer3D.RollingStock
 
         private void UpdateAnimation(RenderFrame frame, ElapsedTime elapsedTime)
         {
+            
+            
             float distanceTravelledM;
             if (MSTSWagon.IsDriveable && MSTSWagon.Simulator.UseAdvancedAdhesion)
                 //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.

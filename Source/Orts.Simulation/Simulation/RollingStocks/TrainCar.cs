@@ -117,12 +117,15 @@ namespace Orts.Simulation.RollingStocks
         public float CarHeatPipeAreaM2;  // Area of surface of car pipe
 
         // Used to calculate wheel sliding for locked brake
-        public bool IsBrakeSlide = false;
+        public bool BrakeSkid = false;
         public float BrakeShoeCoefficientFriction = 1.0f; // Brake Shoe coefficient - for simple adhesion model set to 1
-        public float BrakeShoeCoefficientFrictionAdjFactor = 1.0f; // Factor to adjust Brake force by - based upon changing friction coefficient with speed
+        public float BrakeShoeCoefficientFrictionAdjFactor = 1.0f; // Factor to adjust Brake force by - based upon changing friction coefficient with speed, will change when wheel goes into skid
+        public float BrakeShoeRetardCoefficientFrictionAdjFactor = 1.0f; // Factor of adjust Retard Brake force by - independent of skid
         float DefaultBrakeShoeCoefficientFriction;  // A default value of brake shoe friction is no user settings are present.
         float BrakeWheelTreadForceN; // The retarding force apparent on the tread of the wheel
         float WagonBrakeAdhesiveForceN; // The adhesive force existing on the wheels of the wagon
+        public float SkidFriction = 0.08f; // Friction if wheel starts skidding - based upon wheel dynamic friction of approx 0.08
+        bool BrakeSkidCheck;  // Determine whether brake skid should be calculated. Depends upon type of stock
 
         public float AuxTenderWaterMassKG;    // Water mass in auxiliary tender
         public string AuxWagonType;           // Store wagon type for use with auxilary tender calculations
@@ -149,6 +152,7 @@ namespace Orts.Simulation.RollingStocks
         public float CouplerSlack2M;  // slack calculated using draft gear force
         public bool WheelSlip;  // true if locomotive wheels slipping
         public bool WheelSlipWarning;
+        public bool WheelSkid;  // True if wagon wheels lock up.
         public float _AccelerationMpSS;
         protected IIRFilter AccelerationFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, 1.0f, 0.1f);
 
@@ -253,7 +257,8 @@ namespace Orts.Simulation.RollingStocks
 
         public float TunnelForceN;  // Resistive force due to tunnel, in Newtons
         public float FrictionForceN; // in Newtons ( kg.m/s^2 ) unsigned, includes effects of curvature
-        public float BrakeForceN;    // brake force in Newtons
+        public float BrakeForceN;    // brake force applied to slow train (Newtons) - will be impacted by wheel/rail friction
+        public float BrakeRetardForceN;    // brake force applied to wheel by brakeshoe (Newtons)
         public float TotalForceN; // sum of all the forces active on car relative train direction
 
         public string CarBrakeSystemType;
@@ -488,7 +493,7 @@ namespace Orts.Simulation.RollingStocks
         }
 
 
- #region Calculate Brake Slide
+        #region Calculate Brake Skid
 
         /// <summary>
         /// This section calculates:
@@ -499,6 +504,7 @@ namespace Orts.Simulation.RollingStocks
 
         public virtual void UpdateBrakeSlideCalculation()
         {
+
             // Only apply slide, and advanced brake friction, if advanced adhesion is selected, and it is not an AI train
             if (Simulator.UseAdvancedAdhesion && Train.GetType() != typeof(AITrain))
             {
@@ -507,41 +513,109 @@ namespace Orts.Simulation.RollingStocks
                 float UserFriction = GetUserBrakeShoeFrictionFactor();
                 float ZeroUserFriction = GetZeroUserBrakeShoeFrictionFactor();
                 float AdhesionMultiplier = Simulator.Settings.AdhesionFactor / 100.0f; // User set adjustment factor - convert to a factor where 100% = no change to adhesion
+          //      float SkidFrictionAdjFactor; // Factor to adjust BrakeForce by if skid occurs
                 
+
                 // This section calculates an adjustment factor for the brake force dependent upon the "base" (zero speed) friction value. 
                 //For a user defined case the base value is the zero speed value from the curve entered by the user.
                 // For a "default" case where no user data has been added to the WAG file, the base friction value has been assumed to be 0.2.
 
                 if (UserFriction != 0)  // User defined friction has been applied in WAG file - Assume MaxBrakeForce is correctly set in the WAG, so no adjustment required 
                 {
-                    BrakeShoeCoefficientFrictionAdjFactor = UserFriction / ZeroUserFriction * AdhesionMultiplier;
-                    BrakeShoeCoefficientFriction = UserFriction * AdhesionMultiplier;
+                    BrakeShoeCoefficientFrictionAdjFactor = UserFriction / ZeroUserFriction * AdhesionMultiplier; // Factor calculated by normalising zero speed value on friction curve applied in WAG file
+                    BrakeShoeRetardCoefficientFrictionAdjFactor = UserFriction / ZeroUserFriction * AdhesionMultiplier;
+                    BrakeShoeCoefficientFriction = UserFriction * AdhesionMultiplier; // For display purposes on HUD
                 }
                 else
                 // User defined friction NOT applied in WAG file - Assume MaxBrakeForce is incorrectly set in the WAG, so adjustment is required 
                 {
                     DefaultBrakeShoeCoefficientFriction = (7.6f / (MpS.ToKpH(SpeedMpS) + 17.5f) + 0.07f) * AdhesionMultiplier; // Base Curtius - Kniffler equation - u = 0.50, all other values are scaled off this formula
                     BrakeShoeCoefficientFrictionAdjFactor = DefaultBrakeShoeCoefficientFriction / 0.2f * AdhesionMultiplier;  // Assuming that current MaxBrakeForce has been set with an existing Friction Coff of 0.2f, an adjustment factor needs to be developed to reduce the MAxBrakeForce by a relative amount
-                    BrakeShoeCoefficientFriction = DefaultBrakeShoeCoefficientFriction * AdhesionMultiplier;
-                    }
+                    BrakeShoeRetardCoefficientFrictionAdjFactor = DefaultBrakeShoeCoefficientFriction / 0.2f * AdhesionMultiplier;
+                    BrakeShoeCoefficientFriction = DefaultBrakeShoeCoefficientFriction * AdhesionMultiplier;  // For display purposes on HUD
+                }
 
                 // Clamp adjustment factor to a value of 1.0 - i.e. the brakeforce can never exceed the Brake Force value defined in the WAG file
                 BrakeShoeCoefficientFrictionAdjFactor = MathHelper.Clamp(BrakeShoeCoefficientFrictionAdjFactor, 0.01f, 1.0f);
+                BrakeShoeRetardCoefficientFrictionAdjFactor = MathHelper.Clamp(BrakeShoeRetardCoefficientFrictionAdjFactor, 0.01f, 1.0f);
 
-                // Calculate tread force on wheel
-                BrakeWheelTreadForceN = BrakeForceN;
 
-                // Calculate adhesive force
-                WagonBrakeAdhesiveForceN = MassKG * GravitationalAccelerationMpS2 * Train.WagonCoefficientFriction;
+                // ************  Check if diesel or electric - assumed already be cover by advanced adhesion model *********
 
-                if (BrakeWheelTreadForceN > WagonBrakeAdhesiveForceN)
+                BrakeSkidCheck = true;  // set brake skid check to true - ie brake skid will be calculated
+
+                if (this is MSTSDieselLocomotive || this is MSTSElectricLocomotive)
                 {
-                    IsBrakeSlide = true;
+                    BrakeSkidCheck = false; // if diesel or electric locomotive the skid is calculated elsewhere - to be confirmed
+                }
+
+                if (BrakeSkidCheck)
+                {
+
+                    // Calculate tread force on wheel - use the retard force as this is related to brakeshoe coefficient, and doesn't vary with skid.
+                    BrakeWheelTreadForceN = BrakeRetardForceN;
+
+
+                    // Calculate adhesive force based upon whether in skid or not
+                    if (BrakeSkid)
+                    {
+                        WagonBrakeAdhesiveForceN = MassKG * GravitationalAccelerationMpS2 * SkidFriction;  // Adhesive force if wheel skidding
+                    }
+                    else
+                    {
+                        WagonBrakeAdhesiveForceN = MassKG * GravitationalAccelerationMpS2 * Train.WagonCoefficientFriction; // Adhesive force wheel normal
+                    }
+
+                    // Test if wheel forces are high enough to induce a slip. Set slip flag if slip occuring 
+                    if (!BrakeSkid && AbsSpeedMpS > 0.01)  // Train must be moving forward to experience skid
+                    {
+                        if (BrakeWheelTreadForceN > WagonBrakeAdhesiveForceN)
+                        {
+                            BrakeSkid = true; 	// wagon wheel is slipping
+                            var message = "Car ID: " + CarID + " - experiencing braking force wheel skid.";
+                            Simulator.Confirmer.Message(ConfirmLevel.Warning, message);
+                        }
+                    }
+                    else if (BrakeSkid && AbsSpeedMpS > 0.01)
+                    {
+                        if (BrakeWheelTreadForceN < WagonBrakeAdhesiveForceN)
+                        {
+                            BrakeSkid = false; 	// wagon wheel is not slipping
+                        }
+                    }
+                    else
+                    {
+                        BrakeSkid = false; 	// wagon wheel is not slipping
+
+                    }
+
+                    // If wagon wheel skid is occuring, set parameters to reduce motive force (pulling power), and set wheel rotational speed for wheel viewers
+                    if (BrakeSkid)
+                    {
+                        //  WheelSlip = true;  // Set wheel slip if locomotive is slipping???
+
+                        //    WheelSpeedMpS = (Direction == Direction.Forward ? 1 : -1) * FrictionWheelSpeedMpS;
+
+                        // BrakeForceN = MassKG * GravitationalAccelerationMpS2 * SkidFriction;  // Reduce locomotive tractive force to stop it moving forward
+                    }
+                    else
+                    {
+                        // WheelSlip = false;
+                        //             WheelSpeedMpS = SpeedMpS;
+                    }
+
+                }
+                else
+                {
+                    BrakeSkid = false; 	// wagon wheel is not slipping
+                    BrakeShoeRetardCoefficientFrictionAdjFactor = 1.0f;
                 }
             }
-            else  // set default values if simple adhesion model is used.
+            else  // set default values if simple adhesion model, or if diesel or electric locomotive is used, which doesn't check for brake skid.
             {
+                BrakeSkid = false; 	// wagon wheel is not slipping
                 BrakeShoeCoefficientFrictionAdjFactor = 1.0f;  // Default value set to leave existing brakeforce constant regardless of changing speed
+                BrakeShoeRetardCoefficientFrictionAdjFactor = 1.0f;
                 BrakeShoeCoefficientFriction = 1.0f;  // Default value for display purposes
 
             }
@@ -550,7 +624,9 @@ namespace Orts.Simulation.RollingStocks
 
             Trace.TraceInformation("================================== Brake Force Slide (TrainCar.cs) ===================================");
             Trace.TraceInformation("Brake Shoe Friction- Car: {0} Speed: {1} Brake Force: {2} Advanced Adhesion: {3}", CarID, MpS.ToMpH(SpeedMpS), BrakeForceN, Simulator.UseAdvancedAdhesion);
+            Trace.TraceInformation("BrakeSkidCheck: {0}", BrakeSkidCheck);
             Trace.TraceInformation("Brake Shoe Friction- Coeff: {0} Adjust: {1}", BrakeShoeCoefficientFriction, BrakeShoeCoefficientFrictionAdjFactor);
+            Trace.TraceInformation("Brake Shoe Force - Ret: {0} Adjust: {1} Skid {2} Adj {3}", BrakeRetardForceN, BrakeShoeRetardCoefficientFrictionAdjFactor, BrakeSkid, SkidFriction);
             Trace.TraceInformation("Tread: {0} Adhesive: {1}", BrakeWheelTreadForceN, WagonBrakeAdhesiveForceN);
             Trace.TraceInformation("Mass: {0} Rail Friction: {1}", MassKG, Train.WagonCoefficientFriction);
 #endif

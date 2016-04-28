@@ -132,6 +132,7 @@ namespace Orts.Simulation.Physics
 
         public bool IsWheelSlipWarninq;
         public bool IsWheelSlip;
+        public bool IsBrakeSkid;
 
         // Carriage Steam Heating
         public float TrainCurrentCarriageHeatTempC;          // Set current train carriage heat
@@ -1505,6 +1506,7 @@ namespace Orts.Simulation.Physics
 
             bool whlslp = false;
             bool whlslpwrn = false;
+            bool whlskd = false;
 
             TrainCar uncoupleBehindCar = null;
 
@@ -1527,6 +1529,8 @@ namespace Orts.Simulation.Physics
                     whlslp = true;
                 if (car.WheelSlipWarning)
                     whlslpwrn = true;
+                if (car.BrakeSkid)
+                    whlskd = true;
 
                 if (car.CouplerOverloaded)
                     uncoupleBehindCar = car;
@@ -1535,6 +1539,7 @@ namespace Orts.Simulation.Physics
 
             IsWheelSlip = whlslp;
             IsWheelSlipWarninq = whlslpwrn;
+            IsBrakeSkid = whlskd;
 
             // Coupler breaker
             if (uncoupleBehindCar != null)

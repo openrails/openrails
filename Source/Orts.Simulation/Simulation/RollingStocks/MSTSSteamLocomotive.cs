@@ -3645,18 +3645,18 @@ namespace Orts.Simulation.RollingStocks
                 StartStaticWheelFrictionForceLbf = (Kg.ToLb(DrvWheelWeightKg) - StartVerticalThrustForceLeft - StartVerticalThrustForceMiddle - StartVerticalThrustForceRight) * Train.LocomotiveCoefficientFriction;
             }
 
-            if (absSpeedMpS < 1.0)  // Test only when the locomotive is starting
+            if (absSpeedMpS < 1.0)  // For low speed use the starting values
             {
                 SteamStaticWheelForce = StartStaticWheelFrictionForceLbf;
                 SteamTangentialWheelForce = StartTangentialWheelTreadForceLbf;
             }
-            else
+            else // for high speed use "running values"
             {
                 SteamStaticWheelForce = SpeedStaticWheelFrictionForceLbf;
                 SteamTangentialWheelForce = SpeedTangentialWheelTreadForceLbf;
             }
 
-
+                // Test if wheel forces are high enough to induce a slip. Set slip flag if slip occuring 
                 if (!IsLocoSlip)
                 {
                     if (SteamTangentialWheelForce > SteamStaticWheelForce)
@@ -3671,17 +3671,18 @@ namespace Orts.Simulation.RollingStocks
                         IsLocoSlip = false; 	// locomotive is not slipping
                     }
                 }
-            else
-            {
-                IsLocoSlip = false; 	// locomotive is not slipping
+                else
+                {
+                    IsLocoSlip = false; 	// locomotive is not slipping
 
-            }
+                }
 
+                // If locomotive slip is occuring, set parameters to reduce motive force (pulling power), and set wheel rotational speed for wheel viewers
                 if (IsLocoSlip)
                 {
                     float FrictionWheelSpeedMpS = Train.ProjectedSpeedMpS;
                     WheelSlip = true;  // Set wheel slip if locomotive is slipping
-                    if (absSpeedMpS < 1.0)
+                    if (absSpeedMpS < 1.0)  // if locomotive is stationary there is no projected train speed 
                     {
                         WheelSpeedMpS = (Direction == Direction.Forward ? 1 : -1) * 2.0f * (SteamTangentialWheelForce / SteamStaticWheelForce);
                     }
@@ -3692,12 +3693,10 @@ namespace Orts.Simulation.RollingStocks
                     }
 
                     MotiveForceN *= Train.LocomotiveCoefficientFriction;  // Reduce locomotive tractive force to stop it moving forward
-               //Trace.TraceInformation("WheelSlip")
                 }
                 else
                 {
                     WheelSlip = false;
-              //      WheelSpeedMpS = (Direction == Direction.Forward ? 1 : -1) * absSpeedMpS;
                     WheelSpeedMpS = SpeedMpS;
                 }
 

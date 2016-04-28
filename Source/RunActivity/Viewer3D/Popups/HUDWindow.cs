@@ -425,8 +425,8 @@ namespace Orts.Viewer3D.Popups
             else if (Viewer.PlayerTrain.IsWheelSlipWarninq)
                 TableAddLine(table, Viewer.Catalog.GetString("Wheel slip warning") + "???");
 
-//            if (Viewer.PlayerLocomotive.Train.TrainType = playerTrain && car.IsBrakeSlide)
- //               TableAddLine(table, Viewer.Catalog.GetString("Wheel skid"));
+            if (Viewer.PlayerTrain.IsBrakeSkid )
+                TableAddLine(table, Viewer.Catalog.GetString("Wheel skid") + "!!!");
 
             if (Viewer.PlayerLocomotive.GetSanderOn())
             {
@@ -642,7 +642,7 @@ namespace Orts.Viewer3D.Popups
                         TableAddLabelValue(table, Viewer.Catalog.GetString("Wheel slip"), "{0:F0}% ({1:F0}%/{2})", mstsLocomotive.LocomotiveAxle.SlipSpeedPercent, mstsLocomotive.LocomotiveAxle.SlipDerivationPercentpS, FormatStrings.s);
                         TableAddLabelValue(table, Viewer.Catalog.GetString("Conditions"), "{0:F0}%", mstsLocomotive.LocomotiveAxle.AdhesionConditions * 10f);
                         TableAddLabelValue(table, Viewer.Catalog.GetString("Axle drive force"), "{0}", FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.DriveForceN, mstsLocomotive.IsMetric));
-                        TableAddLabelValue(table, Viewer.Catalog.GetString("Axle brake force"), "{0}", FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.BrakeForceN, mstsLocomotive.IsMetric));
+                        TableAddLabelValue(table, Viewer.Catalog.GetString("Axle brake force"), "{0}", FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.BrakeRetardForceN, mstsLocomotive.IsMetric));
                         TableAddLabelValue(table, Viewer.Catalog.GetString("Number of substeps"), "{0:F0} ({1})", mstsLocomotive.LocomotiveAxle.AxleRevolutionsInt.NumOfSubstepsPS,
                                                                                                     Viewer.Catalog.GetStringFmt("filtered by {0:F0}", mstsLocomotive.LocomotiveAxle.FilterMovingAverage.Size));
                         TableAddLabelValue(table, Viewer.Catalog.GetString("Solver"), "{0}", mstsLocomotive.LocomotiveAxle.AxleRevolutionsInt.Method.ToString());
@@ -701,7 +701,7 @@ namespace Orts.Viewer3D.Popups
                 TableSetCell(table, 10, "{0:F2}%", -car.CurrentElevationPercent);
                 TableSetCell(table, 11, "{0}", FormatStrings.FormatDistance(car.CurrentCurveRadius, car.IsMetric));
                 TableSetCell(table, 12, "{0:F0}%", car.BrakeShoeCoefficientFriction * 100.0f);
-                TableSetCell(table, 13, car.IsBrakeSlide ? Viewer.Catalog.GetString("Yes") : "No");
+                TableSetCell(table, 13, car.BrakeSkid ? Viewer.Catalog.GetString("Yes") : "No");
                 TableSetCell(table, 14, car.Flipped ? Viewer.Catalog.GetString("Flipped") : "");
                 TableAddLine(table);
             }
