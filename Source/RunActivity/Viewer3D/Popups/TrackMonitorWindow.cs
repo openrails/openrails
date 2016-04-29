@@ -208,6 +208,7 @@ namespace Orts.Viewer3D.Popups
         int[] endAuthorityPosition = new int[5] { 42, -14, -10, 24, 24 }; // Relative positioning
         int[] signalPosition = new int[5] { 134, -16, 0, 16, 16 }; // Relative positioning
         int[] arrowPosition = new int[5] { 22, -12, -12, 24, 24 };
+        int[] invalidReversalPosition = new int[5] { 42, -14, -10, 24, 24 }; // Relative positioning
 
         // texture rectangles : X-offset, Y-offset, width, height
         Rectangle eyeSprite = new Rectangle(0, 144, 24, 24);
@@ -223,6 +224,7 @@ namespace Orts.Viewer3D.Popups
         Rectangle waitingPointSprite = new Rectangle(24, 24, 24, 24);
         Rectangle forwardArrowSprite = new Rectangle(24, 48, 24, 24);
         Rectangle backwardArrowSprite = new Rectangle(0, 48, 24, 24);
+        Rectangle invalidReversalSprite = new Rectangle(24, 144, 24, 24);
 
         Dictionary<TrackMonitorSignalAspect, Rectangle> SignalMarkers = new Dictionary<TrackMonitorSignalAspect, Rectangle>
         {
@@ -283,6 +285,7 @@ namespace Orts.Viewer3D.Popups
             ScaleDesign(ref endAuthorityPosition);
             ScaleDesign(ref signalPosition);
             ScaleDesign(ref arrowPosition);
+            ScaleDesign(ref invalidReversalPosition);
         }
 
         void ScaleDesign(ref int variable)
@@ -755,7 +758,7 @@ namespace Orts.Viewer3D.Popups
         // draw reversal information
         int drawReversal(SpriteBatch spriteBatch, Point offset, int startObjectArea, int endObjectArea, int zeroPoint, float maxDistance, float distanceFactor, float firstLabelDistance, bool forward, int lastLabelPosition, Train.TrainObjectItem thisItem, ref bool firstLabelShown)
         {
-            var displayItem = reversalSprite;
+            var displayItem = thisItem.Valid ? reversalSprite : invalidReversalSprite;
             var newLabelPosition = lastLabelPosition;
 
             if (thisItem.DistanceToTrainM < (maxDistance - textSpacing / distanceFactor))
@@ -767,8 +770,16 @@ namespace Orts.Viewer3D.Popups
                 // What was this offset all about? Shouldn't we draw the icons in the correct location ALL the time? -- James Ross
                 // var correctingOffset = Program.Simulator.TimetableMode || !Program.Simulator.Settings.EnhancedActCompatibility ? 0 : 7;
 
-                var markerPlacement = new Rectangle(offset.X + reversalPosition[0], offset.Y + itemLocation + reversalPosition[forward ? 1 : 2], reversalPosition[3], reversalPosition[4]);
-                spriteBatch.Draw(TrackMonitorImages, markerPlacement, displayItem, thisItem.Enabled ? Color.LightGreen : Color.White);
+                if (thisItem.Valid)
+                {
+                    var markerPlacement = new Rectangle(offset.X + reversalPosition[0], offset.Y + itemLocation + reversalPosition[forward ? 1 : 2], reversalPosition[3], reversalPosition[4]);
+                    spriteBatch.Draw(TrackMonitorImages, markerPlacement, displayItem, thisItem.Enabled ? Color.LightGreen : Color.White);
+                }
+                else
+                {
+                    var markerPlacement = new Rectangle(offset.X + invalidReversalPosition[0], offset.Y + itemLocation + invalidReversalPosition[forward ? 1 : 2], invalidReversalPosition[3], invalidReversalPosition[4]);
+                    spriteBatch.Draw(TrackMonitorImages, markerPlacement, displayItem, Color.White);
+                }
 
                 // Only show distance for enhanced MSTS compatibility (this is the only time the position is controlled by the author).
                 if (itemOffset < firstLabelDistance && !firstLabelShown && !Program.Simulator.TimetableMode)

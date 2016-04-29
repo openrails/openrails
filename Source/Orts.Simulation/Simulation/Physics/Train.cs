@@ -5107,196 +5107,206 @@ namespace Orts.Simulation.Physics
                     TCRoute.LoopEnd[TCRoute.activeSubpath] = -1;
                 }
             }
-
-            // can only be performed if train is stationary
-
-            if (Math.Abs(SpeedMpS) > 0.01)
-                return (returnState);
-
-            // check position in relation to present end of path
-
-            if (ControlMode == TRAIN_CONTROL.AUTO_NODE &&
-                (EndAuthorityType[0] == END_AUTHORITY.END_OF_TRACK || EndAuthorityType[0] == END_AUTHORITY.END_OF_PATH) ||
-                !Simulator.TimetableMode)
+            if (TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid || TCRoute.activeSubpath == TCRoute.TCRouteSubpaths.Count - 1 || Simulator.TimetableMode)
             {
-                // front is in last route section
-                if (PresentPosition[0].RouteListIndex == (ValidRoute[0].Count - 1) && (Simulator.TimetableMode ||
-                    (!TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid && TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1)))
-                {
-                    endOfRoute = true;
-                }
-                // front is within 150m. of end of route and no junctions inbetween (only very short sections ahead of train)
-                else
-                {
-                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[PresentPosition[0].TCSectionIndex];
-                    float lengthToGo = thisSection.Length - PresentPosition[0].TCOffset;
+                // can only be performed if train is stationary
 
-                    bool junctionFound = false;
-                    if (Simulator.TimetableMode || TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1)
-                    {
-                        for (int iIndex = PresentPosition[0].RouteListIndex + 1; iIndex < ValidRoute[0].Count && !junctionFound; iIndex++)
-                        {
-                            thisSection = signalRef.TrackCircuitList[ValidRoute[0][iIndex].TCSectionIndex];
-                            junctionFound = thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction;
-                            lengthToGo += thisSection.Length;
-                        }
-                    }
-                    else lengthToGo = ComputeDistanceToReversalPoint();
-                    float compatibilityNegligibleRouteChunk = ((TrainType == TRAINTYPE.AI || TrainType == TRAINTYPE.AI_PLAYERHOSTING)
-                        && TCRoute.TCRouteSubpaths.Count - 1 == TCRoute.activeSubpath) ? 40f : 5f;
-                    float negligibleRouteChunk = (Simulator.TimetableMode) ? 150f : compatibilityNegligibleRouteChunk;
+                if (Math.Abs(SpeedMpS) > 0.01)
+                    return (returnState);
 
-                    if (lengthToGo < negligibleRouteChunk && !junctionFound &&
-                        (Simulator.TimetableMode || !TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid))
+                // check position in relation to present end of path
+
+                if (ControlMode == TRAIN_CONTROL.AUTO_NODE &&
+                    (EndAuthorityType[0] == END_AUTHORITY.END_OF_TRACK || EndAuthorityType[0] == END_AUTHORITY.END_OF_PATH) ||
+                    !Simulator.TimetableMode)
+                {
+                    // front is in last route section
+                    if (PresentPosition[0].RouteListIndex == (ValidRoute[0].Count - 1) && (Simulator.TimetableMode ||
+                        (!TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid && TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1)))
                     {
                         endOfRoute = true;
                     }
-                }
-            }
-            //<CSComment: check of vicinity to reverse point; only in subpaths ending with reversal
-            if (!Simulator.TimetableMode && TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid)
-            {
-                float distanceToReversalPoint = ComputeDistanceToReversalPoint();
-                if (distanceToReversalPoint < 50 && PresentPosition[1].RouteListIndex >= reversalSectionIndex)
-                    endOfRoute = true;
-            }
-            // other checks unrelated to state
-            if (!endOfRoute)
-            {
-                // if last entry in route is END_OF_TRACK, check against previous entry as this can never be the trains position nor a signal reference section
-                int lastValidRouteIndex = ValidRoute[0].Count - 1;
-                if (signalRef.TrackCircuitList[ValidRoute[0][lastValidRouteIndex].TCSectionIndex].CircuitType == TrackCircuitSection.TrackCircuitType.EndOfTrack)
-                    lastValidRouteIndex--;
-
-                // if end of train on last section in route - end of route reached
-
-                if (PresentPosition[1].RouteListIndex == lastValidRouteIndex && (Simulator.TimetableMode))
-                {
-                    endOfRoute = true;
-                }
-
-                // if waiting for next signal and section in front of signal is last in route - end of route reached
-
-                if (NextSignalObject[0] != null && PresentPosition[0].TCSectionIndex == NextSignalObject[0].TCReference &&
-                     NextSignalObject[0].TCReference == ValidRoute[0][lastValidRouteIndex].TCSectionIndex &&
-                     Simulator.TimetableMode)
-                {
-                    endOfRoute = true;
-                }
-
-                // if waiting for next signal and section beyond signal is last in route and there is no valid reversal index - end of route reached
-                if (NextSignalObject[0] != null && PresentPosition[0].TCSectionIndex == NextSignalObject[0].TCReference &&
-                     NextSignalObject[0].TCNextTC == ValidRoute[0][lastValidRouteIndex].TCSectionIndex && reversalSectionIndex < 0 &&
-                     (Simulator.TimetableMode ||
-                     (NextSignalObject[0].this_sig_lr(MstsSignalFunction.NORMAL) == MstsSignalAspect.STOP && TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid)))
-                {
-                    endOfRoute = true;
-                }
-
-                // if rear of train is beyond reversal section
-
-                else if (reversalSectionIndex >= 0 && PresentPosition[1].RouteListIndex >= reversalSectionIndex &&
-                    Simulator.TimetableMode)
-                {
-                    endOfRoute = true;
-                }
-
-                // if remaining length less then train length and no junctions to end of route - end of route reached
-                // if no junctions or signals to end of route - end of route reached
-                else
-                {
-                    bool intermediateJunction = false;
-                    bool intermediateSignal = false;
-                    float length = 0f;
-                    float distanceToNextJunction = -1f;
-                    float distanceToNextSignal = -1f;
-
-                    if (PresentPosition[1].RouteListIndex >= 0) // end of train is on route
+                    // front is within 150m. of end of route and no junctions inbetween (only very short sections ahead of train)
+                    else
                     {
-                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[ValidRoute[0][PresentPosition[1].RouteListIndex].TCSectionIndex];
-                        int direction = ValidRoute[0][PresentPosition[1].RouteListIndex].Direction;
-                        length = (thisSection.Length - PresentPosition[1].TCOffset);
-                        if (thisSection.EndSignals[direction] != null)                         // check for signal only in direction of train (other signal is behind train)
+                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[PresentPosition[0].TCSectionIndex];
+                        float lengthToGo = thisSection.Length - PresentPosition[0].TCOffset;
+
+                        bool junctionFound = false;
+                        if (Simulator.TimetableMode || TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1)
                         {
-                            intermediateSignal = true;
-                            distanceToNextSignal = length + Length; // distance is total length plus train length (must be re-compensated)
-                        }
-
-                        if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction || thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
-                        {
-                            intermediateJunction = true;
-                            distanceToNextJunction = 0f;
-                        }
-
-                        for (int iIndex = PresentPosition[1].RouteListIndex + 1; iIndex >= 0 && iIndex <= ValidRoute[0].Count - 1; iIndex++)
-                        {
-                            thisSection = signalRef.TrackCircuitList[ValidRoute[0][iIndex].TCSectionIndex];
-                            length += thisSection.Length;
-
-                            if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction ||
-                                thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
+                            for (int iIndex = PresentPosition[0].RouteListIndex + 1; iIndex < ValidRoute[0].Count && !junctionFound; iIndex++)
                             {
-                                intermediateJunction = true;
-                                distanceToNextJunction = distanceToNextJunction < 0 ? length : distanceToNextJunction;
-                            }
-
-                            if (thisSection.EndSignals[direction] != null)
-                            {
-                                intermediateSignal = true;
-                                distanceToNextSignal = distanceToNextSignal < 0 ? length : distanceToNextSignal;
-                            }
-                            if (thisSection.EndSignals[direction == 1 ? 0 : 1] != null) // check in other direction
-                            {
-                                intermediateSignal = true;
-                                distanceToNextSignal = distanceToNextSignal < 0 ? length - thisSection.Length : distanceToNextSignal; // signal is at start of section
+                                thisSection = signalRef.TrackCircuitList[ValidRoute[0][iIndex].TCSectionIndex];
+                                junctionFound = thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction;
+                                lengthToGo += thisSection.Length;
                             }
                         }
-                        // check if intermediate junction or signal is valid : only so if there is enough distance (from the front of the train) left for train to pass that junction
+                        else lengthToGo = ComputeDistanceToReversalPoint();
+                        float compatibilityNegligibleRouteChunk = ((TrainType == TRAINTYPE.AI || TrainType == TRAINTYPE.AI_PLAYERHOSTING)
+                            && TCRoute.TCRouteSubpaths.Count - 1 == TCRoute.activeSubpath) ? 40f : 5f;
+                        float negligibleRouteChunk = (Simulator.TimetableMode) ? 150f : compatibilityNegligibleRouteChunk;
 
-                        float frontlength = length - Length;
-                        if (intermediateJunction)
+                        if (lengthToGo < negligibleRouteChunk && !junctionFound &&
+                            (Simulator.TimetableMode || !TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid))
                         {
-                            if ((frontlength - distanceToNextJunction) < Length) intermediateJunction = false;
-                        }
-
-                        if (intermediateSignal)
-                        {
-                            if ((frontlength - distanceToNextSignal) < Length) intermediateSignal = false;
+                            endOfRoute = true;
                         }
                     }
-                    else if (PresentPosition[0].RouteListIndex >= 0) // else use front position - check for further signals or junctions only
-                    {
-                        for (int iIndex = PresentPosition[0].RouteListIndex; iIndex >= 0 && iIndex <= ValidRoute[0].Count - 1; iIndex++)
-                        {
-                            TrackCircuitSection thisSection = signalRef.TrackCircuitList[ValidRoute[0][iIndex].TCSectionIndex];
-                            int direction = ValidRoute[0][iIndex].Direction;
+                }
+                //<CSComment: check of vicinity to reverse point; only in subpaths ending with reversal
+                if (!Simulator.TimetableMode && TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid)
+                {
+                    float distanceToReversalPoint = ComputeDistanceToReversalPoint();
+                    if (distanceToReversalPoint < 50 && PresentPosition[1].RouteListIndex >= reversalSectionIndex)
+                        endOfRoute = true;
+                }
+                // other checks unrelated to state
+                if (!endOfRoute)
+                {
+                    // if last entry in route is END_OF_TRACK, check against previous entry as this can never be the trains position nor a signal reference section
+                    int lastValidRouteIndex = ValidRoute[0].Count - 1;
+                    if (signalRef.TrackCircuitList[ValidRoute[0][lastValidRouteIndex].TCSectionIndex].CircuitType == TrackCircuitSection.TrackCircuitType.EndOfTrack)
+                        lastValidRouteIndex--;
 
-                            if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction ||
-                                thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
-                            {
-                                intermediateJunction = true;
-                            }
+                    // if end of train on last section in route - end of route reached
 
-                            if (thisSection.EndSignals[direction] != null)
-                            {
-                                intermediateSignal = true;
-                            }
-                        }
-                    }
-
-                    // check overall position
-
-                    if (!intermediateJunction && !intermediateSignal && Simulator.TimetableMode)  // no more junctions and no more signal - reverse subpath
+                    if (PresentPosition[1].RouteListIndex == lastValidRouteIndex && (Simulator.TimetableMode))
                     {
                         endOfRoute = true;
                     }
 
-                    //                    if (length < Length && !intermediateJunction)  // no more junctions and short track - reverse subpath
-                    //                    {
-                    //                        endOfRoute = true;
-                    //                    }
+                    // if waiting for next signal and section in front of signal is last in route - end of route reached
+
+                    if (NextSignalObject[0] != null && PresentPosition[0].TCSectionIndex == NextSignalObject[0].TCReference &&
+                         NextSignalObject[0].TCReference == ValidRoute[0][lastValidRouteIndex].TCSectionIndex &&
+                         Simulator.TimetableMode)
+                    {
+                        endOfRoute = true;
+                    }
+
+                    // if waiting for next signal and section beyond signal is last in route and there is no valid reversal index - end of route reached
+                    if (NextSignalObject[0] != null && PresentPosition[0].TCSectionIndex == NextSignalObject[0].TCReference &&
+                         NextSignalObject[0].TCNextTC == ValidRoute[0][lastValidRouteIndex].TCSectionIndex && reversalSectionIndex < 0 &&
+                         (Simulator.TimetableMode ||
+                         (NextSignalObject[0].this_sig_lr(MstsSignalFunction.NORMAL) == MstsSignalAspect.STOP && TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid)))
+                    {
+                        endOfRoute = true;
+                    }
+
+                    // if rear of train is beyond reversal section
+
+                    else if (reversalSectionIndex >= 0 && PresentPosition[1].RouteListIndex >= reversalSectionIndex &&
+                        Simulator.TimetableMode)
+                    {
+                        endOfRoute = true;
+                    }
+
+                    // if remaining length less then train length and no junctions to end of route - end of route reached
+                    // if no junctions or signals to end of route - end of route reached
+                    else
+                    {
+                        bool intermediateJunction = false;
+                        bool intermediateSignal = false;
+                        float length = 0f;
+                        float distanceToNextJunction = -1f;
+                        float distanceToNextSignal = -1f;
+
+                        if (PresentPosition[1].RouteListIndex >= 0) // end of train is on route
+                        {
+                            TrackCircuitSection thisSection = signalRef.TrackCircuitList[ValidRoute[0][PresentPosition[1].RouteListIndex].TCSectionIndex];
+                            int direction = ValidRoute[0][PresentPosition[1].RouteListIndex].Direction;
+                            length = (thisSection.Length - PresentPosition[1].TCOffset);
+                            if (thisSection.EndSignals[direction] != null)                         // check for signal only in direction of train (other signal is behind train)
+                            {
+                                intermediateSignal = true;
+                                distanceToNextSignal = length + Length; // distance is total length plus train length (must be re-compensated)
+                            }
+
+                            if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction || thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
+                            {
+                                intermediateJunction = true;
+                                distanceToNextJunction = 0f;
+                            }
+
+                            for (int iIndex = PresentPosition[1].RouteListIndex + 1; iIndex >= 0 && iIndex <= ValidRoute[0].Count - 1; iIndex++)
+                            {
+                                thisSection = signalRef.TrackCircuitList[ValidRoute[0][iIndex].TCSectionIndex];
+                                length += thisSection.Length;
+
+                                if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction ||
+                                    thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
+                                {
+                                    intermediateJunction = true;
+                                    distanceToNextJunction = distanceToNextJunction < 0 ? length : distanceToNextJunction;
+                                }
+
+                                if (thisSection.EndSignals[direction] != null)
+                                {
+                                    intermediateSignal = true;
+                                    distanceToNextSignal = distanceToNextSignal < 0 ? length : distanceToNextSignal;
+                                }
+                                if (thisSection.EndSignals[direction == 1 ? 0 : 1] != null) // check in other direction
+                                {
+                                    intermediateSignal = true;
+                                    distanceToNextSignal = distanceToNextSignal < 0 ? length - thisSection.Length : distanceToNextSignal; // signal is at start of section
+                                }
+                            }
+                            // check if intermediate junction or signal is valid : only so if there is enough distance (from the front of the train) left for train to pass that junction
+
+                            float frontlength = length - Length;
+                            if (intermediateJunction)
+                            {
+                                if ((frontlength - distanceToNextJunction) < Length) intermediateJunction = false;
+                            }
+
+                            if (intermediateSignal)
+                            {
+                                if ((frontlength - distanceToNextSignal) < Length) intermediateSignal = false;
+                            }
+                        }
+                        else if (PresentPosition[0].RouteListIndex >= 0) // else use front position - check for further signals or junctions only
+                        {
+                            for (int iIndex = PresentPosition[0].RouteListIndex; iIndex >= 0 && iIndex <= ValidRoute[0].Count - 1; iIndex++)
+                            {
+                                TrackCircuitSection thisSection = signalRef.TrackCircuitList[ValidRoute[0][iIndex].TCSectionIndex];
+                                int direction = ValidRoute[0][iIndex].Direction;
+
+                                if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction ||
+                                    thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
+                                {
+                                    intermediateJunction = true;
+                                }
+
+                                if (thisSection.EndSignals[direction] != null)
+                                {
+                                    intermediateSignal = true;
+                                }
+                            }
+                        }
+
+                        // check overall position
+
+                        if (!intermediateJunction && !intermediateSignal && Simulator.TimetableMode)  // no more junctions and no more signal - reverse subpath
+                        {
+                            endOfRoute = true;
+                        }
+
+                        //                    if (length < Length && !intermediateJunction)  // no more junctions and short track - reverse subpath
+                        //                    {
+                        //                        endOfRoute = true;
+                        //                    }
+                    }
                 }
             }
+
+            // MSTS double reversal point: can be recognized and passed at speed > 0
+            else
+            {
+                var distanceToReversalPoint = ComputeDistanceToReversalPoint();
+                if (distanceToReversalPoint <= 0 && distanceToReversalPoint != -1) endOfRoute = true;
+            }
+
             // not end of route - no action
 
             if (!endOfRoute)
@@ -11760,10 +11770,7 @@ namespace Orts.Simulation.Physics
             // set reversal point
 
             TCReversalInfo thisReversal = TCRoute.ReversalInfo[TCRoute.activeSubpath];
-            if (thisReversal.Valid)
-            {
-                AddTrainReversalInfo(thisReversal, ref thisInfo);
-            }
+            AddTrainReversalInfo(thisReversal, ref thisInfo);
 
             // set waiting point
             if (this != Simulator.OriginalPlayerTrain)
@@ -11857,6 +11864,7 @@ namespace Orts.Simulation.Physics
 
         public virtual void AddTrainReversalInfo(TCReversalInfo thisReversal, ref TrainInfo thisInfo)
         {
+            if (!thisReversal.Valid && TCRoute.activeSubpath == TCRoute.TCRouteSubpaths.Count - 1) return;
             int reversalSection = thisReversal.ReversalSectionIndex;
             if (thisReversal.LastDivergeIndex >= 0)
             {
@@ -11879,7 +11887,7 @@ namespace Orts.Simulation.Physics
             }
             if (reversalDistanceM > 0)
             {
-                TrainObjectItem nextItem = new TrainObjectItem(reversalEnabled, reversalDistanceM);
+                TrainObjectItem nextItem = new TrainObjectItem(reversalEnabled, reversalDistanceM, thisReversal.Valid);
                 thisInfo.ObjectInfoForward.Add(nextItem);
             }
         }
@@ -17345,6 +17353,7 @@ namespace Orts.Simulation.Physics
             public bool Enabled;
             public int StationPlatformLength;
             public SpeedItemType SpeedObjectType;
+            public bool Valid;
 
             // field validity :
             // if ItemType == SIGNAL :
@@ -17408,7 +17417,7 @@ namespace Orts.Simulation.Physics
             }
 
             // Constructor for Reversal
-            public TrainObjectItem(bool enabled, float thisDistanceM)
+            public TrainObjectItem(bool enabled, float thisDistanceM, bool valid = true)
             {
                 ItemType = TRAINOBJECTTYPE.REVERSAL;
                 AuthorityType = END_AUTHORITY.NO_PATH_RESERVED;
@@ -17416,6 +17425,7 @@ namespace Orts.Simulation.Physics
                 AllowedSpeedMpS = -1;
                 DistanceToTrainM = thisDistanceM;
                 Enabled = enabled;
+                Valid = valid;
             }
 
             // Constructor for Authority

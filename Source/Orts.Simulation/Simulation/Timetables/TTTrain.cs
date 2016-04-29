@@ -5596,6 +5596,7 @@ namespace Orts.Simulation.Timetables
 
         public override void AddTrainReversalInfo(TCReversalInfo thisReversal, ref TrainInfo thisInfo)
         {
+            if (!thisReversal.Valid) return;
             int reversalSection = TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][(TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count) - 1].TCSectionIndex;
             if (thisReversal.LastDivergeIndex >= 0)
             {
