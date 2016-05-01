@@ -8418,6 +8418,55 @@ namespace Orts.Simulation.Signalling
                 sigfound = true;
                 return sigAsp;
             }
+        }
+
+        // additional version using valid route heads only
+        public MstsSignalAspect this_sig_mr_routed(MstsSignalFunction fn_type, string dumpfile)
+        {
+            MstsSignalAspect sigAsp = MstsSignalAspect.UNKNOWN;
+            var sob = new StringBuilder();
+            sob.AppendFormat("  signal type 1 : {0} \n", thisRef);
+
+            foreach (SignalHead sigHead in SignalHeads)
+            {
+                if (sigHead.sigFunction == fn_type)
+                {
+                    if (sigHead.route_set() == 1)
+                    {
+                        if (sigHead.state < sigAsp)
+                        {
+                            sigAsp = sigHead.state;
+                            if (dumpfile.Length > 1)
+                            {
+                                sob.AppendFormat("   {0} : routed correct : {1} \n", sigHead.TDBIndex, sigHead.state);
+                            }
+                        }
+                    }
+                    else if (dumpfile.Length > 1)
+                    {
+                        sob.AppendFormat("   {0} : routed incorrect \n", sigHead.TDBIndex);
+                    }
+                }
+            }
+
+            if (sigAsp == MstsSignalAspect.UNKNOWN)
+            {
+                if (dumpfile.Length > 1)
+                {
+                    sob.AppendFormat("    No valid routed head found, returned STOP \n\n");
+                    File.AppendAllText(dumpfile, sob.ToString());
+                }
+                return MstsSignalAspect.STOP;
+            }
+            else
+            {
+                if (dumpfile.Length > 1)
+                {
+                    sob.AppendFormat("    Returned state : {0} \n\n", sigAsp.ToString());
+                    File.AppendAllText(dumpfile, sob.ToString());
+                }
+                return sigAsp;
+            }
         }//this_sig_mr
 
         //================================================================================================//
@@ -11317,32 +11366,19 @@ namespace Orts.Simulation.Signalling
             {
                 thisSignal = thisSignal.signalRef.SignalObjects[thisSignal.sigfound[(int)sigFN1]];
 
-                MstsSignalAspect thisState = thisSignal.this_sig_mr(sigFN1);
-
-                if (dumpfile.Length > 1)
-                {
-                    var sob = new StringBuilder();
-                    sob.AppendFormat("  signal type 1 : {0}", thisSignal.thisRef);
-                    sob.AppendFormat(" (");
-
-                    foreach (SignalHead otherHead in thisSignal.SignalHeads)
-                    {
-                        sob.AppendFormat(" {0} ", otherHead.TDBIndex);
-                    }
-
-                    sob.AppendFormat(") ");
-                    sob.AppendFormat("\n");
-
-                    File.AppendAllText(dumpfile, sob.ToString());
-                    File.AppendAllText(dumpfile,
-                        String.Format("  signal type 1 : {0} = {1}\n",
-                        thisSignal.thisRef, thisState));
-                }
+                MstsSignalAspect thisState = thisSignal.this_sig_mr_routed(sigFN1, dumpfile);
 
                 // ensure correct next signals are located
 
                 if (sigFN1 != MstsSignalFunction.NORMAL || !thisSignal.isSignalNormal()) thisSignal.sigfound[(int)sigFN1] = thisSignal.SONextSignal(sigFN1);
                 if (sigFN2 != MstsSignalFunction.NORMAL || !thisSignal.isSignalNormal()) thisSignal.sigfound[(int)sigFN2] = thisSignal.SONextSignal(sigFN2);
+
+                if (sig2Index == thisSignal.thisRef) // this signal also contains type 2 signal and is therefor valid and last signal
+                {
+                    foundValid = true;
+                    foundState = foundState < thisState ? foundState : thisState;
+                    return (foundValid ? foundState : MstsSignalAspect.STOP);
+                }
 
                 if (sig2Index >= 0 && thisSignal.sigfound[(int)sigFN2] != sig2Index)  // we are beyond type 2 signal
                 {
