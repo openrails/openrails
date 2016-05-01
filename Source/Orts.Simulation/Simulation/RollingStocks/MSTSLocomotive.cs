@@ -1423,6 +1423,7 @@ namespace Orts.Simulation.RollingStocks
             if ((Simulator.UseAdvancedAdhesion) && (!Simulator.Paused) && EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared )
              {
                 // Steam locomotive details updated in UpdateMotiveForce method, and inserted into adhesion module
+                // ****************  NB WheelSpeed updated within Steam Locomotive module at the moment - to be fixed to prevent discrepancies ******************
             }
             
             else if ((Simulator.UseAdvancedAdhesion) && (!Simulator.Paused) && (!AntiSlip))

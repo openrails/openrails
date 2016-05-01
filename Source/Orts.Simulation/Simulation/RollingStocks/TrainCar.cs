@@ -588,22 +588,6 @@ namespace Orts.Simulation.RollingStocks
                         BrakeSkid = false; 	// wagon wheel is not slipping
 
                     }
-
-                    // If wagon wheel skid is occuring, set parameters to reduce motive force (pulling power), and set wheel rotational speed for wheel viewers
-                    if (BrakeSkid)
-                    {
-                        //  WheelSlip = true;  // Set wheel slip if locomotive is slipping???
-
-                        //    WheelSpeedMpS = (Direction == Direction.Forward ? 1 : -1) * FrictionWheelSpeedMpS;
-
-                        // BrakeForceN = MassKG * GravitationalAccelerationMpS2 * SkidFriction;  // Reduce locomotive tractive force to stop it moving forward
-                    }
-                    else
-                    {
-                        // WheelSlip = false;
-                        //             WheelSpeedMpS = SpeedMpS;
-                    }
-
                 }
                 else
                 {

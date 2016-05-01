@@ -15,7 +15,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-// This file is the responsibility of the 3D & Environment Team. 
+// This file is the responsibility of the 3D & Environment Team.
+
+// Debug for Sound Variables
+//#define DEBUG_WHEEL_ANIMATION 
 
 using Microsoft.Xna.Framework;
 using Orts.Common;
@@ -358,31 +361,78 @@ namespace Orts.Viewer3D.RollingStock
 
         private void UpdateAnimation(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            
-            
+                        
             float distanceTravelledM;
+            float distanceTravelledDrivenM;  // speed of driven wheels
+            float AnimationWheelRadiusM; //Radius of non driven wheels
+            float AnimationDriveWheelRadiusM; //Radius of driven wheels
+
             if (MSTSWagon.IsDriveable && MSTSWagon.Simulator.UseAdvancedAdhesion)
+            {
                 //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
                 // To achieve the same result with other means, without flipping trainset physics, the line should be changed as follows:
                 //                                distanceTravelledM = MSTSWagon.WheelSpeedMpS * elapsedTime.ClockSeconds;
-                distanceTravelledM = ((MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && ((MSTSLocomotive)MSTSWagon).UsingRearCab) ? -1 : 1) * MSTSWagon.WheelSpeedMpS * elapsedTime.ClockSeconds;
-            else
-                distanceTravelledM = MSTSWagon.SpeedMpS * elapsedTime.ClockSeconds;
 
-            // Running gear animation
-            if (!RunningGear.Empty() && MSTSWagon.DriverWheelRadiusM > 0.001)
-                RunningGear.UpdateLoop(distanceTravelledM / MathHelper.TwoPi / MSTSWagon.DriverWheelRadiusM);
-
-            // Wheel animation
-            if (WheelPartIndexes.Count > 0)
+                if (Car.EngineType == Orts.Simulation.RollingStocks.TrainCar.EngineTypes.Steam) // Steam locomotive so set up different speeds for different driver and non-driver wheels
+                {
+                    distanceTravelledM = ((MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && ((MSTSLocomotive)MSTSWagon).UsingRearCab) ? -1 : 1) * MSTSWagon.WheelSpeedMpS * elapsedTime.ClockSeconds;
+                    distanceTravelledDrivenM = ((MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && ((MSTSLocomotive)MSTSWagon).UsingRearCab) ? -1 : 1) * MSTSWagon.WheelSpeedSlipMpS * elapsedTime.ClockSeconds;
+                    // Set values of wheel radius - assume that drive wheel and non driven wheel are different sizes
+                    AnimationWheelRadiusM = MSTSWagon.WheelRadiusM;
+                    AnimationDriveWheelRadiusM = MSTSWagon.DriverWheelRadiusM;
+                }
+                else  // Other driveable rolling stock - all wheels have same speed.
+                {
+                    distanceTravelledM = ((MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && ((MSTSLocomotive)MSTSWagon).UsingRearCab) ? -1 : 1) * MSTSWagon.WheelSpeedMpS * elapsedTime.ClockSeconds;
+                    distanceTravelledDrivenM = ((MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && ((MSTSLocomotive)MSTSWagon).UsingRearCab) ? -1 : 1) * MSTSWagon.WheelSpeedMpS * elapsedTime.ClockSeconds;
+                    // Set values of wheel radius - assume that drive wheel and non driven wheel are same sizes
+                    AnimationWheelRadiusM = MSTSWagon.WheelRadiusM;
+                    AnimationDriveWheelRadiusM = MSTSWagon.WheelRadiusM;
+                }
+            }
+            else // set values for non-driveable stock, eg wagons
             {
-                var wheelCircumferenceM = MathHelper.TwoPi * MSTSWagon.WheelRadiusM;
+
+                distanceTravelledM = MSTSWagon.SpeedMpS * elapsedTime.ClockSeconds;
+                distanceTravelledDrivenM = MSTSWagon.SpeedMpS * elapsedTime.ClockSeconds;
+                // Set values of wheel radius - assume that drive wheel and non driven wheel are same sizes
+                AnimationWheelRadiusM = MSTSWagon.WheelRadiusM;
+                AnimationDriveWheelRadiusM = MSTSWagon.WheelRadiusM;
+            }
+
+            if (Car.BrakeSkid) // if car wheels are skidding because of brakes lockin wheels up then stop wheels rotating.
+            {
+                distanceTravelledM = 0.0f;
+                distanceTravelledDrivenM = 0.0f;
+            }
+
+            // Running gear and drive wheel rotation (animation) in steam locomotives
+            if (!RunningGear.Empty() && AnimationDriveWheelRadiusM > 0.001)
+                RunningGear.UpdateLoop(distanceTravelledDrivenM / MathHelper.TwoPi / AnimationDriveWheelRadiusM);
+
+
+            // Wheel rotation (animation) - for non-drive wheels in steam locomotives and all wheels in other stock
+            if (WheelPartIndexes.Count > 0)
+             {
+                var wheelCircumferenceM = MathHelper.TwoPi * AnimationWheelRadiusM;
                 var rotationalDistanceR = MathHelper.TwoPi * distanceTravelledM / wheelCircumferenceM;  // in radians
                 WheelRotationR = MathHelper.WrapAngle(WheelRotationR - rotationalDistanceR);
                 var wheelRotationMatrix = Matrix.CreateRotationX(WheelRotationR);
                 foreach (var iMatrix in WheelPartIndexes)
+                 {
                     TrainCarShape.XNAMatrices[iMatrix] = wheelRotationMatrix * TrainCarShape.SharedShape.Matrices[iMatrix];
-            }
+                 }
+              }
+
+#if DEBUG_WHEEL_ANIMATION
+
+            Trace.TraceInformation("========================== Debug Animation in MSTSWagonViewer.cs ==========================================");
+           // Trace.TraceInformation("Slip speed: Car ID {0} WheelSpeed {1}", Car.CarID, distanceTravelledM);
+            Trace.TraceInformation("Slip speed: Car ID {0} WheelDistance {1} SlipWheelDistance {2}", Car.CarID, distanceTravelledM, distanceTravelledDrivenM);
+            Trace.TraceInformation("Wag Speed - Wheelspeed {0} Slip {1} Train {2}", MSTSWagon.WheelSpeedMpS, MSTSWagon.WheelSpeedSlipMpS, MSTSWagon.SpeedMpS);
+            Trace.TraceInformation("Wheels: DriveWheel {0} NonDriveWheel {1}", AnimationDriveWheelRadiusM, AnimationWheelRadiusM);
+
+#endif
 
             // truck angle animation
             foreach (var p in Car.Parts)

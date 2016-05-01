@@ -115,6 +115,7 @@ namespace Orts.Simulation.RollingStocks
         //public AntislipControl AntislipControl = AntislipControl.None;
         public float AxleInertiaKgm2;    //axle inertia
         public float WheelSpeedMpS;
+        public float WheelSpeedSlipMpS; // speed of wheel if locomotive is slipping
         public float SlipWarningThresholdPercent = 70;
         public float NumWheelsBrakingFactor = 4;   // MSTS braking factor loosely based on the number of braked wheels. Not used yet.
         public MSTSNotchController WeightLoadController; // Used to control freight loading in freight cars
@@ -915,7 +916,7 @@ namespace Orts.Simulation.RollingStocks
             }
 
             Pantographs.Update(elapsedClockSeconds);
-
+            
             MSTSBrakeSystem.Update(elapsedClockSeconds);
 
             if (WeightLoadController != null)

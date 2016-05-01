@@ -1632,7 +1632,7 @@ namespace Orts.Simulation.RollingStocks
 
             // Variable1 is proportional to angular speed, value of 10 means 1 rotation/second.
          //   var variable1 = (Simulator.UseAdvancedAdhesion && Train.IsPlayerDriven ? LocomotiveAxle.AxleSpeedMpS : SpeedMpS) / DriverWheelRadiusM / MathHelper.Pi * 5;
-            var variable1 = WheelSpeedMpS / DriverWheelRadiusM / MathHelper.Pi * 5;
+            var variable1 = WheelSpeedSlipMpS / DriverWheelRadiusM / MathHelper.Pi * 5;
             Variable1 = ThrottlePercent == 0 ? 0 : variable1;
             Variable2 = MathHelper.Clamp((CylinderPressureAtmPSI - OneAtmospherePSI) / BoilerPressurePSI * 100f, 0, 100);
             Variable3 = FuelRateSmooth * 100;
@@ -3392,7 +3392,7 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
-            #region - Experimental Steam Slip Monitor
+            #region - Steam Adhesion Monitor
 
             // Based upon information presented in "Locomotive Operation - A Technical and Practical Analysis" by G. R. Henderson
             // At its simplest slip occurs when the wheel tangential force exceeds the static frictional force
@@ -3684,12 +3684,23 @@ namespace Orts.Simulation.RollingStocks
                     WheelSlip = true;  // Set wheel slip if locomotive is slipping
                     if (absSpeedMpS < 1.0)  // if locomotive is stationary there is no projected train speed 
                     {
-                        WheelSpeedMpS = (Direction == Direction.Forward ? 1 : -1) * 2.0f * (SteamTangentialWheelForce / SteamStaticWheelForce);
+                        WheelSpeedMpS = SpeedMpS;
+                        WheelSpeedSlipMpS = (Direction == Direction.Forward ? 1 : -1) * 3.0f * (SteamTangentialWheelForce / SteamStaticWheelForce);
                     }
                     else
                     {
-                        WheelSpeedMpS = (Direction == Direction.Forward ? 1 : -1) * FrictionWheelSpeedMpS;
-                        //     WheelSpeedMpS = absSpeedMpS * 20.0f * (TangentialWheelTreadForceLbf / StaticWheelFrictionForceLbf);
+                        WheelSpeedMpS = SpeedMpS;
+                        // Calculate whether to use projected train speed for the slip, or alternatively use an estimated value.
+                        if (SpeedMpS > FrictionWheelSpeedMpS)
+                        {
+                            WheelSpeedMpS = SpeedMpS;
+                            WheelSpeedSlipMpS = (Direction == Direction.Forward ? 1 : -1) * 3.0f * (SteamTangentialWheelForce / SteamStaticWheelForce);
+                        }
+                        else
+                        {
+                            WheelSpeedMpS = SpeedMpS;
+                            WheelSpeedSlipMpS = (Direction == Direction.Forward ? 1 : -1) * FrictionWheelSpeedMpS;
+                        }
                     }
 
                     MotiveForceN *= Train.LocomotiveCoefficientFriction;  // Reduce locomotive tractive force to stop it moving forward
@@ -3698,6 +3709,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     WheelSlip = false;
                     WheelSpeedMpS = SpeedMpS;
+                    WheelSpeedSlipMpS = SpeedMpS;
                 }
 
 #if DEBUG_STEAM_SLIP
@@ -3739,8 +3751,12 @@ namespace Orts.Simulation.RollingStocks
             }
             else // Set wheel speed if "simple" friction is used
             {
+                WheelSlip = false;
                 WheelSpeedMpS = SpeedMpS;
+                WheelSpeedSlipMpS = SpeedMpS;
             }
+
+      //      Trace.TraceInformation("Loco Speed - Wheelspeed {0} Slip {1} Train {2}", WheelSpeedMpS, WheelSpeedSlipMpS, SpeedMpS);
 
             #endregion
 
