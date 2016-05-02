@@ -93,11 +93,26 @@ namespace Orts.Simulation.RollingStocks
             DynamicAir,
         }
 
+        public enum SoundState
+        {
+            Stopped,
+            Sound,
+            ContinuousSound
+        }
+
         // simulation parameters
-        public bool Horn;
+        public bool ManualHorn = false;
+        public bool TCSHorn = false;
+        public bool Horn = false;
+        protected bool PreviousHorn = false;
+
+        public bool ManualBell = false;
+        public SoundState BellState = SoundState.Stopped;
+        public bool Bell = false;
+        protected bool PreviousBell = false;
+
         public bool AlerterSnd;
         public bool VigilanceMonitor;
-        public bool Bell;
         public bool Sander;
         public bool Wiper;
         public bool BailOff;
@@ -1100,6 +1115,8 @@ namespace Orts.Simulation.RollingStocks
 
             UpdateCompressor(elapsedClockSeconds);
             UpdateFrictionCoefficient(elapsedClockSeconds); // Find the current coefficient of friction depending upon the weather
+            UpdateHornAndBell(elapsedClockSeconds);
+
             UpdateSoundVariables(elapsedClockSeconds);
 
             PrevMotiveForceN = MotiveForceN;
@@ -1384,6 +1401,48 @@ namespace Orts.Simulation.RollingStocks
 
             if (CompressorIsOn)
                 MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
+        }
+
+        /// <summary>
+        /// This function updates periodically the states of the horn/whistle and the bell of the locomotive.
+        /// </summary>
+        protected virtual void UpdateHornAndBell(float elapsedClockSeconds)
+        {
+            Horn = ManualHorn || TCSHorn;
+            if (Horn && !PreviousHorn)
+            {
+                SignalEvent(Event.HornOn);
+            }
+            else if (!Horn && PreviousHorn)
+            {
+                SignalEvent(Event.HornOff);
+            }
+
+            if (ManualBell)
+            {
+                BellState = SoundState.Sound;
+            }
+            else if (DoesHornTriggerBell && Horn)
+            {
+                BellState = SoundState.ContinuousSound;
+            }
+            else if (!ManualBell && BellState == SoundState.Sound)
+            {
+                BellState = SoundState.Stopped;
+            }
+
+            Bell = BellState != SoundState.Stopped;
+            if (Bell && !PreviousBell)
+            {
+                SignalEvent(Event.BellOn);
+            }
+            else if (!Bell && PreviousBell)
+            {
+                SignalEvent(Event.BellOff);
+            }
+
+            PreviousHorn = Horn;
+            PreviousBell = Bell;
         }
 
         /// <summary>
@@ -2607,14 +2666,14 @@ namespace Orts.Simulation.RollingStocks
             {
                 case Event.VigilanceAlarmOn: { AlerterSnd = true; if (Simulator.Settings.Alerter) Simulator.Confirmer.Confirm(CabControl.Alerter, CabSetting.On); break; }
                 case Event.VigilanceAlarmOff: { AlerterSnd = false; if (Simulator.Settings.Alerter) Simulator.Confirmer.Confirm(CabControl.Alerter, CabSetting.Off); break; }
-                case Event.BellOn: { Bell = true; if (this == Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Bell, CabSetting.On); break; }
-                case Event.BellOff: { Bell = false; if (this == Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Bell, CabSetting.Off); break; }
+                case Event.BellOn:
+                case Event.BellOff:
+                    if (this == Simulator.PlayerLocomotive && Simulator.Confirmer != null)
+                        Simulator.Confirmer.Confirm(CabControl.Bell, Bell ? CabSetting.On : CabSetting.Off);
+                    break;
                 case Event.HornOn:
                 case Event.HornOff:
-                    Horn = evt == Event.HornOn;
-                    if (DoesHornTriggerBell && Horn)
-                        SignalEvent(Event.BellOn);
-                    if (this == Simulator.PlayerLocomotive)
+                    if (this == Simulator.PlayerLocomotive && Simulator.Confirmer != null)
                         Simulator.Confirmer.Confirm(this is MSTSSteamLocomotive ? CabControl.Whistle : CabControl.Horn, Horn ? CabSetting.On : CabSetting.Off);
                     break;
                 case Event.SanderOn: { Sander = true; if (this.IsLeadLocomotive() && this == Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Sander, CabSetting.On); break; }

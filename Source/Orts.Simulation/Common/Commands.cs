@@ -658,13 +658,12 @@ namespace Orts.Common
         }
 
         public override void Redo() {
-            Receiver.SignalEvent(ToState ? Event.HornOn : Event.HornOff);
+            Receiver.ManualHorn = ToState;
             if (ToState)
             {
                 Receiver.AlerterReset(TCSEvent.HornActivated);
                 Receiver.Simulator.HazzardManager.Horn();
             }
-            // Report();
         }
 
         public override string ToString() {
@@ -681,17 +680,9 @@ namespace Orts.Common
             Redo();
         }
 
-        public override void Redo() {
-            if (ToState)
-            {
-                if (!Receiver.Bell)
-                    Receiver.SignalEvent(Event.BellOn);
-            }
-            else
-            {
-                Receiver.SignalEvent(Event.BellOff);
-            }
-            // Report();
+        public override void Redo()
+        {
+            Receiver.ManualBell = ToState;
         }
 
         public override string ToString() {

@@ -1998,7 +1998,7 @@ namespace Orts.Simulation.AIs
                     File.AppendAllText(@"C:\temp\checkpath.txt", "Do Horn for AITRain " + thisTrain.Number + " , mvt state " + movementState.ToString() + " at " + presentTime + "\n");
 #endif
                     TrainCar locomotive = thisTrain.FindLeadLocomotive();
-                    ((MSTSLocomotive)locomotive).SignalEvent(Event.HornOn);
+                    ((MSTSLocomotive)locomotive).ManualHorn = true;
                     Triggered = true;
                 }
                 movementState = AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION;
@@ -2020,7 +2020,7 @@ namespace Orts.Simulation.AIs
                 File.AppendAllText(@"C:\temp\checkpath.txt", "Stop Horn for AITRain " + thisTrain.Number + " : mvt state " + movementState.ToString() + " at " + presentTime + "\n");
 #endif
                 TrainCar locomotive = thisTrain.FindLeadLocomotive();
-                ((MSTSLocomotive)locomotive).SignalEvent(Event.HornOff);
+                ((MSTSLocomotive)locomotive).ManualHorn = false;
             }
             return currentMvmtState;    //  Restore previous MovementState
         }
@@ -2221,7 +2221,7 @@ namespace Orts.Simulation.AIs
                 File.AppendAllText(@"C:\temp\checkpath.txt", "Stop Horn for AITRain " + thisTrain.Number + " : mvt state " + movementState.ToString() + " at " + presentTime + "\n");
 #endif
                 locomotive = thisTrain.FindLeadLocomotive();
-                ((MSTSLocomotive)locomotive).SignalEvent(Event.HornOff);
+                ((MSTSLocomotive)locomotive).ManualHorn = false;
             }
             return currentMvmtState;    //  Restore previous MovementState
         }
@@ -2420,7 +2420,7 @@ namespace Orts.Simulation.AIs
                 File.AppendAllText(@"C:\temp\checkpath.txt", "Stop Horn for AITRain " + thisTrain.Number + " : mvt state " + movementState.ToString() + " at " + presentTime + "\n");
 #endif
                 locomotive = thisTrain.FindLeadLocomotive();
-                ((MSTSLocomotive)locomotive).SignalEvent(Event.HornOff);
+                ((MSTSLocomotive)locomotive).ManualHorn = false;
             }
             return currentMvmtState;    //  Restore previous MovementState
         }
@@ -2553,7 +2553,7 @@ namespace Orts.Simulation.AIs
                 if (!HornTriggered)
                 {
                     TrainCar locomotive = thisTrain.FindLeadLocomotive();
-                    ((MSTSLocomotive)locomotive).SignalEvent(Event.HornOn);
+                    ((MSTSLocomotive)locomotive).ManualHorn = true;
                     HornTriggered = true;
                 }
                 movementState = AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION;
@@ -2573,7 +2573,7 @@ namespace Orts.Simulation.AIs
             if (HornTriggered)
             {
                 TrainCar locomotive = thisTrain.FindLeadLocomotive();
-                ((MSTSLocomotive)locomotive).SignalEvent(Event.HornOff);
+                ((MSTSLocomotive)locomotive).ManualHorn = false;
             }
             return currentMvmtState;    //  Restore previous MovementState
         }

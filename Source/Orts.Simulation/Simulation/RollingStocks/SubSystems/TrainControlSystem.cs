@@ -227,7 +227,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     );
             };
             Script.AlerterSound = () => Locomotive.AlerterSnd;
-            Script.SetHorn = (value) => Locomotive.SignalEvent(value ? Event.HornOn : Event.HornOff);
+            Script.SetHorn = (value) => Locomotive.TCSHorn = value;
             Script.SetFullBrake = (value) =>
             {
                 if (Locomotive.TrainBrakeController.TCSFullServiceBraking != value)
@@ -596,11 +596,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 SetFullBrake(FullBrake);
                 SetPowerAuthorization(!PowerCut);
 
-                if (EmergencyCausesThrottleDown && (EmergencyBrake || FullBrake))
+                if (EmergencyCausesThrottleDown && (IsBrakeEmergency() || IsBrakeFullService()))
                     SetThrottleController(0f);
 
                 if (EmergencyEngagesHorn)
-                    SetHorn(EmergencyBrake || FullBrake);
+                    SetHorn(IsBrakeEmergency() || IsBrakeFullService());
 
                 SetPenaltyApplicationDisplay(IsBrakeEmergency() && IsBrakeFullService());
 
