@@ -108,6 +108,11 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("graphic", ()=>{ Thumbnail = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("loadingscreen", ()=>{ LoadingScreen = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("ortsloadingscreenwide", ()=>{ LoadingScreenWide = stf.ReadStringBlock(null); }),
+                 // values for OHLE
+                new STFReader.TokenProcessor("ortsdoublewireenabled", ()=>{ DoubleWireEnabled = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("ortsdoublewireheight", ()=>{ DoubleWireHeight = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                new STFReader.TokenProcessor("ortstriphaseenabled", ()=>{ TriphaseEnabled = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("ortstriphasewidth", ()=>{ TriphaseWidth = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
 
            });
             //TODO This should be changed to STFException.TraceError() with defaults values created
@@ -148,6 +153,12 @@ namespace Orts.Formats.Msts
         public string Thumbnail;
         public string LoadingScreen;
         public string LoadingScreenWide;
+
+        // Values for OHLE
+        public string DoubleWireEnabled;
+        public float DoubleWireHeight;
+        public string TriphaseEnabled;
+        public float TriphaseWidth;
 
     }
 
