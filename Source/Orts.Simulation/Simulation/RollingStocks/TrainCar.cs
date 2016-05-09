@@ -505,8 +505,8 @@ namespace Orts.Simulation.RollingStocks
         public virtual void UpdateBrakeSlideCalculation()
         {
 
-            // Only apply slide, and advanced brake friction, if advanced adhesion is selected, and it is not an AI train
-            if (Simulator.UseAdvancedAdhesion && Train.GetType() != typeof(AITrain))
+            // Only apply slide, and advanced brake friction, if advanced adhesion is selected, and it is a Player train
+            if (Simulator.UseAdvancedAdhesion && IsPlayerTrain)
             {
 
                 // Get user defined brake shoe coefficient if defined in WAG file
