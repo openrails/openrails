@@ -84,7 +84,6 @@ namespace Orts.Simulation.AIs
             STOPPED_EXISTING,
             INIT_ACTION,
             HANDLE_ACTION,
-            END_ACTION, //  SPA: used by new AIActionItem as Auxiliary
             SUSPENDED,
             FROZEN,
             UNKNOWN
@@ -625,7 +624,7 @@ namespace Orts.Simulation.AIs
             //          if ((NextStopDistanceM < actClearance) || (SpeedMpS <= 0 && MovementState == AI_MOVEMENT_STATE.STOPPED))
             // <CSComment> TODO: next if block is in effect only a workaround due to OR braking physics not working well with AI trains
             if (MovementState == AI_MOVEMENT_STATE.STOPPED || MovementState == AI_MOVEMENT_STATE.STATION_STOP || MovementState == AI_MOVEMENT_STATE.AI_STATIC ||
-                MovementState == AI_MOVEMENT_STATE.INIT_ACTION || MovementState == AI_MOVEMENT_STATE.HANDLE_ACTION || MovementState == AI_MOVEMENT_STATE.END_ACTION)
+                MovementState == AI_MOVEMENT_STATE.INIT_ACTION || MovementState == AI_MOVEMENT_STATE.HANDLE_ACTION)
             {
                 SpeedMpS = 0;
                 foreach (TrainCar car in Cars)
@@ -1057,7 +1056,7 @@ namespace Orts.Simulation.AIs
             {
                 if (MovementState != AI_MOVEMENT_STATE.STATION_STOP && MovementState != AI_MOVEMENT_STATE.STOPPED)
                 {
-                    if (MovementState != AI_MOVEMENT_STATE.INIT_ACTION && MovementState != AI_MOVEMENT_STATE.HANDLE_ACTION && MovementState != AI_MOVEMENT_STATE.END_ACTION)
+                    if (MovementState != AI_MOVEMENT_STATE.INIT_ACTION && MovementState != AI_MOVEMENT_STATE.HANDLE_ACTION)
                     {
                         MovementState = AI_MOVEMENT_STATE.FOLLOWING;  // start following
                     }
@@ -1065,7 +1064,7 @@ namespace Orts.Simulation.AIs
             }
             else if (EndAuthorityType[0] == END_AUTHORITY.RESERVED_SWITCH || EndAuthorityType[0] == END_AUTHORITY.LOOP)
             {
-                if (MovementState != AI_MOVEMENT_STATE.INIT_ACTION && MovementState != AI_MOVEMENT_STATE.HANDLE_ACTION && MovementState != AI_MOVEMENT_STATE.END_ACTION &&
+                if (MovementState != AI_MOVEMENT_STATE.INIT_ACTION && MovementState != AI_MOVEMENT_STATE.HANDLE_ACTION &&
                      (nextActionInfo == null || nextActionInfo.NextAction != AIActionItem.AI_ACTION_TYPE.END_OF_AUTHORITY))
                 {
                     ResetActions(true);
@@ -2929,7 +2928,7 @@ namespace Orts.Simulation.AIs
 
                         // <CScomment> Make check when this train in same section of OtherTrain or other train at less than 50m;
                         // if other train is static or other train is in last section of this train, pass to passive coupling
-                        if (OtherTrain.SpeedMpS == 0.0f && distanceToTrain <= 2 * keepDistanceMovingTrainM)
+                        if (Math.Abs(OtherTrain.SpeedMpS) < 0.001f && distanceToTrain <= 2 * keepDistanceMovingTrainM)
                         {
                             var rearOrFront = ValidRoute[0][ValidRoute[0].Count - 1].Direction == 1 ? 0 : 1;
 
@@ -2944,7 +2943,7 @@ namespace Orts.Simulation.AIs
                             }
 
                         }
-                        if (OtherTrain.SpeedMpS != 0.0f)
+                        if (Math.Abs(OtherTrain.SpeedMpS) >= 0.001f)
                         {
                             keepDistanceTrainM = keepDistanceMovingTrainM;
                         }
@@ -2978,7 +2977,7 @@ namespace Orts.Simulation.AIs
                         }
 
                         // check distance and speed
-                        if (OtherTrain.SpeedMpS == 0.0f)
+                        if (Math.Abs(OtherTrain.SpeedMpS) < 0.001f)
                         {
                             float brakingDistance = SpeedMpS * SpeedMpS * 0.5f * (0.5f * MaxDecelMpSS);
                             float reqspeed = (float)Math.Sqrt(distanceToTrain * MaxDecelMpSS);
@@ -3807,10 +3806,16 @@ namespace Orts.Simulation.AIs
                         AuxActionsContain.Add(action);
                         if (insertSigDelegate && (waitingPoint[2] != 60002 || !Simulator.Settings.ExtendedAIShunting) && signalIndex[iWait] > -1)
                         {
-                            AIActSigDelegateRef delegateAction = new AIActSigDelegateRef(this, waitingPoint[5], 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction);
+                            AIActSigDelegateRef delegateAction = new AIActSigDelegateRef(this, waitingPoint[5], 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction, action);
                             signalRef.SignalObjects[signalIndex[iWait]].LockForTrain(this.Number, waitingPoint[0]);
                             delegateAction.SetEndSignalIndex(signalIndex[iWait]);
-                            delegateAction.Delay = 1;   //   waitingPoint[2] <= 5 ? 5 : waitingPoint[2];
+
+                            if (waitingPoint[2] >= 30000 && waitingPoint[2] < 40000)
+                            {
+                                delegateAction.Delay = waitingPoint[2];
+                                delegateAction.IsAbsolute = true;
+                            }
+                            else delegateAction.Delay = 0;
                             delegateAction.SetSignalObject(signalRef.SignalObjects[signalIndex[iWait]]);
 
                             AuxActionsContain.Add(delegateAction);
@@ -3820,12 +3825,13 @@ namespace Orts.Simulation.AIs
                 else if (insertSigDelegate && signalIndex[iWait] > -1)
                 {
                     AIActionWPRef action = new AIActionWPRef(this, waitingPoint[5], 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction);
-                    action.SetDelay(0);
+                    action.SetDelay(waitingPoint[2]);
                     AuxActionsContain.Add(action);
-                    AIActSigDelegateRef delegateAction = new AIActSigDelegateRef(this, waitingPoint[5], 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction);
+                    AIActSigDelegateRef delegateAction = new AIActSigDelegateRef(this, waitingPoint[5], 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction, action);
                     signalRef.SignalObjects[signalIndex[iWait]].LockForTrain(this.Number, waitingPoint[0]);
                     delegateAction.SetEndSignalIndex(signalIndex[iWait]);
-                    delegateAction.Delay = waitingPoint[2] <= 5 ? 5 : waitingPoint[2];
+                    delegateAction.Delay = waitingPoint[2];
+                    if (waitingPoint[2] >= 30000 && waitingPoint[2] < 40000) delegateAction.IsAbsolute = true;
                     delegateAction.SetSignalObject(signalRef.SignalObjects[signalIndex[iWait]]);
 
                     AuxActionsContain.Add(delegateAction);
@@ -4759,6 +4765,7 @@ namespace Orts.Simulation.AIs
             // reset AuxAction if any
             AuxActionsContain.ResetAuxAction(this);
             TrainType = TRAINTYPE.AI_INCORPORATED;
+            LeadLocomotiveIndex = -1;
             Cars.Clear();
             requiredActions.RemovePendingAIActionItems(true);
             UncondAttach = false;
@@ -5027,7 +5034,7 @@ namespace Orts.Simulation.AIs
                 {
                     int presentTime = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
                     var actionState = ((AuxActionItem)thisAction).ProcessAction(this, presentTime);
-                    if (actionState != AI_MOVEMENT_STATE.INIT_ACTION && actionState != AI_MOVEMENT_STATE.HANDLE_ACTION && actionState != AI_MOVEMENT_STATE.END_ACTION)
+                    if (actionState != AI_MOVEMENT_STATE.INIT_ACTION && actionState != AI_MOVEMENT_STATE.HANDLE_ACTION)
                         MovementState = actionState;
                 }
             }
@@ -6451,11 +6458,6 @@ namespace Orts.Simulation.AIs
         }
 
         public virtual AITrain.AI_MOVEMENT_STATE InitAction(Train thisTrain, int presentTime, float elapsedClockSeconds, AITrain.AI_MOVEMENT_STATE movementState)
-        {
-            return movementState;
-        }
-
-        public virtual AITrain.AI_MOVEMENT_STATE EndAction(Train thisTrain, int presentTime, float elapsedClockSeconds, AITrain.AI_MOVEMENT_STATE movementState)
         {
             return movementState;
         }

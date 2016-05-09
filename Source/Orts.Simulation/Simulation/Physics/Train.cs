@@ -10856,11 +10856,13 @@ namespace Orts.Simulation.Physics
 
                 if (endSignalIndex > -1)
                 {
-                    AIActSigDelegateRef action = new AIActSigDelegateRef(this, waitingPoint[5], 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction);
+                    AIActSigDelegateRef action = new AIActSigDelegateRef(this, Math.Max(waitingPoint[5]-1500, 0), 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction);
                     signalRef.SignalObjects[endSignalIndex].LockForTrain(this.Number, waitingPoint[0]);
                     action.SetEndSignalIndex(endSignalIndex);
                     action.SetSignalObject(signalRef.SignalObjects[endSignalIndex]);
-                    action.Delay = waitingPoint[2] <= 5 ? 5 : waitingPoint[2];
+//                    action.Delay = waitingPoint[2] <= 5 ? 5 : waitingPoint[2];
+                    action.Delay = waitingPoint[2];
+                    if (waitingPoint[2] >= 30000 && waitingPoint[2] < 40000) action.IsAbsolute = true;
                     AuxActionsContain.Add(action);
                 }
             }
