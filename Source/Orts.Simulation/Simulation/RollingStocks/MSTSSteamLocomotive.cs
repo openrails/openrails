@@ -583,6 +583,8 @@ namespace Orts.Simulation.RollingStocks
         float ExcessBalanceForceLeft;
         float ExcessBalanceForceMiddle;
         float ExcessBalanceForceRight;
+        float FrictionWheelSpeedMpS; // Tangential speed of wheel rim
+        float PrevFrictionWheelSpeedMpS; // Previous tangential speed of wheel rim
 
         #endregion
 
@@ -3406,6 +3408,7 @@ namespace Orts.Simulation.RollingStocks
             float SlipCutoffPressureAtmPSI;
             float SlipCylinderReleasePressureAtmPSI;
             float SlipInitialPressureAtmPSI;
+            
 
             // Starting tangential force - at starting piston force is based upon cutoff pressure  & interia = 0
             if (SteamEngineType == SteamEngineTypes.Compound)
@@ -3669,38 +3672,68 @@ namespace Orts.Simulation.RollingStocks
                     if (SteamTangentialWheelForce < SteamStaticWheelForce)
                     {
                         IsLocoSlip = false; 	// locomotive is not slipping
+                        PrevFrictionWheelSpeedMpS = 0.0f; // Reset previous wheel slip speed to zero
+                        FrictionWheelSpeedMpS = 0.0f;
                     }
                 }
                 else
                 {
                     IsLocoSlip = false; 	// locomotive is not slipping
-
+                    PrevFrictionWheelSpeedMpS = 0.0f; // Reset previous wheel slip speed to zero
+                    FrictionWheelSpeedMpS = 0.0f;
                 }
 
                 // If locomotive slip is occuring, set parameters to reduce motive force (pulling power), and set wheel rotational speed for wheel viewers
                 if (IsLocoSlip)
                 {
-                    float FrictionWheelSpeedMpS = Train.ProjectedSpeedMpS;
+
+                    // This next section caluclates the turning speed for the wheel if slip occurs. It is based upon the force applied to the wheel and the moment of inertia for the wheel
+                    // A Generic wheel profile is used, so results may not be applicable to all locomotive, but should provide a "reasonable" guestimation
+                    // Generic wheel assumptions are - 80 inch drive wheels ( 2.032 metre), a pair of drive wheels weighs approx 6,000lbs, axle weighs 1,000 lbs, and has a diameter of 8 inches.
+                    // Moment of Inertia (Wheel and axle) = (Mass x Radius) / 2.0
+                    float WheelRadiusAssumptM = Me.FromIn(80.0f / 2.0f);
+                    float WheelWeightKG = Kg.FromLb(6000.0f);
+                    float AxleWeighKG = Kg.FromLb(1000.0f);
+                    float AxleRadiusM = Me.FromIn(8.0f / 2.0f);
+                    float WheelMomentInertia = (WheelWeightKG * WheelRadiusAssumptM * WheelRadiusAssumptM) / 2.0f;
+                    float AxleMomentInertia = (WheelWeightKG * AxleRadiusM * AxleRadiusM) / 2.0f;
+                    float TotalWheelMomentofInertia = WheelMomentInertia + AxleMomentInertia; // Total MoI for generic wheel
+          
+                    // The moment of inertia will be adjusted up or down compared to the size of the wheel on the player locomotive compared to the Generic wheel                
+                    TotalWheelMomentofInertia *= DriverWheelRadiusM / WheelRadiusAssumptM;
+               
+                    // The moment of inertia needs to be increased by the number of wheel sets
+                    TotalWheelMomentofInertia *= LocoNumDrvWheels;
+                    
+                    // the inertia of the coupling rods can also be added
+                    // Assume rods weigh approx 1500 lbs
+                    // // MoI = rod weight x stroke radius (ie stroke / 2)
+                    float RodWeightKG = Kg.FromLb(1500.0f);
+                    // ???? For both compound and simple??????
+                    float RodStrokeM = CylinderStrokeM / 2.0f;
+                    float RodMomentInertia = RodWeightKG * RodStrokeM * RodStrokeM;
+
+                    float TotalMomentInertia = TotalWheelMomentofInertia + RodMomentInertia;
+                    
+                    // angular acceleration = (sum of forces * wheel radius) / moment of inertia
+                    float AngAccRadpS2 = (N.FromLbf(SteamTangentialWheelForce - SteamStaticWheelForce) * DriverWheelRadiusM) / TotalMomentInertia;
+                    // tangential acceleration = angular acceleration * wheel radius
+                    // tangential speed = angular acceleration * time
+                    PrevFrictionWheelSpeedMpS = FrictionWheelSpeedMpS; // Save current value of wheelspeed
+                    // Speed = current velocity + acceleration * time
+                    FrictionWheelSpeedMpS += (AngAccRadpS2 * DriverWheelRadiusM * elapsedClockSeconds);  // increase wheel speed whilever wheel accelerating
+                    FrictionWheelSpeedMpS = MathHelper.Clamp(FrictionWheelSpeedMpS, 0.0f, 62.58f);  // Clamp wheel speed at maximum of 140mph (62.58 m/s)
+
                     WheelSlip = true;  // Set wheel slip if locomotive is slipping
-                    if (absSpeedMpS < 1.0)  // if locomotive is stationary there is no projected train speed 
+                    WheelSpeedMpS = SpeedMpS;
+
+                    if(FrictionWheelSpeedMpS > WheelSpeedMpS) // If slip speed is greater then normal forward speed use slip speed
                     {
-                        WheelSpeedMpS = SpeedMpS;
-                        WheelSpeedSlipMpS = (Direction == Direction.Forward ? 1 : -1) * 3.0f * (SteamTangentialWheelForce / SteamStaticWheelForce);
+                        WheelSpeedSlipMpS = (Direction == Direction.Forward ? 1 : -1) * FrictionWheelSpeedMpS;
                     }
-                    else
+                    else // use normal wheel speed
                     {
-                        WheelSpeedMpS = SpeedMpS;
-                        // Calculate whether to use projected train speed for the slip, or alternatively use an estimated value.
-                        if (SpeedMpS > FrictionWheelSpeedMpS)
-                        {
-                            WheelSpeedMpS = SpeedMpS;
-                            WheelSpeedSlipMpS = (Direction == Direction.Forward ? 1 : -1) * 3.0f * (SteamTangentialWheelForce / SteamStaticWheelForce);
-                        }
-                        else
-                        {
-                            WheelSpeedMpS = SpeedMpS;
-                            WheelSpeedSlipMpS = (Direction == Direction.Forward ? 1 : -1) * FrictionWheelSpeedMpS;
-                        }
+                        WheelSpeedSlipMpS = (Direction == Direction.Forward ? 1 : -1) * WheelSpeedMpS;
                     }
 
                     MotiveForceN *= Train.LocomotiveCoefficientFriction;  // Reduce locomotive tractive force to stop it moving forward
@@ -4927,6 +4960,12 @@ namespace Orts.Simulation.RollingStocks
                   FormatStrings.FormatForce(N.FromLbf(SpeedTangentialWheelTreadForceLbf), IsMetric),
                   Simulator.Catalog.GetString("Static"),
                   FormatStrings.FormatForce(N.FromLbf(SpeedStaticWheelFrictionForceLbf), IsMetric)
+                );
+
+                status.AppendFormat("{0}\t{1}\t{2}\n",
+                      Simulator.Catalog.GetString("Wheel:"),
+                      Simulator.Catalog.GetString("TangSp"),
+                FrictionWheelSpeedMpS
                 );
 
 

@@ -30,6 +30,9 @@
 //#define ALLOW_ORTS_SPECIFIC_ENG_PARAMETERS
 //#define DEBUG_AUXTENDER
 
+// Debug for Friction Force
+//#define DEBUG_FRICTION
+
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
@@ -902,6 +905,17 @@ namespace Orts.Simulation.RollingStocks
                 {
                     FrictionForceN = DavisAN + AbsSpeedMpS * (DavisBNSpM + AbsSpeedMpS * DavisCNSSpMM); // for normal speed operation
                 }
+
+#if DEBUG_FRICTION
+
+                Trace.TraceInformation("========================== Debug Friction in MSTSWagon.cs ==========================================");
+                Trace.TraceInformation("Stationary - CarID {0} Force0N {1} Force5N {2} Speed {3} Factor {4}", CarID, Friction0N, Friction5N, AbsSpeedMpS, StaticFrictionFactorLb);
+                Trace.TraceInformation("Stationary - Mass {0} Mass (US-tons) {1}", MassKG, Kg.ToTUS(MassKG));
+                Trace.TraceInformation("Stationary - Weather Type (1 for Snow) {0}", (int)Simulator.WeatherType);
+                Trace.TraceInformation("Stationary - Force0 lbf {0} Force5 lbf {1}", N.ToLbf(Friction0N), N.ToLbf(Friction5N));
+
+#endif
+
             }
 
 

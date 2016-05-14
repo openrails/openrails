@@ -1753,25 +1753,27 @@ namespace Orts.Simulation.RollingStocks
 
             if (WheelSlip)   // If loco is slipping then coeff of friction will be decreased below static value.
             {
-                BaseFrictionCoefficientFactor *= 0.24f;  // Icy track - dynamic friction U = 0.08
+                BaseFrictionCoefficientFactor = 0.15f;  // Icy track - dynamic (kinetic) friction U = 0.0525
 
             }
 
             //add sander
-            if (AbsSpeedMpS < SanderSpeedOfMpS && TrackSandBoxCapacityFt3 > 0.0 && MainResPressurePSI > 80.0)
+            if (AbsSpeedMpS < SanderSpeedOfMpS && TrackSandBoxCapacityFt3 > 0.0 && MainResPressurePSI > 80.0 && (AbsSpeedMpS > 0))
             {
                 if (SanderSpeedEffectUpToMpS > 0.0f)
                 {
                     if ((Sander) && (AbsSpeedMpS < SanderSpeedEffectUpToMpS))
                     {
-                         BaseFrictionCoefficientFactor *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.5f;  
+                        BaseFrictionCoefficientFactor *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.5f;
                     }
                 }
                 else
-                    if (Sander)
+                {
+                    if (Sander)  // If sander is on, and train speed is greater then zero, then put sand on the track
                     {
                         BaseFrictionCoefficientFactor *= 1.5f; // Sanding track adds approx 150% adhesion (best case)
                     }
+                }
             }
 
             var AdhesionMultiplier = Simulator.Settings.AdhesionFactor / 100.0f; // Convert to a factor where 100% = no change to adhesion
