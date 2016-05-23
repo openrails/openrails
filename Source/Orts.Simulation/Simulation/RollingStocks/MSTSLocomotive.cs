@@ -720,6 +720,7 @@ namespace Orts.Simulation.RollingStocks
             MaxForceN = locoCopy.MaxForceN;
             MaxCurrentA = locoCopy.MaxCurrentA;
             MaxSpeedMpS = locoCopy.MaxSpeedMpS;
+            EngineType = locoCopy.EngineType;
             TractiveForceCurves = locoCopy.TractiveForceCurves;
             MaxContinuousForceN = locoCopy.MaxContinuousForceN;
             ContinuousForceTimeFactor = locoCopy.ContinuousForceTimeFactor;
