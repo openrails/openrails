@@ -388,11 +388,12 @@ namespace Orts.Viewer3D.RollingStock
                                     (uint)intake.Type == pickup.PickupType)
                                  || ((uint)intake.Type == pickup.PickupType && (uint)intake.Type > (uint)MSTSWagon.PickupType.FreightSand && (wagon.WagonType == TrainCar.WagonTypes.Tender || wagon is MSTSLocomotive)))
                                 {
-                                    var intakePosition = car.WorldPosition; //TODO Convert this into the position of the intake.
+                                    var intakePosition = new Vector3(0, 0, -intake.OffsetM);
+                                    Vector3.Transform(ref intakePosition, ref car.WorldPosition.XNAMatrix, out intakePosition);
 
                                     var intakeLocation = new WorldLocation(
                                         car.WorldPosition.TileX, car.WorldPosition.TileZ,
-                                        car.WorldPosition.Location.X, car.WorldPosition.Location.Y, car.WorldPosition.Location.Z);
+                                        intakePosition.X, intakePosition.Y, -intakePosition.Z);
 
                                     var d2 = WorldLocation.GetDistanceSquared(intakeLocation, pickup.Location);
                                     if (d2 < shortestD2)
@@ -561,7 +562,7 @@ namespace Orts.Viewer3D.RollingStock
                 controller.StartIncrease(target);
             }
         }
-
+       
         /// <summary>
         /// Starts a continuous increase in controlled value.
         /// </summary>
