@@ -64,6 +64,7 @@ namespace Orts.Viewer3D.Popups
 			{ Train.OUTOFCONTROL.SLIPPED_INTO_PATH, "Splipped" },
 			{ Train.OUTOFCONTROL.SLIPPED_TO_ENDOFTRACK, "Slipped" },
 			{ Train.OUTOFCONTROL.OUT_OF_TRACK, "Off Track" },
+            { Train.OUTOFCONTROL.SLIPPED_INTO_TURNTABLE, "Slip Turn" },
 			{ Train.OUTOFCONTROL.UNDEFINED, "Undefined" },
 		};
 
@@ -78,6 +79,7 @@ namespace Orts.Viewer3D.Popups
                 { Train.TRAIN_CONTROL.EXPLORER, Viewer.Catalog.GetString("Explorer") },
 			    { Train.TRAIN_CONTROL.OUT_OF_CONTROL, Viewer.Catalog.GetString("OutOfControl : ") },
                 { Train.TRAIN_CONTROL.INACTIVE, Viewer.Catalog.GetString("Inactive") },
+                { Train.TRAIN_CONTROL.TURNTABLE, Viewer.Catalog.GetString("Turntable") },
 			    { Train.TRAIN_CONTROL.UNDEFINED, Viewer.Catalog.GetString("Unknown") },
 		    };
         }
@@ -327,6 +329,7 @@ namespace Orts.Viewer3D.Popups
             {
                 drawAutoInfo(spriteBatch, offset);
             }
+            else if (validInfo.ControlMode == Train.TRAIN_CONTROL.TURNTABLE) return;
             else
             {
                 drawManualInfo(spriteBatch, offset);

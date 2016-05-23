@@ -1073,4 +1073,91 @@ namespace Orts.Common
             // Report();
         }
     }
+
+    [Serializable()]
+    public sealed class TurntableClockwiseCommand : Command
+    {
+        public static Turntable Receiver { get; set; }
+        public TurntableClockwiseCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.StartContinuous(true);
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " " + "Clockwise";
+        }
+    }
+
+
+    [Serializable()]
+    public sealed class TurntableClockwiseTargetCommand : Command
+    {
+        public static Turntable Receiver { get; set; }
+        public TurntableClockwiseTargetCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.ComputeTarget(true);
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " " + "Clockwise with target";
+        }
+    }
+
+    [Serializable()]
+    public sealed class TurntableCounterclockwiseCommand : Command
+    {
+        public static Turntable Receiver { get; set; }
+        public TurntableCounterclockwiseCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.StartContinuous(false);
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " " + "Counterclockwise";
+        }
+    }
+
+
+    [Serializable()]
+    public sealed class TurntableCounterclockwiseTargetCommand : Command
+    {
+        public static Turntable Receiver { get; set; }
+        public TurntableCounterclockwiseTargetCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.ComputeTarget(false);
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " " + "Counterclockwise with target";
+        }
+    }
+
 }

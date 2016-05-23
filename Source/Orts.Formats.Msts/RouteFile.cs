@@ -113,7 +113,8 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("ortsdoublewireheight", ()=>{ DoubleWireHeight = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
                 new STFReader.TokenProcessor("ortstriphaseenabled", ()=>{ TriphaseEnabled = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("ortstriphasewidth", ()=>{ TriphaseWidth = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
-
+                // default sms file for turntables
+                new STFReader.TokenProcessor("ortsdefaultturntablesms", ()=>{ DefaultTurntableSMS = stf.ReadStringBlock(null); }),
            });
             //TODO This should be changed to STFException.TraceError() with defaults values created
             if (RouteID == null) throw new STFException(stf, "Missing RouteID");
@@ -159,6 +160,8 @@ namespace Orts.Formats.Msts
         public float DoubleWireHeight;
         public string TriphaseEnabled;
         public float TriphaseWidth;
+
+        public string DefaultTurntableSMS;
 
     }
 

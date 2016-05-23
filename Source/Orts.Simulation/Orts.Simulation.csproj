@@ -121,6 +121,7 @@
     <Compile Include="Simulation\Timetables\ProcessTimetable.cs" />
     <Compile Include="Simulation\Timetables\TTTrain.cs" />
     <Compile Include="Simulation\Traveller.cs" />
+	<Compile Include="Simulation\Turntables.cs" />
     <Compile Include="Simulation\Weather.cs" />
   </ItemGroup>
   <ItemGroup>

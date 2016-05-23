@@ -130,6 +130,8 @@ namespace Orts.Simulation
         public HazzardManager HazzardManager;
         public FuelManager FuelManager;
         public bool InControl = true;//For multiplayer, a player may not control his/her own train (as helper)
+        public TurntableFile TurntableFile;
+        public List<Turntable> Turntables;
 
         /// <summary>
         /// Reference to the InterlockingSystem object, responsible for
@@ -158,7 +160,27 @@ namespace Orts.Simulation
         public bool PlayerIsInCab = false;
         public readonly bool MilepostUnitsMetric;
 
-        // Replacy functionality!
+        public int ActiveTurntableIndex = -1;
+        public Turntable ActiveTurntable
+        {
+            get
+            {
+                return ActiveTurntableIndex >= 0 && ActiveTurntableIndex < Turntables.Count ? Turntables[ActiveTurntableIndex] : null;
+            }
+            set
+            {
+                ActiveTurntableIndex = -1;
+                if (Turntables == null) return;
+                for (int i = 0; i < Turntables.Count; i++)
+                    if (value == Turntables[i])
+                    {
+                        ActiveTurntableIndex = i;
+                    }
+            }
+        }
+
+
+        // Replay functionality!
         public CommandLog Log { get; set; }
         public List<ICommand> ReplayCommandList { get; set; }
 
@@ -337,6 +359,13 @@ namespace Orts.Simulation
         public void Start(CancellationToken cancellation)
         {
             Signals = new Signals(this, SIGCFG, cancellation);
+            var turntableFile = RoutePath + @"\openrails\turntables.dat";
+            if (File.Exists(turntableFile))
+            {
+                Turntables = new List<Turntable>();
+                Trace.Write(" TURNTBL");
+                TurntableFile = new TurntableFile(RoutePath + @"\openrails\turntables.dat", RoutePath + @"\shapes\", Turntables, this);
+            }
             LevelCrossings = new LevelCrossings(this);
             FuelManager = new FuelManager(this);
             Trains = new TrainList(this);
@@ -412,13 +441,28 @@ namespace Orts.Simulation
             InitialTileZ = initialTileZ;
 
             Signals = new Signals(this, SIGCFG, inf, cancellation);
+
+            // initialization of turntables
+            ActiveTurntableIndex = inf.ReadInt32();
+            var turntableFile = RoutePath + @"\openrails\turntables.dat";
+            if (File.Exists(turntableFile))
+            {
+                Turntables = new List<Turntable>();
+                Trace.Write(" TURNTBL");
+                TurntableFile = new TurntableFile(RoutePath + @"\openrails\turntables.dat", RoutePath + @"\shapes\", Turntables, this);
+            }
+            if (Turntables != null && Turntables.Count >= 0)
+                foreach (var turntable in Turntables) turntable.Restore(inf, this);
             RestoreTrains(inf);
             LevelCrossings = new LevelCrossings(this);
             AI = new AI(this, inf);
             // Find original player train
             OriginalPlayerTrain = Trains.Find(item => item.Number == 0);
             if (OriginalPlayerTrain == null) OriginalPlayerTrain = AI.AITrains.Find(item => item.Number == 0);
-
+/*
+            if (Turntables != null && Turntables.Count >= 0)
+                foreach (var turntable in Turntables) turntable.ReInitTrainPositions();
+*/
             ActivityRun = Orts.Simulation.Activity.Restore(inf, this, ActivityRun);
             Signals.RestoreTrains(Trains);  // restore links to trains
         }
@@ -430,6 +474,9 @@ namespace Orts.Simulation
             outf.Write((int)WeatherType);
             outf.Write(TimetableMode);
             Signals.Save(outf);
+            outf.Write(ActiveTurntableIndex);
+            if (Turntables != null && Turntables.Count >= 0)
+                foreach (var turntable in Turntables) turntable.Save(outf);
             SaveTrains(outf);
             // LevelCrossings
             // InterlockingSystem
@@ -536,6 +583,8 @@ namespace Orts.Simulation
                 CompleteSwitchPlayerTrain();
             }
 
+            // Must be done before trains so that during turntable rotation train follows it
+            if (ActiveTurntable != null) ActiveTurntable.Update();
 
             // Represent conditions at the specified clock time.
             List<Train> movingTrains = new List<Train>();

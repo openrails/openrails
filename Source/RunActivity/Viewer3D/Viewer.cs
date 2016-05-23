@@ -664,6 +664,8 @@ namespace Orts.Viewer3D
 
             World.Update(elapsedTime);
 
+            Simulator.ActiveTurntable = FindActiveTurntable();
+
             frame.PrepareFrame(this);
             Camera.PrepareFrame(frame, elapsedTime);
             frame.PrepareFrame(elapsedTime);
@@ -901,6 +903,42 @@ namespace Orts.Viewer3D
 
                 }
             }
+
+            // Turntable commands
+            if (Simulator.Turntables != null)
+            {
+                if (UserInput.IsPressed(UserCommands.ControlTurntableClockwise))
+                {
+                    Simulator.ActiveTurntable = FindActiveTurntable();
+                    if (Simulator.ActiveTurntable != null)
+                    {
+                        TurntableClockwiseCommand.Receiver = Simulator.ActiveTurntable;
+                        new TurntableClockwiseCommand(Log);
+                    }
+                }
+                else if (UserInput.IsReleased(UserCommands.ControlTurntableClockwise) && Simulator.ActiveTurntable != null)
+                {
+                    TurntableClockwiseTargetCommand.Receiver = Simulator.ActiveTurntable;
+                    new TurntableClockwiseTargetCommand(Log);
+                }
+
+                if (UserInput.IsPressed(UserCommands.ControlTurntableCounterclockwise))
+                {
+                    Simulator.ActiveTurntable = FindActiveTurntable();
+                    if (Simulator.ActiveTurntable != null)
+                    {
+                        TurntableCounterclockwiseCommand.Receiver = Simulator.ActiveTurntable;
+                        new TurntableCounterclockwiseCommand(Log);
+                    }
+                }
+
+                else if (UserInput.IsReleased(UserCommands.ControlTurntableCounterclockwise) && Simulator.ActiveTurntable != null)
+                {
+                    TurntableCounterclockwiseTargetCommand.Receiver = Simulator.ActiveTurntable;
+                    new TurntableCounterclockwiseTargetCommand(Log);
+                }
+            }
+
             if (UserInput.IsPressed(UserCommands.GameAutopilotMode))
             {
                 if (PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
@@ -1093,6 +1131,30 @@ namespace Orts.Viewer3D
             {
                 SelectedTrain = e.NewTrain;
             }
+        }
+
+        // Finds the Turntable nearest to the viewing point
+        Turntable FindActiveTurntable()
+        {
+            Turntable activeTurntable = null;
+            float minDistanceSquared = 1000000f;
+            if (Simulator.Turntables != null)
+            {
+                foreach (var turntable in Simulator.Turntables)
+                {
+
+                    if (turntable.WorldPosition.XNAMatrix.M44 != 100000000)
+                    {
+                        var distanceSquared = WorldLocation.GetDistanceSquared(turntable.WorldPosition.WorldLocation, Camera.CameraWorldLocation);
+                        if (distanceSquared <= minDistanceSquared && distanceSquared < 160000) //must be the nearest one, but must also be near!
+                        {
+                            minDistanceSquared = distanceSquared;
+                            activeTurntable = turntable;
+                        }
+                    }
+                }
+            }
+            return activeTurntable;
         }
 
         [CallOnThread("Loader")]

@@ -119,6 +119,9 @@ namespace Orts.Common
         TrainControlSystemPenalty2,
         TrainControlSystemWarning1,
         TrainControlSystemWarning2,
+        TurntableTurningEmpty,
+        TurntableTurningLoaded,
+        TurntableStopped,
         Uncouple,
         UncoupleB, // NOTE: Currently not used in Open Rails.
         UncoupleC, // NOTE: Currently not used in Open Rails.
@@ -153,6 +156,7 @@ namespace Orts.Common
             MSTSFuelTower,
             MSTSInGame,
             MSTSSignal,
+            ORTSTurntable
         }
 
         // PLEASE DO NOT EDIT THESE FUNCTIONS without references and testing!
@@ -332,6 +336,15 @@ namespace Orts.Common
                     {
                         // Calculated from inspection of existing signal.sms files.
                         case 1: return Event.SemaphoreArm;
+                        default: return 0;
+                    }
+                case Source.ORTSTurntable:
+                    switch (eventID)
+                    {
+                        // related file is turntable.sms
+                        case 1: return Event.TurntableTurningEmpty;
+                        case 2: return Event.TurntableTurningLoaded;
+                        case 3: return Event.TurntableStopped;
                         default: return 0;
                     }
                 default: return 0;

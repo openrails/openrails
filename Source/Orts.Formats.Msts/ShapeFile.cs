@@ -101,6 +101,15 @@ namespace Orts.Formats.Msts
             file.VerifyEndOfBlock();
             if (!suppressShapeWarnings) Validate(filename);
         }
+
+        public void ReadAnimationBlock(string orFileName)
+        {
+            var file = SBR.Open(orFileName);
+            shape.animations = new animations(file.ReadSubBlock());
+            file.VerifyEndOfBlock();
+        }
+
+
     }
 
     public class shape

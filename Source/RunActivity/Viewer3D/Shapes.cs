@@ -780,7 +780,7 @@ namespace Orts.Viewer3D
         {
             if (Hazzard == null) return;
             Vector2 CurrentRange;
-            AnimationKey += elapsedTime.ClockSeconds* 24f;
+            AnimationKey += elapsedTime.ClockSeconds * 24f;
             DelayHazAnimation += elapsedTime.ClockSeconds;
             switch (Hazzard.state)
             {
@@ -829,7 +829,7 @@ namespace Orts.Viewer3D
                 if (AnimationKey < CurrentRange.X) AnimationKey = CurrentRange.X;
                 if (AnimationKey > CurrentRange.Y) AnimationKey = CurrentRange.Y;
             }
-            
+
             if (Hazzard.state == Hazzard.State.Scared)
             {
                 if (AnimationKey < CurrentRange.X) AnimationKey = CurrentRange.X;
@@ -839,9 +839,9 @@ namespace Orts.Viewer3D
 
             for (var i = 0; i < SharedShape.Matrices.Length; ++i)
                 AnimateMatrix(i, AnimationKey);
-            
+
             //var pos = this.HazardObj.Position;
-                        
+
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
     }
@@ -957,7 +957,7 @@ namespace Orts.Viewer3D
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
 
-             // 0 can be used as a setting for instant animation.
+            // 0 can be used as a setting for instant animation.
             if (FuelPickupItem.ReFill() && FuelPickupItemObj.UID == MSTSWagon.RefillProcess.ActivePickupObjectUID)
                 if (FuelPickupItemObj.PickupAnimData.AnimationSpeed == 0) AnimationKey = 1.0f;
                 else if (AnimationKey < AnimationFrames)
@@ -991,6 +991,103 @@ namespace Orts.Viewer3D
         public RoadCarShape(Viewer viewer, string path)
             : base(viewer, path, new WorldPosition(), ShapeFlags.ShadowCaster)
         {
+        }
+    }
+
+    public class TurntableShape : PoseableShape
+    {
+        protected float AnimationKey;  // advances with time
+        protected Turntable Turntable; // linked turntable data
+        readonly SoundSource Sound;
+        bool Rotating = false;
+        protected int IAnimationMatrix = -1; // index of animation matrix
+
+        /// <summary>
+        /// Construct and initialize the class
+        /// </summary>
+        public TurntableShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags, Turntable turntable, double startingY)
+            : base(viewer, path, initialPosition, flags)
+        {
+            Turntable = turntable;
+            Turntable.StartingY = (float)startingY;
+            AnimationKey = (Turntable.YAngle / (float)Math.PI * 1800.0f + 3600) % 3600.0f;
+            for (var imatrix = 0; imatrix < SharedShape.Matrices.Length; ++imatrix)
+            {
+                if (SharedShape.MatrixNames[imatrix].ToLower() == turntable.Animations[0].ToLower())
+                {
+                    IAnimationMatrix = imatrix;
+                    break;
+                }
+            }
+            if (viewer.Simulator.TRK.Tr_RouteFile.DefaultTurntableSMS != null)
+            {
+                var soundPath = viewer.Simulator.RoutePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultTurntableSMS;
+                try
+                {
+                    Sound = new SoundSource(viewer, initialPosition.WorldLocation, Events.Source.ORTSTurntable, soundPath);
+                    viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
+                }
+                catch
+                {
+                    soundPath = viewer.Simulator.BasePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultTurntableSMS;
+                    try
+                    {
+                        Sound = new SoundSource(viewer, initialPosition.WorldLocation, Events.Source.ORTSTurntable, soundPath);
+                        viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
+                    }
+                    catch (Exception error)
+                    {
+                        Trace.WriteLine(new FileLoadException(soundPath, error));
+                    }
+                }
+            }
+            for (var matrix = 0; matrix < SharedShape.Matrices.Length; ++matrix)
+                AnimateMatrix(matrix, AnimationKey);
+
+            var absAnimationMatrix = XNAMatrices[IAnimationMatrix];
+            Matrix.Multiply(ref absAnimationMatrix, ref Location.XNAMatrix, out absAnimationMatrix);
+            Turntable.ReInitTrainPositions(absAnimationMatrix);
+        }
+
+        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+        {
+            if (Turntable.GoToTarget)
+            {
+                AnimationKey = (Turntable.TargetY / (float)Math.PI * 1800.0f + 3600) % 3600.0f;
+            }
+
+            else if (Turntable.Counterclockwise)
+            {
+                AnimationKey += SharedShape.Animations[0].FrameRate * elapsedTime.ClockSeconds;
+            }
+            else if (Turntable.Clockwise)
+            {
+                AnimationKey -= SharedShape.Animations[0].FrameRate * elapsedTime.ClockSeconds;
+            }
+            while (AnimationKey > SharedShape.Animations[0].FrameCount) AnimationKey -= SharedShape.Animations[0].FrameCount;
+            while (AnimationKey < 0) AnimationKey += SharedShape.Animations[0].FrameCount;
+
+            Turntable.YAngle = MathHelper.WrapAngle(AnimationKey / 1800.0f * (float)Math.PI);
+
+            if ((Turntable.Clockwise || Turntable.Counterclockwise) && !Rotating)
+            {
+                Rotating = true;
+                if (Sound != null) Sound.HandleEvent(Turntable.TrainFrontOnBoard && Turntable.TrainBackOnBoard ? Event.TurntableTurningLoaded : Event.TurntableTurningEmpty);
+            }
+            else if ((!Turntable.Clockwise && !Turntable.Counterclockwise && Rotating))
+            {
+                Rotating = false;
+                if (Sound != null) Sound.HandleEvent(Event.TurntableStopped);
+            }
+
+            // Update the pose for each matrix
+            for (var matrix = 0; matrix < SharedShape.Matrices.Length; ++matrix)
+                AnimateMatrix(matrix, AnimationKey);
+
+            var absAnimationMatrix = XNAMatrices[IAnimationMatrix];
+            Matrix.Multiply(ref absAnimationMatrix, ref Location.XNAMatrix, out absAnimationMatrix);
+            Turntable.PerformUpdateActions(absAnimationMatrix);
+            SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
     }
 
@@ -1177,7 +1274,7 @@ namespace Orts.Viewer3D
         public bool HasNightSubObj;
         public int RootSubObjectIndex = 0;
         public bool negativeBogie = false;
-        
+
         readonly Viewer Viewer;
         public readonly string FilePath;
         public readonly string ReferencePath;
@@ -1217,7 +1314,17 @@ namespace Orts.Viewer3D
         void LoadContent()
         {
             Trace.Write("S");
-            var sFile = new ShapeFile(FilePath, Viewer.Settings.SuppressShapeWarnings);
+            var filePath = FilePath;
+            // commented lines allow reading the animation block from an additiona file in an Openrails subfolder
+//           string dir = Path.GetDirectoryName(filePath);
+//            string file = Path.GetFileName(filePath);
+//            string orFilePath = dir + @"\openrails\" + file;
+            var sFile = new ShapeFile(filePath, Viewer.Settings.SuppressShapeWarnings);
+//            if (file.ToLower().Contains("turntable") && File.Exists(orFilePath))
+//            {
+//                sFile.ReadAnimationBlock(orFilePath);
+//            }
+
 
             var textureFlags = Helpers.TextureFlags.None;
             if (File.Exists(FilePath + "d"))
@@ -1262,19 +1369,19 @@ namespace Orts.Viewer3D
             else if (LodControls[0].DistanceLevels.Length > 0 && LodControls[0].DistanceLevels[0].SubObjects.Length > 0)
             {
                 // Look for root subobject, it is not necessarily the first (see ProTrain signal)
-                for (int soIndex=0; soIndex <= LodControls[0].DistanceLevels[0].SubObjects.Length-1; soIndex++)
+                for (int soIndex = 0; soIndex <= LodControls[0].DistanceLevels[0].SubObjects.Length - 1; soIndex++)
                 {
                     sub_object subObject = sFile.shape.lod_controls[0].distance_levels[0].sub_objects[soIndex];
-                    if (subObject.sub_object_header.geometry_info.geometry_node_map[0]==0)
+                    if (subObject.sub_object_header.geometry_info.geometry_node_map[0] == 0)
                     {
                         RootSubObjectIndex = soIndex;
                         break;
                     }
                 }
-             }
+            }
         }
 
-        static void WagonMatrixCheck(string MSTSMatrixName, float M43 )
+        static void WagonMatrixCheck(string MSTSMatrixName, float M43)
         {
 
         }
@@ -1672,7 +1779,7 @@ namespace Orts.Viewer3D
             XNAMatrix.M41 = MSTSMatrix.DX;
             XNAMatrix.M42 = MSTSMatrix.DY;
             XNAMatrix.M43 = -MSTSMatrix.DZ;
-            
+
             return XNAMatrix;
         }
 
@@ -1744,7 +1851,7 @@ namespace Orts.Viewer3D
                 for (var i = 0; i < displayDetail.SubObjects.Length; i++)
                 {
                     var subObject = displayDetail.SubObjects[i];
-                   
+
                     // The 1st subobject (note that index 0 is the main object itself) is hidden during the day if HasNightSubObj is true.
                     if ((subObjVisible != null && !subObjVisible[i]) || (i == 1 && HasNightSubObj && Viewer.MaterialManager.sunDirection.Y >= 0))
                         continue;
@@ -1777,24 +1884,24 @@ namespace Orts.Viewer3D
             {
                 // The rare situation when equipment use dummy axles that use repeating offset that happen to be opposite(negative) from the bogie(positive)
                 // OR was unable to process the axles so the process below will make changes so that OR can work with the axles.
-                if (MatrixNames[iNode].Contains("BOGIE") )
+                if (MatrixNames[iNode].Contains("BOGIE"))
                 {
                     if (Matrices[iNode].M43 < 0)
                         negativeBogie = true;
                     else
                         negativeBogie = false;
                 }
-                else if(MatrixNames[iNode].Contains("WHEELS") && Matrices[iNode].M43 == Matrices[iNode-1].M43)
+                else if (MatrixNames[iNode].Contains("WHEELS") && Matrices[iNode].M43 == Matrices[iNode - 1].M43)
                 {
                     if (Matrices[iNode].M43 > 0 && negativeBogie)
                     {
                         Matrices[iNode].M43 *= -1;
-                        Matrices[iNode-1].M43 *= -1;
+                        Matrices[iNode - 1].M43 *= -1;
                     }
                     else if (Matrices[iNode].M43 < 0 && !negativeBogie)
                     {
                         Matrices[iNode].M43 *= -1;
-                        Matrices[iNode-1].M43 *= -1;
+                        Matrices[iNode - 1].M43 *= -1;
                     }
                 }
                 matrix *= Matrices[iNode];

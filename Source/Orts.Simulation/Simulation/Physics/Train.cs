@@ -264,6 +264,7 @@ namespace Orts.Simulation.Physics
             EXPLORER,
             OUT_OF_CONTROL,
             INACTIVE,
+            TURNTABLE,
             UNDEFINED
         }
 
@@ -279,6 +280,7 @@ namespace Orts.Simulation.Physics
             SLIPPED_INTO_PATH,
             SLIPPED_TO_ENDOFTRACK,
             OUT_OF_TRACK,
+            SLIPPED_INTO_TURNTABLE,
             UNDEFINED
         }
 
@@ -1281,6 +1283,28 @@ namespace Orts.Simulation.Physics
 
         public void ReverseFormation(bool setMUParameters)
         {
+            ReverseCars();
+            // Flip the train's travellers.
+            var t = FrontTDBTraveller;
+            FrontTDBTraveller = new Traveller(RearTDBTraveller, Traveller.TravellerDirection.Backward);
+            RearTDBTraveller = new Traveller(t, Traveller.TravellerDirection.Backward);
+            // If we are updating the controls...
+            if (setMUParameters)
+            {
+                // Flip the controls.
+                MUDirection = DirectionControl.Flip(MUDirection);
+                MUReverserPercent = -MUReverserPercent;
+            }
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Reverse cars and car order
+        /// </summary>
+        /// 
+
+        public void ReverseCars()
+        {
             // Shift all the coupler data along the train by 1 car.
             for (var i = Cars.Count - 1; i > 0; i--)
                 Cars[i].CopyCoupler(Cars[i - 1]);
@@ -1303,18 +1327,9 @@ namespace Orts.Simulation.Physics
             // Update flipped state of each car.
             for (var i = 0; i < Cars.Count; i++)
                 Cars[i].Flipped = !Cars[i].Flipped;
-            // Flip the train's travellers.
-            var t = FrontTDBTraveller;
-            FrontTDBTraveller = new Traveller(RearTDBTraveller, Traveller.TravellerDirection.Backward);
-            RearTDBTraveller = new Traveller(t, Traveller.TravellerDirection.Backward);
-            // If we are updating the controls...
-            if (setMUParameters)
-            {
-                // Flip the controls.
-                MUDirection = DirectionControl.Flip(MUDirection);
-                MUReverserPercent = -MUReverserPercent;
-            }
         }
+
+
 
         //================================================================================================//
         /// <summary>
@@ -1403,6 +1418,9 @@ namespace Orts.Simulation.Physics
 
         public virtual void Update(float elapsedClockSeconds)
         {
+            if (IsActualPlayerTrain && Simulator.ActiveTurntable != null)
+                Simulator.ActiveTurntable.CheckTrainOnTurntable(this);
+
             if (IsActualPlayerTrain && Simulator.OriginalPlayerTrain != this && !CheckStations) // if player train is to check own stations
             {
                 CheckStationTask();
@@ -1424,7 +1442,12 @@ namespace Orts.Simulation.Physics
 
             // perform overall update
 
-            if (ControlMode == TRAIN_CONTROL.MANUAL)                                        // manual mode
+            if (ControlMode == TRAIN_CONTROL.TURNTABLE)
+            {
+                UpdateTurntable(elapsedClockSeconds);
+            }
+
+            else if (ControlMode == TRAIN_CONTROL.MANUAL)                                        // manual mode
             {
                 UpdateManual(elapsedClockSeconds);
             }
@@ -1600,8 +1623,8 @@ namespace Orts.Simulation.Physics
             SpeedMpS /= Cars.Count;
 
             SlipperySpotDistanceM -= SpeedMpS * elapsedClockSeconds;
-
-            CalculatePositionOfCars(elapsedClockSeconds, distanceM);
+            if (ControlMode != TRAIN_CONTROL.TURNTABLE)
+                CalculatePositionOfCars(elapsedClockSeconds, distanceM);
 
             // calculate projected speed
             if (elapsedClockSeconds < AccelerationMpSpS.SmoothPeriodS)
@@ -2128,6 +2151,22 @@ namespace Orts.Simulation.Physics
             UpdateSectionStateExplorer();                                                         // update track occupation          //
             UpdateExplorerMode(SignalObjIndex);                                                   // update route clearance           //
             // for manual, also includes signal update //
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Update in turntable mode
+        /// <\summary>
+
+        public void UpdateTurntable(float elapsedClockSeconds)
+        {
+ //           UpdateTrainPosition();                                                                // position update                  //
+            if (LeadLocomotive != null && (LeadLocomotive.ThrottlePercent >= 1 || Math.Abs(LeadLocomotive.SpeedMpS) > 0.05 || !(LeadLocomotive.Direction == Direction.N
+            || Math.Abs(MUReverserPercent) <= 1)) || ControlMode != TRAIN_CONTROL.TURNTABLE)
+                // Go to emergency.
+                {
+                    ((MSTSLocomotive)LeadLocomotive).SetEmergency(true);
+                }
         }
 
         //================================================================================================//
@@ -7856,6 +7895,66 @@ namespace Orts.Simulation.Physics
         }
 
         //================================================================================================//
+        //
+        // Switch to explorer mode
+        //
+
+        public void ToggleToExplorerMode()
+        {
+            if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL && LeadLocomotive != null)
+                ((MSTSLocomotive)LeadLocomotive).SetEmergency(false);
+
+            // set track occupation (using present route)
+            UpdateSectionStateExplorer();
+
+            // breakdown present route - both directions if set
+
+            if (ValidRoute[0] != null)
+            {
+                int listIndex = PresentPosition[0].RouteListIndex;
+                signalRef.BreakDownRouteList(ValidRoute[0], listIndex, routedForward);
+                ClearDeadlocks();
+            }
+
+            ValidRoute[0] = null;
+            LastReservedSection[0] = -1;
+
+            if (ValidRoute[1] != null)
+            {
+                int listIndex = PresentPosition[1].RouteListIndex;
+                signalRef.BreakDownRouteList(ValidRoute[1], listIndex, routedBackward);
+            }
+            ValidRoute[1] = null;
+            LastReservedSection[1] = -1;
+
+            // clear all outstanding actions
+
+            ClearActiveSectionItems();
+            requiredActions.RemovePendingAIActionItems(true);
+
+            // clear signal info
+
+            NextSignalObject[0] = null;
+            NextSignalObject[1] = null;
+
+            SignalObjectItems.Clear();
+
+            PassedSignalSpeeds.Clear();
+
+            // set explorer mode
+
+            ControlMode = TRAIN_CONTROL.EXPLORER;
+
+            // reset routes and check sections either end of train
+
+            PresentPosition[0].RouteListIndex = -1;
+            PresentPosition[1].RouteListIndex = -1;
+            PreviousPosition[0].RouteListIndex = -1;
+
+            UpdateExplorerMode(-1);
+        }
+
+        //================================================================================================//
         /// <summary>
         /// Update out-of-control mode
         /// </summary>
@@ -11175,6 +11274,9 @@ namespace Orts.Simulation.Physics
                 case TRAIN_CONTROL.EXPLORER:
                     statusString[iColumn] = "EXPL";
                     break;
+                case TRAIN_CONTROL.TURNTABLE:
+                    statusString[iColumn] = "TURN";
+                    break;
                 default:
                     statusString[iColumn] = "----";
                     break;
@@ -11209,6 +11311,9 @@ namespace Orts.Simulation.Physics
                         break;
                     case OUTOFCONTROL.MISALIGNED_SWITCH:
                         statusString[iColumn] = "MASW";
+                        break;
+                    case OUTOFCONTROL.SLIPPED_INTO_TURNTABLE:
+                        statusString[iColumn] = "SLPT";
                         break;
                     default:
                         statusString[iColumn] = "....";
@@ -17594,5 +17699,79 @@ namespace Orts.Simulation.Physics
             return;
 
         }
+
+        /// <summary>
+        /// Nullify valid routes
+        /// </summary>
+        public void ClearValidRoutes()
+        {
+
+            if (ValidRoute[0] != null)
+            {
+                int listIndex = PresentPosition[0].RouteListIndex;
+                signalRef.BreakDownRouteList(ValidRoute[0], listIndex, routedForward);
+                ClearDeadlocks();
+            }
+
+            ValidRoute[0] = null;
+            LastReservedSection[0] = -1;
+
+            if (ValidRoute[1] != null)
+            {
+                int listIndex = PresentPosition[1].RouteListIndex;
+                signalRef.BreakDownRouteList(ValidRoute[1], listIndex, routedBackward);
+            }
+            ValidRoute[1] = null;
+            LastReservedSection[1] = -1;
+        }
+
+        /// <summary>
+        /// After turntable rotation, must find where it is
+        /// </summary>
+        /// 
+        public void ReenterTrackSections(int trackNodeIndex, int trVectorSectionIndex, Vector3 finalFrontTravellerXNALocation, Vector3 finalRearTravellerXNALocation, Traveller.TravellerDirection direction)
+        {
+            if (direction == Traveller.TravellerDirection.Backward)
+            {
+                ReverseCars();
+                FrontTDBTraveller = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[trackNodeIndex],
+                    Cars[0].WorldPosition.TileX, Cars[0].WorldPosition.TileZ, finalRearTravellerXNALocation.X, -finalRearTravellerXNALocation.Z, FrontTDBTraveller.Direction);
+                RearTDBTraveller = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[trackNodeIndex],
+                                Cars[0].WorldPosition.TileX, Cars[0].WorldPosition.TileZ, finalFrontTravellerXNALocation.X, -finalFrontTravellerXNALocation.Z, RearTDBTraveller.Direction);
+            }
+            else
+            {
+                FrontTDBTraveller = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[trackNodeIndex],
+                    Cars[0].WorldPosition.TileX, Cars[0].WorldPosition.TileZ, finalFrontTravellerXNALocation.X, -finalFrontTravellerXNALocation.Z, FrontTDBTraveller.Direction);
+                RearTDBTraveller = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[trackNodeIndex],
+                                Cars[0].WorldPosition.TileX, Cars[0].WorldPosition.TileZ, finalRearTravellerXNALocation.X, -finalRearTravellerXNALocation.Z, RearTDBTraveller.Direction);
+            }
+
+            ClearValidRoutes();
+            bool canPlace = true;
+            TCSubpathRoute tempRoute = CalculateInitialTrainPosition(ref canPlace);
+            if (tempRoute.Count == 0 || !canPlace)
+            {
+                throw new InvalidDataException("Player train original position not clear");
+            }
+
+            SetInitialTrainRoute(tempRoute);
+            CalculatePositionOfCars();
+            ResetInitialTrainRoute(tempRoute);
+
+            CalculatePositionOfCars();
+
+            TrackNode tn = FrontTDBTraveller.TN;
+            float offset = FrontTDBTraveller.TrackNodeOffset;
+            int direction1 = (int)FrontTDBTraveller.Direction;
+
+            PresentPosition[0].SetTCPosition(tn.TCCrossReference, offset, direction1);
+            PresentPosition[0].CopyTo(ref PreviousPosition[0]);
+
+            if (Simulator.Activity == null && !Simulator.TimetableMode) ToggleToExplorerMode();
+            else ToggleToManualMode();
+            Simulator.Confirmer.Confirm(CabControl.SignalMode, CabSetting.Off);
+        }
+
     }// class Train
 }

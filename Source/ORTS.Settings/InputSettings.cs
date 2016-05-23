@@ -199,6 +199,8 @@ namespace ORTS.Settings
         [GetString("Control Refill")] ControlRefill,
         [GetString("Control TroughRefill")] ControlTroughRefill,
         [GetString("Control ImmediateRefill")]ControlImmediateRefill,
+        [GetString("Control Turntable Clockwise")]ControlTurntableClockwise,
+        [GetString("Control Turntable Counterclockwise")]ControlTurntableCounterclockwise,
     }
 
     /// <summary>
@@ -565,6 +567,9 @@ namespace ORTS.Settings
             Commands[(int)UserCommands.ControlTrainBrakeIncrease] = new UserCommandKeyInput(0x28);
             Commands[(int)UserCommands.ControlTrainBrakeZero] = new UserCommandKeyInput(0x27, KeyModifiers.Control);
             Commands[(int)UserCommands.ControlTroughRefill] = new UserCommandKeyInput(0x15);
+            Commands[(int)UserCommands.ControlTurntableClockwise] = new UserCommandKeyInput(0x2E, KeyModifiers.Alt);
+            Commands[(int)UserCommands.ControlTurntableCounterclockwise] = new UserCommandKeyInput(0x2E, KeyModifiers.Control);
+
             Commands[(int)UserCommands.ControlWiper] = new UserCommandKeyInput(0x2F);
 
             Commands[(int)UserCommands.DebugClockBackwards] = new UserCommandKeyInput(0x0C);
