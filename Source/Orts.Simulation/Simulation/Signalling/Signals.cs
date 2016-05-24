@@ -8643,13 +8643,16 @@ namespace Orts.Simulation.Signalling
                 Train.TCSubpathRoute RoutePart = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex];
 
                 TrackNode thisNode = signalRef.trackDB.TrackNodes[req_mainnode];
-                for (int iSection = 0; iSection <= thisNode.TCCrossReference.Count - 1 && !routeset; iSection++)
+                if (RoutePart != null)
                 {
-                    int sectionIndex = thisNode.TCCrossReference[iSection].Index;
-
-                    for (int iElement = 0; iElement < RoutePart.Count && !routeset; iElement++)
+                    for (int iSection = 0; iSection <= thisNode.TCCrossReference.Count - 1 && !routeset; iSection++)
                     {
-                        routeset = (sectionIndex == RoutePart[iElement].TCSectionIndex && signalRef.TrackCircuitList[sectionIndex].CircuitType == TrackCircuitSection.TrackCircuitType.Normal);
+                        int sectionIndex = thisNode.TCCrossReference[iSection].Index;
+
+                        for (int iElement = 0; iElement < RoutePart.Count && !routeset; iElement++)
+                        {
+                            routeset = (sectionIndex == RoutePart[iElement].TCSectionIndex && signalRef.TrackCircuitList[sectionIndex].CircuitType == TrackCircuitSection.TrackCircuitType.Normal);
+                        }
                     }
                 }
 
