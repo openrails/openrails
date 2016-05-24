@@ -386,7 +386,7 @@ namespace Orts.MultiPlayer
                 ids[i] = t.Cars[i].CarID;
                 if (t.Cars[i].Flipped == true) flipped[i] = 1;
                 else flipped[i] = 0;
-                lengths[i] = (int)(t.Cars[i].CarLengthM);
+                lengths[i] = (int)(t.Cars[i].CarLengthM * 100);
             }
             if (t.LeadLocomotive != null) leadingID = t.LeadLocomotive.CarID;
             else leadingID = "NA";
