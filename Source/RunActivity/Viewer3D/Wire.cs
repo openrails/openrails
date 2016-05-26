@@ -79,8 +79,8 @@ namespace Orts.Viewer3D
                 localV = Vector3.Zero; // Local position (in x-z plane)
 
 
-                Vector3 trackLoc = new Vector3((float)id.X, (float)id.Y, (float)id.Z);// +new Vector3(3, 0, 0);
-                Matrix trackRot = Matrix.CreateRotationY(-(float)id.A * 3.14f / 180);
+                Vector3 trackLoc = new Vector3((float)id.X, (float)id.Y, -(float)id.Z);// +new Vector3(3, 0, 0);
+                Matrix trackRot = Matrix.CreateRotationY(-(float)id.A * 3.1416f / 180);
 
                 //heading = Vector3.Transform(heading, trackRot); // Heading change
                 nextRoot.XNAMatrix = trackRot * nextRoot.XNAMatrix;
@@ -104,13 +104,13 @@ namespace Orts.Viewer3D
                     }
                     else
                     {
-                        length = section.SectionCurve.Angle * 3.14f / 180;
+                        length = section.SectionCurve.Angle * 3.1416f / 180;
                         radius = section.SectionCurve.Radius; // meters
 
                         Vector3 left;
                         if (section.SectionCurve.Angle > 0) left = radius * Vector3.Cross(Vector3.Down, heading); // Vector from PC to O
                         else left = radius * Vector3.Cross(Vector3.Up, heading); // Vector from PC to O
-                        Matrix rot = Matrix.CreateRotationY(-section.SectionCurve.Angle * 3.14f / 180); // Heading change (rotation about O)
+                        Matrix rot = Matrix.CreateRotationY(-section.SectionCurve.Angle * 3.1416f / 180); // Heading change (rotation about O)
 
                         displacement = Traveller.MSTSInterpolateAlongCurve(localV, left, rot,
                                                 worldMatrix.XNAMatrix, out localProjectedV);
@@ -195,13 +195,13 @@ namespace Orts.Viewer3D
                 }
                 else
                 {
-                    length = section.SectionCurve.Angle * 3.14f / 180;
+                    length = section.SectionCurve.Angle * 3.1416f / 180;
                     radius = section.SectionCurve.Radius; // meters
 
                     Vector3 left;
                     if (section.SectionCurve.Angle > 0) left = radius * Vector3.Cross(Vector3.Down, heading); // Vector from PC to O
                     else left = radius * Vector3.Cross(Vector3.Up, heading); // Vector from PC to O
-                    Matrix rot = Matrix.CreateRotationY(-section.SectionCurve.Angle * 3.14f / 180); // Heading change (rotation about O)
+                    Matrix rot = Matrix.CreateRotationY(-section.SectionCurve.Angle * 3.1416f / 180); // Heading change (rotation about O)
 
                     displacement = Traveller.MSTSInterpolateAlongCurve(localV, left, rot,
                                             worldMatrix.XNAMatrix, out localProjectedV);
