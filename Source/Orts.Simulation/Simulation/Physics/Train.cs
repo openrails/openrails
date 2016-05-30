@@ -7007,14 +7007,14 @@ namespace Orts.Simulation.Physics
                                 }
                                 else
                                 {
-                                    allowedMaxSpeedLimitMpS = thisSpeedMpS;
+                                    allowedMaxSpeedLimitMpS = Math.Min(allowedMaxSpeedLimitMpS, thisSpeedMpS);
                                     AllowedMaxSpeedMpS = Math.Min(allowedMaxSpeedLimitMpS, Math.Min(allowedMaxTempSpeedLimitMpS,
                                        allowedMaxSpeedSignalMpS == -1 ? 999 : allowedMaxSpeedSignalMpS));
                                 }
                             }
                             else
                             {
-                                allowedMaxTempSpeedLimitMpS = thisSpeedMpS;
+                                allowedMaxTempSpeedLimitMpS = Math.Min(allowedMaxTempSpeedLimitMpS, thisSpeedMpS);
                                 AllowedMaxSpeedMpS = Math.Min(allowedMaxSpeedLimitMpS, Math.Min(allowedMaxTempSpeedLimitMpS,
                                     allowedMaxSpeedSignalMpS == -1 ? 999 : allowedMaxSpeedSignalMpS));
                             }

@@ -3678,12 +3678,6 @@ namespace Orts.Simulation.Signalling
                     endOfRoute = true;
                 }
 
-                if (searchFacingSignal && thisSection.EndSignals[curDirection] != null)           // search facing signal
-                {
-                    foundObject.Add(thisSection.EndSignals[curDirection].thisRef);
-                    endOfRoute = true;
-                }
-
                 // search facing speedpost
                 if (searchFacingSpeedpost && thisSection.CircuitItems.TrackCircuitSpeedPosts[curDirection].TrackCircuitItem.Count > 0)
                 {
@@ -3728,6 +3722,13 @@ namespace Orts.Simulation.Signalling
                         }
                     }
                 }
+
+                if (searchFacingSignal && thisSection.EndSignals[curDirection] != null)           // search facing signal
+                {
+                    foundObject.Add(thisSection.EndSignals[curDirection].thisRef);
+                    endOfRoute = true;
+                }
+
 
                 // search backward speedpost
                 if (searchBackwardSpeedpost && thisSection.CircuitItems.TrackCircuitSpeedPosts[oppDirection].TrackCircuitItem.Count > 0)
