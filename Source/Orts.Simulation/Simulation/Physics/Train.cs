@@ -2130,6 +2130,15 @@ namespace Orts.Simulation.Physics
             {
                 SignalObjIndex = CheckSignalPassed(1, PresentPosition[1], PreviousPosition[1]);   // check if passed signal backward  //
             }
+            if (SignalObjIndex >= 0)
+            {
+                var signalObject = signalRef.SignalObjects[SignalObjIndex];
+
+                //the following is added by CSantucci, applying also to manual mode what Jtang implemented for activity mode: after passing a manually forced signal,
+                // system will take back control of the signal
+                if (signalObject.holdState == SignalObject.HoldState.ManualPass ||
+                    signalObject.holdState == SignalObject.HoldState.ManualApproach) signalObject.holdState = SignalObject.HoldState.None;
+            }
             UpdateSectionStateManual();                                                           // update track occupation          //
             UpdateManualMode(SignalObjIndex);                                                     // update route clearance           //
             // for manual, also includes signal update //
@@ -2147,6 +2156,15 @@ namespace Orts.Simulation.Physics
             if (SignalObjIndex < 0)
             {
                 SignalObjIndex = CheckSignalPassed(1, PresentPosition[1], PreviousPosition[1]);   // check if passed signal backward  //
+            }
+            if (SignalObjIndex >= 0)
+            {
+                var signalObject = signalRef.SignalObjects[SignalObjIndex];
+
+                //the following is added by CSantucci, applying also to explorer mode what Jtang implemented for activity mode: after passing a manually forced signal,
+                // system will take back control of the signal
+                if (signalObject.holdState == SignalObject.HoldState.ManualPass ||
+                    signalObject.holdState == SignalObject.HoldState.ManualApproach) signalObject.holdState = SignalObject.HoldState.None;
             }
             UpdateSectionStateExplorer();                                                         // update track occupation          //
             UpdateExplorerMode(SignalObjIndex);                                                   // update route clearance           //
