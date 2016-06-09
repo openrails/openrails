@@ -362,10 +362,10 @@ namespace Orts.Viewer3D.RollingStock
         private void UpdateAnimation(RenderFrame frame, ElapsedTime elapsedTime)
         {
                         
-            float distanceTravelledM;
-            float distanceTravelledDrivenM;  // speed of driven wheels
-            float AnimationWheelRadiusM; //Radius of non driven wheels
-            float AnimationDriveWheelRadiusM; //Radius of driven wheels
+            float distanceTravelledM = 0.0f; // Distance travelled by non-driven wheels
+            float distanceTravelledDrivenM = 0.0f;  // Distance travelled by driven wheels
+            float AnimationWheelRadiusM = 0.0f; // Radius of non driven wheels
+            float AnimationDriveWheelRadiusM = 0.0f; // Radius of driven wheels
 
             if (MSTSWagon.IsDriveable && MSTSWagon.Simulator.UseAdvancedAdhesion)
             {
@@ -390,14 +390,23 @@ namespace Orts.Viewer3D.RollingStock
                     AnimationDriveWheelRadiusM = MSTSWagon.WheelRadiusM;
                 }
             }
-            else // set values for non-driveable stock, eg wagons
+            else // set values for simple adhesion
             {
 
                 distanceTravelledM = MSTSWagon.SpeedMpS * elapsedTime.ClockSeconds;
                 distanceTravelledDrivenM = MSTSWagon.SpeedMpS * elapsedTime.ClockSeconds;
                 // Set values of wheel radius - assume that drive wheel and non driven wheel are same sizes
-                AnimationWheelRadiusM = MSTSWagon.WheelRadiusM;
-                AnimationDriveWheelRadiusM = MSTSWagon.WheelRadiusM;
+                if (Car.EngineType == Orts.Simulation.RollingStocks.TrainCar.EngineTypes.Steam) // set values for steam stock
+                {
+                    AnimationWheelRadiusM = MSTSWagon.WheelRadiusM;
+                    AnimationDriveWheelRadiusM = MSTSWagon.DriverWheelRadiusM;
+                }
+                else // set values for non-driveable stock, eg wagons, and driveable stock such as diesels, electric locomotives 
+                {
+                    AnimationWheelRadiusM = MSTSWagon.WheelRadiusM;
+                    AnimationDriveWheelRadiusM = MSTSWagon.WheelRadiusM;
+                }
+
             }
 
             if (Car.BrakeSkid) // if car wheels are skidding because of brakes lockin wheels up then stop wheels rotating.
@@ -427,10 +436,9 @@ namespace Orts.Viewer3D.RollingStock
 #if DEBUG_WHEEL_ANIMATION
 
             Trace.TraceInformation("========================== Debug Animation in MSTSWagonViewer.cs ==========================================");
-           // Trace.TraceInformation("Slip speed: Car ID {0} WheelSpeed {1}", Car.CarID, distanceTravelledM);
-            Trace.TraceInformation("Slip speed: Car ID {0} WheelDistance {1} SlipWheelDistance {2}", Car.CarID, distanceTravelledM, distanceTravelledDrivenM);
-            Trace.TraceInformation("Wag Speed - Wheelspeed {0} Slip {1} Train {2}", MSTSWagon.WheelSpeedMpS, MSTSWagon.WheelSpeedSlipMpS, MSTSWagon.SpeedMpS);
-            Trace.TraceInformation("Wheels: DriveWheel {0} NonDriveWheel {1}", AnimationDriveWheelRadiusM, AnimationWheelRadiusM);
+            Trace.TraceInformation("Slip speed - Car ID: {0} WheelDistance: {1} SlipWheelDistance: {2}", Car.CarID, distanceTravelledM, distanceTravelledDrivenM);
+            Trace.TraceInformation("Wag Speed - Wheelspeed: {0} Slip: {1} Train: {2}", MSTSWagon.WheelSpeedMpS, MSTSWagon.WheelSpeedSlipMpS, MSTSWagon.SpeedMpS);
+            Trace.TraceInformation("Wheel Radius - DriveWheel: {0} NonDriveWheel: {1}", AnimationDriveWheelRadiusM, AnimationWheelRadiusM);
 
 #endif
 
