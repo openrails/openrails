@@ -256,6 +256,7 @@ namespace Orts.Simulation
                     foreach (TrainCar trainCar in train.Cars)
                     {
                         var relativeCarPosition = Matrix.Identity;
+                        trainCar.WorldPosition.NormalizeTo(WorldPosition.TileX, WorldPosition.TileZ);
                         relativeCarPosition = Matrix.Multiply(trainCar.WorldPosition.XNAMatrix, invAnimationXNAMatrix);
                         RelativeCarPositions.Add(relativeCarPosition);
                     }
@@ -425,14 +426,19 @@ namespace Orts.Simulation
                     foreach (TrainCar trainCar in train.Cars)
                     {
                         var relativeCarPosition = Matrix.Identity;
+                        trainCar.WorldPosition.NormalizeTo(WorldPosition.TileX, WorldPosition.TileZ);
                         relativeCarPosition = Matrix.Multiply(trainCar.WorldPosition.XNAMatrix, invAnimationXNAMatrix);
                         RelativeCarPositions.Add(relativeCarPosition);
                     }
                     var XNALocation = train.FrontTDBTraveller.Location;
                     XNALocation.Z = -XNALocation.Z;
+                    XNALocation.X = XNALocation.X + 2048 * (train.FrontTDBTraveller.TileX - WorldPosition.TileX);
+                    XNALocation.Z = XNALocation.Z - 2048 * (train.FrontTDBTraveller.TileZ - WorldPosition.TileZ);
                     RelativeFrontTravellerXNALocation = Vector3.Transform(XNALocation, invAnimationXNAMatrix);
                     XNALocation = train.RearTDBTraveller.Location;
                     XNALocation.Z = -XNALocation.Z;
+                    XNALocation.X = XNALocation.X + 2048 * (train.RearTDBTraveller.TileX - WorldPosition.TileX);
+                    XNALocation.Z = XNALocation.Z - 2048 * (train.RearTDBTraveller.TileZ - WorldPosition.TileZ);
                     RelativeRearTravellerXNALocation = Vector3.Transform(XNALocation, invAnimationXNAMatrix);
                     train.ControlMode = Train.TRAIN_CONTROL.TURNTABLE;
                 }
