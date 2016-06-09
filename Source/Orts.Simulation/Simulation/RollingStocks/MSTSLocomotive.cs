@@ -41,6 +41,9 @@
 
 //#define ALLOW_ORTS_SPECIFIC_ENG_PARAMETERS
 
+// Debug for Advanced Adhesion Model
+//#define DEBUG_ADHESION
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Common;
@@ -131,6 +134,12 @@ namespace Orts.Simulation.RollingStocks
         public bool CabLightOn;
         public bool ShowCab = true;
         public bool MilepostUnitsMetric;
+
+        // Adhesion Debug
+        bool DebugSpeedReached;
+        float DebugSpeedIncrement = 5.0f; // Speed increment for debug display - in mph
+        float DebugSpeed = 5.0f; // Initialise at 5 mph
+        float DebugTimer = 0.0f;
 
         // Adhesion parameters
         float BaseFrictionCoefficientFactor;  // Factor used to adjust Curtius formula depending upon weather conditions
@@ -1122,6 +1131,62 @@ namespace Orts.Simulation.RollingStocks
 
             PrevMotiveForceN = MotiveForceN;
             base.Update(elapsedClockSeconds);
+
+#if DEBUG_ADHESION
+            // Timer to determine travel time - resets when locomotive stops
+            if (AbsSpeedMpS > 0)
+            {
+                DebugTimer += elapsedClockSeconds;  // Increment debug timer whilever train is moving
+            }
+            else
+            {
+                DebugTimer = 0.0f; // Reset timer if train is stopped
+            }
+
+            // Speed detector, set to print out an adhesion snapshot every 5mph increment
+            if (AbsSpeedMpS > MpS.FromMpH(DebugSpeed))
+            {
+                if (!DebugSpeedReached)
+                {
+                    DebugSpeedReached = true;                    
+                }
+                else
+                {
+                    if (DebugSpeedReached)
+                    {
+                        DebugSpeed += DebugSpeedIncrement;
+                    }
+                    DebugSpeedReached = false;
+
+                }
+
+            }
+
+            // Only prints out in speed increments of 5mph
+            if (DebugSpeedReached)
+            {
+                
+                Trace.TraceInformation("====================================== Debug Adhesion (MSTSLocomotive.cs) ===============================");
+                Trace.TraceInformation("Advanced Adhesion Model - {0}", Simulator.UseAdvancedAdhesion);
+                Trace.TraceInformation("Car Id: {0} Engine type: {1} Speed: {2} Gradient: {3} Time: {4}", CarID, EngineType, FormatStrings.FormatSpeedDisplay(AbsSpeedMpS, IsMetric), -CurrentElevationPercent, DebugTimer);
+                Trace.TraceInformation("Rail TE: {0} DBTE: {1}", FormatStrings.FormatForce(MotiveForceN, IsMetric), FormatStrings.FormatForce(CouplerForceU, IsMetric));
+
+                Trace.TraceInformation("Axle - Drive Force: {0} Axle Force: {1} Wheelspeed: {2}", FormatStrings.FormatForce(LocomotiveAxle.DriveForceN, IsMetric), FormatStrings.FormatForce(LocomotiveAxle.AxleForceN, IsMetric), FormatStrings.FormatSpeedDisplay(WheelSpeedMpS, IsMetric));
+                Trace.TraceInformation("Axle - Axle Inertia: {0} Wheel Radius: {1}", LocomotiveAxle.InertiaKgm2, DriverWheelRadiusM);
+
+                Trace.TraceInformation("Adhesion - Curtius_A: {0} Curtius_B: {1} Curtius_C: {2} Curtius_D: {3}", Curtius_KnifflerA, Curtius_KnifflerB, Curtius_KnifflerC, AdhesionK);
+
+                Trace.TraceInformation("Axle Speed: {0} TrainSpeed: {1} Slip Speed: {2}", LocomotiveAxle.AxleSpeedMpS, LocomotiveAxle.TrainSpeedMpS, LocomotiveAxle.SlipSpeedMpS);
+
+                Trace.TraceInformation("Adhesion Conditions: {0}", LocomotiveAxle.AdhesionConditions);
+
+                Trace.TraceInformation("Fog - Min {0} fog {1}", Math.Min((Simulator.Weather.FogDistance * 2.75e-4f + 0.45f), 1.0f), Simulator.Weather.FogDistance);
+
+                Trace.TraceInformation("Rain - Min {0} pric {1}", Math.Min((Simulator.Weather.PricipitationIntensityPPSPM2 * 0.0078f + 0.45f), 0.607f), Simulator.Weather.PricipitationIntensityPPSPM2);
+
+            }
+#endif
+
         } // End Method Update
 
         /// <summary>
@@ -1478,7 +1543,7 @@ namespace Orts.Simulation.RollingStocks
             }
 
             //Curtius-Kniffler computation for the basic model
-            float max0 = 1.0f;  //Adhesion conditions [N]
+    //        float max0 = 1.0f;  //Adhesion conditions [N]
 
             if ((Simulator.UseAdvancedAdhesion) && (!Simulator.Paused) && EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared )
              {
@@ -1488,6 +1553,10 @@ namespace Orts.Simulation.RollingStocks
             
             else if ((Simulator.UseAdvancedAdhesion) && (!Simulator.Paused) && (!AntiSlip))
             {
+
+                /* Turn off code
+                 * 
+                 * 
                 //Set the weather coeff
                 if (Simulator.WeatherType == WeatherType.Rain || Simulator.WeatherType == WeatherType.Snow)
                 {
@@ -1546,12 +1615,14 @@ namespace Orts.Simulation.RollingStocks
                     AdhesionFilter.Filter(max0 + (float)((float)(Simulator.Settings.AdhesionFactorChange) * 0.01f * 2f * (Simulator.Random.NextDouble() - 0.5f)), elapsedClockSeconds);
                 LocomotiveAxle.AdhesionConditions = MathHelper.Clamp(0.05f, LocomotiveAxle.AdhesionConditions, 2.5f); // Avoids NaNs in axle speed computing                      
 
+                 */
+                  
                 //Compute axle inertia from parameters if possible
-                if (AxleInertiaKgm2 > 10000.0f)
+                if (AxleInertiaKgm2 > 10000.0f) // if axleinertia value supplied in ENG file, then use in calculations
                 {
                     LocomotiveAxle.InertiaKgm2 = AxleInertiaKgm2;
                 }
-                else
+                else // if no value in ENG file, calculate axleinertia value.
                 {
                     if (WheelAxles.Count > 0 && DriverWheelRadiusM > 0)
                     {
@@ -1695,16 +1766,23 @@ namespace Orts.Simulation.RollingStocks
         /// For the purposes of simulating frcition the following values have been used. 
         /// Some reference documents have suggested that friction can vary between 0.07 
         /// for lubricated or icy track to 0.78 for dry track.
-        /// The following values have been used as an "appropriate common" standard.
-        /// Dry track = 0.35
-        /// Wet track = 0.2
-        /// Icy track = 0.15 (to be confirmed - values to less then 0.1 have been described in lterature)
+        /// The standard Cutius-Kniffler formula for dry rail is used as a base.
+        /// Dry track = 0.33 
+        /// 
+        /// The following values have been used as an "appropriate common" standard  to vary the above value by (sourced from Principles and Applications of Tribology).
+        /// Wet track (clean) = 0.18 <=> 0.2
+        /// Wet track (sand) = 0.22 <=> 0.25
+        /// Dew or fog = 0.09 <=> 0.15
+        /// Sleet = 0.15
+        /// Sleet (sand) = 0.2
+        /// Snow track = 0.1 
+        /// Snow track (sand) = 0.15
         /// 
         /// Note Heavy rain will actually wash track clean, and will give a higher value of adhesion then light drizzling rain
         /// </summary>
         public virtual void UpdateFrictionCoefficient(float elapsedClockSeconds)
         {
-            float BaseuMax = (7.5f / (MpS.ToKpH(AbsSpeedMpS) + 44.0f) + 0.161f); // Base Curtius - Kniffler equation - u = 0.33, all other values are scaled off this formula
+            float BaseuMax = (Curtius_KnifflerA / (MpS.ToKpH(AbsSpeedMpS) + Curtius_KnifflerB) + Curtius_KnifflerC); // Base Curtius - Kniffler equation - u = 0.33, all other values are scaled off this formula
 
             //Set the friction coeff due to weather
             if (Simulator.WeatherType == WeatherType.Rain || Simulator.WeatherType == WeatherType.Snow)
@@ -1720,12 +1798,17 @@ namespace Orts.Simulation.RollingStocks
                 }
                 if (Simulator.WeatherType == WeatherType.Rain) // Wet weather
                 {
-                    BaseFrictionCoefficientFactor = 0.6f;
-//                    if (Simulator.Settings.AdhesionProportionalToWeather)  // Adjust clear weather for fog presence
-//                    {
- //                       float pric = Simulator.Weather.PricipitationIntensityPPSPM2 * 1000;
- //                       BaseFrictionCoefficientFactor *= Math.Min(Math.Max(1.5f - pric * 0.05f, 0.5f), 1.5f);
- //                   }
+                    if (Simulator.Settings.AdhesionProportionalToWeather && Simulator.UseAdvancedAdhesion && !Simulator.Paused)  // Adjust clear weather for precipitation presence - base friction value will be approximately between 0.15 and 0.2
+                        // ie base value between 0.606 and 0.45 - note lowest friction will be with lightest precipitation value.
+                    {
+                       float pric = Simulator.Weather.PricipitationIntensityPPSPM2 * 1000;
+                // precipitation will calculate a value between 0.15 (light rain) and 0.2 (heavy rain) - this will be a factor that is used to adjust the base value - assume linear value between upper and lower precipitation values
+                       BaseFrictionCoefficientFactor = Math.Min((pric * 0.0078f + 0.45f), 0.607f);
+                    }
+                    else // if not proportional to precipitation use fixed friction value approximately equal to 0.2, thus factor will be 0.6 x friction coefficient of 0.33
+                    {
+                        BaseFrictionCoefficientFactor = 0.607f;
+                    }
                 }
                 else     // Snow weather
                 {
@@ -1734,19 +1817,30 @@ namespace Orts.Simulation.RollingStocks
             }
             else // Default to Dry (Clear) weather
             {
-                BaseFrictionCoefficientFactor = 1.0f;
-//                if (Simulator.Settings.AdhesionProportionalToWeather)  // Adjust clear weather for fog presence
-//                {
-//                    float fog = Simulator.Weather.FogDistance;
-//                    BaseFrictionCoefficientFactor *= Math.Min(Math.Max(fog * 5.1e-4f + 0.7f, 0.7f), 1.5f);
-//                }
+
+                if (Simulator.Settings.AdhesionProportionalToWeather && Simulator.UseAdvancedAdhesion && !Simulator.Paused)  // Adjust clear weather for fog presence
+                {
+                    float fog = Simulator.Weather.FogDistance;
+                    if (fog > 2000)
+                    {
+                        BaseFrictionCoefficientFactor = 1.0f; // if fog is not too thick don't change the friction
+                    }
+                    else
+                    {
+                        BaseFrictionCoefficientFactor = Math.Min((fog * 2.75e-4f + 0.45f), 1.0f); // If fog is less then 2km then it will impact friction
+                    }                                        
+                }
+                else // if not proportional to fog use fixed friction value approximately equal to 0.33, thus factor will be 1.0 x friction coefficient of 0.33
+                {
+                    BaseFrictionCoefficientFactor = 1.0f;
+                }
 
             }
 
             Train.WagonCoefficientFriction = BaseuMax * BaseFrictionCoefficientFactor;  // Find friction coefficient factor for wagons
             WagonCoefficientFrictionHUD = Train.WagonCoefficientFriction; // Save value for HUD display
 
-            if (SteamDrvWheelWeightLbs < 10000 && Simulator.WeatherType == WeatherType.Clear)
+            if (EngineType == EngineTypes.Steam && SteamDrvWheelWeightLbs < 10000 && Simulator.WeatherType == WeatherType.Clear)
             {
                 BaseFrictionCoefficientFactor *= 0.75f;  // Dry track - static friction for vehicles with wheel weights less then 10,000lbs - u = 0.25
 
@@ -1782,16 +1876,24 @@ namespace Orts.Simulation.RollingStocks
 
             Train.LocomotiveCoefficientFriction = BaseuMax * BaseFrictionCoefficientFactor * AdhesionMultiplier;  // Find friction coefficient factor for locomotive
             Train.LocomotiveCoefficientFriction = MathHelper.Clamp(Train.LocomotiveCoefficientFriction, 0.05f, 0.8f); // Ensure friction coefficient never exceeds a "reasonable" value
-            LocomotiveCoefficientFrictionHUD = Train.LocomotiveCoefficientFriction; // Set display value for HUD
-
 
             if (elapsedClockSeconds > 0)
             {
-
-//                Trace.TraceInformation("Adhesison Multiplier {0}  Random Change {1}", AdhesionMultiplier, AdhesionRandom);
-//                BaseFrictionCoefficientFactor = (float)(Simulator.Settings.AdhesionFactor) * 0.01f + (float)((float)(Simulator.Settings.AdhesionFactorChange) * 0.01f * 2f * (Simulator.Random.NextDouble() - 0.5f)), elapsedClockSeconds);
- //               LocomotiveAxle.AdhesionConditions = MathHelper.Clamp(0.05f, LocomotiveAxle.AdhesionConditions, 2.5f); // Avoids NaNs in axle speed computing
+                LocomotiveAxle.AdhesionConditions = AdhesionMultiplier * AdhesionFilter.Filter(BaseFrictionCoefficientFactor + AdhesionRandom, elapsedClockSeconds);
+            
+                LocomotiveAxle.AdhesionConditions = MathHelper.Clamp(LocomotiveAxle.AdhesionConditions, 0.05f, 2.5f); // Avoids NaNs in axle speed computing
             }
+
+            if (EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared)  // ToDo explore adhesion factors
+            {
+                LocomotiveCoefficientFrictionHUD = Train.LocomotiveCoefficientFriction; // Set display value for HUD - steam
+            }
+            else
+            {
+                LocomotiveCoefficientFrictionHUD = BaseuMax * LocomotiveAxle.AdhesionConditions; // Set display value for HUD - diesel
+            }
+
+            
         }
 
         #endregion

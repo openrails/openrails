@@ -117,6 +117,7 @@ namespace Orts.Simulation.RollingStocks
         public float AdhesionK = 0.7f;   //slip characteristics slope
         //public AntislipControl AntislipControl = AntislipControl.None;
         public float AxleInertiaKgm2;    //axle inertia
+        public float AdhesionDriveWheelRadiusM;
         public float WheelSpeedMpS;
         public float WheelSpeedSlipMpS; // speed of wheel if locomotive is slipping
         public float SlipWarningThresholdPercent = 70;
@@ -443,8 +444,7 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case "wagon(ortsadhesion(wheelset(axle(ortsradius":
                     stf.MustMatch("(");
-                    // <CJComment> Shouldn't this be "WheelRadiusM = " ? </CJComment>
-                    AxleInertiaKgm2 = stf.ReadFloatBlock(STFReader.UNITS.Distance, null);
+                    AdhesionDriveWheelRadiusM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
                 case "wagon(lights":
@@ -528,6 +528,7 @@ namespace Orts.Simulation.RollingStocks
             Curtius_KnifflerC = copy.Curtius_KnifflerC;
             AdhesionK = copy.AdhesionK;
             AxleInertiaKgm2 = copy.AxleInertiaKgm2;
+            AdhesionDriveWheelRadiusM = copy.AdhesionDriveWheelRadiusM;
             SlipWarningThresholdPercent = copy.SlipWarningThresholdPercent;
             Lights = copy.Lights;
             foreach (PassengerViewPoint passengerViewPoint in copy.PassengerViewpoints)
