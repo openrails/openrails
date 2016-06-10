@@ -605,23 +605,23 @@ namespace Orts.Simulation
         /// CheckTrainOnTurntable: checks if actual player train is on turntable
         /// </summary>
         /// 
-        public bool CheckTrainOnTurntable(Train playerTrain)
+        public bool CheckTrainOnTurntable(Train train)
         {
-            if (WorldLocation.Within(playerTrain.FrontTDBTraveller.WorldLocation, WorldPosition.WorldLocation, Diameter/2))
+            if (WorldLocation.Within(train.FrontTDBTraveller.WorldLocation, WorldPosition.WorldLocation, Diameter/2))
             {
                 if (!TrainFrontOnBoard)
                 {
                     if (!TrainBackOnBoard)
                     {
                         // check if turntable aligned with train
-                        var isAligned = CheckTurntableAligned(playerTrain, true);
+                        var isAligned = CheckTurntableAligned(train, true);
                         if (!isAligned)
                         {
                             TrainFrontOnBoard = true;
                             Simulator.Confirmer.Warning(Simulator.Catalog.GetStringFmt("Train slipped into non aligned turntable"));
-                            playerTrain.SetTrainOutOfControl(Train.OUTOFCONTROL.SLIPPED_INTO_TURNTABLE);
-                            playerTrain.SpeedMpS = 0;
-                            foreach (var car in playerTrain.Cars) car.SpeedMpS = 0;
+                            train.SetTrainOutOfControl(Train.OUTOFCONTROL.SLIPPED_INTO_TURNTABLE);
+                            train.SpeedMpS = 0;
+                            foreach (var car in train.Cars) car.SpeedMpS = 0;
                             return false;
                         }
                     }
@@ -635,21 +635,21 @@ namespace Orts.Simulation
                 Simulator.Confirmer.Information(Simulator.Catalog.GetStringFmt("Train front outside turntable"));
             TrainFrontOnBoard = false;
             }
-            if (WorldLocation.Within(playerTrain.RearTDBTraveller.WorldLocation, WorldPosition.WorldLocation, Diameter / 2))
+            if (WorldLocation.Within(train.RearTDBTraveller.WorldLocation, WorldPosition.WorldLocation, Diameter / 2))
             {
                 if (!TrainBackOnBoard)
                 {
                     if (!TrainFrontOnBoard)
                     {
                         // check if turntable aligned with train
-                        var isAligned = CheckTurntableAligned(playerTrain, false);
+                        var isAligned = CheckTurntableAligned(train, false);
                         if (!isAligned)
                         {
                             TrainBackOnBoard = true;
                             Simulator.Confirmer.Warning(Simulator.Catalog.GetStringFmt("Train slipped into non aligned turntable"));
-                            playerTrain.SetTrainOutOfControl(Train.OUTOFCONTROL.SLIPPED_INTO_TURNTABLE);
-                            playerTrain.SpeedMpS = 0;
-                            foreach (var car in playerTrain.Cars) car.SpeedMpS = 0;
+                            train.SetTrainOutOfControl(Train.OUTOFCONTROL.SLIPPED_INTO_TURNTABLE);
+                            train.SpeedMpS = 0;
+                            foreach (var car in train.Cars) car.SpeedMpS = 0;
                             return false;
                         }
                     }
@@ -662,6 +662,14 @@ namespace Orts.Simulation
                 if (TrainBackOnBoard)
                     Simulator.Confirmer.Information(Simulator.Catalog.GetStringFmt("Train rear outside turntable"));
                 TrainBackOnBoard = false;
+            }
+            if (TrainFrontOnBoard && TrainBackOnBoard && train.SpeedMpS <= 0.1f && Simulator.ActivityRun != null &&
+                train.ControlMode != Train.TRAIN_CONTROL.MANUAL &&
+                train.TCRoute.activeSubpath == train.TCRoute.TCRouteSubpaths.Count - 1 && train.TCRoute.TCRouteSubpaths[train.TCRoute.activeSubpath].Count > 1 &&
+                ( train.PresentPosition[0].RouteListIndex == train.TCRoute.TCRouteSubpaths[train.TCRoute.activeSubpath].Count - 2 ||
+                train.PresentPosition[1].RouteListIndex == train.TCRoute.TCRouteSubpaths[train.TCRoute.activeSubpath].Count - 2))
+            {
+                train.IsPathless = true;
             }
             return TrainFrontOnBoard || TrainBackOnBoard;
         }

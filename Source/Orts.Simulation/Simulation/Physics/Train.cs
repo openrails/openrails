@@ -8093,7 +8093,7 @@ namespace Orts.Simulation.Physics
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You cannot enter manual mode when autopiloted"));
             }
-            else if (IsPathless && ControlMode != TRAIN_CONTROL.OUT_OF_CONTROL)
+            else if (IsPathless && ControlMode != TRAIN_CONTROL.OUT_OF_CONTROL && ControlMode == TRAIN_CONTROL.MANUAL)
             {
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You cannot use this command for pathless trains"));

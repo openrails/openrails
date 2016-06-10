@@ -1810,7 +1810,7 @@ namespace Orts.Simulation
                 var selectedAsPlayer = TrainSwitcher.SelectedAsPlayer;
                 var oldTrainReverseFormation = false;
                 var newTrainReverseFormation = false;
-                if (PlayerLocomotive.Train is AITrain)
+                if (PlayerLocomotive.Train is AITrain && !PlayerLocomotive.Train.IsPathless)
                 {
                     var playerTrain = PlayerLocomotive.Train as AITrain;
                     if (playerTrain != null)
