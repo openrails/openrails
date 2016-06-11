@@ -797,7 +797,12 @@ namespace Orts.Viewer3D
             base.Restore(inf);
             var carIndex = inf.ReadInt32();
             if (carIndex != -1 && Viewer.SelectedTrain != null)
-                attachedCar = Viewer.SelectedTrain.Cars[carIndex];
+            {
+                if (carIndex < Viewer.SelectedTrain.Cars.Count)
+                    attachedCar = Viewer.SelectedTrain.Cars[carIndex];
+                else if (Viewer.SelectedTrain.Cars.Count > 0)
+                    attachedCar = Viewer.SelectedTrain.Cars[Viewer.SelectedTrain.Cars.Count -1];
+            }
             attachedLocation.X = inf.ReadSingle();
             attachedLocation.Y = inf.ReadSingle();
             attachedLocation.Z = inf.ReadSingle();
