@@ -693,7 +693,8 @@ namespace Orts.MultiPlayer
 
 		public static void LocoChange(Train t, TrainCar lead)
 		{
-			Notify((new MSGLocoChange(GetUserName(), lead.CarID, t)).ToString());
+            var frontOrRearCab = (lead as MSTSLocomotive).UsingRearCab ? "R" : "F";
+			Notify((new MSGLocoChange(GetUserName(), lead.CarID, frontOrRearCab, t)).ToString());
 		}
 
         public TrainCar SubCar(string wagonFilePath, int length)

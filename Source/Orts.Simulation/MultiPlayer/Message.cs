@@ -1829,19 +1829,22 @@ namespace Orts.MultiPlayer
         int num;
         string engine;
         string user;
+        string frontOrRearCab;
         public MSGLocoChange(string m)
         {
             m.Trim();
             string[] t = m.Split('\t');
             user = t[0];
             engine = t[1];
-            num = int.Parse(t[2]);
+            frontOrRearCab = t[2];
+            num = int.Parse(t[3]);
         }
 
-        public MSGLocoChange(string u, string l, Train t)
+        public MSGLocoChange(string u, string l, string f, Train t)
         {
             user = u;
             engine = l;
+            frontOrRearCab = f;
             num = t.Number;
         }
 
@@ -1854,11 +1857,16 @@ namespace Orts.MultiPlayer
                     if (car.CarID == engine)
                     {
                         car.Train.LeadLocomotive = car;
+                        (car.Train.LeadLocomotive as MSTSLocomotive).UsingRearCab = frontOrRearCab == "F" ? false : true;
                         foreach (var p in MPManager.OnlineTrains.Players)
                         {
-                            if (p.Value.Train == t) { p.Value.LeadingLocomotiveID = car.CarID; break; }
+                            if (p.Value.Train == t)
+                            {
+                                p.Value.LeadingLocomotiveID = car.CarID;                              
+                                break;
+                            }
                         }
-                        if (MPManager.IsServer()) MPManager.BroadCast((new MSGLocoChange(user, engine, t)).ToString());
+                        if (MPManager.IsServer()) MPManager.BroadCast((new MSGLocoChange(user, engine, frontOrRearCab, t)).ToString());
                         return;
                     }
                 }
@@ -1867,7 +1875,7 @@ namespace Orts.MultiPlayer
 
         public override string ToString()
         {
-            string tmp = "LOCCHANGE " + user + "\t" + engine + "\t" + num;
+            string tmp = "LOCCHANGE " + user + "\t" + engine + "\t" + frontOrRearCab + "\t" + num;
             return " " + tmp.Length + ": " + tmp;
         }
     }
