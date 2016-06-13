@@ -134,6 +134,7 @@ namespace Orts.Simulation.RollingStocks
         public bool CabLightOn;
         public bool ShowCab = true;
         public bool MilepostUnitsMetric;
+        public float DrvWheelWeightKg; // weight on locomotive drive wheel, includes drag factor
 
         // Adhesion Debug
         bool DebugSpeedReached;
@@ -685,6 +686,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(dynamicbrakesdelaytimebeforeengaging": DynamicBrakeDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(numwheels": LocoNumDrvWheels = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); if (LocoNumDrvWheels < 1) STFException.TraceWarning(stf, "Engine:NumWheels is less than 1, parts of the simulation may not function correctly"); break;
                 case "engine(antislip": AntiSlip = stf.ReadBoolBlock(false); break;
+                case "engine(ortsdrivewheelweight": DrvWheelWeightKg = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(engineoperatingprocedures": EngineOperatingProcedures = stf.ReadStringBlock(""); break;
                 case "engine(headout":
                     HeadOutViewpoints.Add(new ViewPoint(stf.ReadVector3Block(STFReader.UNITS.Distance, Vector3.Zero)));
@@ -742,6 +744,7 @@ namespace Orts.Simulation.RollingStocks
             HasSmoothStruc = locoCopy.HasSmoothStruc;
             LocoNumDrvWheels = locoCopy.LocoNumDrvWheels;
             AntiSlip = locoCopy.AntiSlip;
+            DrvWheelWeightKg = locoCopy.DrvWheelWeightKg;
             EffectData = locoCopy.EffectData;
             SanderSpeedEffectUpToMpS = locoCopy.SanderSpeedEffectUpToMpS;
             SanderSpeedOfMpS = locoCopy.SanderSpeedOfMpS;
@@ -1175,6 +1178,7 @@ namespace Orts.Simulation.RollingStocks
                 Trace.TraceInformation("Axle - Axle Inertia: {0} Wheel Radius: {1}", LocomotiveAxle.InertiaKgm2, DriverWheelRadiusM);
 
                 Trace.TraceInformation("Adhesion - Curtius_A: {0} Curtius_B: {1} Curtius_C: {2} Curtius_D: {3}", Curtius_KnifflerA, Curtius_KnifflerB, Curtius_KnifflerC, AdhesionK);
+                Trace.TraceInformation("Axle Weight: {0}", DrvWheelWeightKg);
 
                 Trace.TraceInformation("Axle Speed: {0} TrainSpeed: {1} Slip Speed: {2}", LocomotiveAxle.AxleSpeedMpS, LocomotiveAxle.TrainSpeedMpS, LocomotiveAxle.SlipSpeedMpS);
 
@@ -1645,9 +1649,9 @@ namespace Orts.Simulation.RollingStocks
 
                 //Set axle model parameters
 
-                //LocomotiveAxle.BrakeForceN = FrictionForceN;
+               //LocomotiveAxle.BrakeForceN = FrictionForceN;
                 LocomotiveAxle.BrakeRetardForceN = BrakeRetardForceN;  // Force on wheel due to braking effort rather then braking force applied to train -- Needs confirmation
-                LocomotiveAxle.AxleWeightN = 9.81f * MassKG;        //will be computed each time considering the tilting
+                LocomotiveAxle.AxleWeightN = 9.81f * DrvWheelWeightKg;   //will be computed each time considering the tilting
                 LocomotiveAxle.DriveForceN = MotiveForceN;           //Developed force
                 LocomotiveAxle.TrainSpeedMpS = SpeedMpS;            //Set the train speed of the axle model
                 LocomotiveAxle.Update(elapsedClockSeconds);         //Main updater of the axle model

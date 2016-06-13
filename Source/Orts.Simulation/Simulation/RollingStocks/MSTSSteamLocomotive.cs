@@ -508,7 +508,6 @@ namespace Orts.Simulation.RollingStocks
         float absSpeedMpS;
 
         float cutoff;
-        public float DrvWheelWeightKg; // weight on locomotive drive wheel, includes drag factor
         float NumSafetyValves;  // Number of safety valves fitted to locomotive - typically 1 to 4
         float SafetyValveSizeIn;    // Size of the safety value - all will be the same size.
         float SafetyValveSizeDiaIn2; // Area of the safety valve - impacts steam discharge rate - is the space when the valve lifts
@@ -720,7 +719,6 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortscylinderbackpressure": BackPressureIHPtoAtmPSI = new Interpolator(stf); break;
                 case "engine(ortsburnrate": NewBurnRateSteamToCoalLbspH = new Interpolator(stf); break;
                 case "engine(ortsboilerefficiency": BoilerEfficiencyGrateAreaLBpFT2toX = new Interpolator(stf); break;
-                case "engine(ortsdrivewheelweight": DrvWheelWeightKg = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(ortssteamgearratio":
                     stf.MustMatch("(");
                     SteamGearRatioLow = stf.ReadFloat(STFReader.UNITS.None, null);
@@ -809,7 +807,6 @@ namespace Orts.Simulation.RollingStocks
             BackPressureIHPtoAtmPSI = new Interpolator(locoCopy.BackPressureIHPtoAtmPSI);
             NewBurnRateSteamToCoalLbspH = new Interpolator(locoCopy.NewBurnRateSteamToCoalLbspH);
             BoilerEfficiency = locoCopy.BoilerEfficiency;
-            DrvWheelWeightKg = locoCopy.DrvWheelWeightKg;
             SteamGearRatioLow = locoCopy.SteamGearRatioLow;
             SteamGearRatioHigh = locoCopy.SteamGearRatioHigh;
             MaxSteamGearPistonRateFtpM = locoCopy.MaxSteamGearPistonRateFtpM;
@@ -1284,6 +1281,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 const float FactorofAdhesion = 4.2f; // Assume a typical factor of adhesion
                 DrvWheelWeightKg = Kg.FromLb(FactorofAdhesion * MaxTractiveEffortLbf); // calculate Drive wheel weight if not in ENG file
+                DrvWheelWeightKg = MathHelper.Clamp(DrvWheelWeightKg, 0.1f, MassKG); // Make sure adhesive weight does not exceed the weight of the locomotive
             }
 
             // Calculate factor of adhesion for display purposes

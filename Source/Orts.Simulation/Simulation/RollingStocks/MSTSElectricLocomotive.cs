@@ -27,6 +27,7 @@
  * 
  */
 
+using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
@@ -126,6 +127,16 @@ namespace Orts.Simulation.RollingStocks
             PowerSupply.Initialize();
 
             base.Initialize();
+
+            // If DrvWheelWeight is not in ENG file, then calculate drivewheel weight freom FoA
+
+            if (DrvWheelWeightKg == 0) // if DrvWheelWeightKg not in ENG file.
+            {
+//                DrvWheelWeightKg = MassKG; // calculate Drive wheel weight if not in ENG file
+                const float FactorofAdhesion = 5.0f; // Assume a typical factor of adhesion
+                DrvWheelWeightKg = (FactorofAdhesion * (MaxForceN)) / 9.81f; // calculate Drive wheel weight if not in ENG file, divide by gravity to align units
+                DrvWheelWeightKg = MathHelper.Clamp(DrvWheelWeightKg, 0.1f, MassKG); // Make sure adhesive weight does not exceed the weight of the locomotive
+            }
         }
 
         //================================================================================================//
