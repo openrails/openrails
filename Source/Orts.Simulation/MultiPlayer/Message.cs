@@ -251,6 +251,8 @@ namespace Orts.MultiPlayer
         public double seconds;
         public int season, weather;
         public int pantofirst, pantosecond;
+        public string frontorrearcab;
+        public int headlight;
         public string leadingID;
         public string[] cars;
         public string[] ids;
@@ -289,6 +291,8 @@ namespace Orts.MultiPlayer
                 weather = int.Parse(data[10]);
                 pantofirst = int.Parse(data[11]);
                 pantosecond = int.Parse(data[12]);
+                frontorrearcab = data[13];
+                headlight = int.Parse(data[14]);
                 //user = areas[0].Trim();
                 con = areas[2].Trim();
                 route = areas[3].Trim();
@@ -374,6 +378,8 @@ namespace Orts.MultiPlayer
             {
                 pantofirst = w.Pantographs[1].CommandUp ? 1 : 0;
                 pantosecond = w.Pantographs[2].CommandUp ? 1 : 0;
+                frontorrearcab = (w as MSTSLocomotive).UsingRearCab ? "R" : "F";
+                headlight = w.Headlight;
             }
 
             cars = new string[t.Cars.Count];
@@ -399,7 +405,7 @@ namespace Orts.MultiPlayer
         public override string ToString()
         {
             string tmp = "PLAYER " + user + " " + code + " " + num + " " + TileX + " " + TileZ + " " + X.ToString(CultureInfo.InvariantCulture) + " " + Z.ToString(CultureInfo.InvariantCulture)
-                + " " + Travelled.ToString(CultureInfo.InvariantCulture) + " " + seconds.ToString(CultureInfo.InvariantCulture) + " " + season + " " + weather + " " + pantofirst + " " + pantosecond + " \r" +
+                + " " + Travelled.ToString(CultureInfo.InvariantCulture) + " " + seconds.ToString(CultureInfo.InvariantCulture) + " " + season + " " + weather + " " + pantofirst + " " + pantosecond + " " + frontorrearcab + " " + headlight + " \r" +
                 leadingID + "\r" + con + "\r" + route + "\r" + path + "\r" + dir + "\r" + url + "\r";
             for (var i = 0; i < cars.Length; i++)
             {

@@ -235,7 +235,12 @@ namespace Orts.MultiPlayer
             //if (MPManager.Instance().AllowedManualSwitch) train.InitializeSignals(false);
             foreach (var car in train.Cars)
             {
-                if (car.CarID == p.LeadingLocomotiveID) train.LeadLocomotive = car;
+                if (car.CarID == p.LeadingLocomotiveID)
+                {
+                    train.LeadLocomotive = car;
+                    (train.LeadLocomotive as MSTSLocomotive).Headlight = player.headlight;
+                    (train.LeadLocomotive as MSTSLocomotive).UsingRearCab = player.frontorrearcab == "R" ? true : false;
+                }
             }
             if (train.LeadLocomotive == null)
             {
