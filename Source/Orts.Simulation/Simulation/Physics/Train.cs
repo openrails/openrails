@@ -17770,7 +17770,7 @@ namespace Orts.Simulation.Physics
             TCSubpathRoute tempRoute = CalculateInitialTrainPosition(ref canPlace);
             if (tempRoute.Count == 0 || !canPlace)
             {
-                throw new InvalidDataException("Player train original position not clear");
+                throw new InvalidDataException("Position of train in turntable not clear");
             }
 
             SetInitialTrainRoute(tempRoute);
@@ -17785,6 +17785,12 @@ namespace Orts.Simulation.Physics
 
             PresentPosition[0].SetTCPosition(tn.TCCrossReference, offset, direction1);
             PresentPosition[0].CopyTo(ref PreviousPosition[0]);
+
+            if (TrainType == TRAINTYPE.STATIC)
+            {
+                ControlMode = TRAIN_CONTROL.UNDEFINED;
+                return;
+            }
 
             if (Simulator.Activity == null && !Simulator.TimetableMode) ToggleToExplorerMode();
             else ToggleToManualMode();

@@ -442,6 +442,13 @@ namespace Orts.Simulation
 
             Signals = new Signals(this, SIGCFG, inf, cancellation);
 
+            RestoreTrains(inf);
+            LevelCrossings = new LevelCrossings(this);
+            AI = new AI(this, inf);
+            // Find original player train
+            OriginalPlayerTrain = Trains.Find(item => item.Number == 0);
+            if (OriginalPlayerTrain == null) OriginalPlayerTrain = AI.AITrains.Find(item => item.Number == 0);
+
             // initialization of turntables
             ActiveTurntableIndex = inf.ReadInt32();
             var turntableFile = RoutePath + @"\openrails\turntables.dat";
@@ -453,12 +460,6 @@ namespace Orts.Simulation
             }
             if (Turntables != null && Turntables.Count >= 0)
                 foreach (var turntable in Turntables) turntable.Restore(inf, this);
-            RestoreTrains(inf);
-            LevelCrossings = new LevelCrossings(this);
-            AI = new AI(this, inf);
-            // Find original player train
-            OriginalPlayerTrain = Trains.Find(item => item.Number == 0);
-            if (OriginalPlayerTrain == null) OriginalPlayerTrain = AI.AITrains.Find(item => item.Number == 0);
 /*
             if (Turntables != null && Turntables.Count >= 0)
                 foreach (var turntable in Turntables) turntable.ReInitTrainPositions();
@@ -474,13 +475,14 @@ namespace Orts.Simulation
             outf.Write((int)WeatherType);
             outf.Write(TimetableMode);
             Signals.Save(outf);
-            outf.Write(ActiveTurntableIndex);
-            if (Turntables != null && Turntables.Count >= 0)
-                foreach (var turntable in Turntables) turntable.Save(outf);
             SaveTrains(outf);
             // LevelCrossings
             // InterlockingSystem
             AI.Save(outf);
+
+            outf.Write(ActiveTurntableIndex);
+            if (Turntables != null && Turntables.Count >= 0)
+                foreach (var turntable in Turntables) turntable.Save(outf);
 
             Orts.Simulation.Activity.Save(outf, ActivityRun);
         }
@@ -703,6 +705,18 @@ namespace Orts.Simulation
 
         private void FinishCoupling(Train drivenTrain, Train train, bool couple_to_front, bool sameDirection)
         {
+            // if coupled train was on turntable and static, remove it from list of trains on turntable
+            if (ActiveTurntable != null && ActiveTurntable.TrainsOnTurntable.Count != 0)
+            {
+                foreach (var trainOnTurntable in ActiveTurntable.TrainsOnTurntable)
+                {
+                    if (trainOnTurntable.Train.Number == train.Number)
+                    {
+                        ActiveTurntable.TrainsOnTurntable.Remove(trainOnTurntable);
+                        break;
+                    }
+                }
+            }
             if (train.TrainType == Train.TRAINTYPE.AI && (((AITrain)train).UncondAttach ||
                 train.TCRoute.activeSubpath < train.TCRoute.TCRouteSubpaths.Count - 1 || train.ValidRoute[0].Count > 5))
             {
@@ -1591,6 +1605,11 @@ namespace Orts.Simulation
             }
             if (Confirmer != null && IsReplaying) Confirmer.Confirm(CabControl.Uncouple, train.LastCar.CarID);
             if (AI != null) AI.aiListChanged = true;
+            if (train2.TrainType == Train.TRAINTYPE.STATIC && (train.TrainType == Train.TRAINTYPE.PLAYER || train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN))
+            {
+                // check if detached on turntable
+               if (ActiveTurntable != null) ActiveTurntable.CheckTrainOnTurntable(train2);
+            }
         }
 
         //uncouple behind car in Timetable mode

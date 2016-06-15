@@ -87,8 +87,6 @@ namespace Orts.Simulation
         public int RearConnectedTarget = -1; // index of trackend connected
         public bool GoToTarget = false;
         public float TargetY = 0; //final target for Viewer;
-        public bool TrainFrontOnBoard = false; // front of train is on platform
-        public bool TrainBackOnBoard = false; // back of train is on platform
         public List<Matrix> RelativeCarPositions;
         public Vector3 RelativeFrontTravellerXNALocation;
         public Vector3 RelativeRearTravellerXNALocation;
@@ -97,6 +95,9 @@ namespace Orts.Simulation
         public Matrix AnimationXNAMatrix = Matrix.Identity;
         public bool LastConnection = true; // true if Forward connected, false if Rear connected.
         public bool ConnectionToggled = false; // connection has toggled from last time, trainset must flip
+        // additions to manage rotation of wagons
+        public List<TrainOnTurntable> TrainsOnTurntable = new List<TrainOnTurntable>(); // List of trains on turntable
+
 
         public Signals signalRef { get; protected set; }
         public Simulator Simulator;
@@ -147,8 +148,8 @@ namespace Orts.Simulation
         outf.Write(RearConnectedTarget);
         outf.Write(GoToTarget);
         outf.Write(TargetY);
-        outf.Write(TrainFrontOnBoard);
-        outf.Write(TrainBackOnBoard);
+        outf.Write(TrainsOnTurntable.Count);
+        foreach (var trainOnTurntable in TrainsOnTurntable) trainOnTurntable.Save(outf);
  //       public List<Matrix> RelativeCarPositions;
         SaveVector(outf, RelativeFrontTravellerXNALocation);
         SaveVector(outf, RelativeRearTravellerXNALocation);
@@ -186,8 +187,14 @@ namespace Orts.Simulation
             RearConnectedTarget = inf.ReadInt32();
             GoToTarget = inf.ReadBoolean();
             TargetY = inf.ReadSingle();
-            TrainFrontOnBoard = inf.ReadBoolean();
-            TrainBackOnBoard = inf.ReadBoolean();
+            var trainsOnTurntable = inf.ReadInt32();
+            while (trainsOnTurntable > 0)
+            {
+                TrainOnTurntable trainOnTurntable = new TrainOnTurntable(Simulator);
+                trainOnTurntable.Restore(inf);
+                trainsOnTurntable--;
+            }
+
             RelativeFrontTravellerXNALocation = RestoreVector(inf);
             RelativeRearTravellerXNALocation = RestoreVector(inf);
             FinalFrontTravellerXNALocation = RestoreVector(inf);
@@ -246,10 +253,10 @@ namespace Orts.Simulation
         public void ReInitTrainPositions(Matrix animationXNAMatrix)
         {
             AnimationXNAMatrix = animationXNAMatrix;
-            if (this == Simulator.ActiveTurntable)
+            if (this == Simulator.ActiveTurntable && TrainsOnTurntable.Count == 1)
             {
-                var train = Simulator.PlayerLocomotive.Train;
-                if (TrainFrontOnBoard && TrainBackOnBoard && Math.Abs(train.SpeedMpS) < 0.1)
+                var train = TrainsOnTurntable[0].Train;
+                if (TrainsOnTurntable[0].FrontOnBoard && TrainsOnTurntable[0].BackOnBoard && Math.Abs(train.SpeedMpS) < 0.1)
                 {
                     var invAnimationXNAMatrix = Matrix.Invert(AnimationXNAMatrix);
                     RelativeCarPositions = new List<Matrix>();
@@ -273,16 +280,6 @@ namespace Orts.Simulation
         {
             Continuous = false;
             GoToTarget = false;
-            var train = Simulator.PlayerLocomotive.Train;
-            if ((TrainFrontOnBoard ^ TrainBackOnBoard) ||
-                (TrainFrontOnBoard && TrainBackOnBoard && (Simulator.PlayerLocomotive.ThrottlePercent >= 1 || Math.Abs(train.SpeedMpS) > 0.1 || !(Simulator.PlayerLocomotive.Direction == Direction.N
-                 || Math.Abs(train.MUReverserPercent) <= 1) || ( train.ControlMode != Train.TRAIN_CONTROL.MANUAL && train.ControlMode != Train.TRAIN_CONTROL.TURNTABLE &&
-                 train.ControlMode != Train.TRAIN_CONTROL.EXPLORER))))
-            {
-                Clockwise = false;
-                Counterclockwise = false;
-                return;
-            }
             Clockwise = isClockwise;
             Counterclockwise = !isClockwise;
             if (Clockwise)
@@ -398,26 +395,26 @@ namespace Orts.Simulation
         /// 
         public void StartContinuous(bool isClockwise)
         {
-            if (TrainFrontOnBoard ^ TrainBackOnBoard || (Math.Abs(Simulator.PlayerLocomotive.Train.SpeedMpS) > 0.1 && TrainFrontOnBoard && TrainBackOnBoard))
+            if (TrainsOnTurntable.Count > 1 || (TrainsOnTurntable.Count == 1 && TrainsOnTurntable[0].FrontOnBoard ^ TrainsOnTurntable[0].BackOnBoard))
             {
                 Clockwise = false;
                 Counterclockwise = false;
                 Continuous = false;
-                Simulator.Confirmer.Warning(Simulator.Catalog.GetStringFmt("Train partially on turntable or moving, can't rotate"));
+                Simulator.Confirmer.Warning(Simulator.Catalog.GetStringFmt("Train partially on turntable, can't rotate"));
                 return;
             }
-             if (TrainFrontOnBoard && TrainBackOnBoard)
+            if (TrainsOnTurntable.Count == 1 && TrainsOnTurntable[0].FrontOnBoard && TrainsOnTurntable[0].BackOnBoard)
             {
                 // Preparing for rotation
-                var train = Simulator.PlayerLocomotive.Train;
-                if (Simulator.PlayerLocomotive.ThrottlePercent >= 1 || Math.Abs(train.SpeedMpS) > 0.1 || !(Simulator.PlayerLocomotive.Direction == Direction.N
-                 || Math.Abs(train.MUReverserPercent) <= 1) || (train.ControlMode != Train.TRAIN_CONTROL.MANUAL && train.ControlMode != Train.TRAIN_CONTROL.TURNTABLE &&
-                 train.ControlMode != Train.TRAIN_CONTROL.EXPLORER))
+                var train = TrainsOnTurntable[0].Train;
+                if (Math.Abs(train.SpeedMpS) > 0.1 || (train.LeadLocomotiveIndex != -1 && (train.LeadLocomotive.ThrottlePercent >= 1 || !(train.LeadLocomotive.Direction == Direction.N 
+                 || Math.Abs(train.MUReverserPercent) <= 1))) || (train.ControlMode != Train.TRAIN_CONTROL.MANUAL && train.ControlMode != Train.TRAIN_CONTROL.TURNTABLE &&
+                 train.ControlMode != Train.TRAIN_CONTROL.EXPLORER && train.ControlMode != Train.TRAIN_CONTROL.UNDEFINED))
                 {
                     Simulator.Confirmer.Warning(Simulator.Catalog.GetStringFmt("Rotation can't start: check throttle, speed, direction and control mode"));
                     return;
                 }
-                if (train.ControlMode == Train.TRAIN_CONTROL.MANUAL || train.ControlMode == Train.TRAIN_CONTROL.EXPLORER)
+                if (train.ControlMode == Train.TRAIN_CONTROL.MANUAL || train.ControlMode == Train.TRAIN_CONTROL.EXPLORER || train.ControlMode == Train.TRAIN_CONTROL.UNDEFINED)
                 {
                     SaveForwardConnected = ForwardConnected ^ !MyTrackNodesOrientation[ConnectedTrackEnd];
                     SaveRearConnected = RearConnected;
@@ -464,11 +461,12 @@ namespace Orts.Simulation
         public void RotateTrain(Matrix animationXNAMatrix)
         {
             AnimationXNAMatrix = animationXNAMatrix;
-            if ((Clockwise || Counterclockwise || GoToTarget) && TrainFrontOnBoard && TrainBackOnBoard &&  Simulator.PlayerLocomotive.Train.ControlMode == Train.TRAIN_CONTROL.TURNTABLE)
+            if ((Clockwise || Counterclockwise || GoToTarget) && TrainsOnTurntable.Count == 1 && TrainsOnTurntable[0].FrontOnBoard &&
+                TrainsOnTurntable[0].BackOnBoard && TrainsOnTurntable[0].Train.ControlMode == Train.TRAIN_CONTROL.TURNTABLE)
             {
                 // Rotate together also train
                 var iRelativeCarPositions = 0;
-                foreach (TrainCar traincar in Simulator.PlayerLocomotive.Train.Cars)
+                foreach (TrainCar traincar in TrainsOnTurntable[0].Train.Cars)
                 {
                     traincar.WorldPosition.XNAMatrix = Matrix.Multiply(RelativeCarPositions[iRelativeCarPositions], AnimationXNAMatrix);
                     iRelativeCarPositions++;
@@ -484,13 +482,14 @@ namespace Orts.Simulation
 
         public void Update()
         {
-            if (TrainFrontOnBoard ^ TrainBackOnBoard)
-            {
-                Clockwise = false;
-                Counterclockwise = false;
-                Continuous = false;
-                return;
-            }
+            foreach (var trainOnTurntable in TrainsOnTurntable)
+                if (trainOnTurntable.FrontOnBoard ^ trainOnTurntable.BackOnBoard)
+                {
+                    Clockwise = false;
+                    Counterclockwise = false;
+                    Continuous = false;
+                    return;
+                }
             if (Continuous)
             {
                 ForwardConnected = false;
@@ -578,9 +577,12 @@ namespace Orts.Simulation
             Traveller.TravellerDirection direction = ForwardConnected ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward;
             direction = SaveForwardConnected ^ !MyTrackNodesOrientation[ConnectedTrackEnd]? direction : (direction == Traveller.TravellerDirection.Forward ? Traveller.TravellerDirection.Backward : Traveller.TravellerDirection.Forward);
             GoToTarget = false;
-            var train = Simulator.PlayerLocomotive.Train;
-            if (train.ControlMode == Train.TRAIN_CONTROL.TURNTABLE)
-                train.ReenterTrackSections(MyTrackNodesIndex[ConnectedTrackEnd], MyTrVectorSectionsIndex[ConnectedTrackEnd], FinalFrontTravellerXNALocation, FinalRearTravellerXNALocation, direction);
+            if (TrainsOnTurntable.Count == 1)
+            {
+                var train = TrainsOnTurntable[0].Train;
+                if (train.ControlMode == Train.TRAIN_CONTROL.TURNTABLE)
+                    train.ReenterTrackSections(MyTrackNodesIndex[ConnectedTrackEnd], MyTrVectorSectionsIndex[ConnectedTrackEnd], FinalFrontTravellerXNALocation, FinalRearTravellerXNALocation, direction);
+            }
         }
 
         /// <summary>
@@ -607,45 +609,65 @@ namespace Orts.Simulation
         /// 
         public bool CheckTrainOnTurntable(Train train)
         {
+            var trainIndex = TrainsOnTurntable.FindIndex(x => x.Train.Number == train.Number);
             if (WorldLocation.Within(train.FrontTDBTraveller.WorldLocation, WorldPosition.WorldLocation, Diameter/2))
             {
-                if (!TrainFrontOnBoard)
+                if (trainIndex == -1 || !TrainsOnTurntable[trainIndex].FrontOnBoard)
                 {
-                    if (!TrainBackOnBoard)
+                    if (trainIndex == -1)
+                    {
+                        var trainOnTurntable = new TrainOnTurntable(train, Simulator);
+                        trainIndex = TrainsOnTurntable.Count;
+                        TrainsOnTurntable.Add(trainOnTurntable);
+                    }
+                    if (!TrainsOnTurntable[trainIndex].BackOnBoard)
                     {
                         // check if turntable aligned with train
                         var isAligned = CheckTurntableAligned(train, true);
                         if (!isAligned)
                         {
-                            TrainFrontOnBoard = true;
+                            TrainsOnTurntable[trainIndex].SetFrontState(true);
                             Simulator.Confirmer.Warning(Simulator.Catalog.GetStringFmt("Train slipped into non aligned turntable"));
                             train.SetTrainOutOfControl(Train.OUTOFCONTROL.SLIPPED_INTO_TURNTABLE);
                             train.SpeedMpS = 0;
                             foreach (var car in train.Cars) car.SpeedMpS = 0;
                             return false;
                         }
-                    }
+                     }                 
                     Simulator.Confirmer.Information(Simulator.Catalog.GetStringFmt("Train front on turntable"));
                 }
-            TrainFrontOnBoard = true;
+                TrainsOnTurntable[trainIndex].SetFrontState(true);
             }
             else
             {
-            if (TrainFrontOnBoard)
-                Simulator.Confirmer.Information(Simulator.Catalog.GetStringFmt("Train front outside turntable"));
-            TrainFrontOnBoard = false;
+                if (trainIndex != -1 && TrainsOnTurntable[trainIndex].FrontOnBoard)
+                {
+                    Simulator.Confirmer.Information(Simulator.Catalog.GetStringFmt("Train front outside turntable"));
+                    if (TrainsOnTurntable[trainIndex].BackOnBoard) TrainsOnTurntable[trainIndex].SetFrontState(false);
+                    else
+                    {
+                        TrainsOnTurntable.RemoveAt(trainIndex);
+                        trainIndex = -1;
+                    }
+                }
             }
             if (WorldLocation.Within(train.RearTDBTraveller.WorldLocation, WorldPosition.WorldLocation, Diameter / 2))
             {
-                if (!TrainBackOnBoard)
+                if (trainIndex == -1 || !TrainsOnTurntable[trainIndex].BackOnBoard)
                 {
-                    if (!TrainFrontOnBoard)
+                    if (trainIndex == -1)
+                    {
+                        var trainOnTurntable = new TrainOnTurntable(train, Simulator);
+                        trainIndex = TrainsOnTurntable.Count;
+                        TrainsOnTurntable.Add(trainOnTurntable);
+                    }
+                    if (!TrainsOnTurntable[trainIndex].FrontOnBoard)
                     {
                         // check if turntable aligned with train
                         var isAligned = CheckTurntableAligned(train, false);
                         if (!isAligned)
                         {
-                            TrainBackOnBoard = true;
+                            TrainsOnTurntable[trainIndex].SetBackState(true);
                             Simulator.Confirmer.Warning(Simulator.Catalog.GetStringFmt("Train slipped into non aligned turntable"));
                             train.SetTrainOutOfControl(Train.OUTOFCONTROL.SLIPPED_INTO_TURNTABLE);
                             train.SpeedMpS = 0;
@@ -655,15 +677,22 @@ namespace Orts.Simulation
                     }
                     Simulator.Confirmer.Information(Simulator.Catalog.GetStringFmt("Train rear on turntable"));
                 }
-                TrainBackOnBoard = true;
+                TrainsOnTurntable[trainIndex].SetBackState(true);
             }
             else
             {
-                if (TrainBackOnBoard)
+                if (trainIndex != -1 && TrainsOnTurntable[trainIndex].BackOnBoard)
+                {
                     Simulator.Confirmer.Information(Simulator.Catalog.GetStringFmt("Train rear outside turntable"));
-                TrainBackOnBoard = false;
+                    if (TrainsOnTurntable[trainIndex].FrontOnBoard) TrainsOnTurntable[trainIndex].SetBackState(false);
+                    else
+                    {
+                        TrainsOnTurntable.RemoveAt(trainIndex);
+                        trainIndex = -1;
+                    }
+                }
             }
-            if (TrainFrontOnBoard && TrainBackOnBoard && train.SpeedMpS <= 0.1f && Simulator.ActivityRun != null &&
+            if (trainIndex != -1 && TrainsOnTurntable[trainIndex].FrontOnBoard && TrainsOnTurntable[trainIndex].BackOnBoard && train.SpeedMpS <= 0.1f && Simulator.ActivityRun != null &&
                 train.ControlMode != Train.TRAIN_CONTROL.MANUAL &&
                 train.TCRoute.activeSubpath == train.TCRoute.TCRouteSubpaths.Count - 1 && train.TCRoute.TCRouteSubpaths[train.TCRoute.activeSubpath].Count > 1 &&
                 ( train.PresentPosition[0].RouteListIndex == train.TCRoute.TCRouteSubpaths[train.TCRoute.activeSubpath].Count - 2 ||
@@ -671,7 +700,7 @@ namespace Orts.Simulation
             {
                 train.IsPathless = true;
             }
-            return TrainFrontOnBoard || TrainBackOnBoard;
+            return false;
         }
 
 
@@ -682,11 +711,55 @@ namespace Orts.Simulation
         public void PerformUpdateActions ( Matrix absAnimationMatrix)
         {
             RotateTrain(absAnimationMatrix);
-            if (GoToTarget && Simulator.PlayerLocomotive.Train.ControlMode == Train.TRAIN_CONTROL.TURNTABLE)
+            if (GoToTarget && TrainsOnTurntable.Count == 1 && TrainsOnTurntable[0].Train.ControlMode == Train.TRAIN_CONTROL.TURNTABLE)
             {
                 RecalculateTravellerXNALocations(absAnimationMatrix);
             }
             if (GoToTarget) TargetExactlyReached();
         }
+    }
+
+    public class TrainOnTurntable
+    {
+        public Train Train;
+        public bool FrontOnBoard;
+        public bool BackOnBoard;
+        public Simulator Simulator;
+
+        public TrainOnTurntable (Train train, Simulator simulator)
+        {
+            Train = train;
+            Simulator = simulator;
+        }
+
+        public TrainOnTurntable(Simulator simulator)
+        {
+            Simulator = simulator;
+        }
+
+        public void Save (BinaryWriter outf)
+        {
+            outf.Write(Simulator.Trains.IndexOf(Train));
+            outf.Write(FrontOnBoard);
+            outf.Write(BackOnBoard);
+        }
+
+        public void Restore(BinaryReader inf)
+        {
+            Train = Simulator.Trains[inf.ReadInt32()];
+            FrontOnBoard = inf.ReadBoolean();
+            BackOnBoard = inf.ReadBoolean();
+        }
+
+        public void SetFrontState (bool frontOnBoard)
+        {
+            FrontOnBoard = frontOnBoard;
+        }
+
+        public void SetBackState(bool backOnBoard)
+        {
+            BackOnBoard = backOnBoard;
+        }
+
     }
 }
