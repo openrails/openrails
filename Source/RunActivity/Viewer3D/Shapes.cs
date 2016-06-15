@@ -1072,7 +1072,8 @@ namespace Orts.Viewer3D
             if ((Turntable.Clockwise || Turntable.Counterclockwise) && !Rotating)
             {
                 Rotating = true;
-                if (Sound != null) Sound.HandleEvent(Turntable.TrainFrontOnBoard && Turntable.TrainBackOnBoard ? Event.TurntableTurningLoaded : Event.TurntableTurningEmpty);
+                if (Sound != null) Sound.HandleEvent(Turntable.TrainsOnTurntable.Count == 1 &&
+                    Turntable.TrainsOnTurntable[0].FrontOnBoard && Turntable.TrainsOnTurntable[0].BackOnBoard ? Event.TurntableTurningLoaded : Event.TurntableTurningEmpty);
             }
             else if ((!Turntable.Clockwise && !Turntable.Counterclockwise && Rotating))
             {
