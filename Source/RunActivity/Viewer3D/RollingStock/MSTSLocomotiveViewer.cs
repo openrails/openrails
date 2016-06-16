@@ -35,6 +35,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using Event = Orts.Common.Event;
 
 namespace Orts.Viewer3D.RollingStock
@@ -163,7 +164,7 @@ namespace Orts.Viewer3D.RollingStock
             UserInputCommands.Add(UserCommands.ControlHeadlightDecrease, new Action[] { Noop, () => new HeadlightCommand(Viewer.Log, false) });
             UserInputCommands.Add(UserCommands.ControlLight, new Action[] { Noop, () => new ToggleCabLightCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommands.ControlRefill, new Action[] { () => StopRefillingOrUnloading(Viewer.Log), () => AttemptToRefillOrUnload() });
-            UserInputCommands.Add(UserCommands.ControlImmediateRefill, new Action[] { () => StopRefillingOrUnloading(Viewer.Log), () => ImmediateRefill() });
+            UserInputCommands.Add(UserCommands.ControlImmediateRefill, new Action[] { () => StopImmediateRefilling(Viewer.Log), () => ImmediateRefill() });
             UserInputCommands.Add(UserCommands.ControlOdoMeterShowHide, new Action[] { Noop, () => new ToggleOdometerCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommands.ControlOdoMeterReset, new Action[] { Noop, () => new ResetOdometerCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommands.ControlOdoMeterDirection, new Action[] { Noop, () => new ToggleOdometerDirectionCommand(Viewer.Log) });
@@ -347,7 +348,9 @@ namespace Orts.Viewer3D.RollingStock
         {
             public PickupObj Pickup;
             public MSTSWagon Wagon;
+            public MSTSLocomotive SteamLocomotiveWithTender;
             public IntakePoint IntakePoint;
+
         }
 
         /// <summary>
@@ -364,6 +367,7 @@ namespace Orts.Viewer3D.RollingStock
             var shortestD2 = float.MaxValue;
             WagonAndMatchingPickup nearestPickup = null;
             float distanceFromFrontOfTrainM = 0f;
+            int index = 0;
             foreach (var car in train.Cars)
             {
                 if (car is MSTSWagon)
@@ -402,6 +406,14 @@ namespace Orts.Viewer3D.RollingStock
                                         nearestPickup = new WagonAndMatchingPickup();
                                         nearestPickup.Pickup = pickup;
                                         nearestPickup.Wagon = wagon;
+                                        if (wagon.WagonType == TrainCar.WagonTypes.Tender)
+                                        {
+                                            // Normal arrangement would be steam locomotive followed by the tender car.
+                                            if (index > 0 && train.Cars[index -1] is MSTSSteamLocomotive)
+                                                nearestPickup.SteamLocomotiveWithTender = train.Cars[index - 1] as MSTSLocomotive;
+                                            //if (index < train.Cars.Count && train.Cars[index + 1] is MSTSSteamLocomotive)
+                                            //    nearestPickup.SteamLocomotiveWithTender = train.Cars[index + 1] as MSTSLocomotive;
+                                        }
                                         nearestPickup.IntakePoint = intake;
                                     }
                                 }
@@ -410,6 +422,7 @@ namespace Orts.Viewer3D.RollingStock
                     }
                     distanceFromFrontOfTrainM += wagon.CarLengthM;
                 }
+                index++;
             }
             return nearestPickup;
         }
@@ -432,31 +445,25 @@ namespace Orts.Viewer3D.RollingStock
             return (float)Math.Sqrt(WorldLocation.GetDistanceSquared(intakeLocation, match.Pickup.Location));
         }
 
+        /// <summary>
         // This process is tied to the Shift T key combination
         // The purpose of is to perform immediate refueling without having to pull up alongside the fueling station.
+        /// </summary>
         public void ImmediateRefill()
         {
-            MatchedWagonAndPickup = null;   // Ensures that releasing the Shift T key doesn't do anything unless there is something to do.
-
             var loco = this.Locomotive;
-            var match = GetMatchingPickup(loco.Train);
-
-            if (match == null && !(loco is MSTSElectricLocomotive))
-            {
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetString("Refill: Immediate refill process selected, refilling immediately."));
-                loco.RefillImmediately();
+            
+            if (loco == null)
                 return;
-            }
-            if (match == null)
+            
+            foreach(var car in loco.Train.Cars)
             {
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetString("Refill: Electric loco and no pickup. Command rejected"));
-                return;
-            }
-            if (match.Wagon is MSTSDieselLocomotive || match.Wagon is MSTSSteamLocomotive || (match.Wagon.WagonType == TrainCar.WagonTypes.Tender && loco is MSTSSteamLocomotive))
-            {
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetString("Refill: Immediate refill process selected, refilling immediately."));
-                loco.RefillImmediately();
-                return;
+                // There is no need to check for the tender.  The MSTSSteamLocomotive is the primary key in the refueling process when using immediate refueling.
+                if (car is MSTSDieselLocomotive || car is MSTSSteamLocomotive)
+                {
+                    Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetString("Refill: Immediate refill process selected, refilling immediately."));
+                    (car as MSTSLocomotive).RefillImmediately();
+                }
             }
         }
 
@@ -507,10 +514,18 @@ namespace Orts.Viewer3D.RollingStock
                     FormatStrings.FormatSpeedLimit(match.Pickup.SpeedRange.MaxMpS, Viewer.MilepostUnitsMetric)));
                 return;
             }
-            if (match.Wagon is MSTSDieselLocomotive || match.Wagon is MSTSSteamLocomotive || (match.Wagon.WagonType == TrainCar.WagonTypes.Tender && loco is MSTSSteamLocomotive))
+            if (match.Wagon is MSTSDieselLocomotive || match.Wagon is MSTSSteamLocomotive || (match.Wagon.WagonType == TrainCar.WagonTypes.Tender && match.SteamLocomotiveWithTender != null))
             {
+                // Note: The tender contains the intake information, but the steam locomotive includes the controller information that is needed for the refueling process.
+
+                float fraction = 0;
+
                 // classical MSTS Freightanim, handled as usual
-                var fraction = loco.GetFilledFraction(match.Pickup.PickupType);
+                if(match.SteamLocomotiveWithTender != null)
+                    fraction = match.SteamLocomotiveWithTender.GetFilledFraction(match.Pickup.PickupType);
+                else
+                    fraction = match.Wagon.GetFilledFraction(match.Pickup.PickupType);
+                                
                 if (fraction > 0.99)
                 {
                     Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: {0} supply now replenished.",
@@ -520,7 +535,11 @@ namespace Orts.Viewer3D.RollingStock
                 else
                 {
                     MSTSWagon.RefillProcess.OkToRefill = true;
-                    StartRefilling(match.Pickup.PickupType, fraction);
+                    if (match.SteamLocomotiveWithTender != null)
+                        StartRefilling(match.Pickup.PickupType, fraction, match.SteamLocomotiveWithTender);
+                    else
+                        StartRefilling(match.Pickup.PickupType, fraction, match.Wagon);
+
                     MatchedWagonAndPickup = match;  // Save away for HandleUserInput() to use when key is released.
                 }
             }
@@ -555,14 +574,39 @@ namespace Orts.Viewer3D.RollingStock
         /// </summary>
         public void RefillChangeTo(float? target)
         {
-            var matchedWagonAndPickup = GetMatchingPickup(Locomotive.Train);   // Save away for RefillCommand to use.
+            MSTSNotchController controller = new MSTSNotchController();
+            var loco = this.Locomotive;
+
+            var matchedWagonAndPickup = GetMatchingPickup(loco.Train);   // Save away for RefillCommand to use.
             if (matchedWagonAndPickup != null)
             {
-                var controller = Locomotive.GetRefillController((uint)matchedWagonAndPickup.Pickup.PickupType);
+                if (matchedWagonAndPickup.SteamLocomotiveWithTender != null)
+                    controller = matchedWagonAndPickup.SteamLocomotiveWithTender.GetRefillController((uint)matchedWagonAndPickup.Pickup.PickupType);
+                else
+                    controller = (matchedWagonAndPickup.Wagon as MSTSLocomotive).GetRefillController((uint)matchedWagonAndPickup.Pickup.PickupType);
                 controller.StartIncrease(target);
             }
         }
-       
+
+        /// <summary>
+        /// Starts a continuous increase in controlled value. This method also receives TrainCar car to process individual locomotives for refueling.
+        /// </summary>
+        /// <param name="type">Pickup point</param>
+        public void StartRefilling(uint type, float fraction, TrainCar car)
+        {
+            var controller = (car as MSTSLocomotive).GetRefillController(type);
+
+            if (controller == null)
+            {
+                Viewer.Simulator.Confirmer.Message(ConfirmLevel.Error, Viewer.Catalog.GetString("Incompatible pickup type"));
+                return;
+            }
+            controller.SetValue(fraction);
+            controller.CommandStartTime = Viewer.Simulator.ClockTime;  // for Replay to use 
+            Viewer.Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer.Catalog.GetString("Starting refill"));
+            controller.StartIncrease(controller.MaximumValue);
+        }
+
         /// <summary>
         /// Starts a continuous increase in controlled value.
         /// </summary>
@@ -582,6 +626,14 @@ namespace Orts.Viewer3D.RollingStock
         }
 
         /// <summary>
+        // Immediate refueling process is different from the process of refueling individual locomotives.
+        /// </summary> 
+        public void StopImmediateRefilling(CommandLog log)
+        {
+            new ImmediateRefillCommand(log);  // for Replay to use
+        }
+
+        /// <summary>
         /// Ends a continuous increase in controlled value.
         /// </summary>
         public void StopRefillingOrUnloading(CommandLog log)
@@ -592,8 +644,13 @@ namespace Orts.Viewer3D.RollingStock
             MSTSWagon.RefillProcess.ActivePickupObjectUID = 0;
             var match = MatchedWagonAndPickup;
             var controller = new MSTSNotchController();
-            if (match.Wagon is MSTSDieselLocomotive || match.Wagon is MSTSSteamLocomotive || (match.Wagon.WagonType == TrainCar.WagonTypes.Tender && Locomotive is MSTSSteamLocomotive))
-                controller = Locomotive.GetRefillController(MatchedWagonAndPickup.Pickup.PickupType);
+            if (match.Wagon is MSTSDieselLocomotive || match.Wagon is MSTSSteamLocomotive || (match.Wagon.WagonType == TrainCar.WagonTypes.Tender && match.SteamLocomotiveWithTender != null))
+            {
+                if (match.SteamLocomotiveWithTender != null)
+                    controller = match.SteamLocomotiveWithTender.GetRefillController(MatchedWagonAndPickup.Pickup.PickupType);
+                else
+                    controller = (match.Wagon as MSTSLocomotive).GetRefillController(MatchedWagonAndPickup.Pickup.PickupType);
+            }
             else
             {
                 controller = match.Wagon.WeightLoadController;
@@ -605,7 +662,6 @@ namespace Orts.Viewer3D.RollingStock
                 controller.StopIncrease();
             else controller.StopDecrease();
         }
-
         #endregion
     } // Class LocomotiveViewer
 

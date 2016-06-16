@@ -45,24 +45,23 @@ namespace Orts.Viewer3D
     }
 
     /// <summary>
-    /// Continuous command to automatically re-fuel and re-water locomotive or tender when 2000 meters or more from pickup object.
+    /// Command to automatically re-fuel and re-water locomotive or tender.
     /// </summary>
     [Serializable()]
-    public sealed class ImmediateRefillCommand : ContinuousCommand
+    public sealed class ImmediateRefillCommand : Command
     {
         public static MSTSLocomotiveViewer Receiver { get; set; }
 
-        public ImmediateRefillCommand(CommandLog log, float? target, double startTime)
-            : base(log, true, target, startTime)
+        public ImmediateRefillCommand(CommandLog log)
+            : base(log)
         {
-            Target = target;        // Fraction from 0 to 1.0
-            this.Time = startTime;  // Continuous commands are created at end of change, so overwrite time when command was created
+            Redo();
         }
 
         public override void Redo()
         {
             if (Receiver == null) return;
-            Receiver.RefillChangeTo(Target);
+            Receiver.ImmediateRefill(); 
             // Report();
         }
     }

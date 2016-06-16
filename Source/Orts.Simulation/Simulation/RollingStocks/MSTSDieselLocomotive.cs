@@ -67,7 +67,7 @@ namespace Orts.Simulation.RollingStocks
         float EngineRPMold;
         float EngineRPMRatio; // used to compute Variable1 and Variable2
 
-        public MSTSNotchController FuelController = new MSTSNotchController(0, 1, 0.1f);
+        public MSTSNotchController FuelController = new MSTSNotchController(0, 1, 0.0025f);
         public float MaxDieselLevelL = 5000.0f;
         public float DieselLevelL
         {
