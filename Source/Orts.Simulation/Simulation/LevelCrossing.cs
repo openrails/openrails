@@ -42,8 +42,10 @@ namespace Orts.Simulation
         public LevelCrossings(Simulator simulator)
         {
             Simulator = simulator;
-            TrackCrossingItems = simulator.TDB != null && simulator.TDB.TrackDB != null ? GetLevelCrossingsFromDB(simulator.TDB.TrackDB.TrackNodes, simulator.TDB.TrackDB.TrItemTable) : new Dictionary<int, LevelCrossingItem>();
-            RoadCrossingItems = simulator.RDB != null && simulator.RDB.RoadTrackDB != null ? GetLevelCrossingsFromDB(simulator.RDB.RoadTrackDB.TrackNodes, simulator.RDB.RoadTrackDB.TrItemTable) : new Dictionary<int, LevelCrossingItem>();
+            TrackCrossingItems = simulator.TDB != null && simulator.TDB.TrackDB != null && simulator.TDB.TrackDB.TrackNodes != null && simulator.TDB.TrackDB.TrItemTable != null 
+                ? GetLevelCrossingsFromDB(simulator.TDB.TrackDB.TrackNodes, simulator.TDB.TrackDB.TrItemTable) : new Dictionary<int, LevelCrossingItem>();
+            RoadCrossingItems = simulator.RDB != null && simulator.RDB.RoadTrackDB != null && simulator.RDB.RoadTrackDB.TrackNodes != null && simulator.RDB.RoadTrackDB.TrItemTable != null
+                ? GetLevelCrossingsFromDB(simulator.RDB.RoadTrackDB.TrackNodes, simulator.RDB.RoadTrackDB.TrItemTable) : new Dictionary<int, LevelCrossingItem>();
         }
 
         static Dictionary<int, LevelCrossingItem> GetLevelCrossingsFromDB(TrackNode[] trackNodes, TrItem[] trItemTable)
