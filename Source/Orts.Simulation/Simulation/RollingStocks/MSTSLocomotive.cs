@@ -1432,7 +1432,7 @@ namespace Orts.Simulation.RollingStocks
         {
             if (elapsedClockSeconds > 0 && Simulator.GameTime - LocomotiveAxle.ResetTime > 5)
             {
-                if (Simulator.UseAdvancedAdhesion)
+                if (AdvancedAdhesionModel)
                 {
                     // Wheelslip
                     if (LocomotiveAxle.IsWheelSlip)
@@ -1830,7 +1830,7 @@ namespace Orts.Simulation.RollingStocks
                 }
                 if (Simulator.WeatherType == WeatherType.Rain) // Wet weather
                 {
-                    if (Simulator.Settings.AdhesionProportionalToWeather && Simulator.UseAdvancedAdhesion && !Simulator.Paused)  // Adjust clear weather for precipitation presence - base friction value will be approximately between 0.15 and 0.2
+                    if (Simulator.Settings.AdhesionProportionalToWeather && AdvancedAdhesionModel && !Simulator.Paused)  // Adjust clear weather for precipitation presence - base friction value will be approximately between 0.15 and 0.2
                         // ie base value between 0.606 and 0.45 - note lowest friction will be with lightest precipitation value.
                     {
                        float pric = Simulator.Weather.PricipitationIntensityPPSPM2 * 1000;
@@ -1850,7 +1850,7 @@ namespace Orts.Simulation.RollingStocks
             else // Default to Dry (Clear) weather
             {
 
-                if (Simulator.Settings.AdhesionProportionalToWeather && Simulator.UseAdvancedAdhesion && !Simulator.Paused)  // Adjust clear weather for fog presence
+                if (Simulator.Settings.AdhesionProportionalToWeather && AdvancedAdhesionModel && !Simulator.Paused)  // Adjust clear weather for fog presence
                 {
                     float fog = Simulator.Weather.FogDistance;
                     if (fog > 2000)
@@ -3148,7 +3148,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                 case CABViewControlTypes.WHEELSLIP:
                     {
-                        if (Simulator.UseAdvancedAdhesion && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
+                        if (AdvancedAdhesionModel && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
                             data = LocomotiveAxle.IsWheelSlipWarning ? 1 : 0;
                         else
                             data = WheelSlip ? 1 : 0;
