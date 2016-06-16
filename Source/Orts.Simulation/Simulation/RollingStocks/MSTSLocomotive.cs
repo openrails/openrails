@@ -227,6 +227,7 @@ namespace Orts.Simulation.RollingStocks
         public float MaxContinuousForceN;
         public float ContinuousForceTimeFactor = 1800;
         public bool AntiSlip;
+        public bool AdvancedAdhesionModel = false; // flag set depending upon adhesion model used.
         public float SanderSpeedEffectUpToMpS;
         public float SanderSpeedOfMpS = 30.0f;
         public string EngineOperatingProcedures;
@@ -1045,8 +1046,8 @@ namespace Orts.Simulation.RollingStocks
             // TODO  this is a wild simplification for electric and diesel electric
             float t = ThrottlePercent / 100f;
 
-            if (!this.Simulator.UseAdvancedAdhesion)
-                AbsWheelSpeedMpS = AbsSpeedMpS;
+            if (!AdvancedAdhesionModel)  // Advanced adhesion model turned off.
+               AbsWheelSpeedMpS = AbsSpeedMpS;
 
             UpdateMotiveForce(elapsedClockSeconds, t, AbsSpeedMpS, AbsWheelSpeedMpS);
 
@@ -1066,6 +1067,7 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
+            UpdateFrictionCoefficient(elapsedClockSeconds); // Find the current coefficient of friction depending upon the weather
 
             switch (this.Train.TrainType)
             {
@@ -1087,7 +1089,7 @@ namespace Orts.Simulation.RollingStocks
                         }
                     }
                     //LimitMotiveForce(elapsedClockSeconds);    //calls the advanced physics
-                    LimitMotiveForce();                         //let's call the basic physics instead for now
+                    SimpleAdhesion();                         //let's call the basic physics instead for now
                     if (Train.IsActualPlayerTrain) FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
                     WheelSpeedMpS = Flipped ? -AbsSpeedMpS : AbsSpeedMpS;            //make the wheels go round
                     break;
@@ -1113,8 +1115,19 @@ namespace Orts.Simulation.RollingStocks
                             DynamicBrakeController.CurrentValue * 100);
                     }
 
+                    // Antislip only works in simple adhesion model at moment
+                    if ((Simulator.UseAdvancedAdhesion) && (!Simulator.Paused) && (!AntiSlip))  // When antislip implemented in advanced adhesion model this conditional statement needs to change
+                    {
+                        AdvancedAdhesion(elapsedClockSeconds); // Use advanced adhesion model
+                        AdvancedAdhesionModel = true;  // Set flag to advise advanced adhesion model is in use
+                    }
+                    else
+                    {
+                        SimpleAdhesion();  // Use simple adhesion model
+                        AdvancedAdhesionModel = false; // Set flag to advise simple adhesion model is in use
+                    }
+
                     UpdateTrackSander(elapsedClockSeconds);
-                    LimitMotiveForce(elapsedClockSeconds);
 
                     if (WheelslipCausesThrottleDown && WheelSlip)
                         ThrottleController.SetValue(0.0f);
@@ -1126,8 +1139,14 @@ namespace Orts.Simulation.RollingStocks
 
             }
 
+            // always set AntiSlip for AI trains
+                        if (Train.TrainType == Train.TRAINTYPE.AI || Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
+                        {
+                            AntiSlip = true;
+                        }
+
             UpdateCompressor(elapsedClockSeconds);
-            UpdateFrictionCoefficient(elapsedClockSeconds); // Find the current coefficient of friction depending upon the weather
+
             UpdateHornAndBell(elapsedClockSeconds);
 
             UpdateSoundVariables(elapsedClockSeconds);
@@ -1170,6 +1189,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 
                 Trace.TraceInformation("====================================== Debug Adhesion (MSTSLocomotive.cs) ===============================");
+                Trace.TraceInformation("AntiSlip - {0} ABSWheelSpeed {1}", AntiSlip, AbsWheelSpeedMpS);
                 Trace.TraceInformation("Advanced Adhesion Model - {0}", Simulator.UseAdvancedAdhesion);
                 Trace.TraceInformation("Car Id: {0} Engine type: {1} Speed: {2} Gradient: {3} Time: {4}", CarID, EngineType, FormatStrings.FormatSpeedDisplay(AbsSpeedMpS, IsMetric), -CurrentElevationPercent, DebugTimer);
                 Trace.TraceInformation("Rail TE: {0} DBTE: {1}", FormatStrings.FormatForce(MotiveForceN, IsMetric), FormatStrings.FormatForce(CouplerForceU, IsMetric));
@@ -1178,7 +1198,7 @@ namespace Orts.Simulation.RollingStocks
                 Trace.TraceInformation("Axle - Axle Inertia: {0} Wheel Radius: {1}", LocomotiveAxle.InertiaKgm2, DriverWheelRadiusM);
 
                 Trace.TraceInformation("Adhesion - Curtius_A: {0} Curtius_B: {1} Curtius_C: {2} Curtius_D: {3}", Curtius_KnifflerA, Curtius_KnifflerB, Curtius_KnifflerC, AdhesionK);
-                Trace.TraceInformation("Axle Weight: {0}", DrvWheelWeightKg);
+                Trace.TraceInformation("Locomotive Weight: {0} Axle Weight: {1}", MassKG, DrvWheelWeightKg);
 
                 Trace.TraceInformation("Axle Speed: {0} TrainSpeed: {1} Slip Speed: {2}", LocomotiveAxle.AxleSpeedMpS, LocomotiveAxle.TrainSpeedMpS, LocomotiveAxle.SlipSpeedMpS);
 
@@ -1537,7 +1557,7 @@ namespace Orts.Simulation.RollingStocks
         /// If UseAdvancedAdhesion is false, the basic force limits are calculated the same way MSTS calculates them, but
         /// the weather handleing is different and Curtius-Kniffler curves are considered as a static limit
         /// </summary>
-        public void LimitMotiveForce(float elapsedClockSeconds)
+        public void AdvancedAdhesion(float elapsedClockSeconds)
         {
 
             if (LocoNumDrvWheels <= 0)
@@ -1549,13 +1569,13 @@ namespace Orts.Simulation.RollingStocks
             //Curtius-Kniffler computation for the basic model
     //        float max0 = 1.0f;  //Adhesion conditions [N]
 
-            if ((Simulator.UseAdvancedAdhesion) && (!Simulator.Paused) && EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared )
+            if (EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared )
              {
                 // Steam locomotive details updated in UpdateMotiveForce method, and inserted into adhesion module
                 // ****************  NB WheelSpeed updated within Steam Locomotive module at the moment - to be fixed to prevent discrepancies ******************
             }
             
-            else if ((Simulator.UseAdvancedAdhesion) && (!Simulator.Paused) && (!AntiSlip))
+            else 
             {
 
                 /* Turn off code
@@ -1663,14 +1683,22 @@ namespace Orts.Simulation.RollingStocks
                 }
                 WheelSpeedMpS = LocomotiveAxle.AxleSpeedMpS;
             }
-            else
-            {
-                LimitMotiveForce();
-            }
+//            else
+//            {
+//                SimpleAdhesion();
+//            }
         }
 
-        public void LimitMotiveForce()
+        public void SimpleAdhesion()
         {
+
+            // Check if the following few lines are required???
+            if (LocoNumDrvWheels <= 0)
+            {
+                WheelSpeedMpS = AbsSpeedMpS;
+                return;
+            }
+            
             if (LocoNumDrvWheels <= 0)
                 return;
             //float max0 = MassKG * 9.8f * Adhesion3 / NumWheelsAdhesionFactor;   //Not used
@@ -1730,10 +1758,10 @@ namespace Orts.Simulation.RollingStocks
             WheelSlip = false;
 
             // always set AntiSlip for AI trains
-            if (Train.TrainType == Train.TRAINTYPE.AI || Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
-            {
-                AntiSlip = true;
-            }
+//            if (Train.TrainType == Train.TRAINTYPE.AI || Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
+//            {
+//                AntiSlip = true;
+//            }
 
             if (MotiveForceN > max1)
             {
@@ -1754,10 +1782,10 @@ namespace Orts.Simulation.RollingStocks
 
             //This doesn't help at all, the force is already limited!!! The "AntiSlip = true;" statement is much better.
             // overrule wheelslip for AI trains
-            if (Train.TrainType == Train.TRAINTYPE.AI || Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
-            {
-                WheelSlip = false;
-            }
+   //         if (Train.TrainType == Train.TRAINTYPE.AI || Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
+   //         {
+   //             WheelSlip = false;
+   //        }
         }
 
 #region Calculate Friction Coefficient
@@ -2811,7 +2839,7 @@ namespace Orts.Simulation.RollingStocks
                 case CABViewControlTypes.SPEEDOMETER:
                     {
                         //data = SpeedMpS;
-                        if (Simulator.UseAdvancedAdhesion && (!AntiSlip))
+                        if (AdvancedAdhesionModel)
                             data = WheelSpeedMpS;
                         else
                             data = SpeedMpS;

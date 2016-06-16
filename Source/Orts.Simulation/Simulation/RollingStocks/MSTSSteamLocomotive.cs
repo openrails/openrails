@@ -3314,7 +3314,7 @@ namespace Orts.Simulation.RollingStocks
                 case Train.TRAINTYPE.PLAYER:
                 case Train.TRAINTYPE.AI_PLAYERDRIVEN:
                 case Train.TRAINTYPE.REMOTE:
-                    LimitMotiveForce(elapsedClockSeconds);
+                    AdvancedAdhesion(elapsedClockSeconds);
                     break;
                 default:
                     break;
