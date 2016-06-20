@@ -3392,7 +3392,7 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
-            #region - Steam Adhesion Monitor
+            #region - Steam Adhesion Model Input for Steam Locomotives
 
             // Based upon information presented in "Locomotive Operation - A Technical and Practical Analysis" by G. R. Henderson
             // At its simplest slip occurs when the wheel tangential force exceeds the static frictional force
@@ -3656,6 +3656,8 @@ namespace Orts.Simulation.RollingStocks
                 SteamStaticWheelForce = SpeedStaticWheelFrictionForceLbf;
                 SteamTangentialWheelForce = SpeedTangentialWheelTreadForceLbf;
             }
+
+            SteamStaticWheelForce = MathHelper.Clamp(SteamStaticWheelForce, 0.1f, SteamStaticWheelForce);  // Ensure static wheelforce never goes negative - as this will induce wheel slip incorrectly
 
                 // Test if wheel forces are high enough to induce a slip. Set slip flag if slip occuring 
                 if (!IsLocoSlip)
