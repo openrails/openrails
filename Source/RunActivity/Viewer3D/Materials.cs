@@ -483,7 +483,7 @@ namespace Orts.Viewer3D
     public abstract class Material
     {
         public readonly Viewer Viewer;
-        readonly string Key;
+        public readonly string Key;
 
         protected Material(Viewer viewer, string key)
         {
