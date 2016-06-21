@@ -948,6 +948,11 @@ namespace Orts.Simulation.RollingStocks
                                 CabSetting.Increase, WeightLoadController.CurrentValue * 100);
                     }
                 }
+                if (WeightLoadController.UpdateValue == 0.0 && FreightAnimations.LoadedOne != null && FreightAnimations.LoadedOne.LoadPerCent == 0.0)
+                {
+                    FreightAnimations.LoadedOne = null;
+                    FreightAnimations.FreightType = PickupType.None;
+                }
                 if (FreightAnimations.WagonEmptyWeight != -1) MassKG = FreightAnimations.WagonEmptyWeight + FreightAnimations.FreightWeight + FreightAnimations.StaticFreightWeight;
                 if (WaitForAnimationReady && WeightLoadController.CommandStartTime + FreightAnimations.UnloadingStartDelay <= Simulator.ClockTime)
                 {
