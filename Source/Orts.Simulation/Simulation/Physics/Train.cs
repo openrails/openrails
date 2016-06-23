@@ -14101,8 +14101,8 @@ namespace Orts.Simulation.Physics
                                     endSubPath[iSection].TCSectionIndex == RoughReversalInfos[RoughReversalInfos.Count - 1].ReversalSectionIndex)
                                 {
                                     RoughReversalInfos[RoughReversalInfos.Count - 1].ReversalSectionIndex = endSubPath[sigIndex].TCSectionIndex;
-                                    RoughReversalInfos[RoughReversalInfos.Count - 1].ReverseReversalOffset = endSubPath[sigIndex].Direction == 0 ?
-                                        orgSignals.TrackCircuitList[endSubPath[sigIndex].TCSectionIndex].Length : 0;
+                                    RoughReversalInfos[RoughReversalInfos.Count - 1].ReverseReversalOffset = 
+                                        orgSignals.TrackCircuitList[endSubPath[sigIndex].TCSectionIndex].Length;
                                 }
                                 endSubPath.RemoveAt(iSection);
                             }
