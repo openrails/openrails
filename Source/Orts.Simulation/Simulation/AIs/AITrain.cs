@@ -5411,7 +5411,8 @@ namespace Orts.Simulation.AIs
             if (actionValid && nextActionInfo != null && nextActionInfo is AuxActionWPItem &&
                 thisItem.NextAction == AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_STOP)
             {
-                if (thisItem.ActiveItem.ObjectDetails.HasLockForTrain(Number, TCRoute.activeSubpath) && nextActionInfo.ActivateDistanceM - thisItem.ActivateDistanceM < 40)
+                if ((thisItem.ActiveItem.ObjectDetails.HasLockForTrain(Number, TCRoute.activeSubpath) && nextActionInfo.ActivateDistanceM - thisItem.ActivateDistanceM < 40) ||
+                    nextActionInfo.ActivateDistanceM - thisItem.ActivateDistanceM < activityClearingDistanceM)
                 {
                     actionValid = false;
                     nextActionInfo.ActivateDistanceM = Math.Min(nextActionInfo.ActivateDistanceM, thisItem.ActivateDistanceM);
@@ -5491,7 +5492,8 @@ namespace Orts.Simulation.AIs
                                nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_STOP)
                     {
                         // check if it is the the AI action is related to the signal linked to the WP
-                        if (nextActionInfo.ActiveItem.ObjectDetails.HasLockForTrain(Number, TCRoute.activeSubpath) && thisItem.ActivateDistanceM - nextActionInfo.ActivateDistanceM < 40)
+                        if ((nextActionInfo.ActiveItem.ObjectDetails.HasLockForTrain(Number, TCRoute.activeSubpath) && thisItem.ActivateDistanceM - nextActionInfo.ActivateDistanceM < 40) ||
+                            thisItem.ActivateDistanceM - nextActionInfo.ActivateDistanceM < activityClearingDistanceM)
                         {
                             earlier = true;
                             thisItem.ActivateDistanceM = Math.Min(nextActionInfo.ActivateDistanceM, thisItem.ActivateDistanceM);
