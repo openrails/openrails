@@ -19,7 +19,7 @@
 	          <p>
 			    New features are listed below. However, effort has also gone into better sound, environment,
 				enhancing performance to cater for larger and more detailed models and, of course, updating the manual. 
-				Many models take advantage of quirks in MSTS, so much effort has also gone into handling these
+				Many models take advantage of quirks in Microsoft Train Simulator, so much effort has also gone into handling these
 				tricky cases and in eliminating unexpected behaviour in activities.
 			  </p>
 			</div>

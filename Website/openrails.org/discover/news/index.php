@@ -84,7 +84,7 @@
           <hr />
           <h2>Mar 2014 - Work Starts On Timetables</h2>
           <p>
-            A schedule of trains (or timetable) is nearly impossible to arrange in MSTS as AI trains don't adhere to booked station stops. In OR,
+            A schedule of trains (or timetable) is nearly impossible to arrange in Microsoft Train Simulator as AI trains don't adhere to booked station stops. In Open Rails,
             the situation is better but an activity with a player train and AI traffic is still very different from a timetable.
           </p><p>
             Work has now begun on a timetable element which is an alternative to the usual activity. The timetable will contain all the details

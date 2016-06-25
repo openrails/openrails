@@ -22,59 +22,59 @@
 				</ul>
 				<br>
 				<h2><span id="general_questions">General Questions</span></h2>
-				<h3>What is Open Rails (OR)?</h3>
+				<h3>What is Open Rails?</h3>
 				<p>
-				OR is a train simulator project compatible with Microsoft's Train Simulator (MSTS) product.
+				Open Rails is a train simulator project compatible with Microsoft's Train Simulator product.
 				</p>
-				<h3>Is OR freeware? Is there a downloadable version available?</h3>
+				<h3>Is Open Rails freeware? Is there a downloadable version available?</h3>
 				<p>
 				Yes. A variety of downloads <a href="../../download/program/">are available here</a>.
 				</p>
-				<h3>Is OR just an improved version of MSTS?</h3>
+				<h3>Is Open Rails just an improved version of Microsoft Train Simulator?</h3>
 				<p>
-				OR is not an improvement to MSTS, but a complete new simulator that can use MSTS routes, activities, consists and train sets. At
-        installation, OR looks for MSTS entries in the Windows registry to locate any MSTS files on your computer. It will offer to use them
+				Open Rails is not an improvement to Microsoft Train Simulator, but a complete new simulator that can use Microsoft Train Simulator routes, activities, consists and train sets. At
+        installation, Open Rails looks for Microsoft Train Simulator entries in the Windows registry to locate any Microsoft Train Simulator files on your computer. It will offer to use them
         in the simulation.
 				</p><p>
-				The OR simulator operates train services independently of MSTS and without running any MSTS code. Currently you must use the MSTS Route Editor to build
+				The Open Rails simulator operates train services independently of Microsoft Train Simulator and without running any Microsoft Train Simulator code. Currently you must use the Microsoft Train Simulator Route Editor to build
 				new routes, but we intend to develop our own Route Editor.
 				</p>
-				<h3>Can I use my collection of MSTS locomotives and rolling stock with OR?</h3>
+				<h3>Can I use my collection of Microsoft Train Simulator locomotives and rolling stock with Open Rails?</h3>
 				<p>
-				The short answer is 'yes', but with some limitations around cab controls and gauges. Everything else should work very similar to MSTS.
+				The short answer is 'yes', but with some limitations around cab controls and gauges. Everything else should work very similar to Microsoft Train Simulator.
 				</p>
-				<h3>Can I use my collection of MSTS routes with OR?</h3>
+				<h3>Can I use my collection of Microsoft Train Simulator routes with Open Rails?</h3>
 				<p>
 				The short answer is 'yes'.
 				</p>
-				<h3>Can I use my collection of MSTS activities with OR?</h3>
+				<h3>Can I use my collection of Microsoft Train Simulator activities with Open Rails?</h3>
 				<p>
-				The answer is "Yes", though the signaling in OR and performance of AI (computer-driven) trains is more rigorous and some activities may need adjusting.
+				The answer is "Yes", though the signaling in Open Rails and performance of AI (computer-driven) trains is more rigorous and some activities may need adjusting.
 				</p>
-				<h3>Does OR improve the performance of MSTS?</h3>
+				<h3>Does Open Rails improve the performance of Microsoft Train Simulator?</h3>
 				<p>
-				No, OR has no effect on the performance of MSTS. OR is a completely new simulator. With suitable hardware, most users running MSTS routes and consists
-				in OR see significantly higher frames per second (FPS) because the OR simulator uses modern graphics cards (GPUs) effectively. Loading
+				No, Open Rails has no effect on the performance of Microsoft Train Simulator. Open Rails is a completely new simulator. With suitable hardware, most users running Microsoft Train Simulator routes and consists
+				in Open Rails see significantly higher frames per second (FPS) because the Open Rails simulator uses modern graphics cards (GPUs) effectively. Loading
         times are much reduced and larger routes can be accommodated.
 				</p>
-				<h3>Will OR make my MSTS routes and trains look better?</h3>
+				<h3>Will Open Rails make my Microsoft Train Simulator routes and trains look better?</h3>
 				<p>
-				MSTS displays textures as 16-bit color even though most are stored as 24 or 32-bit ACE files. Therefore, the foundation is there to support these 
-				higher bit textures. OR may also provide better lighting effects and texture effects which gives a better view of the current MSTS models.
+				Microsoft Train Simulator displays textures as 16-bit color even though most are stored as 24 or 32-bit ACE files. Therefore, the foundation is there to support these 
+				higher bit textures. Open Rails may also provide better lighting effects and texture effects which gives a better view of the current Microsoft Train Simulator models.
 				</p>
-				<h3>Will OR improve my frame rates, decrease stuttering, make my MSTS content look better or improve the lighting?</h3>
+				<h3>Will Open Rails improve my frame rates, decrease stuttering, make my Microsoft Train Simulator content look better or improve the lighting?</h3>
 				<p>
-				The point of OR is not just better frame rates or display colors, but those are common side effects. OR is more about the future!
+				The point of Open Rails is not just better frame rates or display colors, but those are common side effects. Open Rails is more about the future!
 				</p>
-				<h3>Do I need MSTS to run Open Rails?</h3>
+				<h3>Do I need Microsoft Train Simulator to run Open Rails?</h3>
 				<p>
 				No. However Open Rails does not yet have a route editor or an activity editor, so you cannot build your own routes and activities.
 				</p>
-				<h3>Are there any routes available for Open Rails that do not need MSTS?</h3>
+				<h3>Are there any routes available for Open Rails that do not need Microsoft Train Simulator?</h3>
 				<p>
-				Most free and payware routes are packaged as add-ons to MSTS and many locos make use of sound and cabview files from MSTS.
+				Most free and payware routes are packaged as add-ons to Microsoft Train Simulator and many locos make use of sound and cabview files from Microsoft Train Simulator.
 				</p><p>
-				Some Australian routes (New South Wales) have been packaged to work just with OR:
+				Some Australian routes (New South Wales) have been packaged to work just with Open Rails:
         </p>
 				<ul>
 				  <li><a href="http://www.craven.coalstonewcastle.com.au/">Craven Timber Railway</a></li>
@@ -85,14 +85,14 @@
 				<h2><span id="technical_questions">Technical Questions</span></h2>
 				<h3>What computer specs do I need to run Open Rails?</h3>
 				<p>
-          In general, Open Rails currently requires a higher hardware specification than MSTS, especially with regard to video cards (GPUs).
-          Community members have Open Rails running on Windows XP, Vista, Windows 7 and 8 operating systems. Some OR users, however, have
+          In general, Open Rails currently requires a higher hardware specification than Microsoft Train Simulator, especially with regard to video cards (GPUs).
+          Community members have Open Rails running on Windows XP, Vista, Windows 7 and 8 operating systems. Some Open Rails users, however, have
           reported difficulties with low frame rates (FPS) especially on laptops with onboard video because of the demands Open Rails places
           on the GPU.
         </p><p> 
           The latest system and software requirements are <a href="#hardware_requirements">shown below</a>.
         </p>
-				<h3>Does OR achieve higher FPS by giving the graphics card more of the work in rendering the graphics?</h3>
+				<h3>Does Open Rails achieve higher FPS by giving the graphics card more of the work in rendering the graphics?</h3>
 				<p>
           Yes, Open Rails makes fewer demands on the CPU for processing information and rendering the graphics. 
           The GPU and CPU now share these functions.
@@ -102,7 +102,7 @@
           With the current release, Open Rails software has implemented our first phase of independent physics for diesel, diesel electric, 
           electric and steam engines. This more sophisticated physics model incorporates ground-breaking inertia and traction motor loading,
           plus wheel-slipping equations that more realistically model train physics. As a result, you may experience slower acceleration and
-          longer stopping distances compared to MSTS.
+          longer stopping distances compared to Microsoft Train Simulator.
         </p>
 				<h3>Why don't I see distant mountains?</h3>
 				<p>
@@ -112,7 +112,7 @@
 				<h3>How do I change my view?</h3>
 				<p>
           You can move about in the route and locomotive in Open Rails with several camera views. The F1 key assignment window details all
-          the views available in Open Rails. In current version of the Open Rails software, you can do more than MSTS with BIN.
+          the views available in Open Rails. In current version of the Open Rails software, you can do more than Microsoft Train Simulator with BIN.
         </p><p> 
           The #4 camera (trackside) automatically jumps as the train passes. Use the #8 key to "unlock" the #4 camera to a fixed view, which
           is movable like all the other cameras. Then just press the #4 key to jump to the next automatic viewpoint. 
@@ -121,7 +121,7 @@
         </p><p> 
           You can view other (AI) trains using Alt-9.
         </p>
-				<h3>Does OR have working signals?</h3>
+				<h3>Does Open Rails have working signals?</h3>
 				<p>
           The Open Rails team has implemented a comprehensive and robust signal system which is detailed in the manual.
         </p>

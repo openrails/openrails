@@ -40,21 +40,21 @@ As mentioned opposite, <a href="http://www.zigzag.coalstonewcastle.com.au/">this
         <div class="col-md-4">
 <h2>Expected To Grow</h2>
 <p>
-Now that Open Rails has reached a stage where it can do most of what MSTS does, attention is shifting to features that only Open Rails can provide. You should expect the lists below to grow.
+Now that Open Rails has reached a stage where it can do most of what Microsoft Train Simulator does, attention is shifting to features that only Open Rails can provide. You should expect the lists below to grow.
 </p><p>
-In part this is because the Open Rails platform supports finer graphical detail by accommodating more "polys", with smoother curves and more detailed textures. But also the Development Team has begun to include ORTS-specific parameters so models can be built which work with the Open Rails simulator in ways which MSTS ignores.
+In part this is because the Open Rails platform supports finer graphical detail by accommodating more "polys", with smoother curves and more detailed textures. But also the Development Team has begun to include Open Rails-specific parameters so models can be built which work with the Open Rails simulator in ways which Microsoft Train Simulator ignores.
 </p><p>
-There are more than 40 of these ORTS parameters which are used to provide features such as more realistic smoke for diesel locos and more realistic performance for steam locos.
+There are more than 40 of these parameters (identified by the prefix "ORTS") which are used to provide features such as more realistic smoke for diesel locos and more realistic performance for steam locos.
 </p>
 <h2>Resources</h2>
 <p>
-The Spanish websites <a href="http://viajerosaltren.es">Viajeros al Tren</a> and <a href="http://www.spaintrainzrutas.com/">Spain Trainz Rutas</a> are some of the first to offer ORTS-specific products.
+The Spanish websites <a href="http://viajerosaltren.es">Viajeros al Tren</a> and <a href="http://www.spaintrainzrutas.com/">Spain Trainz Rutas</a> are some of the first to offer Open Rails-specific products.
 </p><p>
 <a href="http://www.dekosoft.com">Dekosoft Trains</a> have since offered GP30 locos with 3D cabs exclusively for Open Rails.
 </p><p>
 Peter Newell has just released (June 2015) the <a href="http://www.zigzag.coalstonewcastle.com.au/">Great Zig Zag Railway</a>, a steam route for Open Rails v1.0 (this 120MB download requires no other files).
 </p><p>
-Some Australian routes (New South Wales) have been packaged by Peter Newell to work just with OR:
+Some Australian routes (New South Wales) have been packaged by Peter Newell to work just with Open Rails:
 </p>
 <ul>
 <li><a href="http://www.burrinjuck.coalstonewcastle.com.au/">Burrinjuck Railway</a></li>

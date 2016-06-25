@@ -17,11 +17,11 @@
 			<div class="col-md-6">
 <h2>The Building Process</h2>
 <p>
-Currently models for Open Rails are created in the same way as for MSTS. This process is quite involved and the Open Rails team will be developing tools and formats to streamline it.
+Currently models for Open Rails are created in the same way as for Microsoft Train Simulator. This process is quite involved and the Open Rails team will be developing tools and formats to streamline it.
 </p>
 <h2>3D Modelling</h2>
 <p>
-There are several products which support modelling in 3D and produce the formats used by Open Rails and MSTS. 
+There are several products which support modelling in 3D and produce the formats used by Open Rails and Microsoft Train Simulator. 
 </p>
 <ul>
   <li><a href="http://www.amabilis.com">Amabilis 3DCrafter</a></li>
@@ -47,15 +47,15 @@ There is <a href="http://www.elvastower.com/forums/index.php?/topic/21949-gmax-t
 </p>
 <h2>3D Modelling For Open Rails</h2>
 <p>
-The key advantage that Open Rails currently offers over MSTS is that good frame rates can be maintained with a much higher number of polygons,
-so curves can be smoother and more detail can be modelled. Open Rails also displays 32-bit color (whereas MSTS is limited to 16-bit). 
+The key advantage that Open Rails currently offers over Microsoft Train Simulator is that good frame rates can be maintained with a much higher number of polygons,
+so curves can be smoother and more detail can be modelled. Open Rails also displays 32-bit color (whereas Microsoft Train Simulator is limited to 16-bit). 
 Another advantage is the longer viewing distances, adjustable from 2km out to 10km. 
 </p><p>
-There will be other advantages as we move beyond our current status of MSTS-compatible.    
+There will be other advantages as we move beyond our current status of Microsoft Train Simulator-compatible.    
 </p>
 <h2>3D Cabs</h2>
 <p>
-One of these advantages is 3D cabs. Open Rails now supports 3D cabs interiors as well as the MSTS 2D interiors.
+One of these advantages is 3D cabs. Open Rails now supports 3D cabs interiors as well as the Microsoft Train Simulator 2D interiors.
 </p>
 <img src="3d_cab.jpg" title="Cab from Hungarian MAV 424 class loco &#xa; posted by zaza" alt="Cab from Hungarian MAV 424 class loco &#xa; posted by zaza" />
 <p>&nbsp;
