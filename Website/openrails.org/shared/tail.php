@@ -12,7 +12,7 @@
             <p>
               &copy; 2009-<?php // Calculate current year as end of copyright range.
 $path = dirname(__FILE__);  // path to this include file
-echo date('Y', filemtime("$path/../files/OpenRailsTesting.zip"));
+echo date('Y', filemtime("$path/../files/OpenRails-Testing-Source.zip"));
 ?> &nbsp; Open Rails
             </p>
             <a href="http://www.gnu.org/licenses/licenses.html" target="_blank">
