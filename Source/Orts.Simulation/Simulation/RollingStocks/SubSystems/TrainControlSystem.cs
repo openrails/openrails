@@ -602,7 +602,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 if (EmergencyEngagesHorn)
                     SetHorn(IsBrakeEmergency() || IsBrakeFullService());
 
-                SetPenaltyApplicationDisplay(IsBrakeEmergency() && IsBrakeFullService());
+                SetPenaltyApplicationDisplay(IsBrakeEmergency() || IsBrakeFullService());
 
                 // Update monitoring status
                 if (SpeedMpS() > CurrentSpeedLimitMpS)
