@@ -252,10 +252,7 @@ namespace Orts.Simulation.RollingStocks
 
             if (DrvWheelWeightKg == 0) // if DrvWheelWeightKg not in ENG file.
             {
-//                DrvWheelWeightKg = MassKG; // calculate Drive wheel weight if not in ENG file
-                const float FactorofAdhesion = 5.0f; // Assume a typical factor of adhesion
-                DrvWheelWeightKg = (FactorofAdhesion * (MaxForceN)) / 9.81f; // calculate Drive wheel weight if not in ENG file, divide by gravity to align units
-                DrvWheelWeightKg = MathHelper.Clamp(DrvWheelWeightKg, 0.1f, MassKG); // Make sure adhesive weight does not exceed the weight of the locomotive
+                DrvWheelWeightKg = MassKG; // set Drive wheel weight to total wagon mass if not in ENG file
             }
 
         }
