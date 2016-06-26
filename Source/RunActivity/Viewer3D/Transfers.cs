@@ -24,7 +24,6 @@ using Orts.Viewer3D.Common;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace Orts.Viewer3D
 {
@@ -170,15 +169,8 @@ namespace Orts.Viewer3D
             shader.ReferenceAlpha = 10;
 
             var samplerState = graphicsDevice.SamplerStates[0];
-            samplerState.AddressU = TextureAddressMode.Border;
-            samplerState.AddressV = TextureAddressMode.Border;
-            var stringa = Path.GetDirectoryName(Key);
-            var string2 = Path.GetFileName(stringa);
-            var Color = new Color(133, 131, 62, 0);
-            if (string2 == "snow")
-            Color = new Color (232, 232, 232, 0);
-
-            samplerState.BorderColor = Color;
+            samplerState.AddressU = TextureAddressMode.Clamp;
+            samplerState.AddressV = TextureAddressMode.Clamp;
 
             var rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = true;
