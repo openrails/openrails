@@ -3401,7 +3401,7 @@ namespace Orts.Simulation.RollingStocks
             // Typically tangential force will be greater at starting then when the locomotive is at speed, as interia and reduce steam pressure will decrease the value. 
             // Thus we will only consider slip impacts at start of the locomotive
 
-            if (Simulator.UseAdvancedAdhesion) // only set slip when advanced adhesion is set
+            if (Simulator.UseAdvancedAdhesion && this == Simulator.PlayerLocomotive) // only set advanced wheel slip when advanced adhesion and is the player locomotive, AI locomotive will not work to this model)
             {
             float SlipCutoffPressureAtmPSI;
             float SlipCylinderReleasePressureAtmPSI;
@@ -3659,7 +3659,7 @@ namespace Orts.Simulation.RollingStocks
 
             SteamStaticWheelForce = MathHelper.Clamp(SteamStaticWheelForce, 0.1f, SteamStaticWheelForce);  // Ensure static wheelforce never goes negative - as this will induce wheel slip incorrectly
 
-                // Test if wheel forces are high enough to induce a slip. Set slip flag if slip occuring 
+            // Test if wheel forces are high enough to induce a slip. Set slip flag if slip occuring 
                 if (!IsLocoSlip)
                 {
                     if (SteamTangentialWheelForce > SteamStaticWheelForce)
@@ -3682,6 +3682,7 @@ namespace Orts.Simulation.RollingStocks
                     PrevFrictionWheelSpeedMpS = 0.0f; // Reset previous wheel slip speed to zero
                     FrictionWheelSpeedMpS = 0.0f;
                 }
+            
 
                 // If locomotive slip is occuring, set parameters to reduce motive force (pulling power), and set wheel rotational speed for wheel viewers
                 if (IsLocoSlip)
