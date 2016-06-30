@@ -3905,8 +3905,12 @@ namespace Orts.Simulation.Physics
             // To overcome this any "air_piped cars are forced to zero speed if the prcedding car is stationary.
             int n = 0;
             float PrevCarSpeedMps = 0.0f;
-            foreach (TrainCar car in Cars)
+            float NextCarSpeedMps = 0.0f;
+            bool locoBehind = true;
+            for (int iCar = 0; iCar < Cars.Count; iCar++)
             {
+                var car = Cars[iCar];
+                if (iCar < Cars.Count - 1) NextCarSpeedMps = Cars[iCar + 1].SpeedMpS;
                 if (TrainMaxSpeedMpS <= 0f)
                 {
                     if (car is MSTSLocomotive)
@@ -3918,13 +3922,14 @@ namespace Orts.Simulation.Physics
                     if (car is MSTSSteamLocomotive)
                         TrainMaxSpeedMpS = (car as MSTSSteamLocomotive).MaxSpeedMpS;
                 }
+                if (car is MSTSLocomotive) locoBehind = false;
                 if (car.SpeedMpS > 0)
                 {
                     car.SpeedMpS += car.TotalForceN / car.MassKG * elapsedTime;
                     if (car.SpeedMpS < 0)
                         car.SpeedMpS = 0;
                     // If is "air_piped car, and preceeding car is at stop, then set speed to zero.
-                    if (n != 0 && PrevCarSpeedMps == 0 && car.CarBrakeSystemType == "air_piped")
+                    if ((car.CarBrakeSystemType == "air_piped" || car.CarBrakeSystemType == "vacuum_piped") && (locoBehind ? n != Cars.Count - 1 && NextCarSpeedMps == 0 : n != 0 && PrevCarSpeedMps == 0))
                     {
                         car.SpeedMpS = 0;
                     }
@@ -3936,7 +3941,7 @@ namespace Orts.Simulation.Physics
                     if (car.SpeedMpS > 0)
                         car.SpeedMpS = 0;
                     // If is "air_piped car, and preceeding is at stop, then set speed to zero.
-                    if (n != 0 && PrevCarSpeedMps == 0 && car.CarBrakeSystemType == "air_piped")
+                    if ((car.CarBrakeSystemType == "air_piped" || car.CarBrakeSystemType == "vacuum_piped") && (locoBehind ? n != Cars.Count - 1 && NextCarSpeedMps == 0 : n != 0 && PrevCarSpeedMps == 0))
                     {
                         car.SpeedMpS = 0;
                     }
@@ -3951,11 +3956,11 @@ namespace Orts.Simulation.Physics
                 Trace.TraceInformation("Friction {0} Brake {1} Curve {2} Tunnel {3}", car.FrictionForceN, car.BrakeForceN, car.CurveForceN, car.TunnelForceN);
                 Trace.TraceInformation("Coupler {0} Prev Car Speed {1}", car.CouplerForceU, PrevCarSpeedMps);
                 Trace.TraceInformation("Calculated Total {0}", car.FrictionForceN + car.BrakeForceN + car.CurveForceN + car.TunnelForceN);
-#endif    
+#endif
             }
             if (n == 0)
                 return;
-            float PrevMovingCarSpeed = 0.0f;
+            float PrevMovingCarSpeedMps = 0.0f;
             // start cars moving forward
 
             for (int i = 0; i < Cars.Count; i++)
@@ -3983,7 +3988,7 @@ namespace Orts.Simulation.Physics
                     for (int k = i; k <= j; k++)
                     {
                         // If is "air_piped car, and preceeding car is at stop, then set speed to zero.
-                        if (Cars[k].CarBrakeSystemType == "air_piped" && PrevMovingCarSpeed == 0.0)
+                        if ((Cars[k].CarBrakeSystemType == "air_piped" || Cars[k].CarBrakeSystemType == "vacuum_piped") && PrevMovingCarSpeedMps == 0.0)
                         {
                             Cars[k].SpeedMpS = 0.0f;
                         }
@@ -3991,7 +3996,7 @@ namespace Orts.Simulation.Physics
                         {
                             Cars[k].SpeedMpS = f / m * elapsedTime;
                         }
-                        PrevMovingCarSpeed = Cars[k].SpeedMpS;
+                        PrevMovingCarSpeedMps = Cars[k].SpeedMpS;
                     }
                     n -= j - i + 1;
                 }
@@ -4024,7 +4029,7 @@ namespace Orts.Simulation.Physics
                     for (int k = j; k <= i; k++)
                     {
                         // If is "air_piped car, and preceeding car is at stop, then set speed to zero.
-                        if (Cars[k].CarBrakeSystemType == "air_piped" && PrevMovingCarSpeed == 0.0)
+                        if ((Cars[k].CarBrakeSystemType == "air_piped" || Cars[k].CarBrakeSystemType == "vacuum_piped") && PrevMovingCarSpeedMps == 0.0)
                         {
                             Cars[k].SpeedMpS = 0.0f;
                         }
@@ -4032,7 +4037,7 @@ namespace Orts.Simulation.Physics
                         {
                             Cars[k].SpeedMpS = f / m * elapsedTime;
                         }
-                        PrevMovingCarSpeed = Cars[k].SpeedMpS;
+                        PrevMovingCarSpeedMps = Cars[k].SpeedMpS;
                     }
                 }
             }
