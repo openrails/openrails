@@ -1243,7 +1243,7 @@ namespace Orts.Viewer3D.RollingStock
             else
                 stretchedCab = new Rectangle(_CabRect.Left, _CabRect.Top + _Viewer.CabYOffsetPixels, _CabRect.Width, _CabRect.Height);
 
-            if (_Location == 0 && _Shader != null)
+            if (_Shader != null)
             {
                 // TODO: Readd ability to control night time lighting.
                 if (_Viewer.Settings.UseMSTSEnv == false)
@@ -1272,7 +1272,7 @@ namespace Orts.Viewer3D.RollingStock
             }
             //Materials.SpriteBatchMaterial.SpriteBatch.Draw(_CabTexture, _CabRect, Color.White);
 
-            if (_Location == 0 && _Shader != null)
+            if (_Shader != null)
             {
                 _Shader.CurrentTechnique.Passes[0].End();
                 _Shader.End();
