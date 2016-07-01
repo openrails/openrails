@@ -182,7 +182,7 @@ namespace Orts.Viewer3D.Processes
                                     if (!sources.Value[i].NeedsFrequentUpdate && UpdateCounter > 0)
                                         continue;
 
-                                    if (!sources.Value[i].Update())
+                                    if (!sources.Value[i].Update() && viewer.Simulator.GameSpeed <= 1)
                                     {
                                         Trace.TraceInformation("Sound Update return False");
                                         // This doesn't seem to be needed - cleanup when a train is removed seems to do it anyway.
