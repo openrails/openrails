@@ -3401,7 +3401,7 @@ namespace Orts.Simulation.RollingStocks
             // Typically tangential force will be greater at starting then when the locomotive is at speed, as interia and reduce steam pressure will decrease the value. 
             // Thus we will only consider slip impacts at start of the locomotive
 
-            if (Simulator.UseAdvancedAdhesion && this == Simulator.PlayerLocomotive) // only set advanced wheel slip when advanced adhesion and is the player locomotive, AI locomotive will not work to this model)
+            if (Simulator.UseAdvancedAdhesion && this == Simulator.PlayerLocomotive && this.Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING) // only set advanced wheel slip when advanced adhesion and is the player locomotive, AI locomotive will not work to this model. Don't use slip model when train is in auto pilot
             {
             float SlipCutoffPressureAtmPSI;
             float SlipCylinderReleasePressureAtmPSI;
