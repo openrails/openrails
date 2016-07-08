@@ -159,6 +159,7 @@ namespace Orts.Simulation.RollingStocks
         public bool AcceptMUSignals = true; //indicates if the car accepts multiple unit signals
         public bool IsMetric;
         public bool IsUK;
+        public float prevElev = -100f;
 
         public float SpeedMpS
         {
@@ -1657,20 +1658,28 @@ namespace Orts.Simulation.RollingStocks
 
             CurrentCurveRadius = traveler.GetCurveRadius();
             UpdateVibration(traveler, elapsedTimeS, distanceM, speedMpS);
-            UpdateSuperElevation(traveler);
+            UpdateSuperElevation(traveler, elapsedTimeS);
         }
         #endregion
 
         #region Super-elevation
-        void UpdateSuperElevation(Traveller traveler)
+        void UpdateSuperElevation(Traveller traveler,  float elapsedTimeS)
         {
             if (Simulator.Settings.UseSuperElevation == 0 && !Train.IsTilting)
                 return;
+            if (prevElev < -30f) { prevElev += 40f; return; }//avoid the first two updates as they are not valid
 
             // Because the traveler is at the FRONT of the TrainCar, smooth the super-elevation out with the rear.
             var z = traveler.GetSuperElevation(-CarLengthM);
             if (Flipped)
                 z *= -1;
+            // TODO This is a hack until we fix the super-elevation code as described in http://www.elvastower.com/forums/index.php?/topic/28751-jerky-superelevation-effect/
+            if (prevElev < -10f || prevElev > 10f) prevElev = z;//initial, will jump to the desired value
+            else
+            {
+                z = prevElev + (z - prevElev) * Math.Min(elapsedTimeS, 1);//smooth rotation
+                prevElev = z;
+            }
 
             WorldPosition.XNAMatrix = Matrix.CreateRotationZ(z) * WorldPosition.XNAMatrix;
         }
