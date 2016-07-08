@@ -67,7 +67,9 @@ namespace ORTS.TrackViewer.Drawing
 
             messageDelegate(TrackViewer.catalog.GetString("Loading tsection.dat ..."));
             string BasePath = Path.GetDirectoryName(Path.GetDirectoryName(routePath));
-            if (Directory.Exists(routePath + @"\GLOBAL") && File.Exists(routePath + @"\GLOBAL\TSECTION.DAT"))
+            if (Directory.Exists(routePath + @"\Openrails") && File.Exists(routePath + @"\Openrails\TSECTION.DAT"))
+                TsectionDat = new TrackSectionsFile(routePath + @"\Openrails\TSECTION.DAT");
+            else if (Directory.Exists(routePath + @"\GLOBAL") && File.Exists(routePath + @"\GLOBAL\TSECTION.DAT"))
                 TsectionDat = new TrackSectionsFile(routePath + @"\GLOBAL\TSECTION.DAT");
             else
                 TsectionDat = new TrackSectionsFile(BasePath + @"\GLOBAL\TSECTION.DAT");

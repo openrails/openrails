@@ -49,10 +49,12 @@ namespace Orts.Formats.OR
                 SIGCFG = new SignalConfigurationFile(RoutePath + @"\sigcfg.dat", false);
             }
 
-            if (Directory.Exists(MstsPath + @"\GLOBAL") && File.Exists(MstsPath + @"\GLOBAL\TSECTION.DAT"))
-                TSectionDat = new TrackSectionsFile(MstsPath + @"\GLOBAL\TSECTION.DAT");
-            else
+            if (Directory.Exists(RoutePath + @"\Openrails") && File.Exists(RoutePath + @"\Openrails\TSECTION.DAT"))
+                TSectionDat = new TrackSectionsFile(RoutePath + @"\Openrails\TSECTION.DAT");
+            else if (Directory.Exists(RoutePath + @"\GLOBAL") && File.Exists(RoutePath + @"\GLOBAL\TSECTION.DAT"))
                 TSectionDat = new TrackSectionsFile(RoutePath + @"\GLOBAL\TSECTION.DAT");
+            else
+                TSectionDat = new TrackSectionsFile(MstsPath + @"\GLOBAL\TSECTION.DAT");
             if (File.Exists(RoutePath + @"\TSECTION.DAT"))
                 TSectionDat.AddRouteTSectionDatFile(RoutePath + @"\TSECTION.DAT");
             Signals = new AESignals (this, SIGCFG);
