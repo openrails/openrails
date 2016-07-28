@@ -304,7 +304,7 @@ namespace Orts.Simulation.RollingStocks
         protected float RouteSpeedMpS; // Max Route Speed Limit
         protected const float GravitationalAccelerationMpS2 = 9.80665f; // Acceleration due to gravity 9.80665 m/s2
         protected float WagonNumWheels; // Number of wheels on a wagon
-        protected float LocoNumDrvWheels = 4; // Number of drive wheels on locomotive
+        protected float LocoNumDrvWheels = 4; // Number of drive axles (wheels / 2) on locomotive
         public float DriverWheelRadiusM = 1.5f; // Drive wheel radius of locomotive wheels
 
         public enum SteamEngineTypes
