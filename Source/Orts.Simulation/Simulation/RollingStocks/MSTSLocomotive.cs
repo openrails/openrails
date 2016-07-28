@@ -146,7 +146,7 @@ namespace Orts.Simulation.RollingStocks
         float BaseFrictionCoefficientFactor;  // Factor used to adjust Curtius formula depending upon weather conditions
         public float SteamStaticWheelForce;
         public float SteamTangentialWheelForce;
-        public float SteamDrvWheelWeightLbs;
+        public float SteamDrvWheelWeightLbs;  // Weight on each drive axle
         // parameters for Track Sander
         public float MaxTrackSandBoxCapacityFt3 = 5.0f;  // Capacity of sandbox - assume 3.5 cu ft
         public float TrackSandBoxCapacityFt3 = 5.0f;   // This value needs to be initialised to the value above.

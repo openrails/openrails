@@ -3633,7 +3633,7 @@ namespace Orts.Simulation.RollingStocks
             // Dry, wght per wheel > 10,000lbs   == 0.35
             // Dry, wght per wheel < 10,000lbs   == 0.25
 
-            SteamDrvWheelWeightLbs = Kg.ToLb(DrvWheelWeightKg / (LocoNumDrvWheels * 2.0f)); // Calculate the weight per wheel (used in MSTSLocomotive for friction calculatons)
+            SteamDrvWheelWeightLbs = Kg.ToLb(DrvWheelWeightKg / LocoNumDrvWheels); // Calculate the weight per axle (used in MSTSLocomotive for friction calculatons)
 
             // Static Friction Force - adhesive factor increased by vertical thrust when travelling forward, and reduced by vertical thrust when travelling backwards
 
