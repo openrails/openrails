@@ -3864,7 +3864,7 @@ namespace Orts.Simulation.AIs
                 max = maxPressurePSIVacuum;
                 fullServ = maxPressurePSIVacuum + fullServReductionPSI;
             }
-            BrakeLine1PressurePSIorInHg = BrakeLine2PressurePSI = max;
+            EqualReservoirPressurePSIorInHg = BrakeLine2PressurePSI = max;
             ConnectBrakeHoses();
             foreach (TrainCar car in Cars)
             {

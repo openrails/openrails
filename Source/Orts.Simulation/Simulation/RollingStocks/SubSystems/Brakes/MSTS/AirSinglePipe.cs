@@ -119,7 +119,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
         public override string GetFullStatus(BrakeSystem lastCarBrakeSystem, Dictionary<BrakeSystemComponent, PressureUnit> units)
         {
-            string s = string.Format(" EQ {0}", FormatStrings.FormatPressure(Car.Train.BrakeLine1PressurePSIorInHg, PressureUnit.PSI, units[BrakeSystemComponent.EqualizingReservoir], true));
+            string s = string.Format(" EQ {0}", FormatStrings.FormatPressure(Car.Train.EqualReservoirPressurePSIorInHg, PressureUnit.PSI, units[BrakeSystemComponent.EqualizingReservoir], true));
             s += string.Format(
                 " BC {0} BP {1}",
                 FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakeCylinder], true),
@@ -265,7 +265,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             // reducing size of Emergency Reservoir for short (fake) cars
             if (Car.Simulator.Settings.CorrectQuestionableBrakingParams && Car.CarLengthM <= 1)
                 EmergResVolumeM3 = Math.Min (0.02f, EmergResVolumeM3);
-            BrakeLine1PressurePSI = Car.Train.BrakeLine1PressurePSIorInHg;
+            BrakeLine1PressurePSI = Car.Train.EqualReservoirPressurePSIorInHg;
             BrakeLine2PressurePSI = Car.Train.BrakeLine2PressurePSI;
             BrakeLine3PressurePSI = 0;
             AuxResPressurePSI = maxPressurePSI > BrakeLine1PressurePSI ? maxPressurePSI : BrakeLine1PressurePSI;
@@ -519,14 +519,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             // Propagate brake line (1) data
             if (lead != null && lead.BrakePipeChargingRatePSIpS >= 1000)
             {   // pressure gradient disabled
-                if (lead.BrakeSystem.BrakeLine1PressurePSI < train.BrakeLine1PressurePSIorInHg)
+                if (lead.BrakeSystem.BrakeLine1PressurePSI < train.EqualReservoirPressurePSIorInHg)
                 {
-                    var dp1 = train.BrakeLine1PressurePSIorInHg - lead.BrakeSystem.BrakeLine1PressurePSI;
+                    var dp1 = train.EqualReservoirPressurePSIorInHg - lead.BrakeSystem.BrakeLine1PressurePSI;
                     lead.MainResPressurePSI -= dp1 * lead.BrakeSystem.BrakePipeVolumeM3 / lead.MainResVolumeM3;
                 }
                 foreach (TrainCar car in train.Cars)
                     if (car.BrakeSystem.BrakeLine1PressurePSI >= 0)
-                        car.BrakeSystem.BrakeLine1PressurePSI = train.BrakeLine1PressurePSIorInHg;
+                        car.BrakeSystem.BrakeLine1PressurePSI = train.EqualReservoirPressurePSIorInHg;
             }
             else
             {   // approximate pressure gradient in line1
@@ -537,11 +537,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 //                        lead.BrakeSystem.BrakeLine1PressurePSI, train.Cars[1].BrakeSystem.BrakeLine1PressurePSI, train.Cars[2].BrakeSystem.BrakeLine1PressurePSI,  lead.MainResPressurePSI, (train.Cars[1].BrakeSystem as AirSinglePipe).AuxResPressurePSI, i);
                     if (lead != null)
                     {
-                        if (lead.BrakeSystem.BrakeLine1PressurePSI < train.BrakeLine1PressurePSIorInHg)
+                        if (lead.BrakeSystem.BrakeLine1PressurePSI < train.EqualReservoirPressurePSIorInHg)
                         {
                             float dp = dt * lead.BrakePipeChargingRatePSIpS;
-                            if (lead.BrakeSystem.BrakeLine1PressurePSI + dp > train.BrakeLine1PressurePSIorInHg)
-                                dp = train.BrakeLine1PressurePSIorInHg - lead.BrakeSystem.BrakeLine1PressurePSI;
+                            if (lead.BrakeSystem.BrakeLine1PressurePSI + dp > train.EqualReservoirPressurePSIorInHg)
+                                dp = train.EqualReservoirPressurePSIorInHg - lead.BrakeSystem.BrakeLine1PressurePSI;
                             if (lead.BrakeSystem.BrakeLine1PressurePSI + dp > lead.MainResPressurePSI)
                                 dp = lead.MainResPressurePSI - lead.BrakeSystem.BrakeLine1PressurePSI;
                             if (dp < 0)
@@ -549,7 +549,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             lead.BrakeSystem.BrakeLine1PressurePSI += dp;
                             lead.MainResPressurePSI -= dp * lead.BrakeSystem.BrakePipeVolumeM3 / lead.MainResVolumeM3;
                         }
-                        else if (lead.BrakeSystem.BrakeLine1PressurePSI > train.BrakeLine1PressurePSIorInHg)
+                        else if (lead.BrakeSystem.BrakeLine1PressurePSI > train.EqualReservoirPressurePSIorInHg)
                             lead.BrakeSystem.BrakeLine1PressurePSI *= (1 - dt / serviceTimeFactor);
                     }
                     TrainCar car0 = train.Cars[0];
@@ -749,7 +749,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         {
             if (percent < 0) percent = 0;
             if (percent > 100) percent = 100;
-            Car.Train.BrakeLine1PressurePSIorInHg = Math.Max(EmergResPressurePSI, 90) - (Math.Max(EmergResPressurePSI, 90) - FullServPressurePSI) * percent / 100;
+            Car.Train.EqualReservoirPressurePSIorInHg = Math.Max(EmergResPressurePSI, 90) - (Math.Max(EmergResPressurePSI, 90) - FullServPressurePSI) * percent / 100;
         }
 
         // used when switching from autopilot to player driven mode, to move from default values to values specific for the trainset

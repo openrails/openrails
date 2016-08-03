@@ -2998,7 +2998,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                 case CABViewControlTypes.EQ_RES:
                     {
-                        data = ConvertFromPSI(cvc, this.Train.BrakeLine1PressurePSIorInHg);
+                        data = ConvertFromPSI(cvc, this.Train.EqualReservoirPressurePSIorInHg);
                         break;
                     }
                 case CABViewControlTypes.BRAKE_CYL:
