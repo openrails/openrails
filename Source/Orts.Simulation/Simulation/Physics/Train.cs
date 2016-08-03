@@ -121,7 +121,7 @@ namespace Orts.Simulation.Physics
         public int MUGearboxGearIndex;                   // set by player locomotive to control MU'd locomotives
         public float MUReverserPercent = 100;            // steam engine direction/cutoff control for MU'd locomotives
         public float MUDynamicBrakePercent = -1;         // dynamic brake control for MU'd locomotives, <0 for off
-        public float BrakeLine1PressurePSIorInHg = 90;   // set by player locomotive to control entire train brakes
+        public float EqualReservoirPressurePSIorInHg = 90;   // set by player locomotive to control entire train brakes
         // Class AirSinglePipe etc. use this property for pressure in PSI, 
         // but Class VacuumSinglePipe uses it for vacuum in InHg.
         public float BrakeLine2PressurePSI;              // extra line for dual line systems, main reservoir
@@ -548,7 +548,7 @@ namespace Orts.Simulation.Physics
             MUThrottlePercent = inf.ReadSingle();
             MUGearboxGearIndex = inf.ReadInt32();
             MUDynamicBrakePercent = inf.ReadSingle();
-            BrakeLine1PressurePSIorInHg = inf.ReadSingle();
+            EqualReservoirPressurePSIorInHg = inf.ReadSingle();
             BrakeLine2PressurePSI = inf.ReadSingle();
             BrakeLine3PressurePSI = inf.ReadSingle();
             BrakeLine4 = inf.ReadSingle();
@@ -876,7 +876,7 @@ namespace Orts.Simulation.Physics
             outf.Write(MUThrottlePercent);
             outf.Write(MUGearboxGearIndex);
             outf.Write(MUDynamicBrakePercent);
-            outf.Write(BrakeLine1PressurePSIorInHg);
+            outf.Write(EqualReservoirPressurePSIorInHg);
             outf.Write(BrakeLine2PressurePSI);
             outf.Write(BrakeLine3PressurePSI);
             outf.Write(BrakeLine4);
@@ -1388,7 +1388,7 @@ namespace Orts.Simulation.Physics
 
                 if (lead.TrainBrakeController != null)
                 {
-                    BrakeLine1PressurePSIorInHg = lead.TrainBrakeController.MaxPressurePSI;
+                    EqualReservoirPressurePSIorInHg = lead.TrainBrakeController.MaxPressurePSI;
                 }
             }
             MUThrottlePercent = initialThrottlepercent;
@@ -3207,11 +3207,11 @@ namespace Orts.Simulation.Physics
                 MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
                 if (lead.TrainBrakeController != null)
                 {
-                    lead.TrainBrakeController.UpdatePressure(ref BrakeLine1PressurePSIorInHg, 1000, ref BrakeLine4);
+                    lead.TrainBrakeController.UpdatePressure(ref EqualReservoirPressurePSIorInHg, 1000, ref BrakeLine4);
                     maxPressurePSI = lead.TrainBrakeController.MaxPressurePSI;
                     fullServPressurePSI = lead.BrakeSystem is VacuumSinglePipe ? 16 : maxPressurePSI - lead.TrainBrakeController.FullServReductionPSI;
-                    BrakeLine1PressurePSIorInHg =
-                            MathHelper.Max(BrakeLine1PressurePSIorInHg, fullServPressurePSI);
+                    EqualReservoirPressurePSIorInHg =
+                            MathHelper.Max(EqualReservoirPressurePSIorInHg, fullServPressurePSI);
                 }
                 if (lead.EngineBrakeController != null)
                     lead.EngineBrakeController.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, 1000);
@@ -3226,7 +3226,7 @@ namespace Orts.Simulation.Physics
             }
             else
             {
-                BrakeLine1PressurePSIorInHg = BrakeLine2PressurePSI = BrakeLine3PressurePSI = 0;
+                EqualReservoirPressurePSIorInHg = BrakeLine2PressurePSI = BrakeLine3PressurePSI = 0;
                 // Initialize static consists airless for allowing proper shunting operations,
                 // but set AI trains pumped up with air.
                 if (TrainType == TRAINTYPE.STATIC)
@@ -3413,7 +3413,7 @@ namespace Orts.Simulation.Physics
             {
                 MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
                 if (lead.TrainBrakeController != null)
-                    lead.TrainBrakeController.UpdatePressure(ref BrakeLine1PressurePSIorInHg, elapsedClockSeconds, ref BrakeLine4);
+                    lead.TrainBrakeController.UpdatePressure(ref EqualReservoirPressurePSIorInHg, elapsedClockSeconds, ref BrakeLine4);
                 if (lead.EngineBrakeController != null)
                     lead.EngineBrakeController.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, elapsedClockSeconds);
                 lead.BrakeSystem.PropagateBrakePressure(elapsedClockSeconds);
@@ -3439,7 +3439,7 @@ namespace Orts.Simulation.Physics
         {
             foreach (TrainCar car in Cars)
             {
-                car.BrakeSystem.BrakeLine1PressurePSI = car.BrakeSystem.InternalPressure(BrakeLine1PressurePSIorInHg);
+                car.BrakeSystem.BrakeLine1PressurePSI = car.BrakeSystem.InternalPressure(EqualReservoirPressurePSIorInHg);
                 car.BrakeSystem.BrakeLine2PressurePSI = BrakeLine2PressurePSI;
                 car.BrakeSystem.BrakeLine3PressurePSI = 0;
             }

@@ -113,7 +113,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
         public override string GetFullStatus(BrakeSystem lastCarBrakeSystem, Dictionary<BrakeSystemComponent, PressureUnit> units)
         {
-            string s = string.Format(" V {0}", FormatStrings.FormatPressure(Car.Train.BrakeLine1PressurePSIorInHg, PressureUnit.InHg, PressureUnit.InHg, true));
+            string s = string.Format(" V {0}", FormatStrings.FormatPressure(Car.Train.EqualReservoirPressurePSIorInHg, PressureUnit.InHg, PressureUnit.InHg, true));
             if (lastCarBrakeSystem != null && lastCarBrakeSystem != this)
                 s += " EOT " + lastCarBrakeSystem.GetStatus(units);
             if (HandbrakePercent > 0)
@@ -204,7 +204,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
         public override void InitializeMoving() // used when initial speed > 0
         {
-            BrakeLine1PressurePSI = V2P(Car.Train.BrakeLine1PressurePSIorInHg);
+            BrakeLine1PressurePSI = V2P(Car.Train.EqualReservoirPressurePSIorInHg);
             BrakeLine2PressurePSI = 0;
             BrakeLine3PressurePSI = 0;
 /*            if (Car.Train.AITrainBrakePercent == 0)
@@ -213,14 +213,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 Car.BrakeForceN = 0;
             }
             else */
-            CylPressurePSIA = V2P(Car.Train.BrakeLine1PressurePSIorInHg);
-            VacResPressurePSIA = V2P(Car.Train.BrakeLine1PressurePSIorInHg);
+            CylPressurePSIA = V2P(Car.Train.EqualReservoirPressurePSIorInHg);
+            VacResPressurePSIA = V2P(Car.Train.EqualReservoirPressurePSIorInHg);
             HandbrakePercent = 0;
         }
 
         public override void LocoInitializeMoving() // starting conditions when starting speed > 0
         {
-            VacResPressurePSIA = V2P(Car.Train.BrakeLine1PressurePSIorInHg);
+            VacResPressurePSIA = V2P(Car.Train.EqualReservoirPressurePSIorInHg);
         }
 
         public override void Update(float elapsedClockSeconds)
@@ -317,7 +317,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         {
             Train train = Car.Train;
             // train.BrakeLine1PressurePSI is really vacuum in inHg
-            float psia = V2P(train.BrakeLine1PressurePSIorInHg);
+            float psia = V2P(train.EqualReservoirPressurePSIorInHg);
             int nSteps = (int)(elapsedClockSeconds * 2 / PipeTimeFactorS + 1);
             float dt = elapsedClockSeconds / nSteps;
             for (int i = 0; i < nSteps; i++)
@@ -385,7 +385,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         {
             if (percent < 0) percent = 0;
             if (percent > 100) percent = 100;
-            Car.Train.BrakeLine1PressurePSIorInHg = P2V(OneAtmospherePSI - MaxForcePressurePSI * (1 - percent / 100));
+            Car.Train.EqualReservoirPressurePSIorInHg = P2V(OneAtmospherePSI - MaxForcePressurePSI * (1 - percent / 100));
         }
     }
 }
