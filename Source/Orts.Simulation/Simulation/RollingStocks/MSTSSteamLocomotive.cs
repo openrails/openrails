@@ -193,7 +193,6 @@ namespace Orts.Simulation.RollingStocks
         public float BlowerSteamUsageLBpS;
         public float BoilerPressurePSI;     // Gauge pressure - what the engineer sees.
 
-        float WaterFraction;        // fraction of boiler volume occupied by water
         public float EvaporationLBpS;          // steam generation rate
         public float FireMassKG;      // Mass of coal currently on grate area
         public float FireRatio;
@@ -347,6 +346,7 @@ namespace Orts.Simulation.RollingStocks
         // Water model - locomotive boilers require water level to be maintained above the firebox crown sheet
         // This model is a crude representation of a water gauge based on a generic boiler and 8" water gauge
         // Based on a scaled drawing following water fraction levels have been used - crown sheet = 0.7, min water level = 0.73, max water level = 0.89
+        float WaterFraction;        // fraction of boiler volume occupied by water
         float WaterMinLevel = 0.7f;         // min level before we blow the fusible plug
         float WaterMinLevelSafe = 0.75f;    // min level which you would normally want for safety
         float WaterMaxLevel = 0.91f;        // max level above which we start priming
@@ -355,6 +355,7 @@ namespace Orts.Simulation.RollingStocks
         float WaterGlassMinLevel = 0.73f;   // min height of water gauge as a fraction of boiler level
         float WaterGlassLengthIN = 8.0f;    // nominal length of water gauge
         float WaterGlassLevelIN;            // Water glass level in inches
+        float waterGlassPercent;            // Water glass level in percent
         float MEPFactor = 0.7f;             // Factor to determine the MEP
         float GrateAreaDesignFactor = 500.0f;   // Design factor for determining Grate Area
         float EvapAreaDesignFactor = 10.0f;     // Design factor for determining Evaporation Area
@@ -1162,7 +1163,7 @@ namespace Orts.Simulation.RollingStocks
             }
 
             CylinderSteamUsageLBpS = 1.0f;  // Set to 1 to ensure that there are no divide by zero errors
-            WaterFraction = 0.9f;
+            WaterFraction = 0.9f;  // Initialise boiler water level at 90%
 
             if (BoilerEvapRateLbspFt2 == 0) // If boiler evaporation rate is not in ENG file then set a default value
             {
@@ -1943,11 +1944,6 @@ namespace Orts.Simulation.RollingStocks
                     FireIsExhausted = true; // fire has run out of fuel.
                 }
             }
-            // test for fusible plug
-            if (FusiblePlugIsBlown)
-            {
-                BurnRateRawKGpS = 0.0f; // Drop fire due to melting of fusible plug and steam quenching fire, change later to allow graduate ramp down.
-            }
 
             FireRatio = FireMassKG / IdealFireMassKG;
             if (absSpeedMpS == 0)
@@ -1956,6 +1952,12 @@ namespace Orts.Simulation.RollingStocks
                 BurnRateRawKGpS *= FireRatio;
             else
                 BurnRateRawKGpS *= 2 - FireRatio;
+
+            // test for fusible plug
+            if (FusiblePlugIsBlown)
+            {
+                BurnRateRawKGpS = 0.0f; // Drop fire due to melting of fusible plug and steam quenching fire, change later to allow graduate ramp down.
+            }
 
             BurnRateSmoothKGpS.Update(elapsedClockSeconds, BurnRateRawKGpS);
             FuelBurnRateKGpS = BurnRateSmoothKGpS.SmoothedValue;
@@ -2466,6 +2468,7 @@ namespace Orts.Simulation.RollingStocks
             // If density Dx = Mx/Vx, we can write:
             //             Vw/Vb = (Mb/Vb - Ds)/Dw - Ds)
             WaterFraction = ((BoilerMassLB / BoilerVolumeFT3) - BoilerSteamDensityLBpFT3) / (BoilerWaterDensityLBpFT3 - BoilerSteamDensityLBpFT3);
+            WaterFraction = MathHelper.Clamp(WaterFraction, 0.0f, 1.01f); // set water fraction limits so that it doesn't go below zero or exceed full boiler volume
 
             // Update Boiler Heat based upon current Evaporation rate
             // Based on formula - BoilerCapacity (btu/h) = (SteamEnthalpy (btu/lb) - EnthalpyCondensate (btu/lb) ) x SteamEvaporated (lb/h) ?????
@@ -2485,7 +2488,7 @@ namespace Orts.Simulation.RollingStocks
             WaterTempNewK = MathHelper.Clamp(WaterTempNewK, 274.0f, 496.0f);
             if (FusiblePlugIsBlown)
             {
-                BoilerPressurePSI = 5.0f; // Drop boiler pressure if fusible plug melts.
+                BoilerPressurePSI = 0.50f; // Drop boiler pressure if fusible plug melts.
             }
             else
             {
@@ -3060,7 +3063,7 @@ namespace Orts.Simulation.RollingStocks
             if (HasSuperheater)
             {
                 CurrentSuperheatTempF = SuperheatTempLbpHtoDegF[pS.TopH(CylinderSteamUsageLBpS)] * SuperheatTempRatio; // Calculate current superheat temp
-                CurrentSuperheatTempF = MathHelper.Clamp(CurrentSuperheatTempF, 0.0f, SuperheatRefTempF); // max sure that superheat temp does not exceed max superheat temp
+                CurrentSuperheatTempF = MathHelper.Clamp(CurrentSuperheatTempF, 0.0f, SuperheatRefTempF); // make sure that superheat temp does not exceed max superheat temp or drop below zero
                 float DifferenceSuperheatTeampF = CurrentSuperheatTempF - SuperheatTempLimitXtoDegF[cutoff]; // reduce superheat temp due to cylinder condensation
                 SuperheatVolumeRatio = 1.0f + (0.0015f * DifferenceSuperheatTeampF); // Based on formula Vsup = Vsat ( 1 + 0.0015 Tsup) - Tsup temperature at superheated level
                 // look ahead to see what impact superheat will have on cylinder usage
@@ -3197,11 +3200,10 @@ namespace Orts.Simulation.RollingStocks
                 CalculatedCylinderSteamUsageLBpS = RawCalculatedCylinderSteamUsageLBpS * SuperheaterSteamUsageFactor;
             }
 
-
             #endregion
 
 
-            if (throttle < 0.01 && absSpeedMpS > 0.1) // If locomotive moving and throttle set to close, then reduce steam usage.
+            if (throttle < 0.01 && absSpeedMpS > 0.1 || FusiblePlugIsBlown) // If locomotive moving and throttle set to close, then reduce steam usage, alternatively if fusible plug is blown.
             {
                 CalculatedCylinderSteamUsageLBpS = 0.0001f; // Set steam usage to a small value if throttle is closed
             }
@@ -3797,6 +3799,13 @@ namespace Orts.Simulation.RollingStocks
             // Derate when priming is occurring.
             if (BoilerIsPriming)
                 MotiveForceN *= BoilerPrimingDeratingFactor;
+
+            if( FusiblePlugIsBlown) // If fusible plug blows, then reduve motive force
+            {
+                MotiveForceN = 0.5f;
+            }
+
+
             // Find the maximum TE for debug i.e. @ start and full throttle
             if (absSpeedMpS < 1.0)
             {
@@ -3888,14 +3897,17 @@ namespace Orts.Simulation.RollingStocks
             WaterGlassLevelIN = ((WaterFraction - WaterGlassMinLevel) / (WaterGlassMaxLevel - WaterGlassMinLevel)) * WaterGlassLengthIN;
             WaterGlassLevelIN = MathHelper.Clamp(WaterGlassLevelIN, 0, WaterGlassLengthIN);
 
-            if (WaterFraction < WaterMinLevel)
+            waterGlassPercent = (WaterFraction - WaterMinLevel) / (WaterMaxLevel - WaterMinLevel);
+            waterGlassPercent = MathHelper.Clamp(waterGlassPercent, 0.0f, 1.0f);
+
+            if (WaterFraction < WaterMinLevel)  // Blow fusible plugs if absolute boiler water drops below 70%
             {
                 if (!FusiblePlugIsBlown)
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Water level dropped too far. Plug has fused and loco has failed."));
                 FusiblePlugIsBlown = true; // if water level has dropped, then fusible plug will blow , see "water model"
             }
             // Check for priming            
-            if (WaterFraction >= WaterMaxLevel)
+            if (WaterFraction >= WaterMaxLevel) // Priming occurs if water level exceeds 91%
             {
                 if (!BoilerIsPriming)
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Boiler overfull and priming."));
@@ -4380,7 +4392,7 @@ namespace Orts.Simulation.RollingStocks
                     data = ThrottlePercent / 100f;
                     break;
                 case CABViewControlTypes.BOILER_WATER:
-                    data = WaterFraction;
+                    data = waterGlassPercent; // Shows the level in the water glass
                     break;
                 case CABViewControlTypes.TENDER_WATER:
                     data = TenderWaterVolumeUKG; // Looks like default locomotives need an absolute UK gallons value
@@ -4439,7 +4451,6 @@ namespace Orts.Simulation.RollingStocks
         {
             var boilerPressurePercent = BoilerPressurePSI / MaxBoilerPressurePSI;
             var boilerPressureSafety = boilerPressurePercent <= 0.25 ? "!!!" : boilerPressurePercent <= 0.5 ? "???" : "";
-            var waterGlassPercent = (WaterFraction - WaterMinLevel) / (WaterMaxLevel - WaterMinLevel);
             var boilerWaterSafety = WaterFraction < WaterMinLevel || WaterFraction > WaterMaxLevel ? "!!!" : WaterFraction < WaterMinLevelSafe || WaterFraction > WaterMaxLevelSafe ? "???" : "";
             var coalPercent = TenderCoalMassKG / MaxTenderCoalMassKG;
             var waterPercent = TenderWaterVolumeUKG / (Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG);
@@ -4454,7 +4465,7 @@ namespace Orts.Simulation.RollingStocks
 
             status.AppendFormat("{0} = {1}/{2}\n", Simulator.Catalog.GetString("Steam usage"), FormatStrings.FormatMass(pS.TopH(Kg.FromLb(PreviousTotalSteamUsageLBpS)), MainPressureUnit != PressureUnit.PSI), FormatStrings.h);
             status.AppendFormat("{0}{2} = {1}{2}\n", Simulator.Catalog.GetString("Boiler pressure"), FormatStrings.FormatPressure(BoilerPressurePSI, PressureUnit.PSI, MainPressureUnit, true), boilerPressureSafety);
-            status.AppendFormat("{0}{2} = {1:F0}% {3}{2}\n", Simulator.Catalog.GetString("Boiler water level"), 100 * waterGlassPercent, boilerWaterSafety, FiringIsManual ? Simulator.Catalog.GetString("(safe range)") : "");
+            status.AppendFormat("{0}{2} = {1:F0}% {3}{2}\n", Simulator.Catalog.GetString("Boiler water glass"), 100 * waterGlassPercent, boilerWaterSafety, FiringIsManual ? Simulator.Catalog.GetString("(safe range)") : "");
 
             if (FiringIsManual)
             {
