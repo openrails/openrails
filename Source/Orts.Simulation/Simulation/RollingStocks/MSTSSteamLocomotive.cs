@@ -3322,9 +3322,6 @@ namespace Orts.Simulation.RollingStocks
                     break;
             }
 
-            if (absSpeedMpS == 0 && cutoff < 0.3f)
-                MotiveForceN = 0;   // valves assumed to be closed
-
         }
 
         protected override void UpdateMotiveForce(float elapsedClockSeconds, float t, float AbsSpeedMpS, float AbsWheelSpeedMpS)
@@ -3348,6 +3345,9 @@ namespace Orts.Simulation.RollingStocks
             {
                 MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * MaxForceN;
             }
+
+            if (absSpeedMpS == 0 && cutoff < 0.05f) // If the reverser is set too low then not sufficient steam is admitted to the steam cylinders, and hence insufficient Motive Force will produced to move the train.
+                MotiveForceN = 0; 
 
             // Based upon max IHP, limit motive force.
             if (PistonSpeedFtpMin > MaxPistonSpeedFtpM || IndicatedHorsePowerHP > MaxIndicatedHorsePowerHP)
