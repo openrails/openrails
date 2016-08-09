@@ -421,7 +421,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             if (Script != null)
             {
                 string state = ControllerStateDictionary.Dict[Script.GetState()];
-                string fraction = GetStateFraction();
+                string fraction = GetStateFractionScripted();
 
                 if (String.IsNullOrEmpty(state) && String.IsNullOrEmpty(fraction))
                     return String.Empty;
@@ -436,7 +436,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 return String.Empty;
         }
 
-        private string GetStateFraction()
+        public string GetStateFractionScripted()
         {
             if (Script != null)
             {

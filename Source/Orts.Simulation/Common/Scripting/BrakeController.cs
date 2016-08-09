@@ -198,8 +198,8 @@ namespace ORTS.Scripting.Api
         Lap,
         Apply,              // TrainBrakesControllerApplyStart 
         EPApply,            // TrainBrakesControllerEPApplyStart 
-        GSelfLap,
-        GSelfLapH,
+        GSelfLap,           // TrainBrakesControllerGraduatedSelfLapStart ??
+        GSelfLapH,          // TrainBrakesControllerGraduatedSelfLapLimitedStart ??
         Suppression,        // TrainBrakesControllerSuppressionStart 
         ContServ,           // TrainBrakesControllerContinuousServiceStart 
         FullServ,           // TrainBrakesControllerFullServiceStart 
@@ -226,7 +226,7 @@ namespace ORTS.Scripting.Api
             {ControllerState.Apply, Catalog.GetString("Apply")},
             {ControllerState.EPApply, Catalog.GetString("EPApply")},
             {ControllerState.Emergency, Catalog.GetString("Emergency")},
-            {ControllerState.SelfLap, Catalog.GetString("Lap")},
+            {ControllerState.SelfLap, Catalog.GetString("Self Lap")},
             {ControllerState.GSelfLap, Catalog.GetString("Service")},
             {ControllerState.GSelfLapH, Catalog.GetString("Service")},
             {ControllerState.Lap, Catalog.GetString("Lap")},
