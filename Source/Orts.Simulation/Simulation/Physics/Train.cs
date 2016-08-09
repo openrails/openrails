@@ -121,7 +121,8 @@ namespace Orts.Simulation.Physics
         public int MUGearboxGearIndex;                   // set by player locomotive to control MU'd locomotives
         public float MUReverserPercent = 100;            // steam engine direction/cutoff control for MU'd locomotives
         public float MUDynamicBrakePercent = -1;         // dynamic brake control for MU'd locomotives, <0 for off
-        public float EqualReservoirPressurePSIorInHg = 90;   // set by player locomotive to control entire train brakes
+        public float EqualReservoirPressurePSIorInHg = 90;   // Pressure in equalising reservoir - set by player locomotive - train brake pipe use this as a reference to set brake pressure levels
+
         // Class AirSinglePipe etc. use this property for pressure in PSI, 
         // but Class VacuumSinglePipe uses it for vacuum in InHg.
         public float BrakeLine2PressurePSI;              // extra line for dual line systems, main reservoir
@@ -129,6 +130,10 @@ namespace Orts.Simulation.Physics
         public float BrakeLine4 = -1;                    // extra line just in case, ep brake control line. -1: release/inactive, 0: hold, 0 < value <=1: apply
         public RetainerSetting RetainerSetting = RetainerSetting.Exhaust;
         public int RetainerPercent = 100;
+        public float TotalTrainBrakePipeVolumeM3; // Total volume of train brake pipe
+        public float HUDWagonBrakeCylinderPSI;         // Display value for wagon HUD
+        public float HUDLocomotiveBrakeCylinderPSI;    // Display value for locomotive HUD
+
 
         public bool IsWheelSlipWarninq;
         public bool IsWheelSlip;

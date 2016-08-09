@@ -193,6 +193,7 @@ namespace Orts.Simulation.RollingStocks
         public string CVFFileName;
         public float MaxMainResPressurePSI = 130;
         public float MainResVolumeM3 = 0.3f;
+        public float TrainBrakePipeLeakPSIpS;    // Air leakage from train brake pipe - should normally be no more then 5psi/min
         public float CompressorRestartPressurePSI = 110;
         public float CompressorChargingRateM3pS = 0.075f;
         public float MainResChargingRatePSIpS;
@@ -661,6 +662,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(airbrakesmainmaxairpressure": MainResPressurePSI = MaxMainResPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(airbrakescompressorrestartpressure": CompressorRestartPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(airbrakesaircompressorpowerrating": CompressorChargingRateM3pS = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
+                case "engine(trainpipeleakrate": TrainBrakePipeLeakPSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(ortsmainreschargingrate": MainResChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(ortsenginebrakereleaserate": EngineBrakeReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(ortsenginebrakeapplicationrate": EngineBrakeApplyRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
@@ -759,6 +761,7 @@ namespace Orts.Simulation.RollingStocks
             WheelslipCausesThrottleDown = locoCopy.WheelslipCausesThrottleDown;
 
             CompressorRestartPressurePSI = locoCopy.CompressorRestartPressurePSI;
+            TrainBrakePipeLeakPSIpS = locoCopy.TrainBrakePipeLeakPSIpS;
             MaxMainResPressurePSI = locoCopy.MaxMainResPressurePSI;
             MainResPressurePSI = MaxMainResPressurePSI;
             MainResVolumeM3 = locoCopy.MainResVolumeM3;
@@ -817,6 +820,7 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(OdometerVisible);
             outf.Write(MainResPressurePSI);
             outf.Write(CompressorIsOn);
+            outf.Write(TrainBrakePipeLeakPSIpS);
             outf.Write(AverageForceN);
             outf.Write(LocomotiveAxle.AxleSpeedMpS);
             outf.Write(CabLightOn);
@@ -845,6 +849,7 @@ namespace Orts.Simulation.RollingStocks
             OdometerVisible = inf.ReadBoolean();
             MainResPressurePSI = inf.ReadSingle();
             CompressorIsOn = inf.ReadBoolean();
+            TrainBrakePipeLeakPSIpS = inf.ReadSingle();
             AverageForceN = inf.ReadSingle();
             LocomotiveAxle.Reset(Simulator.GameTime, inf.ReadSingle());
             CabLightOn = inf.ReadBoolean();
@@ -1906,6 +1911,8 @@ namespace Orts.Simulation.RollingStocks
             var AdhesionMultiplier = Simulator.Settings.AdhesionFactor / 100.0f; // Convert to a factor where 100% = no change to adhesion
             var AdhesionRandom = (float)((float)(Simulator.Settings.AdhesionFactorChange) * 0.01f * 2f * (Simulator.Random.NextDouble() - 0.5f));
 
+            Trace.TraceInformation("Adhesion: Factor {0}  Change Factor {1}", AdhesionMultiplier, Simulator.Settings.AdhesionFactorChange * 0.01f );
+
             Train.LocomotiveCoefficientFriction = BaseuMax * BaseFrictionCoefficientFactor * AdhesionMultiplier;  // Find friction coefficient factor for locomotive
             Train.LocomotiveCoefficientFriction = MathHelper.Clamp(Train.LocomotiveCoefficientFriction, 0.05f, 0.8f); // Ensure friction coefficient never exceeds a "reasonable" value
 
@@ -2500,7 +2507,16 @@ namespace Orts.Simulation.RollingStocks
         {
             if (EngineBrakeController == null)
                 return null;
-            return string.Format("{0}{1}", EngineBrakeController.GetStatus(), BailOff ? " BailOff" : "");
+            // If brake type is only a state, and no numerical fraction application is displayed in the HUD, then display Brake Cylinder (BC) pressure
+            if (String.IsNullOrEmpty(TrainBrakeController.GetStateFractionScripted())) // Test to see if a brake state only is present without a fraction of application
+            {
+                return string.Format("{0} BC {1} {2}", EngineBrakeController.GetStatus(), FormatStrings.FormatPressure( Train.HUDLocomotiveBrakeCylinderPSI, PressureUnit.PSI, MainPressureUnit, true), BailOff ? " BailOff" : "");
+                // Fraction not found so display BC                
+            }
+            else
+            {
+                return string.Format("{0}{1}", EngineBrakeController.GetStatus(), BailOff ? " BailOff" : "");  // Fraction found so don't display BC
+            }
         }
         #endregion
 
