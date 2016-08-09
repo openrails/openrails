@@ -1911,7 +1911,7 @@ namespace Orts.Simulation.RollingStocks
             var AdhesionMultiplier = Simulator.Settings.AdhesionFactor / 100.0f; // Convert to a factor where 100% = no change to adhesion
             var AdhesionRandom = (float)((float)(Simulator.Settings.AdhesionFactorChange) * 0.01f * 2f * (Simulator.Random.NextDouble() - 0.5f));
 
-            Trace.TraceInformation("Adhesion: Factor {0}  Change Factor {1}", AdhesionMultiplier, Simulator.Settings.AdhesionFactorChange * 0.01f );
+//            Trace.TraceInformation("Adhesion: Factor {0}  Change Factor {1}", AdhesionMultiplier, Simulator.Settings.AdhesionFactorChange * 0.01f );
 
             Train.LocomotiveCoefficientFriction = BaseuMax * BaseFrictionCoefficientFactor * AdhesionMultiplier;  // Find friction coefficient factor for locomotive
             Train.LocomotiveCoefficientFriction = MathHelper.Clamp(Train.LocomotiveCoefficientFriction, 0.05f, 0.8f); // Ensure friction coefficient never exceeds a "reasonable" value
