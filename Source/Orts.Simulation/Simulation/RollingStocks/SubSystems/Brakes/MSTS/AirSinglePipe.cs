@@ -542,8 +542,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             var lead = trainCar as MSTSLocomotive;
             var brakePipeTimeFactorS = lead == null ? 0.003f : lead.BrakePipeTimeFactorS;
             int nSteps = (int)(elapsedClockSeconds * 2 / brakePipeTimeFactorS + 1);
-            float dt = elapsedClockSeconds / nSteps;
-            float TempTrainPipeLeakPSIpS = lead.TrainBrakePipeLeakPSIpS; // set train pipe leak
+            float dt = elapsedClockSeconds / nSteps;                
 
             // Propagate brake line (1) data
             if (lead != null && lead.BrakePipeChargingRatePSIpS >= 1000)
@@ -568,7 +567,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     if (lead != null)
                     {
                             // Allow for leaking train air brakepipe
-                            float TrainPipeLeakLossPSI = dt * TempTrainPipeLeakPSIpS;
+                            float TrainPipeLeakLossPSI = dt * lead.TrainBrakePipeLeakPSIpS;
 
                             if (lead.BrakeSystem.BrakeLine1PressurePSI - TrainPipeLeakLossPSI > 0 && lead.TrainBrakePipeLeakPSIpS != 0) // if train brake pipe has pressure in it, ensure result will not be negative if loss is sutracted
                             {
@@ -596,7 +595,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 // If pipe leakage and brake control valve is in LAP position then pipe is connected to main reservoir and maintained at equalising pressure from reservoir
                                 // All other brake states will have the brake pipe connected to the main reservoir, and therefore leakage will be compenstaed by air from main reservoir
                                 // Modern self lap brakes will maintain pipe pressure using air from main reservoir
-                                if (lead.TrainBrakeController.GetStatus() != "Lap" )
+
+                                if (lead.TrainBrakeController.GetTrainBrakeControlState() != "Lap")
                                 {
                                     lead.BrakeSystem.BrakeLine1PressurePSI += dp;  // Increase brake pipe pressure to cover loss
                                     lead.MainResPressurePSI -= dp * train.TotalTrainBrakePipeVolumeM3 / lead.MainResVolumeM3;  // Decrease main reservoir pressure

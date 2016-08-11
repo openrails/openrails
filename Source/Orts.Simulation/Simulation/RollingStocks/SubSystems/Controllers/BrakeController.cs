@@ -416,6 +416,29 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 return true;
         }
 
+        // Returns the state of the current train brake notch, currently only the Lap state is required to be known. Other states can be added if required.
+        // ControllerState Dictionary can't be used as various translations are applied
+        public string GetTrainBrakeControlState()   
+        {
+                string state;
+                MSTSNotch notch = Notches[CurrentNotch];
+            
+            if (notch.Type == ControllerState.Lap)
+                    {
+                        state = "Lap";
+                    }
+
+
+               else
+                    {
+                        state = "Dummy";
+                    }
+            
+               return state;
+           
+        }
+
+
         public string GetStatus()
         {
             if (Script != null)
