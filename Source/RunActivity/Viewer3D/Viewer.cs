@@ -624,7 +624,6 @@ namespace Orts.Viewer3D
 
             // Update camera first...
             Camera.Update(elapsedTime);
-
             // No above camera means we're allowed to auto-switch to cab view.
             if ((AbovegroundCamera == null) && Camera.IsUnderground)
             {
@@ -650,9 +649,10 @@ namespace Orts.Viewer3D
                 && Camera.AttachedCar != null
                 && Camera.AttachedCar.Train == Simulator.PlayerLocomotive.Train)
             {
-                // Make sure to keep the old camera updated...
-                AbovegroundCamera.Update(elapsedTime);
-                // ...so we can tell when to come back to it.
+                // The AbovegroundCamera.Update() has been creating an odd sound issue when the locomotive is in the tunnel.
+                // Allowing the update to take place when only in cab view solved the issue.
+                if (Camera == CabCamera)
+                    AbovegroundCamera.Update(elapsedTime);
                 if (!AbovegroundCamera.IsUnderground)
                 {
                     // But only if the user hasn't selected another camera!
@@ -661,7 +661,7 @@ namespace Orts.Viewer3D
                     AbovegroundCamera = null;
                 }
             }
-
+            
             World.Update(elapsedTime);
 
             Simulator.ActiveTurntable = FindActiveTurntable();
