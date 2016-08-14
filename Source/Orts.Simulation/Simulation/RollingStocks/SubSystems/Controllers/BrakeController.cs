@@ -118,7 +118,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         /// Knowing actual notch and its change is needed for proper repeatability of mouse and RailDriver operation
         /// </summary>
         public int CurrentNotch { get { return Script is MSTSBrakeController ? (Script as MSTSBrakeController).NotchController.CurrentNotch : 0; } set { } }
-        
+
+        public ControllerState TrainBrakeControllerState
+        {
+            get
+            {
+                return Notches[CurrentNotch].Type;
+            }
+        }
+
         float OldValue;
 
         public float CurrentValue { get; set; }
@@ -416,30 +424,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 return true;
         }
 
-        // Returns the state of the current train brake notch, currently only the Lap state is required to be known. Other states can be added if required.
-        // ControllerState Dictionary can't be used as various translations are applied
-        public string GetTrainBrakeControlState()   
-        {
-                string state;
-                MSTSNotch notch = Notches[CurrentNotch];
-            
-            if (notch.Type == ControllerState.Lap)
-                    {
-                        state = "Lap";
-                    }
-
-
-               else
-                    {
-                        state = "Dummy";
-                    }
-            
-               return state;
-           
-        }
-
-
-        public string GetStatus()
+         public string GetStatus()
         {
             if (Script != null)
             {

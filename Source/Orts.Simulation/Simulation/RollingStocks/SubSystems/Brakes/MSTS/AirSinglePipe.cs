@@ -19,6 +19,7 @@ using Orts.Common;
 using Microsoft.Xna.Framework;
 using Orts.Parsers.Msts;
 using ORTS.Common;
+using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -596,7 +597,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 // All other brake states will have the brake pipe connected to the main reservoir, and therefore leakage will be compenstaed by air from main reservoir
                                 // Modern self lap brakes will maintain pipe pressure using air from main reservoir
 
-                                if (lead.TrainBrakeController.GetTrainBrakeControlState() != "Lap")
+                                if (lead.TrainBrakeController.TrainBrakeControllerState != ControllerState.Lap)
                                 {
                                     lead.BrakeSystem.BrakeLine1PressurePSI += dp;  // Increase brake pipe pressure to cover loss
                                     lead.MainResPressurePSI -= dp * train.TotalTrainBrakePipeVolumeM3 / lead.MainResVolumeM3;  // Decrease main reservoir pressure
