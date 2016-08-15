@@ -15,6 +15,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+// Debug for Airbrake operation - Train Pipe Leak
+//#define DEBUG_TRAIN_PIPE_LEAK
+
 using Orts.Common;
 using Microsoft.Xna.Framework;
 using Orts.Parsers.Msts;
@@ -614,32 +617,42 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     float p0 = car0.BrakeSystem.BrakeLine1PressurePSI;
                     float brakePipeVolumeM30 = car0.BrakeSystem.BrakePipeVolumeM3;
                     train.TotalTrainBrakePipeVolumeM3 = 0.0f; // initiallise train brake pipe volume
+#if DEBUG_TRAIN_PIPE_LEAK
+
+                    Trace.TraceInformation("======================================= Train Pipe Leak (AirSinglePipe) ===============================================");
+                    Trace.TraceInformation("Before:  CarID {0}  TrainPipeLeak {1} Lead BrakePipe Pressure {2}", trainCar.CarID, lead.TrainBrakePipeLeakPSIpS, lead.BrakeSystem.BrakeLine1PressurePSI);
+                    Trace.TraceInformation("Brake State {0}", lead.TrainBrakeController.TrainBrakeControllerState);
+                    Trace.TraceInformation("Main Resevoir {0} Compressor running {1}", lead.MainResPressurePSI, lead.CompressorIsOn);
+
+#endif
                     foreach (TrainCar car in train.Cars)               
                     {
                         train.TotalTrainBrakePipeVolumeM3 += car.BrakeSystem.BrakePipeVolumeM3; // Calculate total brake pipe volume of train
                         float p1 = car.BrakeSystem.BrakeLine1PressurePSI;
                         if (car == train.Cars[0] || car.BrakeSystem.FrontBrakeHoseConnected && car.BrakeSystem.AngleCockAOpen && car0.BrakeSystem.AngleCockBOpen)
                         {
+
                             float dp = Math.Min (dt * (p1 - p0) / brakePipeTimeFactorS * 2, p1 - p0);
                             car.BrakeSystem.BrakeLine1PressurePSI -= dp * brakePipeVolumeM30 / (brakePipeVolumeM30 + car.BrakeSystem.BrakePipeVolumeM3);
-                           if (lead != car0)
+                            if (car0 != lead) // don't increase the lead locomotive brake line pipe pressure
                             {
                                 car0.BrakeSystem.BrakeLine1PressurePSI += dp * car.BrakeSystem.BrakePipeVolumeM3 / (brakePipeVolumeM30 + car.BrakeSystem.BrakePipeVolumeM3);
-                            }
+                            }                      
                         }
                         if (!car.BrakeSystem.FrontBrakeHoseConnected)  // Car front brake hose not connected
                         {
-                            if (car.BrakeSystem.AngleCockAOpen)
-                                car.BrakeSystem.BrakeLine1PressurePSI -= dt * p1 / brakePipeTimeFactorS;
-                            if (car0.BrakeSystem.AngleCockBOpen && car != car0)
+                            if (car.BrakeSystem.AngleCockAOpen) // Front brake cock opened
                             {
-                                if (lead != car0)
-                                {
-                                    car0.BrakeSystem.BrakeLine1PressurePSI -= dt * p0 / brakePipeTimeFactorS;
-                                }
+                                car.BrakeSystem.BrakeLine1PressurePSI -= dt * p1 / brakePipeTimeFactorS;
+                            }
+
+
+                            if (car0.BrakeSystem.AngleCockBOpen && car != car0) // Rear cock of wagon opened, and car is not the first wagon
+                            {
+                                car0.BrakeSystem.BrakeLine1PressurePSI -= dt * p0 / brakePipeTimeFactorS;
                             }
                         }
-                        if (car == train.Cars[train.Cars.Count - 1] && car.BrakeSystem.AngleCockBOpen) // Last car in train
+                        if (car == train.Cars[train.Cars.Count - 1] && car.BrakeSystem.AngleCockBOpen) // Last car in train and rear cock of wagon open
                         {
                             car.BrakeSystem.BrakeLine1PressurePSI -= dt * p1 / brakePipeTimeFactorS;
                         }
@@ -647,6 +660,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         car0 = car;
                         brakePipeVolumeM30 = car0.BrakeSystem.BrakePipeVolumeM3;
                     }
+#if DEBUG_TRAIN_PIPE_LEAK
+                    Trace.TraceInformation("After: Lead Brake Pressure {0}", lead.BrakeSystem.BrakeLine1PressurePSI);
+#endif
                 }
             }
 
