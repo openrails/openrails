@@ -170,6 +170,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 {
                     case ControllerState.Neutral:
                     case ControllerState.Running:
+                    case ControllerState.Lap:
                         break;
                     case ControllerState.FullQuickRelease:
                         pressureBar -= x * QuickReleaseRateBarpS() * elapsedClockSeconds;
