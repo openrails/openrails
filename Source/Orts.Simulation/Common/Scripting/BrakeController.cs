@@ -189,7 +189,7 @@ namespace ORTS.Scripting.Api
     public enum ControllerState
     {
         // MSTS values (DO NOT CHANGE THE ORDER !)
-        Dummy,
+        Dummy,              // Dummy
         Release,            // TrainBrakesControllerReleaseStart 
         FullQuickRelease,   // TrainBrakesControllerFullQuickReleaseStart
         Running,            // TrainBrakesControllerRunningStart 
