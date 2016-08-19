@@ -16,6 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using ORTS.Scripting.Api;
+using System.Diagnostics;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 {
@@ -35,6 +36,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         /// </summary>
         public bool ForceControllerReleaseGraduated;
 
+        MSTSNotch PreviousNotchPosition;
+        
 		public MSTSBrakeController()
         {
         }
@@ -70,6 +73,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         {
             var epState = -1f;
 
+          
             if (EmergencyBrakingPushButton() || TCSEmergencyBraking())
             {
                 pressureBar -= EmergencyRateBarpS() * elapsedClockSeconds;
@@ -92,6 +96,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 {
                     epState = 0;
                     float x = NotchController.GetNotchFraction();
+
                     switch (notch.Type)
                     {
                         case ControllerState.Release:
@@ -107,6 +112,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                             if (notch.Type == ControllerState.FullServ)
                                 epState = x;
                             pressureBar -= x * ApplyRateBarpS() * elapsedClockSeconds;
+                            break;
+                        case ControllerState.Lap:
+                            // Lap position applies min service reduction when first selected, and previous contoller position was Running, then no change in pressure occurs 
+                            if (PreviousNotchPosition.Type == ControllerState.Running) 
+                            {
+                                pressureBar -= MinReductionBar();
+                                epState = -1;
+                            }
                             break;
                         case ControllerState.EPApply:
                         case ControllerState.GSelfLapH:
@@ -131,6 +144,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                             epState = -1;
                             break;
                     }
+
+                    PreviousNotchPosition = NotchController.GetCurrentNotch();
                 }
             }
 

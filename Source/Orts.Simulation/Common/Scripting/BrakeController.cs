@@ -195,11 +195,11 @@ namespace ORTS.Scripting.Api
         Running,            // TrainBrakesControllerRunningStart 
         Neutral,            // TrainBrakesControllerNeutralhandleOffStart
         SelfLap,            // TrainBrakesControllerSelfLapStart 
-        Lap,
+        Lap,                // TrainBrakesControllerHoldLapStart  and TrainBrakesControllerHoldStart
         Apply,              // TrainBrakesControllerApplyStart 
         EPApply,            // TrainBrakesControllerEPApplyStart 
-        GSelfLap,           // TrainBrakesControllerGraduatedSelfLapStart ??
-        GSelfLapH,          // TrainBrakesControllerGraduatedSelfLapLimitedStart ??
+        GSelfLap,           // TrainBrakesControllerGraduatedSelfLapLimitedStart
+        GSelfLapH,          // TrainBrakesControllerGraduatedSelfLapLimitedHoldStart
         Suppression,        // TrainBrakesControllerSuppressionStart 
         ContServ,           // TrainBrakesControllerContinuousServiceStart 
         FullServ,           // TrainBrakesControllerFullServiceStart 

@@ -610,7 +610,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         }
                         // reduce pressure in train brake line if brake pipe pressure is above equalising pressure
                         else if (lead.BrakeSystem.BrakeLine1PressurePSI > train.EqualReservoirPressurePSIorInHg)
-                            lead.BrakeSystem.BrakeLine1PressurePSI *= (1 - dt / serviceTimeFactor);
+                        {
+                            float ServiceVariationFactor = (1 - dt / serviceTimeFactor);
+                            ServiceVariationFactor = MathHelper.Clamp(ServiceVariationFactor, 0.05f, 1.0f); // Keep factor within acceptable limits - prevent value from going negative
+                            lead.BrakeSystem.BrakeLine1PressurePSI *= ServiceVariationFactor;
+                        }
                     }
                    // Propogate brake line pressure from lead locomotive along each car
                     TrainCar car0 = train.Cars[0];
