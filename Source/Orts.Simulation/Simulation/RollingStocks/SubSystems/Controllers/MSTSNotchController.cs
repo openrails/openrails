@@ -31,7 +31,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         {
             Value = v;
             Smooth = s == 0 ? false : true;
-            Type = ControllerState.Dummy;
+            Type = ControllerState.Dummy;  // Default to a dummy controller state if no valid alternative state used
             string lower = type.ToLower();
             if (lower.StartsWith("trainbrakescontroller"))
                 lower = lower.Substring(21);

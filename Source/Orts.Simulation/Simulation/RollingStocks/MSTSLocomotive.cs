@@ -2508,7 +2508,8 @@ namespace Orts.Simulation.RollingStocks
             if (EngineBrakeController == null)
                 return null;
             // If brake type is only a state, and no numerical fraction application is displayed in the HUD, then display Brake Cylinder (BC) pressure
-            if (String.IsNullOrEmpty(TrainBrakeController.GetStateFractionScripted())) // Test to see if a brake state only is present without a fraction of application
+
+            if (String.IsNullOrEmpty(EngineBrakeController.GetStateFractionScripted())) // Test to see if a brake state only is present without a fraction of application, if no fraction display BC pressure
             {
                 return string.Format("{0} BC {1} {2}", EngineBrakeController.GetStatus(), FormatStrings.FormatPressure( Train.HUDLocomotiveBrakeCylinderPSI, PressureUnit.PSI, MainPressureUnit, true), BailOff ? " BailOff" : "");
                 // Fraction not found so display BC                
