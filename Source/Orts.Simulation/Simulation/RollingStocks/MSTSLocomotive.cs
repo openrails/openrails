@@ -186,8 +186,6 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
-        protected bool DoesHornTriggerBell;
-
         // wag file data
         public string CabSoundFileName;
         public string CVFFileName;
@@ -233,11 +231,15 @@ namespace Orts.Simulation.RollingStocks
         public float SanderSpeedOfMpS = 30.0f;
         public string EngineOperatingProcedures;
 
-        public bool EmergencyCausesPowerDown;
-        public bool EmergencyCausesThrottleDown;
-        public bool EmergencyEngagesHorn;
-        public bool EmergencyButtonPressed;
-        public bool WheelslipCausesThrottleDown;
+        public bool EmergencyButtonPressed { get; set; }
+        public bool EmergencyCausesPowerDown { get; private set; }
+        public bool EmergencyCausesThrottleDown { get; private set; }
+        public bool EmergencyEngagesHorn { get; private set; }
+        public bool WheelslipCausesThrottleDown { get; private set; }
+
+        public bool DoesBrakeCutPower { get; private set; }
+        public float BrakeCutsPowerAtBrakeCylinderPressurePSI { get; private set; }
+        public bool DoesHornTriggerBell { get; private set; }
 
         protected const float DefaultCompressorRestartToMaxSysPressureDiff = 35;    // Used to check if difference between these two .eng parameters is correct, and to correct it
         protected const float DefaultMaxMainResToCompressorRestartPressureDiff = 10; // Used to check if difference between these two .eng parameters is correct, and to correct it
@@ -696,6 +698,8 @@ namespace Orts.Simulation.RollingStocks
                     HeadOutViewpoints.Add(new ViewPoint(HeadOutViewpoints[0], true));
                     break;
                 case "engine(sanding": SanderSpeedOfMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, 30.0f); break;
+                case "engine(doesbrakecutpower": DoesBrakeCutPower = stf.ReadBoolBlock(false); break;
+                case "engine(brakecutspoweratbrakecylinderpressure": BrakeCutsPowerAtBrakeCylinderPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(doeshorntriggerbell": DoesHornTriggerBell = stf.ReadBoolBlock(false); break;
                 case "engine(brakesenginecontrollers":
                     foreach (var brakesenginecontrollers in stf.ReadStringBlock("").ToLower().Replace(" ", "").Split(','))
