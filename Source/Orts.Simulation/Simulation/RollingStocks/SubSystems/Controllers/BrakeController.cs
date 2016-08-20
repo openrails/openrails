@@ -424,7 +424,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 return true;
         }
 
-         public string GetStatus()
+        public string GetStatus()
         {
             if (Script != null)
             {
