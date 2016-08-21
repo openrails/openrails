@@ -124,6 +124,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
         public bool AlerterButtonPressed { get; private set; }
         public bool PowerAuthorization { get; private set; }
+        public bool TractionAuthorization { get; private set; }
 
         string ScriptName;
         string SoundFileName;
@@ -142,6 +143,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             Simulator = Locomotive.Simulator;
 
             PowerAuthorization = true;
+            TractionAuthorization = true;
         }
 
         public void Parse(string lowercasetoken, STFReader stf)
@@ -236,6 +238,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             Script.IsBrakeEmergency = () => Locomotive.TrainBrakeController.EmergencyBraking;
             Script.IsBrakeFullService = () => Locomotive.TrainBrakeController.TCSFullServiceBraking;
             Script.PowerAuthorization = () => PowerAuthorization;
+            Script.TractionAuthorization = () => TractionAuthorization;
             Script.BrakePipePressureBar = () => Locomotive.BrakeSystem != null ? Bar.FromPSI(Locomotive.BrakeSystem.BrakeLine1PressurePSI) : float.MaxValue;
             Script.LocomotiveBrakeCylinderPressureBar = () => Locomotive.BrakeSystem != null ? Bar.FromPSI(Locomotive.BrakeSystem.GetCylPressurePSI()) : float.MaxValue;
             Script.DoesBrakeCutPower = () => Locomotive.DoesBrakeCutPower;
@@ -266,11 +269,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     Locomotive.Train.SignalEvent(PowerSupplyEvent.LowerPantograph);
                 }
             };
-            Script.SetPowerAuthorization = (value) =>
-            {
-                if (PowerAuthorization != value)
-                    PowerAuthorization = value;
-            };
+            Script.SetPowerAuthorization = (value) => PowerAuthorization = value;
+            Script.SetTractionAuthorization = (value) => TractionAuthorization = value;
             Script.SetVigilanceAlarm = (value) => Locomotive.SignalEvent(value ? Event.VigilanceAlarmOn : Event.VigilanceAlarmOff);
             Script.SetHorn = (value) => Locomotive.TCSHorn = value;
             Script.TriggerSoundAlert1 = () => this.HandleEvent(Event.TrainControlSystemAlert1, Script);
@@ -722,10 +722,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         PowerCut |= ExternalEmergency;
                 }
 
-                if (DoesBrakeCutPower())
-                {
-                    PowerCut |= LocomotiveBrakeCylinderPressureBar() >= BrakeCutsPowerAtBrakeCylinderPressureBar();
-                }
+                SetTractionAuthorization(!DoesBrakeCutPower() || LocomotiveBrakeCylinderPressureBar() < BrakeCutsPowerAtBrakeCylinderPressureBar());
 
                 SetEmergencyBrake(EmergencyBrake);
                 SetFullBrake(FullBrake);
