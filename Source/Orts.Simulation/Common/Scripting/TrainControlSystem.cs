@@ -105,6 +105,10 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<bool> PowerAuthorization;
         /// <summary>
+        /// True if traction is authorized.
+        /// </summary>
+        public Func<bool> TractionAuthorization;
+        /// <summary>
         /// Train brake pipe pressure. Returns float.MaxValue if no data is available.
         /// </summary>
         public Func<float> BrakePipePressureBar;
@@ -164,6 +168,10 @@ namespace ORTS.Scripting.Api
         /// Set the circuit breaker or power contactor close authorization.
         /// </summary>
         public Action<bool> SetPowerAuthorization;
+        /// <summary>
+        /// Set the traction authorization.
+        /// </summary>
+        public Action<bool> SetTractionAuthorization;
         /// <summary>
         /// Switch vigilance alarm sound on (true) or off (false).
         /// </summary>

@@ -187,7 +187,16 @@ namespace Orts.Simulation.RollingStocks
             get
             {
                 if (AcceptMUSignals && Train != null)
-                    return Train.MUThrottlePercent;
+                {
+                    if (Train.LeadLocomotive != null && !((MSTSLocomotive)Train.LeadLocomotive).TrainControlSystem.TractionAuthorization && Train.MUThrottlePercent > 0)
+                    {
+                        return 0;
+                    }
+                    else
+                    {
+                        return Train.MUThrottlePercent;
+                    }
+                }
                 else
                     return LocalThrottlePercent;
             }
