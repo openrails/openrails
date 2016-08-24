@@ -63,6 +63,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float prevCylPressurePSI = 0f;
         protected float prevBrakePipePressurePSI = 0f;
 
+
         /// <summary>
         /// EP brake holding valve. Needs to be closed (Lap) in case of brake application or holding.
         /// For non-EP brake types must default to and remain in Release.
@@ -456,7 +457,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
             if (AutoCylPressurePSI < 0)
                 AutoCylPressurePSI = 0;
-            if (AutoCylPressurePSI < BrakeLine3PressurePSI)
+            if (AutoCylPressurePSI < BrakeLine3PressurePSI) // Brake Cylinder pressure will be the greater of engine brake pressure or train brake pressure
                 CylPressurePSI = BrakeLine3PressurePSI;
             else
                 CylPressurePSI = AutoCylPressurePSI;
@@ -475,6 +476,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                    FirstWagon = true;
                }
                 
+            }
+ 
+            if (!Car.Train.WagonsAttached) // If wagons are not attached to the train, then set wagon BC pressure to same as locomotive
+            {
+                Car.Train.HUDWagonBrakeCylinderPSI = CylPressurePSI;
             }
 
             float f = MaxBrakeForceN * Math.Min(CylPressurePSI / MaxCylPressurePSI, 1);
@@ -632,6 +638,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     foreach (TrainCar car in train.Cars)               
                     {
                         train.TotalTrainBrakePipeVolumeM3 += car.BrakeSystem.BrakePipeVolumeM3; // Calculate total brake pipe volume of train
+                       
+                        // Test to see if freight or passenger wagons attached
+                        if (car.WagonType == MSTSWagon.WagonTypes.Freight || car.WagonType == MSTSWagon.WagonTypes.Passenger )
+                        {
+                            train.WagonsAttached = true;
+
+                        }
+                        else
+                        {
+                            train.WagonsAttached = false;
+                        }
+
                         float p1 = car.BrakeSystem.BrakeLine1PressurePSI;
                         if (car == train.Cars[0] || car.BrakeSystem.FrontBrakeHoseConnected && car.BrakeSystem.AngleCockAOpen && car0.BrakeSystem.AngleCockBOpen)
                         {
@@ -711,6 +729,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 }
 
                 // Collect and propagate engine brake pipe (3) data
+                // This appears to be calculating the engine brake cylinder pressure???
                 if (i < first || i > last)
                 {
                     brakeSystem.BrakeLine3PressurePSI = 0;
@@ -723,7 +742,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         if (p > 1000)
                             p -= 1000;
                         var prevState = lead.EngineBrakeState;
-                        if (p < train.BrakeLine3PressurePSI && p < lead.MainResPressurePSI )
+                        if (p < train.BrakeLine3PressurePSI && p < lead.MainResPressurePSI )  // Apply the engine brake as the pressure decreases
                         {
                             float dp = elapsedClockSeconds * lead.EngineBrakeApplyRatePSIpS / (last - first + 1);
                             if (p + dp > train.BrakeLine3PressurePSI)
@@ -732,7 +751,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             lead.EngineBrakeState = ValveState.Apply;
                             sumpv -= dp * brakeSystem.GetCylVolumeM3() / lead.MainResVolumeM3;
                         }
-                        else if (p > train.BrakeLine3PressurePSI)
+                        else if (p > train.BrakeLine3PressurePSI)  // Release the engine brake as the pressure increases in the brake cylinder
                         {
                             float dp = elapsedClockSeconds * lead.EngineBrakeReleaseRatePSIpS / (last - first + 1);
                             if (p - dp < train.BrakeLine3PressurePSI)
@@ -740,7 +759,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             p -= dp;
                             lead.EngineBrakeState = ValveState.Release;
                         }
-                        else
+                        else  // Engine brake does not change
                             lead.EngineBrakeState = ValveState.Lap;
                         if (lead.EngineBrakeState != prevState)
                             switch (lead.EngineBrakeState)

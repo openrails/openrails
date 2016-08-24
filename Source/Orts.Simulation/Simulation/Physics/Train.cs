@@ -133,7 +133,7 @@ namespace Orts.Simulation.Physics
         public float TotalTrainBrakePipeVolumeM3; // Total volume of train brake pipe
         public float HUDWagonBrakeCylinderPSI;         // Display value for wagon HUD
         public float HUDLocomotiveBrakeCylinderPSI;    // Display value for locomotive HUD
-
+        public bool WagonsAttached = false;    // Wagons are attached to train
 
         public bool IsWheelSlipWarninq;
         public bool IsWheelSlip;
