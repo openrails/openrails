@@ -55,9 +55,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 case "suppressionstart": Type = ControllerState.Suppression; break;
                 case "fullservicestart": Type = ControllerState.FullServ; break;
                 case "emergencystart": Type = ControllerState.Emergency; break;
+                case "minimalreductionstart": Type = ControllerState.MinimalReductionStart; break;
                 case "epapplystart": Type = ControllerState.EPApply; break;
-                case "epholdstart": Type = ControllerState.Lap; break;
-                case "minimalreductionstart": Type = ControllerState.Lap; break;
+                case "epholdstart": Type = ControllerState.SelfLap; break;
                 default:
                     STFException.TraceInformation(stf, "Skipped unknown notch type " + type);
                     break;
