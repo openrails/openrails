@@ -122,7 +122,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                             }
                             break;
                         case ControllerState.MinimalReductionStart:
-                            // Lap position applies min service reduction when first selected, and previous contoller position was Running, then no change in pressure occurs 
+                            // Lap position applies min service reduction when first selected, and previous contoller position was Running or Release, then no change in pressure occurs 
                             if (PreviousNotchPosition.Type == ControllerState.Running || PreviousNotchPosition.Type == ControllerState.Release)
                             {
                                 pressureBar -= MinReductionBar();
