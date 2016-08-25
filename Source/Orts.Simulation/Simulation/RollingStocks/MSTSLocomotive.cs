@@ -147,12 +147,16 @@ namespace Orts.Simulation.RollingStocks
         public float SteamStaticWheelForce;
         public float SteamTangentialWheelForce;
         public float SteamDrvWheelWeightLbs;  // Weight on each drive axle
+        public float PreviousThrottleSetting = 0.0f;  // Holds the value of the previous throttle setting for calculating the correct antislip speed
+
         // parameters for Track Sander
         public float MaxTrackSandBoxCapacityFt3 = 5.0f;  // Capacity of sandbox - assume 3.5 cu ft
         public float TrackSandBoxCapacityFt3 = 5.0f;   // This value needs to be initialised to the value above.
         public float TrackSanderAirComsumptionFt3pM = 17.0f;  //
         public float TrackSanderAirPressurePSI = 80.0f;
         public float TrackSanderSandConsumptionFt3pH = 1.01f;
+
+ 
 
         // Set values for display in HUD
         public float WagonCoefficientFrictionHUD;
@@ -1125,7 +1129,9 @@ namespace Orts.Simulation.RollingStocks
                     }
 
                     // Antislip only works in simple adhesion model at moment
-                    if ((Simulator.UseAdvancedAdhesion) && (!Simulator.Paused) && (!AntiSlip))  // When antislip implemented in advanced adhesion model this conditional statement needs to change
+
+                    if ((Simulator.UseAdvancedAdhesion) && (!Simulator.Paused))  // When antislip implemented in advanced adhesion model this conditional statement needs to change
+// if ((Simulator.UseAdvancedAdhesion) && (!Simulator.Paused) && (!AntiSlip))  // When antislip implemented in advanced adhesion model this conditional statement needs to change
                     {
                         AdvancedAdhesion(elapsedClockSeconds); // Use advanced adhesion model
                         AdvancedAdhesionModel = true;  // Set flag to advise advanced adhesion model is in use
@@ -1138,8 +1144,24 @@ namespace Orts.Simulation.RollingStocks
 
                     UpdateTrackSander(elapsedClockSeconds);
 
-                    if (WheelslipCausesThrottleDown && WheelSlip)
-                        ThrottleController.SetValue(0.0f);
+                    if (this is MSTSDieselLocomotive || this is MSTSElectricLocomotive)  // Antislip and throttle down should only work on diesel or electric locomotives.
+                    {
+
+                        // If wheel slip waring activated, and antislip is set in ENG file then reduce throttle setting to a value below warning power
+                        if (WheelSlipWarning && AntiSlip)
+                        {
+                            ThrottleController.SetValue(PreviousThrottleSetting);
+                        }
+
+
+                        PreviousThrottleSetting = (ThrottlePercent / 100.0f) - 0.005f;
+                        PreviousThrottleSetting = MathHelper.Clamp(PreviousThrottleSetting, 0.0f, 1.0f); // Prevents parameter going outside of bounds 
+
+                        // If wheels slip and WheelslipCausesThrottleDown is set in engine file reduce throttle to 0 setting
+                        if (WheelslipCausesThrottleDown && WheelSlip)
+                            ThrottleController.SetValue(0.0f);
+                    }
+
                     //Force to display
                     FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
                     break;
