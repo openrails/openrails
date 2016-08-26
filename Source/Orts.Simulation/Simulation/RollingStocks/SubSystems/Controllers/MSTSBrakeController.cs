@@ -35,9 +35,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         /// Setting to workaround MSTS bug of not abling to set this function correctly in .eng file
         /// </summary>
         public bool ForceControllerReleaseGraduated;
-
+        bool BrakeControllerInitialised; // flag to allow PreviousNotchPosition to be initially set.
         MSTSNotch PreviousNotchPosition;
-        
+       
 		public MSTSBrakeController()
         {
         }
@@ -50,6 +50,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             NotchController.MinimumValue = MinimumValue();
             NotchController.MaximumValue = MaximumValue();
             NotchController.StepSize = StepSize();
+            BrakeControllerInitialised = false;       // set to false so that the PreviousNotchPosition value can be initialised around the first update loop     
         }
 
         public override void InitializeMoving()
@@ -57,9 +58,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             NotchController.SetValue(0);
             NotchController.CurrentNotch = 0;
         }
-
-
-
 
         public override float Update(float elapsedSeconds)
         {
@@ -88,6 +86,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             else
             {
                 MSTSNotch notch = NotchController.GetCurrentNotch();
+
+                if (!BrakeControllerInitialised) // The first time around loop, PreviousNotchPosition will be set up front with current value, this will stop crashes due to vsalue not being initialised. 
+                {
+                    PreviousNotchPosition = NotchController.GetCurrentNotch();
+                    BrakeControllerInitialised = false;
+                }
+
                 if (notch == null)
                 {
                     pressureBar = MaxPressureBar() - FullServReductionBar() * CurrentValue();
