@@ -90,7 +90,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 if (!BrakeControllerInitialised) // The first time around loop, PreviousNotchPosition will be set up front with current value, this will stop crashes due to vsalue not being initialised. 
                 {
                     PreviousNotchPosition = NotchController.GetCurrentNotch();
-                    BrakeControllerInitialised = false;
+                    BrakeControllerInitialised = true;
                 }
 
                 if (notch == null)
@@ -101,7 +101,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 {
                     epState = 0;
                     float x = NotchController.GetNotchFraction();
-
                     switch (notch.Type)
                     {
                         case ControllerState.Release:
@@ -127,8 +126,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                             }
                             break;
                         case ControllerState.MinimalReductionStart:
-                            // Lap position applies min service reduction when first selected, and previous contoller position was Running or Release, then no change in pressure occurs 
-                            if (PreviousNotchPosition.Type == ControllerState.Running || PreviousNotchPosition.Type == ControllerState.Release)
+                            // Lap position applies min service reduction when first selected, and previous contoller position was Running or Release, then no change in pressure occurs                             
+                            if (PreviousNotchPosition.Type == ControllerState.Running || PreviousNotchPosition.Type == ControllerState.Release || PreviousNotchPosition.Type == ControllerState.FullQuickRelease)
                             {
                                 pressureBar -= MinReductionBar();
                                 epState = -1;
