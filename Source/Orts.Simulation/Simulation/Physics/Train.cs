@@ -133,6 +133,7 @@ namespace Orts.Simulation.Physics
         public float TotalTrainBrakePipeVolumeM3; // Total volume of train brake pipe
         public float HUDWagonBrakeCylinderPSI;         // Display value for wagon HUD
         public float HUDLocomotiveBrakeCylinderPSI;    // Display value for locomotive HUD
+        public bool HUDBrakeSlide;                     // Display indication for brake wheel slip
         public bool WagonsAttached = false;    // Wagons are attached to train
 
         public bool IsWheelSlipWarninq;
@@ -1558,7 +1559,24 @@ namespace Orts.Simulation.Physics
                 if (car.WheelSlipWarning)
                     whlslpwrn = true;
                 if (car.BrakeSkid)
+                {
                     whlskd = true;
+                    car.HUDBrakeSkid = true;
+                }
+
+                if (car is MSTSDieselLocomotive || car is MSTSElectricLocomotive)
+                {
+                    if (HUDLocomotiveBrakeCylinderPSI > 25.0f && car.WheelSlip && car.ThrottlePercent < 0.25f )  // throttle is not good as it may not be zero? better brake? Think about more
+                    {
+                        whlskd = true;
+                        car.HUDBrakeSkid = true;
+                    }
+                    else
+                    {
+                        car.HUDBrakeSkid = false;
+                    }
+
+                }
 
                 if (car.CouplerOverloaded)
                     uncoupleBehindCar = car;
