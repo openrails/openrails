@@ -703,7 +703,7 @@ namespace Orts.Viewer3D.Popups
                 TableSetCell(table, 10, "{0:F2}%", -car.CurrentElevationPercent);
                 TableSetCell(table, 11, "{0}", FormatStrings.FormatDistance(car.CurrentCurveRadius, car.IsMetric));
                 TableSetCell(table, 12, "{0:F0}%", car.BrakeShoeCoefficientFriction * 100.0f);
-                TableSetCell(table, 13, car.BrakeSkid ? Viewer.Catalog.GetString("Yes") : "No");
+                TableSetCell(table, 13, car.HUDBrakeSkid ? Viewer.Catalog.GetString("Yes") : "No");
                 TableSetCell(table, 14, car.Flipped ? Viewer.Catalog.GetString("Flipped") : "");
                 TableAddLine(table);
             }

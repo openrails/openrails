@@ -118,6 +118,7 @@ namespace Orts.Simulation.RollingStocks
 
         // Used to calculate wheel sliding for locked brake
         public bool BrakeSkid = false;
+        public bool HUDBrakeSkid = false;
         public float BrakeShoeCoefficientFriction = 1.0f; // Brake Shoe coefficient - for simple adhesion model set to 1
         public float BrakeShoeCoefficientFrictionAdjFactor = 1.0f; // Factor to adjust Brake force by - based upon changing friction coefficient with speed, will change when wheel goes into skid
         public float BrakeShoeRetardCoefficientFrictionAdjFactor = 1.0f; // Factor of adjust Retard Brake force by - independent of skid
