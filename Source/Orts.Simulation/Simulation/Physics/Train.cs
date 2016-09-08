@@ -1563,6 +1563,10 @@ namespace Orts.Simulation.Physics
                     whlskd = true;
                     car.HUDBrakeSkid = true;
                 }
+                else
+                {
+                    car.HUDBrakeSkid = false;
+                }
 
                 if (car is MSTSDieselLocomotive || car is MSTSElectricLocomotive)
                 {
