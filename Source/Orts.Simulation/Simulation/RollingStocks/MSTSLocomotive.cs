@@ -1102,7 +1102,7 @@ namespace Orts.Simulation.RollingStocks
                             }
                         }
                     }
-                    //LimitMotiveForce(elapsedClockSeconds);    //calls the advanced physics
+                    AntiSlip = true; // Always set AI trains to AntiSlip
                     SimpleAdhesion();                         //let's call the basic physics instead for now
                     if (Train.IsActualPlayerTrain) FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
                     WheelSpeedMpS = Flipped ? -AbsSpeedMpS : AbsSpeedMpS;            //make the wheels go round
@@ -1129,10 +1129,7 @@ namespace Orts.Simulation.RollingStocks
                             DynamicBrakeController.CurrentValue * 100);
                     }
 
-                    // Antislip only works in simple adhesion model at moment
-
-                    if ((Simulator.UseAdvancedAdhesion) && (!Simulator.Paused))  // When antislip implemented in advanced adhesion model this conditional statement needs to change
-// if ((Simulator.UseAdvancedAdhesion) && (!Simulator.Paused) && (!AntiSlip))  // When antislip implemented in advanced adhesion model this conditional statement needs to change
+                    if ((Simulator.UseAdvancedAdhesion) && (!Simulator.Paused)) 
                     {
                         AdvancedAdhesion(elapsedClockSeconds); // Use advanced adhesion model
                         AdvancedAdhesionModel = true;  // Set flag to advise advanced adhesion model is in use
@@ -1609,70 +1606,7 @@ namespace Orts.Simulation.RollingStocks
             
             else 
             {
-
-                /* Turn off code
-                 * 
-                 * 
-                //Set the weather coeff
-                if (Simulator.WeatherType == WeatherType.Rain || Simulator.WeatherType == WeatherType.Snow)
-                {
-                    if (Train.SlipperySpotDistanceM < 0)
-                    {
-                        Train.SlipperySpotLengthM = 10 + 40 * (float)Simulator.Random.NextDouble();
-                        Train.SlipperySpotDistanceM = Train.SlipperySpotLengthM + 2000 * (float)Simulator.Random.NextDouble();
-                    }
-                    if (Train.SlipperySpotDistanceM < Train.SlipperySpotLengthM)
-                        max0 = .8f;
-                    if (Simulator.WeatherType == WeatherType.Rain)
-                        max0 = 0.6f;
-                    else
-                        max0 = 0.4f;
-                }
-                else
-                    max0 = 1.0f;
-                //add sander
-                if (AbsSpeedMpS < SanderSpeedOfMpS && TrackSandBoxCapacityFt3 > 0.0 && MainResPressurePSI > 80.0)
-                {
-                    if (SanderSpeedEffectUpToMpS > 0.0f)
-                    {
-                        if ((Sander) && (AbsSpeedMpS < SanderSpeedEffectUpToMpS))
-                        {
-                            switch (Simulator.WeatherType)
-                            {
-                                case WeatherType.Clear: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.2f; break;
-                                case WeatherType.Rain: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.8f; break;
-                                case WeatherType.Snow: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 2.5f; break;
-                            }
-                        }
-                    }
-                    else
-                        if (Sander)
-                    {
-                        switch (Simulator.WeatherType)
-                        {
-                            case WeatherType.Clear: max0 *= 1.2f; break;
-                            case WeatherType.Rain: max0 *= 1.8f; break;
-                            case WeatherType.Snow: max0 *= 2.5f; break;
-                        }
-                    }
-                }
-
-                //Set adhesion coeff to the model
-                //Filtered random condition
-
-                if (Simulator.Settings.AdhesionProportionalToWeather)
-                {
-                    float fog = Simulator.Weather.FogDistance;
-                    float pric = Simulator.Weather.PricipitationIntensityPPSPM2 * 1000;
-                    max0 *= Math.Min(Math.Max(fog * 5.1e-4f + 0.7f, 0.7f), 1.5f);
-                    max0 *= Math.Min(Math.Max(1.5f - pric * 0.05f, 0.5f), 1.5f);
-                }
-                if (elapsedClockSeconds > 0) LocomotiveAxle.AdhesionConditions = (float)(Simulator.Settings.AdhesionFactor) * 0.01f *
-                    AdhesionFilter.Filter(max0 + (float)((float)(Simulator.Settings.AdhesionFactorChange) * 0.01f * 2f * (Simulator.Random.NextDouble() - 0.5f)), elapsedClockSeconds);
-                LocomotiveAxle.AdhesionConditions = MathHelper.Clamp(0.05f, LocomotiveAxle.AdhesionConditions, 2.5f); // Avoids NaNs in axle speed computing                      
-
-                 */
-                  
+               
                 //Compute axle inertia from parameters if possible
                 if (AxleInertiaKgm2 > 10000.0f) // if axleinertia value supplied in ENG file, then use in calculations
                 {
@@ -1702,7 +1636,7 @@ namespace Orts.Simulation.RollingStocks
                 //Set axle model parameters
 
                //LocomotiveAxle.BrakeForceN = FrictionForceN;
-                LocomotiveAxle.BrakeRetardForceN = BrakeRetardForceN;  // Force on wheel due to braking effort rather then braking force applied to train -- Needs confirmation
+                LocomotiveAxle.BrakeRetardForceN = BrakeForceN;
                 LocomotiveAxle.AxleWeightN = 9.81f * DrvWheelWeightKg;   //will be computed each time considering the tilting
                 LocomotiveAxle.DriveForceN = MotiveForceN;           //Developed force
                 LocomotiveAxle.TrainSpeedMpS = SpeedMpS;            //Set the train speed of the axle model
@@ -1715,10 +1649,6 @@ namespace Orts.Simulation.RollingStocks
                 }
                 WheelSpeedMpS = LocomotiveAxle.AxleSpeedMpS;
             }
-//            else
-//            {
-//                SimpleAdhesion();
-//            }
         }
 
         public void SimpleAdhesion()
@@ -1789,12 +1719,6 @@ namespace Orts.Simulation.RollingStocks
 
             WheelSlip = false;
 
-            // always set AntiSlip for AI trains
-//            if (Train.TrainType == Train.TRAINTYPE.AI || Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
-//            {
-//                AntiSlip = true;
-//            }
-
             if (MotiveForceN > max1)
             {
                 WheelSlip = true;
@@ -1811,13 +1735,6 @@ namespace Orts.Simulation.RollingStocks
                 else
                     MotiveForceN = -Adhesion1 * max0;       //Lowers the adhesion limit to 20% of its full
             }
-
-            //This doesn't help at all, the force is already limited!!! The "AntiSlip = true;" statement is much better.
-            // overrule wheelslip for AI trains
-   //         if (Train.TrainType == Train.TRAINTYPE.AI || Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
-   //         {
-   //             WheelSlip = false;
-   //        }
         }
 
 #region Calculate Friction Coefficient
@@ -1938,8 +1855,6 @@ namespace Orts.Simulation.RollingStocks
             var AdhesionMultiplier = Simulator.Settings.AdhesionFactor / 100.0f; // Convert to a factor where 100% = no change to adhesion
             var AdhesionRandom = (float)((float)(Simulator.Settings.AdhesionFactorChange) * 0.01f * 2f * (Simulator.Random.NextDouble() - 0.5f));
 
-//            Trace.TraceInformation("Adhesion: Factor {0}  Change Factor {1}", AdhesionMultiplier, Simulator.Settings.AdhesionFactorChange * 0.01f );
-
             Train.LocomotiveCoefficientFriction = BaseuMax * BaseFrictionCoefficientFactor * AdhesionMultiplier;  // Find friction coefficient factor for locomotive
             Train.LocomotiveCoefficientFriction = MathHelper.Clamp(Train.LocomotiveCoefficientFriction, 0.05f, 0.8f); // Ensure friction coefficient never exceeds a "reasonable" value
 
@@ -1986,12 +1901,10 @@ namespace Orts.Simulation.RollingStocks
                 }
 
           // Calculate air consumption and change in main air reservoir pressure
- //               Trace.TraceInformation("Main Pressure - {0}", MainResPressurePSI);
                 float ActualAirConsumptionFt3pS = pS.FrompM(TrackSanderAirComsumptionFt3pM) * elapsedClockSeconds;
                 float SanderPressureDiffPSI = ActualAirConsumptionFt3pS / Me3.ToFt3(MainResVolumeM3) ;
                 MainResPressurePSI -= SanderPressureDiffPSI;
                 MainResPressurePSI = MathHelper.Clamp(MainResPressurePSI, 0.001f, MaxMainResPressurePSI);
- //               Trace.TraceInformation( "Sander: ResPress {0} ResVol {1} Consumpt {2} Diff {3}", MainResPressurePSI, MainResVolumeM3, ActualAirConsumptionFt3pS, SanderPressureDiffPSI);
             }
 
         }

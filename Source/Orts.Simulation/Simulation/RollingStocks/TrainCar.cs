@@ -524,12 +524,10 @@ namespace Orts.Simulation.RollingStocks
                 float UserFriction = GetUserBrakeShoeFrictionFactor();
                 float ZeroUserFriction = GetZeroUserBrakeShoeFrictionFactor();
                 float AdhesionMultiplier = Simulator.Settings.AdhesionFactor / 100.0f; // User set adjustment factor - convert to a factor where 100% = no change to adhesion
-          //      float SkidFrictionAdjFactor; // Factor to adjust BrakeForce by if skid occurs
-                
 
                 // This section calculates an adjustment factor for the brake force dependent upon the "base" (zero speed) friction value. 
                 //For a user defined case the base value is the zero speed value from the curve entered by the user.
-                // For a "default" case where no user data has been added to the WAG file, the base friction value has been assumed to be 0.2.
+                // For a "default" case where no user data has been added to the WAG file, the base friction value has been assumed to be 0.2, thus maximum value of 20% applied.
 
                 if (UserFriction != 0)  // User defined friction has been applied in WAG file - Assume MaxBrakeForce is correctly set in the WAG, so no adjustment required 
                 {
@@ -589,10 +587,11 @@ namespace Orts.Simulation.RollingStocks
                     }
                     else if (BrakeSkid && AbsSpeedMpS > 0.01)
                     {
-                        if (BrakeWheelTreadForceN < WagonBrakeAdhesiveForceN)
+                        if (BrakeWheelTreadForceN < WagonBrakeAdhesiveForceN || BrakeForceN == 0.0f)
                         {
                             BrakeSkid = false; 	// wagon wheel is not slipping
                         }
+                        
                     }
                     else
                     {
