@@ -793,7 +793,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                                 VigilanceMonitorState = MonitorState.StandBy;
                                 break;
 
-                                // case VigilanceState.Emergency: do nothing
+                            // case VigilanceState.Emergency: do nothing
                         }
                     }
                     break;
@@ -821,7 +821,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             switch (VigilanceMonitorState)
             {
                 case MonitorState.Disabled:
-                    VigilanceMonitorState = MonitorState.StandBy;
+                    if (VigilanceSystemEnabled)
+                    {
+                        VigilanceMonitorState = MonitorState.StandBy;
+                    }
                     break;
 
                 case MonitorState.StandBy:
@@ -903,7 +906,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         {
             var interventionSpeedMpS = CurrentSpeedLimitMpS + MpS.FromKpH(5.0f); // Default margin : 5 km/h
             
-            // Not sure about the difference of the following two. Seems both of them are used.
             if (OverspeedMonitor.TriggerOnTrackOverspeed)
             {
                 interventionSpeedMpS = CurrentSpeedLimitMpS + OverspeedMonitor.TriggerOnTrackOverspeedMarginMpS;
