@@ -410,7 +410,7 @@ namespace Orts.Simulation.AIs
                 BuildStationList(activityClearingDistanceM);
 
                 StationStops.Sort();
-                if (!atStation && StationStops.Count >= 0 && this != Simulator.Trains[0])
+                if (!atStation && StationStops.Count > 0 && this != Simulator.Trains[0])
                 {
                     if (MaxVelocityA > 0 &&
                         ServiceDefinition != null && ServiceDefinition.ServiceList.Count > 0)
