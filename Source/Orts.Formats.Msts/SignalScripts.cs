@@ -1930,7 +1930,7 @@ namespace Orts.Formats.Msts
                     {
                         SCRNegate negated = SCRNegate.NEGATE;
                         SCRConditionList.Add(negated);
-                        procstring = procstring.Substring(1).Trim();
+                        procstring = procstring.Substring(4).Trim();
                     }
 
                     // previous separated substring - process as new full IF condition
