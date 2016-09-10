@@ -5036,9 +5036,11 @@ namespace Orts.Simulation.AIs
                         ((AuxActionItem)thisAction).ProcessAction(this, presentTime);
                     }
                 }
-                else if (thisAction is AuxActionItem && !PreUpdate)
+                else if (thisAction is AuxActionItem)
                 {
-                    int presentTime = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
+                    var presentTime = 0;
+                    if (!PreUpdate) presentTime = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
+                    else presentTime = Convert.ToInt32(Math.Floor(AI.clockTime));
                     var actionState = ((AuxActionItem)thisAction).ProcessAction(this, presentTime);
                     if (actionState != AI_MOVEMENT_STATE.INIT_ACTION && actionState != AI_MOVEMENT_STATE.HANDLE_ACTION)
                         MovementState = actionState;
