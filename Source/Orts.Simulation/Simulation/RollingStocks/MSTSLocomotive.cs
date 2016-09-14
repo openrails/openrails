@@ -195,7 +195,7 @@ namespace Orts.Simulation.RollingStocks
         public string CVFFileName;
         public float MaxMainResPressurePSI = 130;
         public float MainResVolumeM3 = 0.3f;
-        public float TrainBrakePipeLeakPSIpS;    // Air leakage from train brake pipe - should normally be no more then 5psi/min
+        public float TrainBrakePipeLeakPSIpS = 0.0f;    // Air leakage from train brake pipe - should normally be no more then 5psi/min - default off
         public float CompressorRestartPressurePSI = 110;
         public float CompressorChargingRateM3pS = 0.075f;
         public float MainResChargingRatePSIpS;
