@@ -2888,9 +2888,11 @@ namespace Orts.Simulation.RollingStocks
                             }
                             if (direction == 1)
                                 data = -data;
+                            if (cvc.ControlType == CABViewControlTypes.AMMETER_ABS) data = Math.Abs(data);
                             break;
                         }
                         data = this.MotiveForceN / MaxForceN * MaxCurrentA;
+                        if (cvc.ControlType == CABViewControlTypes.AMMETER_ABS) data = Math.Abs(data);
                         break;
                     }
                 case CABViewControlTypes.LOAD_METER:
