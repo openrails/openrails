@@ -212,6 +212,7 @@ namespace Orts.Simulation.RollingStocks
         public float DynamicBrakeSpeed3MpS = MpS.FromKpH(999);
         public float DynamicBrakeSpeed4MpS = MpS.FromKpH(999);
         public float MaxDynamicBrakeForceN;
+        public float DynamicBrakeMaxCurrentA;
         public float DynamicBrakeDelayS;
         public bool DynamicBrakeAutoBailOff;
         public bool UsingRearCab;
@@ -694,6 +695,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(dynamicbrakehasautobailoff":
                 case "engine(ortsdynamicbrakeshasautobailoff": DynamicBrakeAutoBailOff = stf.ReadBoolBlock(true); break;
                 case "engine(dynamicbrakesdelaytimebeforeengaging": DynamicBrakeDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
+                case "engine(dynamicbrakesresistorcurrentlimit": DynamicBrakeMaxCurrentA = stf.ReadFloatBlock(STFReader.UNITS.Current, null); break;
                 case "engine(numwheels": LocoNumDrvWheels = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); if (LocoNumDrvWheels < 1) STFException.TraceWarning(stf, "Engine:NumWheels is less than 1, parts of the simulation may not function correctly"); break;
                 case "engine(antislip": AntiSlip = stf.ReadBoolBlock(false); break;
                 case "engine(ortsdrivewheelweight": DrvWheelWeightKg = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
@@ -2879,7 +2881,11 @@ namespace Orts.Simulation.RollingStocks
                             }
                             if (DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
                             {
-                                float rangeFactor = direction == 0 ? (float)cvc.MinValue : (float)cvc.MaxValue;
+                                float rangeFactor;
+                                if ( DynamicBrakeMaxCurrentA == 0)
+                                    rangeFactor = direction == 0 ? (float)cvc.MaxValue : (float)cvc.MinValue;
+                                else
+                                    rangeFactor = direction == 0 ? DynamicBrakeMaxCurrentA : (float)cvc.MinValue;
                                 if (FilteredMotiveForceN != 0)
                                     data = this.FilteredMotiveForceN / MaxDynamicBrakeForceN * rangeFactor;
                                 else
