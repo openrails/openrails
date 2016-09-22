@@ -2882,10 +2882,20 @@ namespace Orts.Simulation.RollingStocks
                             if (DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
                             {
                                 float rangeFactor;
-                                if ( DynamicBrakeMaxCurrentA == 0)
-                                    rangeFactor = direction == 0 ? (float)cvc.MaxValue : (float)cvc.MinValue;
+                                if (cvc.ControlType == CABViewControlTypes.AMMETER_ABS)
+                                {
+                                    if (DynamicBrakeMaxCurrentA == 0)
+                                        rangeFactor = direction == 0 ? (float)cvc.MaxValue : (float)cvc.MinValue;
+                                    else
+                                        rangeFactor = direction == 0 ? DynamicBrakeMaxCurrentA : (float)cvc.MinValue;
+                                }
                                 else
-                                    rangeFactor = direction == 0 ? DynamicBrakeMaxCurrentA : (float)cvc.MinValue;
+                                {
+                                    if (DynamicBrakeMaxCurrentA == 0)
+                                        rangeFactor = direction == 0 ? (float)cvc.MinValue : (float)cvc.MaxValue;
+                                    else
+                                        rangeFactor = direction == 0 ? -DynamicBrakeMaxCurrentA : (float)cvc.MaxValue;
+                                }
                                 if (FilteredMotiveForceN != 0)
                                     data = this.FilteredMotiveForceN / MaxDynamicBrakeForceN * rangeFactor;
                                 else
