@@ -409,9 +409,13 @@ namespace Orts.Viewer3D.RollingStock
                                         if (wagon.WagonType == TrainCar.WagonTypes.Tender)
                                         {
                                             // Normal arrangement would be steam locomotive followed by the tender car.
-                                            if (index > 0 && train.Cars[index -1] is MSTSSteamLocomotive)
+                                            if (index > 0 && train.Cars[index - 1] is MSTSSteamLocomotive && !wagon.Flipped && !train.Cars[index - 1].Flipped)
                                                 nearestPickup.SteamLocomotiveWithTender = train.Cars[index - 1] as MSTSLocomotive;
                                             // but after reversal point or turntable reversal order of cars is reversed too!
+                                            else if (index < train.Cars.Count && train.Cars[index + 1] is MSTSSteamLocomotive && wagon.Flipped && train.Cars[index + 1].Flipped)
+                                                nearestPickup.SteamLocomotiveWithTender = train.Cars[index + 1] as MSTSLocomotive;
+                                            else if (index > 0 && train.Cars[index - 1] is MSTSSteamLocomotive)
+                                                nearestPickup.SteamLocomotiveWithTender = train.Cars[index - 1] as MSTSLocomotive;
                                             else if (index < train.Cars.Count && train.Cars[index + 1] is MSTSSteamLocomotive)
                                                 nearestPickup.SteamLocomotiveWithTender = train.Cars[index + 1] as MSTSLocomotive;
                                         }
