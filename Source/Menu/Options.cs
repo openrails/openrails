@@ -136,6 +136,7 @@ namespace ORTS
             checkAlerter.Checked = Settings.Alerter;
             checkAlerterExternal.Enabled = Settings.Alerter;
             checkAlerterExternal.Checked = Settings.Alerter && !Settings.AlerterDisableExternal;
+            checkSpeedControl.Checked = Settings.SpeedControl;
             checkConfirmations.Checked = !Settings.SuppressConfirmations;
             checkViewDispatcher.Checked = Settings.ViewDispatcher;
             checkUseLargeAddressAware.Checked = Settings.UseLargeAddressAware;
@@ -415,6 +416,7 @@ namespace ORTS
             // General tab
             Settings.Alerter = checkAlerter.Checked;
             Settings.AlerterDisableExternal = !checkAlerterExternal.Checked;
+            Settings.SpeedControl = checkSpeedControl.Checked;
             Settings.SuppressConfirmations = !checkConfirmations.Checked;
             Settings.ViewDispatcher = checkViewDispatcher.Checked;
             Settings.UseLargeAddressAware = checkUseLargeAddressAware.Checked;

@@ -220,6 +220,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         && !Simulator.PlayerIsInCab
                     );
             };
+            Script.IsSpeedControlEnabled = () => Simulator.Settings.SpeedControl;
             Script.AlerterSound = () => Locomotive.AlerterSnd;
             Script.TrainSpeedLimitMpS = () => TrainInfo.allowedSpeedMpS;
             Script.CurrentSignalSpeedLimitMpS = () => Locomotive.Train.allowedMaxSpeedSignalMpS;
@@ -564,6 +565,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 }
 
                 return vigilanceReset;
+            }
+        }
+
+        public bool SpeedControlSystemEnabled
+        {
+            get
+            {
+                bool enabled = true;
+
+                enabled &= IsSpeedControlEnabled();
+
+                return enabled;
             }
         }
 
@@ -916,31 +929,48 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             switch (OverspeedMonitorState)
             {
                 case MonitorState.Disabled:
-                    OverspeedMonitorState = MonitorState.StandBy;
+                    if (SpeedControlSystemEnabled)
+                    {
+                        OverspeedMonitorState = MonitorState.StandBy;
+                    }
                     break;
 
                 case MonitorState.StandBy:
-                    if (Overspeed)
+                    if (!SpeedControlSystemEnabled)
                     {
-                        OverspeedMonitorState = MonitorState.Alarm;
+                        OverspeedMonitorState = MonitorState.Disabled;
+                    }
+                    else
+                    {
+                        if (Overspeed)
+                        {
+                            OverspeedMonitorState = MonitorState.Alarm;
+                        }
                     }
                     break;
 
                 case MonitorState.Alarm:
-                    if (!OverspeedEmergencyTimer.Started)
+                    if (!SpeedControlSystemEnabled)
                     {
-                        OverspeedEmergencyTimer.Start();
+                        OverspeedMonitorState = MonitorState.Disabled;
                     }
+                    else
+                    {
+                        if (!OverspeedEmergencyTimer.Started)
+                        {
+                            OverspeedEmergencyTimer.Start();
+                        }
 
-                    if (!Overspeed)
-                    {
-                        OverspeedEmergencyTimer.Stop();
-                        OverspeedMonitorState = MonitorState.StandBy;
-                    }
-                    else if (OverspeedEmergencyTimer.Triggered)
-                    {
-                        OverspeedEmergencyTimer.Stop();
-                        OverspeedMonitorState = MonitorState.Emergency;
+                        if (!Overspeed)
+                        {
+                            OverspeedEmergencyTimer.Stop();
+                            OverspeedMonitorState = MonitorState.StandBy;
+                        }
+                        else if (OverspeedEmergencyTimer.Triggered)
+                        {
+                            OverspeedEmergencyTimer.Stop();
+                            OverspeedMonitorState = MonitorState.Emergency;
+                        }
                     }
                     break;
 

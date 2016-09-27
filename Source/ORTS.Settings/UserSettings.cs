@@ -112,6 +112,8 @@ namespace ORTS.Settings
         public bool Alerter { get; set; }
         [Default(true)]
         public bool AlerterDisableExternal { get; set; }
+        [Default(true)]
+        public bool SpeedControl { get; set; }
         [Default(false)]
         public bool ViewDispatcher { get; set; }
         [Default(false)]

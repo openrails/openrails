@@ -29,9 +29,13 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<bool> IsTrainControlEnabled;
         /// <summary>
-        /// False if vigilance monitor was switched off in game options, thus requested to be auto reset.
+        /// True if vigilance monitor was switched on in game options.
         /// </summary>
         public Func<bool> IsAlerterEnabled;
+        /// <summary>
+        /// True if speed control was switched on in game options.
+        /// </summary>
+        public Func<bool> IsSpeedControlEnabled;
         /// <summary>
         /// True if alerter sound rings, otherwise false
         /// </summary>
