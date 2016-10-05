@@ -554,7 +554,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             int nSteps = (int)(elapsedClockSeconds * 2 / brakePipeTimeFactorS + 1);
             float dt = elapsedClockSeconds / nSteps;                
 
-            // Propagate brake line (1) data
+            // Propagate brake line (1) data if pressure gradient disabled
             if (lead != null && lead.BrakePipeChargingRatePSIpS >= 1000)
             {   // pressure gradient disabled
                 if (lead.BrakeSystem.BrakeLine1PressurePSI < train.EqualReservoirPressurePSIorInHg)
@@ -584,26 +584,26 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 lead.BrakeSystem.BrakeLine1PressurePSI -= TrainPipeLeakLossPSI;
                             }
 
-                            // Charge train brake pipe - adjust main reservoir pressure, and brake pressure line to maintain brake pipe equal to equalising resevoir pressure
+                            // Charge train brake pipe - adjust main reservoir pressure, and lead brake pressure line to maintain brake pipe equal to equalising resevoir pressure
                         if (lead.BrakeSystem.BrakeLine1PressurePSI < train.EqualReservoirPressurePSIorInHg)
                         {
-                            // Calculate change in brake pipe pressure
-                            float dp = dt * lead.BrakePipeChargingRatePSIpS; // default condition - if EQ Res is higher then Brake Pipe Pressure
+                            // Calculate change in brake pipe pressure between equalising reservoir and lead brake pipe
+                            float PressureDiffEqualToPipePSI = dt * lead.BrakePipeChargingRatePSIpS; // default condition - if EQ Res is higher then Brake Pipe Pressure
 
-                            if (lead.BrakeSystem.BrakeLine1PressurePSI + dp > train.EqualReservoirPressurePSIorInHg)
-                                dp = train.EqualReservoirPressurePSIorInHg - lead.BrakeSystem.BrakeLine1PressurePSI;
+                            if (lead.BrakeSystem.BrakeLine1PressurePSI + PressureDiffEqualToPipePSI > train.EqualReservoirPressurePSIorInHg)
+                                PressureDiffEqualToPipePSI = train.EqualReservoirPressurePSIorInHg - lead.BrakeSystem.BrakeLine1PressurePSI;
 
-                            if (lead.BrakeSystem.BrakeLine1PressurePSI + dp > lead.MainResPressurePSI)
-                                dp = lead.MainResPressurePSI - lead.BrakeSystem.BrakeLine1PressurePSI;
+                            if (lead.BrakeSystem.BrakeLine1PressurePSI + PressureDiffEqualToPipePSI > lead.MainResPressurePSI)
+                                PressureDiffEqualToPipePSI = lead.MainResPressurePSI - lead.BrakeSystem.BrakeLine1PressurePSI;
 
-                            if (dp < 0)
-                                dp = 0;
+                            if (PressureDiffEqualToPipePSI < 0)
+                                PressureDiffEqualToPipePSI = 0;
 
-                            // Adjust brake pipe pressure based upon differential pressure
+                            // Adjust brake pipe pressure based upon pressure differential
                             if (lead.TrainBrakePipeLeakPSIpS == 0)  // Train pipe leakage disabled (ie. No Train Leakage parameter present in ENG file)
                             {
-                                lead.BrakeSystem.BrakeLine1PressurePSI += dp;
-                                lead.MainResPressurePSI -= dp * lead.BrakeSystem.BrakePipeVolumeM3 / lead.MainResVolumeM3;
+                                lead.BrakeSystem.BrakeLine1PressurePSI += PressureDiffEqualToPipePSI;
+                                lead.MainResPressurePSI -= PressureDiffEqualToPipePSI * lead.BrakeSystem.BrakePipeVolumeM3 / lead.MainResVolumeM3;
                             }
                             else
                             // Train pipe leakage is enabled (ie. ENG file parameter present)
@@ -614,13 +614,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
                                 if (lead.TrainBrakeController.TrainBrakeControllerState != ControllerState.Lap)
                                 {
-                                    lead.BrakeSystem.BrakeLine1PressurePSI += dp;  // Increase brake pipe pressure to cover loss
-                                    lead.MainResPressurePSI = lead.MainResPressurePSI - (dp * lead.BrakeSystem.BrakePipeVolumeM3 / lead.MainResVolumeM3);   // Decrease main reservoir pressure
+                                    lead.BrakeSystem.BrakeLine1PressurePSI += PressureDiffEqualToPipePSI;  // Increase brake pipe pressure to cover loss
+                                    lead.MainResPressurePSI = lead.MainResPressurePSI - (PressureDiffEqualToPipePSI * lead.BrakeSystem.BrakePipeVolumeM3 / lead.MainResVolumeM3);   // Decrease main reservoir pressure
                                 }
                                     // else in LAP psoition brake pipe is isolated, and thus brake pipe pressure decreases, but reservoir remains at same pressure
                             }
                         }
-                        // reduce pressure in train brake line if brake pipe pressure is above equalising pressure
+                        // reduce pressure in lead brake line if brake pipe pressure is above equalising pressure
                         else if (lead.BrakeSystem.BrakeLine1PressurePSI > train.EqualReservoirPressurePSIorInHg)
                         {
                             float ServiceVariationFactor = (1 - dt / serviceTimeFactor);
@@ -628,10 +628,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             lead.BrakeSystem.BrakeLine1PressurePSI *= ServiceVariationFactor;
                         }
                     }
-                   // Propogate brake line pressure from lead locomotive along each car
+                   // Propogate lead brake line pressure from lead locomotive along the train to each car
                     TrainCar car0 = train.Cars[0];
                     float p0 = car0.BrakeSystem.BrakeLine1PressurePSI;
                     float brakePipeVolumeM30 = car0.BrakeSystem.BrakePipeVolumeM3;
+                    float LeadPipePressurePSI = lead.BrakeSystem.BrakeLine1PressurePSI;
                     train.TotalTrainBrakePipeVolumeM3 = 0.0f; // initiallise train brake pipe volume
 #if DEBUG_TRAIN_PIPE_LEAK
 
@@ -645,7 +646,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     {
                         train.TotalTrainBrakePipeVolumeM3 += car.BrakeSystem.BrakePipeVolumeM3; // Calculate total brake pipe volume of train
                        
-                        // Test to see if freight or passenger wagons attached
+                        // Test to see if freight or passenger wagons attached (used to set BC pressure in locomotive or wagons)
                         if (car.WagonType == MSTSWagon.WagonTypes.Freight || car.WagonType == MSTSWagon.WagonTypes.Passenger )
                         {
                             train.WagonsAttached = true;
@@ -660,21 +661,32 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         if (car == train.Cars[0] || car.BrakeSystem.FrontBrakeHoseConnected && car.BrakeSystem.AngleCockAOpen && car0.BrakeSystem.AngleCockBOpen)
                         {
 
-                            float dp = Math.Min (dt * (p1 - p0) / brakePipeTimeFactorS * 2, p1 - p0);
-                            car.BrakeSystem.BrakeLine1PressurePSI -= dp * brakePipeVolumeM30 / (brakePipeVolumeM30 + car.BrakeSystem.BrakePipeVolumeM3);
-                            // Reduce preceeding car brake pipe pressure to allow for air flow to this car 
-                            car0.BrakeSystem.BrakeLine1PressurePSI += dp * car.BrakeSystem.BrakePipeVolumeM3 / (brakePipeVolumeM30 + car.BrakeSystem.BrakePipeVolumeM3);                         
+                            float PressureDiffPropogationPSI = Math.Min (dt * (p1 - p0) / brakePipeTimeFactorS * 2, p1 - p0);
+                            float dpl = dt * (p1 - p0 - ( dt * lead.TrainBrakePipeLeakPSIpS)) / brakePipeTimeFactorS * 2;
+                            // Appears to work on the principle of pressure equalisation, ie trailing car pressure will drop by fraction of total volume determined by lead car.
+
+                            // TODO - Confirm logic - it appears to allow for air flow to coupled car by reducing (increasing) preceeding car brake pipe - this allows time for the train to "recharge".
+                            if (car0 == lead) // If this is the locomotive
+                            {
+                                car.BrakeSystem.BrakeLine1PressurePSI -= PressureDiffPropogationPSI * brakePipeVolumeM30 / (brakePipeVolumeM30 + car.BrakeSystem.BrakePipeVolumeM3);
+                                car0.BrakeSystem.BrakeLine1PressurePSI += PressureDiffPropogationPSI * car.BrakeSystem.BrakePipeVolumeM3 / (brakePipeVolumeM30 + car.BrakeSystem.BrakePipeVolumeM3);
+                                car0.BrakeSystem.BrakeLine1PressurePSI = MathHelper.Clamp(car0.BrakeSystem.BrakeLine1PressurePSI, 0.001f, LeadPipePressurePSI); // Prevent Lead locomotive pipe pressure increasing above the value calculated above
+                            }
+                           else
+                            {
+                                car.BrakeSystem.BrakeLine1PressurePSI -= PressureDiffPropogationPSI * brakePipeVolumeM30 / (brakePipeVolumeM30 + car.BrakeSystem.BrakePipeVolumeM3);
+                                car0.BrakeSystem.BrakeLine1PressurePSI += PressureDiffPropogationPSI * car.BrakeSystem.BrakePipeVolumeM3 / (brakePipeVolumeM30 + car.BrakeSystem.BrakePipeVolumeM3);
+                            }                      
                         }
                         
                         if (!car.BrakeSystem.FrontBrakeHoseConnected)  // Car front brake hose not connected
                         {
-                            if (car.BrakeSystem.AngleCockAOpen) // Front brake cock opened
+                            if (car.BrakeSystem.AngleCockAOpen) //  AND Front brake cock opened
                             {
                                 car.BrakeSystem.BrakeLine1PressurePSI -= dt * p1 / brakePipeTimeFactorS;
                             }
 
-
-                            if (car0.BrakeSystem.AngleCockBOpen && car != car0) // Rear cock of wagon opened, and car is not the first wagon
+                            if (car0.BrakeSystem.AngleCockBOpen && car != car0) //  AND Rear cock of wagon opened, and car is not the first wagon
                             {
                                 car0.BrakeSystem.BrakeLine1PressurePSI -= dt * p0 / brakePipeTimeFactorS;
                             }
