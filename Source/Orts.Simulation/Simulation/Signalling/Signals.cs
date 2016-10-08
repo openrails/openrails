@@ -5900,7 +5900,7 @@ namespace Orts.Simulation.Signalling
             int direction = routeIndex < 0 ? 0 : thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex][routeIndex].Direction;
             CircuitState.TrainOccupy.Add(thisTrain, direction);
             thisTrain.Train.OccupiedTrack.Add(this);
-
+	    
             // clear all reservations
             CircuitState.TrainReserved = null;
             CircuitState.SignalReserved = -1;
@@ -7774,6 +7774,7 @@ namespace Orts.Simulation.Signalling
         public bool ForcePropagation = false;   // Force propagation (used in case of signals at very short distance)
 
         public bool ApproachControlCleared;     // set in case signal has cleared on approach control
+        public bool ApproachControlSet;         // set in case approach control is active
 
         public bool StationHold = false;        // Set if signal must be held at station - processed by signal script
         protected List<KeyValuePair<int, int>> LockedTrains;
@@ -7917,9 +7918,10 @@ namespace Orts.Simulation.Signalling
             propagated = inf.ReadBoolean();
             isPropagated = inf.ReadBoolean();
             ForcePropagation = false; // preset (not stored)
-            ApproachControlCleared = inf.ReadBoolean();
             ReqNumClearAhead = inf.ReadInt32();
             StationHold = inf.ReadBoolean();
+            ApproachControlCleared = inf.ReadBoolean();
+            ApproachControlSet = inf.ReadBoolean();
             hasPermission = (Permission)inf.ReadInt32();
 
             // set dummy train, route direction index will be set later on restore of train
@@ -8056,10 +8058,11 @@ namespace Orts.Simulation.Signalling
 
             outf.Write(fullRoute);
             outf.Write(propagated);
-            outf.Write(ApproachControlCleared);
             outf.Write(isPropagated);
             outf.Write(ReqNumClearAhead);
             outf.Write(StationHold);
+            outf.Write(ApproachControlCleared);
+            outf.Write(ApproachControlSet);
             outf.Write((int)hasPermission);
             outf.Write(LockedTrains.Count);
             for (int cnt = 0; cnt < LockedTrains.Count; cnt++)
@@ -9093,6 +9096,7 @@ namespace Orts.Simulation.Signalling
             propagated = false;
             ForcePropagation = false;
             ApproachControlCleared = false;
+            ApproachControlSet = false;
 
             // reset block state to most restrictive
 
@@ -9733,11 +9737,11 @@ namespace Orts.Simulation.Signalling
                 }
             }
 
-            // reserve full section if allowed
+            // reserve full section if allowed, do not set reserved if signal is held on approach control
 
             if (enabledTrain != null)
             {
-                if (internalBlockState == InternalBlockstate.Reservable)
+                if (internalBlockState == InternalBlockstate.Reservable && !ApproachControlSet)
                 {
                     internalBlockState = InternalBlockstate.Reserved; // preset all sections are reserved
 
@@ -10583,6 +10587,7 @@ namespace Orts.Simulation.Signalling
                     File.AppendAllText(dumpfile, sob.ToString());
                 }
 
+                ApproachControlSet = true;  // approach control is selected but train is yet further out, so assume approach control has locked signal
                 return (false);
             }
 
@@ -10590,6 +10595,7 @@ namespace Orts.Simulation.Signalling
 
             if (ApproachControlCleared)
             {
+                ApproachControlSet = false;
                 return (true);
             }
 
@@ -10605,6 +10611,7 @@ namespace Orts.Simulation.Signalling
                     File.AppendAllText(dumpfile, sob.ToString());
                 }
 
+                ApproachControlSet = false;
                 ApproachControlCleared = true;
                 return (true);
             }
@@ -10618,6 +10625,7 @@ namespace Orts.Simulation.Signalling
                     File.AppendAllText(dumpfile, sob.ToString());
                 }
 
+                ApproachControlSet = true;
                 return (false);
             }
         }
@@ -10652,6 +10660,7 @@ namespace Orts.Simulation.Signalling
                     File.AppendAllText(dumpfile, sob.ToString());
                 }
 
+                ApproachControlSet = true;
                 return (false);
             }
 
@@ -10659,6 +10668,7 @@ namespace Orts.Simulation.Signalling
 
             if (ApproachControlCleared)
             {
+                ApproachControlSet = false;
                 return (true);
             }
 
@@ -10692,6 +10702,7 @@ namespace Orts.Simulation.Signalling
                         File.AppendAllText(dumpfile, sob.ToString());
                     }
 
+                    ApproachControlSet = false;
                     ApproachControlCleared = true;
                     return (true);
                 }
@@ -10705,6 +10716,7 @@ namespace Orts.Simulation.Signalling
                         File.AppendAllText(dumpfile, sob.ToString());
                     }
 
+                    ApproachControlSet = true;
                     return (false);
                 }
             }
@@ -10718,6 +10730,7 @@ namespace Orts.Simulation.Signalling
                     File.AppendAllText(dumpfile, sob.ToString());
                 }
 
+                ApproachControlSet = true;
                 return (false);
             }
         }
