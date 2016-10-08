@@ -57,6 +57,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected bool NoMRPAuxResCharging;
         protected float CylVolumeM3;
 
+
         protected bool TrainBrakePressureChanging = false;
         protected bool BrakePipePressureChanging = false;
         protected float SoundTriggerCounter = 0;
@@ -552,7 +553,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             var lead = trainCar as MSTSLocomotive;
             var brakePipeTimeFactorS = lead == null ? 0.003f : lead.BrakePipeTimeFactorS;
             int nSteps = (int)(elapsedClockSeconds * 2 / brakePipeTimeFactorS + 1);
-            float dt = elapsedClockSeconds / nSteps;                
+            float dt = elapsedClockSeconds / nSteps;
 
             // Propagate brake line (1) data if pressure gradient disabled
             if (lead != null && lead.BrakePipeChargingRatePSIpS >= 1000)
@@ -627,12 +628,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             ServiceVariationFactor = MathHelper.Clamp(ServiceVariationFactor, 0.05f, 1.0f); // Keep factor within acceptable limits - prevent value from going negative
                             lead.BrakeSystem.BrakeLine1PressurePSI *= ServiceVariationFactor;
                         }
+
+                        train.LeadPipePressurePSI = lead.BrakeSystem.BrakeLine1PressurePSI;  // Keep a record of current train pipe pressure in lead locomotive
                     }
-                   // Propogate lead brake line pressure from lead locomotive along the train to each car
+                    
+                    // Propogate lead brake line pressure from lead locomotive along the train to each car
                     TrainCar car0 = train.Cars[0];
                     float p0 = car0.BrakeSystem.BrakeLine1PressurePSI;
                     float brakePipeVolumeM30 = car0.BrakeSystem.BrakePipeVolumeM3;
-                    float LeadPipePressurePSI = lead.BrakeSystem.BrakeLine1PressurePSI;
                     train.TotalTrainBrakePipeVolumeM3 = 0.0f; // initiallise train brake pipe volume
 #if DEBUG_TRAIN_PIPE_LEAK
 
@@ -662,7 +665,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         {
 
                             float PressureDiffPropogationPSI = Math.Min (dt * (p1 - p0) / brakePipeTimeFactorS * 2, p1 - p0);
-                            float dpl = dt * (p1 - p0 - ( dt * lead.TrainBrakePipeLeakPSIpS)) / brakePipeTimeFactorS * 2;
                             // Appears to work on the principle of pressure equalisation, ie trailing car pressure will drop by fraction of total volume determined by lead car.
 
                             // TODO - Confirm logic - it appears to allow for air flow to coupled car by reducing (increasing) preceeding car brake pipe - this allows time for the train to "recharge".
@@ -670,7 +672,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             {
                                 car.BrakeSystem.BrakeLine1PressurePSI -= PressureDiffPropogationPSI * brakePipeVolumeM30 / (brakePipeVolumeM30 + car.BrakeSystem.BrakePipeVolumeM3);
                                 car0.BrakeSystem.BrakeLine1PressurePSI += PressureDiffPropogationPSI * car.BrakeSystem.BrakePipeVolumeM3 / (brakePipeVolumeM30 + car.BrakeSystem.BrakePipeVolumeM3);
-                                car0.BrakeSystem.BrakeLine1PressurePSI = MathHelper.Clamp(car0.BrakeSystem.BrakeLine1PressurePSI, 0.001f, LeadPipePressurePSI); // Prevent Lead locomotive pipe pressure increasing above the value calculated above
+                                car0.BrakeSystem.BrakeLine1PressurePSI = MathHelper.Clamp(car0.BrakeSystem.BrakeLine1PressurePSI, 0.001f, train.LeadPipePressurePSI); // Prevent Lead locomotive pipe pressure increasing above the value calculated above
                             }
                            else
                             {

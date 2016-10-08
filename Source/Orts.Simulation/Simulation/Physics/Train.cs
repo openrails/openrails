@@ -135,6 +135,7 @@ namespace Orts.Simulation.Physics
         public float HUDLocomotiveBrakeCylinderPSI;    // Display value for locomotive HUD
         public bool HUDBrakeSlide;                     // Display indication for brake wheel slip
         public bool WagonsAttached = false;    // Wagons are attached to train
+        public float LeadPipePressurePSI;       // Keeps record of Lead locomootive brake pipe pressure
 
         public bool IsWheelSlipWarninq;
         public bool IsWheelSlip;
