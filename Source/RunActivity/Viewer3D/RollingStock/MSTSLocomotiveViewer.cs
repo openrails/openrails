@@ -1740,10 +1740,7 @@ namespace Orts.Viewer3D.RollingStock
                     break;
                 case CABViewControlTypes.THROTTLE:
                 case CABViewControlTypes.THROTTLE_DISPLAY:
-                    if (Locomotive.ThrottleController.SmoothMax() == null)
-                        index = Locomotive.ThrottleController.CurrentNotch;
-                    else
-                        index = PercentToIndex(data);
+                    index = PercentToIndex(data);
                     break;
                 case CABViewControlTypes.FRICTION_BRAKING:
                     index = data > 0.001 ? 1 : 0;
