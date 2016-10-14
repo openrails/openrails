@@ -4903,6 +4903,11 @@ namespace Orts.Simulation.Physics
                         if (nextSignalIndex >= 0)
                         {
                             NextSignalObject[direction] = signalRef.SignalObjects[nextSignalIndex];
+
+                            int reqSectionIndex = NextSignalObject[direction].TCReference;
+                            float endOffset = NextSignalObject[direction].TCOffset;
+
+                            distanceToSignal = GetDistanceToTrain(reqSectionIndex, endOffset);
                         }
                         else
                         {
