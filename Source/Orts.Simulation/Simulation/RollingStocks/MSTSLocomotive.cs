@@ -622,7 +622,7 @@ namespace Orts.Simulation.RollingStocks
                     var engineType = stf.ReadString();
                     try
                     {
-                        EngineType = (EngineTypes)Enum.Parse(typeof(EngineTypes), engineType);
+                        EngineType = (EngineTypes)Enum.Parse(typeof(EngineTypes), engineType.First().ToString().ToUpper() + engineType.Substring(1));
                     }
                     catch
                     {
