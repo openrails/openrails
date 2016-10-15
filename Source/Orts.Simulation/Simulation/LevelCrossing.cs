@@ -181,6 +181,9 @@ namespace Orts.Simulation
                     {
                         crossing.RemoveTrain(train);
                     }
+                    // This test is to factor in the train sitting on the crossing at the start of the activity.
+                    else
+                        crossing.AddTrain(train);
                 }
 
                 // Train is travelling toward crossing below 11.1mph.
