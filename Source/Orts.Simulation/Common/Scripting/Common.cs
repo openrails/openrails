@@ -16,6 +16,8 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using Orts.Common;
+using Orts.Simulation;
 
 namespace ORTS.Scripting.Api
 {
@@ -33,6 +35,22 @@ namespace ORTS.Scripting.Api
         /// Running total of distance travelled - always positive, updated by train physics.
         /// </summary>
         public Func<float> DistanceM;
+        /// <summary>
+        /// Confirms a command done by the player with a pre-set message on the screen.
+        /// </summary>
+        public Action<CabControl, CabSetting> Confirm;
+        /// <summary>
+        /// Displays a message on the screen.
+        /// </summary>
+        public Action<ConfirmLevel, string> Message;
+        /// <summary>
+        /// Sends an event to the locomotive.
+        /// </summary>
+        public Action<Event> SignalEvent;
+        /// <summary>
+        /// Sends an event to the train.
+        /// </summary>
+        public Action<Event> SignalEventToTrain;
     }
 
     /// <summary>

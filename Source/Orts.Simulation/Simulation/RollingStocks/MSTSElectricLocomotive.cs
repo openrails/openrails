@@ -212,8 +212,12 @@ namespace Orts.Simulation.RollingStocks
             {
                 case PowerSupplyEvent.CloseCircuitBreaker:
                 case PowerSupplyEvent.OpenCircuitBreaker:
-                case PowerSupplyEvent.GiveCircuitBreakerClosingAuthority:
-                case PowerSupplyEvent.RemoveCircuitBreakerClosingAuthority:
+                case PowerSupplyEvent.CloseCircuitBreakerButtonPressed:
+                case PowerSupplyEvent.CloseCircuitBreakerButtonReleased:
+                case PowerSupplyEvent.OpenCircuitBreakerButtonPressed:
+                case PowerSupplyEvent.OpenCircuitBreakerButtonReleased:
+                case PowerSupplyEvent.GiveCircuitBreakerClosingAuthorization:
+                case PowerSupplyEvent.RemoveCircuitBreakerClosingAuthorization:
                     PowerSupply.HandleEvent(evt);
                     break;
             }
@@ -262,64 +266,112 @@ namespace Orts.Simulation.RollingStocks
 
         public override float GetDataOf(CabViewControl cvc)
         {
-            float data;
+            float data = 0;
 
             switch (cvc.ControlType)
             {
                 case CABViewControlTypes.LINE_VOLTAGE:
-                    {
-                        if (Pantographs.State == PantographState.Up)
-                        {
-                            //data = (float)Program.Simulator.TRK.Tr_RouteFile.MaxLineVoltage;
-                            data = PowerSupply.FilterVoltageV;
-                            if (cvc.Units == CABViewControlUnits.KILOVOLTS)
-                                data /= 1000;
-                        }
-                        else
-                            data = 0;
-                        break;
-                    }
+                    data = PowerSupply.PantographVoltageV;
+                    if (cvc.Units == CABViewControlUnits.KILOVOLTS)
+                        data /= 1000;
+                    break;
+
                 case CABViewControlTypes.PANTOGRAPH:
                 case CABViewControlTypes.PANTO_DISPLAY:
-                    {
-                        data = Pantographs[1].State == PantographState.Up ? 1 : 0;
-                        break;
-                    }
+                    data = Pantographs[1].State == PantographState.Up ? 1 : 0;
+                    break;
+
                 case CABViewControlTypes.PANTOGRAPH2:
-                    {
-                        data = Pantographs[2].State == PantographState.Up ? 1 : 0;
-                        break;
-                    }
+                    data = Pantographs[2].State == PantographState.Up ? 1 : 0;
+                    break;
+
                 case CABViewControlTypes.PANTOGRAPHS_4:
                 case CABViewControlTypes.PANTOGRAPHS_4C:
-                    {
-                        if (Pantographs[1].State == PantographState.Up && Pantographs[2].State == PantographState.Up)
-                            data = 2;
-                        else if (Pantographs[1].State == PantographState.Up)
-                            data = 1;
-                        else if (Pantographs[2].State == PantographState.Up)
-                            data = 3;
-                        else
-                            data = 0;
-                        break;
-                    }
+                    if (Pantographs[1].State == PantographState.Up && Pantographs[2].State == PantographState.Up)
+                        data = 2;
+                    else if (Pantographs[1].State == PantographState.Up)
+                        data = 1;
+                    else if (Pantographs[2].State == PantographState.Up)
+                        data = 3;
+                    else
+                        data = 0;
+                    break;
+
                 case CABViewControlTypes.PANTOGRAPHS_5:
+                    if (Pantographs[1].State == PantographState.Up && Pantographs[2].State == PantographState.Up)
+                        data = 0; // TODO: Should be 0 if the previous state was Pan2Up, and 4 if that was Pan1Up
+                    else if (Pantographs[2].State == PantographState.Up)
+                        data = 1;
+                    else if (Pantographs[1].State == PantographState.Up)
+                        data = 3;
+                    else
+                        data = 2;
+                    break;
+
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_ORDER:
+                    data = PowerSupply.CircuitBreaker.DriverClosingOrder ? 1 : 0;
+                    break;
+
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_OPENING_ORDER:
+                    data = PowerSupply.CircuitBreaker.DriverOpeningOrder ? 1 : 0;
+                    break;
+
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_AUTHORIZATION:
+                    data = PowerSupply.CircuitBreaker.DriverClosingAuthorization ? 1 : 0;
+                    break;
+
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_STATE:
+                    switch (PowerSupply.CircuitBreaker.State)
                     {
-                        if (Pantographs[1].State == PantographState.Up && Pantographs[2].State == PantographState.Up)
-                            data = 0; // TODO: Should be 0 if the previous state was Pan2Up, and 4 if that was Pan1Up
-                        else if (Pantographs[2].State == PantographState.Up)
+                        case CircuitBreakerState.Open:
+                            data = 0;
+                            break;
+                        case CircuitBreakerState.Closing:
                             data = 1;
-                        else if (Pantographs[1].State == PantographState.Up)
-                            data = 3;
-                        else
+                            break;
+                        case CircuitBreakerState.Closed:
                             data = 2;
-                        break;
+                            break;
                     }
-                default:
+                    break;
+
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_CLOSED:
+                    switch (PowerSupply.CircuitBreaker.State)
                     {
-                        data = base.GetDataOf(cvc);
-                        break;
+                        case CircuitBreakerState.Open:
+                        case CircuitBreakerState.Closing:
+                            data = 0;
+                            break;
+                        case CircuitBreakerState.Closed:
+                            data = 1;
+                            break;
                     }
+                    break;
+
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_OPEN:
+                    switch (PowerSupply.CircuitBreaker.State)
+                    {
+                        case CircuitBreakerState.Open:
+                        case CircuitBreakerState.Closing:
+                            data = 1;
+                            break;
+                        case CircuitBreakerState.Closed:
+                            data = 0;
+                            break;
+                    }
+                    break;
+
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_AUTHORIZED:
+                    data = PowerSupply.CircuitBreaker.ClosingAuthorization ? 1 : 0;
+                    break;
+
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_OPEN_AND_AUTHORIZED:
+                    data = (PowerSupply.CircuitBreaker.State < CircuitBreakerState.Closed && PowerSupply.CircuitBreaker.ClosingAuthorization) ? 1 : 0;
+                    break;
+
+                default:
+                    data = base.GetDataOf(cvc);
+                    break;
             }
 
             return data;
@@ -332,19 +384,22 @@ namespace Orts.Simulation.RollingStocks
             foreach (var pantograph in Pantographs.List)
                 status.AppendFormat("{0} ", Simulator.Catalog.GetParticularString("Pantograph", GetStringAttribute.GetPrettyName(pantograph.State)));
             status.AppendLine();
-            status.AppendFormat("{0}{2} = {1}{2}\n",
+            status.AppendFormat("{0} = {1}",
+                Simulator.Catalog.GetString("Circuit breaker"),
+                Simulator.Catalog.GetParticularString("CircuitBreaker", GetStringAttribute.GetPrettyName(PowerSupply.CircuitBreaker.State)));
+            status.AppendLine();
+            status.AppendFormat("{0} = {1}",
                 Simulator.Catalog.GetParticularString("PowerSupply", "Power"),
-                Simulator.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(PowerSupply.State)),
-                PowerSupply.State == PowerSupplyState.PowerOff ? "!!!" : "");
+                Simulator.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(PowerSupply.State)));
             return status.ToString();
         }
 
         public override string GetDebugStatus()
         {
             var status = new StringBuilder(base.GetDebugStatus());
-            status.AppendFormat("\t{0}\t\t{1}", Simulator.Catalog.GetString("Circuit breaker"), Simulator.Catalog.GetParticularString("CircuitBraker", GetStringAttribute.GetPrettyName(PowerSupply.CircuitBreaker.State)));
-            status.AppendFormat("\t{0}\t{1}", Simulator.Catalog.GetString("TCS"), TrainControlSystem.PowerAuthorization ? Simulator.Catalog.GetString("OK") : Simulator.Catalog.GetString("NOT OK"));
-            status.AppendFormat("\t{0}\t{1}", Simulator.Catalog.GetString("Driver"), PowerSupply.CircuitBreaker.DriverCloseAuthorization ? Simulator.Catalog.GetString("OK") : Simulator.Catalog.GetString("NOT OK"));
+            status.AppendFormat("\t{0}\t\t{1}", Simulator.Catalog.GetString("Circuit breaker"), Simulator.Catalog.GetParticularString("CircuitBreaker", GetStringAttribute.GetPrettyName(PowerSupply.CircuitBreaker.State)));
+            status.AppendFormat("\t{0}\t{1}", Simulator.Catalog.GetString("TCS"), PowerSupply.CircuitBreaker.TCSClosingAuthorization ? Simulator.Catalog.GetString("OK") : Simulator.Catalog.GetString("NOT OK"));
+            status.AppendFormat("\t{0}\t{1}", Simulator.Catalog.GetString("Driver"), PowerSupply.CircuitBreaker.DriverClosingAuthorization ? Simulator.Catalog.GetString("OK") : Simulator.Catalog.GetString("NOT OK"));
             status.AppendFormat("\t{0}\t\t{1}", Simulator.Catalog.GetString("Auxiliary power"), Simulator.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(PowerSupply.AuxiliaryState)));
             return status.ToString();
         }

@@ -41,6 +41,9 @@ namespace Orts.Simulation
       , Power
       , Pantograph1
       , Pantograph2
+      , CircuitBreakerClosingOrder
+      , CircuitBreakerOpeningOrder
+      , CircuitBreakerClosingAuthorization
         // Diesel Power
       , PlayerDiesel
       , HelperDiesel
@@ -51,7 +54,7 @@ namespace Orts.Simulation
       , Injector1
       , Injector2
       , Blower
-      ,SteamHeat
+      , SteamHeat
       , Damper
       , FireboxDoor
       , FiringRate
@@ -166,6 +169,9 @@ namespace Orts.Simulation
                 , new string [] { GetString("Power"), GetString("off"), null, GetString("on") }
                 , new string [] { GetString("Pantograph 1"), GetString("lower"), null, GetString("raise") } 
                 , new string [] { GetString("Pantograph 2"), GetString("lower"), null, GetString("raise") }
+                , new string [] { GetString("Circuit breaker"), GetString("open"), null, GetString("close") }
+                , new string [] { GetString("Circuit breaker"), GetString("close"), null, GetString("open") }
+                , new string [] { GetString("Circuit breaker closing authorization"), GetString("remove"), null, GetString("give") }
                 // Diesel power
                 , new string [] { GetString("Player Diesel Power"), GetString("off"), null, GetString("on"), null, null, GetString("locked. Close throttle then re-try.") }
                 , new string [] { GetString("Helper Diesel Power"), GetString("off"), null, GetString("on") }

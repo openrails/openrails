@@ -42,6 +42,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
         }
 
+        public float LineVoltageV {
+            get
+            {
+                return (float)Simulator.TRK.Tr_RouteFile.MaxLineVoltage;
+            }
+        }
+        public float PantographVoltageV { get; set; }
         public float FilterVoltageV { get; set; }
 
         public ScriptedElectricPowerSupply(MSTSElectricLocomotive locomotive) :
@@ -107,20 +114,36 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     Script = new DefaultElectricPowerSupply() as ElectricPowerSupply;
                 }
 
+                // AbstractScriptClass
                 Script.ClockTime = () => (float)Simulator.ClockTime;
                 Script.GameTime = () => (float)Simulator.GameTime;
                 Script.DistanceM = () => Locomotive.DistanceM;
+                Script.Confirm = Locomotive.Simulator.Confirmer.Confirm;
+                Script.Message = Locomotive.Simulator.Confirmer.Message;
+                Script.SignalEvent = Locomotive.SignalEvent;
+                Script.SignalEventToTrain = (evt) =>
+                {
+                    if (Locomotive.Train != null)
+                    {
+                        Locomotive.Train.SignalEvent(evt);
+                    }
+                };
+
+                // ElectricPowerSupply getters
                 Script.CurrentState = () => State;
                 Script.CurrentAuxiliaryState = () => AuxiliaryState;
                 Script.CurrentPantographState = () => Pantographs.State;
                 Script.CurrentCircuitBreakerState = () => CircuitBreaker.State;
+                Script.PantographVoltageV = () => PantographVoltageV;
                 Script.FilterVoltageV = () => FilterVoltageV;
-                Script.LineVoltageV = () => (float)Simulator.TRK.Tr_RouteFile.MaxLineVoltage;
+                Script.LineVoltageV = () => LineVoltageV;
                 Script.PowerOnDelayS = () => PowerOnDelayS;
                 Script.AuxPowerOnDelayS = () => AuxPowerOnDelayS;
 
+                // ElectricPowerSupply setters
                 Script.SetCurrentState = (value) => State = value;
                 Script.SetCurrentAuxiliaryState = (value) => AuxiliaryState = value;
+                Script.SetPantographVoltageV = (value) => PantographVoltageV = value;
                 Script.SetFilterVoltageV = (value) => FilterVoltageV = value;
 
                 Script.Initialize();
@@ -195,10 +218,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     SetCurrentState(PowerSupplyState.PowerOff);
                     SetCurrentAuxiliaryState(PowerSupplyState.PowerOff);
+                    SetPantographVoltageV(0.0f);
                     SetFilterVoltageV(VoltageFilter.Filter(0.0f, elapsedClockSeconds));
                     break;
 
                 case PantographState.Up:
+                    SetPantographVoltageV(LineVoltageV());
+
                     switch (CurrentCircuitBreakerState())
                     {
                         case CircuitBreakerState.Open:
@@ -220,7 +246,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                             SetCurrentState(PowerOnTimer.Triggered ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff);
                             SetCurrentAuxiliaryState(AuxPowerOnTimer.Triggered ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff);
-                            SetFilterVoltageV(VoltageFilter.Filter(LineVoltageV(), elapsedClockSeconds));
+                            SetFilterVoltageV(VoltageFilter.Filter(PantographVoltageV(), elapsedClockSeconds));
                             break;
                     }
                     break;

@@ -30,6 +30,15 @@ namespace Orts.Common
         BellOff,
         BellOn,
         BlowerChange,
+        CircuitBreakerOpen,
+        CircuitBreakerClosing,
+        CircuitBreakerClosed,
+        CircuitBreakerClosingOrderOff,
+        CircuitBreakerClosingOrderOn,
+        CircuitBreakerOpeningOrderOff,
+        CircuitBreakerOpeningOrderOn,
+        CircuitBreakerClosingAuthorizationOff,
+        CircuitBreakerClosingAuthorizationOn,
         CompressorOff,
         CompressorOn,
         ControlError,
@@ -294,6 +303,16 @@ namespace Orts.Common
                         case 141: return Event.BrakePipePressureIncrease;
                         case 142: return Event.BrakePipePressureDecrease;
                         case 143: return Event.BrakePipePressureStoppedChanging;
+
+                        case 150: return Event.CircuitBreakerOpen;
+                        case 151: return Event.CircuitBreakerClosing;
+                        case 152: return Event.CircuitBreakerClosed;
+                        case 153: return Event.CircuitBreakerClosingOrderOn;
+                        case 154: return Event.CircuitBreakerClosingOrderOff;
+                        case 155: return Event.CircuitBreakerOpeningOrderOn;
+                        case 156: return Event.CircuitBreakerOpeningOrderOff;
+                        case 157: return Event.CircuitBreakerClosingAuthorizationOn;
+                        case 158: return Event.CircuitBreakerClosingAuthorizationOff;
 
                         //
 

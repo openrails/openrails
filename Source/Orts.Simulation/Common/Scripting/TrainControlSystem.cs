@@ -105,9 +105,17 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<bool> IsBrakeFullService;
         /// <summary>
-        /// True if circuit breaker or power contactor close authorization is true.
+        /// True if circuit breaker or power contactor closing authorization is true.
         /// </summary>
         public Func<bool> PowerAuthorization;
+        /// <summary>
+        /// True if circuit breaker or power contactor closing order is true.
+        /// </summary>
+        public Func<bool> CircuitBreakerClosingOrder;
+        /// <summary>
+        /// True if circuit breaker or power contactor opening order is true.
+        /// </summary>
+        public Func<bool> CircuitBreakerOpeningOrder;
         /// <summary>
         /// True if traction is authorized.
         /// </summary>
@@ -169,9 +177,17 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Action SetPantographsDown;
         /// <summary>
-        /// Set the circuit breaker or power contactor close authorization.
+        /// Set the circuit breaker or power contactor closing authorization.
         /// </summary>
         public Action<bool> SetPowerAuthorization;
+        /// <summary>
+        /// Set the circuit breaker or power contactor closing order.
+        /// </summary>
+        public Action<bool> SetCircuitBreakerClosingOrder;
+        /// <summary>
+        /// Set the circuit breaker or power contactor opening order.
+        /// </summary>
+        public Action<bool> SetCircuitBreakerOpeningOrder;
         /// <summary>
         /// Set the traction authorization.
         /// </summary>

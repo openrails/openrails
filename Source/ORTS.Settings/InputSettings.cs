@@ -172,6 +172,9 @@ namespace ORTS.Settings
         [GetString("Control Light")] ControlLight,
         [GetString("Control Pantograph 1")] ControlPantograph1,
         [GetString("Control Pantograph 2")] ControlPantograph2,
+        [GetString("Control Circuit Breaker Closing Order")] ControlCircuitBreakerClosingOrder,
+        [GetString("Control Circuit Breaker Opening Order")] ControlCircuitBreakerOpeningOrder,
+        [GetString("Control Circuit Breaker Closing Authorization")] ControlCircuitBreakerClosingAuthorization,
         [GetString("Control Diesel Player")] ControlDieselPlayer,
         [GetString("Control Diesel Helper")] ControlDieselHelper,
         [GetString("Control Headlight Increase")] ControlHeadlightIncrease,
@@ -513,6 +516,9 @@ namespace ORTS.Settings
             Commands[(int)UserCommands.ControlSteamHeatIncrease] = new UserCommandKeyInput(0x16, KeyModifiers.Alt);
             Commands[(int)UserCommands.ControlBrakeHoseConnect] = new UserCommandKeyInput(0x2B);
             Commands[(int)UserCommands.ControlBrakeHoseDisconnect] = new UserCommandKeyInput(0x2B, KeyModifiers.Shift);
+            Commands[(int)UserCommands.ControlCircuitBreakerClosingOrder] = new UserCommandKeyInput(0x18);
+            Commands[(int)UserCommands.ControlCircuitBreakerOpeningOrder] = new UserCommandKeyInput(0x17);
+            Commands[(int)UserCommands.ControlCircuitBreakerClosingAuthorization] = new UserCommandKeyInput(0x18, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlCylinderCocks] = new UserCommandKeyInput(0x2E);
             Commands[(int)UserCommands.ControlCylinderCompound] = new UserCommandKeyInput(0x19);
             Commands[(int)UserCommands.ControlDamperDecrease] = new UserCommandKeyInput(0x32, KeyModifiers.Shift);

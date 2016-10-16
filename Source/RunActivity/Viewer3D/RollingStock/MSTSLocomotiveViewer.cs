@@ -1789,6 +1789,14 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.PANTOGRAPHS_4C:
                 case CABViewControlTypes.PANTOGRAPHS_5:
                 case CABViewControlTypes.PANTO_DISPLAY:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_ORDER:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_OPENING_ORDER:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_AUTHORIZATION:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_STATE:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_CLOSED:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_OPEN:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_AUTHORIZED:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_OPEN_AND_AUTHORIZED:
                 case CABViewControlTypes.DIRECTION:
                 case CABViewControlTypes.DIRECTION_DISPLAY:
                 case CABViewControlTypes.ASPECT_DISPLAY:
@@ -1850,6 +1858,12 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.SANDING: new SanderCommand(Viewer.Log, ChangedValue(Locomotive.Sander ? 1 : 0) > 0); break;
                 case CABViewControlTypes.PANTOGRAPH: new PantographCommand(Viewer.Log, 1, ChangedValue(Locomotive.Pantographs[1].State == PantographState.Up ? 1 : 0) > 0); break;
                 case CABViewControlTypes.PANTOGRAPH2: new PantographCommand(Viewer.Log, 2, ChangedValue(Locomotive.Pantographs[2].State == PantographState.Up ? 1 : 0) > 0); break;
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_ORDER:
+                    new CircuitBreakerClosingOrderCommand(Viewer.Log, ChangedValue((Locomotive as MSTSElectricLocomotive).PowerSupply.CircuitBreaker.DriverClosingOrder ? 1 : 0) > 0);
+                    new CircuitBreakerClosingOrderButtonCommand(Viewer.Log, ChangedValue(UserInput.IsMouseLeftButtonPressed ? 1 : 0) > 0);
+                    break;
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_OPENING_ORDER: new CircuitBreakerOpeningOrderButtonCommand(Viewer.Log, ChangedValue(UserInput.IsMouseLeftButtonPressed ? 1 : 0) > 0); break;
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_AUTHORIZATION: new CircuitBreakerClosingAuthorizationCommand(Viewer.Log, ChangedValue((Locomotive as MSTSElectricLocomotive).PowerSupply.CircuitBreaker.DriverClosingAuthorization ? 1 : 0) > 0); break;
                 case CABViewControlTypes.EMERGENCY_BRAKE: if ((Locomotive.EmergencyButtonPressed ? 1 : 0) != ChangedValue(Locomotive.EmergencyButtonPressed ? 1 : 0)) new EmergencyPushButtonCommand(Viewer.Log); break;
                 case CABViewControlTypes.RESET: new AlerterCommand(Viewer.Log, ChangedValue(Locomotive.TrainControlSystem.AlerterButtonPressed ? 1 : 0) > 0); break;
                 case CABViewControlTypes.CP_HANDLE: Locomotive.SetCombinedHandleValue(ChangedValue(Locomotive.GetCombinedHandleValue(true))); break;

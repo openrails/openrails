@@ -223,7 +223,7 @@ namespace Orts.Common
         }
     }
 
-    // Power
+    // Power : Raise/lower pantograph
     [Serializable()]
     public sealed class PantographCommand : BooleanCommand {
         public static MSTSLocomotive Receiver { get; set; }
@@ -244,6 +244,110 @@ namespace Orts.Common
 
         public override string ToString() {
             return base.ToString() + " - " + (ToState ? "raise" : "lower") + ", item = " + item.ToString();
+        }
+    }
+
+    // Power : Close/open circuit breaker
+    [Serializable()]
+    public sealed class CircuitBreakerClosingOrderCommand : BooleanCommand
+    {
+        public static MSTSElectricLocomotive Receiver { get; set; }
+
+        public CircuitBreakerClosingOrderCommand(CommandLog log, bool toState)
+            : base(log, toState)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver != null && Receiver.Train != null)
+            {
+                Receiver.Train.SignalEvent(ToState ? PowerSupplyEvent.CloseCircuitBreaker : PowerSupplyEvent.OpenCircuitBreaker);
+            }
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " - " + (ToState ? "close" : "open");
+        }
+    }
+
+    // Power : Close circuit breaker button
+    [Serializable()]
+    public sealed class CircuitBreakerClosingOrderButtonCommand : BooleanCommand
+    {
+        public static MSTSElectricLocomotive Receiver { get; set; }
+
+        public CircuitBreakerClosingOrderButtonCommand(CommandLog log, bool toState)
+            : base(log, toState)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver != null && Receiver.Train != null)
+            {
+                Receiver.Train.SignalEvent(ToState ? PowerSupplyEvent.CloseCircuitBreakerButtonPressed : PowerSupplyEvent.CloseCircuitBreakerButtonReleased);
+            }
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " - " + (ToState ? "pressed" : "released");
+        }
+    }
+
+    // Power : Open circuit breaker button
+    [Serializable()]
+    public sealed class CircuitBreakerOpeningOrderButtonCommand : BooleanCommand
+    {
+        public static MSTSElectricLocomotive Receiver { get; set; }
+
+        public CircuitBreakerOpeningOrderButtonCommand(CommandLog log, bool toState)
+            : base(log, toState)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver != null && Receiver.Train != null)
+            {
+                Receiver.Train.SignalEvent(ToState ? PowerSupplyEvent.OpenCircuitBreakerButtonPressed : PowerSupplyEvent.OpenCircuitBreakerButtonReleased);
+            }
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " - " + (ToState ? "pressed" : "released");
+        }
+    }
+
+    // Power : Give/remove circuit breaker authorization
+    [Serializable()]
+    public sealed class CircuitBreakerClosingAuthorizationCommand : BooleanCommand
+    {
+        public static MSTSElectricLocomotive Receiver { get; set; }
+
+        public CircuitBreakerClosingAuthorizationCommand(CommandLog log, bool toState)
+            : base(log, toState)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver != null && Receiver.Train != null)
+            {
+                Receiver.Train.SignalEvent(ToState ? PowerSupplyEvent.GiveCircuitBreakerClosingAuthorization : PowerSupplyEvent.RemoveCircuitBreakerClosingAuthorization);
+            }
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " - " + (ToState ? "given" : "removed");
         }
     }
 

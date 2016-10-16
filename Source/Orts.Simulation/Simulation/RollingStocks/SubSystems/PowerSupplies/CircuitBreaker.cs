@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using Orts.Common;
 using Orts.Parsers.Msts;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
@@ -37,7 +38,43 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         private float DelayS = 0f;
 
         public CircuitBreakerState State { get; private set; }
-        public bool DriverCloseAuthorization { get; private set; }
+        public bool DriverClosingOrder { get; private set; }
+        public bool DriverOpeningOrder { get; private set; }
+        public bool DriverClosingAuthorization { get; private set; }
+        public bool TCSClosingOrder
+        {
+            get
+            {
+                MSTSLocomotive locomotive = Locomotive.Train.LeadLocomotive as MSTSLocomotive;
+                if (locomotive != null)
+                    return locomotive.TrainControlSystem.CircuitBreakerClosingOrder;
+                else
+                    return false;
+            }
+        }
+        public bool TCSOpeningOrder
+        {
+            get
+            {
+                MSTSLocomotive locomotive = Locomotive.Train.LeadLocomotive as MSTSLocomotive;
+                if (locomotive != null)
+                    return locomotive.TrainControlSystem.CircuitBreakerOpeningOrder;
+                else
+                    return false;
+            }
+        }
+        public bool TCSClosingAuthorization
+        {
+            get
+            {
+                MSTSLocomotive locomotive = Locomotive.Train.LeadLocomotive as MSTSLocomotive;
+                if (locomotive != null)
+                    return locomotive.TrainControlSystem.PowerAuthorization;
+                else
+                    return false;
+            }
+        }
+        public bool ClosingAuthorization { get; private set; }
 
         public ScriptedCircuitBreaker(MSTSElectricLocomotive locomotive)
         {
@@ -69,45 +106,68 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
         }
 
-        public void Restore(BinaryReader inf)
-        {
-            ScriptName = inf.ReadString();
-            State = (CircuitBreakerState) Enum.Parse(typeof(CircuitBreakerState), inf.ReadString());
-            DelayS = inf.ReadSingle();
-        }
-
         public void Initialize()
         {
             if (!Activated)
             {
-                if (ScriptName != null && ScriptName != "Automatic")
+                if (ScriptName != null)
                 {
-                    var pathArray = new string[] { Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script") };
-                    Script = Simulator.ScriptManager.Load(pathArray, ScriptName) as CircuitBreaker;
+                    switch(ScriptName)
+                    {
+                        case "Automatic":
+                            Script = new AutomaticCircuitBreaker() as CircuitBreaker;
+                            break;
+
+                        case "Manual":
+                            Script = new ManualCircuitBreaker() as CircuitBreaker;
+                            break;
+
+                        default:
+                            var pathArray = new string[] { Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script") };
+                            Script = Simulator.ScriptManager.Load(pathArray, ScriptName) as CircuitBreaker;
+                            break;
+                    }
                 }
+                // Fallback to automatic circuit breaker if the above failed.
                 if (Script == null)
                 {
                     Script = new AutomaticCircuitBreaker() as CircuitBreaker;
                 }
 
+                // AbstractScriptClass
                 Script.ClockTime = () => (float)Simulator.ClockTime;
                 Script.GameTime = () => (float)Simulator.GameTime;
                 Script.DistanceM = () => Locomotive.DistanceM;
+                Script.Confirm = Locomotive.Simulator.Confirmer.Confirm;
+                Script.Message = Locomotive.Simulator.Confirmer.Message;
+                Script.SignalEvent = Locomotive.SignalEvent;
+                Script.SignalEventToTrain = (evt) =>
+                {
+                    if (Locomotive.Train != null)
+                    {
+                        Locomotive.Train.SignalEvent(evt);
+                    }
+                };
+
+                // CircuitBreaker getters
                 Script.CurrentState = () => State;
                 Script.CurrentPantographState = () => Locomotive.Pantographs.State;
                 Script.CurrentPowerSupplyState = () => Locomotive.PowerSupply.State;
-                Script.TCSCloseAuthorization = () => {
-                    MSTSLocomotive locomotive = Locomotive.Train.LeadLocomotive as MSTSLocomotive;
-                    if (locomotive != null)
-                        return locomotive.TrainControlSystem.PowerAuthorization;
-                    else
-                        return false;
-                };
-                Script.DriverCloseAuthorization = () => DriverCloseAuthorization;
+                Script.DriverClosingOrder = () => DriverClosingOrder;
+                Script.DriverOpeningOrder = () => DriverOpeningOrder;
+                Script.DriverClosingAuthorization = () => DriverClosingAuthorization;
+                Script.TCSClosingOrder = () => TCSClosingOrder;
+                Script.TCSOpeningOrder = () => TCSOpeningOrder;
+                Script.TCSClosingAuthorization = () => TCSClosingAuthorization;
+                Script.ClosingAuthorization = () => ClosingAuthorization;
                 Script.ClosingDelayS = () => DelayS;
 
+                // CircuitBreaker setters
                 Script.SetCurrentState = (value) => State = value;
-                Script.SetDriverCloseAuthorization = (value) => DriverCloseAuthorization = value;
+                Script.SetDriverClosingOrder = (value) => DriverClosingOrder = value;
+                Script.SetDriverOpeningOrder = (value) => DriverOpeningOrder = value;
+                Script.SetDriverClosingAuthorization = (value) => DriverClosingAuthorization = value;
+                Script.SetClosingAuthorization = (value) => ClosingAuthorization = value;
 
                 Script.Initialize();
                 Activated = true;
@@ -137,53 +197,219 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void HandleEvent(PowerSupplyEvent evt)
         {
-            if (Script == null)
-                return;
-
-            Script.HandleEvent(evt);
+            if (Script != null)
+            {
+                Script.HandleEvent(evt);
+            }
         }
 
         public void Save(BinaryWriter outf)
         {
             outf.Write(ScriptName);
-            outf.Write(State.ToString());
             outf.Write(DelayS);
+            outf.Write(State.ToString());
+            outf.Write(DriverClosingOrder);
+            outf.Write(DriverOpeningOrder);
+            outf.Write(DriverClosingAuthorization);
+            outf.Write(ClosingAuthorization);
+        }
+
+        public void Restore(BinaryReader inf)
+        {
+            ScriptName = inf.ReadString();
+            DelayS = inf.ReadSingle();
+            State = (CircuitBreakerState)Enum.Parse(typeof(CircuitBreakerState), inf.ReadString());
+            DriverClosingOrder = inf.ReadBoolean();
+            DriverOpeningOrder = inf.ReadBoolean();
+            DriverClosingAuthorization = inf.ReadBoolean();
+            ClosingAuthorization = inf.ReadBoolean();
         }
     }
 
     class AutomaticCircuitBreaker : CircuitBreaker
     {
         private Timer ClosingTimer;
+        private CircuitBreakerState PreviousState;
 
         public override void Initialize()
         {
             ClosingTimer = new Timer(this);
             ClosingTimer.Setup(ClosingDelayS());
 
-            SetDriverCloseAuthorization(true);
+            SetDriverClosingOrder(false);
+            SetDriverOpeningOrder(false);
+            SetDriverClosingAuthorization(true);
         }
 
         public override void Update(float elapsedSeconds)
         {
-            if (TCSCloseAuthorization() && CurrentPantographState() == PantographState.Up)
-            {
-                if (!ClosingTimer.Started)
-                    ClosingTimer.Start();
+            SetClosingAuthorization(TCSClosingAuthorization() && CurrentPantographState() == PantographState.Up);
 
-                SetCurrentState(ClosingTimer.Triggered ? CircuitBreakerState.Closed : CircuitBreakerState.Open);
-            }
-            else
+            switch (CurrentState())
             {
-                if (ClosingTimer.Started)
-                    ClosingTimer.Stop();
+                case CircuitBreakerState.Closed:
+                    if (!ClosingAuthorization())
+                    {
+                        SetCurrentState(CircuitBreakerState.Open);
+                    }
+                    break;
 
-                SetCurrentState(CircuitBreakerState.Open);
+                case CircuitBreakerState.Closing:
+                    if (ClosingAuthorization())
+                    {
+                        if (!ClosingTimer.Started)
+                        {
+                            ClosingTimer.Start();
+                        }
+
+                        if (ClosingTimer.Triggered)
+                        {
+                            ClosingTimer.Stop();
+                            SetCurrentState(CircuitBreakerState.Closed);
+                        }
+                    }
+                    else
+                    {
+                        ClosingTimer.Stop();
+                        SetCurrentState(CircuitBreakerState.Open);
+                    }
+                    break;
+
+                case CircuitBreakerState.Open:
+                    if (ClosingAuthorization())
+                    {
+                        SetCurrentState(CircuitBreakerState.Closing);
+                    }
+                    break;
             }
+
+            if (PreviousState != CurrentState())
+            {
+                switch (CurrentState())
+                {
+                    case CircuitBreakerState.Open:
+                        SignalEvent(Event.CircuitBreakerOpen);
+                        break;
+
+                    case CircuitBreakerState.Closing:
+                        SignalEvent(Event.CircuitBreakerClosing);
+                        break;
+
+                    case CircuitBreakerState.Closed:
+                        SignalEvent(Event.CircuitBreakerClosed);
+                        break;
+                }
+            }
+
+            PreviousState = CurrentState();
         }
 
         public override void HandleEvent(PowerSupplyEvent evt)
         {
             // Nothing to do since it is automatic
+        }
+    }
+
+    class ManualCircuitBreaker : CircuitBreaker
+    {
+        private Timer ClosingTimer;
+        private CircuitBreakerState PreviousState;
+
+        public override void Initialize()
+        {
+            ClosingTimer = new Timer(this);
+            ClosingTimer.Setup(ClosingDelayS());
+
+            SetDriverClosingAuthorization(true);
+        }
+
+        public override void Update(float elapsedSeconds)
+        {
+            SetClosingAuthorization(TCSClosingAuthorization() && CurrentPantographState() == PantographState.Up);
+
+            switch (CurrentState())
+            {
+                case CircuitBreakerState.Closed:
+                    if (!ClosingAuthorization() || DriverOpeningOrder())
+                    {
+                        SetCurrentState(CircuitBreakerState.Open);
+                    }
+                    break;
+
+                case CircuitBreakerState.Closing:
+                    if (ClosingAuthorization() && DriverClosingOrder())
+                    {
+                        if (!ClosingTimer.Started)
+                        {
+                            ClosingTimer.Start();
+                        }
+
+                        if (ClosingTimer.Triggered)
+                        {
+                            ClosingTimer.Stop();
+                            SetCurrentState(CircuitBreakerState.Closed);
+                        }
+                    }
+                    else
+                    {
+                        ClosingTimer.Stop();
+                        SetCurrentState(CircuitBreakerState.Open);
+                    }
+                    break;
+
+                case CircuitBreakerState.Open:
+                    if (ClosingAuthorization() && DriverClosingOrder())
+                    {
+                        SetCurrentState(CircuitBreakerState.Closing);
+                    }
+                    break;
+            }
+
+            if (PreviousState != CurrentState())
+            {
+                switch (CurrentState())
+                {
+                    case CircuitBreakerState.Open:
+                        SignalEvent(Event.CircuitBreakerOpen);
+                        break;
+
+                    case CircuitBreakerState.Closing:
+                        SignalEvent(Event.CircuitBreakerClosing);
+                        break;
+
+                    case CircuitBreakerState.Closed:
+                        SignalEvent(Event.CircuitBreakerClosed);
+                        break;
+                }
+            }
+
+            PreviousState = CurrentState();
+        }
+
+        public override void HandleEvent(PowerSupplyEvent evt)
+        {
+            switch (evt)
+            {
+                case PowerSupplyEvent.CloseCircuitBreaker:
+                    SetDriverClosingOrder(true);
+                    SetDriverOpeningOrder(false);
+                    SignalEvent(Event.CircuitBreakerClosingOrderOn);
+
+                    Confirm(CabControl.CircuitBreakerClosingOrder, CabSetting.On);
+                    if (!ClosingAuthorization())
+                    {
+                        Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Circuit breaker closing not authorized"));
+                    }
+                    break;
+
+                case PowerSupplyEvent.OpenCircuitBreaker:
+                    SetDriverClosingOrder(false);
+                    SetDriverOpeningOrder(true);
+                    SignalEvent(Event.CircuitBreakerClosingOrderOff);
+
+                    Confirm(CabControl.CircuitBreakerClosingOrder, CabSetting.Off);
+                    break;
+            }
         }
     }
 }

@@ -33,6 +33,10 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<CircuitBreakerState> CurrentCircuitBreakerState;
         /// <summary>
+        /// Voltage of the pantograph
+        /// </summary>
+        public Func<float> PantographVoltageV;
+        /// <summary>
         /// Voltage of the filter
         /// </summary>
         public Func<float> FilterVoltageV;
@@ -41,6 +45,10 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<float> LineVoltageV;
 
+        /// <summary>
+        /// Sets the voltage of the pantograph
+        /// </summary>
+        public Action<float> SetPantographVoltageV;
         /// <summary>
         /// Sets the voltage of the filter
         /// </summary>

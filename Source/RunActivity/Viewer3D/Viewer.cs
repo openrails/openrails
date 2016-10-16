@@ -451,6 +451,13 @@ namespace Orts.Viewer3D
             }
 
             PantographCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            if (PlayerLocomotive is MSTSElectricLocomotive)
+            {
+                CircuitBreakerClosingOrderCommand.Receiver = (MSTSElectricLocomotive)PlayerLocomotive;
+                CircuitBreakerClosingOrderButtonCommand.Receiver = (MSTSElectricLocomotive)PlayerLocomotive;
+                CircuitBreakerOpeningOrderButtonCommand.Receiver = (MSTSElectricLocomotive)PlayerLocomotive;
+                CircuitBreakerClosingAuthorizationCommand.Receiver = (MSTSElectricLocomotive)PlayerLocomotive;
+            }
 
             ImmediateRefillCommand.Receiver = (MSTSLocomotiveViewer)PlayerLocomotiveViewer;
             RefillCommand.Receiver = (MSTSLocomotiveViewer)PlayerLocomotiveViewer;
