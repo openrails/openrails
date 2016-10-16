@@ -124,6 +124,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
         public bool AlerterButtonPressed { get; private set; }
         public bool PowerAuthorization { get; private set; }
+        public bool CircuitBreakerClosingOrder { get; private set;  }
+        public bool CircuitBreakerOpeningOrder { get; private set; }
         public bool TractionAuthorization { get; private set; }
 
         string ScriptName;
@@ -143,6 +145,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             Simulator = Locomotive.Simulator;
 
             PowerAuthorization = true;
+            CircuitBreakerClosingOrder = false;
+            CircuitBreakerOpeningOrder = false;
             TractionAuthorization = true;
         }
 
@@ -210,6 +214,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             Script.ClockTime = () => (float)Simulator.ClockTime;
             Script.GameTime = () => (float)Simulator.GameTime;
             Script.DistanceM = () => Locomotive.DistanceM;
+            Script.Confirm = Locomotive.Simulator.Confirmer.Confirm;
+            Script.Message = Locomotive.Simulator.Confirmer.Message;
+            Script.SignalEvent = Locomotive.SignalEvent;
+            Script.SignalEventToTrain = (evt) =>
+            {
+                if (Locomotive.Train != null)
+                {
+                    Locomotive.Train.SignalEvent(evt);
+                }
+            };
 
             // TrainControlSystem getters
             Script.IsTrainControlEnabled = () => Locomotive == Locomotive.Train.LeadLocomotive && Locomotive.Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING;
@@ -239,6 +253,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             Script.IsBrakeEmergency = () => Locomotive.TrainBrakeController.EmergencyBraking;
             Script.IsBrakeFullService = () => Locomotive.TrainBrakeController.TCSFullServiceBraking;
             Script.PowerAuthorization = () => PowerAuthorization;
+            Script.CircuitBreakerClosingOrder = () => CircuitBreakerClosingOrder;
+            Script.CircuitBreakerOpeningOrder = () => CircuitBreakerOpeningOrder;
             Script.TractionAuthorization = () => TractionAuthorization;
             Script.BrakePipePressureBar = () => Locomotive.BrakeSystem != null ? Bar.FromPSI(Locomotive.BrakeSystem.BrakeLine1PressurePSI) : float.MaxValue;
             Script.LocomotiveBrakeCylinderPressureBar = () => Locomotive.BrakeSystem != null ? Bar.FromPSI(Locomotive.BrakeSystem.GetCylPressurePSI()) : float.MaxValue;
@@ -271,19 +287,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 }
             };
             Script.SetPowerAuthorization = (value) => PowerAuthorization = value;
+            Script.SetCircuitBreakerClosingOrder = (value) => CircuitBreakerClosingOrder = value;
+            Script.SetCircuitBreakerOpeningOrder = (value) => CircuitBreakerOpeningOrder = value;
             Script.SetTractionAuthorization = (value) => TractionAuthorization = value;
             Script.SetVigilanceAlarm = (value) => Locomotive.SignalEvent(value ? Event.VigilanceAlarmOn : Event.VigilanceAlarmOff);
             Script.SetHorn = (value) => Locomotive.TCSHorn = value;
-            Script.TriggerSoundAlert1 = () => this.HandleEvent(Event.TrainControlSystemAlert1, Script);
-            Script.TriggerSoundAlert2 = () => this.HandleEvent(Event.TrainControlSystemAlert2, Script);
-            Script.TriggerSoundInfo1 = () => this.HandleEvent(Event.TrainControlSystemInfo1, Script);
-            Script.TriggerSoundInfo2 = () => this.HandleEvent(Event.TrainControlSystemInfo2, Script);
-            Script.TriggerSoundPenalty1 = () => this.HandleEvent(Event.TrainControlSystemPenalty1, Script);
-            Script.TriggerSoundPenalty2 = () => this.HandleEvent(Event.TrainControlSystemPenalty2, Script);
-            Script.TriggerSoundWarning1 = () => this.HandleEvent(Event.TrainControlSystemWarning1, Script);
-            Script.TriggerSoundWarning2 = () => this.HandleEvent(Event.TrainControlSystemWarning2, Script);
-            Script.TriggerSoundSystemActivate = () => this.HandleEvent(Event.TrainControlSystemActivate, Script);
-            Script.TriggerSoundSystemDeactivate = () => this.HandleEvent(Event.TrainControlSystemDeactivate, Script);
+            Script.TriggerSoundAlert1 = () => this.SignalEvent(Event.TrainControlSystemAlert1, Script);
+            Script.TriggerSoundAlert2 = () => this.SignalEvent(Event.TrainControlSystemAlert2, Script);
+            Script.TriggerSoundInfo1 = () => this.SignalEvent(Event.TrainControlSystemInfo1, Script);
+            Script.TriggerSoundInfo2 = () => this.SignalEvent(Event.TrainControlSystemInfo2, Script);
+            Script.TriggerSoundPenalty1 = () => this.SignalEvent(Event.TrainControlSystemPenalty1, Script);
+            Script.TriggerSoundPenalty2 = () => this.SignalEvent(Event.TrainControlSystemPenalty2, Script);
+            Script.TriggerSoundWarning1 = () => this.SignalEvent(Event.TrainControlSystemWarning1, Script);
+            Script.TriggerSoundWarning2 = () => this.SignalEvent(Event.TrainControlSystemWarning2, Script);
+            Script.TriggerSoundSystemActivate = () => this.SignalEvent(Event.TrainControlSystemActivate, Script);
+            Script.TriggerSoundSystemDeactivate = () => this.SignalEvent(Event.TrainControlSystemDeactivate, Script);
             Script.SetVigilanceAlarmDisplay = (value) => this.VigilanceAlarm = value;
             Script.SetVigilanceEmergencyDisplay = (value) => this.VigilanceEmergency = value;
             Script.SetOverspeedWarningDisplay = (value) => this.OverspeedWarning = value;
@@ -372,7 +390,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             }
         }
 
-        private void HandleEvent(Event evt, TrainControlSystem script)
+        private void SignalEvent(Event evt, TrainControlSystem script)
         {
             foreach (var eventHandler in Locomotive.EventHandlers)
                 eventHandler.HandleEvent(evt, script);
@@ -461,12 +479,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public void AlerterPressed(bool pressed)
         {
             AlerterButtonPressed = pressed;
-            SendEvent(pressed ? TCSEvent.AlerterPressed : TCSEvent.AlerterReleased);
+            HandleEvent(pressed ? TCSEvent.AlerterPressed : TCSEvent.AlerterReleased);
         }
 
         public void AlerterReset()
         {
-            SendEvent(TCSEvent.AlerterReset);
+            HandleEvent(TCSEvent.AlerterReset);
         }
 
         public void SetEmergency(bool emergency)
@@ -477,12 +495,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Locomotive.TrainBrakeController.TCSEmergencyBraking = emergency;
         }
 
-        public void SendEvent(TCSEvent evt)
+        public void HandleEvent(TCSEvent evt)
         {
-            SendEvent(evt, String.Empty);
+            HandleEvent(evt, String.Empty);
         }
 
-        public void SendEvent(TCSEvent evt, string message)
+        public void HandleEvent(TCSEvent evt, string message)
         {
             if (Script != null)
                 Script.HandleEvent(evt, message);

@@ -2742,13 +2742,13 @@ namespace Orts.Simulation.RollingStocks
 
         public void AlerterReset()
         {
-            TrainControlSystem.SendEvent(TCSEvent.AlerterReset);
+            TrainControlSystem.HandleEvent(TCSEvent.AlerterReset);
         }
 
         public void AlerterReset(TCSEvent evt)
         {
             AlerterReset();
-            TrainControlSystem.SendEvent(evt);
+            TrainControlSystem.HandleEvent(evt);
         }
 
         public void AlerterPressed(bool pressed)
