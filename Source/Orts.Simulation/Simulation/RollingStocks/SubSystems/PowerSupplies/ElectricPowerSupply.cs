@@ -189,12 +189,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
     public class DefaultElectricPowerSupply : ElectricPowerSupply
     {
+        private IIRFilter PantographFilter;
         private IIRFilter VoltageFilter;
         private Timer PowerOnTimer;
         private Timer AuxPowerOnTimer;
 
         public override void Initialize()
         {
+            PantographFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.7f), 0.001f);
             VoltageFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.7f), 0.001f);
             
             PowerOnTimer = new Timer(this);
@@ -218,12 +220,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     SetCurrentState(PowerSupplyState.PowerOff);
                     SetCurrentAuxiliaryState(PowerSupplyState.PowerOff);
-                    SetPantographVoltageV(0.0f);
+                    SetPantographVoltageV(PantographFilter.Filter(0.0f, elapsedClockSeconds));
                     SetFilterVoltageV(VoltageFilter.Filter(0.0f, elapsedClockSeconds));
                     break;
 
                 case PantographState.Up:
-                    SetPantographVoltageV(LineVoltageV());
+                    SetPantographVoltageV(PantographFilter.Filter(LineVoltageV(), elapsedClockSeconds));
 
                     switch (CurrentCircuitBreakerState())
                     {
