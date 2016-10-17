@@ -1814,6 +1814,9 @@ namespace Orts.Viewer3D.RollingStock
                     index = (int)data;
                     break;
             }
+            // If it is a control with NumPositions and NumValues, the index becomes the reference to the Positions entry, which in turn is the frame index within the .ace file
+            if (ControlDiscrete is CVCDiscrete && (ControlDiscrete as CVCDiscrete).Positions.Count > index && (ControlDiscrete as CVCDiscrete).Positions.Count == ControlDiscrete.Values.Count)
+                index = (ControlDiscrete as CVCDiscrete).Positions[index];
 
             if (index >= ControlDiscrete.FramesCount) index = ControlDiscrete.FramesCount - 1;
             if (index < 0) index = 0;
