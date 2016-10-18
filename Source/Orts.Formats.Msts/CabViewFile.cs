@@ -675,7 +675,6 @@ namespace Orts.Formats.Msts
         public List<int> Positions = new List<int>();
 
         private int _ValuesRead;
-        private int numPositions;
 
         public CVCDiscrete(STFReader stf, string basepath)
         {
@@ -716,7 +715,7 @@ namespace Orts.Formats.Msts
                         stf.MustMatch("(");
                         // If Positions are not filled before by Values
                         bool shouldFill = (Positions.Count == 0);
-                        numPositions = stf.ReadInt(null); // Number of Positions
+                        stf.ReadInt(null); // Number of Positions - Ignore it
 
                         var minPosition = 0;
                         var positionsRead = 0;
@@ -754,7 +753,7 @@ namespace Orts.Formats.Msts
                     }),
                     new STFReader.TokenProcessor("numvalues", ()=>{
                         stf.MustMatch("(");
-                        var numValues = stf.ReadDouble(null); // Number of Values
+                        stf.ReadDouble(null); // Number of Values - ignore it
                         while (!stf.EndOfBlock())
                         {
                             double v = stf.ReadDouble(null);
@@ -765,16 +764,12 @@ namespace Orts.Formats.Msts
                             }
                             // Avoid later repositioning, put every value to its Position
                             // But before resize Values if needed
-                            if (numValues != numPositions)
-                            { 
-                                while (Values.Count <= Positions[_ValuesRead])
-                                {
-                                    Values.Add(0);
-                                }
-                                // Avoid later repositioning, put every value to its Position
-                                Values[Positions[_ValuesRead]] = v;
+                            while (Values.Count <= Positions[_ValuesRead])
+                            {
+                                Values.Add(0);
                             }
-                            Values.Add(v);
+                            // Avoid later repositioning, put every value to its Position
+                            Values[Positions[_ValuesRead]] = v;
                             _ValuesRead++;
                         }
                     }),
@@ -847,17 +842,43 @@ namespace Orts.Formats.Msts
                         else if (Values.Count == 0)
                             Values.Add(MinValue);
 
+                        // Fill empty Values
+                        for (int i = Values.Count; i < FramesCount; i++)
+                            Values.Add(Values[Values.Count-1]);
 
                         // Add the maximums to the end, the Value will be removed
                         // We use Positions only here
                         if (Values.Count > 0 && Values[0] <= Values[Values.Count - 1]) Values.Add(MaxValue);
                         else if (Values.Count > 0 && Values[0] > Values[Values.Count - 1]) Values.Add(MinValue);
+                        Positions.Add(FramesCount);
                     }
 
                     // OK, we have a valid size of Positions and Values
 
+                    // Now it is the time for checking holes in the given data
+                    if (Positions.Count < FramesCount - 1 && Values[0] <= Values[Values.Count - 1])
+                    {
+                        int j = 1;
+                        int p = 0;
+                        // Skip the 0 element, that is the default MinValue
+                        for (int i = 1; i < Positions.Count; i++)
+                        {
+                            // Found a hole
+                            if (Positions[i] != p + 1)
+                            {
+                                // Iterate to the next valid data and fill the hole
+                                for (j = p + 1; j < Positions[i]; j++)
+                                {
+                                    // Extrapolate into the hole
+                                    Values[j] = MathHelper.Lerp((float)Values[p], (float)Values[Positions[i]], (float)j / (float)Positions[i]);
+                                }
+                            }
+                            p = Positions[i];
+                        }
+                    }
+
                     // Don't need the MaxValue added before, remove it
-                    Values.RemoveAt(Values.Count-1);
+                    Values.RemoveAt(FramesCount);
                 }
 
                 // MSTS ignores/overrides various settings by the following exceptional cases:
