@@ -676,6 +676,7 @@ namespace Orts.Formats.Msts
 
         private int _ValuesRead;
         private int numPositions;
+        private bool canFill = true;
 
         public CVCDiscrete(STFReader stf, string basepath)
         {
@@ -751,6 +752,16 @@ namespace Orts.Formats.Msts
                             for (var i = 0; i < Positions.Count; i++)
                                 Positions[i] = i;
                         }
+
+                        // Check if eligible for filling
+                        
+                        for (var iPos = 1; iPos <= Positions.Count - 1; iPos++)
+                        {
+                            if (Positions[iPos] > Positions[iPos-1]) continue;
+                            canFill = false;
+                            break;
+                        }
+
                     }),
                     new STFReader.TokenProcessor("numvalues", ()=>{
                         stf.MustMatch("(");
@@ -812,7 +823,7 @@ namespace Orts.Formats.Msts
 
                     // Only shuffle data in following cases
 
-                    if (Values.Count != Positions.Count || Values.Count < FramesCount)
+                    if (Values.Count != Positions.Count || ((Values.Count < FramesCount) && canFill))
                     {
 
                         // Fixup Positions and Values collections first
