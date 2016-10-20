@@ -917,9 +917,15 @@ namespace Orts.Viewer3D
             lookAtPosition.Z *= -1;
             lookAtPosition = Vector3.Transform(lookAtPosition, attachedCar.WorldPosition.XNAMatrix);
             // Don't forget to rotate the up vector so the camera rotates with us.
-            var upRotation = attachedCar.WorldPosition.XNAMatrix;
-            upRotation.Translation = Vector3.Zero;
-            var up = Vector3.Transform(Vector3.Up, upRotation);
+            Vector3 up;
+            if (Viewer.Camera is TrackingCamera)
+                up = Vector3.Up;
+            else
+            {
+                var upRotation = attachedCar.WorldPosition.XNAMatrix;
+                upRotation.Translation = Vector3.Zero;
+                up = Vector3.Transform(Vector3.Up, upRotation);
+            }
             return Matrix.CreateLookAt(XnaLocation(cameraLocation), lookAtPosition, up);
         }
 
