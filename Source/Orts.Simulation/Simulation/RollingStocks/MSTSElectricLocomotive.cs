@@ -278,31 +278,31 @@ namespace Orts.Simulation.RollingStocks
 
                 case CABViewControlTypes.PANTOGRAPH:
                 case CABViewControlTypes.PANTO_DISPLAY:
-                    data = Pantographs[1].State == PantographState.Up ? 1 : 0;
+                    data = Pantographs[1].CommandUp ? 1 : 0;
                     break;
 
                 case CABViewControlTypes.PANTOGRAPH2:
-                    data = Pantographs[2].State == PantographState.Up ? 1 : 0;
+                    data = Pantographs[2].CommandUp ? 1 : 0;
                     break;
 
                 case CABViewControlTypes.PANTOGRAPHS_4:
                 case CABViewControlTypes.PANTOGRAPHS_4C:
-                    if (Pantographs[1].State == PantographState.Up && Pantographs[2].State == PantographState.Up)
+                    if (Pantographs[1].CommandUp && Pantographs[2].CommandUp)
                         data = 2;
-                    else if (Pantographs[1].State == PantographState.Up)
+                    else if (Pantographs[1].CommandUp)
                         data = 1;
-                    else if (Pantographs[2].State == PantographState.Up)
+                    else if (Pantographs[2].CommandUp)
                         data = 3;
                     else
                         data = 0;
                     break;
 
                 case CABViewControlTypes.PANTOGRAPHS_5:
-                    if (Pantographs[1].State == PantographState.Up && Pantographs[2].State == PantographState.Up)
+                    if (Pantographs[1].CommandUp && Pantographs[2].CommandUp)
                         data = 0; // TODO: Should be 0 if the previous state was Pan2Up, and 4 if that was Pan1Up
-                    else if (Pantographs[2].State == PantographState.Up)
+                    else if (Pantographs[2].CommandUp)
                         data = 1;
-                    else if (Pantographs[1].State == PantographState.Up)
+                    else if (Pantographs[1].CommandUp)
                         data = 3;
                     else
                         data = 2;
