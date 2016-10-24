@@ -823,7 +823,7 @@ namespace Orts.Formats.Msts
 
                     // Only shuffle data in following cases
 
-                    if (Values.Count != Positions.Count || ((Values.Count < FramesCount) && canFill))
+                    if (Values.Count != Positions.Count || (Values.Count < FramesCount & canFill)|| ( Values.Count > 0 && Values[0] == Values[Values.Count - 1] && Values[0] == 0))
                     {
 
                         // Fixup Positions and Values collections first
@@ -877,7 +877,7 @@ namespace Orts.Formats.Msts
                         // OK, we have a valid size of Positions and Values
 
                         // Now it is the time for checking holes in the given data
-                        if (Positions.Count < FramesCount - 1 && Values[0] <= Values[Values.Count - 1])
+                        if ((Positions.Count < FramesCount - 1 && Values[0] <= Values[Values.Count - 1]) || (Values.Count > 1 && Values[0] == Values[Values.Count - 2] && Values[0] == 0))
                         {
                             int j = 1;
                             int p = 0;
