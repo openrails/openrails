@@ -800,7 +800,8 @@ namespace Orts.Formats.Msts
                 // If read any Values, or the control requires Values to control
                 //     The twostate, tristate, signal displays are not in these
                 // Need check the Values collection for validity
-                if (_ValuesRead > 0 || ControlStyle == CABViewControlStyles.SPRUNG || ControlStyle == CABViewControlStyles.NOT_SPRUNG)
+                if (_ValuesRead > 0 || ControlStyle == CABViewControlStyles.SPRUNG || ControlStyle == CABViewControlStyles.NOT_SPRUNG ||
+                    FramesCount  > 0 || (FramesX > 0 && FramesY > 0 ))
                 {
                     // Check max number of Frames
                     if (FramesCount == 0)
