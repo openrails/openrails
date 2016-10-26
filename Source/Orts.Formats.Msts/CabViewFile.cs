@@ -740,9 +740,12 @@ namespace Orts.Formats.Msts
                             //   NumPositions ( 5 8 7 2 1 0 )
                             positionsRead++;
 
-                        for (int iPos = 0; iPos <= Positions.Count - 1; iPos++)
-                        {
-                            Positions[iPos] -= minPosition;
+                        if (minPosition < 0)
+                        { 
+                            for (int iPos = 0; iPos <= Positions.Count - 1; iPos++)
+                            {
+                                Positions[iPos] -= minPosition;
+                            }
                         }
 
                         // This is a hack for SLI locomotives which have the positions listed as "1056964608 0 0 0 ...".
