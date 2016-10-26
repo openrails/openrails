@@ -762,6 +762,19 @@ namespace Orts.Formats.Msts
                             break;
                         }
 
+                        // This is a protection against GP40 locomotives that erroneously have positions pointing beyond frame count limit.
+
+                        if (Positions.Count > 1 && canFill && Positions.Count < FramesCount && Positions[Positions.Count-1] >= FramesCount && Positions[0] == 0)
+                        {
+                            STFException.TraceInformation(stf, "Some NumPositions entries refer to non-exisiting frames, trying to renumber");
+                            Positions[Positions.Count - 1] = FramesCount - 1;
+                            for (var iPos = Positions.Count -2 ; iPos >= 1; iPos--)
+                            {
+                                if ((Positions[iPos] >= FramesCount || Positions[iPos] >= Positions[iPos + 1])) Positions[iPos] = Positions[iPos + 1] - 1;
+                                else break;
+                            }
+                        }
+
                     }),
                     new STFReader.TokenProcessor("numvalues", ()=>{
                         stf.MustMatch("(");
