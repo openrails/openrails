@@ -1907,7 +1907,7 @@ namespace Orts.Viewer3D.RollingStock
                 try
                 {
                     var val = ControlDiscrete.Values[0] <= ControlDiscrete.Values[ControlDiscrete.Values.Count - 1] ?
-                        ControlDiscrete.Values.Where(v => (float)v <= percent).Last() : ControlDiscrete.Values.Where(v => (float)v <= percent).First();
+                        ControlDiscrete.Values.Where(v => (float)v <= percent + 0.00001).Last() : ControlDiscrete.Values.Where(v => (float)v <= percent + 0.00001).First();
                     index = ControlDiscrete.Values.IndexOf(val);
                 }
                 catch
