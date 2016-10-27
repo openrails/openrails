@@ -168,6 +168,7 @@ namespace Orts.Viewer3D
         // This adjustment assumes that the cab view is 4:3. Where the cab view matches the aspect ratio of the screen, use an adjustment of 100.
         public int CabHeightPixels { get; private set; }
         public int CabYOffsetPixels { get; set; } // Note: Always -ve. Without it, the cab view is fixed to the top of the screen. -ve values pull it up the screen.
+        public int CabExceedsDisplay; // difference between cabview texture vertical resolution and display vertical resolution
 
         public CommandLog Log { get { return Simulator.Log; } }
 
@@ -523,7 +524,6 @@ namespace Orts.Viewer3D
             // will disable this feature. A smarter scheme would discover the aspect ratio of the cab view and adjust
             // appropriately. </CJComment>
 
-            int CabExceedsDisplay;
             if (((float)windowWidth / windowHeight) > (4.0 / 3))
             {
                 // screen is wide-screen, so can choose between scroll or stretch
