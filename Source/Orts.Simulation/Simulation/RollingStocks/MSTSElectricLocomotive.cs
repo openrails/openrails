@@ -276,8 +276,11 @@ namespace Orts.Simulation.RollingStocks
                         data /= 1000;
                     break;
 
-                case CABViewControlTypes.PANTOGRAPH:
                 case CABViewControlTypes.PANTO_DISPLAY:
+                    data = Pantographs.State == PantographState.Up ? 1 : 0;
+                    break;
+
+                case CABViewControlTypes.PANTOGRAPH:
                     data = Pantographs[1].CommandUp ? 1 : 0;
                     break;
 
