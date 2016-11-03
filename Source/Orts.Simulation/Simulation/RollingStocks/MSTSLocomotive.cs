@@ -3011,7 +3011,7 @@ namespace Orts.Simulation.RollingStocks
                 case CABViewControlTypes.THROTTLE_DISPLAY:
                 case CABViewControlTypes.CPH_DISPLAY:
                     {
-                        data = ThrottlePercent / 100f;
+                        data = LocalThrottlePercent / 100f;
                         break;
                     }
                 case CABViewControlTypes.ENGINE_BRAKE:
