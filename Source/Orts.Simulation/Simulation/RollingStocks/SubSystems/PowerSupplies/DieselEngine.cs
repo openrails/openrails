@@ -456,7 +456,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             DieselPowerTab = new Interpolator(copy.DieselPowerTab);
             DieselConsumptionTab = new Interpolator(copy.DieselConsumptionTab);
             ThrottleRPMTab = new Interpolator(copy.ThrottleRPMTab);
-            DieselTorqueTab = new Interpolator(copy.DieselTorqueTab);
+            if (copy.DieselTorqueTab != null) DieselTorqueTab = new Interpolator(copy.DieselTorqueTab);
             DieselUsedPerHourAtMaxPowerL = copy.DieselUsedPerHourAtMaxPowerL;
             DieselUsedPerHourAtIdleL = copy.DieselUsedPerHourAtIdleL;
             InitialExhaust = copy.InitialExhaust;
