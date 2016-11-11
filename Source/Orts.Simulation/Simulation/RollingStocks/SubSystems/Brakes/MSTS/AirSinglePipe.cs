@@ -120,17 +120,23 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             HoldingValve = thiscopy.HoldingValve;
         }
 
+        // Get the brake BC & BP for EOT conditions
         public override string GetStatus(Dictionary<BrakeSystemComponent, PressureUnit> units)
         {
-            return string.Format("BP {0}", FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakePipe], true));
+            string s = string.Format(
+                " BC {0}",
+                FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakeCylinder], true));
+                s += string.Format(" BP {0}", FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakePipe], true));
+            return s;
         }
 
+        // Get Brake information for train
         public override string GetFullStatus(BrakeSystem lastCarBrakeSystem, Dictionary<BrakeSystemComponent, PressureUnit> units)
         {
             string s = string.Format(" EQ {0}", FormatStrings.FormatPressure(Car.Train.EqualReservoirPressurePSIorInHg, PressureUnit.PSI, units[BrakeSystemComponent.EqualizingReservoir], true));
             s += string.Format(
                 " BC {0}",
-                FormatStrings.FormatPressure(   Car.Train.HUDWagonBrakeCylinderPSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakeCylinder], true)
+                FormatStrings.FormatPressure(Car.Train.HUDWagonBrakeCylinderPSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakeCylinder], true)
             );
 
             s += string.Format(
@@ -344,8 +350,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             float threshold = Math.Max(RetainerPressureThresholdPSI,
                 (Car as MSTSWagon).DistributorPresent ? (EmergResPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio : 0);
 
-            bool FirstWagon = false; // Flag to identify the first wagon in the consist
-
             if (BleedOffValveOpen)
             {
                 if (AuxResPressurePSI < 0.01f && AutoCylPressurePSI < 0.01f && BrakeLine1PressurePSI < 0.01f && (EmergResPressurePSI < 0.01f || !(Car as MSTSWagon).EmergencyReservoirPresent))
@@ -470,11 +474,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
             else
             {
-               // Record the Brake Cylinder pressure in first car, as EOT is also captured elsewhere, and this will provide the two extremeties of the train
-                if (!FirstWagon)
+               // Record the Brake Cylinder pressure in first wagon, as EOT is also captured elsewhere, and this will provide the two extremeties of the train
+               // Identifies the first wagon based upon the previously identified UiD 
+                if (Car.UiD == Car.Train.FirstCarUiD)
                {
                    Car.Train.HUDWagonBrakeCylinderPSI = CylPressurePSI;
-                   FirstWagon = true;
                }
                 
             }
@@ -648,17 +652,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     foreach (TrainCar car in train.Cars)               
                     {
                         train.TotalTrainBrakePipeVolumeM3 += car.BrakeSystem.BrakePipeVolumeM3; // Calculate total brake pipe volume of train
-                       
-                        // Test to see if freight or passenger wagons attached (used to set BC pressure in locomotive or wagons)
-                        if (car.WagonType == MSTSWagon.WagonTypes.Freight || car.WagonType == MSTSWagon.WagonTypes.Passenger )
-                        {
-                            train.WagonsAttached = true;
-
-                        }
-                        else
-                        {
-                            train.WagonsAttached = false;
-                        }
 
                         float p1 = car.BrakeSystem.BrakeLine1PressurePSI;
                         if (car == train.Cars[0] || car.BrakeSystem.FrontBrakeHoseConnected && car.BrakeSystem.AngleCockAOpen && car0.BrakeSystem.AngleCockBOpen)
