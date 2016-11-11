@@ -1589,7 +1589,7 @@ namespace Orts.Simulation.Physics
             {
                 car.MotiveForceN = 0;
                 car.Update(elapsedClockSeconds);
-                car.TotalForceN = car.MotiveForceN + car.GravityForceN;
+                car.TotalForceN = (car.IsDriveable && (car as MSTSLocomotive).DynamicBrakeForceN > 0? 0 : car.MotiveForceN) + car.GravityForceN;
                 massKg += car.MassKG;
                 //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
                 // To achieve the same result with other means, without flipping trainset physics, the line should be changed as follows:
@@ -3914,9 +3914,11 @@ namespace Orts.Simulation.Physics
             // TODO: this loop could be extracted and become a separate method, that could be called also by TTTrain.physicsPreUpdate
             for (int i = 0; i < Cars.Count; i++)
                 if (Cars[i].SpeedMpS > 0)
-                    Cars[i].TotalForceN -= (Cars[i].FrictionForceN + Cars[i].BrakeForceN + Cars[i].CurveForceN + Cars[i].TunnelForceN);
+                    Cars[i].TotalForceN -= (Cars[i].FrictionForceN + Cars[i].BrakeForceN + Cars[i].CurveForceN + Cars[i].TunnelForceN +
+                        ((Cars[i].IsDriveable && (Cars[i] as MSTSLocomotive).DynamicBrakeForceN > 0)? Math.Abs(Cars[i].MotiveForceN) : 0));
                 else if (Cars[i].SpeedMpS < 0)
-                    Cars[i].TotalForceN += Cars[i].FrictionForceN + Cars[i].BrakeForceN + Cars[i].CurveForceN + Cars[i].TunnelForceN;
+                    Cars[i].TotalForceN += Cars[i].FrictionForceN + Cars[i].BrakeForceN + Cars[i].CurveForceN + Cars[i].TunnelForceN +
+                        ((Cars[i].IsDriveable && (Cars[i] as MSTSLocomotive).DynamicBrakeForceN > 0)? Math.Abs(Cars[i].MotiveForceN) : 0);
             if (Cars.Count < 2)
                 return;
             SetupCouplerForceEquations();
@@ -4038,7 +4040,8 @@ namespace Orts.Simulation.Physics
             for (int i = 0; i < Cars.Count; i++)
             {
                 TrainCar car = Cars[i];
-                if (car.SpeedMpS != 0 || car.TotalForceN <= (car.FrictionForceN + car.BrakeForceN + car.CurveForceN + car.TunnelForceN))
+                if (car.SpeedMpS != 0 || car.TotalForceN <= (car.FrictionForceN + car.BrakeForceN + car.CurveForceN + car.TunnelForceN + 
+                    ((car.IsDriveable && (car as MSTSLocomotive).DynamicBrakeForceN > 0) ? Math.Abs(car.MotiveForceN) : 0)))
                     continue;
                 int j = i;
                 float f = 0;
@@ -4046,7 +4049,13 @@ namespace Orts.Simulation.Physics
                 for (;;)
                 {
                     if (car.IsDriveable)
+                    {
                         f += car.TotalForceN - (car.FrictionForceN + car.CurveForceN + car.TunnelForceN);
+                        if ((car as MSTSLocomotive).DynamicBrakeForceN > 0)
+                        {
+                            f -= Math.Abs(car.MotiveForceN);
+                        }
+                    }
                     else
                         f += car.TotalForceN - (car.FrictionForceN + car.BrakeForceN + car.CurveForceN + car.TunnelForceN);
                     m += car.MassKG;
@@ -4079,7 +4088,8 @@ namespace Orts.Simulation.Physics
             for (int i = Cars.Count - 1; i >= 0; i--)
             {
                 TrainCar car = Cars[i];
-                if (car.SpeedMpS != 0 || car.TotalForceN > (-1.0f * (car.FrictionForceN + car.BrakeForceN + car.CurveForceN + car.TunnelForceN)))
+                if (car.SpeedMpS != 0 || car.TotalForceN > (-1.0f * (car.FrictionForceN + car.BrakeForceN + car.CurveForceN + car.TunnelForceN+ 
+                    ((car.IsDriveable && (car as MSTSLocomotive).DynamicBrakeForceN > 0) ? Math.Abs(car.MotiveForceN) : 0))))
                     continue;
                 int j = i;
                 float f = 0;
@@ -4087,7 +4097,13 @@ namespace Orts.Simulation.Physics
                 for (;;)
                 {
                     if (car.IsDriveable)
+                    {
                         f += car.TotalForceN + car.FrictionForceN + car.CurveForceN + car.TunnelForceN;
+                        if ((car as MSTSLocomotive).DynamicBrakeForceN > 0)
+                        {
+                            f += Math.Abs(car.MotiveForceN);
+                        }
+                    }
                     else
                         f += car.TotalForceN + car.FrictionForceN + car.BrakeForceN + car.CurveForceN + car.TunnelForceN;
                     m += car.MassKG;
