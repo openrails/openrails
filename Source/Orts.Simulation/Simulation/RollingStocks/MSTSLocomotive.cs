@@ -1074,7 +1074,7 @@ namespace Orts.Simulation.RollingStocks
                 float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, AbsSpeedMpS);
                 if (f > 0 && PowerOn)
                 {
-                    MotiveForceN -= (SpeedMpS > 0 ? 1 : -1) * f;
+                    MotiveForceN -= (SpeedMpS > 0 ? 1 : SpeedMpS < 0 ? -1 : Direction == Direction.Reverse ? -1 : 1) * f;
                     DynamicBrakeForceN = f;
                 }
                 else
