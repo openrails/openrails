@@ -131,6 +131,7 @@ namespace Orts.Simulation.Physics
         public RetainerSetting RetainerSetting = RetainerSetting.Exhaust;
         public int RetainerPercent = 100;
         public float TotalTrainBrakePipeVolumeM3; // Total volume of train brake pipe
+        public int FirstCarUiD;                          // UiD of first car in the train
         public float HUDWagonBrakeCylinderPSI;         // Display value for wagon HUD
         public float HUDLocomotiveBrakeCylinderPSI;    // Display value for locomotive HUD
         public bool HUDBrakeSlide;                     // Display indication for brake wheel slip
@@ -421,6 +422,43 @@ namespace Orts.Simulation.Physics
                         //    lead.EngineBrakeController.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, 1000);
                     }
             }
+        }
+
+        // Get the UiD value of the first wagon - searches along train, and gets the integer UiD of the first wagon that is not an engine or tender
+        public virtual int GetFirstWagonUiD()
+        {
+            FirstCarUiD = 0; // Initialise at zero every time routine runs
+            foreach (TrainCar car in Cars)
+            {
+                if (car.WagonType != MSTSWagon.WagonTypes.Engine && car.WagonType != MSTSWagon.WagonTypes.Tender) // If car is not a locomotive or tender, then set UiD
+                {
+                    FirstCarUiD = car.UiD;
+                }
+                if(FirstCarUiD != 0)
+                {
+                    break; // If UiD has been set, then don't go any further
+                }
+            }
+            return FirstCarUiD;
+        }
+
+        // Get the UiD value of the first wagon - searches along train, and gets the integer UiD of the first wagon that is not an engine or tender
+        public virtual bool GetWagonsAttachedIndication()
+        {
+            WagonsAttached = false;
+             foreach (TrainCar car in Cars)
+            {
+                // Test to see if freight or passenger wagons attached (used to set BC pressure in locomotive or wagons)
+                if (car.WagonType == MSTSWagon.WagonTypes.Freight || car.WagonType == MSTSWagon.WagonTypes.Passenger)
+                {
+                    WagonsAttached = true;
+                }
+                else
+                {
+                    WagonsAttached = false;
+                }
+             }
+             return WagonsAttached; 
         }
 
         //================================================================================================//
@@ -1435,6 +1473,12 @@ namespace Orts.Simulation.Physics
             // Update train physics, position and movement
 
             physicsUpdate(elapsedClockSeconds);
+
+            // Update the UiD of First Wagon
+            FirstCarUiD = GetFirstWagonUiD();
+
+            // Check to see if wagons are attached to train
+            WagonsAttached = GetWagonsAttachedIndication();
 
             //Exit here when train is static consist (no further actions required)
 
