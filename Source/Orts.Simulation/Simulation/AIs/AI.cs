@@ -768,7 +768,6 @@ namespace Orts.Simulation.AIs
                     car.Flipped = wagon.Flip;
                     train.Cars.Add(car);
                     car.Train = train;
-                    car.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
                     train.Length += car.CarLengthM;
                     car.UiD = wagon.UiD;
                     if (isInitialPlayerTrain)
@@ -785,8 +784,15 @@ namespace Orts.Simulation.AIs
                             mstsSteamLocomotive.TenderWaterVolumeUKG = (ORTS.Common.Kg.ToLb(mstsSteamLocomotive.MaxTenderWaterMassKG) / 10.0f) * Simulator.Activity.Tr_Activity.Tr_Activity_Header.FuelWater / 100.0f;
                             mstsSteamLocomotive.TenderCoalMassKG = mstsSteamLocomotive.MaxTenderCoalMassKG * Simulator.Activity.Tr_Activity.Tr_Activity_Header.FuelCoal / 100.0f;
                         }
+                        if (train.InitialSpeed != 0)
+                            car.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
                     }
-                    else car.CarID = "AI" + train.Number.ToString() + " - " + (train.Cars.Count - 1).ToString();
+                    else
+                    {
+                        car.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
+                        car.CarID = "AI" + train.Number.ToString() + " - " + (train.Cars.Count - 1).ToString();
+                    }
+
                 }
                 catch (Exception error)
                 {
@@ -810,7 +816,7 @@ namespace Orts.Simulation.AIs
 #endif
             train.CreateRoute(false);  // create route without use of FrontTDBtraveller
             train.CheckFreight(); // check if train is freight or passenger
-            train.AITrainDirectionForward = true;
+            if (!isInitialPlayerTrain || train.InitialSpeed != 0) train.AITrainDirectionForward = true;
             train.BrakeLine3PressurePSI = 0;
 
 
