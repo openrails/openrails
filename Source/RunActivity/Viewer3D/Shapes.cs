@@ -1892,7 +1892,7 @@ namespace Orts.Viewer3D
                     else
                         negativeBogie = false;
                 }
-                else if (MatrixNames[iNode].Contains("WHEELS") && Matrices[iNode].M43 == Matrices[iNode - 1].M43)
+                else if ( iNode > 0 && MatrixNames[iNode].Contains("WHEELS") && Matrices[iNode].M43 == Matrices[iNode - 1].M43)
                 {
                     if (Matrices[iNode].M43 > 0 && negativeBogie)
                     {
