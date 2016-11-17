@@ -9015,18 +9015,8 @@ namespace Orts.Simulation.Physics
             }
 
             // Set track sections to occupied - forward direction only
-
             OccupiedTrack.Clear();
-            if (TrainRoute != null) TrainRoute.Clear();
-            TrainRoute = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset,
-                PresentPosition[1].TCDirection, Length, false, true, false);
-
-            foreach (TCRouteElement thisElement in TrainRoute)
-            {
-                TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
-                thisSection.Reserve(routedForward, TrainRoute);
-                thisSection.SetOccupied(routedForward);
-            }
+            UpdateOccupancies();
 
             // add sections to required actions list
 
@@ -9084,6 +9074,102 @@ namespace Orts.Simulation.Physics
             }
 
             // add present occupied sections to train route to avoid out-of-path detection
+
+            AddTrackSections();
+ 
+            // reset signals etc.
+
+            SignalObjectItems.Clear();
+            NextSignalObject[0] = null;
+            NextSignalObject[1] = null;
+            LastReservedSection[0] = PresentPosition[0].TCSectionIndex;
+            LastReservedSection[1] = PresentPosition[0].TCSectionIndex;
+
+            InitializeSignals(true);
+
+            if (TCRoute != null && (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL || ControlMode == TRAIN_CONTROL.AUTO_NODE))
+            {
+                PresentPosition[0].RouteListIndex = ValidRoute[0].GetRouteIndex(PresentPosition[0].TCSectionIndex, 0);
+                PresentPosition[1].RouteListIndex = ValidRoute[0].GetRouteIndex(PresentPosition[1].TCSectionIndex, 0);
+
+                SwitchToNodeControl(PresentPosition[0].TCSectionIndex);
+                CheckDeadlock(ValidRoute[0], Number);
+                TCRoute.SetReversalOffset(Length);
+            }
+            else if (ControlMode == TRAIN_CONTROL.MANUAL)
+            {
+                // set track occupation
+
+                UpdateSectionStateManual();
+
+                // reset routes and check sections either end of train
+
+                PresentPosition[0].RouteListIndex = -1;
+                PresentPosition[1].RouteListIndex = -1;
+                PreviousPosition[0].RouteListIndex = -1;
+
+                UpdateManualMode(-1);
+            }
+            else if (ControlMode == TRAIN_CONTROL.EXPLORER)
+            {
+                // set track occupation
+
+                UpdateSectionStateExplorer();
+
+                // reset routes and check sections either end of train
+
+                PresentPosition[0].RouteListIndex = -1;
+                PresentPosition[1].RouteListIndex = -1;
+                PreviousPosition[0].RouteListIndex = -1;
+
+                UpdateExplorerMode(-1);
+            }
+            else
+            {
+                signalRef.requestClearNode(routedForward, ValidRoute[0]);
+            }
+
+#if DEBUG_REPORTS
+            File.AppendAllText(@"C:\temp\printproc.txt",
+                            "Train " + Number.ToString() +
+                            " couple procedure completed \n");
+#endif
+            if (CheckTrain)
+            {
+                File.AppendAllText(@"C:\temp\checktrain.txt",
+                                "Train " + Number.ToString() +
+                                " couple procedure completed \n");
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Update occupancies
+        // Update track occupancies after coupling
+        //
+        public void UpdateOccupancies()
+        {
+            if (TrainRoute != null) TrainRoute.Clear();
+            TrainRoute = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset,
+                PresentPosition[1].TCDirection, Length, false, true, false);
+
+            foreach (TCRouteElement thisElement in TrainRoute)
+            {
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                thisSection.Reserve(routedForward, TrainRoute);
+                if (!thisSection.CircuitState.ThisTrainOccupying(this))
+                    thisSection.SetOccupied(routedForward);
+            }
+        }
+
+        //================================================================================================//
+        //
+        // AddTrackSections
+        // Add track sections not present in path to avoid out-of-path detection
+        //
+
+        public void AddTrackSections()
+        {
             // check if first section in route
 
             if (ValidRoute[0].GetRouteIndex(OccupiedTrack[0].Index, 0) > 0)
@@ -9173,70 +9259,6 @@ namespace Orts.Simulation.Physics
                         lastSectionIndex = nextSectionIndex;
                     }
                 }
-            }
-
-            // reset signals etc.
-
-            SignalObjectItems.Clear();
-            NextSignalObject[0] = null;
-            NextSignalObject[1] = null;
-            LastReservedSection[0] = PresentPosition[0].TCSectionIndex;
-            LastReservedSection[1] = PresentPosition[0].TCSectionIndex;
-
-            InitializeSignals(true);
-
-            if (TCRoute != null && (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL || ControlMode == TRAIN_CONTROL.AUTO_NODE))
-            {
-                PresentPosition[0].RouteListIndex = ValidRoute[0].GetRouteIndex(PresentPosition[0].TCSectionIndex, 0);
-                PresentPosition[1].RouteListIndex = ValidRoute[0].GetRouteIndex(PresentPosition[1].TCSectionIndex, 0);
-
-                SwitchToNodeControl(PresentPosition[0].TCSectionIndex);
-                CheckDeadlock(ValidRoute[0], Number);
-                TCRoute.SetReversalOffset(Length);
-            }
-            else if (ControlMode == TRAIN_CONTROL.MANUAL)
-            {
-                // set track occupation
-
-                UpdateSectionStateManual();
-
-                // reset routes and check sections either end of train
-
-                PresentPosition[0].RouteListIndex = -1;
-                PresentPosition[1].RouteListIndex = -1;
-                PreviousPosition[0].RouteListIndex = -1;
-
-                UpdateManualMode(-1);
-            }
-            else if (ControlMode == TRAIN_CONTROL.EXPLORER)
-            {
-                // set track occupation
-
-                UpdateSectionStateExplorer();
-
-                // reset routes and check sections either end of train
-
-                PresentPosition[0].RouteListIndex = -1;
-                PresentPosition[1].RouteListIndex = -1;
-                PreviousPosition[0].RouteListIndex = -1;
-
-                UpdateExplorerMode(-1);
-            }
-            else
-            {
-                signalRef.requestClearNode(routedForward, ValidRoute[0]);
-            }
-
-#if DEBUG_REPORTS
-            File.AppendAllText(@"C:\temp\printproc.txt",
-                            "Train " + Number.ToString() +
-                            " couple procedure completed \n");
-#endif
-            if (CheckTrain)
-            {
-                File.AppendAllText(@"C:\temp\checktrain.txt",
-                                "Train " + Number.ToString() +
-                                " couple procedure completed \n");
             }
         }
 
