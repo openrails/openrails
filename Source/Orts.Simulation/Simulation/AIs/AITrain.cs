@@ -4332,7 +4332,8 @@ namespace Orts.Simulation.AIs
                 Simulator.TrainDictionary.Remove(attachTrain.Number);
                 Simulator.NameDictionary.Remove(attachTrain.Name.ToLower());
             }
-
+            UpdateOccupancies();
+            AddTrackSections();
             ResetActions(true);
             physicsUpdate(0);
 
