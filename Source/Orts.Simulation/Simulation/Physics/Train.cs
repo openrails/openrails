@@ -4192,6 +4192,16 @@ namespace Orts.Simulation.Physics
             TrackCircuitSection thisSection = signalRef.TrackCircuitList[PresentPosition[1].TCSectionIndex];
             offset = PresentPosition[1].TCOffset;
 
+            //<CSComment> must do preliminary calculation of PresentPosition[0] parameters in order to use subsequent code
+            // limited however to case of train fully in one section to avoid placement ambiguities </CSComment>
+            float offsetFromEnd = thisSection.Length - (Length + offset);
+            if (PresentPosition[0].TCSectionIndex == -1 && offsetFromEnd >= 0) // train is fully in one section
+            {
+                PresentPosition[0].TCDirection = PresentPosition[1].TCDirection;
+                PresentPosition[0].TCSectionIndex = PresentPosition[1].TCSectionIndex;
+                PresentPosition[0].TCOffset = PresentPosition[1].TCOffset + trainLength;
+            }
+
             // create route if train has none
 
             if (ValidRoute[0] == null)
@@ -9603,15 +9613,18 @@ namespace Orts.Simulation.Physics
                             if (otherRouteDict.ContainsKey(thisSectionIndex))
                             {
                                 int otherTrainDirection = otherRouteDict[thisSectionIndex];
-                                if (otherTrainDirection != thisSectionDirection)
+                                //<CSComment> Right part of OR clause refers to initial placement with trains back-to-back and running away one from the other</CSComment>
+                                if (otherTrainDirection == thisSectionDirection ||
+                                    (PresentPosition[1].TCSectionIndex == otherTrain.PresentPosition[1].TCSectionIndex && thisSectionIndex == PresentPosition[1].TCSectionIndex &&
+                                    PresentPosition[1].TCOffset + otherTrain.PresentPosition[1].TCOffset - 1 > thisSection.Length))
+                                {
+                                    iElement = EndCommonSection(iElement, thisRoute, otherRoute); 
+                                }
+                                else
                                 {
                                     int[] endDeadlock = SetDeadlock_pathBased(iElement, thisRoute, otherRoute, otherTrain);
                                     // use end of alternative path if set - if so, compensate for iElement++
                                     iElement = endDeadlock[1] > 0 ? --endDeadlock[1] : endDeadlock[0];
-                                }
-                                else
-                                {
-                                    iElement = EndCommonSection(iElement, thisRoute, otherRoute);
                                 }
                             }
                         }
@@ -9796,7 +9809,15 @@ namespace Orts.Simulation.Physics
                             if (otherRouteDict.ContainsKey(thisSectionIndex))
                             {
                                 int otherTrainDirection = otherRouteDict[thisSectionIndex];
-                                if (otherTrainDirection != thisSectionDirection)
+                                //<CSComment> Right part of OR clause refers to initial placement with trains back-to-back and running away one from the other</CSComment>
+                                if (otherTrainDirection == thisSectionDirection ||
+                                    (PresentPosition[1].TCSectionIndex == otherTrain.PresentPosition[1].TCSectionIndex && thisSectionIndex == PresentPosition[1].TCSectionIndex &&
+                                    PresentPosition[1].TCOffset + otherTrain.PresentPosition[1].TCOffset - 1 > thisSection.Length))
+                                {
+                                    iElement = EndCommonSection(iElement, thisRoute, otherRoute);
+  
+                                }
+                                else
                                 {
                                     if (CheckRealDeadlock_locationBased(thisRoute, otherRoute, ref iElement))
                                     {
@@ -9804,10 +9825,6 @@ namespace Orts.Simulation.Physics
                                         // use end of alternative path if set
                                         iElement = endDeadlock[1] > 0 ? --endDeadlock[1] : endDeadlock[0];
                                     }
-                                }
-                                else
-                                {
-                                    iElement = EndCommonSection(iElement, thisRoute, otherRoute);
                                 }
                             }
                         }
