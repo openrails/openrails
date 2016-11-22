@@ -98,7 +98,6 @@ namespace Orts.Simulation
 
             bool validTrain = false;
             bool validStaticConsist = false;
-            //bool validStaticTrain = false;
             //var stopTime = elapsedTime; // This has been set up, but it is not being used in the code.
             //stopTime = 0;
 
@@ -120,13 +119,26 @@ namespace Orts.Simulation
                 var reqDist = 0f; // actual used distance
                 var hornReqDist = 0f; // used distance for horn blow
 
-
-                if ((train.TrainType == Train.TRAINTYPE.STATIC) && WorldLocation.Within(crossing.Location, train.FrontTDBTraveller.WorldLocation, minimumDist) || WorldLocation.Within(crossing.Location, train.RearTDBTraveller.WorldLocation, minimumDist))
+                // The purpose of this test is to validate the static consist that is within vicinity of the crossing.  
+                if ((train.TrainType == Train.TRAINTYPE.STATIC) && WorldLocation.Within(crossing.Location, train.FrontTDBTraveller.WorldLocation, (minimumDist + (train.Length/2))) || WorldLocation.Within(crossing.Location, train.RearTDBTraveller.WorldLocation, minimumDist + (minimumDist + (train.Length / 2))))
                 {
-                    validStaticConsist = true;
+                    if (WorldLocation.Within(crossing.Location, train.FrontTDBTraveller.WorldLocation, minimumDist) || WorldLocation.Within(crossing.Location, train.RearTDBTraveller.WorldLocation, minimumDist))
+                    {
+                        validStaticConsist = true;
+                    }
+                    else
+                    {
+                        foreach (var scar in train.Cars)
+                        {
+                            if (WorldLocation.Within(crossing.Location, scar.WorldPosition.WorldLocation, minimumDist))
+                            {
+                                validStaticConsist = true;
+                            }
+                        }
+                    }
                 }
 
-                else if ((train.TrainType != Train.TRAINTYPE.STATIC) && WorldLocation.Within(crossing.Location, train.FrontTDBTraveller.WorldLocation, totalDist) || WorldLocation.Within(crossing.Location, train.RearTDBTraveller.WorldLocation, totalDist))
+                if ((train.TrainType != Train.TRAINTYPE.STATIC) && WorldLocation.Within(crossing.Location, train.FrontTDBTraveller.WorldLocation, totalDist) || WorldLocation.Within(crossing.Location, train.RearTDBTraveller.WorldLocation, totalDist))
                 {
                     validTrain = true;
                     reqDist = totalDist;
