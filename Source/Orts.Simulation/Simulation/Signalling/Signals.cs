@@ -87,6 +87,9 @@ namespace Orts.Simulation.Signalling
         public int deadlockIndex;                               // last used reference index
         public Dictionary<int, int> DeadlockReference;          // cross-reference between trackcircuitsection (key) and deadlockinforeference (value)
 
+        public List<Milepost> MilepostList = new List<Milepost>();                     // list of mileposts
+        private int foundMileposts;
+
         //================================================================================================//
         ///
         /// Constructor
@@ -119,7 +122,7 @@ namespace Orts.Simulation.Signalling
 
             // build list of signals in TDB file
 
-            BuildSignalList(trackDB.TrItemTable, trackDB.TrackNodes, tsectiondat, tdbfile, platformList);
+            BuildSignalList(trackDB.TrItemTable, trackDB.TrackNodes, tsectiondat, tdbfile, platformList, MilepostList);
 
             if (foundSignals > 0)
             {
@@ -165,7 +168,7 @@ namespace Orts.Simulation.Signalling
             // Process trough information
             //
 
-            ProcessTroughs();
+            ProcessTroughs();         
 
             //
             // Print all info (DEBUG only)
@@ -591,7 +594,7 @@ namespace Orts.Simulation.Signalling
         ///
 
         private void BuildSignalList(TrItem[] TrItems, TrackNode[] trackNodes, TrackSectionsFile tsectiondat,
-                TrackDatabaseFile tdbfile, Dictionary<int, int> platformList)
+                TrackDatabaseFile tdbfile, Dictionary<int, int> platformList, List<Milepost> milepostList)
         {
 
             //  Determaine the number of signals in the track Objects list
@@ -630,7 +633,7 @@ namespace Orts.Simulation.Signalling
 
             for (int i = 1; i < trackNodes.Length; i++)
             {
-                ScanSection(TrItems, trackNodes, i, tsectiondat, tdbfile, platformList);
+                ScanSection(TrItems, trackNodes, i, tsectiondat, tdbfile, platformList, milepostList);
             }
             if (noSignals > 0)
             {
@@ -914,9 +917,10 @@ namespace Orts.Simulation.Signalling
         //
 
         private void ScanSection(TrItem[] TrItems, TrackNode[] trackNodes, int index,
-                               TrackSectionsFile tsectiondat, TrackDatabaseFile tdbfile, Dictionary<int, int> platformList)
+                               TrackSectionsFile tsectiondat, TrackDatabaseFile tdbfile, Dictionary<int, int> platformList, List <Milepost> milepostList)
         {
-            int lastSignal = -1;                // Index to last signal found in path -1 if none
+            int lastSignal = -1;                // Index to last signal found in path; -1 if none
+            int lastMilepost = -1;                // Index to last milepost found in path; -1 if none
 
             if (trackNodes[index].TrEndNode)
                 return;
@@ -924,7 +928,7 @@ namespace Orts.Simulation.Signalling
             //  Is it a vector node then it may contain objects.
             if (trackNodes[index].TrVectorNode != null && trackNodes[index].TrVectorNode.NoItemRefs > 0)
             {
-                // Any obects ?
+                // Any objects ?
                 for (int i = 0; i < trackNodes[index].TrVectorNode.NoItemRefs; i++)
                 {
                     if (TrItems[trackNodes[index].TrVectorNode.TrItemRefs[i]] != null)
@@ -961,6 +965,12 @@ namespace Orts.Simulation.Signalling
                                 lastSignal = AddSpeed(index, i, speedItem, TDBRef, tsectiondat, tdbfile);
                                 speedItem.SigObj = lastSignal;
 
+                            }
+                            else if (speedItem.IsMilePost)
+                            {
+                                speedItem.SigObj = foundMileposts;
+                                lastMilepost = AddMilepost(index, i, speedItem, TDBRef, tsectiondat, tdbfile);
+                                speedItem.SigObj = lastMilepost;
                             }
                         }
                         else if (TrItems[TDBRef].ItemType == TrItem.trItemType.trPLATFORM)
@@ -1140,6 +1150,28 @@ namespace Orts.Simulation.Signalling
             foundSignals++;
             return foundSignals - 1;
         } // AddSpeed
+
+        //================================================================================================//
+        ///
+        /// This method adds a new Milepost to the list
+        ///
+
+        private int AddMilepost(int trackNode, int nodeIndx, SpeedPostItem speedItem, int TDBRef, TrackSectionsFile tsectiondat, TrackDatabaseFile tdbfile)
+        {
+            Milepost milepost = new Milepost();
+            milepost.TrItemId = (uint)TDBRef;
+            milepost.MilepostValue = speedItem.SpeedInd;
+            MilepostList.Add(milepost);
+ 
+#if DEBUG_PRINT
+            File.AppendAllText(@"C:\temp\speedpost.txt",
+				String.Format("\nMilepost placed : at : {0} {1}:{2} {3}. String: {4}\n",
+				speedItem.TileX, speedItem.TileZ, speedItem.X, speedItem.Z, speedItem.SpeedInd));
+#endif
+
+            foundMileposts = MilepostList.Count;
+            return foundMileposts - 1;
+        } // AddMilepost
 
         //================================================================================================//
         //
@@ -1586,6 +1618,11 @@ namespace Orts.Simulation.Signalling
             {
                 ProcessNodes(iNode, TrItems, trackNodes, tsectiondat);
             }
+
+            // Delete MilepostList as it is no more needed
+            MilepostList.Clear();
+            foundMileposts = -1;
+            MilepostList = null;
 
 #if ACTIVITY_EDITOR
             //
@@ -2059,7 +2096,7 @@ namespace Orts.Simulation.Signalling
                 }
             }
 
-        //
+            //
             // Insert speedpost
             //
 
@@ -2068,39 +2105,57 @@ namespace Orts.Simulation.Signalling
                 SpeedPostItem speedItem = (SpeedPostItem)thisItem;
                 if (speedItem.SigObj >= 0)
                 {
-                    SignalObject thisSpeedpost = SignalObjects[speedItem.SigObj];
-                    float speedpostDistance = thisSpeedpost.DistanceTo(TDBTrav);
-                    if (thisSpeedpost.direction == 1)
-                    {
-                        speedpostDistance = thisCircuit.Length - speedpostDistance;
+                    if (!speedItem.IsMilePost)
+                    { 
+                        SignalObject thisSpeedpost = SignalObjects[speedItem.SigObj];
+                        float speedpostDistance = thisSpeedpost.DistanceTo(TDBTrav);
+                        if (thisSpeedpost.direction == 1)
+                        {
+                            speedpostDistance = thisCircuit.Length - speedpostDistance;
+                        }
+
+                        if (speedpostDistance == lastDistance[thisSpeedpost.direction]) // if at same position as last item
+                        {
+                            speedpostDistance = speedpostDistance + 0.001f;  // shift 1 mm so it will be found
+                        }
+
+                        TrackCircuitSignalItem thisTCItem =
+                                new TrackCircuitSignalItem(thisSpeedpost, speedpostDistance);
+
+                        int directionList = thisSpeedpost.direction == 0 ? 1 : 0;
+                        TrackCircuitSignalList thisSignalList =
+                                thisCircuit.CircuitItems.TrackCircuitSpeedPosts[directionList];
+
+                        if (directionList == 0)
+                        {
+                            thisSignalList.TrackCircuitItem.Insert(0, thisTCItem);
+                        }
+                        else
+                        {
+                            thisSignalList.TrackCircuitItem.Add(thisTCItem);
+                        }
+
+                        newLastDistance[thisSpeedpost.direction] = speedpostDistance;
                     }
 
-                    if (speedpostDistance == lastDistance[thisSpeedpost.direction]) // if at same position as last item
+                    // Milepost
+                    else if (speedItem.IsMilePost)
                     {
-                        speedpostDistance = speedpostDistance + 0.001f;  // shift 1 mm so it will be found
+                        Milepost thisMilepost = MilepostList[speedItem.SigObj];
+                        TrItem milepostTrItem = Simulator.TDB.TrackDB.TrItemTable[thisMilepost.TrItemId];
+                        float milepostDistance = TDBTrav.DistanceTo(milepostTrItem.TileX, milepostTrItem.TileZ, milepostTrItem.X, milepostTrItem.Y, milepostTrItem.Z);
+
+                        TrackCircuitMilepost thisTCItem =
+                                new TrackCircuitMilepost(thisMilepost, milepostDistance, thisCircuit.Length - milepostDistance);
+
+                        List<TrackCircuitMilepost> thisMilepostList =
+                                thisCircuit.CircuitItems.TrackCircuitMileposts;
+                        thisMilepostList.Add(thisTCItem);
                     }
-
-                    TrackCircuitSignalItem thisTCItem =
-                            new TrackCircuitSignalItem(thisSpeedpost, speedpostDistance);
-
-                    int directionList = thisSpeedpost.direction == 0 ? 1 : 0;
-                    TrackCircuitSignalList thisSignalList =
-                            thisCircuit.CircuitItems.TrackCircuitSpeedPosts[directionList];
-
-                    if (directionList == 0)
-                    {
-                        thisSignalList.TrackCircuitItem.Insert(0, thisTCItem);
-                    }
-                    else
-                    {
-                        thisSignalList.TrackCircuitItem.Add(thisTCItem);
-                    }
-
-                    newLastDistance[thisSpeedpost.direction] = speedpostDistance;
                 }
             }
 
-        //
+            //
             // Insert crossover in special crossover list
             //
 
@@ -2549,17 +2604,17 @@ namespace Orts.Simulation.Signalling
 
             // copy milepost information
 
-            foreach (TrackCircuitMilepost thisMilePost in orgSection.CircuitItems.MilePosts)
+            foreach (TrackCircuitMilepost thisMilepost in orgSection.CircuitItems.TrackCircuitMileposts)
             {
-                if (thisMilePost.MilepostLocation[0] > replSection.Length)
+                if (thisMilepost.MilepostLocation[0] > replSection.Length)
                 {
-                    thisMilePost.MilepostLocation[0] -= replSection.Length;
-                    newSection.CircuitItems.MilePosts.Add(thisMilePost);
+                    thisMilepost.MilepostLocation[0] -= replSection.Length;
+                    newSection.CircuitItems.TrackCircuitMileposts.Add(thisMilepost);
                 }
                 else
                 {
-                    thisMilePost.MilepostLocation[1] -= newSection.Length;
-                    replSection.CircuitItems.MilePosts.Add(thisMilePost);
+                    thisMilepost.MilepostLocation[1] -= newSection.Length;
+                    replSection.CircuitItems.TrackCircuitMileposts.Add(thisMilepost);
                 }
             }
 
@@ -2905,7 +2960,7 @@ namespace Orts.Simulation.Signalling
 
         //================================================================================================//
         //
-        // Set trackcircuit cross reference for signal items
+        // Set trackcircuit cross reference for signal items and speedposts
         //
 
         private void setSignalCrossReference(int thisNode)
@@ -2970,6 +3025,21 @@ namespace Orts.Simulation.Signalling
                     }
                 }
             }
+
+
+            // process mileposts
+
+            foreach (TrackCircuitMilepost thisItem in thisSection.CircuitItems.TrackCircuitMileposts)
+            {
+                Milepost thisMilepost = thisItem.MilepostRef;
+
+                if (thisMilepost.TCReference <= 0)
+                {
+                    thisMilepost.TCReference = thisNode;
+                    thisMilepost.TCOffset = thisItem.MilepostLocation[0];
+                }
+            }
+            
         }
 
         //================================================================================================//
@@ -7140,7 +7210,7 @@ namespace Orts.Simulation.Signalling
         public TrackCircuitSignalList[]
             TrackCircuitSpeedPosts = new TrackCircuitSignalList[2];
         // List of speedposts (per direction) //
-        public List<TrackCircuitMilepost> MilePosts = new List<TrackCircuitMilepost>();
+        public List<TrackCircuitMilepost> TrackCircuitMileposts = new List<TrackCircuitMilepost>();
         // List of mileposts //
 
 #if ACTIVITY_EDITOR
@@ -7182,8 +7252,21 @@ namespace Orts.Simulation.Signalling
 
     public class TrackCircuitMilepost
     {
-        public float MilepostValue;                        // milepost value                   //
+        public Milepost MilepostRef;                       // reference to milepost 
         public float[] MilepostLocation = new float[2];    // milepost location from both ends //
+        public uint Idx;                                   // milepost Idx within TrItemTable // 
+
+         //================================================================================================//
+        //
+        // Constructor
+        //
+
+        public TrackCircuitMilepost(Milepost thisRef, float thisLocation0, float thisLocation1)
+        {
+            MilepostRef = thisRef;
+            MilepostLocation[0] = thisLocation0;
+            MilepostLocation[1] = thisLocation1; 
+        }
     }
 
     //================================================================================================//
@@ -13372,6 +13455,29 @@ namespace Orts.Simulation.Signalling
             {
                 outf.Write(thisIndex);
             }
+        }
+    }
+
+    //================================================================================================//
+    //
+    // Milepost Object
+    //
+    //================================================================================================//
+
+    public class Milepost
+    {
+        public uint TrItemId; // TrItemId of milepost 
+        public int TCReference = -1;            // Reference to TrackCircuit (index)
+        public float TCOffset;                  // Position within TrackCircuit
+        public float MilepostValue;             // milepost value
+
+        public Milepost(uint trItemId)
+        {
+            TrItemId = trItemId;
+        }
+
+        public Milepost()
+        {
         }
     }
 

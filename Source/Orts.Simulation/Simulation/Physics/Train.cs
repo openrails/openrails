@@ -6170,6 +6170,8 @@ namespace Orts.Simulation.Physics
             TCSubpathRoute newRouteF = CheckManualPath(0, PresentPosition[0], ValidRoute[0], true, ref EndAuthorityType[0],
                 ref DistanceToEndNodeAuthorityM[0]);
             ValidRoute[0] = newRouteF;
+            int routeIndex = ValidRoute[0].GetRouteIndex(PresentPosition[0].TCSectionIndex, 0);
+            PresentPosition[0].RouteListIndex = routeIndex;
 
             // check present reverse
             // reverse present rear position direction to build correct path backwards
@@ -7265,6 +7267,8 @@ namespace Orts.Simulation.Physics
             TCSubpathRoute newRouteF = CheckExplorerPath(0, PresentPosition[0], ValidRoute[0], true, ref EndAuthorityType[0],
                 ref DistanceToEndNodeAuthorityM[0]);
             ValidRoute[0] = newRouteF;
+            int routeIndex = ValidRoute[0].GetRouteIndex(PresentPosition[0].TCSectionIndex, 0);
+            PresentPosition[0].RouteListIndex = routeIndex;
 
             // check present reverse
             // reverse present rear position direction to build correct path backwards
@@ -12023,6 +12027,9 @@ namespace Orts.Simulation.Physics
             // set max speed
             thisInfo.allowedSpeedMpS = Math.Min(AllowedMaxSpeedMpS, TrainMaxSpeedMpS);
 
+            // set gradient
+            thisInfo.currentElevationPercent = Simulator.PlayerLocomotive != null ? Simulator.PlayerLocomotive.CurrentElevationPercent : 0;
+
             // set direction
             thisInfo.direction = MUDirection == Direction.Forward ? 0 : (MUDirection == Direction.Reverse ? 1 : -1);
 
@@ -12090,10 +12097,62 @@ namespace Orts.Simulation.Physics
             if (StationStops != null && StationStops.Count > 0 &&
                 (!maxAuthSet || StationStops[0].DistanceToTrainM < DistanceToEndNodeAuthorityM[0]) &&
                 StationStops[0].SubrouteIndex == TCRoute.activeSubpath)
-            {
+             {
                 TrainObjectItem nextItem = new TrainObjectItem(StationStops[0].DistanceToTrainM, (int)StationStops[0].PlatformItem.Length);
                 thisInfo.ObjectInfoForward.Add(nextItem);
+             }            
+
+
+            // Draft to display more station stops
+            /*            if (StationStops != null && StationStops.Count > 0)
+            {
+                for (int iStation = 0; iStation < StationStops.Count; iStation++)
+                {
+                    if ((!maxAuthSet || StationStops[iStation].DistanceToTrainM <= DistanceToEndNodeAuthorityM[0]) && StationStops[iStation].SubrouteIndex == TCRoute.activeSubpath)
+                    {
+                        TrainObjectItem nextItem = new TrainObjectItem(StationStops[iStation].DistanceToTrainM, (int)StationStops[iStation].PlatformItem.Length);
+                        thisInfo.ObjectInfoForward.Add(nextItem);
+                    }
+                    else break;
+                }
+            }*/
+
+            // run along forward path to catch all mileposts
+
+            if (ValidRoute[0] != null)
+            {
+                TrainObjectItem thisItem;
+                float distanceToTrainM = 0.0f;
+                float offset = PresentPosition[0].TCOffset;
+                float sectionStart = -offset;
+                int startRouteIndex = PresentPosition[0].RouteListIndex;
+                if (startRouteIndex < 0) startRouteIndex = ValidRoute[0].GetRouteIndex(PresentPosition[0].TCSectionIndex, 0);
+                if (startRouteIndex >= 0)
+                {
+                    for (int iRouteElement = startRouteIndex; iRouteElement < ValidRoute[0].Count && distanceToTrainM < 7000; iRouteElement++)
+                    {
+                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[ValidRoute[0][iRouteElement].TCSectionIndex];
+                        int sectionDirection = ValidRoute[0][iRouteElement].Direction;
+
+                        if (thisSection.CircuitItems.TrackCircuitMileposts != null)
+                        {
+                            foreach (TrackCircuitMilepost thisMilepostItem in thisSection.CircuitItems.TrackCircuitMileposts)
+                            {
+                                Milepost thisMilepost = thisMilepostItem.MilepostRef;
+                                distanceToTrainM = sectionStart + thisMilepostItem.MilepostLocation[sectionDirection == 1 ? 0 : 1];
+
+                                if (distanceToTrainM > 0 && distanceToTrainM < 7000)
+                                {
+                                    thisItem = new TrainObjectItem(thisMilepost.MilepostValue.ToString(), distanceToTrainM);
+                                    thisInfo.ObjectInfoForward.Add(thisItem);
+                                }
+                            }
+                        }
+                        sectionStart += thisSection.Length;
+                    }
+                }
             }
+
 
             // set object items - backward
 
@@ -12203,6 +12262,9 @@ namespace Orts.Simulation.Physics
             // set max speed
             thisInfo.allowedSpeedMpS = Math.Min(AllowedMaxSpeedMpS, TrainMaxSpeedMpS);
 
+            // set gradient
+            thisInfo.currentElevationPercent = Simulator.PlayerLocomotive != null ? Simulator.PlayerLocomotive.CurrentElevationPercent : 0;
+
             // set direction
             thisInfo.direction = MUDirection == Direction.Forward ? 0 : (MUDirection == Direction.Reverse ? 1 : -1);
 
@@ -12269,6 +12331,38 @@ namespace Orts.Simulation.Physics
 
                     sectionStart += thisSection.Length;
                 }
+
+                // do it separately for mileposts
+
+                distanceToTrainM = 0.0f;
+                offset = PresentPosition[0].TCOffset;
+                sectionStart = -offset;
+                int startRouteIndex = PresentPosition[0].RouteListIndex;
+                if (startRouteIndex < 0) startRouteIndex = ValidRoute[0].GetRouteIndex(PresentPosition[0].TCSectionIndex, 0);
+                if (startRouteIndex >= 0)
+                {
+                    for (int iRouteElement = startRouteIndex; iRouteElement < ValidRoute[0].Count && distanceToTrainM < 7000; iRouteElement++)
+                    {
+                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[ValidRoute[0][iRouteElement].TCSectionIndex];
+                        int sectionDirection = ValidRoute[0][iRouteElement].Direction;
+
+                        if (thisSection.CircuitItems.TrackCircuitMileposts != null)
+                        {
+                            foreach (TrackCircuitMilepost thisMilepostItem in thisSection.CircuitItems.TrackCircuitMileposts)
+                            {
+                                Milepost thisMilepost = thisMilepostItem.MilepostRef;
+                                distanceToTrainM = sectionStart + thisMilepostItem.MilepostLocation[sectionDirection == 1 ? 0 : 1];
+
+                                if (distanceToTrainM > 0 && distanceToTrainM < 7000)
+                                {
+                                    thisItem = new TrainObjectItem(thisMilepost.MilepostValue.ToString(), distanceToTrainM);
+                                    thisInfo.ObjectInfoForward.Add(thisItem);
+                                }
+                            }
+                        }
+                        sectionStart += thisSection.Length;
+                    }
+                }
             }
 
             // set backward information
@@ -12321,6 +12415,38 @@ namespace Orts.Simulation.Physics
                     }
 
                     sectionStart += thisSection.Length;
+                }
+
+                // do it separately for mileposts
+
+                distanceToTrainM = 0.0f;
+                offset = PresentPosition[1].TCOffset;
+                sectionStart = offset - firstSection.Length;
+                int startRouteIndex = PresentPosition[1].RouteListIndex;
+                if (startRouteIndex < 0) startRouteIndex = ValidRoute[1].GetRouteIndex(PresentPosition[1].TCSectionIndex, 0);
+                if (startRouteIndex >= 0)
+                {
+                    for (int iRouteElement = startRouteIndex; iRouteElement < ValidRoute[1].Count && distanceToTrainM < 7000; iRouteElement++)
+                    {
+                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[ValidRoute[1][iRouteElement].TCSectionIndex];
+                        int sectionDirection = ValidRoute[1][iRouteElement].Direction;
+
+                        if (thisSection.CircuitItems.TrackCircuitMileposts != null)
+                        {
+                            foreach (TrackCircuitMilepost thisMilepostItem in thisSection.CircuitItems.TrackCircuitMileposts)
+                            {
+                                Milepost thisMilepost = thisMilepostItem.MilepostRef;
+                                distanceToTrainM = sectionStart + thisMilepostItem.MilepostLocation[sectionDirection == 1 ? 0 : 1];
+
+                                if (distanceToTrainM > 0 && distanceToTrainM < 7000)
+                                {
+                                    thisItem = new TrainObjectItem(thisMilepost.MilepostValue.ToString(), distanceToTrainM);
+                                    thisInfo.ObjectInfoBackward.Add(thisItem);
+                                }
+                            }
+                        }
+                        sectionStart += thisSection.Length;
+                    }
                 }
             }
         }
@@ -17559,6 +17685,7 @@ namespace Orts.Simulation.Physics
             public float speedMpS;                           // present speed
             public float projectedSpeedMpS;                  // projected speed
             public float allowedSpeedMpS;                    // max allowed speed
+            public float currentElevationPercent;            // elevation %
             public int direction;                            // present direction (0=forward, 1=backward)
             public int cabOrientation;                       // present cab orientation (0=forward, 1=backward)
             public bool isOnPath;                            // train is on defined path (valid in Manual mode only)
@@ -17596,7 +17723,8 @@ namespace Orts.Simulation.Physics
                 AUTHORITY,
                 REVERSAL,
                 OUT_OF_CONTROL,
-                WAITING_POINT
+                WAITING_POINT,
+                MILEPOST
             }
 
             public enum SpeedItemType
@@ -17616,6 +17744,7 @@ namespace Orts.Simulation.Physics
             public int StationPlatformLength;
             public SpeedItemType SpeedObjectType;
             public bool Valid;
+            public string ThisMile;
 
             // field validity :
             // if ItemType == SIGNAL :
@@ -17716,6 +17845,17 @@ namespace Orts.Simulation.Physics
                 AllowedSpeedMpS = -1;
                 DistanceToTrainM = thisDistanceM;
                 Enabled = enabled;
+            }
+
+            // Constructor for Milepost
+            public TrainObjectItem(string thisMile, float thisDistanceM)
+            {
+                ItemType = TRAINOBJECTTYPE.MILEPOST;
+                AuthorityType = END_AUTHORITY.NO_PATH_RESERVED;
+                SignalState = TrackMonitorSignalAspect.Clear_2;
+                AllowedSpeedMpS = -1;
+                DistanceToTrainM = thisDistanceM;
+                ThisMile = thisMile;
             }
 
             /// no need for Restore or Save items as info is not kept in permanent variables

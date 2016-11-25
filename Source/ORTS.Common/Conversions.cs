@@ -578,6 +578,15 @@ namespace ORTS.Common
         }
 
         /// <summary>
+        /// Formatted localized speed string, used to display speed limits, with 0 decimal precision and no unit of measure
+        /// </summary>
+        public static string FormatSpeedLimitNoUoM(float speed, bool isMetric)
+        {
+            return String.Format(CultureInfo.CurrentCulture,
+                "{0:F0}", MpS.FromMpS(speed, isMetric));
+        }
+        
+        /// <summary>
         /// Formatted unlocalized distance string, used in reports and logs.
         /// </summary>
         public static string FormatDistance(float distance, bool isMetric)
