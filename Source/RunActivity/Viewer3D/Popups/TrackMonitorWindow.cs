@@ -37,6 +37,7 @@ namespace Orts.Viewer3D.Popups
         Label SpeedProjected;
         Label SpeedAllowed;
         Label ControlMode;
+        Label Gradient;
         TrackMonitor Monitor;
 
         readonly Dictionary<Train.TRAIN_CONTROL, string> ControlModeLabels;
@@ -106,11 +107,13 @@ namespace Orts.Viewer3D.Popups
             {
                 var hbox = vbox.AddLayoutHorizontalLineOfText();
                 hbox.Add(ControlMode = new Label(hbox.RemainingWidth - 18, hbox.RemainingHeight, "", LabelAlignment.Left));
+                hbox.Add(Gradient = new Label(hbox.RemainingWidth, hbox.RemainingHeight, "", LabelAlignment.Right));
+
             }
             vbox.AddHorizontalSeparator();
             {
                 var hbox = vbox.AddLayoutHorizontalLineOfText();
-                hbox.Add(new Label(hbox.RemainingWidth, hbox.RemainingHeight, Viewer.Catalog.GetString(" Dist      Speed   Aspect")));
+                hbox.Add(new Label(hbox.RemainingWidth, hbox.RemainingHeight, Viewer.Catalog.GetString(" Milepost   Speed     Dist")));
             }
             vbox.AddHorizontalSeparator();
             vbox.Add(Monitor = new TrackMonitor(vbox.RemainingWidth, vbox.RemainingHeight, Owner));
@@ -143,6 +146,19 @@ namespace Orts.Viewer3D.Popups
                     ControlText = String.Concat(ControlText, OutOfControlLabels[thisInfo.ObjectInfoForward[0].OutOfControlReason]);
                 }
                 ControlMode.Text = String.Copy(ControlText);
+                if (-thisInfo.currentElevationPercent < -0.00015)
+                {
+                    var c = '\u2198';
+                    Gradient.Text = String.Format("|  {0:F1}%{1} ", -thisInfo.currentElevationPercent, c);
+                    Gradient.Color = Color.LightSkyBlue;
+                }
+                else if (-thisInfo.currentElevationPercent > 0.00015)
+                {
+                    var c = '\u2197';
+                    Gradient.Text = String.Format("|  {0:F1}%{1} ", -thisInfo.currentElevationPercent, c);
+                    Gradient.Color = Color.Yellow;
+                }
+                else Gradient.Text = "";
             }
         }
 
@@ -189,9 +205,10 @@ namespace Orts.Viewer3D.Popups
         readonly int[] textOffset = new int[2] { -11, -3 };
 
         // Horizontal offsets for various elements.
-        readonly int distanceTextOffset = 0;
+        readonly int distanceTextOffset = 117;
         readonly int trackOffset = 42;
         readonly int speedTextOffset = 70;
+        readonly int milepostTextOffset = 0;
 
         // position definition arrays
         // contents :
@@ -208,7 +225,7 @@ namespace Orts.Viewer3D.Popups
         int[] reversalPosition = new int[5] { 42, -21, -3, 24, 24 }; // Relative positioning
         int[] waitingPointPosition = new int[5] { 42, -21, -3, 24, 24 }; // Relative positioning
         int[] endAuthorityPosition = new int[5] { 42, -14, -10, 24, 24 }; // Relative positioning
-        int[] signalPosition = new int[5] { 134, -16, 0, 16, 16 }; // Relative positioning
+        int[] signalPosition = new int[5] { 95, -16, 0, 16, 16 }; // Relative positioning
         int[] arrowPosition = new int[5] { 22, -12, -12, 24, 24 };
         int[] invalidReversalPosition = new int[5] { 42, -14, -10, 24, 24 }; // Relative positioning
 
@@ -607,6 +624,10 @@ namespace Orts.Viewer3D.Popups
                         drawWaitingPoint(spriteBatch, offset, startObjectArea, endObjectArea, zeroPoint, maxDistance, distanceFactor, firstLabelPosition, forward, lastLabelPosition, thisItem, ref firstLabelShown);
                         break;
 
+                    case Train.TrainObjectItem.TRAINOBJECTTYPE.MILEPOST:
+                        lastLabelPosition = drawMilePost(spriteBatch, offset, startObjectArea, endObjectArea, zeroPoint, maxDistance, distanceFactor, firstLabelPosition, forward, lastLabelPosition, thisItem, ref firstLabelShown);
+                        break;
+
                     default:     // capture unkown item
                         break;
                 }
@@ -686,7 +707,7 @@ namespace Orts.Viewer3D.Popups
                 if (thisItem.SignalState != TrackMonitorSignalAspect.Stop && thisItem.AllowedSpeedMpS > 0)
                 {
                     var labelPoint = new Point(offset.X + speedTextOffset, offset.Y + itemLocation + textOffset[forward ? 0 : 1]);
-                    var speedString = FormatStrings.FormatSpeedLimit(thisItem.AllowedSpeedMpS, metric);
+                    var speedString = FormatStrings.FormatSpeedLimitNoUoM(thisItem.AllowedSpeedMpS, metric);
                     Font.Draw(spriteBatch, labelPoint, speedString, Color.White);
                 }
 
@@ -723,7 +744,7 @@ namespace Orts.Viewer3D.Popups
                 }
 
                 var labelPoint = new Point(offset.X + speedTextOffset, offset.Y + newLabelPosition + textOffset[forward ? 0 : 1]);
-                var speedString = FormatStrings.FormatSpeedLimit(allowedSpeed, metric);
+                var speedString = FormatStrings.FormatSpeedLimitNoUoM(allowedSpeed, metric);
                 Font.Draw(spriteBatch, labelPoint, speedString, thisItem.SpeedObjectType == Train.TrainObjectItem.SpeedItemType.Standard ? Color.White :
                     (thisItem.SpeedObjectType == Train.TrainObjectItem.SpeedItemType.TempRestrictedStart ? Color.Red : Color.LightGreen));
 
@@ -823,5 +844,26 @@ namespace Orts.Viewer3D.Popups
 
             return newLabelPosition;
         }
+
+        // draw milepost information
+        int drawMilePost(SpriteBatch spriteBatch, Point offset, int startObjectArea, int endObjectArea, int zeroPoint, float maxDistance, float distanceFactor, int firstLabelPosition, bool forward, int lastLabelPosition, Train.TrainObjectItem thisItem, ref bool firstLabelShown)
+        {
+            var newLabelPosition = lastLabelPosition;
+
+            if (thisItem.DistanceToTrainM < (maxDistance - textSpacing / distanceFactor))
+            {
+                var itemOffset = Convert.ToInt32(thisItem.DistanceToTrainM * distanceFactor);
+                var itemLocation = forward ? zeroPoint - itemOffset : zeroPoint + itemOffset;
+                newLabelPosition = forward ? Math.Min(itemLocation, lastLabelPosition - textSpacing) : Math.Max(itemLocation, lastLabelPosition + textSpacing);
+                var labelPoint = new Point(offset.X + milepostTextOffset, offset.Y + newLabelPosition + textOffset[forward ? 0 : 1]);
+                var milepostString = thisItem.ThisMile;
+                Font.Draw(spriteBatch, labelPoint, milepostString, Color.White);
+
+            }
+
+            return newLabelPosition;
+        }
+
+
     }
 }
