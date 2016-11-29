@@ -925,6 +925,27 @@ namespace Orts.Common
     }
 
     [Serializable()]
+    public sealed class ContinuousSmallEjectorCommand : ContinuousCommand
+    {
+        public static MSTSSteamLocomotive Receiver { get; set; }
+
+        public ContinuousSmallEjectorCommand(CommandLog log, int injector, bool toState, float? target, double startTime)
+            : base(log, toState, target, startTime)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver == null) return;
+            {
+                Receiver.SmallEjectorChangeTo(ToState, Target);
+            }
+            // Report();
+        }
+    }
+
+    [Serializable()]
     public sealed class ContinuousInjectorCommand : ContinuousCommand {
         public static MSTSSteamLocomotive Receiver { get; set; }
         int Injector;

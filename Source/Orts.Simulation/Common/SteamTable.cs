@@ -294,8 +294,47 @@ namespace Orts.Common
         static float[] CylinderCondensationSimpleFactor = new float[]
         {
               0.335f, 0.27f, 0.21f, 0.17f, 0.15f, 0.16f, 0.19f, 0.23f
-        };          
-                  
+        };
+
+
+        // pressure tables for Steam Ejector vacuum and steam usage
+        static float[] EjectorUsePressureTablePSI = new float[]
+        {
+            0.0f, 20.00f, 40.00f, 60.00f, 80.00f, 100.00f, 120.00f, 150.00f
+        };
+
+        // Steam consumption table for steam ejector (pressure values 40 and less assumed) - Ref Penberthy Type GL jet pump
+        static float[] EjectorSteamUsageTableLbspH = new float[]
+        {
+            0.0f, 0.00f, 100.00f, 221.00f, 277.00f, 333.00f, 390.00f, 474.00f
+        };
+
+        // Steam Ejector size (Inches) for calculating Steam Capacity Factor - Ref Penberthy Type GL jet pump 
+        static float[] EjectorSizeIn = new float[]
+        {
+            0.00f, 0.50f, 0.75f, 1.00f, 1.25f, 1.50f, 2.00f, 2.50f, 3.00f
+        };
+
+        // Steam capacity factor for steam ejector - Ref Penberthy Type GL jet pump
+        static float[] EjectorSteamCapacityFactorX = new float[]
+        {
+            0.0f, 0.121f, 0.208f, 0.344f, 0.613f, 1.00f, 1.82f, 3.17f, 5.92f
+        };
+
+// Steam Tables
+
+        // Steam Ejector steam factor - Ref Ref Penberthy Type GL jet pump
+        public static Interpolator EjectorCapacityFactorIntoX()
+        {
+            return new Interpolator(EjectorSizeIn, EjectorSteamCapacityFactorX);
+        }   
+
+        // Steam Ejector steam consumption Vs steam pressure - Ref Ref Penberthy Type GL jet pump
+        public static Interpolator EjectorSteamConsumptionLbspHtoPSI()
+        {
+            return new Interpolator(EjectorUsePressureTablePSI, EjectorSteamUsageTableLbspH);
+        }        
+          
 // Cylinder condensation Vs Speed (Wheel Revolutions) - Simple locomotive - based upon Ref LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON
         public static Interpolator CylinderCondensationSimpleSpeedAdjRpMtoX()
         {
