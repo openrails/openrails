@@ -3051,11 +3051,6 @@ namespace Orts.Simulation.RollingStocks
                         data = Bell ? 1 : 0;
                         break;
                     }
-                case CABViewControlTypes.SMALL_EJECTOR:
-                    {
-                        data = CompressorIsOn ? 1 : 0;
-                        break;
-                    }
                 case CABViewControlTypes.RESET:
                     {
                         if (TrainControlSystem.AlerterButtonPressed)

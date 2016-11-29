@@ -2949,7 +2949,7 @@ namespace Orts.MultiPlayer
     public class MSGLocoInfo : Message
     {
 
-        float EB, DB, TT, VL, CC, BC, DC, FC, I1, I2, SH;
+        float EB, DB, TT, VL, CC, BC, DC, FC, I1, I2, SH, SE;
         string user;
         int tnum; //train number
 
@@ -2957,11 +2957,11 @@ namespace Orts.MultiPlayer
         public MSGLocoInfo(TrainCar c, string u)
         {
             MSTSLocomotive loco = (MSTSLocomotive)c;
-            EB = DB = TT = VL = CC = BC = DC = FC = I1 = I2 = SH = 0.0f;
+            EB = DB = TT = VL = CC = BC = DC = FC = I1 = I2 = SH = SE = 0.0f;
             if (loco is MSTSSteamLocomotive)
             {
                 MSTSSteamLocomotive loco1 = (MSTSSteamLocomotive)loco;
-                loco1.GetLocoInfo(ref CC, ref BC, ref DC, ref FC, ref I1, ref I2, ref SH);
+                loco1.GetLocoInfo(ref CC, ref BC, ref DC, ref FC, ref I1, ref I2, ref SH, ref SE);
             }
             if (loco.EngineBrakeController != null)
             {
@@ -3023,7 +3023,7 @@ namespace Orts.MultiPlayer
             if (loco is MSTSSteamLocomotive)
             {
                 MSTSSteamLocomotive loco1 = (MSTSSteamLocomotive)loco;
-                loco1.GetLocoInfo(ref CC, ref BC, ref DC, ref FC, ref I1, ref I2, ref SH);
+                loco1.GetLocoInfo(ref CC, ref BC, ref DC, ref FC, ref I1, ref I2, ref SH, ref SE);
             }
             if (loco.EngineBrakeController != null)
             {

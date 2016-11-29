@@ -91,11 +91,12 @@ namespace Orts.Common
         SanderOff,
         SanderOn,
         SemaphoreArm,
-        SteamEjector1Off,
-        SteamEjector1On,
-        SteamEjector2Off,
-        SteamEjector2On,
-        SteamHeatChange, // NOTE: Currently not used in Open Rails.
+        SmallEjectorChange,
+        WaterInjector1Off,
+        WaterInjector1On,
+        WaterInjector2Off,
+        WaterInjector2On,
+        SteamHeatChange, 
         SteamPulse1,
         SteamPulse2,
         SteamPulse3,
@@ -219,11 +220,11 @@ namespace Orts.Common
                         // Event 24 is unused in MSTS.
                         // Event 25 is possibly a vigilance reset in MSTS sound files but is never used.
                         // Event 26 is a sander toggle in MSTS sound files but is never used.
-                        case 27: return Event.SteamEjector2On;
-                        case 28: return Event.SteamEjector2Off;
+                        case 27: return Event.WaterInjector2On;
+                        case 28: return Event.WaterInjector2Off;
                         // Event 29 is unused in MSTS.
-                        case 30: return Event.SteamEjector1On;
-                        case 31: return Event.SteamEjector1Off;
+                        case 30: return Event.WaterInjector1On;
+                        case 31: return Event.WaterInjector1Off;
                         case 32: return Event.DamperChange;
                         case 33: return Event.BlowerChange;
                         case 34: return Event.CylinderCocksToggle;
@@ -314,6 +315,8 @@ namespace Orts.Common
                         case 157: return Event.CircuitBreakerClosingAuthorizationOn;
                         case 158: return Event.CircuitBreakerClosingAuthorizationOff;
 
+                        case 160: return Event.SmallEjectorChange; 
+                        
                         //
 
                         default: return 0;

@@ -45,6 +45,9 @@
 // Debug for Sound Variables
 //#define DEBUG_STEAM_SOUND_VARIABLES
 
+// Debug for Steam Ejector
+//#define DEBUG_STEAM_EJECTOR
+
 
 /* STEAM LOCOMOTIVE CLASSES
  * 
@@ -94,6 +97,7 @@ namespace Orts.Simulation.RollingStocks
         public MSTSNotchController FireboxDoorController = new MSTSNotchController(0, 1, 0.1f);
         public MSTSNotchController FuelController = new MSTSNotchController(0, 1, 0.01f); // Could be coal, wood, oil or even peat !
         public MSTSNotchController WaterController = new MSTSNotchController(0, 1, 0.01f);
+        public MSTSNotchController SmallEjectorController = new MSTSNotchController(0, 1, 0.1f);
 
         public bool Injector1IsOn;
         public bool Injector2IsOn;
@@ -289,6 +293,9 @@ namespace Orts.Simulation.RollingStocks
         Interpolator InitialPressureDropRatioRpMtoX; // Allowance for wire-drawing - ie drop in initial pressure (cutoff) as speed increases
         Interpolator SteamChestPressureDropRatioRpMtoX; // Allowance for pressure drop in Steam chest pressure compared to Boiler Pressure
 
+        Interpolator SteamEjectorSteamUsageLBpHtoPSI; // Steam consumption of steam ejector
+        Interpolator SteamEjectorCapacityFactorIntoX; // Steam capacity factor for steam ejector
+
         Interpolator SaturatedSpeedFactorSpeedDropFtpMintoX; // Allowance for drop in TE for a saturated locomotive due to piston speed limitations
         Interpolator SuperheatedSpeedFactorSpeedDropFtpMintoX; // Allowance for drop in TE for a superheated locomotive due to piston speed limitations
 
@@ -297,7 +304,7 @@ namespace Orts.Simulation.RollingStocks
         Interpolator2D CutoffInitialPressureDropRatioUpper;  // Upper limit of the pressure drop from initial pressure to cut-off pressure
         Interpolator2D CutoffInitialPressureDropRatioLower;  // Lower limit of the pressure drop from initial pressure to cut-off pressure
 
-        #region Additional steam properties
+         #region Additional steam properties
         const float SpecificHeatCoalKJpKGpK = 1.26f; // specific heat of coal - kJ/kg/K
         const float SteamVaporSpecVolumeAt100DegC1BarM3pKG = 1.696f;
         float WaterHeatBTUpFT3;             // Water heat in btu/ft3
@@ -702,6 +709,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortssteamfiremanmaxpossiblefiringrate": ORTSMaxFiringRateKGpS = stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null) / 2.2046f / 3600; break;
                 case "engine(enginecontrollers(cutoff": CutoffController.Parse(stf); break;
                 case "engine(enginecontrollers(steamheat": SteamHeatController.Parse(stf); break;
+                case "engine(enginecontrollers(smallejector": SmallEjectorController.Parse(stf); break;
                 case "engine(enginecontrollers(injector1water": Injector1Controller.Parse(stf); break;
                 case "engine(enginecontrollers(injector2water": Injector2Controller.Parse(stf); break;
                 case "engine(enginecontrollers(blower": BlowerController.Parse(stf); break;
@@ -797,6 +805,7 @@ namespace Orts.Simulation.RollingStocks
             DamperController = (MSTSNotchController)locoCopy.DamperController.Clone();
             FiringRateController = (MSTSNotchController)locoCopy.FiringRateController.Clone();
             FireboxDoorController = (MSTSNotchController)locoCopy.FireboxDoorController.Clone();
+            SmallEjectorController = (MSTSNotchController)locoCopy.SmallEjectorController.Clone();
             GrateAreaM2 = locoCopy.GrateAreaM2;
             SuperheaterFactor = locoCopy.SuperheaterFactor;
             EvaporationAreaM2 = locoCopy.EvaporationAreaM2;
@@ -853,6 +862,7 @@ namespace Orts.Simulation.RollingStocks
             ControllerFactory.Save(DamperController, outf);
             ControllerFactory.Save(FireboxDoorController, outf);
             ControllerFactory.Save(FiringRateController, outf);
+            ControllerFactory.Save(SmallEjectorController, outf);
             base.Save(outf);
         }
 
@@ -887,6 +897,7 @@ namespace Orts.Simulation.RollingStocks
             ControllerFactory.Restore(DamperController, inf);
             ControllerFactory.Restore(FireboxDoorController, inf);
             ControllerFactory.Restore(FiringRateController, inf);
+            ControllerFactory.Restore(SmallEjectorController, inf);
             base.Restore(inf);
         }
 
@@ -935,6 +946,9 @@ namespace Orts.Simulation.RollingStocks
             SuperheatTempLimitXtoDegF = SteamTable.SuperheatTempLimitInterpolatorXtoDegF();
             SuperheatTempLbpHtoDegF = SteamTable.SuperheatTempInterpolatorLbpHtoDegF();
             SteamChestPressureDropRatioRpMtoX = SteamTable.SteamChestPressureDropRatioInterpolatorRpMtoX();
+
+            SteamEjectorSteamUsageLBpHtoPSI = SteamTable.EjectorSteamConsumptionLbspHtoPSI();
+            SteamEjectorCapacityFactorIntoX = SteamTable.EjectorCapacityFactorIntoX();
 
             SaturatedSpeedFactorSpeedDropFtpMintoX = SteamTable.SaturatedSpeedFactorSpeedDropFtpMintoX();
             SuperheatedSpeedFactorSpeedDropFtpMintoX = SteamTable.SuperheatedSpeedFactorSpeedDropFtpMintoX();
@@ -1505,6 +1519,23 @@ namespace Orts.Simulation.RollingStocks
             UpdateFiring(absSpeedMpS);
             UpdateSteamHeat(elapsedClockSeconds);
             #endregion
+
+            // Temporary for Steam Ejector
+#if DEBUG_STEAM_EJECTOR
+
+            float SteamEjectorSetting = SmallEjectorController.CurrentValue;
+            float SteamEjectorPressure = BoilerPressurePSI * SteamEjectorSetting;
+            float EjectorSmallBaseSteam = SteamEjectorSteamUsageLBpHtoPSI[SteamEjectorPressure];
+            float SteamEjectorSmallDiameterIn = 1.0f;
+            float EjectorBaseDiameterIn = 1.0f;
+            float SmallEjectorCapacityFactor = SteamEjectorCapacityFactorIntoX[SteamEjectorSmallDiameterIn];
+            float EjectorSmallSteamConsumptionLbpH = EjectorSmallBaseSteam * SmallEjectorCapacityFactor;
+
+            Trace.TraceInformation("============================================= Steam Ejector (MSTSSTeamLocomotive.cs) =========================================================");
+            Trace.TraceInformation("Small Ejector Setting {0} Steam Pressure {1} Base Steam Consumption {2}", SteamEjectorSetting, SteamEjectorPressure, EjectorSmallBaseSteam);
+            Trace.TraceInformation("Small Ejector - Diameter {0} Capacity Factor {1}  Steam Consumption {2}", SteamEjectorSmallDiameterIn, SmallEjectorCapacityFactor, EjectorSmallSteamConsumptionLbpH);
+    
+#endif
         }
 
         /// <summary>
@@ -1696,6 +1727,12 @@ namespace Orts.Simulation.RollingStocks
                     Simulator.Confirmer.UpdateWithPerCent(CabControl.FiringRate, CabSetting.Increase, FiringRateController.CurrentValue * 100);
                 if (FiringRateController.UpdateValue < 0.0)
                     Simulator.Confirmer.UpdateWithPerCent(CabControl.FiringRate, CabSetting.Decrease, FiringRateController.CurrentValue * 100);
+
+                if (SmallEjectorController.UpdateValue > 0.0)
+                    Simulator.Confirmer.UpdateWithPerCent(CabControl.SmallEjector, CabSetting.Increase, SmallEjectorController.CurrentValue * 100);
+                if (SmallEjectorController.UpdateValue < 0.0)
+                    Simulator.Confirmer.UpdateWithPerCent(CabControl.SmallEjector, CabSetting.Decrease, SmallEjectorController.CurrentValue * 100);
+            
             }
 
             SteamHeatController.Update(elapsedClockSeconds);
@@ -1705,6 +1742,15 @@ namespace Orts.Simulation.RollingStocks
                     Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamHeat, CabSetting.Increase, SteamHeatController.CurrentValue * 100);
                 if (SteamHeatController.UpdateValue < 0.0)
                     Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamHeat, CabSetting.Decrease, SteamHeatController.CurrentValue * 100);
+            }
+
+            SmallEjectorController.Update(elapsedClockSeconds);
+            if (IsPlayerTrain)
+            {
+                if (SmallEjectorController.UpdateValue > 0.0)
+                    Simulator.Confirmer.UpdateWithPerCent(CabControl.SmallEjector, CabSetting.Increase, SmallEjectorController.CurrentValue * 100);
+                if (SmallEjectorController.UpdateValue < 0.0)
+                    Simulator.Confirmer.UpdateWithPerCent(CabControl.SmallEjector, CabSetting.Decrease, SmallEjectorController.CurrentValue * 100);
             }
 
             Injector1Controller.Update(elapsedClockSeconds);
@@ -4179,8 +4225,8 @@ namespace Orts.Simulation.RollingStocks
                 }
 
                 // Put sound triggers in for the injectors in AI Fireman mode
-                SignalEvent(Injector1IsOn ? Event.SteamEjector1On : Event.SteamEjector1Off); // hook for sound trigger
-                SignalEvent(Injector2IsOn ? Event.SteamEjector2On : Event.SteamEjector2Off); // hook for sound trigger
+                SignalEvent(Injector1IsOn ? Event.WaterInjector1On : Event.WaterInjector1Off); // hook for sound trigger
+                SignalEvent(Injector2IsOn ? Event.WaterInjector2On : Event.WaterInjector2Off); // hook for sound trigger
 
                 float BoilerHeatCheck = BoilerHeatOutBTUpS / BoilerHeatInBTUpS;
                 BoilerHeatExcess = BoilerHeatBTU / MaxBoilerHeatBTU;
@@ -4440,6 +4486,11 @@ namespace Orts.Simulation.RollingStocks
                 case CABViewControlTypes.STEAM_INJ2:
                     data = Injector2IsOn ? 1 : 0;
                     break;
+                case CABViewControlTypes.SMALL_EJECTOR:
+                    {
+                        data = SmallEjectorController.CurrentValue;
+                        break;
+                    }
                 default:
                     data = base.GetDataOf(cvc);
                     break;
@@ -5176,6 +5227,73 @@ namespace Orts.Simulation.RollingStocks
 
         #endregion
 
+        //Small Ejector Controller
+
+        #region Small Ejector controller
+
+        public void StartSmallEjectorIncrease(float? target)
+        {
+            SmallEjectorController.CommandStartTime = Simulator.ClockTime;
+            if (IsPlayerTrain)
+                Simulator.Confirmer.ConfirmWithPerCent(CabControl.SmallEjector, CabSetting.Increase, SmallEjectorController.CurrentValue * 100);
+            SmallEjectorController.StartIncrease(target);
+            SignalEvent(Event.SmallEjectorChange);
+        }
+
+        public void StopSmallEjectorIncrease()
+        {
+            SmallEjectorController.StopIncrease();
+            new ContinuousSmallEjectorCommand(Simulator.Log, 1, true, SmallEjectorController.CurrentValue, SmallEjectorController.CommandStartTime);
+        }
+
+        public void StartSmallEjectorDecrease(float? target)
+        {
+            if (IsPlayerTrain)
+                Simulator.Confirmer.ConfirmWithPerCent(CabControl.SmallEjector, CabSetting.Decrease, SmallEjectorController.CurrentValue * 100);
+            SmallEjectorController.StartDecrease(target);
+            SignalEvent(Event.SmallEjectorChange);
+        }
+
+        public void StopSmallEjectorDecrease()
+        {
+            SmallEjectorController.StopDecrease();
+            if (IsPlayerTrain)
+                new ContinuousSmallEjectorCommand(Simulator.Log, 1, false, SmallEjectorController.CurrentValue, SmallEjectorController.CommandStartTime);
+        }
+
+        public void SmallEjectorChangeTo(bool increase, float? target)
+        {
+            if (increase)
+            {
+                if (target > SmallEjectorController.CurrentValue)
+                {
+                    StartSmallEjectorIncrease(target);
+                }
+            }
+            else
+            {
+                if (target < SmallEjectorController.CurrentValue)
+                {
+                    StartSmallEjectorDecrease(target);
+                }
+            }
+        }
+
+        public void SetSmallEjectorValue(float value)
+        {
+            var controller = SmallEjectorController;
+            var oldValue = controller.IntermediateValue;
+            var change = controller.SetValue(value);
+            if (change != 0)
+            {
+                new ContinuousSmallEjectorCommand(Simulator.Log, 1, change > 0, controller.CurrentValue, Simulator.GameTime);
+            }
+            if (oldValue != controller.IntermediateValue)
+                Simulator.Confirmer.UpdateWithPerCent(CabControl.SmallEjector, oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, controller.CurrentValue * 100);
+        }
+
+        #endregion
+
         public override void StartReverseIncrease(float? target)
         {
             CutoffController.StartIncrease(target);
@@ -5649,7 +5767,7 @@ namespace Orts.Simulation.RollingStocks
             if (!FiringIsManual)
                 return;
             Injector1IsOn = !Injector1IsOn;
-            SignalEvent(Injector1IsOn ? Event.SteamEjector1On : Event.SteamEjector1Off); // hook for sound trigger
+            SignalEvent(Injector1IsOn ? Event.WaterInjector1On : Event.WaterInjector1Off); // hook for sound trigger
             if (IsPlayerTrain)
                 Simulator.Confirmer.Confirm(CabControl.Injector1, Injector1IsOn ? CabSetting.On : CabSetting.Off);
         }
@@ -5659,7 +5777,7 @@ namespace Orts.Simulation.RollingStocks
             if (!FiringIsManual)
                 return;
             Injector2IsOn = !Injector2IsOn;
-            SignalEvent(Injector2IsOn ? Event.SteamEjector2On : Event.SteamEjector2Off); // hook for sound trigger
+            SignalEvent(Injector2IsOn ? Event.WaterInjector2On : Event.WaterInjector2Off); // hook for sound trigger
             if (IsPlayerTrain)
                 Simulator.Confirmer.Confirm(CabControl.Injector2, Injector2IsOn ? CabSetting.On : CabSetting.Off);
         }
@@ -5709,7 +5827,7 @@ namespace Orts.Simulation.RollingStocks
             return 0f;
         }
 
-        public void GetLocoInfo(ref float CC, ref float BC, ref float DC, ref float FC, ref float I1, ref float I2, ref float SH)
+        public void GetLocoInfo(ref float CC, ref float BC, ref float DC, ref float FC, ref float I1, ref float I2, ref float SH, ref float SE)
         {
             CC = CutoffController.CurrentValue;
             BC = BlowerController.CurrentValue;
@@ -5718,9 +5836,10 @@ namespace Orts.Simulation.RollingStocks
             I1 = Injector1Controller.CurrentValue;
             I2 = Injector2Controller.CurrentValue;
             SH = SteamHeatController.CurrentValue;
+            SE = SmallEjectorController.CurrentValue;
         }
 
-        public void SetLocoInfo(float CC, float BC, float DC, float FC, float I1, float I2, float SH)
+        public void SetLocoInfo(float CC, float BC, float DC, float FC, float I1, float I2, float SH, float SE)
         {
             CutoffController.CurrentValue = CC;
             CutoffController.UpdateValue = 0.0f;
@@ -5736,6 +5855,8 @@ namespace Orts.Simulation.RollingStocks
             Injector2Controller.UpdateValue = 0.0f;
             SteamHeatController.CurrentValue = SH;
             SteamHeatController.UpdateValue = 0.0f;
+            SmallEjectorController.CurrentValue = SE;
+            SmallEjectorController.UpdateValue = 0.0f;
         }
 
         public override void SwitchToPlayerControl()

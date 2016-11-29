@@ -197,6 +197,8 @@ namespace ORTS.Settings
         [GetString("Control Firing Rate Decrease")] ControlFiringRateDecrease,
         [GetString("Control Fire Shovel Full")] ControlFireShovelFull,
         [GetString("Control Cylinder Cocks")] ControlCylinderCocks,
+        [GetString("Control Small Ejector Increase")] ControlSmallEjectorIncrease,
+        [GetString("Control Small Ejector Decrease")] ControlSmallEjectorDecrease,
         [GetString("Control Cylinder Compound")] ControlCylinderCompound,
         [GetString("Control Firing")] ControlFiring,
         [GetString("Control Refill")] ControlRefill,
@@ -520,6 +522,8 @@ namespace ORTS.Settings
             Commands[(int)UserCommands.ControlCircuitBreakerOpeningOrder] = new UserCommandKeyInput(0x17);
             Commands[(int)UserCommands.ControlCircuitBreakerClosingAuthorization] = new UserCommandKeyInput(0x18, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlCylinderCocks] = new UserCommandKeyInput(0x2E);
+            Commands[(int)UserCommands.ControlSmallEjectorIncrease] = new UserCommandKeyInput(0x24);
+            Commands[(int)UserCommands.ControlSmallEjectorDecrease] = new UserCommandKeyInput(0x24, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlCylinderCompound] = new UserCommandKeyInput(0x19);
             Commands[(int)UserCommands.ControlDamperDecrease] = new UserCommandKeyInput(0x32, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlDamperIncrease] = new UserCommandKeyInput(0x32);
