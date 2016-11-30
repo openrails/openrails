@@ -851,8 +851,25 @@ namespace Orts.Formats.Msts
                         //     maybe did not want to display all Frames
                         // (If there are more Values than Frames it will checked at draw time)
                         // Need to fix the whole Values
-                        if (Positions.Count != _ValuesRead || (FramesCount > 0 && Values.Count == 0))
+                        if (Positions.Count != _ValuesRead || (FramesCount > 0 && (Values.Count == 0 || Values.Count == 1)))
                         {
+                            //This if clause covers among others following cases:
+                            // Case 1 (e.g. engine brake lever of Dash 9):
+                            //NumFrames ( 22 11 2 )
+			                //NumPositions ( 1 0 )
+			                //NumValues ( 1 0 )
+			                //Orientation ( 1 )
+			                //DirIncrease ( 1 )
+			                //ScaleRange ( 0 1 )
+                            //
+                            // Case 2 (e.g. throttle lever of Acela):
+			                //NumFrames ( 25 5 5 )
+			                //NumPositions ( 0 )
+			                //NumValues ( 0 )
+			                //Orientation ( 1 )
+			                //DirIncrease ( 1 )
+			                //ScaleRange ( 0 1 )
+                            //
                             // Clear existing
                             Positions.Clear();
                             Values.Clear();
@@ -870,25 +887,53 @@ namespace Orts.Formats.Msts
 
                             Values.Add(MaxValue);
                         }
-                        // The Positions, Values are correct
-                        else
+                        else if (Values.Count == 2 && Values[0] == 0 && Values[1] < MaxValue && Positions[0] == 0 && Positions[1] == 1 && Values.Count < FramesCount)
                         {
-                            // Check if read Values at all
-                            if (Values.Count > 0 && Values[0] <= Values[Values.Count - 1])
-                                // Set Min for sure
-                                Values[0] = MinValue;
-                            else if (Values.Count == 0)
-                                Values.Add(MinValue);
-
+                            //This if clause covers among others following cases:
+                            // Case 1 (e.g. engine brake lever of gp38):
+			                //NumFrames ( 18 2 9 )
+			                //NumPositions ( 2 0 1 )
+			                //NumValues ( 2 0 0.3 )
+			                //Orientation ( 0 )
+			                //DirIncrease ( 0 )
+			                //ScaleRange ( 0 1 )
+                            Positions.Add(FramesCount);
                             // Fill empty Values
                             for (int i = Values.Count; i < FramesCount; i++)
-                                Values.Add(Values[Values.Count - 1]);
+                                Values.Add(Values[1]);
+                            Values.Add(MaxValue);                            
+                        }
+
+                        else
+                        {
+                            //This if clause covers among others following cases:
+                            // Case 1 (e.g. train brake lever of Acela): 
+			                //NumFrames ( 12 4 3 )
+			                //NumPositions ( 5 0 1 9 10 11 )
+			                //NumValues ( 5 0 0.2 0.85 0.9 0.95 )
+			                //Orientation ( 1 )
+			                //DirIncrease ( 1 )
+			                //ScaleRange ( 0 1 )
+                            //
+                            // Fill empty Values
+                            int iValues = 1;
+                            for (int i = 1; i < FramesCount && i <= Positions.Count - 1 && Values.Count < FramesCount; i++)
+                            {
+                                var deltaPos = Positions[i] - Positions[i - 1];
+                                while (deltaPos > 1 && Values.Count < FramesCount)
+                                {
+
+                                    Values.Insert(iValues, 0);
+                                    iValues++;
+                                    deltaPos--;
+                                }
+                                iValues++;
+                            }
 
                             // Add the maximums to the end, the Value will be removed
                             // We use Positions only here
                             if (Values.Count > 0 && Values[0] <= Values[Values.Count - 1]) Values.Add(MaxValue);
                             else if (Values.Count > 0 && Values[0] > Values[Values.Count - 1]) Values.Add(MinValue);
-                            Positions.Add(FramesCount);
                         }
 
                         // OK, we have a valid size of Positions and Values
@@ -916,7 +961,7 @@ namespace Orts.Formats.Msts
                         }
 
                         // Don't need the MaxValue added before, remove it
-                        Values.RemoveAt(FramesCount);
+                        Values.RemoveAt(Values.Count - 1);
                     }
                 }
 
