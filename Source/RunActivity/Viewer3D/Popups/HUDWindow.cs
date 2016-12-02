@@ -470,13 +470,19 @@ namespace Orts.Viewer3D.Popups
             var locomotive = Viewer.PlayerLocomotive;
             var mstsLocomotive = locomotive as MSTSLocomotive;
             var train = locomotive.Train;
-
+            float tonnage = 0f;
+            foreach (var car in train.Cars)
+            {
+                if(car.WagonType == TrainCar.WagonTypes.Freight || car.WagonType == TrainCar.WagonTypes.Passenger)
+                    tonnage += car.MassKG;
+            }
             TableSetCells(table, 0,
                 Viewer.Catalog.GetString("Player"),
                 Viewer.Catalog.GetString("Tilted"),
                 Viewer.Catalog.GetString("Type"),
                 Viewer.Catalog.GetString("Length"),
                 Viewer.Catalog.GetString("Weight"), "",
+                Viewer.Catalog.GetString("Tonnage"), "",
                 Viewer.Catalog.GetString("Control Mode"), "",
                 Viewer.Catalog.GetString("Out of Control"), "",
                 Viewer.Catalog.GetString("Cab Aspect"));
@@ -486,6 +492,7 @@ namespace Orts.Viewer3D.Popups
                 train.IsFreight ? Viewer.Catalog.GetString("Freight") : Viewer.Catalog.GetString("Pass"),
                 FormatStrings.FormatShortDistanceDisplay(train.Length, locomotive.IsMetric),
                 FormatStrings.FormatLargeMass(train.MassKg, locomotive.IsMetric, locomotive.IsUK), "",
+                FormatStrings.FormatLargeMass(tonnage, locomotive.IsMetric, locomotive.IsUK), "",
                 train.ControlMode.ToString(), "",
                 train.OutOfControlReason.ToString(), "",
                 mstsLocomotive.TrainControlSystem.CabSignalAspect.ToString());
@@ -517,7 +524,7 @@ namespace Orts.Viewer3D.Popups
         {
             if (car.WheelAxles.Count == 0)
                 return "";
-
+            
             var whyte = new List<string>();
             var currentCount = 0;
             var currentBogie = car.WheelAxles[0].BogieIndex;
