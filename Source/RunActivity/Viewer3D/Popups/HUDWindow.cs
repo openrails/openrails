@@ -24,6 +24,7 @@ using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
+using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Viewer3D.Processes;
 using ORTS.Common;
 using System;
@@ -569,12 +570,57 @@ namespace Orts.Viewer3D.Popups
             TextPageHeading(table, Viewer.Catalog.GetString("BRAKE INFORMATION"));
 
             var train = Viewer.PlayerLocomotive.Train;
-            TableAddLines(table, String.Format("{0}\t\t{1}\t\t{2}\t{3}\t\t{4}",
-                Viewer.Catalog.GetString("PlayerLoco"),
-                Viewer.Catalog.GetString("Main reservoir"),
-                FormatStrings.FormatPressure((Viewer.PlayerLocomotive as MSTSLocomotive).MainResPressurePSI, PressureUnit.PSI, (Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir], true),
-                Viewer.Catalog.GetString("Compressor"),
-                (Viewer.PlayerLocomotive as MSTSLocomotive).CompressorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off")));
+            var mstsLocomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
+            var HUDSteamEngineType = mstsLocomotive.SteamEngineType;
+            var HUDEngineType = mstsLocomotive.EngineType;
+
+            if (HUDEngineType == TrainCar.EngineTypes.Steam) // For display of steam locomotive info
+            {
+                // If vacuum brakes are used then use this display
+                if ((Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystem is VacuumSinglePipe)
+                {
+                    if (!(Viewer.PlayerLocomotive as MSTSLocomotive).VacuumPumpFitted) // Change display so that small ejector is not displayed for vacuum pump operated locomotives
+                    {
+                        TableAddLines(table, String.Format("{0}\t\t{1}\t\t{2}\t{3}\t\t{4}\t{5}\t{6}",
+                            Viewer.Catalog.GetString("PlayerLoco"),
+                            Viewer.Catalog.GetString("Large Ejector"),
+                            (Viewer.PlayerLocomotive as MSTSLocomotive).LargeSteamEjectorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off"),
+                            Viewer.Catalog.GetString("Small Ejector"),
+                            (Viewer.PlayerLocomotive as MSTSLocomotive).SmallSteamEjectorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off"),
+                            Viewer.Catalog.GetString("Pressure"),
+                            FormatStrings.FormatPressure((Viewer.PlayerLocomotive as MSTSLocomotive).SteamEjectorSmallPressurePSI, PressureUnit.PSI, (Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir], true)));
+                    }
+                    else
+                    {
+                        TableAddLines(table, String.Format("{0}\t\t{1}\t\t{2}\t{3}\t\t{4}",
+                            Viewer.Catalog.GetString("PlayerLoco"),
+                            Viewer.Catalog.GetString("Large Ejector"),
+                            (Viewer.PlayerLocomotive as MSTSLocomotive).LargeSteamEjectorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off"),
+                            Viewer.Catalog.GetString("Vacuum Pump"),
+                            (Viewer.PlayerLocomotive as MSTSLocomotive).VacuumPumpFitted ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No")));
+
+                    }
+                }
+                else  // If air or electronically braked use this display
+                {
+                    TableAddLines(table, String.Format("{0}\t\t{1}\t\t{2}\t{3}\t\t{4}",
+                        Viewer.Catalog.GetString("PlayerLoco"),
+                        Viewer.Catalog.GetString("Main reservoir"),
+                        FormatStrings.FormatPressure((Viewer.PlayerLocomotive as MSTSLocomotive).MainResPressurePSI, PressureUnit.PSI, (Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir], true),
+                        Viewer.Catalog.GetString("Compressor"),
+                        (Viewer.PlayerLocomotive as MSTSLocomotive).CompressorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off")));
+                }
+            }
+            else
+            { // For time being display diesels and electric locomotives as air - to be checked for vacuum diesels
+                TableAddLines(table, String.Format("{0}\t\t{1}\t\t{2}\t{3}\t\t{4}",
+                        Viewer.Catalog.GetString("PlayerLoco"),
+                        Viewer.Catalog.GetString("Main reservoir"),
+                        FormatStrings.FormatPressure((Viewer.PlayerLocomotive as MSTSLocomotive).MainResPressurePSI, PressureUnit.PSI, (Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir], true),
+                        Viewer.Catalog.GetString("Compressor"),
+                        (Viewer.PlayerLocomotive as MSTSLocomotive).CompressorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off")));
+            }
+
             // Display data for other locomotives
             for (var i = 0; i < train.Cars.Count; i++)
             {
