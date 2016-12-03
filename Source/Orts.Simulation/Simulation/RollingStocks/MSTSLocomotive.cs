@@ -156,7 +156,11 @@ namespace Orts.Simulation.RollingStocks
         public float TrackSanderAirPressurePSI = 80.0f;
         public float TrackSanderSandConsumptionFt3pH = 1.01f;
 
- 
+        // Vacuum Braking parameters
+        public bool SmallSteamEjectorIsOn = false;
+        public bool LargeSteamEjectorIsOn = false;
+        public float SteamEjectorSmallPressurePSI = 0.0f;
+        public bool VacuumPumpFitted;
 
         // Set values for display in HUD
         public float WagonCoefficientFrictionHUD;
@@ -722,6 +726,7 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case "engine(ortsdynamicblendingoverride": DynamicBrakeBlendingOverride = stf.ReadBoolBlock(false); break;
                 case "engine(ortsdynamicblendingforcematch": DynamicBrakeBlendingForceMatch = stf.ReadBoolBlock(false); break;
+                case "engine(vacuumbrakeshasvacuumpump": VacuumPumpFitted = stf.ReadBoolBlock(false); break;
                 default: base.Parse(lowercasetoken, stf); break;
             }
         }
@@ -758,6 +763,7 @@ namespace Orts.Simulation.RollingStocks
             HasSmoothStruc = locoCopy.HasSmoothStruc;
             LocoNumDrvWheels = locoCopy.LocoNumDrvWheels;
             AntiSlip = locoCopy.AntiSlip;
+            VacuumPumpFitted = locoCopy.VacuumPumpFitted;
             DrvWheelWeightKg = locoCopy.DrvWheelWeightKg;
             EffectData = locoCopy.EffectData;
             SanderSpeedEffectUpToMpS = locoCopy.SanderSpeedEffectUpToMpS;
@@ -1171,12 +1177,20 @@ namespace Orts.Simulation.RollingStocks
             }
 
             // always set AntiSlip for AI trains
-                        if (Train.TrainType == Train.TRAINTYPE.AI || Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
-                        {
-                            AntiSlip = true;
-                        }
+              if (Train.TrainType == Train.TRAINTYPE.AI || Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
+                 {
+                    AntiSlip = true;
+                 }
 
-            UpdateCompressor(elapsedClockSeconds);
+            // If the train is vacuumed braked then no need to update the compressor, but udate the ejector instead
+              if (BrakeSystem is VacuumSinglePipe)
+                 {
+                     UpdateSteamEjector(elapsedClockSeconds);
+                 }
+                 else
+                 {
+                   UpdateCompressor(elapsedClockSeconds);
+                 }
 
             UpdateHornAndBell(elapsedClockSeconds);
 
@@ -1508,6 +1522,23 @@ namespace Orts.Simulation.RollingStocks
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// This function updates periodically the state of the steam ejector on a vacuum braked system.
+        /// </summary>
+        protected virtual void UpdateSteamEjector(float elapsedClockSeconds)
+        {
+            if (TrainBrakeController.TrainBrakeControllerState == ControllerState.Release || TrainBrakeController.TrainBrakeControllerState == ControllerState.FullQuickRelease )
+            {
+                LargeSteamEjectorIsOn = true;  // If brake is set to a release controller, then turn ejector on
+            }
+            else
+            {
+                LargeSteamEjectorIsOn = false; // If brake is not set to a release controller, then turn ejector off
+            }
+
+
         }
 
         /// <summary>

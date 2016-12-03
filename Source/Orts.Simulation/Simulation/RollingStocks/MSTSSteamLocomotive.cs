@@ -253,8 +253,6 @@ namespace Orts.Simulation.RollingStocks
         public bool ScoopIsBroken = false; // becomes broken if activated where there is no trough
         public bool RefillingFromTrough = false; // refilling from through is ongoing
 
-
-
         // precomputed values
         float CylinderSweptVolumeFT3pFT;     // Volume of steam Cylinder
         float LPCylinderSweptVolumeFT3pFT;     // Volume of LP steam Cylinder
@@ -333,6 +331,21 @@ namespace Orts.Simulation.RollingStocks
         float SafetyValveStartPSI = 0.1f;   // Set safety valve to just over max pressure - allows for safety valve not to operate in AI firing
         float InjectorBoilerInputLB = 0.0f; // Input into boiler from injectors
         const float WaterDensityAt100DegC1BarKGpM3 = 954.8f;
+
+
+        // Steam Ejector
+        float SteamEjectorSmallDiameterIn = 1.5f; // Actual diameter of small ejector
+        float EjectorBaseDiameterIn = 1.0f;         // Base reference diameter all values scalled from this value.
+        float SteamEjectorSmallSetting;
+        float SteamEjectorSmallBaseSteamUsageLbpS;
+        float SmallEjectorCapacityFactor;
+        float EjectorSmallSteamConsumptionLbpS;
+        float EjectorLargeSteamConsumptionLbpS;
+        float EjectorTotalSteamConsumptionLbpS;
+        float SteamEjectorLargeBaseUsageSteamLbpS;
+        float LargeEjectorCapacityFactor;
+        float SteamEjectorLargeDiameterIn = 1.5f;  // Actual diameter of large ejector
+        float SteamEjectorLargePressurePSI = 120.0f;
 
         // Air Compressor Characteristics - assume 9.5in x 10in Compressor operating at 120 strokes per min.          
         float CompCylDiaIN = 9.5f;
@@ -1520,22 +1533,6 @@ namespace Orts.Simulation.RollingStocks
             UpdateSteamHeat(elapsedClockSeconds);
             #endregion
 
-            // Temporary for Steam Ejector
-#if DEBUG_STEAM_EJECTOR
-
-            float SteamEjectorSetting = SmallEjectorController.CurrentValue;
-            float SteamEjectorPressure = BoilerPressurePSI * SteamEjectorSetting;
-            float EjectorSmallBaseSteam = SteamEjectorSteamUsageLBpHtoPSI[SteamEjectorPressure];
-            float SteamEjectorSmallDiameterIn = 1.0f;
-            float EjectorBaseDiameterIn = 1.0f;
-            float SmallEjectorCapacityFactor = SteamEjectorCapacityFactorIntoX[SteamEjectorSmallDiameterIn];
-            float EjectorSmallSteamConsumptionLbpH = EjectorSmallBaseSteam * SmallEjectorCapacityFactor;
-
-            Trace.TraceInformation("============================================= Steam Ejector (MSTSSTeamLocomotive.cs) =========================================================");
-            Trace.TraceInformation("Small Ejector Setting {0} Steam Pressure {1} Base Steam Consumption {2}", SteamEjectorSetting, SteamEjectorPressure, EjectorSmallBaseSteam);
-            Trace.TraceInformation("Small Ejector - Diameter {0} Capacity Factor {1}  Steam Consumption {2}", SteamEjectorSmallDiameterIn, SmallEjectorCapacityFactor, EjectorSmallSteamConsumptionLbpH);
-    
-#endif
         }
 
         /// <summary>
@@ -1611,11 +1608,14 @@ namespace Orts.Simulation.RollingStocks
             Injector2ParticleDurationS = MathHelper.Clamp(Injector2ParticleDurationS / (absSpeedMpS / 4.0f), 0.1f, 1.0f);
 
             // Compressor Steam Effects
-
-            CompressorSteamVelocityMpS = 10.0f;
-            CompressorSteamVolumeM3pS = (CompressorIsOn ? (1.5f * SteamEffectsFactor) : 0);
-            CompressorParticleDurationS = 1.0f;
-            CompressorParticleDurationS = MathHelper.Clamp(CompressorParticleDurationS / (absSpeedMpS / 4.0f), 0.1f, 1.0f);
+            // Only show compressor steam effects if it is not a vacuum controlled steam engine
+            if (!(BrakeSystem is Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS.VacuumSinglePipe))
+            {
+                CompressorSteamVelocityMpS = 10.0f;
+                CompressorSteamVolumeM3pS = (CompressorIsOn ? (1.5f * SteamEffectsFactor) : 0);
+                CompressorParticleDurationS = 1.0f;
+                CompressorParticleDurationS = MathHelper.Clamp(CompressorParticleDurationS / (absSpeedMpS / 4.0f), 0.1f, 1.0f);
+            }
 
             // Whistle Steam Effects
 
@@ -3864,18 +3864,65 @@ namespace Orts.Simulation.RollingStocks
 
         private void UpdateAuxiliaries(float elapsedClockSeconds, float absSpeedMpS)
         {
-            // Calculate Air Compressor steam Usage if turned on
-            if (CompressorIsOn)
+            // Only calculate compressor consumption if it is not a vacuum controlled steam engine
+            if (!(BrakeSystem is Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS.VacuumSinglePipe))
             {
-                CompSteamUsageLBpS = Me3.ToFt3(Me3.FromIn3((float)Math.PI * (CompCylDiaIN / 2.0f) * (CompCylDiaIN / 2.0f) * CompCylStrokeIN * pS.FrompM(CompStrokespM))) * SteamDensityPSItoLBpFT3[BoilerPressurePSI];   // Calculate Compressor steam usage - equivalent to volume of compressor steam cylinder * steam denisty * cylinder strokes
-                BoilerMassLB -= elapsedClockSeconds * CompSteamUsageLBpS; // Reduce boiler mass to reflect steam usage by compressor
-                BoilerHeatBTU -= elapsedClockSeconds * CompSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by compressor
-                BoilerHeatOutBTUpS += CompSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by compressor
-                TotalSteamUsageLBpS += CompSteamUsageLBpS;
+                // Calculate Air Compressor steam Usage if turned on
+                if (CompressorIsOn)
+                {
+                    CompSteamUsageLBpS = Me3.ToFt3(Me3.FromIn3((float)Math.PI * (CompCylDiaIN / 2.0f) * (CompCylDiaIN / 2.0f) * CompCylStrokeIN * pS.FrompM(CompStrokespM))) * SteamDensityPSItoLBpFT3[BoilerPressurePSI];   // Calculate Compressor steam usage - equivalent to volume of compressor steam cylinder * steam denisty * cylinder strokes
+                    BoilerMassLB -= elapsedClockSeconds * CompSteamUsageLBpS; // Reduce boiler mass to reflect steam usage by compressor
+                    BoilerHeatBTU -= elapsedClockSeconds * CompSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by compressor
+                    BoilerHeatOutBTUpS += CompSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by compressor
+                    TotalSteamUsageLBpS += CompSteamUsageLBpS;
+                }
+                else
+                {
+                    CompSteamUsageLBpS = 0.0f;    // Set steam usage to zero if compressor is turned off
+                }
             }
-            else
+            else // Train is vacuum brake controlled, and steam ejector is used
             {
-                CompSteamUsageLBpS = 0.0f;    // Set steam usage to zero if compressor is turned off
+
+                // Calculate small steam ejector steam usage
+                SteamEjectorSmallSetting = SmallEjectorController.CurrentValue;
+                SteamEjectorSmallPressurePSI = BoilerPressurePSI * SteamEjectorSmallSetting;
+                SteamEjectorSmallBaseSteamUsageLbpS = pS.FrompH(SteamEjectorSteamUsageLBpHtoPSI[SteamEjectorSmallPressurePSI]);
+
+                SmallEjectorCapacityFactor = SteamEjectorCapacityFactorIntoX[SteamEjectorSmallDiameterIn];
+                EjectorSmallSteamConsumptionLbpS = SteamEjectorSmallBaseSteamUsageLbpS * SmallEjectorCapacityFactor;
+
+                if (SteamEjectorSmallSetting > 0.1f) // Test to see if small steam ejector is on
+                {
+                    SmallSteamEjectorIsOn = true;
+                }
+                else
+                {
+                    SmallSteamEjectorIsOn = false;
+                }
+
+         //       Trace.TraceInformation("Small: Press {0} Base Cons {1} Factor {2} Total Cons {3} Raw {4}", SteamEjectorSmallPressurePSI, SteamEjectorSmallBaseSteamLbpS, SmallEjectorCapacityFactor, EjectorSmallSteamConsumptionLbpS, SteamEjectorSteamUsageLBpHtoPSI[SteamEjectorSmallPressurePSI]); 
+
+       //         Trace.TraceInformation("Vacuum Pump {0}", VacuumPumpFitted);
+                // Calculate large steam ejector steam usage if no vacuum pump fitted, and the brake turns the large ejector on
+                if (!VacuumPumpFitted && LargeSteamEjectorIsOn)
+                {
+                    SteamEjectorLargeBaseUsageSteamLbpS = pS.FrompH(SteamEjectorSteamUsageLBpHtoPSI[SteamEjectorLargePressurePSI]);
+
+                    LargeEjectorCapacityFactor = SteamEjectorCapacityFactorIntoX[SteamEjectorLargeDiameterIn];
+                    EjectorLargeSteamConsumptionLbpS = SteamEjectorLargeBaseUsageSteamLbpS * LargeEjectorCapacityFactor;
+                }
+                else
+                {
+                    EjectorLargeSteamConsumptionLbpS = 0.0f;
+                }
+                // Calculate Total steamconsumption for Ejectors
+                EjectorTotalSteamConsumptionLbpS = EjectorSmallSteamConsumptionLbpS + EjectorLargeSteamConsumptionLbpS;
+
+                BoilerMassLB -= elapsedClockSeconds * EjectorTotalSteamConsumptionLbpS; // Reduce boiler mass to reflect steam usage by compressor
+                BoilerHeatBTU -= elapsedClockSeconds * EjectorTotalSteamConsumptionLbpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by compressor
+                BoilerHeatOutBTUpS += EjectorTotalSteamConsumptionLbpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by compressor
+                TotalSteamUsageLBpS += EjectorTotalSteamConsumptionLbpS;
             }
             // Calculate cylinder cock steam Usage if turned on
             // The cock steam usage will be assumed equivalent to a steam orifice
@@ -4607,29 +4654,61 @@ namespace Orts.Simulation.RollingStocks
                 FormatStrings.FormatMass(pS.TopH(Kg.FromLb(PreviousTotalSteamUsageLBpS)), IsMetric),
                 FormatStrings.h);
 
-            status.AppendFormat("{0}\t{1}\t{10}/{21}\t{2}\t{11}/{21}\t{3}\t{12}/{21}\t{4}\t{13}/{21}\t{5}\t{14}/{21}\t{6}\t{15}/{21}\t{7}\t{16}/{21}\t{8}\t{17}/{21}\t{9}\t{18}/{21} ({19}x{20:N1}\")\n",
-                Simulator.Catalog.GetString("Usage:"),
-                Simulator.Catalog.GetString("Cyl"),
-                Simulator.Catalog.GetString("Blower"),
-                Simulator.Catalog.GetString("Radiation"),
-                Simulator.Catalog.GetString("Comprsr"),
-                Simulator.Catalog.GetString("SafetyV"),
-                Simulator.Catalog.GetString("CylCock"),
-                Simulator.Catalog.GetString("Genertr"),
-                Simulator.Catalog.GetString("Stoker"),
-                Simulator.Catalog.GetString("MaxSafe"),
-                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylinderSteamUsageLBpS)), IsMetric),
-                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(BlowerSteamUsageLBpS)), IsMetric),
-                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(RadiationSteamLossLBpS)), IsMetric),
-                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CompSteamUsageLBpS)), IsMetric),
-                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(SafetyValveUsageLBpS)), IsMetric),
-                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylCockSteamUsageDisplayLBpS)), IsMetric),
-                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(GeneratorSteamUsageLBpS)), IsMetric),
-                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(StokerSteamUsageLBpS)), IsMetric),
-                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(MaxSafetyValveDischargeLbspS)), IsMetric),
-                NumSafetyValves,
-                SafetyValveSizeIn,
-                FormatStrings.h);
+            if (!(BrakeSystem is Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS.VacuumSinglePipe))
+            {
+                // Display air compressor information
+                status.AppendFormat("{0}\t{1}\t{10}/{21}\t{2}\t{11}/{21}\t{3}\t{12}/{21}\t{4}\t{13}/{21}\t{5}\t{14}/{21}\t{6}\t{15}/{21}\t{7}\t{16}/{21}\t{8}\t{17}/{21}\t{9}\t{18}/{21} ({19}x{20:N1}\")\n",
+                    Simulator.Catalog.GetString("Usage:"),
+                    Simulator.Catalog.GetString("Cyl"),
+                    Simulator.Catalog.GetString("Blower"),
+                    Simulator.Catalog.GetString("Radiation"),
+                    Simulator.Catalog.GetString("Comprsr"),
+                    Simulator.Catalog.GetString("SafetyV"),
+                    Simulator.Catalog.GetString("CylCock"),
+                    Simulator.Catalog.GetString("Genertr"),
+                    Simulator.Catalog.GetString("Stoker"),
+                    Simulator.Catalog.GetString("MaxSafe"),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylinderSteamUsageLBpS)), IsMetric),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(BlowerSteamUsageLBpS)), IsMetric),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(RadiationSteamLossLBpS)), IsMetric),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CompSteamUsageLBpS)), IsMetric),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(SafetyValveUsageLBpS)), IsMetric),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylCockSteamUsageDisplayLBpS)), IsMetric),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(GeneratorSteamUsageLBpS)), IsMetric),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(StokerSteamUsageLBpS)), IsMetric),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(MaxSafetyValveDischargeLbspS)), IsMetric),
+                    NumSafetyValves,
+                    SafetyValveSizeIn,
+                    FormatStrings.h);
+            }
+            else
+            {
+                // Display steam ejector information instead of air compressor
+                status.AppendFormat("{0}\t{1}\t{10}/{21}\t{2}\t{11}/{21}\t{3}\t{12}/{21}\t{4}\t{13}/{21}\t{5}\t{14}/{21}\t{6}\t{15}/{21}\t{7}\t{16}/{21}\t{8}\t{17}/{21}\t{9}\t{18}/{21} ({19}x{20:N1}\")\n",
+                    Simulator.Catalog.GetString("Usage:"),
+                    Simulator.Catalog.GetString("Cyl"),
+                    Simulator.Catalog.GetString("Blower"),
+                    Simulator.Catalog.GetString("Radiation"),
+                    Simulator.Catalog.GetString("Ejector"),
+                    Simulator.Catalog.GetString("SafetyV"),
+                    Simulator.Catalog.GetString("CylCock"),
+                    Simulator.Catalog.GetString("Genertr"),
+                    Simulator.Catalog.GetString("Stoker"),
+                    Simulator.Catalog.GetString("MaxSafe"),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylinderSteamUsageLBpS)), IsMetric),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(BlowerSteamUsageLBpS)), IsMetric),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(RadiationSteamLossLBpS)), IsMetric),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(EjectorTotalSteamConsumptionLbpS)), IsMetric),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(SafetyValveUsageLBpS)), IsMetric),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylCockSteamUsageDisplayLBpS)), IsMetric),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(GeneratorSteamUsageLBpS)), IsMetric),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(StokerSteamUsageLBpS)), IsMetric),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(MaxSafetyValveDischargeLbspS)), IsMetric),
+                    NumSafetyValves,
+                    SafetyValveSizeIn,
+                    FormatStrings.h);
+
+            }
 
             if (SteamEngineType == SteamEngineTypes.Compound)  // Display Steam Indicator Information for compound locomotive
             {
@@ -5046,6 +5125,38 @@ namespace Orts.Simulation.RollingStocks
               Simulator.Catalog.GetString("V3:"),
               Variable3
               );
+
+#endif
+
+#if DEBUG_STEAM_EJECTOR
+
+            status.AppendFormat("\n\t\t === {0} === \t\t{1}/{2}\n",
+            Simulator.Catalog.GetString("Steam Ejector"),
+            pS.TopH(EjectorTotalSteamConsumptionLbpS),
+            FormatStrings.h);
+
+            status.AppendFormat("{0}\t{1}\t{2:N2}\t{3}\t{4:N2}\t{5}\t{6:N2}\n",
+            Simulator.Catalog.GetString("Small:"),
+            Simulator.Catalog.GetString("Size"),
+            SteamEjectorSmallDiameterIn,
+            Simulator.Catalog.GetString("Press"),
+            SteamEjectorSmallPressurePSI,
+            Simulator.Catalog.GetString("Cons"),
+            pS.TopH(EjectorSmallSteamConsumptionLbpS));
+
+            if (!VacuumPumpFitted) // only display large ejector if vacuum pump fitted.
+            {
+                status.AppendFormat("{0}\t{1}\t{2:N2}\t{3}\t{4:N2}\t{5}\t{6:N2}\t{7}\t{8}\n",
+                Simulator.Catalog.GetString("Large:"),
+                Simulator.Catalog.GetString("Size"),
+                SteamEjectorLargeDiameterIn,
+                Simulator.Catalog.GetString("Press"),
+                SteamEjectorLargePressurePSI,
+                Simulator.Catalog.GetString("Cons"),
+                pS.TopH(EjectorLargeSteamConsumptionLbpS),
+                Simulator.Catalog.GetString("Lg Ej"),
+                LargeSteamEjectorIsOn);
+            }
 
 #endif
 
