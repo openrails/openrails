@@ -12117,44 +12117,11 @@ namespace Orts.Simulation.Physics
                 }
             }*/
 
-            // run along forward path to catch all mileposts
+            // run along forward path to catch all diverging switches and mileposts
 
-            if (ValidRoute[0] != null)
-            {
-                TrainObjectItem thisItem;
-                float distanceToTrainM = 0.0f;
-                float offset = PresentPosition[0].TCOffset;
-                float sectionStart = -offset;
-                int startRouteIndex = PresentPosition[0].RouteListIndex;
-                if (startRouteIndex < 0) startRouteIndex = ValidRoute[0].GetRouteIndex(PresentPosition[0].TCSectionIndex, 0);
-                if (startRouteIndex >= 0)
-                {
-                    for (int iRouteElement = startRouteIndex; iRouteElement < ValidRoute[0].Count && distanceToTrainM < 7000; iRouteElement++)
-                    {
-                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[ValidRoute[0][iRouteElement].TCSectionIndex];
-                        int sectionDirection = ValidRoute[0][iRouteElement].Direction;
+            AddSwitch_MilepostInfo(ref thisInfo, 0);
 
-                        if (thisSection.CircuitItems.TrackCircuitMileposts != null)
-                        {
-                            foreach (TrackCircuitMilepost thisMilepostItem in thisSection.CircuitItems.TrackCircuitMileposts)
-                            {
-                                Milepost thisMilepost = thisMilepostItem.MilepostRef;
-                                distanceToTrainM = sectionStart + thisMilepostItem.MilepostLocation[sectionDirection == 1 ? 0 : 1];
-
-                                if (distanceToTrainM > 0 && distanceToTrainM < 7000)
-                                {
-                                    thisItem = new TrainObjectItem(thisMilepost.MilepostValue.ToString(), distanceToTrainM);
-                                    thisInfo.ObjectInfoForward.Add(thisItem);
-                                }
-                            }
-                        }
-                        sectionStart += thisSection.Length;
-                    }
-                }
-            }
-
-
-            // set object items - backward
+             // set object items - backward
 
             if (ClearanceAtRearM <= 0)
             {
@@ -12176,6 +12143,73 @@ namespace Orts.Simulation.Physics
                 }
             }
         }
+
+        //================================================================================================//
+        /// <summary>
+        /// Add all switch and milepost info to TrackMonitorInfo
+        /// </summary>
+        /// 
+        private void AddSwitch_MilepostInfo(ref TrainInfo thisInfo, int routeDirection)
+        {
+            // run along forward path to catch all diverging switches and mileposts
+
+            if (ValidRoute[routeDirection] != null)
+            {
+                TrainObjectItem thisItem;
+                float distanceToTrainM = 0.0f;
+                float offset = PresentPosition[routeDirection].TCOffset;
+                TrackCircuitSection firstSection = signalRef.TrackCircuitList[PresentPosition[routeDirection].TCSectionIndex];
+                float sectionStart = routeDirection == 0 ? -offset : offset - firstSection.Length;
+                int startRouteIndex = PresentPosition[routeDirection].RouteListIndex;
+                if (startRouteIndex < 0) startRouteIndex = ValidRoute[routeDirection].GetRouteIndex(PresentPosition[routeDirection].TCSectionIndex, 0);
+                if (startRouteIndex >= 0)
+                {
+                    for (int iRouteElement = startRouteIndex; iRouteElement < ValidRoute[routeDirection].Count && distanceToTrainM < 7000 && sectionStart < 7000; iRouteElement++)
+                    {
+                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[ValidRoute[routeDirection][iRouteElement].TCSectionIndex];
+                        int sectionDirection = ValidRoute[routeDirection][iRouteElement].Direction;
+
+                        if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction && (thisSection.Pins[sectionDirection, 1].Link != -1) && sectionStart < 7000)
+                        {
+                            var isDiverging = false;
+                            var isRightSwitch = true;
+                            if (thisSection.ActivePins[sectionDirection, 1].Link > 0 && thisSection.JunctionDefaultRoute == 0)
+                                // diverging switch right
+                                isDiverging = true;
+                            else if (thisSection.ActivePins[sectionDirection, 0].Link > 0 && thisSection.JunctionDefaultRoute > 0)
+                            {
+                                isDiverging = true;
+                                isRightSwitch = false;
+                            }
+                            if (isDiverging)
+                            {
+                                thisItem = new TrainObjectItem(isRightSwitch, sectionStart);
+                                if (routeDirection == 0) thisInfo.ObjectInfoForward.Add(thisItem);
+                                else thisInfo.ObjectInfoBackward.Add(thisItem);
+                            }
+                        }
+
+                        if (thisSection.CircuitItems.TrackCircuitMileposts != null)
+                        {
+                            foreach (TrackCircuitMilepost thisMilepostItem in thisSection.CircuitItems.TrackCircuitMileposts)
+                            {
+                                Milepost thisMilepost = thisMilepostItem.MilepostRef;
+                                distanceToTrainM = sectionStart + thisMilepostItem.MilepostLocation[sectionDirection == 1 ? 0 : 1];
+
+                                if (distanceToTrainM > 0 && distanceToTrainM < 7000)
+                                {
+                                    thisItem = new TrainObjectItem(thisMilepost.MilepostValue.ToString(), distanceToTrainM);
+                                    if (routeDirection == 0) thisInfo.ObjectInfoForward.Add(thisItem);
+                                    else thisInfo.ObjectInfoBackward.Add(thisItem);
+                                }
+                            }
+                        }
+                        sectionStart += thisSection.Length;
+                    }
+                }
+            }
+        }
+
 
 
         //================================================================================================//
@@ -12331,40 +12365,13 @@ namespace Orts.Simulation.Physics
 
                     sectionStart += thisSection.Length;
                 }
-
-                // do it separately for mileposts
-
-                distanceToTrainM = 0.0f;
-                offset = PresentPosition[0].TCOffset;
-                sectionStart = -offset;
-                int startRouteIndex = PresentPosition[0].RouteListIndex;
-                if (startRouteIndex < 0) startRouteIndex = ValidRoute[0].GetRouteIndex(PresentPosition[0].TCSectionIndex, 0);
-                if (startRouteIndex >= 0)
-                {
-                    for (int iRouteElement = startRouteIndex; iRouteElement < ValidRoute[0].Count && distanceToTrainM < 7000; iRouteElement++)
-                    {
-                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[ValidRoute[0][iRouteElement].TCSectionIndex];
-                        int sectionDirection = ValidRoute[0][iRouteElement].Direction;
-
-                        if (thisSection.CircuitItems.TrackCircuitMileposts != null)
-                        {
-                            foreach (TrackCircuitMilepost thisMilepostItem in thisSection.CircuitItems.TrackCircuitMileposts)
-                            {
-                                Milepost thisMilepost = thisMilepostItem.MilepostRef;
-                                distanceToTrainM = sectionStart + thisMilepostItem.MilepostLocation[sectionDirection == 1 ? 0 : 1];
-
-                                if (distanceToTrainM > 0 && distanceToTrainM < 7000)
-                                {
-                                    thisItem = new TrainObjectItem(thisMilepost.MilepostValue.ToString(), distanceToTrainM);
-                                    thisInfo.ObjectInfoForward.Add(thisItem);
-                                }
-                            }
-                        }
-                        sectionStart += thisSection.Length;
-                    }
-                }
             }
 
+                // do it separately for switches and mileposts
+            // run along forward path to catch all diverging switches and mileposts
+
+            AddSwitch_MilepostInfo(ref thisInfo, 0);
+ 
             // set backward information
 
             // set authority
@@ -12416,39 +12423,10 @@ namespace Orts.Simulation.Physics
 
                     sectionStart += thisSection.Length;
                 }
-
-                // do it separately for mileposts
-
-                distanceToTrainM = 0.0f;
-                offset = PresentPosition[1].TCOffset;
-                sectionStart = offset - firstSection.Length;
-                int startRouteIndex = PresentPosition[1].RouteListIndex;
-                if (startRouteIndex < 0) startRouteIndex = ValidRoute[1].GetRouteIndex(PresentPosition[1].TCSectionIndex, 0);
-                if (startRouteIndex >= 0)
-                {
-                    for (int iRouteElement = startRouteIndex; iRouteElement < ValidRoute[1].Count && distanceToTrainM < 7000; iRouteElement++)
-                    {
-                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[ValidRoute[1][iRouteElement].TCSectionIndex];
-                        int sectionDirection = ValidRoute[1][iRouteElement].Direction;
-
-                        if (thisSection.CircuitItems.TrackCircuitMileposts != null)
-                        {
-                            foreach (TrackCircuitMilepost thisMilepostItem in thisSection.CircuitItems.TrackCircuitMileposts)
-                            {
-                                Milepost thisMilepost = thisMilepostItem.MilepostRef;
-                                distanceToTrainM = sectionStart + thisMilepostItem.MilepostLocation[sectionDirection == 1 ? 0 : 1];
-
-                                if (distanceToTrainM > 0 && distanceToTrainM < 7000)
-                                {
-                                    thisItem = new TrainObjectItem(thisMilepost.MilepostValue.ToString(), distanceToTrainM);
-                                    thisInfo.ObjectInfoBackward.Add(thisItem);
-                                }
-                            }
-                        }
-                        sectionStart += thisSection.Length;
-                    }
-                }
             }
+            
+                // do it separately for switches and mileposts
+            AddSwitch_MilepostInfo(ref thisInfo, 1);
         }
 
         //================================================================================================//
@@ -17724,7 +17702,8 @@ namespace Orts.Simulation.Physics
                 REVERSAL,
                 OUT_OF_CONTROL,
                 WAITING_POINT,
-                MILEPOST
+                MILEPOST,
+                FACING_SWITCH
             }
 
             public enum SpeedItemType
@@ -17745,6 +17724,7 @@ namespace Orts.Simulation.Physics
             public SpeedItemType SpeedObjectType;
             public bool Valid;
             public string ThisMile;
+            public bool IsRightSwitch;
 
             // field validity :
             // if ItemType == SIGNAL :
@@ -17857,6 +17837,15 @@ namespace Orts.Simulation.Physics
                 DistanceToTrainM = thisDistanceM;
                 ThisMile = thisMile;
             }
+
+            // Constructor for facing Switch
+            public TrainObjectItem(bool isRightSwitch, float thisDistanceM)
+            {
+                ItemType = TRAINOBJECTTYPE.FACING_SWITCH;
+                DistanceToTrainM = thisDistanceM;
+                IsRightSwitch = isRightSwitch;
+            }
+
 
             /// no need for Restore or Save items as info is not kept in permanent variables
 
