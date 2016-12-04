@@ -228,6 +228,8 @@ namespace Orts.Viewer3D.Popups
         int[] signalPosition = new int[5] { 95, -16, 0, 16, 16 }; // Relative positioning
         int[] arrowPosition = new int[5] { 22, -12, -12, 24, 24 };
         int[] invalidReversalPosition = new int[5] { 42, -14, -10, 24, 24 }; // Relative positioning
+        int[] leftSwitchPosition = new int[5] { 37, -14, -10, 24, 24 }; // Relative positioning
+        int[] rightSwitchPosition = new int[5] { 47, -14, -10, 24, 24 }; // Relative positioning
 
         // texture rectangles : X-offset, Y-offset, width, height
         Rectangle eyeSprite = new Rectangle(0, 144, 24, 24);
@@ -244,6 +246,8 @@ namespace Orts.Viewer3D.Popups
         Rectangle forwardArrowSprite = new Rectangle(24, 48, 24, 24);
         Rectangle backwardArrowSprite = new Rectangle(0, 48, 24, 24);
         Rectangle invalidReversalSprite = new Rectangle(24, 144, 24, 24);
+        Rectangle leftArrowSprite = new Rectangle(0, 168, 24, 24);
+        Rectangle rightArrowSprite = new Rectangle(24, 168, 24, 24);
 
         Dictionary<TrackMonitorSignalAspect, Rectangle> SignalMarkers = new Dictionary<TrackMonitorSignalAspect, Rectangle>
         {
@@ -628,6 +632,10 @@ namespace Orts.Viewer3D.Popups
                         lastLabelPosition = drawMilePost(spriteBatch, offset, startObjectArea, endObjectArea, zeroPoint, maxDistance, distanceFactor, firstLabelPosition, forward, lastLabelPosition, thisItem, ref firstLabelShown);
                         break;
 
+                    case Train.TrainObjectItem.TRAINOBJECTTYPE.FACING_SWITCH:
+                        drawSwitch(spriteBatch, offset, startObjectArea, endObjectArea, zeroPoint, maxDistance, distanceFactor, firstLabelPosition, forward, lastLabelPosition, thisItem, ref firstLabelShown);
+                        break;
+
                     default:     // capture unkown item
                         break;
                 }
@@ -859,6 +867,36 @@ namespace Orts.Viewer3D.Popups
                 var milepostString = thisItem.ThisMile;
                 Font.Draw(spriteBatch, labelPoint, milepostString, Color.White);
 
+            }
+
+            return newLabelPosition;
+        }
+
+        // draw switch information
+        int drawSwitch(SpriteBatch spriteBatch, Point offset, int startObjectArea, int endObjectArea, int zeroPoint, float maxDistance, float distanceFactor, float firstLabelDistance, bool forward, int lastLabelPosition, Train.TrainObjectItem thisItem, ref bool firstLabelShown)
+        {
+            var displayItem = thisItem.IsRightSwitch ? rightArrowSprite : leftArrowSprite;
+            var newLabelPosition = lastLabelPosition;
+
+            if (thisItem.DistanceToTrainM < (maxDistance - textSpacing / distanceFactor))
+            {
+                var itemOffset = Convert.ToInt32(thisItem.DistanceToTrainM * distanceFactor);
+                var itemLocation = forward ? zeroPoint - itemOffset : zeroPoint + itemOffset;
+                newLabelPosition = forward ? Math.Min(itemLocation, lastLabelPosition - textSpacing) : Math.Max(itemLocation, lastLabelPosition + textSpacing);
+
+                var markerPlacement = thisItem.IsRightSwitch ?
+                    new Rectangle(offset.X + rightSwitchPosition[0], offset.Y + itemLocation + rightSwitchPosition[forward ? 1 : 2], rightSwitchPosition[3], rightSwitchPosition[4]) :
+                    new Rectangle(offset.X + leftSwitchPosition[0], offset.Y + itemLocation + leftSwitchPosition[forward ? 1 : 2], leftSwitchPosition[3], leftSwitchPosition[4]);
+                spriteBatch.Draw(TrackMonitorImages, markerPlacement, displayItem, Color.White);
+
+                // Only show distance for enhanced MSTS compatibility (this is the only time the position is controlled by the author).
+                if (itemOffset < firstLabelDistance && !firstLabelShown && !Program.Simulator.TimetableMode)
+                {
+                    var labelPoint = new Point(offset.X + distanceTextOffset, offset.Y + newLabelPosition + textOffset[forward ? 0 : 1]);
+                    var distanceString = FormatStrings.FormatDistanceDisplay(thisItem.DistanceToTrainM, metric);
+                    Font.Draw(spriteBatch, labelPoint, distanceString, Color.White);
+                    firstLabelShown = true;
+                }
             }
 
             return newLabelPosition;
