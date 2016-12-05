@@ -44,6 +44,7 @@
 
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
+using Orts.Formats.OR;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
@@ -244,6 +245,17 @@ namespace Orts.Viewer3D
             // read the world file 
             var WFile = new Orts.Formats.Msts.WorldFile(WFilePath);
 
+            // check for existence of world file in OpenRails subfolder
+
+            WFilePath = viewer.Simulator.RoutePath + @"\World\Openrails\" + WFileName;
+            if (File.Exists(WFilePath))
+            {
+                // We have an OR-specific addition to world file
+                WFile.InsertORSpecificData(WFilePath);
+            }
+
+
+
             // to avoid loop checking for every object this pre-check is performed
             bool containsTurntable = false;
             if (Program.Simulator.Turntables != null)
@@ -402,6 +414,12 @@ namespace Orts.Viewer3D
                     }
                     else if (worldObject.GetType() == typeof(CarSpawnerObj))
                     {
+                        if (Program.Simulator.CarSpawnerLists != null && ((CarSpawnerObj)worldObject).ListName != null)
+                        {
+                            ((CarSpawnerObj)worldObject).CarSpawnerListIdx = Program.Simulator.CarSpawnerLists.FindIndex(x => x.ListName == ((CarSpawnerObj)worldObject).ListName);
+                            if (((CarSpawnerObj)worldObject).CarSpawnerListIdx < 0 || ((CarSpawnerObj)worldObject).CarSpawnerListIdx > Program.Simulator.CarSpawnerLists.Count-1) ((CarSpawnerObj)worldObject).CarSpawnerListIdx = 0;
+                        }
+                        else ((CarSpawnerObj)worldObject).CarSpawnerListIdx = 0;
                         carSpawners.Add(new RoadCarSpawner(viewer, worldMatrix, (CarSpawnerObj)worldObject));
                     }
                     else if (worldObject.GetType() == typeof(SidingObj))

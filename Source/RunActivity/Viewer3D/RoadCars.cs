@@ -99,7 +99,7 @@ namespace Orts.Viewer3D
             if (Length > 0 && LastSpawnedTime >= NextSpawnTime && (cars.Count == 0 || cars.Last().Travelled > cars.Last().Length))
             {
                 var newCars = new List<RoadCar>(cars);
-                newCars.Add(new RoadCar(Viewer, this, CarSpawnerObj.CarAvSpeed));
+                newCars.Add(new RoadCar(Viewer, this, CarSpawnerObj.CarAvSpeed, CarSpawnerObj.CarSpawnerListIdx));
                 Cars = cars = newCars;
 
                 LastSpawnedTime = 0;
@@ -219,12 +219,14 @@ namespace Orts.Viewer3D
         float Speed;
         float SpeedMax;
         int NextCrossingIndex;
+        public int CarSpawnerListIdx;
 
-        public RoadCar(Viewer viewer, RoadCarSpawner spawner, float averageSpeed)
+        public RoadCar(Viewer viewer, RoadCarSpawner spawner, float averageSpeed, int carSpawnerListIdx)
         {
             Spawner = spawner;
-            Type = Viewer.Random.Next() % viewer.Simulator.CarSpawnerFile.shapeNames.Length;
-            Length = viewer.Simulator.CarSpawnerFile.distanceFrom[Type];
+            CarSpawnerListIdx = carSpawnerListIdx;
+            Type = Viewer.Random.Next() % viewer.Simulator.CarSpawnerLists[CarSpawnerListIdx].shapeNames.Length;
+            Length = viewer.Simulator.CarSpawnerLists[CarSpawnerListIdx].distanceFrom[Type];
             // Front and rear travellers approximate wheel positions at 25% and 75% along vehicle.
             FrontTraveller = new Traveller(spawner.Traveller);
             FrontTraveller.Move(Length * 0.15f);
@@ -360,7 +362,7 @@ namespace Orts.Viewer3D
         public RoadCarPrimitive(Viewer viewer, RoadCar car)
         {
             Car = car;
-            CarShape = new RoadCarShape(viewer, viewer.Simulator.CarSpawnerFile.shapeNames[car.Type]);
+            CarShape = new RoadCarShape(viewer, viewer.Simulator.CarSpawnerLists[Car.CarSpawnerListIdx].shapeNames[car.Type]);
         }
 
         [CallOnThread("Updater")]

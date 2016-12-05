@@ -132,6 +132,8 @@ namespace Orts.Simulation
         public bool InControl = true;//For multiplayer, a player may not control his/her own train (as helper)
         public TurntableFile TurntableFile;
         public List<Turntable> Turntables;
+        public ExtCarSpawnerFile ExtCarSpawnerFile;
+        public List<CarSpawnerList> CarSpawnerLists;
 
         /// <summary>
         /// Reference to the InterlockingSystem object, responsible for
@@ -316,8 +318,18 @@ namespace Orts.Simulation
             var carSpawnFile = RoutePath + @"\carspawn.dat";
             if (File.Exists(carSpawnFile))
             {
+                CarSpawnerLists = new List<CarSpawnerList>();
                 Trace.Write(" CARSPAWN");
-                CarSpawnerFile = new CarSpawnerFile(RoutePath + @"\carspawn.dat", RoutePath + @"\shapes\");
+                CarSpawnerFile = new CarSpawnerFile(RoutePath + @"\carspawn.dat", RoutePath + @"\shapes\", CarSpawnerLists);
+            }
+
+            // Extended car spawner file
+            var extCarSpawnFile = RoutePath + @"\openrails\carspawn.dat";
+            if (File.Exists(extCarSpawnFile))
+            {
+                if (CarSpawnerLists == null) CarSpawnerLists = new List<CarSpawnerList>();
+                Trace.Write(" EXTCARSPAWN");
+                ExtCarSpawnerFile = new ExtCarSpawnerFile(RoutePath + @"\openrails\carspawn.dat", RoutePath + @"\shapes\", CarSpawnerLists);
             }
 
             Confirmer = new Confirmer(this, 1.5);

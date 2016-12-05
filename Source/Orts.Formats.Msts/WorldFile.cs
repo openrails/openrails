@@ -54,6 +54,20 @@ namespace Orts.Formats.Msts
                 sbr.Skip();
             }
         }
+
+        public void InsertORSpecificData (string filename)
+        {
+            using (var sbr = SBR.Open(filename))
+            {
+                using (var block = sbr.ReadSubBlock())
+                {
+                    Tr_Worldfile.InsertORSpecificData(block, filename);
+                }
+                // some w files have additional comments at the end 
+                //       eg _Skip ( "TS DB-Utility - Version: 3.4.05(13.10.2009), Filetype='World', Copyright (C) 2003-2009 by ...CarlosHR..." )
+                sbr.Skip();
+            }
+        }
     }
 
     public class Tr_Worldfile : List<WorldObject>
@@ -155,6 +169,83 @@ namespace Orts.Formats.Msts
                     break;
             }
         }
+
+        public void InsertORSpecificData (SBR block, string filename)
+        {
+            block.VerifyID(TokenID.Tr_Worldfile);
+            while (!block.EndOfBlock())
+            {
+                using (var subBlock = block.ReadSubBlock())
+                {
+                    try
+                    {
+                        WorldObject origObject;
+                        bool wrongBlock = false;
+                        if (!subBlock.EndOfBlock())
+                        {
+                            var subSubBlockUID = subBlock.ReadSubBlock();
+                                // check if a block with this UiD already present
+                                if (subSubBlockUID.ID == TokenID.UiD)
+                                {
+                                    uint UID = subSubBlockUID.ReadUInt();
+                                    origObject = Find(x => x.UID == UID);
+                                    if (origObject == null)
+                                    {
+                                        wrongBlock = true;
+                                        Trace.TraceWarning("Skipped world block {0} (0x{0:X}), UID {1} not matching with base file", subBlock.ID, UID);
+                                        subSubBlockUID.Skip();
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        wrongBlock = !TestMatch(subBlock, origObject);
+                                        if (!wrongBlock)
+                                        {
+                                            subSubBlockUID.Skip();
+                                            while (!subBlock.EndOfBlock() && !wrongBlock)
+                                            {
+                                                using (var subSubBlock = subBlock.ReadSubBlock())
+                                                {
+
+                                                    origObject.AddOrModifyObj(subSubBlock);
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            Trace.TraceWarning("Skipped world block {0} (0x{0:X}), UID {1} not matching with base file", subBlock.ID, UID);
+                                            subBlock.Skip();
+                                            break;
+                                        }
+                                    }
+                                }
+ 
+                        }
+                        subBlock.EndOfBlock();
+                    }
+
+                    catch (Exception error)
+                    {
+                        Trace.WriteLine(new FileLoadException(filename, error));
+                    }
+                }
+            }
+        }
+
+        private bool TestMatch(SBR subBlock, WorldObject origObject)
+        {
+            if (subBlock.ID == TokenID.Static && origObject is StaticObj) return true;
+            if (subBlock.ID == TokenID.Gantry && origObject is BaseObj) return true;
+            if (subBlock.ID == TokenID.Pickup && origObject is PickupObj) return true;
+            if (subBlock.ID == TokenID.Transfer && origObject is TransferObj) return true;
+            if (subBlock.ID == TokenID.Forest && origObject is ForestObj) return true;
+            if (subBlock.ID == TokenID.Signal && origObject is SignalObj) return true;
+            if (subBlock.ID == TokenID.Speedpost && origObject is SpeedPostObj) return true;
+            if (subBlock.ID == TokenID.LevelCr && origObject is LevelCrossingObj) return true;
+            if (subBlock.ID == TokenID.Hazard && origObject is HazardObj) return true;
+            if (subBlock.ID == TokenID.CarSpawner && origObject is CarSpawnerObj) return true;
+            return false;
+        }
     }
 
     public class BaseObj : WorldObject
@@ -167,25 +258,22 @@ namespace Orts.Formats.Msts
         {
             StaticDetailLevel = detailLevel;
 
-            while (!block.EndOfBlock())
-            {
-                using (var subBlock = block.ReadSubBlock())
-                {
-                    switch (subBlock.ID)
-                    {
-                        case TokenID.UiD: UID = subBlock.ReadUInt(); break;
-                        case TokenID.FileName: FileName = subBlock.ReadString(); break;
-                        case TokenID.Position: Position = new STFPositionItem(subBlock); break;
-                        case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
-                        case TokenID.Matrix3x3: Matrix3x3 = new Matrix3x3(subBlock); break;
-                        case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
-                        case TokenID.StaticFlags: StaticFlags = subBlock.ReadFlags(); break;
-                        default: subBlock.Skip(); break;
-                    }
-                }
-            }
+            ReadBlock(block);
             // TODO verify that we got all needed parameters otherwise null pointer failures will occur
             // TODO, do this for all objects that iterate using a while loop
+        }
+        public override void AddOrModifyObj(SBR subBlock)
+        {
+            switch (subBlock.ID)
+            {
+                case TokenID.FileName: FileName = subBlock.ReadString(); break;
+                case TokenID.Position: Position = new STFPositionItem(subBlock); break;
+                case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
+                case TokenID.Matrix3x3: Matrix3x3 = new Matrix3x3(subBlock); break;
+                case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
+                case TokenID.StaticFlags: StaticFlags = subBlock.ReadFlags(); break;
+                default: subBlock.Skip(); break;
+            }
         }
     }
 
@@ -195,6 +283,11 @@ namespace Orts.Formats.Msts
             : base(block, detailLevel)
         {
         }
+
+        public override void AddOrModifyObj(SBR subBlock)
+        {
+            base.AddOrModifyObj(subBlock);
+        }
     }
 
     /// <summary>
@@ -202,12 +295,12 @@ namespace Orts.Formats.Msts
     /// </summary>
     public class PickupObj : BaseObj
     {
-        public readonly uint PickupType;
-        public readonly PickupAnimDataItem PickupAnimData;
-        public readonly SpeedRangeItem SpeedRange;
-        public readonly PickupCapacityItem PickupCapacity;
-        public readonly List<TrItemId> TrItemIDList = new List<TrItemId>();
-        public readonly uint CollideFlags;
+        public uint PickupType;
+        public PickupAnimDataItem PickupAnimData;
+        public SpeedRangeItem SpeedRange;
+        public PickupCapacityItem PickupCapacity;
+        public List<TrItemId> TrItemIDList = new List<TrItemId>();
+        public uint CollideFlags;
 
         public WorldLocation Location;
 
@@ -220,31 +313,30 @@ namespace Orts.Formats.Msts
         {
             StaticDetailLevel = detailLevel;
 
-            while (!block.EndOfBlock())
+            ReadBlock(block);
+        }
+            
+        public override void AddOrModifyObj(SBR subBlock)
+        {
+            switch (subBlock.ID)
             {
-                using (var subBlock = block.ReadSubBlock())
-                {
-                    switch (subBlock.ID)
-                    {
-                        case TokenID.UiD: UID = subBlock.ReadUInt(); break;
-                        case TokenID.SpeedRange: SpeedRange = new SpeedRangeItem(subBlock); break;
-                        case TokenID.PickupType: PickupType = subBlock.ReadUInt();
-                            subBlock.Skip(); // Discard the 2nd value (0 or 1 but significance is not known)
-                            break;
-                        case TokenID.PickupAnimData: PickupAnimData = new PickupAnimDataItem(subBlock); break;
-                        case TokenID.PickupCapacity: PickupCapacity = new PickupCapacityItem(subBlock); break;
-                        case TokenID.TrItemId: TrItemIDList.Add(new TrItemId(subBlock)); break;
-                        case TokenID.CollideFlags: CollideFlags = subBlock.ReadUInt(); break;
-                        case TokenID.FileName: FileName = subBlock.ReadString(); break;
-                        case TokenID.StaticFlags: StaticFlags = subBlock.ReadFlags(); break;
-                        case TokenID.Position: Position = new STFPositionItem(subBlock); break;
-                        case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
-                        case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
-                        default: subBlock.Skip(); break;
-                    }
-                }
+                case TokenID.SpeedRange: SpeedRange = new SpeedRangeItem(subBlock); break;
+                case TokenID.PickupType: PickupType = subBlock.ReadUInt();
+                    subBlock.Skip(); // Discard the 2nd value (0 or 1 but significance is not known)
+                    break;
+                case TokenID.PickupAnimData: PickupAnimData = new PickupAnimDataItem(subBlock); break;
+                case TokenID.PickupCapacity: PickupCapacity = new PickupCapacityItem(subBlock); break;
+                case TokenID.TrItemId: TrItemIDList.Add(new TrItemId(subBlock)); break;
+                case TokenID.CollideFlags: CollideFlags = subBlock.ReadUInt(); break;
+                case TokenID.FileName: FileName = subBlock.ReadString(); break;
+                case TokenID.StaticFlags: StaticFlags = subBlock.ReadFlags(); break;
+                case TokenID.Position: Position = new STFPositionItem(subBlock); break;
+                case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
+                case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
+                default: subBlock.Skip(); break;
             }
         }
+
 
         /// <summary>
         /// SpeedRangeItem specifies the acceptable range of speeds (meters/sec) for using a pickup.
@@ -305,69 +397,66 @@ namespace Orts.Formats.Msts
 
     public class TransferObj : WorldObject
     {
-        public readonly float Width;
-        public readonly float Height;
+        public float Width;
+        public float Height;
 
         public TransferObj(SBR block, int detailLevel)
         {
             StaticDetailLevel = detailLevel;
 
-            while (!block.EndOfBlock())
+            ReadBlock(block);
+        }
+
+        public override void AddOrModifyObj(SBR subBlock)
+        {
+            switch (subBlock.ID)
             {
-                using (var subBlock = block.ReadSubBlock())
-                {
-                    switch (subBlock.ID)
-                    {
-                        case TokenID.UiD: UID = subBlock.ReadUInt(); break;
-                        case TokenID.Width: Width = subBlock.ReadFloat(); break;
-                        case TokenID.Height: Height = subBlock.ReadFloat(); break;
-                        case TokenID.FileName: FileName = subBlock.ReadString(); break;
-                        case TokenID.Position: Position = new STFPositionItem(subBlock); break;
-                        case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
-                        case TokenID.Matrix3x3: Matrix3x3 = new Matrix3x3(subBlock); break;
-                        case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
-                        case TokenID.StaticFlags: StaticFlags = subBlock.ReadFlags(); break;
-                        default: subBlock.Skip(); break;
-                    }
-                }
+                case TokenID.Width: Width = subBlock.ReadFloat(); break;
+                case TokenID.Height: Height = subBlock.ReadFloat(); break;
+                case TokenID.FileName: FileName = subBlock.ReadString(); break;
+                case TokenID.Position: Position = new STFPositionItem(subBlock); break;
+                case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
+                case TokenID.Matrix3x3: Matrix3x3 = new Matrix3x3(subBlock); break;
+                case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
+                case TokenID.StaticFlags: StaticFlags = subBlock.ReadFlags(); break;
+                default: subBlock.Skip(); break;
             }
         }
     }
 
     public class TrackObj : WorldObject
     {
-        public readonly uint SectionIdx;
-        public readonly float Elevation;
-        public readonly uint CollideFlags;
-        public readonly JNodePosn JNodePosn;
+        public uint SectionIdx;
+        public float Elevation;
+        public uint CollideFlags;
+        public JNodePosn JNodePosn;
 
         public TrackObj(SBR block, int detailLevel)
         {
             StaticDetailLevel = detailLevel;
 
-            while (!block.EndOfBlock())
-            {
-                using (var subBlock = block.ReadSubBlock())
-                {
-                    switch (subBlock.ID)
-                    {
-                        case TokenID.UiD: UID = subBlock.ReadUInt(); break;
-                        case TokenID.SectionIdx: SectionIdx = subBlock.ReadUInt(); break;
-                        case TokenID.Elevation: Elevation = subBlock.ReadFloat(); break;
-                        case TokenID.CollideFlags: CollideFlags = subBlock.ReadUInt(); break;
-                        case TokenID.FileName: FileName = subBlock.ReadString(); break;
-                        case TokenID.StaticFlags: StaticFlags = subBlock.ReadUInt(); break;
-                        case TokenID.Position: Position = new STFPositionItem(subBlock); break;
-                        case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
-                        case TokenID.Matrix3x3: Matrix3x3 = new Matrix3x3(subBlock); break;
-                        case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
-                        case TokenID.JNodePosn: JNodePosn = new JNodePosn(subBlock); break;
-                        default: subBlock.Skip(); break;
-                    }
-                }
-            }
+            ReadBlock(block);
+
             // TODO verify that we got all needed parameters otherwise null pointer failures will occur
             // TODO, do this for all objects that iterate using a while loop
+        }
+
+        public override void AddOrModifyObj(SBR subBlock)
+        {
+            switch (subBlock.ID)
+            {
+                case TokenID.SectionIdx: SectionIdx = subBlock.ReadUInt(); break;
+                case TokenID.Elevation: Elevation = subBlock.ReadFloat(); break;
+                case TokenID.CollideFlags: CollideFlags = subBlock.ReadUInt(); break;
+                case TokenID.FileName: FileName = subBlock.ReadString(); break;
+                case TokenID.StaticFlags: StaticFlags = subBlock.ReadUInt(); break;
+                case TokenID.Position: Position = new STFPositionItem(subBlock); break;
+                case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
+                case TokenID.Matrix3x3: Matrix3x3 = new Matrix3x3(subBlock); break;
+                case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
+                case TokenID.JNodePosn: JNodePosn = new JNodePosn(subBlock); break;
+                default: subBlock.Skip(); break;
+            }
         }
     }
 
@@ -489,40 +578,39 @@ namespace Orts.Formats.Msts
 
     public class ForestObj : WorldObject
     {
-        public readonly bool IsYard;
-        public readonly string TreeTexture;
-        public readonly int Population;
-        public readonly ScaleRange scaleRange;
-        public readonly ForestArea forestArea;
-        public readonly TreeSize treeSize;
+        public bool IsYard;
+        public string TreeTexture;
+        public int Population;
+        public ScaleRange scaleRange;
+        public ForestArea forestArea;
+        public TreeSize treeSize;
 
         public ForestObj(SBR block, int detailLevel)
         {
             StaticDetailLevel = detailLevel;
 
-            while (!block.EndOfBlock())
-            {
-                using (var subBlock = block.ReadSubBlock())
-                {
-                    switch (subBlock.ID)
-                    {
-                        case TokenID.UiD: UID = subBlock.ReadUInt(); break;
-                        case TokenID.TreeTexture: TreeTexture = subBlock.ReadString(); break;
-                        case TokenID.ScaleRange: scaleRange = new ScaleRange(subBlock); break;
-                        case TokenID.Area: forestArea = new ForestArea(subBlock); break;
-                        case TokenID.Population: Population = subBlock.ReadInt(); break;
-                        case TokenID.TreeSize: treeSize = new TreeSize(subBlock); break;
-                        case TokenID.StaticFlags: StaticFlags = subBlock.ReadUInt(); break;
-                        case TokenID.Position: Position = new STFPositionItem(subBlock); break;
-                        case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
-                        case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
-                        default: subBlock.Skip(); break;
-                    }
-                }
-            }
+            ReadBlock (block);
+
             IsYard = TreeTexture == null;
         }
 
+
+        public override void AddOrModifyObj(SBR subBlock)
+        {
+            switch (subBlock.ID)
+            {
+                case TokenID.TreeTexture: TreeTexture = subBlock.ReadString(); break;
+                case TokenID.ScaleRange: scaleRange = new ScaleRange(subBlock); break;
+                case TokenID.Area: forestArea = new ForestArea(subBlock); break;
+                case TokenID.Population: Population = subBlock.ReadInt(); break;
+                case TokenID.TreeSize: treeSize = new TreeSize(subBlock); break;
+                case TokenID.StaticFlags: StaticFlags = subBlock.ReadUInt(); break;
+                case TokenID.Position: Position = new STFPositionItem(subBlock); break;
+                case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
+                case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
+                default: subBlock.Skip(); break;
+            }
+        }
         public class ScaleRange
         {
             public readonly float Minimum;
@@ -568,69 +656,68 @@ namespace Orts.Formats.Msts
 
     public class SignalObj : WorldObject
     {
-        public readonly uint SignalSubObj;
-        public readonly SignalUnits SignalUnits;
+        public uint SignalSubObj;
+        public SignalUnits SignalUnits;
 
         public SignalObj(SBR block, int detailLevel)
         {
             StaticDetailLevel = detailLevel;
 
-            while (!block.EndOfBlock())
+            ReadBlock(block);
+        }
+
+        public override void AddOrModifyObj(SBR subBlock)
+        {
+            switch (subBlock.ID)
             {
-                using (var subBlock = block.ReadSubBlock())
-                {
-                    switch (subBlock.ID)
-                    {
-                        case TokenID.UiD: UID = subBlock.ReadUInt(); break;
-                        case TokenID.FileName: FileName = subBlock.ReadString(); break;
-                        case TokenID.Position: Position = new STFPositionItem(subBlock); break;
-                        case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
-                        case TokenID.Matrix3x3: Matrix3x3 = new Matrix3x3(subBlock); break;
-                        case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
-                        case TokenID.StaticFlags: StaticFlags = subBlock.ReadFlags(); break;
-                        case TokenID.SignalSubObj: SignalSubObj = subBlock.ReadFlags(); break;
-                        case TokenID.SignalUnits: SignalUnits = new SignalUnits(subBlock); break;
-                        default: subBlock.Skip(); break;
-                    }
-                }
+                case TokenID.UiD: UID = subBlock.ReadUInt(); break;
+                case TokenID.FileName: FileName = subBlock.ReadString(); break;
+                case TokenID.Position: Position = new STFPositionItem(subBlock); break;
+                case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
+                case TokenID.Matrix3x3: Matrix3x3 = new Matrix3x3(subBlock); break;
+                case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
+                case TokenID.StaticFlags: StaticFlags = subBlock.ReadFlags(); break;
+                case TokenID.SignalSubObj: SignalSubObj = subBlock.ReadFlags(); break;
+                case TokenID.SignalUnits: SignalUnits = new SignalUnits(subBlock); break;
+                default: subBlock.Skip(); break;
             }
         }
     }
 
     public class SpeedPostObj : WorldObject
     {
-        public readonly string Speed_Digit_Tex; //ace
-        public readonly Speed_Text_Size Text_Size;// ( 0.08 0.06 0 )
-        public readonly Speed_Sign_Shape Sign_Shape;
-        public readonly List<TrItemId> trItemIDList = new List<TrItemId>();
+        public string Speed_Digit_Tex; //ace
+        public Speed_Text_Size Text_Size;// ( 0.08 0.06 0 )
+        public Speed_Sign_Shape Sign_Shape;
+        public List<TrItemId> trItemIDList = new List<TrItemId>();
 
         public SpeedPostObj(SBR block, int detailLevel)
         {
             StaticDetailLevel = detailLevel;
 
-            while (!block.EndOfBlock())
-            {
-                using (var subBlock = block.ReadSubBlock())
-                {
-                    switch (subBlock.ID)
-                    {
-                        case TokenID.UiD: UID = subBlock.ReadUInt(); break;
-                        case TokenID.Speed_Digit_Tex: Speed_Digit_Tex = subBlock.ReadString(); break;
-                        case TokenID.FileName: FileName = subBlock.ReadString(); break;
-                        case TokenID.StaticFlags: StaticFlags = subBlock.ReadUInt(); break;
-                        case TokenID.Position: Position = new STFPositionItem(subBlock); break;
-                        case TokenID.Speed_Sign_Shape: Sign_Shape = new Speed_Sign_Shape(subBlock); break;
-                        case TokenID.Speed_Text_Size: Text_Size = new Speed_Text_Size(subBlock); break;
-                        case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
-                        case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
-                        case TokenID.TrItemId: trItemIDList.Add(new TrItemId(subBlock)); break;
-                        default: subBlock.Skip(); break;
-                    }
-                }
-            }
+            ReadBlock(block);
+
+        }
             // TODO verify that we got all needed parameters otherwise null pointer failures will occur
             // TODO, do this for all objects that iterate using a while loop
+
+        public override void AddOrModifyObj(SBR subBlock)
+        {
+            switch (subBlock.ID)
+            {
+                case TokenID.Speed_Digit_Tex: Speed_Digit_Tex = subBlock.ReadString(); break;
+                case TokenID.FileName: FileName = subBlock.ReadString(); break;
+                case TokenID.StaticFlags: StaticFlags = subBlock.ReadUInt(); break;
+                case TokenID.Position: Position = new STFPositionItem(subBlock); break;
+                case TokenID.Speed_Sign_Shape: Sign_Shape = new Speed_Sign_Shape(subBlock); break;
+                case TokenID.Speed_Text_Size: Text_Size = new Speed_Text_Size(subBlock); break;
+                case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
+                case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
+                case TokenID.TrItemId: trItemIDList.Add(new TrItemId(subBlock)); break;
+                default: subBlock.Skip(); break; 
+            }
         }
+
 
         public class Speed_Sign_Shape
         {
@@ -698,43 +785,41 @@ namespace Orts.Formats.Msts
 
     public class LevelCrossingObj : WorldObject
     {
-        public readonly LevelCrParameters levelCrParameters;
-        public readonly LevelCrData levelCrData;
-        public readonly LevelCrTiming levelCrTiming;
-        public readonly List<TrItemId> trItemIDList = new List<TrItemId>();
-        public readonly int crashProbability;
-        public readonly bool visible = true;
-        public readonly bool silent = false;
+        public LevelCrParameters levelCrParameters;
+        public LevelCrData levelCrData;
+        public LevelCrTiming levelCrTiming;
+        public List<TrItemId> trItemIDList = new List<TrItemId>();
+        public int crashProbability;
+        public bool visible = true;
+        public bool silent = false;
 
         public LevelCrossingObj(SBR block, int detailLevel)
         {
             StaticDetailLevel = detailLevel;
 
-            while (!block.EndOfBlock())
-            {
-                using (var subBlock = block.ReadSubBlock())
-                {
-                    switch (subBlock.ID)
-                    {
-                        case TokenID.UiD: UID = subBlock.ReadUInt(); break;
-                        case TokenID.StaticFlags: StaticFlags = subBlock.ReadFlags(); break;
-                        case TokenID.LevelCrParameters: levelCrParameters = new LevelCrParameters(subBlock); break;
-                        case TokenID.CrashProbability: crashProbability = subBlock.ReadInt(); break;
-                        case TokenID.LevelCrData: levelCrData = new LevelCrData(subBlock);
-                            visible = (levelCrData.crData1 & 0x1) == 0;
-                            silent = !visible || (levelCrData.crData1 & 0x6) == 0x6;
-                            break;
-                        case TokenID.LevelCrTiming: levelCrTiming = new LevelCrTiming(subBlock); break;
-                        case TokenID.TrItemId: trItemIDList.Add(new TrItemId(subBlock)); break;
-                        case TokenID.FileName: FileName = subBlock.ReadString(); break;
-                        case TokenID.Position: Position = new STFPositionItem(subBlock); break;
-                        case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
-                        case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
-                        default: subBlock.Skip(); break;
-                    }
-                }
-            }
+            ReadBlock(block);
         }
+
+    public override void AddOrModifyObj(SBR subBlock)
+    {
+        switch (subBlock.ID)
+        {
+            case TokenID.StaticFlags: StaticFlags = subBlock.ReadFlags(); break;
+            case TokenID.LevelCrParameters: levelCrParameters = new LevelCrParameters(subBlock); break;
+            case TokenID.CrashProbability: crashProbability = subBlock.ReadInt(); break;
+            case TokenID.LevelCrData: levelCrData = new LevelCrData(subBlock);
+                visible = (levelCrData.crData1 & 0x1) == 0;
+                silent = !visible || (levelCrData.crData1 & 0x6) == 0x6;
+                break;
+            case TokenID.LevelCrTiming: levelCrTiming = new LevelCrTiming(subBlock); break;
+            case TokenID.TrItemId: trItemIDList.Add(new TrItemId(subBlock)); break;
+            case TokenID.FileName: FileName = subBlock.ReadString(); break;
+            case TokenID.Position: Position = new STFPositionItem(subBlock); break;
+            case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
+            case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
+            default: subBlock.Skip(); break;
+        }
+    }
 
         public class LevelCrParameters
         {
@@ -792,27 +877,25 @@ namespace Orts.Formats.Msts
 
     public class HazardObj : WorldObject
     {
-        public readonly int itemId;
+        public int itemId;
 
         public HazardObj(SBR block, int detailLevel)
         {
             StaticDetailLevel = detailLevel;
 
-            while (!block.EndOfBlock())
+            ReadBlock(block);
+        }
+
+        public override void AddOrModifyObj(SBR subBlock)
+        {
+            switch (subBlock.ID)
             {
-                using (var subBlock = block.ReadSubBlock())
-                {
-                    switch (subBlock.ID)
-                    {
-                        case TokenID.UiD: UID = subBlock.ReadUInt(); break;
-                        case TokenID.TrItemId: itemId = DecodeTrItemId(subBlock); break;
-                        case TokenID.FileName: FileName = subBlock.ReadString(); break;
-                        case TokenID.Position: Position = new STFPositionItem(subBlock); break;
-                        case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
-                        case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
-                        default: subBlock.Skip(); break;
-                    }
-                }
+                case TokenID.TrItemId: itemId = DecodeTrItemId(subBlock); break;
+                case TokenID.FileName: FileName = subBlock.ReadString(); break;
+                case TokenID.Position: Position = new STFPositionItem(subBlock); break;
+                case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
+                case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
+                default: subBlock.Skip(); break;
             }
         }
 
@@ -829,8 +912,10 @@ namespace Orts.Formats.Msts
     public class CarSpawnerObj : WorldObject
     {
         public readonly List<TrItemId> trItemIDList = new List<TrItemId>();
-        public readonly float CarFrequency;
-        public readonly float CarAvSpeed;
+        public float CarFrequency;
+        public float CarAvSpeed;
+        public string ListName; // name of car list associated to this car spawner
+        public int CarSpawnerListIdx;
 
         public CarSpawnerObj(SBR block, int detailLevel)
         {
@@ -838,25 +923,25 @@ namespace Orts.Formats.Msts
             CarFrequency = 5.0f;
             CarAvSpeed = 20.0f;
 
-            while (!block.EndOfBlock())
+            ReadBlock (block);
+        }
+
+        public override void AddOrModifyObj (SBR subBlock)
+        {
+            switch (subBlock.ID)
             {
-                using (var subBlock = block.ReadSubBlock())
-                {
-                    switch (subBlock.ID)
-                    {
-                        case TokenID.UiD: UID = subBlock.ReadUInt(); break;
-                        case TokenID.CarFrequency: CarFrequency = subBlock.ReadFloat(); break;
-                        case TokenID.CarAvSpeed: CarAvSpeed = subBlock.ReadFloat(); break;
-                        case TokenID.TrItemId: trItemIDList.Add(new TrItemId(subBlock)); break;
-                        case TokenID.StaticFlags: StaticFlags = subBlock.ReadFlags(); break;
-                        case TokenID.Position: Position = new STFPositionItem(subBlock); break;
-                        case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
-                        case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
-                        default: subBlock.Skip(); break;
-                    }
-                }
+                case TokenID.CarFrequency: CarFrequency = subBlock.ReadFloat(); break;
+                case TokenID.CarAvSpeed: CarAvSpeed = subBlock.ReadFloat(); break;
+                case TokenID.ORTSListName: ListName = subBlock.ReadString(); break;
+                case TokenID.TrItemId: trItemIDList.Add(new TrItemId(subBlock)); break;
+                case TokenID.StaticFlags: StaticFlags = subBlock.ReadFlags(); break;
+                case TokenID.Position: Position = new STFPositionItem(subBlock); break;
+                case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
+                case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
+                default: subBlock.Skip(); break;
             }
         }
+
 
         public int getTrItemID(int index)
         {
@@ -885,7 +970,7 @@ namespace Orts.Formats.Msts
                 block.VerifyEndOfBlock();
             }
         }
-    }
+     }
 
     /// <summary>
     /// Super-class for similar track items SidingObj and PlatformObj.
@@ -990,6 +1075,26 @@ namespace Orts.Formats.Msts
         public int StaticDetailLevel;
         public uint StaticFlags;
         public uint VDbId;
+
+        public virtual void AddOrModifyObj(SBR subBlock)
+        {
+            
+        }
+
+        public void ReadBlock(SBR block)
+        {
+            while (!block.EndOfBlock())
+            {
+                using (var subBlock = block.ReadSubBlock())
+                {
+                    if (subBlock.ID == TokenID.UiD) UID = subBlock.ReadUInt();
+                    else
+                    {
+                        AddOrModifyObj(subBlock);
+                    }
+                }
+            }
+        }
     }
 
     public class STFPositionItem : TWorldPosition
