@@ -8249,7 +8249,9 @@ namespace Orts.Simulation.Signalling
                         for (int iItem = 0; iItem < thisList.TrackCircuitItem.Count && !signalFound; iItem++)
                         {
                             TrackCircuitSignalItem thisItem = thisList.TrackCircuitItem[iItem];
-                            if (thisItem.SignalLocation > position)
+                            if ((thisItem.SignalRef.TCReference ==  TCReference && 
+                                (thisItem.SignalLocation > position && direction == 0) || (thisItem.SignalLocation < position && direction == 1))
+                                || thisItem.SignalRef.TCReference != TCReference)
                             {
                                 defaultNextSignal[fntype] = thisItem.SignalRef.thisRef;
                                 signalFound = true;
@@ -11458,6 +11460,7 @@ namespace Orts.Simulation.Signalling
 
             // ensure next signal of type 1 is located correctly
 
+            if (sigFN1 != MstsSignalFunction.NORMAL || !thisSignal.isSignalNormal()) 
             thisSignal.sigfound[(int)sigFN1] = thisSignal.SONextSignal(sigFN1);
 
             // loop through all available signals of type 1
@@ -11470,8 +11473,16 @@ namespace Orts.Simulation.Signalling
 
                 // ensure correct next signals are located
 
-                if (sigFN1 != MstsSignalFunction.NORMAL || !thisSignal.isSignalNormal()) thisSignal.sigfound[(int)sigFN1] = thisSignal.SONextSignal(sigFN1);
-                if (sigFN2 != MstsSignalFunction.NORMAL || !thisSignal.isSignalNormal()) thisSignal.sigfound[(int)sigFN2] = thisSignal.SONextSignal(sigFN2);
+                if (sigFN1 != MstsSignalFunction.NORMAL || !thisSignal.isSignalNormal()) 
+               {
+                    var sigFound = thisSignal.SONextSignal(sigFN1);
+                    if (sigFound >= 0) thisSignal.sigfound[(int)sigFN1] = thisSignal.SONextSignal(sigFN1);
+                }
+                if (sigFN2 != MstsSignalFunction.NORMAL || !thisSignal.isSignalNormal())
+                {
+                    var sigFound = thisSignal.SONextSignal(sigFN2);
+                    if (sigFound >= 0) thisSignal.sigfound[(int)sigFN2] = thisSignal.SONextSignal(sigFN2);
+                }
 
                 if (sig2Index == thisSignal.thisRef) // this signal also contains type 2 signal and is therefor valid and last signal
                 {
