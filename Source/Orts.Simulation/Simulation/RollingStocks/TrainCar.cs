@@ -1162,6 +1162,7 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(SpeedMpS);
             outf.Write(CouplerSlackM);
             outf.Write(Headlight);
+            outf.Write(PrevTiltingZRot);
         }
 
         // Game restore
@@ -1177,6 +1178,7 @@ namespace Orts.Simulation.RollingStocks
             _PrevSpeedMpS = SpeedMpS;
             CouplerSlackM = inf.ReadSingle();
             Headlight = inf.ReadInt32();
+            PrevTiltingZRot = inf.ReadSingle();
         }
 
         //================================================================================================//
@@ -1666,7 +1668,7 @@ namespace Orts.Simulation.RollingStocks
                 return;
 
             CurrentCurveRadius = traveler.GetCurveRadius();
-            UpdateVibration(traveler, elapsedTimeS, distanceM, speedMpS);
+            UpdateVibrationAndTilting(traveler, elapsedTimeS, distanceM, speedMpS);
             UpdateSuperElevation(traveler, elapsedTimeS);
         }
         #endregion
@@ -1674,7 +1676,7 @@ namespace Orts.Simulation.RollingStocks
         #region Super-elevation
         void UpdateSuperElevation(Traveller traveler,  float elapsedTimeS)
         {
-            if (Simulator.Settings.UseSuperElevation == 0 && !Train.IsTilting)
+            if (Simulator.Settings.UseSuperElevation == 0)
                 return;
             if (prevElev < -30f) { prevElev += 40f; return; }//avoid the first two updates as they are not valid
 
@@ -1694,7 +1696,7 @@ namespace Orts.Simulation.RollingStocks
         }
         #endregion
 
-        #region Vibration
+        #region Vibration and tilting
         public Matrix VibrationInverseMatrix = Matrix.Identity;
 
         // https://en.wikipedia.org/wiki/Newton%27s_laws_of_motion#Newton.27s_2nd_Law
@@ -1739,84 +1741,98 @@ namespace Orts.Simulation.RollingStocks
         int VibrationTrackVectorSection;
         float VibrationTrackCurvaturepM;
 
-        internal void UpdateVibration(Traveller traveler, float elapsedTimeS, float distanceM, float speedMpS)
+        float PrevTiltingZRot; // previous tilting angle
+        float TiltingZRot; // actual tilting angle
+
+        internal void UpdateVibrationAndTilting(Traveller traveler, float elapsedTimeS, float distanceM, float speedMpS)
         {
             // NOTE: Traveller is at the FRONT of the TrainCar!
 
             // Don't add vibrations to train cars less than 1 meter in length; they're unsuitable for these calculations.
-            if (Simulator.Settings.CarVibratingLevel == 0 || CarLengthM < 1)
-                return;
-
-            //var elapsedTimeS = Math.Abs(speedMpS) > 0.001f ? distanceM / speedMpS : 0;
-            if (VibrationOffsetM.X == 0)
+            if (CarLengthM < 1) return;
+            if (Simulator.Settings.CarVibratingLevel != 0)
             {
-                // Initialize three different offsets (0 - 1 meters) so that the different components of the vibration motion don't align.
-                VibrationOffsetM.X = (float)Simulator.Random.NextDouble();
-                VibrationOffsetM.Y = (float)Simulator.Random.NextDouble();
-                VibrationOffsetM.Z = (float)Simulator.Random.NextDouble();
-            }
 
-            if (VibrationTrackVectorSection == 0)
-                VibrationTrackVectorSection = traveler.TrackVectorSectionIndex;
-            if (VibrationTrackNode == 0)
-                VibrationTrackNode = traveler.TrackNodeIndex;
-
-            // Apply suspension/spring and damping.
-            // https://en.wikipedia.org/wiki/Simple_harmonic_motion
-            //   Let F be the force in N
-            //   Let k be the spring constant in N/m or kg/s/s
-            //   Let x be the displacement in m
-            //   Then F = -k * x
-            // Given F = m * a, solve for a:
-            //   a = F / m
-            // Substitute F:
-            //   a = -k * x / m
-            // Because our spring constant was never multiplied by m, we can cancel that out:
-            //   a = -k' * x
-            var rotationAccelerationRadpSpS = -VibrationSpringConstantPrimepSpS * VibrationRotationRad;
-            var translationAccelerationMpSpS = -VibrationSpringConstantPrimepSpS * VibrationTranslationM;
-            // https://en.wikipedia.org/wiki/Damping
-            //   Let F be the force in N
-            //   Let c be the damping coefficient in N*s/m
-            //   Let v be the velocity in m/s
-            //   Then F = -c * v
-            // We apply the acceleration (let t be time in s, then dv/dt = a * t) and damping (-c * v) to the velocities:
-            VibrationRotationVelocityRadpS += rotationAccelerationRadpSpS * elapsedTimeS - VibratioDampingCoefficient * VibrationRotationVelocityRadpS;
-            VibrationTranslationVelocityMpS += translationAccelerationMpSpS * elapsedTimeS - VibratioDampingCoefficient * VibrationTranslationVelocityMpS;
-            // Now apply the velocities (dx/dt = v * t):
-            VibrationRotationRad += VibrationRotationVelocityRadpS * elapsedTimeS;
-            VibrationTranslationM += VibrationTranslationVelocityMpS * elapsedTimeS;
-
-            // Add new vibrations every CarLengthM in either direction.
-            if (Math.Round((VibrationOffsetM.X + DistanceM) / CarLengthM) != Math.Round((VibrationOffsetM.X + DistanceM + distanceM) / CarLengthM))
-            {
-                AddVibrations(VibrationFactorDistance);
-            }
-
-            // Add new vibrations every track vector section which changes the curve radius.
-            if (VibrationTrackVectorSection != traveler.TrackVectorSectionIndex)
-            {
-                var curvaturepM = MathHelper.Clamp(traveler.GetCurvature(), -VibrationMaximumCurvaturepM, VibrationMaximumCurvaturepM);
-                if (VibrationTrackCurvaturepM != curvaturepM)
+                //var elapsedTimeS = Math.Abs(speedMpS) > 0.001f ? distanceM / speedMpS : 0;
+                if (VibrationOffsetM.X == 0)
                 {
-                    // Use the difference in curvature to determine the strength of the vibration caused.
-                    AddVibrations(VibrationFactorTrackVectorSection * Math.Abs(VibrationTrackCurvaturepM - curvaturepM) / VibrationMaximumCurvaturepM);
-                    VibrationTrackCurvaturepM = curvaturepM;
+                    // Initialize three different offsets (0 - 1 meters) so that the different components of the vibration motion don't align.
+                    VibrationOffsetM.X = (float)Simulator.Random.NextDouble();
+                    VibrationOffsetM.Y = (float)Simulator.Random.NextDouble();
+                    VibrationOffsetM.Z = (float)Simulator.Random.NextDouble();
                 }
-                VibrationTrackVectorSection = traveler.TrackVectorSectionIndex;
-            }
 
-            // Add new vibrations every track node.
-            if (VibrationTrackNode != traveler.TrackNodeIndex)
+                if (VibrationTrackVectorSection == 0)
+                    VibrationTrackVectorSection = traveler.TrackVectorSectionIndex;
+                if (VibrationTrackNode == 0)
+                    VibrationTrackNode = traveler.TrackNodeIndex;
+
+                // Apply suspension/spring and damping.
+                // https://en.wikipedia.org/wiki/Simple_harmonic_motion
+                //   Let F be the force in N
+                //   Let k be the spring constant in N/m or kg/s/s
+                //   Let x be the displacement in m
+                //   Then F = -k * x
+                // Given F = m * a, solve for a:
+                //   a = F / m
+                // Substitute F:
+                //   a = -k * x / m
+                // Because our spring constant was never multiplied by m, we can cancel that out:
+                //   a = -k' * x
+                var rotationAccelerationRadpSpS = -VibrationSpringConstantPrimepSpS * VibrationRotationRad;
+                var translationAccelerationMpSpS = -VibrationSpringConstantPrimepSpS * VibrationTranslationM;
+                // https://en.wikipedia.org/wiki/Damping
+                //   Let F be the force in N
+                //   Let c be the damping coefficient in N*s/m
+                //   Let v be the velocity in m/s
+                //   Then F = -c * v
+                // We apply the acceleration (let t be time in s, then dv/dt = a * t) and damping (-c * v) to the velocities:
+                VibrationRotationVelocityRadpS += rotationAccelerationRadpSpS * elapsedTimeS - VibratioDampingCoefficient * VibrationRotationVelocityRadpS;
+                VibrationTranslationVelocityMpS += translationAccelerationMpSpS * elapsedTimeS - VibratioDampingCoefficient * VibrationTranslationVelocityMpS;
+                // Now apply the velocities (dx/dt = v * t):
+                VibrationRotationRad += VibrationRotationVelocityRadpS * elapsedTimeS;
+                VibrationTranslationM += VibrationTranslationVelocityMpS * elapsedTimeS;
+
+                // Add new vibrations every CarLengthM in either direction.
+                if (Math.Round((VibrationOffsetM.X + DistanceM) / CarLengthM) != Math.Round((VibrationOffsetM.X + DistanceM + distanceM) / CarLengthM))
+                {
+                    AddVibrations(VibrationFactorDistance);
+                }
+
+                // Add new vibrations every track vector section which changes the curve radius.
+                if (VibrationTrackVectorSection != traveler.TrackVectorSectionIndex)
+                {
+                    var curvaturepM = MathHelper.Clamp(traveler.GetCurvature(), -VibrationMaximumCurvaturepM, VibrationMaximumCurvaturepM);
+                    if (VibrationTrackCurvaturepM != curvaturepM)
+                    {
+                        // Use the difference in curvature to determine the strength of the vibration caused.
+                        AddVibrations(VibrationFactorTrackVectorSection * Math.Abs(VibrationTrackCurvaturepM - curvaturepM) / VibrationMaximumCurvaturepM);
+                        VibrationTrackCurvaturepM = curvaturepM;
+                    }
+                    VibrationTrackVectorSection = traveler.TrackVectorSectionIndex;
+                }
+
+                // Add new vibrations every track node.
+                if (VibrationTrackNode != traveler.TrackNodeIndex)
+                {
+                    AddVibrations(VibrationFactorTrackNode);
+                    VibrationTrackNode = traveler.TrackNodeIndex;
+                }
+            }
+            if (Train != null && Train.IsTilting)
             {
-                AddVibrations(VibrationFactorTrackNode);
-                VibrationTrackNode = traveler.TrackNodeIndex;
+                TiltingZRot = traveler.FindTiltedZ(speedMpS);//rotation if tilted, an indication of centrifugal force
+                TiltingZRot = PrevTiltingZRot + (TiltingZRot - PrevTiltingZRot) * elapsedTimeS;//smooth rotation
+                PrevTiltingZRot = TiltingZRot;
+                if (this.Flipped) TiltingZRot *= -1f;
             }
-
-            var rotation = Matrix.CreateFromYawPitchRoll(VibrationRotationRad.Y, VibrationRotationRad.X, VibrationRotationRad.Z);
-            var translation = Matrix.CreateTranslation(VibrationTranslationM.X, VibrationTranslationM.Y, 0);
-            WorldPosition.XNAMatrix = rotation * translation * WorldPosition.XNAMatrix;
-            VibrationInverseMatrix = Matrix.Invert(rotation * translation);
+            if (Simulator.Settings.CarVibratingLevel != 0 || Train.IsTilting)
+            {
+                var rotation = Matrix.CreateFromYawPitchRoll(VibrationRotationRad.Y, VibrationRotationRad.X, VibrationRotationRad.Z + TiltingZRot);
+                var translation = Matrix.CreateTranslation(VibrationTranslationM.X, VibrationTranslationM.Y, 0);
+                WorldPosition.XNAMatrix = rotation * translation * WorldPosition.XNAMatrix;
+                VibrationInverseMatrix = Matrix.Invert(rotation * translation);
+            }
         }
 
         private void AddVibrations(float factor)
