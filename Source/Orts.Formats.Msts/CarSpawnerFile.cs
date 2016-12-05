@@ -25,19 +25,34 @@ using Orts.Parsers.Msts;
 
 namespace Orts.Formats.Msts
 {
+    public class CarSpawnerList
+    {
+        public string[] shapeNames; //car shape names
+        public float[] distanceFrom; // the second parameter of the CarSpawnerItem
+        public string ListName;
+        public CarSpawnerList(List<CarSpawnerItemData> spawnerDataItems, string listName)
+        {
+            shapeNames = new string[spawnerDataItems.Count];
+            distanceFrom = new float[spawnerDataItems.Count];
+            ListName = listName;
+            int i = 0;
+            foreach (CarSpawnerItemData data in spawnerDataItems)
+            {
+                shapeNames[i] = data.name;
+                distanceFrom[i] = data.dist;
+                i++;
+            }
+        }
+    }
 
-	public class CarSpawnerFile
-	{
-		public string[] shapeNames; //car shape names
-		public float[] distanceFrom; // the second parameter of the CarSpwanerItem
-
-		public CarSpawnerFile(string filePath, string shapePath)
-		{
-			List<CarSpawnerItemData> spawnerDataItems = new List<CarSpawnerItemData>();
-			using (STFReader stf = new STFReader(filePath, false))
-			{
-				var count = stf.ReadInt(null);
-				stf.ParseBlock(new STFReader.TokenProcessor[] {
+    public class CarSpawnerBlock
+    {
+        public CarSpawnerBlock(STFReader stf, string shapePath, List<CarSpawnerList> carSpawnerLists, string listName)
+        {
+            var spawnerDataItems = new List<CarSpawnerItemData>();
+            {
+                var count = stf.ReadInt(null);
+                stf.ParseBlock(new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("carspawneritem", ()=>{
                         if (--count < 0)
                             STFException.TraceWarning(stf, "Skipped extra CarSpawnerItem");
@@ -51,35 +66,40 @@ namespace Orts.Formats.Msts
                         }
                     }),
                 });
-				if (count > 0)
+                if (count > 0)
                     STFException.TraceWarning(stf, count + " missing CarSpawnerItem(s)");
-			}
+            }
 
-            shapeNames = new string[spawnerDataItems.Count];
-            distanceFrom = new float[spawnerDataItems.Count];
-			int i = 0;
-			foreach (CarSpawnerItemData data in spawnerDataItems) {
-				shapeNames[i] = data.name;
-				distanceFrom[i] = data.dist;
-				i++;
+            CarSpawnerList carSpawnerList = new CarSpawnerList(spawnerDataItems, listName);
+            carSpawnerLists.Add(carSpawnerList);
+        }
+
+    }
+
+    public class CarSpawnerItemData
+    {
+        public string name;
+        public float dist;
+
+        public CarSpawnerItemData(STFReader stf, string shapePath)
+        {
+            stf.MustMatch("(");
+            //pre fit in the shape path so no need to do it again and again later
+            name = shapePath + stf.ReadString();
+            dist = stf.ReadFloat(STFReader.UNITS.Distance, null);
+            stf.SkipRestOfBlock();
+        }
+    } 
+
+	public class CarSpawnerFile
+	{
+		public CarSpawnerFile(string filePath, string shapePath, List<CarSpawnerList> carSpawnerLists)
+		{
+			using (STFReader stf = new STFReader(filePath, false))
+			{
+                var carSpawnerBlock = new CarSpawnerBlock(stf, shapePath, carSpawnerLists, "Default");
 			}
 		}
-
-		public class CarSpawnerItemData
-		{
-			public string name;
-			public float dist;
-
-			public CarSpawnerItemData(STFReader stf, string shapePath)
-			{
-				stf.MustMatch("(");
-				//pre fit in the shape path so no need to do it again and again later
-				name = shapePath+stf.ReadString();
-				dist = stf.ReadFloat(STFReader.UNITS.Distance, null);
-				stf.SkipRestOfBlock();
-			}
-		} // TrackType
-
-	} // class CVFFile
+	}
 }
 
