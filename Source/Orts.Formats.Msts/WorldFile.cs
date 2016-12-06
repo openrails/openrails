@@ -194,7 +194,7 @@ namespace Orts.Formats.Msts
                                         wrongBlock = true;
                                         Trace.TraceWarning("Skipped world block {0} (0x{0:X}), UID {1} not matching with base file", subBlock.ID, UID);
                                         subSubBlockUID.Skip();
-                                        break;
+                                        subBlock.Skip();
                                     }
                                     else
                                     {
@@ -214,8 +214,8 @@ namespace Orts.Formats.Msts
                                         else
                                         {
                                             Trace.TraceWarning("Skipped world block {0} (0x{0:X}), UID {1} not matching with base file", subBlock.ID, UID);
+                                            subSubBlockUID.Skip();
                                             subBlock.Skip();
-                                            break;
                                         }
                                     }
                                 }
