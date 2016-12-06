@@ -12171,15 +12171,16 @@ namespace Orts.Simulation.Physics
 
                         if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction && (thisSection.Pins[sectionDirection, 1].Link != -1) && sectionStart < 7000)
                         {
+                            bool isRightSwitch = true;
+                            TrJunctionNode junctionNode = Simulator.TDB.TrackDB.TrackNodes[thisSection.OriginalIndex].TrJunctionNode;
                             var isDiverging = false;
-                            var isRightSwitch = true;
-                            if (thisSection.ActivePins[sectionDirection, 1].Link > 0 && thisSection.JunctionDefaultRoute == 0)
-                                // diverging switch right
-                                isDiverging = true;
-                            else if (thisSection.ActivePins[sectionDirection, 0].Link > 0 && thisSection.JunctionDefaultRoute > 0)
+                            if ((thisSection.ActivePins[sectionDirection, 1].Link > 0 && thisSection.JunctionDefaultRoute == 0) ||
+                                (thisSection.ActivePins[sectionDirection, 0].Link > 0 && thisSection.JunctionDefaultRoute > 0))
                             {
+                                // diverging 
                                 isDiverging = true;
-                                isRightSwitch = false;
+                                var junctionAngle = junctionNode.GetAngle(Simulator.TSectionDat);
+                                if (junctionAngle < 0) isRightSwitch = false; 
                             }
                             if (isDiverging)
                             {
