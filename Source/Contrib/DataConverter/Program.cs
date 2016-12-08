@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace Orts.DataConverter
 {
@@ -26,6 +27,119 @@ namespace Orts.DataConverter
     {
         static void Main(string[] args)
         {
+            try
+            {
+                var conversions = GetConversions(args);
+                if (conversions.Count == 0)
+                {
+                    ShowHelp();
+                    return;
+                }
+                // TODO convert here
+            }
+            catch (InvalidCommandLineException error)
+            {
+                Console.WriteLine("Error: " + error.Message);
+                Console.WriteLine();
+                ShowHelp();
+            }
+        }
+
+        static void ShowHelp()
+        {
+            Console.WriteLine("Open Rails Data Converter utility");
+            Console.WriteLine();
+            Console.WriteLine("{0} /input INPUT [/output] [OUTPUT [...]]", Path.GetFileNameWithoutExtension(AppDomain.CurrentDomain.FriendlyName));
+            Console.WriteLine();
+            //                "1234567890123456789012345678901234567890123456789012345678901234567890123456789"
+            Console.WriteLine("    INPUT         Specifies the file to read.");
+            Console.WriteLine("    OUTPUT        Specifies the file to generate.");
+            Console.WriteLine();
+            Console.WriteLine("  Multiple outputs may be specified for each input.");
+            Console.WriteLine();
+            Console.WriteLine("  Available file format conversions");
+            Console.WriteLine("    Input   Output  Description");
+        }
+
+        static List<DataConversion> GetConversions(string[] args)
+        {
+            var conversions = new List<DataConversion>();
+            for (var i = 0; i < args.Length; i++)
+            {
+                switch (args[i].ToLowerInvariant())
+                {
+                    case "/input":
+                        i++;
+                        if (i >= args.Length)
+                        {
+                            throw new InvalidCommandLineException("Expected input filename; got end of input");
+                        }
+                        if (args[i].StartsWith("/"))
+                        {
+                            throw new InvalidCommandLineException("Expected input filename; got option " + args[i]);
+                        }
+                        conversions.Add(new DataConversion(args[i]));
+                        break;
+                    case "/output":
+                        if (conversions.Count == 0)
+                        {
+                            throw new InvalidCommandLineException("Expected /input; got /output");
+                        }
+                        if (conversions.Last().Output.Count > 0)
+                        {
+                            throw new InvalidCommandLineException("Expected output filename or /input; got /output");
+                        }
+                        i++;
+                        if (i >= args.Length)
+                        {
+                            throw new InvalidCommandLineException("Expected output filename; got end of input");
+                        }
+                        goto default;
+                    default:
+                        if (conversions.Count == 0)
+                        {
+                            throw new InvalidCommandLineException("Expected /input; got " + args[i]);
+                        }
+                        if (args[i].StartsWith("/"))
+                        {
+                            throw new InvalidCommandLineException("Expected output filename; got option " + args[i]);
+                        }
+                        conversions.Last().Output.Add(args[i]);
+                        break;
+                }
+            }
+            return conversions;
+        }
+    }
+
+    [Serializable]
+    internal class InvalidCommandLineException : Exception
+    {
+        public InvalidCommandLineException()
+        {
+        }
+
+        public InvalidCommandLineException(string message) : base(message)
+        {
+        }
+
+        public InvalidCommandLineException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
+        protected InvalidCommandLineException(SerializationInfo info, StreamingContext context) : base(info, context)
+        {
+        }
+    }
+
+    internal class DataConversion
+    {
+        public string Input { get; }
+        public List<string> Output { get; }
+        public DataConversion(string input)
+        {
+            Input = input;
+            Output = new List<string>();
         }
     }
 }
