@@ -46,6 +46,13 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TerrainConverter.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Orts.Formats.Msts\Orts.Formats.Msts.csproj">
+      <Project>{570709FA-0C8A-4B1D-BA2D-D9455AFD9B5C}</Project>
+      <Name>Orts.Formats.Msts</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

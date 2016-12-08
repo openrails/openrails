@@ -27,25 +27,56 @@ namespace Orts.DataConverter
     {
         static void Main(string[] args)
         {
+            var converters = new List<IDataConverter>()
+            {
+                new TerrainConverter()
+            };
+
             try
             {
                 var conversions = GetConversions(args);
                 if (conversions.Count == 0)
                 {
-                    ShowHelp();
+                    ShowHelp(converters);
                     return;
                 }
-                // TODO convert here
+
+                foreach (var conversion in conversions)
+                {
+                    var valid = false;
+                    foreach (var converter in converters)
+                    {
+                        if (converter.DoConversion(conversion))
+                        {
+                            valid = true;
+                            Console.WriteLine(conversion.Input);
+                            foreach (var output in conversion.Output)
+                            {
+                                Console.WriteLine("--> {0}", output);
+                            }
+                            break;
+                        }
+                    }
+
+                    if (!valid)
+                    {
+                        throw new InvalidCommandLineException("No conversion available for " + conversion.Input);
+                    }
+                }
+            }
+            catch (FileNotFoundException error)
+            {
+                Console.WriteLine("Error: File not found: " + error.FileName);
             }
             catch (InvalidCommandLineException error)
             {
                 Console.WriteLine("Error: " + error.Message);
                 Console.WriteLine();
-                ShowHelp();
+                ShowHelp(converters);
             }
         }
 
-        static void ShowHelp()
+        static void ShowHelp(List<IDataConverter> converters)
         {
             Console.WriteLine("Open Rails Data Converter utility");
             Console.WriteLine();
@@ -59,6 +90,10 @@ namespace Orts.DataConverter
             Console.WriteLine();
             Console.WriteLine("  Available file format conversions");
             Console.WriteLine("    Input   Output  Description");
+            foreach (var converter in converters)
+            {
+                converter.ShowConversions();
+            }
         }
 
         static List<DataConversion> GetConversions(string[] args)
@@ -132,14 +167,24 @@ namespace Orts.DataConverter
         }
     }
 
-    internal class DataConversion
+    public class DataConversion
     {
-        public string Input { get; }
-        public List<string> Output { get; }
+        public string Input { get; private set; }
+        public List<string> Output { get; private set; }
         public DataConversion(string input)
         {
             Input = input;
             Output = new List<string>();
         }
+        public void SetInput(string input)
+        {
+            Input = input;
+        }
+    }
+
+    public interface IDataConverter
+    {
+        void ShowConversions();
+        bool DoConversion(DataConversion conversion);
     }
 }
