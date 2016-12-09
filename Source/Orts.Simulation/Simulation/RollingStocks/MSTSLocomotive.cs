@@ -199,7 +199,7 @@ namespace Orts.Simulation.RollingStocks
         public string CVFFileName;
         public float MaxMainResPressurePSI = 130;
         public float MainResVolumeM3 = 0.3f;
-        public float TrainBrakePipeLeakPSIpS = 0.0f;    // Air leakage from train brake pipe - should normally be no more then 5psi/min - default off
+        public float TrainBrakePipeLeakPSIorInHgpS = 0.0f;    // Air leakage from train brake pipe - should normally be no more then 5psi/min - default off
         public float CompressorRestartPressurePSI = 110;
         public float CompressorChargingRateM3pS = 0.075f;
         public float MainResChargingRatePSIpS;
@@ -208,7 +208,7 @@ namespace Orts.Simulation.RollingStocks
         public float BrakePipeTimeFactorS = .003f;
         public float BrakeServiceTimeFactorS = 1.009f;
         public float BrakeEmergencyTimeFactorS = .1f;
-        public float BrakePipeChargingRatePSIpS;
+        public float BrakePipeChargingRatePSIorInHgpS;
         public InterpolatorDiesel2D TractiveForceCurves;
         public InterpolatorDiesel2D DynamicBrakeForceCurves;
         public float DynamicBrakeSpeed1MpS = MpS.FromKpH(5);
@@ -287,7 +287,8 @@ namespace Orts.Simulation.RollingStocks
         public MSTSLocomotive(Simulator simulator, string wagPath)
             : base(simulator, wagPath)
         {
-            BrakePipeChargingRatePSIpS = Simulator.Settings.BrakePipeChargingRate;
+          //  BrakePipeChargingRatePSIpS = Simulator.Settings.BrakePipeChargingRate;
+                        
             MilepostUnitsMetric = Simulator.TRK.Tr_RouteFile.MilepostUnitsMetric;
             BrakeCutsPowerAtBrakeCylinderPressurePSI = 4.0f;
 
@@ -674,14 +675,14 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(airbrakesmainmaxairpressure": MainResPressurePSI = MaxMainResPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(airbrakescompressorrestartpressure": CompressorRestartPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(airbrakesaircompressorpowerrating": CompressorChargingRateM3pS = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
-                case "engine(trainpipeleakrate": TrainBrakePipeLeakPSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
+                case "engine(trainpipeleakrate": TrainBrakePipeLeakPSIorInHgpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(ortsmainreschargingrate": MainResChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(ortsenginebrakereleaserate": EngineBrakeReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(ortsenginebrakeapplicationrate": EngineBrakeApplyRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(ortsbrakepipetimefactor": BrakePipeTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(ortsbrakeservicetimefactor": BrakeServiceTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(ortsbrakeemergencytimefactor": BrakeEmergencyTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
-                case "engine(ortsbrakepipechargingrate": BrakePipeChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
+                case "engine(ortsbrakepipechargingrate": BrakePipeChargingRatePSIorInHgpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(ortsmaxtractiveforcecurves": TractiveForceCurves = new InterpolatorDiesel2D(stf, false); break;
                 case "engine(ortstractioncharacteristics": TractiveForceCurves = new InterpolatorDiesel2D(stf, true); break;
                 case "engine(ortsdynamicbrakeforcecurves": DynamicBrakeForceCurves = new InterpolatorDiesel2D(stf, false); break;
@@ -727,7 +728,9 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsdynamicblendingoverride": DynamicBrakeBlendingOverride = stf.ReadBoolBlock(false); break;
                 case "engine(ortsdynamicblendingforcematch": DynamicBrakeBlendingForceMatch = stf.ReadBoolBlock(false); break;
                 case "engine(vacuumbrakeshasvacuumpump": VacuumPumpFitted = stf.ReadBoolBlock(false); break;
+
                 default: base.Parse(lowercasetoken, stf); break;
+                    
             }
         }
 
@@ -778,7 +781,7 @@ namespace Orts.Simulation.RollingStocks
             WheelslipCausesThrottleDown = locoCopy.WheelslipCausesThrottleDown;
 
             CompressorRestartPressurePSI = locoCopy.CompressorRestartPressurePSI;
-            TrainBrakePipeLeakPSIpS = locoCopy.TrainBrakePipeLeakPSIpS;
+            TrainBrakePipeLeakPSIorInHgpS = locoCopy.TrainBrakePipeLeakPSIorInHgpS;
             MaxMainResPressurePSI = locoCopy.MaxMainResPressurePSI;
             MainResPressurePSI = MaxMainResPressurePSI;
             MainResVolumeM3 = locoCopy.MainResVolumeM3;
@@ -837,7 +840,7 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(OdometerVisible);
             outf.Write(MainResPressurePSI);
             outf.Write(CompressorIsOn);
-            outf.Write(TrainBrakePipeLeakPSIpS);
+            outf.Write(TrainBrakePipeLeakPSIorInHgpS);
             outf.Write(AverageForceN);
             outf.Write(LocomotiveAxle.AxleSpeedMpS);
             outf.Write(CabLightOn);
@@ -866,7 +869,7 @@ namespace Orts.Simulation.RollingStocks
             OdometerVisible = inf.ReadBoolean();
             MainResPressurePSI = inf.ReadSingle();
             CompressorIsOn = inf.ReadBoolean();
-            TrainBrakePipeLeakPSIpS = inf.ReadSingle();
+            TrainBrakePipeLeakPSIorInHgpS = inf.ReadSingle();
             AverageForceN = inf.ReadSingle();
             LocomotiveAxle.Reset(Simulator.GameTime, inf.ReadSingle());
             CabLightOn = inf.ReadBoolean();
@@ -955,6 +958,20 @@ namespace Orts.Simulation.RollingStocks
             TrainBrakeController.Initialize();
             EngineBrakeController.Initialize();
             TrainControlSystem.Initialize();
+
+            if (BrakePipeChargingRatePSIorInHgpS == 0) // Check to see if BrakePipeChargingRate has been set in the ENG file.
+            {
+
+                // Set Default BrakePipe Charging Rate depending upon whether locomotive has Vacuum or air brakes - overwritten by ENG file setting.
+                if ((BrakeSystem is VacuumSinglePipe))
+                {
+                    BrakePipeChargingRatePSIorInHgpS = 4.0f; // Vacuum brakes
+                }
+                else
+                {
+                    BrakePipeChargingRatePSIorInHgpS = Simulator.Settings.BrakePipeChargingRate; // Air brakes
+                }
+            }
 
             base.Initialize();
             if (DynamicBrakeBlendingEnabled) airPipeSystem = BrakeSystem as AirSinglePipe;

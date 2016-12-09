@@ -334,7 +334,7 @@ namespace Orts.Simulation.RollingStocks
 
 
         // Steam Ejector
-        float SteamEjectorSmallDiameterIn = 1.5f; // Actual diameter of small ejector
+        float SteamEjectorSmallDiameterIn = 0.787402f; // Actual diameter of small ejector (Assume a small ejector of 20mm - Dreadnought)
         float EjectorBaseDiameterIn = 1.0f;         // Base reference diameter all values scalled from this value.
         float SteamEjectorSmallSetting;
         float SteamEjectorSmallBaseSteamUsageLbpS;
@@ -344,7 +344,7 @@ namespace Orts.Simulation.RollingStocks
         float EjectorTotalSteamConsumptionLbpS;
         float SteamEjectorLargeBaseUsageSteamLbpS;
         float LargeEjectorCapacityFactor;
-        float SteamEjectorLargeDiameterIn = 1.5f;  // Actual diameter of large ejector
+        float SteamEjectorLargeDiameterIn = 1.1811f;  // Actual diameter of large ejector (Assume a large ejector value of 30mm - Dreadnought )
         float SteamEjectorLargePressurePSI = 120.0f;
 
         // Air Compressor Characteristics - assume 9.5in x 10in Compressor operating at 120 strokes per min.          
