@@ -15,6 +15,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+// Debug for Vacuum operation - Train Pipe Leak
+//#define DEBUG_TRAIN_PIPE_LEAK
+
 using Orts.Common;
 using Orts.Parsers.Msts;
 using Orts.Simulation.Physics;
@@ -22,6 +25,7 @@ using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Diagnostics;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 {
@@ -49,19 +53,22 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         bool HasDirectAdmissionValue = false;
         float MaxReleaseRatePSIpS = 2.5f;
         float MaxApplicationRatePSIpS = 2.5f;
-        float PipeTimeFactorS = .003f; // copied from air single pipe, probably not accurate
-        float ReleaseTimeFactorS = 1.009f; // copied from air single pipe, but close to modern ejector data
-        float ApplyChargingRatePSIpS = 4;
+      //  float PipeTimeFactorS = .003f; // copied from air single pipe, probably not accurate
+     //   float ReleaseTimeFactorS = 1.009f; // copied from air single pipe, but close to modern ejector data
+    //    float ApplyChargingRatePSIpS = 4;
         bool TrainBrakePressureChanging = false;
         bool BrakePipePressureChanging = false;
         int SoundTriggerCounter = 0;
         float prevCylPressurePSIA = 0f;
         float prevBrakePipePressurePSI = 0f;
+     //   private float TrainBrakePipeLeakPSIpS;
 
 
         public VacuumSinglePipe(TrainCar car)
         {
             Car = car;
+            // taking into account very short (fake) cars to prevent NaNs in brake line pressures
+            BrakePipeVolumeM3 = (0.050f * 0.050f * (float)Math.PI / 4f) * Math.Max(5.0f, (1 + car.CarLengthM)); // Using (2") pipe
         }
 
         public override bool GetHandbrakeStatus()
@@ -77,9 +84,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             MaxForcePressurePSI = thiscopy.MaxForcePressurePSI;
             MaxReleaseRatePSIpS = thiscopy.MaxReleaseRatePSIpS;
             MaxApplicationRatePSIpS = thiscopy.MaxApplicationRatePSIpS;
-            ApplyChargingRatePSIpS = thiscopy.ApplyChargingRatePSIpS;
-            PipeTimeFactorS = thiscopy.PipeTimeFactorS;
-            ReleaseTimeFactorS = thiscopy.ReleaseTimeFactorS;
+          //  ApplyChargingRatePSIpS = thiscopy.ApplyChargingRatePSIpS;
+         //   PipeTimeFactorS = thiscopy.PipeTimeFactorS;
+          //  ReleaseTimeFactorS = thiscopy.ReleaseTimeFactorS;
             NumCylinders = thiscopy.NumCylinders;
             CylVol = thiscopy.CylVol;
             PipeVol = thiscopy.PipeVol;
@@ -162,9 +169,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 case "wagon(maxbrakeforce": MaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(brakecylinderpressureformaxbrakebrakeforce": MaxForcePressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultInHg, null); break;
                 case "wagon(maxreleaserate": MaxReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultInHgpS, null); break;
-                case "wagon(maxapplicationrate": ApplyChargingRatePSIpS = MaxApplicationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultInHgpS, null); break;
-                case "engine(pipetimefactor": PipeTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
-                case "engine(releasetimefactor": ReleaseTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
+           //     case "wagon(maxapplicationrate": ApplyChargingRatePSIpS = MaxApplicationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultInHgpS, null); break;
+           //     case "engine(pipetimefactor": PipeTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
+          //      case "engine(releasetimefactor": ReleaseTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
+          
+                // OpenRails specific parameters
+                case "wagon(brakepipevolume": BrakePipeVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
             }
         }
 
@@ -259,7 +269,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (f < MaxHandbrakeForceN * HandbrakePercent / 100)
                 f = MaxHandbrakeForceN * HandbrakePercent / 100;
             Car.BrakeRetardForceN = f * Car.BrakeShoeRetardCoefficientFrictionAdjFactor; // calculates value of force applied to wheel, independent of wheel skid
-            if (Car.BrakeSkid) // Test to see if wheels are skiding to excessive brake force
+            if (Car.BrakeSkid) // Test to see if wheels are skiding due to excessive brake force
             {
                 Car.BrakeForceN = f * Car.SkidFriction;   // if excessive brakeforce, wheel skids, and loses adhesion
             }
@@ -315,46 +325,86 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
         public override void PropagateBrakePressure(float elapsedClockSeconds)
         {
-            Train train = Car.Train;
+            PropagateBrakeLinePressures(elapsedClockSeconds, Car, TwoPipes);
+        }
+
+
+        protected static void PropagateBrakeLinePressures(float elapsedClockSeconds, TrainCar trainCar, bool twoPipes)
+        {
+            // Brake pressures are calculated on the lead locomotive first, and then propogated along each wagon in the consist.
+
+            var train = trainCar.Train;
+            var lead = trainCar as MSTSLocomotive;
+            var brakePipeTimeFactorS = lead == null ? 0.003f : lead.BrakePipeTimeFactorS;
             // train.BrakeLine1PressurePSI is really vacuum in inHg
-            float psia = V2P(train.EqualReservoirPressurePSIorInHg);
-            int nSteps = (int)(elapsedClockSeconds * 2 / PipeTimeFactorS + 1);
-            float dt = elapsedClockSeconds / nSteps;
+            float DesiredPipeVacuum = V2P(train.EqualReservoirPressurePSIorInHg);
+            int nSteps = (int)(elapsedClockSeconds * 2 / brakePipeTimeFactorS + 1);
+            float TrainPipeTimeVariationS = elapsedClockSeconds / nSteps;
             for (int i = 0; i < nSteps; i++)
             {
-                if (BrakeLine1PressurePSI < psia)
+                // Allow for leaking train air brakepipe in lead locomotive
+                float TrainPipeLeakLossPSI = TrainPipeTimeVariationS * lead.TrainBrakePipeLeakPSIorInHgpS;
+
+                if (lead.BrakeSystem.BrakeLine1PressurePSI - TrainPipeLeakLossPSI > 0 && lead.TrainBrakePipeLeakPSIorInHgpS != 0) // if train brake pipe has pressure in it, ensure result will not be negative if loss is subtracted
                 {
-                    float dp = dt * ApplyChargingRatePSIpS;
-                    if (BrakeLine1PressurePSI + dp > psia)
-                        dp = psia - BrakeLine1PressurePSI;
-                    BrakeLine1PressurePSI += dp;
+                    lead.BrakeSystem.BrakeLine1PressurePSI -= TrainPipeLeakLossPSI;
                 }
-                else if (BrakeLine1PressurePSI > psia)
+
+                // Vacuum Pipe is < Desired value - increase brake pipe value - release brakes??
+                if (lead.BrakeSystem.BrakeLine1PressurePSI < DesiredPipeVacuum)
                 {
-                    BrakeLine1PressurePSI *= (1 - dt / ReleaseTimeFactorS);
-                    if (BrakeLine1PressurePSI < psia)
-                        BrakeLine1PressurePSI = psia;
+                    //  float TrainPipePressureDiffPSI = TrainPipeTimeVariationS * lead.BrakeSystem.ApplyChargingRatePSIpS;
+                    float TrainPipePressureDiffPSI = TrainPipeTimeVariationS * lead.BrakePipeChargingRatePSIorInHgpS; 
+                    if (lead.BrakeSystem.BrakeLine1PressurePSI + TrainPipePressureDiffPSI > DesiredPipeVacuum)
+                        TrainPipePressureDiffPSI = DesiredPipeVacuum - lead.BrakeSystem.BrakeLine1PressurePSI;
+                    lead.BrakeSystem.BrakeLine1PressurePSI += TrainPipePressureDiffPSI;
                 }
-                TrainCar car0 = Car.Train.Cars[0];
+
+                // Vacuum Pipe is < Desired value - decrease brake pipe value - apply brakes??
+                else if (lead.BrakeSystem.BrakeLine1PressurePSI > DesiredPipeVacuum)  
+                {
+                    // lead.BrakeSystem.BrakeLine1PressurePSI *= (1 - TrainPipeTimeVariationS / ReleaseTimeFactorS);
+                    lead.BrakeSystem.BrakeLine1PressurePSI *= (1 - TrainPipeTimeVariationS / lead.BrakeServiceTimeFactorS);
+                    if (lead.BrakeSystem.BrakeLine1PressurePSI < DesiredPipeVacuum)
+                        lead.BrakeSystem.BrakeLine1PressurePSI = DesiredPipeVacuum;
+                }
+
+                // Propogate lead brake line pressure from lead locomotive along the train to each car
+                TrainCar car0 = train.Cars[0];
                 float p0 = car0.BrakeSystem.BrakeLine1PressurePSI;
+                float brakePipeVolumeM30 = car0.BrakeSystem.BrakePipeVolumeM3;
+                train.TotalTrainBrakePipeVolumeM3 = 0.0f; // initialise train brake pipe volume
+
+#if DEBUG_TRAIN_PIPE_LEAK
+
+                Trace.TraceInformation("======================================= Train Pipe Leak (VacuumSinglePipe) ===============================================");
+                Trace.TraceInformation("Charging Rate {0}  ServiceTimeFactor {1}", lead.BrakePipeChargingRatePSIpS, lead.BrakeServiceTimeFactorS);
+                Trace.TraceInformation("Before:  CarID {0}  TrainPipeLeak {1} Lead BrakePipe Pressure {2}", trainCar.CarID, lead.TrainBrakePipeLeakPSIpS, lead.BrakeSystem.BrakeLine1PressurePSI);
+                Trace.TraceInformation("Brake State {0}", lead.TrainBrakeController.TrainBrakeControllerState);
+                Trace.TraceInformation("Small Ejector {0} Large Ejector {1}", lead.SmallSteamEjectorIsOn, lead.LargeSteamEjectorIsOn);
+
+#endif
+
                 foreach (TrainCar car in train.Cars)
                 {
+                    train.TotalTrainBrakePipeVolumeM3 += car.BrakeSystem.BrakePipeVolumeM3; // Calculate total brake pipe volume of train
+                    
                     float p1 = car.BrakeSystem.BrakeLine1PressurePSI;
                     if (car.BrakeSystem.FrontBrakeHoseConnected && car.BrakeSystem.AngleCockAOpen && car0.BrakeSystem.AngleCockBOpen)
                     {
-                        float dp = dt * (p1 - p0) / PipeTimeFactorS;
-                        car.BrakeSystem.BrakeLine1PressurePSI -= dp;
-                        car0.BrakeSystem.BrakeLine1PressurePSI += dp;
+                        float TrainPipePressureDiffPropogationPSI = TrainPipeTimeVariationS * (p1 - p0) / brakePipeTimeFactorS;
+                        car.BrakeSystem.BrakeLine1PressurePSI -= TrainPipePressureDiffPropogationPSI;
+                        car0.BrakeSystem.BrakeLine1PressurePSI += TrainPipePressureDiffPropogationPSI;
                     }
-                    if (!car.BrakeSystem.FrontBrakeHoseConnected)
+                    if (!car.BrakeSystem.FrontBrakeHoseConnected) // Car front brake hose not connected
                     {
-                        if (car.BrakeSystem.AngleCockAOpen)
-                            car.BrakeSystem.BrakeLine1PressurePSI -= dt * (p1 - OneAtmospherePSI) / PipeTimeFactorS;
-                        if (car0.BrakeSystem.AngleCockBOpen && car != car0)
-                            car0.BrakeSystem.BrakeLine1PressurePSI -= dt * (p0 - OneAtmospherePSI) / PipeTimeFactorS;
+                        if (car.BrakeSystem.AngleCockAOpen)  //  AND Front brake cock opened
+                            car.BrakeSystem.BrakeLine1PressurePSI -= TrainPipeTimeVariationS * (p1 - OneAtmospherePSI) / brakePipeTimeFactorS;
+                        if (car0.BrakeSystem.AngleCockBOpen && car != car0)  //  AND Rear cock of wagon opened, and car is not the first wagon
+                            car0.BrakeSystem.BrakeLine1PressurePSI -= TrainPipeTimeVariationS * (p0 - OneAtmospherePSI) / brakePipeTimeFactorS;
                     }
-                    if (car == train.Cars[train.Cars.Count - 1] && car.BrakeSystem.AngleCockBOpen)
-                        car.BrakeSystem.BrakeLine1PressurePSI -= dt * (p1 - OneAtmospherePSI) / PipeTimeFactorS;
+                    if (car == train.Cars[train.Cars.Count - 1] && car.BrakeSystem.AngleCockBOpen)  // Last car in train and rear cock of wagon open
+                        car.BrakeSystem.BrakeLine1PressurePSI -= TrainPipeTimeVariationS * (p1 - OneAtmospherePSI) / brakePipeTimeFactorS;
                     p0 = p1;
                     car0 = car;
                 }
