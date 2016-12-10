@@ -102,7 +102,7 @@ namespace Orts.Viewer3D
                 {   // Both heading and translation change 
                     // nextRoot is found by moving from Point-of-Curve (PC) to
                     // center (O)to Point-of-Tangent (PT).
-                    float radius = subsection.trackSections[0].param2; // meters
+                    float radius = subsection.trackSections[0].param2*Math.Sign(-subsection.trackSections[0].param1); // meters
                     Vector3 left = radius * Vector3.Cross(Vector3.Up, heading); // Vector from PC to O
                     Matrix rot = Matrix.CreateRotationY(-length); // Heading change (rotation about O)
                     // Shared method returns displacement from present world position and, by reference,
