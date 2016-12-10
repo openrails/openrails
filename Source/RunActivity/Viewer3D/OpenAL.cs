@@ -766,7 +766,7 @@ namespace Orts.Viewer3D
         /// </summary>
         /// <param name="pulFormat">Place to put the format number</param>
         /// <returns>True if success</returns>
-        private bool GetALFormat(ref int pulFormat, ref bool mstsMonoTreatment)
+        private bool GetALFormat(ref int pulFormat, ref bool mstsMonoTreatment, ushort origNChannels )
         {
             pulFormat = 0;
 
@@ -784,7 +784,7 @@ namespace Orts.Viewer3D
                             break;
                         case 16:
                             pulFormat = OpenAL.AL_FORMAT_MONO16;
-                            mstsMonoTreatment = true;
+                            if (origNChannels == 1) mstsMonoTreatment = true;
                             break;
                     }
                 }
@@ -820,7 +820,7 @@ namespace Orts.Viewer3D
                             break;
                         case 16:
                             pulFormat = OpenAL.AL_FORMAT_MONO16;
-                            mstsMonoTreatment = true;
+                            if (origNChannels == 1) mstsMonoTreatment = true;
                             break;
                     }
                 }
@@ -976,13 +976,15 @@ namespace Orts.Viewer3D
                 return false;
             }
 
+            ushort origNChannels = wfi.wfEXT.Format.nChannels;
+
             byte[] buffer = wfi.ReadData(ToMono);
             if (buffer == null)
             {
                 return false;
             }
 
-            if (!wfi.GetALFormat(ref fmt, ref mstsMonoTreatment))
+            if (!wfi.GetALFormat(ref fmt, ref mstsMonoTreatment, origNChannels))
             {
                 return false;
             }
