@@ -1686,7 +1686,8 @@ namespace Orts.Simulation.RollingStocks
                 //Set axle model parameters
 
                //LocomotiveAxle.BrakeForceN = FrictionForceN;
-                LocomotiveAxle.BrakeRetardForceN = BrakeForceN;
+              //  LocomotiveAxle.BrakeRetardForceN = BrakeForceN;
+                LocomotiveAxle.BrakeRetardForceN = BrakeRetardForceN;
                 LocomotiveAxle.AxleWeightN = 9.81f * DrvWheelWeightKg;   //will be computed each time considering the tilting
                 LocomotiveAxle.DriveForceN = MotiveForceN;           //Developed force
                 LocomotiveAxle.TrainSpeedMpS = SpeedMpS;            //Set the train speed of the axle model
@@ -1877,10 +1878,13 @@ namespace Orts.Simulation.RollingStocks
 
             }
 
-            if (WheelSlip)   // If loco is slipping then coeff of friction will be decreased below static value.
+            if (WheelSlip && ThrottlePercent > 0.2f && !BrakeSkid)   // Test to see if loco wheel is slipping, then coeff of friction will be decreased below static value.
             {
-                BaseFrictionCoefficientFactor = 0.15f;  // Icy track - dynamic (kinetic) friction U = 0.0525
-
+                BaseFrictionCoefficientFactor = 0.15f;  // Descrease friction to take into account dynamic (kinetic) friction U = 0.0525
+            }
+            else if (WheelSlip && ThrottlePercent < 0.1f && BrakeSkid) // Test to see if loco wheel is skidding due to brake application
+            {
+                BaseFrictionCoefficientFactor = 0.15f;  // Descrease friction to take into account dynamic (kinetic) friction U = 0.0525
             }
 
             //add sander
@@ -1908,13 +1912,14 @@ namespace Orts.Simulation.RollingStocks
             Train.LocomotiveCoefficientFriction = BaseuMax * BaseFrictionCoefficientFactor * AdhesionMultiplier;  // Find friction coefficient factor for locomotive
             Train.LocomotiveCoefficientFriction = MathHelper.Clamp(Train.LocomotiveCoefficientFriction, 0.05f, 0.8f); // Ensure friction coefficient never exceeds a "reasonable" value
 
+            // Set adhesion conditions for diesel, electric or steam geared locomotives
             if (elapsedClockSeconds > 0)
             {
                 LocomotiveAxle.AdhesionConditions = AdhesionMultiplier * AdhesionFilter.Filter(BaseFrictionCoefficientFactor + AdhesionRandom, elapsedClockSeconds);
-            
                 LocomotiveAxle.AdhesionConditions = MathHelper.Clamp(LocomotiveAxle.AdhesionConditions, 0.05f, 2.5f); // Avoids NaNs in axle speed computing
             }
 
+           // Set adhesion conditions for other steam locomotives
             if (EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared)  // ToDo explore adhesion factors
             {
                 LocomotiveCoefficientFrictionHUD = Train.LocomotiveCoefficientFriction; // Set display value for HUD - steam
