@@ -126,7 +126,6 @@ namespace Orts.Simulation.RollingStocks
         float BrakeWheelTreadForceN; // The retarding force apparent on the tread of the wheel
         float WagonBrakeAdhesiveForceN; // The adhesive force existing on the wheels of the wagon
         public float SkidFriction = 0.08f; // Friction if wheel starts skidding - based upon wheel dynamic friction of approx 0.08
-        bool BrakeSkidCheck;  // Determine whether brake skid should be calculated. Depends upon type of stock
 
         public float AuxTenderWaterMassKG;    // Water mass in auxiliary tender
         public string AuxWagonType;           // Store wagon type for use with auxilary tender calculations
@@ -269,7 +268,7 @@ namespace Orts.Simulation.RollingStocks
         public float TunnelForceN;  // Resistive force due to tunnel, in Newtons
         public float FrictionForceN; // in Newtons ( kg.m/s^2 ) unsigned, includes effects of curvature
         public float BrakeForceN;    // brake force applied to slow train (Newtons) - will be impacted by wheel/rail friction
-        public float BrakeRetardForceN;    // brake force applied to wheel by brakeshoe (Newtons)
+        public float BrakeRetardForceN;    // brake force applied to wheel by brakeshoe (Newtons) independent of friction wheel/rail friction
         public float TotalForceN; // sum of all the forces active on car relative train direction
 
         public string CarBrakeSystemType;
@@ -551,14 +550,19 @@ namespace Orts.Simulation.RollingStocks
 
                 // ************  Check if diesel or electric - assumed already be cover by advanced adhesion model *********
 
-                BrakeSkidCheck = true;  // set brake skid check to true - ie brake skid will be calculated
-
                 if (this is MSTSDieselLocomotive || this is MSTSElectricLocomotive)
                 {
-                    BrakeSkidCheck = false; // if diesel or electric locomotive the skid is calculated elsewhere - to be confirmed
+                   if (WheelSlip && ThrottlePercent < 0.1f && BrakeRetardForceN > 25.0) // If advanced adhesion model indicates wheel slip, then check other conditiond (throttle and brake force) to determine whether it is a wheel slip or brake skid
+                    {
+                       BrakeSkid = true;  // set brake skid flag true
+                    } 
+                   else
+                   {
+                       BrakeSkid = false;
+                   }
                 }
 
-                if (BrakeSkidCheck)
+                else if (!(this is MSTSDieselLocomotive) || !(this is MSTSElectricLocomotive))
                 {
 
                     // Calculate tread force on wheel - use the retard force as this is related to brakeshoe coefficient, and doesn't vary with skid.

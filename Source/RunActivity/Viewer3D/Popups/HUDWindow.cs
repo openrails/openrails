@@ -738,7 +738,7 @@ namespace Orts.Viewer3D.Popups
                 );
             TableAddLine(table);
 
-            var n = Math.Min(10, train.Cars.Count);
+            var n = train.Cars.Count; // Number of lines to show
             for (var i = 0; i < n; i++)
             {
                 var j = i == 0 ? 0 : i * (train.Cars.Count - 1) / (n - 1);

@@ -1615,7 +1615,8 @@ namespace Orts.Simulation.Physics
 
                 if (car is MSTSDieselLocomotive || car is MSTSElectricLocomotive)
                 {
-                    if (HUDLocomotiveBrakeCylinderPSI > 25.0f && car.WheelSlip && car.ThrottlePercent < 0.25f )  // throttle is not good as it may not be zero? better brake? Think about more
+                    // Test to see if locomotive is skidding for HUD presentation
+                    if (car.BrakeRetardForceN > 25.0f && car.WheelSlip && car.ThrottlePercent < 0.1f)  // throttle is not good as it may not be zero? better brake? Think about more
                     {
                         whlskd = true;
                         car.HUDBrakeSkid = true;
