@@ -278,6 +278,7 @@ namespace Orts.Simulation
         /// </summary>
         public void ComputeTarget(bool isClockwise)
         {
+            if (!Continuous) return;
             Continuous = false;
             GoToTarget = false;
             Clockwise = isClockwise;
