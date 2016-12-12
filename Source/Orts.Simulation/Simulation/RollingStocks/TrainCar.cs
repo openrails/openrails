@@ -1553,42 +1553,43 @@ namespace Orts.Simulation.RollingStocks
 
         public void ComputePosition(Traveller traveler, bool backToFront, float elapsedTimeS, float distance, float speed)
         {
-            for (int j = 0; j < Parts.Count; j++)
+            for (var j = 0; j < Parts.Count; j++)
                 Parts[j].InitLineFit();
-            int tileX = traveler.TileX;
-            int tileZ = traveler.TileZ;
+            var tileX = traveler.TileX;
+            var tileZ = traveler.TileZ;
             if (Flipped == backToFront)
             {
-                float o = -CarLengthM / 2;
-                for (int k = 0; k < WheelAxles.Count; k++)
+                var o = -CarLengthM / 2 - CentreOfGravityM.Z;
+                for (var k = 0; k < WheelAxles.Count; k++)
                 {
-                    float d = WheelAxles[k].OffsetM - o;
+                    var d = WheelAxles[k].OffsetM - o;
                     o = WheelAxles[k].OffsetM;
                     traveler.Move(d);
-                    float x = traveler.X + 2048 * (traveler.TileX - tileX);
-                    float y = traveler.Y;
-                    float z = traveler.Z + 2048 * (traveler.TileZ - tileZ);
+                    var x = traveler.X + 2048 * (traveler.TileX - tileX);
+                    var y = traveler.Y;
+                    var z = traveler.Z + 2048 * (traveler.TileZ - tileZ);
                     WheelAxles[k].Part.AddWheelSetLocation(1, o, x, y, z, 0, traveler);
                 }
-                o = CarLengthM / 2 - o;
+                o = CarLengthM / 2 - CentreOfGravityM.Z - o;
                 traveler.Move(o);
             }
             else
             {
-                float o = CarLengthM / 2;
-                for (int k = WheelAxles.Count - 1; k >= 0; k--)
+                var o = CarLengthM / 2 - CentreOfGravityM.Z;
+                for (var k = WheelAxles.Count - 1; k >= 0; k--)
                 {
-                    float d = o - WheelAxles[k].OffsetM;
+                    var d = o - WheelAxles[k].OffsetM;
                     o = WheelAxles[k].OffsetM;
                     traveler.Move(d);
-                    float x = traveler.X + 2048 * (traveler.TileX - tileX);
-                    float y = traveler.Y;
-                    float z = traveler.Z + 2048 * (traveler.TileZ - tileZ);
+                    var x = traveler.X + 2048 * (traveler.TileX - tileX);
+                    var y = traveler.Y;
+                    var z = traveler.Z + 2048 * (traveler.TileZ - tileZ);
                     WheelAxles[k].Part.AddWheelSetLocation(1, o, x, y, z, 0, traveler);
                 }
-                o = CarLengthM / 2 + o;
+                o = CarLengthM / 2 + CentreOfGravityM.Z + o;
                 traveler.Move(o);
             }
+
             TrainCarPart p0 = Parts[0];
             for (int i = 1; i < Parts.Count; i++)
             {
