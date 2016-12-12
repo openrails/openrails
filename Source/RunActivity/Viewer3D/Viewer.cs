@@ -1,21 +1,21 @@
 ﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
-// 
+//
 // This file is part of Open Rails.
-// 
+//
 // Open Rails is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // Open Rails is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-// This file is the responsibility of the 3D & Environment Team. 
+// This file is the responsibility of the 3D & Environment Team.
 
 using GNU.Gettext;
 using Microsoft.Xna.Framework;
@@ -340,7 +340,7 @@ namespace Orts.Viewer3D
 
         /// <summary>
         /// Called once after the graphics device is ready
-        /// to load any static graphics content, background 
+        /// to load any static graphics content, background
         /// processes haven't started yet.
         /// </summary>
         [CallOnThread("Loader")]
@@ -356,7 +356,7 @@ namespace Orts.Viewer3D
             if (PlayerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
             {
                 Simulator.Trains[0].LeadLocomotive = null;
-                Simulator.Trains[0].LeadLocomotiveIndex = -1;           
+                Simulator.Trains[0].LeadLocomotiveIndex = -1;
             }
 
             TextureManager = new SharedTextureManager(this, GraphicsDevice);
@@ -397,7 +397,7 @@ namespace Orts.Viewer3D
             Simulator.Confirmer.DisplayMessage += (s, e) => MessagesWindow.AddMessage(e.Key, e.Text, e.Duration);
 
             if (Simulator.PlayerLocomotive.HasFront3DCab || Simulator.PlayerLocomotive.HasRear3DCab) ThreeDimCabCamera.Activate();
-            else if (Simulator.PlayerLocomotive.HasFrontCab || Simulator.PlayerLocomotive.HasRearCab) CabCamera.Activate(); 
+            else if (Simulator.PlayerLocomotive.HasFrontCab || Simulator.PlayerLocomotive.HasRearCab) CabCamera.Activate();
             else CameraActivate();
 
             // Prepare the world to be loaded and then load it from the correct thread for debugging/tracing purposes.
@@ -405,7 +405,7 @@ namespace Orts.Viewer3D
             // all loading is performed on a single thread that we can handle in debugging and tracing.
             World.LoadPrep();
             if (Simulator.Settings.ConditionalLoadOfNightTextures) // We need to compute sun height only in this case
-            { 
+            {
             MaterialManager.LoadPrep();
             LoadMemoryThreshold = (long)HUDWindow.GetVirtualAddressLimit() - 512 * 1024 * 1024;
             }
@@ -419,7 +419,7 @@ namespace Orts.Viewer3D
         }
 
         /// <summary>
-        /// Each Command needs to know its Receiver so it can call a method of the Receiver to action the command. 
+        /// Each Command needs to know its Receiver so it can call a method of the Receiver to action the command.
         /// The Receiver is a static property as all commands of the same class share the same Receiver
         /// and it needs to be set before the command is used.
         /// </summary>
@@ -564,6 +564,10 @@ namespace Orts.Viewer3D
             {
                 Trace.WriteLine(error);
             }
+            catch (UnauthorizedAccessException error)
+            {
+                Trace.WriteLine(error);
+            }
         }
 
         [CallOnThread("Loader")]
@@ -669,7 +673,7 @@ namespace Orts.Viewer3D
                     AbovegroundCamera = null;
                 }
             }
-            
+
             World.Update(elapsedTime);
 
             Simulator.ActiveTurntable = FindActiveTurntable();
@@ -1209,7 +1213,7 @@ namespace Orts.Viewer3D
         }
 
         /// <summary>
-        /// The user has left-clicked with U pressed.   
+        /// The user has left-clicked with U pressed.
         /// If the mouse was over a coupler, then uncouple the car.
         /// </summary>
         void TryUncoupleAt()
@@ -1242,7 +1246,7 @@ namespace Orts.Viewer3D
         }
 
         /// <summary>
-        /// The user has left-clicked with Alt key pressed.   
+        /// The user has left-clicked with Alt key pressed.
         /// If the mouse was over a switch, then toggle the switch.
         /// No action if toggling blocks the player loco's path.
         /// </summary>
@@ -1322,7 +1326,7 @@ namespace Orts.Viewer3D
 
         internal void EndRender(RenderFrame frame)
         {
-            // VisibilityState is used to delay calling SaveScreenshot() by one render cycle. 
+            // VisibilityState is used to delay calling SaveScreenshot() by one render cycle.
             // We want the hiding of the MessageWindow to take effect on the screen before the screen content is saved.
             if (Visibility == VisibilityState.Hidden)  // Test for Hidden state must come before setting Hidden state.
             {
