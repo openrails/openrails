@@ -922,12 +922,21 @@ namespace Orts.Simulation.RollingStocks
 
             foreach (MSTSCoupling coupler in Couplers)
             {
-                if (-CouplerForceU > coupler.Break1N || IsCriticalSpeed == true)  // break couplers if forces exceeded onm coupler or train has "overturned" on curve
+                if (IsPlayerTrain) // Only break couplers on player trains
                 {
-                    CouplerOverloaded = true;
+                    if (-CouplerForceU > coupler.Break1N || IsCriticalSpeed == true)  // break couplers if forces exceeded onm coupler or train has "overturned" on curve
+                    {
+                        CouplerOverloaded = true;
+                    }
+                    else
+                    {
+                        CouplerOverloaded = false;
+                    }
                 }
-                else
+                else // if not a player train then don't ever break the couplers
+                {
                     CouplerOverloaded = false;
+                }
             }
 
             Pantographs.Update(elapsedClockSeconds);
