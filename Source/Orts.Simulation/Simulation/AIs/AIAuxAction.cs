@@ -2631,9 +2631,13 @@ namespace Orts.Simulation.AIs
             {
                 if (thisTrain.SpeedMpS > 0f)
                 {
-                    thisTrain.SetTrainOutOfControl(Train.OUTOFCONTROL.OUT_OF_PATH);
+                    if (thisTrain is AITrain && thisTrain.TrainType != Train.TRAINTYPE.AI_PLAYERDRIVEN)
+                    {
+                        thisTrain.SetTrainOutOfControl(Train.OUTOFCONTROL.OUT_OF_PATH);
+                        return true;
+                    }
+                    else return false;
                 }
-                return true;
             }
 
             if (!reschedule && distancesM[1] < thisTrain.DistanceTravelledM && (thisTrain.SpeedMpS == 0f ||
