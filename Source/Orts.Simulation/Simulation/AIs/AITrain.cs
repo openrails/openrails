@@ -3825,7 +3825,7 @@ namespace Orts.Simulation.AIs
                 else if (insertSigDelegate && signalIndex[iWait] > -1)
                 {
                     AIActionWPRef action = new AIActionWPRef(this, waitingPoint[5], 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction);
-                    action.SetDelay(waitingPoint[2]);
+                    action.SetDelay( (waitingPoint[2] >= 30000 && waitingPoint[2] < 40000)? waitingPoint[2] : 0);
                     AuxActionsContain.Add(action);
                     AIActSigDelegateRef delegateAction = new AIActSigDelegateRef(this, waitingPoint[5], 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction, action);
                     signalRef.SignalObjects[signalIndex[iWait]].LockForTrain(this.Number, waitingPoint[0]);
