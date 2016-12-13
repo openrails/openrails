@@ -8,5 +8,6 @@ Source/Contrib/TimetableEditor/*.lps
 Source/Contrib/TimetableEditor/*.res
 Source/Contrib/TimetableEditor/backup
 Source/Contrib/TimetableEditor/lib
+Source/Documentation/**/_build
 Source/Help
 Source/Locales/**/*.bak
