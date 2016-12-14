@@ -342,31 +342,35 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             float TrainPipeTimeVariationS = elapsedClockSeconds / nSteps;
             for (int i = 0; i < nSteps; i++)
             {
-                // Allow for leaking train air brakepipe in lead locomotive
-                float TrainPipeLeakLossPSI = TrainPipeTimeVariationS * lead.TrainBrakePipeLeakPSIorInHgpS;
 
-                if (lead.BrakeSystem.BrakeLine1PressurePSI - TrainPipeLeakLossPSI > 0 && lead.TrainBrakePipeLeakPSIorInHgpS != 0) // if train brake pipe has pressure in it, ensure result will not be negative if loss is subtracted
+                if (lead != null)
                 {
-                    lead.BrakeSystem.BrakeLine1PressurePSI -= TrainPipeLeakLossPSI;
-                }
+                    // Allow for leaking train air brakepipe in lead locomotive
+                    float TrainPipeLeakLossPSI = TrainPipeTimeVariationS * lead.TrainBrakePipeLeakPSIorInHgpS;
 
-                // Vacuum Pipe is < Desired value - increase brake pipe value - release brakes??
-                if (lead.BrakeSystem.BrakeLine1PressurePSI < DesiredPipeVacuum)
-                {
-                    //  float TrainPipePressureDiffPSI = TrainPipeTimeVariationS * lead.BrakeSystem.ApplyChargingRatePSIpS;
-                    float TrainPipePressureDiffPSI = TrainPipeTimeVariationS * lead.BrakePipeChargingRatePSIorInHgpS; 
-                    if (lead.BrakeSystem.BrakeLine1PressurePSI + TrainPipePressureDiffPSI > DesiredPipeVacuum)
-                        TrainPipePressureDiffPSI = DesiredPipeVacuum - lead.BrakeSystem.BrakeLine1PressurePSI;
-                    lead.BrakeSystem.BrakeLine1PressurePSI += TrainPipePressureDiffPSI;
-                }
+                    if (lead.BrakeSystem.BrakeLine1PressurePSI - TrainPipeLeakLossPSI > 0 && lead.TrainBrakePipeLeakPSIorInHgpS != 0) // if train brake pipe has pressure in it, ensure result will not be negative if loss is subtracted
+                    {
+                        lead.BrakeSystem.BrakeLine1PressurePSI -= TrainPipeLeakLossPSI;
+                    }
 
-                // Vacuum Pipe is < Desired value - decrease brake pipe value - apply brakes??
-                else if (lead.BrakeSystem.BrakeLine1PressurePSI > DesiredPipeVacuum)  
-                {
-                    // lead.BrakeSystem.BrakeLine1PressurePSI *= (1 - TrainPipeTimeVariationS / ReleaseTimeFactorS);
-                    lead.BrakeSystem.BrakeLine1PressurePSI *= (1 - TrainPipeTimeVariationS / lead.BrakeServiceTimeFactorS);
+                    // Vacuum Pipe is < Desired value - increase brake pipe value - release brakes??
                     if (lead.BrakeSystem.BrakeLine1PressurePSI < DesiredPipeVacuum)
-                        lead.BrakeSystem.BrakeLine1PressurePSI = DesiredPipeVacuum;
+                    {
+                        //  float TrainPipePressureDiffPSI = TrainPipeTimeVariationS * lead.BrakeSystem.ApplyChargingRatePSIpS;
+                        float TrainPipePressureDiffPSI = TrainPipeTimeVariationS * lead.BrakePipeChargingRatePSIorInHgpS;
+                        if (lead.BrakeSystem.BrakeLine1PressurePSI + TrainPipePressureDiffPSI > DesiredPipeVacuum)
+                            TrainPipePressureDiffPSI = DesiredPipeVacuum - lead.BrakeSystem.BrakeLine1PressurePSI;
+                        lead.BrakeSystem.BrakeLine1PressurePSI += TrainPipePressureDiffPSI;
+                    }
+
+                    // Vacuum Pipe is < Desired value - decrease brake pipe value - apply brakes??
+                    else if (lead.BrakeSystem.BrakeLine1PressurePSI > DesiredPipeVacuum)
+                    {
+                        // lead.BrakeSystem.BrakeLine1PressurePSI *= (1 - TrainPipeTimeVariationS / ReleaseTimeFactorS);
+                        lead.BrakeSystem.BrakeLine1PressurePSI *= (1 - TrainPipeTimeVariationS / lead.BrakeServiceTimeFactorS);
+                        if (lead.BrakeSystem.BrakeLine1PressurePSI < DesiredPipeVacuum)
+                            lead.BrakeSystem.BrakeLine1PressurePSI = DesiredPipeVacuum;
+                    }
                 }
 
                 // Propogate lead brake line pressure from lead locomotive along the train to each car
