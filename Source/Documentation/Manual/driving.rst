@@ -1001,7 +1001,7 @@ Rotation of the camera view in any direction is controlled by the mouse
 with the right-hand button depressed (or alternatively by the four arrow 
 keys). The camera's position is moved forward or backward along the train 
 axis with the PageUp and PageDown keys, and moved left or right or up or 
-down with `<Alt>`` + the four arrow keys. The headout views (if available) 
+down with ``<Alt>`` + the four arrow keys. The headout views (if available) 
 are selected by ``<Home>`` (right hand side, looking forward) or ``<End>`` 
 (left hand side, looking back) and the outside view direction is 
 controlled by the mouse with the right button depressed.
@@ -1040,7 +1040,7 @@ default position relative to the current target car.
   the active train. Note that the *active train* may be an AI train selected 
   by ``<Ctrl+9>``.
 - Key ``<6>`` is the brakeman's view -- the camera is assumed to be at 
-  either end of the train, selected by `<Alt+Home>`` and ``<Alt+End>``.
+  either end of the train, selected by ``<Alt+Home>`` and ``<Alt+End>``.
   Rotation is controlled by the arrow keys or mouse with right button 
   depressed. There is no brakeman's view for a single locomotive.
 - Key ``<8>`` is the free camera view; the camera starts from the current 
@@ -1183,6 +1183,8 @@ The window is self-explanatory.
 If you are running OR in a Window, you can also exit OR by simply clicking 
 on the x on the right top of the OR window.
 
+.. _driving-saveresume:
+
 Save and Resume
 ===============
 
@@ -1228,6 +1230,8 @@ This Save and any Saves of the same age or older will be of no further
 value and will be marked as invalid automatically (e.g. the 3rd entry in 
 the list). The button in the bottom left corner of the menu deletes all 
 the invalid Saves for all activities in Open Rails.
+
+.. _driving-save-and-replay:
 
 Save and Replay
 ===============

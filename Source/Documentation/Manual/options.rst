@@ -41,7 +41,7 @@ It is suggested to always select this option. When this option is selected,
 pressing ``<Ctrl+9>`` at runtime creates an additional window like the 
 following. This window coexists with the main Open Rails window, and 
 ``<Alt+Tab>`` switches between it and the Open Rails window. See the related 
-option *Fast full screen Alt+Tab*.
+option :ref:`Fast fullscreen Alt+Tab<options-fullscreen>`.
 
 Through this window you can monitor train movements and also influence 
 them, by setting signals and switches. A complete description of the 
@@ -419,6 +419,8 @@ this panel are logged, allowing a later evaluation on how the activity was
 executed by the player.
 
 .. image:: images/options-evaluation.png
+
+.. _options-Content:
 
 Content Options
 ===============

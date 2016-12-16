@@ -59,7 +59,7 @@ Open Rails software uses some of the data in several MSTS Route files,
 depending on the MSTS features supported by Open Rails:
 
 - Route Database file (.rdb) -- CarSpawner is supported.
-- Reference File (.ref) -- Open Rails does not yet provide a Route Editor.
+- Reference File (.ref) -- a Route Editor is well under way.
 - Track Database file (.tdb) -- supported
 - Route File (.trk) -- Level Crossings and overhead wires are supported.
 - Sigcfg (.dat) file -- Signal & scripting capabilities are supported.
@@ -152,7 +152,7 @@ have their own specific files with the same names in their root folder.
 ``\GLOBAL\SHAPES``
 ''''''''''''''''''
 
-Many routes use specific track sets, like XTRACK, UK-finescale etc.
+Many routes use specific track sets, like XTRACKS, UK-finescale etc.
   
 Routes which solely use such sets do not need any of the original MSTS 
 files from GLOBAL, as all required files come from the relevant track set. 
