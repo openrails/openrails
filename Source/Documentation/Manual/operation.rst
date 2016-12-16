@@ -404,6 +404,8 @@ last one influences the signal.
 
 Waiting points cannot be used in Timetable mode.
 
+.. _operation-absoluteWP:
+
 Absolute Waiting Points
 -----------------------
 
@@ -503,6 +505,8 @@ Further Features of AI Train Control
   etc.) are followed. The position of all AI trains at the start of an activity 
   therefore is as close as possible to what it would have been if the activity had 
   been started at the start time of the first AI train. 
+
+.. _operation-locationpath:
 
 Location-linked Passing Path Processing
 =======================================
