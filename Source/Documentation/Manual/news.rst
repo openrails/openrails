@@ -26,7 +26,7 @@ v1.0 was released:
 Some experimental features have been added which you can turn on; some of
 them may affect performance. They include:
 
-- The ability to :ref:`change the driven train<driving-trainlist>` during an activity
+- The ability to :ref:`change the driven train <driving-trainlist>` during an activity
 - Weather controlled within an activity (dynamic weather)
 - Conditional permission for AI trains to pass a signal at stop 
 - Further improvements to AI train shunting

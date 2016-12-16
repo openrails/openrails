@@ -41,11 +41,11 @@ It is suggested to always select this option. When this option is selected,
 pressing ``<Ctrl+9>`` at runtime creates an additional window like the 
 following. This window coexists with the main Open Rails window, and 
 ``<Alt+Tab>`` switches between it and the Open Rails window. See the related 
-option :ref:`Fast fullscreen Alt+Tab<options-fullscreen>`.
+option :ref:`Fast fullscreen Alt+Tab <options-fullscreen>`.
 
 Through this window you can monitor train movements and also influence 
 them, by setting signals and switches. A complete description of the 
-dispatcher window can be found here.
+dispatcher window can be found :ref:`here <driving-dispatcher>`.
 
 .. image:: images/options-dispatcher.png
 
@@ -111,7 +111,7 @@ The Brake Pipe Charging Rate (psi/s) value controls the charging rate of
 the main air brake pipe. Increasing the value will reduce the time 
 required to recharge the train (i.e. when releasing the brakes after a 
 brake application), while decreasing the value will slow the charging 
-rate. See also the paragraphs on the OR implementation of the braking 
+rate. See also the :ref:`paragraphs <physics-hud-brake>` on the OR implementation of the braking 
 system.
 
 If this parameter is set at 1000, a simplified, MSTS-like braking model is 
@@ -149,13 +149,13 @@ This selects the units displayed for length, mass, pressure, etc. in the
 The option *Player's Location* sets the units according to the Windows 
 *Language and Region* settings on the player's computer. 
 
-The option *Route* set the units based on the data in the route files. 
+The option *Route* sets the units based on the data in the route files. 
 The other options are self-explanatory.
 
 The F5 HUD uses the abbreviations *stn* for short tons (2000 lb) and 
-*t* for metric tons (tonnes).
+*t* or *tn* for metric tons (tonnes).
 
-Note that the units displayed by the F4 Track Monitor (e.g. velocity and 
+Note that the units displayed by the :ref:`F4 Track Monitor <driving-track-monitor>` (e.g. velocity and 
 distance) are always based on data read from the route files.
 
 Disable TCS scripts
@@ -193,12 +193,12 @@ Fast full-screen Alt+Tab
 ------------------------
 
 When this option is selected, and OR is running full-screen, pressing 
-Alt+Tab leaves OR full-screen and running, and allows the Dispatcher 
-Window to be shown in front of it. If this option is not selected, OR is 
-minimized. The Dispatcher Window option must also be selected and the 
+Alt+Tab leaves OR full-screen and running, and allows the
+:ref:`Dispatcher Window <driving-dispatcher>` to be shown in front of it. If this option is not selected, OR is 
+minimized. The Dispatcher Window :ref:`option <options-dispatcher>` must also be selected and the 
 Dispatcher Window started with Ctrl+9 to display the Dispatcher Window. 
 Each successive press of Alt+Tab will toggle between the Dispatcher window 
-and the OR window
+and the OR window.
 
 Glass on in-game windows
 ------------------------
@@ -313,7 +313,7 @@ Advanced adhesion model
 OR supports two adhesion models: the basic one is similar to the one used 
 by MSTS, while the advanced one is based on a model more similar to reality.
 
-For more information read the section on *Adhesion Models* later in this 
+For more information read the section on :ref:`Adhesion Models <physics-adhesion>` later in this 
 manual.
 
 Adhesion moving average filter size
@@ -450,9 +450,8 @@ Updater Options
 ===============
 
 These options control which OR version update channel is active (see also 
-here). The various options available are self-explanatory.
+:ref:`here <updating-or>`). The various options available are self-explanatory.
 
-.. seealso:: :ref:`updating-or`
 .. image:: images/options-updater.png
 
 Experimental Options
@@ -477,11 +476,8 @@ When superelevation is selected, two viewing effects occur at runtime:
 
 1. If an external camera view is selected, the tracks and the running 
    train will be shown inclined towards the internal part of the curve.
-2. When the cab view is selected, the cab itself will be shown as inclined 
-   towards the internal part of the curve, while the external world will be 
-   shown as inclined towards the external part; the ratio of these two 
-   inclinations can be changed at runtime by repeatedly pressing 
-   ``<Alt+R>``. Four possible ratios are possible.
+2. When the cab view is selected, the external world will be 
+   shown as inclined towards the external part of the curve.
 
 .. image:: images/options-superelevation_1.png
 .. image:: images/options-superelevation_2.png
@@ -516,7 +512,7 @@ Show shape warnings
 
 When this option is selected, when OR is loading the shape (.s) files it 
 will report errors in syntax and structure (even if these don't cause 
-runtime errors) in the Log file ``OpenRailsLog.txt`` on the desktop. 
+runtime errors) in the :ref:`Log file <driving-logfile>` ``OpenRailsLog.txt`` on the desktop. 
 
 .. _options-forced-red:
 
@@ -530,8 +526,8 @@ two minutes before starting time. This is useful in organizing train meets
 and takeovers, however it does not always correspond to reality nor to 
 MSTS operation. So with this option the player can decide which behavior 
 the start signal will have. This option is checked by default. Unchecking 
-the option has an effect on simulation behavior only if no Timetable mode 
-operation is under way.
+the option has an effect on simulation behavior only if no
+:ref:`Timetable mode <timetable>` operation is under way.
 
 Load night textures only when needed
 ------------------------------------
@@ -557,7 +553,7 @@ Extended AI train shunting
 When this option is selected, further AI train shunting functions are 
 available. This allows for more interesting and varied activities. If an 
 activity is run which makes use of these function, this option must be 
-selected. This option has no effect in Timetable mode.
+selected. This option has no effect in :ref:`Timetable mode <timetable>`.
 
 The following additional shunting functions are available:
 
@@ -583,7 +579,7 @@ The following additional shunting functions are available:
     Selecting this option also enables the waiting points to declare an 
     absolute time-of-day instead of a waiting point duration. A more 
     detailed description of this feature can be found in the 
-    related paragraph in the chapter *Open Rails Train Operation*.
+    :ref:`related paragraph <operation-absoluteWP>` in the chapter *Open Rails Train Operation*.
 
 .. _options-autopilot:
 
@@ -595,7 +591,8 @@ in the cab of the player train, but to let Open Rails move the train,
 respecting path, signals, speeds and station stops.
 
 It is possible to switch the player train between autopilot mode and 
-player driven mode at run time. The Autopilot mode is described here.
+player driven mode at run time. The Autopilot mode is described
+:ref:`here <driving-autopilot>`.
 
 .. _options-etcs:
 
@@ -607,6 +604,9 @@ circular speed gauge accordingly to the European standard train control
 system ETCS.
 
 .. image:: images/options-etcs.png
+   :scale: 60 %
+   :align: center
+
 
 .. admonition:: For content developers
 
@@ -656,8 +656,8 @@ meet.
 .. admonition:: For content developers
 
     A more detailed description of this feature can be 
-    found under Location-Linked Passing Path Processing in the chapter 
-    *Open Rails Train Operation*.
+    found under :ref:`Location-Linked Passing Path Processing operation-locationpath>`
+    in the chapter  *Open Rails Train Operation*.
 
 MSTS Environments
 -----------------

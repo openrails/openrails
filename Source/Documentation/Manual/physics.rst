@@ -88,6 +88,8 @@ Coupler Slack
 Slack action for couplers is introduced and calculated the same way as in 
 MSTS. 
 
+.. _physics-adhesion:
+
 Adhesion of Locomotives -- Settings Within the Wagon Section of ENG files
 -------------------------------------------------------------------------
 

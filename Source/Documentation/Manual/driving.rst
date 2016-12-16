@@ -322,6 +322,8 @@ head of the train is again on the correct path, with no SPAD situation.
 In standard situations you can also return to auto mode while the train 
 is moving. Details are described in the paragraph of the link shown above.
 
+.. _driving-track-monitor:
+
 Track Monitor display in Auto Signal mode:
 
 .. image:: images/driving-auto-signal.png
@@ -1642,6 +1644,8 @@ to the first stream of the selected sound file.
 
 Active and inactive sounds toggle passing from internal to external views 
 and vice-versa.
+
+.. _driving-logfile:
 
 OpenRailsLog.txt Log file
 =========================
