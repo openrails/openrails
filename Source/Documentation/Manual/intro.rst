@@ -8,7 +8,7 @@ What is Open Rails?
 ===================
 
 Open Rails software (OR) is a community developed and maintained project
-from openrails.org. Its objective is to create a new transport simulator
+from `openrails.org <http://www.openrails.org/>`_. Its objective is to create a new transport simulator
 platform that is first, compatible with routes, activities, consists,
 locomotives, and rolling stock created for Microsoft Train Simulator (MSTS);
 and secondly, a platform for future content creation freed of the constraints
@@ -59,13 +59,17 @@ others. The software is published so that the user community can
 understand how the software functions to facilitate feedback and to 
 improve the capabilities of Open Rails software.
 
-Open Rails is published under the GPL license which is "copyleft"  to ensure 
+Open Rails is published under the GPL license which is "copyleft"[1]  to ensure 
 that the source code always remains publicly available.
+
+.. [1] http://www.gnu.org/copyleft//
+
+.. _intro-MSTSneeded:
 
 Does Open Rails Require You to Have MSTS Installed?
 ===================================================
 
-No, it is not required by the Open Rails software itself. However. a great deal 
+No, it is not *required* by the Open Rails software itself. However. a great deal 
 of the content accessed by OR includes files originally delivered with MSTS 
 (e.g., tracks or general sounds). These files must be obtained from a properly 
 licensed installation of MSTS.
@@ -82,7 +86,7 @@ called an *MSTS installation* for clarity, even if this wording is not
 completely correct. 
 
 A proof that Open Rails itself does not need an MSTS installation at all to 
-run is e.g. this route.
+run is e.g. `this route <http://www.burrinjuck.coalstonewcastle.com.au/route/route-install/>`.
 
 Community
 =========
@@ -97,12 +101,6 @@ We suggest:
 
 For users interested in multiplayer sessions, a forum is set up for you to 
 seek and announce hosting sessions: http://www.tsimserver.com.
-
-The Open Rails team is NOT planning on hosting a forum on the Open Rails 
-website. We believe that the best solution is for the current train 
-simulation forum sites to remain the destination for users who want to 
-discuss topics relating to Open Rails software. The Open Rails team 
-monitors and actively participates in these forums.
 
 Raildriver Support
 ==================
@@ -154,4 +152,4 @@ In the package of this version ancillary programs (*tools*) are also
 delivered, including:
 
 - Track Viewer: a complete track viewer and path editor
-- Timetable Editor: a tool for preparing Timetables
+- Timetable Editor: a tool for preparing :ref:`Timetables <timetable>`

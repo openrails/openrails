@@ -23,34 +23,15 @@ v1.0 was released:
 - Switching to manual mode also at speed
 - Direct access to OR documentation from main menu
 
-The features which have been added or substantially changed since
-v0.9 was released:
-
-- Train operation accordingly to timetables in .csv format, entered with
-  a specific editor
-- Support for languages other than English
-- Support of 3D cabs
-- Train physics far more realistic than in MSTS
-- A *Timetable* mode
-
 Some experimental features have been added which you can turn on; some of
-them may affect performance. They include (v1.0):
+them may affect performance. They include:
 
+- The ability to :ref:`change the driven train<driving-trainlist>` during an activity
+- Weather controlled within an activity (dynamic weather)
 - Conditional permission for AI trains to pass a signal at stop 
 - Further improvements to AI train shunting
 - Optional runtime correction for braking parameters (improves driveability)
 
-v0.9:
-
-- Compatibility with MSTS environment files
-- Extended AI train shunting
-- Adhesion linked to weather
-- Support for DDS textures
-- Extended viewing distance
-- The ability to change the driven train during an activity
-- Weather controlled within an activity (dynamic weather)
-- Water fill from water troughs is now implemented.
-- The Start/Stop keys for Diesel locomotives have changed.
 
 The overall code architecture has been cleaned up, providing better separation 
 between simulation and viewing.
