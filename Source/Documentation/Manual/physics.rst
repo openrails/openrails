@@ -165,6 +165,8 @@ future.
 The heart of the model is the slip characteristics (picture below).
 
 .. image:: images/physics-adhesion-slip.png
+   :align: center
+   :scale: 70%
 
 The *wheel creep* describes the stable area of the characteristics and is 
 used in the most of the operation time. When the tractive force reaches 
@@ -172,13 +174,6 @@ the actual maximum of the slip characteristics, force transition falls
 down and more power is used to speed up the wheels, so called *wheel 
 slip*. 
 
-.. image:: images/physics-adhesion-wheelslip-none.png
-    :align: right
-.. image:: images/physics-adhesion-wheelslip-warning.png
-    :align: right
-.. image:: images/physics-adhesion-wheelslip-full.png
-    :align: right
-   
 To avoid the loss of the tractive force, use the throttle in combination 
 with sanding to return to the stable area (wheel creep area). A possible 
 sequence of the wheel slip development is shown on the pictures below. The 
@@ -192,6 +187,16 @@ indication should warn you to use the throttle very carefully. Exceeding
 to speed up, which can be seen on the speedometer or in external view 2. 
 To reduce the wheel slip, use *throttle down*, sanding or the locomotive 
 brake.
+
+.. figure:: images/physics-adhesion-wheelslip-none.png
+    :align: left
+    :scale: 66%
+.. figure:: images/physics-adhesion-wheelslip-warning.png
+    :align: left
+    :scale: 66%
+.. figure:: images/physics-adhesion-wheelslip-full.png
+    :align: left
+    :scale: 66%
 
 The *actual maximum* of the tractive force is based on the 
 Curtius-Kniffler adhesion theory and can be adjusted by the aforementioned 
@@ -312,6 +317,8 @@ are not defined (as they are in the example below), they are calculated
 based on the MSTS data and common normalized characteristics.
 
 .. image:: images/physics-diesel-power.png
+  :align: center
+  :scale: 80%
 
 In many cases the throttle vs. speed curve is customized because power vs. 
 speed is not linear. A default linear throttle vs. speed characteristics 
@@ -403,6 +410,8 @@ below. ``ChangeUpRPMpS`` means the slope of RPM, ``RateOfChangeUpRPMpSS``
 means how fast the RPM approaches the demanded RPM.
 
 .. image:: images/physics-diesel-rpm.png
+  :align: center
+  :scale: 80%
 
 Fuel Consumption
 ''''''''''''''''
@@ -538,7 +547,7 @@ the key bindings will be customizable for each locomotive).
 The power status is indicated by the *Electric power* value in the HUD 
 view. The pantographs of all locomotives in a consist are triggered by 
 *Control Pantograph First* and *Control Pantograph Second* commands 
-(``<P>``and ``<Shift+P>`` by default). The status of the pantographs 
+( ``<P>`` and ``<Shift+P>`` by default ). The status of the pantographs 
 is indicated by the *Pantographs* value in the HUD view.
 
 .. _physics-steam:
@@ -579,6 +588,8 @@ the principal mechanical forces acting on the train. The diagram below
 shows the two key forces affecting the ability of a train to move.
 
 .. image:: images/physics-steam-forces.png
+  :align: center
+  :scale: 75%
  
 The first force is the tractive effort produced by the locomotive, whilst 
 the second force is the resistance presented by the train. Whenever the 
@@ -696,6 +707,8 @@ ability to maintain sufficient steam generation to match the steam usage
 by the cylinders.
  
 .. image:: images/physics-steam-power.png
+  :align: center
+  :scale: 80%
  
 Hauling Capacity of Locomotives
 ...............................
@@ -716,6 +729,7 @@ the relative loads on level track and other grades as the cylinder size,
 drive wheel diameter, and weight of the locomotive is varied.
 
 .. image:: images/physics-steam-hauling.png
+  :align: center
  
 Typically the ruling gradient is defined as the maximum uphill grade 
 facing a train in a particular section of the route, and this grade would 
@@ -997,7 +1011,8 @@ regard to the heat conversion (Boiler and Fire) and work done (Cylinder)
 processes. Also bear in mind the above driving tips.
 
 .. image:: images/driving-hud-steam.png
-    :align: right
+    :align: center
+    :scale: 80%
 
 - Direction -- indicates the setting on the reverser and the direction 
   of travel. The value is in per cent, so for example a value of 50 
@@ -1058,6 +1073,7 @@ as follows:
 
 .. figure:: images/physics-steam-passenger-car.png
     :align: right
+    :scale: 95%
     
     Heat Model for Passenger Car
 
@@ -1429,8 +1445,8 @@ from the .eng file to determine if the braking physics uses passenger or
 freight standards, self-lapping or not. This is controlled within the 
 Options menu as shown in :ref:`General Options <options-general>` above.
 
-Selecting :ref:`Graduated Release Air Brakes <options-general>` in Menu > 
-Options allows partial release of the brakes. Some 26C brake valves have a 
+Selecting :ref:`Graduated Release Air Brakes <options-general>` in *Menu > 
+Options* allows partial release of the brakes. Some 26C brake valves have a 
 cut-off valve that has three positions: passenger, freight and cut-out. Checked 
 is equivalent to passenger standard and unchecked is equivalent to freight 
 standard.
@@ -1889,6 +1905,7 @@ following formula to model the speed impact on curve resistance:
 
 .. figure:: images/physics-curve-resistance.png
     :align: center
+    :scale: 80%
 
     Generalisation of Variation of Curve Resistance With Speed 
 
@@ -2345,10 +2362,12 @@ The magnitude and impact of this effect will principally be determined by
 the **tunnel profile**, **train profile** and **speed**.
 
 .. image:: images/physics-tunnel-profile1.png
-    :align: left
+    :align: center
+    :scale: 80%
 
 .. image:: images/physics-tunnel-profile2.png
-    :align: right
+    :align: center
+    :scale: 80%
 
 Typical tunnel profiles are shown in the diagrams. 
 
@@ -2577,6 +2596,8 @@ OpenRails subfolder that uses the second possibility is as follows::
         )
       )
     )
+
+Take into account that the first line must be blank (before the include line).
 
 The ``ORTSMaxTractiveForceCurves`` are formed by blocks of pairs of parameters 
 representing speed in metres per second and tractive force in Newtons; 
