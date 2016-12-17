@@ -21,9 +21,7 @@ At the end of the loading phase, you are in the cab of the train you will
 drive.(Note: some newer locomotives have experimental 3D cabs - if no cab 
 interior display appears, then type ``<Alt+1>`` to display the cab interior.) 
 Depending on the configuration of the activity (in case of activity mode), 
-your train will be in motion or stopped. In this second case, if the train 
-is driven by an electric locomotive, as the first operation you have to 
-raise the pantograph (key ``<P>``). To look around in the simulation, you 
+your train will be in motion or stopped. To look around in the simulation, you 
 can select different views using the keyboard, as described in 
 :ref:`Changing the View <driving-changing-view>`.
 
@@ -130,7 +128,7 @@ at any time.
 Specific Features to Optimize Locomotive Driving
 ------------------------------------------------
 
-You are encouraged to read the chapter on Open Rails Physics to optimize 
+You are encouraged to read the chapter on :ref:`Open Rails Physics <physics>` to optimize 
 your driving capabilities and to achieve a realistic feeling of what 
 happens in a real moving train.
 
@@ -184,7 +182,7 @@ The following information is displayed in the basic display:
   % of power for Diesel engines or % of throttle for steam engines.
 - Train Brake = Shows the current position of the train brake system and 
   the pressure value of the train brakes. Braking correctly reflects the 
-  braking system used; hold/release, self- lapping or graduated release. The 
+  braking system used; hold/release, self-lapping or graduated release. The 
   Train brake HUD line has two Brake Reservoir pressure numbers: the first is 
   the Equalization Reservoir (EQ) and the second is the Brake Cylinder (BC) 
   pressure. The two BP numbers report the brake pressure in the lead engine 
@@ -204,9 +202,8 @@ will be shown.
 An example of the basic HUD for Diesel locomotives:
 
 .. image:: images/driving-hud-diesel.png
-
-.. image:: images/driving-hud-electric.png
-    :align: right
+  :align: center
+  :scale: 80%
 
 Electric Locomotives -- Additional information
 ----------------------------------------------
@@ -215,11 +212,12 @@ For electric locomotives information about the pantograph state is also
 shown and whether the locomotive has power (at least one pantograph raised) 
 or not.
 
+.. image:: images/driving-hud-electric.png
+    :align: center
+    :scale: 80%
+
 Steam Engine -- Additional Information
 --------------------------------------
-
-.. image:: images/driving-hud-steam.png
-    :align: right
 
 When using a steam engine the following additional information is displayed 
 in the HUD:
@@ -229,19 +227,23 @@ in the HUD:
   following parameters: number of cylinders; cylinder stroke; cylinder 
   diameter; boiler volume; maximum boiler pressure; maximum boiler output; 
   exhaust limit; and basic steam usage.
-
-.. image:: images/driving-hud-steam-manual-firing.png
-    :align: right
-
 - Boiler pressure. 
 - Water level.
 - Levels of coal and water in %.
 
 An example of the basic HUD for Steam locomotives:
 
+.. image:: images/driving-hud-steam.png
+    :align: center
+    :scale: 80%
+
 The default :ref:`firing <physics-steam-firing>` setting is automatic fireman. 
 If manual firing is engaged with ``<Ctrl+F>``, then additional information 
-is included.
+is included:
+
+.. image:: images/driving-hud-steam-manual-firing.png
+    :align: center
+    :scale: 80%
 
 Multiplayer -- Additional Information
 -------------------------------------
@@ -254,11 +256,12 @@ from the train of the player viewing the computer.
 Compass Window
 --------------
 
-.. image:: images/driving-compass.png
-    :align: right
-
 Open Rails software displays a compass that provides a heading based on the 
 camera's direction together with its latitude and longitude. 
+
+.. image:: images/driving-compass.png
+    :align: center
+    :scale: 60%
 
 To activate the compass window press the ``<0>`` key. To deactivate the 
 compass window, press the ``<0>`` key a second time.
@@ -274,11 +277,15 @@ selected by clicking with the mouse on the desired heading:
 ``Key Commands``: displays the actions of the keyboard keys
 
 .. image:: images/driving-keys.png
+  :align: center
+  :scale: 80%
 
 ``Briefing``: displays what the activity creator has entered as information 
 to be provided to the player about the activity:
 
 .. image:: images/driving-briefing.png
+  :align: center
+  :scale: 80%
 
 ``Timetable``: shows the list of the station stops, if any, with scheduled 
 and actual times of arrival and departure. During the activity the actual 
@@ -289,6 +296,8 @@ uncoupling operations to be performed. When an operation has been
 completed, the string ``Done`` appears in the last column:
 
 .. image:: images/driving-workorders.png
+  :align: center
+  :scale: 80%
 
 ``Procedures``: basic instructions for driving trains in Open Rails.
 
@@ -315,14 +324,14 @@ by pressing ``<Ctrl+M>``:
   To reset the emergency stop and then move to correct the error, you 
   must first switch to ``Manual`` mode.
 
-To switch to manual mode press ``<Ctrl+M>`` when the train is stopped.
+To switch to manual mode press ``<Ctrl+M>``. In timetable mode you must
+first stop the train to pass to manual mode.
 
 You can return to auto mode by pressing ``<Ctrl+M>`` again when the 
 head of the train is again on the correct path, with no SPAD situation. 
 In standard situations you can also return to auto mode while the train 
 is moving. Details are described in the paragraph of the link shown above.
 
-.. _driving-track-monitor:
 
 Track Monitor display in Auto Signal mode:
 
@@ -336,6 +345,8 @@ Track Monitor: Displayed Symbols (common for Auto and Manual mode unless
 indicated otherwise) :
 
 .. image:: images/driving-symbols.png
+  :align: center
+  :scale: 50%
 
 Notes on the Track Monitor:
 
@@ -394,7 +405,12 @@ has ``Player`` as identification).
 Hitting ``<Shift+F7>`` displays the rolling stock IDs.
 
 .. image:: images/driving-train-names-service.png
+  :align: center
+  :scale: 80%
+
 .. image:: images/driving-train-names-id.png
+  :align: center
+  :scale: 80%
 
 In a multiplayer session, player-controlled trains will have the id 
 specified by the player:
@@ -451,6 +467,8 @@ in the Activity file (.act). Scrolling is accomplished by clicking on the
 arrows at the left or right bottom corners of the window.
 
 .. image:: images/driving-train-operations.png
+  :align: center
+  :scale: 80%
 
 Clicking on the coupler icon between any two cars uncouples the consist at 
 that point. 
@@ -464,7 +482,8 @@ By clicking on any car in the above window, the Car Operation Menu appears.
 By clicking in this menu it is possible:
 
 .. image:: images/driving-car-operations.png
-    :align: right
+    :align: center
+    :scale: 80%
 
 - to apply and release the handbrake of the car;
 - to power on or power off the car (if it is a locomotive). This applies 
@@ -520,6 +539,8 @@ A text message alerts the engineer as to the proper departure time along
 with a whistle or other departure sound.
 
 .. image:: images/driving-next-station.png
+  :align: center
+  :scale: 80%
 
 Odometer
 --------
@@ -572,7 +593,7 @@ route.
 
 The dispatcher window shows the route layout and monitors the movement of 
 all trains. While the player train is identified by the ``PLAYER`` string 
-(or by a ``0`` if autopilot mode is enabled), AI-trains are identified by 
+(or by a ``0`` if autopilot mode is enabled), AI trains are identified by 
 their OR number (that is also shown in the :ref:`Extended HUD for Dispatcher 
 Information <driving-hud-dispatcher>`), followed by the service name. 
 Static consists are identified as in MSTS.
@@ -593,6 +614,8 @@ in the correct position for the path, a red X is shown on it.
 When left- or right-clicking on a signal, a pop-up menu appears:
 
 .. image:: images/driving-dispatcher-signal-menu.png
+  :align: center
+  :scale: 80%
 
 Using the mouse, you can force the signal to Stop, Approach or Proceed. 
 Later you can return it to System Controlled mode.
@@ -669,7 +692,8 @@ command can be useful in three cases:
   brakes after a coupling operation; again, the use of the command is not 
   prototypical.
 
-Note that this command does not work if the ``Emergency Brake`` button has 
+Note that this command does not work if the :ref:`Emergency Brake <physics-emergency>`
+button has 
 been pressed -- the button must be pressed again to cancel the emergency 
 brake condition.
 
@@ -806,9 +830,6 @@ Changing the Train Driven by the Player
 General
 -------
 
-.. image:: images/driving-train-list-1.png
-    :align: right
-
 This function only works in activity mode, and allows the player to select 
 another (existing) train from a list and to start driving it. It requires 
 that the Experimental Options ``Autopilot`` and ``Extended AI Shunting`` be 
@@ -821,6 +842,10 @@ trains equipped with a locomotive with cab, plus the player train.
 
 Here an example of an initial situation:
 
+.. image:: images/driving-train-list-1.png
+    :align: center
+    :scale: 80%
+
 The current player train is shown in red. The star at the end of the line 
 indicates that the cameras (cab camera is managed differently) are currently 
 linked to that train.
@@ -832,9 +857,6 @@ Static trains with loco and cab are shown in yellow.
 
 Other AI trains are shown in white.
 
-.. image:: images/driving-train-list-2.png
-    :align: right
-
 By left-clicking in the list for the first time on an AI train, the cameras 
 become linked to that train. A red star appears at the end of the line. 
 This is partially equivalent to clicking on ``<Alt+9>``, but in this 
@@ -842,6 +864,10 @@ method the desired train is immediately selected and may become the player
 train.
 
 Here is the intermediate situation: 
+
+.. image:: images/driving-train-list-2.png
+    :align: center
+    :scale: 80%
 
 By left-clicking a second time on the AI train (usually when it has 
 completely appeared on the screen - if it is far away from the player train 
@@ -852,15 +878,16 @@ The AI train string now becomes red and is moved to the first position.The
 train can be driven, or set to autopilot mode. The former player train 
 becomes an AI train.
 
+Here is the final situation:
+
 .. image:: images/driving-train-list-3.png
-    :align: right
+    :align: center
+    :scale: 80%
 
 If the second left-click was performed with the Shift key down, the former 
 player train still becomes an AI train, but it is put in a suspended mode 
 (only if its speed is 0). It won't move until it becomes a player train 
 again. A suspended train is shown in orange color on the Train List window.
-
-Here is the final situation: 
 
 The new player train can can be switched to manual mode, can also request to 
 pass signals at danger with the ``<Tab>`` command, and can be moved outside 
@@ -881,7 +908,7 @@ The Train List window is also available in
 names of all trains except the player train are shown in white (they can't 
 be driven), however with a single click on a train in the window the 
 external view cameras become linked to that train, as occurs with the Alt-9 
-command described below.
+command described :ref:`further below <driving-changing-view>`.
 
 Switching to a static train
 ---------------------------
@@ -911,7 +938,7 @@ direction can be changed, cars can be coupled and uncoupled. If the train
 goes out of control (e.g. because of SPAD), CTRL+M has to be pressed first 
 to exit emergency braking.
 
-With a stopped pathless train -- if a new player train is selected in the 
+With stopped pathless train, if a new player train is selected in the 
 Train List window, the pathless train returns to being a STATIC consist.
 
 The pathless train can also couple to another train (e.g. an AI train or 
@@ -1060,13 +1087,15 @@ default position relative to the current target car.
   press the ``<9>`` key. There may be a delay for each change of view as Open 
   Rails calculates the new image. The cab view and data values in the F4 
   window always remain with the Player train. To directly select which train 
-  is to be shown either use the Dispatcher Window or the ``<Alt+F9>`` option 
+  is to be shown either use the :ref:`Dispatcher Window <driving-dispatcher>`
+  or the ``<Alt+F9>`` option 
   described below. In the Dispatcher Window, locate the train that you wish 
   to view, and click the mouse on it until the block representing it turns 
   red; then click on the button ``Show in game`` in the Dispatcher Window 
   and then return to the Open Rails window.
 - ``<Alt+F9>`` is an enhancement of the ``<Alt+9>`` feature that 
-  displays the Train List window showing the names of all of the currently 
+  displays the :ref:`Train List window <driving-trainlist>` showing the names
+  of all of the currently 
   active trains. Click on the name of the desired train to move the exterior 
   views to the selected train. In Activity mode, double-clicking on a 
   train's name in this window transfers the Cabview and control of the 
@@ -1178,7 +1207,8 @@ You can suspend or exit the game by pressing the ESC key at any time. The
 window shown at the right will appear.
 
 .. image:: images/driving-pause.png
-    :align: right
+    :align: center
+    :scale: 80%
 
 The window is self-explanatory.
 
@@ -1207,26 +1237,31 @@ This will display the list of any Saves you made for this activity:
 To help you identify a Save, the list provides a screenshot and date and 
 also distance travelled in meters and the time and position of the 
 player's train. This window can be widened to show the full width of the 
-strings in the left panel
+strings in the left panel.
 
 Saves from Previous OR Versions
 -------------------------------
 
-.. image:: images/driving-save-invalid.png
-    :align: right
-
 You should be aware that these Saves will only be useful in the short term 
 as each new version of Open Rails will mark Saves from previous versions 
-as potentially invalid (e.g. the second entry in the list).
+as potentially invalid (e.g. the second entry in the list below).
+
+.. image:: images/driving-save-invalid.png
+    :align: center
+    :scale: 80%
 
 When you resume from such a Save, there will be a warning prompt.
 
 .. image:: images/driving-save-warning.png
+    :align: center
+    :scale: 70%
 
 The Save will be tested during the loading process. If a problem is 
 detected, then you will be notified.
 
 .. image:: images/driving-save-error.png
+    :align: center
+    :scale: 70%
 
 This Save and any Saves of the same age or older will be of no further 
 value and will be marked as invalid automatically (e.g. the 3rd entry in 
@@ -1262,11 +1297,13 @@ in the F5 Head Up Display.
 
 .. figure:: images/driving-replay-warning.png
     :align: left
+    :scale: 80%
     
     Warning
     
 .. figure:: images/driving-replay-countdown.png
     :align: right
+    :scale: 80%
     
     Countdown
 
@@ -1296,6 +1333,8 @@ To export a Save file, use the command: ``Menu`` > ``Options`` >
 ``Resume`` > ``Import/export saves`` > ``Export to Save Pack``
 
 .. image:: images/driving-save-impex.png
+    :align: center
+    :scale: 80%
 
 OR will pack the necessary files into a single archive file with the 
 extension ``ORSavePack`` and place it in the folder ``Open Rails\Save Packs``. 
@@ -1333,6 +1372,8 @@ This page shows in the first line data about the whole train. Under
 selected.
 
 .. image:: images/driving-hud-consist.png
+    :align: center
+    :scale: 80%
 
 ``Tilted`` is true in case the consist name ends with ``tilted`` (e.g. 
 ``ETR460_tilted.con``), in which case it means that it is a tilting train.
@@ -1366,6 +1407,8 @@ one where the active cab resides).
 .. image:: images/driving-hud-locomotive-graphs.png
 
 .. _driving-hud-brake:
+    :align: center
+    :scale: 80%
 
 Extended HUD for Brake Information
 ----------------------------------
@@ -1413,6 +1456,8 @@ the second field signals coupler overload.
 At the bottom of the picture two moving graphs are displayed.
 
 .. image:: images/driving-hud-force-graphs.png
+    :align: center
+    :scale: 80%
 
 The upper graph displays the motive force in % of the player locomotive. 
 Green colour means tractive force, red colour means dynamic brake force.
@@ -1600,7 +1645,12 @@ The values in the ``Camera`` line refer to the two tile coordinates and to
 the three coordinates within the tile.
 
 .. image:: images/driving-hud-debug.png
+    :align: center
+    :scale: 80%
+
 .. image:: images/driving-hud-debug-graphs.png
+    :align: center
+    :scale: 80%
 
 At the bottom of the picture, some moving graphs are displayed that show 
 the actual load of the computer.
@@ -1625,10 +1675,6 @@ that shows the state of the signals and switches on the path.
 
 .. image:: images/driving-signal-state.png
 
-.. image:: images/driving-sound-debug.png
-    :align: right
-    :width: 300 px
-
 .. _driving-sound-debug:
 
 Sound Debug Window
@@ -1636,7 +1682,12 @@ Sound Debug Window
 
 By pressing ``<Alt+S>`` this window opens:
 
-It shows in the upper part the list of all active .sms files; by expanding 
+.. image:: images/driving-sound-debug.png
+    :align: center
+    :scale: 80%
+
+It shows in the upper part the list of all active .sms files (track sound apart);
+by expanding 
 the detail of a specific .sms file, the list of all sound streams is 
 displayed, as well as their state. On the left the value of the analog 
 sound variables is displayed for the selected .sms file. The volume refers 

@@ -1724,6 +1724,8 @@ the ENG file release rate value is used, otherwise the pressures and
 release rates are hard coded based on some AB brake documentation used by 
 the Open Rails development team.
 
+.. _physics-emergency:
+
 Emergency Brake Application Key
 -------------------------------
 
