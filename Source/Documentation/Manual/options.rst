@@ -218,6 +218,8 @@ Overhead wire
 
 This option will enable or disable display of the overhead wire.
 
+.. _options-vsync:
+
 Vertical sync
 -------------
 

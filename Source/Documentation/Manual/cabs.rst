@@ -152,7 +152,7 @@ Key ``<1>`` can also be used to enter to 3D-cab-only locomotives.
 Development Rules
 -----------------
 
-- The 3D cab is described by an .s file, the associated .ace or .dds files; 
+- The 3D cab is described by an .s file, the associated .ace or .dds files, 
   and a .cvf file having the same name as the .s file. All these files reside 
   in a folder named ``CABVIEW3D`` created within the main folder of the 
   locomotive.
@@ -197,6 +197,7 @@ Development Rules
   font. If no ace is specified, the default will be used.
 - Mirrors and doors can be operated from 3D cabs. The names used are 
   ``LEFTDOOR``, ``RIGHTDOOR`` and ``MIRRORS``.
+- How to control the view in a 3D cab is described :ref:`here <driving-changing-view>`.
 
 A demo trainset with a 3Dcab, that may be useful for developers, can be 
 downloaded from: `<http://www.tsimserver.com/Download/Df11G3DCab.zip>`_.  
@@ -206,7 +207,7 @@ A Practical Development Example For a Digital Speedometer
 
 Let's suppose you wish to create a digital speedometer using a size 14 font.
 
-To explain it in *gmax* speak, you must have an object called ``SPEEDOMETER`` 
+To explain it in *gmax* language, you must have an object called ``SPEEDOMETER`` 
 in the cab view and it must be comprised of at least one face.
 
 As the sample cab has only one digital speedometer, it can be named 
@@ -231,7 +232,7 @@ vertically. As most locomotive primary displays are normally angled you may
 have to rotate the pivot point so that it aligns with the angle of the 
 *display screen*.
 
-Export the .S file for the cab as per normal.
+Export the .S file for the cab as usually.
 
 You will then have to uncompress the .s file for the cab using Shape File 
 Manager or the .S file decompression tool of your choice.

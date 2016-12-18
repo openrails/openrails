@@ -4,9 +4,10 @@
 Developing OR Content
 *********************
 
-Open Rails is defining and developing its own development tools.
+Open Rails already has some own development tools and is defining and developing other ones. A path editor is available within TrackViewer under the *Tools* button in the main menu window. An editor for timetable mode is also available under the *Tools* button. Route editor and consist editor are in an advanced stage of development and may already be tested. You can read about and download the consist editor `here <http://www.elvastower.com/forums/index.php?/topic/28623-new-consist-editor-for-open-rails/>`_ .
+You can read about and download the TSRE5 route editor `at this link <http://www.elvastower.com/forums/index.php?/topic/26669-new-route-editor-for-open-rails/>`_
 
-However it is already possible to develop OR content (rolling stock, routes, 3D 
+IT is of course already possible to develop OR content (rolling stock, routes, 3D 
 objects, activities) using the tools used to develop MSTS content, thanks to 
 the high compatibility that OR has with MSTS. Below, some of the advantages of 
 OR-specific content are described.

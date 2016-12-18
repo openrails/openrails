@@ -14,14 +14,14 @@ tool for chatting, thus players are encouraged to use Ventrillo, Skype, MSN,
 Yahoo, Teamspeak or other tools to communicate vocally. 
 
 The current release utilizes a peer-to-peer mode, thus each player must start 
-and run OR on their computer. A special server was deployed so you may not need 
+and run OR on his computer. A special server was deployed so you may not need 
 to set up a server from your own computer.
 
 Getting Started
 ===============
 
 One player starts as the server, and then the others connect as clients. Each 
-player will choose and operate their own consist (and locomotive), but also can 
+player will choose and operate his own consist (and locomotive), but also can 
 jump to watch others' consists, or couple with others to work as lead and DPU 
 through a tough route, or even act as a dispatcher to control signals and 
 switches manually.
@@ -127,7 +127,7 @@ start in Explore mode on the client.
 You can jump to see other trains in sequence by pressing ``<Alt+9>``. 
 OpenRails will cycle through all trains active on the server with each key 
 press. If you are running an activity OpenRails will include in the cycle any 
-sidings that are used in the activity. As some trains may be far away, 
+static consists that are used in the activity. As some trains may be far away, 
 OpenRails may need a few seconds to load the surrounding scenery.  Thus you 
 may temporarily see a blank screen. You can press F7 to see train names. You 
 can press 9 to return to seeing your own train.
@@ -142,7 +142,7 @@ player needs to drive slowly so that the server will have accurate
 information of train positions. If two player trains couple together, one of 
 them will become a helper, and a message will be shown on the left indicating 
 that the player is in Helper mode.  A player in Helper mode cannot control 
-their consist as it falls under control of the lead locomotive. By pressing 
+his consist as it falls under control of the lead locomotive. By pressing 
 ``<Shift+E>`` you can swap Helper status with another player on the train. 
 Always press ``<\>`` and ``<Shift+/>`` to reset brakes each time after 
 coupling/uncoupling.
@@ -176,10 +176,10 @@ of the Dispatcher Window.
 
 You can zoom in and out by rotating the mouse wheel, or by holding both the 
 left and right mouse button and moving the mouse (if you do not have a mouse 
-wheel). You can hold shift key while click the mouse in a place in the map, 
+wheel). You can hold shift key while clicking the mouse in a place in the map, 
 which will quickly zoom in with that place in focus. You can hold Ctrl while 
-click the mouse in a place in the map, which will zoom out to show the whole 
-route. Holding Alt and click will zoom out to show part of the route.
+clicking the mouse in a place in the map, which will zoom out to show the whole 
+route. Holding Alt and clicking will zoom out to show part of the route.
 
 .. image:: images/multiplayer-dispatcher.png
 
@@ -195,8 +195,8 @@ One can click a switch (or signal) and press ``<Ctrl+Alt+G>`` to jump to
 that switch with the free-roam camera. 
 
 The Dispatcher player can click a switch (black dot) and choose *Main Route* 
-or *Side Route* to switch.  They can also click on a signal (green, red or 
-orange dot) and choose to change the light. 
+or *Side Route* to switch.  He can also click on a signal (green, red or 
+orange dot) and choose to change the signal status. 
 
 The Dispatcher can choose a player and give the player right to throw 
 switches and change signals, by clicking the button *Assist*. The right can 
@@ -206,7 +206,7 @@ The Dispatcher can choose a player from the avatar list and remove that
 player from the game.
 
 You can send a text message by typing in the top left text input area, and 
-view the most recent 10 messages from the viewing area. One can send message 
+view the most recent 10 messages from the viewing area. You can send message 
 to all after finishing it, or select some avatars and send a message to those 
 selected.
 
@@ -216,7 +216,7 @@ Summary of Multi-Player Procedures
 1.  Server can start an activity or Explore. Clients must choose to Explore 
     the route or start with an activity without AI trains.
 2.  Missing rolling stock in other players' consists will be automatically 
-    replaced by existing cars from local directory.
+    replaced by existing cars from local directory. This can lead to awkward consists.
 3.  You have two minutes after joining the game to move your train out of 
     other trains.
 4.  Use ``<Alt+9>`` to see other trains, 9 to see your own train, 
@@ -240,9 +240,9 @@ Possible Problems
 
 - A server may not be able to listen on the port specified. Restart the 
   server and choose another port.
-- If you cannot connect to the server, verify sure you have the correct IP 
+- If you cannot connect to the server, verify you have the correct IP 
   address and port number, and that the server has the port opened.
-- If other player have rolling stock you do not have, that train will 
+- If other players have rolling stock you do not have, that train will 
   automatically replace cars from your own folder, and this replacement may 
   make the consist 'interesting'.
 - You may join the game and see you've selected the same start point as 
