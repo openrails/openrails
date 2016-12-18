@@ -113,9 +113,9 @@ Trigger       Function
 =========     ===============================================
 
 MSTS .sms files for crossings (``crossing.sms``), control error and permission 
-announcements (``ingame.sms``) together with their triggers are managed by OR.
+announcements (``ingame.sms``) together with their triggers, and for fuel tower are managed by OR.
 
-MSTS triggers for derailment and fuel tower are currently not managed by OR.
+MSTS triggers for derailment are currently not managed by OR.
 
 MSTS .sms files related to weather (``clear_ex.sms``, ``clear_in.sms``, 
 ``rain_ex.sms``, ``rain_in.sms``, ``snow_ex.sms``, ``snow_in.sms``) are 

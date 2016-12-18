@@ -33,7 +33,7 @@ Rick Hargraves      Riemer Grootjans    Rob Lane
 Robert Hodgson      Robert Murphy       Roberto Ceccarelli
 Robert Roeterdink   Samuel Kelly        Sándor Tarcsi
 Scott Miller        Sid Penstone        Tim Muir
-Walter Niehoff      Wes Card
+Walter Niehoff      Wes Card            Piotr Gadecki
 =================== ==================  ===================
 
 and ...

@@ -37,7 +37,6 @@ at any of the following forums monitored by the Open Rails development team:
   by the OR development team;
 - `TrainSim.com <http://www.trainsim.com/>`_, "Open Rails discussion" section 
   of the Open Rails  sub-forum
-- `MJRMSTSRepaints <http://mjrmstsrepaints.proboards.com/>`_
 - ...more forums may be added in the future
 
 A Maybe-Bug report consists of a simple post in a new topic in the forum. The 
@@ -89,9 +88,7 @@ The above description is available in a condensed "checklist" form below.
 Decided bugs
 ============
 
-Most bug reports never even make it to the status of a Decided Bug, due to 
-either being resolved too quickly to be worthy of an entry on the Bug Tracker 
-or being a content or user error. Some Maybe-Bugs, however, will eventually 
+Many bug reports never even make it to the status of a Decided Bug, being a content or user error. Some Maybe-Bugs, however, will eventually 
 be declared Decided Bugs. Such secured bugs should be reported at our Bug 
 Tracker, when the developer taking the report asks you to.
 
@@ -193,36 +190,36 @@ Decided Bug
 Bug Status in Launchpad
 =======================
 
-- New -- this is where all bugs start. At this point, the bug has not been 
+- **New** -- this is where all bugs start. At this point, the bug has not been 
   looked at by the right people to check whether it is complete or if more 
   details are needed.
-- Incomplete -- a member of the Open Rails teams has decided that the bug 
+- **Incomplete** -- a member of the Open Rails teams has decided that the bug 
   needs more information before it can be fixed. The person who created the bug 
   report does not have to be the one to provide the extra details. A bug 
   remaining incomplete for 60 consecutive days is automatically removed.
-- Opinion -- the bug has been identified as an opinion, meaning that it isn't 
+- **Opinion** -- the bug has been identified as an opinion, meaning that it isn't 
   clear whether there is actually a bug or how things should be behaving.
-- Invalid -- a member of the team believes that the report is not actually a 
+- **Invalid** -- a member of the team believes that the report is not actually a 
   bug report. This may be because Open Rails is working as designed and 
   expected or it could just be spam. The bug may be put back to the new state 
   if further information or clarity is provided in comments.
-- Won't Fix -- a member of the team has decided that this bug will not be 
+- **Won't Fix** -- a member of the team has decided that this bug will not be 
   fixed at this time. If the bug report is a "feature request", then they have 
   decided that the feature isn't desired right now. This status does not mean 
   something will never happen but usually a better reason for fixing the bug or 
   adding the feature will be needed first.
-- Confirmed -- a member of the team has been able to experience the bug as 
+- **Confirmed** -- a member of the team has been able to experience the bug as 
   well, by following the instructions in the bug report.
-- Triaged -- a member of the team has assigned the importance level to the 
+- **Triaged** -- a member of the team has assigned the importance level to the 
   bug or has assigned it to a specific milestone. Bugs generally need to get to 
   this state before the developers will want to look at them in detail.
-- In Progress -- one or more members of the team are currently planning to or 
+- **In Progress** -- one or more members of the team are currently planning to or 
   actually working on the bug report. They will be identified by the assignee 
   field.
-- Fix Committed -- the fix for the bug report or feature request has been 
+- **Fix Committed** -- the fix for the bug report or feature request has been 
   completed and checked in to the source control system, Subversion. Once 
   there, the fix will usually appear in the next experimental release.
-- Fix Released -- The code containing the bug fix has been released in an 
+- **Fix Released** -- The code containing the bug fix has been released in an 
   official release. 
 
 Disclaimer

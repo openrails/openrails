@@ -25,26 +25,14 @@ further improvements are planned:
   automatic in-cab train control within the same route 
 - Specifying random variations for AI trains in consist and delays. 
 - Specifying separate speed profiles for passenger or freight trains. 
-- AI trains which can split or combine 
 - A schedule for AI trains which can depend on other trains (e.g. wait a 
   limited time). 
 
 Open Rails Route Editor
 =======================
 
-Now that the project is moving beyond MSTS, we are at last able to specify the 
-Open Rails Route Editor. This will free us from the constraints and fragility 
-of the MSTS tool. The editor will, of course, use GIS data, edit the terrain 
-and allow objects to be placed and moved. 
+The Open Rails Route Editor (called TSRE5) is well under way, and it is expected that in reasonable time it will replace the MS Route Editor. However, *no timetable is available for this work*.
+The route editor already can use GIS data.
+it will be possible to lay both track pieces and procedural track.
+TSRE5 is able to read route files created with the MS Route Editor, however it extends the MSTS file structure allowing for new functions. Routes that will use these extensions will in general not run under MSTS.
 
-In particular, it will be possible to lay both track pieces and procedural 
-track. The procedural track may bend up and down to follow the contours of 
-the land and twist to build banked curves and spirals. There will be support 
-for transition curves and it will be easy to lay a new track parallel to an 
-existing one. 
-
-The new Route Editor will not be backwards-compatible with MSTS routes. It 
-will work with Open Rails routes and there will be a utility to create an 
-Open Rails route from an MSTS route. 
-
-No timetable is available for this work.
