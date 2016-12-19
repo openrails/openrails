@@ -140,7 +140,27 @@ Within the base Sound folder (not the one of the route) a .sms file has to be ad
 turntablesSOUND.zip has to be downloaded. It uses the two default MSTS .wav files for the sound. They have a bit a low volume. It is open to everyone to improve such files. Discrete trigger 1 is triggered when the turntable starts turning empty, discrete trigger 2 is triggered when the turntable starts turning with train on board, and discrete trigger 3 is triggered when rotation stops.
 
 Already many existing turntables have been successfully animated and many new other
-have been created. More can be read `here <http://www.elvastower.com/forums/index.php?/topic/28591-operational-turntable/>`_ .
+have been created. More can be read `in this forum thread <http://www.elvastower.com/forums/index.php?/topic/28591-operational-turntable/>`_ .
+
+.. _features-route-turntable-operation:
+
+Path laying and operation considerations
+----------------------------------------
+
+By building up a path that enters the turntable, exits it from the opposite side and has 
+a reversal point few meters after the end of the turntable, it is possible to use the 
+turntable in activity mode. The player will drive the consist into the turntable and 
+stop it. At that point the reversal point will have effect and will logically lay the 
+consist in the return subpath. The player will put the consist in manual mode, rotate 
+the platform by 180 degrees and return to auto mode. At this point the consist will be 
+again on the activity path.
+If instead the player wants the consist to exit to other tracks, he must drive the 
+consist in manual mode out of the platform. If he later wants to drive back the consist 
+into the turntable and rotate the train so that it exits the turntable on the track 
+where it initially entered the platform, he can pass back the train to auto mode after 
+rotation, provided the path is built as defined above.
+By using the feature to change :ref:`player train <driving-trainlist>` it is possible 
+also to move in and out any locomotive on any track of e.g. a roundhouse. 
  
 
 

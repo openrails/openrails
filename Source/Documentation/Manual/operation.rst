@@ -152,6 +152,8 @@ The following states are possible :
 Changes from Auto Node to Auto Signal and vice-versa are automatic and cannot be 
 influenced by the player.
 
+.. _operation-manual-mode:
+
 Manual Mode
 -----------
 
