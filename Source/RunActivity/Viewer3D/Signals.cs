@@ -219,10 +219,11 @@ namespace Orts.Viewer3D
                 else
                     SignalTypeData = SignalTypes[mstsSignalType.Name] = new SignalTypeData(viewer, mstsSignalType);
 
-                if (SignalTypeData.Semaphore)
+                if (SignalTypeData.Semaphore && signalShape.SharedShape.Animations != null && signalShape.SharedShape.Animations.Count != 0)
                 {
                     foreach (int mindex in MatrixIndices)
                     {
+                        if (signalShape.SharedShape.Animations[0].anim_nodes[mindex].controllers.Count == 0) continue;
                         AnimatedPart SemaphorePart = new AnimatedPart(signalShape);
                         SemaphorePart.AddMatrix(mindex);
                         SemaphoreParts.Add(SemaphorePart);
