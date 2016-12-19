@@ -771,6 +771,33 @@ You can have train cars oscillating (swaying) by hitting ``<Ctrl+V>``; if
 you want more oscillation, click ``<Ctrl+V>`` again. Four levels, 
 including the no-oscillation level, are available by repeating ``<Ctrl+V>``.
 
+.. _driving-turntable:
+
+Engaging a turntable
+====================
+
+Turntable operation is possible in explore mode, activity mode and timetable mode.
+A turntable can be moved by the player only if it is viewed by him on the screen.
+If more than one turntable is on view, the nearest one can be moved.
+The trainset (or trainsets) to be rotated must be completely on the turntable to start 
+rotation. Messages of type "Train front on turntable" and "train rear on turntable" 
+help stating that the train is fully on the rotating bridge.
+Before starting rotatin the train must be fully stopped, with reverser in neutral 
+position and zeroed throttle. Moreover, if in activity or timetable mode, the player 
+must first pass to :ref:`manual mode <operation-manual-mode>` pressing ``<Ctrl+M>``.
+At this point you can rotate the turntable clockwise with keys ``<Alt+C>``, and 
+counterclockwise with keys ``<Ctrl+C>``. You must keep the keys pressed to continue 
+rotation. When the first of the two rails of the rotating bridge is between the two 
+rails where you want to stop, release the keys. Rotation will continue up to perfect 
+alignment. If necessary exit from manual mode (if you are again on a path in activity 
+mode) and move the loco out of the turntable.
+During rotation the train is in *Turntable* state (this can be seen in the 
+:ref:`Track Monitor <driving-track-monitor>`).
+It is also possible to rotate standalone wagons. They have to be pushed or pulled to 
+the turntable, the locomotive must exit the turntable and the the wagon can be rotated.
+It is suggested to read also :ref:`this paragraph <features-route-turntable-operation>` 
+to better understand what is possible with turntables.
+
 .. _driving-autopilot:
 
 Autopilot Mode
