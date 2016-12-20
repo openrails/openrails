@@ -28,18 +28,20 @@ A cool feature available in OR is the one of operating turntables. In MSTS they 
 static, and can't rotate trainsets.
 The best way to get a turntable to be operational is to refer to an example.
 So here are the instructions and the files to test this function, both for route 
-Catania-Messina (SICILIA 1) and for other routes using a1t27mturntable.s.
+Catania-Messina (SICILIA 1) and for other routes using ``a1t27mturntable.s``.
 Route Catania-Messina can be downloaded from 
 `here <http://www.trainsimhobby.net/infusions/pro_download_panel/download.php?did=544>`_ . 
-A .ws file within the World subdirectory must be replaced with file w-005631+014158.zip
-downloadable from the trainsim forum post http://www.trainsim.com/vbts/showthread.php?324957-!!-Working-Turntable-!!&p=1896324#post1896324 
+A .ws file within the World subdirectory must be replaced with file 
+``w-005631+014158.zip``
+available in the Open Rails pack in the Documentation\SampleFiles\Manual subfolder. 
 (this has nothing to do with turntables, it's a file that contains incoherent data that 
 can cause a crash).
+Pls. note that also the other sample files cited in this paragraph are available in such subfolder. 
 
-Two test paths, included in file Turntable_PATHS.zip one for each turntable in the route, which can be used either 
-in explore mode or within activities can be downloaded from the same forum post.
+Two test paths, included in file ``Turntable_PATHS.zip``, one for each turntable in the route, which can be used either 
+in explore mode or within activities are available in the Open Rails pack.
 Within the route's folder an OpenRails subfolder must be created, that must contain 
-2 files. The first one is following file turntables.dat, which contains the data needed 
+2 files. The first one is following file ``turntables.dat``, which contains the data needed 
 to OR to locate and specify the turntable.
 
 turntables.dat::
@@ -85,7 +87,7 @@ To generate this file for other routes following has to be taken into account:
 The above file refers to turntables using the a1t27mturntable.s shape.
 
 The second file to be inserted within the route's Openrails subfolder is a small 
-integration .trk file that indicates the name of the .sms sound file to be associated to the turntable. For the route SICILIA 1 such file is therefore named SICILIA 1.trk, like 
+integration .trk file that indicates the name of the .sms sound file to be associated to the turntable. For the route SICILIA 1 such file is therefore named ``SICILIA 1.trk``, like 
 its parent file. Here is the file contents.
 
 SICILIA 1.trk::
@@ -96,9 +98,8 @@ SICILIA 1.trk::
 
 The first line must be blank. 
 
-File a1t27mturntable.s must be modified to add the animation data, as MSTS has provided 
-it as a static file. To do this, uncompress it with Route Riter or Shapefilemanager and insert just above the last parenthesis the contents of file a1t27mturntable_animations.zip which can be downloaded from the above trainsim forum 
-post.
+File ``a1t27mturntable.s`` must be modified to add the animation data, as MSTS has provided 
+it as a static file. To do this, uncompress it with Route Riter or Shapefilemanager and insert just above the last parenthesis the contents of file ``a1t27mturntable_animations.zip``.
 If other .s files have to be used for turntables, or new ones have to be developed, it must be considered that the rotation animation should be as follows::
 
 		animation ( 3599 30
@@ -136,8 +137,8 @@ or as follows::
 The above names of the anim_nodes are of course free choice.
 The animation rotation direction as defined above must be counterclockwise.
 
-Within the base Sound folder (not the one of the route) a .sms file has to be added to provide sound when the turntable rotates. From the above trainsim forum link file 
-turntablesSOUND.zip has to be downloaded. It uses the two default MSTS .wav files for the sound. They have a bit a low volume. It is open to everyone to improve such files. Discrete trigger 1 is triggered when the turntable starts turning empty, discrete trigger 2 is triggered when the turntable starts turning with train on board, and discrete trigger 3 is triggered when rotation stops.
+Within the base Sound folder (not the one of the route) the .sms file 
+``turntablesSOUND.zip`` has to be added to provide sound when the turntable rotates. It uses the two default MSTS .wav files for the sound. They have a bit a low volume. It is open to everyone to improve such files. Discrete trigger 1 is triggered when the turntable starts turning empty, discrete trigger 2 is triggered when the turntable starts turning with train on board, and discrete trigger 3 is triggered when rotation stops.
 
 Already many existing turntables have been successfully animated and many new other
 have been created. More can be read `in this forum thread <http://www.elvastower.com/forums/index.php?/topic/28591-operational-turntable/>`_ .
@@ -162,6 +163,163 @@ rotation, provided the path is built as defined above.
 By using the feature to change :ref:`player train <driving-trainlist>` it is possible 
 also to move in and out any locomotive on any track of e.g. a roundhouse. 
  
+.. _features-route-modify-wfiles:
+
+.w File modifiers
+=================
+
+An ``Openrails`` subfolder can be created within the route's ``World`` folder.
+Within this subfolder .w file chunks can be positioned. ORTS will first read the base 
+.w files, and then will correct such files with the file chunks of the ``Openrails`` 
+subfolder.
+This can be used both to modify parameters or to add OR-specific parameters.
+Here an example of a w. file chunk for USA1 .w file w-011008+014318.w::
+
+  SIMISA@@@@@@@@@@JINX0w0t______
+
+  Tr_Worldfile (
+		CarSpawner (
+			UiD ( 532 )
+			ORTSListName ( "List2" )
+		)
+		CarSpawner (
+			UiD ( 533 )
+			ORTSListName ( "List3" )
+		)
+		Static (
+			UiD ( 296 )
+			FileName ( hut3.s )
+	  )
+  )
+
+With the two CarSpawner block chunks OR interprets the CarSpawners with same UiD 
+present in the base .w file as extended ones 
+(see :ref:`here <features-route-extended-carspawners>`). With the Static block OR 
+replaces the shape defined in the Static block with same UiD within the base .w file 
+with the one defined in the file chunk.
+WAny Pickup, Transfer, Forest, Signal, Speedpost, LevelCrossing, Hazard, CarSpawner, 
+Static, Gantry may have parameters modified or added by the "modifying" .w file. 
+
+.. caution:: If the route is edited with a route editor, UiDs could change and so the .w file chunks could be out of date and should be modified.
+
+.. caution:: Entering wrong data in the .w file chunks may lead to program malfunctions.
+
+.. _features-route-extended-carspawners:
+
+Multiple car spawner lists
+==========================
+
+With this OR-specific feature it is possible to associate any car spawner to one of 
+additional car lists, therefore allowing e.g. to have different vehicles appearing in 
+a highway and in a small country road.
+
+The additional car lists have to be defined within a file named carspawn.dat to be inserted in an ``Openrails`` subfolder within the Route's root folder.
+Such file must have the structure as in following example::
+
+  SIMISA@@@@@@@@@@JINX0v1t______
+
+  3
+  CarSpawnerList(
+  ListName ( "List1" )
+  2
+  CarSpawnerItem( "car1.s" 4 )
+  CarSpawnerItem( "postbus.s" 4 )
+  )
+  CarSpawnerList(
+  ListName ( "List2" )
+  3
+  CarSpawnerItem( "policePHIL.S" 6 )
+  CarSpawnerItem( "truck1.s" 13 )
+  CarSpawnerItem( "postbus.s" 6 )
+  )
+  CarSpawnerList(
+  ListName ( "List3" )
+  2
+  CarSpawnerItem( "US2Pickup.s" 6 )
+  CarSpawnerItem( "postbus.s" 13 )
+  )
+
+The first ``3`` defines the number of the additional car spawner lists.
+To associate a CarSpawner block to one of these lists, a line like this one::
+
+			ORTSListName ( "List2" )
+
+has to be inserted in the CarSpawn block, in any position after the UiD line.
+
+If the CarSpawner block does not contain such additional line, it will be associated 
+with the base carspawn.dat file present in the route's root directory.
+
+.. caution:: If the route is edited with the MSTS route editor modifying the .w files referring to the additional car spawners, the above line will be deleted.
+
+To avoid this problem, two other possibilities are available to insert the additional 
+line. One is described :ref:`here <features-route-modify-wfiles>`.
+The other one is to use the OR specific TSRE route editor, that natively manages this 
+feature. Also in the latter case, however, if the route is later edited with the MSTS 
+route editor, the above line will be deleted.
+
+.. _features-route-tracksections:
+
+Route specific TrackSections and TrackShapes
+============================================
+It quite often occurs that for special routes also special TrackSections and TrackShapes 
+are needed. Being file tsection.dat unique for every installation, for such routes a 
+so-called mini-route installation was needed.
+The present feature overcomes this problem. The route still uses the common tsection.dat,but it can add to it route-specific TrackSections and TrackShapes, and can modify common ones. This occurs by putting in an ``OpenRails`` subfolder within the route's root 
+folder a route-specific chunk of tsection.dat, which includes the TrackSections and 
+TrackShapes to be added or modified. Here a fictitious example for route USA1 (first 
+line must be blank)::
+
+
+  include ( "../../../Global/tsection.dat" )
+  _INFO ( Track sections and shapes specific for USA1   )
+  _Skip (
+  Further comments here
+  )
+  TrackSections ( 40000
+  _Skip (
+  Comment here
+  )
+  _SKIP ( Bernina )
+    TrackSection ( 33080
+	    SectionSize ( 0.9 1.5825815 )
+    )
+    TrackSection ( 19950
+	    SectionSize ( 0.9 12 )
+    )
+  )
+  TrackShapes ( 40000
+  _Skip (
+  Comment here
+  )
+  -INFO(Bernina Pass narrow gauge sections / wood tie texture)
+  _INFO(by Massimo Calvi)
+  _INFO(straight sections)
+    TrackShape ( 30000
+	    FileName ( track1_6m_wt.s )
+	    NumPaths ( 1 )
+	    SectionIdx ( 1 0 0 0 0 33080 )
+    )
+    TrackShape ( 19858
+	    FileName ( track12m_wt.s )
+	    NumPaths ( 1 )
+	    SectionIdx ( 1 0 0 0 0 19950 )
+    )
+  )
+
+In this fictitious example the first TrackSection and TrackShape is present also in the 
+Global tsection.dat, so the effect is that the original TrackSection and TrackShape are 
+modified; the second ones are not present, and so they are added to the lists.   
+
+.. note::  to be able to use these modified items with the actual MSTS RE or with Or's TSRE5 route editor it is necessary that these modified items are present also in the original tsection.dat file. However, when the work with the RE is terminated and route is distributed, it is sufficient to distribute the above route's specific tsection.dat.
+
+
+
+
+  
+
+
+
+
 
 
 
