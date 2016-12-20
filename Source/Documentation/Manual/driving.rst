@@ -793,6 +793,10 @@ alignment. If necessary exit from manual mode (if you are again on a path in act
 mode) and move the loco out of the turntable.
 During rotation the train is in *Turntable* state (this can be seen in the 
 :ref:`Track Monitor <driving-track-monitor>`).
+
+.. image:: images/driving-turntable.png
+  :align: center
+  
 It is also possible to rotate standalone wagons. They have to be pushed or pulled to 
 the turntable, the locomotive must exit the turntable and the the wagon can be rotated.
 It is suggested to read also :ref:`this paragraph <features-route-turntable-operation>` 

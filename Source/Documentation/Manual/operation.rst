@@ -1634,6 +1634,29 @@ Function call::
 
 Function returns 1 if head is set, else 0. 
 
+
+Signalling flag OR_NOSPEEDREDUCTION
+-----------------------------------
+Differently from MSTS, as default AI trains pass signals with aspect ``RESTRICTED`` or 
+``STOP_AND_PROCEED`` at reduced speed.
+To provide also an MSTS-compatible operation and to take into account signalling 
+systems where no a speed reduction is required when passing such signals, the flag 
+``OR_NOSPEEDREDUCTION`` has been introduced. This is an example of usage of such flag::
+
+  SignalAspects ( 7
+	SignalAspect ( STOP		"Red" )
+	SignalAspect ( STOP_AND_PROCEED	"LowYellowFlash" SpeedMPH(25) signalflags (OR_NOSPEEDREDUCTION) )
+	SignalAspect ( RESTRICTING 	"LowYellow"	SpeedMPH(25) signalflags (OR_NOSPEEDREDUCTION) )
+	SignalAspect ( APPROACH_2			"TopYellowMidGreen" )
+	SignalAspect ( APPROACH_3			"TopYellow" )
+	SignalAspect ( CLEAR_1				"MidGreen" )
+	SignalAspect ( CLEAR_2				"TopGreen" )
+  )
+
+With this flag set, no speed reduction is applied when passing the signal.
+
+
+
 .. _operation-activity:
 
 OR-Specific Additions to Activity Files
