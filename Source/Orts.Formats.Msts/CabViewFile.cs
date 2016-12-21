@@ -757,12 +757,16 @@ namespace Orts.Formats.Msts
                         }
 
                         // Check if eligible for filling
-                        
-                        for (var iPos = 1; iPos <= Positions.Count - 1; iPos++)
-                        {
-                            if (Positions[iPos] > Positions[iPos-1]) continue;
-                            canFill = false;
-                            break;
+
+                        if (Positions.Count > 1 && Positions[0] != 0) canFill = false;
+                        else 
+                        { 
+                            for (var iPos = 1; iPos <= Positions.Count - 1; iPos++)
+                            {
+                                if (Positions[iPos] > Positions[iPos-1]) continue;
+                                canFill = false;
+                                break;
+                            }
                         }
 
                         // This is a protection against GP40 locomotives that erroneously have positions pointing beyond frame count limit.
