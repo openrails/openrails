@@ -589,7 +589,10 @@ Other Comparisons Between Running Activities in ORTS or MSTS
 End of run of AI trains
 -----------------------
 
-AI trains end their run where the end point of their path resides, as in MSTS.
+AI trains end their run where the end point of their path resides, as in MSTS. 
+However they always end their run at zero speed.
+
+.. _operation-performance:
 
 Default Performance and Performance Parameters
 ----------------------------------------------
@@ -620,6 +623,37 @@ This corresponds to MSTS behaviour.
 
 Moreover the Efficiency parameter is used also to compute acceleration and 
 braking curves.
+
+Calculation of Train Speed Limit
+--------------------------------
+
+*For the player train*: speed limit is the lowest among:
+
+  - route speed limit as defined in the ``.trk`` file
+  - local signal speed limit
+  - local speedpost speed limit
+  - local temporary speedpost speed limit
+  - first parameter ``MaxVelocityA`` in ``.con`` file, if bigger than zero and not 
+    equal 40
+  - locomotive speed limit in ``.eng`` file in the other cases. 
+
+ *For the AI trains*: speed limit is the lowest among:  
+
+  - route speed limit as defined in the ``.trk`` file
+  - local signal speed limit
+  - local speedpost speed limit
+  - local temporary speedpost speed limit
+  - first parameter ``MaxVelocityA`` in ``.con`` file, if bigger than zero and not 
+    equal 40
+  - locomotive speed limit in ``.eng`` file in the other cases. 
+
+
+  - route speed limit as defined in the ``.trk`` file
+  - local signal speed limit
+  - local speedpost speed limit
+  - local temporary speedpost speed limit
+  - first parameter ``MaxVelocityA`` in ``.con`` file, if bigger than zero, 
+    multiplied by the Efficiency as explained :ref:``here <operation-performance>``.
 
 Start of Run of AI train in a Section Reserved by Another Train
 ---------------------------------------------------------------
@@ -698,8 +732,7 @@ The following additional shunting functions are available:
 
 These functions are described in detail below.
 
-Some sample activities can be found `here 
-<http://www.elvastower.com/forums/index.php?/topic/25224-extended-ai-train-shunting/>`_.
+A sample activity can be found in ``Documentation\SampleFiles\Manual\Show_AI_shunting.zip``.
 
 Activity Design for Extended AI Train Shunting Functions
 --------------------------------------------------------
