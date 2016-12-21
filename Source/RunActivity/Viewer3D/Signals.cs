@@ -219,11 +219,13 @@ namespace Orts.Viewer3D
                 else
                     SignalTypeData = SignalTypes[mstsSignalType.Name] = new SignalTypeData(viewer, mstsSignalType);
 
-                if (SignalTypeData.Semaphore && signalShape.SharedShape.Animations != null && signalShape.SharedShape.Animations.Count != 0)
+                if (SignalTypeData.Semaphore)
                 {
+
                     foreach (int mindex in MatrixIndices)
                     {
-                        if (signalShape.SharedShape.Animations[0].anim_nodes[mindex].controllers.Count == 0) continue;
+                        if (mindex == 0 && (signalShape.SharedShape.Animations == null || signalShape.SharedShape.Animations.Count == 0 ||
+                            signalShape.SharedShape.Animations[0].anim_nodes[mindex].controllers.Count == 0)) continue;
                         AnimatedPart SemaphorePart = new AnimatedPart(signalShape);
                         SemaphorePart.AddMatrix(mindex);
                         SemaphoreParts.Add(SemaphorePart);
@@ -248,7 +250,6 @@ namespace Orts.Viewer3D
                 Console.Write("  HEAD type={0,-8} lights={1,-2} sem={2}", SignalTypeData.Type, SignalTypeData.Lights.Count, SignalTypeData.Semaphore);
 #endif
             }
-
             [CallOnThread("Loader")]
             public void Unload()
             {
