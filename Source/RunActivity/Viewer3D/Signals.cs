@@ -225,7 +225,8 @@ namespace Orts.Viewer3D
                     foreach (int mindex in MatrixIndices)
                     {
                         if (mindex == 0 && (signalShape.SharedShape.Animations == null || signalShape.SharedShape.Animations.Count == 0 ||
-                            signalShape.SharedShape.Animations[0].anim_nodes[mindex].controllers.Count == 0)) continue;
+                            signalShape.SharedShape.Animations[0].anim_nodes[mindex].controllers.Count == 0))
+                            continue;
                         AnimatedPart SemaphorePart = new AnimatedPart(signalShape);
                         SemaphorePart.AddMatrix(mindex);
                         SemaphoreParts.Add(SemaphorePart);
@@ -454,7 +455,7 @@ namespace Orts.Viewer3D
                 {
                     foreach (var drawLight in drawStateData.DrawLights)
                     {
-                        if (drawLight.LightIndex < 0 || drawLight.LightIndex >= DrawLights.Length)
+                        if (drawLight.LightIndex < 0 || DrawLights == null || drawLight.LightIndex >= DrawLights.Length)
                             Trace.TraceWarning("Skipped extra draw light {0}", drawLight.LightIndex);
                         else
                         {
