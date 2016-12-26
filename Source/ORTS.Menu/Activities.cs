@@ -53,8 +53,8 @@ namespace ORTS.Menu
                     var actFile = new ActivityFile(filePath);
                     var srvFile = new ServiceFile(System.IO.Path.Combine(System.IO.Path.Combine(route.Path, "SERVICES"), actFile.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name + ".srv"));
                     // ITR activities are excluded.
-                    showInList = actFile.Tr_Activity.Tr_Activity_Header.Mode != ActivityMode.IntroductoryTrainRide;
                     Name = actFile.Tr_Activity.Tr_Activity_Header.Name.Trim();
+                    if (actFile.Tr_Activity.Tr_Activity_Header.Mode == ActivityMode.IntroductoryTrainRide) Name = "Introductory Train Ride";
                     Description = actFile.Tr_Activity.Tr_Activity_Header.Description;
                     Briefing = actFile.Tr_Activity.Tr_Activity_Header.Briefing;
                     StartTime = actFile.Tr_Activity.Tr_Activity_Header.StartTime;
