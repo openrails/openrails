@@ -4184,7 +4184,15 @@ namespace Orts.Simulation.Signalling
                             // end signal is only valid if it has no fixed route in activity mode
                             else
                             {
-                                if (!thisSection.EndSignals[0].hasFixedRoute)
+                                float? approachControlLimitPositionM = null;
+                                if (distToSignal > 150)
+                                {
+                                    foreach (SignalHead signalHead in thisSection.EndSignals[0].SignalHeads)
+                                    {
+                                        if (signalHead.ApproachControlLimitPositionM != null) approachControlLimitPositionM = signalHead.ApproachControlLimitPositionM;
+                                    }
+                                }
+                                if (!thisSection.EndSignals[0].hasFixedRoute && !(approachControlLimitPositionM != null && (float)approachControlLimitPositionM < distToSignal + 100))
                                 {
                                     thisDetails.EndSignals[0] = thisSection.EndSignals[0].thisRef;
                                     thisDetails.DistanceToSignals[0] = distToSignal;
@@ -4228,7 +4236,15 @@ namespace Orts.Simulation.Signalling
                             }
                             else
                             {
-                                if (!thisSection.EndSignals[1].hasFixedRoute)
+                                float? approachControlLimitPositionM = null;
+                                if (distToSignal > 150)
+                                {
+                                    foreach (SignalHead signalHead in thisSection.EndSignals[1].SignalHeads)
+                                    {
+                                        if (signalHead.ApproachControlLimitPositionM != null) approachControlLimitPositionM = signalHead.ApproachControlLimitPositionM;
+                                    }
+                                }
+                                if (!thisSection.EndSignals[1].hasFixedRoute && !(approachControlLimitPositionM != null && (float)approachControlLimitPositionM < distToSignal + 100))
                                 {
                                     thisDetails.EndSignals[1] = thisSection.EndSignals[1].thisRef;
                                     thisDetails.DistanceToSignals[1] = distToSignal;
