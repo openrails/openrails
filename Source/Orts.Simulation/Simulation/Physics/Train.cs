@@ -6369,6 +6369,8 @@ namespace Orts.Simulation.Physics
             bool hasEndSignal = false;     // ends with cleared signal
             int sectionWithSignalIndex = 0;
 
+            SignalObject previousSignal = new SignalObject();
+
             for (int iindex = 0; iindex < newRoute.Count && !endWithSignal; iindex++)
             {
                 thisElement = newRoute[iindex];
@@ -6383,6 +6385,8 @@ namespace Orts.Simulation.Physics
                     var endSignal = thisSection.EndSignals[reqDirection];
                     MstsSignalAspect thisAspect = thisSection.EndSignals[reqDirection].this_sig_lr(MstsSignalFunction.NORMAL);
                     hasEndSignal = true;
+                    if (previousSignal.signalRef != null) previousSignal.sigfound[(int)MstsSignalFunction.NORMAL] = endSignal.thisRef;
+                    previousSignal = thisSection.EndSignals[reqDirection];
 
                     if (thisAspect == MstsSignalAspect.STOP && endSignal.hasPermission != SignalObject.Permission.Granted)
                     {
