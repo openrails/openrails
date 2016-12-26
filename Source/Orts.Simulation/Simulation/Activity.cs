@@ -99,21 +99,24 @@ namespace Orts.Simulation
 
                     foreach (var i in sd.Player_Traffic_Definition.Player_Traffic_List)
                     {
-                        Platform = Simulator.TDB.TrackDB.TrItemTable[i.PlatformStartID] is PlatformItem ?
-                            Simulator.TDB.TrackDB.TrItemTable[i.PlatformStartID] as PlatformItem :
-                            new PlatformItem(Simulator.TDB.TrackDB.TrItemTable[i.PlatformStartID] as SidingItem);
-
+                        if (Simulator.TDB.TrackDB.TrItemTable[i.PlatformStartID] is PlatformItem)
+                            Platform = Simulator.TDB.TrackDB.TrItemTable[i.PlatformStartID] as PlatformItem;
+                        else
+                        {
+                            Trace.TraceWarning("PlatformStartID {0} is not present in TDB file", i.PlatformStartID);
+                            continue;
+                        }
                         if (Platform != null)
                         {
-                            PlatformItem Platform2 = Simulator.TDB.TrackDB.TrItemTable[Platform.LinkedPlatformItemId] is PlatformItem ?
-                            Simulator.TDB.TrackDB.TrItemTable[Platform.LinkedPlatformItemId] as PlatformItem :
-                            new PlatformItem(Simulator.TDB.TrackDB.TrItemTable[Platform.LinkedPlatformItemId] as SidingItem);
-
-                            Tasks.Add(task = new ActivityTaskPassengerStopAt(simulator,
-                                task,
-                                i.ArrivalTime,
-                                i.DepartTime,
-                                Platform, Platform2));
+                            if (Simulator.TDB.TrackDB.TrItemTable[Platform.LinkedPlatformItemId] is PlatformItem)
+                            {
+                                PlatformItem Platform2 = Simulator.TDB.TrackDB.TrItemTable[Platform.LinkedPlatformItemId] as PlatformItem;
+                                Tasks.Add(task = new ActivityTaskPassengerStopAt(simulator,
+                                    task,
+                                    i.ArrivalTime,
+                                    i.DepartTime,
+                                    Platform, Platform2));
+                            }
                         }
                     }
                     Current = Tasks[0];
