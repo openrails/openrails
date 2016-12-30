@@ -542,16 +542,6 @@ namespace ORTS
                 MessageBox.Show(catalog.GetString("No errors found."), Application.ProductName);
         }
 
-        private void comboBoxWindowSize_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            var windowSizeParts = comboWindowSize.Text.Split(new[] { 'x' }, 2);
-            double width = Convert.ToDouble(windowSizeParts[0]);
-            double height = Convert.ToDouble(windowSizeParts[1]);
-            double aspectRatio = width / height;
-            bool wideScreen = aspectRatio > (4.0 / 3.0);
-            numericCab2DStretch.Enabled = wideScreen;
-        }
-
         private void numericUpDownFOV_ValueChanged(object sender, EventArgs e)
         {
             labelFOVHelp.Text = catalog.GetStringFmt("{0:F0}° vertical FOV is the same as:\n{1:F0}° horizontal FOV on 4:3\n{2:F0}° horizontal FOV on 16:9", numericViewingFOV.Value, numericViewingFOV.Value * 4 / 3, numericViewingFOV.Value * 16 / 9);
