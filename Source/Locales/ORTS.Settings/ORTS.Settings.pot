@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2016-07-25 22:38:41+0200\n"
-"PO-Revision-Date: 2016-07-25 22:38:41+0200\n"
+"POT-Creation-Date: 2016-12-30 17:56:10+0100\n"
+"PO-Revision-Date: 2016-12-30 17:56:10+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -528,137 +528,157 @@ msgid "Control Pantograph 2"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:175
-msgid "Control Diesel Player"
+msgid "Control Circuit Breaker Closing Order"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:176
-msgid "Control Diesel Helper"
+msgid "Control Circuit Breaker Opening Order"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:177
-msgid "Control Headlight Increase"
+msgid "Control Circuit Breaker Closing Authorization"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:178
-msgid "Control Headlight Decrease"
+msgid "Control Diesel Player"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:179
-msgid "Control Injector 1 Increase"
+msgid "Control Diesel Helper"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:180
-msgid "Control Injector 1 Decrease"
+msgid "Control Headlight Increase"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:181
-msgid "Control Injector 1"
+msgid "Control Headlight Decrease"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:182
-msgid "Control Injector 2 Increase"
+msgid "Control Injector 1 Increase"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:183
-msgid "Control Injector 2 Decrease"
+msgid "Control Injector 1 Decrease"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:184
-msgid "Control Injector 2"
+msgid "Control Injector 1"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:185
-msgid "Control Blower Increase"
+msgid "Control Injector 2 Increase"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:186
-msgid "Control Blower Decrease"
+msgid "Control Injector 2 Decrease"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:187
-msgid "Control Steam Heat Increase"
+msgid "Control Injector 2"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:188
-msgid "Control Steam Heat Decrease"
+msgid "Control Blower Increase"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:189
-msgid "Control Damper Increase"
+msgid "Control Blower Decrease"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:190
-msgid "Control Damper Decrease"
+msgid "Control Steam Heat Increase"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:191
-msgid "Control Firebox Open"
+msgid "Control Steam Heat Decrease"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:192
-msgid "Control Firebox Close"
+msgid "Control Damper Increase"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:193
-msgid "Control Firing Rate Increase"
+msgid "Control Damper Decrease"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:194
-msgid "Control Firing Rate Decrease"
+msgid "Control Firebox Open"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:195
-msgid "Control Fire Shovel Full"
+msgid "Control Firebox Close"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:196
-msgid "Control Cylinder Cocks"
+msgid "Control Firing Rate Increase"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:197
-msgid "Control Cylinder Compound"
+msgid "Control Firing Rate Decrease"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:198
-msgid "Control Firing"
+msgid "Control Fire Shovel Full"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:199
-msgid "Control Refill"
+msgid "Control Cylinder Cocks"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:200
-msgid "Control TroughRefill"
+msgid "Control Small Ejector Increase"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:201
-msgid "Control ImmediateRefill"
+msgid "Control Small Ejector Decrease"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:202
-msgid "Control Turntable Clockwise"
+msgid "Control Cylinder Compound"
 msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:203
+msgid "Control Firing"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:204
+msgid "Control Refill"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:205
+msgid "Control TroughRefill"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:206
+msgid "Control ImmediateRefill"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:207
+msgid "Control Turntable Clockwise"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:208
 msgid "Control Turntable Counterclockwise"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:656
+#: ../../ORTS.Settings/InputSettings.cs:666
 #, csharp-format
 msgid "{0} requires and is modified by Shift"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:658
+#: ../../ORTS.Settings/InputSettings.cs:668
 #, csharp-format
 msgid "{0} requires and is modified by Control"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:660
+#: ../../ORTS.Settings/InputSettings.cs:670
 #, csharp-format
 msgid "{0} requires and is modified by Alt"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:691
+#: ../../ORTS.Settings/InputSettings.cs:701
 #, csharp-format
 msgid "{0} and {1} both match {2}"
 msgstr ""
