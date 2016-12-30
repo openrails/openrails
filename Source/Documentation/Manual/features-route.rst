@@ -312,6 +312,81 @@ modified; the second ones are not present, and so they are added to the lists.
 
 .. note::  to be able to use these modified items with the actual MSTS RE or with Or's TSRE5 route editor it is necessary that these modified items are present also in the original tsection.dat file. However, when the work with the RE is terminated and route is distributed, it is sufficient to distribute the above route's specific tsection.dat.
 
+.. _features-route-overhead-wire-extensions:
+
+Overhead wire extensions
+===================================
+
+.. _features-route-overhead-wire-double-wire:
+
+Double wire
+-----------
+
+OR provides an :ref:`experimental function that enables the upper wire <options-double-overhead-wires>` for 
+electrified routes. The optional parameter ``ortsdoublewireenabled`` in the ``.trk`` file of the route can
+force the activation or disactivation of the option overriding the user setting in the options panel.
+
+In this example the upper wire is enabled overriding the user setting::
+
+  OrtsDoubleWireEnabled ( On )
+
+while in this one the upper wire is forced to be disabled::
+
+  OrtsDoubleWireEnabled ( Off )
+
+Another parameter (``ortsdoublewireheight``) specifies the height of the upper wire relative to the contact wire,
+if not specified the default is 1 meter.
+In this example the upper wire is 130cm over the main wire (as in most italian routes)::
+
+
+  include ( "../tures.trk" )
+    OrtsTriphaseEnabled ( Off )
+    OrtsDoubleWireEnabled ( On )
+    OrtsDoubleWireHeight ( 130cm )
+
+Of course you can use any :ref:`distance unit of measure <appendices-units-of-measure>` supported by OR.
+
+.. _features-route-overhead-wire-triphase:
+
+Triphase lines
+--------------
+
+The modern electric locos are powered by DC or monophase AC, but some years ago there were triphase AC powered locos.
+A triphase circuit needs tre wires (one for each phase, no wire is needed for neutral); in rails systems two wires 
+are overhead and the third is made by the rails.
+
+OR can enable the second overhead wire with the parameter ``ortstriphaseenabled`` this way::
+
+  OrtsTriphaseEnabled ( On )
+
+If the parameter is missing or its value is ``Off`` the usual single wire is displayed.
+
+Another parameter (``ortstriphasewidth``) specifies the space between the two wires with a default (if the parameter 
+is not declared) of 1 meter.
+
+.. _features-route-loading-screen:
+
+Loading screen
+==============
+
+In the ``.trk`` file of the route can be used the parameter ``loadingscreen`` as in this example::
+
+	LoadingScreen ( Load.ace )
+
+If in the main directory of the route there is a file with the same name but with extension ``.dds`` 
+and the :ref:`DDS texture support<options-dds-textures>` is enabled
+the last one is displayed instead of that with ``.ace`` extension.
+If the parameter is omitted then is loaded the file ``load.ace`` (like in MSTS) or ``load.dds`` 
+(if present and, again, the dds support is enabled).
+
+The loading screen image can have any resolution and aspect-ratio, it will be displayed letter-boxed
+in the screen keeping the aspect-ratio.
+
+Another optional parameter ``ortsloadingscreenwide``, can specify the image to show when the user
+loads the route on a wide (16:9) screen. This parameter is ignored when a traditional 4:3 display is used.
+
+
+
 
 
 
