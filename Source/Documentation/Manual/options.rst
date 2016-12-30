@@ -501,6 +501,8 @@ frame rate FPS ( Frames per second). To do this it decreases or increases
 the viewing distance of the standard terrain. If the option is selected, 
 also select the desired FPS in the *Target frame rate* window.
 
+.. _options-double-overhead-wires:
+
 Double overhead wires
 ---------------------
 
@@ -630,6 +632,8 @@ With this option selected, all objects viewable up to the viewing distance
 defined in the Video Options are displayed. As a default ORTS only 
 displays objects up to 2000 m distance. Selecting this option improves 
 display quality but may reduce frame rate.
+
+.. _options-dds-textures:
 
 Load DDS textures in preference to ACE
 --------------------------------------

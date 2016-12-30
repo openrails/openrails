@@ -29,8 +29,10 @@ Routes
 
 - Routes are displayed in higher resolution.
 - Extended viewing distance yields much more realism.
-- Double overhead wire increases the realism of electrified routes.
+- :ref:`Double overhead wire<features-route-overhead-wire-double-wire>` increases the realism of electrified routes.
+- Built-in :ref:`triphase overhead electric line<features-route-overhead-wire-triphase>`.
 - Extended signaling features provide more realistic signal behavior.
+- :ref:`Widescreen<features-route-loading-screen>` and hi-res loading screen.
 
 Activities
 ==========

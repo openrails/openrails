@@ -4,6 +4,8 @@
 Appendices
 **********
 
+.. _appendices-units-of-measure:
+
 Units of Measure
 ================
 
