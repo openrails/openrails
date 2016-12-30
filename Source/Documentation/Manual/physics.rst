@@ -1419,6 +1419,27 @@ The code block consists of the following elements:
 - Effect direction of emission (given as a normal x, y and z)
 - Effect nozzle width (in metres)
 
+Auxiliary Water Tenders
+-----------------------
+
+To increase the water carrying capacity of a steam locomotive, an “auxiliary tender” (or as known in Australia as a water gin) would sometimes be coupled to the locomotive. This auxiliary tender would provide additional water to the locomotive tender via connecting pipes.
+ 
+Typically, if the connecting pipes were opened between the locomotive tender and the auxiliary tender, the water level in the two vehicles would equalise at the same height.
+  
+To implement this feature in Open Rails, a suitable water carrying vehicle needs to have the following parameter included in the WAG file.
+
+``ORTSAuxTenderWaterMass ( 70000lb )`` The units of measure are in mass.
+
+When the auxiliary tender is coupled to the locomotive the *tender* line in the LOCOMOTIVE INFORMATION HUD will show the two tenders and the water capacity of each. Water (C) is the combined water capacity of the two tenders, whilst Water (T) shows the water capacity of the  locomotive tender, and Water (A) the capacity of the auxiliary tender (as shown below). 
+
+.. image:: images/aux_water_tender_hud.png
+  :align: center
+  :scale: 100% 
+
+To allow the auxiliary tender to be filled at a water fuelling point, a water freight animation will be need to be added to the WAG file as well. (Refer to *Freight Animations* for more details).
+
+
+
 Engines -- Multiple Units in Same Consist or AI Engines
 =======================================================
 
@@ -1517,6 +1538,77 @@ Brake system charging time depends on the train length as it should, but
 at the moment there is no modeling of main reservoirs and compressors.
 
 .. _physics-hud-brake:
+
+Brake Shoe Adhesion
+-------------------
+
+The braking of a train is impacted by the following two types of adhesion (friction coefficients):
+
+- **Brakeshoe** -- the coefficient of friction of the brakeshoe varies due to the type of brake shoe, and the speed of the wheel increases. Typically older cast iron brake shoes had lower friction coefficients then more modern composite brakeshoes.
+
+- **Wheel** -- the adhesion or friction coefficient between the wheel and the rail will also vary with different conditions, such as whether the track was dry or wet, and will also vary with the speed of rotation of the wheel.
+
+Thus a train traveling at high speed will have lower brake shoe adhesion, which means that the train will take a longer time to stop (or alternatively more force needs to be applied to the brakeshoe to achieve the same slowing effect of the wheel, as at slower speeds). Traveling at high speeds may also result in insufficient force being available to stop the train, and therefore under some circumstances the train may become uncontrollable (unstoppable) or *runaway* on steep falling gradients.
+
+Conversely if too much force is applied to the brakeshoe, then the wheel could “lock up”, and this could result in the wheel slipping along the rail once the *adhesive force* (wagon weight x coefficient of friction) of the wagon is exceeded by the braking force. In this instance the static friction between the wheel and the track will change to dynamic friction, which is significantly lower than the static friction, and thus the train will not be stopped in the desired time and distance.
+ 
+When designing the braking forces railway engineers need to ensure that the maximum braking force applied to the wheels takes into account the above adhesion factors.
+
+*Implementation in Open Rails*
+
+Open Rails models the aspects described above, and operates within one of the following modes:
+
+-	Advanced Adhesion NOT selected - brake force operates as per previous OR functionality, i.e. - constant brake force regardless of speed.
+
+-	Advanced Adhesion SELECTED and legacy WAG files, or NO additional user friction data defined in WAG file - OR assumes the users assigned friction coefficient have been set at 20% friction coefficient for cast iron brakes, and reverse engineers the braking force, and then applies the default friction curve as the speed varies.
+
+-	Advanced Adhesion SELECTED and additional user friction data HAS been defined in WAG file - OR applies the user defined friction/speed curve.
+
+It should be noted that the MaxBrakeForce parameter in the WAG file is the actual force applied to the wheel after reduction by the friction coefficient.
+
+Option iii) above is the ideal recommended method of operating, and naturally will require include files, or variations to the WAG file.
+
+To setup the WAG file, the following values need to be set:
+
+- use the OR parameter ``ORTSBrakeShoeFriction ( x, y )`` to define an appropriate friction/speed curve, where x = speed in kph, and y = brakeshoe friction. This parameter needs to be included in the WAG file near the section defining the brakes. This parameter allows the user to customise to any brake type.
+
+- Define the ``MaxBrakeForce`` value with a friction value equal to the zero speed value of the above curve, i.e. in the case of the curve below this woyuld be 0.49.
+
+For example, a sample curve definition for a COBRA (COmposition BRAkes) brakeshoe might be as follows:
+
+``ORTSBrakeShoeFriction ( 0.0 0.49 8.0 ................  80.5 0.298 88.5 0.295 96.6 0.289 104.6 0.288 )``
+
+The debug FORCES INFORMATION HUD has been modified by the addition of two extra columns:
+
+- Brk. Frict. - Column shows the current friction value of the brakeshoe and will vary according to the speed. (Applies to modes ii) and iii) above). In mode i) it will show friction constant at 100%, which indicates that the MaxBrakeForce defined in the WAG file is being used without alteration, ie it is constant regardless of the speed.
+
+- Brk. Slide - indicates that the vehicle wheels are sliding along the track under brake application. (Ref to *Wheel Skidding due to Excessive Brake Force* )
+
+It should be noted that the *Adhesion factor correction* slider in the options menu will vary the brakeshoe coefficient above and below 100% (or unity). It is recommended that this is set @ the default value of 100%.
+
+These changes introduce an extra challenge to train braking, but provide a more realistic train operation. 
+
+For example, in a lot of normal Westinghouse brake systems, a minimum pressure reduction was applied by moving the brake controller to the LAP position. Typically Westinghouse recommended values of between 7 and 10 psi. 
+
+Train Brake Pipe Losses
+-----------------------
+
+The train brake pipe on a train is subject to air losses through leakage at joints, etc. Typically when the brake controller is in the RUNNING position, air pressure is maintained in the pipe from the reservoir. However on some brake systems, especially older ones such as the A6-ET, when the brake controller is in the LAP position the train brkae pipe is isolated from the air reservoir, and hence over time the pipe will suffer pressure drops due to leakages. This will result in the brakes being gradually applied.
+
+More modern brake systems have a self lapping feature which compensates for train brake pipe leakage regardless of the position that the brake controller is in.
+
+Open Rails models this feature whenever the ``TrainPipeLeakRate`` parameter is defined in the engine section of the ENG file. Typically most railway companies accepted leakage rates of around 5 psi/min in the train brake pipe before some remedial action needed to be undertaken.
+
+If this parameter is left out of the ENG file, then no leakage will occur. 
+
+Wheel Skidding due to Excessive Brake Force
+-------------------------------------------
+
+The application of excessive braking force onto a wheel can cause it to lock up and then start to slip along the rails. This occurs where the wagon braking force exceeds the adhesive weight force of the wagon wheel, i.e. the wheel to rail friction is overcome, and the wheel no longer *grips* the rails.
+
+Typically this happens with lightly loaded vehicles at lower speeds, and hence the need to ensure that braking forces are applied to design standards.
+
+When a vehicle experiences wheel skid, an indication is provided in the FORCES INFORMATION HUD. To correct the problem the brakes must be released, and then applied slowly to ensure that the wheels are not *locked* up.
 
 Using the F5 HUD Expanded Braking Information
 ---------------------------------------------
