@@ -1,13 +1,20 @@
-log.*.xml
-Program/*
-Source/**/*.user
-Source/**/obj
-Source/*.suo
-Source/.vs
-Source/Contrib/TimetableEditor/*.lps
-Source/Contrib/TimetableEditor/*.res
-Source/Contrib/TimetableEditor/backup
-Source/Contrib/TimetableEditor/lib
-Source/Documentation/**/_build
-Source/Help
-Source/Locales/**/*.bak
+/log.*.xml
+/xunit.xml
+/OpenRails-*.pdf
+/OpenRails-*.zip
+/Microsoft .NET Framework Redistributable 3.5 SP1
+/Microsoft .NET Framework Redistributable 3.5 SP1 download manager
+/Microsoft XNA Framework Redistributable 3.1
+/Open Rails
+/Program
+/Source/**/*.user
+/Source/**/obj
+/Source/*.suo
+/Source/.vs
+/Source/Contrib/TimetableEditor/*.lps
+/Source/Contrib/TimetableEditor/*.res
+/Source/Contrib/TimetableEditor/backup
+/Source/Contrib/TimetableEditor/lib
+/Source/Documentation/**/_build
+/Source/Help
+/Source/Locales/**/*.bak
