@@ -18039,6 +18039,7 @@ namespace Orts.Simulation.Physics
 
             ClearValidRoutes();
             bool canPlace = true;
+            PresentPosition[0].TCSectionIndex = -1;
             TCSubpathRoute tempRoute = CalculateInitialTrainPosition(ref canPlace);
             if (tempRoute.Count == 0 || !canPlace)
             {
