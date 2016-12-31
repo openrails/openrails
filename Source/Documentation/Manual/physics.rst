@@ -508,7 +508,17 @@ physics can be replaced by traction characteristics (speed in mps vs.
 force in Newtons) as described below.
 
 Some OR-specific parameters are available in order to improve the realism 
-of the electric system. Since the simulator does not know whether the 
+of the electric system.
+
+Pantographs
+-----------
+
+The pantographs of all locomotives in a consist are triggered by 
+*Control Pantograph First* and *Control Pantograph Second* commands 
+( ``<P>`` and ``<Shift+P>`` by default ). The status of the pantographs 
+is indicated by the *Pantographs* value in the HUD view.
+
+Since the simulator does not know whether the 
 pantograph in the 3D model is up or down, you can set some additional 
 parameters in order to add a delay between the time when the command to 
 raise the pantograph is given and when the pantograph is actually up.
@@ -519,7 +529,7 @@ structure::
 
     ORTSPantographs(
         Pantograph(         << This is going to be your first pantograph.
-            Delay( 5 s )    << Example : a delay of 5 seconds
+            Delay( 5s )     << Example : a delay of 5 seconds
         )
         Pantograph(
             ... parameters for the second pantograph ...
@@ -529,26 +539,42 @@ structure::
 Other parameters will be added to this structure later, such as power 
 limitations or speed restrictions.
 
-By default, the circuit breaker of the train closes as soon as power is 
-available on the pantograph. In real life, the circuit breaker does not 
+Circuit breaker
+---------------
+
+The circuit breaker of all locomotives in a consist can be controlled by 
+*Control Circuit Breaker Closing Order*, *Control Circuit Breaker Opening Order*
+and *Control Circuit Breaker Closing Authorization* commands 
+( ``<O>``, ``<I>`` and ``<Shift+O>`` by default ). The status of the circuit breaker 
+is indicated by the *Circuit breaker* value in the HUD view.
+
+Two default behaviours are available:
+
+- By default, the circuit breaker of the train closes as soon as power is available
+  on the pantograph.
+- The circuit breaker can also be controlled manually by the driver. To get this
+  behaviour, put the parameter ``ORTSCircuitBreaker( Manual )`` in the Engine section
+  of the ENG file.
+
+In order to model a different behaviour of the circuit breaker,
+a scripting interface is available. The script can be loaded with the
+parameter ``ORTSCircuitBreaker( <name of the file> )``.
+
+In real life, the circuit breaker does not 
 close instantly, so you can add a delay with the optional parameter 
-``ORTSCircuitBreakerClosingDelay()``.
+``ORTSCircuitBreakerClosingDelay( )`` (by default in seconds).
+
+Power supply
+------------
+
+The power status is indicated by the *Power* value in the HUD 
+view. 
 
 The power-on sequence time delay can be adjusted by the optional 
-``ORTSPowerOnDelay( )`` value (for example: ``ORTSPowerOnDelay(5s)``) within 
+``ORTSPowerOnDelay( )`` value (for example: ``ORTSPowerOnDelay( 5s )``) within 
 the Engine section of the .eng file (value in seconds). The same delay for 
 auxiliary systems can be adjusted by the optional parameter 
-``ORTSAuxPowerOnDelay( )``.
-
-A scripting interface is available in order to create a customized circuit 
-breaker or a customized power supply system (it will be useful later when 
-the key bindings will be customizable for each locomotive).
-
-The power status is indicated by the *Electric power* value in the HUD 
-view. The pantographs of all locomotives in a consist are triggered by 
-*Control Pantograph First* and *Control Pantograph Second* commands 
-( ``<P>`` and ``<Shift+P>`` by default ). The status of the pantographs 
-is indicated by the *Pantographs* value in the HUD view.
+``ORTSAuxPowerOnDelay( )`` (by default in seconds).
 
 .. _physics-steam:
 
@@ -1422,7 +1448,7 @@ The code block consists of the following elements:
 Auxiliary Water Tenders
 -----------------------
 
-To increase the water carrying capacity of a steam locomotive, an “auxiliary tender” (or as known in Australia as a water gin) would sometimes be coupled to the locomotive. This auxiliary tender would provide additional water to the locomotive tender via connecting pipes.
+To increase the water carrying capacity of a steam locomotive, an ï¿½auxiliary tenderï¿½ (or as known in Australia as a water gin) would sometimes be coupled to the locomotive. This auxiliary tender would provide additional water to the locomotive tender via connecting pipes.
  
 Typically, if the connecting pipes were opened between the locomotive tender and the auxiliary tender, the water level in the two vehicles would equalise at the same height.
   
@@ -1550,7 +1576,7 @@ The braking of a train is impacted by the following two types of adhesion (frict
 
 Thus a train traveling at high speed will have lower brake shoe adhesion, which means that the train will take a longer time to stop (or alternatively more force needs to be applied to the brakeshoe to achieve the same slowing effect of the wheel, as at slower speeds). Traveling at high speeds may also result in insufficient force being available to stop the train, and therefore under some circumstances the train may become uncontrollable (unstoppable) or *runaway* on steep falling gradients.
 
-Conversely if too much force is applied to the brakeshoe, then the wheel could “lock up”, and this could result in the wheel slipping along the rail once the *adhesive force* (wagon weight x coefficient of friction) of the wagon is exceeded by the braking force. In this instance the static friction between the wheel and the track will change to dynamic friction, which is significantly lower than the static friction, and thus the train will not be stopped in the desired time and distance.
+Conversely if too much force is applied to the brakeshoe, then the wheel could ï¿½lock upï¿½, and this could result in the wheel slipping along the rail once the *adhesive force* (wagon weight x coefficient of friction) of the wagon is exceeded by the braking force. In this instance the static friction between the wheel and the track will change to dynamic friction, which is significantly lower than the static friction, and thus the train will not be stopped in the desired time and distance.
  
 When designing the braking forces railway engineers need to ensure that the maximum braking force applied to the wheels takes into account the above adhesion factors.
 
