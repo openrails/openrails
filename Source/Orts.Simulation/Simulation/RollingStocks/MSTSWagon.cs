@@ -337,6 +337,11 @@ namespace Orts.Simulation.RollingStocks
                     CentreOfGravityM.X = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     CentreOfGravityM.Y = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     CentreOfGravityM.Z = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    if (Math.Abs(CentreOfGravityM.Z) > 1)
+                    {
+                        STFException.TraceWarning(stf, string.Format("Ignored CentreOfGravity Z value {0} outside range -1 to +1", CentreOfGravityM.Z));
+                        CentreOfGravityM.Z = 0;
+                    }
                     stf.SkipRestOfBlock();
                     break;
                 case "wagon(ortsunbalancedsuperelevation": UnbalancedSuperElevationM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
