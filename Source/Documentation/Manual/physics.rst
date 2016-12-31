@@ -2778,53 +2778,61 @@ groups are called ``VigilanceMonitor()``, ``OverspeedMonitor()``,
 In each group, you can define several parameters, which are described in 
 the tables below. 
 
-+-------------------------------+-----------------------------------+---------------+-------------------+
-|Parameter                      |Description                        |Recom'd        |Typical Examples   |
-|                               |                                   |Input Units    |                   |
-+===============================+===================================+===============+===================+
-|**General Parameters**                                                                                 |
-+-------------------------------+-----------------------------------+---------------+-------------------+
-|MonitoringDevice               |Period of time elapsed before the  |Time           |(5s)               |
-|MonitorTimeLimit( x )          |alarm or the penalty is triggered  |               |                   |
-+-------------------------------+-----------------------------------+---------------+-------------------+
-|MonitoringDevice               |Period for which the alarm sounds  |Time           |(5s)               |
-|AlarmTimeLimit( x )            |prior to the penalty being applied |               |                   |
-+-------------------------------+-----------------------------------+---------------+-------------------+
-|MonitoringDevice               |Period in seconds before the       |Time           |(5s)               |
-|PenaltyTimeLimit( x )          |penalty can be reset once triggered|               |                   |
-+-------------------------------+-----------------------------------+---------------+-------------------+
-|MonitoringDevice               |Speed at which monitor triggers    |Speed          |(200kph)           |
-|CriticalLevel( x )             |                                   |               |                   |
-+-------------------------------+-----------------------------------+---------------+-------------------+
-|MonitoringDevice               |Speed at which monitor resets      |Speed          |(5kph)             |
-|ResetLevel( x )                |                                   |               |                   |
-+-------------------------------+-----------------------------------+---------------+-------------------+
-|MonitoringDevice               |Sets whether full braking will be  |Boolean --     |``(0)``            |
-|AppliesFullBrake( x )          |applied                            |0 or 1         |                   |
-+-------------------------------+-----------------------------------+---------------+-------------------+
-|MonitoringDevice               |Sets whether emergency braking     |Boolean --     |``(1)``            |
-|AppliesEmergencyBrake( x )     |will be applied                    |0 or 1         |                   |
-+-------------------------------+-----------------------------------+---------------+-------------------+
-|MonitoringDevice               |Sets whether the power will be cut |Boolean --     |``(1)``            |
-|AppliesCutsPower( x )          |to the locomotive                  |0 or 1         |                   |
-+-------------------------------+-----------------------------------+---------------+-------------------+
-|MonitoringDevice               |Sets whether the engine will be    |Boolean --     |``(0)``            |
-|AppliesShutsDownEngine( x )    |shut down                          |0 or 1         |                   |
-+-------------------------------+-----------------------------------+---------------+-------------------+
-|MonitoringDevice               |Set whether the monitor resets     |Boolean --     |``(1)``            |
-|ResetOnZeroSpeed( x )          |when the speed is null             |0 or 1         |                   |
-+-------------------------------+-----------------------------------+---------------+-------------------+
-|MonitoringDevice               |Sets whether the monitor resets    |Boolean --     |``(0)``            |
-|ResetOnResetButton( x )        |when the reset button is pushed    |0 or 1         |                   |
-+-------------------------------+-----------------------------------+---------------+-------------------+
-|**Specific parameters of the Overspeed Monitor**                                                       |
-+-------------------------------+-----------------------------------+---------------+-------------------+
-|MonitoringDeviceAlarmTime      |Period for which the alarm sounds  |Time           |(2s)               |
-|BeforeOverSpeed( x )           |prior to the penalty being applied |               |                   |
-+-------------------------------+-----------------------------------+---------------+-------------------+
-|MonitoringDeviceTrigger        |Allowed overspeed                  |Speed          |(5kph)             |
-|OnTrackOverspeedMargin( x )    |                                   |               |                   |
-+-------------------------------+-----------------------------------+---------------+-------------------+
-|MonitoringDeviceTrigger        |Maximum allowed overspeed          |Speed          |(200kph)           |
-|OnTrackOverspeed( x )          |                                   |               |                   |
-+-------------------------------+-----------------------------------+---------------+-------------------+
++--------------------------------------------------+-----------------------------------+---------------+-------------------+
+|Parameter                                         |Description                        |Recom'd        |Typical Examples   |
+|                                                  |                                   |Input Units    |                   |
++==================================================+===================================+===============+===================+
+|**General Parameters**                                                                                                    |
++--------------------------------------------------+-----------------------------------+---------------+-------------------+
+|MonitoringDeviceMonitorTimeLimit( x )             |Period of time elapsed before the  |Time           |``(5s)``           |
+|                                                  |alarm or the penalty is triggered  |               |                   |
++--------------------------------------------------+-----------------------------------+---------------+-------------------+
+|MonitoringDeviceAlarmTimeLimit( x )               |Period for which the alarm sounds  |Time           |``(5s)``           |
+|                                                  |prior to the penalty being applied |               |                   |
++--------------------------------------------------+-----------------------------------+---------------+-------------------+
+|MonitoringDevicePenaltyTimeLimit( x )             |Period in seconds before the       |Time           |``(5s)``           |
+|                                                  |penalty can be reset once triggered|               |                   |
++--------------------------------------------------+-----------------------------------+---------------+-------------------+
+|MonitoringDeviceCriticalLevel( x )                |Speed at which monitor triggers    |Speed          |``(200kph)``       |
++--------------------------------------------------+-----------------------------------+---------------+-------------------+
+|MonitoringDeviceResetLevel( x )                   |Speed at which monitor resets      |Speed          |``(5kph)``         |
++--------------------------------------------------+-----------------------------------+---------------+-------------------+
+|MonitoringDeviceAppliesFullBrake( x )             |Sets whether full braking will be  |Boolean --     |``(0)``            |
+|                                                  |applied                            |0 or 1         |                   |
++--------------------------------------------------+-----------------------------------+---------------+-------------------+
+|MonitoringDeviceAppliesEmergencyBrake( x )        |Sets whether emergency braking     |Boolean --     |``(1)``            |
+|                                                  |will be applied                    |0 or 1         |                   |
++--------------------------------------------------+-----------------------------------+---------------+-------------------+
+|MonitoringDeviceAppliesCutsPower( x )             |Sets whether the power will be cut |Boolean --     |``(1)``            |
+|                                                  |to the locomotive                  |0 or 1         |                   |
++--------------------------------------------------+-----------------------------------+---------------+-------------------+
+|MonitoringDeviceAppliesShutsDownEngine( x )       |Sets whether the engine will be    |Boolean --     |``(0)``            |
+|                                                  |shut down                          |0 or 1         |                   |
++--------------------------------------------------+-----------------------------------+---------------+-------------------+
+|MonitoringDeviceResetOnDirectionNeutral( x )      |Sets whether the monitor resets    |Boolean --     |``(0)``            |
+|                                                  |when the reverser is in the neutral|0 or 1         |                   |
+|                                                  |position                           |               |                   |
++--------------------------------------------------+-----------------------------------+---------------+-------------------+
+|MonitoringDeviceResetOnResetButton( x )           |Sets whether the monitor resets    |Boolean --     |``(0)``            |
+|                                                  |when the reset button is pushed    |0 or 1         |                   |
++--------------------------------------------------+-----------------------------------+---------------+-------------------+
+|MonitoringDeviceResetOnZeroSpeed( x )             |Set whether the monitor resets     |Boolean --     |``(1)``            |
+|                                                  |when the speed is null             |0 or 1         |                   |
++--------------------------------------------------+-----------------------------------+---------------+-------------------+
+|**Specific parameters of the Overspeed Monitor**                                                                          |
++--------------------------------------------------+-----------------------------------+---------------+-------------------+
+|MonitoringDeviceAlarmTimeBeforeOverSpeed( x )     |Period for which the alarm sounds  |Time           |``(2s)``           |
+|                                                  |prior to the penalty being applied |               |                   |
++--------------------------------------------------+-----------------------------------+---------------+-------------------+
+|MonitoringDeviceTriggerOnOverspeed( x )           |Maximum allowed speed              |Speed          |``(200kph)``       |
++--------------------------------------------------+-----------------------------------+---------------+-------------------+
+|MonitoringDeviceTriggerOnTrackOverspeed( x )      |Activates the overspeed margin     |Boolean --     |``(1)``            |
+|                                                  |control                            |0 or 1         |                   |
++--------------------------------------------------+-----------------------------------+---------------+-------------------+
+|MonitoringDeviceTriggerOnTrackOverspeedMargin( x )|Allowed overspeed                  |Speed          |``(5kph)``         |
++--------------------------------------------------+-----------------------------------+---------------+-------------------+
+
+Two other parameters in the Engine section of the ENG file are used by the TCS:
+
+- ``DoesBrakeCutPower( x )`` sets whether applying brake on the locomotive cuts the traction (1 for enabled, 0 for disabled)
+- ``BrakeCutsPowerAtBrakeCylinderPressure( x )`` sets the minimum pressure in the brake cylinder that cuts the traction (by default 4 PSI)
