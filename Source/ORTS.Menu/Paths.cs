@@ -1,17 +1,17 @@
 ﻿// COPYRIGHT 2012, 2013, 2014 by the Open Rails project.
-// 
+//
 // This file is part of Open Rails.
-// 
+//
 // Open Rails is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // Open Rails is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -24,7 +24,7 @@ using System;
 namespace ORTS.Menu
 {
     /// <summary>
-    /// Representation of the metadata of a path, where the path is coded in a .pat file. So not the full .pat file, 
+    /// Representation of the metadata of a path, where the path is coded in a .pat file. So not the full .pat file,
     /// but just basic information to be used in menus etc.
     /// </summary>
     public class Path
@@ -104,7 +104,25 @@ namespace ORTS.Menu
                     bool pathShouldBeIncluded = includeNonPlayerPaths || path.IsPlayerPath;
                     if (pathShouldBeIncluded)
                     {
-                        paths.Add(path);
+                        // Suppress the 7 broken paths shipped with MSTS
+                        //
+                        // MSTS ships with 7 unfinished paths, which cannot be used as they reference tracks that do not exist.
+                        // MSTS checks for "broken path" before running the simulator and doesn't offer them in the list.
+                        // ORTS checks for "broken path" when the simulator runs and does offer them in the list.
+                        // The first activity in Marias Pass is "Explore Longhale" which leads to a "Broken Path" message.
+                        // The message then confuses users new to ORTS who have just installed it along with MSTS,
+                        // see https://bugs.launchpad.net/or/+bug/1345172 and https://bugs.launchpad.net/or/+bug/128547
+                        if (!file.EndsWith(@"ROUTES\USA1\PATHS\aftstrm(traffic03).pat", StringComparison.OrdinalIgnoreCase)
+                            && !file.EndsWith(@"ROUTES\USA1\PATHS\aftstrmtraffic01.pat", StringComparison.OrdinalIgnoreCase)
+                            && !file.EndsWith(@"ROUTES\USA1\PATHS\aiphwne2.pat", StringComparison.OrdinalIgnoreCase)
+                            && !file.EndsWith(@"ROUTES\USA1\PATHS\aiwnphex.pat", StringComparison.OrdinalIgnoreCase)
+                            && !file.EndsWith(@"ROUTES\USA1\PATHS\blizzard(traffic).pat", StringComparison.OrdinalIgnoreCase)
+                            && !file.EndsWith(@"ROUTES\USA2\PATHS\longhale.pat", StringComparison.OrdinalIgnoreCase)
+                            && !file.EndsWith(@"ROUTES\USA2\PATHS\long-haul west (blizzard).pat", StringComparison.OrdinalIgnoreCase)
+                            )
+                        {
+                            paths.Add(path);
+                        }
                     }
                 }
             }
