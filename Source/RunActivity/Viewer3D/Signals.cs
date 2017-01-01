@@ -223,14 +223,19 @@ namespace Orts.Viewer3D
 
                 if (SignalTypeData.Semaphore)
                 {
-                    // Check if a reduction by one of the semaphore index is needed
-                    // first we check if there are only two animation steps
+                    // Check whether we have to correct the Semaphore position indexes following the strange rule of MSTS
+                    // Such strange rule is that, if there are only two animation steps in the related .s file, MSTS behaves as follows:
+                    // a SemaphorePos (2) in sigcfg.dat is executed as SemaphorePos (1)
+                    // a SemaphorePos (1) in sigcfg.dat is executed as SemaphorePos (0)
+                    // a SemaphorePos (0) in sigcfg.dat is executed as SemaphorePos (0)
+                    // First we check if there are only two animation steps
                     if (signalShape.SharedShape.Animations != null && signalShape.SharedShape.Animations.Count != 0 &&
                             signalShape.SharedShape.Animations[0].anim_nodes[MatrixIndices[0]].controllers.Count != 0 &&
                             signalShape.SharedShape.Animations[0].anim_nodes[MatrixIndices[0]].controllers[0].Count == 2)
                     {
 
-                        // OK, now we check if maximum index is 2
+                        // OK, now we check if maximum SemaphorePos is 2 (we won't correct if there are only SemaphorePos 1 and 0,
+                        // because they would both be executed as SemaphorePos (0) accordingly to above law, therefore leading to a static semaphore)
                         float maxIndex = float.MinValue;
                         foreach (SignalAspectData drAsp in SignalTypeData.DrawAspects.Values)
                         {
