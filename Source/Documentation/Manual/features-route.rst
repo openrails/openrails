@@ -324,7 +324,7 @@ Double wire
 
 OR provides an :ref:`experimental function that enables the upper wire <options-double-overhead-wires>` for 
 electrified routes. The optional parameter ``ortsdoublewireenabled`` in the ``.trk`` file of the route can
-force the activation or disactivation of the option overriding the user setting in the options panel.
+force the activation or deactivation of the option overriding the user setting in the options panel.
 
 In this example the upper wire is enabled overriding the user setting::
 
@@ -334,9 +334,9 @@ while in this one the upper wire is forced to be disabled::
 
   OrtsDoubleWireEnabled ( Off )
 
-Another parameter (``ortsdoublewireheight``) specifies the height of the upper wire relative to the contact wire,
+Another parameter (``ortsdoublewireheight``) specifies the height of the upper wire relative to the contact wire;
 if not specified the default is 1 meter.
-In this example the upper wire is 130cm over the main wire (as in most italian routes)::
+In this example the upper wire is 130cm above the main wire (as in most Italian routes)::
 
 
   include ( "../tures.trk" )
@@ -352,7 +352,7 @@ Triphase lines
 --------------
 
 The modern electric locos are powered by DC or monophase AC, but some years ago there were triphase AC powered locos.
-A triphase circuit needs tre wires (one for each phase, no wire is needed for neutral); in rails systems two wires 
+A triphase circuit needs three wires (one for each phase, no wire is needed for neutral); in rail systems two wires 
 are overhead and the third is made by the rails.
 
 OR can enable the second overhead wire with the parameter ``ortstriphaseenabled`` this way::
@@ -369,18 +369,18 @@ is not declared) of 1 meter.
 Loading screen
 ==============
 
-In the ``.trk`` file of the route can be used the parameter ``loadingscreen`` as in this example::
+In the ``.trk`` file of the route the parameter ``loadingscreen`` can be used as in this example::
 
 	LoadingScreen ( Load.ace )
 
 If in the main directory of the route there is a file with the same name but with extension ``.dds`` 
 and the :ref:`DDS texture support<options-dds-textures>` is enabled
-the last one is displayed instead of that with ``.ace`` extension.
-If the parameter is omitted then is loaded the file ``load.ace`` (like in MSTS) or ``load.dds`` 
+the latter is displayed instead of that with ``.ace`` extension.
+If the parameter is omitted then the file ``load.ace`` is loaded (as in MSTS) or ``load.dds`` 
 (if present and, again, the dds support is enabled).
 
-The loading screen image can have any resolution and aspect-ratio, it will be displayed letter-boxed
-in the screen keeping the aspect-ratio.
+The loading screen image can have any resolution and aspect ratio; it will be displayed letter-boxed
+on the screen keeping the aspect ratio.
 
 Another optional parameter ``ortsloadingscreenwide``, can specify the image to show when the user
 loads the route on a wide (16:9) screen. This parameter is ignored when a traditional 4:3 display is used.
