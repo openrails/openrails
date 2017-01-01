@@ -43,6 +43,8 @@ namespace Orts.Viewer3D
         readonly bool[] SubObjVisible;
         readonly List<SignalShapeHead> Heads = new List<SignalShapeHead>();
 
+        static bool SemaphoreReindexing = false;
+
         public SignalShape(Viewer viewer, SignalObj mstsSignal, string path, WorldPosition position, ShapeFlags flags)
             : base(viewer, path, position, flags)
         {
@@ -221,6 +223,43 @@ namespace Orts.Viewer3D
 
                 if (SignalTypeData.Semaphore)
                 {
+                    // Check if a reduction by one of the semaphore index is needed
+                    // first we check if there are only two animation steps
+                    if (signalShape.SharedShape.Animations != null && signalShape.SharedShape.Animations.Count != 0 &&
+                            signalShape.SharedShape.Animations[0].anim_nodes[MatrixIndices[0]].controllers.Count != 0 &&
+                            signalShape.SharedShape.Animations[0].anim_nodes[MatrixIndices[0]].controllers[0].Count == 2)
+                    {
+
+                        // OK, now we check if maximum index is 2
+                        float maxIndex = float.MinValue;
+                        foreach (SignalAspectData drAsp in SignalTypeData.DrawAspects.Values)
+                        {
+                            if (drAsp.SemaphorePos > maxIndex) maxIndex = drAsp.SemaphorePos;
+                        }
+                        if (maxIndex == 2)
+                        {
+                            // in this case we modify the SemaphorePositions for compatibility with MSTS.
+                            foreach (SignalAspectData drAsp in SignalTypeData.DrawAspects.Values)
+                            {
+                                switch ((int)drAsp.SemaphorePos)
+                                {
+                                    case 2:
+                                        drAsp.SemaphorePos = 1;
+                                        break;
+                                    case 1:
+                                        drAsp.SemaphorePos = 0;
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+                            if (!SignalShape.SemaphoreReindexing)
+                            {
+                                Trace.TraceInformation("Reindexing semaphore entries for compatibility with MSTS");
+                                SignalShape.SemaphoreReindexing = true;
+                            }
+                        }
+                    }
 
                     foreach (int mindex in MatrixIndices)
                     {
@@ -436,7 +475,7 @@ namespace Orts.Viewer3D
         {
             public readonly bool[] DrawLights;
             public readonly bool[] FlashLights;
-            public readonly float SemaphorePos;
+            public float SemaphorePos;
 
             public SignalAspectData(Orts.Formats.Msts.SignalType mstsSignalType, Orts.Formats.Msts.SignalDrawState drawStateData)
             {
