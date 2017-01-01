@@ -6,13 +6,12 @@ Please note the installation and use of Open Rails software is governed by the O
 INSTALLATION
 - you must have DirectX 9 installed & Direct x 9 Shader Model 2.0 capable video card, 256MB dedicated VRAM minimum; 512 MB dedicated VRAM recommended
 - you must have MSTS content installed (routes, trainset, global folders). You do not need the MSTS executable (train.exe)
-- you must have XNA 3.1 Redistributable installed  ( ORTS will warn you if its missing )( search www.microsoft.com to download) 
-	 or go to http://www.microsoft.com/downloads/details.aspx?FamilyID=53867a2a-e249-4560-8011-98eb3e799ef2&displaylang=en
+- you must have XNA 3.1 Redistributable installed  ( ORTS will warn you if it's missing )( search www.microsoft.com to download) 
+	 or go to http://www.microsoft.com/en-us/download/details.aspx?id=15163
 - unzip the installation package to a folder on your desktop or any convenient location
 - doubleclick on the OpenRails.EXE program
 
 GAME CONTROLS
-An Open Rails Keyboard Reference Guide can be found at:http://www.openrails.org/release.html
 
 CAMERA CONTROLS
 - move the camera with the arrow keys or
@@ -74,13 +73,11 @@ Ctlr+ the above two keys: = Adjust amount of cloud overcast
 Alt+P = Toggle between clear, rain and snow
 
 Multiplayer
-Choose "start as server" if you want to be the server. Client needs to know server IP and port, and can only start in the Explore mode or with activities without AI trains.
+Choose "start as server" if you want to be the server. Client needs to know server IP and port, and can 
+only start in the Explore mode or with activities without AI trains.
 
 GRAPHICS QUALITY
 Note that Open Rails isn't registered with NVidia or ATI so it will run with global settings by default.  
-For best image quality customize
-the graphics settings in your video card control panel. If you are
-setting up a program-specific custom setting, it's the RunActivity.exe program
-in the ORTS folder that you must select. 
-
-
+For best image quality customize the graphics settings in your video card control panel. If you are
+setting up a program-specific custom setting, it's the RunActivity.exe program in the ORTS folder that 
+you must select. 
