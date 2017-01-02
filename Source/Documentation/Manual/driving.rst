@@ -782,7 +782,7 @@ If more than one turntable is on view, the nearest one can be moved.
 The trainset (or trainsets) to be rotated must be completely on the turntable to start 
 rotation. Messages of type "Train front on turntable" and "train rear on turntable" 
 help stating that the train is fully on the rotating bridge.
-Before starting rotatin the train must be fully stopped, with reverser in neutral 
+Before starting rotating the train must be fully stopped, with reverser in neutral 
 position and zeroed throttle. Moreover, if in activity or timetable mode, the player 
 must first pass to :ref:`manual mode <operation-manual-mode>` pressing ``<Ctrl+M>``.
 At this point you can rotate the turntable clockwise with keys ``<Alt+C>``, and 
@@ -798,7 +798,7 @@ During rotation the train is in *Turntable* state (this can be seen in the
   :align: center
   
 It is also possible to rotate standalone wagons. They have to be pushed or pulled to 
-the turntable, the locomotive must exit the turntable and the the wagon can be rotated.
+the turntable, the locomotive must exit the turntable and the wagon can be rotated.
 It is suggested to read also :ref:`this paragraph <features-route-turntable-operation>` 
 to better understand what is possible with turntables.
 

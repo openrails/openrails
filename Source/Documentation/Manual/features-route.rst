@@ -73,12 +73,13 @@ To generate this file for other routes following has to be taken into account:
 - the first line must be blank
 - the number in the second line (2 in the above file) is the number of operating 
   turntables within the route
-- WFile is the name of the .w file where the platform is present
-- The number in the UiD line is the UiD number of the TrackObj () block within the .w      file related to the turntable
-- XOffset, YOffset abd ZOffset are the offsets of the center of rotation of the 
+- WFile is the name of the .w file where the turntable is present
+- The number in the UiD line is the UiD number of the TrackObj () block within the .w 
+  file related to the turntable
+- XOffset, YOffset and ZOffset are the offsets of the center of rotation of the 
   turntable with respect to the zero of the turntable shape 
 - TrackShapeIndex is the index of the TrackShape () block within tsection.dat that
-  refers to the turntable; pls. note that if a new TrackShape () block for the 
+  refers to the turntable; please note that if a new TrackShape () block for the 
   turntable is needed, it is not necessary to modify tsection.dat; it is possible to 
   proceed as described here
 - The Animation parameter is the name of the Matrix of the rotating part within the .s     file
@@ -87,8 +88,9 @@ To generate this file for other routes following has to be taken into account:
 The above file refers to turntables using the a1t27mturntable.s shape.
 
 The second file to be inserted within the route's Openrails subfolder is a small 
-integration .trk file that indicates the name of the .sms sound file to be associated to the turntable. For the route SICILIA 1 such file is therefore named ``SICILIA 1.trk``, like 
-its parent file. Here is the file contents.
+integration .trk file that indicates the name of the .sms sound file to be associated to the turntable. For 
+the route SICILIA 1 such file is therefore named ``SICILIA 1.trk``, like its parent file.
+Here is the file content.
 
 SICILIA 1.trk::
 
@@ -99,8 +101,10 @@ SICILIA 1.trk::
 The first line must be blank. 
 
 File ``a1t27mturntable.s`` must be modified to add the animation data, as MSTS has provided 
-it as a static file. To do this, uncompress it with Route Riter or Shapefilemanager and insert just above the last parenthesis the contents of file ``a1t27mturntable_animations.zip``.
-If other .s files have to be used for turntables, or new ones have to be developed, it must be considered that the rotation animation should be as follows::
+it as a static file. To do this, uncompress it with Route Riter or Shapefilemanager and insert just above 
+the last parenthesis the contents of file ``a1t27mturntable_animations.zip``.
+If other .s files have to be used for turntables, or new ones have to be developed, it must be considered that 
+the rotation animation should be as follows::
 
 		animation ( 3599 30
 			anim_nodes ( ..
@@ -138,7 +142,17 @@ The above names of the anim_nodes are of course free choice.
 The animation rotation direction as defined above must be counterclockwise.
 
 Within the base Sound folder (not the one of the route) the .sms file 
-``turntablesSOUND.zip`` has to be added to provide sound when the turntable rotates. It uses the two default MSTS .wav files for the sound. They have a bit a low volume. It is open to everyone to improve such files. Discrete trigger 1 is triggered when the turntable starts turning empty, discrete trigger 2 is triggered when the turntable starts turning with train on board, and discrete trigger 3 is triggered when rotation stops.
+``turntablesSOUND.zip`` has to be added to provide sound when the turntable rotates. It uses the two default 
+MSTS .wav files for the sound. They have a bit a low volume. It is open to everyone to improve such files. 
+Discrete trigger 1 is triggered when the turntable starts turning empty, discrete trigger 2 is triggered when 
+the turntable starts turning with train on board, and discrete trigger 3 is triggered when rotation stops.
+
+To help generating the tsection.dat entries for new turntable types a rough ``.xls`` 
+spreadsheet (turntable_sectionidxs.xls) can be found in ``Documentation\SampleFiles\Manual``.
+It computes the X, Z and degree parameters to be inserted in the SectionIdx lines of the 
+TrackShape block within the tsection.dat file. You only have to insert the diameter of 
+the turntable and the degree step. Of course you have to take only the lines up to the 
+one preceding the one with degrees = 180.
 
 Already many existing turntables have been successfully animated and many new other
 have been created. More can be read `in this forum thread <http://www.elvastower.com/forums/index.php?/topic/28591-operational-turntable/>`_ .
@@ -153,12 +167,12 @@ a reversal point few meters after the end of the turntable, it is possible to us
 turntable in activity mode. The player will drive the consist into the turntable and 
 stop it. At that point the reversal point will have effect and will logically lay the 
 consist in the return subpath. The player will put the consist in manual mode, rotate 
-the platform by 180 degrees and return to auto mode. At this point the consist will be 
+the turntable by 180 degrees and return to auto mode. At this point the consist will be 
 again on the activity path.
 If instead the player wants the consist to exit to other tracks, he must drive the 
-consist in manual mode out of the platform. If he later wants to drive back the consist 
+consist in manual mode out of the turntable. If he later wants to drive back the consist 
 into the turntable and rotate the train so that it exits the turntable on the track 
-where it initially entered the platform, he can pass back the train to auto mode after 
+where it initially entered the turntable, he can pass back the train to auto mode after 
 rotation, provided the path is built as defined above.
 By using the feature to change :ref:`player train <driving-trainlist>` it is possible 
 also to move in and out any locomotive on any track of e.g. a roundhouse. 
@@ -384,6 +398,26 @@ on the screen keeping the aspect ratio.
 
 Another optional parameter ``ortsloadingscreenwide``, can specify the image to show when the user
 loads the route on a wide (16:9) screen. This parameter is ignored when a traditional 4:3 display is used.
+
+
+MSTS-Compatible semaphore indexing
+==================================
+
+When a signal shape has a semaphore (moving part), and its animation definition within the 
+.s file has only two lines (e.g ``slerp_rot`` lines), MSTS interprets the ``SemaphorePos()`` lines within ``sigcfg.dat`` accordingly to following rule::
+
+- SemaphorePos (2) is executed as SemaphorePos (1)
+- SemaphorePos (1) is executed as SemaphorePos (0)
+- SemaphorePos (0) is executed as SemaphorePos (0).
+
+Open Rails follows this rule, in case one of the SemaphorePos lines has 2 as parameter. 
+It does not follow this rule in case only 1 and 0 as parameters are present, because in 
+such a case following the above rule they would be both executed as SemaphorePos (0) and 
+therefore the semaphore would be static.
+
+It is however strongly recommended to always have three animation lines within the .s file, 
+where usually the third line repeats the parameters of the first line (except for the 
+animation step).
 
 
 
