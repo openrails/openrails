@@ -1436,10 +1436,10 @@ time of the throttle value and of the power of the player locomotive (the
 one where the active cab resides).
 
 .. image:: images/driving-hud-locomotive-graphs.png
-
-.. _driving-hud-brake:
     :align: center
     :scale: 80%
+
+.. _driving-hud-brake:
 
 Extended HUD for Brake Information
 ----------------------------------

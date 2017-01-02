@@ -173,7 +173,9 @@ if "%1" == "latex" (
 if "%1" == "latexpdf" (
 	%SPHINXBUILD% -b latex %ALLSPHINXOPTS% %BUILDDIR%/latex
 	cd %BUILDDIR%/latex
+	REM Run pdflatex twice so that the Table of Contents is correct.
     for %%t in (*.tex) do pdflatex %%t
+	for %%t in (*.tex) do pdflatex %%t
 	cd %~dp0
 	echo.
 	echo.Build finished; the PDF files are in %BUILDDIR%/latex.

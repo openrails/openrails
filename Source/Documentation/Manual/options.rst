@@ -662,7 +662,7 @@ meet.
 .. admonition:: For content developers
 
     A more detailed description of this feature can be 
-    found under :ref:`Location-Linked Passing Path Processing operation-locationpath>`
+    found under :ref:`Location-Linked Passing Path Processing <operation-locationpath>`
     in the chapter  *Open Rails Train Operation*.
 
 MSTS Environments
