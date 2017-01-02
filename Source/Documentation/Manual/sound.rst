@@ -50,7 +50,7 @@ play at the correct speed, a frequency curve halving the speed has to be
 inserted. OR behaves the same as MSTS in this case.
 
 Discrete Triggers
-=================
+-----------------
 
 Unlike MSTS, OR does not restrict the operation of some discrete triggers 
 related to locomotives to the cabview related .sms file (usually named 
@@ -96,7 +96,7 @@ Trigger       Function
     41        FireboxDoorClose
     42        SteamSafetyValveOn
     43        SteamSafetyValveOff
-    44        SteamHeatChange (currently not managed)
+    44        SteamHeatChange
     45        Pantograph1Up
     46        Pantograph1Down
     47        Pantograph1Toggle
@@ -132,52 +132,92 @@ OR manages the following set of new discrete triggers that were not present
 under MSTS. If MSTS (or MSTSbin) executes an .sms where such discrete 
 triggers are used, it simply ignores the related statements.
 
-- triggers 101 - GearUp and 102 - GearDown for gear-based engines; they are 
-  triggered by the ``<E>`` and ``<Shift+E>`` keys respectively, and they 
-  are propagated to all gear-based diesel engines of a train and run also for 
-  AI trains
-- triggers 103 - ReverserToForwardBackward and 104 - ReverserToNeutral (valid 
-  for all locomotive types); this couple of triggers allows to distinguish if 
-  the reverser is moved towards an active or towards a neutral position, which 
-  is not possible under MSTS
-- triggers 105 - DoorOpen and 106 - DoorClose (valid for all locomotive 
-  types); they are triggered by the ``<Q>`` and ``<Shift+Q>`` keys and are 
-  propagated to the wagons of the consist (that is also the .sms files of 
-  the wagons can refer to these triggers)
-- triggers 107 - MirrorOpen and 108 - MirrorClose (valid for all locomotive 
-  types); they are triggered by the ``<Shift+Q>`` key.
+In addition, OpenRails extends triggers 23 and 24 (electric locomotive power 
+on/power off), that were introduced by MSTSbin, to diesel engines. Keys 
+``<Shift+Y>`` (for diesel player engine) and ``<Ctrl+Y>`` (for diesel 
+helpers), apart from physically powering on and off the diesel engines, 
+trigger the above triggers.
+
+=========     ==============================================================================================================================================================
+Trigger       Function
+=========     ==============================================================================================================================================================
+101           GearUp : for gear-based engines, triggered by the ``<E>`` key, propagated to all gear-based diesel engines of a train and run also for AI trains
+102           GearDown : for gear-based engines, triggered by the ``<Shift+E>`` key, propagated to all gear-based diesel engines of a train and run also for AI trains
+103           ReverserToForwardBackward : reverser moved towards the forward or backward position
+104           ReverserToNeutral : reverser moved towards the neutral position
+105           DoorOpen : triggered by the ``<Q>`` and ``<Shift+Q>`` keys and propagated to the wagons of the consist
+106           DoorClose : triggered by the ``<Q>`` and ``<Shift+Q>`` keys and propagated to the wagons of the consist
+107           MirrorOpen : triggered by the ``<Shift+Q>`` key
+108           MirrorClose : triggered by the ``<Shift+Q>`` key
+=========     ==============================================================================================================================================================
 
 Triggers from 109 to 118 are used for TCS scripting, as follows:
 
-- triggers 109 and 110: TrainControlSystemInfo1 and -Info2
-- triggers 111 and 112: TrainControlSystemActivate and -Deactivate
-- triggers 113 and 114: TrainControlSystemPenalty1 and -Penalty2
-- triggers 115 and 116: TrainControlSystemWarning1 and -Warning2
-- triggers 117 and 118: TrainControlSystemAlert1 and -Alert2.
+=========     ============================
+Trigger       Function
+=========     ============================
+109           TrainControlSystemInfo1
+110           TrainControlSystemInfo2
+111           TrainControlSystemActivate
+112           TrainControlSystemDeactivate
+113           TrainControlSystemPenalty1
+114           TrainControlSystemPenalty2
+115           TrainControlSystemWarning1
+116           TrainControlSystemWarning2
+117           TrainControlSystemAlert1
+118           TrainControlSystemAlert2
+=========     ============================
 
 Triggers from 121 to 136 are used to synchronize steam locomotive chuffs with 
 wheel rotation. The sixteen triggers are divided into two wheel rotations. 
 Therefore every trigger is separated from the preceding one by a rotation 
 angle of 45 degrees.
 
-- triggers 137 -- CylinderCocksOpen and 138 -- CylinderCocksClose (valid for 
-  steam locomotive) triggered when cylinder cocks are opened or closed
-- trigger  139 -- TrainBrakePressureStoppedChanging (valid for all rolling 
-  stock equipped with train brakes) to supplement triggers 14 and 54, and make 
-  looped brake sounds possible
-- trigger  140 -- EngineBrakePressureStoppedChanging (valid for locomotives 
-  with engine/independent brakes) to supplement triggers 21 and 22, and make 
-  looped brake sounds possible
-- triggers 141 -- BrakePipePressureIncrease and 142 -- 
-  BrakePipePressureDecrease and 143 -- BrakePipePressureStoppedChanging (valid 
-  for rolling stock equipped with train brakes) triggered by brake 
-  pipe/brakeline pressure changes
+Triggers 137 and 138 are used for the cylinder cocks of steam locomotives:
 
-In addition, OpenRails extends triggers 23 and 24 (electric locomotive power 
-on/power off), that were introduced by MSTSbin, to diesel engines. Keys 
-``<Shift+Y>`` (for diesel player engine) and ``<Ctrl+Y>`` (for diesel 
-helpers), apart from physically powering on and off the diesel engines, 
-trigger the above triggers.
+=========     =============================================================
+Trigger       Function
+=========     =============================================================
+137           CylinderCocksOpen : triggered when cylinder cocks are opened
+138           CylinderCocksClose : triggered when cylinder cocks are closed
+=========     =============================================================
+
+Triggers from 139 to 143 can be used to make looped brake sounds:
+
+=========     ============================================================================================================================================================================
+Trigger       Function
+=========     ============================================================================================================================================================================
+139           TrainBrakePressureStoppedChanging : for rolling stock equipped with train brakes, to use with triggers 14 and 54, triggered when the automatic brake pressure stops changing
+140           EngineBrakePressureStoppedChanging : for locomotives with engine/independent brakes, to use with triggers 21 and 22, triggered when the engine brake pressure stops changing
+141           BrakePipePressureIncrease : for rolling stock equipped with train brakes, triggered when brake pipe/brakeline pressure increases
+142           BrakePipePressureDecrease : for rolling stock equipped with train brakes, triggered when brake pipe/brakeline pressure decreases
+143           BrakePipePressureStoppedChanging : for rolling stock equipped with train brakes, triggered when brake pipe/brakeline pressure stops changing
+=========     ============================================================================================================================================================================
+
+Triggers from 150 to 158 are used for the circuit breaker sounds.
+
+The following triggers are activated when the state of the circuit breaker changes:
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+150           CircuitBreakerOpen
+151           CircuitBreakerClosing
+152           CircuitBreakerClosed
+=========     =====================================
+
+The following triggers are activated when the driver moves the buttons or switches in the cab:
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+153           CircuitBreakerClosingOrderOn
+154           CircuitBreakerClosingOrderOff
+155           CircuitBreakerOpeningOrderOn
+156           CircuitBreakerOpeningOrderOff
+157           CircuitBreakerClosingAuthorizationOn
+158           CircuitBreakerClosingAuthorizationOff
+=========     =====================================
 
 Variable Triggers
 -----------------
