@@ -43,8 +43,6 @@ namespace Orts.Viewer3D
         readonly bool[] SubObjVisible;
         readonly List<SignalShapeHead> Heads = new List<SignalShapeHead>();
 
-        static bool SemaphoreReindexing = false;
-
         public SignalShape(Viewer viewer, SignalObj mstsSignal, string path, WorldPosition position, ShapeFlags flags)
             : base(viewer, path, position, flags)
         {
@@ -258,10 +256,10 @@ namespace Orts.Viewer3D
                                         break;
                                 }
                             }
-                            if (!SignalShape.SemaphoreReindexing)
+                            if (!SignalTypeData.AreSemaphoresReindexed)
                             {
-                                Trace.TraceInformation("Reindexing semaphore entries for compatibility with MSTS");
-                                SignalShape.SemaphoreReindexing = true;
+                                Trace.TraceInformation("Reindexing semaphore entries of signal type {0} for compatibility with MSTS", mstsSignalType.Name);
+                                SignalTypeData.AreSemaphoresReindexed = true;
                             }
                         }
                     }
@@ -410,6 +408,7 @@ namespace Orts.Viewer3D
             public readonly float FlashTimeTotal;
             public readonly bool Semaphore;
             public readonly float SemaphoreAnimationTime;
+            public bool AreSemaphoresReindexed;
 
             public SignalTypeData(Viewer viewer, Orts.Formats.Msts.SignalType mstsSignalType)
             {
