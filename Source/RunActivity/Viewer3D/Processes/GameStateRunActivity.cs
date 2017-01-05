@@ -382,16 +382,24 @@ namespace Orts.Viewer3D.Processes
                 }
                 catch (Exception error)
                 {
-                    if (saveRevision > settings.YoungestFailedToRestore)
+                    if (versionOrBuild == VersionInfo.VersionOrBuild)
                     {
-                        settings.YoungestFailedToRestore = saveRevision;
-                        settings.Save("YoungestFailedToRestore");
-                        Trace.TraceInformation("YoungestFailedToRestore set to Save's revision: {0}", saveRevision);
-                    }
-                    // Rethrow the existing error if it is already an IncompatibleSaveException.
-                    if (error is IncompatibleSaveException)
+                        // If the save version is the same as the program version, we can't be an incompatible save - it's just a bug.
                         throw error;
-                    throw new IncompatibleSaveException(saveFile, versionOrBuild, error);
+                    }
+                    else
+                    {
+                        if (saveRevision > settings.YoungestFailedToRestore)
+                        {
+                            settings.YoungestFailedToRestore = saveRevision;
+                            settings.Save("YoungestFailedToRestore");
+                            Trace.TraceInformation("YoungestFailedToRestore set to Save's revision: {0}", saveRevision);
+                        }
+                        // Rethrow the existing error if it is already an IncompatibleSaveException.
+                        if (error is IncompatibleSaveException)
+                            throw error;
+                        throw new IncompatibleSaveException(saveFile, versionOrBuild, error);
+                    }
                 }
 
                 // Reload the command log
@@ -1134,11 +1142,11 @@ namespace Orts.Viewer3D.Processes
             {
                 var dd = (float)Material.Texture.Width / 2;
                 return new[] {
-				    new VertexPositionTexture(new Vector3(-dd - 0.5f, +dd + 0.5f, -3), new Vector2(0, 0)),
-				    new VertexPositionTexture(new Vector3(+dd - 0.5f, +dd + 0.5f, -3), new Vector2(1, 0)),
-				    new VertexPositionTexture(new Vector3(-dd - 0.5f, -dd + 0.5f, -3), new Vector2(0, 1)),
-				    new VertexPositionTexture(new Vector3(+dd - 0.5f, -dd + 0.5f, -3), new Vector2(1, 1)),
-			    };
+                    new VertexPositionTexture(new Vector3(-dd - 0.5f, +dd + 0.5f, -3), new Vector2(0, 0)),
+                    new VertexPositionTexture(new Vector3(+dd - 0.5f, +dd + 0.5f, -3), new Vector2(1, 0)),
+                    new VertexPositionTexture(new Vector3(-dd - 0.5f, -dd + 0.5f, -3), new Vector2(0, 1)),
+                    new VertexPositionTexture(new Vector3(+dd - 0.5f, -dd + 0.5f, -3), new Vector2(1, 1)),
+                };
             }
             
             public override void Draw(GraphicsDevice graphicsDevice)
@@ -1180,11 +1188,11 @@ namespace Orts.Viewer3D.Processes
                     h = h * scale / 2;
                 }
                 return new[] {
-				    new VertexPositionTexture(new Vector3(-w - 0.5f, +h + 0.5f, -2), new Vector2(0, 0)),
-				    new VertexPositionTexture(new Vector3(+w - 0.5f, +h + 0.5f, -2), new Vector2(1, 0)),
-				    new VertexPositionTexture(new Vector3(-w - 0.5f, -h + 0.5f, -2), new Vector2(0, 1)),
-				    new VertexPositionTexture(new Vector3(+w - 0.5f, -h + 0.5f, -2), new Vector2(1, 1)),
-			    };
+                    new VertexPositionTexture(new Vector3(-w - 0.5f, +h + 0.5f, -2), new Vector2(0, 0)),
+                    new VertexPositionTexture(new Vector3(+w - 0.5f, +h + 0.5f, -2), new Vector2(1, 0)),
+                    new VertexPositionTexture(new Vector3(-w - 0.5f, -h + 0.5f, -2), new Vector2(0, 1)),
+                    new VertexPositionTexture(new Vector3(+w - 0.5f, -h + 0.5f, -2), new Vector2(1, 1)),
+                };
             }
         }
 
@@ -1207,11 +1215,11 @@ namespace Orts.Viewer3D.Processes
                 var x = -w / 2 - 0.5f;
                 var y = game.RenderProcess.DisplaySize.Y / 2 - h - 0.5f;
                 return new[] {
-				    new VertexPositionTexture(new Vector3(x + 0, -y - 0, -1), new Vector2(0, 0)),
-				    new VertexPositionTexture(new Vector3(x + w, -y - 0, -1), new Vector2(1, 0)),
-				    new VertexPositionTexture(new Vector3(x + 0, -y - h, -1), new Vector2(0, 1)),
-				    new VertexPositionTexture(new Vector3(x + w, -y - h, -1), new Vector2(1, 1)),
-			    };
+                    new VertexPositionTexture(new Vector3(x + 0, -y - 0, -1), new Vector2(0, 0)),
+                    new VertexPositionTexture(new Vector3(x + w, -y - 0, -1), new Vector2(1, 0)),
+                    new VertexPositionTexture(new Vector3(x + 0, -y - h, -1), new Vector2(0, 1)),
+                    new VertexPositionTexture(new Vector3(x + w, -y - h, -1), new Vector2(1, 1)),
+                };
             }
         }
 
