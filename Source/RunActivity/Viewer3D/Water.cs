@@ -178,7 +178,7 @@ namespace Orts.Viewer3D
         public WaterMaterial(Viewer viewer, string waterTexturePath)
             : base(viewer, waterTexturePath)
         {
-            WaterTexture = Viewer.TextureManager.Get(waterTexturePath);
+            WaterTexture = Viewer.TextureManager.Get(waterTexturePath, true);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)

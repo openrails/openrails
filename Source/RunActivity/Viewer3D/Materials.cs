@@ -46,12 +46,12 @@ namespace Orts.Viewer3D
             GraphicsDevice = graphicsDevice;
         }
 
-        public Texture2D Get(string path)
+        public Texture2D Get(string path, bool required = false)
         {
-            return (Get(path, SharedMaterialManager.MissingTexture));
+            return (Get(path, SharedMaterialManager.MissingTexture, required));
         }
 
-        public Texture2D Get(string path, Texture2D defaultTexture)
+        public Texture2D Get(string path, Texture2D defaultTexture, bool required = false)
         {
             if (Thread.CurrentThread.Name != "Loader Process")
                 Trace.TraceError("SharedTextureManager.Get incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
@@ -82,7 +82,11 @@ namespace Orts.Viewer3D
                             texture = Orts.Formats.Msts.AceFile.Texture2DFromFile(GraphicsDevice, path);
                         }
                         else
+                        {
+                            if (required) 
+                                Trace.TraceWarning("Missing texture {0} replaced with default texture", path);
                             return defaultTexture;
+                        }
                     }
                     else
                         return defaultTexture;
@@ -637,7 +641,7 @@ namespace Orts.Viewer3D
             Options = options;
             MipMapBias = mipMapBias;
             TexturePath = texturePath;
-            Texture = Viewer.TextureManager.Get(texturePath);
+            Texture = Viewer.TextureManager.Get(texturePath, true);
             if (!String.IsNullOrEmpty(texturePath) && (Options & SceneryMaterialOptions.NightTexture) != 0 && !viewer.DontLoadNightTextures)
             {
                 var nightTexturePath = Helpers.GetNightTextureFile(Viewer.Simulator, texturePath);

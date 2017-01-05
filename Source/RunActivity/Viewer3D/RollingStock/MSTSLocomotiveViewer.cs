@@ -696,7 +696,7 @@ namespace Orts.Viewer3D.RollingStock
             if (DayTextures.Keys.Contains(FileName))
                 return;
 
-            DayTextures.Add(FileName, viewer.TextureManager.Get(FileName));
+            DayTextures.Add(FileName, viewer.TextureManager.Get(FileName, true));
 
             var nightpath = Path.Combine(Path.Combine(Path.GetDirectoryName(FileName), "night"), Path.GetFileName(FileName));
             NightTextures.Add(FileName, viewer.TextureManager.Get(nightpath));
