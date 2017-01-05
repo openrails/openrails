@@ -157,7 +157,7 @@ namespace Orts.Viewer3D
         public TransferMaterial(Viewer viewer, string textureName)
             : base(viewer, textureName)
         {
-            Texture = Viewer.TextureManager.Get(textureName);
+            Texture = Viewer.TextureManager.Get(textureName, true);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)

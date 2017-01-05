@@ -460,7 +460,7 @@ namespace Orts.Viewer3D
         public ParticleEmitterMaterial(Viewer viewer, string textureName)
             : base(viewer, null)
         {
-            Texture = viewer.TextureManager.Get(textureName);
+            Texture = viewer.TextureManager.Get(textureName, true);
             ShaderPasses = Viewer.MaterialManager.ParticleEmitterShader.Techniques["ParticleEmitterTechnique"].Passes.GetEnumerator();
         }
 

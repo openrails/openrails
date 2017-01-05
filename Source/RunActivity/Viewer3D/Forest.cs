@@ -375,7 +375,7 @@ namespace Orts.Viewer3D
         public ForestMaterial(Viewer viewer, string treeTexture)
             : base(viewer, treeTexture)
         {
-            TreeTexture = Viewer.TextureManager.Get(treeTexture);
+            TreeTexture = Viewer.TextureManager.Get(treeTexture, true);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
