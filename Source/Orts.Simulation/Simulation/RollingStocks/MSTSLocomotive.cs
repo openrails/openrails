@@ -223,6 +223,7 @@ namespace Orts.Simulation.RollingStocks
 
         protected bool DynamicBrakeBlended; // dynamic brake blending is currently active
         protected bool DynamicBrakeBlendingEnabled; // dynamic brake blending is configured
+        protected bool DynamicBrakeAvailable; // dynamic brake is available
         AirSinglePipe airPipeSystem;
         protected double DynamicBrakeCommandStartTime;
         protected bool DynamicBrakeBlendingOverride; // true when DB lever >0% should always override the blending. When false, the bigger command is applied.
@@ -716,12 +717,19 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(brakesenginecontrollers":
                     foreach (var brakesenginecontrollers in stf.ReadStringBlock("").ToLower().Replace(" ", "").Split(','))
                     {
-                        switch (brakesenginecontrollers)
+                        if (EngineType == EngineTypes.Electric || EngineType == EngineTypes.Diesel)
                         {
-                            case "blended":
-                                if (EngineType == EngineTypes.Electric || EngineType == EngineTypes.Diesel)
+                            switch (brakesenginecontrollers)
+                            {
+                                case "blended":                              
                                     DynamicBrakeBlendingEnabled = true;
-                                break;
+                                    break;
+                                case "dynamic":
+                                    DynamicBrakeAvailable = true;
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
                     }
                     break;
@@ -1105,6 +1113,7 @@ namespace Orts.Simulation.RollingStocks
                     DynamicBrakeForceN = 0f;
                 }
             }
+//            else if (DynamicBrakePercent == -1) DynamicBrakeForceN = 0;
 
             UpdateFrictionCoefficient(elapsedClockSeconds); // Find the current coefficient of friction depending upon the weather
 
@@ -1315,7 +1324,7 @@ namespace Orts.Simulation.RollingStocks
             if (DynamicBrakeController != null && DynamicBrakeController.CommandStartTime > DynamicBrakeCommandStartTime) // use the latest command time
                 DynamicBrakeCommandStartTime = DynamicBrakeController.CommandStartTime;
 
-            if ((DynamicBrakeController != null || DynamicBrakeBlendingEnabled) && (DynamicBrakePercent >= 0 || IsLeadLocomotive() && DynamicBrakeIntervention >= 0))
+            if ((DynamicBrakeController != null || DynamicBrakeBlendingEnabled || DynamicBrakeAvailable) && (DynamicBrakePercent >= 0 || IsLeadLocomotive() && DynamicBrakeIntervention >= 0))
             {
                 if (!DynamicBrake)
                 {
@@ -1345,7 +1354,7 @@ namespace Orts.Simulation.RollingStocks
                 else if (DynamicBrakeController != null)
                     DynamicBrakeController.Update(elapsedClockSeconds);
             }
-            else if ((DynamicBrakeController != null || DynamicBrakeBlendingEnabled) && DynamicBrakePercent < 0 && (DynamicBrakeIntervention < 0 || !IsLeadLocomotive()) && DynamicBrake)
+            else if ((DynamicBrakeController != null || DynamicBrakeBlendingEnabled || DynamicBrakeAvailable) && DynamicBrakePercent < 0 && (DynamicBrakeIntervention < 0 || !IsLeadLocomotive()) && DynamicBrake)
             {
                 // <CScomment> accordingly to shown documentation dynamic brake delay is required only when engaging
                 //           if (DynamicBrakeController.CommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)
