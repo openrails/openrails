@@ -274,11 +274,11 @@ namespace ORTS
                 TimetableSetLoader.Cancel();
 
             // Remove any deleted saves
-			if (Directory.Exists(UserSettings.DeletedSaveFolder))
-				Directory.Delete(UserSettings.DeletedSaveFolder, true);   // true removes all contents as well as folder
+            if (Directory.Exists(UserSettings.DeletedSaveFolder))
+                Directory.Delete(UserSettings.DeletedSaveFolder, true);   // true removes all contents as well as folder
 
             // Tidy up after versions which used SAVE.BIN
-			var file = UserSettings.UserDataFolder + @"\SAVE.BIN";
+            var file = UserSettings.UserDataFolder + @"\SAVE.BIN";
             if (File.Exists(file))
                 File.Delete(file);
         }
@@ -402,6 +402,7 @@ namespace ORTS
         void comboBoxHeadTo_SelectedIndexChanged(object sender, EventArgs e)
         {
             UpdateExploreActivity();
+            ShowDetails();
         }
         #endregion
 
@@ -1059,6 +1060,13 @@ namespace ORTS
                 {
                     ShowDetail(catalog.GetStringFmt("Activity: {0}", SelectedActivity.Name), SelectedActivity.Description.Split('\n'));
                     ShowDetail(catalog.GetString("Activity Briefing"), SelectedActivity.Briefing.Split('\n'));
+                }
+                else if (SelectedPath != null)
+                {
+                    ShowDetail(catalog.GetStringFmt("Path: {0}", SelectedPath.Name), new[] {
+                        catalog.GetStringFmt("From: {0}", SelectedPath.Start),
+                        catalog.GetStringFmt("To: {0}", SelectedPath.End)
+                    });
                 }
             }
             if (radioButtonModeTimetable.Checked)
