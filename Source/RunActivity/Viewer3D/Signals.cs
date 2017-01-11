@@ -227,7 +227,7 @@ namespace Orts.Viewer3D
                     // a SemaphorePos (1) in sigcfg.dat is executed as SemaphorePos (0)
                     // a SemaphorePos (0) in sigcfg.dat is executed as SemaphorePos (0)
                     // First we check if there are only two animation steps
-                    if (signalShape.SharedShape.Animations != null && signalShape.SharedShape.Animations.Count != 0 &&
+                    if (signalShape.SharedShape.Animations != null && signalShape.SharedShape.Animations.Count != 0 && MatrixIndices.Count > 0 &&
                             signalShape.SharedShape.Animations[0].anim_nodes[MatrixIndices[0]].controllers.Count != 0 &&
                             signalShape.SharedShape.Animations[0].anim_nodes[MatrixIndices[0]].controllers[0].Count == 2)
                     {
