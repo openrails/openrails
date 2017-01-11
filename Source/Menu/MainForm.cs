@@ -1064,8 +1064,8 @@ namespace ORTS
                 else if (SelectedPath != null)
                 {
                     ShowDetail(catalog.GetStringFmt("Path: {0}", SelectedPath.Name), new[] {
-                        catalog.GetStringFmt("From: {0}", SelectedPath.Start),
-                        catalog.GetStringFmt("To: {0}", SelectedPath.End)
+                        catalog.GetStringFmt("Starting at: {0}", SelectedPath.Start),
+                        catalog.GetStringFmt("Heading to: {0}", SelectedPath.End)
                     });
                 }
             }
