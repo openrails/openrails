@@ -12157,7 +12157,8 @@ namespace Orts.Simulation.Physics
         private void AddSwitch_MilepostInfo(ref TrainInfo thisInfo, int routeDirection)
         {
             // run along forward path to catch all diverging switches and mileposts
-
+            var prevMilepostValue = -1f;
+            var prevMilepostDistance = -1f;
             if (ValidRoute[routeDirection] != null)
             {
                 TrainObjectItem thisItem;
@@ -12202,9 +12203,11 @@ namespace Orts.Simulation.Physics
                                 Milepost thisMilepost = thisMilepostItem.MilepostRef;
                                 distanceToTrainM = sectionStart + thisMilepostItem.MilepostLocation[sectionDirection == 1 ? 0 : 1];
 
-                                if (distanceToTrainM > 0 && distanceToTrainM < 7000)
+                                if (!(distanceToTrainM - prevMilepostDistance < 50 && thisMilepost.MilepostValue == prevMilepostValue) && distanceToTrainM > 0 && distanceToTrainM < 7000)
                                 {
                                     thisItem = new TrainObjectItem(thisMilepost.MilepostValue.ToString(), distanceToTrainM);
+                                    prevMilepostDistance = distanceToTrainM;
+                                    prevMilepostValue = thisMilepost.MilepostValue;
                                     if (routeDirection == 0) thisInfo.ObjectInfoForward.Add(thisItem);
                                     else thisInfo.ObjectInfoBackward.Add(thisItem);
                                 }
