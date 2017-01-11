@@ -693,11 +693,12 @@ namespace Orts.Simulation
                     }
                 }
             }
-            if (trainIndex != -1 && TrainsOnTurntable[trainIndex].FrontOnBoard && TrainsOnTurntable[trainIndex].BackOnBoard && train.SpeedMpS <= 0.1f && Simulator.ActivityRun != null &&
-                train.ControlMode != Train.TRAIN_CONTROL.MANUAL &&
+            if (Simulator.ActivityRun != null && !train.IsPathless && train.TrainType != Train.TRAINTYPE.STATIC && trainIndex != -1 && 
+                TrainsOnTurntable[trainIndex].FrontOnBoard && TrainsOnTurntable[trainIndex].BackOnBoard && train.SpeedMpS <= 0.1f && train.ControlMode != Train.TRAIN_CONTROL.MANUAL &&
                 train.TCRoute.activeSubpath == train.TCRoute.TCRouteSubpaths.Count - 1 && train.TCRoute.TCRouteSubpaths[train.TCRoute.activeSubpath].Count > 1 &&
                 ( train.PresentPosition[0].RouteListIndex == train.TCRoute.TCRouteSubpaths[train.TCRoute.activeSubpath].Count - 2 ||
                 train.PresentPosition[1].RouteListIndex == train.TCRoute.TCRouteSubpaths[train.TCRoute.activeSubpath].Count - 2))
+                // Activity mode, train with path is at end of it and is being rotated on the turntable
             {
                 train.IsPathless = true;
             }
