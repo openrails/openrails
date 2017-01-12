@@ -113,7 +113,7 @@ namespace Orts.Viewer3D.Popups
             vbox.AddHorizontalSeparator();
             {
                 var hbox = vbox.AddLayoutHorizontalLineOfText();
-                hbox.Add(new Label(hbox.RemainingWidth, hbox.RemainingHeight, Viewer.Catalog.GetString(" Milepost   Speed     Dist")));
+                hbox.Add(new Label(hbox.RemainingWidth, hbox.RemainingHeight, Viewer.Catalog.GetString(" Milepost   Limit     Dist")));
             }
             vbox.AddHorizontalSeparator();
             vbox.Add(Monitor = new TrackMonitor(vbox.RemainingWidth, vbox.RemainingHeight, Owner));
@@ -599,6 +599,7 @@ namespace Orts.Viewer3D.Popups
         {
             var signalShown = false;
             var firstLabelShown = false;
+            var borderSignalShown = false;
 
             foreach (var thisItem in itemList)
             {
@@ -609,7 +610,7 @@ namespace Orts.Viewer3D.Popups
                         break;
 
                     case Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL:
-                        lastLabelPosition = drawSignal(spriteBatch, offset, startObjectArea, endObjectArea, zeroPoint, maxDistance, distanceFactor, firstLabelPosition, forward, lastLabelPosition, thisItem, ref signalShown, ref firstLabelShown);
+                        lastLabelPosition = drawSignalForward(spriteBatch, offset, startObjectArea, endObjectArea, zeroPoint, maxDistance, distanceFactor, firstLabelPosition, forward, lastLabelPosition, thisItem, ref signalShown, ref borderSignalShown, ref firstLabelShown);
                         break;
 
                     case Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST:
@@ -637,6 +638,20 @@ namespace Orts.Viewer3D.Popups
                         break;
 
                     default:     // capture unkown item
+                        break;
+                }
+            }
+            // reverse display of signals to have correct superposition
+            for (int iItems = itemList.Count-1 ; iItems >=0; iItems--)
+            {
+                var thisItem = itemList[iItems];
+                switch (thisItem.ItemType)
+                {
+                    case Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL:
+                        drawSignalBackward(spriteBatch, offset, startObjectArea, endObjectArea, zeroPoint, maxDistance, distanceFactor, forward, thisItem, signalShown);
+                        break;
+
+                    default:
                         break;
                 }
             }
@@ -682,8 +697,8 @@ namespace Orts.Viewer3D.Popups
             }
         }
 
-        // draw signal information
-        int drawSignal(SpriteBatch spriteBatch, Point offset, int startObjectArea, int endObjectArea, int zeroPoint, float maxDistance, float distanceFactor, int firstLabelPosition, bool forward, int lastLabelPosition, Train.TrainObjectItem thisItem, ref bool signalShown, ref bool firstLabelShown)
+        // check signal information for reverse display
+        int drawSignalForward(SpriteBatch spriteBatch, Point offset, int startObjectArea, int endObjectArea, int zeroPoint, float maxDistance, float distanceFactor, int firstLabelPosition, bool forward, int lastLabelPosition, Train.TrainObjectItem thisItem, ref bool signalShown, ref bool borderSignalShown, ref bool firstLabelShown)
         {
             var displayItem = SignalMarkers[thisItem.SignalState];
             var newLabelPosition = lastLabelPosition;
@@ -700,18 +715,16 @@ namespace Orts.Viewer3D.Popups
                 displayRequired = true;
                 signalShown = true;
             }
-            else if (!signalShown)
+            else if (!borderSignalShown && !signalShown)
             {
                 itemOffset = 2 * startObjectArea;
                 itemLocation = forward ? startObjectArea : endObjectArea;
                 displayRequired = true;
-                signalShown = true;
+                borderSignalShown = true;
             }
 
             if (displayRequired)
             {
-                spriteBatch.Draw(SignalAspects, new Rectangle(offset.X + signalPosition[0], offset.Y + itemLocation + signalPosition[forward ? 1 : 2], signalPosition[3], signalPosition[4]), displayItem, Color.White);
-
                 if (thisItem.SignalState != TrackMonitorSignalAspect.Stop && thisItem.AllowedSpeedMpS > 0)
                 {
                     var labelPoint = new Point(offset.X + speedTextOffset, offset.Y + itemLocation + textOffset[forward ? 0 : 1]);
@@ -729,6 +742,36 @@ namespace Orts.Viewer3D.Popups
             }
 
             return newLabelPosition;
+        }
+
+        // draw signal information
+        void drawSignalBackward(SpriteBatch spriteBatch, Point offset, int startObjectArea, int endObjectArea, int zeroPoint, float maxDistance, float distanceFactor, bool forward, Train.TrainObjectItem thisItem, bool signalShown)
+        {
+            var displayItem = SignalMarkers[thisItem.SignalState];
+ 
+            var displayRequired = false;
+            var itemLocation = 0;
+            var itemOffset = 0;
+            var maxDisplayDistance = maxDistance - (textSpacing / 2) / distanceFactor;
+
+            if (thisItem.DistanceToTrainM < maxDisplayDistance)
+            {
+                itemOffset = Convert.ToInt32(thisItem.DistanceToTrainM * distanceFactor);
+                itemLocation = forward ? zeroPoint - itemOffset : zeroPoint + itemOffset;
+                displayRequired = true;
+            }
+            else if (!signalShown)
+            {
+                itemOffset = 2 * startObjectArea;
+                itemLocation = forward ? startObjectArea : endObjectArea;
+                displayRequired = true;
+            }
+
+            if (displayRequired)
+            {
+                spriteBatch.Draw(SignalAspects, new Rectangle(offset.X + signalPosition[0], offset.Y + itemLocation + signalPosition[forward ? 1 : 2], signalPosition[3], signalPosition[4]), displayItem, Color.White);
+            }
+
         }
 
         // draw speedpost information
