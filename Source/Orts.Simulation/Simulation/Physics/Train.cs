@@ -11210,10 +11210,10 @@ namespace Orts.Simulation.Physics
 
         public void CreatePathlessPlayerTrain()
         {
-            ControlMode = Train.TRAIN_CONTROL.MANUAL;
             TrainType = Train.TRAINTYPE.PLAYER;
             IsPathless = true;
             CheckFreight();
+            ToggleToManualMode();
             InitializeBrakes();
             InitializeSpeeds();
         }
