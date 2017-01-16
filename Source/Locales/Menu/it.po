@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
-"POT-Creation-Date: 2016-12-30 18:01+0100\n"
-"PO-Revision-Date: 2016-12-30 18:03+0100\n"
+"POT-Creation-Date: 2017-01-16 21:37+0100\n"
+"PO-Revision-Date: 2017-01-16 21:39+0100\n"
 "Last-Translator: Roberto Ceccarelli (The Strawberry Field) <strawberry."
 "field@libero.it>\n"
 "Language-Team: Open Rails Dev Team\n"
@@ -158,7 +158,7 @@ msgstr "Domenica"
 msgid "Update check failed"
 msgstr "Controllo aggiornamenti fallito"
 
-#: ../../Menu/MainForm.cs:480
+#: ../../Menu/MainForm.cs:481
 msgid ""
 "User name must be 4-10 characters long, cannot contain space, ', \" or - and "
 "must not start with a digit."
@@ -166,7 +166,7 @@ msgstr ""
 "Il nome utente deve essere formato da 4 massimo 10 caratteri e non deve "
 "contenere spazi, ',\" oppure - e non deve iniziare con un numero"
 
-#: ../../Menu/MainForm.cs:1061
+#: ../../Menu/MainForm.cs:1062
 msgid "Activity Briefing"
 msgstr "Presentazione Activity"
 
@@ -175,7 +175,7 @@ msgstr "Presentazione Activity"
 msgid "Update to {0}"
 msgstr "Aggiorna a {0}"
 
-#: ../../Menu/MainForm.cs:493
+#: ../../Menu/MainForm.cs:494
 #, csharp-format
 msgid ""
 "The update check failed due to an error:\n"
@@ -186,7 +186,7 @@ msgstr ""
 "\n"
 "{0}"
 
-#: ../../Menu/MainForm.cs:501
+#: ../../Menu/MainForm.cs:502
 #, csharp-format
 msgid ""
 "The update failed due to an error:\n"
@@ -197,45 +197,55 @@ msgstr ""
 "\n"
 "{0}"
 
-#: ../../Menu/MainForm.cs:1050
+#: ../../Menu/MainForm.cs:1051
 #, csharp-format
 msgid "Route: {0}"
 msgstr "Scenario: {0}"
 
-#: ../../Menu/MainForm.cs:1056 ../../Menu/MainForm.cs:1082
+#: ../../Menu/MainForm.cs:1057 ../../Menu/MainForm.cs:1090
 #, csharp-format
 msgid "Locomotive: {0}"
 msgstr "Locomotiva: {0}"
 
-#: ../../Menu/MainForm.cs:1060
+#: ../../Menu/MainForm.cs:1061
 #, csharp-format
 msgid "Activity: {0}"
 msgstr ""
 
+#: ../../Menu/MainForm.cs:1066 ../../Menu/MainForm.cs:1095
+#, csharp-format
+msgid "Path: {0}"
+msgstr "Percorso: {0}"
+
+#: ../../Menu/MainForm.cs:1067
+#, csharp-format
+msgid "Starting at: {0}"
+msgstr "Partenza da: {0}"
+
 #: ../../Menu/MainForm.cs:1068
+#, csharp-format
+msgid "Heading to: {0}"
+msgstr "Diretto a: {0}"
+
+#: ../../Menu/MainForm.cs:1076
 #, csharp-format
 msgid "Timetable set: {0}"
 msgstr "Tabella orari: {0}"
 
-#: ../../Menu/MainForm.cs:1072
+#: ../../Menu/MainForm.cs:1080
 #, csharp-format
 msgid "Timetable: {0}"
 msgstr "Orario: {0}"
 
-#: ../../Menu/MainForm.cs:1076
+#: ../../Menu/MainForm.cs:1084
 #, csharp-format
 msgid "Train: {0}"
 msgstr "Treno: {0}"
 
-#: ../../Menu/MainForm.cs:1079
+#: ../../Menu/MainForm.cs:1087
 #, csharp-format
 msgid "Consist: {0}"
 msgstr "Convoglio: {0}"
-
-#: ../../Menu/MainForm.cs:1087
-#, csharp-format
-msgid "Path: {0}"
-msgstr "Percorso: {0}"
 
 #: ../../Menu/MainForm.Designer.cs:119
 msgid "Windowed"

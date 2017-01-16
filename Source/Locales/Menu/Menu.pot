@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2016-12-30 17:56:07+0100\n"
-"PO-Revision-Date: 2016-12-30 17:56:08+0100\n"
+"POT-Creation-Date: 2017-01-16 21:36:36+0100\n"
+"PO-Revision-Date: 2017-01-16 21:36:37+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -158,13 +158,13 @@ msgstr ""
 msgid "Update check failed"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:480
+#: ../../Menu/MainForm.cs:481
 msgid ""
 "User name must be 4-10 characters long, cannot contain space, ', \" or - and "
 "must not start with a digit."
 msgstr ""
 
-#: ../../Menu/MainForm.cs:1061
+#: ../../Menu/MainForm.cs:1062
 msgid "Activity Briefing"
 msgstr ""
 
@@ -173,7 +173,7 @@ msgstr ""
 msgid "Update to {0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:493
+#: ../../Menu/MainForm.cs:494
 #, csharp-format
 msgid ""
 "The update check failed due to an error:\n"
@@ -181,7 +181,7 @@ msgid ""
 "{0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:501
+#: ../../Menu/MainForm.cs:502
 #, csharp-format
 msgid ""
 "The update failed due to an error:\n"
@@ -189,45 +189,56 @@ msgid ""
 "{0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:1050
+#: ../../Menu/MainForm.cs:1051
 #, csharp-format
 msgid "Route: {0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:1056
-#: ../../Menu/MainForm.cs:1082
+#: ../../Menu/MainForm.cs:1057
+#: ../../Menu/MainForm.cs:1090
 #, csharp-format
 msgid "Locomotive: {0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:1060
+#: ../../Menu/MainForm.cs:1061
 #, csharp-format
 msgid "Activity: {0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:1068
+#: ../../Menu/MainForm.cs:1066
+#: ../../Menu/MainForm.cs:1095
 #, csharp-format
-msgid "Timetable set: {0}"
+msgid "Path: {0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:1072
+#: ../../Menu/MainForm.cs:1067
 #, csharp-format
-msgid "Timetable: {0}"
+msgid "Starting at: {0}"
+msgstr ""
+
+#: ../../Menu/MainForm.cs:1068
+#, csharp-format
+msgid "Heading to: {0}"
 msgstr ""
 
 #: ../../Menu/MainForm.cs:1076
 #, csharp-format
-msgid "Train: {0}"
+msgid "Timetable set: {0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:1079
+#: ../../Menu/MainForm.cs:1080
 #, csharp-format
-msgid "Consist: {0}"
+msgid "Timetable: {0}"
+msgstr ""
+
+#: ../../Menu/MainForm.cs:1084
+#, csharp-format
+msgid "Train: {0}"
 msgstr ""
 
 #: ../../Menu/MainForm.cs:1087
 #, csharp-format
-msgid "Path: {0}"
+msgid "Consist: {0}"
 msgstr ""
 
 #: ../../Menu/MainForm.Designer.cs:119
