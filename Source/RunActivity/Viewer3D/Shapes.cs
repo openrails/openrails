@@ -853,7 +853,7 @@ namespace Orts.Viewer3D
         readonly PickupObj FuelPickupItemObj;
         readonly FuelPickupItem FuelPickupItem;
         readonly SoundSource Sound;
-        readonly int FrameRate;
+        readonly float FrameRate;
 
         readonly int AnimationFrames;
         protected float AnimationKey;
@@ -936,7 +936,7 @@ namespace Orts.Viewer3D
             FrameRate = 1;
             if (SharedShape.Animations != null && SharedShape.Animations.Count > 0 && SharedShape.Animations[0].anim_nodes != null && SharedShape.Animations[0].anim_nodes.Count > 0)
             {
-                FrameRate = (int)(SharedShape.Animations[0].FrameCount / FuelPickupItemObj.PickupAnimData.AnimationSpeed);
+                FrameRate = SharedShape.Animations[0].FrameCount / FuelPickupItemObj.PickupAnimData.AnimationSpeed;
                 foreach (var anim_node in SharedShape.Animations[0].anim_nodes)
                     if (anim_node.Name == "ANIMATED_PARTS")
                     {
