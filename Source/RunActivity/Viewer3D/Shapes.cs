@@ -387,13 +387,15 @@ namespace Orts.Viewer3D
     public class AnimatedShape : PoseableShape
     {
         protected float AnimationKey;  // advances with time
+        protected float FrameRateMultiplier = 1; // e.g. in passenger view shapes MSTS divides by 30 the frame rate; this is the inverse
 
         /// <summary>
         /// Construct and initialize the class
         /// </summary>
-        public AnimatedShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags)
+        public AnimatedShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags, float frameRateDivisor = 1.0f)
             : base(viewer, path, initialPosition, flags)
         {
+            FrameRateMultiplier = 1 / frameRateDivisor;
         }
 
         public AnimatedShape(Viewer viewer, string path, WorldPosition initialPosition)
@@ -406,7 +408,7 @@ namespace Orts.Viewer3D
             // if the shape has animations
             if (SharedShape.Animations != null && SharedShape.Animations.Count > 0 && SharedShape.Animations[0].FrameCount > 1)
             {
-                AnimationKey += SharedShape.Animations[0].FrameRate * elapsedTime.ClockSeconds;
+                AnimationKey += SharedShape.Animations[0].FrameRate * elapsedTime.ClockSeconds * FrameRateMultiplier;
                 while (AnimationKey > SharedShape.Animations[0].FrameCount) AnimationKey -= SharedShape.Animations[0].FrameCount;
                 while (AnimationKey < 0) AnimationKey += SharedShape.Animations[0].FrameCount;
 
