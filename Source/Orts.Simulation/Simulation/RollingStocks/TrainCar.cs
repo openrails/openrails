@@ -1753,8 +1753,8 @@ namespace Orts.Simulation.RollingStocks
         {
             // NOTE: Traveller is at the FRONT of the TrainCar!
 
-            // Don't add vibrations to train cars less than 1 meter in length; they're unsuitable for these calculations.
-            if (CarLengthM < 1) return;
+            // Don't add vibrations to train cars less than 2.5 meter in length; they're unsuitable for these calculations.
+            if (CarLengthM < 2.5f) return;
             if (Simulator.Settings.CarVibratingLevel != 0)
             {
 
