@@ -1,22 +1,40 @@
 @ECHO OFF
 SETLOCAL ENABLEDELAYEDEXPANSION
 
-REM This script will build Open Rails. It needs a range of tools available in the PATH (they're checked below) and can produce 3 different kinds of build:
-REM   - Unstable - doesn't include documentation or installers
-REM   - Testing  - includes documentation but not installers
-REM   - Stable   - includes documentation and installers
+ECHO  ##############################################################################
+ECHO  #         ___                             ____            _   _              #
+ECHO  #        / _ \   _ __     ___   _ __     ^|  _ \    __ _  (_) ^| ^|  ___        #
+ECHO  #       ^| ^| ^| ^| ^| '_ \   / _ \ ^| '_ \    ^| ^|_) ^|  / _` ^| ^| ^| ^| ^| / __^|       #
+ECHO  #       ^| ^|_^| ^| ^| ^|_) ^| ^|  __/ ^| ^| ^| ^|   ^|  _ ^<  ^| (_^| ^| ^| ^| ^| ^| \__ \       #
+ECHO  #        \___/  ^| .__/   \___^| ^|_^| ^|_^|   ^|_^| \_\  \__,_^| ^|_^| ^|_^| ^|___/       #
+ECHO  #               ^|_^|                                                          #
+ECHO  ##############################################################################
+ECHO.
+ECHO This script will build Open Rails. There are three kinds of build:
+ECHO   - Unstable - doesn't include documentation or installers
+ECHO   - Testing  - includes documentation but not installers
+ECHO   - Stable   - includes documentation and installers
+ECHO.
+ECHO The following tools must be available in %%PATH%%:
 
 REM Check for necessary tools.
 SET CheckToolInPath.Missing=0
-CALL :check-tool-in-path "svn.exe" "Subversion command-line tool"
-CALL :check-tool-in-path "MSBuild.exe" "Microsoft Visual Studio build tool"
-CALL :check-tool-in-path "lazbuild.exe" "Lazarus compiler"
-CALL :check-tool-in-path "strip.exe" "Lazarus command-line tool"
-CALL :check-tool-in-path "xunit.console.x86.exe" "XUnit command-line tool"
-CALL :check-tool-in-path "editbin.exe" "Microsoft Visual Studio editbin command-line tool"
-CALL :check-tool-in-path "OfficeToPDF.exe" "Office-to-PDF conversion tool"
-CALL :check-tool-in-path "7za.exe" "7-zip command-line tool"
-CALL :check-tool-in-path "iscc.exe" "Inno Setup 5 compiler"
+SET CheckToolInPath.Check=0
+:check-tools
+CALL :list-or-check-tool "svn.exe" "Subversion command-line tool"
+CALL :list-or-check-tool "MSBuild.exe" "Microsoft Visual Studio build tool"
+CALL :list-or-check-tool "lazbuild.exe" "Lazarus compiler"
+CALL :list-or-check-tool "strip.exe" "Lazarus command-line tool"
+CALL :list-or-check-tool "xunit.console.x86.exe" "XUnit command-line tool"
+CALL :list-or-check-tool "editbin.exe" "Microsoft Visual Studio editbin command-line tool"
+CALL :list-or-check-tool "OfficeToPDF.exe" "Office-to-PDF conversion tool"
+CALL :list-or-check-tool "7za.exe" "7-zip command-line tool"
+CALL :list-or-check-tool "iscc.exe" "Inno Setup 5 compiler"
+IF "%CheckToolInPath.Check%" == "0" (
+	ECHO.
+	SET CheckToolInPath.Check=1
+	GOTO :check-tools
+)
 IF %CheckToolInPath.Missing% GTR 0 (
 	TIMEOUT /T 10
 )
@@ -139,17 +157,25 @@ PUSHD "Program" && 7za.exe a -r -tzip "..\OpenRails-%Mode%.zip" . && POPD || GOT
 ENDLOCAL
 GOTO :EOF
 
+REM Lists or checks for a single tool
+:list-or-check-tool
+IF "%CheckToolInPath.Check%" == "0" GOTO :list-tool
+IF "%CheckToolInPath.Check%" == "1" GOTO :check-tool
+GOTO :EOF
+
+REM Lists a tool using the same arguments as :check-tool
+:list-tool
+SETLOCAL
+SET Tool.File=%~1                      .
+SET Tool.Name=%~2                                                  .
+ECHO   - %Tool.File:~0,22% %Tool.Name:~0,52%
+ENDLOCAL
+GOTO :EOF
+
 REM Checks for a tool (%1) exists in %PATH% and reports a warning otherwise (%2 is descriptive name for tool).
-:check-tool-in-path
-REM ECHO  1:%1:
-REM ECHO ~1:%~1:
-REM ECHO $1:%~$PATH:1:
+:check-tool
 IF "%~$PATH:1" == "" (
-	IF NOT "%~2" == "" (
-		>&2 ECHO WARNING: "%~1" ^(%~2^) cannot be found in %%PATH%%. Build may fail.
-	) ELSE (
-		>&2 ECHO WARNING: "%~1" cannot be found in %%PATH%%. Build may fail.
-	)
+	>&2 ECHO WARNING: %~1 ^(%~2^) is not found in %%PATH%% - the build may fail.
 	SET /A CheckToolInPath.Missing=CheckToolInPath.Missing+1
 )
 GOTO :EOF
