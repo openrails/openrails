@@ -1196,199 +1196,200 @@ ii.  `Example Wiki Locomotive Data
 iii. `Testing Resources for Open Rails Steam Locomotives
      <http://coalstonewcastle.com.au/physics/>`_
 
-+-------------------------------------+-------------------+------------+-------------------+
-|Parameter                            |Description        |Recom'd     |Typical Examples   |
-|                                     |                   |Input Units |                   |
-+=====================================+===================+============+===================+
-|**General Information (Engine section)**                                                  |
-+-------------------------------------+-------------------+------------+-------------------+
-|ORTSSteamLocomotive                  |Describes the      |Simple,     || (Simple)         |
-|Type ( x )                           |type of            |Compound,   || (Compound)       |
-|                                     |locomotive         |Geared      || (Geared)         |
-+-------------------------------------+-------------------+------------+-------------------+
-|WheelRadius ( x )                    |Radius of drive    |Distance    || (0.648m)         |
-|                                     |wheels             |            || (36in)           |
-+-------------------------------------+-------------------+------------+-------------------+
-|MaxSteamHeatingPressure ( x )        |Max pressure       |Pressure,   |(80psi)            |
-|                                     |in steam heating   |NB:         |                   |
-|                                     |system for         |normally    |                   |
-|                                     |passenger carriages|< 100 psi   |                   |
-+-------------------------------------+-------------------+------------+-------------------+
-|**Boiler Parameters (Engine section)**                                                    |
-+-------------------------------------+-------------------+------------+-------------------+
-|ORTSSteamBoilerType ( x )            |Describes the type |Saturated,  || (Saturated)      |
-|                                     |of boiler          |Superheated || (Superheated)    |
-+-------------------------------------+-------------------+------------+-------------------+
-|BoilerVolume ( x )                   |Volume of boiler.  |Volume,     |("220*(ft^3)")     |
-|                                     |This parameter     |where an    |("110*(m^3)")      |
-|                                     |is not overly      |act. value  |                   |
-|                                     |critical.          |is n/a, use |                   |
-|                                     |                   |approx.     |                   |
-|                                     |                   |EvapArea /  |                   |
-|                                     |                   |8.3         |                   |
-+-------------------------------------+-------------------+------------+-------------------+
-|ORTSEvaporationArea ( x )            |Boiler evaporation |Area        |("2198*(ft^2)")    |
-|                                     |area               |            |("194*(m^2)")      |
-+-------------------------------------+-------------------+------------+-------------------+
-|MaxBoilerPressure ( x )              |Max boiler working |Pressure    || (200psi)         |
-|                                     |pressure (gauge)   |            || (200kPa)         |
-+-------------------------------------+-------------------+------------+-------------------+
-|ORTSSuperheatArea ( x )              |Superheating       |Area        |("2198*(ft^2)")    |
-|                                     |heating area       |            |("194*(m^2)" )     |
-+-------------------------------------+-------------------+------------+-------------------+
-|**Locomotive Tender Info (Engine section)**                                               |
-+-------------------------------------+-------------------+------------+-------------------+
-|MaxTenderWaterMass ( x )             |Water in tender    |Mass        || (36500lb)        |
-|                                     |                   |            || (16000kg)        |
-+-------------------------------------+-------------------+------------+-------------------+
-|MaxTenderCoalMass ( x )              |Coal in tender     |Mass        || (13440lb)        |
-|                                     |                   |            || (6000kg)         |
-+-------------------------------------+-------------------+------------+-------------------+
-|**Fire (Engine section)**                                                                 |
-+-------------------------------------+-------------------+------------+-------------------+
-|ORTSGrateArea ( x )                  |Locomotive fire    |Area        |("2198*(ft^2)")    |
-|                                     |grate area         |            |("194*(m^2)")      |
-+-------------------------------------+-------------------+------------+-------------------+
-|ORTSFuelCalorific ( x )              |Calorific value    |For coal use|(13700btu/lb)      |
-|                                     |of fuel            |13700 btu/lb|(33400kj/kg)       |
-+-------------------------------------+-------------------+------------+-------------------+
-|ORTSSteamFiremanMax                  |Maximum fuel rate  |Use as def: |                   |
-|PossibleFiringRate ( x )             |that fireman can   |UK:3000lb/h |(4200lb/h)         |
-|                                     |shovel in an hour. |US:5000lb/h |                   |
-|                                     |(Mass Flow)        |AU:4200lb/h |(2000kg/h)         |
-+-------------------------------------+-------------------+------------+-------------------+
-|SteamFiremanIs                       |Mechanical stoker =|Boolean,    |( 1 )              |
-|MechanicalStoker ( x )               |large rate of coal |0=no-stoker |                   |
-|                                     |feed               |1=stoker    |                   |
-+-------------------------------------+-------------------+------------+-------------------+
-|**Steam Cylinder (Engine section)**                                                       |
-+-------------------------------------+-------------------+------------+-------------------+
-|NumCylinders ( x )                   |Number of steam    |Boolean     |( 2 )              |
-|                                     |cylinders          |            |                   |
-+-------------------------------------+-------------------+------------+-------------------+
-|CylinderStroke ( x )                 |Length of cylinder |Distance    || (26in)           |
-|                                     |stroke             |            || (0.8m)           |
-+-------------------------------------+-------------------+------------+-------------------+
-|CylinderDiameter ( x )               |Cylinder diameter  |Distance    || (21in)           |
-|                                     |                   |            || (0.6m)           |
-+-------------------------------------+-------------------+------------+-------------------+
-|LPNumCylinders ( x )                 |Number of steam LP |Boolean     |( 2 )              |
-|                                     |cylinders (compound|            |                   |
-|                                     |locomotive only)   |            |                   |
-+-------------------------------------+-------------------+------------+-------------------+
-|LPCylinderStroke ( x )               |LP cylinder stroke |Distance    || (26in)           |
-|                                     |length (compound   |            || (0.8m)           |
-|                                     |locomotive only)   |            |                   |
-+-------------------------------------+-------------------+------------+-------------------+
-|LPCylinderDiameter ( x )             |Diameter of LP     |Distance    || (21in)           |
-|                                     |cylinder (compound |            || (0.6m)           |
-|                                     |locomotive only)   |            |                   |
-+-------------------------------------+-------------------+------------+-------------------+
-|**Friction (Wagon section)**                                                              |
-+-------------------------------------+-------------------+------------+-------------------+
-|ORTSDavis_A ( x )                    |Journal or roller  |N, lbf.     || (502.8N)         |
-|                                     |bearing +          |Use FCalc   || (502.8lb)        |
-|                                     |mechanical friction|to calculate|                   |
-+-------------------------------------+-------------------+------------+-------------------+
-|ORTSDavis_B ( x )                    |Flange friction    |Nm/s,       |(1.5465Nm/s)       |
-|                                     |                   |lbf/mph.    |(1.5465lbf/mph)    |
-|                                     |                   |Use FCalc   |                   |
-+-------------------------------------+-------------------+------------+-------------------+
-|ORTSDavis_C ( x )                    |Air resistance     |Nm/s^2,     |(1.43Nm/s^2)       |
-|                                     |friction           |lbf/mph^2   |(1.43lbf/mph^2)    |
-|                                     |                   |Use FCalc   |                   |
-+-------------------------------------+-------------------+------------+-------------------+
-|ORTSBearingType ( x )                |Bearing type,      || Roller,   |( Roller )         |
-|                                     |defaults to        || Friction, |                   |
-|                                     |Friction           || Low       |                   |
-|                                     |                   |            |                   |
-+-------------------------------------+-------------------+------------+-------------------+
-|**Friction (Engine section)**                                                             |
-+-------------------------------------+-------------------+------------+-------------------+
-|ORTSDriveWheelWeight ( x )           |Total weight on the|Mass,       |(2.12t)            |
-|                                     |locomotive driving |Leave out if|                   |
-|                                     |wheels             |unknown     |                   |
-+-------------------------------------+-------------------+------------+-------------------+
-|**Curve Speed Limit (Wagon section)**                                                     |
-+-------------------------------------+-------------------+------------+-------------------+
-|ORTSUnbalancedSuper                  |Determines the     |Distance,   |  (3in)            |
-|Elevation ( x )                      |amount of Cant     |Leave out if|  (0.075m)         |
-|                                     |Deficiency applied |unknown     |                   |
-|                                     |to carriage        |            |                   |
-+-------------------------------------+-------------------+------------+-------------------+
-|ORTSTrackGauge( x )                  |Track gauge        |Distance,   || (4ft 8.5in)      |
-|                                     |                   |Leave out if|| ( 1.435m )       |
-|                                     |                   |unknown     || ( 4.708ft)       |
-+-------------------------------------+-------------------+------------+-------------------+
-|CentreOfGravity ( x, y, z )          |Defines the centre |Distance,   || (0m, 1.8m, 0m)   |
-|                                     |of gravity of a    |Leave out if|| (0ft, 5.0ft, 0ft)|
-|                                     |locomotive or wagon|unknown     |                   |
-+-------------------------------------+-------------------+------------+-------------------+
-|**Curve Friction (Wagon section)**                                                        |
-+-------------------------------------+-------------------+------------+-------------------+
-|ORTSRigidWheelBase ( x )             |Rigid wheel base of|Distance,   || (5ft 6in)        |
-|                                     |vehicle            |Leave out if|| (3.37m)          |
-|                                     |                   |unknown     |                   |
-+-------------------------------------+-------------------+------------+-------------------+
-|**Locomotive Gearing (Engine section -- Only required if locomotive is geared)**          |
-+-------------------------------------+-------------------+------------+-------------------+
-|ORTSSteamGearRatio ( a, b )          |Ratio of gears     |Numeric     |(2.55, 0.0)        |
-+-------------------------------------+-------------------+------------+-------------------+
-|ORTSSteamMaxGearPiston               |Max speed of piston|ft/min      |( 650 )            |
-|Rate ( x )                           |                   |            |                   |
-+-------------------------------------+-------------------+------------+-------------------+
-|ORTSSteamGearType ( x )              |Fixed gearing or   |Fixed,      || (Fixed)          |
-|                                     |selectable gearing |Select      || (Select)         |
-+-------------------------------------+-------------------+------------+-------------------+
-|**Locomotive Performance Adjustments (Engine section -- Optional,                         |
-|for experienced modellers)**                                                              |
-+-------------------------------------+-------------------+------------+-------------------+
-|ORTSBoilerEvaporation                |Multipl. factor for|Between     |(15.0)             |
-|Rate ( x )                           |adjusting maximum  |10--15,     |                   |
-|                                     |boiler steam output|Leave out if|                   |
-|                                     |                   |not used    |                   |
-+-------------------------------------+-------------------+------------+-------------------+
-|ORTSBurnRate ( x, y )                |Tabular input: Coal|x -- lbs,   |                   |
-|                                     |combusted (y) to   |y -- kg,    |                   |
-|                                     |steam generated (x)|series of x |                   |
-|                                     |                   |& y values. |                   |
-|                                     |                   |Leave out if|                   |
-|                                     |                   |unused      |                   |
-+-------------------------------------+-------------------+------------+-------------------+
-|ORTSCylinderEfficiency               |Multipl. factor for|Unlimited,  |(1.0)              |
-|Rate ( x )                           |steam cylinder     |Leave out if|                   |
-|                                     |(force) output     |unused      |                   |
-+-------------------------------------+-------------------+------------+-------------------+
-|ORTSBoilerEfficiency (x, y)          |Tabular input:     |x --        |                   |
-|                                     |boiler efficiency  |lbs/ft2/h,  |                   |
-|                                     |(y) to coal        |series of x |                   |
-|                                     |combustion (x)     |& y values. |                   |
-|                                     |                   |Leave out if|                   |
-|                                     |                   |unused      |                   |
-+-------------------------------------+-------------------+------------+-------------------+
-|ORTSCylinderExhaust                  |Point at which the |Between     |(0.1)              |
-|Open ( x )                           |cylinder exhaust   |0.1--0.95,  |                   |
-|                                     |port opens         |Leave out if|                   |
-|                                     |                   |unused      |                   |
-+-------------------------------------+-------------------+------------+-------------------+
-|ORTSCylinderPortOpening ( x )        |Size of cylinder   |Between     |(0.085)            |
-|                                     |port opening       |0.05--0.12, |                   |
-|                                     |                   |Leave out if|                   |
-|                                     |                   |unused      |                   |
-+-------------------------------------+-------------------+------------+-------------------+
-|ORTSCylinderInitial                  |Tabular input:     |x -- rpm,   |                   |
-|PressureDrop ( x, y )                |wheel speed (x) to |series of x |                   |
-|                                     |pressure drop      |& y values. |                   |
-|                                     |factor (y)         |Leave out if|                   |
-|                                     |                   |unused      |                   |
-+-------------------------------------+-------------------+------------+-------------------+
-|ORTSCylinderBackPressure ( x, y )    |Tabular input: Loco|x -- hp,    |                   |
-|                                     |indicated power (x)|y -- psi(g),|                   |
-|                                     |to backpressure (y)|series of x |                   |
-|                                     |                   |& y values. |                   |
-|                                     |                   |Leave out if|                   |
-|                                     |                   |unused      |                   |
-+-------------------------------------+-------------------+------------+-------------------+
+.. |-| unicode:: U+00AD .. soft hyphen
+  :trim:
+
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|Parameter                                                  |Description        |Recommended Units  |Typical Examples   |
++===========================================================+===================+===================+===================+
+|**General Information (Engine section)**                                                                               |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Steam |-| Locomotive |-| Type ( x )               |Describes the      |Simple,            || (Simple)         |
+|                                                           |type of            |Compound,          || (Compound)       |
+|                                                           |locomotive         |Geared             || (Geared)         |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|Wheel |-| Radius ( x )                                     |Radius of drive    |Distance           || (0.648m)         |
+|                                                           |wheels             |                   || (36in)           |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|Max |-| Steam |-| Heating |-| Pressure ( x )               |Max pressure       |Pressure,          |(80psi)            |
+|                                                           |in steam heating   |NB:                |                   |
+|                                                           |system for         |normally           |                   |
+|                                                           |passenger carriages|< 100 psi          |                   |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|**Boiler Parameters (Engine section)**                                                                                 |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Steam |-| Boiler |-| Type ( x )                   |Describes the type |Saturated,         || (Saturated)      |
+|                                                           |of boiler          |Superheated        || (Superheated)    |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|Boiler |-| Volume ( x )                                    |Volume of boiler.  |Volume,            |("220*(ft^3)")     |
+|                                                           |This parameter     |where an           |("110*(m^3)")      |
+|                                                           |is not overly      |act. value         |                   |
+|                                                           |critical.          |is n/a, use        |                   |
+|                                                           |                   |approx.            |                   |
+|                                                           |                   |EvapArea /         |                   |
+|                                                           |                   |8.3                |                   |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Evaporation |-| Area ( x )                        |Boiler evaporation |Area               |("2198*(ft^2)")    |
+|                                                           |area               |                   |("194*(m^2)")      |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|Max |-| Boiler |-| Pressure ( x )                          |Max boiler working |Pressure           || (200psi)         |
+|                                                           |pressure (gauge)   |                   || (200kPa)         |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Superheat |-| Area ( x )                          |Superheating       |Area               |("2198*(ft^2)")    |
+|                                                           |heating area       |                   |("194*(m^2)" )     |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|**Locomotive Tender Info (Engine section)**                                                                            |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|Max |-| Tender |-| Water |-| Mass ( x )                    |Water in tender    |Mass               || (36500lb)        |
+|                                                           |                   |                   || (16000kg)        |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|Max |-| Tender |-| Coal |-| Mass ( x )                     |Coal in tender     |Mass               || (13440lb)        |
+|                                                           |                   |                   || (6000kg)         |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|**Fire (Engine section)**                                                                                              |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Grate |-| Area ( x )                              |Locomotive fire    |Area               |("2198*(ft^2)")    |
+|                                                           |grate area         |                   |("194*(m^2)")      |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Fuel |-| Calorific ( x )                          |Calorific value    |For coal use       |(13700btu/lb)      |
+|                                                           |of fuel            |13700 btu/lb       |(33400kj/kg)       |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Steam |-| Fireman |-| Max |-| Possible |-|        |Maximum fuel rate  |Use as def:        |                   |
+|Firing |-| Rate ( x )                                      |that fireman can   |UK:3000lb/h        |(4200lb/h)         |
+|                                                           |shovel in an hour. |US:5000lb/h        |                   |
+|                                                           |(Mass Flow)        |AU:4200lb/h        |(2000kg/h)         |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|Steam |-| Fireman |-| Is |-| Mechanical |-| Stoker ( x )   |Mechanical stoker =|Boolean,           |( 1 )              |
+|                                                           |large rate of coal |0=no-stoker        |                   |
+|                                                           |feed               |1=stoker           |                   |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|**Steam Cylinder (Engine section)**                                                                                    |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|Num |-| Cylinders ( x )                                    |Number of steam    |Boolean            |( 2 )              |
+|                                                           |cylinders          |                   |                   |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|Cylinder |-| Stroke ( x )                                  |Length of cylinder |Distance           || (26in)           |
+|                                                           |stroke             |                   || (0.8m)           |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|Cylinder |-| Diameter ( x )                                |Cylinder diameter  |Distance           || (21in)           |
+|                                                           |                   |                   || (0.6m)           |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|LP |-| Num |-| Cylinders ( x )                             |Number of steam LP |Boolean            |( 2 )              |
+|                                                           |cylinders (compound|                   |                   |
+|                                                           |locomotive only)   |                   |                   |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|LP |-| Cylinder |-| Stroke ( x )                           |LP cylinder stroke |Distance           || (26in)           |
+|                                                           |length (compound   |                   || (0.8m)           |
+|                                                           |locomotive only)   |                   |                   |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|LP |-| Cylinder |-| Diameter ( x )                         |Diameter of LP     |Distance           || (21in)           |
+|                                                           |cylinder (compound |                   || (0.6m)           |
+|                                                           |locomotive only)   |                   |                   |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|**Friction (Wagon section)**                                                                                           |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Davis_A ( x )                                     |Journal or roller  |N, lbf.            || (502.8N)         |
+|                                                           |bearing +          |Use FCalc          || (502.8lb)        |
+|                                                           |mechanical friction|to calculate       |                   |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Davis_B ( x )                                     |Flange friction    |Nm/s,              |(1.5465Nm/s)       |
+|                                                           |                   |lbf/mph.           |(1.5465lbf/mph)    |
+|                                                           |                   |Use FCalc          |                   |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Davis_C ( x )                                     |Air resistance     |Nm/s^2,            |(1.43Nm/s^2)       |
+|                                                           |friction           |lbf/mph^2          |(1.43lbf/mph^2)    |
+|                                                           |                   |Use FCalc          |                   |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Bearing |-| Type ( x )                            |Bearing type,      || Roller,          |( Roller )         |
+|                                                           |defaults to        || Friction,        |                   |
+|                                                           |Friction           || Low              |                   |
+|                                                           |                   |                   |                   |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|**Friction (Engine section)**                                                                                          |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Drive |-| Wheel |-| Weight ( x )                  |Total weight on the|Mass,              |(2.12t)            |
+|                                                           |locomotive driving |Leave out if       |                   |
+|                                                           |wheels             |unknown            |                   |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|**Curve Speed Limit (Wagon section)**                                                                                  |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Unbalanced |-| Super |-| Elevation ( x )          |Determines the     |Distance,          |  (3in)            |
+|                                                           |amount of Cant     |Leave out if       |  (0.075m)         |
+|                                                           |Deficiency applied |unknown            |                   |
+|                                                           |to carriage        |                   |                   |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Track |-| Gauge( x )                              |Track gauge        |Distance,          || (4ft 8.5in)      |
+|                                                           |                   |Leave out if       || ( 1.435m )       |
+|                                                           |                   |unknown            || ( 4.708ft)       |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|Centre |-| Of |-| Gravity ( x, y, z )                      |Defines the centre |Distance,          || (0m, 1.8m, 0m)   |
+|                                                           |of gravity of a    |Leave out if       || (0ft, 5.0ft, 0ft)|
+|                                                           |locomotive or wagon|unknown            |                   |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|**Curve Friction (Wagon section)**                                                                                     |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Rigid |-| Wheel |-| Base ( x )                    |Rigid wheel base of|Distance,          || (5ft 6in)        |
+|                                                           |vehicle            |Leave out if       || (3.37m)          |
+|                                                           |                   |unknown            |                   |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|**Locomotive Gearing (Engine section -- Only required if locomotive is geared)**                                       |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Steam |-| Gear |-| Ratio ( a, b )                 |Ratio of gears     |Numeric            |(2.55, 0.0)        |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Steam |-| Max |-| Gear |-| Piston |-| Rate ( x )  |Max speed of piston|ft/min             |( 650 )            |
+|                                                           |                   |                   |                   |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Steam |-| Gear |-| Type ( x )                     |Fixed gearing or   |Fixed,             || (Fixed)          |
+|                                                           |selectable gearing |Select             || (Select)         |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|**Locomotive Performance Adjustments (Engine section -- Optional, for experienced modellers)**                         |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Boiler |-| Evaporation |-| Rate ( x )             |Multipl. factor for|Be       tween     |(15.0)             |
+|                                                           |adjusting maximum  |10--15,            |                   |
+|                                                           |boiler steam output|Leave out if       |                   |
+|                                                           |                   |not used           |                   |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Burn |-| Rate ( x, y )                            |Tabular input: Coal|x -- lbs,          |                   |
+|                                                           |combusted (y) to   |y -- kg,           |                   |
+|                                                           |steam generated (x)|series of x        |                   |
+|                                                           |                   |& y values.        |                   |
+|                                                           |                   |Leave out if       |                   |
+|                                                           |                   |unused             |                   |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Cylinder |-| Efficiency |-| Rate ( x )            |Multipl. factor for|Un       limited,  |(1.0)              |
+|                                                           |steam cylinder     |Leave out if       |                   |
+|                                                           |(force) output     |unused             |                   |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Boiler |-| Efficiency (x, y)                      |Tabular input:     |x --               |                   |
+|                                                           |boiler efficiency  |lbs/ft2/h,         |                   |
+|                                                           |(y) to coal        |series of x        |                   |
+|                                                           |combustion (x)     |& y values.        |                   |
+|                                                           |                   |Leave out if       |                   |
+|                                                           |                   |unused             |                   |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Cylinder |-| Exhaust |-| Open ( x )               |Point at which the |Between            |(0.1)              |
+|                                                           |cylinder exhaust   |0.1--0.95,         |                   |
+|                                                           |port opens         |Leave out if       |                   |
+|                                                           |                   |unused             |                   |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Cylinder |-| Port |-| Opening ( x )               |Size of cylinder   |Between            |(0.085)            |
+|                                                           |port opening       |0.05--0.12,        |                   |
+|                                                           |                   |Leave out if       |                   |
+|                                                           |                   |unused             |                   |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Cylinder |-| Initial |-| Pressure |-|             |Tabular input:     |x -- rpm,          |                   |
+|Drop ( x, y )                                              |wheel speed (x) to |series of x        |                   |
+|                                                           |pressure drop      |& y values.        |                   |
+|                                                           |factor (y)         |Leave out if       |                   |
+|                                                           |                   |unused             |                   |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Cylinder |-| Back |-| Pressure ( x, y )           |Tabular input: Loco|x -- hp,           |                   |
+|                                                           |indicated power (x)|y -- psi(g),       |                   |
+|                                                           |to backpressure (y)|series of x        |                   |
+|                                                           |                   |& y values.        |                   |
+|                                                           |                   |Leave out if       |                   |
+|                                                           |                   |unused             |                   |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
 
 Special Steam Effects for Steam Locomotives
 -------------------------------------------
