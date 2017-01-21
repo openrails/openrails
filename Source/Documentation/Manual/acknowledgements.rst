@@ -27,13 +27,13 @@ Joseph Realmuto     Larry Steiner       Laurie Heath
 Lutz Doellermann    Marc Nelson         Markus Gelbmann 
 Matêj Pácha         Matt Peddlesden     Matt Munro 
 Paul Bourke         Paul Gausden        Paul Wright 
-Péter Gulyás        Peter Newark        Phil Voxland 
-Remus Iancu         Richard Plokhaar    Rick Grout 
-Rick Hargraves      Riemer Grootjans    Rob Lane 
-Robert Hodgson      Robert Murphy       Roberto Ceccarelli
-Robert Roeterdink   Samuel Kelly        Sándor Tarcsi
-Scott Miller        Sid Penstone        Tim Muir
-Walter Niehoff      Wes Card            Piotr Gadecki
+Péter Gulyás        Peter Newark        Phil Voxland
+Piotr Gadecki       Remus Iancu         Richard Plokhaar
+Rick Grout          Rick Hargraves      Riemer Grootjans
+Rob Lane            Robert Hodgson      Robert Murphy
+Roberto Ceccarelli  Robert Roeterdink   Samuel Kelly
+Sándor Tarcsi       Scott Miller        Sid Penstone
+Tim Muir            Walter Niehoff      Wes Card
 =================== ==================  ===================
 
 and ...
