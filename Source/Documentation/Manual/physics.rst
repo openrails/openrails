@@ -188,15 +188,14 @@ to speed up, which can be seen on the speedometer or in external view 2.
 To reduce the wheel slip, use *throttle down*, sanding or the locomotive
 brake.
 
-.. figure:: images/physics-adhesion-wheelslip-none.png
-    :align: left
-    :scale: 66%
-.. figure:: images/physics-adhesion-wheelslip-warning.png
-    :align: left
-    :scale: 66%
-.. figure:: images/physics-adhesion-wheelslip-full.png
-    :align: left
-    :scale: 66%
+.. |image-paw1| image:: images/physics-adhesion-wheelslip-none.png
+  :width: 33%
+.. |image-paw2| image:: images/physics-adhesion-wheelslip-warning.png
+  :width: 33%
+.. |image-paw3| image:: images/physics-adhesion-wheelslip-full.png
+  :width: 33%
+
+|image-paw1| |image-paw2| |image-paw3|
 
 The *actual maximum* of the tractive force is based on the
 Curtius-Kniffler adhesion theory and can be adjusted by the aforementioned
