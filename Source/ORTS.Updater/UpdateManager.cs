@@ -448,25 +448,32 @@ namespace ORTS.Updater
                 // Skip deleting the Documentation directory unless a new one is included in the update.
                 (!file.StartsWith(PathDocumentation, StringComparison.OrdinalIgnoreCase) || Directory.Exists(PathUpdateDocumentation)) &&
                 !file.Equals(FileSettings, StringComparison.OrdinalIgnoreCase)).ToArray();
+            var basePathDirectories = Directory.GetDirectories(BasePath, "*", SearchOption.AllDirectories).Where(file =>
+                !file.StartsWith(PathUpdateDirty, StringComparison.OrdinalIgnoreCase) &&
+                !file.StartsWith(PathUpdateStage, StringComparison.OrdinalIgnoreCase) &&
+                // Skip deleting the Documentation directory unless a new one is included in the update.
+                (!file.StartsWith(PathDocumentation, StringComparison.OrdinalIgnoreCase) || Directory.Exists(PathUpdateDocumentation))).ToArray();
+
             var updateStageFiles = Directory.GetFiles(PathUpdateStage, "*", SearchOption.AllDirectories);
+            var updateStageDirectories = Directory.GetDirectories(PathUpdateStage, "*", SearchOption.AllDirectories);
 
             // Move (almost) all the files from the base path to the dirty path - this removes all the old program files.
-            MoveDirectoryFiles(BasePath, PathUpdateDirty, basePathFiles);
+            MoveDirectoryFiles(BasePath, PathUpdateDirty, basePathFiles, basePathDirectories);
 
             // Move all the files from the stage path to the base path - this adds all the new program files.
-            MoveDirectoryFiles(PathUpdateStage, BasePath, updateStageFiles);
+            MoveDirectoryFiles(PathUpdateStage, BasePath, updateStageFiles, updateStageDirectories);
         }
 
-        void MoveDirectoryFiles(string source, string destination, string[] files)
+        void MoveDirectoryFiles(string source, string destination, string[] files, string[] directories)
         {
             CreateDirectoryLayout(source, destination);
 
             foreach (var file in files)
                 File.Move(file, Path.Combine(destination, GetRelativePath(file, source)));
 
-            foreach (var file in files)
+            // Scan the directories by descending length, so that we never try and delete a parent before a child.
+            foreach (var directory in directories.OrderByDescending(s => s.Length))
             {
-                var directory = Path.GetDirectoryName(file);
                 if (!directory.Equals(source, StringComparison.OrdinalIgnoreCase) && Directory.Exists(directory))
                     Directory.Delete(directory);
             }
