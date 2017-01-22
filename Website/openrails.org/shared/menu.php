@@ -1,4 +1,4 @@
-<?php 
+<?php
 $cwd = str_replace('\\', '/', getcwd()) . '/';
 function in_directory($cwd, $name) {
 	return strstr($cwd, "/$name/");

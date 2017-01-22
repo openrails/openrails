@@ -1,14 +1,14 @@
 <?php include "../../shared/head.php" ?>
     <link rel="stylesheet" href="../../shared/iframe/iframe.css" type="text/css" />
   </head>
-  
+
   <body>
     <div class="container"><!-- Centres content and sets fixed width to suit device -->
 <?php include "../../shared/banners/choose_banner.php" ?>
 <?php include "../../shared/banners/show_banner.php" ?>
 <?php include "../../shared/menu.php" ?>
 		<div class="row">
-			<div class="col-md-12"> 
+			<div class="col-md-12">
         <h1>Discover > News</h1>
       </div>
     </div>
@@ -23,7 +23,7 @@
           <h2>Dec 2015 - More Access to Elvas Tower</h2>
           <p>
             The Elvas Tower forum plays a major role in developing Open Rails but has been closed to non-members following a dispute.
-            We can now report that some of the <a href="http://www.elvastower.com/forums/">Open Rails sub-forums</a> 
+            We can now report that some of the <a href="http://www.elvastower.com/forums/">Open Rails sub-forums</a>
             are open again.
           </p>
           <hr />
@@ -43,7 +43,7 @@
           Open Rails first demonstration route <a href="/download/content">Demo Model 1</a> has been published.
           </p>
           <hr />
-          <h2>Dec 2014 - 3D Cabs</h2> 
+          <h2>Dec 2014 - 3D Cabs</h2>
           <p>
           <a href="http://www.dekosoft.com">Dekosoft Trains</a> has added locos exclusively for Open Rails to its range.
           These are GP30 diesels taking advantage of our 3D cab feature.
@@ -59,7 +59,7 @@
           <hr />
           <h2>Apr 2014 - Installer</h2>
           <p>
-          An installer is now available, so Open Rails and its pre-requisites such as XNA can be delivered in a single download. 
+          An installer is now available, so Open Rails and its pre-requisites such as XNA can be delivered in a single download.
           </p>
           <hr />
           <h2>Apr 2014 - Smoother, More Detailed Graphics</h2>
@@ -79,7 +79,7 @@
           <p>
           Open Rails becomes available in additional languages, initially eight including Chinese.<br />
           </p><p>
-            <img src="additional_languages.jpg" height=415 width=314 alt='screendump listing languages'/> 
+            <img src="additional_languages.jpg" height=415 width=314 alt='screendump listing languages'/>
           </p>
           <hr />
           <h2>Mar 2014 - Work Starts On Timetables</h2>
@@ -91,12 +91,12 @@
             needed for each scheduled train - path, consist, booked stops etc.. Conventional activities will continue as before.
           </p><p>
             Also there is no longer any distinction between player train or AI train - any train in the timetable can be selected as the player
-            train, the others are operated by a remote player or by the simulator. 
+            train, the others are operated by a remote player or by the simulator.
           </p>
           <hr />
           <h2>Feb 2014</h2>
           <p>
-          Fog is developed from just softening the horizon into a realistic effect which users can fully control. 
+          Fog is developed from just softening the horizon into a realistic effect which users can fully control.
           </p>
 			</div>
 			<div class="col-md-1"></div>

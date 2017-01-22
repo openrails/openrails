@@ -1,7 +1,7 @@
 ﻿<?php include "../../shared/head.php" ?>
     <link rel="stylesheet" href="../../shared/iframe/iframe.css" type="text/css" />
   </head>
-  
+
   <body>
     <div class="container"><!-- Centres content and sets fixed width to suit device -->
 <?php include "../../shared/banners/choose_banner.php" ?>
@@ -83,7 +83,7 @@ To support development, the <a href='http://james-ross.co.uk/projects/or?utm_cam
       </div>
 <?php include "../../shared/tail.php" ?>
 <?php include "../../shared/banners/preload_next_banner.php" ?>
-<?php 
+<?php
 $modal = 'modal1';
 $title = 'Download Open Rails (stable version)';
 $download_file = $download_stable;
