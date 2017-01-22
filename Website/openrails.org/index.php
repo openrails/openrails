@@ -23,7 +23,7 @@
       </div>
 <?php include "shared/menu.php" ?>
 <?php
-  $download_stable = 'OpenRails-1.1.1-Setup.exe';
+  $download_stable = 'OpenRails-1.2-Setup.exe';
   $file_path = "files";
 ?>
       <div class="row">
@@ -66,8 +66,12 @@
             <h4>News</h4>
           </div>
           <p>
+            <strong>Jan 2017</strong>
+            <a href="/discover/version-1-2/">Open Rails 1.2</a> released! <a href="/download/program/">Download it here</a>.
+          </p>
+          <p>
             <strong>Mar 2016</strong>
-            <a href="/discover/version-1-1/">Open Rails 1.1</a> released! <a href="/download/program/">Download it here</a>.
+            <a href="/discover/version-1-1/">Open Rails 1.1</a> released!
           </p>
           <p>
             <strong>Dec 2015</strong>
