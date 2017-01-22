@@ -19,13 +19,8 @@ echo date('Y', filemtime("$path/../files/OpenRails-Testing-Source.zip"));
               <img src='/shared/logos/gplv3_logo.png' alt='GPLv3 logo' style="padding-bottom: 0.5em;"/>
             </a>
             <p>
-              Open Rails is Free Software licensed under the GPL.
+              You use Open Rails entirely at your own risk. It is intended for entertainment purposes and is not suitable for professional training.
             </p>
-            <ul>
-              <li>
-                <a href='/shared/mysql/get_statistics.php?previous_days=1' target='_blank'>Website Statistics</a>
-              </li>
-            </ul>
           </div>
           <div class="col-md-4 footer_column top_right_footer">
             <p>
@@ -62,6 +57,9 @@ echo date('Y', filemtime("$path/../files/OpenRails-Testing-Source.zip"));
                   title="CSS Minifier">
                   CSS minified with CSS Minifier
                 </a>
+              </li>
+              <li>
+                <a href='/shared/mysql/get_statistics.php?previous_days=1' target='_blank'>Website Statistics</a>
               </li>
             </ul>
           </div>

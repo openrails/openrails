@@ -39,6 +39,7 @@ Less frequently, they get to add something entirely new and then stand ready to 
           <tr><td>Chris Jakeman * (cjakeman)</td></tr>
           <tr><td>CSantucci</td></tr>
           <tr><td>edwardk</td></tr>
+          <tr><td>Goku</td></tr>
           <tr><td>Peter Gulyas (gpz)</td></tr>
           <tr><td>James Ross *</td></tr>
           <tr><td>jeroenp</td></tr>
@@ -68,7 +69,7 @@ We've had some very valuable work done when a developer pairs with a tester to r
 </p>
 <h2>Content Builders</h2>
 <p>
-These are the experts in creating buildings, locos, routes, signs, even grass. They push for more realistic appearance (e.g. smoke) and more "polys" and are forever frustrated by the lack of a better route editor than Microsoft Train Simulator provides.
+These are the experts in creating buildings, locos, routes, signs, even grass. They push for more realistic appearance (e.g. smoke) and more "polys" and are forever frustrated by the lack of a better route editor than MSTS provides.
 </p>
       </div>
       <div class="col-md-3">
@@ -90,6 +91,7 @@ These are the experts in creating buildings, locos, routes, signs, even grass. T
         <p>&nbsp;</p>
           <table>
             <tr><td>engmod</td></tr>
+            <tr><td>EugenR</td></tr>
             <tr><td>Genma Saotome</td></tr>
             <tr><td>plainsman</td></tr>
             <tr><td>thegrindre</td></tr>
@@ -102,7 +104,7 @@ These are the experts in creating buildings, locos, routes, signs, even grass. T
 			<div class="col-md-6">
 <h2>Translators</h2>
 <p>
-A choice of language was added to Open Rails in Spring 2014 and, very quickly, a cadre of translators has come into being to jump on every new feature and render it in at least 9 languages.
+A choice of language was added to OR in Spring 2014 and, very quickly, a cadre of translators has come into being to jump on every new feature and render it in at least 9 languages.
 </p>
 			</div>
 			<div class="col-md-6">

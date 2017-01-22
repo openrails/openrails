@@ -2,7 +2,7 @@
 <p>
 Open Rails works well on Windows PCs from Windows XP* onwards (including Windows 10). It does not work on Windows XBox, Windows Phone or non-Windows platforms.
 </p><p>
-* <small>Windows XP requires Service Pack 2 (SP2).</small>
+* <small>Windows XP requires Service Pack 3 (SP3).</small>
 </p>
 <h3>32-bit or 64-bit Windows?</h3>
 <p>Open Rails is currently a 32-bit program that will run on either 32-bit Windows or 64-bit Windows. When run on a 64-bit Windows system there are some benefits as follows.
