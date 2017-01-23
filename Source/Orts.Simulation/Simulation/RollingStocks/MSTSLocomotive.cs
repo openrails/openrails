@@ -3315,6 +3315,13 @@ namespace Orts.Simulation.RollingStocks
         /// <summary>
         /// To be overridden by MSTSSteamLocomotive and MSTSDieselLocomotive.
         /// </summary>
+        public virtual void SetStepSize(PickupObj matchPickup)
+        {
+        }
+
+        /// <summary>
+        /// To be overridden by MSTSSteamLocomotive and MSTSDieselLocomotive.
+        /// </summary>
         public override float GetFilledFraction(uint pickupType)
         {
             return 0f;

@@ -388,8 +388,8 @@ namespace Orts.Formats.Msts
             internal PickupCapacityItem(SBR block)
             {
                 block.VerifyID(TokenID.PickupCapacity);
-                QuantityAvailableKG = block.ReadFloat();
-                FeedRateKGpS = block.ReadFloat();
+                QuantityAvailableKG = Kg.FromLb(block.ReadFloat());
+                FeedRateKGpS = Kg.FromLb(block.ReadFloat());
                 block.VerifyEndOfBlock();
             }
         }

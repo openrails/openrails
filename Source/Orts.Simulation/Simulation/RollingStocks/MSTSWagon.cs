@@ -1256,8 +1256,9 @@ namespace Orts.Simulation.RollingStocks
         /// Starts a continuous increase in controlled value.
         /// </summary>
         /// <param name="type">Pickup point</param>
-        public void StartRefillingOrUnloading(uint type, IntakePoint intakePoint, float fraction, bool unload)
+        public void StartRefillingOrUnloading(PickupObj matchPickup, IntakePoint intakePoint, float fraction, bool unload)
         {
+            var type = matchPickup.PickupType;
             var controller = WeightLoadController;
             if (controller == null)
             {
@@ -1274,6 +1275,7 @@ namespace Orts.Simulation.RollingStocks
             }
             if (!unload)
             {
+                controller.SetStepSize(matchPickup.PickupCapacity.FeedRateKGpS/ MSTSNotchController.StandardBoost / FreightAnimations.LoadedOne.FreightWeightWhenFull);
                 Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("Starting refill"));
                 controller.StartIncrease(controller.MaximumValue);
             }

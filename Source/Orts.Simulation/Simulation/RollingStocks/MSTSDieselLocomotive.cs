@@ -584,6 +584,17 @@ namespace Orts.Simulation.RollingStocks
         }
 
         /// <summary>
+        /// Sets step size for the fuel controller basing on pickup feed rate and engine fuel capacity
+        /// </summary>
+        /// <param name="type">Pickup</param>
+
+        public override void SetStepSize(PickupObj matchPickup)
+        {
+            if (MaxDieselLevelL != 0)
+                FuelController.SetStepSize(matchPickup.PickupCapacity.FeedRateKGpS / MSTSNotchController.StandardBoost / (MaxDieselLevelL * DieselWeightKgpL)); 
+        }
+
+        /// <summary>
         /// Sets coal and water supplies to full immediately.
         /// Provided in case route lacks pickup points for diesel oil.
         /// </summary>

@@ -541,9 +541,9 @@ namespace Orts.Viewer3D.RollingStock
                 {
                     MSTSWagon.RefillProcess.OkToRefill = true;
                     if (match.SteamLocomotiveWithTender != null)
-                        StartRefilling(match.Pickup.PickupType, fraction, match.SteamLocomotiveWithTender);
+                        StartRefilling(match.Pickup, fraction, match.SteamLocomotiveWithTender);
                     else
-                        StartRefilling(match.Pickup.PickupType, fraction, match.Wagon);
+                        StartRefilling(match.Pickup, fraction, match.Wagon);
 
                     MatchedWagonAndPickup = match;  // Save away for HandleUserInput() to use when key is released.
                 }
@@ -560,7 +560,7 @@ namespace Orts.Viewer3D.RollingStock
                 }
                 else if (fraction < 0.01 && match.Pickup.PickupCapacity.FeedRateKGpS < 0)
                 {
-                    Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: {0} fuel or freight now unloaded.",
+                    Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Unload: {0} fuel or freight now unloaded.",
                         PickupTypeDictionary[match.Pickup.PickupType]));
                     return;
                 }
@@ -568,7 +568,7 @@ namespace Orts.Viewer3D.RollingStock
                 {
                     MSTSWagon.RefillProcess.OkToRefill = true;
                     MSTSWagon.RefillProcess.Unload = match.Pickup.PickupCapacity.FeedRateKGpS < 0;
-                    match.Wagon.StartRefillingOrUnloading(match.Pickup.PickupType, match.IntakePoint, fraction, MSTSWagon.RefillProcess.Unload);
+                    match.Wagon.StartRefillingOrUnloading(match.Pickup, match.IntakePoint, fraction, MSTSWagon.RefillProcess.Unload);
                     MatchedWagonAndPickup = match;  // Save away for HandleUserInput() to use when key is released.
                 }
             }
@@ -597,15 +597,16 @@ namespace Orts.Viewer3D.RollingStock
         /// Starts a continuous increase in controlled value. This method also receives TrainCar car to process individual locomotives for refueling.
         /// </summary>
         /// <param name="type">Pickup point</param>
-        public void StartRefilling(uint type, float fraction, TrainCar car)
+        public void StartRefilling(PickupObj matchPickup, float fraction, TrainCar car)
         {
-            var controller = (car as MSTSLocomotive).GetRefillController(type);
+            var controller = (car as MSTSLocomotive).GetRefillController(matchPickup.PickupType);
 
             if (controller == null)
             {
                 Viewer.Simulator.Confirmer.Message(ConfirmLevel.Error, Viewer.Catalog.GetString("Incompatible pickup type"));
                 return;
             }
+            (car as MSTSLocomotive).SetStepSize(matchPickup);
             controller.SetValue(fraction);
             controller.CommandStartTime = Viewer.Simulator.ClockTime;  // for Replay to use 
             Viewer.Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer.Catalog.GetString("Starting refill"));

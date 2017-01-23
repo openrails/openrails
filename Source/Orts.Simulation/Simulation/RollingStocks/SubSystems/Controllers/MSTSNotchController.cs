@@ -115,6 +115,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         public float IntermediateValue;
         public float MinimumValue;
         public float MaximumValue = 1;
+        public const float StandardBoost = 5.0f; // standard step size multiplier
+        public const float FastBoost = 20.0f;
         public float StepSize;
         private List<MSTSNotch> Notches = new List<MSTSNotch>();
         public int CurrentNotch { get; set; }
@@ -219,7 +221,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         private float GetNotchBoost()
         {
             return (ToZero && ((CurrentNotch >= 0 && Notches[CurrentNotch].Smooth) || Notches.Count == 0 || 
-                IntermediateValue - CurrentValue > StepSize) ? 20 : 5);
+                IntermediateValue - CurrentValue > StepSize) ? FastBoost : StandardBoost);
         }
 
         /// <summary>
@@ -534,6 +536,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     break;
                 }
             }
+        }
+
+        public void SetStepSize ( float stepSize)
+        {
+            StepSize = stepSize;
         }
 
     }
