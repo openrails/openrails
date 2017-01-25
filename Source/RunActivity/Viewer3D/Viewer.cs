@@ -676,7 +676,7 @@ namespace Orts.Viewer3D
 
             World.Update(elapsedTime);
 
-            Simulator.ActiveTurntable = FindActiveTurntable();
+            Simulator.ActiveMovingTable = FindActiveMovingTable();
 
             frame.PrepareFrame(this);
             Camera.PrepareFrame(frame, elapsedTime);
@@ -917,36 +917,36 @@ namespace Orts.Viewer3D
             }
 
             // Turntable commands
-            if (Simulator.Turntables != null)
+            if (Simulator.MovingTables != null)
             {
                 if (UserInput.IsPressed(UserCommands.ControlTurntableClockwise))
                 {
-                    Simulator.ActiveTurntable = FindActiveTurntable();
-                    if (Simulator.ActiveTurntable != null)
+                    Simulator.ActiveMovingTable = FindActiveMovingTable();
+                    if (Simulator.ActiveMovingTable != null)
                     {
-                        TurntableClockwiseCommand.Receiver = Simulator.ActiveTurntable;
+                        TurntableClockwiseCommand.Receiver = Simulator.ActiveMovingTable;
                         new TurntableClockwiseCommand(Log);
                     }
                 }
-                else if (UserInput.IsReleased(UserCommands.ControlTurntableClockwise) && Simulator.ActiveTurntable != null)
+                else if (UserInput.IsReleased(UserCommands.ControlTurntableClockwise) && Simulator.ActiveMovingTable != null)
                 {
-                    TurntableClockwiseTargetCommand.Receiver = Simulator.ActiveTurntable;
+                    TurntableClockwiseTargetCommand.Receiver = Simulator.ActiveMovingTable;
                     new TurntableClockwiseTargetCommand(Log);
                 }
 
                 if (UserInput.IsPressed(UserCommands.ControlTurntableCounterclockwise))
                 {
-                    Simulator.ActiveTurntable = FindActiveTurntable();
-                    if (Simulator.ActiveTurntable != null)
+                    Simulator.ActiveMovingTable = FindActiveMovingTable();
+                    if (Simulator.ActiveMovingTable != null)
                     {
-                        TurntableCounterclockwiseCommand.Receiver = Simulator.ActiveTurntable;
+                        TurntableCounterclockwiseCommand.Receiver = Simulator.ActiveMovingTable;
                         new TurntableCounterclockwiseCommand(Log);
                     }
                 }
 
-                else if (UserInput.IsReleased(UserCommands.ControlTurntableCounterclockwise) && Simulator.ActiveTurntable != null)
+                else if (UserInput.IsReleased(UserCommands.ControlTurntableCounterclockwise) && Simulator.ActiveMovingTable != null)
                 {
-                    TurntableCounterclockwiseTargetCommand.Receiver = Simulator.ActiveTurntable;
+                    TurntableCounterclockwiseTargetCommand.Receiver = Simulator.ActiveMovingTable;
                     new TurntableCounterclockwiseTargetCommand(Log);
                 }
             }
@@ -1145,28 +1145,28 @@ namespace Orts.Viewer3D
             }
         }
 
-        // Finds the Turntable nearest to the viewing point
-        Turntable FindActiveTurntable()
+        // Finds the Turntable or Transfertable nearest to the viewing point
+        MovingTable FindActiveMovingTable()
         {
-            Turntable activeTurntable = null;
+            MovingTable activeMovingTable = null;
             float minDistanceSquared = 1000000f;
-            if (Simulator.Turntables != null)
+            if (Simulator.MovingTables != null)
             {
-                foreach (var turntable in Simulator.Turntables)
+                foreach (var movingTable in Simulator.MovingTables)
                 {
 
-                    if (turntable.WorldPosition.XNAMatrix.M44 != 100000000)
+                    if (movingTable.WorldPosition.XNAMatrix.M44 != 100000000)
                     {
-                        var distanceSquared = WorldLocation.GetDistanceSquared(turntable.WorldPosition.WorldLocation, Camera.CameraWorldLocation);
+                        var distanceSquared = WorldLocation.GetDistanceSquared(movingTable.WorldPosition.WorldLocation, Camera.CameraWorldLocation);
                         if (distanceSquared <= minDistanceSquared && distanceSquared < 160000) //must be the nearest one, but must also be near!
                         {
                             minDistanceSquared = distanceSquared;
-                            activeTurntable = turntable;
+                            activeMovingTable = movingTable;
                         }
                     }
                 }
             }
-            return activeTurntable;
+            return activeMovingTable;
         }
 
         [CallOnThread("Loader")]

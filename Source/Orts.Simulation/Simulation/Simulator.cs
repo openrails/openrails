@@ -131,7 +131,7 @@ namespace Orts.Simulation
         public FuelManager FuelManager;
         public bool InControl = true;//For multiplayer, a player may not control his/her own train (as helper)
         public TurntableFile TurntableFile;
-        public List<Turntable> Turntables;
+        public List<MovingTable> MovingTables;
         public ExtCarSpawnerFile ExtCarSpawnerFile;
         public List<CarSpawnerList> CarSpawnerLists;
 
@@ -162,21 +162,21 @@ namespace Orts.Simulation
         public bool PlayerIsInCab = false;
         public readonly bool MilepostUnitsMetric;
 
-        public int ActiveTurntableIndex = -1;
-        public Turntable ActiveTurntable
+        public int ActiveMovingTableIndex = -1;
+        public MovingTable ActiveMovingTable
         {
             get
             {
-                return ActiveTurntableIndex >= 0 && ActiveTurntableIndex < Turntables.Count ? Turntables[ActiveTurntableIndex] : null;
+                return ActiveMovingTableIndex >= 0 && ActiveMovingTableIndex < MovingTables.Count ? MovingTables[ActiveMovingTableIndex] : null;
             }
             set
             {
-                ActiveTurntableIndex = -1;
-                if (Turntables == null) return;
-                for (int i = 0; i < Turntables.Count; i++)
-                    if (value == Turntables[i])
+                ActiveMovingTableIndex = -1;
+                if (MovingTables == null) return;
+                for (int i = 0; i < MovingTables.Count; i++)
+                    if (value == MovingTables[i])
                     {
-                        ActiveTurntableIndex = i;
+                        ActiveMovingTableIndex = i;
                     }
             }
         }
@@ -376,9 +376,9 @@ namespace Orts.Simulation
             var turntableFile = RoutePath + @"\openrails\turntables.dat";
             if (File.Exists(turntableFile))
             {
-                Turntables = new List<Turntable>();
+                MovingTables = new List<MovingTable>();
                 Trace.Write(" TURNTBL");
-                TurntableFile = new TurntableFile(RoutePath + @"\openrails\turntables.dat", RoutePath + @"\shapes\", Turntables, this);
+                TurntableFile = new TurntableFile(RoutePath + @"\openrails\turntables.dat", RoutePath + @"\shapes\", MovingTables, this);
             }
             LevelCrossings = new LevelCrossings(this);
             FuelManager = new FuelManager(this);
@@ -464,16 +464,16 @@ namespace Orts.Simulation
             if (OriginalPlayerTrain == null) OriginalPlayerTrain = AI.AITrains.Find(item => item.Number == 0);
 
             // initialization of turntables
-            ActiveTurntableIndex = inf.ReadInt32();
+            ActiveMovingTableIndex = inf.ReadInt32();
             var turntableFile = RoutePath + @"\openrails\turntables.dat";
             if (File.Exists(turntableFile))
             {
-                Turntables = new List<Turntable>();
+                MovingTables = new List<MovingTable>();
                 Trace.Write(" TURNTBL");
-                TurntableFile = new TurntableFile(RoutePath + @"\openrails\turntables.dat", RoutePath + @"\shapes\", Turntables, this);
+                TurntableFile = new TurntableFile(RoutePath + @"\openrails\turntables.dat", RoutePath + @"\shapes\", MovingTables, this);
             }
-            if (Turntables != null && Turntables.Count >= 0)
-                foreach (var turntable in Turntables) turntable.Restore(inf, this);
+            if (MovingTables != null && MovingTables.Count >= 0)
+                foreach (var movingTable in MovingTables) movingTable.Restore(inf, this);
 /*
             if (Turntables != null && Turntables.Count >= 0)
                 foreach (var turntable in Turntables) turntable.ReInitTrainPositions();
@@ -494,9 +494,9 @@ namespace Orts.Simulation
             // InterlockingSystem
             AI.Save(outf);
 
-            outf.Write(ActiveTurntableIndex);
-            if (Turntables != null && Turntables.Count >= 0)
-                foreach (var turntable in Turntables) turntable.Save(outf);
+            outf.Write(ActiveMovingTableIndex);
+            if (MovingTables != null && MovingTables.Count >= 0)
+                foreach (var movingtable in MovingTables) movingtable.Save(outf);
 
             Orts.Simulation.Activity.Save(outf, ActivityRun);
         }
@@ -600,7 +600,7 @@ namespace Orts.Simulation
             }
 
             // Must be done before trains so that during turntable rotation train follows it
-            if (ActiveTurntable != null) ActiveTurntable.Update();
+            if (ActiveMovingTable != null) ActiveMovingTable.Update();
 
             // Represent conditions at the specified clock time.
             List<Train> movingTrains = new List<Train>();
@@ -720,13 +720,13 @@ namespace Orts.Simulation
         private void FinishCoupling(Train drivenTrain, Train train, bool couple_to_front, bool sameDirection)
         {
             // if coupled train was on turntable and static, remove it from list of trains on turntable
-            if (ActiveTurntable != null && ActiveTurntable.TrainsOnTurntable.Count != 0)
+            if (ActiveMovingTable != null && ActiveMovingTable.TrainsOnMovingTable.Count != 0)
             {
-                foreach (var trainOnTurntable in ActiveTurntable.TrainsOnTurntable)
+                foreach (var trainOnMovingTable in ActiveMovingTable.TrainsOnMovingTable)
                 {
-                    if (trainOnTurntable.Train.Number == train.Number)
+                    if (trainOnMovingTable.Train.Number == train.Number)
                     {
-                        ActiveTurntable.TrainsOnTurntable.Remove(trainOnTurntable);
+                        ActiveMovingTable.TrainsOnMovingTable.Remove(trainOnMovingTable);
                         break;
                     }
                 }
@@ -1621,8 +1621,8 @@ namespace Orts.Simulation
             if (AI != null) AI.aiListChanged = true;
             if (train2.TrainType == Train.TRAINTYPE.STATIC && (train.TrainType == Train.TRAINTYPE.PLAYER || train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN))
             {
-                // check if detached on turntable
-               if (ActiveTurntable != null) ActiveTurntable.CheckTrainOnTurntable(train2);
+                // check if detached on turntable or transfertable
+                if (ActiveMovingTable != null) ActiveMovingTable.CheckTrainOnMovingTable(train2);
             }
         }
 

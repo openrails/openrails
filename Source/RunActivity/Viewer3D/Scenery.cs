@@ -257,13 +257,13 @@ namespace Orts.Viewer3D
 
 
             // to avoid loop checking for every object this pre-check is performed
-            bool containsTurntable = false;
-            if (Program.Simulator.Turntables != null)
+            bool containsMovingTable = false;
+            if (Program.Simulator.MovingTables != null)
             {
-                foreach (var turntable in Program.Simulator.Turntables)
-                    if (turntable.WFile == WFileName)
+                foreach (var movingTable in Program.Simulator.MovingTables)
+                    if (movingTable.WFile == WFileName)
                     {
-                        containsTurntable = true;
+                        containsMovingTable = true;
                         break;
                     }
             }
@@ -348,18 +348,28 @@ namespace Orts.Viewer3D
                                 //if (success == 0) sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
                             }
                             //otherwise, use shapes
-                            else if (!containsTurntable) sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
+                            else if (!containsMovingTable) sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
                             else
                             {
                                 var found = false;
-                                foreach (var turntable in Program.Simulator.Turntables)
+                                foreach (var movingTable in Program.Simulator.MovingTables)
                                 {
-                                    if (worldObject.UID == turntable.UID && WFileName == turntable.WFile)
+                                    if (worldObject.UID == movingTable.UID && WFileName == movingTable.WFile)
                                     {
                                         found = true;
-                                        turntable.ComputeCenter(worldMatrix);
-                                        var startingY = Math.Asin(-2 * (worldObject.QDirection.A * worldObject.QDirection.C - worldObject.QDirection.B * worldObject.QDirection.D));
-                                        sceneryObjects.Add(new TurntableShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, turntable, startingY));
+                                        if (movingTable is Simulation.Turntable)
+                                        {
+                                            var turntable = movingTable as Simulation.Turntable;
+                                            turntable.ComputeCenter(worldMatrix);
+                                            var startingY = Math.Asin(-2 * (worldObject.QDirection.A * worldObject.QDirection.C - worldObject.QDirection.B * worldObject.QDirection.D));
+                                            sceneryObjects.Add(new TurntableShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, turntable, startingY));
+                                        }
+                                        else
+                                        {
+                                            var transfertable = movingTable as Simulation.Transfertable;
+                                            transfertable.ComputeCenter(worldMatrix);
+                                            sceneryObjects.Add(new TransfertableShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, transfertable));
+                                        }
                                         break;
                                     }
                                 }

@@ -1074,13 +1074,13 @@ namespace Orts.Viewer3D
             if ((Turntable.Clockwise || Turntable.Counterclockwise) && !Rotating)
             {
                 Rotating = true;
-                if (Sound != null) Sound.HandleEvent(Turntable.TrainsOnTurntable.Count == 1 &&
-                    Turntable.TrainsOnTurntable[0].FrontOnBoard && Turntable.TrainsOnTurntable[0].BackOnBoard ? Event.TurntableTurningLoaded : Event.TurntableTurningEmpty);
+                if (Sound != null) Sound.HandleEvent(Turntable.TrainsOnMovingTable.Count == 1 &&
+                    Turntable.TrainsOnMovingTable[0].FrontOnBoard && Turntable.TrainsOnMovingTable[0].BackOnBoard ? Event.MovingTableMovingLoaded : Event.MovingTableMovingEmpty);
             }
             else if ((!Turntable.Clockwise && !Turntable.Counterclockwise && Rotating))
             {
                 Rotating = false;
-                if (Sound != null) Sound.HandleEvent(Event.TurntableStopped);
+                if (Sound != null) Sound.HandleEvent(Event.MovingTableStopped);
             }
 
             // Update the pose for each matrix
@@ -1090,6 +1090,103 @@ namespace Orts.Viewer3D
             var absAnimationMatrix = XNAMatrices[IAnimationMatrix];
             Matrix.Multiply(ref absAnimationMatrix, ref Location.XNAMatrix, out absAnimationMatrix);
             Turntable.PerformUpdateActions(absAnimationMatrix);
+            SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
+        }
+    }
+
+    public class TransfertableShape : PoseableShape
+    {
+        protected float AnimationKey;  // advances with time
+        protected Transfertable Transfertable; // linked turntable data
+        readonly SoundSource Sound;
+        bool Translating = false;
+        protected int IAnimationMatrix = -1; // index of animation matrix
+
+        /// <summary>
+        /// Construct and initialize the class
+        /// </summary>
+        public TransfertableShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags, Transfertable transfertable)
+            : base(viewer, path, initialPosition, flags)
+        {
+            Transfertable = transfertable;
+            AnimationKey = Transfertable.XPos / Transfertable.Width * SharedShape.Animations[0].FrameCount;
+            for (var imatrix = 0; imatrix < SharedShape.Matrices.Length; ++imatrix)
+            {
+                if (SharedShape.MatrixNames[imatrix].ToLower() == transfertable.Animations[0].ToLower())
+                {
+                    IAnimationMatrix = imatrix;
+                    break;
+                }
+            }
+            if (viewer.Simulator.TRK.Tr_RouteFile.DefaultTurntableSMS != null)
+            {
+                var soundPath = viewer.Simulator.RoutePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultTurntableSMS;
+                try
+                {
+                    Sound = new SoundSource(viewer, initialPosition.WorldLocation, Events.Source.ORTSTurntable, soundPath);
+                    viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
+                }
+                catch
+                {
+                    soundPath = viewer.Simulator.BasePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultTurntableSMS;
+                    try
+                    {
+                        Sound = new SoundSource(viewer, initialPosition.WorldLocation, Events.Source.ORTSTurntable, soundPath);
+                        viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
+                    }
+                    catch (Exception error)
+                    {
+                        Trace.WriteLine(new FileLoadException(soundPath, error));
+                    }
+                }
+            }
+            for (var matrix = 0; matrix < SharedShape.Matrices.Length; ++matrix)
+                AnimateMatrix(matrix, AnimationKey);
+
+            var absAnimationMatrix = XNAMatrices[IAnimationMatrix];
+            Matrix.Multiply(ref absAnimationMatrix, ref Location.XNAMatrix, out absAnimationMatrix);
+            Transfertable.ReInitTrainPositions(absAnimationMatrix);
+        }
+
+        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+        {
+            if (Transfertable.GoToTarget)
+            {
+                AnimationKey = Transfertable.TargetX / Transfertable.Width * SharedShape.Animations[0].FrameCount;
+            }
+
+            else if (Transfertable.Forward)
+            {
+                AnimationKey += SharedShape.Animations[0].FrameRate * elapsedTime.ClockSeconds;
+            }
+            else if (Transfertable.Reverse)
+            {
+                AnimationKey -= SharedShape.Animations[0].FrameRate * elapsedTime.ClockSeconds;
+            }
+            if (AnimationKey > SharedShape.Animations[0].FrameCount) AnimationKey = SharedShape.Animations[0].FrameCount;
+            if (AnimationKey < 0) AnimationKey = 0;
+
+            Transfertable.XPos = AnimationKey / SharedShape.Animations[0].FrameCount * Transfertable.Width;
+
+            if ((Transfertable.Forward || Transfertable.Reverse) && !Translating)
+            {
+                Translating = true;
+                if (Sound != null) Sound.HandleEvent(Transfertable.TrainsOnMovingTable.Count == 1 &&
+                    Transfertable.TrainsOnMovingTable[0].FrontOnBoard && Transfertable.TrainsOnMovingTable[0].BackOnBoard ? Event.MovingTableMovingLoaded : Event.MovingTableMovingEmpty);
+            }
+            else if ((!Transfertable.Forward && !Transfertable.Reverse && Translating))
+            {
+                Translating = false;
+                if (Sound != null) Sound.HandleEvent(Event.MovingTableStopped);
+            }
+
+            // Update the pose for each matrix
+            for (var matrix = 0; matrix < SharedShape.Matrices.Length; ++matrix)
+                AnimateMatrix(matrix, AnimationKey);
+
+            var absAnimationMatrix = XNAMatrices[IAnimationMatrix];
+            Matrix.Multiply(ref absAnimationMatrix, ref Location.XNAMatrix, out absAnimationMatrix);
+            Transfertable.PerformUpdateActions(absAnimationMatrix, Location);
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
     }

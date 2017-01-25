@@ -1202,7 +1202,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class TurntableClockwiseCommand : Command
     {
-        public static Turntable Receiver { get; set; }
+        public static MovingTable Receiver { get; set; }
         public TurntableClockwiseCommand(CommandLog log)
             : base(log)
         {
@@ -1224,7 +1224,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class TurntableClockwiseTargetCommand : Command
     {
-        public static Turntable Receiver { get; set; }
+        public static MovingTable Receiver { get; set; }
         public TurntableClockwiseTargetCommand(CommandLog log)
             : base(log)
         {
@@ -1245,7 +1245,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class TurntableCounterclockwiseCommand : Command
     {
-        public static Turntable Receiver { get; set; }
+        public static MovingTable Receiver { get; set; }
         public TurntableCounterclockwiseCommand(CommandLog log)
             : base(log)
         {
@@ -1267,7 +1267,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class TurntableCounterclockwiseTargetCommand : Command
     {
-        public static Turntable Receiver { get; set; }
+        public static MovingTable Receiver { get; set; }
         public TurntableCounterclockwiseTargetCommand(CommandLog log)
             : base(log)
         {

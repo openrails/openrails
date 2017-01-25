@@ -1463,8 +1463,8 @@ namespace Orts.Simulation.Physics
 
         public virtual void Update(float elapsedClockSeconds)
         {
-            if (IsActualPlayerTrain && Simulator.ActiveTurntable != null)
-                Simulator.ActiveTurntable.CheckTrainOnTurntable(this);
+            if (IsActualPlayerTrain && Simulator.ActiveMovingTable != null)
+                Simulator.ActiveMovingTable.CheckTrainOnMovingTable(this);
 
             if (IsActualPlayerTrain && Simulator.OriginalPlayerTrain != this && !CheckStations) // if player train is to check own stations
             {
