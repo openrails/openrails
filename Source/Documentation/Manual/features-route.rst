@@ -21,11 +21,18 @@ are present, instead of using file ``blank.bmp``.
 To have a minimum working snow texture set, the file ``microtex.ace`` must 
 also be present in the ``SNOW`` subfolder.
 
-Operating Turntables
-====================
+Operating Turntables and Transfertables
+=======================================
 
-A cool feature available in OR is the one of operating turntables. In MSTS they are 
-static, and can't rotate trainsets.
+A cool feature available in OR is the one of operating turntables and transfertables. 
+In MSTS they are static, and can't rotate and transfer trainsets.
+Turntables and transfertables are managed in a similar way by OR, and share also a 
+significant portion of code. Therefore here reference to turntables will be made, and 
+then only the differences for transfertables will be described.
+
+Turntables
+----------
+
 The best way to get a turntable to be operational is to refer to an example.
 So here are the instructions and the files to test this function, both for route 
 Catania-Messina (SICILIA 1) and for other routes using ``a1t27mturntable.s``.
@@ -51,7 +58,6 @@ turntables.dat::
   WFile ( "w-005625+014198.w" )
   UiD ( 1280 )
   XOffset ( 0 )
-  YOffset ( -1.92177 )
   ZOffset ( 13.4 )
   TrackShapeIndex ( 253 )
   Animation ( "TRACKPIECE" )
@@ -61,7 +67,6 @@ turntables.dat::
   WFile ( "w-005631+014158.w" )
   UiD ( 638 )
   XOffset ( 0 )
-  YOffset ( -1.92177 )
   ZOffset ( 13.4 )
   TrackShapeIndex ( 253 )
   Animation ( "TRACKPIECE" )
@@ -81,7 +86,7 @@ To generate this file for other routes following has to be taken into account:
 - TrackShapeIndex is the index of the TrackShape () block within tsection.dat that
   refers to the turntable; please note that if a new TrackShape () block for the 
   turntable is needed, it is not necessary to modify tsection.dat; it is possible to 
-  proceed as described here
+  proceed as described :ref:`here <features-route-tracksections>`
 - The Animation parameter is the name of the Matrix of the rotating part within the .s     file
 - the Diameter value is the diameter of the turntable in meters.
 
@@ -155,27 +160,126 @@ the turntable and the degree step. Of course you have to take only the lines up 
 one preceding the one with degrees = 180.
 
 Already many existing turntables have been successfully animated and many new other
-have been created. More can be read `in this forum thread <http://www.elvastower.com/forums/index.php?/topic/28591-operational-turntable/>`_ .
+have been created. More can be read 
+`in this forum thread <http://www.elvastower.com/forums/index.php?/topic/28591-operational-turntable/>`_ .
+
+Transfertables
+--------------
+
+Info for transfertables is stored in file ``turntables.dat`` too. This file may contain 
+info for transfertables and turntables together. Here is an example of such file for 
+a turntable and a transfertable::
+
+
+  2
+  Turntable(
+  WFile ( "w-005625+014198.w" )
+  UiD ( 1280 )
+  XOffset ( 0 )
+  ZOffset ( 13.4 )
+  TrackShapeIndex ( 253 )
+  Animation ( "TRACKPIECE" )
+  Diameter ( 27 )
+  )
+  Transfertable(
+  WFile ( "w-005578+014976.w" )
+  UiD ( 72 )
+  XOffset ( 0 )
+  ZOffset ( 15.0)
+  TrackShapeIndex ( 37300 )
+  Animation ( "TRACKPIECE" )
+  Length ( 29.4 )
+  )
+
+Parameters have the same meaning as for turntables. "Length" is the length of the 
+transfer bridge (therefore the length of the track above it or a bit less, depending 
+from the dimensions of the basin of the transfertable).
+
+The integration .trk file format described in preceding paragraph can be used also for 
+transfertables, using the same sound.
+
+In the standard ``tsection.dat`` there are no usable transfertables defined. Therefore 
+at least a new TrackShape block has to be created. Also in this case it is suggested 
+to define the additional block in the route's specific ``tsection.dat``.
+
+Here below is an example for a route's specific ``tsection.dat`` containing a 
+TrackShape for a transfertable::
+
+
+  include ( "../../../Global/tsection.dat" )
+  _INFO ( Track section and shape addition for transfer table derived from turntable 27m )
+  TrackSections ( 40000
+  _SKIP ( No change here )
+  )
+  TrackShapes ( 40000
+  _INFO(TrackShape for for 30 m transfer table derived from turntable 27m)
+  TrackShape ( 37300
+  FileName (  A1t30mTransfertable.s )
+  NumPaths ( 9 )
+  SectionIdx ( 1 0 -0.18 -1.1 0 339 )
+  SectionIdx ( 1 4.985 -0.18 -1.1 0 339 )
+  SectionIdx ( 1 9.97 -0.18 -1.1 0 339 )
+  SectionIdx ( 1 14.955 -0.18 -1.1 0 339 )
+  SectionIdx ( 1 19.94 -0.18 -1.1 0 339 )
+  SectionIdx ( 1 24.925 -0.18 -1.1 0 339 )
+  SectionIdx ( 1 29.91 -0.18 -1.1 0 339 )
+  SectionIdx ( 1 34.895 -0.18 -1.1 0 339 )
+  SectionIdx ( 1 39.88 -0.18 -1.1 0 339 )
+  )
+  )
+
+The first line must be blank.  
+
+The animation block for the above transfertable is as follows::
+
+		animations ( 1
+		animation ( 3600 30
+			anim_nodes ( 2
+				anim_node BASIN (
+					controllers ( 0 )
+				)
+				anim_node TRACKPIECE (
+					controllers ( 1
+						linear_pos ( 2
+  linear_key (	0	0	-1.92177	0	 )
+  linear_key (	3600	39.88	-1.92177	0	 )
+  						)					
+					)
+				)
+			)
+		)
+	)
+
+3600 is not a mandatory value, however to have a reasonable transfer speed a number of 
+animation keys equal to 60 - 90 every meter should be selected. 
 
 .. _features-route-turntable-operation:
 
 Path laying and operation considerations
 ----------------------------------------
 
-By building up a path that enters the turntable, exits it from the opposite side and has 
-a reversal point few meters after the end of the turntable, it is possible to use the 
-turntable in activity mode. The player will drive the consist into the turntable and 
+By building up a path that enters the turntable or transfertable, exits it from the 
+opposite side and has a reversal point few meters after the end of the turntable or 
+transfertable, it is possible to use the 
+turntable or transfertable in activity mode. The player will drive the consist into 
+the turntable or transfertable and 
 stop it. At that point the reversal point will have effect and will logically lay the 
 consist in the return subpath. The player will put the consist in manual mode, rotate 
-the turntable by 180 degrees and return to auto mode. At this point the consist will be 
+the turntable (in case he is using a turntable) by 180 degrees and return to auto mode. 
+At this point the consist will be 
 again on the activity path.
+
 If instead the player wants the consist to exit to other tracks, he must drive the 
-consist in manual mode out of the turntable. If he later wants to drive back the consist 
-into the turntable and rotate the train so that it exits the turntable on the track 
-where it initially entered the turntable, he can pass back the train to auto mode after 
+consist in manual mode out of the turntable or transfertable. If he later wants to 
+drive back the consist 
+into the turntable or transfertable and rotate or translate the train so that it exits 
+the turntable or transfertable on the track 
+where it initially entered it, he can pass back the train to auto mode after 
 rotation, provided the path is built as defined above.
+
 By using the feature to change :ref:`player train <driving-trainlist>` it is possible 
-also to move in and out any locomotive on any track of e.g. a roundhouse. 
+also to move in and out any locomotive on any track of e.g. a roundhouse or use a 
+shunter to shunt a wagon in and out of a trasfertable. 
  
 .. _features-route-modify-wfiles:
 
@@ -324,7 +428,10 @@ In this fictitious example the first TrackSection and TrackShape is present also
 Global tsection.dat, so the effect is that the original TrackSection and TrackShape are 
 modified; the second ones are not present, and so they are added to the lists.   
 
-.. note::  to be able to use these modified items with the actual MSTS RE or with Or's TSRE5 route editor it is necessary that these modified items are present also in the original tsection.dat file. However, when the work with the RE is terminated and route is distributed, it is sufficient to distribute the above route's specific tsection.dat.
+.. note::  to be able to use these modified items with the actual MSTS RE and AE  
+it is necessary that these modified items are present also in the original tsection.dat 
+file. However, when the work with the RE is terminated and route is distributed, 
+it is sufficient to distribute the above route's specific tsection.dat.
 
 .. _features-route-overhead-wire-extensions:
 
