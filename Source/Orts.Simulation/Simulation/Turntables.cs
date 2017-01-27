@@ -136,6 +136,7 @@ namespace Orts.Simulation
                 TrainOnMovingTable trainOnMovingTable = new TrainOnMovingTable(simulator);
                 trainOnMovingTable.Restore(inf);
                 trainsOnMovingTable--;
+                TrainsOnMovingTable.Add(trainOnMovingTable);
             }
         }
 
@@ -779,14 +780,14 @@ namespace Orts.Simulation
 
         public void Save (BinaryWriter outf)
         {
-            outf.Write(Simulator.Trains.IndexOf(Train));
+            outf.Write(Train.Number);
             outf.Write(FrontOnBoard);
             outf.Write(BackOnBoard);
         }
 
         public void Restore(BinaryReader inf)
         {
-            Train = Simulator.Trains[inf.ReadInt32()];
+            Train = Simulator.Trains.GetTrainByNumber(inf.ReadInt32());
             FrontOnBoard = inf.ReadBoolean();
             BackOnBoard = inf.ReadBoolean();
         }
