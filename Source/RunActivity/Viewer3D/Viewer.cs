@@ -253,6 +253,11 @@ namespace Orts.Viewer3D
 
             Trace.Write(" TTYPE");
             TrackTypes = new TrackTypesFile(Simulator.RoutePath + @"\TTYPE.DAT");
+            if (Simulator.TRK.Tr_RouteFile.SwitchSMSNumber < -1 || Simulator.TRK.Tr_RouteFile.SwitchSMSNumber >= TrackTypes.Count)
+            {
+                Simulator.TRK.Tr_RouteFile.SwitchSMSNumber = -1;
+                Trace.TraceInformation("Switch SMS Number out of range");
+            }
 
             Tiles = new TileManager(Simulator.RoutePath + @"\TILES\", false);
             LoTiles = new TileManager(Simulator.RoutePath + @"\LO_TILES\", true);

@@ -115,6 +115,9 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("ortstriphasewidth", ()=>{ TriphaseWidth = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
                 // default sms file for turntables and transfertables
                 new STFReader.TokenProcessor("ortsdefaultturntablesms", ()=>{ DefaultTurntableSMS = stf.ReadStringBlock(null); }),
+                // sms file number in Ttype.dat when train over switch
+                new STFReader.TokenProcessor("ortsswitchsmsnumber", ()=>{ SwitchSMSNumber = stf.ReadIntBlock(null); }),
+
            });
             //TODO This should be changed to STFException.TraceError() with defaults values created
             if (RouteID == null) throw new STFException(stf, "Missing RouteID");
@@ -162,6 +165,8 @@ namespace Orts.Formats.Msts
         public float TriphaseWidth;
 
         public string DefaultTurntableSMS;
+
+        public int SwitchSMSNumber = -1;
 
     }
 

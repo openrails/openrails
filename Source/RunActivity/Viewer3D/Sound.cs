@@ -45,6 +45,7 @@ using Orts.Simulation;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
+using Orts.Simulation.Signalling;
 using ORTS.Common;
 using ORTS.Settings;
 using System;
@@ -110,6 +111,7 @@ namespace Orts.Viewer3D
         private float initDist = -1; // initial distance run when last ttype selected
         private int initTrackSection = -1; // track section when last ttype selected
         private MSTSWagon initCar = null; // initial leading car (to accommodate in case of change of direction)
+        private bool CarOnSwitch = false;
 
 
         public TrackSoundSource(MSTSWagon car, Viewer viewer)
@@ -172,7 +174,7 @@ namespace Orts.Viewer3D
             _prevTType = 0;
         }
 
-        public void UpdateTType()
+        public void UpdateTType(bool stateChange)
         {
             if (_prevTType == -1)
             {
@@ -202,22 +204,25 @@ namespace Orts.Viewer3D
 
                 if (CarNo == CarLeading)
                 {
-                    bool reSelect = false;
-                    if (nextDist == -1 || initCar != Car.Train.Cars[CarLeading])
+                    bool reSelect = stateChange;
+                    if (!reSelect)
                     {
-                        reSelect = true;
-                    }
-                    else if ((CarLeading == 0 && Car.Train.PresentPosition[0].TCSectionIndex != initTrackSection) || (CarLeading != 0 && Car.Train.PresentPosition[1].TCSectionIndex != initTrackSection))
-                    {
-                        reSelect = true;
-                    }
-                    else if (CarLeading == 0 && (Car.Train.DistanceTravelledM - initDist > nextDist || initDist - Car.Train.DistanceTravelledM > prevDist))
-                    {
-                        reSelect = true;
-                    }
-                    else if (CarLeading != 0 && (Car.Train.DistanceTravelledM - Car.Train.Length - initDist > nextDist || initDist - Car.Train.DistanceTravelledM + Car.Train.Length > prevDist))
-                    {
-                        reSelect = true;
+                        if (nextDist == -1 || initCar != Car.Train.Cars[CarLeading])
+                        {
+                            reSelect = true;
+                        }
+                        else if ((CarLeading == 0 && Car.Train.PresentPosition[0].TCSectionIndex != initTrackSection) || (CarLeading != 0 && Car.Train.PresentPosition[1].TCSectionIndex != initTrackSection))
+                        {
+                            reSelect = true;
+                        }
+                        else if (CarLeading == 0 && (Car.Train.DistanceTravelledM - initDist > nextDist || initDist - Car.Train.DistanceTravelledM > prevDist))
+                        {
+                            reSelect = true;
+                        }
+                        else if (CarLeading != 0 && (Car.Train.DistanceTravelledM - Car.Train.Length - initDist > nextDist || initDist - Car.Train.DistanceTravelledM + Car.Train.Length > prevDist))
+                        {
+                            reSelect = true;
+                        }
                     }
                     if (reSelect)
                     {
@@ -238,8 +243,14 @@ namespace Orts.Viewer3D
                                 Car.TrackSoundType = 0;
                             }
                         else
-                            Car.TrackSoundType = _curTType;
-                    }
+                            if (Viewer.Simulator.TRK.Tr_RouteFile.SwitchSMSNumber == -1 || _curTType != Viewer.Simulator.TRK.Tr_RouteFile.SwitchSMSNumber)
+                                Car.TrackSoundType = _curTType;
+                            else
+                            {
+                                Car.TrackSoundType = 0;
+                                _curTType = 0;
+                            }
+                     }
                     else Car.TrackSoundType = _curTType;
                 }
                 else
@@ -247,11 +258,20 @@ namespace Orts.Viewer3D
                     var CarAhead = Car.Train.Cars[CarNo - CarIncr];
                     if (CarAhead.TrackSoundLocation != WorldLocation.None)
                     {
+//                        if (stateChange)
+//                            Trace.TraceInformation("Time {4} TrainName {6} carNo {0} IsOnSwitch {1} TracksoundType {2} _CurTType {3} AheadTrackSoundType {5}",
+//                                            Car.Train.Cars.IndexOf(Car), CarOnSwitch, Car.TrackSoundType, _curTType, Viewer.Simulator.GameTime, CarAhead.TrackSoundType, Car.Train.Name);
                         if (_curTType == Car.TrackSoundType && Car.TrackSoundType != CarAhead.TrackSoundType)
                         {
                             Car.TrackSoundType = CarAhead.TrackSoundType;
                             Car.TrackSoundLocation = new WorldLocation(CarAhead.TrackSoundLocation);
                             Car.TrackSoundDistSquared = WorldLocation.GetDistanceSquared(Car.WorldPosition.WorldLocation, Car.TrackSoundLocation);
+                            if (stateChange)
+                            {
+                                _curTType = Car.TrackSoundType;
+//                                Trace.TraceInformation("Time {4} TrainName {5} carNo {0} IsOnSwitch {1} TracksoundType {2} _CurTType {3}",
+//                    Car.Train.Cars.IndexOf(Car), CarOnSwitch, Car.TrackSoundType, _curTType, Viewer.Simulator.GameTime, Car.Train.Name);
+                            }
                         }
 
                         if (Car.TrackSoundLocation != WorldLocation.None)
@@ -288,7 +308,8 @@ namespace Orts.Viewer3D
 #if DEBUGSCR
                     Trace.TraceInformation("Sound region changed from {0} to {1}.", _prevTType, _curTType);
 #endif
-
+//                    if (!stateChange) Trace.TraceInformation("StandardChange Time {4} TrainName {5} carNo {0} IsOnSwitch {1} TracksoundType {2} _CurTType {3} _PrevTType {6}",
+//                        Car.Train.Cars.IndexOf(Car), CarOnSwitch, Car.TrackSoundType, _curTType, Viewer.Simulator.GameTime, Car.Train.Name, _prevTType);
                     //Trace.TraceInformation("Train {0} Speed {1}, Car {2}: Sound Region {3} changed to {4} at distance {5}", Car.Train.Number, Car.Train.SpeedMpS, CarNo, _prevTType, _curTType, Math.Sqrt(trackSoundDistSquared));
                     if (CarNo == CarLeading)
                         Car.TrackSoundLocation = new WorldLocation(Car.WorldPosition.WorldLocation);
@@ -299,8 +320,14 @@ namespace Orts.Viewer3D
 
         public override bool Update()
         {
-            UpdateTType();
-
+            bool stateChange = false;
+            if (Viewer.Simulator.TRK.Tr_RouteFile.SwitchSMSNumber != -1) stateChange = UpdateCarOnSwitch();
+//            if (stateChange) Trace.TraceInformation("Time {4} TrainName {5} carNo {0} IsOnSwitch {1} TracksoundType {2} _CurTType {3} Before",
+//                Car.Train.Cars.IndexOf(Car), CarOnSwitch, Car.TrackSoundType, _curTType, Viewer.Simulator.GameTime, Car.Train.Name);
+            if (!CarOnSwitch || Viewer.Simulator.TRK.Tr_RouteFile.SwitchSMSNumber == -1)
+                UpdateTType(stateChange);
+//            if (stateChange) Trace.TraceInformation("Time {4} TrainName {5} carNo {0} IsOnSwitch {1} TracksoundType {2} _CurTType {3} After",
+//                Car.Train.Cars.IndexOf(Car), CarOnSwitch, Car.TrackSoundType, _curTType, Viewer.Simulator.GameTime, Car.Train.Name);
             bool retval = true;
             NeedsFrequentUpdate = false;
 
@@ -335,7 +362,94 @@ namespace Orts.Viewer3D
             }
             Car = null;
         }
+
+        //Checks whether car on switch and selects related .sms file and enables the trigger;
+        // returns true if
+
+        public bool UpdateCarOnSwitch()
+        {
+            var stateChange = false;
+            if (Car != null && Car.Train != null)
+            {
+                if (Car.Train.SpeedMpS > 0.1f || Car.Train.SpeedMpS < -0.1f)
+                {
+                    var carPreviouslyOnSwitch = CarOnSwitch;
+                    CarOnSwitch = false;
+                    if (Car.Train.PresentPosition[0].TCSectionIndex != Car.Train.PresentPosition[1].TCSectionIndex)
+                    {
+                        var copyOccupiedTrack = Car.Train.OccupiedTrack.ToArray();
+                        foreach (var thisSection in copyOccupiedTrack)
+                        {
+                            try
+                            {
+                                if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction || thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
+                                {
+                                    // train is on a switch; let's see if car is on a switch too
+                                    WorldLocation switchLocation = UidLocation(Viewer.Simulator.TDB.TrackDB.TrackNodes[thisSection.OriginalIndex].UiD);
+                                    var distanceFromSwitch = WorldLocation.GetDistanceSquared(Car.WorldPosition.WorldLocation, switchLocation);
+                                    if (distanceFromSwitch < Car.CarLengthM * Car.CarLengthM + Math.Min(Car.SpeedMpS * 3, 150))
+                                    {
+                                        // car is on switch
+                                        if (!carPreviouslyOnSwitch)
+                                        {
+                                            // change TType
+//                                            Car.TrackSoundType = Viewer.Simulator.TRK.Tr_RouteFile.SwitchSMSNumber;
+                                            Car.TrackSoundLocation = new WorldLocation(Car.WorldPosition.WorldLocation);
+                                            stateChange = true;
+                                            _curTType = Viewer.Simulator.TRK.Tr_RouteFile.SwitchSMSNumber;
+                                        }
+                                        CarOnSwitch = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            catch { }
+                        }
+                    }
+                    if (carPreviouslyOnSwitch && !CarOnSwitch)
+                    { 
+                        stateChange = true;
+                    }
+                }
+                else
+                    return stateChange;
+
+                //if (_curTType != _prevTType && _curTType != int.MaxValue)
+                if (_curTType != _prevTType)
+                {
+                    if (_activeInSource != null)
+                    {
+                        _activeInSource.Uninitialize();
+                        //_activeInSource.Car = null;
+                        _activeInSource = _inSources[_curTType];
+                        //_activeInSource.Car = Car;
+                    }
+
+                    if (_activeOutSource != null)
+                    {
+                        _activeOutSource.Uninitialize();
+                        //_activeOutSource.Car = null;
+                        _activeOutSource = _outSources[_curTType];
+                        //_activeOutSource.Car = Car;
+                    }
+#if DEBUGSCR
+                    Trace.TraceInformation("Sound region changed from {0} to {1}.", _prevTType, _curTType);
+#endif
+
+                    //Trace.TraceInformation("Train {0} Speed {1}, Car {2}: Sound Region {3} changed to {4} at distance {5}", Car.Train.Number, Car.Train.SpeedMpS, CarNo, _prevTType, _curTType, Math.Sqrt(trackSoundDistSquared));
+                    _prevTType = _curTType;
+                }
+            }
+            return stateChange;
+        }
+
+        public static WorldLocation UidLocation(UiD uid)
+        {
+            return new WorldLocation(uid.TileX, uid.TileZ, uid.X, uid.Y, uid.Z);
+        }
     }
+
+
     
     /// <summary>
     /// Represents an sms file
