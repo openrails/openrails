@@ -428,10 +428,10 @@ In this fictitious example the first TrackSection and TrackShape is present also
 Global tsection.dat, so the effect is that the original TrackSection and TrackShape are 
 modified; the second ones are not present, and so they are added to the lists.   
 
-.. note::  to be able to use these modified items with the actual MSTS RE and AE  
-it is necessary that these modified items are present also in the original tsection.dat 
-file. However, when the work with the RE is terminated and route is distributed, 
-it is sufficient to distribute the above route's specific tsection.dat.
+.. note::  To be able to use these modified items with the actual MSTS RE and AE 
+  it is necessary that these modified items are present also in the original tsection.dat 
+  file. However, when the work with the RE is terminated and route is distributed, 
+  it is sufficient to distribute the above route's specific tsection.dat.
 
 .. _features-route-overhead-wire-extensions:
 

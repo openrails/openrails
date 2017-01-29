@@ -265,3 +265,61 @@ Testing Sound Files at Runtime
 
 The :ref:`sound debug window <driving-sound-debug>` is a useful tool for 
 testing.
+
+Automatic switch track sound
+============================
+
+With this feature a specific track sound is played when a train passes over any switch or 
+crossover, 
+which highly enhances the sound experience. If this feature is enabled there is no more 
+need to lay down specific sound regions around or sound sources above every 
+switch. This is a lengthy task, and in fact most of the routes aren't equipped with such 
+sound regions or sound sources.
+To enable this feature steps here below must be followed:
+
+1. A suitable external and internal switch track sound must be available; usually you 
+   find them in the root's ``SOUND``. It is highly likely that this sound is available, if 
+   newer routes are present in the ROUTES folder.
+2. For every route it must be checked whether a reference to a switch track sound is 
+   present in the route's ``ttype.dat`` file. If it is, you can proceed to next step. 
+   Else you must insert a new line at the end of ``ttype.dat``, adding the reference to 
+   the switch track sound, and you must add 1 to the number on top of the file.
+   Here below an example of a default ``ttype.dat`` can be found,  where a new line 
+   referring to a fictitious switch sound has been added in last position::
+
+     SIMISA@@@@@@@@@@JINX0t1t______
+     
+     11
+     TrackType ( "Default" "EuropeSteamTrack0In.sms" "EuropeSteamTrack0Ex.sms" )
+     TrackType ( "Concrete Supported"	"EuropeSteamTrack1In.sms" "EuropeSteamTrack1Ex.sms" )
+     TrackType ( "Wood Supported"	"EuropeSteamTrack2In.sms" "EuropeSteamTrack2Ex.sms" )
+     TrackType ( "In Tunnel" "EuropeSteamTrack3In.sms" "EuropeSteamTrack3Ex.sms" )
+     TrackType ( "Steel Bridge" "EuropeSteamTrack4In.sms" "EuropeSteamTrack4Ex.sms" )
+     TrackType ( "Girder Bridge" "EuropeSteamTrack5In.sms" "EuropeSteamTrack5Ex.sms" )
+     TrackType ( "Under Bridge" "EuropeSteamTrack6In.sms" "EuropeSteamTrack6Ex.sms" )
+     TrackType ( "Concrete Bridge" "EuropeSteamTrack7In.sms" "EuropeSteamTrack7Ex.sms" )
+     TrackType ( "Crossing Platform" "EuropeSteamTrack8In.sms" "EuropeSteamTrack8Ex.sms" )
+     TrackType ( "Wooden Bridge" "EuropeSteamTrack9In.sms" "EuropeSteamTrack9Ex.sms" )
+     TrackType ( "Switch" "switchtrack7in.sms" "switchtrack7ex.sms" )
+
+3. For every route you must tell OR which of the ttype sound files are those related to 
+   switches. This is done by inserting following line in the route's ``.trk`` file::
+     
+     ORTSSwitchSMSNumber ( 10 )
+
+   A better solution, because it leaves the ``.trk`` file unaltered, is to create an 
+   ``OpenRails`` subfolder within the route's folder, and to put in it an integration 
+   ``.trk`` file, named like the base one, and with following sample content (supposing 
+   the base .trk file is named ``ITALIA13.trk``::
+
+
+        
+       include ( "../ITALIA13.trk" )
+          ORTSDefaultTurntableSMS ( turntable.sms )
+          ORTSSwitchSMSNumber ( 10 )  
+
+      
+   Note that the above the ``include`` line a blank line must be present.
+   Note also that with the same integration ``.trk`` file also the default turntable sound 
+   is defined, in case this route has turntables or transfertables.                  
+ 
