@@ -32,8 +32,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 {
     public class AirSinglePipe : MSTSBrakeSystem
     {
-        protected float MaxHandbrakeForceN;
-        protected float MaxBrakeForceN = 89e3f;
+//        protected float MaxHandbrakeForceN;
+//        protected float MaxBrakeForceN = 89e3f;
         protected TrainCar Car;
         protected float HandbrakePercent;
         protected float CylPressurePSI = 64;
@@ -102,8 +102,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         public override void InitializeFromCopy(BrakeSystem copy)
         {
             AirSinglePipe thiscopy = (AirSinglePipe)copy;
-            MaxHandbrakeForceN = thiscopy.MaxHandbrakeForceN;
-            MaxBrakeForceN = thiscopy.MaxBrakeForceN;
+//            MaxHandbrakeForceN = thiscopy.MaxHandbrakeForceN;
+//            MaxBrakeForceN = thiscopy.MaxBrakeForceN;
             MaxCylPressurePSI = thiscopy.MaxCylPressurePSI;
             AuxCylVolumeRatio = thiscopy.AuxCylVolumeRatio;
             AuxBrakeLineVolumeRatio = thiscopy.AuxBrakeLineVolumeRatio;
@@ -204,10 +204,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             return MaxApplicationRatePSIpS;
         }
 
-        public float GetMaxBrakeForceN()
-        {
-            return MaxBrakeForceN;
-        }
+//        public float GetMaxBrakeForceN()
+//        {
+//            return MaxBrakeForceN;
+//        }
 
         public override float GetVacResPressurePSI()
         {
@@ -218,8 +218,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         {
             switch (lowercasetoken)
             {
-                case "wagon(maxhandbrakeforce": MaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "wagon(maxbrakeforce": MaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+//                case "wagon(maxhandbrakeforce": MaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+//                case "wagon(maxbrakeforce": MaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(brakecylinderpressureformaxbrakebrakeforce": MaxCylPressurePSI = AutoCylPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "wagon(triplevalveratio": AuxCylVolumeRatio = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "wagon(brakedistributorreleaserate":
@@ -305,7 +305,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 AuxBrakeLineVolumeRatio = EmergResVolumeM3 / EmergAuxVolumeRatio / BrakePipeVolumeM3;
             else
                 AuxBrakeLineVolumeRatio = 3.1f;
-
+                     
             //FullCylAirConsumedM3 = MaxCylPressurePSI * MaxBrakeForceN * 0.00000059733491f; //an average volume (M3) of air used in brake cylinder for 1 N brake force.;
             CylVolumeM3 = EmergResVolumeM3 / EmergAuxVolumeRatio / AuxCylVolumeRatio;
         }
@@ -454,7 +454,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 AuxResPressurePSI += dp;
                 BrakeLine2PressurePSI -= dp * AuxBrakeLineVolumeRatio;
             }
-
+                                 
             if (BrakeLine3PressurePSI >= 1000) // a really weird method: instead of getting the state of bailoff control here, the engine brake simulation signals the bailoff state with brakelinepressure3=1000
             {
                 BrakeLine3PressurePSI -= 1000;
@@ -488,9 +488,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 Car.Train.HUDWagonBrakeCylinderPSI = CylPressurePSI;
             }
 
-            float f = MaxBrakeForceN * Math.Min(CylPressurePSI / MaxCylPressurePSI, 1);
-            if (f < MaxHandbrakeForceN * HandbrakePercent / 100)
-                f = MaxHandbrakeForceN * HandbrakePercent / 100;
+                   float f = Car.MaxBrakeForceN * Math.Min(CylPressurePSI / MaxCylPressurePSI, 1);
+            if (f < Car.MaxHandbrakeForceN * HandbrakePercent / 100)
+                f = Car.MaxHandbrakeForceN * HandbrakePercent / 100;
             Car.BrakeRetardForceN = f * Car.BrakeShoeRetardCoefficientFrictionAdjFactor; // calculates value of force applied to wheel, independent of wheel skid
             if (Car.BrakeSkid) // Test to see if wheels are skiding to excessive brake force
             {

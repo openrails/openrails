@@ -233,7 +233,12 @@ namespace Orts.Simulation.RollingStocks
                 InteriorShapeFileName = null;
             }
 
+            // Initialise key wagon parameters
             MassKG = InitialMassKG;
+            MaxHandbrakeForceN = InitialMaxHandbrakeForceN;
+            MaxBrakeForceN = InitialMaxBrakeForceN;
+            CentreOfGravityM = InitialCentreOfGravityM;
+
             if (FreightAnimations != null)
             {
                 foreach (var ortsFreightAnim in FreightAnimations.Animations)
@@ -334,13 +339,13 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case "wagon(centreofgravity":
                     stf.MustMatch("(");
-                    CentreOfGravityM.X = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    CentreOfGravityM.Y = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    CentreOfGravityM.Z = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    if (Math.Abs(CentreOfGravityM.Z) > 1)
+                    InitialCentreOfGravityM.X = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    InitialCentreOfGravityM.Y = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    InitialCentreOfGravityM.Z = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    if (Math.Abs(InitialCentreOfGravityM.Z) > 1)
                     {
-                        STFException.TraceWarning(stf, string.Format("Ignored CentreOfGravity Z value {0} outside range -1 to +1", CentreOfGravityM.Z));
-                        CentreOfGravityM.Z = 0;
+                        STFException.TraceWarning(stf, string.Format("Ignored CentreOfGravity Z value {0} outside range -1 to +1", InitialCentreOfGravityM.Z));
+                        InitialCentreOfGravityM.Z = 0;
                     }
                     stf.SkipRestOfBlock();
                     break;
@@ -357,6 +362,8 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(wheelradius": DriverWheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(sound": MainSoundFileName = stf.ReadStringBlock(null); break;
                 case "wagon(ortsbrakeshoefriction": BrakeShoeFrictionFactor = new Interpolator(stf); break;
+                case "wagon(maxhandbrakeforce": InitialMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "wagon(maxbrakeforce": InitialMaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(ortsdavis_a": DavisAN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(ortsdavis_b": DavisBNSpM = stf.ReadFloatBlock(STFReader.UNITS.Resistance, null); break;
                 case "wagon(ortsdavis_c": DavisCNSSpMM = stf.ReadFloatBlock(STFReader.UNITS.ResistanceDavisC, null); break;
@@ -494,6 +501,7 @@ namespace Orts.Simulation.RollingStocks
             CarLengthM = copy.CarLengthM;
             TrackGaugeM = copy.TrackGaugeM;
             CentreOfGravityM = copy.CentreOfGravityM;
+            InitialCentreOfGravityM = copy.InitialCentreOfGravityM;
             UnbalancedSuperElevationM = copy.UnbalancedSuperElevationM;
             RigidWheelBaseM = copy.RigidWheelBaseM;
             AuxTenderWaterMassKG = copy.AuxTenderWaterMassKG;
@@ -503,6 +511,10 @@ namespace Orts.Simulation.RollingStocks
             DriverWheelRadiusM = copy.DriverWheelRadiusM;
             MainSoundFileName = copy.MainSoundFileName;
             BrakeShoeFrictionFactor = copy.BrakeShoeFrictionFactor;
+            InitialMaxBrakeForceN = copy.InitialMaxBrakeForceN;
+            InitialMaxHandbrakeForceN = copy.InitialMaxHandbrakeForceN;
+            MaxBrakeForceN = copy.MaxBrakeForceN;
+            MaxHandbrakeForceN = copy.MaxHandbrakeForceN;
             DavisAN = copy.DavisAN;
             DavisBNSpM = copy.DavisBNSpM;
             DavisCNSSpMM = copy.DavisCNSSpMM;
@@ -636,6 +648,8 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(DavisBNSpM);
             outf.Write(DavisCNSSpMM);
             outf.Write(MassKG);
+            outf.Write(MaxBrakeForceN);
+            outf.Write(MaxHandbrakeForceN);
             outf.Write(Couplers.Count);
             foreach (MSTSCoupling coupler in Couplers)
                 coupler.Save(outf);
@@ -671,6 +685,8 @@ namespace Orts.Simulation.RollingStocks
             DavisBNSpM = inf.ReadSingle();
             DavisCNSSpMM = inf.ReadSingle();
             MassKG = inf.ReadSingle();
+            MaxBrakeForceN = inf.ReadSingle();
+            MaxHandbrakeForceN = inf.ReadSingle();
             int n = inf.ReadInt32();
             for (int i = 0; i < n; i++)
             {

@@ -111,6 +111,11 @@ namespace Orts.Simulation.RollingStocks
         public bool HasPassengerCapacity = false;
         public bool HasInsideView = false;
 
+        public float MaxHandbrakeForceN;
+        public float MaxBrakeForceN = 89e3f;
+        public float InitialMaxHandbrakeForceN;  // Initial force when agon initialised
+        public float InitialMaxBrakeForceN = 89e3f;   // Initial force when agon initialised
+
         // Used to calculate Carriage Steam Heat Loss
         public float CarHeatLossWpT;      // Transmission loss for the wagon
         public float CarHeatVolumeM3;     // Volume of car for heating purposes
@@ -302,7 +307,8 @@ namespace Orts.Simulation.RollingStocks
 
         // Used by Curve Speed Method
         protected float TrackGaugeM = 1.435f;  // Track gauge - read in MSTSWagon
-        protected Vector3 CentreOfGravityM = new Vector3(0, 1.8f, 0); // get centre of gravity - read in MSTSWagon
+        protected Vector3 InitialCentreOfGravityM = new Vector3(0, 1.8f, 0); // get centre of gravity - read in MSTSWagon
+        protected Vector3 CentreOfGravityM = new Vector3(0, 1.8f, 0); // get centre of gravity after adjusted for freight animation
         protected float SuperelevationM; // Super elevation on the curve
         protected float UnbalancedSuperElevationM;  // Unbalanced superelevation, read from MSTS Wagon File
         protected float SuperElevationTotalM; // Total superelevation

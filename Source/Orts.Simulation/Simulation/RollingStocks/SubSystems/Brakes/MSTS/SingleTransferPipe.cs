@@ -40,7 +40,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         public override void InitializeFromCopy(BrakeSystem copy)
         {
             SingleTransferPipe thiscopy = (SingleTransferPipe)copy;
-            MaxHandbrakeForceN = thiscopy.MaxHandbrakeForceN;
+    //        MaxHandbrakeForceN = thiscopy.MaxHandbrakeForceN;
         }
 
         public override string GetStatus(Dictionary<BrakeSystemComponent, PressureUnit> units)
@@ -71,14 +71,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         public override void Update(float elapsedClockSeconds)
         {
             BleedOffValveOpen = false;
-            Car.BrakeRetardForceN = (MaxHandbrakeForceN * HandbrakePercent / 100) * Car.BrakeShoeRetardCoefficientFrictionAdjFactor; // calculates value of force applied to wheel, independent of wheel skid
+            Car.BrakeRetardForceN = ( Car.MaxHandbrakeForceN * HandbrakePercent / 100) * Car.BrakeShoeRetardCoefficientFrictionAdjFactor; // calculates value of force applied to wheel, independent of wheel skid
             if (Car.BrakeSkid) // Test to see if wheels are skiding to excessive brake force
             {
-                Car.BrakeForceN = (MaxHandbrakeForceN * HandbrakePercent / 100) * Car.SkidFriction;   // if excessive brakeforce, wheel skids, and loses adhesion
+                Car.BrakeForceN = (Car.MaxHandbrakeForceN * HandbrakePercent / 100) * Car.SkidFriction;   // if excessive brakeforce, wheel skids, and loses adhesion
             }
             else
             {
-                Car.BrakeForceN = (MaxHandbrakeForceN * HandbrakePercent / 100) * Car.BrakeShoeCoefficientFrictionAdjFactor; // In advanced adhesion model brake shoe coefficient varies with speed, in simple model constant force applied as per value in WAG file, will vary with wheel skid.
+                Car.BrakeForceN = (Car.MaxHandbrakeForceN * HandbrakePercent / 100) * Car.BrakeShoeCoefficientFrictionAdjFactor; // In advanced adhesion model brake shoe coefficient varies with speed, in simple model constant force applied as per value in WAG file, will vary with wheel skid.
             }
         
         }

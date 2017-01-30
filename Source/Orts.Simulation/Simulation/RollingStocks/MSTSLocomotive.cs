@@ -1063,7 +1063,7 @@ namespace Orts.Simulation.RollingStocks
                 }
                 if (DynamicBrake)
                 {
-                    float diff = DynamicBrakeBlendingForceMatch ? targetDynamicBrakePercent * airPipeSystem.GetMaxBrakeForceN() - DynamicBrakeForceN : targetDynamicBrakePercent - DynamicBrakeIntervention;
+                    float diff = DynamicBrakeBlendingForceMatch ? targetDynamicBrakePercent * MaxBrakeForceN - DynamicBrakeForceN : targetDynamicBrakePercent - DynamicBrakeIntervention;
                     if (diff > threshold && DynamicBrakeIntervention <= 1)
                         DynamicBrakeIntervention += elapsedClockSeconds * (airPipeSystem.GetMaxApplicationRatePSIpS() / maxCylPressurePSI);
                     else if (diff < -threshold)

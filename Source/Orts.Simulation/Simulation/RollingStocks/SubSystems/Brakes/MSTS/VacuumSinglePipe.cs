@@ -34,8 +34,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         readonly static float OneAtmospherePSI = Bar.ToPSI(1);
         //const float OneAtmosphereKPa = 100;
         //const float OneAtmosphereInHg = 30;
-        float MaxHandbrakeForceN;
-        float MaxBrakeForceN = 89e3f;
+//        float MaxHandbrakeForceN;
+//        float MaxBrakeForceN = 89e3f;
         //float MaxForcePressurePSI = 21 * OneAtmospherePSIA / OneAtmosphereInHg;// relative pressure difference for max brake force
         float MaxForcePressurePSI = KPa.ToPSI(KPa.FromInHg(21));    // relative pressure difference for max brake force
         TrainCar Car;
@@ -79,8 +79,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         public override void InitializeFromCopy(BrakeSystem copy)
         {
             VacuumSinglePipe thiscopy = (VacuumSinglePipe)copy;
-            MaxBrakeForceN = thiscopy.MaxBrakeForceN;
-            MaxHandbrakeForceN = thiscopy.MaxHandbrakeForceN;
+//            MaxBrakeForceN = thiscopy.MaxBrakeForceN;
+//            MaxHandbrakeForceN = thiscopy.MaxHandbrakeForceN;
             MaxForcePressurePSI = thiscopy.MaxForcePressurePSI;
             MaxReleaseRatePSIpS = thiscopy.MaxReleaseRatePSIpS;
             MaxApplicationRatePSIpS = thiscopy.MaxApplicationRatePSIpS;
@@ -165,8 +165,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         {
             switch (lowercasetoken)
             {
-                case "wagon(maxhandbrakeforce": MaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "wagon(maxbrakeforce": MaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+//                case "wagon(maxhandbrakeforce": MaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+//                case "wagon(maxbrakeforce": MaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(brakecylinderpressureformaxbrakebrakeforce": MaxForcePressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultInHg, null); break;
                 case "wagon(maxreleaserate": MaxReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultInHgpS, null); break;
            //     case "wagon(maxapplicationrate": ApplyChargingRatePSIpS = MaxApplicationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultInHgpS, null); break;
@@ -265,9 +265,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     BrakeLine1PressurePSI -= dp * vr;
             }
             float vrp = VacResPressureAdjPSIA();
-            float f = CylPressurePSIA <= vrp ? 0 : MaxBrakeForceN * Math.Min((CylPressurePSIA - vrp) / MaxForcePressurePSI, 1);
-            if (f < MaxHandbrakeForceN * HandbrakePercent / 100)
-                f = MaxHandbrakeForceN * HandbrakePercent / 100;
+            float f = CylPressurePSIA <= vrp ? 0 : Car.MaxBrakeForceN * Math.Min((CylPressurePSIA - vrp) / MaxForcePressurePSI, 1);
+            if (f < Car.MaxHandbrakeForceN * HandbrakePercent / 100)
+                f = Car.MaxHandbrakeForceN * HandbrakePercent / 100;
             Car.BrakeRetardForceN = f * Car.BrakeShoeRetardCoefficientFrictionAdjFactor; // calculates value of force applied to wheel, independent of wheel skid
             if (Car.BrakeSkid) // Test to see if wheels are skiding due to excessive brake force
             {
