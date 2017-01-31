@@ -118,24 +118,23 @@ namespace Orts.Simulation
 
                 var reqDist = 0f; // actual used distance
                 var hornReqDist = 0f; // used distance for horn blow
+                var adjustDist = 0f;
 
-                // The purpose of this test is to validate the static consist that is within vicinity of the crossing.  
-                if ((train.TrainType == Train.TRAINTYPE.STATIC) && WorldLocation.Within(crossing.Location, train.FrontTDBTraveller.WorldLocation, (minimumDist + (train.Length/2))) || WorldLocation.Within(crossing.Location, train.RearTDBTraveller.WorldLocation, minimumDist + (minimumDist + (train.Length / 2))))
+
+                //  The first 2 tests are critical for STATIC CONSISTS, but at the same time should be mandatory since there should always be checks for any null situation.
+                //  The first 2 tests cover a situation where a STATIC consist is found on a crossing attached to a road where other crossings are attached to the same road.
+                //  These tests will only allow the activation of the crossing that should be activated but prevent the actvation of the other crossings which was the issue.
+                //  The source of the issue is not known yet since this only happens with STATIC consists.
+
+                // The purpose of this test is to validate the static consist that is within vicinity of the crossing.
+                if (train.TrainType == Train.TRAINTYPE.STATIC)
                 {
-                    if (WorldLocation.Within(crossing.Location, train.FrontTDBTraveller.WorldLocation, minimumDist) || WorldLocation.Within(crossing.Location, train.RearTDBTraveller.WorldLocation, minimumDist))
-                    {
+                    // An issue was found where a road sharing more than one crossing would have all crossings activated instead of the one crossing when working with STATIC consists.
+                    // The test below corrects this, but the source of the issue is not understood.
+                    if (!WorldLocation.Within(crossing.Location, train.FrontTDBTraveller.WorldLocation, (minimumDist + (train.Length / 2))) && !WorldLocation.Within(crossing.Location, train.RearTDBTraveller.WorldLocation, (minimumDist + (train.Length / 2))))
+                        continue;
+                    if (WorldLocation.Within(crossing.Location, train.FrontTDBTraveller.WorldLocation, (minimumDist + (train.Length / 2))) || WorldLocation.Within(crossing.Location, train.RearTDBTraveller.WorldLocation, (minimumDist + (train.Length / 2))))
                         validStaticConsist = true;
-                    }
-                    else
-                    {
-                        foreach (var scar in train.Cars)
-                        {
-                            if (WorldLocation.Within(crossing.Location, scar.WorldPosition.WorldLocation, minimumDist))
-                            {
-                                validStaticConsist = true;
-                            }
-                        }
-                    }
                 }
 
                 if ((train.TrainType != Train.TRAINTYPE.STATIC) && WorldLocation.Within(crossing.Location, train.FrontTDBTraveller.WorldLocation, totalDist) || WorldLocation.Within(crossing.Location, train.RearTDBTraveller.WorldLocation, totalDist))
@@ -152,7 +151,7 @@ namespace Orts.Simulation
                     hornReqDist = Math.Min(totalMaxDist, 80.0f);
                 }
 
-                if ((train.TrainType == Train.TRAINTYPE.STATIC) && !validStaticConsist)
+                if ((train.TrainType == Train.TRAINTYPE.STATIC) && !validStaticConsist && !crossing.StaticConsists.Contains(train))
                 {
                     continue;
                 }
@@ -198,16 +197,33 @@ namespace Orts.Simulation
 
 
                 // Recognizing static consists at crossings.
-                if ((train.TrainType == Train.TRAINTYPE.STATIC) && frontDist <= minimumDist && (train.ReservedTrackLengthM <= 0 || frontDist < train.ReservedTrackLengthM) && rearDist <= minimumDist)
+                if ((train.TrainType == Train.TRAINTYPE.STATIC) && validStaticConsist && speedMpS == 0)
                 {
-                    if (frontDist <= minimumDist - 15f && (train.ReservedTrackLengthM <= 0 || frontDist < train.ReservedTrackLengthM) && rearDist <= minimumDist - 15f)
-                    {
+                    //adjustDist is used to allow static cars to be placed closer to the crossing without activation.
+                    // One example would be industry sidings with a crossing nearby.  This was found in a custom route.
+                    if (minimumDist >= 20)
+                        adjustDist = minimumDist - 13.5f;
+                    else if (minimumDist < 20)
+                        adjustDist = minimumDist - 6.5f;
+                    frontDist = crossing.DistanceTo(train.FrontTDBTraveller, adjustDist);
+                    rearDist = crossing.DistanceTo(train.RearTDBTraveller, adjustDist);
+                    // Static consist passed the crossing.
+                    if (frontDist < 0 && rearDist < 0)
+                        rearDist = crossing.DistanceTo(new Traveller(train.RearTDBTraveller, Traveller.TravellerDirection.Backward), adjustDist);
+                    // Testing to check if consist is straddling the crossing.
+                    if (frontDist < 0 && rearDist > 0)
                         crossing.AddTrain(train);
-                    }
-                 }
-                
+                    // Testing to check distance while static consist is before crossing.
+                    else if(frontDist <= adjustDist && frontDist > 0)
+                        crossing.AddTrain(train);
+                    else if (rearDist <= adjustDist && rearDist > 0)
+                        crossing.AddTrain(train);
+                    else
+                        crossing.RemoveTrain(train);
+                }
+
                 // Train is stopped.
-                else if ((train is AITrain || train.TrainType == Train.TRAINTYPE.PLAYER || train.TrainType == Train.TRAINTYPE.STATIC) && speedMpS == 0 && frontDist <= reqDist && (train.ReservedTrackLengthM <= 0 || frontDist < train.ReservedTrackLengthM) && rearDist <= minimumDist)
+                else if ((train is AITrain || train.TrainType == Train.TRAINTYPE.PLAYER) && speedMpS == 0 && frontDist <= reqDist && (train.ReservedTrackLengthM <= 0 || frontDist < train.ReservedTrackLengthM) && rearDist <= minimumDist)
                 {
                     // First test is to simulate a timeout if a train comes to a stop before minimumDist
                     if (frontDist > minimumDist && Simulator.Trains.Contains(train))
@@ -223,7 +239,7 @@ namespace Orts.Simulation
                 else if ((train is AITrain || train.TrainType == Train.TRAINTYPE.PLAYER || train.TrainType == Train.TRAINTYPE.STATIC) && speedMpS > 0 && speedMpS <= minCrossingActivationSpeed && frontDist <= reqDist && (train.ReservedTrackLengthM <= 0 || frontDist < train.ReservedTrackLengthM) && rearDist <= minimumDist)
                 {
                     // This will allow a slow train to approach to the crossing's minmum distance without activating the crossing.
-                    if (frontDist <= minimumDist + 70f) // Not all crossing systems operate the same so adding an additional 70 meters is only an option to improve operation.
+                    if (frontDist <= minimumDist + 65f) // Not all crossing systems operate the same so adding an additional 65 meters is only an option to improve operation.
                         crossing.AddTrain(train);
                 }
 
@@ -233,9 +249,9 @@ namespace Orts.Simulation
                     // This will allow a slow train to approach a crossing to a certain point without activating the system.
                     // First test covers front of train clearing crossing.
                     // Second test covers rear of train approaching crossing.
-                    if (frontDist > 2.5) // The value of 2.5 which is within minimumDist is used to test against frontDist to give the best possible distance the gates should deactivate.
+                    if (frontDist > 9.5) // The value of 9.5 which is within minimumDist is used to test against frontDist to give the best possible distance the gates should deactivate.
                         crossing.RemoveTrain(train);
-                    else if (rearDist <= minimumDist + 70f) // Not all crossing systems operate the same so adding an additional 70 meters is only an option to improve operation.
+                    else if (rearDist <= minimumDist + 65f) // Not all crossing systems operate the same so adding an additional 65 meters is only an option to improve operation.
                         crossing.AddTrain(train);
                 }
 
