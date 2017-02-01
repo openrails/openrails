@@ -33,6 +33,9 @@
 // Debug for Friction Force
 //#define DEBUG_FRICTION
 
+// Debug for Freight Animation Variable Mass
+//#define DEBUG_VARIABLE_MASS
+
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
@@ -77,6 +80,8 @@ namespace Orts.Simulation.RollingStocks
         public bool IsLowSpeed = true; // set indicator for low speed operation  0 - 5mph
 
         Interpolator BrakeShoeFrictionFactor;  // Factor of friction for wagon brake shoes
+        const float WaterLBpUKG = 10.0f;    // lbs of water in 1 gal (uk)
+        float TempMassDiffRatio;
 
         // simulation parameters
         public float Variable1;  // used to convey status to soundsource
@@ -195,6 +200,21 @@ namespace Orts.Simulation.RollingStocks
             GetMeasurementUnits();
         }
 
+        // Values for adjusting wagon physics due to load changes
+        float LoadEmptyORTSDavis_A;
+        float LoadEmptyORTSDavis_B;
+        float LoadEmptyORTSDavis_C;
+        float LoadEmptyMaxBrakeForceN;
+        float LoadEmptyMaxHandbrakeForceN;
+        float LoadEmptyCentreOfGravityM_Y;
+        float LoadFullORTSDavis_A;
+        float LoadFullORTSDavis_B;
+        float LoadFullORTSDavis_C;
+        float LoadFullMaxBrakeForceN;
+        float LoadFullMaxHandbrakeForceN;
+        float LoadFullCentreOfGravityM_Y;
+
+
         /// <summary>
         /// This initializer is called when we haven't loaded this type of car before
         /// and must read it new from the wag file.
@@ -250,9 +270,252 @@ namespace Orts.Simulation.RollingStocks
                     }
 
                 }
+
+                // Read freight animation values from animation INCLUDE files
+                // Read (initialise) "common" (empty values first).
+                // Test each value to make sure that it has been defined in the WAG file, if not default to Root WAG file value
+                if (FreightAnimations.EmptyORTSDavis_A > 0)
+                {
+                    LoadEmptyORTSDavis_A = FreightAnimations.EmptyORTSDavis_A;
+                }
+                else
+                {
+                    LoadEmptyORTSDavis_A = DavisAN;
+                }
+
+                if (FreightAnimations.EmptyORTSDavis_B > 0)
+                {
+                    LoadEmptyORTSDavis_B = FreightAnimations.EmptyORTSDavis_B;
+                }
+                else
+                {
+                    LoadEmptyORTSDavis_B = DavisBNSpM;
+                }
+
+                if (FreightAnimations.EmptyORTSDavis_C > 0)
+                {
+                    LoadEmptyORTSDavis_C = FreightAnimations.EmptyORTSDavis_C;
+                }
+                else
+                {
+                    LoadEmptyORTSDavis_C = DavisCNSSpMM;
+                }
+
+                if (FreightAnimations.EmptyMaxBrakeForceN > 0)
+                {
+                    LoadEmptyMaxBrakeForceN = FreightAnimations.EmptyMaxBrakeForceN;
+                }
+                else
+                {
+                    LoadEmptyMaxBrakeForceN = MaxBrakeForceN;
+                }
+
+                if (FreightAnimations.EmptyMaxHandbrakeForceN > 0)
+                {
+                    LoadEmptyMaxHandbrakeForceN = FreightAnimations.EmptyMaxHandbrakeForceN;
+                }
+                else
+                {
+                    LoadEmptyMaxHandbrakeForceN = MaxHandbrakeForceN;
+                }
+
+                if (FreightAnimations.EmptyCentreOfGravityM_Y > 0)
+                {
+                    LoadEmptyCentreOfGravityM_Y = FreightAnimations.EmptyCentreOfGravityM_Y;
+                }
+                else
+                {
+                    LoadEmptyCentreOfGravityM_Y = CentreOfGravityM.Y;
+                }
+
+                // Read (initialise) Static load ones if a static load
+                // Test each value to make sure that it has been defined in the WAG file, if not default to Root WAG file value
+                if (FreightAnimations.FullPhysicsStaticOne != null)
+                {
+                    if (FreightAnimations.FullPhysicsStaticOne.FullStaticORTSDavis_A > 0)
+                    {
+                        LoadFullORTSDavis_A = FreightAnimations.FullPhysicsStaticOne.FullStaticORTSDavis_A;
+                    }
+                    else
+                    {
+                        LoadFullORTSDavis_A = DavisAN;
+                    }
+
+                    if (FreightAnimations.FullPhysicsStaticOne.FullStaticORTSDavis_B > 0)
+                    {
+                        LoadFullORTSDavis_B = FreightAnimations.FullPhysicsStaticOne.FullStaticORTSDavis_B;
+                    }
+                    else
+                    {
+                        LoadFullORTSDavis_B = DavisBNSpM;
+                    }
+
+                    if (FreightAnimations.FullPhysicsStaticOne.FullStaticORTSDavis_C > 0)
+                    {
+                        LoadFullORTSDavis_C = FreightAnimations.FullPhysicsStaticOne.FullStaticORTSDavis_C;
+                    }
+                    else
+                    {
+                        LoadFullORTSDavis_C = DavisCNSSpMM;
+                    }
+
+                    if (FreightAnimations.FullPhysicsStaticOne.FullStaticMaxBrakeForceN > 0)
+                    {
+                        LoadFullMaxBrakeForceN = FreightAnimations.FullPhysicsStaticOne.FullStaticMaxBrakeForceN;
+                    }
+                    else
+                    {
+                        LoadFullMaxBrakeForceN = MaxBrakeForceN;
+                    }
+
+                    if (FreightAnimations.FullPhysicsStaticOne.FullStaticMaxHandbrakeForceN > 0)
+                    {
+                        LoadFullMaxHandbrakeForceN = FreightAnimations.FullPhysicsStaticOne.FullStaticMaxHandbrakeForceN;
+                    }
+                    else
+                    {
+                        LoadFullMaxHandbrakeForceN = MaxHandbrakeForceN;
+                    }
+
+                    if (FreightAnimations.FullPhysicsStaticOne.FullStaticCentreOfGravityM_Y > 0)
+                    {
+                        LoadFullCentreOfGravityM_Y = FreightAnimations.FullPhysicsStaticOne.FullStaticCentreOfGravityM_Y;
+                    }
+                    else
+                    {
+                        LoadFullCentreOfGravityM_Y = CentreOfGravityM.Y;
+                    }
+                }
+
+                // Read (initialise) Continuous load ones if a continuous load
+                // Test each value to make sure that it has been defined in the WAG file, if not default to Root WAG file value
+                if (FreightAnimations.FullPhysicsContinuousOne != null)
+                {
+                    if (FreightAnimations.FullPhysicsContinuousOne.FullORTSDavis_A > 0)
+                    {
+                        LoadFullORTSDavis_A = FreightAnimations.FullPhysicsContinuousOne.FullORTSDavis_A;
+                    }
+                    else
+                    {
+                        LoadFullORTSDavis_A = DavisAN;
+                    }
+
+                    if (FreightAnimations.FullPhysicsContinuousOne.FullORTSDavis_B > 0)
+                    {
+                        LoadFullORTSDavis_B = FreightAnimations.FullPhysicsContinuousOne.FullORTSDavis_B;
+                    }
+                    else
+                    {
+                        LoadFullORTSDavis_B = DavisBNSpM;
+                    }
+
+                    if (FreightAnimations.FullPhysicsContinuousOne.FullORTSDavis_C > 0)
+                    {
+                        LoadFullORTSDavis_C = FreightAnimations.FullPhysicsContinuousOne.FullORTSDavis_C;
+                    }
+                    else
+                    {
+                        LoadFullORTSDavis_C = DavisCNSSpMM;
+                    }
+
+                    if (FreightAnimations.FullPhysicsContinuousOne.FullMaxBrakeForceN > 0)
+                    {
+                        LoadFullMaxBrakeForceN = FreightAnimations.FullPhysicsContinuousOne.FullMaxBrakeForceN;
+                    }
+                    else
+                    {
+                        LoadFullMaxBrakeForceN = MaxBrakeForceN;
+                    }
+
+                    if (FreightAnimations.FullPhysicsContinuousOne.FullMaxHandbrakeForceN > 0)
+                    {
+                        LoadFullMaxHandbrakeForceN = FreightAnimations.FullPhysicsContinuousOne.FullMaxHandbrakeForceN;
+                    }
+                    else
+                    {
+                        LoadFullMaxHandbrakeForceN = MaxHandbrakeForceN;
+                    }
+
+                    if (FreightAnimations.FullPhysicsContinuousOne.FullCentreOfGravityM_Y > 0)
+                    {
+                        LoadFullCentreOfGravityM_Y = FreightAnimations.FullPhysicsContinuousOne.FullCentreOfGravityM_Y;
+                    }
+                    else
+                    {
+                        LoadFullCentreOfGravityM_Y = CentreOfGravityM.Y;
+                    }
+                }
+
                 if (!FreightAnimations.MSTSFreightAnimEnabled) FreightShapeFileName = null;
-                if (FreightAnimations.WagonEmptyWeight != -1) MassKG = FreightAnimations.WagonEmptyWeight + FreightAnimations.FreightWeight + FreightAnimations.StaticFreightWeight;
-                if (FreightAnimations.LoadedOne != null) WeightLoadController.CurrentValue = FreightAnimations.LoadedOne.LoadPerCent / 100;
+                if (FreightAnimations.WagonEmptyWeight != -1)
+                {
+ 
+                    MassKG = FreightAnimations.WagonEmptyWeight + FreightAnimations.FreightWeight + FreightAnimations.StaticFreightWeight;
+
+                    if ( FreightAnimations.StaticFreightAnimationsPresent ) // If it is static freight animation, set wagon physics to full wagon value
+                    {
+                        // Update brake parameters   
+                            MaxBrakeForceN = LoadFullMaxBrakeForceN;
+                            MaxHandbrakeForceN = LoadFullMaxHandbrakeForceN;
+
+                        // Update friction related parameters
+                            DavisAN = LoadFullORTSDavis_A;
+                            DavisBNSpM = LoadFullORTSDavis_B;
+                            DavisCNSSpMM = LoadFullORTSDavis_C;
+
+                        // Update CoG related parameters
+                            CentreOfGravityM.Y = LoadFullCentreOfGravityM_Y;
+
+                    }
+
+                }
+                if (FreightAnimations.LoadedOne != null) // If it is a Continuouos freight animation, set freight wagon parameters to FullatStart
+                {
+                    WeightLoadController.CurrentValue = FreightAnimations.LoadedOne.LoadPerCent / 100;
+
+                    // Update wagon parameters sensitive to wagon mass change
+                    // Calculate the difference ratio, ie how full the wagon is. This value allows the relevant value to be scaled from the empty mass to the full mass of the wagon
+                    TempMassDiffRatio = WeightLoadController.CurrentValue;
+                    // Update brake parameters
+                    MaxBrakeForceN = ((LoadFullMaxBrakeForceN - LoadEmptyMaxBrakeForceN) * TempMassDiffRatio) + LoadEmptyMaxBrakeForceN;
+                    MaxHandbrakeForceN = ((LoadFullMaxHandbrakeForceN - LoadEmptyMaxHandbrakeForceN) * TempMassDiffRatio) + LoadEmptyMaxHandbrakeForceN;
+
+                    // Update friction related parameters
+                    DavisAN = ((LoadFullORTSDavis_A - LoadEmptyORTSDavis_A) * TempMassDiffRatio) + LoadEmptyORTSDavis_A;
+                    DavisBNSpM = ((LoadFullORTSDavis_B - LoadEmptyORTSDavis_B) * TempMassDiffRatio) + LoadEmptyORTSDavis_B;
+                    DavisCNSSpMM = ((LoadFullORTSDavis_C - LoadEmptyORTSDavis_C) * TempMassDiffRatio) + LoadEmptyORTSDavis_C;
+
+                    // Update CoG related parameters
+                    CentreOfGravityM.Y = ((LoadFullCentreOfGravityM_Y - LoadEmptyCentreOfGravityM_Y) * TempMassDiffRatio) + LoadEmptyCentreOfGravityM_Y;
+                }
+                else  // If Freight animation is Continuous and freight is not loaded then set initial values to the empty wagon values
+                {
+                    if (FreightAnimations.ContinuousFreightAnimationsPresent)
+                    {
+                        // If it is an empty continuous freight animation, set wagon physics to empty wagon value
+                        // Update brake physics
+                        MaxBrakeForceN = LoadEmptyMaxBrakeForceN;
+                        MaxHandbrakeForceN = LoadEmptyMaxHandbrakeForceN;
+
+                        // Update friction related parameters
+                        DavisAN = LoadEmptyORTSDavis_A;
+                        DavisBNSpM = LoadEmptyORTSDavis_B;
+                        DavisCNSSpMM = LoadEmptyORTSDavis_C;
+
+                        // Update CoG related parameters
+                        CentreOfGravityM.Y = LoadEmptyCentreOfGravityM_Y;
+                    }
+                }
+
+#if DEBUG_VARIABLE_MASS
+
+                Trace.TraceInformation(" ===============================  Variable Load Initialisation (MSTSWagon.cs) ===============================");
+
+                Trace.TraceInformation("CarID {0}", CarID);
+                Trace.TraceInformation("Initial Values = Brake {0} Handbrake {1} CoGY {2} Mass {3}", InitialMaxBrakeForceN, InitialMaxHandbrakeForceN, InitialCentreOfGravityM.Y, InitialMassKG);
+                Trace.TraceInformation("Empty Values = Brake {0} Handbrake {1} DavisA {2} DavisB {3} DavisC {4} CoGY {5}", LoadEmptyMaxBrakeForceN, LoadEmptyMaxHandbrakeForceN, LoadEmptyORTSDavis_A, LoadEmptyORTSDavis_B, LoadEmptyORTSDavis_C, LoadEmptyCentreOfGravityM_Y);
+                Trace.TraceInformation("Full Values = Brake {0} Handbrake {1} DavisA {2} DavisB {3} DavisC {4} CoGY {5}", LoadFullMaxBrakeForceN, LoadFullMaxHandbrakeForceN, LoadFullORTSDavis_A, LoadFullORTSDavis_B, LoadFullORTSDavis_C, LoadFullCentreOfGravityM_Y);
+#endif
 
             }
 
@@ -567,6 +830,19 @@ namespace Orts.Simulation.RollingStocks
                 FreightAnimations = new FreightAnimations(copy.FreightAnimations, this);
             }
 
+            LoadEmptyCentreOfGravityM_Y = copy.LoadEmptyCentreOfGravityM_Y;
+            LoadEmptyMaxBrakeForceN = copy.LoadEmptyMaxBrakeForceN;
+            LoadEmptyMaxHandbrakeForceN = copy.LoadEmptyMaxHandbrakeForceN;
+            LoadEmptyORTSDavis_A = copy.LoadEmptyORTSDavis_A;
+            LoadEmptyORTSDavis_B = copy.LoadEmptyORTSDavis_B;
+            LoadEmptyORTSDavis_C = copy.LoadEmptyORTSDavis_C;
+            LoadFullCentreOfGravityM_Y = copy.LoadFullCentreOfGravityM_Y;
+            LoadFullMaxBrakeForceN = copy.LoadFullMaxBrakeForceN;
+            LoadFullMaxHandbrakeForceN = copy.LoadFullMaxHandbrakeForceN;
+            LoadFullORTSDavis_A = copy.LoadFullORTSDavis_A;
+            LoadFullORTSDavis_B = copy.LoadFullORTSDavis_B;
+            LoadFullORTSDavis_C = copy.LoadFullORTSDavis_C;
+            
             if (copy.IntakePointList != null)
             {
                 foreach (IntakePoint copyIntakePoint in copy.IntakePointList)
@@ -976,6 +1252,19 @@ namespace Orts.Simulation.RollingStocks
                         if (WeightLoadController.UpdateValue != 0.0)
                             Simulator.Confirmer.UpdateWithPerCent(CabControl.FreightLoad,
                                 CabSetting.Increase, WeightLoadController.CurrentValue * 100);
+                    // Update wagon parameters sensitive to wagon mass change
+                    // Calculate the difference ratio, ie how full the wagon is. This value allows the relevant value to be scaled from the empty mass to the full mass of the wagon
+                        TempMassDiffRatio = WeightLoadController.CurrentValue;
+                   // Update brake parameters
+                        MaxBrakeForceN = ((LoadFullMaxBrakeForceN - LoadEmptyMaxBrakeForceN) * TempMassDiffRatio) + LoadEmptyMaxBrakeForceN;
+                        MaxHandbrakeForceN = ((LoadFullMaxHandbrakeForceN - LoadEmptyMaxHandbrakeForceN) * TempMassDiffRatio) + LoadEmptyMaxHandbrakeForceN;
+                  // Update friction related parameters
+                        DavisAN = ((LoadFullORTSDavis_A - LoadEmptyORTSDavis_A) * TempMassDiffRatio) + LoadEmptyORTSDavis_A;
+                        DavisBNSpM = ((LoadFullORTSDavis_B - LoadEmptyORTSDavis_B) * TempMassDiffRatio) + LoadEmptyORTSDavis_B;
+                        DavisCNSSpMM = ((LoadFullORTSDavis_C - LoadEmptyORTSDavis_C) * TempMassDiffRatio) + LoadEmptyORTSDavis_C;
+                  // Update CoG related parameters
+                        CentreOfGravityM.Y = ((LoadFullCentreOfGravityM_Y - LoadEmptyCentreOfGravityM_Y) * TempMassDiffRatio) + LoadEmptyCentreOfGravityM_Y;
+
                     }
                 }
                 if (WeightLoadController.UpdateValue == 0.0 && FreightAnimations.LoadedOne != null && FreightAnimations.LoadedOne.LoadPerCent == 0.0)

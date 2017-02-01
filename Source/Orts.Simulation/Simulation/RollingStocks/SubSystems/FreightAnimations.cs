@@ -54,7 +54,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public float EmptyMaxHandbrakeForceN = -9999;
         public float EmptyCentreOfGravityM_Y = -9999; // get centre of gravity after adjusted for freight animation
         public bool ContinuousFreightAnimationsPresent = false; // Flag to indicate that a continuous freight animation is present
-        public bool StaticFreightPresent = false; // Flag to indicate that a continuous freight animation is present
+        public bool StaticFreightAnimationsPresent = false; // Flag to indicate that a continuous freight animation is present
 
         public FreightAnimations(STFReader stf, MSTSWagon wagon)
         {
@@ -100,7 +100,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 {
                     Animations.Add(new FreightAnimationStatic(stf));
                     StaticFreightWeight += (Animations.Last() as FreightAnimationStatic).FreightWeight;
-                    StaticFreightPresent = true;
+                    StaticFreightAnimationsPresent = true;
                     FullPhysicsStaticOne = Animations.Last() as FreightAnimationStatic;
                 }),
 /*                new STFReader.TokenProcessor("freightanimdiscrete", ()=>
@@ -199,7 +199,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             EmptyMaxHandbrakeForceN = copyFACollection.EmptyMaxHandbrakeForceN;
             EmptyCentreOfGravityM_Y = copyFACollection.EmptyCentreOfGravityM_Y;
             ContinuousFreightAnimationsPresent = copyFACollection.ContinuousFreightAnimationsPresent;
-            StaticFreightPresent = copyFACollection.StaticFreightPresent;
+            StaticFreightAnimationsPresent = copyFACollection.StaticFreightAnimationsPresent;
         }
     }
 
