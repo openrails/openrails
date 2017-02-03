@@ -409,7 +409,8 @@ namespace Orts.Simulation.AIs
                 BuildWaitingPointList(activityClearingDistanceM);
                 BuildStationList(activityClearingDistanceM);
 
-                StationStops.Sort();
+                // <CSComment> This creates problems in push-pull paths </CSComment>
+//                StationStops.Sort();
                 if (!atStation && StationStops.Count > 0 && this != Simulator.Trains[0])
                 {
                     if (MaxVelocityA > 0 &&

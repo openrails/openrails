@@ -10608,11 +10608,6 @@ namespace Orts.Simulation.Physics
 
             foreach (Traffic_Traffic_Item thisItem in TrafficService.TrafficDetails)
             {
-                if (Simulator.TimetableMode)
-                {
-                    beginActiveSubroute = 0;
-                    activeSubrouteNodeIndex = 0;
-                }
                 if (thisItem.ArrivalTime < 0)
                 {
                     thisItem.ArrivalTime = thisItem.DepartTime < 0 ? TrafficService.Time : Math.Min(thisItem.DepartTime, TrafficService.Time);
@@ -10658,6 +10653,26 @@ namespace Orts.Simulation.Physics
                 PlatformDetails thisPlatform = signalRef.PlatformDetailsList[platformIndex];
                 int sectionIndex = thisPlatform.TCSectionIndex[0];
                 int routeIndex = thisRoute.GetRouteIndex(sectionIndex, activeSubrouteNodeIndex);
+                // No backwards!
+                if (routeIndex >=0 && StationStops.Count > 0 && StationStops[StationStops.Count - 1].RouteIndex == routeIndex
+                    && StationStops[StationStops.Count - 1].SubrouteIndex == activeSubroute
+                    && StationStops[StationStops.Count - 1].PlatformItem.TCOffset[1, thisRoute[routeIndex].Direction] >= thisPlatform.TCOffset[1, thisRoute[routeIndex].Direction])
+                {
+                    if (activeSubrouteNodeIndex < thisRoute.Count - 1) activeSubrouteNodeIndex++;
+                    else if (activeSubroute < (TCRoute.TCRouteSubpaths.Count - 1))
+                    {
+                        activeSubroute++;
+                        activeSubrouteNodeIndex = 0;
+                        thisRoute = TCRoute.TCRouteSubpaths[activeSubroute];
+                    }
+                    else
+                    {
+                      Trace.TraceWarning("Train {0} : platform {1} not in correct sequence",
+                            Number.ToString(), platformStartID.ToString());
+                        return false;
+                    }
+                    routeIndex = thisRoute.GetRouteIndex(sectionIndex, activeSubrouteNodeIndex);
+                }
 
                 // if first section not found in route, try last
 
@@ -10849,7 +10864,8 @@ namespace Orts.Simulation.Physics
                 {
                     TCReversalInfo thisReversal = TCRoute.ReversalInfo[activeSubroute];
                     int reversalIndex = thisReversal.SignalUsed ? thisReversal.LastSignalIndex : thisReversal.LastDivergeIndex;
-                    if (reversalIndex >= 0 && reversalIndex <= lastRouteIndex) // reversal point is this section or earlier
+                    if (reversalIndex >= 0 && reversalIndex <= lastRouteIndex
+                        && !(reversalIndex == lastRouteIndex && thisReversal.ReverseReversalOffset - 50.0 > thisPlatform.TCOffset[1, thisElement.Direction])) // reversal point is this section or earlier
                     {
                         useDirection = useDirection == 0 ? 1 : 0;
                         inDirection = false;
@@ -10957,12 +10973,11 @@ namespace Orts.Simulation.Physics
                 thisStation.arrivalDT = arrivalDT;
                 thisStation.departureDT = departureDT;
 
-                //<CSComment> is this really necessary?
+                StationStops.Add(thisStation);
 
-                MergeWPAndInsert(activeSubroute, thisStation, thisElement, beginOffset, endOffset);
                 //<CSComment> should this be reused?
 
-                //                    StationStops.Add(thisStation);
+                // 
                 //
                 //                    // if station has hold signal and this signal is the same as the exit signal for previous station, remove the exit signal from the previous station
                 //
@@ -11027,22 +11042,7 @@ namespace Orts.Simulation.Physics
                 }
             }
 #endif
-
             return (true);
-        }
-
-        //================================================================================================//
-        /// <summary>
-        /// Add the station stop after removing all WP between Begin and end offset
-        /// <\summary>
-
-        public void MergeWPAndInsert(int activeSubroute, StationStop thisStation, TCRouteElement thisElement, float beginOffset, float endOffset)
-        {
-            for (int idxElt = 0; idxElt < TCRoute.WaitingPoints.Count; idxElt++)
-            {
-                var element = TCRoute.WaitingPoints[idxElt];
-            }
-            StationStops.Add(thisStation);
         }
 
         //================================================================================================//
