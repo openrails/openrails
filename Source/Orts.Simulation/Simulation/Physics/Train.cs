@@ -13591,6 +13591,29 @@ namespace Orts.Simulation.Physics
 
         //================================================================================================//
         /// <summary>
+        /// ToggleDoors
+        /// Toggles status of doors of a train
+        /// Parameters: right = true if right doors; open = true if opening
+        /// <\summary>
+        public void ToggleDoors(bool right, bool open)
+        {
+            foreach (TrainCar car in Cars)
+            {
+                var mstsWagon = car as MSTSWagon;
+                    if (!car.Flipped && right || car.Flipped && !right)
+                    {
+                        mstsWagon.DoorRightOpen = open;
+                    }
+                    else
+                    {
+                        mstsWagon.DoorLeftOpen = open;
+                    }
+                mstsWagon.SignalEvent(open? Event.DoorOpen : Event.DoorClose); // hook for sound trigger
+            }
+        }
+
+        //================================================================================================//
+        /// <summary>
         /// Routed train class : train class plus valid route direction indication
         /// Used throughout in the signalling process in order to derive correct route in Manual and Explorer modes
         /// </summary>
@@ -17520,7 +17543,7 @@ namespace Orts.Simulation.Physics
             /// </summary>
             /// <param name="presentTime"></param>
 
-            public void CalculateDepartTime(int presentTime, Train stoppedTrain)
+            public int CalculateDepartTime(int presentTime, Train stoppedTrain)
             {
                 int eightHundredHours = 8 * 3600;
                 int sixteenHundredHours = 16 * 3600;
@@ -17572,6 +17595,14 @@ namespace Orts.Simulation.Physics
                         ActualArrival += (24 * 3600);
                     }
                 }
+                if (ActualDepart != correctedTime)
+                {
+                    stopTime += ActualDepart - correctedTime;
+                    if (stopTime > 24 * 3600) stopTime -= 24 * 3600;
+                    else if (stopTime < 0) stopTime += 24 * 3600;
+
+                }
+                return stopTime;
             }
 
             //================================================================================================//

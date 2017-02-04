@@ -161,6 +161,7 @@ namespace Orts.Simulation
 
         public bool PlayerIsInCab = false;
         public readonly bool MilepostUnitsMetric;
+        public bool OpenDoorsInAITrains;
 
         public int ActiveMovingTableIndex = -1;
         public MovingTable ActiveMovingTable
@@ -265,6 +266,7 @@ namespace Orts.Simulation
             BasePath = Path.GetDirectoryName(Path.GetDirectoryName(RoutePath));
             DayAmbientLight = (int)Settings.DayAmbientLight;
 
+
             string ORfilepath = System.IO.Path.Combine(RoutePath, "OpenRails");
 
             Trace.Write("Loading ");
@@ -273,6 +275,7 @@ namespace Orts.Simulation
             TRK = new RouteFile(MSTS.MSTSPath.GetTRKFileName(RoutePath));
             RouteName = TRK.Tr_RouteFile.Name;
             MilepostUnitsMetric = TRK.Tr_RouteFile.MilepostUnitsMetric;
+            OpenDoorsInAITrains = TRK.Tr_RouteFile.OpenDoorsInAITrains == null ? Settings.OpenDoorsInAITrains : (bool)TRK.Tr_RouteFile.OpenDoorsInAITrains;
 
             Trace.Write(" TDB");
             TDB = new TrackDatabaseFile(RoutePath + @"\" + TRK.Tr_RouteFile.FileName + ".tdb");

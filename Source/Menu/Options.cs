@@ -323,6 +323,7 @@ namespace ORTS
             precipitationBoxWidth.Value = Settings.PrecipitationBoxWidth;
             precipitationBoxLength.Value = Settings.PrecipitationBoxLength;
             checkCorrectQuestionableBrakingParams.Checked = Settings.CorrectQuestionableBrakingParams;
+            checkDoorsAITrains.Checked = Settings.OpenDoorsInAITrains;
         }
 
         static string ParseCategoryFrom(string name)
@@ -513,6 +514,7 @@ namespace ORTS
             Settings.PrecipitationBoxWidth = (int)precipitationBoxWidth.Value;
             Settings.PrecipitationBoxLength = (int)precipitationBoxLength.Value;
             Settings.CorrectQuestionableBrakingParams = checkCorrectQuestionableBrakingParams.Checked;
+            Settings.OpenDoorsInAITrains = checkDoorsAITrains.Checked;
 
             Settings.Save();
         }

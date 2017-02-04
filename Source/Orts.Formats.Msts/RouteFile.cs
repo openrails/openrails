@@ -117,6 +117,7 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("ortsdefaultturntablesms", ()=>{ DefaultTurntableSMS = stf.ReadStringBlock(null); }),
                 // sms file number in Ttype.dat when train over switch
                 new STFReader.TokenProcessor("ortsswitchsmsnumber", ()=>{ SwitchSMSNumber = stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("ortsopendoorsinaitrains", ()=>{ OpenDoorsInAITrains = stf.ReadBoolBlock(false); }),
 
            });
             //TODO This should be changed to STFException.TraceError() with defaults values created
@@ -165,8 +166,9 @@ namespace Orts.Formats.Msts
         public float TriphaseWidth;
 
         public string DefaultTurntableSMS;
+        public bool ? OpenDoorsInAITrains; // true if option active
 
-        public int SwitchSMSNumber = -1;
+        public int SwitchSMSNumber = -1; // defines the number of the switch SMS files in file .ttype.dat
 
     }
 

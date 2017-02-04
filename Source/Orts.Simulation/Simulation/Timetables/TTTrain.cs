@@ -282,7 +282,8 @@ namespace Orts.Simulation.Timetables
             outf.Write(Efficiency);
             outf.Write(MaxVelocityA);
             outf.Write(UncondAttach);
-
+            outf.Write(doorCloseAdvance);
+            outf.Write(doorOpenDelay);
             // dummy for service list count
             outf.Write(-1);
 
@@ -1831,7 +1832,7 @@ namespace Orts.Simulation.Timetables
         /// Train is at station
         /// <\summary>
 
-        public override void UpdateStationState(int presentTime)
+        public override void UpdateStationState(float elapsedClockSeconds, int presentTime)
         {
             StationStop thisStation = StationStops[0];
             bool removeStation = true;

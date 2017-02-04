@@ -271,6 +271,8 @@ namespace ORTS.Settings
         public int PrecipitationBoxLength { get; set; }
         [Default(false)]
         public bool CorrectQuestionableBrakingParams { get; set; }
+        [Default(false)]
+        public bool OpenDoorsInAITrains { get; set; }
 
 
         // Hidden settings:

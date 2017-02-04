@@ -80,6 +80,7 @@ namespace Orts.Simulation.Signalling
         private Dictionary<int, CrossOverItem> CrossoverList = new Dictionary<int, CrossOverItem>();
         public List<PlatformDetails> PlatformDetailsList = new List<PlatformDetails>();
         public Dictionary<int, int> PlatformXRefList = new Dictionary<int, int>();
+        private Dictionary<int, uint> PlatformSidesList = new Dictionary<int, uint>();
         public Dictionary<string, List<int>> StationXRefList = new Dictionary<string, List<int>>();
 
         public bool UseLocationPassingPaths;                    // Use location-based style processing of passing paths (set by Simulator)
@@ -156,7 +157,7 @@ namespace Orts.Simulation.Signalling
             // Process platform information
             //
 
-            ProcessPlatforms(platformList, trackDB.TrItemTable, trackDB.TrackNodes);
+            ProcessPlatforms(platformList, trackDB.TrItemTable, trackDB.TrackNodes, PlatformSidesList);
 
             //
             // Process tunnel information
@@ -454,6 +455,7 @@ namespace Orts.Simulation.Signalling
 
             var Tokens = new List<TokenID>();
             Tokens.Add(TokenID.Signal);
+            Tokens.Add(TokenID.Platform);
 
             // loop through files, use only extention .w, skip w+1000000+1000000.w file
 
@@ -523,6 +525,12 @@ namespace Orts.Simulation.Signalling
                                 SignalRefList.Add(thisref.Key, thisRefObject);
                             }
                         }
+                    }
+                    else  if (worldObject.GetType() == typeof(PlatformObj))
+                    {
+                        var thisWorldObj = worldObject as PlatformObj;
+                        if (!PlatformSidesList.ContainsKey(thisWorldObj.trItemIDList[0].dbID)) PlatformSidesList.Add(thisWorldObj.trItemIDList[0].dbID, thisWorldObj.PlatformData);
+                        if (!PlatformSidesList.ContainsKey(thisWorldObj.trItemIDList[0].dbID)) PlatformSidesList.Add(thisWorldObj.trItemIDList[1].dbID, thisWorldObj.PlatformData);
                     }
                 }
             }
@@ -3979,11 +3987,12 @@ namespace Orts.Simulation.Signalling
         //
 
         private void ProcessPlatforms(Dictionary<int, int> platformList, TrItem[] TrItems,
-                TrackNode[] trackNodes)
+                TrackNode[] trackNodes, Dictionary<int, uint> platformSidesList)
         {
             foreach (KeyValuePair<int, int> thisPlatformIndex in platformList)
             {
                 int thisPlatformDetailsIndex;
+                uint thisPlatformData;
 
                 // get platform item
 
@@ -4115,6 +4124,7 @@ namespace Orts.Simulation.Signalling
                     thisDetails.nodeOffset[refIndex] = thisPlatform.SData1;
                     thisDetails.TCOffset[refIndex, 1] = thisPlatform.SData1 - thisSection.OffsetLength[1];
                     thisDetails.TCOffset[refIndex == 1 ? 0 : 1, 0] = thisSection.Length - thisDetails.TCOffset[refIndex, 1];
+                    if (thisPlatform.Flags1 == "ffff0000" || thisPlatform.Flags1 == "FFFF0000") thisDetails.PlatformFrontUiD = thisIndex;        // used to define 
                 }
 
                 if (refIndex == 0)
@@ -4122,10 +4132,16 @@ namespace Orts.Simulation.Signalling
                     thisDetails.Name = String.Copy(thisPlatform.Station);
                     thisDetails.MinWaitingTime = thisPlatform.PlatformMinWaitingTime;
                     thisDetails.NumPassengersWaiting = (int)thisPlatform.PlatformNumPassengersWaiting;
-                }
+                 }
                 else if (!splitPlatform)
                 {
                     thisDetails.Length = Math.Abs(thisDetails.nodeOffset[1] - thisDetails.nodeOffset[0]);
+                }
+
+                if (platformSidesList.TryGetValue(thisIndex, out thisPlatformData))
+                {
+                    if (((uint)PlatformDataFlag.PlatformLeft & thisPlatformData) != 0) thisDetails.PlatformSide[0] = true;
+                    if (((uint)PlatformDataFlag.PlatformRight & thisPlatformData) != 0) thisDetails.PlatformSide[1] = true;
                 }
 
                 // check if direction correct, else swap 0 - 1 entries for offsets etc.
@@ -11925,6 +11941,8 @@ namespace Orts.Simulation.Signalling
         public string Name;
         public uint MinWaitingTime;
         public int NumPassengersWaiting;
+        public bool[] PlatformSide = new bool[2] { false, false };
+        public int PlatformFrontUiD = -1;
 
 
         //================================================================================================//
@@ -11961,6 +11979,8 @@ namespace Orts.Simulation.Signalling
             Name = String.Copy(orgDetails.Name);
             MinWaitingTime = orgDetails.MinWaitingTime;
             NumPassengersWaiting = orgDetails.NumPassengersWaiting;
+            PlatformSide [0] = orgDetails.PlatformSide[0];
+            PlatformSide[1] = orgDetails.PlatformSide[1];
         }
     }
 

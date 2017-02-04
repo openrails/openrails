@@ -979,6 +979,11 @@ namespace Orts.Formats.Msts
     {
         public readonly List<TrItemId> trItemIDList = new List<TrItemId>();
 
+        // this one called by PlatformObj
+        public TrObject()
+        { }
+
+        // this one called by SidingObj
         public TrObject(SBR block, int detailLevel)
         {
             StaticDetailLevel = detailLevel;
@@ -1046,10 +1051,36 @@ namespace Orts.Formats.Msts
     /// </summary>
     public class PlatformObj : TrObject
     {
-        public PlatformObj(SBR block, int detailLevel) :
-            base(block, detailLevel)
+        public uint PlatformData;
+
+        public PlatformObj(SBR block, int detailLevel)
         {
+            StaticDetailLevel = detailLevel;
+
+            while (!block.EndOfBlock())
+            {
+                using (var subBlock = block.ReadSubBlock())
+                {
+                    switch (subBlock.ID)
+                    {
+                        case TokenID.UiD: UID = subBlock.ReadUInt(); break;
+                        case TokenID.PlatformData: PlatformData = subBlock.ReadFlags(); break;
+                        case TokenID.TrItemId: trItemIDList.Add(new TrItemId(subBlock)); break;
+                        case TokenID.StaticFlags: StaticFlags = subBlock.ReadFlags(); break;
+                        case TokenID.Position: Position = new STFPositionItem(subBlock); break;
+                        case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
+                        case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
+                        default: subBlock.Skip(); break;
+                    }
+                }
+            }
         }
+    }
+
+    public enum PlatformDataFlag
+    {
+        PlatformLeft = 0x00000002,
+        PlatformRight = 0x00000004,
     }
 
     // These relate to the general properties settable for scenery objects in RE

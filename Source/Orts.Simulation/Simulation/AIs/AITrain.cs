@@ -69,6 +69,9 @@ namespace Orts.Simulation.AIs
         public Service_Definition ServiceDefinition = null; // train's service definition in .act file
         public bool UncondAttach = false;                       // if false it states that train will unconditionally attach to a train on its path
 
+        public float doorOpenDelay = -1f;
+        public float doorCloseAdvance = -1f;
+
 
         public enum AI_MOVEMENT_STATE
         {
@@ -230,6 +233,27 @@ namespace Orts.Simulation.AIs
             Efficiency = inf.ReadSingle();
             MaxVelocityA = inf.ReadSingle();
             UncondAttach = inf.ReadBoolean();
+            doorCloseAdvance = inf.ReadSingle();
+            doorOpenDelay = inf.ReadSingle();
+            if ( !Simulator.TimetableMode && doorOpenDelay <= 0 && doorCloseAdvance > 0 && Simulator.OpenDoorsInAITrains &&
+                MovementState == AI_MOVEMENT_STATE.STATION_STOP && StationStops.Count > 0)
+            {
+                StationStop thisStation = StationStops[0];
+                var frontIsFront = thisStation.PlatformReference == thisStation.PlatformItem.PlatformFrontUiD;
+                foreach (MSTSWagon car in Cars)
+                {
+                    if (thisStation.PlatformItem.PlatformSide[0])
+                    {
+                        //open left doors
+                        ToggleDoors(frontIsFront, true);
+                    }
+                    if (thisStation.PlatformItem.PlatformSide[1])
+                    {
+                        //open right doors
+                        ToggleDoors(!frontIsFront, true);
+                    }
+                }
+            }
             int serviceListCount = inf.ReadInt32();
             if (serviceListCount > 0) RestoreServiceDefinition(inf, serviceListCount);
 
@@ -295,6 +319,8 @@ namespace Orts.Simulation.AIs
             outf.Write(Efficiency);
             outf.Write(MaxVelocityA);
             outf.Write(UncondAttach);
+            outf.Write(doorCloseAdvance);
+            outf.Write(doorOpenDelay);
             if (ServiceDefinition != null) ServiceDefinition.Save(outf);
             else outf.Write(-1);
         }
@@ -719,7 +745,7 @@ namespace Orts.Simulation.AIs
                     if (stillExist[1]) UpdateStoppedState();
                     break;
                 case AI_MOVEMENT_STATE.STATION_STOP:
-                    UpdateStationState(presentTime);
+                    UpdateStationState(elapsedClockSeconds, presentTime);
                     break;
                 case AI_MOVEMENT_STATE.BRAKING:
                     UpdateBrakingState(elapsedClockSeconds, presentTime);
@@ -1791,7 +1817,7 @@ namespace Orts.Simulation.AIs
         /// Train is at station
         /// <\summary>
 
-        public virtual void UpdateStationState(int presentTime)
+        public virtual void UpdateStationState(float elapsedClockSeconds, int presentTime)
         {
             StationStop thisStation = StationStops[0];
             bool removeStation = true;
@@ -1809,8 +1835,16 @@ namespace Orts.Simulation.AIs
                 if (thisStation.ActualArrival < 0)
                 {
                     thisStation.ActualArrival = presentTime;
-                    thisStation.CalculateDepartTime(presentTime, this);
+                    var stopTime = thisStation.CalculateDepartTime(presentTime, this);
                     actualdepart = thisStation.ActualDepart;
+                    doorOpenDelay = 4.0f;
+                    doorCloseAdvance = stopTime - 10.0f;
+                    if (PreUpdate) doorCloseAdvance -= 10;
+                    if (doorCloseAdvance - 6 < doorOpenDelay)
+                    {
+                        doorOpenDelay = 0;
+                        doorCloseAdvance = stopTime - 3;
+                    }
 
 #if DEBUG_REPORTS
                     DateTime baseDT = new DateTime();
@@ -1834,6 +1868,47 @@ namespace Orts.Simulation.AIs
                              depTimeCT.ToString("HH:mm:ss") + "\n");
                     }
 
+                }
+                else
+                {
+                    if (!IsFreight && Simulator.OpenDoorsInAITrains)
+                    {
+                        var frontIsFront = thisStation.PlatformReference == thisStation.PlatformItem.PlatformFrontUiD;
+                        if (doorOpenDelay > 0)
+                        {
+                            doorOpenDelay -= elapsedClockSeconds;
+                            if (doorOpenDelay < 0)
+                            {
+                                if (thisStation.PlatformItem.PlatformSide[0])
+                                {
+                                    //open left doors
+                                    ToggleDoors(frontIsFront, true);
+                                }
+                                if (thisStation.PlatformItem.PlatformSide[1])
+                                {
+                                    //open right doors
+                                    ToggleDoors(!frontIsFront, true);
+                                }
+                            }
+                        }
+                        if (doorCloseAdvance > 0)
+                        {
+                            doorCloseAdvance -= elapsedClockSeconds;
+                            if (doorCloseAdvance < 0)
+                            {
+                                if (thisStation.PlatformItem.PlatformSide[0])
+                                {
+                                    //close left doors
+                                    ToggleDoors(frontIsFront, false);
+                                }
+                                if (thisStation.PlatformItem.PlatformSide[1])
+                                {
+                                    //close right doors
+                                    ToggleDoors(!frontIsFront, false);
+                                }
+                            }
+                        }
+                    }
                 }
 
             }
