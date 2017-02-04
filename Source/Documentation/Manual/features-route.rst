@@ -103,7 +103,7 @@ SICILIA 1.trk::
   include ( "../Sicilia 1.trk" )
 			ORTSDefaultTurntableSMS ( turntable.sms )
 
-The first line must be blank. 
+The first line must be empty. 
 
 File ``a1t27mturntable.s`` must be modified to add the animation data, as MSTS has provided 
 it as a static file. To do this, uncompress it with Route Riter or Shapefilemanager and insert just above 
@@ -228,7 +228,7 @@ TrackShape for a transfertable::
   )
   )
 
-The first line must be blank.  
+The first line must be empty.  
 
 The animation block for the above transfertable is as follows::
 
@@ -525,6 +525,32 @@ therefore the semaphore would be static.
 It is however strongly recommended to always have three animation lines within the .s file, 
 where usually the third line repeats the parameters of the first line (except for the 
 animation step).
+
+.. _features-route-open-doors-ai:
+
+Automatic door open/close on AI trains 
+======================================
+
+The feature is explained :ref:`here<options-open-doors-ai>`.
+
+To override the selection made in the 
+:ref:`Experimental Options Window<options-experimental>`, a command line must be inserted 
+in a small integration .trk file, that must be located in an Openrails subfolder within 
+the route's folder, and must have the same name as the base folder. Here below an example
+of such file::
+
+  
+  include ( "../Platformtest.trk" )
+  			ORTSOpenDoorsInAITrains ( 1 )
+
+The first line must be empty.
+
+``ORTSOpenDoorsInAITrains ( 1 )`` forces door open/close for this route even if the 
+option within the Experimental Options Window is not checked.
+
+``ORTSOpenDoorsInAITrains ( 0 )`` disables door open/close for this route even if the 
+option within the Experimental Options Window is checked.
+ 
 
 
 

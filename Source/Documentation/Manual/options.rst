@@ -456,6 +456,8 @@ These options control which OR version update channel is active (see also
 
 .. image:: images/options-updater.png
 
+.. _options-experimental:
+
 Experimental Options
 ====================
 
@@ -738,3 +740,18 @@ checked (only for single-pipe brake system):
 - the charging rate of the reservoir is derived from the .eng parameter 
   ``AirBrakesAirCompressorPowerRating`` (if this generates a value greater 
   than 0.5 psi/s) instead of using a default value.
+
+.. _options-open-doors-ai:
+
+Open/close doors on AI trains
+-----------------------------
+
+This option enables door open/close at station stops on AI trains having passenger 
+trainsets with door animation. Doors are opened 4 seconds after train stop and closed 
+10 seconds before train start. Due to the fact that not all routes have been built with 
+correct indication of the platform side with respect to the track, this option can be 
+individually disabled or enabled on a per-route basis, as explained 
+:ref:`here <features-route-open-doors-ai>`.
+With option enabled, doors open and 
+close automatically also when a player train is in :ref:`autopilot mode <driving-autopilot>`.
+The option is active only in activity mode.
