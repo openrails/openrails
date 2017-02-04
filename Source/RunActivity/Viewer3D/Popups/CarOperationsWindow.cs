@@ -100,7 +100,6 @@ namespace Orts.Viewer3D.Popups
                 Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Handbrake set"));
             else
                 Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Handbrake off"));
-            Visible = false;
         }
 
         void buttonTogglePower_Click(Control arg1, Point arg2)
@@ -119,8 +118,6 @@ namespace Orts.Viewer3D.Popups
             }
             else
                 Viewer.Simulator.Confirmer.Warning(Viewer.Catalog.GetString("No power command for this type of car!"));
-
-            Visible = false;
         }
 
         void buttonToggleMU_Click(Control arg1, Point arg2)
@@ -140,8 +137,6 @@ namespace Orts.Viewer3D.Popups
             }
             else
                 Viewer.Simulator.Confirmer.Warning(Viewer.Catalog.GetString("No MU command for this type of car!"));
-
-            Visible = false;
         }
 
         void buttonToggleBrakeHose_Click(Control arg1, Point arg2)
