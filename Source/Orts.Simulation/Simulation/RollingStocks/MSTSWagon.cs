@@ -201,12 +201,15 @@ namespace Orts.Simulation.RollingStocks
         }
 
         // Values for adjusting wagon physics due to load changes
+        float LoadEmptyMassKg;
         float LoadEmptyORTSDavis_A;
         float LoadEmptyORTSDavis_B;
         float LoadEmptyORTSDavis_C;
         float LoadEmptyMaxBrakeForceN;
         float LoadEmptyMaxHandbrakeForceN;
         float LoadEmptyCentreOfGravityM_Y;
+
+        float LoadFullMassKg;
         float LoadFullORTSDavis_A;
         float LoadFullORTSDavis_B;
         float LoadFullORTSDavis_C;
@@ -274,6 +277,15 @@ namespace Orts.Simulation.RollingStocks
                 // Read freight animation values from animation INCLUDE files
                 // Read (initialise) "common" (empty values first).
                 // Test each value to make sure that it has been defined in the WAG file, if not default to Root WAG file value
+                if (FreightAnimations.WagonEmptyWeight > 0)
+                {
+                    LoadEmptyMassKg = FreightAnimations.WagonEmptyWeight;
+                }
+                else
+                {
+                    LoadEmptyMassKg = MassKG;
+                }  
+                
                 if (FreightAnimations.EmptyORTSDavis_A > 0)
                 {
                     LoadEmptyORTSDavis_A = FreightAnimations.EmptyORTSDavis_A;
@@ -391,6 +403,15 @@ namespace Orts.Simulation.RollingStocks
                 // Test each value to make sure that it has been defined in the WAG file, if not default to Root WAG file value
                 if (FreightAnimations.FullPhysicsContinuousOne != null)
                 {
+                    if (FreightAnimations.FullPhysicsContinuousOne.FreightWeightWhenFull > 0)
+                    {
+                        LoadFullMassKg = FreightAnimations.WagonEmptyWeight + FreightAnimations.FullPhysicsContinuousOne.FreightWeightWhenFull;
+                    }
+                    else
+                    {
+                        LoadFullMassKg = MassKG;
+                    } 
+
                     if (FreightAnimations.FullPhysicsContinuousOne.FullORTSDavis_A > 0)
                     {
                         LoadFullORTSDavis_A = FreightAnimations.FullPhysicsContinuousOne.FullORTSDavis_A;
@@ -830,12 +851,14 @@ namespace Orts.Simulation.RollingStocks
                 FreightAnimations = new FreightAnimations(copy.FreightAnimations, this);
             }
 
+            LoadEmptyMassKg = copy.LoadEmptyMassKg;
             LoadEmptyCentreOfGravityM_Y = copy.LoadEmptyCentreOfGravityM_Y;
             LoadEmptyMaxBrakeForceN = copy.LoadEmptyMaxBrakeForceN;
             LoadEmptyMaxHandbrakeForceN = copy.LoadEmptyMaxHandbrakeForceN;
             LoadEmptyORTSDavis_A = copy.LoadEmptyORTSDavis_A;
             LoadEmptyORTSDavis_B = copy.LoadEmptyORTSDavis_B;
             LoadEmptyORTSDavis_C = copy.LoadEmptyORTSDavis_C;
+            LoadFullMassKg = copy.LoadFullMassKg;
             LoadFullCentreOfGravityM_Y = copy.LoadFullCentreOfGravityM_Y;
             LoadFullMaxBrakeForceN = copy.LoadFullMaxBrakeForceN;
             LoadFullMaxHandbrakeForceN = copy.LoadFullMaxHandbrakeForceN;
@@ -990,6 +1013,8 @@ namespace Orts.Simulation.RollingStocks
         public override void Update(float elapsedClockSeconds)
         {
             base.Update(elapsedClockSeconds);
+
+            UpdateTenderLoad();
 
             // Update Aux Tender Information
 
@@ -1240,7 +1265,7 @@ namespace Orts.Simulation.RollingStocks
             
             MSTSBrakeSystem.Update(elapsedClockSeconds);
 
-            if (WeightLoadController != null)
+            if (WeightLoadController != null && WagonType != WagonTypes.Tender)
             {
                 WeightLoadController.Update(elapsedClockSeconds);
                 if (FreightAnimations.LoadedOne != null)
@@ -1282,6 +1307,43 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
+        // This section updates the weight and physics of the tender, and aux tender as load varies on it
+        private void UpdateTenderLoad()
+        {
+
+            if (FreightAnimations != null)
+            {
+
+                if (WagonType == WagonTypes.Tender)
+                {
+                    // Find the associated steam locomotive for this tender
+                    if (TendersSteamLocomotive == null) FindTendersSteamLocomotive();
+
+                    MassKG = FreightAnimations.WagonEmptyWeight + TendersSteamLocomotive.TenderCoalMassKG + Kg.FromLb( (TendersSteamLocomotive.TenderWaterVolumeUKG * WaterLBpUKG));
+
+                    // Update wagon parameters sensitive to wagon mass change
+                    // Calculate the difference ratio, ie how full the wagon is. This value allows the relevant value to be scaled from the empty mass to the full mass of the wagon
+                    float TempTenderMassDiffRatio = (MassKG - LoadEmptyMassKg) / (LoadFullMassKg - LoadEmptyMassKg);
+                    // Update brake parameters
+                    MaxBrakeForceN = ((LoadFullMaxBrakeForceN - LoadEmptyMaxBrakeForceN) * TempTenderMassDiffRatio) + LoadEmptyMaxBrakeForceN;
+                    MaxHandbrakeForceN = ((LoadFullMaxHandbrakeForceN - LoadEmptyMaxHandbrakeForceN) * TempTenderMassDiffRatio) + LoadEmptyMaxHandbrakeForceN;
+                    // Update friction related parameters
+                    DavisAN = ((LoadFullORTSDavis_A - LoadEmptyORTSDavis_A) * TempTenderMassDiffRatio) + LoadEmptyORTSDavis_A;
+                    DavisBNSpM = ((LoadFullORTSDavis_B - LoadEmptyORTSDavis_B) * TempTenderMassDiffRatio) + LoadEmptyORTSDavis_B;
+                    DavisCNSSpMM = ((LoadFullORTSDavis_C - LoadEmptyORTSDavis_C) * TempTenderMassDiffRatio) + LoadEmptyORTSDavis_C;
+                    // Update CoG related parameters
+                    CentreOfGravityM.Y = ((LoadFullCentreOfGravityM_Y - LoadEmptyCentreOfGravityM_Y) * TempTenderMassDiffRatio) + LoadEmptyCentreOfGravityM_Y;
+
+       //             Trace.TraceInformation("Load Animation= EmptyWeight {0} Coal {1} Water {2}", FreightAnimations.WagonEmptyWeight, TendersSteamLocomotive.TenderCoalMassKG, (TendersSteamLocomotive.TenderWaterVolumeUKG * WaterLBpUKG));
+       //             Trace.TraceInformation("Load Animation= Diff {0} Full {1} Empty {2} Mass {3}", TempTenderMassDiffRatio, LoadFullMassKg, LoadEmptyMassKg, MassKG);
+
+                }
+
+            }
+
+        }        
+        
+        
         public override void SignalEvent(Event evt)
         {
             switch (evt)
@@ -1420,6 +1482,7 @@ namespace Orts.Simulation.RollingStocks
             if (Simulator.PlayerLocomotive == this) Simulator.Confirmer.Confirm(CabControl.Mirror, MirrorOpen ? CabSetting.On : CabSetting.Off);
         }
 
+        // Find the steam locomotive associated with this wagon tender, this allows parameters processed in the steam loocmotive module to be uesd elsewhere
         public void FindTendersSteamLocomotive()
         {
             if (Train == null || Train.Cars == null || Train.Cars.Count < 2)
