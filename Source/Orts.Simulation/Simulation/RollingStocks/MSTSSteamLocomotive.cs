@@ -131,7 +131,7 @@ namespace Orts.Simulation.RollingStocks
         bool SteamIsAuxTenderCoupled = false;
         float TenderWaterChangePercent;       // Percentatge of water in tender
         public float CurrentAuxTenderWaterMassKG;
-        float CurrentAuxTenderWaterVolumeUKG;
+        public float CurrentAuxTenderWaterVolumeUKG;
         float CombinedTenderWaterVolumeUKG;     // Combined value of water in tender and aux tender
         float PrevCombinedTenderWaterVolumeUKG;
         float PreviousTenderWaterVolumeUKG;

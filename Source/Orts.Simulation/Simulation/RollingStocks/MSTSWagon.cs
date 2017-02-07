@@ -152,6 +152,11 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public MSTSSteamLocomotive TendersSteamLocomotive { get; private set; }
 
+        /// <summary>
+        /// Attached steam locomotive in case this wagon is an auxiliary tender
+        /// </summary>
+        public MSTSSteamLocomotive AuxTendersSteamLocomotive { get; private set; }
+
         public List<IntakePoint> IntakePointList = new List<IntakePoint>();
 
         /// <summary>
@@ -1265,7 +1270,7 @@ namespace Orts.Simulation.RollingStocks
             
             MSTSBrakeSystem.Update(elapsedClockSeconds);
 
-            if (WeightLoadController != null && WagonType != WagonTypes.Tender)
+            if (WeightLoadController != null && WagonType != WagonTypes.Tender && AuxWagonType != "AuxiliaryTender")
             {
                 WeightLoadController.Update(elapsedClockSeconds);
                 if (FreightAnimations.LoadedOne != null)
@@ -1333,14 +1338,28 @@ namespace Orts.Simulation.RollingStocks
                     DavisCNSSpMM = ((LoadFullORTSDavis_C - LoadEmptyORTSDavis_C) * TempTenderMassDiffRatio) + LoadEmptyORTSDavis_C;
                     // Update CoG related parameters
                     CentreOfGravityM.Y = ((LoadFullCentreOfGravityM_Y - LoadEmptyCentreOfGravityM_Y) * TempTenderMassDiffRatio) + LoadEmptyCentreOfGravityM_Y;
-
-       //             Trace.TraceInformation("Load Animation= EmptyWeight {0} Coal {1} Water {2}", FreightAnimations.WagonEmptyWeight, TendersSteamLocomotive.TenderCoalMassKG, (TendersSteamLocomotive.TenderWaterVolumeUKG * WaterLBpUKG));
-       //             Trace.TraceInformation("Load Animation= Diff {0} Full {1} Empty {2} Mass {3}", TempTenderMassDiffRatio, LoadFullMassKg, LoadEmptyMassKg, MassKG);
-
                 }
+                else if (AuxWagonType == "AuxiliaryTender")
+                {
+                    // Find the associated steam locomotive for this tender
+                    if (AuxTendersSteamLocomotive == null) FindAuxTendersSteamLocomotive();
 
+                    MassKG = FreightAnimations.WagonEmptyWeight + Kg.FromLb((AuxTendersSteamLocomotive.CurrentAuxTenderWaterVolumeUKG * WaterLBpUKG));
+
+                    // Update wagon parameters sensitive to wagon mass change
+                    // Calculate the difference ratio, ie how full the wagon is. This value allows the relevant value to be scaled from the empty mass to the full mass of the wagon
+                    float TempTenderMassDiffRatio = (MassKG - LoadEmptyMassKg) / (LoadFullMassKg - LoadEmptyMassKg);
+                    // Update brake parameters
+                    MaxBrakeForceN = ((LoadFullMaxBrakeForceN - LoadEmptyMaxBrakeForceN) * TempTenderMassDiffRatio) + LoadEmptyMaxBrakeForceN;
+                    MaxHandbrakeForceN = ((LoadFullMaxHandbrakeForceN - LoadEmptyMaxHandbrakeForceN) * TempTenderMassDiffRatio) + LoadEmptyMaxHandbrakeForceN;
+                    // Update friction related parameters
+                    DavisAN = ((LoadFullORTSDavis_A - LoadEmptyORTSDavis_A) * TempTenderMassDiffRatio) + LoadEmptyORTSDavis_A;
+                    DavisBNSpM = ((LoadFullORTSDavis_B - LoadEmptyORTSDavis_B) * TempTenderMassDiffRatio) + LoadEmptyORTSDavis_B;
+                    DavisCNSSpMM = ((LoadFullORTSDavis_C - LoadEmptyORTSDavis_C) * TempTenderMassDiffRatio) + LoadEmptyORTSDavis_C;
+                    // Update CoG related parameters
+                    CentreOfGravityM.Y = ((LoadFullCentreOfGravityM_Y - LoadEmptyCentreOfGravityM_Y) * TempTenderMassDiffRatio) + LoadEmptyCentreOfGravityM_Y;
+                }
             }
-
         }        
         
         
@@ -1482,7 +1501,7 @@ namespace Orts.Simulation.RollingStocks
             if (Simulator.PlayerLocomotive == this) Simulator.Confirmer.Confirm(CabControl.Mirror, MirrorOpen ? CabSetting.On : CabSetting.Off);
         }
 
-        // Find the steam locomotive associated with this wagon tender, this allows parameters processed in the steam loocmotive module to be uesd elsewhere
+        // Find the steam locomotive associated with this wagon tender, this allows parameters processed in the steam loocmotive module to be used elsewhere
         public void FindTendersSteamLocomotive()
         {
             if (Train == null || Train.Cars == null || Train.Cars.Count < 2)
@@ -1501,6 +1520,52 @@ namespace Orts.Simulation.RollingStocks
                 TendersSteamLocomotive = Train.Cars[tenderIndex - 1] as MSTSSteamLocomotive;
             if (tenderIndex < Train.Cars.Count - 1 && Train.Cars[tenderIndex + 1] is MSTSSteamLocomotive)
                 TendersSteamLocomotive = Train.Cars[tenderIndex + 1] as MSTSSteamLocomotive;
+        }
+
+        // Find the steam locomotive associated with this wagon aux tender, this allows parameters processed in the steam loocmotive module to be used elsewhere
+        public void FindAuxTendersSteamLocomotive()
+        {
+            if (Train == null || Train.Cars == null || Train.Cars.Count < 2)
+            {
+                AuxTendersSteamLocomotive = null;
+                return;
+            }
+            bool AuxTenderFound = false;
+            var tenderIndex = 0;
+            for (var i = 0; i < Train.Cars.Count; i++)
+            {
+                if (Train.Cars[i] == this)
+                    tenderIndex = i;
+            }
+
+            // If a "normal" tender is not connected try checking if locomotive is directly connected to the auxiliary tender - this will be the case for a tank locomotive.
+            if (tenderIndex > 0 && Train.Cars[tenderIndex - 1] is MSTSSteamLocomotive)
+            {
+                AuxTendersSteamLocomotive = Train.Cars[tenderIndex - 1] as MSTSSteamLocomotive;
+                AuxTenderFound = true;
+            }
+
+            if (tenderIndex < Train.Cars.Count - 1 && Train.Cars[tenderIndex + 1] is MSTSSteamLocomotive)
+            {
+                AuxTendersSteamLocomotive = Train.Cars[tenderIndex + 1] as MSTSSteamLocomotive;
+                AuxTenderFound = true;
+            }
+
+            // If a "normal" tender is connected then the steam locomotive will be two cars away.
+                      
+            if (!AuxTenderFound)
+            {
+            
+                if (tenderIndex > 0 && Train.Cars[tenderIndex - 2] is MSTSSteamLocomotive)
+                {
+                    AuxTendersSteamLocomotive = Train.Cars[tenderIndex - 2] as MSTSSteamLocomotive;
+                }
+                
+                if (tenderIndex < Train.Cars.Count - 2 && Train.Cars[tenderIndex + 2] is MSTSSteamLocomotive)
+                {
+                    AuxTendersSteamLocomotive = Train.Cars[tenderIndex + 2] as MSTSSteamLocomotive;
+                }
+            }
         }
 
         public bool GetTrainHandbrakeStatus()
