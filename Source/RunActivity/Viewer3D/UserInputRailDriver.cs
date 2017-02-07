@@ -233,7 +233,7 @@ namespace Orts.Viewer3D
         {
             if (!Active || playerLoco == null || Device == null)
                 return;
-            float speed = 10 * MpS.FromMpS(playerLoco.SpeedMpS, false);
+            float speed = 10 * MpS.FromMpS(playerLoco.SpeedMpS, playerLoco.IsMetric);
             int s = (int) (speed >= 0 ? speed + .5 : -speed + .5);
             if (s != LEDSpeed)
             {
