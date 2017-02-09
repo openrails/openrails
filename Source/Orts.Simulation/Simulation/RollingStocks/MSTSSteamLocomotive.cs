@@ -136,6 +136,10 @@ namespace Orts.Simulation.RollingStocks
         float PrevCombinedTenderWaterVolumeUKG;
         float PreviousTenderWaterVolumeUKG;
 
+        // Tender
+        public float IsTenderRequired = 1.0f;  // Flag indicates that a tender is required for operation of the locomotive. Typically tank locomotives do not require a tender. Assume by default that tender is required.
+        public bool HasTenderCoupled = true;
+
         // Carriage Steam Heating Parameters
         float MaxSteamHeatPressurePSI;    // Maximum Steam heating pressure
         float InsideTempC;                // Desired inside temperature for carriage steam heating
@@ -196,7 +200,6 @@ namespace Orts.Simulation.RollingStocks
         public float NewCylinderSteamUsageLBpS;
         public float BlowerSteamUsageLBpS;
         public float BoilerPressurePSI;     // Gauge pressure - what the engineer sees.
-
         public float EvaporationLBpS;          // steam generation rate
         public float FireMassKG;      // Mass of coal currently on grate area
         public float FireRatio;
@@ -732,6 +735,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(effects(steamspecialeffects": ParseEffects(lowercasetoken, stf); break;
                 case "engine(ortsgratearea": GrateAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, null); break;
                 case "engine(superheater": SuperheaterFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(istenderrequired": IsTenderRequired = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortsevaporationarea": EvaporationAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, null); break;
                 case "engine(ortssuperheatarea": SuperheatAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, null); break;
                 case "engine(ortsfuelcalorific": FuelCalorificKJpKG = stf.ReadFloatBlock(STFReader.UNITS.EnergyDensity, null); break;
@@ -835,6 +839,7 @@ namespace Orts.Simulation.RollingStocks
             MaxSteamGearPistonRateFtpM = locoCopy.MaxSteamGearPistonRateFtpM;
             SteamEngineType = locoCopy.SteamEngineType;
             IsSaturated = locoCopy.IsSaturated;
+            IsTenderRequired = locoCopy.IsTenderRequired;
             HasSuperheater = locoCopy.HasSuperheater;
             IsFixGeared = locoCopy.IsFixGeared;
             IsSelectGeared = locoCopy.IsSelectGeared;
@@ -1836,8 +1841,24 @@ namespace Orts.Simulation.RollingStocks
 
         private void UpdateTender(float elapsedClockSeconds)
         {
-            TenderCoalMassKG -= elapsedClockSeconds * FuelBurnRateKGpS; // Current Tender coal mass determined by burn rate.
-            TenderCoalMassKG = MathHelper.Clamp(TenderCoalMassKG, 0, MaxTenderCoalMassKG); // Clamp value so that it doesn't go out of bounds
+            if (HasTenderCoupled) // If a tender is coupled then coal is available
+            {
+                TenderCoalMassKG -= elapsedClockSeconds * FuelBurnRateKGpS; // Current Tender coal mass determined by burn rate.
+                TenderCoalMassKG = MathHelper.Clamp(TenderCoalMassKG, 0, MaxTenderCoalMassKG); // Clamp value so that it doesn't go out of bounds
+            }
+            else // if no tender coupled then check whether a tender is required
+            {
+                if (IsTenderRequired == 1.0)  // Tender is required
+                {
+                    TenderCoalMassKG = 0.0f; // Set tender coal to zero (none available)
+                }
+                else  // Tender is not required (ie tank locomotive) - therefore coal will be carried on the locomotive
+                {
+                    TenderCoalMassKG -= elapsedClockSeconds * FuelBurnRateKGpS; // Current Tender coal mass determined by burn rate.
+                    TenderCoalMassKG = MathHelper.Clamp(TenderCoalMassKG, 0, MaxTenderCoalMassKG); // Clamp value so that it doesn't go out of bounds
+                }
+            }
+
             if (TenderCoalMassKG < 1.0)
             {
                 if (!CoalIsExhausted)
@@ -1890,10 +1911,28 @@ namespace Orts.Simulation.RollingStocks
                 CurrentAuxTenderWaterVolumeUKG = MathHelper.Clamp(CurrentAuxTenderWaterVolumeUKG, 0, (Kg.ToLb(Train.MaxAuxTenderWaterMassKG) / WaterLBpUKG)); // Clamp value so that it doesn't go out of bounds
             }
 
-            CombinedTenderWaterVolumeUKG = TenderWaterVolumeUKG + CurrentAuxTenderWaterVolumeUKG;
-            CombinedTenderWaterVolumeUKG = MathHelper.Clamp(CombinedTenderWaterVolumeUKG, 0, ((Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG) + (Kg.ToLb(Train.MaxAuxTenderWaterMassKG) / WaterLBpUKG))); // Clamp value so that it doesn't go out of bounds
+            if (HasTenderCoupled) // If a tender is coupled then water is available
+            {
+                CombinedTenderWaterVolumeUKG = TenderWaterVolumeUKG + CurrentAuxTenderWaterVolumeUKG;
+                CombinedTenderWaterVolumeUKG = MathHelper.Clamp(CombinedTenderWaterVolumeUKG, 0, ((Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG) + (Kg.ToLb(Train.MaxAuxTenderWaterMassKG) / WaterLBpUKG))); // Clamp value so that it doesn't go out of bounds
+                TenderWaterVolumeUKG -= CombinedTenderWaterVolumeUKG * TenderWaterChangePercent;  // Adjust water usage in tender
+            }
+            else // if no tender coupled then check whether a tender is required
+            {
+                if (IsTenderRequired == 1.0)  // Tender is required
+                {
+                    CombinedTenderWaterVolumeUKG = 0.0f; // Set tender water to zero (none available)
+                    TenderWaterVolumeUKG = 0.0f;
+                }
+                else  // Tender is not required (ie tank locomotive) - therefore water will be carried on the locomotive (and possibly on aux tender)
+                {
+                    CombinedTenderWaterVolumeUKG = TenderWaterVolumeUKG + CurrentAuxTenderWaterVolumeUKG;
+                    CombinedTenderWaterVolumeUKG = MathHelper.Clamp(CombinedTenderWaterVolumeUKG, 0, ((Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG) + (Kg.ToLb(Train.MaxAuxTenderWaterMassKG) / WaterLBpUKG))); // Clamp value so that it doesn't go out of bounds
+                    TenderWaterVolumeUKG -= CombinedTenderWaterVolumeUKG * TenderWaterChangePercent;  // Adjust water usage in tender
+                }
+            }
+                        
             TenderWaterChangePercent = (InjectorBoilerInputLB / WaterLBpUKG) / (Kg.ToLb(MaxTenderWaterMassKG + Train.MaxAuxTenderWaterMassKG) / WaterLBpUKG);  // Calculate the % change due to injector water usage
-            TenderWaterVolumeUKG -= CombinedTenderWaterVolumeUKG * TenderWaterChangePercent;  // Adjust water usage in tender
             CurrentAuxTenderWaterVolumeUKG -= CombinedTenderWaterVolumeUKG * TenderWaterChangePercent; // Adjust water usage in aux tender
             PrevCombinedTenderWaterVolumeUKG = CombinedTenderWaterVolumeUKG;   // Store value for next iteration
             PreviousTenderWaterVolumeUKG = TenderWaterVolumeUKG;     // Store value for next iteration            
@@ -1914,6 +1953,8 @@ namespace Orts.Simulation.RollingStocks
             }
 
             #endregion
+
+
 
             if (CombinedTenderWaterVolumeUKG < 1.0)
             {

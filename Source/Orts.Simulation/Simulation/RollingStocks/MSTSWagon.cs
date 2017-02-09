@@ -157,6 +157,11 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public MSTSSteamLocomotive AuxTendersSteamLocomotive { get; private set; }
 
+        /// <summary>
+        /// Steam locomotive has a tender coupled to it
+        /// </summary>
+        public MSTSSteamLocomotive SteamLocomotiveTender { get; private set; }
+
         public List<IntakePoint> IntakePointList = new List<IntakePoint>();
 
         /// <summary>
@@ -1019,7 +1024,12 @@ namespace Orts.Simulation.RollingStocks
         {
             base.Update(elapsedClockSeconds);
 
-            UpdateTenderLoad();
+            ConfirmSteamLocomotiveTender(); // Confirms that a tender is connected to the steam locomotive
+
+            UpdateTenderLoad(); // Updates the load characteristics of tender and aux tender
+
+           
+            
 
             // Update Aux Tender Information
 
@@ -1501,9 +1511,10 @@ namespace Orts.Simulation.RollingStocks
             if (Simulator.PlayerLocomotive == this) Simulator.Confirmer.Confirm(CabControl.Mirror, MirrorOpen ? CabSetting.On : CabSetting.Off);
         }
 
-        // Find the steam locomotive associated with this wagon tender, this allows parameters processed in the steam loocmotive module to be used elsewhere
+
         public void FindTendersSteamLocomotive()
         {
+            // Find the steam locomotive associated with this wagon tender, this allows parameters processed in the steam loocmotive module to be used elsewhere
             if (Train == null || Train.Cars == null || Train.Cars.Count < 2)
             {
                 TendersSteamLocomotive = null;
@@ -1522,9 +1533,46 @@ namespace Orts.Simulation.RollingStocks
                 TendersSteamLocomotive = Train.Cars[tenderIndex + 1] as MSTSSteamLocomotive;
         }
 
-        // Find the steam locomotive associated with this wagon aux tender, this allows parameters processed in the steam loocmotive module to be used elsewhere
+        public void ConfirmSteamLocomotiveTender()
+        {
+            // Check each steam locomotive to see if it has a tender attached.
+            if (WagonType == WagonTypes.Engine && EngineType == EngineTypes.Steam )
+            {
+       
+                if (Train == null || Train.Cars == null)
+                {
+                    SteamLocomotiveTender = null;
+                     return;
+                }
+                else if(Train.Cars.Count < 1) // If car count is less then 1, then there must be no tender attached
+                {
+                    SteamLocomotiveTender = Train.Cars[0] as MSTSSteamLocomotive;
+                    SteamLocomotiveTender.HasTenderCoupled = false;
+                }
+
+                var tenderIndex = 0;
+                for (var i = 0; i < Train.Cars.Count; i++) // test each car to find the where the steam locomotive is in the consist
+                {
+                    if (Train.Cars[i] == this)  // If this car is a Steam locomotive the set tender index
+                        tenderIndex = i;
+                }
+
+                if (tenderIndex < Train.Cars.Count - 1 && Train.Cars[tenderIndex + 1].WagonType == WagonTypes.Tender)
+                {
+                    SteamLocomotiveTender = Train.Cars[tenderIndex] as MSTSSteamLocomotive;
+                    SteamLocomotiveTender.HasTenderCoupled = true;
+                }
+                else
+                {
+                    SteamLocomotiveTender = Train.Cars[tenderIndex] as MSTSSteamLocomotive;
+                    SteamLocomotiveTender.HasTenderCoupled = false;
+                }
+            }
+        }
+
         public void FindAuxTendersSteamLocomotive()
         {
+            // Find the steam locomotive associated with this wagon aux tender, this allows parameters processed in the steam loocmotive module to be used elsewhere
             if (Train == null || Train.Cars == null || Train.Cars.Count < 2)
             {
                 AuxTendersSteamLocomotive = null;
