@@ -480,7 +480,7 @@ namespace ORTS.TrackViewer.Drawing
                 }
             }
 
-            if (roadTrackDB != null)
+            if (roadTrackDB != null && roadTrackDB.TrackNodes != null)
             {
                 for (uint tni = 0; tni < roadTrackDB.TrackNodes.Length; tni++)
                 {
