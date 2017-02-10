@@ -642,7 +642,8 @@ namespace Orts.Viewer3D
             MipMapBias = mipMapBias;
             TexturePath = texturePath;
             Texture = Viewer.TextureManager.Get(texturePath, true);
-            if (!String.IsNullOrEmpty(texturePath) && (Options & SceneryMaterialOptions.NightTexture) != 0 && !viewer.DontLoadNightTextures)
+            // <CSComment> if "trainset" is in the path (true for night textures for 3DCabs) deferred load of night textures is disabled 
+            if (!String.IsNullOrEmpty(texturePath) && (Options & SceneryMaterialOptions.NightTexture) != 0 && (!viewer.DontLoadNightTextures || TexturePath.Contains(@"\trainset\")))
             {
                 var nightTexturePath = Helpers.GetNightTextureFile(Viewer.Simulator, texturePath);
                 if (!String.IsNullOrEmpty(nightTexturePath))
