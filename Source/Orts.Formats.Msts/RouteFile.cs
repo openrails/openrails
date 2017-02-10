@@ -117,6 +117,8 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("ortsdefaultturntablesms", ()=>{ DefaultTurntableSMS = stf.ReadStringBlock(null); }),
                 // sms file number in Ttype.dat when train over switch
                 new STFReader.TokenProcessor("ortsswitchsmsnumber", ()=>{ SwitchSMSNumber = stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("ortscurvesmsnumber", ()=>{ CurveSMSNumber = stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("ortscurveswitchsmsnumber", ()=>{ CurveSwitchSMSNumber = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("ortsopendoorsinaitrains", ()=>{ OpenDoorsInAITrains = stf.ReadBoolBlock(false); }),
 
            });
@@ -168,7 +170,9 @@ namespace Orts.Formats.Msts
         public string DefaultTurntableSMS;
         public bool ? OpenDoorsInAITrains; // true if option active
 
-        public int SwitchSMSNumber = -1; // defines the number of the switch SMS files in file .ttype.dat
+        public int SwitchSMSNumber = -1; // defines the number of the switch SMS files in file ttypedat
+        public int CurveSMSNumber = -1; // defines the number of the curve SMS files in file ttype.dat
+        public int CurveSwitchSMSNumber = -1; // defines the number of the curve-switch SMS files in file ttype.dat
 
     }
 

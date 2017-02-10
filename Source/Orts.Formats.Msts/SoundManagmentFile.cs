@@ -33,6 +33,11 @@ namespace Orts.Formats.Msts
     {
         private static Dictionary<string, SoundManagmentFile> SharedSMSFiles = new Dictionary<string, SoundManagmentFile>();
 
+        public static int SwitchSMSNumber;
+        public static int CurveSMSNumber;
+        public static int CurveSwitchSMSNumber;
+        public static bool AutoTrackSound = false;
+
         public static SoundManagmentFile Get(string path)
         {
             if (!SharedSMSFiles.ContainsKey(path))

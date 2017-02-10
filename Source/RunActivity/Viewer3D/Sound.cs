@@ -112,6 +112,7 @@ namespace Orts.Viewer3D
         private int initTrackSection = -1; // track section when last ttype selected
         private MSTSWagon initCar = null; // initial leading car (to accommodate in case of change of direction)
         private bool CarOnSwitch = false;
+        private bool CarOnCurve = false;
 
 
         public TrackSoundSource(MSTSWagon car, Viewer viewer)
@@ -243,7 +244,10 @@ namespace Orts.Viewer3D
                                 Car.TrackSoundType = 0;
                             }
                         else
-                            if (Viewer.Simulator.TRK.Tr_RouteFile.SwitchSMSNumber == -1 || _curTType != Viewer.Simulator.TRK.Tr_RouteFile.SwitchSMSNumber)
+                            if (!SharedSMSFileManager.AutoTrackSound || (
+                                _curTType != SharedSMSFileManager.SwitchSMSNumber &&
+                                _curTType != SharedSMSFileManager.CurveSMSNumber &&
+                                _curTType != SharedSMSFileManager.CurveSwitchSMSNumber))
                                 Car.TrackSoundType = _curTType;
                             else
                             {
@@ -259,18 +263,18 @@ namespace Orts.Viewer3D
                     if (CarAhead.TrackSoundLocation != WorldLocation.None)
                     {
 //                        if (stateChange)
-//                            Trace.TraceInformation("Time {4} TrainName {6} carNo {0} IsOnSwitch {1} TracksoundType {2} _CurTType {3} AheadTrackSoundType {5}",
-//                                            Car.Train.Cars.IndexOf(Car), CarOnSwitch, Car.TrackSoundType, _curTType, Viewer.Simulator.GameTime, CarAhead.TrackSoundType, Car.Train.Name);
-                        if (_curTType == Car.TrackSoundType && Car.TrackSoundType != CarAhead.TrackSoundType)
+//                            Trace.TraceInformation("Time {4} TrainName {6} carNo {0} IsOnSwitch {1} IsOnCurve {7} TracksoundType {2} _CurTType {3} AheadTrackSoundType {5}",
+//                                Car.Train.Cars.IndexOf(Car), CarOnSwitch, Car.TrackSoundType, _curTType, Viewer.Simulator.GameTime, CarAhead.TrackSoundType, Car.Train.Name, CarOnCurve);
+                        if ((_curTType == Car.TrackSoundType || stateChange ) && Car.TrackSoundType != CarAhead.TrackSoundType)
                         {
                             Car.TrackSoundType = CarAhead.TrackSoundType;
                             Car.TrackSoundLocation = new WorldLocation(CarAhead.TrackSoundLocation);
                             Car.TrackSoundDistSquared = WorldLocation.GetDistanceSquared(Car.WorldPosition.WorldLocation, Car.TrackSoundLocation);
+//                            Trace.TraceInformation("Time {4} TrainName {5} carNo {0} IsOnSwitch {1} IsOnCurve {6} TracksoundType {2} _CurTType {3} to standard",
+//                              Car.Train.Cars.IndexOf(Car), CarOnSwitch, Car.TrackSoundType, _curTType, Viewer.Simulator.GameTime, Car.Train.Name, CarOnCurve);
                             if (stateChange)
                             {
                                 _curTType = Car.TrackSoundType;
-//                                Trace.TraceInformation("Time {4} TrainName {5} carNo {0} IsOnSwitch {1} TracksoundType {2} _CurTType {3}",
-//                    Car.Train.Cars.IndexOf(Car), CarOnSwitch, Car.TrackSoundType, _curTType, Viewer.Simulator.GameTime, Car.Train.Name);
                             }
                         }
 
@@ -281,6 +285,8 @@ namespace Orts.Viewer3D
                                 Car.TrackSoundDistSquared = trackSoundDistSquared;
                             else
                             {
+//                                if (_curTType != Car.TrackSoundType) Trace.TraceInformation("Time {4} TrainName {5} carNo {0} IsOnSwitch {1} IsOnCurve {6} TracksoundType {2} _CurTType {3} standard",
+//                                  Car.Train.Cars.IndexOf(Car), CarOnSwitch, Car.TrackSoundType, _curTType, Viewer.Simulator.GameTime, Car.Train.Name, CarOnCurve);
                                 _curTType = Car.TrackSoundType;
                             }
                         }
@@ -310,7 +316,7 @@ namespace Orts.Viewer3D
 #endif
 //                    if (!stateChange) Trace.TraceInformation("StandardChange Time {4} TrainName {5} carNo {0} IsOnSwitch {1} TracksoundType {2} _CurTType {3} _PrevTType {6}",
 //                        Car.Train.Cars.IndexOf(Car), CarOnSwitch, Car.TrackSoundType, _curTType, Viewer.Simulator.GameTime, Car.Train.Name, _prevTType);
-                    //Trace.TraceInformation("Train {0} Speed {1}, Car {2}: Sound Region {3} changed to {4} at distance {5}", Car.Train.Number, Car.Train.SpeedMpS, CarNo, _prevTType, _curTType, Math.Sqrt(trackSoundDistSquared));
+//                           Trace.TraceInformation("Train {0} Speed {1}, Car {2}: Sound Region {3} changed to {4} at distance {5}", Car.Train.Number, Car.Train.SpeedMpS, CarNo, _prevTType, _curTType, Math.Sqrt(trackSoundDistSquared));
                     if (CarNo == CarLeading)
                         Car.TrackSoundLocation = new WorldLocation(Car.WorldPosition.WorldLocation);
                     _prevTType = _curTType;
@@ -321,13 +327,13 @@ namespace Orts.Viewer3D
         public override bool Update()
         {
             bool stateChange = false;
-            if (Viewer.Simulator.TRK.Tr_RouteFile.SwitchSMSNumber != -1) stateChange = UpdateCarOnSwitch();
-//            if (stateChange) Trace.TraceInformation("Time {4} TrainName {5} carNo {0} IsOnSwitch {1} TracksoundType {2} _CurTType {3} Before",
-//                Car.Train.Cars.IndexOf(Car), CarOnSwitch, Car.TrackSoundType, _curTType, Viewer.Simulator.GameTime, Car.Train.Name);
-            if (!CarOnSwitch || Viewer.Simulator.TRK.Tr_RouteFile.SwitchSMSNumber == -1)
+            if (SharedSMSFileManager.AutoTrackSound) stateChange = UpdateCarOnSwitchAndCurve();
+//            if (stateChange) Trace.TraceInformation("Time {4} TrainName {5} carNo {0} IsOnSwitch {1} IsOnCurve {6} TracksoundType {2} _CurTType {3} Radius {7} Before",
+//                Car.Train.Cars.IndexOf(Car), CarOnSwitch, Car.TrackSoundType, _curTType, Viewer.Simulator.GameTime, Car.Train.Name, CarOnCurve, Car.CurrentCurveRadius);
+            if ((!CarOnSwitch && !CarOnCurve) || !SharedSMSFileManager.AutoTrackSound)
                 UpdateTType(stateChange);
-//            if (stateChange) Trace.TraceInformation("Time {4} TrainName {5} carNo {0} IsOnSwitch {1} TracksoundType {2} _CurTType {3} After",
-//                Car.Train.Cars.IndexOf(Car), CarOnSwitch, Car.TrackSoundType, _curTType, Viewer.Simulator.GameTime, Car.Train.Name);
+//            if (stateChange) Trace.TraceInformation("Time {4} TrainName {5} carNo {0} IsOnSwitch {1} IsOnCurve {6} TracksoundType {2} _CurTType {3} Radius {7} After",
+//                Car.Train.Cars.IndexOf(Car), CarOnSwitch, Car.TrackSoundType, _curTType, Viewer.Simulator.GameTime, Car.Train.Name, CarOnCurve, Car.CurrentCurveRadius);
             bool retval = true;
             NeedsFrequentUpdate = false;
 
@@ -363,16 +369,22 @@ namespace Orts.Viewer3D
             Car = null;
         }
 
-        //Checks whether car on switch and selects related .sms file and enables the trigger;
-        // returns true if
+        //Checks whether car on switch or on curve or both and selects related .sms file;
+        // returns true if state has changed
 
-        public bool UpdateCarOnSwitch()
+        public bool UpdateCarOnSwitchAndCurve()
         {
             var stateChange = false;
             if (Car != null && Car.Train != null)
             {
                 if (Car.Train.SpeedMpS > 0.1f || Car.Train.SpeedMpS < -0.1f)
                 {
+                    var CarNo = Car.Train.Cars.IndexOf(Car);
+                    var CarIncr = 0;
+                    if (Car.Train.SpeedMpS > 0.1f && CarNo != Car.Train.Cars.Count - 1) CarIncr = 1;
+                    if (Car.Train.SpeedMpS < 0.1f && CarNo != 0) CarIncr = -1;
+
+                    var CarBehind = Car.Train.Cars[CarNo + CarIncr];
                     var carPreviouslyOnSwitch = CarOnSwitch;
                     CarOnSwitch = false;
                     if (Car.Train.PresentPosition[0].TCSectionIndex != Car.Train.PresentPosition[1].TCSectionIndex)
@@ -389,16 +401,7 @@ namespace Orts.Viewer3D
                                     var distanceFromSwitch = WorldLocation.GetDistanceSquared(Car.WorldPosition.WorldLocation, switchLocation);
                                     if (distanceFromSwitch < Car.CarLengthM * Car.CarLengthM + Math.Min(Car.SpeedMpS * 3, 150))
                                     {
-                                        // car is on switch
-                                        if (!carPreviouslyOnSwitch)
-                                        {
-                                            // change TType
-//                                            Car.TrackSoundType = Viewer.Simulator.TRK.Tr_RouteFile.SwitchSMSNumber;
-                                            Car.TrackSoundLocation = new WorldLocation(Car.WorldPosition.WorldLocation);
-                                            stateChange = true;
-                                            _curTType = Viewer.Simulator.TRK.Tr_RouteFile.SwitchSMSNumber;
-                                        }
-                                        CarOnSwitch = true;
+                                          CarOnSwitch = true;
                                         break;
                                     }
                                 }
@@ -406,9 +409,39 @@ namespace Orts.Viewer3D
                             catch { }
                         }
                     }
-                    if (carPreviouslyOnSwitch && !CarOnSwitch)
+                    // here check for curve
+                    var carPreviouslyOnCurve = CarOnCurve;
+                    CarOnCurve = false;
+                    if ((Car.CurrentCurveRadius > 0 && (Car.CurrentCurveRadius < 301
+                         || (Car.CurrentCurveRadius < 350 && Car.WagonType == TrainCar.WagonTypes.Freight))) ||
+                        (CarBehind.CurrentCurveRadius > 0 && (CarBehind.CurrentCurveRadius < 301
+                         || (CarBehind.CurrentCurveRadius < 350 && Car.WagonType == TrainCar.WagonTypes.Freight))))
+                    {
+                        CarOnCurve = true;
+                    }
+
+                    // resume results and select sound if change
+                    if (carPreviouslyOnSwitch ^ CarOnSwitch || carPreviouslyOnCurve ^ CarOnCurve)
                     { 
                         stateChange = true;
+                    }
+                    if (stateChange && (CarOnSwitch || CarOnCurve))
+                    {
+                        Car.TrackSoundLocation = new WorldLocation(Car.WorldPosition.WorldLocation);
+                        if (CarOnSwitch && CarOnCurve && SharedSMSFileManager.CurveSMSNumber != -1)
+                        {
+                            _curTType = SharedSMSFileManager.CurveSwitchSMSNumber;
+                        }
+                        else if (CarOnSwitch && SharedSMSFileManager.SwitchSMSNumber != -1)
+                        {
+                            _curTType = SharedSMSFileManager.SwitchSMSNumber;
+                        }
+                        else if (SharedSMSFileManager.CurveSMSNumber != -1)
+                        // car on curve
+                        {
+                            _curTType = SharedSMSFileManager.CurveSMSNumber;
+                        }
+                        else stateChange = false;
                     }
                 }
                 else
