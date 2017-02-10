@@ -266,30 +266,45 @@ Testing Sound Files at Runtime
 The :ref:`sound debug window <driving-sound-debug>` is a useful tool for 
 testing.
 
-Automatic switch track sound
-============================
+Automatic switch and curve squeal track sound
+=============================================
 
 With this feature a specific track sound is played when a train passes over any switch or 
-crossover, 
-which highly enhances the sound experience. If this feature is enabled there is no more 
+crossover, or over a curve with a low radius, which highly enhances the sound experience.
+If this feature is enabled there is no more 
 need to lay down specific sound regions around or sound sources above every 
-switch. This is a lengthy task, and in fact most of the routes aren't equipped with such 
-sound regions or sound sources.
+switch or over curves. This is a lengthy task, and in fact most of the routes aren't 
+equipped with such sound regions or sound sources.
+Three automatic sounds are supported::
+
+-  switch sound
+-  curve squeal sound
+-  curve + switch sound (when wagon is both on curve and switch).
+
+It is possible to define also only one or two of these automatic sounds. If switch and 
+curve squeal sound are defined, and no curve + switch sound is defined, the curve squeal 
+sound is played when a wagon is both on curve and switch.
+The curve radius threshold below which the curve squeal sound is played is 350 meters for 
+freight wagons and 301 meters for all other trainsets.
+
 To enable this feature steps here below must be followed:
 
-1. A suitable external and internal switch track sound must be available; usually you 
-   find them in the root's ``SOUND``. It is highly likely that this sound is available, if 
-   newer routes are present in the ROUTES folder.
-2. For every route it must be checked whether a reference to a switch track sound is 
-   present in the route's ``ttype.dat`` file. If it is, you can proceed to next step. 
-   Else you must insert a new line at the end of ``ttype.dat``, adding the reference to 
-   the switch track sound, and you must add 1 to the number on top of the file.
-   Here below an example of a default ``ttype.dat`` can be found,  where a new line 
-   referring to a fictitious switch sound has been added in last position::
+1. Suitable external and internal automatic sounds must be available (.sms files); 
+   usually you find them in the root's ``SOUND``. It often occurs that switch track 
+   and curve squeal sounds are available in modern routes. If not, they must be created 
+   or searched on the web. A test sound set may be downloaded from 
+   `here <http://www.interazioni-educative.it/Varie/DemoAutoSound.zip>`_.
+2. For every route it must be checked whether a reference to the three automatic track 
+   sounds are present in the route's ``ttype.dat`` file. If they are, you can proceed 
+   to next step. 
+   Else you must insert three new lines at the end of ``ttype.dat``, adding the reference 
+   to the automatic track sounds, and you must add 3 to the number on top of the file.
+   Here below an example of a default ``ttype.dat`` can be found,  where three new lines 
+   referring to the above test sound have been added in last position::
 
      SIMISA@@@@@@@@@@JINX0t1t______
      
-     11
+     13
      TrackType ( "Default" "EuropeSteamTrack0In.sms" "EuropeSteamTrack0Ex.sms" )
      TrackType ( "Concrete Supported"	"EuropeSteamTrack1In.sms" "EuropeSteamTrack1Ex.sms" )
      TrackType ( "Wood Supported"	"EuropeSteamTrack2In.sms" "EuropeSteamTrack2Ex.sms" )
@@ -301,11 +316,16 @@ To enable this feature steps here below must be followed:
      TrackType ( "Crossing Platform" "EuropeSteamTrack8In.sms" "EuropeSteamTrack8Ex.sms" )
      TrackType ( "Wooden Bridge" "EuropeSteamTrack9In.sms" "EuropeSteamTrack9Ex.sms" )
      TrackType ( "Switch" "switchtrack7in.sms" "switchtrack7ex.sms" )
+     TrackType ( "Switch" "DemoAutoSound/switchtrackin.sms" "DemoAutoSound/switchtrackex.sms"     )
+     TrackType ( "Squeal Curve" "DemoAutoSound/curvesquealtrackin.sms" "DemoAutoSound/curvesquealtrackex.sms"   )
+     TrackType ( "Squeal Switch" "DemoAutoSound/curveswitchtrackin.sms" "DemoAutoSound/curveswitchtrackex.sms"   )
 
 3. For every route you must tell OR which of the ttype sound files are those related to 
-   switches. This is done by inserting following line in the route's ``.trk`` file::
+   automatic sounds. This is done by inserting following line in the route's ``.trk`` file::
      
      ORTSSwitchSMSNumber ( 10 )
+     ORTSCurveSMSNumber ( 11 )       
+     ORTSCurveSwitchSMSNumber ( 12 ) 
 
    A better solution, because it leaves the ``.trk`` file unaltered, is to create an 
    ``OpenRails`` subfolder within the route's folder, and to put in it an integration 
@@ -316,10 +336,14 @@ To enable this feature steps here below must be followed:
         
        include ( "../ITALIA13.trk" )
           ORTSDefaultTurntableSMS ( turntable.sms )
-          ORTSSwitchSMSNumber ( 10 )  
+          ORTSSwitchSMSNumber ( 10 )
+          ORTSCurveSMSNumber ( 11 )       
+          ORTSCurveSwitchSMSNumber ( 12 )  
 
       
    Note that the above the ``include`` line a blank line must be present.
    Note also that with the same integration ``.trk`` file also the default turntable sound 
    is defined, in case this route has turntables or transfertables.                  
  
+   As already stated, you can also define in ``ttype.dat`` and in the ``.trk`` file only 
+   one or only two types of automatic sounds.
