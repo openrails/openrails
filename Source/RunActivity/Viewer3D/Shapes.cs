@@ -1433,6 +1433,8 @@ namespace Orts.Viewer3D
                 textureFlags = (Helpers.TextureFlags)sdFile.shape.ESD_Alternative_Texture;
                 if (FilePath != null && FilePath.Contains("\\global\\")) textureFlags |= Helpers.TextureFlags.SnowTrack;//roads and tracks are in global, as MSTS will always use snow texture in snow weather
                 HasNightSubObj = sdFile.shape.ESD_SubObj;
+                if ((textureFlags & Helpers.TextureFlags.Night) != 0 && FilePath.Contains("\\trainset\\"))
+                    textureFlags |= Helpers.TextureFlags.Underground;
             }
 
             var matrixCount = sFile.shape.matrices.Count;
@@ -1661,6 +1663,9 @@ namespace Orts.Viewer3D
 
                     if ((textureFlags & Helpers.TextureFlags.Night) != 0)
                         options |= SceneryMaterialOptions.NightTexture;
+
+                    if ((textureFlags & Helpers.TextureFlags.Underground) != 0)
+                        options |= SceneryMaterialOptions.UndergroundTexture;
 
                     Material material;
                     if (primitiveState.tex_idxs.Length != 0)

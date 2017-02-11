@@ -618,15 +618,17 @@ namespace Orts.Viewer3D
         TextureAddressModeMask = 0x600,
         // Night texture
         NightTexture = 0x800,
+        // Texture to be shown in tunnels and underground (used for 3D cab night textures)
+        UndergroundTexture = 0x40000000,
     }
 
     public class SceneryMaterial : Material
     {
         readonly SceneryMaterialOptions Options;
         readonly float MipMapBias;
-        readonly Texture2D Texture;
+        protected readonly Texture2D Texture;
         private readonly string TexturePath;
-        private Texture2D NightTexture;
+        protected Texture2D NightTexture;
         byte AceAlphaBits;   // the number of bits in the ace file's alpha channel 
         IEnumerator<EffectPass> ShaderPassesDarkShade;
         IEnumerator<EffectPass> ShaderPassesFullBright;
@@ -798,13 +800,13 @@ namespace Orts.Viewer3D
 
             graphicsDevice.SamplerStates[0].AddressU = graphicsDevice.SamplerStates[0].AddressV = GetShadowTextureAddressMode();
 
-            var timeOffset = ((float)KeyLengthRemainder())/5000f; // TODO for later use for pseudorandom texture switch time
-            if (NightTexture != null && NightTexture != SharedMaterialManager.MissingTexture && Viewer.MaterialManager.sunDirection.Y < 0.0f - timeOffset)
+            if (NightTexture != null && NightTexture != SharedMaterialManager.MissingTexture && (((Options & SceneryMaterialOptions.UndergroundTexture) != 0 &&
+                (Viewer.MaterialManager.sunDirection.Y < -0.085f || Viewer.Camera.IsUnderground)) || Viewer.MaterialManager.sunDirection.Y < 0.0f - ((float)KeyLengthRemainder()) / 5000f))
             {
                 shader.ImageTexture = NightTexture;
                 shader.ImageTextureIsNight = true;
             }
-            else
+             else
             {
                 shader.ImageTexture = Texture;
                 shader.ImageTextureIsNight = false;
@@ -879,7 +881,8 @@ namespace Orts.Viewer3D
         public override Texture2D GetShadowTexture()
         {
             var timeOffset = ((float)KeyLengthRemainder()) / 5000f; // TODO for later use for pseudorandom texture switch time
-            if (NightTexture != null && NightTexture != SharedMaterialManager.MissingTexture && Viewer.MaterialManager.sunDirection.Y < 0.0f - timeOffset)
+            if (NightTexture != null && NightTexture != SharedMaterialManager.MissingTexture && (((Options & SceneryMaterialOptions.UndergroundTexture) != 0 &&
+                (Viewer.MaterialManager.sunDirection.Y < -0.085f || Viewer.Camera.IsUnderground)) || Viewer.MaterialManager.sunDirection.Y < 0.0f - ((float)KeyLengthRemainder()) / 5000f))
                 return NightTexture;
 
             return Texture;

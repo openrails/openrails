@@ -2518,7 +2518,7 @@ namespace Orts.Viewer3D.RollingStock
                 }
             }
 
-            SceneryMaterialOptions options = SceneryMaterialOptions.ShaderFullBright | SceneryMaterialOptions.AlphaBlendingAdd;
+            SceneryMaterialOptions options = SceneryMaterialOptions.ShaderFullBright | SceneryMaterialOptions.AlphaBlendingAdd | SceneryMaterialOptions.UndergroundTexture;
 
             if (String.IsNullOrEmpty(TrainCarShape.SharedShape.ReferencePath))
             {

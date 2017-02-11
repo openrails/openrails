@@ -39,6 +39,7 @@ namespace Orts.Viewer3D.Common
             AutumnSnow = 0x40,
             WinterSnow = 0x80,
             Night = 0x100,
+            Underground = 0x40000000,
         }
 
         public static string GetForestTextureFile(Simulator simulator, string textureName)
