@@ -197,6 +197,14 @@ Development Rules
   font. If no ace is specified, the default will be used.
 - Mirrors and doors can be operated from 3D cabs. The names used are 
   ``LEFTDOOR``, ``RIGHTDOOR`` and ``MIRRORS``.
+- like the 2D cabs, also 3D cabs can have a night version. Night textures, named like the 
+  corresponding day textures, must be located within a ``NIGHT`` subfolder of the 
+  ``CABVIEW3D`` folder. To enable night cabs an ``.sd`` file with the same name as the 
+  shape file of the 3D cab must be present in the ``CABVIEW3D`` folder. This ``.sd`` file 
+  has a standard format and must contain following line::
+
+    ESD_Alternative_Texture ( 256 )
+
 - How to control the view in a 3D cab is described :ref:`here <driving-changing-view>`.
 
 A demo trainset with a 3Dcab, that may be useful for developers, can be 
