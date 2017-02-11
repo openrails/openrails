@@ -82,7 +82,7 @@ namespace Orts.Viewer3D
                 Vector3 trackLoc = new Vector3((float)id.X, (float)id.Y, -(float)id.Z);// +new Vector3(3, 0, 0);
                 Matrix trackRot = Matrix.CreateRotationY(-(float)id.A * 3.1416f / 180);
 
-                //heading = Vector3.Transform(heading, trackRot); // Heading change
+                heading = Vector3.Transform(heading, trackRot); // Heading change
                 nextRoot.XNAMatrix = trackRot * nextRoot.XNAMatrix;
                 uint[] sections = id.TrackSections;
 
@@ -116,7 +116,7 @@ namespace Orts.Viewer3D
                                                 worldMatrix.XNAMatrix, out localProjectedV);
 
                         heading = Vector3.Transform(heading, rot); // Heading change
-                        nextRoot.XNAMatrix = trackRot * rot * nextRoot.XNAMatrix; // Store heading change
+                        nextRoot.XNAMatrix = rot * nextRoot.XNAMatrix; // Store heading change
 
                     }
                     nextRoot.XNAMatrix.Translation = sectionOrigin + displacement;
