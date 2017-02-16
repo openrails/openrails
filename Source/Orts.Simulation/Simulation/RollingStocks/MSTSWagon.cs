@@ -1658,12 +1658,19 @@ namespace Orts.Simulation.RollingStocks
                         tenderIndex = i;
                 }
 
-                if (tenderIndex < Train.Cars.Count - 1 && Train.Cars[tenderIndex + 1].WagonType == WagonTypes.Tender)
+                if (tenderIndex < Train.Cars.Count - 1 && Train.Cars[tenderIndex + 1].WagonType == WagonTypes.Tender) // Assuming the tender is behind the locomotive
                 {
                     SteamLocomotiveTender = Train.Cars[tenderIndex] as MSTSSteamLocomotive;
                     SteamLocomotiveTender.HasTenderCoupled = true;
                 }
-                else
+
+                else if (tenderIndex > 0 && Train.Cars[tenderIndex - 1].WagonType == WagonTypes.Tender) // Assuming the tender is "in front" of the locomotive, ie it is running in reverse
+                {
+                    // TO BE CHECKED - What happens if multiple locomotives are coupled together in reverse?
+                    SteamLocomotiveTender = Train.Cars[tenderIndex] as MSTSSteamLocomotive;
+                    SteamLocomotiveTender.HasTenderCoupled = true;
+                }
+                else // Assuming that locomotive is a tank locomotive, and no tender is coupled
                 {
                     SteamLocomotiveTender = Train.Cars[tenderIndex] as MSTSSteamLocomotive;
                     SteamLocomotiveTender.HasTenderCoupled = false;
