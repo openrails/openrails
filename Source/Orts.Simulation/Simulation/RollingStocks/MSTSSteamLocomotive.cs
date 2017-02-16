@@ -432,7 +432,7 @@ namespace Orts.Simulation.RollingStocks
 
         // Cylinder related parameters
         float CutoffPressureDropRatio;  // Ratio of Cutoff Pressure to Initial Pressure
-        float CylinderPressureAtmPSI;
+        float CylinderCocksPressureAtmPSI; // Pressure in cylinder (impacted by cylinder cocks).
         float BackPressureAtmPSI;
         float InitialPressureAtmPSI;    // Initial Pressure to cylinder @ start if stroke
         float CutoffPressureAtmPSI;    // Pressure at cutoff
@@ -1671,7 +1671,7 @@ namespace Orts.Simulation.RollingStocks
          //   var variable1 = (Simulator.UseAdvancedAdhesion && Train.IsPlayerDriven ? LocomotiveAxle.AxleSpeedMpS : SpeedMpS) / DriverWheelRadiusM / MathHelper.Pi * 5;
             var variable1 = WheelSpeedSlipMpS / DriverWheelRadiusM / MathHelper.Pi * 5;
             Variable1 = ThrottlePercent == 0 ? 0 : variable1;
-            Variable2 = MathHelper.Clamp((CylinderPressureAtmPSI - OneAtmospherePSI) / BoilerPressurePSI * 100f, 0, 100);
+            Variable2 = MathHelper.Clamp((CylinderCocksPressureAtmPSI - OneAtmospherePSI) / BoilerPressurePSI * 100f, 0, 100);
             Variable3 = FuelRateSmooth * 100;
 
             const int rotations = 2;
@@ -3204,22 +3204,55 @@ namespace Orts.Simulation.RollingStocks
 
             if (CylinderCocksAreOpen) // Don't apply steam cocks derate until Cylinder steam usage starts to work
             {
-                if (HasSuperheater)
+                if (HasSuperheater) // Superheated locomotive
                 {
                     CylCockPressReduceFactor = ((CylinderSteamUsageLBpS / SuperheaterSteamUsageFactor) / ((CylinderSteamUsageLBpS / SuperheaterSteamUsageFactor) + CylCockSteamUsageLBpS)); // For superheated locomotives temp convert back to a saturated comparison for calculation of steam cock reduction factor.
                 }
-                else
+                else // Simple locomotive
                 {
                     CylCockPressReduceFactor = (CylinderSteamUsageLBpS / (CylinderSteamUsageLBpS + CylCockSteamUsageLBpS)); // Saturated steam locomotive
                 }
-                CylinderPressureAtmPSI = CutoffPressureAtmPSI - (CutoffPressureAtmPSI * (1.0f - CylCockPressReduceFactor)); // Allow for pressure reduction due to Cylinder cocks being open.
+
+                if (SteamEngineType == SteamEngineTypes.Compound)
+                {
+                    if(CylinderCompoundOn)  // simple mode for compound locomotive 
+                    {
+                        CylinderCocksPressureAtmPSI = LPCylinderPreCutoffPressureAtmPSI - (LPCylinderPreCutoffPressureAtmPSI * (1.0f - CylCockPressReduceFactor)); // Allow for pressure reduction due to Cylinder cocks being open.
+                    }
+                    else // Compound mode for compound locomotive
+                    {
+                        CylinderCocksPressureAtmPSI = HPCylinderCutoffPressureAtmPSI - (HPCylinderCutoffPressureAtmPSI * (1.0f - CylCockPressReduceFactor)); // Allow for pressure reduction due to Cylinder cocks being open.
+                    }
+                }
+                else // Simple locomotive
+                {
+                    CylinderCocksPressureAtmPSI = CutoffPressureAtmPSI - (CutoffPressureAtmPSI * (1.0f - CylCockPressReduceFactor)); // Allow for pressure reduction due to Cylinder cocks being open.
+                }
+
+                
             }
-            else
+            else // Cylinder cocks closed, put back to normal
             {
-                CylinderPressureAtmPSI = CutoffPressureAtmPSI;
+                if (SteamEngineType == SteamEngineTypes.Compound)
+                {
+                    if (CylinderCompoundOn)  // simple mode for compound locomotive 
+                    {
+                        CylinderCocksPressureAtmPSI = LPCylinderPreCutoffPressureAtmPSI;
+                    }
+                    else // Compound mode for compound locomotive
+                    {
+                        CylinderCocksPressureAtmPSI = HPCylinderCutoffPressureAtmPSI;
+                    }
+                }
+                else // Simple locomotive
+                {
+                    CylinderCocksPressureAtmPSI = CutoffPressureAtmPSI;
+                }
+                
+                
             }
 
-            CylinderPressureAtmPSI = MathHelper.Clamp(CylinderPressureAtmPSI, 0, MaxBoilerPressurePSI + OneAtmospherePSI); // Make sure that Cylinder pressure does not go negative
+            CylinderCocksPressureAtmPSI = MathHelper.Clamp(CylinderCocksPressureAtmPSI, 0, MaxBoilerPressurePSI + OneAtmospherePSI); // Make sure that Cylinder pressure does not go negative
 
             #region Calculation of Cylinder steam usage using an Indicator Diagram type approach
             // To calculate steam usage, Calculate amount of steam in cylinder 
@@ -3973,7 +4006,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 if (throttle > 0.00 && absSpeedMpS > 0.1) // if regulator open & train moving
                 {
-                    CylCockSteamUsageLBpS = pS.FrompH(NumCylinders * (24.24f * (CylinderPressureAtmPSI) * CylCockDiaIN * CylCockDiaIN));
+                    CylCockSteamUsageLBpS = pS.FrompH(NumCylinders * (24.24f * (CylinderCocksPressureAtmPSI) * CylCockDiaIN * CylCockDiaIN));
                     BoilerMassLB -= elapsedClockSeconds * CylCockSteamUsageLBpS; // Reduce boiler mass to reflect steam usage by cylinder steam cocks  
                     BoilerHeatBTU -= elapsedClockSeconds * CylCockSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by cylinder steam cocks
                     BoilerHeatOutBTUpS += CylCockSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by cylinder steam cocks                
