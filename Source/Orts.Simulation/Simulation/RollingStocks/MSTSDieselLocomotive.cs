@@ -77,7 +77,7 @@ namespace Orts.Simulation.RollingStocks
         public float DieselUsedPerHourAtMaxPowerL = 1.0f;
         public float DieselUsedPerHourAtIdleL = 1.0f;
         public float DieselFlowLps;
-        float DieselWeightKgpL = 0.8f; //per liter
+        public float DieselWeightKgpL = 0.8508f; //per liter
         float InitialMassKg = 100000.0f;
 
         public float EngineRPM;
@@ -419,7 +419,7 @@ namespace Orts.Simulation.RollingStocks
                             de.Stop();
                     }
                 }
-                MassKG = InitialMassKg - MaxDieselLevelL * DieselWeightKgpL + DieselLevelL * DieselWeightKgpL;
+ //               MassKG = InitialMassKg - MaxDieselLevelL * DieselWeightKgpL + DieselLevelL * DieselWeightKgpL;
             }
 
             if (MaxForceN > 0 && MaxContinuousForceN > 0)

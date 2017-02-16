@@ -134,7 +134,8 @@ namespace Orts.Simulation.RollingStocks
         public bool CabLightOn;
         public bool ShowCab = true;
         public bool MilepostUnitsMetric;
-        public float DrvWheelWeightKg; // weight on locomotive drive wheel, includes drag factor
+        public float DrvWheelWeightKg; // current weight on locomotive drive wheels, includes drag factor (changes as mass changes)
+        public float InitialDrvWheelWeightKg; // initialising weight on locomotive drive wheels, includes drag factor
 
         // Adhesion Debug
         bool DebugSpeedReached;
@@ -704,7 +705,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(dynamicbrakesresistorcurrentlimit": DynamicBrakeMaxCurrentA = stf.ReadFloatBlock(STFReader.UNITS.Current, null); break;
                 case "engine(numwheels": LocoNumDrvWheels = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); if (LocoNumDrvWheels < 1) STFException.TraceWarning(stf, "Engine:NumWheels is less than 1, parts of the simulation may not function correctly"); break;
                 case "engine(antislip": AntiSlip = stf.ReadBoolBlock(false); break;
-                case "engine(ortsdrivewheelweight": DrvWheelWeightKg = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
+                case "engine(ortsdrivewheelweight": InitialDrvWheelWeightKg = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(engineoperatingprocedures": EngineOperatingProcedures = stf.ReadStringBlock(""); break;
                 case "engine(headout":
                     HeadOutViewpoints.Add(new ViewPoint(stf.ReadVector3Block(STFReader.UNITS.Distance, Vector3.Zero)));
@@ -776,6 +777,7 @@ namespace Orts.Simulation.RollingStocks
             AntiSlip = locoCopy.AntiSlip;
             VacuumPumpFitted = locoCopy.VacuumPumpFitted;
             DrvWheelWeightKg = locoCopy.DrvWheelWeightKg;
+            InitialDrvWheelWeightKg = locoCopy.InitialDrvWheelWeightKg;
             EffectData = locoCopy.EffectData;
             SanderSpeedEffectUpToMpS = locoCopy.SanderSpeedEffectUpToMpS;
             SanderSpeedOfMpS = locoCopy.SanderSpeedOfMpS;
@@ -984,6 +986,7 @@ namespace Orts.Simulation.RollingStocks
             base.Initialize();
             if (DynamicBrakeBlendingEnabled) airPipeSystem = BrakeSystem as AirSinglePipe;
 
+            DrvWheelWeightKg = InitialDrvWheelWeightKg;
         }
 
         //================================================================================================//

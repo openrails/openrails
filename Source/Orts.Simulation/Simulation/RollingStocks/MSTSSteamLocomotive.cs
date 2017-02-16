@@ -184,7 +184,7 @@ namespace Orts.Simulation.RollingStocks
         float BoilerHeatRatio = 1.0f;   // Boiler heat ratio, if boiler heat exceeds, normal boiler pressure boiler heat
         float MaxBoilerHeatRatio = 1.0f;   // Max Boiler heat ratio, if boiler heat exceeds, safety boiler pressure boiler heat
         SmoothedData BoilerHeatSmoothBTU = new SmoothedData(60);       // total heat in water and steam in boiler - lb/s * SteamHeat(BTU/lb)
-        float BoilerMassLB;         // total mass of water and steam in boiler
+        public float BoilerMassLB;         // current total mass of water and steam in boiler (changes as boiler usage changes)
 
         float BoilerKW;                 // power of boiler
         float MaxBoilerKW;              // power of boiler at full performance
@@ -1841,6 +1841,7 @@ namespace Orts.Simulation.RollingStocks
 
         private void UpdateTender(float elapsedClockSeconds)
         {
+
             if (HasTenderCoupled) // If a tender is coupled then coal is available
             {
                 TenderCoalMassKG -= elapsedClockSeconds * FuelBurnRateKGpS; // Current Tender coal mass determined by burn rate.
