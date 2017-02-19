@@ -72,8 +72,8 @@ namespace Orts.Viewer3D
     public abstract class SoundSourceBase : IDisposable
     {
         public abstract void InitInitials();
-		public abstract void Uninitialize();
-		public abstract bool Update();
+        public abstract void Uninitialize();
+        public abstract bool Update();
 
         /// <summary>
         /// The sound may be from a train car
@@ -154,7 +154,7 @@ namespace Orts.Viewer3D
                 _outSources.Add(new SoundSource(Viewer, Car, fullPath));
         }
 
-		public override void Uninitialize()
+        public override void Uninitialize()
         {
             //Trace.TraceInformation("TrackSoundSource Uninitialize");
             if (_activeInSource != null)
@@ -1905,8 +1905,8 @@ namespace Orts.Viewer3D
             string p = GetNextFile();
             if (p != "")
             {
-				if (ORTSStream != null && ORTSStream.ALSoundSource != null)
-					ORTSStream.ALSoundSource.Queue(p, PlayMode.OneShot, ORTSStream.SoundSource.IsExternal, ORTSStream.RepeatedTrigger);
+                if (ORTSStream != null && ORTSStream.ALSoundSource != null)
+                    ORTSStream.ALSoundSource.Queue(p, PlayMode.OneShot, ORTSStream.SoundSource.IsExternal, ORTSStream.RepeatedTrigger);
             }
         }
     } 
@@ -1926,8 +1926,8 @@ namespace Orts.Viewer3D
             string p = GetNextFile();
             if (p != "")
             {
-				if (ORTSStream != null && ORTSStream.ALSoundSource != null)
-					ORTSStream.ALSoundSource.Queue(p, PlayMode.Loop, ORTSStream.SoundSource.IsExternal, false);
+                if (ORTSStream != null && ORTSStream.ALSoundSource != null)
+                    ORTSStream.ALSoundSource.Queue(p, PlayMode.Loop, ORTSStream.SoundSource.IsExternal, false);
             }
         }
     } 
@@ -1944,8 +1944,8 @@ namespace Orts.Viewer3D
         
         public override void Run()
         {
-			if (ORTSStream != null && ORTSStream.ALSoundSource != null)
-				ORTSStream.ALSoundSource.Queue("", PlayMode.Release, ORTSStream.SoundSource.IsExternal, false);
+            if (ORTSStream != null && ORTSStream.ALSoundSource != null)
+                ORTSStream.ALSoundSource.Queue("", PlayMode.Release, ORTSStream.SoundSource.IsExternal, false);
         }
     }
 
@@ -1965,8 +1965,8 @@ namespace Orts.Viewer3D
             string p = GetNextFile();
             if (p != "")
             {
-				if (ORTSStream != null && ORTSStream.ALSoundSource != null)
-					ORTSStream.ALSoundSource.Queue(p, PlayMode.LoopRelease, ORTSStream.SoundSource.IsExternal, ORTSStream.IsReleasedWithJump);
+                if (ORTSStream != null && ORTSStream.ALSoundSource != null)
+                    ORTSStream.ALSoundSource.Queue(p, PlayMode.LoopRelease, ORTSStream.SoundSource.IsExternal, ORTSStream.IsReleasedWithJump);
             }
         }
     }
@@ -1983,8 +1983,8 @@ namespace Orts.Viewer3D
 
         public override void Run()
         {
-			if (ORTSStream != null && ORTSStream.ALSoundSource != null)
-				ORTSStream.ALSoundSource.Queue("", PlayMode.ReleaseWithJump, ORTSStream.SoundSource.IsExternal, true);
+            if (ORTSStream != null && ORTSStream.ALSoundSource != null)
+                ORTSStream.ALSoundSource.Queue("", PlayMode.ReleaseWithJump, ORTSStream.SoundSource.IsExternal, true);
         }
     }
 
@@ -2127,7 +2127,7 @@ namespace Orts.Viewer3D
             {
                 return new ORTSEnableTrigger(soundStream, (Orts.Formats.Msts.EnableTrigger)mstsSoundCommand);
             }
-			throw new ArgumentException("Unexpected soundCommand type " + mstsSoundCommand.GetType().ToString() + " in " + soundStream.SoundSource.SMSFolder, "mstsSoundCommand");
+            throw new ArgumentException("Unexpected soundCommand type " + mstsSoundCommand.GetType().ToString() + " in " + soundStream.SoundSource.SMSFolder, "mstsSoundCommand");
         }
 
 
@@ -2409,7 +2409,7 @@ namespace Orts.Viewer3D
         public void AddByTile(int TileX, int TileZ)
         {
             string name = Viewer.Simulator.RoutePath + @"\WORLD\" + WorldFile.WorldFileNameFromTileCoordinates(TileX, TileZ) + "s";
-            WorldSoundFile wf = new WorldSoundFile(name);
+            WorldSoundFile wf = new WorldSoundFile(name, Viewer.Simulator.TDB.TrackDB.TrItemTable);
             if (wf.TR_WorldSoundFile != null)
             {
                 string[] pathArray = {Viewer.Simulator.RoutePath, Viewer.Simulator.BasePath};
