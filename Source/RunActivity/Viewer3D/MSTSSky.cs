@@ -101,13 +101,9 @@ namespace Orts.Viewer3D
             MSTSSkyVectors = new SunMoonPos();
 
             //viewer.World.MSTSSky.MSTSSkyMaterial.Viewer.MaterialManager.sunDirection.Y < 0
-            // Set default values
-            mstsskyseasonType = (int)MSTSSkyViewer.Simulator.Season;
-            date.ordinalDate = 82 + mstsskyseasonType * 91;
-            // TODO: Set the following three externally from ORTS route files (future)
-            date.month = 1 + date.ordinalDate / 30;
-            date.day = 21;
-            date.year = 2010;
+            // Set starting value
+            mstsskyseasonType = -1;
+
             // Default wind speed and direction
             mstsskywindSpeed = 5.0f; // m/s (approx 11 mph)
             mstsskywindDirection = 4.7f; // radians (approx 270 deg, i.e. westerly)
@@ -119,16 +115,7 @@ namespace Orts.Viewer3D
         /// </summary>
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            if (mstsskyseasonType != (int)MSTSSkyViewer.Simulator.Season)
-            {
-                mstsskyseasonType = (int)MSTSSkyViewer.Simulator.Season;
-                date.ordinalDate = 82 + mstsskyseasonType * 91;
-                // TODO: Set the following three externally from ORTS route files (future)
-                date.month = 1 + date.ordinalDate / 30;
-                date.day = 21;
-                date.year = 2010;
-            }
-            // Adjust dome position so the bottom edge is not visible
+             // Adjust dome position so the bottom edge is not visible
             Vector3 ViewerXNAPosition = new Vector3(MSTSSkyViewer.Camera.Location.X, MSTSSkyViewer.Camera.Location.Y - 100, -MSTSSkyViewer.Camera.Location.Z);
             Matrix XNASkyWorldLocation = Matrix.CreateTranslation(ViewerXNAPosition);
 
@@ -142,6 +129,15 @@ namespace Orts.Viewer3D
                 step2 = step2 < maxSteps - 1 ? step2 + 1 : 0; // limit to max. steps in case activity starts near midnight
                 // Get the current latitude and longitude coordinates
                 mstsskyworldLoc.ConvertWTC(MSTSSkyViewer.Camera.TileX, MSTSSkyViewer.Camera.TileZ, MSTSSkyViewer.Camera.Location, ref mstsskylatitude, ref mstsskylongitude);
+                if (mstsskyseasonType != (int)MSTSSkyViewer.Simulator.Season)
+                {
+                    mstsskyseasonType = (int)MSTSSkyViewer.Simulator.Season;
+                    date.ordinalDate = mstsskylatitude >= 0 ? 82 + mstsskyseasonType * 91 : (82 + (mstsskyseasonType + 2) * 91) % 365;
+                    // TODO: Set the following three externally from ORTS route files (future)
+                    date.month = 1 + date.ordinalDate / 30;
+                    date.day = 21;
+                    date.year = 2017;
+                }
                 // Fill in the sun- and moon-position lookup tables
                 for (int i = 0; i < maxSteps; i++)
                 {
@@ -264,17 +260,16 @@ namespace Orts.Viewer3D
 
         public void LoadPrep()
         {
-            if (mstsskyseasonType != (int)MSTSSkyViewer.Simulator.Season)
-            {
-                mstsskyseasonType = (int)MSTSSkyViewer.Simulator.Season;
-                date.ordinalDate = 82 + mstsskyseasonType * 91;
-                date.month = 1 + date.ordinalDate / 30;
-                date.day = 21;
-                date.year = 2010;
-            }
+
+
             mstsskyworldLoc = new WorldLatLon();
             // Get the current latitude and longitude coordinates
             mstsskyworldLoc.ConvertWTC(MSTSSkyViewer.Camera.TileX, MSTSSkyViewer.Camera.TileZ, MSTSSkyViewer.Camera.Location, ref mstsskylatitude, ref mstsskylongitude);
+            mstsskyseasonType = (int)MSTSSkyViewer.Simulator.Season;
+            date.ordinalDate = mstsskylatitude >= 0 ? 82 + mstsskyseasonType * 91 : (82 + (mstsskyseasonType + 2) * 91) % 365;
+            date.month = 1 + date.ordinalDate / 30;
+            date.day = 21;
+            date.year = 2017;
             float fractClockTime = (float)MSTSSkyViewer.Simulator.ClockTime / 86400;
             mstsskysolarDirection = SunMoonPos.SolarAngle(mstsskylatitude, mstsskylongitude, fractClockTime, date);
             mstsskyworldLoc = null;
