@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Orts.Parsers.Msts;
@@ -102,6 +103,8 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("ortsdoubletunnelperimeter", ()=>{ DoubleTunnelPerimeterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
                 // if > 0 indicates distance from track without forest trees
 				new STFReader.TokenProcessor("ortsuserpreferenceforestcleardistance", ()=>{ ForestClearDistance = stf.ReadFloatBlock(STFReader.UNITS.Distance, 0); }),
+                // if true removes forest trees also from roads
+				new STFReader.TokenProcessor("ortsuserpreferenceremoveforesttreesfromroads", ()=>{ RemoveForestTreesFromRoads = stf.ReadBoolBlock(false); }),
                 // values for superelevation
                 new STFReader.TokenProcessor("ortstracksuperelevation", ()=>{ SuperElevationHgtpRadiusM = new Interpolator(stf); }),
                 // images
@@ -127,6 +130,7 @@ namespace Orts.Formats.Msts
             if (Name == null) throw new STFException(stf, "Missing Name");
             if (Description == null) throw new STFException(stf, "Missing Description");
             if (RouteStart == null) throw new STFException(stf, "Missing RouteStart");
+            if (ForestClearDistance == 0 && RemoveForestTreesFromRoads) Trace.TraceWarning("You must define also ORTSUserPreferenceForestClearDistance to avoid trees on roads");
         }
 
         public string RouteID;  // ie JAPAN1  - used for TRK file and route folder name
@@ -155,6 +159,7 @@ namespace Orts.Formats.Msts
         public float DoubleTunnelPerimeterM; 
 
         public float ForestClearDistance = 0;
+        public bool RemoveForestTreesFromRoads = false;
 
         // images
         public string Thumbnail;
