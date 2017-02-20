@@ -153,6 +153,7 @@ namespace ORTS
             checkMSTSBINSound.Checked = Settings.MSTSBINSound;
             numericSoundVolumePercent.Value = Settings.SoundVolumePercent;
             numericSoundDetailLevel.Value = Settings.SoundDetailLevel;
+            numericExternalSoundPassThruPercent.Value = Settings.ExternalSoundPassThruPercent;
 
             // Video tab
             checkDynamicShadows.Checked = Settings.DynamicShadows;
@@ -433,6 +434,7 @@ namespace ORTS
             Settings.MSTSBINSound = checkMSTSBINSound.Checked;
             Settings.SoundVolumePercent = (int)numericSoundVolumePercent.Value;
             Settings.SoundDetailLevel = (int)numericSoundDetailLevel.Value;
+            Settings.ExternalSoundPassThruPercent = (int)numericExternalSoundPassThruPercent.Value;
 
             // Video tab
             Settings.DynamicShadows = checkDynamicShadows.Checked;

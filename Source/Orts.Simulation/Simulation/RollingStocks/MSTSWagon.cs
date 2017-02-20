@@ -99,6 +99,7 @@ namespace Orts.Simulation.RollingStocks
         public string MainSoundFileName;
         public string InteriorSoundFileName;
         public string Cab3DSoundFileName;
+        public float ExternalSoundPassThruPercent = -1;
         public float WheelRadiusM = 1;          // provide some defaults in case it's missing from the wag
         protected float StaticFrictionFactorLb;    // factor to multiply friction by to determine static or starting friction - will vary depending upon whether roller or friction bearing
         public float Friction0N;        // static friction
@@ -778,6 +779,7 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortsfreightanims":
                     FreightAnimations = new FreightAnimations(stf, this);
                     break;
+                case "wagon(ortsexternalsoundpassedthroughpercent": ExternalSoundPassThruPercent = stf.ReadFloatBlock(STFReader.UNITS.None, -1); break;
                 default:
                     if (MSTSBrakeSystem != null)
                         MSTSBrakeSystem.Parse(lowercasetoken, stf);
@@ -853,6 +855,7 @@ namespace Orts.Simulation.RollingStocks
             AdhesionDriveWheelRadiusM = copy.AdhesionDriveWheelRadiusM;
             SlipWarningThresholdPercent = copy.SlipWarningThresholdPercent;
             Lights = copy.Lights;
+            ExternalSoundPassThruPercent = copy.ExternalSoundPassThruPercent;
             foreach (PassengerViewPoint passengerViewPoint in copy.PassengerViewpoints)
                 PassengerViewpoints.Add(passengerViewPoint);
             foreach (ViewPoint headOutViewPoint in copy.HeadOutViewpoints)

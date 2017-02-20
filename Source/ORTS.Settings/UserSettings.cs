@@ -142,6 +142,8 @@ namespace ORTS.Settings
         public int SoundVolumePercent { get; set; }
         [Default(5)]
         public int SoundDetailLevel { get; set; }
+        [Default(50)]
+        public int ExternalSoundPassThruPercent { get; set; } // higher = louder sound
 
         // Video settings:
         [Default(false)]

@@ -1314,7 +1314,11 @@ namespace Orts.Viewer3D
                 }
 
             if (SoundSource.IsExternal && SoundSource.Viewer.Camera.Style != Camera.Styles.External && !SoundSource.IsUnattenuated)
-                volume *= 0.5f;
+            {
+                if (SoundSource.Viewer.Camera.AttachedCar == null || ((MSTSWagon)SoundSource.Viewer.Camera.AttachedCar).ExternalSoundPassThruPercent == -1)
+                    volume *= Program.Viewer.Settings.ExternalSoundPassThruPercent / 100;
+                else volume *= ((MSTSWagon)SoundSource.Viewer.Camera.AttachedCar).ExternalSoundPassThruPercent / 100;
+            }
 
             ALSoundSource.Volume = volume;
         }
