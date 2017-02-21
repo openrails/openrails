@@ -1341,7 +1341,7 @@ namespace Orts.Simulation.RollingStocks
        private void UpdateLocomotiveLoadPhysics()
         {
             // This section updates the weight and physics of the locomotive
-            if (FreightAnimations != null) // make sure that a freight animation INCLUDE File has been defined
+            if (FreightAnimations != null && FreightAnimations.ContinuousFreightAnimationsPresent) // make sure that a freight animation INCLUDE File has been defined, and it contains "continuous" animation data.
             {
                 if (WagonType == WagonTypes.Engine && EngineType == EngineTypes.Steam)
                 // If steam locomotive then water, and coal variations will impact the weight of the locomotive
@@ -1429,7 +1429,7 @@ namespace Orts.Simulation.RollingStocks
         // This section updates the weight and physics of the tender, and aux tender as load varies on it
         {
 
-            if (FreightAnimations != null) // make sure that a freight animation INCLUDE File has been defined
+            if (FreightAnimations != null && FreightAnimations.ContinuousFreightAnimationsPresent) // make sure that a freight animation INCLUDE File has been defined, and it contains "continuous" animation data.
             {
 
                 if (WagonType == WagonTypes.Tender)
