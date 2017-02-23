@@ -347,3 +347,20 @@ To enable this feature steps here below must be followed:
  
    As already stated, you can also define in ``ttype.dat`` and in the ``.trk`` file only 
    one or only two types of automatic sounds.
+
+.. _sound-external:   
+
+Override % of external sound heard internally for a specific trainset
+=====================================================================
+
+External sounds are reproduced at a lower volume when heard within a cab or 
+passenger view. The % of external sound heard internally is defined in the 
+``Audio Options`` menu window.
+This percentage may be overridden for any trainset inserting in the Wagon 
+section of any .eng or .wag file (or in their "include" file as explained 
+:ref:`here <physics-inclusions>`) following line::
+
+  ORTSExternalSoundPassedThroughPercent ( 50 ) 
+
+where the number in parenthesis may be anyone from 0 (nothing heard internally) 
+to 100 (external sound reproduced at original volume).  

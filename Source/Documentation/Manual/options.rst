@@ -173,7 +173,13 @@ Except for very slow computers, it is suggested that you leave the *MSTS
 Bin compatible sound* option checked and set the Sound detail level to 5.
 
 The *% sound volume* scroll button allows adjustment of the volume of OR 
-sound.
+sound. Default is 40.
+
+The *% external sound heard internally* scroll button allows to define the percentage 
+of the original volume of external sounds heard in cab and passenger views. In fact 
+in real world external sounds are attenuated when heard within a trainset. 
+This percentage may be overridden trainset by trainset as defined 
+:ref:`here <sound-external>`.
 
 Video Options
 =============

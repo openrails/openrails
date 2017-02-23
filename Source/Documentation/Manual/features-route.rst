@@ -8,6 +8,25 @@ As a general rule and as already stated, Open Rails provides all route
 functionalities that were already available for MSTS, plus some opportunities 
 such as also accepting textures in .dds format.
 
+.. _features-route-modify-trk:
+
+Modifications to .trk Files
+===========================
+
+Many of the features described in this chapter require additional parameters to be 
+added in the route's .trk file. The additional parameters can be directly added in 
+the route's .trk file residing in the route's root folder. However, to avoid 
+modifying the original file, the *Include* method described 
+:ref:`here <physics-inclusions>` is also applicable to the .trk file, creating a 
+new .trk file inserted into an ``OpenRails`` folder in the root folder of the route.
+As an example, in case of the parameter needed to avoid forest trees on tracks ( see 
+:ref:`here <features-route-remove-trees>`). This .trk file will contain::
+
+    include ( ../Surfliner2.trk )
+        ORTSUserPreferenceForestClearDistance ( 2 )
+
+Only OR will look in the ``Openrails`` folder.
+
 Repetition of Snow Terrain Textures
 ===================================
 
@@ -550,8 +569,36 @@ option within the Experimental Options Window is not checked.
 
 ``ORTSOpenDoorsInAITrains ( 0 )`` disables door open/close for this route even if the 
 option within the Experimental Options Window is checked.
- 
 
+.. _features-route-remove-trees:
+
+Removing forest trees from tracks and roads
+===========================================
+
+OR and MSTS determine differently the position of trees in forests. 
+This may result in trees appearing on tracks or roads.
+To avoid trees on tracks following OR-specific parameter can be added to the .trk
+file of the route::
+
+  ORTSUserPreferenceForestClearDistance ( 2 )
+
+where the parameter represents a minimum distance in metres from the track
+for placement of forests.
+Alternatively, the original .trk file can be left unmodified, and a new .trk file 
+inserted into an ``OpenRails`` folder in the root folder of the route. This is 
+explained :ref:`here <features-route-modify-trk>`. 
+
+To avoid also forest trees on routes following line::
+
+  ORTSUserPreferenceRemoveForestTreesFromRoads ( 1 )
+
+must be added below line::
+
+  ORTSUserPreferenceForestClearDistance ( 2 )
+
+either in the route's root .trk file or in the "Include" .trk file.
+
+It is not possible to remove trees only from roads and not from tracks.       
 
 
 

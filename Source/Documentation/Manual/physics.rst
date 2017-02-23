@@ -2744,23 +2744,6 @@ groups of .wag or .eng files that the user wishes to replace by a specific
 block of data -- the parameters can be provided by a text file located
 outside the usual MSTS folders; e.g. brake parameters.
 
-Modifications to .trk Files
----------------------------
-
-This *Include* method is also applicable to the .trk file in the root folder
-of a route. For example, OR and MSTS process the position of trees close to
-the track differently for certain routes. This may result in trees appearing
-in the path of trains in OR. An OR-specifc parameter can be added to the .trk
-file of the route to eliminate this. Alternatively, the original .trk file
-can be left unmodified, and a new .trk file inserted into an ``OpenRails``
-folder in the root folder of the route. This .trk file will contain::
-
-    include ( ../Surfliner2.trk )
-        ORTSUserPreferenceForestClearDistance ( 2 )
-
-Where the parameter represents a minimum distance in metres from the track
-for placement of forests. Only OR will look in the ``Openrails`` folder.
-
 Train Control System
 ====================
 
