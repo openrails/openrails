@@ -1494,49 +1494,13 @@ namespace Orts.Simulation.AIs
 
             int actionIndex0 = thisTrain.PresentPosition[0].RouteListIndex;
             int actionRouteIndex = thisTrain.ValidRoute[0].GetRouteIndex(TCSectionIndex, actionIndex0);
-            float activateDistanceTravelledM = thisTrain.PresentPosition[0].DistanceTravelledM + thisTrain.ValidRoute[0].GetDistanceAlongRoute(actionIndex0, leftInSectionM, actionRouteIndex, this.RequiredDistance, thisTrain.AITrainDirectionForward, thisTrain.signalRef);
+            float activateDistanceTravelledM = -1;
 
-            // if reschedule, use actual speed
-
-            float triggerDistanceM = TriggerDistance;
-
-            //if (thisTrain is AITrain)
-            //{
-            //    AITrain aiTrain = thisTrain as AITrain;
-            //    if (reschedule)
-            //    {
-            //        float firstPartTime = 0.0f;
-            //        float firstPartRangeM = 0.0f;
-            //        float secndPartRangeM = 0.0f;
-            //        float remainingRangeM = activateDistanceTravelledM - thisTrain.PresentPosition[0].DistanceTravelledM;
-
-            //        firstPartTime = presentSpeedMpS / (0.25f * aiTrain.MaxDecelMpSS);
-            //        firstPartRangeM = 0.25f * aiTrain.MaxDecelMpSS * (firstPartTime * firstPartTime);
-
-            //        if (firstPartRangeM < remainingRangeM && thisTrain.SpeedMpS < thisTrain.TrainMaxSpeedMpS) // if distance left and not at max speed
-            //        // split remaining distance based on relation between acceleration and deceleration
-            //        {
-            //            secndPartRangeM = (remainingRangeM - firstPartRangeM) * (2.0f * aiTrain.MaxDecelMpSS) / (aiTrain.MaxDecelMpSS + aiTrain.MaxAccelMpSS);
-            //        }
-
-            //        triggerDistanceM = activateDistanceTravelledM - (firstPartRangeM + secndPartRangeM);
-            //    }
-            //    else
-
-            //    // use maximum speed
-            //    {
-            //        float deltaTime = thisTrain.TrainMaxSpeedMpS / aiTrain.MaxDecelMpSS;
-            //        float brakingDistanceM = (thisTrain.TrainMaxSpeedMpS * deltaTime) + (0.5f * aiTrain.MaxDecelMpSS * deltaTime * deltaTime);
-            //        triggerDistanceM = activateDistanceTravelledM - brakingDistanceM;
-            //    }
-            //}
-            //else
-            {
+            if (actionIndex0 != -1 && actionRouteIndex != -1)
                 activateDistanceTravelledM = thisTrain.PresentPosition[0].DistanceTravelledM + thisTrain.ValidRoute[0].GetDistanceAlongRoute(actionIndex0, leftInSectionM, actionRouteIndex, this.RequiredDistance, true, thisTrain.signalRef);
 
-                var currBrakeSection = (thisTrain is AITrain && !(thisTrain.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN)) ? 1 : brakeSection;
-                triggerDistanceM = activateDistanceTravelledM - Math.Min(this.RequiredDistance, 300);   //  TODO, add the size of train
-            }
+            var currBrakeSection = (thisTrain is AITrain && !(thisTrain.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN)) ? 1 : brakeSection;
+            float triggerDistanceM = activateDistanceTravelledM - Math.Min(this.RequiredDistance, 300);   //  TODO, add the size of train
 
             float[] distancesM = new float[2];
             distancesM[1] = triggerDistanceM;
