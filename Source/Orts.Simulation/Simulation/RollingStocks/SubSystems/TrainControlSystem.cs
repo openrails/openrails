@@ -914,7 +914,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     break;
             }
 
-            if (VigilanceMonitorState == MonitorState.Alarm)
+            if (VigilanceMonitorState >= MonitorState.Alarm)
             {
                 if (!AlerterSound())
                 {
