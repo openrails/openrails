@@ -660,8 +660,11 @@ namespace Orts.Simulation.RollingStocks
                     stf.MustMatch("(");
                     RigidWheelBaseM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     // Allow for imperial feet and inches to be specified separately (not ideal - please don't copy this).
-                    if (!stf.EndOfBlock()) RigidWheelBaseM += stf.ReadFloat(STFReader.UNITS.Distance, 0);
-                    stf.SkipRestOfBlock();
+                    if (!stf.EndOfBlock())
+                    {
+                        RigidWheelBaseM += stf.ReadFloat(STFReader.UNITS.Distance, 0);
+                        stf.SkipRestOfBlock();
+                    }
                     break;
                 case "wagon(ortsauxtenderwatermass": AuxTenderWaterMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "wagon(mass": InitialMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); if (InitialMassKG < 0.1f) InitialMassKG = 0.1f; break;
