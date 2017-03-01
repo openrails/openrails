@@ -189,7 +189,13 @@ namespace Orts.Simulation.RollingStocks
             FuelWater = 5,
             FuelCoal = 6,
             FuelDiesel = 7,
-            FuelWood = 8    // Think this is new to OR and not recognised by MSTS
+            FuelWood = 8,    // Think this is new to OR and not recognised by MSTS
+            FuelSand = 9,  // New to OR
+            FreightGeneral = 10, // New to OR
+            FreightLivestock = 11,  // New to OR
+            FreightFuel = 12,  // New to OR
+            FreightMilk = 13,   // New to OR
+            SpecialMail = 14  // New to OR
         }
 
         public class RefillProcess
@@ -640,8 +646,12 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortstrackgauge":
                     stf.MustMatch("(");
                     TrackGaugeM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    TrackGaugeM += stf.ReadFloat(STFReader.UNITS.Distance, 0);
-                    stf.SkipRestOfBlock();
+                    // Allow for imperial feet and inches to be specified separately (not ideal - please don't copy this).
+                    if (!stf.EndOfBlock())
+                    {
+                        TrackGaugeM += stf.ReadFloat(STFReader.UNITS.Distance, 0);
+                        stf.SkipRestOfBlock();
+                    }
                     break;
                 case "wagon(centreofgravity":
                     stf.MustMatch("(");
@@ -1898,7 +1908,7 @@ namespace Orts.Simulation.RollingStocks
     {
         public float OffsetM = 0f;   // distance forward? from the centre of the vehicle as defined by LengthM/2.
         public float WidthM = 10f;   // of the filling point. Is the maximum positioning error allowed equal to this or half this value? 
-        public MSTSWagon.PickupType Type;          // 'freightgrain', 'freightcoal', 'freightgravel', 'freightsand', 'fuelcoal', 'fuelwater', 'fueldiesel', 'fuelwood'
+        public MSTSWagon.PickupType Type;          // 'freightgrain', 'freightcoal', 'freightgravel', 'freightsand', 'fuelcoal', 'fuelwater', 'fueldiesel', 'fuelwood', freightgeneral, freightlivestock, specialmail
         public float? DistanceFromFrontOfTrainM;
         public FreightAnimationContinuous LinkedFreightAnim = null;
 

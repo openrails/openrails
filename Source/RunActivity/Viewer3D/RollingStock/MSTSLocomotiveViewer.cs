@@ -338,7 +338,13 @@ namespace Orts.Viewer3D.RollingStock
             {(uint)MSTSWagon.PickupType.FuelWater, Viewer.Catalog.GetString("water")},
             {(uint)MSTSWagon.PickupType.FuelCoal, Viewer.Catalog.GetString("coal")},
             {(uint)MSTSWagon.PickupType.FuelDiesel, Viewer.Catalog.GetString("diesel oil")},
-            {(uint)MSTSWagon.PickupType.FuelWood, Viewer.Catalog.GetString("wood")}
+            {(uint)MSTSWagon.PickupType.FuelWood, Viewer.Catalog.GetString("wood")},
+            {(uint)MSTSWagon.PickupType.FuelSand, Viewer.Catalog.GetString("sand")},
+            {(uint)MSTSWagon.PickupType.FreightGeneral, Viewer.Catalog.GetString("freight-general")},
+            {(uint)MSTSWagon.PickupType.FreightLivestock, Viewer.Catalog.GetString("freight-livestock")},
+            {(uint)MSTSWagon.PickupType.FreightFuel, Viewer.Catalog.GetString("freight-fuel")},
+            {(uint)MSTSWagon.PickupType.FreightMilk, Viewer.Catalog.GetString("freight-milk")},
+            {(uint)MSTSWagon.PickupType.SpecialMail, Viewer.Catalog.GetString("mail")}
         };
 
         /// <summary>
